@@ -1,0 +1,137 @@
+﻿<div class="modal fade" id="taskDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content">
+
+            <button type="button" class="modal-close-btn" data-bs-dismiss="modal">
+                <i class="bx bx-x"></i>
+            </button>
+
+            <div class="modal-body">
+
+                <!-- TITLE + PRIORITY BADGE -->
+                <div class="col-12 mb-4">
+                    <h4 id="tdTitle" class="text-muted mb-1"></h4>
+                    <span id="tdPriority" class="badge fs-6"></span>
+                </div>
+
+                <!-- DESCRIPTION -->
+                <div class="col-12 mb-4">
+                    <h5><i class="icon-base bx bx-file-blank me-1"></i> Description</h5>
+                    <p id="tdDescription" class="mb-0"></p>
+                </div>
+
+                 
+                <!-- INFO CARDS -->
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h4 class="alert-heading d-flex align-items-center flex-wrap gap-1" style="margin-bottom:0px;"><span class="alert-icon rounded-circle"><i class="icon-base bx bx-user"></i></span> Assigned By</h4>
+                          
+                            <p id="tdAssignee" class="mb-0 ps-10"></p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                         <h4 class="alert-heading d-flex align-items-center flex-wrap gap-1" style="margin-bottom:0px;"><span class="alert-icon rounded-circle"><i class="icon-base bx bx-time-five"></i></span>ETA</h4>
+
+                            <p id="tdEstimated" class="mb-0 ps-10"></p>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="col-12">
+                        <div class="alert alert-danger">
+
+                           <h4 class="alert-heading d-flex align-items-center flex-wrap gap-1" style="margin-bottom:0px;"><span class="alert-icon rounded-circle"><i class="icon-base bx bx-calendar-exclamation"></i></span> Deadline</h4>
+                            <p id="tdDeadline" class="mb-0 ps-10"></p>
+                        </div>
+                    </div>
+
+
+                    <div class="col-12">
+                    <div class="card shadow-none mb-4 bg-label-primary" id="tdCard">
+                        <div class="card-body">
+
+                            <!-- ÜST SATIR: TITLE + TIMER -->
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <!-- Left: Title -->
+                                <p id="tdTsTitle" class="card-title text-primary mb-0 d-flex align-items-center text-primary">
+                                    <span class="alert-icon rounded-circle me-2">
+                                        <i class="icon-base bx bx-time-five"></i>
+                                    </span>
+                                    Time Tracking
+                                </p>
+
+                                <!-- Right: Live Timer -->
+                                <div id="tdLiveTimer" class="fw-bold text-warning fs-4 d-none">
+                                    00:00
+                                </div>
+
+                            </div>
+
+                            <!-- ALT: Total Logged -->
+                            <p class="card-text mt-2">
+                                Total logged: <span id="tdLogged" class="fw-medium">0m</span>
+                            </p>
+
+                            <!-- BUTTON -->
+                            <div class="d-grid mt-3">
+                                <button id="tdTimesheetBtn" class="btn btn-primary btn-lg">
+                                    <i class="icon-base bx bx-play"></i> Start Timesheet
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- TIME TRACKING SECTION -->
+                <div class="card shadow-none bg-label-secondary">
+                    <div class="card-body" style="height:25vh;overflow-y:auto">
+
+                        <h5 class="card-title text-dark mb-4">Timer Session</h5>
+
+                        <div id="tdTimesheetList"></div>
+
+                    </div>
+
+                </div>
+
+
+
+                
+
+                <!-- FOOTER -->
+
+                <div class="d-flex justify-content-between mt-4 align-items-center">
+
+                    <!-- SOL: DELETE SCHEDULE -->
+                    <button class="btn btn-label-danger" id="btnDeleteSchedule">
+                        <i class="bx bx-trash me-1"></i> Delete Schedule
+                    </button>
+
+                    <!-- SAĞ: Cancel + Completed -->
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-label-secondary me-2" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+
+                        <button class="btn btn-primary" id="btnCloseTask">
+                            Close Task
+                        </button>
+                    </div>
+
+                </div>
+
+
+
+
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,67 @@
+﻿<div class="offcanvas offcanvas-end"
+     tabindex="-1"
+     id="offcanvasCreateSchedule"
+     aria-labelledby="offcanvasCreateSchedule">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="offcanvasCreateScheduleLabel" class="offcanvas-title">Survey Schedule</h5>
+        <button type="button"
+                class="btn-close text-reset"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 p-6 h-100">
+        <form class="create-schedule-form pt-0" id="createScheduleForm" onsubmit="return false">
+           
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="ddl-survey">Survey</label>
+                <select id="ddl-survey" name="surveyName" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-target-auidence">Target Auidence</label>
+                <select id="add-target-auidence" name="targetAuidence" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+            </div>
+            
+            <div class="mb-6 form-control-validation">
+                <label for="dtStartDate" class="form-label">Start Date</label>
+                <input type="text"
+                       class="form-control"
+                       placeholder="DD,Month, YYYY"
+                       name="dateStart"
+                       id="dtStartDate" />
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label for="dtEndDate" class="form-label">End Date</label>
+                <input type="text"
+                       class="form-control"
+                       placeholder="DD,Month, YYYY"
+                       name="dateEnd"
+                       id="dtEndDate" />
+            </div>
+
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-target-response">Target Response Count</label>
+                <input type="number"
+                       class="form-control"
+                       id="add-target-response"
+                       placeholder="250"
+                       name="targetResponse"
+                       min="0" />
+            </div>
+
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-remainder-schedule">Remainder Schedule (days before end)</label>
+                <input type="text"
+                       class="form-control"
+                       id="add-remainder-schedule"
+                       placeholder="eg. 7,3,1"
+                       name="remainderSchedule"
+                       aria-label="Remainder Schedule" />
+            </div>
+
+
+
+            <button type="submit" class="btn btn-primary me-3 data-submit">Schedule Survey</button>
+            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">Cancel</button>
+        </form>
+    </div>
+</div>

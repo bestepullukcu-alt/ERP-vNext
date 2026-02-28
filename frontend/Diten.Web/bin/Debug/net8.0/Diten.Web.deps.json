@@ -1,0 +1,49 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Diten.Web/1.0.0": {
+        "runtime": {
+          "Diten.Web.dll": {}
+        },
+        "resources": {
+          "en/Diten.Web.resources.dll": {
+            "locale": "en"
+          },
+          "es/Diten.Web.resources.dll": {
+            "locale": "es"
+          },
+          "ka/Diten.Web.resources.dll": {
+            "locale": "ka"
+          },
+          "kk/Diten.Web.resources.dll": {
+            "locale": "kk"
+          },
+          "ru/Diten.Web.resources.dll": {
+            "locale": "ru"
+          },
+          "tr/Diten.Web.resources.dll": {
+            "locale": "tr"
+          },
+          "uk/Diten.Web.resources.dll": {
+            "locale": "uk"
+          },
+          "uz/Diten.Web.resources.dll": {
+            "locale": "uz"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Diten.Web/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

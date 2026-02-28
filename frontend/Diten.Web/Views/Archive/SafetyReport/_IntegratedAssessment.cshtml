@@ -1,0 +1,126 @@
+﻿<div class="row g-6">
+    <div class="col-sm-6">
+        <label class="form-label" for="txt-product-complaint">Product Quality Complaint (PQC)</label>
+        <input type="text" id="txt-product-complaint" class="form-control" placeholder="Enter PQC (e.g., Unexpected odor or taste)" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="txt-medical-enquiry">Medical Information Enquiry (MIE)</label>
+        <input type="text" id="txt-medical-enquiry" class="form-control" placeholder="Enter MIE (e.g., Clarification on patient eligibility)" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="txt-severity">Severity (Description)</label>
+        <input type="text" id="txt-severity" class="form-control" placeholder="Enter severity (e.g., Description of the symptom intensity)" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-causality-assessment">Causality (Assessment)</label>
+        <select id="ddl-causality-assessment" name="CausalityAssessment" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-12">
+        <label class="form-label" for="txt-causality-description">Causality (Description)</label>
+        <input type="text" id="txt-causality-description" class="form-control" placeholder="Enter causality description (e.g., Assessment of cause-effect relationship)" />
+    </div>
+    <div class="col-sm-12">
+        <label class="form-label" for="safety-comment-editor">Safety Comments</label>
+        <div id="safety-comment-toolbar">
+            <span class="ql-formats">
+                <select class="ql-font"></select>
+                <select class="ql-size"></select>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-bold"></button>
+                <button class="ql-italic"></button>
+                <button class="ql-underline"></button>
+                <button class="ql-strike"></button>
+            </span>
+            <span class="ql-formats">
+                <select class="ql-color"></select>
+                <select class="ql-background"></select>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-script" value="sub"></button>
+                <button class="ql-script" value="super"></button>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-header" value="1"></button>
+                <button class="ql-header" value="2"></button>
+                <button class="ql-blockquote"></button>
+                <button class="ql-code-block"></button>
+            </span>
+        </div>
+        <div id="safety-comment-editor">
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="txt-followup-tracker">Follow-up Tracker</label>
+        <input type="text" id="txt-followup-tracker" class="form-control" placeholder="Enter follow-up tracker (e.g., Record next steps or actions taken)" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-assessment-by">Assessment by</label>
+        <select id="ddl-assessment-by" name="AssessmentBy" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-assessor">Assessor</label>
+        <select id="ddl-assessor" name="Assessor" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-review-by">Review by</label>
+        <select id="ddl-review-by" name="ReviewBy" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-reviewer">Reviewer</label>
+        <select id="ddl-reviewer" name="Reviewer" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-assigned-to">Assigned To</label>
+        <select id="ddl-assigned-to" name="AssignedTo" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-assigned">Assigned</label>
+        <select id="ddl-assigned" name="Assigned" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-assigned-organization">Assigned Organization Name</label>
+        <select id="ddl-assigned-organization" name="AssignedOrganization" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-12">
+        <label class="form-label" for="assessment-comment-editor">Comments</label>
+        <div id="assessment-comment-toolbar">
+            <span class="ql-formats">
+                <select class="ql-font"></select>
+                <select class="ql-size"></select>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-bold"></button>
+                <button class="ql-italic"></button>
+                <button class="ql-underline"></button>
+                <button class="ql-strike"></button>
+            </span>
+            <span class="ql-formats">
+                <select class="ql-color"></select>
+                <select class="ql-background"></select>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-script" value="sub"></button>
+                <button class="ql-script" value="super"></button>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-header" value="1"></button>
+                <button class="ql-header" value="2"></button>
+                <button class="ql-blockquote"></button>
+                <button class="ql-code-block"></button>
+            </span>
+        </div>
+        <div id="assessment-comment-editor">
+        </div>
+    </div>
+
+
+    <div class="col-12 d-flex justify-content-between">
+        <button class="btn btn-primary btn-prev">
+            <i class="icon-base bx bx-left-arrow-alt scaleX-n1-rtl icon-sm ms-sm-n2 me-sm-2"></i>
+            <span class="align-middle d-sm-inline-block d-none">Previous</span>
+        </button>
+        <button type="button" id="submitButton" class="btn btn-success btn-submit">Submit</button>
+    </div>
+</div>
+

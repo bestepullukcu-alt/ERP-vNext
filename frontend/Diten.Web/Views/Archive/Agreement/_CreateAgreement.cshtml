@@ -1,0 +1,751 @@
+﻿@{
+    ViewData["Title"] = "Create Agreement";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    /* Page hero */
+    .page-hero {
+        border: 1px;
+        border-radius: .5rem;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1rem
+    }
+
+    /* ----- Wizard Top (progress) ----- */
+    .wizard-top {
+        display: grid;
+        grid-template-columns: repeat(6,1fr);
+        column-gap: 40px;
+        align-items: start;
+        margin-top: 12px
+    }
+
+        .wizard-top .wizard-step {
+            display: grid;
+            grid-template-rows: auto auto auto;
+            justify-items: start;
+            row-gap: 6px;
+            transition: opacity .2s ease,color .2s ease;
+            opacity: .45
+        }
+
+            .wizard-top .wizard-step.active {
+                opacity: 1
+            }
+
+            .wizard-top .wizard-step.done {
+                opacity: .9
+            }
+
+        .wizard-top .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            background: transparent;
+            border: 2px solid #95a1ff;
+            display: inline-block;
+            position: relative
+        }
+
+        .wizard-top .wizard-step.active .dot {
+            border-color: #6d79ff;
+            box-shadow: 0 0 0 3px rgba(109,121,255,.15)
+        }
+
+        .wizard-top .wizard-step.done .dot {
+            background: #6d79ff;
+            border-color: #6d79ff
+        }
+
+            .wizard-top .wizard-step.done .dot::after {
+                content: "✓";
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: .6rem;
+                color: #fff;
+                line-height: 1
+            }
+
+        .wizard-top .label {
+            font-size: .88rem;
+            color: #677489;
+            white-space: nowrap
+        }
+
+        .wizard-top .wizard-step.active .label {
+            color: #3b4ba0;
+            font-weight: 600
+        }
+
+        .wizard-top .wizard-step.done .label {
+            color: #3b4ba0
+        }
+
+        .wizard-top .line {
+            width: 100%;
+            height: 3px;
+            border-radius: 999px;
+            position: relative;
+            overflow: hidden
+        }
+        /* mavi alt çizgi efekti */
+        .wizard-top .wizard-step .line::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: #6d79ff;
+            transition: width .25s ease
+        }
+
+        .wizard-top .wizard-step.active .line::after {
+            width: 55%
+        }
+
+        .wizard-top .wizard-step.done .line::after {
+            width: 100%
+        }
+
+    /* Fallback (alt stepper) */
+    .wizard-step {
+        text-align: center;
+        opacity: .55;
+        position: relative;
+        z-index: 1;
+        cursor: default
+    }
+
+        .wizard-step.active {
+            opacity: 1
+        }
+
+        .wizard-step .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #bfc6ff;
+            margin: 0 auto 6px
+        }
+
+        .wizard-step.active .dot {
+            width: 12px;
+            height: 12px;
+            background: #6d79ff;
+            box-shadow: 0 0 0 3px rgba(109,121,255,.15)
+        }
+
+        .wizard-step small {
+            font-weight: 600;
+            color: #74809a
+        }
+
+    /* Sheets & forms */
+    .sheet {
+        border: 1px;
+        border-radius: .5rem;
+        padding: 1rem 1rem 1.25rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,.04);
+        margin-bottom: 1rem
+    }
+
+        .sheet h6 {
+            font-weight: 600
+        }
+
+    .form-control::placeholder {
+        color: #b8bfcc
+    }
+
+
+        .form-select:focus, .form-control:focus {
+            box-shadow: 0 0 0 .2rem rgba(109,121,255,.12);
+        }
+
+    /* Page alert */
+    .page-alert {
+        display: none;
+        border: 1px;
+        color: #842029;
+        border-radius: .375rem;
+        padding: .75rem 1rem;
+        font-size: .9rem
+    }
+
+        .page-alert.show {
+            display: block
+        }
+
+        .page-alert .icon {
+            font-weight: 700;
+            margin-right: 6px
+        }
+
+    /* Attachment list */
+    .att-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px dashed;
+        border-radius: .5rem;
+        padding: .5rem .75rem;
+        margin-top: .5rem
+    }
+
+        .att-item .meta {
+            display: flex;
+            gap: .5rem;
+            align-items: center
+        }
+
+        .att-item .name {
+            font-weight: 600
+        }
+
+    .dashed-box {
+        border: 1px dashed
+    }
+
+    /* Summary cards */
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 12px;
+        margin-top: 12px
+    }
+
+    .summary-card {
+        --c: #94a3b8;
+        border: 1px solid var(--c);
+        border-radius: 8px;
+        background: transparent;
+        padding: .75rem 1rem;
+        line-height: 1.25;
+        min-height: 64px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center
+    }
+
+        .summary-card .title {
+            color: var(--c);
+            font-weight: 600;
+            margin: 0 0 .125rem
+        }
+
+        .summary-card .value {
+            color: var(--c);
+            font-size: .9rem;
+            margin: 0
+        }
+
+        .summary-card.warn {
+            --c: #f59e0b
+        }
+
+        .summary-card.success {
+            --c: #22c55e
+        }
+
+    .summary-one {
+        margin-top: 12px
+    }
+
+        .summary-one .summary-card {
+            grid-column: 1 / -1
+        }
+
+    /* Selected Parties box + chips */
+    .selected-wrap {
+        border: 1px;
+        border-radius: .5rem;
+        padding: .6rem .75rem
+    }
+
+    .selected-title {
+        font-weight: 600;
+        font-size: .9rem;
+        color: #4b5563;
+        margin-bottom: .25rem
+    }
+
+    .chips {
+        margin-top: .25rem
+    }
+
+    .party-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        border: 0;
+        color: #1f2937;
+        border-radius: 999px;
+        padding: .35rem .65rem;
+        margin: .25rem .3rem 0 0;
+        font-size: .92rem
+    }
+
+        .party-chip .x {
+            width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            border: 0;
+            cursor: pointer;
+            line-height: 1;
+            font-weight: 700
+        }
+
+            .party-chip .x:hover {
+                filter: brightness(.9)
+            }
+</style>
+
+<div class="page-hero">
+    <h4 class="mb-1">Create New Agreement</h4>
+    <p class="text-muted mb-2">Create and manage agreements with comprehensive details and tracking</p>
+
+    <div class="wizard-top" id="agreementStepper">
+        <div class="wizard-step active" data-step="1"><span class="dot"></span><span class="label">General Information</span><span class="line"></span></div>
+        <div class="wizard-step" data-step="2"><span class="dot"></span><span class="label">Parties &amp; Contacts</span><span class="line"></span></div>
+        <div class="wizard-step" data-step="3"><span class="dot"></span><span class="label">Specific Details</span><span class="line"></span></div>
+        <div class="wizard-step" data-step="4"><span class="dot"></span><span class="label">Financial &amp; Legal</span><span class="line"></span></div>
+        <div class="wizard-step" data-step="5"><span class="dot"></span><span class="label">Delivery &amp; Logistic</span><span class="line"></span></div>
+        <div class="wizard-step" data-step="6"><span class="dot"></span><span class="label">Attachment &amp; Notes</span><span class="line"></span></div>
+    </div>
+</div>
+
+<form id="agreementForm">
+    @Html.AntiForgeryToken()
+
+    <!-- STEP 1: General Information -->
+    <section class="wizard-section" data-step="1">
+        <div class="sheet">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">General Information</h6>
+                <button class="btn btn-sm btn-outline-secondary" type="button" id="btnAutoNumber">Auto-Generate Number</button>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="agrType">Agreement Type*</label>
+                    <select id="agrType" name="agrType" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Agreement Type">
+                        <option value=""></option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="agrSubType">Agreement Sub Type*</label>
+                    <select id="agrSubType" name="agrSubType" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Sub Type">
+                        <option value=""></option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="agrNumber">Agreement Number*</label>
+                    <input id="agrNumber" name="number" class="form-control" placeholder="AGR*2025-001" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="agrStatus">Agreement Status*</label>
+                    <select id="agrStatus" name="status" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Status">
+                        <option value=""></option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="startDate">Start Date*</label>
+                    <input type="date" id="startDate" name="startDate" class="form-control" placeholder="gg.aa.yyyy" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="endDate">End Date</label>
+                    <input type="date" id="endDate" name="endDate" class="form-control" placeholder="gg.aa.yyyy" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="country">Country / Region*</label>
+                    <select id="country" name="country" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Country">
+                        <option value=""></option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="currency">Currency*</label>
+                    <select id="currency" name="currency" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Currency">
+                        <option value=""></option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="valueNet">Agreement Value (Net)</label>
+                    <input id="valueNet" class="form-control" placeholder="0.00" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="valueGross">Agreement Values (Gross)</label>
+                    <input id="valueGross" class="form-control" placeholder="0.00" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="paymentTerms">Payment Terms</label>
+                    <select id="paymentTerms" name="paymentTerms" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Payment Terms">
+                        <option value=""></option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="discount">Discount (%)</label>
+                    <input id="discount" class="form-control" placeholder="0" />
+                </div>
+
+                <input type="hidden" id="initiatingParty" />
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 2: Parties & Contacts -->
+    <section class="wizard-section d-none" data-step="2">
+        <div class="sheet">
+            <h6 class="mb-3">Parties &amp; Contacts</h6>
+
+            <!-- Row: Initiating Party -->
+            <div class="row g-2 align-items-end mb-2">
+                <div class="col-md-8">
+                    <label class="form-label" for="company">Initiating Party*</label>
+                    <select id="company" name="company"
+                            class="select2 form-select form-select-lg"
+                            data-allow-clear="true"
+                            data-placeholder="Select Company">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="initiatingRole">Role</label>
+                    <select id="initiatingRole"
+                            class="select2 form-select form-select-lg"
+                            data-allow-clear="true"
+                            data-placeholder="Select Role">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="button" id="btnAddPartyInit" class="btn btn-primary btn-sm" disabled>+ Add Party</button>
+                </div>
+
+                <div class="col-12">
+                    <div class="selected-wrap">
+                        <div class="selected-title">Selected Parties</div>
+                        <div id="selectedPartiesInit" class="chips"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row: Receiving Party #1 -->
+            <div class="row g-2 align-items-end mb-2">
+                <div class="col-md-8">
+                    <label class="form-label" for="company2">Receiving Party*</label>
+                    <select id="company2" name="company2"
+                            class="select2 form-select form-select-lg"
+                            data-allow-clear="true"
+                            data-placeholder="Select Company">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="receivingRole">Role</label>
+                    <select id="receivingRole"
+                            class="select2 form-select form-select-lg"
+                            data-allow-clear="true"
+                            data-placeholder="Select Role">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="button" id="btnAddPartyRec" class="btn btn-primary btn-sm" disabled>+ Add Party</button>
+                </div>
+
+                <div class="col-12">
+                    <div class="selected-wrap">
+                        <div class="selected-title">Selected Parties</div>
+                        <div id="selectedPartiesRec" class="chips"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sheet">
+            <h6 class="mb-3">Contact Information</h6>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="respPerson">Agreement Responsible Person</label>
+                    <input id="respPerson" class="form-control" placeholder="Enter Responsible Person Name" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="department">Internal Owner / Department</label>
+                    <select id="department"
+                            class="select2 form-select form-select-lg"
+                            data-allow-clear="true"
+                            data-placeholder="Select Department">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="contactEmail">Contact Email</label>
+                    <input type="email" id="contactEmail" class="form-control" placeholder="email@example.com" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="contactPhone">Contact Phone</label>
+                    <input id="contactPhone" class="form-control" placeholder="+1 (555) 123-4567" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 3: Specific Details -->
+    <section class="wizard-section d-none" data-step="3">
+        <div class="sheet">
+            <h6 class="mb-3">Agreement Specific Details</h6>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="leadTime">Lead Time (Days)</label>
+                    <input class="form-control" id="leadTime" placeholder="Enter Lead time" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="minOrderQty">Minimum Order Quantity</label>
+                    <input class="form-control" id="minOrderQty" placeholder="Enter Minimum Order Quantity" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="deliveryFreq">Delivery Frequency</label>
+                    <input class="form-control" id="deliveryFreq" placeholder="Enter Delivery Frequency" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="supplierRating">Supplier Rating</label>
+                    <input class="form-control" id="supplierRating" placeholder="Enter Supplier Rating" />
+                </div>
+            </div>
+
+            <div class="summary-one">
+                <div class="summary-card warn">
+                    <div class="title">Supply &amp; Chain Agreement</div>
+                    <div class="value">0 field configured</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 4: Financial & Legal -->
+    <section class="wizard-section d-none" data-step="4">
+        <div class="sheet">
+            <h6 class="mb-3">Financial &amp; Legal Details</h6>
+
+            <div class="mb-4">
+                <h6 class="fw-semibold mb-3">Banking Information</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="bankName">Bank Name</label>
+                        <select id="bankName" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Bank">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="bankAccount">Bank Account Number</label>
+                        <input class="form-control" id="bankAccount" placeholder="Enter Account Number" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="swift">SWIFT Code</label>
+                        <input class="form-control" id="swift" placeholder="Enter SWIFT Code" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="correspondentBank">Correspondent Bank</label>
+                        <input class="form-control" id="correspondentBank" placeholder="Enter Correspondent Bank" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="correspondentAcc">Correspondent Account Number</label>
+                        <input class="form-control" id="correspondentAcc" placeholder="Enter Account Number" />
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h6 class="fw-semibold mb-3">Legal Terms &amp; Conditions</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="governingLaw">Governing Law</label>
+                        <select id="governingLaw" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Governing Law">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="confidentiality">Confidentiality Clause</label>
+                        <select id="confidentiality" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Confidentiality Clause">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="renewalTerms">Renewal Terms / Auto-Renewal</label>
+                        <select id="renewalTerms" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Renewal Terms">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="correspondentBankSel">Correspondent Bank</label>
+                        <select id="correspondentBankSel" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Correspondent Bank">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="auditClause">Compliance / Audit Clause</label>
+                        <textarea class="form-control" id="auditClause" rows="3" placeholder="Enter compliance and audit requirements, regulatory standards and monitoring clauses..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-cards">
+                <div class="summary-card success" id="sumBanking">
+                    <div class="title">Banking</div>
+                    <div class="value">Not specified</div>
+                </div>
+                <div class="summary-card warn" id="sumLegal">
+                    <div class="title">Legal Framework</div>
+                    <div class="value">Not specified</div>
+                </div>
+                <div class="summary-card warn" id="sumRenewal">
+                    <div class="title">Renewal Terms</div>
+                    <div class="value">Not specified</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 5: Delivery & Logistics -->
+    <section class="wizard-section d-none" data-step="5">
+        <div class="sheet">
+            <h6 class="mb-3">Delivery &amp; Logistics</h6>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label" for="deliverAddress">Deliver Address (if applicable)</label>
+                    <textarea class="form-control" id="deliverAddress" rows="3" placeholder="Enter complete delivery address including street, city, state/province, postal code and country"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="incoterms">Incoterms (if applicable)</label>
+                    <select id="incoterms" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select Incoterms">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="consignmentOperator">Consignment Operator</label>
+                    <input class="form-control" id="consignmentOperator" placeholder="Enter Consignment Operator/Logistics Company" />
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <h6 class="mb-3">Delivery Contact Information</h6>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="deliveryContact">Delivery Contact Person</label>
+                    <input class="form-control" id="deliveryContact" placeholder="Enter Contact Person" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="deliveryPhone">Delivery Contact Phone</label>
+                    <input class="form-control" id="deliveryPhone" placeholder="+1 (555) 123-4567" />
+                </div>
+                <div class="col-md-10">
+                    <label class="form-label" for="deliveryEmail">Deliver Contact Email</label>
+                    <input type="email" class="form-control" id="deliveryEmail" placeholder="delivery@company.com" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="deliveryExtra">Extra</label>
+                    <select id="deliveryExtra" class="select2 form-select form-select-lg" data-allow-clear="true" data-placeholder="Select value">
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="summary-cards">
+                <div class="summary-card success" id="sumDeliveryMethod">
+                    <div class="title">Delivery Method</div>
+                    <div class="value">Not specified</div>
+                </div>
+                <div class="summary-card warn" id="sumLegal2">
+                    <div class="title">Legal Framework</div>
+                    <div class="value">Not specified</div>
+                </div>
+                <div class="summary-card warn" id="sumRenewal2">
+                    <div class="title">Renewal Terms</div>
+                    <div class="value">Not specified</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 6: Attachment & Notes -->
+    <section class="wizard-section d-none" data-step="6">
+        <div class="sheet">
+            <h6 class="mb-3">Attachments &amp; Notes</h6>
+
+            <div id="attDropArea" class="dashed-box rounded p-5 text-center">
+                <div class="d-flex flex-column align-items-center justify-content-center" style="min-height:200px;">
+                    <div class="mb-2">
+                        <i class="bx bx-upload text-secondary" style="font-size:24px;padding:.35rem .45rem;border-radius:8px;"></i>
+                    </div>
+                    <div class="fw-semibold" style="font-size:1.1rem;">Drag and drop your image here</div>
+                    <div class="text-muted small my-1">or</div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="chooseFileBtn">Browse Image</button>
+                    <input type="file" id="fileUpload" class="d-none" multiple accept="image/*" />
+                </div>
+                <div id="attList" class="mt-3"></div>
+            </div>
+
+            <div class="mb-3 mt-3">
+                <label class="form-label" for="attDeliverAddress">Deliver Address (if applicable)</label>
+                <textarea id="attDeliverAddress" class="form-control form-control-lg" rows="3" placeholder="Enter complete delivery address including street, city, state/province, postal code and country"></textarea>
+            </div>
+
+            <div class="summary-cards">
+                <div class="summary-card warn">
+                    <div class="title">Total Attachment</div>
+                    <div class="value"><span id="attFileCount">0</span> files</div>
+                </div>
+                <div class="summary-card warn">
+                    <div class="title">Total Size</div>
+                    <div class="value"><span id="attTotalSize">0 Bytes</span></div>
+                </div>
+                <div class="summary-card success">
+                    <div class="title">Notes Length</div>
+                    <div class="value"><span id="notesLength">0</span> characters</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <button type="button" class="btn btn-outline-secondary" id="btnPrev">Previous</button>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Agreement")">Cancel</a>
+            <button type="button" class="btn btn-outline-primary" id="btnSaveDraft">Save Draft</button>
+            <button type="button" class="btn btn-primary" id="btnNext">Next</button>
+            <button type="submit" class="btn btn-primary d-none" id="btnCreate">Create Agreement</button>
+        </div>
+    </div>
+
+    <div class="page-alert mt-3" id="pageAlert">
+        <span class="icon">!</span>
+        <span id="pageAlertText">Please fill in the required fields.</span>
+    </div>
+</form>
+
+@Html.Partial("~/Views/Shared/_DeleteConfirmModal.cshtml")
+@Html.Partial("~/Views/Shared/_AppToast.cshtml")
+
+@section Scripts {
+    <script src="~/assets/js/Archive/Agreement/CreateAgreement.js"></script>
+}

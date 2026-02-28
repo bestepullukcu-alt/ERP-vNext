@@ -1,0 +1,35 @@
+﻿<div class="modal fade" id="editUser" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+        <div class="modal-content">
+ <button type="button" class="modal-close-btn" data-bs-dismiss="modal">
+        <i class="bx bx-x"></i>
+    </button>
+            <div class="modal-body">
+                <div class="text-center mb-6">
+                    <h4 class="mb-2 modal-title">New Task / Meeting</h4>
+                    <p class="mb-4 text-muted" id="modalTaskMeetingSubtitle">
+                        Choose whether you want to add a task or arrange a meeting using the options below.
+                    </p>
+                </div>
+
+                    @Html.Partial("~/Views/Calendar/_addEventTabs.cshtml")
+
+
+
+
+                    <div class="col-12 text-end">
+                        <button type="reset"
+                                class="btn btn-label-secondary"
+                                data-bs-dismiss="modal"
+                                aria-label="Close">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary me-sm-3 me-1 createTask">Save</button>
+                        
+                    </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+

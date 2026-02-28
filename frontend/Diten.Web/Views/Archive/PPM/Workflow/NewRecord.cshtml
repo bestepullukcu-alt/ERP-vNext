@@ -1,0 +1,128 @@
+﻿@{
+    ViewData["Title"] = "Workflows New Record";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .tab-content {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+}
+</style>
+
+<div id="normalFormContainer">
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-6 row-gap-4">
+    <div class="d-flex align-items-center">
+        <!-- Back butonu -->
+        <button type="button" class="btn btn-label-secondary me-3" onclick="history.back();"><i class='bx bx-left-arrow-alt'></i>  Back To Workflow</button>
+
+        <div class="d-flex flex-column justify-content-center">
+            <h4 class="mb-1">New </h4>
+            <p class="mb-0">Create a new </p>
+        </div>
+    </div>
+
+        <!-- Sağ taraf: Cancel + Create -->
+    <div class="d-flex align-items-center">
+            <button type="button" id="btnCancelGeneral" class="btn btn-label-secondary me-2">Cancel</button>
+        <button type="button" id="btnCreate" class="btn btn-label-primary">Create</button>
+    </div>
+</div>
+
+<!-- Divider -->
+<hr class="my-4">
+
+<div class="col-xl-12">
+    <div class="nav-align-top">
+        <ul class="nav nav-pills mb-4" role="tablist">
+            <li class="nav-item">
+                <button type="button"
+                        class="nav-link active"
+                        role="tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#generalNewRecord"
+                        aria-controls="generalNewRecord"
+                        aria-selected="true">
+                    General
+                </button>
+            </li>
+            <li class="nav-item">
+                <button type="button"
+                        class="nav-link"
+                        role="tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#teamsForm"
+                        aria-controls="teamsForm"
+                        aria-selected="false">
+                    Teams
+                </button>
+            </li>
+            <li class="nav-item">
+                <button type="button"
+                        class="nav-link"
+                        role="tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#tasksForm"
+                        aria-controls="tasksForm"
+                        aria-selected="false">
+                    Tasks
+                </button>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="generalNewRecord" role="tabpanel">
+                @Html.Partial("~/Views/PPM/Workflow/_NewRecordGeneral.cshtml")
+
+            </div>
+            <div class="tab-pane fade" id="teamsForm" role="tabpanel">
+                @Html.Partial("~/Views/PPM/Workflow/_WorkflowTeam.cshtml")
+            </div>
+            <div class="tab-pane fade" id="tasksForm" role="tabpanel">
+
+                @Html.Partial("~/Views/PPM/Workflow/_WorkflowTask.cshtml")
+           </div>
+        </div>
+ </div>   
+</div>
+
+</div>
+
+
+<div id="fullFormContainer" class="d-none">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-4">
+    <div class="d-flex align-items-center">
+        <!-- Back butonu -->
+        <button type="button" class="btn btn-label-secondary me-3" id="btnBackToNormal"><i class='bx bx-left-arrow-alt'></i>  Back To Intiative</button>
+
+        <div class="d-flex flex-column justify-content-center">
+            <h4 id="hdrTask" class="mb-1">New Task </h4>
+                <p id="pTask" class="mb-0">Add a new task to your workspace and assign it to a initiatives and group </p>
+        </div>
+    </div>
+
+        <!-- Sağ taraf: Cancel + Create -->
+    <div class="d-flex align-items-center">
+        <button type="button" id="btnCancelTask" class="btn btn-label-secondary me-2">Cancel</button>
+        <button type="button" id="btnCreateTask" class="btn btn-label-primary">Create Task</button>
+    </div>
+</div>
+<hr class="my-4">
+    @Html.Partial("~/Views/PPM/Workflow/_NewRecordFullForm.cshtml")
+</div>
+
+<!-- Offcanvas to add new record -->
+   @Html.Partial("~/Views/PPM/Workflow/_AddTeamMemberCanvas.cshtml")
+   @Html.Partial("~/Views/PPM/Workflow/_UpdateTeamMemberCanvas.cshtml")
+@Html.Partial("~/Views/PPM/Workflow/_AddWorkflowTaskCanvas.cshtml")
+@Html.Partial("~/Views/Shared/_AppToast.cshtml")
+@Html.Partial("~/Views/Shared/_DeleteConfirmModal.cshtml")
+@Html.Partial("~/Views/PPM/Workflow/_DeleteTaskModal.cshtml")
+
+
+@section Scripts {
+
+    <script src="@Url.Content("~/assets/js/ui-popover.js")"></script>
+    <script src="@Url.Content("~/assets/js/Archive/PPM/Workflow/NewRecord.js")"></script>
+}

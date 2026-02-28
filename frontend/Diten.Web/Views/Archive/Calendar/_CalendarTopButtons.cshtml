@@ -1,0 +1,31 @@
+﻿
+<div class="d-flex align-items-end justify-content-between flex-wrap gap-3">
+
+    <!-- SORT AREA -->
+    <div class="d-flex flex-column">
+        <label for="taskSort" class="form-label mb-1">Sort by</label>
+        <select id="taskSort" class="form-select">
+            <option value="priority">Priority</option>
+            <option value="status">Status</option>
+            <option value="date">Date</option>
+        </select>
+    </div>
+
+    <!-- RIGHT BUTTONS -->
+    <div class="d-flex align-items-end gap-2">
+
+        <!-- FILTER -->
+        <button class="btn btn-icon btn-label-secondary filter-task"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasTaskOverviewFilters">
+            <i class="bx bx-filter-alt icon-16px"></i>
+        </button>
+
+        <!-- ADD -->
+        <button class="btn btn-icon btn-primary btn-create-task">
+            <i class="bx bx-plus icon-16px"></i>
+        </button>
+
+    </div>
+
+</div>

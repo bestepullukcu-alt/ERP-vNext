@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Safety Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="card">
+    <div class="card-header border-bottom">
+        <h5 class="card-title mb-0">Safety Report</h5>
+        <small class="text-muted">
+            Case Safety Insights
+        </small>        
+    </div>
+    <!-- Offcanvas to add new global brand -->
+    @Html.Partial("_SafetyReportTable")
+</div>
+@Html.Partial("~/Views/Shared/_DeleteConfirmModal.cshtml")
+@Html.Partial("~/Views/Shared/_AppToast.cshtml")
+@section Scripts {
+
+    <script src="@Url.Content("~/assets/js/Archive/SafetyReport/SafetyReport.js")"></script>
+}

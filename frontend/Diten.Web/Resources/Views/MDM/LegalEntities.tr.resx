@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="LegalEntitiesTitle" xml:space="preserve">
+    <value>Tüzel Kişiler</value>
+  </data>
+  <data name="AddNewCompany" xml:space="preserve">
+    <value>Yeni Şirket Ekle</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Başlık</value>
+  </data>
+  <data name="TaxNumber" xml:space="preserve">
+    <value>Vergi Numarası</value>
+  </data>
+  <data name="TaxOffice" xml:space="preserve">
+    <value>Vergi Dairesi</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>E-posta</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Telefon</value>
+  </data>
+  <data name="CompanyType" xml:space="preserve">
+    <value>Şirket Türü</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>İşlemler</value>
+  </data>
+  <data name="ViewBtn" xml:space="preserve">
+    <value>Görüntüle</value>
+  </data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Düzenle</value>
+  </data>
+  <data name="NoOrganizationsFound" xml:space="preserve">
+    <value>Kuruluş bulunamadı veya Gateway'e ulaşılamadı.</value>
+  </data>
+  <data name="CreateLegalEntityTitle" xml:space="preserve">
+    <value>Tüzel Kişi Oluştur</value>
+  </data>
+  <data name="AddNewLegalEntity" xml:space="preserve">
+    <value>Yeni Tüzel Kişi (Şirket) Ekle</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Listeye Dön</value>
+  </data>
+  <data name="BasicInformation" xml:space="preserve">
+    <value>Temel Bilgiler</value>
+  </data>
+  <data name="ContactDetails" xml:space="preserve">
+    <value>İletişim Detayları</value>
+  </data>
+  <data name="AdditionalSpecifications" xml:space="preserve">
+    <value>Ek Özellikler</value>
+  </data>
+  <data name="CancelBtn" xml:space="preserve">
+    <value>İptal</value>
+  </data>
+  <data name="SaveLegalEntity" xml:space="preserve">
+    <value>Tüzel Kişiyi Kaydet</value>
+  </data>
+  <data name="CompanyNamePlaceholder" xml:space="preserve">
+    <value>Şirket Adı</value>
+  </data>
+  <data name="TaxOfficePlaceholder" xml:space="preserve">
+    <value>Vergi Dairesi</value>
+  </data>
+  <data name="TaxNumberPlaceholder" xml:space="preserve">
+    <value>Vergi Numarası</value>
+  </data>
+  <data name="CompanyTypePlaceholder" xml:space="preserve">
+    <value>Örn. A.Ş., Ltd.</value>
+  </data>
+  <data name="SectorPlaceholder" xml:space="preserve">
+    <value>Endüstri Sektörü</value>
+  </data>
+  <data name="EmailPlaceholder" xml:space="preserve">
+    <value>info@sirket.com</value>
+  </data>
+  <data name="PhonePlaceholder" xml:space="preserve">
+    <value>+90 555 123 4567</value>
+  </data>
+  <data name="WebsitePlaceholder" xml:space="preserve">
+    <value>www.sirket.com</value>
+  </data>
+  <data name="AddressPlaceholder" xml:space="preserve">
+    <value>Tam iş adresi</value>
+  </data>
+  <data name="PrimaryCurrencyPlaceholder" xml:space="preserve">
+    <value>USD, EUR, TRY</value>
+  </data>
+  <data name="DefaultTimeZonePlaceholder" xml:space="preserve">
+    <value>UTC+3</value>
+  </data>
+  <data name="ContactPersonPlaceholder" xml:space="preserve">
+    <value>Ana İletişim Kişisi</value>
+  </data>
+  <data name="DefaultLangPlaceholder" xml:space="preserve">
+    <value>en-US, tr-TR</value>
+  </data>
+  <data name="OrganizationRolePlaceholder" xml:space="preserve">
+    <value>Tedarikçi, Müşteri...</value>
+  </data>
+  <data name="LogoUrlPlaceholder" xml:space="preserve">
+    <value>https://...</value>
+  </data>
+  <data name="FiscalYearStartPlaceholder" xml:space="preserve">
+    <value>01-01</value>
+  </data>
+  <data name="TaxJurisdictionPlaceholder" xml:space="preserve">
+    <value>Yargı Kodu</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Şirketlerinizi, şubelerinizi ve tüzel kişiliklerinizi buradan yönetin.</value>
+  </data>
+</root>

@@ -1,0 +1,100 @@
+﻿<div class="card mb-6">
+    <div class="card-widget-separator-wrapper">
+        <div class="card-body card-widget-separator">
+            <div class="row gy-4 gy-sm-1">
+                <div class="col-sm-6 col-lg-6">
+                    <div class="d-flex justify-content-between align-items-start card-widget-1 border-end pb-4 pb-sm-0">
+                        <div>
+                            <p class="mb-1">Total Task</p>
+                            <h4 class="text-primary mb-1" id="totalTaskCount">0</h4>
+                            <p class="mb-0"><span class="me-2" id="inProgressCount">0 in progress</span></p>
+                        </div>
+                        <button type="button" class="btn btn-icon btn-label-primary me-lg-6">
+                            <span class="icon-base bx bx-check icon-md"></span>
+                        </button>
+                    </div>
+                    <hr class="d-none d-sm-block d-lg-none me-6">
+                </div>
+                <div class="col-sm-6 col-lg-6">
+                    <div class="d-flex justify-content-between align-items-start card-widget-2 border-end pb-4 pb-sm-0">
+                        <div>
+                            <p class="mb-1">Completed Task</p>
+                            <h4 class="text-primary mb-1" id="completedTaskCount">0</h4>
+                            <p class="mb-0"><span class="me-2" id="completionRate">0% completion rate</span></p>
+                        </div>
+                        <button type="button" class="btn btn-icon btn-label-success me-lg-6">
+                            <span class="icon-base bx bx-check icon-md"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="col-xl-12">
+    <div class="nav-align-top">
+        <ul class="nav nav-pills mb-4" role="tablist">
+            <li class="nav-item">
+                <button type="button"
+                        class="nav-link active"
+                        role="tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#taskList"
+                        aria-controls="taskList"
+                        aria-selected="true">
+                    Workstream
+                </button>
+            </li>
+            <li class="nav-item">
+                <button type="button"
+                        class="nav-link"
+                        role="tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#timeLineView"
+                        aria-controls="timeLineView"
+                        aria-selected="false">
+                    Timeline
+                </button>
+            </li>
+            <li class="nav-item">
+                <button type="button"
+                        class="nav-link"
+                        role="tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#dependenciesForm"
+                        aria-controls="dependenciesForm"
+                        aria-selected="false">
+                    Dependencies
+                </button>
+            </li>
+            <li class="nav-item">
+                <button type="button"
+                        class="nav-link"
+                        role="tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#subTaskForm"
+                        aria-controls="subTaskForm"
+                        aria-selected="false">
+                    Tasks
+                </button>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="taskList" role="tabpanel">
+              @Html.Partial("~/Views/PPM/Workflow/_WorkflowTaskList.cshtml")
+
+            </div>
+            <div class="tab-pane fade" id="timeLineView" role="tabpanel">
+            </div>
+            <div class="tab-pane fade" id="dependenciesForm" role="tabpanel">
+
+           </div>
+            <div class="tab-pane fade" id="subTaskForm" role="tabpanel">
+            </div>
+        </div>
+ </div>   
+</div>
+
+

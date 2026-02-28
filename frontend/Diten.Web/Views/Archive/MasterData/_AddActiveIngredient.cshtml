@@ -1,0 +1,48 @@
+﻿<div class="offcanvas offcanvas-end"
+     tabindex="-1"
+     id="AddIngredientForm"
+     aria-labelledby="AddIngredientLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="AddIngredientLabel" class="offcanvas-title">Add Ingredient</h5>
+        <button type="button"
+                class="btn-close text-reset"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 p-6 h-100">
+        <form class="add-new-IngredientForm pt-0" id="addNewIngredientForm" onsubmit="return false">
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="ddlIngredientType">Type</label>
+                <select id="ddlIngredientType" name="ingredientType" class="select2 form-select form-select-lg" data-allow-clear="true">
+                    <option value="1">API</option>
+                    <option value="2">Excipient</option>
+
+                </select>
+                
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="ddlIngredient">Active Ingredient</label>
+                <select id="ddlIngredient" name="ingredient" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="ddlUnite">Unite</label>
+                <select id="ddlUnite" name="unite" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="txtIngredientDosage">Dosage/Volume</label>
+                <input type="text"
+                       class="form-control"
+                       id="txtIngredientDosage"
+                       placeholder="10 ml"
+                       name="ingredientDosage"
+                       aria-label="ingredientDosage" />
+            </div>
+            <input type="hidden" name="activeIngredientFormId" id="txtActiveIngredientFormId" />
+            <button  class="btn btn-primary me-3 data-submit">Add</button>
+            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">Cancel</button>
+        </form>
+    </div>
+</div>
+

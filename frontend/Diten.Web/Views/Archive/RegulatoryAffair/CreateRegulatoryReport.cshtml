@@ -1,0 +1,187 @@
+﻿@{
+    ViewData["Title"] = "Regualtory Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    <style>
+        .hidden {
+            display: none !important;
+        }
+    </style>
+}
+<div id="mainView" class="col-12 col-lg-12 order-0 order-md-1">
+                  <!-- User Pills -->
+                  <div class="nav-align-top">
+                    <ul class="nav nav-pills flex-column flex-md-row mb-6 flex-wrap row-gap-2">
+                      <li class="nav-item">
+                <a class="nav-link active" data-tab="general" href="javascript:void(0);" onclick="showTab('general')"><i class="icon-base bx bx-info-circle icon-sm me-1_5"></i>General Info</a>
+                      </li>
+                      <li class="nav-item">
+                <a class="nav-link" data-tab="action" href="javascript:void(0);" onclick="showTab('action')"><i class="icon-base bx bx-check icon-sm me-1_5"></i>Immendiate Action Required</a>
+                      </li>
+                    </ul>
+                  </div>
+                  <!--/ User Pills -->
+
+
+    <div id="tab-general" class="row">
+
+        <div class="col-12 col-lg-8">
+            <div class="card mb-6">
+                <div class="card-body pt-3">
+                    <div class="row">
+                            <div class="col-md-6 mb-6 form-control-validation">
+                            <label class="form-label" for="ddlCountry">Country</label>
+                                <select id="ddlCountry" name="ddlCountry" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+
+                        </div>
+                            <div class="col-md-6 mb-6 form-control-validation">
+                            <label class="form-label" for="ddlRegulatoryReportStatus">Status</label>
+                                <select id="ddlRegulatoryReportStatus" name="regulatoryReportStatus" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+
+                        </div>
+                    </div>
+                    <div class="row">
+                            <div class="col-md-6 mb-6 form-control-validation">
+                            <label class="form-label" for="ddlAuthority">Instution Name</label>
+                                <select id="ddlAuthority"  name="regulatoryReportAuthority" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+
+                        </div>
+                            <div class="col-md-6 mb-6 form-control-validation">
+                            <label for="dtPublish" class="form-label">Date of Update Publication</label>
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="DD,Month, YYYY"
+                                   name="datePublish"
+                                   id="dtPublish" />
+                        </div>
+                        </div>
+                        <div class="mb-6 form-control-validation">
+                        <label class="form-label" for="txtLink">Link to Update</label>
+                        <input type="text" id="txtLink" name="LinkNmae" class="form-control" placeholder="www.xyz.com" />
+                    </div>
+                        <div class="mb-6 form-control-validation">
+                        <label class="form-label" for="snow-editor">Summary in English</label>
+                        <div id="snow-toolbar">
+                                <span class="ql-formats">
+                                    <select class="ql-font"></select>
+                                    <select class="ql-size"></select>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-bold"></button>
+                                    <button class="ql-italic"></button>
+                                    <button class="ql-underline"></button>
+                                    <button class="ql-strike"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <select class="ql-color"></select>
+                                    <select class="ql-background"></select>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-script" value="sub"></button>
+                                    <button class="ql-script" value="super"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-header" value="1"></button>
+                                    <button class="ql-header" value="2"></button>
+                                    <button class="ql-blockquote"></button>
+                                    <button class="ql-code-block"></button>
+                                </span>
+                            </div>
+                            <div id="snow-editor">
+                                
+                            </div>
+                        
+                    </div>
+
+                    
+                    </div>
+                        
+                </div>
+
+
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h5 class="card-title m-0">Comments</h5>
+                </div>
+                <div class="card-body">
+                    <div id="comment-toolbar">
+                        <span class="ql-formats">
+                            <select class="ql-font"></select>
+                            <select class="ql-size"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-bold"></button>
+                            <button class="ql-italic"></button>
+                            <button class="ql-underline"></button>
+                            <button class="ql-strike"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <select class="ql-color"></select>
+                            <select class="ql-background"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-script" value="sub"></button>
+                            <button class="ql-script" value="super"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-header" value="1"></button>
+                            <button class="ql-header" value="2"></button>
+                            <button class="ql-blockquote"></button>
+                            <button class="ql-code-block"></button>
+                        </span>
+                    </div>
+                    <div id="comment-editor">
+                    </div>
+                </div>
+            </div>
+            </div>
+        <div class="col-12 col-lg-4">
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h5 class="card-title m-0">
+                        <i class="icon-base bx bx-file icon-md"></i>
+                        Attachment
+                        <input type="file" id="fileInput" style="display: none;" />
+                        <a href="javascript:;" class="btn btn-icon text-end" style="float:right;" id="uploadIcon">
+                            <i class="icon-base bx bx-plus icon-md"></i>
+                        </a>
+                    </h5>
+
+                </div>
+                <div id="uploadItems" class="card-body">
+                    
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-8 text-end">
+            <button class="btn btn-label-secondary" onclick="window.location.href = '/regulatory-affair/regulatory-report'">
+                Cancel
+            </button>
+            <button type="submit" id="submitButton" onclick="saveGeneral();" class="btn btn-primary btn-submit data-submit">Save</button>
+        </div>
+
+    </div>
+
+    <div id="tab-action" class="card hidden" >
+        <!-- Immediate Action Required content -->
+            <div class="card-header border-bottom">
+                <h5 class="card-title mb-0" data-i18n="Tasks">Tasks</h5>
+
+            </div>
+            <!-- Offcanvas to add new global brand -->
+            @Html.Partial("_RegulatoryTaskTable")
+    </div>
+
+    
+    </div>
+
+@Html.Partial("_AddNewTask")
+@Html.Partial("~/Views/Shared/_DeleteConfirmModal.cshtml")
+@Html.Partial("~/Views/Shared/_AppToast.cshtml")
+
+@section Scripts {
+
+    <script src="@Url.Content("~/assets/js/Archive/RegulatoryAffair/datePicker.js")"></script>
+    <script src="@Url.Content("~/assets/js/Archive/RegulatoryAffair/CreateRegulatoryReport.js")"></script>
+
+
+}

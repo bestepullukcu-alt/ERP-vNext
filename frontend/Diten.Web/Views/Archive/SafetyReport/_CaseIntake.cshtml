@@ -1,0 +1,63 @@
+﻿<div class="row g-6">
+    <div class="col-sm-6">
+        <label class="form-label" for="txt-tracking-number">Tracking Number</label>
+        <input type="text" id="txt-tracking-number" name="TrackingNumber" class="form-control" placeholder="SR-20250515103045-8273" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="txt-other-case-indentifier">Other Case Identifier</label>
+        <input type="text"
+               id="txt-other-case-indentifier"
+               class="form-control"
+               placeholder="Reference ID from another system, e.g., ABC-2024-001"
+               aria-label="OtherCaseIdentifier" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-safety-report-status">Status</label>
+        <select id="ddl-safety-report-status" name="SafetyReportStatus" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-country">Country</label>
+        <select id="ddl-country" name="Country" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-global-sku">GlobalSku</label>
+        <select id="ddl-global-sku" name="GlobalSku" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="dt-received">Date Received(Day 0)</label>
+        <input type="text" class="form-control" placeholder="DD,Month, YYYY" name="dateReceived"
+               id="dt-received" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="dt-entry">Data Entry(Day 0)</label>
+        <input type="text" class="form-control" placeholder="DD,Month, YYYY" name="dateEntry"
+               id="dt-entry" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="dt-due">Due Date</label>
+        <input type="text" class="form-control" placeholder="DD,Month, YYYY" name="dateDue"
+               id="dt-due" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-report-type">Report Type</label>
+        <select id="ddl-report-type" name="ReportType" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="txt-literature-case">Literature Case</label>
+        <input type="text" id="txt-literature-case" class="form-control" placeholder="e.g., PubMed ID or Sponsor Re" />
+    </div>
+    <div class="col-sm-6">
+        <input class="form-check-input" type="checkbox" id="chcIsRelevantForSafetyEfficacyProfile">
+        <label class="form-check-label" for="chcIsRelevantForSafetyEfficacyProfile"> Not ICSR but relevant for the safety-efficacy profile of the product </label>
+    </div>
+    <div class="col-12 d-flex justify-content-between">
+        <button class="btn btn-label-secondary btn-prev" disabled>
+            <i class="icon-base bx bx-left-arrow-alt scaleX-n1-rtl icon-sm ms-sm-n2 me-sm-2"></i>
+            <span class="align-middle d-sm-inline-block d-none">Previous</span>
+        </button>
+        <button class="btn btn-primary btn-next">
+            <span class="align-middle d-sm-inline-block d-none me-sm-2">Next</span>
+            <i class="icon-base bx bx-right-arrow-alt scaleX-n1-rtl icon-sm me-sm-n2"></i>
+        </button>
+    </div>
+</div>

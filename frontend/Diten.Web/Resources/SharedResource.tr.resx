@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Save" xml:space="preserve">
+    <value>Kaydet</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>İptal</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Başlık</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>Ülke</value>
+  </data>
+  <data name="TaxNumber" xml:space="preserve">
+    <value>Vergi Numarası</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Başarılı</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Hata</value>
+  </data>
+  <data name="RecordCreated" xml:space="preserve">
+    <value>Kayıt başarıyla oluşturuldu.</value>
+  </data>
+  <data name="RecordDeleted" xml:space="preserve">
+    <value>Kayıt başarıyla silindi.</value>
+  </data>
+  <data name="RecordSaved" xml:space="preserve">
+    <value>Değişiklikler başarıyla kaydedildi.</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>İşlem sırasında bir hata oluştu.</value>
+  </data>
+  <data name="AreYouSure" xml:space="preserve">
+    <value>Emin misiniz?</value>
+  </data>
+  <data name="DeleteConfirmationTitle" xml:space="preserve">
+    <value>Emin misiniz?</value>
+  </data>
+  <data name="DeleteConfirmationSubText" xml:space="preserve">
+    <value>Bu işlem geri alınamaz!</value>
+  </data>
+  <data name="DeleteConfirmationYesBtn" xml:space="preserve">
+    <value>Evet, Sil</value>
+  </data>
+  <data name="ConfirmAction" xml:space="preserve">
+    <value>Devam etmek istediğinize emin misiniz?</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Erişim reddedildi.</value>
+  </data>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>Lütfen zorunlu alanları doldurun.</value>
+  </data>
+  <data name="SearchFilter" xml:space="preserve">
+    <value>Ara ve Filtrele</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Aktif</value>
+  </data>
+  <data name="Passive" xml:space="preserve">
+    <value>Pasif</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Bilinmiyor</value>
+  </data>
+  <data name="ViewDetails" xml:space="preserve">
+    <value>Detayları Gör</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Ara..</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Dışa Aktar</value>
+  </data>
+  <data name="Print" xml:space="preserve">
+    <value>Yazdır</value>
+  </data>
+  <data name="MDM" xml:space="preserve">
+    <value>MDM</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>Kaydediliyor...</value>
+  </data>
+  <data name="FailedToLoadData" xml:space="preserve">
+    <value>Veri yüklenemedi. Lütfen daha sonra tekrar deneyin.</value>
+  </data>
+  <data name="GatewayError" xml:space="preserve">
+    <value>Sunucu ile iletişim sırasında bir hata oluştu.</value>
+  </data>
+  <data name="LegalEntities" xml:space="preserve">
+    <value>Tüzel Kişilikler</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Aydınlık</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>Karanlık</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Yönetici</value>
+  </data>
+  <data name="MyProfile" xml:space="preserve">
+    <value>Profilim</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Ayarlar</value>
+  </data>
+  <data name="LogOut" xml:space="preserve">
+    <value>Çıkış Yap</value>
+  </data>
+</root>

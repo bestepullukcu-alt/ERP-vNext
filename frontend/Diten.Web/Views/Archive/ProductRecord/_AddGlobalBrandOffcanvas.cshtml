@@ -1,0 +1,40 @@
+﻿<div class="offcanvas offcanvas-end"
+     tabindex="-1"
+     id="offcanvasAddGlobalBrand"
+     aria-labelledby="offcanvasAddGlobalBrandLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="offcanvasAddGlobalBrandLabel" class="offcanvas-title">Add New Brand</h5>
+        <button type="button"
+                class="btn-close text-reset"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 p-6 h-100">
+        <form class="add-new-globalBrand pt-0" id="addNewGlobalBrandForm" onsubmit="return false">
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-globalbrand-name">Global Brand Name</label>
+                <input type="text"
+                       class="form-control"
+                       id="add-globalbrand-name"
+                       placeholder="add name"
+                       name="globalBrandname"
+                       aria-label="Global Brand" />
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-globalbrand-abbrevation">Abbrevation</label>
+                <input type="text"
+                       id="add-globalbrand-abbrevation"
+                       class="form-control"
+                       placeholder="add abbrevation"
+                       aria-label="add abbrevation"
+                       name="globalBrandAbbrevation" />
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-Company">Company</label>
+                <select id="add-Company" name="addCompany" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+            </div>
+            <button type="submit" class="btn btn-primary me-3 data-submit">Submit</button>
+            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">Cancel</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,64 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Diten.Web",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build Diten.Web",
+            "program": "${workspaceFolder}/frontend/Diten.Web/bin/Debug/net8.0/Diten.Web.WebUI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/frontend/Diten.Web",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Diten.MdmService.Api",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build Diten.MdmService.Api",
+            "program": "${workspaceFolder}/services/DitenMdmService/src/Diten.MdmService.Api/bin/Debug/net8.0/Diten.MdmService.Api.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/services/DitenMdmService/src/Diten.MdmService.Api",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Diten.ApiGateway",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build Diten.ApiGateway",
+            "program": "${workspaceFolder}/gateway/DitenApiGateway/Diten.ApiGateway/bin/Debug/net8.0/Diten.ApiGateway.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/gateway/DitenApiGateway/Diten.ApiGateway",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "🚀 Start Diten ERP (All Services)",
+            "configurations": [
+                "Diten.Web",
+                "Diten.MdmService.Api",
+                "Diten.ApiGateway"
+            ],
+            "stopAll": true
+        }
+    ]
+}

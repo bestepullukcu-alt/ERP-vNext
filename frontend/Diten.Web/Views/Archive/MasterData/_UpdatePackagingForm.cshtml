@@ -1,0 +1,38 @@
+﻿<div class="offcanvas offcanvas-end"
+     tabindex="-1"
+     id="UpdatePackagingForm"
+     aria-labelledby="UpdatePackagingFormLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="UpdatePackagingFormLabel" class="offcanvas-title">Edit Packaging Form</h5>
+        <button type="button"
+                class="btn-close text-reset"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 p-6 h-100">
+        <form class="update-packagingForm pt-0" id="updatePackagingForm" onsubmit="return false" data-id="">
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="updateDdlFormType">Form Type</label>
+                <select id="updateDdlFormType" onchange="fetchFormsByFormTypeId('http://localhost:5000/services/PvTenant/TenantPharmaceuticalForm/GetPharmaceuticalFormByFormTypeId', 'updateDdlForm',null,true);" name="formType" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="updateDdlForm">Form</label>
+                <select id="updateDdlForm" disabled name="form" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="updateTxtDosage">Dosaga/Volume or Amount</label>
+                <input type="text"
+                       class="form-control"
+                       id="updateTxtDosage"
+                       placeholder="10 ml"
+                       name="updateTxtDosage"
+                       aria-label="updateTxtDosage" />
+            </div>
+            <button  class="btn btn-primary me-3 data-submit">Update</button>
+            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">Cancel</button>
+        </form>
+    </div>
+</div>
+

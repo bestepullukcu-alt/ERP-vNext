@@ -1,0 +1,38 @@
+﻿<div class="offcanvas offcanvas-end"
+     tabindex="-1"
+     id="AddPackagingForm"
+     aria-labelledby="AddPackagingFormLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="AddPackagingFormLabel" class="offcanvas-title">Add Packaging Form</h5>
+        <button type="button"
+                class="btn-close text-reset"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 p-6 h-100">
+        <form class="add-new-packagingForm pt-0" id="addNewPackagingForm" onsubmit="return false">
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="ddlFormType">Form Type</label>
+                <select id="ddlFormType"  name="formType" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="ddlForm">Form</label>
+                <select id="ddlForm" disabled name="form" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="txtDosage">Dosage/Volume or Amount</label>
+                <input type="text"
+                       class="form-control"
+                       id="txtDosage"
+                       placeholder="10 ml"
+                       name="txtDosage"
+                       aria-label="txtDosage" />
+            </div>
+            <button  class="btn btn-primary me-3 data-submit">Add</button>
+            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">Cancel</button>
+        </form>
+    </div>
+</div>
+

@@ -1,0 +1,196 @@
+﻿@{
+    ViewData["Title"] = "Edit M.A.-Marketing Authorization";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="col-12 col-lg-12 order-0 order-md-1">
+
+    <form id="addMAForm">
+        <div class="row">
+
+            <div class="col-12 col-lg-12">
+                <div class="card mb-6">
+                    <div class="card-header">
+                        <h5 class="card-title m-0">Edit Marketing Authorization</h5>
+                        <small class="text-muted">
+                            Fill in the required information to register a new Marketing Authorization, including product, country, etc. details.
+                        </small>
+                    </div>
+
+
+                    <div class="card-body pt-3">
+                        <div class="row">
+                            <div class="col-md-6 mb-6 form-control-validation">
+                                <label class="form-label" for="ddl-global-brand">Global Brand</label>
+                                <select id="ddl-global-brand" name="GlobalBrand" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+                           </div>
+                            <div class="col-md-6 mb-6 form-control-validation">
+                                <label class="form-label" for="ddl-global-sku">Global Sku</label>
+                                <select id="ddl-global-sku" name="GlobalSku" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+                            </div>
+                           </div>
+                           
+                           <div class="row">
+                            <div class="col-md-6 mb-6 form-control-validation">
+                                <label class="form-label" for="txt-country-brand-name">Country Brand Name</label>
+                                <input type="text" id="txt-country-brand-name" name="CountryBrandName" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-6 form-control-validation">
+                                <label class="form-label" for="ddl-ma-holder">Marketing Authorization Holder / Application Name</label>
+                                <select id="ddl-ma-holder" name="MaHolder" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+                            </div>
+                           </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-6 form-control-validation">
+                                <label class="form-label" for="ddl-country">Country</label>
+                                <select id="ddl-country" name="Country" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+                            </div>
+                            <div class="col-md-3 mb-6 form-control-validation">
+                                <label for="dtStartDate" class="form-label">Start Date</label>
+                                <input type="text"
+                                       class="form-control"
+                                       placeholder="DD,Month, YYYY"
+                                       name="dateStart"
+                                       id="dtStartDate" />
+                            </div>
+                            <div class="col-md-3 mb-6 form-control-validation">
+                                <label for="dtEndDate" class="form-label">End Date</label>
+                                <input type="text"
+                                       class="form-control"
+                                       placeholder="DD,Month, YYYY"
+                                       name="dateEnd"
+                                       id="dtEndDate" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 mb-6 form-control-validation">
+                                <label class="form-label" for="txt-ma-number">Marketing Authorization (MA Number)</label>
+                                <input type="text" id="txt-ma-number" placeholder="Enter MA Number" name="MaNumber" class="form-control" />
+                            </div>
+                            <div class="col-md-3 mb-6 form-control-validation">
+                                <label for="dtMaDate" class="form-label">MA Date (Approval / Rejection)</label>
+                                <input type="text"
+                                       class="form-control"
+                                       placeholder="DD,Month, YYYY"
+                                       name="dateMa"
+                                       id="dtMaDate" />
+                            </div>
+                            <div class="col-md-6 mb-6 form-control-validation">
+                                <label for="formFile" class="form-label">Marketing Authorization Document</label>
+                               
+                                <div id="downloadSection" class="d-flex align-items-center" style="display: none;">
+                                    <span id="documentName" class="me-2 text-truncate"></span>
+                                    <a id="downloadLink" href="#" class="btn btn-outline-primary btn-sm" download>
+                                        <i class="bx bx-download"></i> Download
+                                    </a>
+                                </div>
+                                
+                                
+                                <input class="form-control" type="file" id="formFile" />
+                            </div>
+                        </div>
+
+
+
+
+                        <div class="row">
+                            <div class="col-md-6 mb-6 form-control-validation">
+                                <label class="form-label" for="ddl-lqppv">Local Qualified Person for Diten.Web</label>
+                                <select id="ddl-lqppv" name="Lqppv" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+                            </div>
+                            <div class="col-md-3 mb-6 form-control-validation">
+                                <label for="txt-psmf-number" class="form-label">PSMF number</label>
+                                <input type="text"
+                                       class="form-control"
+                                       placeholder="Enter Diten.Web System Master File number"
+                                       name="PSMFnumber"
+                                       id="txt-psmf-number" />
+                            </div>
+                            <div class="col-md-3 mb-6 form-control-validation">
+                                <label for="txt-atc" class="form-label">Substance (ATC Code)</label>
+                                <input type="text"
+                                       class="form-control"
+                                       placeholder="Enter Substance (ATC Code)"
+                                       name="ATCcode"
+                                       id="txt-atc" />
+                            </div>
+                        </div>
+                        <div class="mb-6 form-control-validation">
+                            <label class="form-label" for="comment-editor">Comments</label>
+                            <div id="comment-toolbar">
+                                <span class="ql-formats">
+                                    <select class="ql-font"></select>
+                                    <select class="ql-size"></select>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-bold"></button>
+                                    <button class="ql-italic"></button>
+                                    <button class="ql-underline"></button>
+                                    <button class="ql-strike"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <select class="ql-color"></select>
+                                    <select class="ql-background"></select>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-script" value="sub"></button>
+                                    <button class="ql-script" value="super"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-header" value="1"></button>
+                                    <button class="ql-header" value="2"></button>
+                                    <button class="ql-blockquote"></button>
+                                    <button class="ql-code-block"></button>
+                                </span>
+                            </div>
+                            <div id="comment-editor">
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-lg-12">
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h5 class="card-title m-0">Packaging Information</h5>
+                </div>
+                <div id="dvPackaging" class="card-body card-datatable pt-3">
+                </div>
+
+            </div>
+        </div>
+
+        <div id="dvActiveIngredients" class="col-12 col-lg-12">
+            
+        </div>
+
+
+        <div class="col-12 col-lg-12 text-end">
+            <button class="btn btn-label-secondary me-2" onclick="window.location.href = '/registration/marketing-authorization'">
+                Discard
+            </button>
+            <button type="submit" id="submitButton" class="btn btn-label-primary btn-submit data-submit">Save Changes</button>
+        </div>
+
+    </form>
+</div>
+
+@Html.Partial("~/Views/Shared/_DeleteConfirmModal.cshtml")
+@Html.Partial("~/Views/Shared/_AppToast.cshtml")
+@section Scripts {
+
+    <script src="@Url.Content("~/assets/js/Archive/Registration/EditRegistrationDatePicker.js")"></script>
+    <script src="@Url.Content("~/assets/js/Archive/Registration/EditRegistration.js")"></script>
+
+
+}

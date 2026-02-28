@@ -1,0 +1,46 @@
+/* 
+ * Backbone Custom CSS (MOD-0013)
+ * Use this file for modern frontend standards.
+ * Base: 16px rem (Sneat Default). Do NOT override html font-size.
+ */
+
+/* Placeholder for shared backbone styles */
+.navbar-detached.navbar-backbone {
+    box-shadow: 0 0.125rem 0.25rem 0 rgba(161, 172, 184, 0.4);
+}
+
+.menu-backbone .menu-inner-shadow {
+    display: none;
+}
+
+/* ================================================
+   Dark Mode: Toast & Modal Harmony
+   Scoped to [data-bs-theme=dark] — light mode UNAFFECTED
+   ================================================ */
+
+/* SweetAlert2 Modal */
+[data-bs-theme=dark] .swal2-popup.swal2-modal {
+    background: var(--bs-body-bg) !important;
+    color: var(--bs-body-color) !important;
+}
+
+[data-bs-theme=dark] .swal2-title {
+    color: var(--bs-heading-color) !important;
+}
+
+[data-bs-theme=dark] .swal2-html-container {
+    color: var(--bs-secondary-color) !important;
+}
+
+[data-bs-theme=dark] .swal-icon-circle {
+    background: rgba(255, 76, 81, 0.15);
+    border-color: rgba(255, 76, 81, 0.3);
+}
+
+/* Notyf Toast */
+[data-bs-theme=dark] .notyf__toast {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* DataTable */
+/* Removed hardcoded dark theme datatable background - rely on Sneat default */

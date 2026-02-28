@@ -1,0 +1,157 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<!-- MOD-0013: Premium Toast Styling -->
+<style>
+    /* Z-Index: Toast ALWAYS on top, even above SweetAlert modals */
+    .notyf {
+        z-index: 10001 !important;
+    }
+
+    .notyf__toast {
+        z-index: 10001 !important;
+        min-width: 320px;
+        max-width: 420px;
+        border-radius: 10px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+        font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+        font-size: 0.9375rem !important;
+        font-weight: 500 !important;
+        backdrop-filter: blur(8px);
+    }
+
+    /* Success: Theme primary success green */
+    .notyf__toast--success {
+        background: linear-gradient(135deg, #71dd37 0%, #5fd130 100%) !important;
+    }
+
+    .notyf__toast--success .notyf__icon {
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-radius: 50% !important;
+    }
+
+    /* Delete Success: Danger Red */
+    .notyf__toast--delete-success {
+        background: #e74c3c !important;
+    }
+
+    .notyf__toast--delete-success .notyf__icon {
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-radius: 50% !important;
+    }
+
+    /* Error: Rich warm red */
+    .notyf__toast--error {
+        background: linear-gradient(135deg, #ff4c51 0%, #e8383d 100%) !important;
+    }
+
+    .notyf__toast--error .notyf__icon {
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-radius: 50% !important;
+    }
+
+    /* Dismiss button polish */
+    .notyf__dismiss-btn {
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+
+    .notyf__dismiss-btn:hover {
+        opacity: 1;
+    }
+
+    /* Notiflix fallback z-index */
+    #NotiflixNotifyWrap,
+    [id^="NotiflixNotify"] {
+        z-index: 10001 !important;
+    }
+</style>
+
+<script>
+    /**
+     * MOD-0013: Platform Standards - Global Notification System (Premium)
+     * window.showToast(key, type)
+     * key: Localization key or raw message string
+     * type: 'success' | 'error' | 'warning' | 'info'
+     */
+    window.showToast = function (key, type) {
+        type = type || 'success';
+        console.log('[MOD-0013 showToast] Key:', key, '| Type:', type);
+
+        // Map RecordDeleted correctly to our new custom type if originally success
+        if (key === 'RecordDeleted' && type === 'success') {
+            type = 'delete-success';
+        }
+
+        var messages = {
+            'RecordCreated': '@Html.Raw(SharedLocalizer["RecordCreated"].Value)',
+            'RecordDeleted': '@Html.Raw(SharedLocalizer["RecordDeleted"].Value)',
+            'RecordSaved': '@Html.Raw(SharedLocalizer["RecordSaved"].Value)',
+            'ErrorOccurred': '@Html.Raw(SharedLocalizer["ErrorOccurred"].Value)',
+            'AccessDenied': '@Html.Raw(SharedLocalizer["AccessDenied"].Value)',
+            'ValidationFailed': '@Html.Raw(SharedLocalizer["ValidationFailed"].Value)',
+            'Success': '@Html.Raw(SharedLocalizer["Success"].Value)',
+            'Error': '@Html.Raw(SharedLocalizer["Error"].Value)'
+        };
+
+        var message = messages[key] || key;
+
+        try {
+            // Priority 1: Notyf (Theme Native)
+            if (typeof Notyf === 'function') {
+                var notyf = new Notyf({
+                    duration: 5000,
+                    position: { x: 'right', y: 'top' },
+                    dismissible: true,
+                    ripple: true,
+                    types: [
+                        {
+                            type: 'delete-success',
+                            background: '#e74c3c',
+                            icon: {
+                                className: 'bx bx-trash fs-5 text-white',
+                                tagName: 'i'
+                            }
+                        }
+                    ]
+                });
+
+                if (type === 'delete-success') { notyf.open({ type: 'delete-success', message: message }); }
+                else if (type === 'success') { notyf.success(message); }
+                else { notyf.error(message); }
+
+                console.log('[MOD-0013 showToast] Displayed via Notyf');
+                return;
+            }
+
+            // Priority 2: Notiflix AIO (CDN)
+            if (typeof Notiflix !== 'undefined' && Notiflix.Notify) {
+                Notiflix.Notify.init({
+                    width: '320px',
+                    timeout: 5000,
+                    position: 'right-top',
+                    zindex: 10001,
+                    fontFamily: 'Public Sans',
+                    fontSize: '15px',
+                    borderRadius: '10px',
+                    cssAnimationStyle: 'from-right'
+                });
+
+                if (type === 'delete-success') {
+                    // Force custom color for delete success in Notiflix
+                    Notiflix.Notify.success(message, {
+                        success: { background: '#e74c3c', childClassName: 'notiflix-notify-success' }
+                    });
+                }
+                else if (type === 'success') { Notiflix.Notify.success(message); }
+                else { Notiflix.Notify.failure(message); }
+
+                console.log('[MOD-0013 showToast] Displayed via Notiflix');
+                return;
+            }
+            console.warn('[MOD-0013 showToast] No toast library found. Message:', message);
+        } catch (err) {
+            console.error('[MOD-0013 showToast] Error caught:', err);
+        }
+    };
+</script>

@@ -1,0 +1,104 @@
+﻿@{
+    ViewData["Title"] = "Survey Manage";
+    Layout = "~/Views/Shared/_SurveyManageLayout.cshtml";
+
+}
+<style>
+  .disabled-div {
+    pointer-events: none;      /* tıklama/odak engelle */
+    opacity: 0.6;              /* soluk görünüm */
+    background-color: #f0f0f0; /* açık gri arka plan */
+  border-radius: 6px;        /* isteğe bağlı */
+  padding: 10px;             /* isteğe bağlı */
+  }
+
+    .custom-dropzone {
+        border: 2px dashed #ccc;
+        border-radius: 6px;
+        padding: 30px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.3s, background-color 0.2s;
+    }
+
+        .custom-dropzone:hover {
+            border-color: #999;
+            background-color: #f9f9f9;
+        }
+
+    .dropzone-icon {
+        font-size: 36px;
+        margin-bottom: 8px;
+    }
+
+    .dropzone-text {
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .dropzone-note {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .upload-list div {
+        margin-top: 4px;
+    }
+
+</style>
+
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="javascript:void(0);" id="surveyListLink">Survey List</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="javascript:void(0);" id="surveyNameBreadcrumb">Manage Survey</a>
+        </li>
+    </ol>
+</nav>
+
+<div class="col-xl-12">
+    <div class="nav-align-top">
+        <ul class="nav nav-pills mb-4" role="tablist">
+            <li class="nav-item">
+                <button type="button"
+                        class="nav-link active"
+                        role="tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#formBuilder"
+                        aria-controls="formBuilder"
+                        aria-selected="true">
+                    Design
+                </button>
+            </li>
+            <li class="nav-item">
+                <button type="button"
+                        class="nav-link"
+                        role="tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#navs-pills-top-settings"
+                        aria-controls="navs-pills-top-settings"
+                        aria-selected="false">
+                    Settings
+                </button>
+            </li>
+        </ul>
+        <div>
+            <div  class="tab-pane fade show active" id="formBuilder" role="tabpanel">
+                
+            </div>
+            <div class="tab-pane fade" id="navs-pills-top-settings" role="tabpanel">
+                @Html.Partial("~/Views/Survey/SurveyList/_ManageDesign.cshtml")
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+
+    <script src="@Url.Content("~/assets/js/Archive/Survey/SurveyList/Manage.js")"></script>
+}
+

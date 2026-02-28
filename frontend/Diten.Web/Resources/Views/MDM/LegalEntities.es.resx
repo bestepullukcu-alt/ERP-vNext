@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="LegalEntitiesTitle" xml:space="preserve">
+    <value>Entidades Legales</value>
+  </data>
+  <data name="AddNewCompany" xml:space="preserve">
+    <value>Agregar Nueva Empresa</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Título</value>
+  </data>
+  <data name="TaxNumber" xml:space="preserve">
+    <value>Número de Impuesto</value>
+  </data>
+  <data name="TaxOffice" xml:space="preserve">
+    <value>Oficina de Impuestos</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Correo Electrónico</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Teléfono</value>
+  </data>
+  <data name="CompanyType" xml:space="preserve">
+    <value>Tipo de Empresa</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="ViewBtn" xml:space="preserve">
+    <value>Ver</value>
+  </data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="NoOrganizationsFound" xml:space="preserve">
+    <value>No se encontraron organizaciones o no se pudo contactar con Gateway.</value>
+  </data>
+  <data name="CreateLegalEntityTitle" xml:space="preserve">
+    <value>Crear Entidad Legal</value>
+  </data>
+  <data name="AddNewLegalEntity" xml:space="preserve">
+    <value>Agregar Nueva Entidad Legal (Empresa)</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Volver a la Lista</value>
+  </data>
+  <data name="BasicInformation" xml:space="preserve">
+    <value>Información Básica</value>
+  </data>
+  <data name="ContactDetails" xml:space="preserve">
+    <value>Detalles de Contacto</value>
+  </data>
+  <data name="AdditionalSpecifications" xml:space="preserve">
+    <value>Especificaciones Adicionales</value>
+  </data>
+  <data name="CancelBtn" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="SaveLegalEntity" xml:space="preserve">
+    <value>Guardar Entidad Legal</value>
+  </data>
+  <data name="CompanyNamePlaceholder" xml:space="preserve">
+    <value>Nombre de la Empresa</value>
+  </data>
+  <data name="TaxOfficePlaceholder" xml:space="preserve">
+    <value>Oficina de Impuestos</value>
+  </data>
+  <data name="TaxNumberPlaceholder" xml:space="preserve">
+    <value>Número de Impuesto</value>
+  </data>
+  <data name="CompanyTypePlaceholder" xml:space="preserve">
+    <value>Ej. LLC, S.A., S.L.</value>
+  </data>
+  <data name="SectorPlaceholder" xml:space="preserve">
+    <value>Sector Industrial</value>
+  </data>
+  <data name="EmailPlaceholder" xml:space="preserve">
+    <value>info@empresa.com</value>
+  </data>
+  <data name="PhonePlaceholder" xml:space="preserve">
+    <value>+34 555 123 456</value>
+  </data>
+  <data name="WebsitePlaceholder" xml:space="preserve">
+    <value>www.empresa.com</value>
+  </data>
+  <data name="AddressPlaceholder" xml:space="preserve">
+    <value>Dirección comercial completa</value>
+  </data>
+  <data name="PrimaryCurrencyPlaceholder" xml:space="preserve">
+    <value>USD, EUR, TRY</value>
+  </data>
+  <data name="DefaultTimeZonePlaceholder" xml:space="preserve">
+    <value>UTC+3</value>
+  </data>
+  <data name="ContactPersonPlaceholder" xml:space="preserve">
+    <value>Nombre del Contacto Principal</value>
+  </data>
+  <data name="DefaultLangPlaceholder" xml:space="preserve">
+    <value>es-ES, en-US</value>
+  </data>
+  <data name="OrganizationRolePlaceholder" xml:space="preserve">
+    <value>Proveedor, Cliente...</value>
+  </data>
+  <data name="LogoUrlPlaceholder" xml:space="preserve">
+    <value>https://...</value>
+  </data>
+  <data name="FiscalYearStartPlaceholder" xml:space="preserve">
+    <value>01-01</value>
+  </data>
+  <data name="TaxJurisdictionPlaceholder" xml:space="preserve">
+    <value>Código de Jurisdicción</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Gestione sus empresas, sucursales y entidades legales desde aquí.</value>
+  </data>
+</root>

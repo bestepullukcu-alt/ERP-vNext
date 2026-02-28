@@ -1,0 +1,117 @@
+﻿<div class="modal fade" id="closeTaskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content">
+
+            <!-- HEADER -->
+            <div class="modal-header border-0">
+                <h4 class="modal-title">Completed Task</h4>
+<button type="button" class="modal-close-btn" data-bs-dismiss="modal">
+                <i class="bx bx-x"></i>
+            </button>
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body">
+
+                <p id="ctTaskName" class="text-muted mb-4"></p>
+
+                <!-- TOP METRICS CARD -->
+                <div class="card mb-4 shadow-none border bg-label-primary">
+                    <div class="card-body py-3">
+
+                        <div class="row text-center g-3">
+
+                            <div class="col-6 col-md-3 border-end border-primary">
+                                <p class="mb-1 small text-muted">Total Spent</p>
+                                <h5 id="ctTimeSpent" class="text-primary mb-0">0m</h5>
+                            </div>
+
+                            <div class="col-6 col-md-3 border-end border-primary">
+                                <p class="mb-1 small text-muted">Estimated</p>
+                                <h5 id="ctEstimated" class="text-primary mb-0">0</h5>
+                            </div>
+
+                            <div class="col-6 col-md-3 border-end border-primary">
+                                <p class="mb-1 small text-muted">Sessions</p>
+                                <h5 id="ctSessions" class="text-primary mb-0">0</h5>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <p class="mb-1 small text-muted">Efficiency</p>
+                                <h5 id="ctEfficiency" class="text-primary mb-0">0%</h5>
+                                <div class="progress mt-2" style="height:6px;">
+                                    <div id="ctEfficiencyBar" class="progress-bar bg-success" style="width:0%;"></div>
+                                </div>
+                                <div id="ctEfficiencyMultiplier" class="small mt-1 text-muted">0x</div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TIMER SESSIONS LIST -->
+                <div class="border rounded p-3 bg-body-secondary mb-4" style="max-height:200px; overflow-y:auto;">
+                    <p class="fw-medium mb-2">Timer Sessions</p>
+                    <div id="ctTimerList"></div>
+                </div>
+
+                <!-- COMPLETION FIELDS -->
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Completion Notes</label>
+                    <textarea id="ctCompletionNotes" placeholder="Describe what was accomplished..." class="form-control" rows="2"></textarea>
+                </div>
+
+                <!-- ACHIEVEMENTS -->
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Key Achievements</label>
+                    <div class="d-flex gap-2 mb-2">
+                        <input id="ctAchievementInput" placeholder="What did you accomplish?" type="text" class="form-control">
+                        <button id="btnAddAchievement" class="btn btn-sm btn-primary"><i class="bx bx-plus"></i></button>
+                    </div>
+                    <div id="ctAchievementsList" class="ct-badge-wrapper"></div>
+                </div>
+
+                <!-- CHALLENGES -->
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Challenges Faced</label>
+                    <div class="d-flex gap-2 mb-2">
+                        <input id="ctChallengeInput" placeholder="Waht obstacles did you encounter?" type="text" class="form-control">
+                        <button id="btnAddChallenge" class="btn btn-sm btn-primary"><i class="bx bx-plus"></i></button>
+                    </div>
+                    <div id="ctChallengesList" class="ct-badge-wrapper"></div>
+                </div>
+
+                <!-- KEY LEARNING -->
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Key Learning</label>
+                    <div class="d-flex gap-2 mb-2">
+                        <input id="ctLearningInput" placeholder="What did you learn?" type="text" class="form-control">
+                        <button id="btnAddLearning" class="btn btn-sm btn-primary"><i class="bx bx-plus"></i></button>
+                    </div>
+                    <div id="ctLearningList" class="ct-badge-wrapper"></div>
+                </div>
+
+                <!-- NEXT STEPS -->
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Next Steps / Follow-up</label>
+                    <div class="d-flex gap-2 mb-2">
+                        <input id="ctNextStepInput" placeholder="What needs to happen next?" type="text" class="form-control">
+                        <button id="btnAddNextStep" class="btn btn-sm btn-primary"><i class="bx bx-plus"></i></button>
+                    </div>
+                    <div id="ctNextStepList" class="ct-badge-wrapper"></div>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="d-flex justify-content-between mt-4">
+
+                    <div>
+                        <button class="btn btn-label-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                        <button class="btn btn-success" id="btnTaskComplete">Completed</button>
+                    </div>
+                </div>
+
+
+            </div> <!-- modal-body -->
+        </div>
+    </div>
+</div>

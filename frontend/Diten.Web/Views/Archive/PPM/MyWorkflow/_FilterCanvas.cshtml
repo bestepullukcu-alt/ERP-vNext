@@ -1,0 +1,67 @@
+﻿<div class="offcanvas offcanvas-end"
+     data-bs-backdrop="false"
+     tabindex="-1"
+     id="offcanvasTaskOverviewFilters"
+     aria-labelledby="offcanvasTaskOverviewFiltersLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="offcanvasTaskOverviewFiltersLabel" class="offcanvas-title">Task Overview Filter</h5>
+        <button type="button"
+                class="btn-close text-reset"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 p-6 h-100">
+        <form class="filter-task pt-0" id="filterTask" onsubmit="return false">
+            <div class="mb-4 form-control-validation">
+            <label class="form-label">Status</label>
+            <select id="filterStatus" class="form-select select2" multiple></select>
+        </div>
+
+        <!-- PRIORITY -->
+        <div class="mb-4 form-control-validation">
+            <label class="form-label">Priority</label>
+            <select id="filterPriority" class="form-select select2" multiple></select>
+        </div>
+
+        <!-- WORKFLOW -->
+        <div class="mb-4 form-control-validation">
+            <label class="form-label">Workflow</label>
+            <select id="filterWorkflow" class="form-select select2" multiple></select>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6 form-control-validation">
+                        <label class="form-label" for="add-meeting-end-date">Date Range</label>
+                   
+                        <input id="filterDateFrom"
+                       type="text"
+                       class="form-control"
+                       placeholder="DD.MM.YYYY" />
+                    </div>
+                    <div class="col-md-6 form-control-validation">
+                     <label class="form-label" for="filterDateTo"></label>
+
+                    <input id="filterDateTo"
+                           type="text"
+                           class="form-control"
+                           placeholder="DD.MM.YYYY" />
+                    </div>
+        </div>
+            <button id="btnApplyFilters"
+                    class="btn btn-primary me-3">
+                Select
+            </button>
+
+            <button id="btnCancelFilters"
+                    class="btn btn-label-secondary me-12"
+                    data-bs-dismiss="offcanvas">
+                Cancel
+            </button>
+
+            <button id="btnClearFilters"
+                    class="btn btn-danger">
+                Clear
+            </button>
+        </form>
+    </div>
+</div>

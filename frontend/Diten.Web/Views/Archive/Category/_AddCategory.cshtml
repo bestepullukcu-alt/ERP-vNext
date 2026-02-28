@@ -1,0 +1,38 @@
+﻿<div class="offcanvas offcanvas-end"
+     tabindex="-1"
+     id="AddCategory"
+     aria-labelledby="AddCategoryLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="AddCategoryLabel" class="offcanvas-title" data-i18n="AddCategory">Add Category</h5>
+        <button type="button"
+                class="btn-close text-reset"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 p-6 h-100">
+        <form class="add-category pt-0" id="addCategoryForm" onsubmit="return false">
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-category-menu" data-i18n="Menu">Menu</label>
+                <select id="add-category-menu" name="categoryMenu" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+            </div>
+
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-category-page" data-i18n="Page">Page</label>
+                <select id="add-category-page" name="categoryPage" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+            </div>
+            
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-category-name" data-i18n="Name">Name</label>
+                <input type="text"
+                       class="form-control"
+                       id="add-category-name"
+                       placeholder="add name"
+                       name="categoryName"
+                       aria-label="Category" />
+            </div>
+
+            <button type="submit" class="btn btn-primary me-3 data-submit" data-i18n="Add">Add</button>
+            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="offcanvas" data-i18n="Cancel">Cancel</button>
+        </form>
+    </div>
+</div>

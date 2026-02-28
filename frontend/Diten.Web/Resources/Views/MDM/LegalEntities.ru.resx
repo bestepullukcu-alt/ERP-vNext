@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="LegalEntitiesTitle" xml:space="preserve">
+    <value>Юридические лица</value>
+  </data>
+  <data name="AddNewCompany" xml:space="preserve">
+    <value>Добавить новую компанию</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="TaxNumber" xml:space="preserve">
+    <value>ИНН</value>
+  </data>
+  <data name="TaxOffice" xml:space="preserve">
+    <value>Налоговая инспекция</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Электронная почта</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Телефон</value>
+  </data>
+  <data name="CompanyType" xml:space="preserve">
+    <value>Тип компании</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="ViewBtn" xml:space="preserve">
+    <value>Просмотр</value>
+  </data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Редактировать</value>
+  </data>
+  <data name="NoOrganizationsFound" xml:space="preserve">
+    <value>Организации не найдены или шлюз недоступен.</value>
+  </data>
+  <data name="CreateLegalEntityTitle" xml:space="preserve">
+    <value>Создать юридическое лицо</value>
+  </data>
+  <data name="AddNewLegalEntity" xml:space="preserve">
+    <value>Добавить новое юридическое лицо (компанию)</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Вернуться к списку</value>
+  </data>
+  <data name="BasicInformation" xml:space="preserve">
+    <value>Основная информация</value>
+  </data>
+  <data name="ContactDetails" xml:space="preserve">
+    <value>Контактные данные</value>
+  </data>
+  <data name="AdditionalSpecifications" xml:space="preserve">
+    <value>Дополнительные характеристики</value>
+  </data>
+  <data name="CancelBtn" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="SaveLegalEntity" xml:space="preserve">
+    <value>Сохранить юридическое лицо</value>
+  </data>
+  <data name="CompanyNamePlaceholder" xml:space="preserve">
+    <value>Название компании</value>
+  </data>
+  <data name="TaxOfficePlaceholder" xml:space="preserve">
+    <value>Налоговая инспекция</value>
+  </data>
+  <data name="TaxNumberPlaceholder" xml:space="preserve">
+    <value>ИНН</value>
+  </data>
+  <data name="CompanyTypePlaceholder" xml:space="preserve">
+    <value>ООО, ПАО, ЗАО</value>
+  </data>
+  <data name="SectorPlaceholder" xml:space="preserve">
+    <value>Отрасль экономики</value>
+  </data>
+  <data name="EmailPlaceholder" xml:space="preserve">
+    <value>info@company.ru</value>
+  </data>
+  <data name="PhonePlaceholder" xml:space="preserve">
+    <value>+7 999 123 4567</value>
+  </data>
+  <data name="WebsitePlaceholder" xml:space="preserve">
+    <value>www.company.ru</value>
+  </data>
+  <data name="AddressPlaceholder" xml:space="preserve">
+    <value>Полный рабочий адрес</value>
+  </data>
+  <data name="PrimaryCurrencyPlaceholder" xml:space="preserve">
+    <value>RUB, USD, EUR</value>
+  </data>
+  <data name="DefaultTimeZonePlaceholder" xml:space="preserve">
+    <value>UTC+3</value>
+  </data>
+  <data name="ContactPersonPlaceholder" xml:space="preserve">
+    <value>Контактное лицо</value>
+  </data>
+  <data name="DefaultLangPlaceholder" xml:space="preserve">
+    <value>ru-RU, en-US</value>
+  </data>
+  <data name="OrganizationRolePlaceholder" xml:space="preserve">
+    <value>Поставщик, Клиент...</value>
+  </data>
+  <data name="LogoUrlPlaceholder" xml:space="preserve">
+    <value>https://...</value>
+  </data>
+  <data name="FiscalYearStartPlaceholder" xml:space="preserve">
+    <value>01-01</value>
+  </data>
+  <data name="TaxJurisdictionPlaceholder" xml:space="preserve">
+    <value>Код юрисдикции</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Управляйте своими компаниями, филиалами и юридическими лицами.</value>
+  </data>
+</root>

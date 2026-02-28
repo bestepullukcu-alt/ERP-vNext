@@ -1,0 +1,183 @@
+﻿@{
+    ViewData["Title"] = "Create LCPPV-Local Contact Person for Diten.Web Monthly Reconciliation";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    <style>
+        .ql-editor[contenteditable="false"] {
+            background-color: #f2f3f4; /* Bootstrap disabled input rengi */
+            color: #6c757d; /* Bootstrap text-muted */
+            cursor: not-allowed;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem; /* .form-control'ın border-radius'u */
+            padding: 0.375rem 0.75rem; /* form-control padding */
+            background-color: rgba(var(--bs-base-color-rgb), 0.
+        }
+
+        .ql-toolbar.ql-disabled {
+            opacity: 0.6;
+            pointer-events: none;
+            background-color: #f2f3f4 !important;
+        }
+
+        #uploadIcon.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    </style>
+}
+
+<div class="col-12 col-lg-12 order-0 order-md-1">
+
+    <form id="addLcppvForm">
+    <div class="row">
+
+        <div class="col-12 col-lg-8">
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h5 class="card-title m-0">Add LCPPV Monthly Reconcilation</h5>
+                </div>
+
+
+                <div class="card-body pt-3">
+                    <div class="row">
+                        <div class="col-md-6 mb-6 form-control-validation">
+                            <label class="form-label" for="ddlCompany">Company</label>
+                            <select id="ddlCompany" name="ddlCompany" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+
+                        </div>
+
+                        <div class="col-md-6 mb-6 form-control-validation">
+                            <label class="form-label" for="ddlCountry">Country</label>
+                            <select id="ddlCountry" name="ddlCountry" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+
+                        </div>                        
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-6 form-control-validation">
+                            <label class="form-label" for="ddlStatus">Status</label>
+                            <select id="ddlStatus" name="lcppvStatus" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+
+                        </div>
+                        <div class="col-md-6 mb-6 form-control-validation">
+                            <label for="dtStartDate" class="form-label">Start Date</label>
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="DD,Month, YYYY"
+                                   name="dateStart"
+                                   id="dtStartDate" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-6 form-control-validation">
+                            <label for="dtEndDate" class="form-label">End Date</label>
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="DD,Month, YYYY"
+                                   name="dateEnd"
+                                   id="dtEndDate" />
+                        </div>
+                        <div class="col-md-6 mb-6 form-control-validation">
+                            <label for="dtDueDate" class="form-label">Due Date</label>
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="DD,Month, YYYY"
+                                   name="dateDue"
+                                   id="dtDueDate" />
+                        </div>
+                    </div>
+                    <div class="mb-6 form-control-validation">
+                        <label class="form-label" for="txtRecordId">Record ID</label>
+                        <input type="text" disabled id="txtRecordId" name="RecordIdName" class="form-control" placeholder="ROVI_5543cea6-a025-4c0c-8343-40e5ea82855b" />
+                    </div>
+                    <div class="mb-6 form-control-validation">
+                        <label class="form-label" for="comment-editor">Comments</label>
+                        <div id="comment-toolbar">
+                            <span class="ql-formats">
+                                <select class="ql-font"></select>
+                                <select class="ql-size"></select>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-bold"></button>
+                                <button class="ql-italic"></button>
+                                <button class="ql-underline"></button>
+                                <button class="ql-strike"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <select class="ql-color"></select>
+                                <select class="ql-background"></select>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-script" value="sub"></button>
+                                <button class="ql-script" value="super"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-header" value="1"></button>
+                                <button class="ql-header" value="2"></button>
+                                <button class="ql-blockquote"></button>
+                                <button class="ql-code-block"></button>
+                            </span>
+                        </div>
+                        <div id="comment-editor">
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h5 class="card-title m-0">
+                        <i class="icon-base bx bx-file icon-md"></i>
+                        Attachment
+                        <input type="file" id="fileInput" style="display: none;" />
+                        <a href="javascript:;" class="btn btn-icon text-end" style="float:right;" id="uploadIcon">
+                            <i class="icon-base bx bx-plus icon-md"></i>
+                        </a>
+                    </h5>
+
+                </div>
+                <div id="uploadItems" class="card-body">
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="col-12 col-lg-12">
+        <div class="card mb-6">
+            <div class="card-header">
+                <h5 class="card-title m-0">Report Details</h5>
+            </div>
+            <div id="dvReportDetail" class="card-body pt-3">
+
+
+            </div>
+
+        </div>
+    </div>
+    <div class="col-12 col-lg-12 text-end">
+        <button class="btn btn-label-secondary me-2" onclick="window.location.href = '/pv-system/lcppv'">
+            Discard
+        </button>
+        <button type="submit" id="submitButton" class="btn btn-label-primary btn-submit data-submit">Save Changes</button>
+    </div>
+
+    </form>
+</div>
+
+@Html.Partial("~/Views/Shared/_DeleteConfirmModal.cshtml")
+@Html.Partial("~/Views/Shared/_AppToast.cshtml")
+@section Scripts {
+
+    <script src="@Url.Content("~/assets/js/Archive/PvSystem/LcppvDatePicker.js")"></script>
+    <script src="@Url.Content("~/assets/js/Archive/PvSystem/AddLcppv.js")"></script>
+
+
+}

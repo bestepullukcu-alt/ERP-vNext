@@ -1,0 +1,126 @@
+﻿@{
+    ViewData["Title"] = "Workflows Overview";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .modal-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    background: transparent;
+    border: none;
+    padding: 6px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.modal-close-btn i {
+    font-size: 26px;
+    color: #6c757d;
+    transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.modal-close-btn:hover i {
+    color: #000;
+    transform: scale(1.1);
+}
+.modal-content {
+    position: relative; /* CLOSE BUTTON'ın referansı burası olmalı */
+}
+    /* İçindeki small'ların alta geçmesini garanti eder */
+    td.dt-col-dates .date-cell small {
+        display: block !important;
+        white-space: normal !important;
+    }
+
+    .dt-col-dates {
+        min-width: 130px !important;
+        width: 130px !important;
+    }
+
+  
+
+   
+    /* Sadece tarih kolonunu etkiler */
+    td.dt-col-dates .date-cell {
+        white-space: normal !important;
+    }
+</style>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-6 row-gap-4">
+      <div class="d-flex flex-column justify-content-center">
+        <h4 class="mb-1">Workflows Overview</h4>
+        <p class="mb-0">A centralized workspace to manage all organizational initiatives, including both projects, initiative and processes.</p>
+      </div>
+</div>
+
+
+
+<div class="card mb-6">
+    <div class="card-widget-separator-wrapper">
+      <div class="card-body card-widget-separator">
+        <div class="row gy-4 gy-sm-1">
+          <div class="col-sm-6 col-lg-4">
+            <div class="d-flex justify-content-between align-items-start card-widget-1 border-end pb-4 pb-sm-0">
+              <div>
+                <p class="mb-1">Total Workflows</p>
+                            <h4 class="text-primary mb-1" id="wfTotalCount">0</h4>
+                            <p class="mb-0"><span class="me-2" id="wfActiveCount">0 active</span></p>
+              </div>
+              <button type="button" class="btn btn-icon btn-label-primary me-lg-6">
+                  <span class="icon-base bx bx-data icon-md"></span>
+                </button>
+            </div>
+            <hr class="d-none d-sm-block d-lg-none me-6">
+          </div>
+          <div class="col-sm-6 col-lg-4">
+            <div class="d-flex justify-content-between align-items-start card-widget-2 border-end pb-4 pb-sm-0">
+              <div>
+                <p class="mb-1">Completed</p>
+                            <h4 class="text-success mb-1" id="wfCompletedCount">0</h4>
+                            <p class="mb-0"><span class="me-2" id="wfCompletedRate">0% completion rate</span></p>
+              </div>
+              <button type="button" class="btn btn-icon btn-label-success me-lg-6">
+                  <span class="icon-base bx bx-check icon-md"></span>
+                </button>
+            </div>
+            <hr class="d-none d-sm-block d-lg-none">
+          </div>
+          <div class="col-sm-6 col-lg-4">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <p class="mb-1">Average Progress</p>
+                <h4 class="text-primary mb-1" id="wfAvgProgress">0%</h4>
+                <p class="mb-0"><span class="me-2">Portfolio avarage</span></p>
+              </div>
+              <button type="button" class="btn btn-icon btn-label-primary">
+                  <span class="icon-base bx bx-chart icon-md"></span>
+                </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="card">
+    <div class="card-header border-bottom">
+        <h5 class="card-title mb-0">Active Workflow</h5>
+        <small class="text-muted">
+            Overview of all projects with quick access to key functions
+        </small>
+    </div>
+    @Html.Partial("~/Views/PPM/Workflow/_WorkflowTable.cshtml")
+
+    <!-- Offcanvas to add new record -->
+    @Html.Partial("~/Views/PPM/Workflow/_AddWorkflowCanvas.cshtml")
+
+</div>
+@Html.Partial("~/Views/Shared/_AppToast.cshtml")
+@Html.Partial("~/Views/Shared/_DeleteConfirmModal.cshtml")
+@Html.Partial("~/Views/PPM/Workflow/_DownloadTemplateModal.cshtml")
+
+@section Scripts {
+
+    <script src="@Url.Content("~/assets/js/Archive/PPM/Workflow/Workflow.js")"></script>
+}

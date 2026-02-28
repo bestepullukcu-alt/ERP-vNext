@@ -1,0 +1,104 @@
+﻿<div id="meetingFormContainer" class="card mb-4 d-none">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Basic Information</h5>
+        <small class="text-muted">
+            Enter the primary details and scheduling for the meeting.
+        </small>
+
+    </div>
+    <div class="card-body">
+        <form class="meeting-detail pt-0" id="meetingDetail" onsubmit="return false">
+            <div class="row mb-4">
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="txt-meeting-name">Name</label>
+                    <input type="text" class="form-control" placeholder="e.g., Final Regulatory Submission" name="txtMeetingName" id="txt-meeting-name" />
+                </div>
+                <div class="col-md-6 form-control-validation opacity-50">
+                    <label class="form-label" for="txt-workflow">Workflow</label>
+                    <input disabled type="text" class="form-control" placeholder="INIT-.####" name="txtWorkflow" id="txt-workflow" />
+                </div>
+            </div>
+            <div class="col-12 mb-4 form-control-validation">
+                <label class="form-label" for="txt-meeting-description">Description</label>
+                <textarea id="txt-meeting-description" name="txtMeetingDescription" class="form-control" rows="3" placeholder="e.g. This initiative aims to improve procurement efficiency by automating approval workflows."></textarea>
+            </div>
+            <hr class="my-4">
+            <div class="col-12 mb-4 form-control-validation">
+                <div class="form-check form-check-inline mt-4">
+                    <input class="form-check-input" type="checkbox" id="checkVirtualMeeting">
+                    <label class="form-check-label" for="checkVirtualMeeting">Virtual Meeting</label>
+                </div>
+            </div>
+            <hr class="my-4">
+
+            <div class="row mb-4">
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="txt-meeting-location">Location</label>
+                    <input type="text" class="form-control" placeholder="Enter meeting location" name="txtMeetingLocation" id="txt-meeting-location" />
+                </div>
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="txt-meeting-link">Meeting Link</label>
+                    <input disabled type="text" class="form-control" placeholder="Enter meeting location" name="txtMeetingLink" id="txt-meeting-link" />
+                </div>
+            </div>
+
+
+
+            <div class="row mb-4">
+                <!-- ✅ 1 satırda 2 kolon -->
+                <div class="col-md-6 form-control-validation">
+                    <label for="ddl-meeting-attendees" class="form-label">Attendees</label>
+                    <select id="ddl-meeting-attendees" name="ddlMeetingAttendees"
+                            multiple
+                            class="selectpicker w-100"
+                            data-style="btn-default"
+                            data-actions-box="true" data-size="10" data-live-search="true">
+                    </select>
+                </div>
+
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="ddl-meeting-category">Category</label>
+                    <select id="ddl-meeting-category" name="ddlMeetingCategory" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+                </div>
+
+            </div>
+
+            <div class="row mb-4">
+                <!-- ✅ 1 satırda 2 kolon -->
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="txt-meeting-start-date">Start Date</label>
+                    <input type="text"
+                           class="form-control"
+                           id="txt-meeting-start-date"
+                           name="txtMeetingStartDate"
+                           placeholder="Start Date" />
+                </div>
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="ddl-meeting-start-time">Start Time</label>
+                    <select id="ddl-meeting-start-time" name="ddlMeetingStartTime" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+                </div>
+
+            </div>
+
+            <div class="row mb-4">
+                <!-- ✅ 1 satırda 2 kolon -->
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="txt-meeting-end-date">End Date</label>
+                    <input type="text"
+                           class="form-control"
+                           id="txt-meeting-end-date"
+                           name="txtMeetingEndDate"
+                           placeholder="End Date" />
+                </div>
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="ddl-meeting-end-time">End Time</label>
+                    <select id="ddl-meeting-end-time" name="ddlMeetingEndTime" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+                </div>
+
+            </div>
+
+        </form>
+    </div>
+</div>
+
+

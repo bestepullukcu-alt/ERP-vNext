@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "5lkqYzwEQcS6+BbgZZn+CpLeTctSSaD/+AuixcEVzr0=",
+  "Source": "Diten.ApiGateway",
+  "BasePath": "_content/Diten.ApiGateway",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

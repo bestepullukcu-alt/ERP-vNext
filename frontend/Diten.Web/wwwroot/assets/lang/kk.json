@@ -1,0 +1,31 @@
+{
+  "name": "Аты",
+  "country": "Ел",
+  "type": "Түрі",
+  "action": "Әрекет",
+  "Company": "Компания",
+  "AddCompany": "Компания қосу",
+  "SearchCompany": "Компанияны іздеу",
+  "CompanyName": "Компания атауы",
+  "Abbrevation": "Қысқартылған атауы",
+  "Address": "Мекенжай",
+  "Phone": "Телефон нөмірі",
+  "Email": "Электрондық пошта",
+  "Website": "Веб-сайт",
+  "Add": "Қосу",
+  "Cancel": "Бас тарту",
+  "EditCompany": "Компанияны өңдеу",
+  "Update": "Жаңарту",
+  "DataTable": {
+    "sInfo": "_TOTAL_ жазбадан _START_ мен _END_ аралығы көрсетілуде",
+    "sInfoEmpty": "Көрсетілетін жазбалар жоқ",
+    "sInfoFiltered": "(_MAX_ жазбадан сүзілді)",
+    "sLengthMenu": "_MENU_ жазба көрсету",
+    "sSearch": "Іздеу:",
+    "Role": "Рөл",
+    "Description": "Сипаттама",
+    "Active": "Белсенді",
+    "AddRole": "Рөл қосу",
+    "PackagingForm": "Қаптама формасы"
+  }
+}

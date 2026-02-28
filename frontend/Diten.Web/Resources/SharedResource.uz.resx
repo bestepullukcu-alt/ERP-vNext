@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Save" xml:space="preserve">
+    <value>Saqlash</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Bekor qilish</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Sarlavha</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>Mamlakat</value>
+  </data>
+  <data name="TaxNumber" xml:space="preserve">
+    <value>STIR</value>
+  </data>
+  <data name="DeleteConfirmationTitle" xml:space="preserve">
+    <value>Ishonchingiz komilmi?</value>
+  </data>
+  <data name="DeleteConfirmationSubText" xml:space="preserve">
+    <value>Bu amalni bekor qilib bo'lmaydi!</value>
+  </data>
+  <data name="DeleteConfirmationYesBtn" xml:space="preserve">
+    <value>Ha, O'chirish</value>
+  </data>
+  <data name="ConfirmAction" xml:space="preserve">
+    <value>Davom etishga ishonchingiz komilmi?</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Kirish taqiqlangan.</value>
+  </data>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>Iltimos, majburiy maydonlarni to'ldiring.</value>
+  </data>
+  <data name="SearchFilter" xml:space="preserve">
+    <value>Qidirish va filtr</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Holat</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Faol</value>
+  </data>
+  <data name="Passive" xml:space="preserve">
+    <value>Nofaol</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Noma'lum</value>
+  </data>
+  <data name="ViewDetails" xml:space="preserve">
+    <value>Batafsil</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Qidirish..</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Eksport</value>
+  </data>
+  <data name="Print" xml:space="preserve">
+    <value>Chop etish</value>
+  </data>
+  <data name="MDM" xml:space="preserve">
+    <value>MDM</value>
+  </data>
+  <data name="AreYouSure" xml:space="preserve">
+    <value>Ishonchingiz komilmi?</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Xato</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>Operatsiya davomida xatolik yuz berdi.</value>
+  </data>
+  <data name="RecordCreated" xml:space="preserve">
+    <value>Yozuv muvaffaqiyatli yaratildi.</value>
+  </data>
+  <data name="RecordDeleted" xml:space="preserve">
+    <value>Yozuv muvaffaqiyatli o'chirildi.</value>
+  </data>
+  <data name="RecordSaved" xml:space="preserve">
+    <value>O'zgarishlar muvaffaqiyatli saqlandi.</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Muvaffaqiyat</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>Saqlanmoqda...</value>
+  </data>
+  <data name="FailedToLoadData" xml:space="preserve">
+    <value>Ma'lumotlarni yuklash imkoni bo'lmadi. Keyinroq qayta urinib ko'ring.</value>
+  </data>
+  <data name="GatewayError" xml:space="preserve">
+    <value>Server bilan aloqa o'rnatishda xatolik yuz berdi.</value>
+  </data>
+  <data name="LegalEntities" xml:space="preserve">
+    <value>Yuridik shaxslar</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Yorug'</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>Qorong'u</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Administrator</value>
+  </data>
+  <data name="MyProfile" xml:space="preserve">
+    <value>Mening profilim</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Sozlamalar</value>
+  </data>
+  <data name="LogOut" xml:space="preserve">
+    <value>Chiqish</value>
+  </data>
+</root>

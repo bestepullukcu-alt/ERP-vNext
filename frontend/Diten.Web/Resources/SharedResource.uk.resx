@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Save" xml:space="preserve">
+    <value>Зберегти</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Скасувати</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Назва</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>Країна</value>
+  </data>
+  <data name="TaxNumber" xml:space="preserve">
+    <value>ІНН</value>
+  </data>
+  <data name="DeleteConfirmationTitle" xml:space="preserve">
+    <value>Ви впевнені?</value>
+  </data>
+  <data name="DeleteConfirmationSubText" xml:space="preserve">
+    <value>Цю дію неможливо скасувати!</value>
+  </data>
+  <data name="DeleteConfirmationYesBtn" xml:space="preserve">
+    <value>Так, видалити</value>
+  </data>
+  <data name="ConfirmAction" xml:space="preserve">
+    <value>Ви впевнені, що хочете продовжити?</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Доступ заборонено.</value>
+  </data>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>Будь ласка, заповніть обов'язкові поля.</value>
+  </data>
+  <data name="SearchFilter" xml:space="preserve">
+    <value>Пошук і фільтр</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Активний</value>
+  </data>
+  <data name="Passive" xml:space="preserve">
+    <value>Неактивний</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Невідомо</value>
+  </data>
+  <data name="ViewDetails" xml:space="preserve">
+    <value>Детальніше</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Пошук..</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Експорт</value>
+  </data>
+  <data name="Print" xml:space="preserve">
+    <value>Друк</value>
+  </data>
+  <data name="MDM" xml:space="preserve">
+    <value>MDM</value>
+  </data>
+  <data name="AreYouSure" xml:space="preserve">
+    <value>Ви впевнені?</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Помилка</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>Під час операції сталася помилка.</value>
+  </data>
+  <data name="RecordCreated" xml:space="preserve">
+    <value>Запис успішно створено.</value>
+  </data>
+  <data name="RecordDeleted" xml:space="preserve">
+    <value>Запис успішно видалено.</value>
+  </data>
+  <data name="RecordSaved" xml:space="preserve">
+    <value>Зміни успішно збережено.</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Успішно</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>Збереження...</value>
+  </data>
+  <data name="FailedToLoadData" xml:space="preserve">
+    <value>Не вдалося завантажити дані. Спробуйте пізніше.</value>
+  </data>
+  <data name="GatewayError" xml:space="preserve">
+    <value>Під час зв'язку із сервером сталася помилка.</value>
+  </data>
+  <data name="LegalEntities" xml:space="preserve">
+    <value>Юридичні особи</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Світла</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>Темна</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Адміністратор</value>
+  </data>
+  <data name="MyProfile" xml:space="preserve">
+    <value>Мій профіль</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Налаштування</value>
+  </data>
+  <data name="LogOut" xml:space="preserve">
+    <value>Вийти</value>
+  </data>
+</root>

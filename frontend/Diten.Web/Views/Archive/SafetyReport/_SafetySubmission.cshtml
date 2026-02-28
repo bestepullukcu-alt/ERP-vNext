@@ -1,0 +1,63 @@
+﻿<div class="row g-6">
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-safety-submission-status">Safety Submissions Status</label>
+        <select id="ddl-safety-submission-status" name="SafetySubmissionStatus" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="ddl-safety-submission-authority">Safety Submissions (Authority List)</label>
+        <select id="ddl-safety-submission-authority" name="SafetySubmissionAuthority" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="dt-safety-submission-due-min">Safety Submissions (Due Date Min)</label>
+        <input type="text" class="form-control" placeholder="DD,Month, YYYY" name="dateSafetySubmissionDueMin"
+               id="dt-safety-submission-due-min" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="dt-safety-submission-due-max">Safety Submissions (Due Date Max)</label>
+        <input type="text" class="form-control" placeholder="DD,Month, YYYY" name="dateSafetySubmissionDueMax"
+               id="dt-safety-submission-due-max" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="dt-safety-submission-min">Safety Submissions (Submission Date Min)</label>
+        <input type="text" class="form-control" placeholder="DD,Month, YYYY" name="dateSafetySubmissionMin"
+               id="dt-safety-submission-min" />
+    </div>
+    <div class="col-sm-6">
+        <label class="form-label" for="dt-safety-submission-max">Safety Submissions (Submission Date Max)</label>
+        <input type="text" class="form-control" placeholder="DD,Month, YYYY" name="dateSafetySubmissionMax"
+               id="dt-safety-submission-max" />
+    </div>
+    <div class="col-sm-12">
+        <label class="form-label" for="ddl-safety-data-type">Safety Data Type</label>
+        <select id="ddl-safety-data-type" name="SafetyDataType" class="select2 form-select form-select-lg form-control" data-allow-clear="true"></select>
+    </div>
+    <div class="col-sm-6">
+        <input class="form-check-input" type="checkbox" id="chcIsSerious">
+        <label class="form-check-label" for="chcIsSerious">is Serious</label>
+    </div>
+    <div class="col-sm-6">
+        <input class="form-check-input" type="checkbox" id="chcIsUnexpected">
+        <label class="form-check-label" for="chcIsUnexpected">is Unexpected</label>
+    </div>
+    <div class="col-sm-6">
+        <input class="form-check-input" type="checkbox" id="chcIsInvalid">
+        <label class="form-check-label" for="chcIsInvalid">is Invalid</label>
+    </div>
+    <div class="col-sm-6">
+        <input class="form-check-input" type="checkbox" id="chcIsDuplicate">
+        <label class="form-check-label" for="chcIsDuplicate">is Duplicate</label>
+    </div>
+
+
+
+    <div class="col-12 d-flex justify-content-between">
+        <button class="btn btn-primary btn-prev">
+            <i class="icon-base bx bx-left-arrow-alt scaleX-n1-rtl icon-sm ms-sm-n2 me-sm-2"></i>
+            <span class="align-middle d-sm-inline-block d-none">Previous</span>
+        </button>
+        <button class="btn btn-primary btn-next">
+            <span class="align-middle d-sm-inline-block d-none me-sm-2">Next</span>
+            <i class="icon-base bx bx-right-arrow-alt scaleX-n1-rtl icon-sm me-sm-n2"></i>
+        </button>
+    </div>
+</div>

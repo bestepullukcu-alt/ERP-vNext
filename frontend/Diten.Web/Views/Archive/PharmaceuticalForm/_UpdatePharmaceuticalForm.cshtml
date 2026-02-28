@@ -1,0 +1,43 @@
+﻿<div class="offcanvas offcanvas-end"
+     tabindex="-1"
+     id="UpdatePharmaceuticalForm"
+     aria-labelledby="UpdatePharmaceuticalFormLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="UpdatePharmaceuticalFormLabel" class="offcanvas-title">Edit Form</h5>
+        <button type="button"
+                class="btn-close text-reset"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 p-6 h-100">
+        <form class="update-pharmaceutical-form pt-0" id="updatePharmaceuticalFormForm" onsubmit="return false" data-id="">
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="update-pharmaceutical-form-type">Type</label>
+                <select id="update-pharmaceutical-form-type" name="updatePharmaceuticalFormType" class="select2 form-select"></select>
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="update-pharmaceutical-form-name">Pharmaceutical Form Name</label>
+                <input type="text"
+                       class="form-control"
+                       id="update-pharmaceutical-form-name"
+                       placeholder="update name"
+                       name="updatePharmaceuticalFormName"
+                       aria-label="PharmaceuticalForm" />
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="update-pharmaceutical-form-abbrevation">Abbrevation</label>
+                <input type="text"
+                       id="update-pharmaceutical-form-abbrevation"
+                       class="form-control"
+                       placeholder="update abbrevation"
+                       aria-label="update abbrevation"
+                       name="updatePharmaceuticalFormAbbrevation" />
+            </div>
+
+           
+            <button type="submit" class="btn btn-primary me-3 data-submit">Update</button>
+            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">Cancel</button>
+        </form>
+    </div>
+</div>
+

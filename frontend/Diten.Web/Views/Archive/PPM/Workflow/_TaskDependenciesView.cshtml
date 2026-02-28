@@ -1,0 +1,33 @@
+﻿<div id="dependenciesFormContainer" class="card mb-4">
+    <div class="card-header">
+            <h5 class="card-title mb-0">Task Predecessors & Successors</h5>
+            <small class="text-muted">
+                Manage links to tasks that must be completed before this task can start.
+            </small>
+        </div>    
+    <div class="card-body">
+        <form class="dependencies-detail pt-0" id="dependenciesDetail" onsubmit="return false">
+            <div class="row mb-4">
+                <!-- ✅ 1 satırda 2 kolon -->
+                <div class="col-md-4 form-control-validation">
+                    <label class="form-label" for="ddl-dependencies-task">Task</label>
+                    <select id="ddl-dependencies-task" name="dependenciesTask" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+                </div>
+
+                <div class="col-md-4 form-control-validation">
+                    <label class="form-label" for="ddl-dependencies-type">Dependencies type</label>
+                    <select id="ddl-dependencies-type" name="dependenciesType" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+                </div>
+                <div class="col-md-4">
+                    <button id="btnCreateDependenciesTask" type="button" class="btn btn-label-primary mt-5">
+                        Add Dependencies Task
+                    </button>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div id="dependenciesContainer">
+            </div>
+        </form>
+    </div>
+</div>
+

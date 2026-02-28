@@ -1,0 +1,106 @@
+﻿@{
+    ViewData["Title"] = "Edit Document";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="mb-4">
+    <h3>Document Library</h3>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/DocumentationSystem">Root</a></li>
+            <li class="breadcrumb-item"><a href="/DocumentationSystem">Documentation System</a></li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container py-4" style="padding: 2rem; border-radius: 0.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+
+    <!-- Dosya Alanı -->
+    <div class="mb-4 border rounded p-5 shadow-sm" style="border-style: dashed;">
+        <h6 class="fw-semibold mb-1">Edit Document</h6>
+        <p class="text-muted">Update the document details below. You may replace the file if needed.</p>
+
+        <div class="mb-4 border dashed-border rounded p-5 text-center shadow-sm">
+            <!-- Dosya seçilmemişse -->
+            <div id="dropDefault">
+                <i class="fa fa-upload text-primary" style="font-size: 36px;"></i>
+                <p class="my-2 fw-bold">Replace the document file (optional)</p>
+                <p class="text-muted small">
+                    Supports PDF, DOC, XLS, PPT, JPG, PNG, MP4, ZIP and more<br />
+                    Maximum file size: 20MB
+                </p>
+                <button type="button" class="btn btn-outline-primary mt-2" id="chooseFileBtn">Choose File</button>
+                <input type="file" class="form-control w-auto mt-2 d-none" name="file" id="fileUpload" />
+            </div>
+
+            <!-- Dosya seçildiyse -->
+            <div class="mt-3 d-none text-center" id="filePreview">
+                <i class="fa fa-file text-secondary mb-2" style="font-size: 32px;"></i>
+                <div id="fileName" class="fw-semibold"></div>
+                <div id="fileSize" class="small text-muted"></div>
+                <div id="fileType" class="small text-muted"></div>
+                <div class="d-flex justify-content-center gap-2 mt-2">
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="removeFileBtn">Remove File</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="replaceFileBtn">Choose Different File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doküman Bilgileri -->
+    <div class="mb-4 border rounded p-4 shadow-sm">
+        <h6 class="fw-semibold mb-3">Document Information</h6>
+        <form id="uploadDocumentForm" enctype="multipart/form-data">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="documentTitle" class="form-label">Document Title *</label>
+                    <input type="text" class="form-control" id="documentTitle" name="title" placeholder="Enter Document Title" required />
+                </div>
+                <div class="col-md-6">
+                    <label for="folderSelect" class="form-label">Folder</label>
+                    <input type="text" class="form-control" id="folderNameDisplay" readonly />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="accessLevel" class="form-label">Access Level</label>
+                    <select class="select2 form-select form-select-lg" data-allow-clear="true" id="accessLevel" name="accessLevel">
+                        <option value="private">Private</option>
+                        <option value="restricted">Restricted</option>
+                        <option value="public">Public</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="expiryDate" class="form-label">Expiry Date (Optional)</label>
+                    <input type="date" class="form-control" id="expiryDate" name="expiryDate" />
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes & Description</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Add any additional notes or description about this document"></textarea>
+            </div>
+        </form>
+    </div>
+
+    <!-- Etiketler -->
+    <div class="mb-4 border rounded p-4 shadow-sm">
+        <h6 class="fw-semibold mb-3">Tags</h6>
+        <label for="tagInput" class="form-label">Initiating Party *</label>
+        <div class="input-group mb-3">
+            <input type="text" id="tagInput" class="form-control" placeholder="Add a tag" />
+            <button type="button" class="btn btn-primary" id="addTagBtn">+ Add Tag</button>
+        </div>
+        <div class="d-flex flex-wrap gap-2" id="tagContainer"></div>
+    </div>
+
+    <!-- Submit Butonu -->
+    <div class="text-end mt-3">
+        <button type="submit" form="uploadDocumentForm" class="btn btn-primary">Update Document</button>
+    </div>
+</div>
+
+@Html.Partial("~/Views/Shared/_DeleteConfirmModal.cshtml")
+@Html.Partial("~/Views/Shared/_AppToast.cshtml")
+
+@section Scripts {
+    <script src="~/assets/js/Archive/DocumentationSystem/EditDocument.js"></script>
+}

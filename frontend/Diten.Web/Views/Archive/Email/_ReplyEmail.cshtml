@@ -1,0 +1,35 @@
+﻿<div class="email-reply card mt-4 mx-sm-6 mx-3 mb-4">
+    <h6 class="card-header border-0 fw-normal pb-4"></h6>
+    <div class="card-body pt-0 ps-3">
+        <div class="d-flex justify-content-start">
+            <div class="email-reply-toolbar border-0 w-100 ps-0 pb-4">
+                <span class="ql-formats me-0">
+                    <button class="ql-bold"></button>
+                    <button class="ql-italic"></button>
+                    <button class="ql-underline"></button>
+                    <button class="ql-list" value="ordered"></button>
+                    <button class="ql-list" value="bullet"></button>
+                    <button class="ql-link"></button>
+                    <button class="ql-image"></button>
+                </span>
+            </div>
+        </div>
+        <div class="email-reply-editor"></div>
+        <div class="d-flex justify-content-end align-items-center mt-4">
+            <ul id="replyfileList" class="mt-2 list-unstyled"></ul>
+
+
+            <div class="cursor-pointer btn btn-text-secondary text-secondary me-4" id="reply-attachment-btn">
+                <i class="icon-base bx bx-paperclip icon-18px text-heading me-2"></i>
+                <span class="align-middle">Attachments</span>
+            </div>
+            <input type="file" id="reply-attachment-input" multiple style="display:none;" onchange="handleFileSelect(event)" />
+            
+
+            <button class="btn btn-primary reply-email-send">
+                <span class="align-middle">Send</span>
+                <i class="icon-base bx bx-paper-plane icon-sm ms-2 scaleX-n1-rtl"></i>
+            </button>
+        </div>
+    </div>
+</div>

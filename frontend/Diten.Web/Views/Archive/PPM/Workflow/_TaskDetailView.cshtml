@@ -1,0 +1,88 @@
+﻿<div id="taskFormContainer" class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Task Core Information</h5>
+        <small class="text-muted">
+            Enter the primary details and scheduling for the task.
+        </small>
+
+    </div>
+    <div class="card-body">
+        <form class="task-detail pt-0" id="taskDetail" onsubmit="return false">
+            <div class="row mb-4">
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="txt-task-name">Name</label>
+                    <input type="text" class="form-control" placeholder="e.g., Final Regulatory Submission" name="txtTaskName" id="txt-task-name" />
+                </div>
+                <div class="col-md-6 form-control-validation opacity-50">
+                    <label class="form-label" for="txt-intiatives">Intiatives</label>
+                    <input disabled type="text" class="form-control" placeholder="INIT-.####" name="txtIntiatives" id="txt-intiatives" />
+                </div>
+                </div>
+                <div class="col-12 mb-4 form-control-validation">
+                    <label class="form-label" for="txt-task-description">Description</label>
+                    <textarea id="txt-task-description" name="txtTaskDescription" class="form-control" rows="3" placeholder="e.g., Prepare and compile the complete Phase 3 Clinical Trial data package and submit the electronic dossier (eCTD) to the FDA via the regulatory portal. Ensure all documentation complies with CFR 21 Part 11 standards.
+Input"></textarea>
+                </div>
+
+                <div class="row mb-4">
+                <!-- ✅ 1 satırda 2 kolon -->
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="ddl-task-assignee">Assignee</label>
+                    <select id="ddl-task-assignee" name="ddlTaskAssignee" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+                </div>
+
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="ddl-task-category">Category</label>
+                    <select id="ddl-task-category" name="ddlTaskCategory" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+                </div>
+
+            </div>
+
+                            <div class="row mb-4">
+                <!-- ✅ 1 satırda 2 kolon -->
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="ddl-task-status">Status</label>
+                    <select id="ddl-task-status" name="ddlTaskStatus" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+                </div>
+
+                <div class="col-md-6 form-control-validation">
+                    <label class="form-label" for="ddl-task-priority">Priority</label>
+                    <select id="ddl-task-priority" name="ddlTaskPriority" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+                </div>
+
+            </div>
+
+
+                <div class="row mb-4">
+                <div class="col-md-4 form-control-validation">
+                    <label for="dtTaskStartDate" class="form-label">Start Date</label>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="DD,Month, YYYY"
+                           name="dtTaskStartDate"
+                           id="dtTaskStartDate" />
+                </div>
+                <div class="col-md-4 form-control-validation">
+                    <label for="dtTaskDueDate" class="form-label">Due Date</label>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="DD,Month, YYYY"
+                           name="dtTaskDueDate"
+                           id="dtTaskDueDate" />
+                </div>
+
+                <div class="col-md-4 form-control-validation">
+                    <label class="form-label" for="txt-task-estimated-hour">Estimated Hour</label>
+                    <input type="number"
+                           class="form-control"
+                           id="txt-task-estimated-hour"
+                           placeholder="Enter estimated hour in minutes"
+                           name="txtTaskEstimatedHour"
+                           min="0" />
+                </div>
+                </div>
+
+        </form>
+    </div>
+</div>
+

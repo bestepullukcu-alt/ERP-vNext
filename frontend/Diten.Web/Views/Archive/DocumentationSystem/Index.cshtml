@@ -1,0 +1,51 @@
+﻿@{
+    ViewData["Title"] = "Document Library";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="mb-4">
+    <h3>Document Library</h3>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/DocumentationSystem">Root</a></li>
+            <li class="breadcrumb-item active" aria-current="page">DocumentationSystem</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Folders -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div id="folder-empty" class="text-center text-muted my-5" style="display: none;">
+            <div><i class="bx bx-plus" style="font-size:48px;"></i></div>
+            <p class="mb-1 fw-bold">No folders found</p>
+            <p>This folder is empty. Upload your first document to get started.</p>
+        </div>
+
+        <div id="folder-list" class="row">
+            <!-- folder-card'lar buraya gelecek -->
+        </div>
+    </div>
+    <!-- ✅ Pagination Butonları Buraya -->
+    <div class="card-footer border-0">
+        <div class="d-flex justify-content-between align-items-center">
+            <small id="page-info" class="text-muted ms-3"></small>
+            <div class="d-flex justify-content-end gap-2 pe-3" id="pagination-controls">
+                <button class="btn btn-light text-secondary border d-flex align-items-center gap-1" id="prev-btn">
+                    <i class='bx bx-chevron-left'></i> Previous
+                </button>
+                <button class="btn btn-light text-secondary border d-flex align-items-center gap-1" id="next-btn">
+                    Next <i class='bx bx-chevron-right'></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@Html.Partial("~/Views/Shared/_DeleteConfirmModal.cshtml")
+@Html.Partial("~/Views/Shared/_AppToast.cshtml")
+
+@section Scripts {
+
+    <script src="@Url.Content("~/assets/js/Archive/DocumentationSystem/DocumentManagement.js")"></script>
+}

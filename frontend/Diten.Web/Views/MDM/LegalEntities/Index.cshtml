@@ -1,0 +1,71 @@
+@model IEnumerable<Diten.Web.Models.LegalEntityViewModel>
+@using Diten.Web.Views.MDM
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LegalEntities> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["LegalEntitiesTitle"].Value;
+    Layout = "_LayoutBackbone";
+}
+
+<!-- Search Filters -->
+<div class="card mb-4">
+    <h5 class="card-header pb-4 border-bottom mb-4">@SharedLocalizer["SearchFilters"]</h5>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 user_plan"></div>
+            <div class="col-md-6 user_status"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Legal Entities List Table -->
+<div class="card">
+    <div class="card-datatable table-responsive">
+        <table class="datatables-legal-entities table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th>@SharedLocalizer["Title"]</th>
+                    <th>@SharedLocalizer["TaxNumber"]</th>
+                    <th>@Localizer["TaxOffice"]</th>
+                    <th>@Localizer["Email"]</th>
+                    <th>@Localizer["Phone"]</th>
+                    <th>@Localizer["CompanyType"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.L10n = window.L10n || {};
+        window.L10n.Active = '@Html.Raw(SharedLocalizer["Active"].Value)';
+        window.L10n.Passive = '@Html.Raw(SharedLocalizer["Passive"].Value)';
+        window.L10n.Unknown = '@Html.Raw(SharedLocalizer["Unknown"].Value)';
+        window.L10n.Actions = '@Html.Raw(Localizer["Actions"].Value)';
+        window.L10n.Edit = '@Html.Raw(Localizer["EditBtn"].Value)';
+        window.L10n.ViewDetails = '@Html.Raw(SharedLocalizer["ViewDetails"].Value)';
+        window.L10n.Search = '@Html.Raw(SharedLocalizer["Search"].Value)';
+        window.L10n.Export = '@Html.Raw(SharedLocalizer["Export"].Value)';
+        window.L10n.Print = '@Html.Raw(SharedLocalizer["Print"].Value)';
+        window.L10n.AddNewCompany = '@Html.Raw(Localizer["AddNewCompany"].Value)';
+        window.L10n.CompanyType = '@Html.Raw(Localizer["CompanyType"].Value)';
+        window.L10n.SelectStatus = '@Html.Raw(SharedLocalizer["SelectStatus"].Value)';
+
+        // Check if redirect came back with success message
+        var successMsg = '@TempData["SuccessMessage"]';
+        if (successMsg) {
+            document.addEventListener('DOMContentLoaded', function () {
+                if (window.showToast) {
+                    window.showToast(successMsg, 'success');
+                }
+            });
+        }
+    </script>
+    <script src="~/assets/js/MDM/LegalEntities/index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,91 @@
+﻿<div class="modal fade" id="meetingDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content p-2">
+
+            <div class="modal-body">
+                <!-- HEADER -->
+                <div class="col-12 mb-8">
+                    <h4 class="text-muted mb-1">Meeting Invitation</h4>
+                <p class="text-muted small">You have been invited to a meeting</p>
+                </div>
+                
+
+                <!-- TITLE -->
+                <div class="col-12 mb-8">
+                    <h4 id="mdTitle" class="mb-2"></h4>
+                    <p id="mdDescription" class="text-muted"></p>
+                </div>
+
+
+
+                <!-- ORGANIZED BY -->
+                 <div class="col-12 mb-4">
+                        <div class="alert alert-primary" style="background-color:transparent;border-color:transparent">
+                            <h5 class="alert-heading d-flex align-items-center flex-wrap gap-1" style="margin-bottom:0px;"><span class="alert-icon rounded-circle"><i class="icon-base bx bx-user"></i></span> Organized by</h5>
+                            <p id="mdOwnerName" class="mb-0 ps-10"></p>
+                        </div>
+                    </div>
+
+
+                <!-- GRID 2x2 -->
+                <div class="row mt-4">
+
+                    <!-- DATE -->
+                    <div class="col-md-6 mb-2">
+                        <div class="alert alert-info">
+                            <h4 class="alert-heading d-flex align-items-center flex-wrap gap-1" style="margin-bottom:0px;"><span class="alert-icon rounded-circle"><i class="icon-base bx bx-calendar"></i></span> Date</h4>
+                            <p id="mdDate" class="mb-0 ps-10"></p>
+                        </div>
+                    </div>
+
+                    <!-- TIME -->
+                    <div class="col-md-6 mb-2">
+                        <div class="alert alert-info">
+                            <h4 class="alert-heading d-flex align-items-center flex-wrap gap-1" style="margin-bottom:0px;"><span class="alert-icon rounded-circle"><i class="icon-base bx bx-time-five"></i></span> Time</h4>
+                            <p id="mdTime" class="mb-0 ps-10"></p>
+                        </div>
+                    </div>
+
+                    <!-- LOCATION -->
+                    <div class="col-md-6 mb-2">
+                        <div class="alert alert-success">
+                            <h4 class="alert-heading d-flex align-items-center flex-wrap gap-1" style="margin-bottom:0px;"><span class="alert-icon rounded-circle"><i class="icon-base bx bx-map"></i></span> Location</h4>
+                            <p id="mdLocation" class="mb-0 ps-10"></p>
+                        </div>
+                    </div>
+
+                    <!-- LINK -->
+                    <div class="col-md-6 mb-2">
+                        <div class="alert alert-success">
+                            <h4 class="alert-heading d-flex align-items-center flex-wrap gap-1" style="margin-bottom:0px;"><span class="alert-icon rounded-circle"><i class="icon-base bx bx-video me-1"></i></span> Meeting Link</h4>
+                            <p id="mdLink" class="mb-0 ps-10" href="#" target="_blank">-</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ATTENDEES -->
+                <div class="col-12 mb-4">
+                    <h5><i class="icon-base bx bx-file-blank me-1"></i> Attendees (<span id="mdAttendeeCount">0</span>)</h5>
+                    <div id="mdAttendees" class="d-flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- AGENDA -->
+                <div class="card shadow-none bg-label-secondary">
+                    <div class="card-body">
+                    <h5 class="card-title text-dark mb-4">Agenda</h5>
+                    <div id="mdAgenda"></div>
+                    </div>
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button class="btn btn-success" style="width:30%" id="btnAccept">Accept</button>
+                    <button class="btn btn-warning" style="width:30%" id="btnMaybe">Maybe</button>
+                    <button class="btn btn-danger" style="width:30%" id="btnDecline">Decline</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

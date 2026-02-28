@@ -1,0 +1,52 @@
+﻿<div class="offcanvas offcanvas-end"
+     tabindex="-1"
+     id="AddAuthority"
+     aria-labelledby="AddAuthorityLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="AddAuthorityLabel" class="offcanvas-title" data-i18n="AddAuthority">Add New Authorities</h5>
+        <button type="button"
+                class="btn-close text-reset"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 p-6 h-100">
+        <form class="add-authority pt-0" id="addAuthorityForm" onsubmit="return false">
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-authority-name" data-i18n="InstitutionName">Institution Name</label>
+                <input type="text"
+                       class="form-control"
+                       id="add-authority-name"
+                       placeholder="institution name"
+                       name="authorityName"
+                       aria-label="Authority" />
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-ddlCountry" data-i18n="country">Country</label>
+                <select id="add-ddlCountry" name="authorityCountry" class="select2 form-select form-select-lg" data-allow-clear="true"></select>
+            </div>
+
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-txt-address" data-i18n="Address">Address</label>
+                <textarea id="add-txt-address" class="form-control"
+                          rows="2"
+                          placeholder="123 Elm Street,Springfield,IL 62704"></textarea>
+            </div>
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="add-txt-website" data-i18n="Website">Website</label>
+                <input type="text"
+                       id="add-txt-website"
+                       class="form-control"
+                       placeholder="www.company.com"
+                       aria-label="add website"
+                       name="authorityWebsite" />
+            </div>            
+            <button type="submit" class="btn btn-primary me-3 data-submit" data-i18n="Add">Add</button>
+            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="offcanvas" data-i18n="Cancel">Cancel</button>
+
+
+
+
+        </form>
+    </div>
+</div>
+

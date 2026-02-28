@@ -1,0 +1,619 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = Diten.Web
+build_property.RootNamespace = Diten.Web
+build_property.ProjectDir = /Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = /Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web
+build_property._RazorSourceGeneratorDebug = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Account/forgetpassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9BY2NvdW50L2ZvcmdldHBhc3N3b3JkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Account/login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9BY2NvdW50L2xvZ2luLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Account/ResetPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9BY2NvdW50L1Jlc2V0UGFzc3dvcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/ActiveIngredient/ActiveIngredient.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9BY3RpdmVJbmdyZWRpZW50L0FjdGl2ZUluZ3JlZGllbnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/ActiveIngredient/_ActiveIngredientTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9BY3RpdmVJbmdyZWRpZW50L19BY3RpdmVJbmdyZWRpZW50VGFibGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/ActiveIngredient/_AddActiveIngredient.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9BY3RpdmVJbmdyZWRpZW50L19BZGRBY3RpdmVJbmdyZWRpZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/ActiveIngredient/_UpdateActiveIngredient.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9BY3RpdmVJbmdyZWRpZW50L19VcGRhdGVBY3RpdmVJbmdyZWRpZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Agreement/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9BZ3JlZW1lbnQvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Agreement/_CreateAgreement.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9BZ3JlZW1lbnQvX0NyZWF0ZUFncmVlbWVudC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Auth/OAuthSuccess.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9BdXRoL09BdXRoU3VjY2Vzcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Calendar/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYWxlbmRhci9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Calendar/TimerPopup.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYWxlbmRhci9UaW1lclBvcHVwLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Calendar/_addEvent.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYWxlbmRhci9fYWRkRXZlbnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Calendar/_addEventTabs.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYWxlbmRhci9fYWRkRXZlbnRUYWJzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Calendar/_AddTaskDetail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYWxlbmRhci9fQWRkVGFza0RldGFpbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Calendar/_CalendarTabs.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYWxlbmRhci9fQ2FsZW5kYXJUYWJzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Calendar/_CalendarTopButtons.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYWxlbmRhci9fQ2FsZW5kYXJUb3BCdXR0b25zLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Calendar/_CompleteTask.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYWxlbmRhci9fQ29tcGxldGVUYXNrLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Calendar/_MeetingDetailModal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYWxlbmRhci9fTWVldGluZ0RldGFpbE1vZGFsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Calendar/_OldAddCalendar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYWxlbmRhci9fT2xkQWRkQ2FsZW5kYXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Category/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYXRlZ29yeS9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Category/_AddCategory.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYXRlZ29yeS9fQWRkQ2F0ZWdvcnkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Category/_CategoryTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYXRlZ29yeS9fQ2F0ZWdvcnlUYWJsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Category/_UpdateCategory.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9DYXRlZ29yeS9fVXBkYXRlQ2F0ZWdvcnkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Company/Company.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Db21wYW55L0NvbXBhbnkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Company/_AddCompany.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Db21wYW55L19BZGRDb21wYW55LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Company/_CompanyTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Db21wYW55L19Db21wYW55VGFibGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Company/_UpdateCompany.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Db21wYW55L19VcGRhdGVDb21wYW55LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Country/Country.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Db3VudHJ5L0NvdW50cnkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/DocumentationSystem/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Eb2N1bWVudGF0aW9uU3lzdGVtL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/DocumentationSystem/_CreateFolder.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Eb2N1bWVudGF0aW9uU3lzdGVtL19DcmVhdGVGb2xkZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/DocumentationSystem/_EditDocument.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Eb2N1bWVudGF0aW9uU3lzdGVtL19FZGl0RG9jdW1lbnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/DocumentationSystem/_EditFolder.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Eb2N1bWVudGF0aW9uU3lzdGVtL19FZGl0Rm9sZGVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/DocumentationSystem/_FolderDetail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Eb2N1bWVudGF0aW9uU3lzdGVtL19Gb2xkZXJEZXRhaWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/DocumentationSystem/_MoveDocument.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Eb2N1bWVudGF0aW9uU3lzdGVtL19Nb3ZlRG9jdW1lbnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/DocumentationSystem/_ShareDocument.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Eb2N1bWVudGF0aW9uU3lzdGVtL19TaGFyZURvY3VtZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/DocumentationSystem/_UploadDocument.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Eb2N1bWVudGF0aW9uU3lzdGVtL19VcGxvYWREb2N1bWVudC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/DocumentationSystem/_VersionHistory.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Eb2N1bWVudGF0aW9uU3lzdGVtL19WZXJzaW9uSGlzdG9yeS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Email/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9FbWFpbC9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Email/_EmailCompose.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9FbWFpbC9fRW1haWxDb21wb3NlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Email/_ReplyEmail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9FbWFpbC9fUmVwbHlFbWFpbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Ib21lL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Home/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Ib21lL1ByaXZhY3kuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/MasterData/AddGlobalSku.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9NYXN0ZXJEYXRhL0FkZEdsb2JhbFNrdS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/MasterData/Authority.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9NYXN0ZXJEYXRhL0F1dGhvcml0eS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/MasterData/GlobalSku.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9NYXN0ZXJEYXRhL0dsb2JhbFNrdS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/MasterData/_AddActiveIngredient.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9NYXN0ZXJEYXRhL19BZGRBY3RpdmVJbmdyZWRpZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/MasterData/_AddAuthority.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9NYXN0ZXJEYXRhL19BZGRBdXRob3JpdHkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/MasterData/_AddPackagingForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9NYXN0ZXJEYXRhL19BZGRQYWNrYWdpbmdGb3JtLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/MasterData/_AuthorityTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9NYXN0ZXJEYXRhL19BdXRob3JpdHlUYWJsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/MasterData/_GlobalSkuTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9NYXN0ZXJEYXRhL19HbG9iYWxTa3VUYWJsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/MasterData/_UpdateAuthority.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9NYXN0ZXJEYXRhL19VcGRhdGVBdXRob3JpdHkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/MasterData/_UpdatePackagingForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9NYXN0ZXJEYXRhL19VcGRhdGVQYWNrYWdpbmdGb3JtLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PharmaceuticalForm/PharmaceuticalForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QaGFybWFjZXV0aWNhbEZvcm0vUGhhcm1hY2V1dGljYWxGb3JtLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PharmaceuticalForm/_AddPharmaceuticalForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QaGFybWFjZXV0aWNhbEZvcm0vX0FkZFBoYXJtYWNldXRpY2FsRm9ybS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PharmaceuticalForm/_PharmaceuticalFormTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QaGFybWFjZXV0aWNhbEZvcm0vX1BoYXJtYWNldXRpY2FsRm9ybVRhYmxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PharmaceuticalForm/_UpdatePharmaceuticalForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QaGFybWFjZXV0aWNhbEZvcm0vX1VwZGF0ZVBoYXJtYWNldXRpY2FsRm9ybS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/MyWorkflow/MyWorkflow.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vTXlXb3JrZmxvdy9NeVdvcmtmbG93LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/MyWorkflow/_AddSubTaskModal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vTXlXb3JrZmxvdy9fQWRkU3ViVGFza01vZGFsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/MyWorkflow/_AddWorkflowTaskCanvas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vTXlXb3JrZmxvdy9fQWRkV29ya2Zsb3dUYXNrQ2FudmFzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/MyWorkflow/_CreateTaskFullForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vTXlXb3JrZmxvdy9fQ3JlYXRlVGFza0Z1bGxGb3JtLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/MyWorkflow/_FilterCanvas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vTXlXb3JrZmxvdy9fRmlsdGVyQ2FudmFzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/MyWorkflow/_MeetingDetailView.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vTXlXb3JrZmxvdy9fTWVldGluZ0RldGFpbFZpZXcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/MyWorkflow/_TaskDetailView.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vTXlXb3JrZmxvdy9fVGFza0RldGFpbFZpZXcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/MyWorkflow/_TaskListTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vTXlXb3JrZmxvdy9fVGFza0xpc3RUYWJsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/NewRecord.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvTmV3UmVjb3JkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/Workflow.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvV29ya2Zsb3cuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_AddTeamMemberCanvas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX0FkZFRlYW1NZW1iZXJDYW52YXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_AddWorkflowCanvas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX0FkZFdvcmtmbG93Q2FudmFzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_AddWorkflowTaskCanvas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX0FkZFdvcmtmbG93VGFza0NhbnZhcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_AgendaView.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX0FnZW5kYVZpZXcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_ChecklistTaskView.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX0NoZWNrbGlzdFRhc2tWaWV3LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_DeleteTaskModal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX0RlbGV0ZVRhc2tNb2RhbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_DownloadTemplateModal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX0Rvd25sb2FkVGVtcGxhdGVNb2RhbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_MeetingDetailView.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX01lZXRpbmdEZXRhaWxWaWV3LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_NewRecordFullForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX05ld1JlY29yZEZ1bGxGb3JtLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_NewRecordGeneral.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX05ld1JlY29yZEdlbmVyYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_SubTaskDetailView.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX1N1YlRhc2tEZXRhaWxWaWV3LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_TaskDependenciesView.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX1Rhc2tEZXBlbmRlbmNpZXNWaWV3LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_TaskDetailView.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX1Rhc2tEZXRhaWxWaWV3LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_UpdateTeamMemberCanvas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX1VwZGF0ZVRlYW1NZW1iZXJDYW52YXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_WorkflowTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX1dvcmtmbG93VGFibGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_WorkflowTask.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX1dvcmtmbG93VGFzay5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_WorkflowTaskList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX1dvcmtmbG93VGFza0xpc3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_WorkflowTaskListTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX1dvcmtmbG93VGFza0xpc3RUYWJsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_WorkflowTeam.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX1dvcmtmbG93VGVhbS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PPM/Workflow/_WorkflowTeamTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QUE0vV29ya2Zsb3cvX1dvcmtmbG93VGVhbVRhYmxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/ProductRecord/GlobalBrand.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Qcm9kdWN0UmVjb3JkL0dsb2JhbEJyYW5kLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/ProductRecord/_AddGlobalBrandOffcanvas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Qcm9kdWN0UmVjb3JkL19BZGRHbG9iYWxCcmFuZE9mZmNhbnZhcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/ProductRecord/_GlobalBrandTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Qcm9kdWN0UmVjb3JkL19HbG9iYWxCcmFuZFRhYmxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/ProductRecord/_UpdateGlobalBrandOffcanvas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Qcm9kdWN0UmVjb3JkL19VcGRhdGVHbG9iYWxCcmFuZE9mZmNhbnZhcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PvSystem/AddLcppv.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QdlN5c3RlbS9BZGRMY3Bwdi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PvSystem/Lcppv.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QdlN5c3RlbS9MY3Bwdi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/PvSystem/_LcppvTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9QdlN5c3RlbS9fTGNwcHZUYWJsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Registration/AddRegistration.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9SZWdpc3RyYXRpb24vQWRkUmVnaXN0cmF0aW9uLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Registration/EditRegistration.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9SZWdpc3RyYXRpb24vRWRpdFJlZ2lzdHJhdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Registration/Registration.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9SZWdpc3RyYXRpb24vUmVnaXN0cmF0aW9uLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Registration/_RegistrationTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9SZWdpc3RyYXRpb24vX1JlZ2lzdHJhdGlvblRhYmxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/RegulatoryAffair/CreateRegulatoryReport.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9SZWd1bGF0b3J5QWZmYWlyL0NyZWF0ZVJlZ3VsYXRvcnlSZXBvcnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/RegulatoryAffair/RegulatoryReport.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9SZWd1bGF0b3J5QWZmYWlyL1JlZ3VsYXRvcnlSZXBvcnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/RegulatoryAffair/_AddNewTask.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9SZWd1bGF0b3J5QWZmYWlyL19BZGROZXdUYXNrLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/RegulatoryAffair/_RegulatoryReportTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9SZWd1bGF0b3J5QWZmYWlyL19SZWd1bGF0b3J5UmVwb3J0VGFibGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/RegulatoryAffair/_RegulatoryTaskTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9SZWd1bGF0b3J5QWZmYWlyL19SZWd1bGF0b3J5VGFza1RhYmxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/SafetyReport/AddSafetyReport.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TYWZldHlSZXBvcnQvQWRkU2FmZXR5UmVwb3J0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/SafetyReport/SafetyReport.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TYWZldHlSZXBvcnQvU2FmZXR5UmVwb3J0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/SafetyReport/_CaseIntake.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TYWZldHlSZXBvcnQvX0Nhc2VJbnRha2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/SafetyReport/_IntegratedAssessment.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TYWZldHlSZXBvcnQvX0ludGVncmF0ZWRBc3Nlc3NtZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/SafetyReport/_LiteratureCase.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TYWZldHlSZXBvcnQvX0xpdGVyYXR1cmVDYXNlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/SafetyReport/_SafetyReportTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TYWZldHlSZXBvcnQvX1NhZmV0eVJlcG9ydFRhYmxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/SafetyReport/_SafetySubmission.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TYWZldHlSZXBvcnQvX1NhZmV0eVN1Ym1pc3Npb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/MySurvey/MySurvey.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvTXlTdXJ2ZXkvTXlTdXJ2ZXkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveyList/Manage.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5TGlzdC9NYW5hZ2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveyList/ManageSurveyTemplate.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5TGlzdC9NYW5hZ2VTdXJ2ZXlUZW1wbGF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveyList/Preview.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5TGlzdC9QcmV2aWV3LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveyList/SurveyList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5TGlzdC9TdXJ2ZXlMaXN0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveyList/_CreateSurveyList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5TGlzdC9fQ3JlYXRlU3VydmV5TGlzdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveyList/_ManageDesign.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5TGlzdC9fTWFuYWdlRGVzaWduLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveyList/_SurveyListTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5TGlzdC9fU3VydmV5TGlzdFRhYmxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveySchedule/SurveySchedule.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5U2NoZWR1bGUvU3VydmV5U2NoZWR1bGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveySchedule/_CreateSurveySchedule.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5U2NoZWR1bGUvX0NyZWF0ZVN1cnZleVNjaGVkdWxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveySchedule/_SettingsModal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5U2NoZWR1bGUvX1NldHRpbmdzTW9kYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveySchedule/_UpdateSurveySchedule.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5U2NoZWR1bGUvX1VwZGF0ZVN1cnZleVNjaGVkdWxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveyType/SurveyType.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5VHlwZS9TdXJ2ZXlUeXBlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveyType/_CreateSurveyType.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5VHlwZS9fQ3JlYXRlU3VydmV5VHlwZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveyType/_SurveyTypeTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5VHlwZS9fU3VydmV5VHlwZVRhYmxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Survey/SurveyType/_UpdateSurveyType.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TdXJ2ZXkvU3VydmV5VHlwZS9fVXBkYXRlU3VydmV5VHlwZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/UserList/UserList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Vc2VyTGlzdC9Vc2VyTGlzdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/UserList/_AddUser.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Vc2VyTGlzdC9fQWRkVXNlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/UserList/_UserTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Vc2VyTGlzdC9fVXNlclRhYmxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/UserManagement/Role.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Vc2VyTWFuYWdlbWVudC9Sb2xlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/UserManagement/_AddRole.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Vc2VyTWFuYWdlbWVudC9fQWRkUm9sZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/UserManagement/_RoleTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Vc2VyTWFuYWdlbWVudC9fUm9sZVRhYmxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/UserManagement/_UpdateRole.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9Vc2VyTWFuYWdlbWVudC9fVXBkYXRlUm9sZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/MDM/LegalEntities/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTURNL0xlZ2FsRW50aXRpZXMvQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/MDM/LegalEntities/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTURNL0xlZ2FsRW50aXRpZXMvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL0Vycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_Application.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19BcHBsaWNhdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_GlobalConfirmation.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19HbG9iYWxDb25maXJtYXRpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_GlobalNotification.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19HbG9iYWxOb3RpZmljYXRpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_LayoutBackbone.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXRCYWNrYm9uZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_SkeletonLoader.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Ta2VsZXRvbkxvYWRlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/ThemeSandbox/Analytics.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVGhlbWVTYW5kYm94L0FuYWx5dGljcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/ThemeSandbox/ProductAdd.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVGhlbWVTYW5kYm94L1Byb2R1Y3RBZGQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/ThemeSandbox/UserList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVGhlbWVTYW5kYm94L1VzZXJMaXN0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_EmptyLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19FbXB0eUxheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = b-xsbqae9hpf
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-v7n8xhxpzt
+
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_SurveyManageLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19TdXJ2ZXlNYW5hZ2VMYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-nfjn4cgsim

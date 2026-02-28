@@ -1,0 +1,39 @@
+﻿@{
+    ViewData["Title"] = "Category";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    <style>
+        .bootstrap-select {
+            width: 100% !important;
+        }
+
+        .bs-searchbox .form-control {
+            margin-bottom: 0.5rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+}
+<div class="card">
+    <div class="card-header border-bottom">
+        <h5 class="card-title mb-0" data-i18n="Category">Category</h5>
+
+    </div>
+    <!-- Offcanvas to add new global brand -->
+    @Html.Partial("_CategoryTable")
+    @Html.Partial("_AddCategory")
+    @Html.Partial("_UpdateCategory")
+
+
+
+</div>
+@Html.Partial("~/Views/Shared/_DeleteConfirmModal.cshtml")
+@Html.Partial("~/Views/Shared/_AppToast.cshtml")
+
+
+@section Scripts {
+
+    <script src="@Url.Content("~/assets/js/Archive/Category/Category.js")"></script>
+
+
+}

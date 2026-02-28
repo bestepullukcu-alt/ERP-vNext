@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "LCPPV-Local Contact Person for Diten.Web Monthly Reconciliation";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="card">
+    <div class="card-header border-bottom">
+        <h5 class="card-title mb-0">Lcppv Monthly Reconcialition</h5>
+        <small class="text-muted">
+            Local Contact Person for Diten.Web Monthly Reconcialition
+        </small>
+        <div class="d-flex justify-content-between align-items-center row pt-4 gap-md-0 g-6">
+            <div class="col-md-4 lcppv_company"></div>
+            <div class="col-md-4 lcppv_country"></div>
+            <div class="col-md-4 lcppv_status"></div>
+        </div>
+    </div>
+    <!-- Offcanvas to add new global brand -->
+    @Html.Partial("_LcppvTable")
+</div>
+@Html.Partial("~/Views/Shared/_DeleteConfirmModal.cshtml")
+@Html.Partial("~/Views/Shared/_AppToast.cshtml")
+@section Scripts {
+
+    <script src="@Url.Content("~/assets/js/Archive/PvSystem/Lcppv.js")"></script>
+}

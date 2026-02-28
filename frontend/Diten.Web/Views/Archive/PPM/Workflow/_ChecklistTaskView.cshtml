@@ -1,0 +1,33 @@
+﻿<div id="checklistFormContainer" class="card mb-4">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <div>
+            <h5 class="card-title mb-0">Simple Completion Checklist</h5>
+            <small class="text-muted">
+                Use to track minor, non-time-consuming items required for task validation.
+            </small>
+        </div>
+        <div>
+            <button id="btnCreateChecklist" type="button" class="btn btn-primary">
+               Add Item
+            </button>
+        </div>
+
+    </div>
+    <div class="card-body">
+        <form class="checklist-detail pt-0" id="checklistDetail" onsubmit="return false">
+            <div class="col-12 mb-4 form-control-validation">
+                <label class="form-label" for="txt-checklist-name">Name</label>
+                <input type="text" class="form-control" placeholder="e.g., Verify all legal documents" name="txtChecklistName" id="txt-checklist-name" />
+            </div>
+            <div class="col-12 mb-4 form-control-validation">
+                <label class="form-label" for="txt-checklist-description">Description</label>
+                <textarea id="txt-checklist-description" name="txtChecklistDescription" class="form-control" rows="3" placeholder="e.g., Confirm the final report matches the protocol."></textarea>
+            </div>
+
+            <hr class="my-4">
+            <div id="checklistContainer">
+            </div>
+        </form>
+    </div>
+</div>
+
