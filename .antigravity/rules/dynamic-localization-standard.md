@@ -40,7 +40,7 @@ For any text needed in `.js` files, use the L10n Bridge pattern:
 @section Scripts {
     <script>
         window.L10n = window.L10n || {};
-        window.L10n.MyNewKey = '@Html.Raw(SharedLocalizer["MyNewKey"].Value)';
+        window.L10n.MyNewKey = @Json.Serialize(SharedLocalizer["MyNewKey"].Value);
     </script>
     <script src="~/assets/js/my-page.js"></script>
 }
@@ -50,6 +50,9 @@ For any text needed in `.js` files, use the L10n Bridge pattern:
 ```javascript
 var label = (window.L10n && window.L10n.MyNewKey) || 'Fallback English';
 ```
+
+> **Security & Stability Rule:** ALWAYS use `@Json.Serialize(...)` for JavaScript strings. 
+> NEVER use `'@Html.Raw(...)'` because if the translation contains a single quote (e.g., Uzbek `o'zbekcha` or French `l'exemple`), it will terminate the JS string early and cause a Syntax Error, breaking the entire page logic.
 
 > **Rule:** The `window.L10n` script block MUST appear BEFORE the page-specific `.js` file in the `@section Scripts` block.
 

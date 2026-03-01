@@ -139,6 +139,12 @@
   <data name="Print" xml:space="preserve">
     <value>Yazdır</value>
   </data>
+  <data name="Import" xml:space="preserve">
+    <value>İçe Aktar</value>
+  </data>
+  <data name="ComingSoon" xml:space="preserve">
+    <value>Bu özellik yakında eklenecektir.</value>
+  </data>
   <data name="MDM" xml:space="preserve">
     <value>MDM</value>
   </data>

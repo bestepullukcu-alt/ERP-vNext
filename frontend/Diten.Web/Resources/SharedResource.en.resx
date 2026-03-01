@@ -139,6 +139,12 @@
   <data name="Print" xml:space="preserve">
     <value>Print</value>
   </data>
+  <data name="Import" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="ComingSoon" xml:space="preserve">
+    <value>This feature will be added soon.</value>
+  </data>
   <data name="MDM" xml:space="preserve">
     <value>MDM</value>
   </data>

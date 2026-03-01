@@ -84,14 +84,14 @@
         }
 
         var messages = {
-            'RecordCreated': '@Html.Raw(SharedLocalizer["RecordCreated"].Value)',
-            'RecordDeleted': '@Html.Raw(SharedLocalizer["RecordDeleted"].Value)',
-            'RecordSaved': '@Html.Raw(SharedLocalizer["RecordSaved"].Value)',
-            'ErrorOccurred': '@Html.Raw(SharedLocalizer["ErrorOccurred"].Value)',
-            'AccessDenied': '@Html.Raw(SharedLocalizer["AccessDenied"].Value)',
-            'ValidationFailed': '@Html.Raw(SharedLocalizer["ValidationFailed"].Value)',
-            'Success': '@Html.Raw(SharedLocalizer["Success"].Value)',
-            'Error': '@Html.Raw(SharedLocalizer["Error"].Value)'
+            'RecordCreated': @Json.Serialize(SharedLocalizer["RecordCreated"].Value),
+            'RecordDeleted': @Json.Serialize(SharedLocalizer["RecordDeleted"].Value),
+            'RecordSaved': @Json.Serialize(SharedLocalizer["RecordSaved"].Value),
+            'ErrorOccurred': @Json.Serialize(SharedLocalizer["ErrorOccurred"].Value),
+            'AccessDenied': @Json.Serialize(SharedLocalizer["AccessDenied"].Value),
+            'ValidationFailed': @Json.Serialize(SharedLocalizer["ValidationFailed"].Value),
+            'Success': @Json.Serialize(SharedLocalizer["Success"].Value),
+            'Error': @Json.Serialize(SharedLocalizer["Error"].Value)
         };
 
         var message = messages[key] || key;

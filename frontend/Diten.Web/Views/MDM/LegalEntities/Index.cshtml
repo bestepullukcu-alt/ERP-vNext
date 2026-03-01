@@ -44,21 +44,23 @@
 @section Scripts {
     <script>
         window.L10n = window.L10n || {};
-        window.L10n.Active = '@Html.Raw(SharedLocalizer["Active"].Value)';
-        window.L10n.Passive = '@Html.Raw(SharedLocalizer["Passive"].Value)';
-        window.L10n.Unknown = '@Html.Raw(SharedLocalizer["Unknown"].Value)';
-        window.L10n.Actions = '@Html.Raw(Localizer["Actions"].Value)';
-        window.L10n.Edit = '@Html.Raw(Localizer["EditBtn"].Value)';
-        window.L10n.ViewDetails = '@Html.Raw(SharedLocalizer["ViewDetails"].Value)';
-        window.L10n.Search = '@Html.Raw(SharedLocalizer["Search"].Value)';
-        window.L10n.Export = '@Html.Raw(SharedLocalizer["Export"].Value)';
-        window.L10n.Print = '@Html.Raw(SharedLocalizer["Print"].Value)';
-        window.L10n.AddNewCompany = '@Html.Raw(Localizer["AddNewCompany"].Value)';
-        window.L10n.CompanyType = '@Html.Raw(Localizer["CompanyType"].Value)';
-        window.L10n.SelectStatus = '@Html.Raw(SharedLocalizer["SelectStatus"].Value)';
+        window.L10n.Active = @Json.Serialize(SharedLocalizer["Active"].Value);
+        window.L10n.Passive = @Json.Serialize(SharedLocalizer["Passive"].Value);
+        window.L10n.Unknown = @Json.Serialize(SharedLocalizer["Unknown"].Value);
+        window.L10n.Actions = @Json.Serialize(Localizer["Actions"].Value);
+        window.L10n.Edit = @Json.Serialize(Localizer["EditBtn"].Value);
+        window.L10n.ViewDetails = @Json.Serialize(SharedLocalizer["ViewDetails"].Value);
+        window.L10n.Search = @Json.Serialize(SharedLocalizer["Search"].Value);
+        window.L10n.Export = @Json.Serialize(SharedLocalizer["Export"].Value);
+        window.L10n.Import = @Json.Serialize(SharedLocalizer["Import"].Value);
+        window.L10n.ComingSoon = @Json.Serialize(SharedLocalizer["ComingSoon"].Value);
+        window.L10n.Print = @Json.Serialize(SharedLocalizer["Print"].Value);
+        window.L10n.AddNewCompany = @Json.Serialize(Localizer["AddNewCompany"].Value);
+        window.L10n.CompanyType = @Json.Serialize(Localizer["CompanyType"].Value);
+        window.L10n.SelectStatus = @Json.Serialize(SharedLocalizer["SelectStatus"].Value);
 
         // Check if redirect came back with success message
-        var successMsg = '@TempData["SuccessMessage"]';
+        var successMsg = @Json.Serialize(TempData["SuccessMessage"]);
         if (successMsg) {
             document.addEventListener('DOMContentLoaded', function () {
                 if (window.showToast) {

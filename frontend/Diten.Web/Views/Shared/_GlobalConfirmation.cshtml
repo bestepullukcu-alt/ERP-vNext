@@ -11,7 +11,8 @@
         width: 72px;
         height: 72px;
         border-radius: 50%;
-        background: rgba(255, 76, 81, 0.08); /* Danger/Red transparent */
+        background: rgba(255, 76, 81, 0.08);
+        /* Danger/Red transparent */
         border: 2px solid rgba(255, 76, 81, 0.2);
         margin: 0 auto;
     }
@@ -33,12 +34,12 @@
         console.log('[MOD-0013 showConfirm] Key:', key);
 
         var confirmations = {
-            'DeleteConfirmationTitle': '@Html.Raw(SharedLocalizer["DeleteConfirmationTitle"].Value)',
-            'DeleteConfirmationSubText': '@Html.Raw(SharedLocalizer["DeleteConfirmationSubText"].Value)',
-            'DeleteConfirmationYesBtn': '@Html.Raw(SharedLocalizer["DeleteConfirmationYesBtn"].Value)',
-            'DeleteConfirmationCancelBtn': '@Html.Raw(SharedLocalizer["Cancel"].Value)',
-            'AreYouSure': '@Html.Raw(SharedLocalizer["AreYouSure"].Value)',
-            'ConfirmAction': '@Html.Raw(SharedLocalizer["ConfirmAction"].Value)'
+            'DeleteConfirmationTitle': @Json.Serialize(SharedLocalizer["DeleteConfirmationTitle"].Value),
+            'DeleteConfirmationSubText': @Json.Serialize(SharedLocalizer["DeleteConfirmationSubText"].Value),
+            'DeleteConfirmationYesBtn': @Json.Serialize(SharedLocalizer["DeleteConfirmationYesBtn"].Value),
+            'DeleteConfirmationCancelBtn': @Json.Serialize(SharedLocalizer["Cancel"].Value),
+            'AreYouSure': @Json.Serialize(SharedLocalizer["AreYouSure"].Value),
+            'ConfirmAction': @Json.Serialize(SharedLocalizer["ConfirmAction"].Value)
         };
 
         var title = confirmations[key + 'Title'] || confirmations['AreYouSure'];
