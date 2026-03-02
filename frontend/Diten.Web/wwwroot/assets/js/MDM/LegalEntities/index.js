@@ -1,5 +1,5 @@
 /**
- * Legal Entities DataTables Initialization
+ * Legal Entities DataTables Initialization (Refactored Module Pattern)
  */
 
 'use strict';
@@ -22,251 +22,154 @@ const LegalEntitiesList = (function () {
     const initDataTable = () => {
         if (!dtTableEl) return;
 
-        dt = new DataTable(dtTableEl, window.DtDefaults.create({
-            processing: true,
-            language: {
-                processing: '<div class="sk-fold sk-primary mx-auto"><div class="sk-fold-cube"></div><div class="sk-fold-cube"></div><div class="sk-fold-cube"></div><div class="sk-fold-cube"></div></div>'
+        // Uzantı butonları (Merkezi butona ek olarak)
+        const extraButtons = [
+            {
+                text: '<i class="icon-base bx bx-import icon-sm"></i>',
+                className: 'btn btn-icon btn-label-secondary',
+                attr: { title: L.Import || 'Import', 'data-bs-toggle': 'tooltip' },
+                action: function () {
+                    if (window.showToast) window.showToast(L.ComingSoon || 'Coming soon', 'info');
+                }
             },
+            {
+                text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
+                className: 'btn btn-icon btn-label-secondary',
+                attr: { title: L.Filter || 'Filter', 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasFilter' }
+            }
+        ];
+
+        dt = new DataTable(dtTableEl, window.DtDefaults.create({
             ajax: {
                 url: apiUrl + '/api/legal-entities',
                 type: 'GET',
-                dataSrc: function (json) { return json.data || json; },
+                dataSrc: (json) => json.data || json,
                 headers: { 'X-Tenant-Id': '00000000-0000-0000-0000-000000000001' }
             },
             columns: [
-                { data: 'id' },
-                { data: 'id' },
-                { data: 'title' },
-                { data: 'taxNumber' },
-                { data: 'taxOffice' },
-                { data: 'email' },
-                { data: 'phone' },
-                { data: 'companyType' },
-                { data: 'isActive' },
-                { data: 'action' }
+                { data: 'id', name: 'control' },
+                { data: 'id', name: 'checkbox' },
+                { data: 'title', name: 'title' },
+                { data: 'taxNumber', name: 'taxNumber' },
+                { data: 'taxOffice', name: 'taxOffice' },
+                { data: 'email', name: 'email' },
+                { data: 'phone', name: 'phone' },
+                { data: 'companyType', name: 'companyType' },
+                { data: 'isActive', name: 'isActive' },
+                { data: 'action', name: 'action' }
             ],
             columnDefs: [
+                { className: 'control', searchable: false, orderable: false, responsivePriority: 2, targets: 0, render: () => '' },
                 {
-                    // For Responsive
-                    className: 'control',
-                    searchable: false,
-                    orderable: false,
-                    responsivePriority: 2,
-                    targets: 0,
-                    render: function () {
-                        return '';
-                    }
+                    targets: 1, orderable: false, searchable: false, responsivePriority: 3,
+                    checkboxes: { selectAllRender: '<input type="checkbox" class="form-check-input">' },
+                    render: () => '<input type="checkbox" class="dt-checkboxes form-check-input">'
                 },
+                { targets: 5, render: (data) => data ? `<a href="mailto:${data}">${data}</a>` : '-' },
                 {
-                    // For Checkboxes
-                    targets: 1,
-                    orderable: false,
-                    searchable: false,
-                    responsivePriority: 3,
-                    checkboxes: {
-                        selectAllRender: '<input type="checkbox" class="form-check-input">'
-                    },
-                    render: function () {
-                        return '<input type="checkbox" class="dt-checkboxes form-check-input">';
-                    }
-                },
-                {
-                    targets: 5, // Email
-                    render: function (data) {
-                        return data ? '<a href="mailto:' + data + '">' + data + '</a>' : '-';
-                    }
-                },
-                {
-                    // Status
                     targets: 8,
-                    render: function (data) {
-                        var key = String(data);
-                        const status = statusObj[key] || { title: L.Unknown || 'Unknown', class: 'bg-label-primary' };
-                        return (
-                            '<span class="badge ' +
-                            status.class +
-                            '" text-capitalized>' +
-                            status.title +
-                            '</span>'
-                        );
+                    render: (data) => {
+                        const status = statusObj[String(data)] || { title: L.Unknown || 'Unknown', class: 'bg-label-primary' };
+                        return `<span class="badge ${status.class}" text-capitalized>${status.title}</span>`;
                     }
                 },
                 {
-                    // Actions
-                    targets: -1,
-                    title: L.Actions || 'Actions',
-                    searchable: false,
-                    orderable: false,
-                    render: function (data, type, full) {
-                        return (
-                            '<div class="d-flex align-items-center">' +
-                            '<a href="javascript:;" class="btn btn-icon delete-record text-danger me-1"><i class="bx bx-trash icon-md"></i></a>' +
-                            '<a href="javascript:;" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded icon-md"></i></a>' +
-                            '<div class="dropdown-menu dropdown-menu-end m-0">' +
-                            '<a href="/LegalEntities/Details/' + full['id'] + '" class="dropdown-item">' + (L.ViewDetails || 'View') + '</a>' +
-                            '<a href="/LegalEntities/Edit/' + full['id'] + '" class="dropdown-item">' + (L.Edit || 'Edit') + '</a>' +
-                            '</div>' +
-                            '</div>'
-                        );
-                    }
+                    targets: -1, title: L.Actions || 'Actions', searchable: false, orderable: false,
+                    render: (data, type, full) => `
+            <div class="d-flex align-items-center">
+              <a href="javascript:;" class="btn btn-icon delete-record text-danger me-1"><i class="bx bx-trash icon-md"></i></a>
+              <a href="javascript:;" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded icon-md"></i></a>
+              <div class="dropdown-menu dropdown-menu-end m-0">
+                <a href="/LegalEntities/Details/${full['id']}" class="dropdown-item">${L.ViewDetails || 'View'}</a>
+                <a href="/LegalEntities/Edit/${full['id']}" class="dropdown-item">${L.Edit || 'Edit'}</a>
+              </div>
+            </div>`
                 }
             ],
-            order: [[2, 'asc']],
             buttons: window.DtDefaults.exportButtons(L.AddNewCompany || 'Add New Company', {
                 onclick: "window.location.href='/LegalEntities/Create'"
-            }).concat([
-                {
-                    text: '<i class="icon-base bx bx-import icon-sm"></i>',
-                    className: 'btn btn-icon btn-label-secondary',
-                    attr: {
-                        title: L.Import || 'Import',
-                        'data-bs-toggle': 'tooltip'
-                    },
-                    action: function () {
-                        if (window.showToast) window.showToast(L.ComingSoon || 'Coming soon', 'info');
-                    }
-                },
-                {
-                    text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
-                    className: 'btn btn-icon btn-label-secondary',
-                    attr: {
-                        title: L.Filter || 'Filter',
-                        'data-bs-toggle': 'offcanvas',
-                        'data-bs-target': '#offcanvasFilter'
-                    }
-                }
-            ]),
-            responsive: {
-                details: {
-                    display: DataTable.Responsive.display.modal({
-                        header: function (row) {
-                            const data = row.data();
-                            return 'Details of ' + data.title;
-                        }
-                    }),
-                    type: 'column',
-                    renderer: function (api, rowIdx, columns) {
-                        const data = columns
-                            .map(function (col) {
-                                return col.title !== ''
-                                    ? `<tr data-dt-row="${col.rowIndex}" data-dt-column="${col.columnIndex}">
-                      <td>${col.title}:</td>
-                      <td>${col.data}</td>
-                    </tr>`
-                                    : '';
-                            })
-                            .join('');
-
-                        if (data) {
-                            const div = document.createElement('div');
-                            div.classList.add('table-responsive');
-                            const table = document.createElement('table');
-                            div.appendChild(table);
-                            table.classList.add('table');
-                            const tbody = document.createElement('tbody');
-                            tbody.innerHTML = data;
-                            table.appendChild(tbody);
-                            return div;
-                        }
-                        return false;
-                    }
-                }
-            },
+            }, extraButtons),
             initComplete: function () {
-                const api = this.api();
-                setupFilters(api);
+                setupFilters(this.api());
             }
         }));
     };
 
     /**
-     * Setup Filters (Internal)
+     * Setup Filters
      */
     const setupFilters = (api) => {
-        // Helper function to create a select dropdown and append options
-        const createSelectFilter = (columnIndex, containerClass, selectId, defaultOptionText) => {
-            const column = api.column(columnIndex);
+        const createSelectFilter = (columnSelector, containerClass, selectId, defaultOptionText) => {
             const container = document.querySelector(containerClass);
             if (!container) return;
-
             const select = document.createElement('select');
             select.id = selectId;
-            select.className = 'form-select text-capitalize';
-            select.innerHTML = '<option value="">' + defaultOptionText + '</option>';
+            select.className = 'form-select select2 text-capitalize';
+            select.innerHTML = `<option value="">${defaultOptionText}</option>`;
             container.appendChild(select);
 
-            // Populate options based on unique column data
-            const uniqueData = Array.from(new Set(column.data().toArray())).sort();
-            uniqueData.forEach(d => {
-                if (!d) return; // Skip empty
+            const column = api.column(columnSelector);
+            Array.from(new Set(column.data().toArray())).sort().forEach(d => {
+                if (!d) return;
                 const option = document.createElement('option');
                 option.value = d;
                 option.textContent = d;
-                option.className = 'text-capitalize';
                 select.appendChild(option);
+            });
+
+            // Initialize Select2
+            $(select).select2({
+                placeholder: defaultOptionText,
+                dropdownParent: $('#offcanvasFilter'),
+                minimumResultsForSearch: 5
             });
         };
 
-        // 1. Type filter
-        createSelectFilter(7, '.user_plan', 'UserPlan', L.CompanyType || 'Select Type');
+        // Company Type Filter
+        createSelectFilter('companyType:name', '.user_plan', 'UserPlan', L.CompanyType || 'Select Type');
 
-        // 2. Status filter
-        const statusFilter = document.createElement('select');
-        statusFilter.id = 'FilterTransaction';
-        statusFilter.className = 'form-select text-capitalize';
-        statusFilter.innerHTML = '<option value="">' + (L.SelectStatus || 'Select Status') + '</option>';
+        // Status filter (special handling for statusObj)
         const statusContainer = document.querySelector('.user_status');
-
         if (statusContainer) {
-            statusContainer.appendChild(statusFilter);
-            const statusColumn = api.column(8);
-            const uniqueStatusData = Array.from(new Set(statusColumn.data().toArray())).sort();
-            uniqueStatusData.forEach(d => {
+            const select = document.createElement('select');
+            select.id = 'FilterTransaction';
+            select.className = 'form-select select2 text-capitalize';
+            select.innerHTML = `<option value="">${L.SelectStatus || 'Select Status'}</option>`;
+            statusContainer.appendChild(select);
+
+            const statusColumn = api.column('isActive:name');
+            Array.from(new Set(statusColumn.data().toArray())).sort().forEach(d => {
+                const status = statusObj[String(d)] || { title: L.Unknown || 'Unknown' };
                 const option = document.createElement('option');
-                var key = String(d);
-                const statusObjRef = statusObj[key] || { title: L.Unknown || 'Unknown' };
-                option.value = statusObjRef.title;
-                option.textContent = statusObjRef.title;
-                option.className = 'text-capitalize';
-                statusFilter.appendChild(option);
+                option.value = status.title;
+                option.textContent = status.title;
+                select.appendChild(option);
+            });
+
+            // Initialize Select2
+            $(select).select2({
+                placeholder: L.SelectStatus || 'Select Status',
+                dropdownParent: $('#offcanvasFilter'),
+                minimumResultsForSearch: Infinity // No search for status
             });
         }
 
-        // 3. Apply button logic
-        const btnApply = document.getElementById('btnFilterApply');
-        if (btnApply) {
-            btnApply.addEventListener('click', () => {
-                const typeVal = document.getElementById('UserPlan')?.value;
-                const statusVal = document.getElementById('FilterTransaction')?.value;
+        // Buttons
+        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
+            const companyType = $('#UserPlan').val();
+            const status = $('#FilterTransaction').val();
 
-                const typeSearch = typeVal ? '^' + typeVal + '$' : '';
-                const statusSearch = statusVal ? '^' + statusVal + '$' : '';
+            api.column('companyType:name').search(companyType ? `^${companyType}$` : '', true, false);
+            api.column('isActive:name').search(status ? `^${status}$` : '', true, false);
+            api.draw();
 
-                api.column(7).search(typeSearch, true, false);
-                api.column(8).search(statusSearch, true, false);
+            bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasFilter'))?.hide();
+        });
 
-                api.draw();
-
-                // Close offcanvas after applying
-                const offcanvas = document.getElementById('offcanvasFilter');
-                const bootstrapOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
-                if (bootstrapOffcanvas) {
-                    bootstrapOffcanvas.hide();
-                }
-            });
-        }
-
-        // 4. Reset logic
-        const btnReset = document.getElementById('btnFilterReset');
-        if (btnReset) {
-            btnReset.addEventListener('click', () => {
-                const typeSelect = document.getElementById('UserPlan');
-                const statusSelect = document.getElementById('FilterTransaction');
-                if (typeSelect) typeSelect.value = '';
-                if (statusSelect) statusSelect.value = '';
-                api.columns().search('').draw();
-            });
-        }
+        document.getElementById('btnFilterReset')?.addEventListener('click', () => {
+            $('#UserPlan, #FilterTransaction').val('').trigger('change');
+            api.columns().search('').draw();
+        });
     };
 
     /**
@@ -274,56 +177,29 @@ const LegalEntitiesList = (function () {
      */
     const handleEvents = () => {
         if (!dtTableEl) return;
-
-        dtTableEl.addEventListener('click', function (e) {
-            if (e.target.closest('.delete-record')) {
-                let tr = e.target.closest('tr');
-                if (tr.classList.contains('child')) {
-                    tr = tr.previousElementSibling;
-                }
+        dtTableEl.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.delete-record');
+            if (deleteBtn) {
+                let tr = deleteBtn.closest('tr');
+                if (tr.classList.contains('child')) tr = tr.previousElementSibling;
                 const row = dt.row(tr);
                 const data = row.data();
 
-                if (window.showConfirm) {
-                    window.showConfirm('DeleteConfirmation', function () {
-                        fetch(apiUrl + '/api/legal-entities/' + data.id, {
-                            method: 'DELETE',
-                            headers: { 'X-Tenant-Id': '00000000-0000-0000-0000-000000000001' }
+                window.showConfirm?.('DeleteConfirmation', () => {
+                    fetch(`${apiUrl}/api/legal-entities/${data.id}`, { method: 'DELETE', headers: { 'X-Tenant-Id': '00000000-0000-0000-0000-000000000001' } })
+                        .then(res => {
+                            if (res.ok) {
+                                row.remove().draw();
+                                window.showToast?.('RecordDeleted', 'success');
+                            } else window.showToast?.('ErrorOccurred', 'error');
                         })
-                            .then(res => {
-                                if (res.ok) {
-                                    row.remove().draw();
-                                    if (window.showToast) window.showToast('RecordDeleted', 'success');
-                                } else {
-                                    if (window.showToast) window.showToast('ErrorOccurred', 'error');
-                                }
-                            })
-                            .catch(err => {
-                                console.error('Delete error:', err);
-                                if (window.showToast) window.showToast('Error deleting record', 'error');
-                            });
-                    }, data.title);
-                }
+                        .catch(() => window.showToast?.('Error deleting record', 'error'));
+                }, data.title);
             }
         });
-
-        // Search input styling fix
-        const searchFilterInput = document.querySelector('.dt-search input');
-        if (searchFilterInput) {
-            searchFilterInput.classList.add('form-control');
-        }
     };
 
-    // Public API
-    return {
-        init: function () {
-            initDataTable();
-            handleEvents();
-        }
-    };
+    return { init: () => { initDataTable(); handleEvents(); } };
 })();
 
-// DOM Ready initialization
-document.addEventListener('DOMContentLoaded', function () {
-    LegalEntitiesList.init();
-});
+document.addEventListener('DOMContentLoaded', () => LegalEntitiesList.init());

@@ -74,11 +74,11 @@ Tüm ajanlar bu kurallara uymak zorundadır.
   - `bottomStart`: info ("Showing X to Y")
   - `bottomEnd`: pagination (chevron ikonlu)
 - `DtDefaults.create()` otomatik olarak:
-  - Layout yapısını inject eder
-  - `#skeleton-loader`'ı `initComplete`'te gizler (`fadeOut(300)`)
-  - Sneat class düzeltmelerini uygular (setTimeout, `btn-secondary` kaldırma vb.)
-- Export butonları `DtDefaults.exportButtons()` factory'si ile oluşturulur.
-- "Add New" butonu `DtDefaults.exportButtons('Button Text', { attrs })` ile DataTable'a gömülür — card-header'a ayrıca eklenmez.
+    - Layout yapısını inject eder.
+    - `#skeleton-loader`'ı `initComplete`'te gizler.
+    - Sneat class düzeltmelerini **`drawCallback`** üzerinden (her çizimde tazeleyerek) uygular.
+    - **Responsive Renderer:** Mobil görünüm için gerekli olan detay tablosunu merkezi olarak oluşturur (`responsiveRenderer`). Sayfa içinde tekrar tanımlanması yasaktır.
+- Export butonları `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons)` factory'si ile oluşturulur. Sayfaya özel butonlar (Filtre vb.) `extraButtons` dizisi olarak bu fonksiyona geçilmelidir.
 
 ### UI-002: DataTable Filtering (Offcanvas Pattern)
 - Tablo filtreleri için sağ taraftan açılan Bootstrap Offcanvas (`#offcanvasFilter`) kullanılır.
@@ -143,6 +143,16 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 ---
 
 ## Production Safety Kuralları
+
+### JS-003: Name-Based Column Access
+- DataTable kolonlarına erişirken sabit indis (`column(7)`) kullanılmamalıdır.
+- Kolon tanımlarına mutlaka `name` özelliği verilmeli ve erişim `api.column('name:name')` şeklinde yapılmalıdır.
+- Bu yaklaşım, tabloya kolon eklendiğinde veya sıralama değiştiğinde kodun kırılmasını engeller.
+
+### UI-008: Advanced Filtering with Select2
+- Tüm filtreleme dropdown'ları için standart HTML select yerine **Select2** kütüphanesi kullanılmalıdır.
+- Offcanvas içindeki Select2 bileşenleri `dropdownParent: $('#offcanvasFilter')` parametresi ile başlatılmalıdır.
+- Resetleme işlemi sırasında Select2 tetikleyicisi (`.trigger('change')`) unutulmamalıdır.
 
 ### PROD-001: Layout Freeze
 - `_Layout.cshtml` dosyası **değiştirilmez**. Archive sayfaları bu layout'a bağımlıdır.
