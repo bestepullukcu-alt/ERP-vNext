@@ -8,16 +8,27 @@
     Layout = "_LayoutBackbone";
 }
 
-<!-- Search Filters -->
-<div class="card mb-4">
-    <h5 class="card-header pb-4 border-bottom mb-4">@SharedLocalizer["SearchFilters"]</h5>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6 user_plan"></div>
-            <div class="col-md-6 user_status"></div>
-        </div>
+<!-- Filter Offcanvas -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasFilter" aria-labelledby="offcanvasFilterLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="offcanvasFilterLabel" class="offcanvas-title">@SharedLocalizer["Filter"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 pt-4 h-100">
+        <form class="pt-0" id="filterForm">
+            <div class="mb-4 user_plan">
+                <label class="form-label">@Localizer["CompanyType"]</label>
+            </div>
+            <div class="mb-4 user_status">
+                <label class="form-label">@SharedLocalizer["Status"]</label>
+            </div>
+            <div class="d-flex mt-4">
+                <button type="reset" class="btn btn-label-danger d-grid w-100" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+            </div>
+        </form>
     </div>
 </div>
+
 
 <!-- Legal Entities List Table -->
 <div class="card">
@@ -58,6 +69,8 @@
         window.L10n.AddNewCompany = @Json.Serialize(Localizer["AddNewCompany"].Value);
         window.L10n.CompanyType = @Json.Serialize(Localizer["CompanyType"].Value);
         window.L10n.SelectStatus = @Json.Serialize(SharedLocalizer["SelectStatus"].Value);
+        window.L10n.Filter = @Json.Serialize(SharedLocalizer["Filter"].Value);
+        window.L10n.Reset = @Json.Serialize(SharedLocalizer["Reset"].Value);
 
         // Check if redirect came back with success message
         var successMsg = @Json.Serialize(TempData["SuccessMessage"]);

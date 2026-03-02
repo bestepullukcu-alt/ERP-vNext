@@ -146,6 +146,15 @@ document.addEventListener('DOMContentLoaded', function (e) {
                     }
                 },
                 {
+                    text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
+                    className: 'btn btn-icon btn-label-secondary',
+                    attr: {
+                        title: L.Filter || 'Filter',
+                        'data-bs-toggle': 'offcanvas',
+                        'data-bs-target': '#offcanvasFilter'
+                    }
+                },
+                {
                     text: '<i class="icon-base bx bx-plus icon-sm me-0 me-sm-2"></i><span class="d-none d-sm-inline-block">' + (L.AddNewCompany || 'Add New Company') + '</span>',
                     className: 'add-new btn btn-primary',
                     attr: {
@@ -249,6 +258,18 @@ document.addEventListener('DOMContentLoaded', function (e) {
                         option.textContent = statusObjRef.title;
                         option.className = 'text-capitalize';
                         statusFilter.appendChild(option);
+                    });
+                }
+
+                // Reset logic
+                const btnReset = document.getElementById('btnFilterReset');
+                if (btnReset) {
+                    btnReset.addEventListener('click', () => {
+                        const typeSelect = document.getElementById('UserPlan');
+                        const statusSelect = document.getElementById('FilterTransaction');
+                        if (typeSelect) typeSelect.value = '';
+                        if (statusSelect) statusSelect.value = '';
+                        api.columns().search('').draw();
                     });
                 }
             }
