@@ -261,6 +261,20 @@ document.addEventListener('DOMContentLoaded', function (e) {
                     });
                 }
 
+                // Apply button logic
+                const btnApply = document.getElementById('btnFilterApply');
+                if (btnApply) {
+                    btnApply.addEventListener('click', () => {
+                        api.draw();
+                        // Close offcanvas after applying
+                        const offcanvas = document.getElementById('offcanvasFilter');
+                        const bootstrapOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+                        if (bootstrapOffcanvas) {
+                            bootstrapOffcanvas.hide();
+                        }
+                    });
+                }
+
                 // Reset logic
                 const btnReset = document.getElementById('btnFilterReset');
                 if (btnReset) {
