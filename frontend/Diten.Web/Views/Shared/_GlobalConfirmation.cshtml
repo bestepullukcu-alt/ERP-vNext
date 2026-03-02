@@ -4,35 +4,51 @@
 <!-- MOD-0013: Premium SweetAlert2 Styling (Native & Bootstrap 5 Classes) -->
 <style>
     /* Sadece özel ikon bileşeni için gerekli CSS (Layout ve boşluklar SweetAlert parametreleriyle yönetilmektedir) */
+    /* Sadece özel ikon bileşeni için gerekli CSS */
     .swal-icon-circle {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 72px;
-        height: 72px;
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
-        background: rgba(255, 76, 81, 0.08);
-        /* Danger/Red transparent */
-        border: 2px solid rgba(255, 76, 81, 0.2);
-        margin: 0 auto;
+        background: rgba(255, 76, 81, 0.12);
+        border: 2px solid rgba(255, 76, 81, 0.25);
+        margin: 0 auto !important;
+        /* Force center */
     }
 
     .swal-icon-circle i {
-        font-size: 2rem;
+        font-size: 2.5rem;
         color: #ff4c51;
+    }
+
+    .swal2-title {
+        width: 100%;
+        text-align: center;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Force Icon Centering */
+    .swal2-icon {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        border: none !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
     }
 </style>
 
 <script>
     /**
-     * MOD-0013: Platform Standards - Global Confirmation System (Showroom)
-     * window.showConfirm(key, callback)
-     * key: Localization key prefix (e.g. 'DeleteConfirmation')
-     * callback: function to execute after user confirms
+     * MOD-0013: Platform Standards - Global Confirmation System
+     * window.showConfirm(key, callback, entityName)
      */
-    window.showConfirm = function (key, callback) {
-        console.log('[MOD-0013 showConfirm] Key:', key);
-
+    window.showConfirm = function (key, callback, entityName) {
         var confirmations = {
             'DeleteConfirmationTitle': @Json.Serialize(SharedLocalizer["DeleteConfirmationTitle"].Value),
             'DeleteConfirmationSubText': @Json.Serialize(SharedLocalizer["DeleteConfirmationSubText"].Value),
@@ -47,25 +63,31 @@
         var yesBtn = confirmations[key + 'YesBtn'] || confirmations['DeleteConfirmationYesBtn'];
         var noBtn = confirmations['DeleteConfirmationCancelBtn'];
 
+        // Build HTML for description with entity name badge
+        var htmlContent = subtext;
+        if (entityName) {
+            htmlContent = `<div class="mb-2">${subtext}</div><div class="badge bg-label-primary fs-6 mt-1 py-2 px-3">${entityName}</div>`;
+        }
+
         try {
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     title: title,
-                    text: subtext,
+                    html: htmlContent,
                     iconHtml: '<div class="swal-icon-circle"><i class="bx bx-trash"></i></div>',
                     showCancelButton: true,
                     confirmButtonText: yesBtn,
                     cancelButtonText: noBtn,
-                    width: '380px',
-                    padding: '2rem 1.5rem 1.5rem',
+                    width: '400px',
+                    padding: '2.5rem 1.5rem 2rem',
                     customClass: {
                         popup: 'rounded-4 shadow-lg',
-                        title: 'fs-5 fw-bold text-heading mt-3 pt-2 mb-1',
-                        htmlContainer: 'text-muted mb-2',
-                        actions: 'd-flex gap-3 justify-content-center mt-4',
-                        confirmButton: 'btn btn-danger waves-effect waves-light',
-                        cancelButton: 'btn btn-label-secondary waves-effect',
-                        icon: 'border-0 m-0 p-0'
+                        title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
+                        htmlContainer: 'text-muted mb-3 d-block w-100 text-center',
+                        actions: 'd-flex justify-content-center mt-4 w-100',
+                        confirmButton: 'btn btn-danger waves-effect waves-light mx-2',
+                        cancelButton: 'btn btn-label-secondary waves-effect mx-2',
+                        icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100' // Added w-100 for centering
                     },
                     buttonsStyling: false,
                     reverseButtons: true
@@ -74,7 +96,6 @@
                         callback();
                     }
                 });
-                console.log('[MOD-0013 showConfirm] SweetAlert2 dialog shown');
                 return;
             }
 

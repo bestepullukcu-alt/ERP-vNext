@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 const data = row.data();
 
                 if (window.showConfirm) {
-                    window.showConfirm('Are you sure you want to delete ' + data.title + '?', function () {
+                    window.showConfirm('DeleteConfirmation', function () {
                         fetch(apiUrl + '/api/legal-entities/' + data.id, {
                             method: 'DELETE',
                             headers: { 'X-Tenant-Id': '00000000-0000-0000-0000-000000000001' }
@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                                 console.error('Delete error:', err);
                                 if (window.showToast) window.showToast('Error deleting record', 'error');
                             });
-                    });
+                    }, data.title);
                 }
             }
         });
