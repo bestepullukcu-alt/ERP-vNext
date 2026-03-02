@@ -85,6 +85,24 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 - Skeleton, tablonun Toolbar'ını kapatmamalı, sadece veri alanını (`top: 72px` veya benzeri bir offset ile) örtmelidir.
 - `min-height: 200px` kuralı hem Skeleton görünürlüğü hem de CLS (Layout Shift) engelleme için zorunludur.
 
+### UI-004: Global Confirmation Standards (SweetAlert2)
+- Tüm silme veya kritik işlem onayları için `window.showConfirm(key, callback, entityName)` kullanılır.
+- Onay modalı tasarımı şu standartlara uymalıdır:
+    - İkon ve Başlık: `justify-content: center` ve `w-100` ile tam ortalı.
+    - Dinamik Veri: Silinecek öğenin adı (entityName) `badge bg-label-primary` içinde gösterilmelidir.
+    - Butonlar: `gap-*` kullanılmaz, butonlar arası boşluk her iki butona verilen `mx-2` class'ı ile sağlanır.
+    - "İptal" butonu `btn-label-secondary`, "Onay" butonu işlemin türüne göre (`danger`, `primary` vb.) seçilir.
+
+### UI-005: Page Header & Description Standardı
+- Liste ve Dashboard sayfalarının en üstünde (kartın dışında) bir başlık alanı bulunmalıdır.
+- Yapı: `h4.mb-1` (Başlık) ve `p.mb-0` (Açıklama).
+- Konteynır: `d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-6`.
+- Tüm metinler sayfa bazlı lokalizasyon dosyasından (`@Localizer["..."]`) alınmalıdır.
+
+### UI-006: Global Footer Standardı
+- Alt bilgi (Footer) metni şu formatta sabitlenmiştir: `© 2018 | made with by Diten`.
+- Emoji (kalp vb.) kullanımı ve yıl değişikliği standart dışıdır.
+
 ### L10N-001: Layout L10n Coverage
 - `_LayoutBackbone.cshtml` içindeki tüm metinler `@SharedLocalizer["Key"]` ile dile bağlanır.
 - Statik metin (`My Profile`, `Settings` vb.) yazılması yasaktır.
