@@ -74,6 +74,17 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 - Export butonları `DtDefaults.exportButtons()` factory'si ile oluşturulur.
 - "Add New" butonu `DtDefaults.exportButtons('Button Text', { attrs })` ile DataTable'a gömülür — card-header'a ayrıca eklenmez.
 
+### UI-002: DataTable Filtering (Offcanvas Pattern)
+- Tablo filtreleri için sağ taraftan açılan Bootstrap Offcanvas (`#offcanvasFilter`) kullanılır.
+- Filtre butonu DataTable toolbar'ına (Search yanına) icon-only (`bx-filter-alt`) olarak eklenir.
+- Offcanvas içinde mutlaka bir **Reset** (`btn-label-danger`) butonu bulunmalıdır.
+- Filtreleme işlemi asenkron (`dt.draw()`) yapılmalı, sayfa yenilenmemelidir.
+
+### UI-003: Skeleton Shimmer Standards
+- Yükleme durumları için `backbone-custom.css` içindeki `.shimmer` class'ı kullanılır.
+- Skeleton, tablonun Toolbar'ını kapatmamalı, sadece veri alanını (`top: 72px` veya benzeri bir offset ile) örtmelidir.
+- `min-height: 200px` kuralı hem Skeleton görünürlüğü hem de CLS (Layout Shift) engelleme için zorunludur.
+
 ### L10N-001: Layout L10n Coverage
 - `_LayoutBackbone.cshtml` içindeki tüm metinler `@SharedLocalizer["Key"]` ile dile bağlanır.
 - Statik metin (`My Profile`, `Settings` vb.) yazılması yasaktır.

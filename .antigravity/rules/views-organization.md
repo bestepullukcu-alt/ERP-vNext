@@ -24,7 +24,7 @@ Projeyi daha modüler hale getirmek ve klasör yapısını düzenli tutmak için
 - Yeni bir sayfa oluşturulduğunda Razor bloğuna `Layout = "_LayoutBackbone";` satırı eklenir.
 
 ## 5. Skeleton Loader Kullanımı
-- DataTable içeren her yeni liste sayfasında `@await Html.PartialAsync("_SkeletonLoader")` çağrılır.
-- Skeleton, `card-datatable` div'inin **içine** (`<table>` tag'ından önce) yerleştirilir — tablonun üstüne ayrı bir section olarak DEĞİL.
-- Parent `card-datatable` div'e `style="position:relative; min-height:200px;"` eklenir.
-- `dt-defaults.js`'teki `initComplete` callback skeleton'ı otomatik gizler (`fadeOut`). Sayfada ekstra JS yazmaya gerek yok.
+- DataTable içeren her yeni liste sayfasında `@await Html.PartialAsync("_SkeletonLoader")` çağrılır (veya manual manual `#skeleton-loader` bloğu eklenir).
+- Skeleton, `card-datatable` div'inin **içine** yerleştirilir.
+- **Overlay Kuralı:** Skeleton `position: absolute` olmalı ve tablonun Toolbar'ını (Search vb.) örtmemesi için üstten boşluk bırakmalıdır (`top: 72px`).
+- Parent `card-datatable` div'e `style="position:relative; min-height:200px;"` eklenir. Bu hem shimmer alanı yaratır hem de düzen kaymasını (CLS) engeller.

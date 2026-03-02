@@ -114,7 +114,7 @@ After modifying ANY `.resx` file:
 
 Aşağıdaki anahtarlar tüm 8 dilde senkronize ve çevrilmiştir:
 
-**Global:** MDM, Title, TaxNumber, SearchFilter, Status, Actions, Active, Passive, Unknown, Export, Print, Search, ViewDetails
+**Global:** MDM, Title, TaxNumber, SearchFilter, Status, Actions, Active, Passive, Unknown, Export, Print, Search, ViewDetails, Filter, Reset
 
 **CRUD:** Save, Cancel, Delete, BackToList, Saving
 
