@@ -184,4 +184,7 @@
   <data name="LogOut" xml:space="preserve">
     <value>Вийти</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Застосувати</value>
+  </data>
 </root>

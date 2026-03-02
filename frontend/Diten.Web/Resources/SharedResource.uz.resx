@@ -184,4 +184,7 @@
   <data name="LogOut" xml:space="preserve">
     <value>Chiqish</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Qo'llash</value>
+  </data>
 </root>

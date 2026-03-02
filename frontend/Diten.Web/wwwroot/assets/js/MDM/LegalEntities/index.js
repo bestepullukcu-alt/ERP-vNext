@@ -4,28 +4,25 @@
 
 'use strict';
 
-// Datatable (js)
-document.addEventListener('DOMContentLoaded', function (e) {
-    let borderColor, bodyBg, headingColor;
+const LegalEntitiesList = (function () {
+    // Constants & Variables
+    let dt;
+    const dtTableEl = document.querySelector('.datatables-legal-entities');
+    const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
+    const L = window.L10n || {};
 
-    if (typeof config !== 'undefined') {
-        borderColor = config.colors.borderColor;
-        bodyBg = config.colors.bodyBg;
-        headingColor = config.colors.headingColor;
-    }
+    const statusObj = {
+        true: { title: L.Active || 'Active', class: 'bg-label-success' },
+        false: { title: L.Passive || 'Passive', class: 'bg-label-secondary' }
+    };
 
-    // Variable declaration for table
-    const dt_user_table = document.querySelector('.datatables-legal-entities'),
-        apiUrl = window.ApiBaseUrl || 'http://localhost:5000',
-        L = window.L10n || {},
-        statusObj = {
-            true: { title: L.Active || 'Active', class: 'bg-label-success' },
-            false: { title: L.Passive || 'Passive', class: 'bg-label-secondary' }
-        };
+    /**
+     * Initialize DataTable
+     */
+    const initDataTable = () => {
+        if (!dtTableEl) return;
 
-    // Users datatable
-    if (dt_user_table) {
-        const dt_user = new DataTable(dt_user_table, window.DtDefaults.create({
+        dt = new DataTable(dtTableEl, window.DtDefaults.create({
             ajax: {
                 url: apiUrl + '/api/legal-entities',
                 type: 'GET',
@@ -52,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                     orderable: false,
                     responsivePriority: 2,
                     targets: 0,
-                    render: function (data, type, full, meta) {
+                    render: function () {
                         return '';
                     }
                 },
@@ -71,14 +68,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 },
                 {
                     targets: 5, // Email
-                    render: function (data, type, full, meta) {
+                    render: function (data) {
                         return data ? '<a href="mailto:' + data + '">' + data + '</a>' : '-';
                     }
                 },
                 {
                     // Status
                     targets: 8,
-                    render: function (data, type, full, meta) {
+                    render: function (data) {
                         var key = String(data);
                         const status = statusObj[key] || { title: L.Unknown || 'Unknown', class: 'bg-label-primary' };
                         return (
@@ -96,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                     title: L.Actions || 'Actions',
                     searchable: false,
                     orderable: false,
-                    render: function (data, type, full, meta) {
+                    render: function (data, type, full) {
                         return (
                             '<div class="d-flex align-items-center">' +
                             '<a href="javascript:;" class="btn btn-icon delete-record text-danger me-1"><i class="bx bx-trash icon-md"></i></a>' +
@@ -200,103 +197,114 @@ document.addEventListener('DOMContentLoaded', function (e) {
             },
             initComplete: function () {
                 const api = this.api();
-
-                // Helper function to create a select dropdown and append options
-                const createFilter = (columnIndex, containerClass, selectId, defaultOptionText) => {
-                    const column = api.column(columnIndex);
-                    const container = document.querySelector(containerClass);
-                    if (!container) return;
-
-                    const select = document.createElement('select');
-                    select.id = selectId;
-                    select.className = 'form-select text-capitalize';
-                    select.innerHTML = '<option value="">' + defaultOptionText + '</option>';
-                    container.appendChild(select);
-
-                    // Add event listener for filtering
-                    select.addEventListener('change', () => {
-                        const val = select.value ? '^' + select.value + '$' : '';
-                        column.search(val, true, false).draw();
-                    });
-
-                    // Populate options based on unique column data
-                    const uniqueData = Array.from(new Set(column.data().toArray())).sort();
-                    uniqueData.forEach(d => {
-                        if (!d) return; // Skip empty
-                        const option = document.createElement('option');
-                        option.value = d;
-                        option.textContent = d;
-                        option.className = 'text-capitalize';
-                        select.appendChild(option);
-                    });
-                };
-
-                // Type filter
-                createFilter(7, '.user_plan', 'UserPlan', L.CompanyType || 'Select Type');
-
-                // Status filter
-                const statusFilter = document.createElement('select');
-                statusFilter.id = 'FilterTransaction';
-                statusFilter.className = 'form-select text-capitalize';
-                statusFilter.innerHTML = '<option value="">' + (L.SelectStatus || 'Select Status') + '</option>';
-                const statusContainer = document.querySelector('.user_status');
-
-                if (statusContainer) {
-                    statusContainer.appendChild(statusFilter);
-                    statusFilter.addEventListener('change', () => {
-                        const val = statusFilter.value ? '^' + statusFilter.value + '$' : '';
-                        api.column(8).search(val, true, false).draw();
-                    });
-
-                    const statusColumn = api.column(8);
-                    const uniqueStatusData = Array.from(new Set(statusColumn.data().toArray())).sort();
-                    uniqueStatusData.forEach(d => {
-                        const option = document.createElement('option');
-                        var key = String(d);
-                        const statusObjRef = statusObj[key] || { title: L.Unknown || 'Unknown' };
-                        option.value = statusObjRef.title;
-                        option.textContent = statusObjRef.title;
-                        option.className = 'text-capitalize';
-                        statusFilter.appendChild(option);
-                    });
-                }
-
-                // Apply button logic
-                const btnApply = document.getElementById('btnFilterApply');
-                if (btnApply) {
-                    btnApply.addEventListener('click', () => {
-                        api.draw();
-                        // Close offcanvas after applying
-                        const offcanvas = document.getElementById('offcanvasFilter');
-                        const bootstrapOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
-                        if (bootstrapOffcanvas) {
-                            bootstrapOffcanvas.hide();
-                        }
-                    });
-                }
-
-                // Reset logic
-                const btnReset = document.getElementById('btnFilterReset');
-                if (btnReset) {
-                    btnReset.addEventListener('click', () => {
-                        const typeSelect = document.getElementById('UserPlan');
-                        const statusSelect = document.getElementById('FilterTransaction');
-                        if (typeSelect) typeSelect.value = '';
-                        if (statusSelect) statusSelect.value = '';
-                        api.columns().search('').draw();
-                    });
-                }
+                setupFilters(api);
             }
         }));
+    };
 
-        // Delete Record initialization
-        dt_user_table.addEventListener('click', function (e) {
+    /**
+     * Setup Filters (Internal)
+     */
+    const setupFilters = (api) => {
+        // Helper function to create a select dropdown and append options
+        const createSelectFilter = (columnIndex, containerClass, selectId, defaultOptionText) => {
+            const column = api.column(columnIndex);
+            const container = document.querySelector(containerClass);
+            if (!container) return;
+
+            const select = document.createElement('select');
+            select.id = selectId;
+            select.className = 'form-select text-capitalize';
+            select.innerHTML = '<option value="">' + defaultOptionText + '</option>';
+            container.appendChild(select);
+
+            // Populate options based on unique column data
+            const uniqueData = Array.from(new Set(column.data().toArray())).sort();
+            uniqueData.forEach(d => {
+                if (!d) return; // Skip empty
+                const option = document.createElement('option');
+                option.value = d;
+                option.textContent = d;
+                option.className = 'text-capitalize';
+                select.appendChild(option);
+            });
+        };
+
+        // 1. Type filter
+        createSelectFilter(7, '.user_plan', 'UserPlan', L.CompanyType || 'Select Type');
+
+        // 2. Status filter
+        const statusFilter = document.createElement('select');
+        statusFilter.id = 'FilterTransaction';
+        statusFilter.className = 'form-select text-capitalize';
+        statusFilter.innerHTML = '<option value="">' + (L.SelectStatus || 'Select Status') + '</option>';
+        const statusContainer = document.querySelector('.user_status');
+
+        if (statusContainer) {
+            statusContainer.appendChild(statusFilter);
+            const statusColumn = api.column(8);
+            const uniqueStatusData = Array.from(new Set(statusColumn.data().toArray())).sort();
+            uniqueStatusData.forEach(d => {
+                const option = document.createElement('option');
+                var key = String(d);
+                const statusObjRef = statusObj[key] || { title: L.Unknown || 'Unknown' };
+                option.value = statusObjRef.title;
+                option.textContent = statusObjRef.title;
+                option.className = 'text-capitalize';
+                statusFilter.appendChild(option);
+            });
+        }
+
+        // 3. Apply button logic
+        const btnApply = document.getElementById('btnFilterApply');
+        if (btnApply) {
+            btnApply.addEventListener('click', () => {
+                const typeVal = document.getElementById('UserPlan')?.value;
+                const statusVal = document.getElementById('FilterTransaction')?.value;
+
+                const typeSearch = typeVal ? '^' + typeVal + '$' : '';
+                const statusSearch = statusVal ? '^' + statusVal + '$' : '';
+
+                api.column(7).search(typeSearch, true, false);
+                api.column(8).search(statusSearch, true, false);
+
+                api.draw();
+
+                // Close offcanvas after applying
+                const offcanvas = document.getElementById('offcanvasFilter');
+                const bootstrapOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+                if (bootstrapOffcanvas) {
+                    bootstrapOffcanvas.hide();
+                }
+            });
+        }
+
+        // 4. Reset logic
+        const btnReset = document.getElementById('btnFilterReset');
+        if (btnReset) {
+            btnReset.addEventListener('click', () => {
+                const typeSelect = document.getElementById('UserPlan');
+                const statusSelect = document.getElementById('FilterTransaction');
+                if (typeSelect) typeSelect.value = '';
+                if (statusSelect) statusSelect.value = '';
+                api.columns().search('').draw();
+            });
+        }
+    };
+
+    /**
+     * Handle UI Events
+     */
+    const handleEvents = () => {
+        if (!dtTableEl) return;
+
+        dtTableEl.addEventListener('click', function (e) {
             if (e.target.closest('.delete-record')) {
                 let tr = e.target.closest('tr');
                 if (tr.classList.contains('child')) {
                     tr = tr.previousElementSibling;
                 }
-                const row = dt_user.row(tr);
+                const row = dt.row(tr);
                 const data = row.data();
 
                 if (window.showConfirm) {
@@ -321,11 +329,24 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 }
             }
         });
-    }
 
-    // Filter form search icon
-    const searchFilterInput = document.querySelector('.dt-search input');
-    if (searchFilterInput) {
-        searchFilterInput.classList.add('form-control');
-    }
+        // Search input styling fix
+        const searchFilterInput = document.querySelector('.dt-search input');
+        if (searchFilterInput) {
+            searchFilterInput.classList.add('form-control');
+        }
+    };
+
+    // Public API
+    return {
+        init: function () {
+            initDataTable();
+            handleEvents();
+        }
+    };
+})();
+
+// DOM Ready initialization
+document.addEventListener('DOMContentLoaded', function () {
+    LegalEntitiesList.init();
 });

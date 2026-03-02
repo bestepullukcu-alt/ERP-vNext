@@ -184,4 +184,7 @@
   <data name="LogOut" xml:space="preserve">
     <value>Çıkış Yap</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Uygula</value>
+  </data>
 </root>

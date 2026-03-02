@@ -83,3 +83,10 @@
     width: 100%;
     margin-bottom: 10px;
 }
+
+/* Offcanvas Filter Custom Styles */
+#offcanvasFilter {
+    border-top-left-radius: 0.375rem !important;
+    border-bottom-left-radius: 0.375rem !important;
+    overflow: hidden;
+}

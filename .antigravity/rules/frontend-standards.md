@@ -34,6 +34,12 @@ Tüm ajanlar bu kurallara uymak zorundadır.
   - `window.DtDefaults` (DataTable merkezi config — sadece dt-defaults.js tarafından)
 - Bunlar dışında `window.*` ataması **yasaktır**. Module pattern veya IIFE kullanılmalıdır.
 
+### JS-002: Module Pattern for Page Scripts
+- Her sayfa için özel hazırlanan JavaScript dosyaları (örn: `index.js`, `create.js`) **Module Pattern** (veya IIFE) yapısında olmalıdır.
+- Kod doğrudan `DOMContentLoaded` içine yazılmaz; bir Manager/List objesi (örn: `LegalEntitiesList`) içinde fonksiyonel parçalara (initDataTable, handleEvents vb.) bölünür.
+- Sayfa yüklendiğinde (`DOMContentLoaded`) sadece bu objenin `init()` metodu çağrılır.
+- Bu yaklaşım; kodun okunabilirliğini artırır, global scope kirliliğini önler ve gerektiğinde belli fonksiyonların (örn: tabloyu yenilemek) dışarıdan tetiklenmesine olanak tanır.
+
 ---
 
 ## Asset Kuralları
@@ -76,9 +82,16 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 
 ### UI-002: DataTable Filtering (Offcanvas Pattern)
 - Tablo filtreleri için sağ taraftan açılan Bootstrap Offcanvas (`#offcanvasFilter`) kullanılır.
-- Filtre butonu DataTable toolbar'ına (Search yanına) icon-only (`bx-filter-alt`) olarak eklenir.
-- Offcanvas içinde mutlaka bir **Reset** (`btn-label-danger`) butonu bulunmalıdır.
-- Filtreleme işlemi asenkron (`dt.draw()`) yapılmalı, sayfa yenilenmemelidir.
+- **Modülerlik:** Filtre offcanvas kodu her zaman ayrı bir `_Filter.cshtml` partial view içerisinde tutulmalıdır.
+- **Tetikleyici:** Filtreleme işlemi input "change" olayında değil, açık bir **Apply** (`btn-primary`) butonu tıklandığında tetiklenmelidir (`dt.draw()`).
+- **Kapatma:** "Apply" butonuna tıklandığında filtreleme ile birlikte offcanvas otomatik olarak kapatılmalıdır.
+- **Görsel Standartlar:** 
+    - Form elemanlarının `.filter-inputs-wrapper.mb-6` divi içine alınmalıdır.
+    - Alt kısımdaki "Apply" ve "Reset" butonları arasında `gap-6` boşluğu bulunmalıdır.
+    - Offcanvas panelinin içe bakan (leading) köşelerine `0.375rem` radius verilmeli ve bu stil `backbone-custom.css` içinde tanımlanmalıdır (satır içi stil kullanımından kaçınılmalıdır).
+- **Reset:** Offcanvas içinde mutlaka bir **Reset** (`btn-label-danger`) butonu bulunmalıdır.
+- **L10n:** "Apply" butonu her zaman `@SharedLocalizer["Apply"]` üzerinden lokalize edilmelidir.
+- Filtreleme işlemi asenkron yapılmalı, sayfa yenilenmemelidir.
 
 ### UI-003: Skeleton Shimmer Standards
 - Yükleme durumları için `backbone-custom.css` içindeki `.shimmer` class'ı kullanılır.
