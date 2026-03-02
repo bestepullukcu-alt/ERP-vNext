@@ -117,6 +117,12 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 - Alt bilgi (Footer) metni şu formatta sabitlenmiştir: `© 2018 | made with by Diten`.
 - Emoji (kalp vb.) kullanımı ve yıl değişikliği standart dışıdır.
 
+### UI-007: Temiz Dışa Aktarma (Export) Standartları
+- Excel, PDF, CSV ve Yazdırma gibi işlemler sırasında tablodaki HTML etiketleri (`<a>`, `<span>` vb.) mutlaka temizlenmelidir (strip HTML).
+- **Kolon Seçimi:** Dışa aktarma dosyalarında "Checkbox" ve "Actions" (İşlemler) kolonları bulunmamalı, sadece saf veri kolonları yer almalıdır.
+- Tüm sayfalar `window.DtDefaults.exportButtons()` fabrikasını kullanarak bu standarda otomatik olarak uymalıdır.
+- Bu standart, `dt-defaults.js` içindeki `commonExportOptions` nesnesi ile merkezi olarak yönetilir.
+
 ### L10N-001: Layout L10n Coverage
 - `_LayoutBackbone.cshtml` içindeki tüm metinler `@SharedLocalizer["Key"]` ile dile bağlanır.
 - Statik metin (`My Profile`, `Settings` vb.) yazılması yasaktır.

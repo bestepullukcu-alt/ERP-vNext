@@ -187,4 +187,10 @@
   <data name="Apply" xml:space="preserve">
     <value>Qo'llash</value>
   </data>
+  <data name="PDF" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Ko'chirish</value>
+  </data>
 </root>

@@ -112,29 +112,9 @@ const LegalEntitiesList = (function () {
                 }
             ],
             order: [[2, 'asc']],
-            buttons: [
-                {
-                    extend: 'collection',
-                    className: 'btn btn-label-secondary dropdown-toggle',
-                    text: '<span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-export icon-sm"></i> <span class="d-none d-sm-inline-block">' + (L.Export || 'Export') + '</span></span>',
-                    buttons: [
-                        {
-                            extend: 'print',
-                            text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-printer me-2"></i>' + (L.Print || 'Print') + '</span>',
-                            className: 'dropdown-item'
-                        },
-                        {
-                            extend: 'csv',
-                            text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-file me-2"></i>CSV</span>',
-                            className: 'dropdown-item'
-                        },
-                        {
-                            extend: 'excel',
-                            text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-export me-2"></i>Excel</span>',
-                            className: 'dropdown-item'
-                        }
-                    ]
-                },
+            buttons: window.DtDefaults.exportButtons(L.AddNewCompany || 'Add New Company', {
+                onclick: "window.location.href='/LegalEntities/Create'"
+            }).concat([
                 {
                     text: '<i class="icon-base bx bx-import icon-sm"></i>',
                     className: 'btn btn-icon btn-label-secondary',
@@ -154,15 +134,8 @@ const LegalEntitiesList = (function () {
                         'data-bs-toggle': 'offcanvas',
                         'data-bs-target': '#offcanvasFilter'
                     }
-                },
-                {
-                    text: '<i class="icon-base bx bx-plus icon-sm me-0 me-sm-2"></i><span class="d-none d-sm-inline-block">' + (L.AddNewCompany || 'Add New Company') + '</span>',
-                    className: 'add-new btn btn-primary',
-                    attr: {
-                        onclick: "window.location.href='/LegalEntities/Create'"
-                    }
                 }
-            ],
+            ]),
             responsive: {
                 details: {
                     display: DataTable.Responsive.display.modal({

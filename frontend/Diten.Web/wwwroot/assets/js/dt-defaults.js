@@ -146,6 +146,28 @@ window.DtDefaults = (function () {
     }
 
     /**
+     * Ortak export ayarları (HTML temizleme ve kolon seçimi).
+     */
+    var commonExportOptions = {
+        columns: [2, 3, 4, 5, 6, 7, 8], // Standart veri kolonları (Control, Checkbox ve Action hariç)
+        format: {
+            body: function (inner, coldex, rowdex) {
+                if (inner.length <= 0) return inner;
+                var el = $.parseHTML(inner);
+                var result = '';
+                $.each(el, function (index, item) {
+                    if (item.classList !== undefined && item.classList.contains('user-name')) {
+                        result = result + item.lastChild.firstChild.textContent;
+                    } else if (item.innerText === undefined) {
+                        result = result + item.textContent;
+                    } else result = result + item.innerText;
+                });
+                return result;
+            }
+        }
+    };
+
+    /**
      * Standard export buttons (Sneat style — icon + text, dropdown).
      * @param {String} addNewText - "Add New" button text (optional)
      * @param {Object} addNewAttr - attributes for "Add New" button (optional)
@@ -162,17 +184,32 @@ window.DtDefaults = (function () {
                     {
                         extend: 'print',
                         text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-printer me-2"></i>' + (l.Print || 'Print') + '</span>',
-                        className: 'dropdown-item'
+                        className: 'dropdown-item',
+                        exportOptions: commonExportOptions
                     },
                     {
                         extend: 'csv',
                         text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-file me-2"></i>CSV</span>',
-                        className: 'dropdown-item'
+                        className: 'dropdown-item',
+                        exportOptions: commonExportOptions
                     },
                     {
                         extend: 'excel',
                         text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-export me-2"></i>Excel</span>',
-                        className: 'dropdown-item'
+                        className: 'dropdown-item',
+                        exportOptions: commonExportOptions
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-pdf me-2"></i>' + (l.PDF || 'PDF') + '</span>',
+                        className: 'dropdown-item',
+                        exportOptions: commonExportOptions
+                    },
+                    {
+                        extend: 'copy',
+                        text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-copy me-2"></i>' + (l.Copy || 'Copy') + '</span>',
+                        className: 'dropdown-item',
+                        exportOptions: commonExportOptions
                     }
                 ]
             }

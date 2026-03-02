@@ -187,4 +187,10 @@
   <data name="Apply" xml:space="preserve">
     <value>გამოყენება</value>
   </data>
+  <data name="PDF" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>კოპირება</value>
+  </data>
 </root>
