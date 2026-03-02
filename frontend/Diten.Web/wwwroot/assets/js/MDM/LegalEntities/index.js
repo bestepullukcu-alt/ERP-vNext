@@ -23,6 +23,10 @@ const LegalEntitiesList = (function () {
         if (!dtTableEl) return;
 
         dt = new DataTable(dtTableEl, window.DtDefaults.create({
+            processing: true,
+            language: {
+                processing: '<div class="sk-fold sk-primary mx-auto"><div class="sk-fold-cube"></div><div class="sk-fold-cube"></div><div class="sk-fold-cube"></div><div class="sk-fold-cube"></div></div>'
+            },
             ajax: {
                 url: apiUrl + '/api/legal-entities',
                 type: 'GET',

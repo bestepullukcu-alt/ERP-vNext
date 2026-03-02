@@ -93,10 +93,11 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 - **L10n:** "Apply" butonu her zaman `@SharedLocalizer["Apply"]` üzerinden lokalize edilmelidir.
 - Filtreleme işlemi asenkron yapılmalı, sayfa yenilenmemelidir.
 
-### UI-003: Skeleton Shimmer Standards
-- Yükleme durumları için `backbone-custom.css` içindeki `.shimmer` class'ı kullanılır.
-- Skeleton, tablonun Toolbar'ını kapatmamalı, sadece veri alanını (`top: 72px` veya benzeri bir offset ile) örtmelidir.
-- `min-height: 200px` kuralı hem Skeleton görünürlüğü hem de CLS (Layout Shift) engelleme için zorunludur.
+### UI-003: DataTable Native Loading (Processing) Standards
+- Sayfa ilk açılışında veya AJAX işlemlerinde (filtreleme, silme, yenileme) DataTable'ın yerleşik `processing: true` mekanizması kullanılır.
+- **Spinner Tasarımı:** Sneat standartlarına uyum için `sk-fold` (veya benzeri bir Spinkit bileşeni) kullanılmalıdır.
+- Kod yapısında `language.processing` alanı üzerinden bu HTML tanımlanmalıdır.
+- Bu yaklaşım, sadece sayfa açılışında değil, verinin her yenilendiği durumda otomatik olarak tetiklendiği için tercih edilmelidir. Özel statik skeleton loader'lardan kaçınılmalıdır.
 
 ### UI-004: Global Confirmation Standards (SweetAlert2)
 - Tüm silme veya kritik işlem onayları için `window.showConfirm(key, callback, entityName)` kullanılır.
