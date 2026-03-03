@@ -64,6 +64,12 @@
         window.L10n.Reset = @Json.Serialize(SharedLocalizer["Reset"].Value);
         window.L10n.PDF = @Json.Serialize(SharedLocalizer["PDF"].Value);
         window.L10n.Copy = @Json.Serialize(SharedLocalizer["Copy"].Value);
+        window.L10n.DtNoRecords = @Json.Serialize(SharedLocalizer["DtNoRecords"].Value);
+        window.L10n.DtInfo = @Json.Serialize(SharedLocalizer["DtInfo"].Value);
+        window.L10n.DtInfoEmpty = @Json.Serialize(SharedLocalizer["DtInfoEmpty"].Value);
+        window.L10n.DtInfoFiltered = @Json.Serialize(SharedLocalizer["DtInfoFiltered"].Value);
+        window.L10n.DtZeroRecords = @Json.Serialize(SharedLocalizer["DtZeroRecords"].Value);
+        window.L10n.DtEmptyTable = @Json.Serialize(SharedLocalizer["DtEmptyTable"].Value);
 
         // Check if redirect came back with success message
         var successMsg = @Json.Serialize(TempData["SuccessMessage"]);

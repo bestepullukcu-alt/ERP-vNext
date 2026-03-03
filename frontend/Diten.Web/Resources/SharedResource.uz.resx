@@ -193,4 +193,22 @@
   <data name="Copy" xml:space="preserve">
     <value>Ko'chirish</value>
   </data>
+  <data name="DtNoRecords" xml:space="preserve">
+    <value>Mos yozuvlar topilmadi</value>
+  </data>
+  <data name="DtInfo" xml:space="preserve">
+    <value>_TOTAL_ ta yozuvdan _START_ - _END_ gacha ko'rsatilmoqda</value>
+  </data>
+  <data name="DtInfoEmpty" xml:space="preserve">
+    <value>0 ta yozuvdan 0 - 0 gacha ko'rsatilmoqda</value>
+  </data>
+  <data name="DtInfoFiltered" xml:space="preserve">
+    <value>(_MAX_ ta yozuvdan filtrlangan)</value>
+  </data>
+  <data name="DtZeroRecords" xml:space="preserve">
+    <value>Mos yozuvlar topilmadi</value>
+  </data>
+  <data name="DtEmptyTable" xml:space="preserve">
+    <value>Jadvalda ma'lumot yo'q</value>
+  </data>
 </root>

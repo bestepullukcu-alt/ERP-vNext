@@ -193,4 +193,22 @@
   <data name="Copy" xml:space="preserve">
     <value>Kopyala</value>
   </data>
+  <data name="DtNoRecords" xml:space="preserve">
+    <value>Eşleşen kayıt bulunamadı</value>
+  </data>
+  <data name="DtInfo" xml:space="preserve">
+    <value>_TOTAL_ kayıttan _START_ - _END_ arasındaki kayıtlar gösteriliyor</value>
+  </data>
+  <data name="DtInfoEmpty" xml:space="preserve">
+    <value>0 kayıttan 0 - 0 arasındaki kayıtlar gösteriliyor</value>
+  </data>
+  <data name="DtInfoFiltered" xml:space="preserve">
+    <value>(_MAX_ kayıt içerisinden filtrelendi)</value>
+  </data>
+  <data name="DtZeroRecords" xml:space="preserve">
+    <value>Eşleşen kayıt bulunamadı</value>
+  </data>
+  <data name="DtEmptyTable" xml:space="preserve">
+    <value>Tabloda veri bulunmuyor</value>
+  </data>
 </root>

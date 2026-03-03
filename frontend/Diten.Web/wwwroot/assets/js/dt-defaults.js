@@ -132,6 +132,14 @@ window.DtDefaults = (function () {
         var l = L();
         merged.language.searchPlaceholder = merged.language.searchPlaceholder || l.Search || 'Search...';
 
+        // DataTables i18n mapping
+        if (l.DtNoRecords) merged.language.zeroRecords = l.DtNoRecords;
+        if (l.DtInfo) merged.language.info = l.DtInfo;
+        if (l.DtInfoEmpty) merged.language.infoEmpty = l.DtInfoEmpty;
+        if (l.DtInfoFiltered) merged.language.infoFiltered = l.DtInfoFiltered;
+        if (l.DtZeroRecords) merged.language.zeroRecords = l.DtZeroRecords;
+        if (l.DtEmptyTable) merged.language.emptyTable = l.DtEmptyTable;
+
         if (!merged.layout) {
             merged.layout = buildLayout(merged.buttons);
             delete merged.buttons;

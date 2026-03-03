@@ -193,4 +193,22 @@
   <data name="Copy" xml:space="preserve">
     <value>კოპირება</value>
   </data>
+  <data name="DtNoRecords" xml:space="preserve">
+    <value>ჩანაწერები ვერ მოიძებნა</value>
+  </data>
+  <data name="DtInfo" xml:space="preserve">
+    <value>ნაჩვენებია _START_ - დან _END_ - მდე, სულ _TOTAL_ ჩანაწერი</value>
+  </data>
+  <data name="DtInfoEmpty" xml:space="preserve">
+    <value>ნაჩვენებია 0 - დან 0 - მდე, სულ 0 ჩანაწერი</value>
+  </data>
+  <data name="DtInfoFiltered" xml:space="preserve">
+    <value>(გაფილტრული _MAX_ ჩანაწერიდან)</value>
+  </data>
+  <data name="DtZeroRecords" xml:space="preserve">
+    <value>ჩანაწერები ვერ მოიძებნა</value>
+  </data>
+  <data name="DtEmptyTable" xml:space="preserve">
+    <value>ცხრილში მონაცემები არ არის</value>
+  </data>
 </root>

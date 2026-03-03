@@ -24,29 +24,37 @@ public sealed class TenantResolutionMiddleware
 
     public async Task InvokeAsync(HttpContext context, TenantContext tenantContext)
     {
-      // Tenant gerektirmeyen path'ler (dev UX + probe)
-var path = context.Request.Path;
+        // Tenant gerektirmeyen durumlar
+        var path = context.Request.Path;
+        var method = context.Request.Method;
 
-// Health check tenant gerektirmez
-if (path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase))
-{
-    await _next(context);
-    return;
-}
+        // CORS Preflight (OPTIONS) istekleri tenant gerektirmez
+        if (HttpMethods.IsOptions(method))
+        {
+            await _next(context);
+            return;
+        }
 
-// Swagger UI tenant gerektirmez
-if (path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase))
-{
-    await _next(context);
-    return;
-}
+        // Health check tenant gerektirmez
+        if (path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase))
+        {
+            await _next(context);
+            return;
+        }
 
-// Browser favicon isteği tenant gerektirmez
-if (path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase))
-{
-    await _next(context);
-    return;
-}
+        // Swagger UI tenant gerektirmez
+        if (path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase))
+        {
+            await _next(context);
+            return;
+        }
+
+        // Browser favicon isteği tenant gerektirmez
+        if (path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase))
+        {
+            await _next(context);
+            return;
+        }
 
 
         if (!context.Request.Headers.TryGetValue(TenantHeader, out var headerValue)

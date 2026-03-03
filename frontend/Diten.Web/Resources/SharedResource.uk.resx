@@ -193,4 +193,22 @@
   <data name="Copy" xml:space="preserve">
     <value>Копіювати</value>
   </data>
+  <data name="DtNoRecords" xml:space="preserve">
+    <value>Відповідних записів не знайдено</value>
+  </data>
+  <data name="DtInfo" xml:space="preserve">
+    <value>Показано з _START_ по _END_ із _TOTAL_ записів</value>
+  </data>
+  <data name="DtInfoEmpty" xml:space="preserve">
+    <value>Показано з 0 по 0 із 0 записів</value>
+  </data>
+  <data name="DtInfoFiltered" xml:space="preserve">
+    <value>(відфільтровано з _MAX_ записів)</value>
+  </data>
+  <data name="DtZeroRecords" xml:space="preserve">
+    <value>Відповідних записів не знайдено</value>
+  </data>
+  <data name="DtEmptyTable" xml:space="preserve">
+    <value>Дані в таблиці відсутні</value>
+  </data>
 </root>

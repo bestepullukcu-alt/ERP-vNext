@@ -193,4 +193,22 @@
   <data name="Copy" xml:space="preserve">
     <value>Көшіру</value>
   </data>
+  <data name="DtNoRecords" xml:space="preserve">
+    <value>Сәйкес жазбалар табылған жоқ</value>
+  </data>
+  <data name="DtInfo" xml:space="preserve">
+    <value>_TOTAL_ жазбаның ішінен _START_ - _END_ көрсетілуде</value>
+  </data>
+  <data name="DtInfoEmpty" xml:space="preserve">
+    <value>0 жазбаның ішінен 0 - 0 көрсетілуде</value>
+  </data>
+  <data name="DtInfoFiltered" xml:space="preserve">
+    <value>(барлық _MAX_ жазбадан сүзілді)</value>
+  </data>
+  <data name="DtZeroRecords" xml:space="preserve">
+    <value>Сәйкес жазбалар табылған жоқ</value>
+  </data>
+  <data name="DtEmptyTable" xml:space="preserve">
+    <value>Кестеде деректер жоқ</value>
+  </data>
 </root>
