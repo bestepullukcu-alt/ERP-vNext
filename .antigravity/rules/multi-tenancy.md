@@ -12,6 +12,7 @@
 4) Her yazma (insert/update) TenantId’yi TenantContext’ten (server-side) set etmek ZORUNDADIR.
 5) Tenant filtresi olmadan Mongo sorgusu yapmak BUG’dır.
 6) `Diten.Web` projesinde `HttpClient` ile dış servislere (Gateway/Backend) giden tüm isteklerde `X-Tenant-Id` header bilgisi zorunludur. Geliştirme aşamasında bu değer varsayılan olarak `1` atanmalıdır. Gelecekte üretilecek tüm `Controller` ve `Service` sınıfları bu header'ı içerecek şekilde kodlanmalıdır.
+7) CORS preflight (`OPTIONS`) isteklerinde tarayıcılar custom header göndermediği için, TenantResolutionMiddleware `OPTIONS` metodu için kontrolü ATLAMAK ZORUNDADIR (bypass).
 
 ## Zorunlu uygulatma (enforcement)
 - MongoDB driver kullanımı sadece Persistence katmanında serbesttir.
