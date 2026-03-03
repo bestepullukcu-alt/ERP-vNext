@@ -121,6 +121,7 @@ window.DtDefaults = (function () {
         $('.dt-buttons').addClass('d-flex gap-4 mb-md-0 mb-6');
         $('.dt-layout-table').removeClass('row mt-2');
         $('.dt-layout-full').removeClass('col-md col-12'); // table-responsive class'ı sayfa içindeki div'de mevcut, mükerrerliği önlemek için buradan kaldırıldı.
+        $('table.dataTable').addClass('table-hover');
     }
 
     /**

@@ -78,6 +78,7 @@ Tüm ajanlar bu kurallara uymak zorundadır.
     - `#skeleton-loader`'ı `initComplete`'te gizler.
     - Sneat class düzeltmelerini **`drawCallback`** üzerinden (her çizimde tazeleyerek) uygular.
     - **Responsive Renderer:** Mobil görünüm için gerekli olan detay tablosunu merkezi olarak oluşturur (`responsiveRenderer`). Sayfa içinde tekrar tanımlanması yasaktır.
+    - **Hover Effect:** Tüm tablolar kullanıcı odaklanmasını artırmak için otomatik olarak `table-hover` sınıfına sahiptir.
 - Export butonları `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons)` factory'si ile oluşturulur. Sayfaya özel butonlar (Filtre vb.) `extraButtons` dizisi olarak bu fonksiyona geçilmelidir.
 
 ### UI-002: DataTable Filtering (Offcanvas Pattern)
@@ -161,6 +162,15 @@ Tüm ajanlar bu kurallara uymak zorundadır.
     - ColVis butonu `.dt-colvis-btn` class'ına sahip olmalı ve yanındaki varsayılan dropdown oku (`::after`) `backbone-custom.css` üzerinden gizlenmelidir.
     - Tasarım "icon-only" (sadece göz ikonu) ve `btn-label-secondary` stilinde olmalıdır.
 - **İçerik Filtreleme:** Kullanıcı deneyimini bozmamak adına; "Responsive Control", "Checkbox" ve "Actions" gibi sistem kolonları ColVis listesinden `columns: [...]` parametresi ile hariç tutulmalıdır. Sadece ana veri kolonları listelenmelidir.
+
+### UI-010: DataTable State Persistence & Visual Feedback (StateSave)
+- **Kalıcılık (stateSave):** Tüm liste sayfalarında kullanıcının arama, sayfalama, sıralama ve kolon görünürlüğü tercihleri `stateSave: true` ile tarayıcı hafızasında (localStorage) saklanmalıdır.
+- **Görsel Bildirim Standartları:** Kullanıcının aktif bir filtre veya arama uyguladığını anlaması için `window.DtDefaults.updateVisualState(api, filterCount)` fonksiyonu kullanılmalıdır.
+    - **Filtre Butonu:** Aktif filtre varsa buton `btn-label-primary` rengine döner ve sağ üst köşesinde seçili filtre sayısını gösteren bir `badge` belirir.
+    - **Search (Arama):** Arama kutusunda metin varsa kutunun kenarlığı ve arka planı vurgulanır.
+    - **ColVis:** Kullanıcı bir sütunu gizlediyse, "Göz" ikonu üzerinde küçük bir mavi bildirim noktası (`badge-dot`) gösterilir.
+- **Sıfırlama (Reset):** "Reset" işlemi sadece tabloyu değil, tarayıcı hafızasındaki state değerini de (`api.state.clear()`) temizlemelidir.
+- **Senkronizasyon:** Sütun gizleme olayları (`column-visibility.dt`) dinlenmeli ve görsel göstergeler anlık olarak güncellenmelidir.
 
 ### PROD-001: Layout Freeze
 - `_Layout.cshtml` dosyası **değiştirilmez**. Archive sayfaları bu layout'a bağımlıdır.
