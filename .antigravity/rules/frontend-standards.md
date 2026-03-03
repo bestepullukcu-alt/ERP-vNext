@@ -156,8 +156,11 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 
 ### UI-009: DataTable ColVis (Kolon Görünürlüğü)
 - Tüm liste tablolarında kullanıcının kolonları gizleyip açabilmesi için **ColVis** özelliği aktif edilmelidir.
-- Bu özellik `window.DtDefaults` üzerinden merkezi olarak sunulur ve üst barın sağ tarafında "Göz" ikonu olarak belirir.
-- Geliştiriciler `colvis` butonunu manuel eklemek yerine merkezi `exportButtons` fabrikasını kullanmalıdır.
+- **Varlık Yönetimi:** Dış bağımlılığı önlemek için `buttons.colVis.js` yerel olarak (`/assets/vendor/libs/datatables-buttons/`) yüklenmelidir.
+- **Tasarım Standartları:**
+    - ColVis butonu `.dt-colvis-btn` class'ına sahip olmalı ve yanındaki varsayılan dropdown oku (`::after`) `backbone-custom.css` üzerinden gizlenmelidir.
+    - Tasarım "icon-only" (sadece göz ikonu) ve `btn-label-secondary` stilinde olmalıdır.
+- **İçerik Filtreleme:** Kullanıcı deneyimini bozmamak adına; "Responsive Control", "Checkbox" ve "Actions" gibi sistem kolonları ColVis listesinden `columns: [...]` parametresi ile hariç tutulmalıdır. Sadece ana veri kolonları listelenmelidir.
 
 ### PROD-001: Layout Freeze
 - `_Layout.cshtml` dosyası **değiştirilmez**. Archive sayfaları bu layout'a bağımlıdır.
