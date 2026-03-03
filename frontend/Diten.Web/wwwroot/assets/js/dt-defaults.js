@@ -205,6 +205,13 @@ window.DtDefaults = (function () {
                     { extend: 'pdf', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-pdf me-2"></i>' + (l.PDF || 'PDF') + '</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
                     { extend: 'copy', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-copy me-2"></i>' + (l.Copy || 'Copy') + '</span>', className: 'dropdown-item', exportOptions: commonExportOptions }
                 ]
+            },
+            {
+                extend: 'colvis',
+                text: '<i class="icon-base bx bx-show icon-sm"></i>',
+                className: 'btn btn-icon btn-label-secondary ms-2 dt-colvis-btn',
+                attr: { title: 'Column Visibility', 'data-bs-toggle': 'tooltip' },
+                columns: [2, 3, 4, 5, 6, 7, 8] // Exclude Index 0 (Control), 1 (Checkbox), 9 (Actions)
             }
         ];
 

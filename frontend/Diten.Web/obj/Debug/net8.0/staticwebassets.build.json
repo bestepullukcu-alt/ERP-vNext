@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "4/d424HD32VPrd5MSfSeawwGuaSjh6N3cBwNJHLiGyI=",
+  "Hash": "TVhZK/54tshmEMsOx+RlW5JN54A+r67Og9OfVHYTmHs=",
   "Source": "Diten.Web",
   "BasePath": "_content/Diten.Web",
   "Mode": "Default",
@@ -21618,6 +21618,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css"
+    },
+    {
+      "Identity": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/vendor/libs/datatables-buttons/buttons.colVis.js",
+      "SourceId": "Diten.Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/",
+      "BasePath": "_content/Diten.Web",
+      "RelativePath": "assets/vendor/libs/datatables-buttons/buttons.colVis.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/assets/vendor/libs/datatables-buttons/buttons.colVis.js"
     },
     {
       "Identity": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/vendor/libs/datatables-fixedcolumns-bs5/fixedcolumns.bootstrap5.css",

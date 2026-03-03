@@ -85,6 +85,11 @@
 }
 
 /* Offcanvas Filter Custom Styles */
+/* ColVis Button Design Fix: Remove dropdown arrow (caret) from icon button */
+.dt-colvis-btn::after {
+    display: none !important;
+}
+
 #offcanvasFilter {
     border-top-left-radius: 0.375rem !important;
     border-bottom-left-radius: 0.375rem !important;

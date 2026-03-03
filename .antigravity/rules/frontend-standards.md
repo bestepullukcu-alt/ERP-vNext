@@ -154,6 +154,11 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 - Offcanvas içindeki Select2 bileşenleri `dropdownParent: $('#offcanvasFilter')` parametresi ile başlatılmalıdır.
 - Resetleme işlemi sırasında Select2 tetikleyicisi (`.trigger('change')`) unutulmamalıdır.
 
+### UI-009: DataTable ColVis (Kolon Görünürlüğü)
+- Tüm liste tablolarında kullanıcının kolonları gizleyip açabilmesi için **ColVis** özelliği aktif edilmelidir.
+- Bu özellik `window.DtDefaults` üzerinden merkezi olarak sunulur ve üst barın sağ tarafında "Göz" ikonu olarak belirir.
+- Geliştiriciler `colvis` butonunu manuel eklemek yerine merkezi `exportButtons` fabrikasını kullanmalıdır.
+
 ### PROD-001: Layout Freeze
 - `_Layout.cshtml` dosyası **değiştirilmez**. Archive sayfaları bu layout'a bağımlıdır.
 

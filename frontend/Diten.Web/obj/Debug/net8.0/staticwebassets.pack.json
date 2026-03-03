@@ -4545,6 +4545,10 @@
       "PackagePath": "staticwebassets/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css"
     },
     {
+      "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/vendor/libs/datatables-buttons/buttons.colVis.js",
+      "PackagePath": "staticwebassets/assets/vendor/libs/datatables-buttons/buttons.colVis.js"
+    },
+    {
       "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/vendor/libs/datatables-fixedcolumns-bs5/fixedcolumns.bootstrap5.css",
       "PackagePath": "staticwebassets/assets/vendor/libs/datatables-fixedcolumns-bs5/fixedcolumns.bootstrap5.css"
     },
