@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Diten.Web")]
 [assembly: System.Reflection.AssemblyCopyrightAttribute(" ")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a1268fdf3938b1efe3cbda746a1f2379e2c7d49c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9eb3dfb950e83589599fbbf08a0aa51ca51c7db2")]
 [assembly: System.Reflection.AssemblyProductAttribute("Diten.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Diten.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

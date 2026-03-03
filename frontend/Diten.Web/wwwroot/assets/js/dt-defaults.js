@@ -119,7 +119,7 @@ window.DtDefaults = (function () {
         $('.dt-layout-start').addClass('mt-0');
         $('.dt-buttons').addClass('d-flex gap-4 mb-md-0 mb-6');
         $('.dt-layout-table').removeClass('row mt-2');
-        $('.dt-layout-full').removeClass('col-md col-12').addClass('table-responsive');
+        $('.dt-layout-full').removeClass('col-md col-12'); // table-responsive class'ı sayfa içindeki div'de mevcut, mükerrerliği önlemek için buradan kaldırıldı.
     }
 
     /**
@@ -134,6 +134,15 @@ window.DtDefaults = (function () {
             merged.layout = buildLayout(merged.buttons);
             delete merged.buttons;
         }
+
+        // AJAX isteği başladığında skeleton'ı göster (Eğer varsa)
+        var originalPreXhr = merged.preXhr;
+        merged.preXhr = function (settings, data) {
+            $('#skeleton-loader').fadeIn(100);
+            if (typeof originalPreXhr === 'function') {
+                originalPreXhr.call(this, settings, data);
+            }
+        };
 
         // Auto-hide skeleton + apply class fixes
         var originalInitComplete = merged.initComplete;

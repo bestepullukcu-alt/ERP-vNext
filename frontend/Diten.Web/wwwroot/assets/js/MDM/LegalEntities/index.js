@@ -58,6 +58,10 @@ const LegalEntitiesList = (function () {
                 { data: 'isActive', name: 'isActive' },
                 { data: 'action', name: 'action' }
             ],
+            preXhr: function () {
+                // Veri yüklenmeye başladığında skeleton'ı geri getir
+                $('#skeleton-loader').fadeIn(100);
+            },
             columnDefs: [
                 { className: 'control', searchable: false, orderable: false, responsivePriority: 2, targets: 0, render: () => '' },
                 {
@@ -131,8 +135,9 @@ const LegalEntitiesList = (function () {
         // Status filter (special handling for statusObj)
         const statusContainer = document.querySelector('.user_status');
         if (statusContainer) {
+            const selectId = 'FilterTransaction';
             const select = document.createElement('select');
-            select.id = 'FilterTransaction';
+            select.id = selectId;
             select.className = 'form-select select2 text-capitalize';
             select.innerHTML = `<option value="">${L.SelectStatus || 'Select Status'}</option>`;
             statusContainer.appendChild(select);
