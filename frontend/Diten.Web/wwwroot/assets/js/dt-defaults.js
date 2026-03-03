@@ -81,6 +81,7 @@ window.DtDefaults = (function () {
     var baseConfig = {
         serverSide: false,
         processing: true,
+        stateSave: true,
         order: [[2, 'desc']],
         language: {
             sLengthMenu: '_MENU_',
@@ -209,7 +210,7 @@ window.DtDefaults = (function () {
             {
                 extend: 'colvis',
                 text: '<i class="icon-base bx bx-show icon-sm"></i>',
-                className: 'btn btn-icon btn-label-secondary ms-2 dt-colvis-btn',
+                className: 'btn btn-icon btn-label-secondary ms-2 dt-colvis-btn position-relative',
                 attr: { title: 'Column Visibility', 'data-bs-toggle': 'tooltip' },
                 columns: [2, 3, 4, 5, 6, 7, 8] // Exclude Index 0 (Control), 1 (Checkbox), 9 (Actions)
             }
@@ -230,9 +231,56 @@ window.DtDefaults = (function () {
         return btns;
     }
 
+    /**
+     * UI: Update Visual States (Filter, ColVis, Search)
+     * Verilen DataTable API'sine göre butonları ve kutuları görsel olarak günceller.
+     */
+    function updateVisualState(api, filterCount) {
+        // 1. Filter Button Sync
+        var $filterBtn = $('.dt-filter-btn');
+        if ($filterBtn.length && filterCount !== undefined) {
+            $filterBtn.find('.badge').remove();
+            if (filterCount > 0) {
+                $filterBtn.removeClass('btn-label-secondary').addClass('btn-label-primary');
+                $filterBtn.append('<span class="badge badge-center rounded-pill bg-primary position-absolute top-0 start-100 translate-middle">' + filterCount + '</span>');
+            } else {
+                $filterBtn.removeClass('btn-label-primary').addClass('btn-label-secondary');
+            }
+        }
+
+        // 2. ColVis Button Sync (Gizlenen kolon varsa işaretle)
+        var $colvisBtn = $('.dt-colvis-btn');
+        if ($colvisBtn.length) {
+            // Varsayılan gizli kolonlar dışındakileri saymak daha doğru olur ama basitçe herhangi bir gizli kolon varsa gösterelim
+            var hiddenCount = api.columns().flatten().filter(function (idx) {
+                return !api.column(idx).visible();
+            }).length;
+
+            $colvisBtn.find('.badge').remove();
+            if (hiddenCount > 0) {
+                $colvisBtn.addClass('btn-label-primary').removeClass('btn-label-secondary');
+                $colvisBtn.append('<span class="badge badge-dot bg-primary position-absolute top-0 start-100 translate-middle"></span>');
+            } else {
+                $colvisBtn.removeClass('btn-label-primary').addClass('btn-label-secondary');
+            }
+        }
+
+        // 3. Search Box Sync
+        var $searchWrapper = $('.dt-search');
+        var $searchInput = $searchWrapper.find('input');
+        if ($searchInput.length) {
+            if (api.search()) {
+                $searchInput.addClass('border-primary bg-label-primary');
+            } else {
+                $searchInput.removeClass('border-primary bg-label-primary');
+            }
+        }
+    }
+
     return {
         create: create,
         exportButtons: exportButtons,
-        responsiveRenderer: responsiveRenderer
+        responsiveRenderer: responsiveRenderer,
+        updateVisualState: updateVisualState
     };
 })();

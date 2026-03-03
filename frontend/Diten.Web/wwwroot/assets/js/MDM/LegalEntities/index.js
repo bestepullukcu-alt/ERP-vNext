@@ -34,7 +34,7 @@ const LegalEntitiesList = (function () {
             },
             {
                 text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
-                className: 'btn btn-icon btn-label-secondary',
+                className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
                 attr: { title: L.Filter || 'Filter', 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasFilter' }
             }
         ];
@@ -95,8 +95,19 @@ const LegalEntitiesList = (function () {
             }, extraButtons),
             initComplete: function () {
                 setupFilters(this.api());
+            },
+            drawCallback: function () {
+                // Her çizimde (arama, sayfalama vb.) görsel durumları güncelle
+                const count = [$('#UserPlan').val(), $('#FilterTransaction').val()].filter(Boolean).length;
+                window.DtDefaults.updateVisualState(this.api(), count);
             }
         }));
+
+        // Sütun görünürlüğü değiştiğinde görsel durumları tetikle
+        dt.on('column-visibility.dt', function () {
+            const count = [$('#UserPlan').val(), $('#FilterTransaction').val()].filter(Boolean).length;
+            window.DtDefaults.updateVisualState(dt, count);
+        });
     };
 
     /**
@@ -159,6 +170,29 @@ const LegalEntitiesList = (function () {
             });
         }
 
+        // Restore state values to UI
+        const state = api.state.loaded();
+        let initialFilterCount = 0;
+
+        if (state) {
+            const companyTypeCol = api.column('companyType:name').index();
+            const statusCol = api.column('isActive:name').index();
+
+            if (companyTypeCol !== undefined && state.columns[companyTypeCol].search.search) {
+                const val = state.columns[companyTypeCol].search.search.replace(/\^|\$/g, '').replace(/\\/g, '');
+                $('#UserPlan').val(val).trigger('change');
+                if (val) initialFilterCount++;
+            }
+            if (statusCol !== undefined && state.columns[statusCol].search.search) {
+                const val = state.columns[statusCol].search.search.replace(/\^|\$/g, '').replace(/\\/g, '');
+                $('#FilterTransaction').val(val).trigger('change');
+                if (val) initialFilterCount++;
+            }
+        }
+
+        // Initial visual sync
+        window.DtDefaults.updateVisualState(api, initialFilterCount);
+
         // Buttons
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
             const companyType = $('#UserPlan').val();
@@ -168,12 +202,17 @@ const LegalEntitiesList = (function () {
             api.column('isActive:name').search(status ? `^${status}$` : '', true, false);
             api.draw();
 
+            let count = [companyType, status].filter(Boolean).length;
+            window.DtDefaults.updateVisualState(api, count);
+
             bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasFilter'))?.hide();
         });
 
         document.getElementById('btnFilterReset')?.addEventListener('click', () => {
             $('#UserPlan, #FilterTransaction').val('').trigger('change');
+            api.state.clear(); // Clear saved state
             api.columns().search('').draw();
+            window.DtDefaults.updateVisualState(api, 0);
         });
     };
 
