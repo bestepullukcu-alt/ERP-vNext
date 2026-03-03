@@ -23,8 +23,8 @@ const LegalEntitiesList = (function () {
         if (!dtTableEl) return;
 
         // Uzantı butonları (Merkezi butona ek olarak)
-        const extraButtons = [
-            {
+        const extraButtons = {
+            importBtn: {
                 text: '<i class="icon-base bx bx-import icon-sm"></i>',
                 className: 'btn btn-icon btn-label-secondary',
                 attr: { title: L.Import || 'Import', 'data-bs-toggle': 'tooltip' },
@@ -32,12 +32,12 @@ const LegalEntitiesList = (function () {
                     if (window.showToast) window.showToast(L.ComingSoon || 'Coming soon', 'info');
                 }
             },
-            {
+            filterBtn: {
                 text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
                 className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
                 attr: { title: L.Filter || 'Filter', 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasFilter' }
             }
-        ];
+        };
 
         dt = new DataTable(dtTableEl, window.DtDefaults.create({
             ajax: {

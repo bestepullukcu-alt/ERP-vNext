@@ -35,7 +35,7 @@ window.DtDefaults = (function () {
     /**
      * Sneat 2.x Layout API — orijinal 'app-user-list.js' ile %100 uyumlu.
      */
-    function buildLayout(userButtons) {
+    function buildLayout() {
         var l = L();
         return {
             topStart: {
@@ -56,9 +56,6 @@ window.DtDefaults = (function () {
                             placeholder: l.Search || 'Search...',
                             text: '_INPUT_'
                         }
-                    },
-                    {
-                        buttons: userButtons || exportButtons()
                     }
                 ]
             },
@@ -118,7 +115,7 @@ window.DtDefaults = (function () {
         $('.dt-search').addClass('mb-md-6 mb-2');
         $('.dt-layout-end').removeClass('justify-content-between').addClass('d-flex gap-md-4 justify-content-md-between justify-content-center gap-4 flex-wrap mt-0');
         $('.dt-layout-start').addClass('mt-0');
-        $('.dt-buttons').addClass('d-flex gap-4 mb-md-0 mb-6');
+        $('.dt-buttons').addClass('mb-md-0 mb-6'); // Removed d-flex gap-4 to keep btn-groups intact
         $('.dt-layout-table').removeClass('row mt-2');
         $('.dt-layout-full').removeClass('col-md col-12'); // table-responsive class'ı sayfa içindeki div'de mevcut, mükerrerliği önlemek için buradan kaldırıldı.
         $('table.dataTable').addClass('table-hover');
@@ -141,7 +138,18 @@ window.DtDefaults = (function () {
         if (l.DtEmptyTable) merged.language.emptyTable = l.DtEmptyTable;
 
         if (!merged.layout) {
-            merged.layout = buildLayout(merged.buttons);
+            merged.layout = buildLayout(); // Don't pass buttons yet
+
+            var btns = merged.buttons || exportButtons();
+
+            if (Array.isArray(btns) && btns.length > 0 && btns[0].buttons !== undefined) {
+                // If it is an array of layout features like [{buttons: [...]}, ...]
+                merged.layout.topEnd.features = merged.layout.topEnd.features.concat(btns);
+            } else if (btns) {
+                // Standard single button array
+                merged.layout.topEnd.features.push({ buttons: btns });
+            }
+
             delete merged.buttons;
         }
 
@@ -203,41 +211,56 @@ window.DtDefaults = (function () {
      */
     function exportButtons(addNewText, addNewAttr, extraButtons) {
         var l = L();
-        var btns = [
-            {
-                extend: 'collection',
-                className: 'btn btn-label-secondary dropdown-toggle',
-                text: '<span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-export icon-sm"></i> <span class="d-none d-sm-inline-block">' + (l.Export || 'Export') + '</span></span>',
-                buttons: [
-                    { extend: 'print', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-printer me-2"></i>' + (l.Print || 'Print') + '</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
-                    { extend: 'csv', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-file me-2"></i>CSV</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
-                    { extend: 'excel', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-export me-2"></i>Excel</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
-                    { extend: 'pdf', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-pdf me-2"></i>' + (l.PDF || 'PDF') + '</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
-                    { extend: 'copy', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-copy me-2"></i>' + (l.Copy || 'Copy') + '</span>', className: 'dropdown-item', exportOptions: commonExportOptions }
-                ]
-            },
-            {
-                extend: 'colvis',
-                text: '<i class="icon-base bx bx-show icon-sm"></i>',
-                className: 'btn btn-icon btn-label-secondary ms-2 dt-colvis-btn position-relative',
-                attr: { title: 'Column Visibility', 'data-bs-toggle': 'tooltip' },
-                columns: [2, 3, 4, 5, 6, 7, 8] // Exclude Index 0 (Control), 1 (Checkbox), 9 (Actions)
-            }
-        ];
 
-        if (extraButtons && Array.isArray(extraButtons)) {
-            btns = btns.concat(extraButtons);
+        var exportBtn = {
+            extend: 'collection',
+            className: 'btn btn-label-secondary dropdown-toggle',
+            text: '<span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-export icon-sm"></i> <span class="d-none d-sm-inline-block">' + (l.Export || 'Export') + '</span></span>',
+            buttons: [
+                { extend: 'print', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-printer me-2"></i>' + (l.Print || 'Print') + '</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
+                { extend: 'csv', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-file me-2"></i>CSV</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
+                { extend: 'excel', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-export me-2"></i>Excel</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
+                { extend: 'pdf', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-pdf me-2"></i>' + (l.PDF || 'PDF') + '</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
+                { extend: 'copy', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-copy me-2"></i>' + (l.Copy || 'Copy') + '</span>', className: 'dropdown-item', exportOptions: commonExportOptions }
+            ]
+        };
+
+        var colvisBtn = {
+            extend: 'colvis',
+            text: '<i class="icon-base bx bx-show icon-sm"></i>',
+            className: 'btn btn-icon btn-label-secondary dt-colvis-btn position-relative',
+            attr: { title: 'Column Visibility', 'data-bs-toggle': 'tooltip' },
+            columns: [2, 3, 4, 5, 6, 7, 8] // Exclude Index 0 (Control), 1 (Checkbox), 9 (Actions)
+        };
+
+        var group1 = [exportBtn];
+        var group2 = [colvisBtn];
+        var group3 = [];
+
+        if (extraButtons) {
+            if (extraButtons.importBtn) group1.push(extraButtons.importBtn);
+            if (extraButtons.filterBtn) group2.push(extraButtons.filterBtn);
+            if (Array.isArray(extraButtons)) group3 = group3.concat(extraButtons);
         }
 
+        var addNewBtnGroup = [];
         if (addNewText) {
-            btns.push({
+            addNewBtnGroup.push({
                 text: '<i class="icon-base bx bx-plus icon-sm me-0 me-sm-2"></i><span class="d-none d-sm-inline-block">' + addNewText + '</span>',
                 className: 'add-new btn btn-primary',
                 attr: addNewAttr || {}
             });
         }
 
-        return btns;
+        var features = [
+            { buttons: group1 },
+            { buttons: group2 }
+        ];
+
+        if (group3.length > 0) features.push({ buttons: group3 });
+        if (addNewBtnGroup.length > 0) features.push({ buttons: addNewBtnGroup });
+
+        return features;
     }
 
     /**
