@@ -181,4 +181,28 @@
   <data name="BreadcrumbMDM" xml:space="preserve">
     <value>MDM</value>
   </data>
+  <data name="GeneralInformation" xml:space="preserve">
+    <value>Genel Bilgiler</value>
+  </data>
+  <data name="Communication" xml:space="preserve">
+    <value>İletişim</value>
+  </data>
+  <data name="FinancialRegistration" xml:space="preserve">
+    <value>Mali &amp; Sicil Bilgileri</value>
+  </data>
+  <data name="LimitedLiability" xml:space="preserve">
+    <value>Limited Şirket</value>
+  </data>
+  <data name="Corporation" xml:space="preserve">
+    <value>Anonim Şirket</value>
+  </data>
+  <data name="SoleProprietorship" xml:space="preserve">
+    <value>Şahıs Şirketi</value>
+  </data>
+  <data name="LanguageEnglish" xml:space="preserve">
+    <value>İngilizce</value>
+  </data>
+  <data name="LanguageTurkish" xml:space="preserve">
+    <value>Türkçe</value>
+  </data>
 </root>

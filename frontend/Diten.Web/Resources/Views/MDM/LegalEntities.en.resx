@@ -181,4 +181,28 @@
   <data name="BreadcrumbMDM" xml:space="preserve">
     <value>MDM</value>
   </data>
+  <data name="GeneralInformation" xml:space="preserve">
+    <value>General Information</value>
+  </data>
+  <data name="Communication" xml:space="preserve">
+    <value>Communication</value>
+  </data>
+  <data name="FinancialRegistration" xml:space="preserve">
+    <value>Financial &amp; Registration</value>
+  </data>
+  <data name="LimitedLiability" xml:space="preserve">
+    <value>Limited Liability</value>
+  </data>
+  <data name="Corporation" xml:space="preserve">
+    <value>Corporation</value>
+  </data>
+  <data name="SoleProprietorship" xml:space="preserve">
+    <value>Sole Proprietorship</value>
+  </data>
+  <data name="LanguageEnglish" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="LanguageTurkish" xml:space="preserve">
+    <value>Turkish</value>
+  </data>
 </root>
