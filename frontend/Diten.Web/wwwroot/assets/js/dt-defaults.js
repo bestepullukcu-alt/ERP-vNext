@@ -273,7 +273,15 @@ window.DtDefaults = (function () {
             text: '<i class="icon-base bx bx-show icon-sm"></i>',
             className: 'btn btn-icon btn-label-secondary dt-colvis-btn position-relative',
             attr: { title: 'Column Visibility', 'data-bs-toggle': 'tooltip' },
-            columns: [2, 3, 4, 5, 6, 7, 8] // Exclude Index 0 (Control), 1 (Checkbox), 9 (Actions)
+            columns: [2, 3, 4, 5, 6, 7, 8], // Exclude Index 0 (Control), 1 (Checkbox), 9 (Actions)
+            postfixButtons: [
+                {
+                    extend: 'colvisGroup',
+                    text: l.ShowAll || 'Tümünü Göster',
+                    show: [2, 3, 4, 5, 6, 7, 8],
+                    className: 'btn btn-outline-primary mt-2 w-100'
+                }
+            ]
         };
 
         var group1 = [exportBtn];
