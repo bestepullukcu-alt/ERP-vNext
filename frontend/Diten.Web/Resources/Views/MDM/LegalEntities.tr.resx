@@ -205,4 +205,46 @@
   <data name="LanguageTurkish" xml:space="preserve">
     <value>Türkçe</value>
   </data>
+  <data name="Sector" xml:space="preserve">
+    <value>Sektör</value>
+  </data>
+  <data name="ContactPerson" xml:space="preserve">
+    <value>İletişim Kişisi</value>
+  </data>
+  <data name="OrganizationRole" xml:space="preserve">
+    <value>Organizasyon Rolü</value>
+  </data>
+  <data name="ParentLegalEntityId" xml:space="preserve">
+    <value>Bağlı Olduğu Şirket (Üst)</value>
+  </data>
+  <data name="LogoUrl" xml:space="preserve">
+    <value>Logo URL (Bağlantı)</value>
+  </data>
+  <data name="Website" xml:space="preserve">
+    <value>Web Sitesi</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>Adres</value>
+  </data>
+  <data name="DefaultCommunicationLanguage" xml:space="preserve">
+    <value>İletişim Dili</value>
+  </data>
+  <data name="DefaultTimeZone" xml:space="preserve">
+    <value>Saat Dilimi</value>
+  </data>
+  <data name="TaxJurisdiction" xml:space="preserve">
+    <value>Vergi / Yargı Çevresi</value>
+  </data>
+  <data name="PrimaryCurrency" xml:space="preserve">
+    <value>Ana Para Birimi</value>
+  </data>
+  <data name="FiscalYearStart" xml:space="preserve">
+    <value>Mali Yıl Başlangıcı</value>
+  </data>
+  <data name="RegistrationDate" xml:space="preserve">
+    <value>Kayıt Tarihi</value>
+  </data>
+  <data name="EffectiveFromDate" xml:space="preserve">
+    <value>Geçerlilik Tarihi</value>
+  </data>
 </root>

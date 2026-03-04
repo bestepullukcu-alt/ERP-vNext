@@ -154,6 +154,7 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 - Sütunları ve kartları sarmalayan Row'lar her zaman `<div class="row g-6">` şeklinde kullanılmalıdır. `g-6` class'ı satır ve sütunlar arasındaki dikey-yatay (gutter) eşit boşlukları sağlamak için kritik öneme sahiptir.
 - Ana içerikler daima `card mb-6` class'ı kullanılarak oluşturulmalıdır.
 - Kart başlıkları (`card-header`) içerisinde ikon kullanıldığında, yazının ve ikonun dikey hizalamasının (floating) bozulmaması için `<h5 class="card-title">` içerisine mutlaka `d-flex align-items-center` class'ları eklenmelidir. (Örn: `<h5 class="card-title mb-0 d-flex align-items-center"><i class="bx..."></i> Title</h5>`)
+- **Dengeli Kart Tasarımı (Equal Height & Full-Width):** Yükseklikleri birbirinden farklı form kartlarını, katı bir sol/sağ sarmalayıcısı (`<div class="col-md-6">` içine gömülü birden fazla kart) haline **getirmeyin**; zira bu durum tasarımsal olarak bir tarafta devasa boşluklar (dead vertical space) bırakır. Bunun yerine kartları doğrudan `.row.g-6` içerisine yazın (`<div class="col-12 col-lg-6">` vb.) ve yan yana gelen farklı uzunluktaki kartlara `<div class="card h-100">` ekleyerek alt sınırlarını eşit olarak hizalayın. Sayfanın en altındaki veya bir tarafı fazla uzatan kartları ise tam genişlikli (`<div class="col-12">`) olarak sayfanın sonuna yayarak formu bütünlük içinde kapatın. Yan yana duran iki kartın içerik yoğunlukları aynı değilse (örneğin birisinde 6 text input alt alta, diğerinde 2 input var ve boş kalıyorsa), kısa olan kartın içindeki input'ları yan yana (`col-md-6`) listelemek yerine, yükseklik dengesi sağlamak amacıyla tekli ve alt alta (`mb-6`) listeleyerek iç hacmi (padding & stacking) manuel olarak dengeleyin.
 
 ### UI-014: UI Component Highlight (Breadcrumbs)
 - Breadcrumb navigasyonunda bulunulan aktif sayfanın vurgusu temanın ana rengiyle belirginleştirilmelidir. Geçerli sayfayı belirten öğeye her zaman `text-primary` class'ı eklenmelidir: `<li class="breadcrumb-item active text-primary">...</li>`.
@@ -172,6 +173,11 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 - `_LayoutBackbone.cshtml` içindeki tüm metinler `@SharedLocalizer["Key"]` ile dile bağlanır.
 - Statik metin (`My Profile`, `Settings` vb.) yazılması yasaktır.
 - `_Layout.cshtml` bu kurala tabi değildir (frozen).
+
+### L10N-002: Universal Localization Coverage (8 Languages)
+- Yeni bir sayfa oluşturulduğunda veya mevcut bir sayfaya yeni metin/etiket (label, placeholder, breadcrumb vb.) eklendiğinde, oluşturulan çeviri anahtarları sistemde desteklenen **tüm 8 dil dosyasına** eksiksiz eklenmelidir (`.en`, `.tr`, `.ru`, `.es`, `.ka`, `.kk`, `.uk`, `.uz`).
+- Herhangi bir çeviri anahtarının (Key) İngilizce ve Türkçe dışındaki diğer altı dosyada eksik bırakılması kesinlikle yasaktır, çünkü bu durum ilgili dilde metnin anlamsız (Key ismiyle) veya tamamen bozuk görünmesine neden olur.
+- Çevirileri test ederken yalnızca Türkçe ve İngilizcede değil, seçili diğer birkaç dilde de (örneğin Gürcüce veya Rusça) sayfanın görsel ve metinsel bütünlüğü kontrol edilmelidir.
 
 ---
 

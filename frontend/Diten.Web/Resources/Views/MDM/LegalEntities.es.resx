@@ -1,48 +1,48 @@
-<?xml version="1.0" encoding="utf-8"?>
-<root>
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
+<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
   </resheader>
@@ -169,4 +169,4 @@
   <data name="PageDescription" xml:space="preserve">
     <value>Gestione sus empresas, sucursales y entidades legales desde aquí.</value>
   </data>
-</root>
+<data name="AddNewCompanyDescription" xml:space="preserve"><value>Registrar una nueva entidad legal o sucursal.</value></data><data name="BreadcrumbHome" xml:space="preserve"><value>Inicio</value></data><data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data><data name="GeneralInformation" xml:space="preserve"><value>Información general</value></data><data name="Communication" xml:space="preserve"><value>Comunicación</value></data><data name="FinancialRegistration" xml:space="preserve"><value>Finanzas y registro</value></data><data name="LimitedLiability" xml:space="preserve"><value>Limited Liability</value></data><data name="Corporation" xml:space="preserve"><value>Corporation</value></data><data name="SoleProprietorship" xml:space="preserve"><value>Sole Proprietorship</value></data><data name="LanguageEnglish" xml:space="preserve"><value>English</value></data><data name="LanguageTurkish" xml:space="preserve"><value>Turkish</value></data><data name="Sector" xml:space="preserve"><value>Sector</value></data><data name="ContactPerson" xml:space="preserve"><value>Persona de contacto</value></data><data name="OrganizationRole" xml:space="preserve"><value>Rol de la organización</value></data><data name="ParentLegalEntityId" xml:space="preserve"><value>Entidad matriz</value></data><data name="LogoUrl" xml:space="preserve"><value>URL del logotipo</value></data><data name="Website" xml:space="preserve"><value>Sitio web</value></data><data name="Address" xml:space="preserve"><value>Dirección</value></data><data name="DefaultCommunicationLanguage" xml:space="preserve"><value>Idioma predeterminado</value></data><data name="DefaultTimeZone" xml:space="preserve"><value>Zona horaria predeterminada</value></data><data name="TaxJurisdiction" xml:space="preserve"><value>Jurisdicción fiscal</value></data><data name="PrimaryCurrency" xml:space="preserve"><value>Moneda principal</value></data><data name="FiscalYearStart" xml:space="preserve"><value>Inicio del año fiscal</value></data><data name="RegistrationDate" xml:space="preserve"><value>Fecha de registro</value></data><data name="EffectiveFromDate" xml:space="preserve"><value>Fecha de vigencia</value></data></root>

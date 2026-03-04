@@ -46,25 +46,22 @@
             <div asp-validation-summary="ModelOnly" class="text-danger mb-6"></div>
 
             <div class="row g-6">
-                <!-- Left Column -->
-                <div class="col-12 col-md-6">
-                    <!-- Card 1: General Information -->
-                    <div class="card mb-6">
+                <!-- Card 1: General Information -->
+                <div class="col-12 col-lg-6">
+                    <div class="card h-100">
                         <div class="card-header">
                             <h5 class="card-title mb-0 d-flex align-items-center"><i
                                     class="bx bx-buildings me-2"></i>@Localizer["GeneralInformation"]</h5>
                         </div>
                         <div class="card-body">
                             <div class="mb-6">
-                                <label asp-for="Title" class="form-label">@Html.DisplayNameFor(m =>
-                                    m.Title) <span class="text-danger">*</span></label>
+                                <label asp-for="Title" class="form-label">@Localizer["Title"] <span class="text-danger">*</span></label>
                                 <input asp-for="Title" class="form-control"
                                     placeholder="@Localizer["CompanyNamePlaceholder"].Value" />
                                 <span asp-validation-for="Title" class="invalid-feedback d-block"></span>
                             </div>
                             <div class="mb-6">
-                                <label asp-for="CompanyType" class="form-label">@Html.DisplayNameFor(m =>
-                                    m.CompanyType)</label>
+                                <label asp-for="CompanyType" class="form-label">@Localizer["CompanyType"]</label>
                                 <select asp-for="CompanyType" class="form-select select2">
                                     <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
                                     <option value="LimitedLiability">@Localizer["LimitedLiability"]</option>
@@ -74,29 +71,25 @@
                                 <span asp-validation-for="CompanyType" class="invalid-feedback d-block"></span>
                             </div>
                             <div class="mb-6">
-                                <label asp-for="Sector" class="form-label">@Html.DisplayNameFor(m =>
-                                    m.Sector)</label>
+                                <label asp-for="Sector" class="form-label">@Localizer["Sector"]</label>
                                 <input asp-for="Sector" class="form-control"
                                     placeholder="@Localizer["SectorPlaceholder"].Value" />
                                 <span asp-validation-for="Sector" class="invalid-feedback d-block"></span>
                             </div>
                             <div class="mb-6">
-                                <label asp-for="OrganizationRole" class="form-label">@Html.DisplayNameFor(m
-                                    => m.OrganizationRole)</label>
+                                <label asp-for="OrganizationRole" class="form-label">@Localizer["OrganizationRole"]</label>
                                 <input asp-for="OrganizationRole" class="form-control"
                                     placeholder="@Localizer["OrganizationRolePlaceholder"].Value" />
                                 <span asp-validation-for="OrganizationRole" class="invalid-feedback d-block"></span>
                             </div>
                             <div class="mb-6">
-                                <label asp-for="ContactPerson" class="form-label">@Html.DisplayNameFor(m =>
-                                    m.ContactPerson)</label>
+                                <label asp-for="ContactPerson" class="form-label">@Localizer["ContactPerson"]</label>
                                 <input asp-for="ContactPerson" class="form-control"
                                     placeholder="@Localizer["ContactPersonPlaceholder"].Value" />
                                 <span asp-validation-for="ContactPerson" class="invalid-feedback d-block"></span>
                             </div>
                             <div class="mb-6">
-                                <label asp-for="ParentLegalEntityId" class="form-label">@Html.DisplayNameFor(m =>
-                                    m.ParentLegalEntityId)</label>
+                                <label asp-for="ParentLegalEntityId" class="form-label">@Localizer["ParentLegalEntityId"]</label>
                                 <select asp-for="ParentLegalEntityId" class="form-select select2">
                                     <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
                                     <!-- Options will be populated via AJAX -->
@@ -104,48 +97,44 @@
                                 <span asp-validation-for="ParentLegalEntityId" class="invalid-feedback d-block"></span>
                             </div>
                             <div class="mb-0">
-                                <label asp-for="LogoUrl" class="form-label">@Html.DisplayNameFor(m =>
-                                    m.LogoUrl)</label>
+                                <label asp-for="LogoUrl" class="form-label">@Localizer["LogoUrl"]</label>
                                 <input asp-for="LogoUrl" class="form-control"
                                     placeholder="@Localizer["LogoUrlPlaceholder"].Value" />
                                 <span asp-validation-for="LogoUrl" class="invalid-feedback d-block"></span>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Card 2: Communication -->
-                    <div class="card mb-6">
+                <!-- Card 2: Communication -->
+                <div class="col-12 col-lg-6">
+                    <div class="card h-100">
                         <div class="card-header">
                             <h5 class="card-title mb-0 d-flex align-items-center"><i
                                     class="bx bx-phone-call me-2"></i>@Localizer["Communication"]
                             </h5>
                         </div>
                         <div class="card-body">
-                            <div class="row g-6">
-                                <div class="col-md-6">
-                                    <label asp-for="Phone" class="form-label">@Html.DisplayNameFor(m =>
-                                        m.Phone)</label>
-                                    <div class="input-group input-group-merge">
-                                        <span class="input-group-text"><i class="bx bx-phone"></i></span>
-                                        <input asp-for="Phone" class="form-control phone-mask"
-                                            placeholder="@Localizer["PhonePlaceholder"].Value" dir="ltr" />
-                                    </div>
-                                    <span asp-validation-for="Phone" class="invalid-feedback d-block"></span>
+                            <div class="mb-6">
+                                <label asp-for="Phone" class="form-label">@Localizer["Phone"]</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="bx bx-phone"></i></span>
+                                    <input asp-for="Phone" class="form-control phone-mask"
+                                        placeholder="@Localizer["PhonePlaceholder"].Value" dir="ltr" />
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="Email" class="form-label">@Html.DisplayNameFor(m =>
-                                        m.Email)</label>
-                                    <div class="input-group input-group-merge">
-                                        <span class="input-group-text"><i class="bx bx-envelope"></i></span>
-                                        <input asp-for="Email" class="form-control"
-                                            placeholder="@Localizer["EmailPlaceholder"].Value" />
-                                    </div>
-                                    <span asp-validation-for="Email" class="invalid-feedback d-block"></span>
-                                </div>
+                                <span asp-validation-for="Phone" class="invalid-feedback d-block"></span>
                             </div>
-                            <div class="mb-6 mt-6">
-                                <label asp-for="Website" class="form-label">@Html.DisplayNameFor(m =>
-                                    m.Website)</label>
+                            <div class="mb-6">
+                                <label asp-for="Email" class="form-label">@Localizer["Email"]</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="bx bx-envelope"></i></span>
+                                    <input asp-for="Email" class="form-control"
+                                        placeholder="@Localizer["EmailPlaceholder"].Value" />
+                                </div>
+                                <span asp-validation-for="Email" class="invalid-feedback d-block"></span>
+                            </div>
+                            <div class="mb-6">
+                                <label asp-for="Website" class="form-label">@Localizer["Website"]</label>
                                 <div class="input-group input-group-merge">
                                     <span class="input-group-text"><i class="bx bx-globe"></i></span>
                                     <input asp-for="Website" class="form-control"
@@ -154,76 +143,66 @@
                                 <span asp-validation-for="Website" class="invalid-feedback d-block"></span>
                             </div>
                             <div class="mb-6">
-                                <label asp-for="Address" class="form-label">@Html.DisplayNameFor(m =>
-                                    m.Address)</label>
+                                <label asp-for="Address" class="form-label">@Localizer["Address"]</label>
                                 <textarea asp-for="Address" class="form-control" rows="3"
                                     placeholder="@Localizer["AddressPlaceholder"].Value"></textarea>
                                 <span asp-validation-for="Address" class="invalid-feedback d-block"></span>
                             </div>
-                            <div class="row g-6">
-                                <div class="col-md-6">
-                                    <label asp-for="DefaultCommunicationLanguage"
-                                        class="form-label">@Html.DisplayNameFor(m =>
-                                        m.DefaultCommunicationLanguage)</label>
-                                    <select asp-for="DefaultCommunicationLanguage" class="form-select select2">
-                                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
-                                        <option value="en">@Localizer["LanguageEnglish"]</option>
-                                        <option value="tr">@Localizer["LanguageTurkish"]</option>
-                                    </select>
-                                    <span asp-validation-for="DefaultCommunicationLanguage"
-                                        class="invalid-feedback d-block"></span>
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="DefaultTimeZone" class="form-label">@Html.DisplayNameFor(m =>
-                                        m.DefaultTimeZone)</label>
-                                    <select asp-for="DefaultTimeZone" class="form-select select2">
-                                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
-                                        <option value="UTC">UTC</option>
-                                        <option value="Europe/Istanbul">Europe/Istanbul</option>
-                                    </select>
-                                    <span asp-validation-for="DefaultTimeZone" class="invalid-feedback d-block"></span>
-                                </div>
+                            <div class="mb-6">
+                                <label asp-for="DefaultCommunicationLanguage"
+                                    class="form-label">@Localizer["DefaultCommunicationLanguage"]</label>
+                                <select asp-for="DefaultCommunicationLanguage" class="form-select select2">
+                                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                    <option value="en">@Localizer["LanguageEnglish"]</option>
+                                    <option value="tr">@Localizer["LanguageTurkish"]</option>
+                                </select>
+                                <span asp-validation-for="DefaultCommunicationLanguage"
+                                    class="invalid-feedback d-block"></span>
+                            </div>
+                            <div class="mb-0">
+                                <label asp-for="DefaultTimeZone" class="form-label">@Localizer["DefaultTimeZone"]</label>
+                                <select asp-for="DefaultTimeZone" class="form-select select2">
+                                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                    <option value="UTC">UTC</option>
+                                    <option value="Europe/Istanbul">Europe/Istanbul</option>
+                                </select>
+                                <span asp-validation-for="DefaultTimeZone" class="invalid-feedback d-block"></span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column -->
-                <div class="col-12 col-md-6">
-                    <!-- Card 3: Financial & Registration -->
-                    <div class="card mb-6">
+                <!-- Card 3: Financial & Registration -->
+                <div class="col-12">
+                    <div class="card">
                         <div class="card-header">
                             <h5 class="card-title mb-0 d-flex align-items-center"><i
                                     class="bx bx-calculator me-2"></i>@Localizer["FinancialRegistration"]</h5>
                         </div>
                         <div class="card-body">
                             <div class="row g-6">
-                                <div class="col-md-6">
-                                    <label asp-for="TaxOffice" class="form-label">@Html.DisplayNameFor(m =>
-                                        m.TaxOffice) <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <label asp-for="TaxOffice" class="form-label">@Localizer["TaxOffice"] <span class="text-danger">*</span></label>
                                     <input asp-for="TaxOffice" class="form-control"
                                         placeholder="@Localizer["TaxOfficePlaceholder"].Value" />
                                     <span asp-validation-for="TaxOffice" class="invalid-feedback d-block"></span>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="TaxNumber" class="form-label">@Html.DisplayNameFor(m =>
-                                        m.TaxNumber) <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <label asp-for="TaxNumber" class="form-label">@Localizer["TaxNumber"] <span class="text-danger">*</span></label>
                                     <input asp-for="TaxNumber" class="form-control"
                                         placeholder="@Localizer["TaxNumberPlaceholder"].Value" />
                                     <span asp-validation-for="TaxNumber" class="invalid-feedback d-block"></span>
                                 </div>
+                                <div class="col-md-4">
+                                    <label asp-for="TaxJurisdiction" class="form-label">@Localizer["TaxJurisdiction"]</label>
+                                    <input asp-for="TaxJurisdiction" class="form-control"
+                                        placeholder="@Localizer["TaxJurisdictionPlaceholder"].Value" />
+                                    <span asp-validation-for="TaxJurisdiction" class="invalid-feedback d-block"></span>
+                                </div>
                             </div>
-                            <div class="mb-6 mt-6">
-                                <label asp-for="TaxJurisdiction" class="form-label">@Html.DisplayNameFor(m
-                                    => m.TaxJurisdiction)</label>
-                                <input asp-for="TaxJurisdiction" class="form-control"
-                                    placeholder="@Localizer["TaxJurisdictionPlaceholder"].Value" />
-                                <span asp-validation-for="TaxJurisdiction" class="invalid-feedback d-block"></span>
-                            </div>
-                            <div class="row g-6">
-                                <div class="col-md-6">
-                                    <label asp-for="PrimaryCurrency" class="form-label">@Html.DisplayNameFor(m =>
-                                        m.PrimaryCurrency)</label>
+                            <div class="row g-6 mt-0">
+                                <div class="col-md-3">
+                                    <label asp-for="PrimaryCurrency" class="form-label">@Localizer["PrimaryCurrency"]</label>
                                     <select asp-for="PrimaryCurrency" class="form-select select2">
                                         <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
                                         <option value="USD">USD ($)</option>
@@ -232,18 +211,14 @@
                                     </select>
                                     <span asp-validation-for="PrimaryCurrency" class="invalid-feedback d-block"></span>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="FiscalYearStart" class="form-label">@Html.DisplayNameFor(m =>
-                                        m.FiscalYearStart)</label>
+                                <div class="col-md-3">
+                                    <label asp-for="FiscalYearStart" class="form-label">@Localizer["FiscalYearStart"]</label>
                                     <input asp-for="FiscalYearStart" class="form-control"
                                         placeholder="@Localizer["FiscalYearStartPlaceholder"].Value" />
                                     <span asp-validation-for="FiscalYearStart" class="invalid-feedback d-block"></span>
                                 </div>
-                            </div>
-                            <div class="row g-6 mt-0">
-                                <div class="col-md-6">
-                                    <label asp-for="RegistrationDate" class="form-label">@Html.DisplayNameFor(m =>
-                                        m.RegistrationDate)</label>
+                                <div class="col-md-3">
+                                    <label asp-for="RegistrationDate" class="form-label">@Localizer["RegistrationDate"]</label>
                                     <div class="input-group input-group-merge">
                                         <span class="input-group-text"><i class="bx bx-calendar"></i></span>
                                         <input asp-for="RegistrationDate" type="text"
@@ -251,9 +226,8 @@
                                     </div>
                                     <span asp-validation-for="RegistrationDate" class="invalid-feedback d-block"></span>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="EffectiveFromDate" class="form-label">@Html.DisplayNameFor(m =>
-                                        m.EffectiveFromDate)</label>
+                                <div class="col-md-3">
+                                    <label asp-for="EffectiveFromDate" class="form-label">@Localizer["EffectiveFromDate"]</label>
                                     <div class="input-group input-group-merge">
                                         <span class="input-group-text"><i class="bx bx-calendar-event"></i></span>
                                         <input asp-for="EffectiveFromDate" type="text"

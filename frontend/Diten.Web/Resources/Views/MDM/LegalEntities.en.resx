@@ -205,4 +205,46 @@
   <data name="LanguageTurkish" xml:space="preserve">
     <value>Turkish</value>
   </data>
+  <data name="Sector" xml:space="preserve">
+    <value>Sector</value>
+  </data>
+  <data name="ContactPerson" xml:space="preserve">
+    <value>Contact Person</value>
+  </data>
+  <data name="OrganizationRole" xml:space="preserve">
+    <value>Organization Role</value>
+  </data>
+  <data name="ParentLegalEntityId" xml:space="preserve">
+    <value>Parent Legal Entity</value>
+  </data>
+  <data name="LogoUrl" xml:space="preserve">
+    <value>Logo URL</value>
+  </data>
+  <data name="Website" xml:space="preserve">
+    <value>Website</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="DefaultCommunicationLanguage" xml:space="preserve">
+    <value>Default Language</value>
+  </data>
+  <data name="DefaultTimeZone" xml:space="preserve">
+    <value>Default Time Zone</value>
+  </data>
+  <data name="TaxJurisdiction" xml:space="preserve">
+    <value>Tax Jurisdiction</value>
+  </data>
+  <data name="PrimaryCurrency" xml:space="preserve">
+    <value>Primary Currency</value>
+  </data>
+  <data name="FiscalYearStart" xml:space="preserve">
+    <value>Fiscal Year Start</value>
+  </data>
+  <data name="RegistrationDate" xml:space="preserve">
+    <value>Registration Date</value>
+  </data>
+  <data name="EffectiveFromDate" xml:space="preserve">
+    <value>Effective From Date</value>
+  </data>
 </root>
