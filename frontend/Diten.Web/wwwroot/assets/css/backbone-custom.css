@@ -209,9 +209,9 @@
         margin: 0 !important;
     }
 
-    /* Buttons: auto-width, they will all flow onto Row 2 together */
+    /* Buttons: each group grows to share the full row width */
     div.dt-container .dt-layout-end .dt-buttons {
-        flex: 0 0 auto !important;
+        flex: 1 1 0% !important;
         width: auto !important;
         display: inline-flex !important;
         flex-wrap: nowrap !important;
@@ -219,8 +219,9 @@
         gap: 0 !important;
     }
 
-    /* Shrink buttons a bit so they fit on 375px */
+    /* Buttons inside each group stretch equally */
     div.dt-container .dt-layout-end .dt-buttons .btn {
+        flex: 1 !important;
         padding-left: 0.4rem !important;
         padding-right: 0.4rem !important;
         font-size: 0.75rem !important;
