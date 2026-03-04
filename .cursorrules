@@ -1,0 +1,18 @@
+# Sneat Theme UI Guidelines
+
+When creating or modifying views and UI components in this ASP.NET Core project (.cshtml files), you MUST adhere to the following design rules to maintain compatibility with the Sneat theme layout:
+
+## 1. Grid & Layout (Container & Rows)
+- **Do not use margin auto wrappers inside rows like `col-lg-10 mx-auto` for form pages**, as this restricts the card width and creates unwanted large empty spaces on the sides. Instead, use full-width columns like `<div class="col-12">`.
+- Use the `<div class="row g-6">` structure when rendering multiple cards or columns within a single wrapper. The `g-6` class is critical for adding the specific Sneat theme vertical and horizontal gutter spacing between standard cards. Omitting `g-6` causes cards to sit with zero spacing on certain screens.
+
+## 2. Global CSS Overrides
+- **Remove Default ASP.NET Core Layout Padding:** The default ASP.NET Core `site.css` file comes with `html { min-height: 100%; position: relative; }` and `body { margin-bottom: 60px; }`. This default styling clashes with Sneat's custom `layout-wrapper` footer layout, resulting in a persistent 60px empty white void at the bottom of the page viewport. These styles MUST be removed or kept empty inside `wwwroot/css/site.css` to prevent UI breakage.
+
+## 3. General Sneat Card Rules
+- All major content containers should use the `card mb-6` class structure.
+- Card bodies usually follow the structure: `<div class="card-header">...</div><div class="card-body">...</div>`.
+- When adding icons next to card titles inside `<div class="card-header">`, always append `d-flex align-items-center` to the `<h5 class="card-title">` element to ensure the icon and text are perfectly vertically aligned (e.g., `<h5 class="card-title mb-0 d-flex align-items-center"><i class="bx..."></i> Title</h5>`).
+
+## 4. UI Component Highlight (Breadcrumbs)
+- The active / current page in a breadcrumb navigation must distinctively stand out. ALWAYS append the `text-primary` class to the current active breadcrumb item. For example: `<li class="breadcrumb-item active text-primary">Current Page</li>`.

@@ -144,6 +144,15 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 - Konteynır: `d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-6`.
 - Tüm metinler sayfa bazlı lokalizasyon dosyasından (`@Localizer["..."]`) alınmalıdır.
 
+### UI-013: Form Pages Grid & Layout (Sneat Theme)
+- Form sayfalarında (Create/Edit) margin auto wrapper'lar (`col-lg-10 mx-auto`) **kullanılmaz**, çünkü bu kullanım içeriği sıkıştırıp kenarlarda devasa boşluklar yaratır. Kartlar tam genişlikte `<div class="col-12">` içine alınmalıdır.
+- Sütunları ve kartları sarmalayan Row'lar her zaman `<div class="row g-6">` şeklinde kullanılmalıdır. `g-6` class'ı satır ve sütunlar arasındaki dikey-yatay (gutter) eşit boşlukları sağlamak için kritik öneme sahiptir.
+- Ana içerikler daima `card mb-6` class'ı kullanılarak oluşturulmalıdır.
+- Kart başlıkları (`card-header`) içerisinde ikon kullanıldığında, yazının ve ikonun dikey hizalamasının (floating) bozulmaması için `<h5 class="card-title">` içerisine mutlaka `d-flex align-items-center` class'ları eklenmelidir. (Örn: `<h5 class="card-title mb-0 d-flex align-items-center"><i class="bx..."></i> Title</h5>`)
+
+### UI-014: UI Component Highlight (Breadcrumbs)
+- Breadcrumb navigasyonunda bulunulan aktif sayfanın vurgusu temanın ana rengiyle belirginleştirilmelidir. Geçerli sayfayı belirten öğeye her zaman `text-primary` class'ı eklenmelidir: `<li class="breadcrumb-item active text-primary">...</li>`.
+
 ### UI-006: Global Footer Standardı
 - Alt bilgi (Footer) metni şu formatta sabitlenmiştir: `© 2018 | made with by Diten`.
 - Emoji (kalp vb.) kullanımı ve yıl değişikliği standart dışıdır.
