@@ -273,6 +273,8 @@ Bugüne kadar karşılaşılan yapısal hatalardan çıkarılan **kesin ve deği
 
 20. **Dinamik Seçici Dışa Aktarma (Selective Export)**: DataTables export işlemlerinde (Excel, PDF, Print vb.), eğer tabloda seçili satır(lar) varsa (`.selected` class'ına sahip), dışa aktarma işlemi KESİNLİKLE sadece bu seçili satırları kapsamalıdır. Eğer hiçbir seçim yoksa tablonun tamamı (filtreli haliyle) dışa aktarılmalıdır. Bu mantık `dt-defaults.js` içindeki `commonExportOptions.rows` fonksiyonu ile merkezi olarak yönetilmeli ve manuel override'larda bu davranış korunmalıdır.
 
+21. **Kolon Genişlik Dengesi (cell-fit kullanımı)**: DataTables içinde yer alan Checkbox, Actions (Aksiyonlar) veya ikon bazlı kontrol kolonları gibi sabit kalması gereken kolonlar için mutlaka Sneat temasının **`cell-fit`** sınıfı kullanılmalıdır. Bu sınıf, ColVis ile diğer veri kolonları gizlendiğinde bu sabit kolonların orantısız şekilde genişlemesini (stretching) engeller ve tablonun kompakt yapısını korur. Hem `columnDefs` içinde `className` olarak hem de ilgili `th` etiketinde tanımlanmalıdır.
+
 ------------------------------------------------------------------------
 
 # 📐 Layout & View Architecture Rule
