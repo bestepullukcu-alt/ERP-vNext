@@ -145,8 +145,8 @@
 }
 
 /* ================================================
-   MOD-0022: DataTable Mobile Responsive Layout
-   Scoped to @media (max-width: 767.98px) — Desktop UNAFFECTED
+   MOD-0022: DataTable Responsive Layout (Phone + Tablet)
+   Scoped to @media (max-width: 991.98px) — Desktop (≥992px) UNAFFECTED
    
    Actual DOM structure:
    div.dt-container
@@ -154,7 +154,7 @@
        > div.dt-layout-start.col-md-auto.me-auto        ← Length
        > div.dt-layout-end.col-md-auto.ms-auto          ← Search + .dt-buttons x3
    ================================================ */
-@media screen and (max-width: 767.98px) {
+@media screen and (max-width: 991.98px) {
 
     /* ---- Top Row: flex-row with wrap ---- */
     div.dt-container>.row:first-child {
