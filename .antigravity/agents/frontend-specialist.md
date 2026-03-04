@@ -271,6 +271,8 @@ Bugüne kadar karşılaşılan yapısal hatalardan çıkarılan **kesin ve deği
 18. **DataTable Bulk Action & Seçim Estetiği (Sneat Standardı)**: Toplu işlem (Bulk Action) barındaki silme butonu her zaman **`btn-label-danger`** (premium tinted style) olmalıdır. Tablo satır seçimlerinde (selection) asla DataTables'ın default parlament mavisi tonları kullanılmamalıdır. Seçilen satırların arka planı her zaman temanın birincil rengine (`--bs-primary-rgb`) bağımlı olarak **`rgba(var(--bs-primary-rgb), 0.08)`** (ve hover için `0.12`) opaklık değerleriyle dinamik olarak ayarlanmalıdır. Bu, projenin "Theme-Aware" (temaya duyarlı) kalmasını sağlar.
 19. **DataTables Inset Shadow Temizliği**: DataTables 'Select' eklentisi seçili hücrelere (`td`) 9999px boyutunda agresif bir `box-shadow` (inset) uygular. Bu gölge temanın estetiğini bozduğu için CSS üzerinden KESİNLİKLE hem `tr.selected` hem de `tr.selected > td` seviyesinde `box-shadow: none !important` ile sıfırlanmalıdır.
 
+20. **Dinamik Seçici Dışa Aktarma (Selective Export)**: DataTables export işlemlerinde (Excel, PDF, Print vb.), eğer tabloda seçili satır(lar) varsa (`.selected` class'ına sahip), dışa aktarma işlemi KESİNLİKLE sadece bu seçili satırları kapsamalıdır. Eğer hiçbir seçim yoksa tablonun tamamı (filtreli haliyle) dışa aktarılmalıdır. Bu mantık `dt-defaults.js` içindeki `commonExportOptions.rows` fonksiyonu ile merkezi olarak yönetilmeli ve manuel override'larda bu davranış korunmalıdır.
+
 ------------------------------------------------------------------------
 
 # 📐 Layout & View Architecture Rule
