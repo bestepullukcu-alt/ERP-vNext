@@ -21,6 +21,17 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 - `.btn:focus`, `.form-control:focus` gibi focus ring override'ları yapılmaz.
 - Sneat'in merkezi focus tanımları geçerlidir.
 
+### CSS-004: DataTable Cellfit Columns
+- Bulk checkbox ve Actions gibi sabit genişlikli kolonlar ColVis ile diğer kolonlar gizlendiğinde **genişlememeli**dir.
+- Bu kolonlara `cellfit` class'ı verilir ve CSS tanımı `backbone-custom.css` içinde yapılır.
+- Inline `style` ile genişlik verilmesi **yasaktır**; bunun yerine `cellfit` class'ı kullanılır.
+
+### CSS-005: Responsive Layout via CSS Media Queries
+- DataTable header responsive düzeltmeleri **yalnızca CSS** ile (`backbone-custom.css` içinde `@media` query) yapılır.
+- JavaScript (dt-defaults.js) responsive layout amaçlı class ekleme/çıkarma yapmamalıdır.
+- CSS düzeltmeleri masaüstü görünümünü **kesinlikle bozmamalıdır**; tüm kurallar media query (`@media screen and (max-width: 991.98px)`) içinde kapsamlanır.
+- `display: contents` tekniği, `.dt-layout-end` hücresini mobilde eriterek çocuklarının (Search, Buttons) üst satırın doğrudan flex item'ları olmasını sağlar.
+
 ---
 
 ## JavaScript Kuralları
@@ -80,6 +91,25 @@ Tüm ajanlar bu kurallara uymak zorundadır.
     - **Responsive Renderer:** Mobil görünüm için gerekli olan detay tablosunu merkezi olarak oluşturur (`responsiveRenderer`). Sayfa içinde tekrar tanımlanması yasaktır.
     - **Hover Effect:** Tüm tablolar kullanıcı odaklanmasını artırmak için otomatik olarak `table-hover` sınıfına sahiptir.
 - Export butonları `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons)` factory'si ile oluşturulur. Sayfaya özel butonlar (Filtre vb.) `extraButtons` dizisi olarak bu fonksiyona geçilmelidir.
+
+### UI-011: DataTable Responsive Header Layout (MOD-0022)
+- **Breakpoint:** `@media (max-width: 991.98px)` — telefon ve tablet kapsar; masaüstü (≥992px) etkilenmez.
+- **Row 1 (Telefon/Tablet):** Length (100 dropdown) solda, Search (Ara..) sağda — aynı yatay satırda.
+- **Row 2 (Telefon/Tablet):** Export, Import, ColVis, Filter ve Add butonu — **sol kenardan başlayarak full-width** yayılır.
+- **Teknik:** `.dt-layout-end`'e `display: contents` uygulanarak çocukları (Search + Button grupları) üst satırın doğrudan flex item'ları yapılır. Bu sayede butonlar Length'in altından başlar.
+- **Kurallar:**
+    - Butonlar mobilde **tek bir birleşik grup olarak birleştirilmez** — mevcut 3 ayrı `.dt-buttons` grubu korunur (Export+Import, ColVis+Filter, AddNew).
+    - Her buton grubu `flex: 1` ile eşit genişlik alır ve içindeki butonlar da `flex: 1` ile eşit dağılır.
+    - Bu düzeltmeler **sadece CSS** ile yapılır (`backbone-custom.css`); `dt-defaults.js` içinde responsive amaçlı class manipülasyonu yapılmaz.
+
+### UI-012: DataTable Button Group Architecture
+- `DtDefaults.exportButtons()` factory'si butonları **ayrı feature grupları** olarak döner:
+    - **Grup 1:** Export + Import butonları (`btn-group` olarak birleşir)
+    - **Grup 2:** ColVis + Filter butonları (`btn-group` olarak birleşir)
+    - **Grup 3:** Add New butonu (bağımsız, `btn-primary`)
+- Bu gruplar DataTables tarafından ayrı `.dt-buttons` container'ları olarak render edilir.
+- `applySneatClassFixes()` fonksiyonu bu grupları `btn-group` class'ı ile butona dönüştürür ve Nuclear Fix (inline style) ile border-radius/divider tutarlılığını sağlar.
+- Tüm butonlar **birleştirilmemelidir** (tek bir mega btn-group yapılmaz); mevcut 3'lü grup yapısı korunmalıdır.
 
 ### UI-002: DataTable Filtering (Offcanvas Pattern)
 - Tablo filtreleri için sağ taraftan açılan Bootstrap Offcanvas (`#offcanvasFilter`) kullanılır.

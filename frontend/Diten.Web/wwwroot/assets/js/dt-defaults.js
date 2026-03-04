@@ -39,13 +39,18 @@ window.DtDefaults = (function () {
         var l = L();
         return {
             topStart: {
+                rowClass: 'row mx-3 my-0 justify-content-between',
                 features: [
                     {
                         pageLength: {
                             menu: [10, 25, 50, 100],
                             text: '_MENU_'
                         }
-                    },
+                    }
+                ]
+            },
+            topEnd: {
+                features: [
                     {
                         search: {
                             placeholder: l.Search || 'Search...',
@@ -54,10 +59,6 @@ window.DtDefaults = (function () {
                     }
                 ]
             },
-            topEnd: {
-                features: []
-            },
-
             bottomStart: {
                 rowClass: 'row mx-3 justify-content-between',
                 features: ['info']
@@ -107,40 +108,29 @@ window.DtDefaults = (function () {
      * Sneat class düzeltmeleri — drawCallback ile daha stabil.
      */
     function applySneatClassFixes() {
-        // 1. Basic Element Cleaning
-        $('.dt-buttons .btn').removeClass('shadow-none');
+        $('.dt-buttons .btn').removeClass('btn-secondary').addClass('shadow-none');
         $('.dt-search .form-control').removeClass('form-control-sm').addClass('shadow-none');
         $('.dt-length .form-select').removeClass('form-select-sm').addClass('ms-0');
-
-        // 2. Responsive Layout Containers
-        // Sneat standard card padding: px-md-6 (24px) for desktop, px-4 (16px) for mobile.
-        $('.dt-layout-row').first().attr('class', 'dt-layout-row row mx-0 px-md-6 px-4 py-2 align-items-center d-flex flex-row flex-wrap');
-
-        // Start Cell (Now contains Length + Search)
-        $('.dt-layout-start').first().attr('class', 'dt-layout-cell dt-layout-start col d-flex flex-row flex-wrap align-items-center justify-content-start p-0 gap-2');
-        $('.dt-length').addClass('m-0');
-        $('.dt-search').addClass('m-0 d-flex align-items-center');
-        $('.dt-search input').addClass('form-control shadow-none').css('max-width', '150px'); // Ensure they fit on same line
-
-        // End Cell (Now contains only Buttons)
-        $('.dt-layout-end').first().attr('class', 'dt-layout-cell dt-layout-end col-12 col-md-auto d-flex justify-content-center justify-content-md-end align-items-center p-0 mt-2 mt-md-0');
+        $('.dt-length').addClass('mb-md-6 mb-0');
+        $('.dt-search').addClass('mb-md-6 mb-2');
+        $('.dt-layout-end').removeClass('justify-content-between').addClass('d-flex gap-md-4 justify-content-md-between justify-content-center gap-4 flex-wrap mt-0');
+        $('.dt-layout-start').addClass('mt-0');
 
         $('.dt-buttons').each(function () {
             var $container = $(this);
             // MOD-0014: Remove any DataTables-generated internal wraps
-            $container.find('> .btn-group, > .dt-button-collection, > .dt-layout-cell').each(function () {
+            $container.find('> .btn-group, > .dt-button-collection').each(function () {
                 $(this).contents().unwrap();
             });
 
-            // Mobile: Take full width to drops correctly if needed, but here we handled it via dt-layout-end
-            $container.addClass('m-0 d-flex justify-content-center justify-content-md-end');
+            $container.addClass('mb-md-0 mb-6');
             $container.removeClass('d-flex gap-1 gap-2 gap-3 gap-4'); // Remove any JS-injected gaps
 
             if ($container.children().length > 1) {
                 $container.addClass('btn-group');
 
-                // Nuclear Fix for Border Radius & Dividers using Inline Styles
-                var $btns = $container.children('button.btn, a.btn');
+                // Nuclear Fix for Border Radius & Dividers using Inline Styles (Overrides all sneat pseudo-classes)
+                var $btns = $container.children('button.btn');
                 $btns.each(function (index) {
                     this.style.setProperty('border-radius', '0', 'important');
                     this.style.setProperty('margin-left', '0', 'important');
@@ -305,25 +295,34 @@ window.DtDefaults = (function () {
             ]
         };
 
-        var allButtons = [exportBtn];
-        if (extraButtons && extraButtons.importBtn) allButtons.push(extraButtons.importBtn);
-        allButtons.push(colvisBtn);
-        if (extraButtons && extraButtons.filterBtn) allButtons.push(extraButtons.filterBtn);
+        var group1 = [exportBtn];
+        if (extraButtons && extraButtons.importBtn) group1.push(extraButtons.importBtn);
 
-        if (addNewText) {
-            allButtons.push({
-                text: '<i class="icon-base bx bx-plus icon-sm me-0 me-sm-2"></i><span class="d-none d-sm-inline-block">' + addNewText + '</span>',
-                className: 'add-new btn btn-primary',
-                attr: addNewAttr || {}
-            });
-        }
+        var group2 = [colvisBtn];
+        if (extraButtons && extraButtons.filterBtn) group2.push(extraButtons.filterBtn);
+
+        var features = [
+            { buttons: group1 },
+            { buttons: group2 }
+        ];
 
         // Extra array buttons (usually custom actions)
         if (Array.isArray(extraButtons)) {
-            allButtons = allButtons.concat(extraButtons);
+            features.push({ buttons: extraButtons });
         }
 
-        return [{ buttons: allButtons }];
+        // Add New button stays in its own group as a primary action
+        if (addNewText) {
+            features.push({
+                buttons: [{
+                    text: '<i class="icon-base bx bx-plus icon-sm me-0 me-sm-2"></i><span class="d-none d-sm-inline-block">' + addNewText + '</span>',
+                    className: 'add-new btn btn-primary',
+                    attr: addNewAttr || {}
+                }]
+            });
+        }
+
+        return features;
     }
 
     /**
