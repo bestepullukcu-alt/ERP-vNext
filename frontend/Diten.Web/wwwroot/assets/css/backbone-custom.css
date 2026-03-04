@@ -156,24 +156,20 @@
    ================================================ */
 @media screen and (max-width: 767.98px) {
 
-    /* ---- Top Row: flex-row so Start & End sit side-by-side ---- */
+    /* ---- Top Row: flex-row with wrap ---- */
     div.dt-container>.row:first-child {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;
-        align-items: flex-start !important;
+        align-items: center !important;
         padding: 0.5rem 1rem !important;
+        gap: 0.25rem !important;
     }
 
-    /* Reset Bootstrap column sizing for both cells */
-    div.dt-container>.row:first-child>.dt-layout-start,
-    div.dt-container>.row:first-child>.dt-layout-end {
+    /* Reset Bootstrap column sizing */
+    div.dt-container>.row:first-child>.dt-layout-start {
         padding: 0 !important;
         margin: 0 !important;
-    }
-
-    /* Start Cell (Length): auto-width, sit on the left */
-    div.dt-container>.row:first-child>.dt-layout-start {
         flex: 0 0 auto !important;
         width: auto !important;
         max-width: none !important;
@@ -183,24 +179,17 @@
         margin: 0 !important;
     }
 
-    /* End Cell: flex container with wrap. Search fills first sub-line,
-       buttons wrap to next sub-line */
+    /* End Cell: dissolve the wrapper so children become direct flex items
+       of the row. This lets buttons span the FULL row width. */
     div.dt-container>.row:first-child>.dt-layout-end {
-        flex: 1 1 0% !important;
-        width: auto !important;
-        max-width: none !important;
-        display: flex !important;
-        flex-wrap: wrap !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 0.25rem !important;
+        display: contents !important;
     }
 
-    /* Search: take full width of End cell = fills Row 1 next to Length */
+    /* Search: sits next to Length on Row 1 */
     div.dt-container .dt-layout-end .dt-search {
-        flex: 1 0 100% !important;
+        flex: 1 1 0% !important;
         margin: 0 !important;
-        order: -1 !important;
+        order: 0 !important;
     }
 
     div.dt-container .dt-layout-end .dt-search input {
@@ -209,7 +198,7 @@
         margin: 0 !important;
     }
 
-    /* Buttons: each group grows to share the full row width */
+    /* Buttons: grow to share full row width on Row 2 */
     div.dt-container .dt-layout-end .dt-buttons {
         flex: 1 1 0% !important;
         width: auto !important;
@@ -217,6 +206,7 @@
         flex-wrap: nowrap !important;
         margin: 0 !important;
         gap: 0 !important;
+        order: 1 !important;
     }
 
     /* Buttons inside each group stretch equally */
