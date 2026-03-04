@@ -66,7 +66,7 @@ const LegalEntitiesList = (function () {
                 { className: 'control', searchable: false, orderable: false, responsivePriority: 2, targets: 0, render: () => '' },
                 {
                     targets: 1, orderable: false, searchable: false, responsivePriority: 3,
-                    className: 'dt-checkboxes-cell',
+                    className: 'dt-checkboxes-cell cell-fit',
                     render: function (data) {
                         return '<input type="checkbox" class="dt-checkboxes form-check-input" value="' + data + '">';
                     }
@@ -81,6 +81,7 @@ const LegalEntitiesList = (function () {
                 },
                 {
                     targets: -1, title: L.Actions || 'Actions', searchable: false, orderable: false,
+                    className: 'cell-fit',
                     render: (data, type, full) => `
             <div class="d-flex align-items-center">
               <a href="javascript:;" class="btn btn-icon delete-record text-danger me-1"><i class="bx bx-trash icon-md"></i></a>
