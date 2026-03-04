@@ -21,6 +21,25 @@
     </div>
 </div>
 
+<!-- Bulk Action Bar (Shown when rows are selected) -->
+<div id="bulkActionBar" class="card mb-4 d-none">
+    <div class="card-body d-flex align-items-center justify-content-between py-3">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bx bx-check-circle text-primary icon-md"></i>
+            <span id="bulkSelectedCount" class="fw-medium text-heading">0</span>
+            <span class="text-muted" id="bulkSelectedLabel">@SharedLocalizer["SelectedCount"]</span>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" id="btnBulkDelete" class="btn btn-danger">
+                <i class="bx bx-trash me-1"></i> @SharedLocalizer["BulkDelete"]
+            </button>
+            <button type="button" id="btnClearSelection" class="btn btn-label-secondary">
+                @SharedLocalizer["ClearSelection"]
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Legal Entities List Table -->
 <div class="card">
     <div class="card-datatable table-responsive">
@@ -28,7 +47,7 @@
             <thead>
                 <tr>
                     <th></th>
-                    <th></th>
+                    <th><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
                     <th>@SharedLocalizer["Title"]</th>
                     <th>@SharedLocalizer["TaxNumber"]</th>
                     <th>@Localizer["TaxOffice"]</th>
@@ -71,6 +90,13 @@
         window.L10n.DtInfoFiltered = @Json.Serialize(SharedLocalizer["DtInfoFiltered"].Value);
         window.L10n.DtZeroRecords = @Json.Serialize(SharedLocalizer["DtZeroRecords"].Value);
         window.L10n.DtEmptyTable = @Json.Serialize(SharedLocalizer["DtEmptyTable"].Value);
+        window.L10n.BulkDelete = @Json.Serialize(SharedLocalizer["BulkDelete"].Value);
+        window.L10n.BulkDeleteConfirm = @Json.Serialize(SharedLocalizer["BulkDeleteConfirm"].Value);
+        window.L10n.BulkDeleteSuccess = @Json.Serialize(SharedLocalizer["BulkDeleteSuccess"].Value);
+        window.L10n.ClearSelection = @Json.Serialize(SharedLocalizer["ClearSelection"].Value);
+        window.L10n.SelectedCount = @Json.Serialize(SharedLocalizer["SelectedCount"].Value);
+        window.L10n.AreYouSure = @Json.Serialize(SharedLocalizer["AreYouSure"].Value);
+        window.L10n.Cancel = @Json.Serialize(SharedLocalizer["Cancel"].Value);
 
         // Check if redirect came back with success message
         var successMsg = @Json.Serialize(TempData["SuccessMessage"]);

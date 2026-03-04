@@ -66,8 +66,10 @@ const LegalEntitiesList = (function () {
                 { className: 'control', searchable: false, orderable: false, responsivePriority: 2, targets: 0, render: () => '' },
                 {
                     targets: 1, orderable: false, searchable: false, responsivePriority: 3,
-                    checkboxes: { selectAllRender: '<input type="checkbox" class="form-check-input">' },
-                    render: () => '<input type="checkbox" class="dt-checkboxes form-check-input">'
+                    className: 'dt-checkboxes-cell',
+                    render: function (data) {
+                        return '<input type="checkbox" class="dt-checkboxes form-check-input" value="' + data + '">';
+                    }
                 },
                 { targets: 5, render: (data) => data ? `<a href="mailto:${data}">${data}</a>` : '-' },
                 {
@@ -216,11 +218,67 @@ const LegalEntitiesList = (function () {
         });
     };
 
+    // =================== Checkbox Selection Management ===================
+
+    /**
+     * Get all selected IDs from checked checkboxes
+     */
+    const getSelectedIds = () => {
+        const ids = [];
+        dtTableEl.querySelectorAll('.dt-checkboxes:checked').forEach(cb => {
+            ids.push(cb.value);
+        });
+        return ids;
+    };
+
+    /**
+     * Update Bulk Action Bar visibility and selected count
+     */
+    const updateBulkBar = () => {
+        const ids = getSelectedIds();
+        const bar = document.getElementById('bulkActionBar');
+        const countEl = document.getElementById('bulkSelectedCount');
+        if (!bar || !countEl) return;
+
+        if (ids.length > 0) {
+            bar.classList.remove('d-none');
+            countEl.textContent = ids.length;
+        } else {
+            bar.classList.add('d-none');
+            countEl.textContent = '0';
+        }
+
+        // Sync header checkbox
+        const headerCb = dtTableEl.querySelector('thead .dt-checkboxes-select-all');
+        if (headerCb) {
+            const totalVisible = dtTableEl.querySelectorAll('tbody .dt-checkboxes').length;
+            headerCb.checked = ids.length > 0 && ids.length === totalVisible;
+            headerCb.indeterminate = ids.length > 0 && ids.length < totalVisible;
+        }
+    };
+
+    /**
+     * Clear all checkboxes
+     */
+    const clearSelection = () => {
+        dtTableEl.querySelectorAll('.dt-checkboxes:checked').forEach(cb => {
+            cb.checked = false;
+            cb.closest('tr')?.classList.remove('selected');
+        });
+        const headerCb = dtTableEl.querySelector('thead .dt-checkboxes-select-all');
+        if (headerCb) { headerCb.checked = false; headerCb.indeterminate = false; }
+        updateBulkBar();
+    };
+
+    // =================== Event Handlers ===================
+
     /**
      * Handle UI Events
      */
     const handleEvents = () => {
         if (!dtTableEl) return;
+
+        // --- Single row delete ---
         dtTableEl.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.delete-record');
             if (deleteBtn) {
@@ -240,6 +298,74 @@ const LegalEntitiesList = (function () {
                         .catch(() => window.showToast?.('Error deleting record', 'error'));
                 }, data.title);
             }
+        });
+
+        // --- Row checkbox change ---
+        $(dtTableEl).on('change', '.dt-checkboxes', function () {
+            const tr = $(this).closest('tr');
+            if (this.checked) tr.addClass('selected'); else tr.removeClass('selected');
+            updateBulkBar();
+        });
+
+        // --- Header "Select All" checkbox ---
+        $(dtTableEl).on('change', '.dt-checkboxes-select-all', function () {
+            const isChecked = this.checked;
+            dtTableEl.querySelectorAll('tbody .dt-checkboxes').forEach(cb => {
+                cb.checked = isChecked;
+                const tr = cb.closest('tr');
+                if (isChecked) tr?.classList.add('selected'); else tr?.classList.remove('selected');
+            });
+            updateBulkBar();
+        });
+
+        // --- Clear selection button ---
+        document.getElementById('btnClearSelection')?.addEventListener('click', () => {
+            clearSelection();
+        });
+
+        // --- Bulk Delete button ---
+        document.getElementById('btnBulkDelete')?.addEventListener('click', () => {
+            const ids = getSelectedIds();
+            if (ids.length === 0) return;
+
+            const confirmMsg = (L.BulkDeleteConfirm || 'Are you sure you want to delete {0} selected records?').replace('{0}', ids.length);
+
+            Swal.fire({
+                title: L.AreYouSure || window.L10n?.AreYouSure || 'Are you sure?',
+                text: confirmMsg,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: L.BulkDelete || 'Bulk Delete',
+                cancelButtonText: L.Cancel || 'Cancel',
+                customClass: {
+                    confirmButton: 'btn btn-danger me-3',
+                    cancelButton: 'btn btn-label-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`${apiUrl}/api/legal-entities/bulk`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Tenant-Id': '00000000-0000-0000-0000-000000000001'
+                        },
+                        body: JSON.stringify({ ids: ids })
+                    })
+                        .then(res => {
+                            if (res.ok) {
+                                return res.json();
+                            }
+                            throw new Error('Bulk delete failed');
+                        })
+                        .then(data => {
+                            window.showToast?.((L.BulkDeleteSuccess || '{0} records deleted successfully').replace('{0}', data.deletedCount), 'success');
+                            clearSelection();
+                            dt.ajax.reload();
+                        })
+                        .catch(() => window.showToast?.('ErrorOccurred', 'error'));
+                }
+            });
         });
     };
 

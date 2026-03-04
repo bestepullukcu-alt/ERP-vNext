@@ -210,4 +210,4 @@
   <data name="DtEmptyTable" xml:space="preserve">
     <value>Кестеде деректер жоқ</value>
   </data>
-<data name="ShowAll" xml:space="preserve"><value>Барлығын көрсету</value></data></root>
+<data name="ShowAll" xml:space="preserve"><value>Барлығын көрсету</value></data><data name="BulkDelete" xml:space="preserve"><value>Жаппай жою</value></data><data name="BulkDeleteConfirm" xml:space="preserve"><value>{0} таңдалған жазбаны жоюды қалайсыз ба?</value></data><data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} жазба сәтті жойылды</value></data><data name="ClearSelection" xml:space="preserve"><value>Таңдауды тазалау</value></data><data name="SelectedCount" xml:space="preserve"><value>жазба таңдалды</value></data></root>

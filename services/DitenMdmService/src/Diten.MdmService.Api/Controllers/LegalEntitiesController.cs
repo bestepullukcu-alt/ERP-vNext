@@ -135,7 +135,22 @@ public sealed class LegalEntitiesController : ControllerBase
         await _mediator.Send(new DeleteLegalEntityCommand(id));
         return NoContent();
     }
+
+    [HttpDelete("bulk")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteLegalEntitiesRequest request)
+    {
+        if (request.Ids == null || request.Ids.Count == 0)
+            return BadRequest("At least one ID is required.");
+
+        var deletedCount = await _mediator.Send(new BulkDeleteLegalEntitiesCommand(request.Ids));
+        return Ok(new { deletedCount });
+    }
 }
+
+public sealed record BulkDeleteLegalEntitiesRequest(List<Guid> Ids);
 
 public sealed record CreateLegalEntityRequest(
     string Title,

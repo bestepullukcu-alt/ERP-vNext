@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Diten.MdmService.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b3d1f3e8a2346175d3a9dd808ed2f03e27fa8390")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3aca08320afcdb421b0506331f9c853eb355924b")]
 [assembly: System.Reflection.AssemblyProductAttribute("Diten.MdmService.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Diten.MdmService.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

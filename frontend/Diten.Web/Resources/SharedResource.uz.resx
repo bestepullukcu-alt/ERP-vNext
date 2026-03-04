@@ -210,4 +210,4 @@
   <data name="DtEmptyTable" xml:space="preserve">
     <value>Jadvalda ma'lumot yo'q</value>
   </data>
-<data name="ShowAll" xml:space="preserve"><value>Barchasini ko'rsatish</value></data></root>
+<data name="ShowAll" xml:space="preserve"><value>Barchasini ko'rsatish</value></data><data name="BulkDelete" xml:space="preserve"><value>Ommaviy o'chirish</value></data><data name="BulkDeleteConfirm" xml:space="preserve"><value>{0} tanlangan yozuvni o'chirishni xohlaysizmi?</value></data><data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} ta yozuv muvaffaqiyatli o'chirildi</value></data><data name="ClearSelection" xml:space="preserve"><value>Tanlashni tozalash</value></data><data name="SelectedCount" xml:space="preserve"><value>ta yozuv tanlandi</value></data></root>

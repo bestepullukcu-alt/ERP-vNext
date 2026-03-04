@@ -210,4 +210,4 @@
   <data name="DtEmptyTable" xml:space="preserve">
     <value>No data available in table</value>
   </data>
-<data name="ShowAll" xml:space="preserve"><value>Show All</value></data></root>
+<data name="ShowAll" xml:space="preserve"><value>Show All</value></data><data name="BulkDelete" xml:space="preserve"><value>Bulk Delete</value></data><data name="BulkDeleteConfirm" xml:space="preserve"><value>Are you sure you want to delete {0} selected records?</value></data><data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} records deleted successfully</value></data><data name="ClearSelection" xml:space="preserve"><value>Clear Selection</value></data><data name="SelectedCount" xml:space="preserve"><value>records selected</value></data></root>
