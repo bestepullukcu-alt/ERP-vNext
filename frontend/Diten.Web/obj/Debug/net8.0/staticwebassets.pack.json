@@ -1865,6 +1865,10 @@
       "PackagePath": "staticwebassets/assets/js/config.js"
     },
     {
+      "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/js/custom/required-fields-tracker.js",
+      "PackagePath": "staticwebassets/assets/js/custom/required-fields-tracker.js"
+    },
+    {
       "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/js/dashboards-analytics.js",
       "PackagePath": "staticwebassets/assets/js/dashboards-analytics.js"
     },

@@ -65,6 +65,10 @@
                 }
             }
         })();
+
+        // Global Localization for Features
+        window.RequiredProgressText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(SharedLocalizer["RequiredProgress"].Value));
+        window.RequiredProgressText = window.RequiredProgressText.replace("{{0}}", "{0}").replace("{{1}}", "{1}");
     </script>
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -362,6 +366,9 @@
     <!-- Global UI Modules (MOD-0013) -->
     @await Html.PartialAsync("_GlobalNotification")
     @await Html.PartialAsync("_GlobalConfirmation")
+
+    <!-- Required Fields Tracker -->
+    <script src="~/assets/js/custom/required-fields-tracker.js"></script>
 
     <script>
         function logout() {

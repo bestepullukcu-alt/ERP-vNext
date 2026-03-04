@@ -159,6 +159,16 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 ### UI-014: UI Component Highlight (Breadcrumbs)
 - Breadcrumb navigasyonunda bulunulan aktif sayfanın vurgusu temanın ana rengiyle belirginleştirilmelidir. Geçerli sayfayı belirten öğeye her zaman `text-primary` class'ı eklenmelidir: `<li class="breadcrumb-item active text-primary">...</li>`.
 
+### UI-015: Dynamic Required Fields Progress Indicator (Tracker)
+- Tüm form sayfalarında (Create/Edit vb.) doldurulması zorunlu alanların takibi kodlanmış dinamik bir **JavaScript Takip Modülü** (`required-fields-tracker.js`) ile merkezi olarak yönetilmelidir.
+- **Mantık:** Form içindeki tüm `<input>`, `<select>` veya `<textarea>` elemanları taranır. Eğer elemanın `required` veya `data-val-required` niteliği (attribute) varsa ya da etiketinde (label) `<span class="text-danger">*</span>` bulunuyorsa bu alan "zorunlu" kabul edilerek takibe alınır.
+- **Tasarım (UI) & Konum:** Kullanıcıya anlık geri bildirim vermek maksadıyla, formun en altındaki "Kaydet" / "İptal" butonlarının (`action container`) hemen solunda dinamik bir rozet (Badge) belirmelidir. ("Zorunlu Alan: 0 / 3" gibi).
+- **Renk Davranışları (Feedback):**
+    - **Sıfır Alan Doldurulduğunda:** Rozet kırmızı şeffaf (`bg-label-danger`) kalmalıdır.
+    - **Kısmi Doldurulduğunda:** Rozet sarı şeffaf (`bg-label-warning`) rengine dönmelidir.
+    - **Tümü Doldurulduğunda:** Rozet yeşil şeffaf (`bg-label-success`) rengini alarak kullanıcının işlemi kaydetmeye hazır olduğunu göstermelidir.
+- **Çoklu Dil (L10n):** Gösterge içerisindeki metin (Örn: `Required:`), sayfaya özel değil `SharedResource` dosyalarında yer alan `RequiredProgress` key'i kullanılarak beslenmelidir ve desteklenen 8 dilin hepsinde eksiksiz olmalıdır. Özel metinlerin Razor tarafında JavaScript'e aktarılırken `Json.Serialize` ile format hatalarından (Örn: Ukraynaca tırnak çakışmaları) kaçınılması sağlanmalıdır.
+
 ### UI-006: Global Footer Standardı
 - Alt bilgi (Footer) metni şu formatta sabitlenmiştir: `© 2018 | made with by Diten`.
 - Emoji (kalp vb.) kullanımı ve yıl değişikliği standart dışıdır.

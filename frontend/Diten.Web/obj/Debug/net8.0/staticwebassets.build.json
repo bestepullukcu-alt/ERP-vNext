@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "TVhZK/54tshmEMsOx+RlW5JN54A+r67Og9OfVHYTmHs=",
+  "Hash": "KApk6U4FBmPs1tTGsCixMOYTlgarXABW8rHsu9YXzS4=",
   "Source": "Diten.Web",
   "BasePath": "_content/Diten.Web",
   "Mode": "Default",
@@ -8793,6 +8793,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/assets/js/config.js"
+    },
+    {
+      "Identity": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/js/custom/required-fields-tracker.js",
+      "SourceId": "Diten.Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/",
+      "BasePath": "_content/Diten.Web",
+      "RelativePath": "assets/js/custom/required-fields-tracker.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/assets/js/custom/required-fields-tracker.js"
     },
     {
       "Identity": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/js/dashboards-analytics.js",
