@@ -232,6 +232,17 @@ window.DtDefaults = (function () {
      */
     var commonExportOptions = {
         columns: [2, 3, 4, 5, 6, 7, 8],
+        rows: function (idx, data, node) {
+            // Tablo genelinde seçili satır var mı kontrol et
+            var $table = $(node).closest('table');
+            var hasSelected = $table.find('tbody tr.selected').length > 0;
+
+            // Eğer seçim varsa sadece seçili olanları getir, yoksa hepsini (filtrelenmiş haliyle) getir
+            if (hasSelected) {
+                return $(node).hasClass('selected');
+            }
+            return true;
+        },
         format: {
             body: function (inner) {
                 if (!inner || inner.length <= 0) return inner;
