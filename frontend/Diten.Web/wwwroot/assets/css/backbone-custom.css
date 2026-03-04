@@ -228,3 +228,15 @@
         margin-block: 0 !important;
     }
 }
+
+/* ================================================
+   ASP.NET Core Unobtrusive Validation Styles
+   ================================================ */
+.input-validation-error {
+    border-color: var(--bs-danger) !important;
+}
+
+.input-validation-error:focus {
+    border-color: var(--bs-danger) !important;
+    box-shadow: 0 0 0 0.15rem rgba(var(--bs-danger-rgb), 0.25) !important;
+}

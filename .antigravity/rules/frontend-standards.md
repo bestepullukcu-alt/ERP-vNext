@@ -32,6 +32,11 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 - CSS düzeltmeleri masaüstü görünümünü **kesinlikle bozmamalıdır**; tüm kurallar media query (`@media screen and (max-width: 991.98px)`) içinde kapsamlanır.
 - `display: contents` tekniği, `.dt-layout-end` hücresini mobilde eriterek çocuklarının (Search, Buttons) üst satırın doğrudan flex item'ları olmasını sağlar.
 
+### CSS-006: Unobtrusive Form Validation Feedback
+- ASP.NET Core Unobtrusive Validation'ın ürettiği `.input-validation-error` sınıfı için merkezi tanımlar (`backbone-custom.css`) geliştirilmiştir.
+- Hatalı alanlar mutlaka **danger** (`var(--bs-danger)`) rengiyle kırmızı sınırlara (border) ve odaklanma anında (`:focus`) kırmızı estetik gölgelere (`box-shadow`) sahip olmalıdır.
+- Hata durumları için sayfa özelinde veya satır içi (inline) CSS yazılması **kesinlikle yasaktır**.
+
 ---
 
 ## JavaScript Kuralları

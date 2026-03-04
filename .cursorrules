@@ -16,3 +16,7 @@ When creating or modifying views and UI components in this ASP.NET Core project 
 
 ## 4. UI Component Highlight (Breadcrumbs)
 - The active / current page in a breadcrumb navigation must distinctively stand out. ALWAYS append the `text-primary` class to the current active breadcrumb item. For example: `<li class="breadcrumb-item active text-primary">Current Page</li>`.
+
+## 5. Form Validation Feedback
+- ASP.NET Core Unobtrusive Validation automatically adds the `.input-validation-error` class to invalid inputs. 
+- These invalid inputs must have a red border (`border-color: var(--bs-danger) !important;`) and a red focus ring (`box-shadow: 0 0 0 0.15rem rgba(var(--bs-danger-rgb), 0.25) !important;`) to properly alert the user. This is globally enforced in `backbone-custom.css`, so do NOT write custom inline validation styles.
