@@ -138,3 +138,8 @@
     border-color: var(--bs-primary) !important;
     box-shadow: none !important;
 }
+
+/* MOD-0021: Remove box-shadow from ColVis 'Show All' button */
+.buttons-colvisGroup {
+    box-shadow: none !important;
+}
