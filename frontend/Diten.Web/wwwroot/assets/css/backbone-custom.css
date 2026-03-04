@@ -143,3 +143,97 @@
 .buttons-colvisGroup {
     box-shadow: none !important;
 }
+
+/* ================================================
+   MOD-0022: DataTable Mobile Responsive Layout
+   Scoped to @media (max-width: 767.98px) — Desktop UNAFFECTED
+   
+   Actual DOM structure:
+   div.dt-container
+     > div.row.mx-3.my-0.justify-content-between       ← TOP ROW
+       > div.dt-layout-start.col-md-auto.me-auto        ← Length
+       > div.dt-layout-end.col-md-auto.ms-auto          ← Search + .dt-buttons x3
+   ================================================ */
+@media screen and (max-width: 767.98px) {
+
+    /* ---- Top Row: flex-row so Start & End sit side-by-side ---- */
+    div.dt-container>.row:first-child {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        padding: 0.5rem 1rem !important;
+    }
+
+    /* Reset Bootstrap column sizing for both cells */
+    div.dt-container>.row:first-child>.dt-layout-start,
+    div.dt-container>.row:first-child>.dt-layout-end {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Start Cell (Length): auto-width, sit on the left */
+    div.dt-container>.row:first-child>.dt-layout-start {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        max-width: none !important;
+    }
+
+    div.dt-container .dt-layout-start .dt-length {
+        margin: 0 !important;
+    }
+
+    /* End Cell: flex container with wrap. Search fills first sub-line,
+       buttons wrap to next sub-line */
+    div.dt-container>.row:first-child>.dt-layout-end {
+        flex: 1 1 0% !important;
+        width: auto !important;
+        max-width: none !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.25rem !important;
+    }
+
+    /* Search: take full width of End cell = fills Row 1 next to Length */
+    div.dt-container .dt-layout-end .dt-search {
+        flex: 1 0 100% !important;
+        margin: 0 !important;
+        order: -1 !important;
+    }
+
+    div.dt-container .dt-layout-end .dt-search input {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+
+    /* Buttons: auto-width, they will all flow onto Row 2 together */
+    div.dt-container .dt-layout-end .dt-buttons {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        display: inline-flex !important;
+        flex-wrap: nowrap !important;
+        margin: 0 !important;
+        gap: 0 !important;
+    }
+
+    /* Shrink buttons a bit so they fit on 375px */
+    div.dt-container .dt-layout-end .dt-buttons .btn {
+        padding-left: 0.4rem !important;
+        padding-right: 0.4rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    /* Override DT flex-wrap on button groups */
+    div.dt-container .dt-layout-end .dt-buttons.flex-wrap {
+        flex-wrap: nowrap !important;
+    }
+
+    /* Remove excessive vertical spacing from DT defaults */
+    div.dt-container div.dt-length,
+    div.dt-container div.dt-search {
+        margin-block: 0 !important;
+    }
+}
