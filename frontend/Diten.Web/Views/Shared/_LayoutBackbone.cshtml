@@ -27,10 +27,8 @@
     <link rel="stylesheet" href="~/assets/vendor/fonts/fontawesome.css" />
     <link rel="stylesheet" href="~/assets/vendor/fonts/flag-icons.css" />
 
-    <!-- Core CSS -->
     <link rel="stylesheet" href="~/assets/vendor/css/core.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/assets/css/demo.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/assets/css/backbone-custom.css" asp-append-version="true" />
 
     <!-- Vendor CSS (Global essentials only) -->
     <link rel="stylesheet" href="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
@@ -44,6 +42,10 @@
     <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
     <link rel="stylesheet" href="~/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" />
     <link rel="stylesheet" href="~/assets/vendor/libs/select2/select2.css" />
+
+    <!-- Custom CSS (Loaded last to override vendors) -->
+    <link rel="stylesheet" href="~/assets/css/backbone-custom.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     <!-- Helpers -->
     <script src="~/assets/vendor/js/helpers.js"></script>
@@ -64,6 +66,7 @@
             }
         })();
     </script>
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 
 <body>

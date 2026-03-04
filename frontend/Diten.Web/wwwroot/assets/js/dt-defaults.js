@@ -115,9 +115,52 @@ window.DtDefaults = (function () {
         $('.dt-search').addClass('mb-md-6 mb-2');
         $('.dt-layout-end').removeClass('justify-content-between').addClass('d-flex gap-md-4 justify-content-md-between justify-content-center gap-4 flex-wrap mt-0');
         $('.dt-layout-start').addClass('mt-0');
-        $('.dt-buttons').addClass('mb-md-0 mb-6'); // Removed d-flex gap-4 to keep btn-groups intact
+
+        $('.dt-buttons').each(function () {
+            var $container = $(this);
+            // MOD-0014: Remove any DataTables-generated internal wraps
+            $container.find('> .btn-group, > .dt-button-collection').each(function () {
+                $(this).contents().unwrap();
+            });
+
+            $container.addClass('mb-md-0 mb-6');
+            $container.removeClass('d-flex gap-1 gap-2 gap-3 gap-4'); // Remove any JS-injected gaps
+
+            if ($container.children().length > 1) {
+                $container.addClass('btn-group');
+
+                // Nuclear Fix for Border Radius & Dividers using Inline Styles (Overrides all sneat pseudo-classes)
+                var $btns = $container.children('button.btn');
+                $btns.each(function (index) {
+                    this.style.setProperty('border-radius', '0', 'important');
+                    this.style.setProperty('margin-left', '0', 'important');
+                    this.style.setProperty('position', 'relative', 'important');
+
+                    if (index === 0) {
+                        this.style.setProperty('border-top-left-radius', '0.375rem', 'important');
+                        this.style.setProperty('border-bottom-left-radius', '0.375rem', 'important');
+                    } else {
+                        var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                        var borderColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
+                        this.style.setProperty('border-left', '1px solid ' + borderColor, 'important');
+                    }
+
+                    if (index === $btns.length - 1) {
+                        this.style.setProperty('border-top-right-radius', '0.375rem', 'important');
+                        this.style.setProperty('border-bottom-right-radius', '0.375rem', 'important');
+                    }
+                });
+
+            } else {
+                $container.removeClass('btn-group');
+            }
+        });
+
+        // Ensure dot z-index is protected
+        $('.dt-colvis-btn').css('z-index', '4');
+
         $('.dt-layout-table').removeClass('row mt-2');
-        $('.dt-layout-full').removeClass('col-md col-12'); // table-responsive class'ı sayfa içindeki div'de mevcut, mükerrerliği önlemek için buradan kaldırıldı.
+        $('.dt-layout-full').removeClass('col-md col-12');
         $('table.dataTable').addClass('table-hover');
     }
 
@@ -234,31 +277,31 @@ window.DtDefaults = (function () {
         };
 
         var group1 = [exportBtn];
+        if (extraButtons && extraButtons.importBtn) group1.push(extraButtons.importBtn);
+
         var group2 = [colvisBtn];
-        var group3 = [];
-
-        if (extraButtons) {
-            if (extraButtons.importBtn) group1.push(extraButtons.importBtn);
-            if (extraButtons.filterBtn) group2.push(extraButtons.filterBtn);
-            if (Array.isArray(extraButtons)) group3 = group3.concat(extraButtons);
-        }
-
-        var addNewBtnGroup = [];
-        if (addNewText) {
-            addNewBtnGroup.push({
-                text: '<i class="icon-base bx bx-plus icon-sm me-0 me-sm-2"></i><span class="d-none d-sm-inline-block">' + addNewText + '</span>',
-                className: 'add-new btn btn-primary',
-                attr: addNewAttr || {}
-            });
-        }
+        if (extraButtons && extraButtons.filterBtn) group2.push(extraButtons.filterBtn);
 
         var features = [
             { buttons: group1 },
             { buttons: group2 }
         ];
 
-        if (group3.length > 0) features.push({ buttons: group3 });
-        if (addNewBtnGroup.length > 0) features.push({ buttons: addNewBtnGroup });
+        // Extra array buttons (usually custom actions)
+        if (Array.isArray(extraButtons)) {
+            features.push({ buttons: extraButtons });
+        }
+
+        // Add New button stays in its own group as a primary action
+        if (addNewText) {
+            features.push({
+                buttons: [{
+                    text: '<i class="icon-base bx bx-plus icon-sm me-0 me-sm-2"></i><span class="d-none d-sm-inline-block">' + addNewText + '</span>',
+                    className: 'add-new btn btn-primary',
+                    attr: addNewAttr || {}
+                }]
+            });
+        }
 
         return features;
     }

@@ -63,6 +63,9 @@
   <link rel="stylesheet" href="~/assets/vendor/libs/highlight/highlight.css" />
   <link rel="stylesheet" href="~/assets/vendor/libs/quill/katex.css" />
   <link rel="stylesheet" href="~/assets/vendor/libs/quill/editor.css" />
+  <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+  @await RenderSectionAsync("Styles", required: false)
 
   <!-- Helpers -->
   <script src="~/assets/vendor/js/helpers.js"></script>
