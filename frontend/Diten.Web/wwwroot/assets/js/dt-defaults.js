@@ -108,8 +108,8 @@ window.DtDefaults = (function () {
      * Sneat class düzeltmeleri — drawCallback ile daha stabil.
      */
     function applySneatClassFixes() {
-        $('.dt-buttons .btn').removeClass('btn-secondary');
-        $('.dt-search .form-control').removeClass('form-control-sm');
+        $('.dt-buttons .btn').removeClass('btn-secondary').addClass('shadow-none');
+        $('.dt-search .form-control').removeClass('form-control-sm').addClass('shadow-none');
         $('.dt-length .form-select').removeClass('form-select-sm').addClass('ms-0');
         $('.dt-length').addClass('mb-md-6 mb-0');
         $('.dt-search').addClass('mb-md-6 mb-2');
