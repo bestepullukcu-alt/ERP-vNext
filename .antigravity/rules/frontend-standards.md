@@ -142,6 +142,11 @@ Tüm ajanlar bu kurallara uymak zorundadır.
     - Dinamik Veri: Silinecek öğenin adı (entityName) `badge bg-label-primary` içinde gösterilmelidir.
     - Butonlar: `gap-*` kullanılmaz, butonlar arası boşluk her iki butona verilen `mx-2` class'ı ile sağlanır.
     - "İptal" butonu `btn-label-secondary`, "Onay" butonu işlemin türüne göre (`danger`, `primary` vb.) seçilir.
+    - **Bulk Delete (Çoklu Silme) Entegrasyonu:** DataTable'lardaki çoklu silme butonu da `window.showConfirm` veya standart dışı eski uyarıcıları (classic SweetAlert) kullanmamalı, doğrudan Global Confirmation (MOD-0013) için belirlenmiş yukarıdaki CSS ve Modal hiyerarşisi (`customClass: { popup: 'rounded-4 shadow-lg', title: '...', actions: '...', iconHtml: '<div class="swal-icon-circle">...</div>' }`) ile tetiklenmelidir.
+
+### UI-016: Language Session Persistence
+- Kullanıcının dil seçimi geçici URL parametrelerine (`?culture=xx`) bağlanmamalıdır.
+- Çoklu dil (L10n) kullanan projede Layout dosyasındaki (`_LayoutBackbone.cshtml`) dil seçici (Language Dropdown), tıklandığında tarayıcıya 1 yıl kalıcılığı olan bir `.AspNetCore.Culture=c=xx|uic=xx` çerezi (Cookie) bırakmalıdır. Bu sayede sayfa değiştirildiğinde, navigasyon yapıldığında veya işlem iptal (Cancel) edildiğinde dil seçimi kaybolmaz, aynı kalır.
 
 ### UI-005: Page Header & Description Standardı
 - Liste ve Dashboard sayfalarının en üstünde (kartın dışında) bir başlık alanı bulunmalıdır.

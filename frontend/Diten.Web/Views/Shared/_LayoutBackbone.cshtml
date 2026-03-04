@@ -375,6 +375,16 @@
             localStorage.removeItem("token");
             window.location.href = "/account/login";
         }
+        
+        // Language Persistence
+        document.querySelectorAll('.dropdown-language .dropdown-item').forEach(item => {
+            item.addEventListener('click', function () {
+                var lang = this.getAttribute('data-language');
+                if (lang) {
+                    document.cookie = ".AspNetCore.Culture=c=" + lang + "|uic=" + lang + ";path=/;max-age=31536000";
+                }
+            });
+        });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

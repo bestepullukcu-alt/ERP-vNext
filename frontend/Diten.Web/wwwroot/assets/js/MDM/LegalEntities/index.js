@@ -332,17 +332,25 @@ const LegalEntitiesList = (function () {
             const confirmMsg = (L.BulkDeleteConfirm || 'Are you sure you want to delete {0} selected records?').replace('{0}', ids.length);
 
             Swal.fire({
-                title: L.AreYouSure || window.L10n?.AreYouSure || 'Are you sure?',
-                text: confirmMsg,
-                icon: 'warning',
+                title: window.L10n?.AreYouSure || 'Are you sure?',
+                html: `<div class="mb-2">${confirmMsg}</div>`,
+                iconHtml: '<div class="swal-icon-circle"><i class="bx bx-trash"></i></div>',
                 showCancelButton: true,
                 confirmButtonText: L.BulkDelete || 'Bulk Delete',
                 cancelButtonText: L.Cancel || 'Cancel',
+                width: '400px',
+                padding: '2.5rem 1.5rem 2rem',
                 customClass: {
-                    confirmButton: 'btn btn-danger me-3',
-                    cancelButton: 'btn btn-label-secondary'
+                    popup: 'rounded-4 shadow-lg',
+                    title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
+                    htmlContainer: 'text-muted mb-3 d-block w-100 text-center',
+                    actions: 'd-flex justify-content-center mt-4 w-100',
+                    confirmButton: 'btn btn-danger waves-effect waves-light mx-2',
+                    cancelButton: 'btn btn-label-secondary waves-effect mx-2',
+                    icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'
                 },
-                buttonsStyling: false
+                buttonsStyling: false,
+                reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch(`${apiUrl}/api/legal-entities/bulk`, {
