@@ -67,8 +67,12 @@
         })();
 
         // Global Localization for Features
-        window.RequiredProgressText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(SharedLocalizer["RequiredProgress"].Value));
+        window.RequiredProgressText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(SharedLocalizer["RequiredStatus"].Value));
+        window.ValidationErrorsText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(SharedLocalizer["ValidationErrors"].Value));
+
+        // Template normalization: ensure {0} and {1} placeholders are used
         window.RequiredProgressText = window.RequiredProgressText.replace("{{0}}", "{0}").replace("{{1}}", "{1}");
+        window.ValidationErrorsText = window.ValidationErrorsText.replace("{{0}}", "{0}");
     </script>
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -375,7 +379,7 @@
             localStorage.removeItem("token");
             window.location.href = "/account/login";
         }
-        
+
         // Language Persistence
         document.querySelectorAll('.dropdown-language .dropdown-item').forEach(item => {
             item.addEventListener('click', function () {

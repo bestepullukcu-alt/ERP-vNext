@@ -1,113 +1,150 @@
 /**
- * Required Fields Tracker
- * Dynamically scans the page for required form inputs and displays a progress badge.
+ * Enhanced Unified Form Tracker
+ * Dynamically scans the page for required form inputs and validation errors.
  */
 document.addEventListener("DOMContentLoaded", function () {
-    const forms = document.querySelectorAll("form");
+    const forms = document.querySelectorAll("form:not([data-no-tracker])");
     if (forms.length === 0) return;
 
     let requiredElements = [];
+    let allTrackedElements = [];
 
-    // Find all required fields based on data-val-required or associated label with text-danger *
+    // Initialize tracking for all forms
     forms.forEach(form => {
         const inputs = form.querySelectorAll("input, select, textarea");
         inputs.forEach(input => {
-            // Check HTML5 required attribute or ASP.NET data-val-required
-            let isRequired = input.hasAttribute("required") || input.hasAttribute("data-val-required");
+            const isRequired = input.hasAttribute("required") || input.hasAttribute("data-val-required");
 
-            // Check if label has <span class="text-danger">*</span>
-            if (!isRequired && input.id) {
+            // Check if label has asterisk
+            let labelHasAsterisk = false;
+            if (input.id) {
                 const label = document.querySelector(`label[for="${input.id}"]`);
                 if (label && label.querySelector('.text-danger')) {
-                    isRequired = true;
+                    labelHasAsterisk = true;
                 }
             }
 
-            // Optional: Skip hidden inputs or specific types
-            if (isRequired && input.type !== 'hidden') {
-                requiredElements.push(input);
+            if (isRequired || labelHasAsterisk) {
+                if (input.type !== 'hidden') {
+                    requiredElements.push(input);
+                }
+            }
+
+            // Track all non-hidden inputs for validation errors (even if not required)
+            if (input.type !== 'hidden') {
+                allTrackedElements.push(input);
             }
         });
     });
 
-    if (requiredElements.length === 0) return;
+    if (allTrackedElements.length === 0) return;
 
     // Create the badge UI
-    const trackerId = "global-required-tracker";
+    const trackerId = "global-unified-tracker";
     let badge = document.getElementById(trackerId);
 
     if (!badge) {
-        // Find the submit button or action area to place the tracker next to it
         const submitBtn = document.querySelector('button[type="submit"]') || document.querySelector('.btn-primary');
-
         if (submitBtn) {
             const actionContainer = submitBtn.parentNode;
-
             const wrapper = document.createElement("div");
             wrapper.className = "d-flex align-items-center me-4";
 
-            // Adjust tracker look to blend with buttons
             wrapper.innerHTML = `
-                <span id="${trackerId}" class="badge bg-label-danger fs-6 px-3 py-2" style="opacity: 0.9; transition: all 0.3s ease;">
-                    <i class="bx bx-check-shield me-1"></i> <span class="tracker-text">0 / ${requiredElements.length}</span>
+                <span id="${trackerId}" class="badge bg-label-danger fs-6 px-3 py-2 d-flex align-items-center" style="opacity: 0.9; transition: all 0.3s ease; cursor: default;">
+                    <div class="required-part me-2 border-end pe-2" style="border-color: rgba(0,0,0,0.1) !important;">
+                        <i class="bx bx-check-shield me-1"></i> <span class="required-text">0 / 0</span>
+                    </div>
+                    <div class="error-part d-none">
+                        <i class="bx bx-error-circle me-1"></i> <span class="error-text">0</span>
+                    </div>
                 </span>
             `;
 
-            // Prepend it so it sits to the left of the Cancel/Save buttons
             actionContainer.insertBefore(wrapper, actionContainer.firstChild);
             badge = document.getElementById(trackerId);
         }
     }
 
     function updateProgress() {
+        if (!badge) return;
+
+        // 1. Calculate Required Progress
         let filledCount = 0;
         requiredElements.forEach(el => {
+            let isFilled = false;
             if (el.tagName === "SELECT") {
-                // Handle Select2 or native select
-                if ($(el).hasClass('select2-hidden-accessible')) {
-                    const val = $(el).val();
-                    if (val && val !== "") filledCount++;
-                } else if (el.value.trim() !== "") {
-                    filledCount++;
+                const $el = $(el);
+                if ($el.hasClass('select2-hidden-accessible')) {
+                    const val = $el.val();
+                    isFilled = val && val !== "";
+                } else {
+                    isFilled = el.value.trim() !== "";
                 }
             } else if (el.type === "radio" || el.type === "checkbox") {
-                // If it's a group, checking if at least one is checked should be handled differently,
-                // but for simple required checkbox:
-                if (el.checked) filledCount++;
+                isFilled = el.checked;
             } else {
-                if (el.value.trim() !== "") filledCount++;
+                isFilled = el.value.trim() !== "";
+            }
+            if (isFilled) filledCount++;
+        });
+
+        // 2. Count Validation Errors
+        let errorCount = 0;
+        allTrackedElements.forEach(el => {
+            // Check native validity (handles type="email", pattern, etc.)
+            // We only count errors if the field has been touched or the form was submitted
+            // However, for real-time feedback, we check if it has a value AND is invalid
+            if (el.value.trim() !== "" && !el.checkValidity()) {
+                errorCount++;
             }
         });
 
-        const total = requiredElements.length;
-        if (badge) {
-            const textSpan = badge.querySelector('.tracker-text');
-            // Using window.RequiredProgressText from Layout if available, otherwise fallback
-            const template = window.RequiredProgressText || "{0} / {1}";
-            textSpan.textContent = template.replace("{0}", filledCount).replace("{1}", total);
+        // 3. Update UI
+        const totalRequired = requiredElements.length;
+        const requiredTextSpan = badge.querySelector('.required-text');
+        const errorTextSpan = badge.querySelector('.error-text');
+        const errorPart = badge.querySelector('.error-part');
 
-            if (filledCount === total) {
-                badge.classList.remove('bg-label-danger');
-                badge.classList.remove('bg-label-warning');
-                badge.classList.add('bg-label-success');
-            } else if (filledCount > 0) {
-                badge.classList.remove('bg-label-danger');
-                badge.classList.remove('bg-label-success');
+        // Localization templates
+        const reqTemplate = window.RequiredProgressText || "Required: {0} / {1}";
+        const errTemplate = window.ValidationErrorsText || "Errors: {0}";
+
+        requiredTextSpan.textContent = reqTemplate.replace("{0}", filledCount).replace("{1}", totalRequired);
+
+        if (errorCount > 0) {
+            errorTextSpan.textContent = errTemplate.replace("{0}", errorCount);
+            errorPart.classList.remove('d-none');
+            // If there's an error, it's always at least warning/danger
+            badge.classList.remove('bg-label-success');
+            if (filledCount === totalRequired) {
                 badge.classList.add('bg-label-warning');
+                badge.classList.remove('bg-label-danger');
             } else {
                 badge.classList.add('bg-label-danger');
                 badge.classList.remove('bg-label-warning');
-                badge.classList.remove('bg-label-success');
+            }
+        } else {
+            errorPart.classList.add('d-none');
+            // No errors logic
+            if (filledCount === totalRequired) {
+                badge.classList.remove('bg-label-danger', 'bg-label-warning');
+                badge.classList.add('bg-label-success');
+            } else if (filledCount > 0) {
+                badge.classList.remove('bg-label-danger', 'bg-label-success');
+                badge.classList.add('bg-label-warning');
+            } else {
+                badge.classList.add('bg-label-danger');
+                badge.classList.remove('bg-label-warning', 'bg-label-success');
             }
         }
     }
 
-    // Attach events
-    requiredElements.forEach(el => {
+    // Attach events to all tracked elements for errors, and required elements for progress
+    allTrackedElements.forEach(el => {
         el.addEventListener("input", updateProgress);
         el.addEventListener("change", updateProgress);
 
-        // Select2 specific event
         if (el.tagName === "SELECT" && $(el).hasClass('select2-hidden-accessible')) {
             $(el).on('select2:select select2:unselect', function () {
                 updateProgress();
