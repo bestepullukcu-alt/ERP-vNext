@@ -92,10 +92,11 @@ document.addEventListener("DOMContentLoaded", function () {
         // 2. Count Validation Errors
         let errorCount = 0;
         allTrackedElements.forEach(el => {
-            // Check native validity (handles type="email", pattern, etc.)
-            // We only count errors if the field has been touched or the form was submitted
-            // However, for real-time feedback, we check if it has a value AND is invalid
-            if (el.value.trim() !== "" && !el.checkValidity()) {
+            // Check native validity AND jQuery Validation class
+            const isInvalidNative = el.value.trim() !== "" && !el.checkValidity();
+            const hasValidationErrorClass = el.classList.contains('input-validation-error');
+
+            if (isInvalidNative || hasValidationErrorClass) {
                 errorCount++;
             }
         });
@@ -147,10 +148,23 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Attach events to all tracked elements for errors, and required elements for progress
+    // Watch for class changes (specifically for 'input-validation-error')
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === "attributes" && mutation.attributeName === "class") {
+                updateProgress();
+            }
+        });
+    });
+
+    // Attach events to all tracked elements
     allTrackedElements.forEach(el => {
         el.addEventListener("input", updateProgress);
         el.addEventListener("change", updateProgress);
+        el.addEventListener("focusout", updateProgress); // Catch validation on blur
+
+        // Start observing for class changes
+        observer.observe(el, { attributes: true, attributeFilter: ["class"] });
 
         if (el.tagName === "SELECT" && $(el).hasClass('select2-hidden-accessible')) {
             $(el).on('select2:select select2:unselect', function () {
