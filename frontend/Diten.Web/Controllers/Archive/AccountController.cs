@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Diten.Web.Controllers
+namespace Diten.Web.Controllers.Archive
 {
     public class AccountController : Controller
     {

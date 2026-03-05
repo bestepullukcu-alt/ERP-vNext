@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Diten.Web.Models;
 using System.Diagnostics;
 
-namespace Diten.Web.Controllers
+namespace Diten.Web.Controllers.Archive
 {
     public class HomeController : Controller
     {

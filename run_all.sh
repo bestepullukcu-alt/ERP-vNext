@@ -21,7 +21,7 @@ echo "🚀 Servislerin projeleri derleniyor..."
 echo "========================================="
 dotnet build services/DitenMdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -v q
 dotnet build gateway/DitenApiGateway/Diten.ApiGateway/Diten.ApiGateway.csproj -v q
-dotnet build frontend/Diten.Web/Diten.Web.WebUI.csproj -v q
+dotnet build frontend/Diten.Web/Diten.Web.csproj -v q
 
 echo "========================================="
 echo "🚀 Başlatılıyor: Backend (MdmService.Api)"
@@ -36,6 +36,6 @@ killall -9 dotnet 2>/dev/null || true
 
 prefix_logs "[BACKEND ]" "dotnet run --no-build --project services/DitenMdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj --urls http://0.0.0.0:5050" &
 prefix_logs "[GATEWAY ]" "dotnet run --no-build --project gateway/DitenApiGateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000" &
-prefix_logs "[FRONTEND]" "dotnet run --no-build --project frontend/Diten.Web/Diten.Web.WebUI.csproj --urls http://0.0.0.0:5001" &
+prefix_logs "[FRONTEND]" "dotnet run --no-build --project frontend/Diten.Web/Diten.Web.csproj --urls http://0.0.0.0:5001" &
 
 wait

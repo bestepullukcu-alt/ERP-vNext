@@ -13,9 +13,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Diten.Web.WebUI.csproj",
+      "projectUniqueName": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Diten.Web.csproj",
       "projectName": "Diten.Web",
-      "projectPath": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Diten.Web.WebUI.csproj",
+      "projectPath": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Diten.Web.csproj",
       "packagesPath": "/Users/alitufanoglu/.nuget/packages/",
       "outputPath": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/obj/",
       "projectStyle": "PackageReference",
