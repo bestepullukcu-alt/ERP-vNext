@@ -164,21 +164,24 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 ### UI-014: UI Component Highlight (Breadcrumbs)
 - Breadcrumb navigasyonunda bulunulan aktif sayfanın vurgusu temanın ana rengiyle belirginleştirilmelidir. Geçerli sayfayı belirten öğeye her zaman `text-primary` class'ı eklenmelidir: `<li class="breadcrumb-item active text-primary">...</li>`.
 
-### UI-015: Dynamic Required Fields Progress Indicator (Tracker)
-- Tüm form sayfalarında (Create/Edit vb.) doldurulması zorunlu alanların takibi kodlanmış dinamik bir **JavaScript Takip Modülü** (`required-fields-tracker.js`) ile merkezi olarak yönetilmelidir.
-- **Mantık:** Form içindeki tüm `<input>`, `<select>` veya `<textarea>` elemanları taranır. Eğer elemanın `required` veya `data-val-required` niteliği (attribute) varsa ya da etiketinde (label) `<span class="text-danger">*</span>` bulunuyorsa bu alan "zorunlu" kabul edilerek takibe alınır.
-- **Tasarım (UI) & Konum:** Kullanıcıya anlık geri bildirim vermek maksadıyla, formun en altındaki "Kaydet" / "İptal" butonlarının (`action container`) hemen solunda dinamik bir rozet (Badge) belirmelidir. ("Zorunlu Alan: 0 / 3" gibi).
-- **Renk Davranışları (Feedback):**
-    - **Sıfır Alan Doldurulduğunda:** Rozet kırmızı şeffaf (`bg-label-danger`) kalmalıdır.
-    - **Kısmi Doldurulduğunda:** Rozet sarı şeffaf (`bg-label-warning`) rengine dönmelidir.
-    - **Tümü Doldurulduğunda:** Rozet yeşil şeffaf (`bg-label-success`) rengini alarak kullanıcının işlemi kaydetmeye hazır olduğunu göstermelidir.
-- **Çoklu Dil (L10n):** Gösterge içerisindeki metin (Örn: `Required:`), sayfaya özel değil `SharedResource` dosyalarında yer alan `RequiredProgress` key'i kullanılarak beslenmelidir ve desteklenen 8 dilin hepsinde eksiksiz olmalıdır. Özel metinlerin Razor tarafında JavaScript'e aktarılırken `Json.Serialize` ile format hatalarından (Örn: Ukraynaca tırnak çakışmaları) kaçınılması sağlanmalıdır.
+### UI-015: Unified Form Progress & Validation Tracker (MOD-0024)
+- Tüm form sayfalarında (Create/Edit vb.) doluluk ve doğruluk oranını takip eden dinamik bir **JavaScript Modülü** (`required-fields-tracker.js`) kullanılır.
+- **Mantık:** Bu modül sadece zorunlu alanları (`required`) değil, aynı zamanda formatı hatalı (geçersiz email, telefon, url vb.) girilmiş alanları da anlık takip eder.
+- **Tasarım (UI):** Rozet iki bölmelidir:
+    1.  **Zorunlu Alan:** (Örn: `Zorunlu: 1 / 3`)
+    2.  **Hata Sayısı:** (Örn: `Hata: 2`) — Sadece hata olduğunda görünür.
+- **Hizalama Kuralı:** Rozet içindeki ikonların ve metinlerin tam dengeli durması için her zaman `d-flex align-items-center` ve ikonlar için `lh-1` (line-height) sınıfı kullanılmalıdır.
+- **Renk Davranışları (Combined State):**
+    -   🔴 **Kırmızı:** Eksik zorunlu alan varsa VEYA herhangi bir format hatası varsa.
+    -   🟡 **Sarı:** Tüm zorunlu alanlar dolu ama hala düzeltilmesi gereken format hataları varsa.
+    -   🟢 **Yeşil:** Form tamamen eksiksiz ve hatasız olduğunda.
+- **L10n:** Tüm etiketler (`RequiredStatus`, `ValidationErrors`) `SharedResource` üzerinden beslenmelidir.
 
 ### UI-006: Global Footer Standardı
 - Alt bilgi (Footer) metni şu formatta sabitlenmiştir: `© 2018 | made with by Diten`.
 - Emoji (kalp vb.) kullanımı ve yıl değişikliği standart dışıdır.
 
-### UI-007: Temiz Dışa Aktarma (Export) Standartları
+### UI-007: Temiz Dışa Aktırma (Export) Standartları
 - Excel, PDF, CSV ve Yazdırma gibi işlemler sırasında tablodaki HTML etiketleri (`<a>`, `<span>` vb.) mutlaka temizlenmelidir (strip HTML).
 - **Kolon Seçimi:** Dışa aktarma dosyalarında "Checkbox" ve "Actions" (İşlemler) kolonları bulunmamalı, sadece saf veri kolonları yer almalıdır.
 - Tüm sayfalar `window.DtDefaults.exportButtons()` fabrikasını kullanarak bu standarda otomatik olarak uymalıdır.

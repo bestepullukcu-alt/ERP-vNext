@@ -1,4 +1,4 @@
-namespace Diten.Web.WebUI.Models
+namespace Diten.Web.Models
 {
     public class ErrorViewModel
     {

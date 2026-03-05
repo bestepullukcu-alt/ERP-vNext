@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Diten.Web.WebUI.Controllers
+namespace Diten.Web.Controllers.Archive
 {
-    public class EmailController : Controller
+    public class CategoryController : Controller
     {
         public IActionResult Index()
         {
