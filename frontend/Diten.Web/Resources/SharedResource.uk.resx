@@ -210,4 +210,22 @@
   <data name="DtEmptyTable" xml:space="preserve">
     <value>Дані в таблиці відсутні</value>
   </data>
-<data name="ShowAll" xml:space="preserve"><value>Показати всі</value></data><data name="BulkDelete" xml:space="preserve"><value>Масове видалення</value></data><data name="BulkDeleteConfirm" xml:space="preserve"><value>Ви впевнені, що хочете видалити {0} вибраних записів?</value></data><data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} записів успішно видалено</value></data><data name="ClearSelection" xml:space="preserve"><value>Очистити вибір</value></data><data name="SelectedCount" xml:space="preserve"><value>записів вибрано</value></data><data name="RequiredProgress" xml:space="preserve"><value>Обов'язково: {{0}} / {{1}}</value></data><data name="Update" xml:space="preserve"><value>Оновити</value></data><data name="RecordUpdated" xml:space="preserve"><value>Запис успішно оновлено.</value></data><data name="InvalidEmail" xml:space="preserve"><value>Некоректна адреса електронної пошти</value></data><data name="InvalidUrl" xml:space="preserve"><value>Некоректний формат URL</value></data><data name="InvalidPhone" xml:space="preserve"><value>Некоректний номер телефону</value></data><data name="NumericOnly" xml:space="preserve"><value>Дозволені лише цифри</value></data><data name="FieldRequired" xml:space="preserve"><value>Це поле є обов'язковим</value></data><data name="InvalidFiscalYear" xml:space="preserve"><value>Некоректний формат (наприклад, 01-01)</value></data><data name="ValidationErrors" xml:space="preserve"><value>Помилки: {0}</value></data><data name="RequiredStatus" xml:space="preserve"><value>Обов'язково: {0} / {1}</value></data></root>
+  <data name="ShowAll" xml:space="preserve"><value>Показати всі</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Масове видалення</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Ви впевнені, що хочете видалити {0} вибраних записів?</value></data>
+  <data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} записів успішно видалено</value></data>
+  <data name="ClearSelection" xml:space="preserve"><value>Очистити вибір</value></data>
+  <data name="SelectedCount" xml:space="preserve"><value>записів вибрано</value></data>
+  <data name="RequiredProgress" xml:space="preserve"><value>Обов'язково: {{0}} / {{1}}</value></data>
+  <data name="Update" xml:space="preserve"><value>Оновити</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Запис успішно оновлено.</value></data>
+  <data name="InvalidEmail" xml:space="preserve"><value>Некоректна адреса електронної пошти</value></data>
+  <data name="InvalidUrl" xml:space="preserve"><value>Некоректний формат URL</value></data>
+  <data name="InvalidPhone" xml:space="preserve"><value>Некоректний номер телефону</value></data>
+  <data name="NumericOnly" xml:space="preserve"><value>Дозволені лише цифри</value></data>
+  <data name="FieldRequired" xml:space="preserve"><value>Це поле є обов'язковим</value></data>
+  <data name="InvalidFiscalYear" xml:space="preserve"><value>Некоректний формат (наприклад, 01-01)</value></data>
+  <data name="ValidationErrors" xml:space="preserve"><value>Помилки: {0}</value></data>
+  <data name="RequiredStatus" xml:space="preserve"><value>Обов'язково: {0} / {1}</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Виберіть...</value></data>
+</root>

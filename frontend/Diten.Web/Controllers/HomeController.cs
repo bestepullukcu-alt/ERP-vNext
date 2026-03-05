@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Diten.Web.WebUI.Models;
+using Diten.Web.Models;
 using System.Diagnostics;
 
 namespace Diten.Web.Controllers

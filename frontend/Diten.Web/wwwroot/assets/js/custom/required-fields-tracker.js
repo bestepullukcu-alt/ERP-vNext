@@ -106,9 +106,16 @@ document.addEventListener("DOMContentLoaded", function () {
         const errorTextSpan = badge.querySelector('.error-text');
         const errorPart = badge.querySelector('.error-part');
 
-        // Localization templates
-        const reqTemplate = window.RequiredProgressText || "Required: {0} / {1}";
-        const errTemplate = window.ValidationErrorsText || "Errors: {0}";
+        // Localization templates with safe fallbacks
+        let reqTemplate = window.RequiredProgressText;
+        if (typeof reqTemplate !== 'string' || !reqTemplate.includes("{0}")) {
+            reqTemplate = "Required: {0} / {1}";
+        }
+
+        let errTemplate = window.ValidationErrorsText;
+        if (typeof errTemplate !== 'string' || !errTemplate.includes("{0}")) {
+            errTemplate = "Errors: {0}";
+        }
 
         requiredTextSpan.textContent = reqTemplate.replace("{0}", filledCount).replace("{1}", totalRequired);
 

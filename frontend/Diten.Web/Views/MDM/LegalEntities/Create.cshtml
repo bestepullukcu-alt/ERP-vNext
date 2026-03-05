@@ -47,7 +47,15 @@
 
         <form asp-action="@(isEditMode ? "Edit" : "Create")" method="post" id="formCreateLegalEntity" novalidate>
             <input type="hidden" asp-for="Id" />
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-6"></div>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-6 d-flex align-items-center"
+                role="alert">
+                <i class="bx bx-error-alt me-2"></i>
+                <div>
+                    <ul class="mb-0">
+                        <li asp-validation-summary="ModelOnly"></li>
+                    </ul>
+                </div>
+            </div>
 
             <div class="row g-6">
                 <!-- Card 1: General Information -->
@@ -227,7 +235,8 @@
                                     <label asp-for="FiscalYearStart"
                                         class="form-label">@Localizer["FiscalYearStart"]</label>
                                     <input asp-for="FiscalYearStart" class="form-control fiscal-year-mask"
-                                        placeholder="@Localizer["FiscalYearStartPlaceholder"].Value" inputmode="numeric" />
+                                        placeholder="@Localizer["FiscalYearStartPlaceholder"].Value"
+                                        inputmode="numeric" />
                                     <span asp-validation-for="FiscalYearStart" class="invalid-feedback"></span>
                                 </div>
                                 <div class="col-md-3">

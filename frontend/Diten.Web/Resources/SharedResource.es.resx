@@ -210,4 +210,22 @@
   <data name="DtEmptyTable" xml:space="preserve">
     <value>Ningún dato disponible en esta tabla</value>
   </data>
-<data name="ShowAll" xml:space="preserve"><value>Mostrar todo</value></data><data name="BulkDelete" xml:space="preserve"><value>Eliminar en masa</value></data><data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Está seguro de que desea eliminar {0} registros seleccionados?</value></data><data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} registros eliminados exitosamente</value></data><data name="ClearSelection" xml:space="preserve"><value>Borrar selección</value></data><data name="SelectedCount" xml:space="preserve"><value>registros seleccionados</value></data><data name="RequiredProgress" xml:space="preserve"><value>Requerido: {{0}} / {{1}}</value></data><data name="Update" xml:space="preserve"><value>Actualizar</value></data><data name="RecordUpdated" xml:space="preserve"><value>El registro se ha actualizado correctamente.</value></data><data name="InvalidEmail" xml:space="preserve"><value>Dirección de correo electrónico no válida</value></data><data name="InvalidUrl" xml:space="preserve"><value>Formato URL no válido</value></data><data name="InvalidPhone" xml:space="preserve"><value>Número de teléfono no válido</value></data><data name="NumericOnly" xml:space="preserve"><value>Sólo se permiten dígitos</value></data><data name="FieldRequired" xml:space="preserve"><value>Este campo es obligatorio</value></data><data name="InvalidFiscalYear" xml:space="preserve"><value>Formato no válido (p. ej., 01-01)</value></data><data name="ValidationErrors" xml:space="preserve"><value>Errores: {0}</value></data><data name="RequiredStatus" xml:space="preserve"><value>Requerido: {0} / {1}</value></data></root>
+  <data name="ShowAll" xml:space="preserve"><value>Mostrar todo</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Eliminar en masa</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Está seguro de que desea eliminar {0} registros seleccionados?</value></data>
+  <data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} registros eliminados exitosamente</value></data>
+  <data name="ClearSelection" xml:space="preserve"><value>Borrar selección</value></data>
+  <data name="SelectedCount" xml:space="preserve"><value>registros seleccionados</value></data>
+  <data name="RequiredProgress" xml:space="preserve"><value>Requerido: {{0}} / {{1}}</value></data>
+  <data name="Update" xml:space="preserve"><value>Actualizar</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>El registro se ha actualizado correctamente.</value></data>
+  <data name="InvalidEmail" xml:space="preserve"><value>Dirección de correo electrónico no válida</value></data>
+  <data name="InvalidUrl" xml:space="preserve"><value>Formato URL no válido</value></data>
+  <data name="InvalidPhone" xml:space="preserve"><value>Número de teléfono no válido</value></data>
+  <data name="NumericOnly" xml:space="preserve"><value>Sólo se permiten dígitos</value></data>
+  <data name="FieldRequired" xml:space="preserve"><value>Este campo es obligatorio</value></data>
+  <data name="InvalidFiscalYear" xml:space="preserve"><value>Formato no válido (p. ej., 01-01)</value></data>
+  <data name="ValidationErrors" xml:space="preserve"><value>Errores: {0}</value></data>
+  <data name="RequiredStatus" xml:space="preserve"><value>Requerido: {0} / {1}</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Seleccionar...</value></data>
+</root>
