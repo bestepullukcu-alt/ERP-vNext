@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "KApk6U4FBmPs1tTGsCixMOYTlgarXABW8rHsu9YXzS4=",
+  "Hash": "hlSdiF9+n7Snej0CmMDoxI0W6se/cN006/xyl95jDFs=",
   "Source": "Diten.Web",
   "BasePath": "_content/Diten.Web",
   "Mode": "Default",
@@ -53,25 +53,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/obj/Debug/net8.0/scopedcss/projectbundle/Diten.Web.bundle.scp.css"
-    },
-    {
-      "Identity": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/audio/Water_Lily.mp3",
-      "SourceId": "Diten.Web",
-      "SourceType": "Discovered",
-      "ContentRoot": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/",
-      "BasePath": "_content/Diten.Web",
-      "RelativePath": "assets/audio/Water_Lily.mp3",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/assets/audio/Water_Lily.mp3"
     },
     {
       "Identity": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/css/backbone-custom.css",
@@ -9781,25 +9762,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/assets/lang/tr.json"
-    },
-    {
-      "Identity": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/preview.png",
-      "SourceId": "Diten.Web",
-      "SourceType": "Discovered",
-      "ContentRoot": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/",
-      "BasePath": "_content/Diten.Web",
-      "RelativePath": "assets/preview.png",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/assets/preview.png"
     },
     {
       "Identity": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/svg/icons/check.svg",
@@ -24734,25 +24696,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/lib/jquery/LICENSE.txt"
-    },
-    {
-      "Identity": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/pages-misc-error.html",
-      "SourceId": "Diten.Web",
-      "SourceType": "Discovered",
-      "ContentRoot": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/",
-      "BasePath": "_content/Diten.Web",
-      "RelativePath": "pages-misc-error.html",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/pages-misc-error.html"
     }
   ]
 }

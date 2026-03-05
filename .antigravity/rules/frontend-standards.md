@@ -248,3 +248,24 @@ Tüm ajanlar bu kurallara uymak zorundadır.
 
 ### PROD-004: Archive Freeze
 - `Views/Archive/` ve `wwwroot/assets/js/Archive/` altındaki dosyalar **değiştirilmez** (refactor planı olmadan).
+
+---
+
+## Yeni Form Standartları (MOD-0023)
+
+### UI-017: Input Restrictions (Numeric & Phone)
+Formlarda yanlış veri girişini (wrong typing) engellemek için şu CSS sınıfları ve JS maskeleri kullanılmalıdır:
+1.  **Numeric Only:** `.numeric-only` sınıfı eklenen inputlar sadece rakam (`0-9`) kabul eder. Harf girişleri JS ile anlık temizlenir.
+2.  **Phone Mask:** `.phone-mask` sınıfı eklenen inputlar sadece telefon karakterlerini (`0-9`, `+`, `-`, `(`, `)`, ` `) kabul eder.
+3.  **HTML5 Types:** Her zaman doğru `type` ve `inputmode` kullanılmalıdır:
+    *   Email: `type="email"`
+    *   URL: `type="url"`
+    *   Telefon: `type="tel" inputmode="tel"`
+    *   Vergi No: `type="text" inputmode="numeric"`
+
+### UI-019: Specialized Field Masks & Regex Validation
+Özel format gerektiren alanlar (Mali Yıl Başlangıcı, Özel Kodlar vb.) için hem kullanıcı girişini kısıtlayan maskeler hem de backend doğrulaması birlikte kullanılmalıdır:
+1.  **Strict JS Mask:** Kullanıcının geçersiz karakter (harf vb.) girmesi `.addEventListener('input', ...)` ile engellenmelidir. (Örn: Mali yıl için sadece `0-9` ve `-`).
+2.  **Regex Alignment:** ViewModel üzerinde kullanılan `[RegularExpression]` deseni ile JS maskesi birbiriyle tutarlı olmalıdır.
+3.  **L10n Format Error:** Yanlış format girişlerinde (Örn: `35-13` veya eksik karakter) gösterilecek hata mesajı (`InvalidFiscalYear` vb.) projenin 8 dil standardına uygun olarak `SharedResource.resx` dosyalarına eklenmelidir.
+4.  **UX Guidance:** Input `placeholder` alanı, kullanıcıya beklenen formatı (Örn: `GG-AA`) açıkça göstermelidir.

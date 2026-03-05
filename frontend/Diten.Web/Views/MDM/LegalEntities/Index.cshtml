@@ -99,7 +99,7 @@
         window.L10n.Cancel = @Json.Serialize(SharedLocalizer["Cancel"].Value);
 
         // Check if redirect came back with success message
-        var successMsg = @Json.Serialize(TempData["SuccessMessage"]);
+        var successMsg = @Json.Serialize(TempData["SuccessMessage"] != null ? SharedLocalizer[TempData["SuccessMessage"].ToString()].Value : null);
         if (successMsg) {
             document.addEventListener('DOMContentLoaded', function () {
                 if (window.showToast) {

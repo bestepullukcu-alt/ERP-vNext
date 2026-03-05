@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\pages-misc-error.html" />
   </ItemGroup>
 
 </Project>

@@ -590,18 +590,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/ThemeSandbox/Analytics.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVGhlbWVTYW5kYm94L0FuYWx5dGljcy5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/ThemeSandbox/ProductAdd.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVGhlbWVTYW5kYm94L1Byb2R1Y3RBZGQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/ThemeSandbox/UserList.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVGhlbWVTYW5kYm94L1VzZXJMaXN0LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
 [/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -610,6 +598,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Archive/Shared/_SurveyManageLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXJjaGl2ZS9TaGFyZWQvX1N1cnZleU1hbmFnZUxheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = b-elfy09bbem
+
 [/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_EmptyLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19FbXB0eUxheW91dC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = b-xsbqae9hpf
@@ -617,7 +609,3 @@ build_metadata.AdditionalFiles.CssScope = b-xsbqae9hpf
 [/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-v7n8xhxpzt
-
-[/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Views/Shared/_SurveyManageLayout.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19TdXJ2ZXlNYW5hZ2VMYXlvdXQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = b-nfjn4cgsim

@@ -1,3 +1,4 @@
+using Diten.Web;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -5,14 +6,14 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 
 builder.Services.AddControllersWithViews()
     .AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix)
-    .AddDataAnnotationsLocalization()
+    .AddDataAnnotationsLocalization(options => {
+        options.DataAnnotationLocalizerProvider = (type, factory) =>
+            factory.Create(typeof(SharedResource));
+    })
     .AddRazorOptions(options =>
     {
         options.ViewLocationFormats.Add("/Views/MDM/{1}/{0}.cshtml");
         options.ViewLocationFormats.Add("/Views/Archive/{1}/{0}.cshtml");
-        options.ViewLocationFormats.Add("/Views/Identity/{1}/{0}.cshtml");
-        options.ViewLocationFormats.Add("/Views/PPM/{1}/{0}.cshtml");
-        options.ViewLocationFormats.Add("/Views/Other/{1}/{0}.cshtml");
     });
 builder.Services.AddHttpClient();
 

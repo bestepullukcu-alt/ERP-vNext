@@ -5,10 +5,6 @@
       "PackagePath": "staticwebassets/Diten.Web.bundle.scp.css"
     },
     {
-      "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/audio/Water_Lily.mp3",
-      "PackagePath": "staticwebassets/assets/audio/Water_Lily.mp3"
-    },
-    {
       "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/css/backbone-custom.css",
       "PackagePath": "staticwebassets/assets/css/backbone-custom.css"
     },
@@ -2051,10 +2047,6 @@
     {
       "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/lang/tr.json",
       "PackagePath": "staticwebassets/assets/lang/tr.json"
-    },
-    {
-      "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/preview.png",
-      "PackagePath": "staticwebassets/assets/preview.png"
     },
     {
       "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/svg/icons/check.svg",
@@ -5199,10 +5191,6 @@
     {
       "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/lib/jquery/jquery.js",
       "PackagePath": "staticwebassets/lib/jquery/jquery.js"
-    },
-    {
-      "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/pages-misc-error.html",
-      "PackagePath": "staticwebassets/pages-misc-error.html"
     },
     {
       "Id": "obj/Debug/net8.0/staticwebassets/msbuild.Diten.Web.Microsoft.AspNetCore.StaticWebAssets.props",

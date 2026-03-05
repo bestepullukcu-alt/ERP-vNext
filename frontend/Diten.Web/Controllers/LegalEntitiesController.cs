@@ -91,6 +91,59 @@ namespace Diten.Web.Controllers
 
             return View(model);
         }
+        [HttpGet]
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_gatewayUrl}/api/legal-entities/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var entity = await response.Content.ReadFromJsonAsync<CreateLegalEntityViewModel>();
+                    if (entity != null)
+                    {
+                        entity.Id = id;
+                        return View("Create", entity);
+                    }
+                }
+                
+                TempData["ErrorMessage"] = _localizer["RecordNotFound"].Value;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = _localizer["GatewayError"].Value;
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(Guid id, CreateLegalEntityViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Create", model);
+            }
+
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"{_gatewayUrl}/api/legal-entities/{id}", model);
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["SuccessMessage"] = "RecordUpdated";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                ModelState.AddModelError(string.Empty, _localizer["GatewayError"].Value);
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError(string.Empty, _localizer["GatewayError"].Value);
+            }
+
+            return View("Create", model);
+        }
+
         [HttpDelete]
         public async Task<IActionResult> Delete(Guid id)
         {
