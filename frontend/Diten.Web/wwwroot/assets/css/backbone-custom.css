@@ -200,7 +200,7 @@
 
     /* Buttons: grow to share full row width on Row 2 */
     div.dt-container .dt-layout-end .dt-buttons {
-        flex: 1 1 0% !important;
+        flex: 0 0 auto !important;
         width: auto !important;
         display: inline-flex !important;
         flex-wrap: nowrap !important;
@@ -211,7 +211,7 @@
 
     /* Buttons inside each group stretch equally */
     div.dt-container .dt-layout-end .dt-buttons .btn {
-        flex: 1 !important;
+        flex: 0 0 auto !important;
         padding-left: 0.4rem !important;
         padding-right: 0.4rem !important;
         font-size: 0.75rem !important;
