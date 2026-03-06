@@ -97,6 +97,16 @@
             <!-- Details List -->
             <h6 class="text-uppercase text-muted fw-bold mb-3">General Information</h6>
             <dl class="row mb-4">
+                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-buildings text-muted me-2"></i>Company
+                    Type</dt>
+                <dd id="oc-company-type" class="col-7 mb-2">-</dd>
+
+                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-layer text-muted me-2"></i>Sector</dt>
+                <dd id="oc-sector" class="col-7 mb-2">-</dd>
+
+                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-user-pin text-muted me-2"></i>Role</dt>
+                <dd id="oc-org-role" class="col-7 mb-2">-</dd>
+
                 <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-briefcase text-muted me-2"></i>Contact
                     Person</dt>
                 <dd id="oc-contact" class="col-7 mb-2">-</dd>
@@ -201,6 +211,18 @@
             }
             if (data.sector) subtitleParts.push(data.sector);
             document.getElementById('oc-subtitle').innerText = subtitleParts.join(' • ') || '-';
+
+            let companyTypeStr = '-';
+            if (data.companyType) {
+                if (data.companyType === 'LimitedLiability') companyTypeStr = "LimitedLiability"; // This would normally use localization. Using exact type representation for now.
+                else if (data.companyType === 'Corporation') companyTypeStr = "Corporation";
+                else if (data.companyType === 'SoleProprietorship') companyTypeStr = "SoleProprietorship";
+                else companyTypeStr = data.companyType;
+            }
+
+            document.getElementById('oc-company-type').innerText = companyTypeStr;
+            document.getElementById('oc-sector').innerText = data.sector || '-';
+            document.getElementById('oc-org-role').innerText = data.organizationRole || '-';
 
             document.getElementById('oc-taxnumber').innerText = data.taxNumber || '-';
             document.getElementById('oc-contact').innerText = data.contactPerson || '-';
