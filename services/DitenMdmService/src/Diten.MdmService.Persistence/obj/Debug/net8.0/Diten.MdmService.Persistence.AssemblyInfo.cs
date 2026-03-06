@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Diten.MdmService.Persistence")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+da6e713b1fae18ae86bd1e65244067078b441f1b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9bf4f999c37cc935ce82ffe0b72cbae58201d4c6")]
 [assembly: System.Reflection.AssemblyProductAttribute("Diten.MdmService.Persistence")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Diten.MdmService.Persistence")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

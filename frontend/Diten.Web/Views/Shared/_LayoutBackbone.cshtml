@@ -142,17 +142,7 @@
                     </div>
 
                     <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
-                        <!-- Search -->
-                        <div class="navbar-nav align-items-center">
-                            <div class="nav-item navbar-search-wrapper mb-0">
-                                <a class="nav-item nav-link search-toggler px-0" href="javascript:void(0);">
-                                    <i class="bx bx-search icon-md me-2"></i><span
-                                        class="d-inline-block text-body-secondary fw-normal"
-                                        id="autocomplete">@SharedLocalizer["Search"]...</span>
-                                </a>
-                            </div>
-                        </div>
-                        <!-- /Search -->
+                        <!-- Search Removed as requested -->
 
                         <ul class="navbar-nav flex-row align-items-center ms-md-auto">
                             <!-- Language -->
@@ -190,24 +180,24 @@
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
                                     <li>
-                                        <button type="button" class="dropdown-item align-items-center active"
+                                        <button type="button" class="dropdown-item d-flex align-items-center active"
                                             data-bs-theme-value="light" aria-pressed="false">
-                                            <span><i class="bx bx-sun icon-md me-3"
-                                                    data-icon="sun"></i>@SharedLocalizer["Light"]</span>
+                                            <i class="bx bx-sun me-3" data-icon="sun"></i>
+                                            <span class="align-middle">@SharedLocalizer["Light"]</span>
                                         </button>
                                     </li>
                                     <li>
-                                        <button type="button" class="dropdown-item align-items-center"
+                                        <button type="button" class="dropdown-item d-flex align-items-center"
                                             data-bs-theme-value="dark" aria-pressed="true">
-                                            <span><i class="bx bx-moon icon-md me-3"
-                                                    data-icon="moon"></i>@SharedLocalizer["Dark"]</span>
+                                            <i class="bx bx-moon me-3" data-icon="moon"></i>
+                                            <span class="align-middle">@SharedLocalizer["Dark"]</span>
                                         </button>
                                     </li>
                                     <li>
-                                        <button type="button" class="dropdown-item align-items-center"
+                                        <button type="button" class="dropdown-item d-flex align-items-center"
                                             data-bs-theme-value="system" aria-pressed="false">
-                                            <span><i class="bx bx-desktop icon-md me-3"
-                                                    data-icon="desktop"></i>Sistem</span>
+                                            <i class="bx bx-desktop me-3" data-icon="desktop"></i>
+                                            <span class="align-middle">Sistem</span>
                                         </button>
                                     </li>
                                 </ul>
