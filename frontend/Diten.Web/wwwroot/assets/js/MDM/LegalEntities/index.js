@@ -87,7 +87,8 @@ const LegalEntitiesList = (function () {
               <a href="javascript:;" class="btn btn-icon delete-record text-danger me-1"><i class="bx bx-trash icon-md"></i></a>
               <a href="javascript:;" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded icon-md"></i></a>
               <div class="dropdown-menu dropdown-menu-end m-0">
-                <a href="/LegalEntities/Details/${full['id']}" class="dropdown-item">${L.ViewDetails || 'View'}</a>
+                <a href="/LegalEntities/Details/${full['id']}" class="dropdown-item">${L.ViewDetails || 'View Details'}</a>
+                <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetailsPreview" onclick="populateOffcanvas(this)" data-json='${JSON.stringify(full).replace(/'/g, "&#39;")}'>Quick View</a>
                 <a href="/LegalEntities/Edit/${full['id']}" class="dropdown-item">${L.Edit || 'Edit'}</a>
               </div>
             </div>`

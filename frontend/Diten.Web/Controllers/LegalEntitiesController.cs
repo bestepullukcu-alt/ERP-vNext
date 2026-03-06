@@ -92,6 +92,32 @@ namespace Diten.Web.Controllers
             return View(model);
         }
         [HttpGet]
+        public async Task<IActionResult> Details(Guid id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_gatewayUrl}/api/legal-entities/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var entity = await response.Content.ReadFromJsonAsync<CreateLegalEntityViewModel>();
+                    if (entity != null)
+                    {
+                        entity.Id = id;
+                        return View(entity);
+                    }
+                }
+                
+                TempData["ErrorMessage"] = _localizer["RecordNotFound"].Value;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = _localizer["GatewayError"].Value;
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
             try

@@ -1,0 +1,143 @@
+@model Diten.Web.Models.CreateLegalEntityViewModel
+@using Diten.Web.Views.MDM
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LegalEntities> Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+<div class="row g-4">
+    <div class="col-12 col-md-6 col-lg-4">
+        <!-- Card 1: General Information -->
+        <div class="card h-100">
+            <div class="card-header border-bottom">
+                <h5 class="card-title mb-0 d-flex align-items-center"><i
+                        class="bx bx-buildings me-2"></i>@Localizer["GeneralInformation"]</h5>
+            </div>
+            <div class="card-body mt-4">
+                <dl class="row mb-0">
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["Title"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.Title ?? "-")</dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["CompanyType"]:</dt>
+                    <dd class="col-12 mb-4">
+                        @if (Model.CompanyType == "LimitedLiability")
+                        {
+                            @Localizer["LimitedLiability"]
+                        }
+                        else if (Model.CompanyType == "Corporation")
+                        {
+                            @Localizer["Corporation"]
+                        }
+                        else if (Model.CompanyType == "SoleProprietorship")
+                        {
+                            @Localizer["SoleProprietorship"]
+                        }
+                        else
+                        {
+                            @("-")
+                        }
+                    </dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["Sector"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.Sector ?? "-")</dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["OrganizationRole"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.OrganizationRole ?? "-")</dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["ContactPerson"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.ContactPerson ?? "-")</dd>
+                </dl>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Card 2: Communication -->
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header border-bottom">
+                <h5 class="card-title mb-0 d-flex align-items-center"><i
+                        class="bx bx-phone-call me-2"></i>@Localizer["Communication"]</h5>
+            </div>
+            <div class="card-body mt-4">
+                <dl class="row mb-0">
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["Phone"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.Phone ?? "-")</dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["Email"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.Email ?? "-")</dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["Website"]:</dt>
+                    <dd class="col-12 mb-4">
+                        @if (!string.IsNullOrEmpty(Model.Website))
+                        {
+                            <a href="@Model.Website" target="_blank">@Model.Website</a>
+                        }
+                        else
+                        {
+                            @("-")
+                        }
+                    </dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["Address"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.Address ?? "-")</dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["DefaultCommunicationLanguage"]:</dt>
+                    <dd class="col-12 mb-4">
+                        @if (Model.DefaultCommunicationLanguage == "en")
+                        {
+                            @Localizer["LanguageEnglish"]
+                        }
+                        else if (Model.DefaultCommunicationLanguage == "tr")
+                        {
+                            @Localizer["LanguageTurkish"]
+                        }
+                        else
+                        {
+                            @("-")
+                        }
+                    </dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["DefaultTimeZone"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.DefaultTimeZone ?? "-")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Financial & Registration -->
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header border-bottom">
+                <h5 class="card-title mb-0 d-flex align-items-center"><i
+                        class="bx bx-calculator me-2"></i>@Localizer["FinancialRegistration"]</h5>
+            </div>
+            <div class="card-body mt-4">
+                <dl class="row mb-0">
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["TaxOffice"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.TaxOffice ?? "-")</dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["TaxNumber"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.TaxNumber ?? "-")</dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["TaxJurisdiction"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.TaxJurisdiction ?? "-")</dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["PrimaryCurrency"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.PrimaryCurrency ?? "-")</dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["FiscalYearStart"]:</dt>
+                    <dd class="col-12 mb-4">@(string.IsNullOrEmpty(Model.FiscalYearStart) ? "-" : Model.FiscalYearStart)
+                    </dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["RegistrationDate"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.RegistrationDate.HasValue ?
+                        Model.RegistrationDate.Value.ToString("yyyy-MM-dd") : "-")</dd>
+
+                    <dt class="col-12 fw-medium text-heading mb-1">@Localizer["EffectiveFromDate"]:</dt>
+                    <dd class="col-12 mb-4">@(Model.EffectiveFromDate.HasValue ?
+                        Model.EffectiveFromDate.Value.ToString("yyyy-MM-dd") : "-")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>

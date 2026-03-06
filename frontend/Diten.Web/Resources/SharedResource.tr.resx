@@ -228,4 +228,20 @@
   <data name="ValidationErrors" xml:space="preserve"><value>Hata: {0}</value></data>
   <data name="RequiredStatus" xml:space="preserve"><value>Zorunlu: {0} / {1}</value></data>
   <data name="SelectPlaceholder" xml:space="preserve"><value>Seçiniz...</value></data>
+  <data name="Overview" xml:space="preserve"><value>Genel Bakış</value></data>
+  <data name="SubRecords" xml:space="preserve"><value>Alt Kayıtlar</value></data>
+  <data name="Details" xml:space="preserve"><value>Detaylar</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye Dön</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Kaydı Düzenle</value></data>
+  <data name="NoRecordsFound" xml:space="preserve"><value>Henüz alt kayıt bulunmuyor.</value></data>
+  <data name="About" xml:space="preserve"><value>Hakkında</value></data>
+  <data name="Address" xml:space="preserve"><value>Adres</value></data>
+  <data name="EmailAddress" xml:space="preserve"><value>E-posta Adresi</value></data>
+  <data name="PhoneNumber" xml:space="preserve"><value>Telefon Numarası</value></data>
+  <data name="Website" xml:space="preserve"><value>Web Sitesi</value></data>
+  <data name="Sector" xml:space="preserve"><value>Sektör</value></data>
+  <data name="ContactPerson" xml:space="preserve"><value>İletişim Kişisi</value></data>
+  <data name="PrimaryCurrency" xml:space="preserve"><value>Ana Para Birimi</value></data>
+  <data name="DefaultTimeZone" xml:space="preserve"><value>Varsayılan Saat Dilimi</value></data>
+  <data name="BasicInfo" xml:space="preserve"><value>Temel Bilgiler</value></data>
 </root>

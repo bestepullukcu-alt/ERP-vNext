@@ -57,6 +57,8 @@ app.UseEndpoints(endpoints =>
         context.Response.Redirect("/LegalEntities");
     });
 });
-app.MapControllers();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=LegalEntities}/{action=Index}/{id?}");
 
 app.Run();
