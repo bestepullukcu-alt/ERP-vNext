@@ -68,23 +68,21 @@
 </style>
 
 <script>
-    /**
-     * MOD-0013: Platform Standards - Global Notification System (Premium)
-     * window.showToast(key, type)
-     * key: Localization key or raw message string
-     * type: 'success' | 'error' | 'warning' | 'info'
-     */
+    // Reuse a single instance to prevent redundant notifications or conflicts
+    var _notyfInstance = null;
+
     window.showToast = function (key, type) {
         type = type || 'success';
-        console.log('[MOD-0013 showToast] Key:', key, '| Type:', type);
+        console.log('[MOD-0013 showToast] Triggered - Key:', key, '| Type:', type);
 
-        // Map RecordDeleted correctly to our new custom type if originally success
-        if (key === 'RecordDeleted' && type === 'success') {
+        // Normalize RecordDeleted to delete-success type
+        if ((key === 'RecordDeleted' || key === 'RecordDeleted_Success') && (type === 'success' || type === 'delete-success')) {
             type = 'delete-success';
         }
 
         var messages = {
             'RecordCreated': @Json.Serialize(SharedLocalizer["RecordCreated"].Value),
+            'RecordUpdated': @Json.Serialize(SharedLocalizer["RecordUpdated"].Value),
             'RecordDeleted': @Json.Serialize(SharedLocalizer["RecordDeleted"].Value),
             'RecordSaved': @Json.Serialize(SharedLocalizer["RecordSaved"].Value),
             'ErrorOccurred': @Json.Serialize(SharedLocalizer["ErrorOccurred"].Value),
@@ -98,33 +96,49 @@
 
         try {
             // Priority 1: Notyf (Theme Native)
-            if (typeof Notyf === 'function') {
-                var notyf = new Notyf({
-                    duration: 5000,
-                    position: { x: 'right', y: 'top' },
-                    dismissible: true,
-                    ripple: true,
-                    types: [
-                        {
-                            type: 'delete-success',
-                            background: '#e74c3c',
-                            icon: {
-                                className: 'bx bx-trash fs-5 text-white',
-                                tagName: 'i'
+            if (typeof Notyf !== 'undefined') {
+                if (!_notyfInstance) {
+                    _notyfInstance = new Notyf({
+                        duration: 5000,
+                        position: { x: 'right', y: 'top' },
+                        dismissible: true,
+                        ripple: true,
+                        types: [
+                            {
+                                type: 'delete-success',
+                                background: '#ea5455', // Improved red for danger/delete
+                                icon: {
+                                    className: 'bx bx-trash icon-md text-white',
+                                    tagName: 'i'
+                                }
+                            },
+                            {
+                                type: 'success',
+                                background: '#71dd37',
+                                icon: {
+                                    className: 'bx bx-check-circle icon-md text-white',
+                                    tagName: 'i'
+                                }
                             }
-                        }
-                    ]
-                });
+                        ]
+                    });
+                }
 
-                if (type === 'delete-success') { notyf.open({ type: 'delete-success', message: message }); }
-                else if (type === 'success') { notyf.success(message); }
-                else { notyf.error(message); }
+                if (type === 'delete-success' || key === 'RecordDeleted') {
+                    _notyfInstance.open({ type: 'delete-success', message: message });
+                } else if (type === 'success') {
+                    _notyfInstance.success(message);
+                } else if (type === 'error') {
+                    _notyfInstance.error(message);
+                } else {
+                    _notyfInstance.open({ type: type, message: message });
+                }
 
-                console.log('[MOD-0013 showToast] Displayed via Notyf');
+                console.log('[MOD-0013 showToast] Displayed via Notyf - Message:', message);
                 return;
             }
 
-            // Priority 2: Notiflix AIO (CDN)
+            // Priority 2: Notiflix AIO (As Fallback)
             if (typeof Notiflix !== 'undefined' && Notiflix.Notify) {
                 Notiflix.Notify.init({
                     width: '320px',
@@ -137,16 +151,17 @@
                     cssAnimationStyle: 'from-right'
                 });
 
-                if (type === 'delete-success') {
-                    // Force custom color for delete success in Notiflix
+                if (type === 'delete-success' || key === 'RecordDeleted') {
                     Notiflix.Notify.success(message, {
-                        success: { background: '#e74c3c', childClassName: 'notiflix-notify-success' }
+                        success: { background: '#ea5455', childClassName: 'notiflix-notify-success' }
                     });
+                } else if (type === 'success') {
+                    Notiflix.Notify.success(message);
+                } else {
+                    Notiflix.Notify.failure(message);
                 }
-                else if (type === 'success') { Notiflix.Notify.success(message); }
-                else { Notiflix.Notify.failure(message); }
 
-                console.log('[MOD-0013 showToast] Displayed via Notiflix');
+                console.log('[MOD-0013 showToast] Displayed via Notiflix - Message:', message);
                 return;
             }
             console.warn('[MOD-0013 showToast] No toast library found. Message:', message);

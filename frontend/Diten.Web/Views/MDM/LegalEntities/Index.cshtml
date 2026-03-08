@@ -42,6 +42,14 @@
 
 <!-- Legal Entities List Table -->
 <div class="card">
+    <!-- Skeleton Loader (Shimmer) -->
+    <div id="skeleton-loader" class="p-4" style="display: none;">
+        <div class="shimmer skeleton-row" style="width: 100%; height: 32px; margin-bottom: 2rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
+    </div>
     <div class="card-datatable table-responsive">
         <table class="datatables-legal-entities table border-top">
             <thead>
@@ -184,15 +192,6 @@
         window.L10n.AreYouSure = @Json.Serialize(SharedLocalizer["AreYouSure"].Value);
         window.L10n.Cancel = @Json.Serialize(SharedLocalizer["Cancel"].Value);
 
-        // Check if redirect came back with success message
-        var successMsg = @Json.Serialize(TempData["SuccessMessage"] != null ? SharedLocalizer[TempData["SuccessMessage"].ToString()].Value : null);
-        if (successMsg) {
-            document.addEventListener('DOMContentLoaded', function () {
-                if (window.showToast) {
-                    window.showToast(successMsg, 'success');
-                }
-            });
-        }
     </script>
     <script>
         function populateOffcanvas(element) {

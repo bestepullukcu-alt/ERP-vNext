@@ -4,6 +4,7 @@ using Diten.MdmService.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,18 +17,24 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<CreateSampleCommand>());
 
 // ── JWT ───────────────────────────────────────────────────────────────────
+var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
+var jwtAudience = builder.Configuration["JwtSettings:Audience"];
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = builder.Configuration["Jwt:Authority"];
-        options.Audience  = builder.Configuration["Jwt:Audience"];
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer           = true,
-            ValidateAudience         = true,
-            ValidateLifetime         = true,
-            ValidateIssuerSigningKey = true
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret!)),
+            ClockSkew = TimeSpan.Zero
         };
     });
 
@@ -54,19 +61,19 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title   = "Diten MDM Service",
+        Title = "Diten MDM Service",
         Version = "v1"
     });
 
     // Swagger'da JWT + X-Tenant-Id desteği
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Name         = "Authorization",
-        Type         = SecuritySchemeType.Http,
-        Scheme       = "bearer",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
         BearerFormat = "JWT",
-        In           = ParameterLocation.Header,
-        Description  = "JWT Bearer token. Örnek: Bearer <token>"
+        In = ParameterLocation.Header,
+        Description = "JWT Bearer token. Örnek: Bearer <token>"
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -84,9 +91,9 @@ builder.Services.AddSwaggerGen(c =>
     });
     c.AddSecurityDefinition("X-Tenant-Id", new OpenApiSecurityScheme
     {
-        Name        = "X-Tenant-Id",
-        Type        = SecuritySchemeType.ApiKey,
-        In          = ParameterLocation.Header,
+        Name = "X-Tenant-Id",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
         Description = "Multi-tenant GUID. Örnek: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement

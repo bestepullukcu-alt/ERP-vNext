@@ -19,11 +19,13 @@ prefix_logs() {
 echo "========================================="
 echo "🚀 Servislerin projeleri derleniyor..."
 echo "========================================="
+dotnet build services/DitenAuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj -v q
 dotnet build services/DitenMdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -v q
 dotnet build gateway/DitenApiGateway/Diten.ApiGateway/Diten.ApiGateway.csproj -v q
 dotnet build frontend/Diten.Web/Diten.Web.csproj -v q
 
 echo "========================================="
+echo "🚀 Başlatılıyor: Auth (AuthService.Api)"
 echo "🚀 Başlatılıyor: Backend (MdmService.Api)"
 echo "🚀 Başlatılıyor: Gateway (ApiGateway)"
 echo "🚀 Başlatılıyor: Frontend (Diten.Web)"
@@ -31,9 +33,11 @@ echo "========================================="
 echo ""
 
 # Terminate processes on our target ports
-lsof -ti :5000,5001,5050 | xargs kill -9 2>/dev/null || true
+lsof -ti :5000,5001,5050,5056 | xargs kill -9 2>/dev/null || true
 killall -9 dotnet 2>/dev/null || true
 
+prefix_logs "[AUTH    ]" "dotnet run --no-build --project services/DitenAuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj --urls http://0.0.0.0:5056" &
+sleep 2 # Auth service needs more startup time for seeding
 prefix_logs "[BACKEND ]" "dotnet run --no-build --project services/DitenMdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj --urls http://0.0.0.0:5050" &
 prefix_logs "[GATEWAY ]" "dotnet run --no-build --project gateway/DitenApiGateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000" &
 prefix_logs "[FRONTEND]" "dotnet run --no-build --project frontend/Diten.Web/Diten.Web.csproj --urls http://0.0.0.0:5001" &

@@ -67,8 +67,7 @@ a[b-7t7kqn8591] {
   border-color: #1861ac;
 }
 
-.nav-pills .nav-link.active[b-7t7kqn8591],
-.nav-pills .show>.nav-link[b-7t7kqn8591] {
+.nav-pills .nav-link.active[b-7t7kqn8591], .nav-pills .show > .nav-link[b-7t7kqn8591] {
   color: #fff;
   background-color: #1b6ec2;
   border-color: #1861ac;
@@ -77,7 +76,6 @@ a[b-7t7kqn8591] {
 .border-top[b-7t7kqn8591] {
   border-top: 1px solid #e5e5e5;
 }
-
 .border-bottom[b-7t7kqn8591] {
   border-bottom: 1px solid #e5e5e5;
 }

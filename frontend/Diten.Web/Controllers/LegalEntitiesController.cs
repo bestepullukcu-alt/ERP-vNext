@@ -29,20 +29,23 @@ namespace Diten.Web.Controllers
             
             // Gateway URL default or from configuration. 
             _gatewayUrl = configuration["GatewayUrl"] ?? "http://localhost:5000"; 
-
-            if (!_httpClient.DefaultRequestHeaders.Contains("X-Tenant-Id"))
-            {
-                _httpClient.DefaultRequestHeaders.Add("X-Tenant-Id", "00000000-0000-0000-0000-000000000001");
-            }
         }
 
-        private void AddAuthHeader()
+        private void AddAuthHeaders()
         {
             var token = Request.Cookies["access_token"];
             if (!string.IsNullOrEmpty(token))
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
+
+            // Set Tenant ID from user claims
+            var tenantId = User.FindFirst("tenant_id")?.Value ?? "00000000-0000-0000-0000-000000000001";
+            if (_httpClient.DefaultRequestHeaders.Contains("X-Tenant-Id"))
+            {
+                _httpClient.DefaultRequestHeaders.Remove("X-Tenant-Id");
+            }
+            _httpClient.DefaultRequestHeaders.Add("X-Tenant-Id", tenantId);
         }
 
         [HttpGet]
@@ -68,7 +71,7 @@ namespace Diten.Web.Controllers
                 return View(model);
             }
 
-            AddAuthHeader();
+            AddAuthHeaders();
             try
             {
                 var response = await _httpClient.PostAsJsonAsync($"{_gatewayUrl}/api/legal-entities", model);
@@ -96,7 +99,7 @@ namespace Diten.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(Guid id)
         {
-            AddAuthHeader();
+            AddAuthHeaders();
             try
             {
                 var response = await _httpClient.GetAsync($"{_gatewayUrl}/api/legal-entities/{id}");
@@ -128,7 +131,7 @@ namespace Diten.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
-            AddAuthHeader();
+            AddAuthHeaders();
             try
             {
                 var response = await _httpClient.GetAsync($"{_gatewayUrl}/api/legal-entities/{id}");
@@ -165,7 +168,7 @@ namespace Diten.Web.Controllers
                 return View("Create", model);
             }
 
-            AddAuthHeader();
+            AddAuthHeaders();
             try
             {
                 var response = await _httpClient.PutAsJsonAsync($"{_gatewayUrl}/api/legal-entities/{id}", model);
@@ -193,7 +196,7 @@ namespace Diten.Web.Controllers
         [HttpDelete]
         public async Task<IActionResult> Delete(Guid id)
         {
-            AddAuthHeader();
+            AddAuthHeaders();
             try
             {
                 var response = await _httpClient.DeleteAsync($"{_gatewayUrl}/api/legal-entities/{id}");

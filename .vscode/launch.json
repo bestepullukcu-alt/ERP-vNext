@@ -19,6 +19,20 @@
             }
         },
         {
+            "name": "Diten.AuthService.Api",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build Diten.AuthService.Api",
+            "program": "${workspaceFolder}/services/DitenAuthService/src/Diten.AuthService.Api/bin/Debug/net8.0/Diten.AuthService.Api.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/services/DitenAuthService/src/Diten.AuthService.Api",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5056"
+            }
+        },
+        {
             "name": "Diten.MdmService.Api",
             "type": "coreclr",
             "request": "launch",
@@ -28,7 +42,8 @@
             "cwd": "${workspaceFolder}/services/DitenMdmService/src/Diten.MdmService.Api",
             "stopAtEntry": false,
             "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5050"
             }
         },
         {
@@ -41,7 +56,8 @@
             "cwd": "${workspaceFolder}/gateway/DitenApiGateway/Diten.ApiGateway",
             "stopAtEntry": false,
             "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5000"
             }
         },
         {
@@ -54,9 +70,10 @@
         {
             "name": "🚀 Start Diten ERP (All Services)",
             "configurations": [
-                "Diten.Web",
+                "Diten.AuthService.Api",
                 "Diten.MdmService.Api",
-                "Diten.ApiGateway"
+                "Diten.ApiGateway",
+                "Diten.Web"
             ],
             "stopAll": true
         }

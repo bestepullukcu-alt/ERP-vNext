@@ -108,14 +108,19 @@ document.addEventListener("DOMContentLoaded", function () {
         const errorPart = badge.querySelector('.error-part');
 
         // Localization templates with safe fallbacks
-        let reqTemplate = window.RequiredProgressText;
-        if (typeof reqTemplate !== 'string' || !reqTemplate.includes("{0}")) {
+        let reqTemplate = window.RequiredProgressText || (window.L10n && window.L10n.RequiredProgressText);
+        if (typeof reqTemplate !== 'string' || (!reqTemplate.includes("{0}") && !reqTemplate.includes("{{0}}"))) {
             reqTemplate = "Required: {0} / {1}";
+        } else {
+            // Support both standard {0} and some double-curly variants if present
+            reqTemplate = reqTemplate.replace("{{0}}", "{0}").replace("{{1}}", "{1}");
         }
 
-        let errTemplate = window.ValidationErrorsText;
-        if (typeof errTemplate !== 'string' || !errTemplate.includes("{0}")) {
+        let errTemplate = window.ValidationErrorsText || (window.L10n && window.L10n.ValidationErrorsText);
+        if (typeof errTemplate !== 'string' || (!errTemplate.includes("{0}") && !errTemplate.includes("{{0}}"))) {
             errTemplate = "Errors: {0}";
+        } else {
+            errTemplate = errTemplate.replace("{{0}}", "{0}");
         }
 
         requiredTextSpan.textContent = reqTemplate.replace("{0}", filledCount).replace("{1}", totalRequired);

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html lang="en" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr" data-skin="default"
   data-assets-path="/assets/" data-template="vertical-menu-template" data-bs-theme="light">
@@ -7,8 +7,8 @@
 
   <meta property="og:title" content="Welcome to Di10" />
   <meta property="og:description" content="" />
-  <meta property="og:image" content="@Url.Content("~/assets/preview.png?v=1")" />
-  <meta property="og:url" content="@Url.Action("Index", "Home")" />
+  <meta property="og:image" content="~/assets/preview.png?v=1" />
+  <meta property="og:url" content="index.html" />
   <meta property="og:type" content="website" />
   <meta charset="utf-8" />
   <meta name="viewport"
@@ -17,10 +17,10 @@
   <title>@ViewData["Title"] - Pharmacovigilance</title>
 
   <meta name="description" content="" />
-  <meta property="og:image" content="@Url.Content("~/assets/preview.png?v=1")" />
-  <link rel="image_src" href="@Url.Content("~/assets/preview.png")" />
+  <meta property="og:image" content="~/assets/preview.png?v=1" />
+  <link rel="image_src" href="~/assets/preview.png" />
   <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="@Url.Content("~/assets/img/favicon/favicon.ico")" />
+  <link rel="icon" type="image/x-icon" href="~/assets/img/favicon/favicon.ico" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -54,43 +54,63 @@
   <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
   <link rel="stylesheet" href="~/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" />
   <link rel="stylesheet" href="~/assets/vendor/libs/@@form-validation/form-validation.css" />
-  <link rel="stylesheet" href="~/assets/vendor/css/pages/app-calendar.css" />
+  <link rel="stylesheet" href="/assets/vendor/css/pages/app-calendar.css" />
   <link rel="stylesheet" href="~/assets/vendor/fonts/fontawesome.css" />
   <link rel="stylesheet" href="~/assets/vendor/libs/notyf/notyf.css" />
-  <link rel="stylesheet" href="~/assets/vendor/libs/sweetalert2/sweetalert2.css" />
   <link rel="stylesheet" href="~/assets/vendor/libs/animate-css/animate.css" />
   <link rel="stylesheet" href="~/assets/vendor/libs/quill/typography.css" />
   <link rel="stylesheet" href="~/assets/vendor/libs/highlight/highlight.css" />
   <link rel="stylesheet" href="~/assets/vendor/libs/quill/katex.css" />
   <link rel="stylesheet" href="~/assets/vendor/libs/quill/editor.css" />
-  <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-  @await RenderSectionAsync("Styles", required: false)
 
   <!-- Helpers -->
   <script src="~/assets/vendor/js/helpers.js"></script>
 
   <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
+  <script>
+    // Sayfa yüklenince otomatik yönlendirme yap
+    if (window.location.pathname === '/') {
+      window.location.pathname = '/index.html';
+    }
+  </script>
   <script src="~/assets/vendor/js/template-customizer.js"></script>
   <script src="~/assets/js/config.js"></script>
-  <script src="~/assets/js/Archive/ResetPassword/authHelper.js"></script>
+  <script src="~/assets/js/Pagejs/ResetPassword/authHelper.js"></script>
+  <!--? Control expiration the token  -->
 
   <script>
-    // Global API Configuration
-    window.ApiBaseUrl = window.location.protocol + "//" + window.location.hostname + ":5000";
-
     (function checkAuthentication() {
-      console.log("Dev Mode: Authentication Bypass Active");
-      if (!localStorage.getItem("token")) {
-        localStorage.setItem("token", "dummy.fake.payload");
-        localStorage.setItem("expiration", "2099-01-01T00:00:00Z");
-        localStorage.setItem("user", JSON.stringify({ name: "Diten Admin", role: "Admin" }));
+      const token = localStorage.getItem("token");
+      const expiration = localStorage.getItem("expiration");
+      const isLoginPage = window.location.pathname === "/account/login";
+
+      if (!token || !expiration) {
+        if (!isLoginPage) {
+          window.location.href = "/account/login";
+        }
+        return;
       }
-      if (window.location.pathname.toLowerCase().includes("login") && localStorage.getItem("token")) {
-        window.location.href = "/LegalEntities";
+
+      const expirationDate = new Date(expiration);
+      const now = new Date();
+
+      if (now >= expirationDate) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("expiration");
+        if (!isLoginPage) {
+          window.location.href = "/account/login";
+        }
+        return;
+      }
+
+      // Eğer token geçerliyse ve login sayfasındaysa, anasayfaya yönlendir
+      if (isLoginPage) {
+        window.location.href = "/";
       }
     })();
   </script>
+
+
 
 
   <script>
@@ -126,15 +146,13 @@
       let output = '';
 
       if (userInfo.image) {
-        const assetsPath = '/assets/';
+        const assetsPath = '../../assets/';
         output = '<img src="' + assetsPath + 'img/avatars/' + userInfo.image + '" alt="Avatar" class="rounded-circle" />';
-      } else if (userInfo.name) {
+      } else {
         const states = ['success', 'danger', 'warning', 'info', 'dark', 'primary', 'secondary'];
         const state = states[Math.floor(Math.random() * states.length)];
-        const initials = (userInfo.name.split(' ').map(word => word[0] || '').join('')).toUpperCase();
+        const initials = (userInfo.name.split(' ').map(word => word[0]).join('')).toUpperCase();
         output = '<span class="avatar-initial rounded-circle bg-label-' + state + '">' + initials + '</span>';
-      } else {
-        output = '<span class="avatar-initial rounded-circle bg-label-secondary"><i class="bx bx-user"></i></span>';
       }
 
       if (avatarContainer) {
@@ -575,7 +593,7 @@
 
                     // document.write(new Date().getFullYear());
                   </script>
-                  2018 | made with by
+                  2018 , made with by
                   <a href="#" target="_blank" class="footer-link">Diten</a>
                 </div>
                 <div class="d-none d-lg-inline-block">
@@ -671,18 +689,15 @@
   <script src="~/assets/vendor/libs/jquery-timepicker/jquery-timepicker.js"></script>
   <script src="~/assets/vendor/libs/pickr/pickr.js"></script>
   <script src="~/assets/vendor/libs/quill/katex.js"></script>
-  <script src="~/assets/vendor/libs/highlight/highlight.js"></script>
+  <script src="~/assets//vendor/libs/highlight/highlight.js"></script>
   <script src="~/assets/vendor/libs/quill/quill.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.js"></script>
+  <script src="~/assets/vendor/libs/notiflix/notiflix.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-
-  <!-- Notification & Confirmation Libraries -->
-  <script src="~/assets/vendor/libs/notyf/notyf.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.7/dist/notiflix-aio-3.2.7.min.js"></script>
-  <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
-
   <!-- Main JS -->
+
   <script src="~/assets/js/main.js"></script>
 
   <!-- Page JS -->
@@ -691,14 +706,24 @@
   <script src="~/assets/js/Pagejs/langLoader.js"></script>
   <script src="~/assets/js/Pagejs/global-errors.js"></script>
   <script type="module" src="~/assets/js/Pagejs/Layout.js"></script>
-
-  <!-- Global UI Modules (MOD-0013): defines window.showToast & window.showConfirm -->
-  @await Html.PartialAsync("_GlobalNotification")
-  @await Html.PartialAsync("_GlobalConfirmation")
-
-  <!-- Page-specific scripts load AFTER global functions are defined -->
   @await RenderSectionAsync("Scripts", required: false)
 
+  <!-- DitenPPM Global SignalR Configurations & Script -->
+  <script>
+    // Feature flag for Meeting Reminder System
+    window.appConfig = window.appConfig || {};
+    window.appConfig.enableGlobalMeetingReminder = '@Environment.GetEnvironmentVariable("ENABLE_GLOBAL_REMINDER")' !== 'false';
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+  <script src="~/assets/js/signalr-global.js"></script>
+  <script>
+    // Start Global SignalR
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof initGlobalSignalR === 'function') {
+        initGlobalSignalR();
+      }
+    });
+  </script>
 </body>
 
 </html>

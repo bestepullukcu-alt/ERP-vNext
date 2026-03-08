@@ -132,6 +132,9 @@ const LegalEntitiesList = (function () {
                 // Her çizimde (arama, sayfalama vb.) görsel durumları güncelle
                 const count = [$('#UserPlan').val(), $('#FilterTransaction').val()].filter(Boolean).length;
                 window.DtDefaults.updateVisualState(this.api(), count);
+
+                // Skeleton'ı gizle
+                $('#skeleton-loader').fadeOut(200);
             }
         }));
 

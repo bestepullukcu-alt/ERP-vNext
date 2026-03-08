@@ -16,11 +16,7 @@
         "PUT",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/legal-entities/{everything}",
@@ -38,11 +34,7 @@
         "PUT",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/{everything}",
@@ -61,11 +53,7 @@
         "PUT",
         "PATCH"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/auth/{everything}",
@@ -101,11 +89,7 @@
         "PUT",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/roles/{everything}",
@@ -123,11 +107,7 @@
         "PUT",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/permissions/{everything}",
