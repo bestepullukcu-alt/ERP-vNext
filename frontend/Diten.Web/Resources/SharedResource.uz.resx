@@ -228,4 +228,4 @@
   <data name="ValidationErrors" xml:space="preserve"><value>Xatolar: {0}</value></data>
   <data name="RequiredStatus" xml:space="preserve"><value>Zarur: {0} / {1}</value></data>
   <data name="SelectPlaceholder" xml:space="preserve"><value>Tanlang...</value></data>
-</root>
+<data name="Login.Title" xml_space="preserve"><value>Sign In</value></data><data name="Login.Email" xml_space="preserve"><value>Email</value></data><data name="Login.Password" xml_space="preserve"><value>Password</value></data><data name="Login.RememberMe" xml_space="preserve"><value>Remember Me</value></data><data name="Login.Submit" xml_space="preserve"><value>Sign In</value></data><data name="Login.ErrorTitle" xml_space="preserve"><value>Error</value></data><data name="Login.ErrorRequired" xml_space="preserve"><value>Email and password are required</value></data><data name="Login.Error" xml_space="preserve"><value>Invalid email or password</value></data><data name="Login.Loading" xml_space="preserve"><value>Signing in...</value></data></root>

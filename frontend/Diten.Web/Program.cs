@@ -1,4 +1,9 @@
 using Diten.Web;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Localization;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -13,8 +18,18 @@ builder.Services.AddControllersWithViews()
     .AddRazorOptions(options =>
     {
         options.ViewLocationFormats.Add("/Views/MDM/{1}/{0}.cshtml");
+        options.ViewLocationFormats.Add("/Views/{1}/{0}.cshtml");
         options.ViewLocationFormats.Add("/Views/Archive/{1}/{0}.cshtml");
     });
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "auth_ticket"; // Use a separate cookie for ASP.NET state if needed
+        options.LoginPath = "/account/login";
+        options.LogoutPath = "/account/logout";
+    });
+
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
@@ -33,21 +48,48 @@ app.Use(async (context, next) =>
     var culture = context.Request.Query["culture"];
     if (!string.IsNullOrEmpty(culture))
     {
-        var cookieValue = Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.MakeCookieValue(new Microsoft.AspNetCore.Localization.RequestCulture(culture));
-        context.Response.Cookies.Append(Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName, cookieValue, new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) });
+        var cookieValue = CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture));
+        context.Response.Cookies.Append(CookieRequestCultureProvider.DefaultCookieName, cookieValue, new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) });
+    }
+    await next();
+});
+
+// MOD-0014: Custom Token-to-User State Bridge
+app.Use(async (context, next) =>
+{
+    var accessToken = context.Request.Cookies["access_token"];
+    if (!string.IsNullOrEmpty(accessToken))
+    {
+        try 
+        {
+            var handler = new JwtSecurityTokenHandler();
+            if (handler.CanReadToken(accessToken))
+            {
+                var jwtToken = handler.ReadJwtToken(accessToken);
+                var identity = new ClaimsIdentity(jwtToken.Claims, "JWT");
+                context.User = new ClaimsPrincipal(identity);
+            }
+        }
+        catch { /* Corrupt token? */ }
     }
     await next();
 });
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Home/Error");
 }
+
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseEndpoints(endpoints =>
@@ -57,6 +99,7 @@ app.UseEndpoints(endpoints =>
         context.Response.Redirect("/LegalEntities");
     });
 });
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=LegalEntities}/{action=Index}/{id?}");

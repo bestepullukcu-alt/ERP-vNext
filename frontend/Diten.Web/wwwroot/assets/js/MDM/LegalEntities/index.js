@@ -11,6 +11,34 @@ const LegalEntitiesList = (function () {
     const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
     const L = window.L10n || {};
 
+    // Get TenantId from logged-in user or fallback
+    const getTenantId = () => {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            return user.tenantId || '00000000-0000-0000-0000-000000000001';
+        } catch (e) {
+            return '00000000-0000-0000-0000-000000000001';
+        }
+    };
+
+    /**
+     * Helper to get cookie value
+     */
+    const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    };
+
+    const getAuthHeaders = () => {
+        const token = getCookie('access_token');
+        return {
+            'X-Tenant-Id': getTenantId(),
+            'Authorization': token ? `Bearer ${token}` : ''
+        };
+    };
+
     const statusObj = {
         true: { title: L.Active || 'Active', class: 'bg-label-success' },
         false: { title: L.Passive || 'Passive', class: 'bg-label-secondary' }
@@ -44,7 +72,7 @@ const LegalEntitiesList = (function () {
                 url: apiUrl + '/api/legal-entities',
                 type: 'GET',
                 dataSrc: (json) => json.data || json,
-                headers: { 'X-Tenant-Id': '00000000-0000-0000-0000-000000000001' }
+                headers: getAuthHeaders()
             },
             columns: [
                 { data: 'id', name: 'control' },
@@ -290,7 +318,10 @@ const LegalEntitiesList = (function () {
                 const data = row.data();
 
                 window.showConfirm?.('DeleteConfirmation', () => {
-                    fetch(`${apiUrl}/api/legal-entities/${data.id}`, { method: 'DELETE', headers: { 'X-Tenant-Id': '00000000-0000-0000-0000-000000000001' } })
+                    fetch(`${apiUrl}/api/legal-entities/${data.id}`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    })
                         .then(res => {
                             if (res.ok) {
                                 row.remove().draw();
@@ -357,8 +388,8 @@ const LegalEntitiesList = (function () {
                     fetch(`${apiUrl}/api/legal-entities/bulk`, {
                         method: 'DELETE',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'X-Tenant-Id': '00000000-0000-0000-0000-000000000001'
+                            ...getAuthHeaders(),
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({ ids: ids })
                     })

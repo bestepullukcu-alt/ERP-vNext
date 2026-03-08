@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Diten.Web.Models;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Diten.Web.Controllers
 {
-    [AllowAnonymous]
+    [Authorize]
     public class LegalEntitiesController : Controller
     {
         private readonly HttpClient _httpClient;
@@ -26,37 +27,31 @@ namespace Diten.Web.Controllers
             _httpClient = httpClient;
             _localizer = localizer;
             
+            // Gateway URL default or from configuration. 
+            _gatewayUrl = configuration["GatewayUrl"] ?? "http://localhost:5000"; 
+
             if (!_httpClient.DefaultRequestHeaders.Contains("X-Tenant-Id"))
             {
                 _httpClient.DefaultRequestHeaders.Add("X-Tenant-Id", "00000000-0000-0000-0000-000000000001");
             }
+        }
 
-            // Gateway URL default or from configuration. 
-            _gatewayUrl = configuration["GatewayUrl"] ?? "http://localhost:5000"; 
+        private void AddAuthHeader()
+        {
+            var token = Request.Cookies["access_token"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var legalEntities = new List<LegalEntityViewModel>();
-            try
-            {
-                var response = await _httpClient.GetAsync($"{_gatewayUrl}/api/legal-entities");
-                if (response.IsSuccessStatusCode)
-                {
-                    legalEntities = await response.Content.ReadFromJsonAsync<List<LegalEntityViewModel>>() ?? new List<LegalEntityViewModel>();
-                }
-                else
-                {
-                    ViewBag.ErrorMessage = _localizer["FailedToLoadData"].Value;
-                }
-            }
-            catch (Exception ex)
-            {
-                ViewBag.ErrorMessage = _localizer["GatewayError"].Value;
-            }
-
-            return View(legalEntities);
+            // Set basic display info even if API fails as page uses AJAX
+            ViewBag.TenantId = User.FindFirst("tenant_id")?.Value ?? "00000000-0000-0000-0000-000000000001";
+            
+            return View(new List<LegalEntityViewModel>());
         }
 
         [HttpGet]
@@ -73,6 +68,7 @@ namespace Diten.Web.Controllers
                 return View(model);
             }
 
+            AddAuthHeader();
             try
             {
                 var response = await _httpClient.PostAsJsonAsync($"{_gatewayUrl}/api/legal-entities", model);
@@ -82,18 +78,25 @@ namespace Diten.Web.Controllers
                     return RedirectToAction(nameof(Index));
                 }
                 
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return RedirectToAction("Login", "Account", new { returnUrl = Request.Path });
+                }
+
                 ModelState.AddModelError(string.Empty, _localizer["GatewayError"].Value);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ModelState.AddModelError(string.Empty, _localizer["GatewayError"].Value);
             }
 
             return View(model);
         }
+
         [HttpGet]
         public async Task<IActionResult> Details(Guid id)
         {
+            AddAuthHeader();
             try
             {
                 var response = await _httpClient.GetAsync($"{_gatewayUrl}/api/legal-entities/{id}");
@@ -107,6 +110,11 @@ namespace Diten.Web.Controllers
                     }
                 }
                 
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return RedirectToAction("Login", "Account", new { returnUrl = Request.Path });
+                }
+
                 TempData["ErrorMessage"] = _localizer["RecordNotFound"].Value;
                 return RedirectToAction(nameof(Index));
             }
@@ -120,6 +128,7 @@ namespace Diten.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
+            AddAuthHeader();
             try
             {
                 var response = await _httpClient.GetAsync($"{_gatewayUrl}/api/legal-entities/{id}");
@@ -131,6 +140,11 @@ namespace Diten.Web.Controllers
                         entity.Id = id;
                         return View("Create", entity);
                     }
+                }
+
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return RedirectToAction("Login", "Account", new { returnUrl = Request.Path });
                 }
                 
                 TempData["ErrorMessage"] = _localizer["RecordNotFound"].Value;
@@ -151,6 +165,7 @@ namespace Diten.Web.Controllers
                 return View("Create", model);
             }
 
+            AddAuthHeader();
             try
             {
                 var response = await _httpClient.PutAsJsonAsync($"{_gatewayUrl}/api/legal-entities/{id}", model);
@@ -158,6 +173,11 @@ namespace Diten.Web.Controllers
                 {
                     TempData["SuccessMessage"] = "RecordUpdated";
                     return RedirectToAction(nameof(Index));
+                }
+
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return RedirectToAction("Login", "Account", new { returnUrl = Request.Path });
                 }
 
                 ModelState.AddModelError(string.Empty, _localizer["GatewayError"].Value);
@@ -173,6 +193,7 @@ namespace Diten.Web.Controllers
         [HttpDelete]
         public async Task<IActionResult> Delete(Guid id)
         {
+            AddAuthHeader();
             try
             {
                 var response = await _httpClient.DeleteAsync($"{_gatewayUrl}/api/legal-entities/{id}");
@@ -180,6 +201,12 @@ namespace Diten.Web.Controllers
                 {
                     return Json(new { success = true, message = "Record deleted successfully." });
                 }
+
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return Json(new { success = false, message = "Unauthorized", redirect = true });
+                }
+
                 return Json(new { success = false, message = _localizer["GatewayError"].Value });
             }
             catch (Exception)

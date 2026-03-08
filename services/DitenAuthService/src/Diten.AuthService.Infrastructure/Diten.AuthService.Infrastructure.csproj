@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Diten.AuthService.Infrastructure</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+        <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Diten.AuthService.Domain\Diten.AuthService.Domain.csproj" />
+        <ProjectReference Include="..\Diten.AuthService.Application\Diten.AuthService.Application.csproj" />
+        <ProjectReference Include="..\Diten.AuthService.Persistence\Diten.AuthService.Persistence.csproj" />
+    </ItemGroup>
+
+</Project>

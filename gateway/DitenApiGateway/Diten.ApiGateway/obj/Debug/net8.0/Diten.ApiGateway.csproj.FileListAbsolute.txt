@@ -37,3 +37,11 @@
 /Users/alitufanoglu/Desktop/ERP-vNext/gateway/DitenApiGateway/Diten.ApiGateway/obj/Debug/net8.0/Diten.ApiGateway.pdb
 /Users/alitufanoglu/Desktop/ERP-vNext/gateway/DitenApiGateway/Diten.ApiGateway/obj/Debug/net8.0/Diten.ApiGateway.genruntimeconfig.cache
 /Users/alitufanoglu/Desktop/ERP-vNext/gateway/DitenApiGateway/Diten.ApiGateway/obj/Debug/net8.0/ref/Diten.ApiGateway.dll
+/Users/alitufanoglu/Desktop/ERP-vNext/gateway/DitenApiGateway/Diten.ApiGateway/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/Users/alitufanoglu/Desktop/ERP-vNext/gateway/DitenApiGateway/Diten.ApiGateway/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/Users/alitufanoglu/Desktop/ERP-vNext/gateway/DitenApiGateway/Diten.ApiGateway/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/Users/alitufanoglu/Desktop/ERP-vNext/gateway/DitenApiGateway/Diten.ApiGateway/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/Users/alitufanoglu/Desktop/ERP-vNext/gateway/DitenApiGateway/Diten.ApiGateway/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll
+/Users/alitufanoglu/Desktop/ERP-vNext/gateway/DitenApiGateway/Diten.ApiGateway/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/Users/alitufanoglu/Desktop/ERP-vNext/gateway/DitenApiGateway/Diten.ApiGateway/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/Users/alitufanoglu/Desktop/ERP-vNext/gateway/DitenApiGateway/Diten.ApiGateway/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll

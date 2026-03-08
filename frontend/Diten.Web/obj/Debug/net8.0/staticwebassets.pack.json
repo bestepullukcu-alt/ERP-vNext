@@ -169,20 +169,8 @@
       "PackagePath": "staticwebassets/assets/img/backgrounds/event.jpg"
     },
     {
-      "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/img/branding/brand-img-dark.png",
-      "PackagePath": "staticwebassets/assets/img/branding/brand-img-dark.png"
-    },
-    {
-      "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/img/branding/brand-img-light.png",
-      "PackagePath": "staticwebassets/assets/img/branding/brand-img-light.png"
-    },
-    {
-      "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/img/branding/brand-img-small.png",
-      "PackagePath": "staticwebassets/assets/img/branding/brand-img-small.png"
-    },
-    {
-      "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/img/branding/logo.png",
-      "PackagePath": "staticwebassets/assets/img/branding/logo.png"
+      "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/img/branding/logo.svg",
+      "PackagePath": "staticwebassets/assets/img/branding/logo.svg"
     },
     {
       "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/img/customizer/content-compact.svg",
@@ -1595,6 +1583,10 @@
     {
       "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/img/products/woodenchair.png",
       "PackagePath": "staticwebassets/assets/img/products/woodenchair.png"
+    },
+    {
+      "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/js/Account/login.js",
+      "PackagePath": "staticwebassets/assets/js/Account/login.js"
     },
     {
       "Id": "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/js/Archive/Account/ResetPassword.js",

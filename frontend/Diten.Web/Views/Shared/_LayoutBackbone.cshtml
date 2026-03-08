@@ -55,24 +55,26 @@
     <script>
         window.ApiBaseUrl = window.location.protocol + "//" + window.location.hostname + ":5000";
 
-        // MOD-0013: Safety Isolation - Auth Bypass only in Dev (Simulated check)
-        (function checkAuthentication() {
-            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-                if (!localStorage.getItem("token")) {
-                    localStorage.setItem("token", "dummy.fake.payload");
-                    localStorage.setItem("expiration", "2099-01-01T00:00:00Z");
-                    localStorage.setItem("user", JSON.stringify({ name: "Diten Admin", role: "Admin" }));
-                }
+        // Global Localization for Features
+        window.L10n = {
+            RequiredProgressText: "@SharedLocalizer["RequiredStatus"].Value",
+            ValidationErrorsText: "@SharedLocalizer["ValidationErrors"].Value",
+            LoginErrorTitle: "@SharedLocalizer["Login.ErrorTitle"].Value",
+            LoginErrorRequired: "@SharedLocalizer["Login.ErrorRequired"].Value",
+            LoginSubmit: "@SharedLocalizer["Login.Submit"].Value"
+        };
+
+        // Template normalization
+        window.L10n.RequiredProgressText = window.L10n.RequiredProgressText.replace("{{0}}", "{0}").replace("{{1}}", "{1}");
+        window.L10n.ValidationErrorsText = window.L10n.ValidationErrorsText.replace("{{0}}", "{0}");
+
+        // Token Validation
+        (function checkAuth() {
+            const hasToken = document.cookie.split(';').some((item) => item.trim().startsWith('access_token='));
+            if (!hasToken && !window.location.pathname.startsWith('/account/')) {
+                window.location.href = "/account/login?returnUrl=" + encodeURIComponent(window.location.pathname);
             }
         })();
-
-        // Global Localization for Features
-        window.RequiredProgressText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(SharedLocalizer["RequiredStatus"].Value));
-        window.ValidationErrorsText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(SharedLocalizer["ValidationErrors"].Value));
-
-        // Template normalization: ensure {0} and {1} placeholders are used
-        window.RequiredProgressText = window.RequiredProgressText.replace("{{0}}", "{0}").replace("{{1}}", "{1}");
-        window.ValidationErrorsText = window.ValidationErrorsText.replace("{{0}}", "{0}");
     </script>
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -142,8 +144,6 @@
                     </div>
 
                     <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
-                        <!-- Search Removed as requested -->
-
                         <ul class="navbar-nav flex-row align-items-center ms-md-auto">
                             <!-- Language -->
                             <li class="nav-item dropdown-language dropdown me-2 me-xl-0">
@@ -181,92 +181,24 @@
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
                                     <li>
                                         <button type="button" class="dropdown-item d-flex align-items-center active"
-                                            data-bs-theme-value="light" aria-pressed="false">
-                                            <i class="bx bx-sun me-3" data-icon="sun"></i>
-                                            <span class="align-middle">@SharedLocalizer["Light"]</span>
+                                            data-bs-theme-value="light">
+                                            <i class="bx bx-sun me-3"></i><span>@SharedLocalizer["Light"]</span>
                                         </button>
                                     </li>
                                     <li>
                                         <button type="button" class="dropdown-item d-flex align-items-center"
-                                            data-bs-theme-value="dark" aria-pressed="true">
-                                            <i class="bx bx-moon me-3" data-icon="moon"></i>
-                                            <span class="align-middle">@SharedLocalizer["Dark"]</span>
+                                            data-bs-theme-value="dark">
+                                            <i class="bx bx-moon me-3"></i><span>@SharedLocalizer["Dark"]</span>
                                         </button>
                                     </li>
                                     <li>
                                         <button type="button" class="dropdown-item d-flex align-items-center"
-                                            data-bs-theme-value="system" aria-pressed="false">
-                                            <i class="bx bx-desktop me-3" data-icon="desktop"></i>
-                                            <span class="align-middle">Sistem</span>
+                                            data-bs-theme-value="system">
+                                            <i class="bx bx-desktop me-3"></i><span>Sistem</span>
                                         </button>
                                     </li>
                                 </ul>
                             </li>
-                            <!-- / Style Switcher-->
-
-                            <!-- Notification -->
-                            <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-2">
-                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);"
-                                    data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                    <span class="position-relative">
-                                        <i class="bx bx-bell icon-md"></i>
-                                        <span
-                                            class="badge rounded-pill bg-danger badge-dot badge-notifications border"></span>
-                                    </span>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end p-0">
-                                    <li class="dropdown-menu-header border-bottom">
-                                        <div class="dropdown-header d-flex align-items-center py-3">
-                                            <h6 class="mb-0 me-auto">Bildirimler</h6>
-                                            <div class="d-flex align-items-center h6 mb-0">
-                                                <span class="badge bg-label-primary me-2">1 Yeni</span>
-                                                <a href="javascript:void(0)" class="dropdown-notifications-all p-2"
-                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    title="Tümünü okundu işaretle"><i
-                                                        class="icon-base bx bx-envelope-open text-heading"></i></a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="dropdown-notifications-list scrollable-container">
-                                        <ul class="list-group list-group-flush">
-                                            <li
-                                                class="list-group-item list-group-item-action dropdown-notifications-item">
-                                                <div class="d-flex">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <div class="avatar">
-                                                            <span
-                                                                class="avatar-initial rounded-circle bg-label-success"><i
-                                                                    class="icon-base bx bx-pie-chart-alt"></i></span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <h6 class="small mb-0">Aylık Rapor Üretildi 🚀</h6>
-                                                        <small class="mb-1 d-block text-body">Sistem finansal raporunuz
-                                                            hazırlandı.</small>
-                                                        <small class="text-body-secondary">1 gün önce</small>
-                                                    </div>
-                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
-                                                        <a href="javascript:void(0)"
-                                                            class="dropdown-notifications-read"><span
-                                                                class="badge badge-dot"></span></a>
-                                                        <a href="javascript:void(0)"
-                                                            class="dropdown-notifications-archive"><span
-                                                                class="icon-base bx bx-x"></span></a>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li class="border-top">
-                                        <div class="d-grid p-4">
-                                            <a class="btn btn-primary btn-sm d-flex" href="javascript:void(0);">
-                                                <small class="align-middle">Tüm Bildirimleri Gör</small>
-                                            </a>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </li>
-                            <!--/ Notification -->
 
                             <!-- User -->
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
@@ -278,7 +210,7 @@
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <a class="dropdown-item" href="javascript:void(0);">
+                                        <div class="dropdown-item">
                                             <div class="d-flex">
                                                 <div class="flex-shrink-0 me-3">
                                                     <div class="avatar avatar-online">
@@ -286,30 +218,26 @@
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1">
-                                                    <span class="fw-medium d-block">Diten Admin</span>
-                                                    <small class="text-muted">@SharedLocalizer["Admin"]</small>
+                                                    <span class="fw-medium d-block" id="navbar-user-name">User</span>
+                                                    <small class="text-muted" id="navbar-user-role">Role</small>
                                                 </div>
                                             </div>
-                                        </a>
+                                        </div>
                                     </li>
                                     <li>
                                         <div class="dropdown-divider"></div>
                                     </li>
                                     <li><a class="dropdown-item" href="javascript:void(0);"><i
-                                                class="icon-base bx bx-user me-2"></i>@SharedLocalizer["MyProfile"]</a>
-                                    </li>
+                                                class="bx bx-user me-2"></i>@SharedLocalizer["MyProfile"]</a></li>
                                     <li><a class="dropdown-item" href="javascript:void(0);"><i
-                                                class="icon-base bx bx-cog me-2"></i>@SharedLocalizer["Settings"]</a>
-                                    </li>
+                                                class="bx bx-cog me-2"></i>@SharedLocalizer["Settings"]</a></li>
                                     <li>
                                         <div class="dropdown-divider"></div>
                                     </li>
-                                    <li><a class="dropdown-item" href="javascript:void(0);" onclick="logout()"><i
-                                                class="icon-base bx bx-power-off me-2"></i>@SharedLocalizer["LogOut"]</a>
-                                    </li>
+                                    <li><a class="dropdown-item" href="/account/logout"><i
+                                                class="bx bx-power-off me-2"></i>@SharedLocalizer["LogOut"]</a></li>
                                 </ul>
                             </li>
-                            <!-- / User -->
                         </ul>
                     </div>
                 </nav>
@@ -325,8 +253,7 @@
                         <div
                             class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                             <div class="mb-2 mb-md-0">
-                                © 2018 | made with by <a href="#" target="_blank"
-                                    class="footer-link fw-medium">Diten</a>
+                                © 2026 | Di10 ERP
                             </div>
                         </div>
                     </footer>
@@ -342,14 +269,10 @@
     <script src="~/assets/vendor/js/bootstrap.js"></script>
     <script src="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
     <script src="~/assets/vendor/js/menu.js"></script>
-
-    <!-- Vendors JS (Shared standard only) -->
-    <script src="~/assets/vendor/libs/notyf/notyf.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/notiflix@@3.2.7/dist/notiflix-aio-3.2.7.min.js"></script>
     <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
     <script src="~/assets/vendor/libs/select2/select2.js"></script>
 
-    <!-- DataTable Vendor + Centralized Config -->
+    <!-- DataTable Vendor -->
     <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
     <script src="~/assets/vendor/libs/datatables-buttons/buttons.colVis.js"></script>
     <script src="~/assets/js/dt-defaults.js"></script>
@@ -357,18 +280,15 @@
     <!-- Main JS -->
     <script src="~/assets/js/main.js"></script>
 
-    <!-- Global UI Modules (MOD-0013) -->
-    @await Html.PartialAsync("_GlobalNotification")
-    @await Html.PartialAsync("_GlobalConfirmation")
-
-    <!-- Required Fields Tracker -->
-    <script src="~/assets/js/custom/required-fields-tracker.js"></script>
-
     <script>
-        function logout() {
-            localStorage.removeItem("token");
-            window.location.href = "/account/login";
-        }
+        // Set User Display Info
+        (function initDisplay() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user && user.firstName) {
+                document.getElementById('navbar-user-name').textContent = user.firstName + ' ' + user.lastName;
+                document.getElementById('navbar-user-role').textContent = (user.roles && user.roles.length > 0) ? user.roles[0] : 'User';
+            }
+        })();
 
         // Language Persistence
         document.querySelectorAll('.dropdown-language .dropdown-item').forEach(item => {

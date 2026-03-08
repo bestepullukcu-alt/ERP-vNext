@@ -244,4 +244,4 @@
   <data name="PrimaryCurrency" xml:space="preserve"><value>Ana Para Birimi</value></data>
   <data name="DefaultTimeZone" xml:space="preserve"><value>Varsayılan Saat Dilimi</value></data>
   <data name="BasicInfo" xml:space="preserve"><value>Temel Bilgiler</value></data>
-</root>
+<data name="Login.Title" xml_space="preserve"><value>Giriş Yap</value></data><data name="Login.Email" xml_space="preserve"><value>E-posta</value></data><data name="Login.Password" xml_space="preserve"><value>Şifre</value></data><data name="Login.RememberMe" xml_space="preserve"><value>Beni Hatırla</value></data><data name="Login.Submit" xml_space="preserve"><value>Giriş Yap</value></data><data name="Login.ErrorTitle" xml_space="preserve"><value>Hata</value></data><data name="Login.ErrorRequired" xml_space="preserve"><value>E-posta ve şifre zorunludur</value></data><data name="Login.Error" xml_space="preserve"><value>Geçersiz e-posta veya şifre</value></data><data name="Login.Loading" xml_space="preserve"><value>Giriş yapılıyor...</value></data></root>
