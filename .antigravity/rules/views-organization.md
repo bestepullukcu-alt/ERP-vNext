@@ -1,30 +1,60 @@
-# View Organizasyon Kuralları
+---
+description: "VIEW-001 — Diten.Web View Organizasyonu, Modüler Gruplama ve Layout Yönetim Standartları"
+---
 
-Projeyi daha modüler hale getirmek ve klasör yapısını düzenli tutmak için Views klasörü altındaki sayfalar belirli kurallara göre gruplanmalıdır.
+# View Organizasyon Kuralları (Diten ERP vNext)
 
-## 1. Modül Tabanlı Gruplama
-- `Views` klasörü altında her sayfa, doğrudan dizin köküne konulmak yerine **bağlı olduğu modül veya domain adına göre** gruplanmalıdır.
-- Örnek Klasörleme:
-  - `Views/MDM/` (Master Data Management için)
-  - `Views/Identity/` (Kullanıcı, rol, yetkilendirme vb. için)
-  - `Views/PPM/` (Project Portfolio Management için)
-  - `Views/Finance/` vb.
+Bu doküman, Diten.Web projesindeki klasör hiyerarşisini düzenlemek, yeni sayfaların doğru layout ile açılmasını sağlamak ve yükleme ekranı (UX) standartlarını belirlemek için oluşturulmuştur.
 
-## 2. Yeni Sayfa Üretimi
-- Yeni bir sayfa veya view üretilmeden önce kullanıcıya **hangi modül klasörüne konulacağı sorulmalı** veya bağlamdan doğru klasör **çıkarım yapılmalı** ve uygulanmalıdır.
-- Kesinlikle `Views/` root klasörüne doğrudan yeni sayfa oluşturulmamalıdır.
+## 📁 1. Modül Tabanlı Gruplama
 
-## 3. Mevcut Karmaşık Sayfalar
-- Projede halihazırda bulunan ve belirli bir modüle uymayan veya generic olan karmaşık sayfalar, referans olarak `Views/Other` (veya uygun benzer bir genel klasör) mantığıyla ele alınmalı ve oraya taşınmalıdır.
+Projeyi modüler ve ölçeklenebilir tutmak için Views klasörü altında rastgele dosya oluşturulamaz. Her sayfa bağlı olduğu ana modüle göre gruplanmalıdır.
 
-## 4. Layout Atama Kuralı (Dual-Layout)
-- **Yeni MDM ve modern sayfalar:** `Layout = "_LayoutBackbone"` kullanır.
-- **Archive sayfaları:** `_Layout`'u kullanmaya devam eder (dokunulmaz).
-- `_ViewStart.cshtml` dosyası **değiştirilmez** — Default `_Layout` olarak kalır.
-- Yeni bir sayfa oluşturulduğunda Razor bloğuna `Layout = "_LayoutBackbone";` satırı eklenir.
+- KURAL: Yeni bir View oluşturulmadan önce mutlaka bağlam kontrol edilmeli veya kullanıcıya modül sorulmalıdır.
+- Standart Klasör Yapısı:
+  - Views/MDM/ (Master Data Management - Altın Referans Katmanı)
+  - Views/Identity/ (Kullanıcı, Rol ve Yetki Yönetimi)
+  - Views/PPM/ (Project Portfolio Management)
+  - Views/Other/ (Genel sayfalar için referans alanı)
 
-## 5. Skeleton Loader Kullanımı
-- DataTable içeren her yeni liste sayfasında `@await Html.PartialAsync("_SkeletonLoader")` çağrılır (veya manual manual `#skeleton-loader` bloğu eklenir).
-- Skeleton, `card-datatable` div'inin **içine** yerleştirilir.
-- **Overlay Kuralı:** Skeleton `position: absolute` olmalı ve tablonun Toolbar'ını (Search vb.) örtmemesi için üstten boşluk bırakmalıdır (`top: 72px`).
-- Parent `card-datatable` div'e `style="position:relative; min-height:200px;"` eklenir. Bu hem shimmer alanı yaratır hem de düzen kaymasını (CLS) engeller.
+---
+
+## 🖼️ 2. Layout ve ViewStart Yönetimi (Dual-Layout)
+
+Sistemde iki farklı dünya (Eski Archive ve Yeni vNext) aynı anda yaşamaktadır.
+
+- Archive Sayfaları: _Layout.cshtml kullanır ve dokunulmazdır (Frozen).
+- Yeni Modern Sayfalar: Mutlaka _LayoutBackbone.cshtml kullanmalıdır.
+- Uygulama: _ViewStart.cshtml dosyasının varsayılan ayarı değiştirilmez. Yeni oluşturulan her modern Razor sayfasının en üstüne şu blok eklenmelidir:
+  @{ Layout = "_LayoutBackbone"; }
+
+---
+
+## 💀 3. Skeleton Loader ve UX Standartları
+
+Kullanıcının veri yüklenirken boş bir ekran görmesini engellemek için Skeleton Loader kullanımı zorunludur.
+
+- Yerleşim: DataTable içeren her liste sayfasında, .card-datatable div'inin İÇİNE #skeleton-loader bloğu yerleştirilmelidir.
+- Teknik Detaylar:
+  - Parent div (card-datatable) mutlaka style="position: relative; min-height: 200px;" ayarına sahip olmalıdır.
+  - Skeleton, tablonun toolbar'ını (Arama/Export alanı) örtmemesi için top: 72px; boşluğu ile position: absolute olarak konumlandırılmalıdır.
+- Kullanım: @await Html.PartialAsync("_SkeletonLoader") çağrısı veya manuel ID tanımlı Shimmer blokları kullanılır.
+
+---
+
+## 🚨 Önemli Notlar
+- Views root klasörüne doğrudan .cshtml dosyası eklemek kesinlikle yasaktır.
+- Yeni modüller oluşturulurken klasör isimleri her zaman PascalCase olmalıdır (Örn: Finance, HumanResources).
+- Her modül klasörü kendi içinde sayfa bazlı alt klasörlere (Örn: Views/MDM/LegalEntities/Index.cshtml) sahip olabilir.
+
+---
+
+## ✅ Kontrol Listesi
+- [ ] Sayfa doğru modül klasörü (MDM, Identity vb.) altında mı?
+- [ ] Razor bloğunda Layout = "_LayoutBackbone" tanımlandı mı?
+- [ ] _ViewStart dosyasına dokunulmadı mı?
+- [ ] Liste sayfasında #skeleton-loader yapısı kuruldu mu?
+- [ ] Parent container'da min-height ve position: relative ayarları yapıldı mı?
+
+---
+Diten ERP vNext View Organization Standard - VIEW-001

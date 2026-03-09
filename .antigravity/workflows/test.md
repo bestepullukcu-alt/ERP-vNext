@@ -1,144 +1,45 @@
 ---
-description: Test generation and test running command. Creates and executes tests for code.
+description: [Test Oluşturma ve Çalıştırma Komutu — Diten ERP vNext (.NET 8)]
 ---
+# /test - Test Oluşturma ve Yürütme
 
-# /test - Test Generation and Execution
-
-$ARGUMENTS
-
----
-
-## Purpose
-
-This command generates tests, runs existing tests, or checks test coverage.
+Bu komut; yeni testler oluşturur, mevcut testleri çalıştırır veya test kapsamını (coverage) kontrol eder.
 
 ---
 
-## Sub-commands
+## 🏗️ Alt Komutlar
 
-```
-/test                - Run all tests
-/test [file/feature] - Generate tests for specific target
-/test coverage       - Show test coverage report
-/test watch          - Run tests in watch mode
-```
+- `/test`                - Tüm projeyi test et (dotnet test)
+- `/test [dosya/özellik]` - Belirli bir hedef için Unit/Integration testleri üret
+- `/test coverage`       - Test kapsama raporunu göster
+- `/test tenant-safety`  - Sadece Tenant izolasyon testlerini çalıştır
 
 ---
 
-## Behavior
+## 🛡️ Diten Test Standartları (Kurallar)
 
-### Generate Tests
-
-When asked to test a file or feature:
-
-1. **Analyze the code**
-   - Identify functions and methods
-   - Find edge cases
-   - Detect dependencies to mock
-
-2. **Generate test cases**
-   - Happy path tests
-   - Error cases
-   - Edge cases
-   - Integration tests (if needed)
-
-3. **Write tests**
-   - Use project's test framework (Jest, Vitest, etc.)
-   - Follow existing test patterns
-   - Mock external dependencies
+1. **AAA Deseni:** Testler mutlaka "Arrange (Hazırla) - Act (Çalıştır) - Assert (Doğrula)" yapısında olmalıdır.
+2. **Mocking:** Veritabanı (MongoDB) ve dış servisler mutlaka `Moq` veya `NSubstitute` ile taklit edilmelidir.
+3. **Multi-Tenancy Check:** Her test senaryosu mutlaka "Farklı TenantId" durumunu test etmelidir.
+4. **8 Dil Check:** Hata mesajlarının `SharedLocalizer` üzerinden doğru Key ile dönüp dönmediği kontrol edilmelidir.
 
 ---
 
-## Output Format
+## 📝 Çıktı Formatı (Örnek)
 
-### For Test Generation
-
-```markdown
-## 🧪 Tests: [Target]
-
-### Test Plan
-| Test Case | Type | Coverage |
+### Test Planı
+| Senaryo | Tür | Kapsam |
 |-----------|------|----------|
-| Should create user | Unit | Happy path |
-| Should reject invalid email | Unit | Validation |
-| Should handle db error | Unit | Error case |
+| Şehir başarıyla oluşturulmalı | Unit | Happy Path |
+| Geçersiz TenantId reddedilmeli | Security | İzolasyon |
+| Boş isim hatası (8 dil) dönmeli | Validation | L10n |
 
-### Generated Tests
-
-`tests/[file].test.ts`
-
-[Code block with tests]
-
----
-
-Run with: `npm test`
-```
-
-### For Test Execution
-
-```
-🧪 Running tests...
-
-✅ auth.test.ts (5 passed)
-✅ user.test.ts (8 passed)
-❌ order.test.ts (2 passed, 1 failed)
-
-Failed:
-  ✗ should calculate total with discount
-    Expected: 90
-    Received: 100
-
-Total: 15 tests (14 passed, 1 failed)
-```
-
----
-
-## Examples
-
-```
-/test src/services/auth.service.ts
-/test user registration flow
-/test coverage
-/test fix failed tests
-```
-
----
-
-## Test Patterns
-
-### Unit Test Structure
-
-```typescript
-describe('AuthService', () => {
-  describe('login', () => {
-    it('should return token for valid credentials', async () => {
-      // Arrange
-      const credentials = { email: 'test@test.com', password: 'pass123' };
-      
-      // Act
-      const result = await authService.login(credentials);
-      
-      // Assert
-      expect(result.token).toBeDefined();
-    });
-
-    it('should throw for invalid password', async () => {
-      // Arrange
-      const credentials = { email: 'test@test.com', password: 'wrong' };
-      
-      // Act & Assert
-      await expect(authService.login(credentials)).rejects.toThrow('Invalid credentials');
-    });
-  });
-});
-```
-
----
-
-## Key Principles
-
-- **Test behavior not implementation**
-- **One assertion per test** (when practical)
-- **Descriptive test names**
-- **Arrange-Act-Assert pattern**
-- **Mock external dependencies**
+### Üretilen Test (C# / xUnit)
+```csharp
+[Fact]
+public async Task CreateCity_WithDifferentTenant_ShouldThrowSecurityException()
+{
+    // Arrange: Farklı bir TenantId ile istek hazırla
+    // Act: Handler'ı çağır
+    // Assert: UnauthorizedAccessException fırlatıldığını doğrula
+}

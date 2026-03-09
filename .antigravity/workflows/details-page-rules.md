@@ -1,55 +1,52 @@
 ---
-description: [Details Page UI Layout Rules]
+description: "[Detay Sayfası UI Düzen Kuralları — Diten ERP vNext]"
 ---
-# Details (Detayları Gör) Page UI Rules
+# Detay (Details) Sayfası UI Kuralları
 
-When creating or modifying a "Read-Only Details" view for a record, you MUST choose between two distinct patterns. Both patterns should never be built as default states in the SAME full-page simultaneously. Follow the capacity rules below:
-
----
-
-## RULE #1: Choice of Pattern & Capacity
-
-### Pattern A: Offcanvas "Quick View" (For Lightweight Data)
-**When to use:** If the record has a small amount of detail mostly fitting a few fields (e.g. 5-10 short properties) and NO complex sub-lists or deep tabs.
-- **Trigger:** Rendered directly on the List/Index page (e.g. clicking "Quick Preview" from the DataTable row action).
-- **Structure:** Use the Bootstrap Offcanvas component sliding from the right (`offcanvas-end` with `width: 480px`).
-- **Footer action:** Include a "Full Details" button in the offcanvas if there is a more detailed dedicated page.
-
-### Pattern B: Isolated Full Details Page (For Heavy Data)
-**When to use:** If the record contains heavily nested relationships, many tabs, or categorized property blocks (like Legal Entities with General Info, Contact, Financials).
-- **Trigger:** Navigating to `/{Controller}/Details/{id}`.
-
-*(If you chose Pattern B, you MUST apply rules 2 through 5 below.)*
+Bir kaydın "Salt Okunur Detaylarını" oluştururken veya düzenlerken, aşağıdaki iki modelden birini seçmelisiniz. Bu modeller, Diten ERP vNext görsel standartlarına (Sneat 2.x) uygun olmalıdır.
 
 ---
 
-## RULE #2: Removing Left User/Profile Card
-- Do NOT use a split layout with a narrow left-hand user/avatar profile card. 
-- The content container for details should be `col-12` (full width), displaying cards in a unified grid structure.
-- Redundant data (e.g., repeating contact info in a sidebar when it exists in a main tab) must be eliminated.
+## KURAL #1: Model Seçimi ve Kapasite
 
-## RULE #3: Header and Dynamic Description
-- The header should have a dynamic and useful sub-description (`<p class="mb-0">`), not just "Details".
-- The description should be built cleanly using a List of string elements joined by a bullet point (`&bull;` or `•`).
-  - Example logic: 
+### Model A: Offcanvas "Hızlı Bakış" (Hafif Veriler İçin)
+- **Kullanım:** 5-10 kısa özellik, karmaşık sekme (tab) içermeyen yapılar.
+- **Tetikleme:** Liste/Index sayfasındaki DataTable satırından tıklanır.
+- **Diten Şartı:** İçerik AJAX ile yüklenmeli ve `window.L10n` bridge yapısı ile yerelleştirilmelidir (8 dil desteği).
+
+### Model B: İzole Tam Detay Sayfası (Ağır Veriler İçin)
+- **Kullanım:** İlişkili tablolar, çok sayıda sekme veya finansal/iletişim gibi blok grupları.
+- **Tetikleme:** `/{Controller}/Details/{id}` rotasına gidilerek açılır.
+- **Diten Şartı:** Mutlaka `Layout = "_LayoutBackbone";` kullanılmalı ve asenkron veri için Skeleton Loader eklenmelidir.
+
+---
+
+## KURAL #2: Düzen ve Multi-Tenancy Güvenliği
+- Sol taraftaki dar "Kullanıcı/Profil Kartı" yapısını KULLANMAYIN. Sayfa `col-12` (tam genişlik) olmalıdır.
+- **Güvenlik:** Backend tarafındaki Handler, başka kiracıların verisine erişimi engellemek için `X-Tenant-Id` kontrolünü sıkı bir şekilde yapmalıdır.
+
+## KURAL #3: Başlık ve Dinamik Açıklama (L10n)
+- Sayfa başlığının altında (`<p class="mb-0">`) dinamik bir alt açıklama olmalıdır.
+- **L10n Şartı:** "No:", "Tip:" gibi tüm sabit metinler mutlaka `@SharedLocalizer` üzerinden gelmelidir.
+- Örnek Mantık: 
     ```csharp
     @{
         var descParts = new List<string>();
-        if(!string.IsNullOrEmpty(Model.Type)) { descParts.Add(Model.Type); }
-        if(!string.IsNullOrEmpty(Model.Number)) { descParts.Add("No: " + Model.Number); }
+        if(!string.IsNullOrEmpty(Model.Type)) { descParts.Add(SharedLocalizer[Model.Type]); }
+        if(!string.IsNullOrEmpty(Model.Number)) { descParts.Add(SharedLocalizer["RegistrationNo"] + ": " + Model.Number); }
     }
-    <p class="mb-0">@(string.Join(" • ", descParts))</p>
+    <p class="mb-0 text-muted">@(string.Join(" • ", descParts))</p>
     ```
 
-## RULE #4: Grid Row Structure (N-Card Layout)
-- The main read-only data must be grouped logically into distinct cards (e.g., General Info, Contact, Financial).
-- These cards must be wrapped in a Bootstrap grid container using `row g-4`.
-- Each individual card should sit inside a responsive column layer, specifically `<div class="col-12 col-md-6 col-lg-4">`.
-- This ensures that 3 layout cards will horizontally align on wide screens (`col-lg-4`) and stack beautifully on smaller screens (`col-12`).
+## KURAL #4: Izgara (Grid) Yapısı (3'lü Kart Düzeni)
+- Kartları Bootstrap `row g-6` (Diten standart boşluğu) içine alın.
+- Responsive sütun yapısı: `<div class="col-12 col-md-6 col-lg-4">`. Bu, geniş ekranlarda 3 kartın yan yana gelmesini sağlar.
 
-## RULE #5: Vertical Stack inside Information Cards
-- Data Lists inside the cards (`<dl class="row mb-0">`) must use vertical stacking (top-to-bottom) for their labels and values because the cards are narrow on a 3-column layout. 
-- Do NOT use side-by-side structures like `col-sm-4` / `col-sm-8`.
-- ALWAYS use the following pattern:
-  - `<dt class="col-12 fw-medium text-heading mb-1">Label</dt>`
-  - `<dd class="col-12 mb-4">Value</dd>`
+## KURAL #5: Bilgi Kartları İçinde Dikey Dizilim
+- Kart içindeki veri listeleri (`<dl class="row mb-0">`) dikey (üstten alta) dizilmelidir. Yan yana (`col-sm-4` vb.) yapıları kullanmayın.
+- **Diten Standart Şablonu:**
+  - `<dt class="col-12 fw-medium text-heading mb-1">@SharedLocalizer["Label"]</dt>`
+  - `<dd class="col-12 mb-4">@Model.Value</dd>`
+
+---
+Diten ERP vNext Salt Okunur Standartları - VIEW-002

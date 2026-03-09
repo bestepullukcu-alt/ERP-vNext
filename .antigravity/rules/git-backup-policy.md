@@ -1,21 +1,53 @@
+---
+description: "GIT-001 — Diten ERP vNext Git Yedekleme, Branch İsimlendirme ve Versiyon Kontrol Politikası"
+---
+
 # Git Yedekleme ve İsimlendirme Politikası
 
-Bu kural, projedeki her önemli aşamada veya kullanıcı talebi üzerine alınacak yedeklemelerin (Git branch/commit) nasıl isimlendirileceğini belirler.
+Bu politika, projedeki her kritik aşamada veya kullanıcı talebi üzerine alınacak yedeklemelerin (Branch/Commit) standartlarını belirler. Amaç, hatasız bir geçmiş (history) yönetimi ve güvenli geri dönüş noktaları oluşturmaktır.
 
-## İsimlendirme Mantığı
-Yedeklemeler (backup) şu formatta isimlendirilmelidir:
-`backup/YYYYMMDD-HHmm_OZET_BILGI`
+## 🕰️ İsimlendirme Mantığı (Naming Convention)
 
-- **YYYYMMDD**: Yıl-Ay-Gün (Örn: 20260302)
-- **HHmm**: Saat-Dakika (Örn: 1320)
-- **OZET_BILGI**: Yapılan işlemin kısa, teknik ve açıklayıcı adı (lower_snake_case).
+Yedeklemeler (backup) her zaman aşağıdaki formatta isimlendirilmelidir:
+`backup/YYYYMMDD-HHmm_ozet_bilgi`
 
-**Örnekler:**
-- `backup/20260302-1320_datatable_analysis_completed`
-- `backup/20260302-1545_legal_entities_ui_fix`
+- **YYYYMMDD:** Yıl-Ay-Gün (Örn: 20260309)
+- **HHmm:** Saat-Dakika (Örn: 1545)
+- **ozet_bilgi:** Yapılan işlemin kısa, teknik ve açıklayıcı adı (küçük harf ve snake_case).
 
-## Uygulama Kuralı
-1. Her kritik değişiklikten önce veya sonra (kullanıcı talebiyle) yeni bir yedekleme branch'i oluşturun.
-2. Mevcut değişiklikleri bu branch'e "Backup: [OZET_BILGI]" mesajıyla commit edin.
-3. İsimlendirme otomatik olarak yukarıdaki formata göre benim tarafımdan (Antigravity) yapılacaktır.
-4. Yedekleme bittikten sonra orijinal çalışma branch'ine geri dönün.
+**Standart Örnekler:**
+- `backup/20260309-1000_mdm_tenant_id_refactor`
+- `backup/20260309-1320_datatable_layout_v2_sync`
+- `backup/20260309-1545_legal_entities_ui_final_golden`
+
+---
+
+## 🏗️ Uygulama Protokolü
+
+Ajan (Antigravity), bir yedekleme talebi aldığında veya kritik bir sürece girmeden önce şu adımları izler:
+
+1. **İzleme:** Mevcut değişiklikleri `git status` ile kontrol et.
+2. **Branch Oluşturma:** Yukarıdaki formata uygun isimlendirme ile yeni bir yedekleme branch'i aç (`git checkout -b backup/...`).
+3. **Commit:** Değişiklikleri "Backup: [OZET_BILGI]" mesajıyla bu branch'e işle.
+4. **Güvenli Dönüş:** Yedekleme bittikten sonra orijinal çalışma branch'ine (`main` veya `develop`) geri dön.
+
+
+
+---
+
+## 🚨 Ne Zaman Yedek Alınmalı?
+
+- **Önemli Refactor Öncesi:** Bir servisin çekirdek mantığı (örn: CQRS Handler yapısı) değişmeden hemen önce.
+- **UI "Altın Referans" Güncellemeleri:** `LegalEntities` gibi projenin standartlarını belirleyen sayfalarda yapılan büyük değişikliklerden sonra.
+- **Hata Ayıklama (Debugging) Öncesi:** Karmaşık bir hatayı çözmek için kodun birçok noktasında geçici değişiklikler yapılmadan önce.
+- **Kullanıcı Talebi:** Kullanıcı "Şu anki halini yedekle" dediğinde.
+
+---
+
+## ✅ Kontrol Listesi
+- [ ] Branch ismi `backup/` ön ekiyle başlıyor mu?
+- [ ] Tarih ve saat formatı (`YYYYMMDD-HHmm`) doğru mu?
+- [ ] Özet bilgi `snake_case` formatında ve açıklayıcı mı?
+- [ ] Yedekleme sonrası ana branch'e geri dönüldü mü?
+
+> **Mühür:** Bu kural, Antigravity orkestrasının "Hafıza Yönetimi" kuralıdır. Hiçbir emek kaybolmamalı, her geri dönüş yolu açık tutulmalıdır.

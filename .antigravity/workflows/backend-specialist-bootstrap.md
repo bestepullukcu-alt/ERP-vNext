@@ -1,31 +1,26 @@
-# Workflow: Backend Servis Bootstrap (.NET 8 + CQRS + Mongo + MultiTenant + JWT)
+---
+description: "WORKFLOW-003 — Diten ERP vNext .NET 8 Mikroservis Bootstrap ve Mimari Kurulum Akışı"
+---
 
-## Amaç
-Aşağıdaki projelerle .NET 8 servis iskeleti kur:
-- <Service>.Api (veya <Service> Web host)
-- <Service>.Application
-- <Service>.Domain
-- <Service>.Persistence
-- <Service>.Infrastructure
+# Workflow: Backend Servis Bootstrap
 
-## Kesin Gereksinimler
-- Tenant header: X-Tenant-Id (GUID)
-- TenantContext (scoped) + TenantResolutionMiddleware
-- Her Mongo dokümanında Guid TenantId zorunlu
-- RepositoryBase her sorguda tenant filtresi uygular ve yazmalarda TenantId set eder
-- TenantId request DTO/body içinde ASLA olmayacak
-- MongoDB.Driver sadece Persistence’te
-- CQRS: MediatR
-- JWT scaffolding: JwtBearer (config placeholders)
-- Controller: iş kuralı yok, sadece MediatR çağrısı
-- Önce plan (dosya dosya), sonra implement
+Bu akış, yeni bir mikroservisin (Api, Application, Domain, Persistence, Infrastructure) sıfırdan ve standartlara %100 uyumlu şekilde ayağa kaldırılmasını sağlar.
 
-## Girdiler (eksikse sor)
-- Servis adı (default: Diten.MdmService)
-- Mongo connection string (default: mongodb://localhost:27017)
-- Mongo database name (default: diten_mdm)
+## 🏗️ 1. Mimari Katmanlar (Folder Structure)
 
-## Çıktı
-- GET /health (public) -> { status: "ok" }
-- POST /sample (authorize) -> SampleEntity oluşturur, TenantId otomatik set edilir
-- X-Tenant-Id ve Authorization içeren örnek curl komutları
+Her servis aşağıdaki 5 katmanlı yapıyla kurulur:
+
+- **<Service>.Api:** Host, Middleware (TenantResolution, GlobalException), Controllers.
+- **<Service>.Application:** CQRS (Commands, Queries, Handlers), Validators, DTOs, Mapping.
+- **<Service>.Domain:** Entities (ITenantDocument), IRepositories, Domain Exceptions.
+- **<Service>.Persistence:** MongoDbContext, Repository Impl (Tenant Enforced), Indexing.
+- **<Service>.Infrastructure:** External Services (Mail, Auth Client, etc.).
+
+---
+
+## 🛡️ 2. Kesin Gereksinimler (Mühürlü)
+
+1. **Tenant İzolatörü:** `X-Tenant-Id` (GUID) header'ı zorunludur. `TenantResolutionMiddleware` bu header'ı okur ve `Scoped` olan `ITenantContext` nesnesini doldurur.
+2. **Sessiz Tenant Yönetimi:** `TenantId` alanı Request DTO/Body içinde **ASLA** yer almaz. Bu bilgi `Persistence` katmanındaki `RepositoryBase` tarafından yazma anında otomatik set edilir, okuma anında otomatik filtrelenir.
+3. **CQRS & Klasör Yapısı (WORKFLOW-001):** Handler sınıfları `Handlers/CommandHandlers` ve `Handlers/QueryHandlers` klasörlerinde toplanır.
+4. **JWT & Güvenlik:** Tüm servisler `JwtBearer` ile donatılır
