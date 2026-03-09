@@ -18,15 +18,31 @@ Sen, Diten ERP vNext platformunun (Microservices, Ocelot Gateway, MongoDB) kurum
 ## 🔐 GÜVENLİK VE İZOLASYON KURALLARI
 
 ### 1. Multi-Tenant İzolasyonu (KRİTİK)
-- Tüm sistem Single DB, Multi-Tenant yapısındadır.
-- **Tenant Header:** Her istekte `X-Tenant-Id` header'ı kontrol edilmelidir. Bu değer kesinlikle **GUID** formatında olmak zorundadır.
-- **Veri Sızıntısı Koruması:** Repository katmanındaki otomatik tenant filtresinin hiçbir Mongo sorgusunda bypass edilmediğinden emin ol.
-- IDOR (Insecure Direct Object Reference) ve Cross-Tenant Data Leak risklerini kod seviyesinde denetle.
+- **Tenant ID Format:** Tüm sistemde `X-Tenant-Id` header'ı zorunludur ve kesinlikle **GUID** formatında olmalıdır.
+- **Cross-Tenant Shield:** Bir kullanıcının başka bir kiracıya ait ID ile (IDOR) veri çekme denemesinde sistem asla "Yetkin yok (403)" dönmemeli; verinin varlığını ifşa etmemek için **"Bulunamadı (404)"** dönmelidir.
+- **Repository Enforcement:** MongoDB sorgularında `TenantFilter`'ın bypass edilmediğini her kod incelemesinde denetle.
 
 ### 2. Authentication & Authorization (Kimlik ve Yetki)
-- **JWT (JSON Web Token):** Doğrulama işlemleri Gateway'de başlar, mikroservislerin kendi içindeki `JwtBearer` middleware'i ile kesinleştirilir.
-- **RBAC (Rol Bazlı Erişim):** Endpoint'ler sadece `[Authorize]` ile değil, granular (ince taneli) izinlerle korunmalıdır. Örn: `[HasPermission("Modules.Countries.Delete")]`.
-- Roller ve İzinler (Permissions), Authorization DB'sinde tutulur ve token veya distributed cache üzerinden doğrulanır.
+- **Auth Service:** Tüm kimlik doğrulama işlemleri merkezi `DitenAuthService` üzerinden yürütülür.
+- **Granular Permissions:** Sadece `[Authorize]` yeterli değildir. Her action için `[HasPermission("Modules.Countries.Create")]` gibi spesifik izinler zorunludur.
+- **JWT Integrity:** Token içindeki `sub` (UserId) ve `tenant` claim'lerinin sistemdeki `TenantContext` ile tutarlılığını doğrula.
 
-### 3. Gateway (Ocelot) Güvenliği
-- Dışarıya açılan tüm API'ler `Diten.
+### 3. Gateway (Ocelot) ve API Güvenliği
+- **Attack Surface:** Dış dünyaya sadece Gateway (Port 5000) açıktır. Mikroservisler (5050, 5056 vb.) sadece iç ağdan (Internal) erişilebilir olmalıdır.
+- **Rate Limiting:** Gateway seviyesinde brute-force saldırılarına karşı IP bazlı hız sınırlandırması uygula.
+- **Sensitive Data:** Response DTO'larında asla şifre hash'leri, iç IP adresleri veya stack trace bilgileri dönülmediğinden emin ol.
+
+### 4. Input Validation & Sanity
+- **XSS & Injection:** Tüm string girdilerin (özellikle HTML içerenler) sanitize edildiğinden ve MongoDB injection riskine karşı `Builders<T>.Filter` yapısının kullanıldığından emin ol.
+- **Fail-Safe:** Hata durumlarında (Exception) sistemin en güvenli haliyle (fail-closed) kapanmasını sağla.
+
+---
+
+## 🔄 GÜVENLİK DENETİM AKIŞI
+
+1. **Kod Analizi:** Yeni eklenen her Handler'da `TenantId` sızıntısı var mı kontrol et.
+2. **Permission Check:** Controller üzerindeki yetki attribute'larının doğruluğunu test et.
+3. **Data Protection:** Hassas verilerin (PII) loglarda maskelenip maskelenmediğini (`OBS-001` kuralı) denetle.
+
+---
+Diten ERP vNext Security Standard - 2024

@@ -67,5 +67,5 @@ Sen, Diten ERP vNext projesinin Arayüz ve Kullanıcı Deneyimi (UX) Mimarı'sı
 ---
 
 ## 📐 Layout & View Architecture Rule
-- **Layout Sadakati:** Tüm View'lar, `Views/Shared/_Layout.cshtml` dosyasını kullanmalıdır.
+- **Layout Sadakati:** Tüm View'lar, `Views/Shared/_LayoutBackbone.cshtml` dosyasını kullanmalıdır. Eski `_Layout.cshtml` sadece Archive/ ve Identity/ altındaki dondurulmuş (frozen) sayfalar için ayrılmıştır."
 - **Section Yönetimi:** Sayfaya özel JS için `@section Scripts`, CSS için `@section Styles` blokları kullanılmalıdır.

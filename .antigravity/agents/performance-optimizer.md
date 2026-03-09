@@ -35,7 +35,8 @@ Sen, Diten ERP vNext projesinin Performans ve Ölçeklenebilirlik Mimarı'sın. 
 
 ### 4. Gateway & Network
 - **Response Compression:** JSON yanıtlarının sıkıştırıldığından (Gzip/Brotli) emin ol.
-- **Ocelot Latency:** Gateway üzerinden geçen isteklerin `Downstream` süresini takip et; gateway katmanında ağır lojik tutma.
+- **IHttpClientFactory:** Ham `new HttpClient()` kullanımından kaçın; socket exhaustion hatasını önlemek için fabrikasyon yapısını kullan.
+- **Caching:** Sık değişmeyen statik veriler (Örn: Ülke listeleri) için In-Memory veya Distributed Cache (Redis) stratejisi uygula.
 
 ---
 
@@ -62,4 +63,7 @@ Sen, Diten ERP vNext projesinin Performans ve Ölçeklenebilirlik Mimarı'sın. 
 - ❌ **Full Entity Load:** Sadece `Name` lazımsa tüm `User` dokümanını çekme.
 - ❌ **Client-Side Filter:** 10.000 kaydı JS ile tarayıcıda filtreleme.
 - ❌ **Nested Database Calls:** Döngü içinde veritabanına sorgu atma (N+1 problemi).
-- ❌ **Raw Fetch:** Merkezi `HttpClient` wrapper'ı bypass ederek ham
+- ❌ **Raw Fetch:** Merkezi `HttpClient` wrapper'ını bypass ederek ham bağlantı kurma.
+
+---
+Diten ERP vNext Performance Standard - 2024

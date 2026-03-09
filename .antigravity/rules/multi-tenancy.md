@@ -1,29 +1,53 @@
-# Multi-Tenant (Single DB) — KESİN KURALLAR
+---
+description: "RULE-002 — Multi-Tenant (Single DB) Kesin Uygulama Kuralları"
+---
 
-## Standart
-- Tenant header: `X-Tenant-Id`
-- Format: GUID string
-- Her Mongo dokümanında ZORUNLU alan: `Guid TenantId`
+# 🛡️ Multi-Tenant (Single DB) — KESİN KURALLAR
 
-## Pazarlık yok (hard rules)
-1) TenantId asla request body / DTO / query param üzerinden kabul edilmez.
-2) TenantId sadece `X-Tenant-Id` header’dan, middleware ile çözülür.
-3) Her okuma/sorgu TenantId ile filtrelenmek ZORUNDADIR.
-4) Her yazma (insert/update) TenantId’yi TenantContext’ten (server-side) set etmek ZORUNDADIR.
-5) Tenant filtresi olmadan Mongo sorgusu yapmak BUG’dır.
-6) `Diten.Web` projesinde `HttpClient` ile dış servislere (Gateway/Backend) giden tüm isteklerde `X-Tenant-Id` header bilgisi zorunludur. Geliştirme aşamasında bu değer varsayılan olarak `1` atanmalıdır. Gelecekte üretilecek tüm `Controller` ve `Service` sınıfları bu header'ı içerecek şekilde kodlanmalıdır.
-7) CORS preflight (`OPTIONS`) isteklerinde tarayıcılar custom header göndermediği için, TenantResolutionMiddleware `OPTIONS` metodu için kontrolü ATLAMAK ZORUNDADIR (bypass).
+Bu kurallar, Diten ERP vNext ekosistemindeki veri izolasyonunun ve kiracı güvenliğinin anayasasıdır.
 
-## Zorunlu uygulatma (enforcement)
-- MongoDB driver kullanımı sadece Persistence katmanında serbesttir.
-- Data access sadece tenant-enforcing repository üzerinden yapılır.
-- RepositoryBase tenant filtresini otomatik uygular (insana bırakılmaz).
+---
 
-## Hata davranışı
-- `X-Tenant-Id` yok -> 400 Bad Request (ProblemDetails)
-- GUID geçersiz -> 400 Bad Request (ProblemDetails)
+## 📋 Standartlar
+- **Tenant Header:** `X-Tenant-Id` (Case-sensitive)
+- **Format:** Standart GUID string (Örn: `550e8400-e29b-41d4-a716-446655440000`)
+- **Mongo Şeması:** Her dokümanda `Guid TenantId` alanı bulunması **ZORUNLUDUR**.
 
-### 🛡️ Güvenli Silme ve İzolasyon
-- Bir veri silinirken (Soft Delete), sadece `Id` değil, `TenantId` kontrolü de zorunludur.
-- `Repository.DeleteAsync` metodu, `IsDeleted` alanını güncellerken mutlaka `TenantFilter` kullanmalıdır.
-- Silinmiş veriler, kiracı bazlı raporlamalarda (audit) aksi istenmedikçe listelenmemelidir.
+---
+
+## ⚖️ Pazarlık Yok (Hard Rules)
+
+1. **Giriş Yasak:** `TenantId` asla Request Body, DTO veya Query Parameter üzerinden kabul edilemez.
+2. **Tek Kaynak:** `TenantId` sadece `X-Tenant-Id` header'ından, `TenantResolutionMiddleware` aracılığıyla çözülür.
+3. **Zorunlu Filtre:** Her okuma/sorgu (Select/Find) `TenantId` ile filtrelenmek **ZORUNDADIR**.
+4. **Server-Side Set:** Her yazma (Insert/Update) işlemi, `TenantId` bilgisini `ITenantContext` üzerinden sunucu tarafında set etmek **ZORUNDADIR**.
+5. **Güvenlik İhlali:** Filtre içermeyen herhangi bir MongoDB sorgusu "Kritik Bug" ve "Güvenlik İhlali" olarak kabul edilir.
+6. **HttpClient Entegrasyonu:** `Diten.Web` projesinde `HttpClient` ile giden tüm isteklerde bu header zorunludur. Geliştirme/Test aşamasında (seed data yoksa) varsayılan değer olarak `00000000-0000-0000-0000-000000000000` (Guid.Empty) kullanılmalıdır. **Asla '1' veya 'admin' gibi string değerler kullanılamaz.**
+7. **CORS Bypass:** `OPTIONS` (Preflight) isteklerinde tarayıcılar custom header göndermediği için, middleware bu metodu doğrulamadan muaf tutmalıdır.
+
+---
+
+## 🏗️ Zorunlu Uygulatma (Enforcement)
+
+- **Katman İzolasyonu:** MongoDB Driver kullanımı sadece **Persistence** katmanında serbesttir.
+- **Repository Pattern:** Veri erişimi sadece `Tenant-Enforcing` olan repository metodları üzerinden yapılır.
+- **Otomasyon:** `RepositoryBase`, `TenantFilter`'ı otomatik uygular; filtreleme işlemi geliştiricinin inisiyatifine bırakılamaz.
+
+---
+
+## 🚨 Hata Davranışı ve Status Kodları
+
+- **Header Eksik:** `400 Bad Request` (ProblemDetails - "Missing Tenant Configuration")
+- **Format Hatalı:** `400 Bad Request` (ProblemDetails - "Invalid Tenant Identity Format")
+- **Cross-Tenant Erişim:** Başka kiracıya ait ID ile işlem denemesinde `403` yerine **`404 Not Found`** dönülmelidir (Bkz: `ARCHITECTURE.md` - Security Section).
+
+---
+
+## 🗑️ Güvenli Silme (Soft Delete) ve İzolasyon
+
+- **Çift Kontrol:** Bir veri silinirken (Soft Delete), filtrede hem `Id` hem de `TenantId` bulunması zorunludur.
+- **Audit:** `IsDeleted = true` yapılan kayıtlar, kiracı bazlı denetim raporları dışında standart listelemelerde (FindAll) görünmemelidir.
+- **Timestamp:** Silme anında `DeletedAt` alanı UTC olarak set edilmelidir.
+
+---
+Diten ERP vNext Multi-Tenancy Standard - 2024
