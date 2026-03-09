@@ -28,6 +28,23 @@ public sealed class CreateLegalEntityHandler : IRequestHandler<CreateLegalEntity
         CreateLegalEntityCommand request,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.Title))
+        {
+            throw new ArgumentException("LegalEntity.Validation.TitleRequired", nameof(request.Title));
+        }
+
+        if (request.ParentLegalEntityId.HasValue)
+        {
+            var exists = await _repository.ExistsAsync(request.ParentLegalEntityId.Value, cancellationToken);
+            if (!exists)
+            {
+                _logger.LogWarning("Parent LegalEntity not found during creation. ParentId={ParentId} TenantId={TenantId}", request.ParentLegalEntityId, _tenantContext.TenantId);
+                throw new KeyNotFoundException("LegalEntity.Error.ParentNotFound");
+            }
+        }
+
         var entity = new LegalEntity
         {
             Title = request.Title,

@@ -89,3 +89,4 @@ Ajanların uyması gereken zorunlu dosyalar (`.antigravity/rules/`):
 - **frontend-standards.md**: CSS, JS, UI ve window.L10n (L10n Bridge) kuralları.
 - **views-organization.md**: Modül bazlı View gruplama ve Layout atama kuralları.
 - **details-page-rules.md**: Salt okunur detay sayfası UI standartları.
+- **configuration-safety.md**: Kod içinde asla "mongodb://..." gibi bağlantı adresi (connection string) yazılamaz. Ayarlar mutlaka `appsettings.json` üzerinden okunmalı, ayar eksikse uygulama hata fırlatarak (Fail-fast) durmalıdır.

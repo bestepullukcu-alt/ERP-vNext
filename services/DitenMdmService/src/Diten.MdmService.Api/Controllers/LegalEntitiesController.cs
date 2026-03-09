@@ -1,5 +1,6 @@
 using Diten.MdmService.Application.Features.LegalEntities.Commands;
 using Diten.MdmService.Application.Features.LegalEntities.Queries;
+using Diten.MdmService.Application.Features.LegalEntities.Requests;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -75,18 +76,10 @@ public sealed class LegalEntitiesController : ControllerBase
         );
 
         var result = await _mediator.Send(command);
-        var publicBaseUrl = _configuration["PublicBaseUrl"];
-
-        if (string.IsNullOrWhiteSpace(publicBaseUrl))
-        {
-            return Created($"/api/legal-entities/{result.Id}", result);
-        }
-
-        var location = $"{publicBaseUrl.TrimEnd('/')}/api/legal-entities/{result.Id}";
-        return Created(location, result);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPost("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -142,59 +135,9 @@ public sealed class LegalEntitiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteLegalEntitiesRequest request)
     {
-        if (request.Ids == null || request.Ids.Count == 0)
-            return BadRequest("At least one ID is required.");
-
         var deletedCount = await _mediator.Send(new BulkDeleteLegalEntitiesCommand(request.Ids));
         return Ok(new { deletedCount });
     }
 }
 
-public sealed record BulkDeleteLegalEntitiesRequest(List<Guid> Ids);
 
-public sealed record CreateLegalEntityRequest(
-    string Title,
-    string TaxOffice,
-    string TaxNumber,
-    string? Email,
-    string? Phone,
-    string? Website,
-    string? Address,
-    string? CompanyType,
-    string? Sector,
-    string? ContactPerson,
-    string? PrimaryCurrency,
-    string? DefaultTimeZone,
-    Guid? ParentLegalEntityId,
-    string? DefaultCommunicationLanguage,
-    string? OrganizationRole,
-    string? LogoUrl,
-    string? FiscalYearStart,
-    DateTimeOffset? RegistrationDate,
-    DateTimeOffset? EffectiveFromDate,
-    string? TaxJurisdiction
-);
-
-public sealed record UpdateLegalEntityRequest(
-    string Title,
-    string TaxOffice,
-    string TaxNumber,
-    string? Email,
-    string? Phone,
-    string? Website,
-    string? Address,
-    string? CompanyType,
-    string? Sector,
-    string? ContactPerson,
-    string? PrimaryCurrency,
-    string? DefaultTimeZone,
-    Guid? ParentLegalEntityId,
-    string? DefaultCommunicationLanguage,
-    string? OrganizationRole,
-    string? LogoUrl,
-    string? FiscalYearStart,
-    DateTimeOffset? RegistrationDate,
-    DateTimeOffset? EffectiveFromDate,
-    string? TaxJurisdiction,
-    bool IsActive
-);

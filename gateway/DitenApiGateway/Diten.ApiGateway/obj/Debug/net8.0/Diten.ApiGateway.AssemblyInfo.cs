@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Diten.ApiGateway")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ace9a39fa89d248e305a25d49f4701d25b6fae74")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+225fb0a7129284c2ea37ba3756dbbd105d5f2dc6")]
 [assembly: System.Reflection.AssemblyProductAttribute("Diten.ApiGateway")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Diten.ApiGateway")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

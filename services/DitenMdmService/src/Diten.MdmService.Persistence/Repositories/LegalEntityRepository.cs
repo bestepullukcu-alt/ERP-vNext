@@ -12,10 +12,13 @@ public sealed class LegalEntityRepository : RepositoryBase<LegalEntity>, ILegalE
     {
     }
 
-    public Task<LegalEntity?> GetByIdAsync(Guid id, Guid tenantId, CancellationToken cancellationToken = default)
+    public Task<LegalEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         => FindByIdAsync(id, cancellationToken);
 
-    public async Task<IEnumerable<LegalEntity>> GetAllAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    public new Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+        => base.ExistsAsync(id, cancellationToken);
+
+    public async Task<IEnumerable<LegalEntity>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var result = await FindAllAsync(cancellationToken);
         return result;
@@ -24,22 +27,26 @@ public sealed class LegalEntityRepository : RepositoryBase<LegalEntity>, ILegalE
     public Task<LegalEntity> CreateAsync(LegalEntity entity, CancellationToken cancellationToken = default)
         => InsertAsync(entity, cancellationToken);
 
-    public async Task<LegalEntity> UpdateAsync(LegalEntity entity, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(LegalEntity entity, CancellationToken cancellationToken = default)
     {
         var filter = Builders<LegalEntity>.Filter.And(
             TenantFilter,
             Builders<LegalEntity>.Filter.Eq(e => e.Id, entity.Id));
 
-        await Collection.ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
-        return entity;
+        var result = await Collection.ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
+        return result.ModifiedCount > 0;
     }
 
-    public async Task DeleteAsync(Guid id, Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var filter = Builders<LegalEntity>.Filter.And(
             TenantFilter,
             Builders<LegalEntity>.Filter.Eq(e => e.Id, id));
 
-        await Collection.DeleteOneAsync(filter, cancellationToken);
+        var update = Builders<LegalEntity>.Update
+            .Set(e => e.IsDeleted, true)
+            .Set(e => e.DeletedAt, DateTimeOffset.UtcNow);
+
+        await Collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
     }
 }

@@ -27,12 +27,18 @@ public sealed class BulkDeleteLegalEntitiesHandler : IRequestHandler<BulkDeleteL
         BulkDeleteLegalEntitiesCommand request,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var deletedCount = 0;
 
         foreach (var id in request.Ids)
         {
-            await _repository.DeleteAsync(id, _tenantContext.TenantId, cancellationToken);
-            deletedCount++;
+            var entity = await _repository.GetByIdAsync(id, cancellationToken);
+            if (entity != null)
+            {
+                await _repository.DeleteAsync(id, cancellationToken);
+                deletedCount++;
+            }
         }
 
         _logger.LogInformation(

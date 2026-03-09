@@ -27,7 +27,16 @@ public sealed class DeleteLegalEntityHandler : IRequestHandler<DeleteLegalEntity
         DeleteLegalEntityCommand request,
         CancellationToken cancellationToken)
     {
-        await _repository.DeleteAsync(request.Id, _tenantContext.TenantId, cancellationToken);
+        ArgumentNullException.ThrowIfNull(request);
+
+        var exists = await _repository.ExistsAsync(request.Id, cancellationToken);
+        if (!exists)
+        {
+            _logger.LogWarning("LegalEntity not found for deletion. Id={Id} TenantId={TenantId}", request.Id, _tenantContext.TenantId);
+            throw new KeyNotFoundException("LegalEntity.Error.NotFound");
+        }
+
+        await _repository.DeleteAsync(request.Id, cancellationToken);
 
         _logger.LogInformation("LegalEntity deleted. Id={Id} TenantId={TenantId}", request.Id, _tenantContext.TenantId);
 

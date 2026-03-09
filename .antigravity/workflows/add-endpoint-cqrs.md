@@ -4,55 +4,73 @@ description: "WORKFLOW-001 — Diten ERP vNext Yeni Endpoint ve CQRS Geliştirme
 
 # Workflow: Endpoint Ekle (CQRS)
 
-Bu akış, sistemde yeni bir API ucu oluşturulurken izlenecek standart operasyon adımlarını tanımlar.
+Bu akış, sistemde yeni bir API ucu oluşturulurken izlenecek standart operasyon adımlarını ve klasör hiyerarşisini tanımlar.
 
-## 📥 1. Gerekli Inputlar (Planlama Aşaması)
-Geliştirmeye başlamadan önce şu bilgiler netleşmelidir:
-- **İşlem:** HTTP Method (GET, POST, etc.) + Route (Standard: `/api/v1/...`).
-- **Veri Modeli:** Request/Response DTO şemaları.
-- **Güvenlik:** Auth gereksinimi (Default: `[Authorize]`).
-- **Kurallar:** Validation kuralları ve Mongo Entity/Collection eşleşmesi.
+## 📥 1. Gerekli Inputlar
+- **HTTP Method + Route:** (Örn: POST `/api/v1/legal-entities`)
+- **Request/Response DTO Şeması:** Giriş ve çıkış veri modelleri.
+- **Auth Gereksinimi:** (Public / Authorized / Policy)
+- **Validation Kuralları:** Alan zorunlulukları ve formatlar.
+- **Mongo Entity/Collection:** Verinin kaydedileceği hedef.
 
 ---
 
-## 🏗️ 2. Mimari ve Klasör Yapısı (Zorunlu)
+## ⚖️ 2. Kesin Kurallar
 
-Diten ERP vNext'te **CQRS Klasör Hiyerarşisi** aşağıdaki gibi sabitlenmiştir:
+### 🛡️ Handler Savunma Hattı (Guard Clauses)
+- **Null Check:** `Handle` metodunun en başında `ArgumentNullException.ThrowIfNull(request);` kullanılmalıdır.
+- **Zorunlu Alan Doğrulaması:** FluentValidation dışında, Handler içinde iş mantığına başlamadan önce kritik alanlar için manuel kontroller (Örn: `string.IsNullOrWhiteSpace`) yapılmalıdır.
+- **Veri Tutarlılığı & Tenant Shield:** Eğer bir `ParentId` veya ilişkili bir ID geliyorsa, işleme başlamadan önce bu ID'nin veritabanında var olduğu ve işlem yapan **TenantId**'ye ait olduğu `repository.ExistsAsync` ile doğrulanmalıdır.
 
+### 🗑️ Veri Silme Mantığı (Soft Delete)
+- Sistemde fiziksel silme (Hard Delete) **KESİNLİKLE YASAKTIR**.
+- Silme işlemi, entity üzerindeki `IsDeleted = true` ve `DeletedAt = DateTime.UtcNow` alanlarının güncellenmesiyle yapılmalıdır.
+- Repository katmanındaki tüm sorgular (Find/List) otomatik olarak `IsDeleted == false` filtresini içermelidir.
 
+### 🚨 Hata Yönetimi ve Statü Kodları
+Handler içinde hata oluştuğunda asla `return null` veya `return false` dönülmez. Uygun exception fırlatılır (throw). Bu exception'lar Global Exception Middleware tarafından şu HTTP kodlarına dönüştürülür:
 
-- **`Commands/`**: Sadece veriyi taşıyan `IRequest` modelleri (Örn: `CreateCityCommand.cs`).
-- **`Queries/`**: Sadece sorgu modelleri (Örn: `GetCityByIdQuery.cs`).
-- **`Handlers/`**: Gerçek iş mantığının (Business Logic) döndüğü yer.
-  - **`CommandHandlers/`**: Yazma işlemlerini yöneten sınıflar.
-  - **`QueryHandlers/`**: Okuma işlemlerini yöneten sınıflar.
+- **ArgumentNullException / ValidationException:** `400 Bad Request`.
+- **KeyNotFoundException:** `404 Not Found` (Kayıt yok veya başka bir Tenant'a ait veriye erişim denemesi).
+- **UnauthorizedAccessException:** `403 Forbidden`.
+- **ConflictException:** `409 Conflict`.
+
+> **Güvenlik Notu:** Başka bir kiracıya ait ID ile işlem yapılmaya çalışıldığında, sistemin varlığını açık etmemek için `403` yerine `404 Not Found` fırlatılmalıdır.
+
+### 🌐 HTTP Method Standartları
+- **Create:** `POST` kullanılır.
+- **Update:** Aksiyon bazlı tutarlılık ve firewall/proxy uyumluluğu açısından **POST** tercih edilir. (Örn: `POST /api/legal-entities/{id}`)
+- **Delete:** `DELETE` veya `POST /delete` kullanılabilir.
+- **Read:** `GET` kullanılır.
+
+### 🚫 Controller Temizliği
+- Controller dosyası içerisinde **ASLA** `record` veya `class` (Request/Response DTO) tanımı yapılamaz.
+- Controller sadece API uçlarını yöneten, MediatR'a komut gönderen "ince" bir katman olarak kalmalıdır.
+
+### 📁 Klasör Hiyerarşisi (Zorunlu)
+Her bir feature (Örn: `LegalEntities`) altında şu yapı kurulmalıdır:
+
+- **`Requests/`**: API'den gelen ham istek modelleri.
+- **`Commands/`**: MediatR `IRequest` modelleri (Sadece veri taşır).
+- **`Queries/`**: MediatR sorgu modelleri.
+- **`Handlers/`**: İş mantığının (logic) döndüğü yer.
+  - **`CommandHandlers/`**: Yazma (Insert/Update/Delete) sınıfları.
+  - **`QueryHandlers/`**: Okuma (Get) sınıfları.
 - **`Validators/`**: FluentValidation sınıfları.
 
----
-
-## 🛡️ 3. Uygulama Kuralları (Mühürlü)
-
-1. **Controller Disiplini:** Controller sadece MediatR çağırır. İçinde `if`, `foreach` veya veritabanı sorgusu asla bulunamaz.
-2. **DTO Temizliği:** DTO’lar asla `TenantId` içermez. Bu bilgi `X-Tenant-Id` header'ından otomatik enjekte edilir.
-3. **Validation:** Her Command/Query için bir validator eklenmelidir.
-4. **Repository Kullanımı:** Veriye erişim sadece Repository üzerinden yapılır ve `TenantId` filtresi otomatik uygulanır.
-5. **Multi-Language:** Kullanıcıya dönen mesajlar (Toast, Hata vb.) her zaman `SharedResource` üzerinden 8 dilde sunulur.
+### 🔒 Güvenlik ve Tenant
+- **DTO’lar TenantId İçermez:** Kiracı bilgisi her zaman header (`X-Tenant-Id`) üzerinden alınır. DTO içine asla `TenantId` alanı eklenmez.
+- **Repository:** Veriye erişim sadece `tenant enforced` olan repository metodları üzerinden yapılmalıdır.
 
 ---
 
-## 🚀 4. Uygulama Sıralaması (Execution Steps)
+## 🚀 3. Uygulama Sıralaması
 
-1. **Plan:** Önce yapılacakları listeleyerek benden (Orkestratör) onay al.
-2. **Domain/Persistence:** Entity ve Repository katmanını hazırla.
-3. **Application:** Command/Query, DTO ve Handler sınıflarını oluştur.
-4. **Validation:** İş kurallarını (Validator) yaz.
-5. **Presentation:** API Controller ve Ocelot Route tanımlarını yap.
-6. **Frontend:** (Gerekirse) View, JS ve L10n Bridge bağlantılarını kur.
+1. **Önce Plan:** Kod yazmadan önce dosya yapısını ve akış planını sun ve onay al.
+2. **Requests & Commands:** İstek modellerini ve MediatR komutlarını oluştur.
+3. **Handlers:** İlgili `Handlers/` klasörü altına iş mantığını ve **Soft Delete/Guard Clause** kontrollerini yaz.
+4. **Validation & Index:** Gerekli doğrulamaları ekle ve veritabanı performansını (index) kontrol et.
+5. **Controller:** API ucunu tanımla ve MediatR çağrısını yap.
 
 ---
-
-## ✅ Kontrol Listesi
-- [ ] Handler'lar doğru `Handlers/` klasörü altında mı?
-- [ ] DTO'da `TenantId` var mı? (Varsa sil!).
-- [ ] `X-Tenant-Id` ve `Authorization` kontrolleri yapıldı mı?
-- [ ] 8 dil desteği için key'ler eklendi mi?
+Diten ERP vNext Endpoint Standard - WORKFLOW-001

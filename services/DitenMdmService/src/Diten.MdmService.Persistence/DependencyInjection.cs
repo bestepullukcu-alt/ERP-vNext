@@ -19,9 +19,9 @@ public static class DependencyInjection
         BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
         var connectionString = configuration["Mongo:ConnectionString"]
-            ?? "mongodb://localhost:27017";
+            ?? throw new InvalidOperationException("Configuration error: 'Mongo:ConnectionString' is missing in appsettings.json.");
         var databaseName = configuration["Mongo:DatabaseName"]
-            ?? "diten_mdm";
+            ?? throw new InvalidOperationException("Configuration error: 'Mongo:DatabaseName' is missing in appsettings.json.");
 
         services.AddSingleton<IMongoClient>(_ => new MongoClient(connectionString));
         services.AddScoped<IMongoDatabase>(sp =>

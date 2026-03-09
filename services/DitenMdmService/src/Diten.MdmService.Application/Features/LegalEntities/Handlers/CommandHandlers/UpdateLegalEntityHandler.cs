@@ -27,11 +27,34 @@ public sealed class UpdateLegalEntityHandler : IRequestHandler<UpdateLegalEntity
         UpdateLegalEntityCommand request,
         CancellationToken cancellationToken)
     {
-        var entity = await _repository.GetByIdAsync(request.Id, _tenantContext.TenantId, cancellationToken);
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.Title))
+        {
+            throw new ArgumentException("LegalEntity.Validation.TitleRequired", nameof(request.Title));
+        }
+
+        if (request.ParentLegalEntityId.HasValue)
+        {
+            if (request.ParentLegalEntityId.Value == request.Id)
+            {
+                _logger.LogWarning("Circular reference detected during update. Id={Id} ParentId={ParentId}", request.Id, request.ParentLegalEntityId);
+                throw new ArgumentException("LegalEntity.Error.CircularReference");
+            }
+
+            var exists = await _repository.ExistsAsync(request.ParentLegalEntityId.Value, cancellationToken);
+            if (!exists)
+            {
+                _logger.LogWarning("Parent LegalEntity not found during update. ParentId={ParentId} TenantId={TenantId}", request.ParentLegalEntityId, _tenantContext.TenantId);
+                throw new KeyNotFoundException("LegalEntity.Error.ParentNotFound");
+            }
+        }
+
+        var entity = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (entity == null)
         {
             _logger.LogWarning("LegalEntity not found. Id={Id} TenantId={TenantId}", request.Id, _tenantContext.TenantId);
-            return false;
+            throw new KeyNotFoundException("LegalEntity.Error.NotFound");
         }
 
         entity.Title = request.Title;
@@ -57,7 +80,11 @@ public sealed class UpdateLegalEntityHandler : IRequestHandler<UpdateLegalEntity
         entity.IsActive = request.IsActive;
         entity.UpdatedAt = DateTimeOffset.UtcNow;
 
-        await _repository.UpdateAsync(entity, cancellationToken);
+        var success = await _repository.UpdateAsync(entity, cancellationToken);
+        if (!success)
+        {
+            throw new KeyNotFoundException("LegalEntity.Error.NotFound");
+        }
 
         _logger.LogInformation("LegalEntity updated. Id={Id} TenantId={TenantId}", entity.Id, entity.TenantId);
 

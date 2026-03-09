@@ -24,7 +24,10 @@ public abstract class RepositoryBase<TEntity> where TEntity : EntityBase
     /// Her okuma bu filter builder üzerinden yapılmalıdır.
     /// </summary>
     protected FilterDefinition<TEntity> TenantFilter =>
-        Builders<TEntity>.Filter.Eq(e => e.TenantId, TenantContext.TenantId);
+        Builders<TEntity>.Filter.And(
+            Builders<TEntity>.Filter.Eq(e => e.TenantId, TenantContext.TenantId),
+            Builders<TEntity>.Filter.Eq(e => e.IsDeleted, false)
+        );
 
     protected async Task<TEntity?> FindByIdAsync(Guid id, CancellationToken ct)
     {
@@ -33,6 +36,15 @@ public abstract class RepositoryBase<TEntity> where TEntity : EntityBase
             Builders<TEntity>.Filter.Eq(e => e.Id, id));
 
         return await Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    protected async Task<bool> ExistsAsync(Guid id, CancellationToken ct)
+    {
+        var filter = Builders<TEntity>.Filter.And(
+            TenantFilter,
+            Builders<TEntity>.Filter.Eq(e => e.Id, id));
+
+        return await Collection.Find(filter).AnyAsync(ct);
     }
 
     protected async Task<IReadOnlyList<TEntity>> FindAllAsync(CancellationToken ct)

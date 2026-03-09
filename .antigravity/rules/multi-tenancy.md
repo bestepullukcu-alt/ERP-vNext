@@ -1,16 +1,29 @@
----
-description: Diten ERP vNext projelerinde Multi-Tenant (Çoklu Kiracı) veri izolasyonu ve yönetimi kuralları.
----
+# Multi-Tenant (Single DB) — KESİN KURALLAR
 
-# Multi-Tenancy Kuralları (Single DB, Multi-Tenant)
+## Standart
+- Tenant header: `X-Tenant-Id`
+- Format: GUID string
+- Her Mongo dokümanında ZORUNLU alan: `Guid TenantId`
 
-Diten ERP vNext, tüm müşterilerin aynı veritabanını (MongoDB) paylaştığı ancak verilerin satır/doküman bazında izole edildiği bir mimariye sahiptir.
+## Pazarlık yok (hard rules)
+1) TenantId asla request body / DTO / query param üzerinden kabul edilmez.
+2) TenantId sadece `X-Tenant-Id` header’dan, middleware ile çözülür.
+3) Her okuma/sorgu TenantId ile filtrelenmek ZORUNDADIR.
+4) Her yazma (insert/update) TenantId’yi TenantContext’ten (server-side) set etmek ZORUNDADIR.
+5) Tenant filtresi olmadan Mongo sorgusu yapmak BUG’dır.
+6) `Diten.Web` projesinde `HttpClient` ile dış servislere (Gateway/Backend) giden tüm isteklerde `X-Tenant-Id` header bilgisi zorunludur. Geliştirme aşamasında bu değer varsayılan olarak `1` atanmalıdır. Gelecekte üretilecek tüm `Controller` ve `Service` sınıfları bu header'ı içerecek şekilde kodlanmalıdır.
+7) CORS preflight (`OPTIONS`) isteklerinde tarayıcılar custom header göndermediği için, TenantResolutionMiddleware `OPTIONS` metodu için kontrolü ATLAMAK ZORUNDADIR (bypass).
 
-## 🔴 DEĞİŞMEZ KURALLAR (CRITICAL)
+## Zorunlu uygulatma (enforcement)
+- MongoDB driver kullanımı sadece Persistence katmanında serbesttir.
+- Data access sadece tenant-enforcing repository üzerinden yapılır.
+- RepositoryBase tenant filtresini otomatik uygular (insana bırakılmaz).
 
-1. **GUID Zorunluluğu:** `TenantId` değerleri KESİNLİKLE `Guid` tipinde olmalıdır. Eski sistemlerdeki gibi `"1"`, `"0"` veya hardcoded string değerler KESİNLİKLE YASAKTIR.
-2. **Entity Standardı:** MongoDB'ye kaydedilecek olan, tenant'a özel her Entity sınıfı `ITenantEntity` (veya benzeri bir base interface) uygulamalı ve içinde zorunlu `Guid TenantId { get; set; }` barındırmalıdır.
-3. **X-Tenant-Id Header:** İstemciden (Frontend/Postman) gelen her API isteğinde `X-Tenant-Id` header'ı bulunmak zorundadır.
-4. **DTO ve Body Yasağı:** Create/Update DTO'ları içinde veya JSON request body'sinde `TenantId` ASLA gönderilmez ve istenmez.
-5. **Server-Side Çözümleme:** TenantId, API tarafında bir Middleware veya `TenantContext` servisi tarafından `HttpContext.Request.Headers` içinden okunur ve doğrudan Repository katmanına (veya Command Handler'a) enjekte edilir.
-6. **Sızıntı Koruması (Leak Prevention):** Repository base sınıflarında tüm `Find`, `Update`, `Delete` işlemleri otomatik olarak `CurrentTenantId` filtresi ile sarmalanmalıdır. Geliştiricinin bunu manuel yazmasına güvenilmez.
+## Hata davranışı
+- `X-Tenant-Id` yok -> 400 Bad Request (ProblemDetails)
+- GUID geçersiz -> 400 Bad Request (ProblemDetails)
+
+### 🛡️ Güvenli Silme ve İzolasyon
+- Bir veri silinirken (Soft Delete), sadece `Id` değil, `TenantId` kontrolü de zorunludur.
+- `Repository.DeleteAsync` metodu, `IsDeleted` alanını güncellerken mutlaka `TenantFilter` kullanmalıdır.
+- Silinmiş veriler, kiracı bazlı raporlamalarda (audit) aksi istenmedikçe listelenmemelidir.

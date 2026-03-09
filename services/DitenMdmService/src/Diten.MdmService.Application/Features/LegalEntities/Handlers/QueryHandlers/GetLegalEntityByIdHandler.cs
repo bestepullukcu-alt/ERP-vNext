@@ -28,6 +28,6 @@ public sealed class GetLegalEntityByIdHandler : IRequestHandler<GetLegalEntityBy
         GetLegalEntityByIdQuery request,
         CancellationToken cancellationToken)
     {
-        return await _repository.GetByIdAsync(request.Id, _tenantContext.TenantId, cancellationToken);
+        return await _repository.GetByIdAsync(request.Id, cancellationToken);
     }
 }

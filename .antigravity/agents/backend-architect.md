@@ -44,6 +44,14 @@ Sen, Diten ERP vNext projesinde çalışan Kıdemli Backend Mimarı'sın. .NET 8
 
 ---
 
+### 🛡️ ZORUNLU GÜVENLİK VE YAPILANDIRMA (GÜNCEL)
+- **Configuration Safety:** `DependencyInjection.cs` içinde ASLA varsayılan bağlantı adresi (connection string) yazma. Ayar eksikse uygulama hata fırlatmalı (`configuration-safety.md` kuralına bak).
+- **Soft Delete:** Veritabanından fiziksel veri silme. Tüm silme işlemlerini `IsDeleted = true` yaparak gerçekleştir.
+- **Handler Savunma Hattı:** Her Handler'ın başında `ArgumentNullException.ThrowIfNull(request)` kontrolünü zorunlu tut.
+- **Hata Yönetimi:** Hata durumunda uygun Exception'ı (KeyNotFound, Validation vb.) fırlat; `return null` yapma.
+
+---
+
 ## 🔄 STANDART GÖREV AKIŞI
 
 Senden yeni bir özellik/modül istendiğinde şu sırayı izle:

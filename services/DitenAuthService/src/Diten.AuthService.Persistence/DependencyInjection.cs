@@ -20,8 +20,19 @@ public static class DependencyInjection
         BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
         // Settings
+        var mongoSection = configuration.GetSection("MongoDbSettings");
+        if (!mongoSection.Exists())
+            throw new InvalidOperationException("Configuration error: 'MongoDbSettings' section is missing in appsettings.json.");
+
         var mongoSettings = new MongoDbSettings();
-        configuration.GetSection("MongoDbSettings").Bind(mongoSettings);
+        mongoSection.Bind(mongoSettings);
+
+        if (string.IsNullOrWhiteSpace(mongoSettings.ConnectionString))
+            throw new InvalidOperationException("Configuration error: 'MongoDbSettings:ConnectionString' is missing.");
+
+        if (string.IsNullOrWhiteSpace(mongoSettings.DatabaseName))
+            throw new InvalidOperationException("Configuration error: 'MongoDbSettings:DatabaseName' is missing.");
+
         services.AddSingleton(mongoSettings);
 
         // Drivers

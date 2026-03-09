@@ -63,3 +63,5 @@
 /Users/alitufanoglu/Desktop/ERP-vNext/services/DitenMdmService/src/Diten.MdmService.Api/obj/Debug/net8.0/Diten.MdmService.Api.pdb
 /Users/alitufanoglu/Desktop/ERP-vNext/services/DitenMdmService/src/Diten.MdmService.Api/obj/Debug/net8.0/Diten.MdmService.Api.genruntimeconfig.cache
 /Users/alitufanoglu/Desktop/ERP-vNext/services/DitenMdmService/src/Diten.MdmService.Api/obj/Debug/net8.0/ref/Diten.MdmService.Api.dll
+/Users/alitufanoglu/Desktop/ERP-vNext/services/DitenMdmService/src/Diten.MdmService.Api/bin/Debug/net8.0/FluentValidation.dll
+/Users/alitufanoglu/Desktop/ERP-vNext/services/DitenMdmService/src/Diten.MdmService.Api/bin/Debug/net8.0/FluentValidation.DependencyInjectionExtensions.dll

@@ -1,12 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "VW+9QEUlmG8=",
+  "dgSpecHash": "OD7vpxdGq5Q=",
   "success": true,
   "projectFilePath": "/Users/alitufanoglu/Desktop/ERP-vNext/services/DitenMdmService/src/Diten.MdmService.Application/Diten.MdmService.Application.csproj",
   "expectedPackageFiles": [
     "/Users/alitufanoglu/.nuget/packages/awssdk.core/3.7.100.14/awssdk.core.3.7.100.14.nupkg.sha512",
     "/Users/alitufanoglu/.nuget/packages/awssdk.securitytoken/3.7.100.14/awssdk.securitytoken.3.7.100.14.nupkg.sha512",
     "/Users/alitufanoglu/.nuget/packages/dnsclient/1.6.1/dnsclient.1.6.1.nupkg.sha512",
+    "/Users/alitufanoglu/.nuget/packages/fluentvalidation/12.1.1/fluentvalidation.12.1.1.nupkg.sha512",
+    "/Users/alitufanoglu/.nuget/packages/fluentvalidation.dependencyinjectionextensions/12.1.1/fluentvalidation.dependencyinjectionextensions.12.1.1.nupkg.sha512",
     "/Users/alitufanoglu/.nuget/packages/mediatr/12.3.0/mediatr.12.3.0.nupkg.sha512",
     "/Users/alitufanoglu/.nuget/packages/mediatr.contracts/2.0.1/mediatr.contracts.2.0.1.nupkg.sha512",
     "/Users/alitufanoglu/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.1/microsoft.extensions.dependencyinjection.abstractions.8.0.1.nupkg.sha512",
