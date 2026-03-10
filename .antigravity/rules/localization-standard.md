@@ -6,8 +6,9 @@ Diten ERP vNext projesinde "Hardcoded" (elle yazılmış) metin kullanmak KESİN
 Resmi desteklenen 8 dilin TAMAMI için `.resx` dosyaları oluşturulmalıdır. Sadece Türkçe (`tr`) oluşturup bırakmak kural ihlalidir.
 Desteklenen Diller: `en, es, ka, kk, ru, tr, uk, uz`
 
-**Dosya Yolu Standardı:** `Resources/Views/{AreaName}/{ModuleName}.{lang}.resx`
-*(Örnek: `Resources/Views/MDM/Cities.en.resx`, `Resources/Views/MDM/Cities.ru.resx` vb.)*
+**Dosya Yolu Standardı:** `Resources/Views/{AreaName}/{ModuleName}/Index.{lang}.resx`
+*(Örn: `Resources/Views/MDM/Countries/Index.en.resx`, `Resources/Views/MDM/Countries/Index.ru.resx` vb.)*
+**Kritik Kural:** Kaynak dosyası, hedeflediği `.cshtml` dosyasının adıyla birebir eşleşmelidir. Listeleme sayfaları için bu daima `Index`'tir. Klasörleme karmaşayı önlemek için ZORUNLUDUR.
 
 ## 2. Zorunlu Anahtarlar (Keys)
 Her modülün dil dosyasında ŞART olan standart anahtarlar:

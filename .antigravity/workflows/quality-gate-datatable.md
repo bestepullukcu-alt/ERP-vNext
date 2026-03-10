@@ -1,0 +1,65 @@
+---
+description: "QUALITY-GATE-DT — DataTable Sayfası Teslim Öncesi Zorunlu Kontrol Listesi"
+---
+
+# /quality-gate-datatable — DataTable Sayfası Kalite Kapısı
+
+Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) tamamlandığında **hem agent hem orkestratör tarafından işaretlenmesi zorunlu** kontrol listesidir.
+
+> ⛔ Aşağıdaki listede **tek bir madde bile işaretlenmemişse** sayfa teslim edilemez. İlgili agent geri döner ve sorunu düzeltir.
+
+---
+
+## ✅ Kalite Kapısı Kontrol Listesi
+
+### A. JavaScript (index.js)
+
+- [ ] **DtDefaults:** `new DataTable(el, window.DtDefaults.create({...}))` kullanılıyor mu? Ham `$(...).DataTable({...})` yok mu?
+- [ ] **ExportButtons:** `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons)` kullanılıyor mu? Elle `layout.topEnd.buttons` tanımı yok mu?
+- [ ] **Bulk Action:** `getSelectedIds()`, `updateBulkBar()`, `clearSelection()` fonksiyonları implement edilmiş mi?
+- [ ] **Header Checkbox Sync:** `dt-checkboxes-select-all` değişince tüm satır checkbox'ları ve bar güncelleniyor mu? `indeterminate` state var mı?
+- [ ] **Tek Satır Silme:** `window.showConfirm()` wrapper'ı kullanılıyor mu? Direkt `Swal.fire` ile bypass edilmiyor mu?
+- [ ] **Toast:** Başarı/hata bildirimleri `window.showToast('Key', 'success'|'error')` üzerinden mi geçiyor?
+- [ ] **API URL:** `apiUrl + '/api/{{ModuleNameLower}}'` formatında mı? `/mdm/api/v1/...` formatı yok mu?
+- [ ] **Auth Headers:** `getAuthHeaders()` tüm fetch/ajax çağrılarına ekleniyor mu?
+- [ ] **drawCallback:** `DtDefaults.updateVisualState(this.api(), filterCount)` çağrılıyor mu?
+
+### B. HTML / Razor (Index.cshtml)
+
+- [ ] **_Filter Partial:** `<partial name="_Filter" />` sayfanın en üstünde mevcut mu?
+- [ ] **_Filter.cshtml:** `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dosyası oluşturulmuş mu?
+- [ ] **Offcanvas Yapısı:** Offcanvas içeriği `<dl class="row">` + `<dt>/<dd>` yapısıyla mı yazılmış? (`<div class="row"><div class="col-6">` yapısı yasaktır)
+- [ ] **Hardcoded String:** Offcanvas dahil tüm görünür metinler `@Localizer[...]` veya `@SharedLocalizer[...]` üzerinden geliyor mu?
+- [ ] **L10n Bridge:** `@section Scripts` içinde `window.L10n` bloğu standart şablona göre dolu mu? (en azından `Active, Passive, Actions, Delete, BulkDelete, BulkDeleteConfirm, AreYouSure, Cancel` key'leri)?
+- [ ] **Layout:** `Layout = "_LayoutBackbone"` kullanılıyor mu?
+
+### C. Localization
+
+- [ ] **8 Dil:** Modüle özgü tüm yeni key'ler (`en, tr, ru, es, ka, kk, uk, uz`) dosyalarına eklenmiş mi?
+- [ ] **SharedResource:** "Kaydet", "İptal", "Aktif", "Durum", "İşlemler" gibi genel key'ler modül `.resx`'ine değil, sadece `SharedLocalizer`'a eklenmiş mi?
+
+### D. Routing & Sidebar
+
+- [ ] **Sidebar:** `_LayoutBackbone.cshtml` içine aktif sayfa vurgulama ile menu item eklenmiş mi?
+- [ ] **Controller Route:** Frontend controller `/{{ModuleName}}` (MDM area'sı olmadan kök) ile erişilebilir mi?
+- [ ] **Ocelot:** `ocelot.json` içinde `/api/{{ModuleNameLower}}` ve `/api/{{ModuleNameLower}}/{everything}` rotaları doğru servise yönlendirilmiş mi?
+
+---
+
+## 🔄 Workflow Adımları
+
+1. **Agent:** Geliştirmeyi tamamladıktan sonra bu listeyi kendi kendine işaretler.
+2. **Orkestratör:** Teslim raporunda bu listenin tamamlandığını onaylar.
+3. **Kullanıcı onayı:** Orkestratör, `run_all.sh` ile sistemi yeniden derleyip kullanıcıya "sayfa hazır" raporu sunar.
+
+---
+
+## ⚡ Hızlı Referans — Kullanılacak Dosyalar
+
+| Dosya | Konu |
+|-------|------|
+| `.antigravity/rules/frontend-datatable-template.md` | HTML/Razor şablonu |
+| `.antigravity/rules/frontend-js-standard.md` | JavaScript şablonu (DtDefaults tabanlı) |
+| `.antigravity/rules/frontend-standards.md` | CSS, UI, L10n genel kurallar |
+| `.antigravity/workflows/add-module.md` | Tam modül oluşturma orkestrasyonu |
+| `.antigravity/workflows/add-page.md` | Sayfa/action ekleme kuralları |

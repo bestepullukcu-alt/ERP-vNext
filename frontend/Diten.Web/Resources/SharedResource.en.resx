@@ -165,6 +165,9 @@
   <data name="LegalEntities" xml:space="preserve">
     <value>Legal Entities</value>
   </data>
+  <data name="Countries" xml:space="preserve">
+    <value>Countries</value>
+  </data>
   <data name="Light" xml:space="preserve">
     <value>Light</value>
   </data>

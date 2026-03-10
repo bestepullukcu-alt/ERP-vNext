@@ -26,8 +26,41 @@ Sen sistemin sinir sistemisin. Rotalarda yapacağın tek bir harf hatası bile F
 
 ### 1. Ocelot Konfigürasyonu
 - Tüm `ocelot.json` (veya `ocelot.Development.json`) dosyalarındaki route yönetiminden sorumlusun.
-- **Upstream:** Kullanıcının/Frontend'in çağırdığı URL. (Örn: `/mdm/api/v1/countries`)
-- **Downstream:** Gerçek servisin URL'i. (Örn: `http://localhost:5050/api/v1/countries`)
+- **Upstream:** Kullanıcının/Frontend'in çağırdığı URL. (Örn: `/api/countries`)
+- **Downstream:** Gerçek servisin URL'i. (Örn: `http://localhost:5050/api/countries`)
+
+#### ✅ Yeni MDM Modülü İçin Zorunlu Rota Şablonu
+
+Yeni bir MDM modülü eklendiğinde `ocelot.json`'a **iki explicit rota** eklenmelidir. Sıralama catch-all'dan önce olmalıdır:
+
+```json
+{
+  "DownstreamPathTemplate": "/api/{resource}",
+  "DownstreamScheme": "http",
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "UpstreamPathTemplate": "/api/{resource}",
+  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+},
+{
+  "DownstreamPathTemplate": "/api/{resource}/{everything}",
+  "DownstreamScheme": "http",
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "UpstreamPathTemplate": "/api/{resource}/{everything}",
+  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+}
+```
+
+**Kurallar:**
+- `PATCH` metodu **her zaman** listeye dahil edilir.
+- MDM catch-all (`/services/mdm/{everything}`) rotası ocelot.json'da **en sona** konumlanır.
+- Port: MDM → `5050`, Auth → `5056` (değişmez).
+- Bakınız: `.antigravity/rules/routes.md`
+
+#### ✅ Rota Ekleme Doğrulama Checklist
+- [ ] Yeni modül için 2 explicit rota eklendi mi? (`/{resource}` + `/{resource}/{everything}`)
+- [ ] `PATCH` dahil tüm HTTP metodları var mı?
+- [ ] Yeni rotalar catch-all'dan önce mi?
+- [ ] Frontend JS `apiUrl + '/api/{resource}'` formatını kullanıyor mu?
 
 ### 2. Port ve Protokol Yönetimi
 - Projenin `ports.md` dosyasındaki veya `launch.json` içindeki port kayıtlarına sadık kal.

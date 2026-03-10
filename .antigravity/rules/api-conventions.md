@@ -9,15 +9,20 @@ Bu doküman, tüm mikroservisler (MDM, Auth vb.) ve Gateway katmanı için geçe
 ## 🛣️ Routing (Yönlendirme) Standartları
 
 ### 1. Mikroservis İçi (Downstream)
-- **Format:** `/api/v1/[resource]`
 - **İsimlendirme:** Kebab-case ve Çoğul (Plural) isimler kullanılmalıdır.
-- *Doğru:* `/api/v1/legal-entities`, `/api/v1/countries`
-- *Yanlış:* `/api/GetCountries`, `/api/v1/Country`
+- *Doğru:* `/api/legal-entities`, `/api/countries`
+- *Yanlış:* `/api/GetCountries`, `/api/Country`
+
+> **Versiyonlama Notu (Pragmatik Yaklaşım):**
+> Mevcut MDM Controller'ları `/api/{resource}` (v1 ön eki olmadan) kullanmaktadır.
+> Auth servisi `/api/v1/` kullanmaktadır. Bu bir geçici tutarsızlıktır.
+> **Yeni modüller MDM içinde `/api/{resource}` formatını kullanmaya devam etmelidir.** Versiyonlama ihtiyacı sistem genelinde kararlaştırıldığında bu kural güncellenecektir.
 
 ### 2. Gateway Üzerinden (Upstream)
 - Frontend her zaman Gateway portu (`5000`) üzerinden konuşur.
-- **Format:** `/:service-name/api/v1/:resource`
-- *Örnek:* `http://localhost:5000/mdm/api/v1/countries`
+- **Format:** Mevcut MDM modülleri için `/api/{resource}` (explicit Ocelot rotası üzerinden).
+- *Örnek:* `http://localhost:5000/api/countries` → MDM servisine iletilir
+- Bkz: `.antigravity/rules/routes.md` — Ocelot konfigürasyon detayları için
 
 ---
 

@@ -120,10 +120,18 @@
                     <li class="menu-header small text-uppercase">
                         <span class="menu-header-text">@SharedLocalizer["MDM"]</span>
                     </li>
-                    <li class="menu-item active">
+                    <li
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "LegalEntities" ? "active" : "")">
                         <a href="/LegalEntities" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-building"></i>
                             <div>@SharedLocalizer["LegalEntities"]</div>
+                        </a>
+                    </li>
+                    <li
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Countries" ? "active" : "")">
+                        <a href="/Countries" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-world"></i>
+                            <div>@SharedLocalizer["Countries"]</div>
                         </a>
                     </li>
                 </ul>
@@ -197,19 +205,22 @@
                                     <li>
                                         <button type="button" class="dropdown-item d-flex align-items-center active"
                                             data-bs-theme-value="light">
-                                            <i class="icon-base bx bx-sun icon-md me-3" data-icon="sun"></i>@SharedLocalizer["Light"]
+                                            <i class="icon-base bx bx-sun icon-md me-3"
+                                                data-icon="sun"></i>@SharedLocalizer["Light"]
                                         </button>
                                     </li>
                                     <li>
                                         <button type="button" class="dropdown-item d-flex align-items-center"
                                             data-bs-theme-value="dark">
-                                            <i class="icon-base bx bx-moon icon-md me-3" data-icon="moon"></i>@SharedLocalizer["Dark"]
+                                            <i class="icon-base bx bx-moon icon-md me-3"
+                                                data-icon="moon"></i>@SharedLocalizer["Dark"]
                                         </button>
                                     </li>
                                     <li>
                                         <button type="button" class="dropdown-item d-flex align-items-center"
                                             data-bs-theme-value="system">
-                                            <i class="icon-base bx bx-desktop icon-md me-3" data-icon="desktop"></i>System
+                                            <i class="icon-base bx bx-desktop icon-md me-3"
+                                                data-icon="desktop"></i>System
                                         </button>
                                     </li>
                                 </ul>
@@ -389,12 +400,14 @@
                                     </li>
                                     <li>
                                         <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);">
-                                            <i class="bx bx-user icon-md me-3"></i><span>@SharedLocalizer["MyProfile"]</span>
+                                            <i
+                                                class="bx bx-user icon-md me-3"></i><span>@SharedLocalizer["MyProfile"]</span>
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);">
-                                            <i class="bx bx-cog icon-md me-3"></i><span>@SharedLocalizer["Settings"]</span>
+                                            <i
+                                                class="bx bx-cog icon-md me-3"></i><span>@SharedLocalizer["Settings"]</span>
                                         </a>
                                     </li>
                                     <li>
@@ -402,7 +415,8 @@
                                     </li>
                                     <li>
                                         <a class="dropdown-item d-flex align-items-center" href="/account/logout">
-                                            <i class="bx bx-power-off icon-md me-3"></i><span>@SharedLocalizer["LogOut"]</span>
+                                            <i
+                                                class="bx bx-power-off icon-md me-3"></i><span>@SharedLocalizer["LogOut"]</span>
                                         </a>
                                     </li>
                                 </ul>

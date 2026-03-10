@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../buildMultiTargeting/Diten.MdmService.Api.props" />
-</Project>

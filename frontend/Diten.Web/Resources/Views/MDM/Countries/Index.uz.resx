@@ -1,0 +1,199 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CountriesTitle" xml:space="preserve">
+    <value>Davlatlar</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Davlatlar, mintaqalar va bog'liq ma'lumotlarni boshqaring.</value>
+  </data>
+  <data name="AddNewCountry" xml:space="preserve">
+    <value>Yangi davlat qo'shish</value>
+  </data>
+  <data name="AddNewCountryDescription" xml:space="preserve">
+    <value>Yangi davlat yozuvini yarating.</value>
+  </data>
+  <data name="EditCountry" xml:space="preserve">
+    <value>Davlatni tahrirlash</value>
+  </data>
+  <data name="EditCountryDescription" xml:space="preserve">
+    <value>Mavjud davlat ma'lumotlarini tahrirlash.</value>
+  </data>
+  <data name="CountryName" xml:space="preserve">
+    <value>Davlat nomi</value>
+  </data>
+  <data name="NativeName" xml:space="preserve">
+    <value>Milliy nomi</value>
+  </data>
+  <data name="Iso2Code" xml:space="preserve">
+    <value>ISO 2 kodi</value>
+  </data>
+  <data name="Iso3Code" xml:space="preserve">
+    <value>ISO 3 kodi</value>
+  </data>
+  <data name="NumericCode" xml:space="preserve">
+    <value>Raqamli kod</value>
+  </data>
+  <data name="PhoneCode" xml:space="preserve">
+    <value>Telefon kodi</value>
+  </data>
+  <data name="CurrencyCode" xml:space="preserve">
+    <value>Valyuta kodi</value>
+  </data>
+  <data name="CurrencyName" xml:space="preserve">
+    <value>Valyuta nomi</value>
+  </data>
+  <data name="CurrencySymbol" xml:space="preserve">
+    <value>Valyuta belgisi</value>
+  </data>
+  <data name="Region" xml:space="preserve">
+    <value>Mintaqa</value>
+  </data>
+  <data name="SubRegion" xml:space="preserve">
+    <value>Quyi mintaqa</value>
+  </data>
+  <data name="Capital" xml:space="preserve">
+    <value>Poytaxt</value>
+  </data>
+  <data name="FlagEmoji" xml:space="preserve">
+    <value>Bayroq</value>
+  </data>
+  <data name="Latitude" xml:space="preserve">
+    <value>Kenglik</value>
+  </data>
+  <data name="Longitude" xml:space="preserve">
+    <value>Uzunlik</value>
+  </data>
+  <data name="IsActive" xml:space="preserve">
+    <value>Faol</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Amallar</value>
+  </data>
+  <data name="ViewBtn" xml:space="preserve">
+    <value>Ko'rish</value>
+  </data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Tahrirlash</value>
+  </data>
+  <data name="DeleteBtn" xml:space="preserve">
+    <value>O'chirish</value>
+  </data>
+  <data name="CancelBtn" xml:space="preserve">
+    <value>Bekor qilish</value>
+  </data>
+  <data name="SaveBtn" xml:space="preserve">
+    <value>Saqlash</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Ro'yxatga qaytish</value>
+  </data>
+  <data name="NoCountriesFound" xml:space="preserve">
+    <value>Davlatlar topilmadi yoki Gateway'ga ulanib bo'lmadi.</value>
+  </data>
+  <data name="CountryNamePlaceholder" xml:space="preserve">
+    <value>mas. Turkiya</value>
+  </data>
+  <data name="NativeNamePlaceholder" xml:space="preserve">
+    <value>mas. Türkiye</value>
+  </data>
+  <data name="Iso2CodePlaceholder" xml:space="preserve">
+    <value>TR</value>
+  </data>
+  <data name="Iso3CodePlaceholder" xml:space="preserve">
+    <value>TUR</value>
+  </data>
+  <data name="NumericCodePlaceholder" xml:space="preserve">
+    <value>792</value>
+  </data>
+  <data name="PhoneCodePlaceholder" xml:space="preserve">
+    <value>+90</value>
+  </data>
+  <data name="CurrencyCodePlaceholder" xml:space="preserve">
+    <value>TRY</value>
+  </data>
+  <data name="CurrencyNamePlaceholder" xml:space="preserve">
+    <value>Turk lirasi</value>
+  </data>
+  <data name="CurrencySymbolPlaceholder" xml:space="preserve">
+    <value>₺</value>
+  </data>
+  <data name="RegionPlaceholder" xml:space="preserve">
+    <value>Yevropa</value>
+  </data>
+  <data name="SubRegionPlaceholder" xml:space="preserve">
+    <value>G'arbiy Osiyo</value>
+  </data>
+  <data name="CapitalPlaceholder" xml:space="preserve">
+    <value>Ankara</value>
+  </data>
+  <data name="GeneralInformation" xml:space="preserve">
+    <value>Umumiy ma'lumot</value>
+  </data>
+  <data name="GeographicData" xml:space="preserve">
+    <value>Geografik ma'lumotlar</value>
+  </data>
+  <data name="CurrencyInfo" xml:space="preserve">
+    <value>Valyuta ma'lumoti</value>
+  </data>
+  <data name="BreadcrumbHome" xml:space="preserve">
+    <value>Bosh sahifa</value>
+  </data>
+  <data name="BreadcrumbMDM" xml:space="preserve">
+    <value>MDM</value>
+  </data>
+</root>

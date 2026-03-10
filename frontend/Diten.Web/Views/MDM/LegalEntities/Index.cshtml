@@ -1,8 +1,8 @@
 @model IEnumerable<Diten.Web.Models.LegalEntityViewModel>
 @using Diten.Web.Views.MDM
 @using Microsoft.AspNetCore.Mvc.Localization
-@inject IHtmlLocalizer<LegalEntities> Localizer
-@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject IHtmlLocalizer<Index> Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Localizer["LegalEntitiesTitle"].Value;
     Layout = "_LayoutBackbone";

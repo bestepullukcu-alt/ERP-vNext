@@ -13,27 +13,65 @@ Bu doküman, tüm mikroservislerin Gateway (Ocelot) arkasındaki adresleme mant�
 
 ---
 
-## 🛣️ Upstream (Gateway - Port 5000) Standartları
+## 🛣️ Ocelot Gateway Rota Stratejisi
 
-Frontend veya dış servisler her zaman Gateway üzerinden konuşur. Tüm Upstream yolları **küçük harf (lowercase)** olmalıdır.
+MDM servisi için iki tür rota mevcuttur ve ikisi **aynı anda** `ocelot.json` içinde yaşar:
 
-- **Genel Format:** `/services/<module>/{everything}`
-- **<module>:** Servisin küçük harfle yazılmış kısa adı (örn: `mdm`, `auth`, `finance`).
+### Strateji A — Explicit Modül Rotaları (Öncelikli)
+Bilinen her modül için **explicit** (açık) Upstream/Downstream çifti eklenir. Bu rotalar Ocelot'ta **önce** eşleşir.
 
-**Örnekler:**
-- **MDM Servisi:** `http://localhost:5000/services/mdm/api/v1/legal-entities`
-- **Auth Servisi:** `http://localhost:5000/services/auth/api/v1/login`
+```json
+{
+  "DownstreamPathTemplate": "/api/v1/{resource}",
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "UpstreamPathTemplate": "/api/{resource}",
+  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+}
+```
+
+**Gerçek örnek (Countries modülü):**
+```json
+{
+  "DownstreamPathTemplate": "/api/countries",
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "UpstreamPathTemplate": "/api/countries",
+  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+},
+{
+  "DownstreamPathTemplate": "/api/countries/{everything}",
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "UpstreamPathTemplate": "/api/countries/{everything}",
+  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+}
+```
+
+> **Not:** Mevcut projedeki MDM Controller route'ları `/api/{resource}` formatındadır (v1 ön eki olmadan). Bu gerçek baz alınmaktadır. Yeni modüller de bu formatla eklenir.
+
+### Strateji B — Catch-All Rota (Fallback)
+Explicit tanımlanmamış istekler için fallback. `ocelot.json`'da **en sona** konumlandırılmalıdır.
+
+```json
+{
+  "DownstreamPathTemplate": "/{everything}",
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "UpstreamPathTemplate": "/services/mdm/{everything}",
+  "UpstreamHttpMethod": ["GET", "POST", "DELETE", "PUT", "PATCH"]
+}
+```
 
 ---
 
-## 🏁 Downstream (Internal - Port 5050/5056) Standartları
+## 🔄 Frontend (JS) ↔ Gateway URL Formatı
 
-Gateway'in arkasındaki servislerin kendi içindeki adresleme yapısıdır.
+Frontend `index.js` dosyaları her zaman `window.ApiBaseUrl + '/api/{resource}'` formatını kullanır:
 
-- **API Prefix:** Her servis kendi endpoint'lerini `/api/v1/...` ile başlatmalıdır.
-- **Health Check:** Sistem sağlığı takibi için her serviste `/health` endpoint'i bulunmalıdır. (Bu endpoint `X-Tenant-Id` zorunluluğu barındırmaz).
+```javascript
+// ✅ Doğru
+ajax: { url: apiUrl + '/api/countries' }
 
-
+// ❌ Yanlış
+ajax: { url: apiUrl + '/services/mdm/api/v1/countries' }
+```
 
 ---
 
@@ -53,27 +91,29 @@ Tüm isteklerde aşağıdaki header'ların varlığı ve formatı denetlenmelidi
 
 ## 📍 Location Header Standardı (Proxy Awareness)
 
-Bir servis `201 Created` döndüğünde, yanıtın `Location` header'ı kullanıcının erişebileceği **Gateway adresini** göstermelidir, servisin internal (5050) portunu değil.
+Bir servis `201 Created` döndüğünde, yanıtın `Location` header'ı kullanıcının erişebileceği **Gateway adresini** göstermelidir.
 
 - **Kural:** Her mikroservis kendi `appsettings.json` dosyasında bir `PublicBaseUrl` tanımına sahip olmalıdır.
-- **Örnek (MDM):**
-  `PublicBaseUrl = http://localhost:5000/services/mdm`
-- **Sonuç:** Servis içinden `CreatedAtAction` çağrıldığında dönen URL şu şekilde olmalıdır:
-  `http://localhost:5000/services/mdm/api/v1/legal-entities/{id}`
+- **MDM örneği:** `PublicBaseUrl = http://localhost:5000`
 
 ---
 
-## 🚨 Önemli Notlar
-- Gateway konfigürasyonunda (Ocelot) `ReRoute` tanımları yapılırken `UpstreamPathTemplate` alanı her zaman `/services/` ön ekiyle başlamalıdır.
-- Servisler arası doğrudan (Internal) iletişimde dahi `X-Tenant-Id` header'ı asla düşürülmemeli, bir sonraki servise aktarılmalıdır.
+## 🚨 Ocelot Rota Ekleme Kuralları
+
+Yeni modül eklendiğinde `integration-agent` şu adımları takip eder:
+1. `ocelot.json`'a **explicit** iki rota ekle: `/{resource}` ve `/{resource}/{everything}`
+2. `UpstreamHttpMethod`'da `PATCH` dahil tüm metodları listele
+3. Explicit rotalar, catch-all rotadan (`/services/mdm/{everything}`) **ÖNCE** gelecek şekilde sırala
+4. Port: MDM → `5050`, Auth → `5056` (değişmez, `ports.md` referans aldır)
 
 ---
 
 ## ✅ Kontrol Listesi
-- [ ] Upstream path tamamen lowercase mi?
-- [ ] Path `/services/` ile başlıyor mu?
+- [ ] Explicit Upstream/Downstream çifti eklendi mi? (her modül için 2 rota)
+- [ ] `PATCH` HTTP metodu dahil mi?
+- [ ] Explicit rotalar catch-all'dan önce mi?
 - [ ] `X-Tenant-Id` header'ı GUID olarak tanımlandı mı?
-- [ ] `Location` header gateway URL'ini gösteriyor mu?
+- [ ] Frontend JS `apiUrl + '/api/{resource}'` formatını kullanıyor mu?
 - [ ] `/health` endpoint'i tanımlandı mı?
 
 ---

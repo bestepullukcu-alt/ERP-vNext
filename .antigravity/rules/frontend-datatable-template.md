@@ -1,7 +1,14 @@
 # GOLDEN RULE: Standard DataTable UI Blueprint
 
 Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları (Örn: Countries, Cities, Currencies) için ZORUNLU HTML/Razor şablonudur.
-Ajan, yeni bir modül sayfası oluştururken bu yapıyı BİREBİR kopyalayacak, sadece `{{DegiskenAdlari}}` kısımlarını ilgili modüle göre dolduracaktır. Özel panolar (Dashboard, Metric Cards) için bu şablonu kullanmayın.
+
+> ⚠️ **MANDATES:**
+> - HTML iskeletine hiç dokunma. Sadece `{{DeğişkenAdlar}}` kısımlarını doldur.
+> - `<partial name="_Filter" />` her DataTable sayfasında **zorunludur** — kaldırma veya in-line yazma.
+> - JavaScript başlatma için `DtDefaults.create()` zorunludur — bakınız `frontend-js-standard.md`.
+> - Offcanvas içindeki her label `@Localizer[...]` veya `@SharedLocalizer[...]` üzerinden gelmelidir. Hardcoded string kesinlikle yasaktır.
+
+---
 
 ## Master HTML Template
 
@@ -16,6 +23,7 @@ Ajan, yeni bir modül sayfası oluştururken bu yapıyı BİREBİR kopyalayacak,
     Layout = "_LayoutBackbone";
 }
 
+{{!-- ① ZORUNLU: Filter offcanvas partial'ı. _Filter.cshtml yoksa oluştur. --}}
 <partial name="_Filter" />
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-6 row-gap-4">
@@ -25,6 +33,7 @@ Ajan, yeni bir modül sayfası oluştururken bu yapıyı BİREBİR kopyalayacak,
     </div>
 </div>
 
+{{!-- ② Bulk Action Bar (Satır seçilince gösterilir) --}}
 <div id="bulkActionBar" class="card mb-4 d-none">
     <div class="card-body d-flex align-items-center justify-content-between py-3">
         <div class="d-flex align-items-center gap-2">
@@ -43,6 +52,7 @@ Ajan, yeni bir modül sayfası oluştururken bu yapıyı BİREBİR kopyalayacak,
     </div>
 </div>
 
+{{!-- ③ DataTable Card --}}
 <div class="card">
     <div id="skeleton-loader" class="p-4" style="display: none;">
         <div class="shimmer skeleton-row" style="width: 100%; height: 32px; margin-bottom: 2rem;"></div>
@@ -51,7 +61,7 @@ Ajan, yeni bir modül sayfası oluştururken bu yapıyı BİREBİR kopyalayacak,
         <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
         <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
     </div>
-    
+
     <div class="card-datatable table-responsive">
         <table class="datatables-{{ModuleNameLower}} table border-top">
             <thead>
@@ -67,11 +77,14 @@ Ajan, yeni bir modül sayfası oluştururken bu yapıyı BİREBİR kopyalayacak,
     </div>
 </div>
 
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="offcanvasDetailsPreviewLabel" style="width: 480px;">
+{{!-- ④ Offcanvas — Hızlı Görüntüleme (Quick View) --}}
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview"
+    aria-labelledby="offcanvasDetailsPreviewLabel" style="width: 480px;">
     <div class="offcanvas-header border-bottom">
         <div class="d-flex align-items-center">
             <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
-                <i class="bx bx-info-circle fs-4"></i>
+                {{!-- Modüle özgü bir ikon seç. Örn: bx-buildings, bx-world, bx-coin, vb. --}}
+                <i class="bx {{ModuleIcon}} fs-4"></i>
             </div>
             <div>
                 <h5 id="oc-title" class="offcanvas-title mb-0">-</h5>
@@ -83,53 +96,82 @@ Ajan, yeni bir modül sayfası oluştururken bu yapıyı BİREBİR kopyalayacak,
 
     <div class="offcanvas-body flex-grow-1 p-0">
         <div class="p-4">
+            {{!-- Status Kutusu (her modülde sabit kalır) --}}
             <div class="bg-label-secondary rounded p-3 mb-4 d-flex align-items-center justify-content-between">
                 <div>
-                    <span class="d-block text-muted small fw-medium mb-1">Status</span>
+                    <span class="d-block text-muted small fw-medium mb-1">@SharedLocalizer["Status"]</span>
                     <span id="oc-status" class="badge bg-label-secondary">-</span>
                 </div>
             </div>
 
-            {{OffcanvasDetails}}
-            </div>
+            {{!-- MODÜLE ÖZGÜ DETAYLAR — <dl>/<dt>/<dd> yapısını kullan. Örnek: --}}
+            {{!--
+            <h6 class="text-uppercase text-muted fw-bold mb-3">@Localizer["GeneralInformation"]</h6>
+            <dl class="row mb-4">
+                <dt class="col-5 fw-medium text-heading mb-2">
+                    <i class="bx bx-rename text-muted me-2"></i>@Localizer["FieldLabel"]
+                </dt>
+                <dd id="oc-fieldName" class="col-7 mb-2">-</dd>
+            </dl>
+            --}}
+        </div>
     </div>
+
     <div class="offcanvas-footer border-top p-4 d-flex justify-content-between">
-        <button type="button" class="btn btn-label-secondary w-50 me-2" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" class="btn btn-label-secondary w-50 me-2" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
         <a id="oc-btn-edit" href="#" class="btn btn-primary w-50">@SharedLocalizer["EditBtn"]</a>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        // Global Localization Variables
+        // ── L10n Bridge ─────────────────────────────────────────────────────
         window.L10n = window.L10n || {};
-        window.L10n.Active = @Json.Serialize(SharedLocalizer["Active"].Value);
-        window.L10n.Passive = @Json.Serialize(SharedLocalizer["Passive"].Value);
-        window.L10n.Actions = @Json.Serialize(SharedLocalizer["Actions"].Value);
-        window.L10n.Edit = @Json.Serialize(SharedLocalizer["EditBtn"].Value);
-        window.L10n.ViewDetails = @Json.Serialize(SharedLocalizer["ViewDetails"].Value);
-        window.L10n.Search = @Json.Serialize(SharedLocalizer["Search"].Value);
-        window.L10n.Export = @Json.Serialize(SharedLocalizer["Export"].Value);
+        window.L10n.Active              = @Json.Serialize(SharedLocalizer["Active"].Value);
+        window.L10n.Passive             = @Json.Serialize(SharedLocalizer["Passive"].Value);
+        window.L10n.Actions             = @Json.Serialize(SharedLocalizer["Actions"].Value);
+        window.L10n.Edit                = @Json.Serialize(SharedLocalizer["EditBtn"].Value);
+        window.L10n.ViewDetails         = @Json.Serialize(SharedLocalizer["ViewDetails"].Value);
+        window.L10n.QuickView           = @Json.Serialize(SharedLocalizer["ViewDetails"].Value);
+        window.L10n.Search              = @Json.Serialize(SharedLocalizer["Search"].Value);
+        window.L10n.Export              = @Json.Serialize(SharedLocalizer["Export"].Value);
+        window.L10n.Delete              = @Json.Serialize(SharedLocalizer["DeleteBtn"].Value);
+        window.L10n.Filter              = @Json.Serialize(SharedLocalizer["Filter"].Value);
+        window.L10n.Print               = @Json.Serialize(SharedLocalizer["Print"].Value);
+        window.L10n.PDF                 = @Json.Serialize(SharedLocalizer["PDF"].Value);
+        window.L10n.Copy                = @Json.Serialize(SharedLocalizer["Copy"].Value);
+        window.L10n.ShowAll             = @Json.Serialize(SharedLocalizer["ShowAll"].Value);
         window.L10n.AddNew{{ModuleName}} = @Json.Serialize(Localizer["AddNew{{ModuleName}}"].Value);
-        window.L10n.DtNoRecords = @Json.Serialize(SharedLocalizer["DtNoRecords"].Value);
-        window.L10n.DtInfo = @Json.Serialize(SharedLocalizer["DtInfo"].Value);
-        window.L10n.DtInfoEmpty = @Json.Serialize(SharedLocalizer["DtInfoEmpty"].Value);
-        window.L10n.BulkDelete = @Json.Serialize(SharedLocalizer["BulkDelete"].Value);
-        window.L10n.BulkDeleteConfirm = @Json.Serialize(SharedLocalizer["BulkDeleteConfirm"].Value);
-        window.L10n.AreYouSure = @Json.Serialize(SharedLocalizer["AreYouSure"].Value);
-        window.L10n.Cancel = @Json.Serialize(SharedLocalizer["Cancel"].Value);
-        
-        // DİNAMİK L10N DEĞİŞKENLERİ BURAYA GELECEK
+        window.L10n.DtNoRecords         = @Json.Serialize(SharedLocalizer["DtNoRecords"].Value);
+        window.L10n.DtInfo              = @Json.Serialize(SharedLocalizer["DtInfo"].Value);
+        window.L10n.DtInfoEmpty         = @Json.Serialize(SharedLocalizer["DtInfoEmpty"].Value);
+        window.L10n.DtInfoFiltered      = @Json.Serialize(SharedLocalizer["DtInfoFiltered"].Value);
+        window.L10n.DtZeroRecords       = @Json.Serialize(SharedLocalizer["DtZeroRecords"].Value);
+        window.L10n.DtEmptyTable        = @Json.Serialize(SharedLocalizer["DtEmptyTable"].Value);
+        window.L10n.BulkDelete          = @Json.Serialize(SharedLocalizer["BulkDelete"].Value);
+        window.L10n.BulkDeleteConfirm   = @Json.Serialize(SharedLocalizer["BulkDeleteConfirm"].Value);
+        window.L10n.BulkDeleteSuccess   = @Json.Serialize(SharedLocalizer["BulkDeleteSuccess"].Value);
+        window.L10n.ClearSelection      = @Json.Serialize(SharedLocalizer["ClearSelection"].Value);
+        window.L10n.SelectedCount       = @Json.Serialize(SharedLocalizer["SelectedCount"].Value);
+        window.L10n.AreYouSure          = @Json.Serialize(SharedLocalizer["AreYouSure"].Value);
+        window.L10n.Cancel              = @Json.Serialize(SharedLocalizer["Cancel"].Value);
+        // DİNAMİK L10N — Modüle özgü ek key'leri buraya ekle
         {{DynamicL10nScripts}}
     </script>
+
     <script>
+        // ── Offcanvas Populate Function ─────────────────────────────────────
+        // populateOffcanvas — index.js değil bu blokta kalmalı (Razor Localizer erişimi için)
         function populateOffcanvas(element) {
             const dataStr = element.getAttribute('data-json').replace(/&#39;/g, "'");
             let data = {};
-            try { data = JSON.parse(dataStr); } catch (e) { console.error("Could not parse row data", e); }
+            try { data = JSON.parse(dataStr); } catch (e) { console.error('Could not parse row data', e); }
 
             document.getElementById('oc-title').innerText = data.name || data.title || '-';
-            
+            document.getElementById('oc-subtitle').innerText = data.{{SubtitleField}} || '-';
+
             const statusEl = document.getElementById('oc-status');
             if (data.isActive) {
                 statusEl.className = 'badge bg-label-success';
@@ -140,10 +182,51 @@ Ajan, yeni bir modül sayfası oluştururken bu yapıyı BİREBİR kopyalayacak,
             }
 
             document.getElementById('oc-btn-edit').href = `/{{ModuleName}}/Edit/${data.id}`;
-            
-            // DİNAMİK OFFCANVAS JS ATAMALARI BURAYA GELECEK
+
+            // DİNAMİK OFFCANVAS JS ATAMALARI — Modüle özgü alanlar buraya
             {{DynamicOffcanvasJs}}
         }
     </script>
+
     <script src="~/assets/js/{{AreaName}}/{{ModuleName}}/index.js" asp-append-version="true"></script>
 }
+```
+
+---
+
+## `_Filter.cshtml` Minimum Şablonu
+
+Her DataTable sayfasında `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dosyası mevcut olmalıdır.
+
+```html
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasFilter"
+     aria-labelledby="offcanvasFilterLabel" style="width: 380px;">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="offcanvasFilterLabel">
+            <i class="bx bx-filter-alt me-2"></i>@SharedLocalizer["Filter"]
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        {{!-- Modüle özgü filtre alanları buraya (Select2, date range, vb.) --}}
+        <div class="mb-4 user_plan">
+            <label class="form-label">{{FilterLabel1}}</label>
+            {{!-- Select dinamik olarak JS içinde oluşturulur (setupFilters fonksiyonu) --}}
+        </div>
+        <div class="mb-4 user_status">
+            <label class="form-label">@SharedLocalizer["Status"]</label>
+        </div>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex gap-3">
+        <button type="button" id="btnFilterReset" class="btn btn-label-secondary w-50">
+            @SharedLocalizer["Reset"]
+        </button>
+        <button type="button" id="btnFilterApply" class="btn btn-primary w-50">
+            @SharedLocalizer["Apply"]
+        </button>
+    </div>
+</div>
+```

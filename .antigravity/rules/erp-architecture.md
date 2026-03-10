@@ -39,7 +39,7 @@ Her mikroservis aşağıdaki 5 temel projeden oluşmalıdır:
 
 ## 🍃 Persistence (MongoDB) Standartları
 
-- **Driver İzolasyonu:** `MongoDB.Driver` kütüphanesi sadece `Persistence` projesinde referanslanmalıdır. Diğer katmanlar sürücüye bağımlı olmamalıdır.
+- **Driver İzolasyonu:** `MongoDB.Driver` ve `MongoDB.Bson` kütüphaneleri sadece `Persistence` projesinde referanslanmalıdır. **Domain katmanında (`using MongoDB.Bson;` dahil) MongoDB import YASAKTIR.** İstisna: `BsonRepresentation` attribute zorunluysa yalnızca o attribute import edilebilir.
 - **Otomatik Tenant Filtresi:** Her sorgu, anayasada belirtilen `X-Tenant-Id` (GUID) değerini otomatik olarak veritabanı seviyesinde filtrelemelidir.
 - **Tracking:** Okuma işlemlerinde performans için `AsNoTracking` benzeri yaklaşımlar (Mongo için projeksiyonlar) tercih edilmelidir.
 
@@ -54,8 +54,93 @@ Her mikroservis aşağıdaki 5 temel projeden oluşmalıdır:
 
 ---
 
+## 🧱 EntityBase Zorunlu Alanlar
+
+> 📖 Detaylar için bkz: `.antigravity/rules/entity-base-template.md`
+
+Her entity `EntityBase`'ten miras almalıdır. `EntityBase`, aşağıdaki alanları **otomatik sağlar** — entity içinde tekrar tanımlanmaz:
+
+| Alan | Tip | Açıklama |
+|------|-----|----------|
+| `Id` | `Guid` | MongoDB `_id` |
+| `TenantId` | `Guid` | Multi-tenant izolasyon anahtarı |
+| `IsDeleted` | `bool` | Soft Delete flag |
+| `DeletedAt` | `DateTimeOffset?` | Soft Delete timestamp |
+| `CreatedAt` | `DateTimeOffset` | Oluşturma zamanı (UTC) |
+| `UpdatedAt` | `DateTimeOffset?` | Güncelleme zamanı — `UpdateAsync` içinde set edilmeli |
+
+**Opsiyonel Audit Alanları** (User-aware modüllerde manuel eklenir):
+- `CreatedBy (Guid?)` — `[BsonRepresentation(BsonType.String)]` ile
+- `UpdatedBy (Guid?)` — `[BsonRepresentation(BsonType.String)]` ile
+
+---
+
+## � RBAC Permission Key Formatı
+
+Controller endpoint'lerinde kullanılan `[HasPermission]` attribute'u için standart format:
+
+```
+[HasPermission("Modules.{ModuleName}.{Action}")]
+```
+
+**Örnekler:**
+- `[HasPermission("Modules.Countries.Read")]`
+- `[HasPermission("Modules.Countries.Create")]`
+- `[HasPermission("Modules.LegalEntities.Delete")]`
+
+**Actions:** `Read`, `Create`, `Update`, `Delete`, `BulkDelete`
+
+Eğer bir endpoint henüz RBAC'a bağlanmadıysa `[Authorize]` ile koruma altında tutulur. `[AllowAnonymous]` sadece Public health check endpoint'leri için kabul edilir.
+
+---
+
+## �📛 İsimlendirme Standartları (Naming Standards)
+
+### Global İsimlendirme Zorunluluğu
+
+1. **Yerel İsimlendirme YASAK:** Alan adları (field names) ülke veya bölge spesifik isimlendirme içeremez.
+   - ❌ YANLIŞ: `PlateCode` (TR-spesifik plaka kodu)
+   - ✅ DOĞRU: `Code` (genel kod alanı)
+
+2. **Genel ERP Standartları:** Tüm alan adları global ERP standartlarına uygun olmalıdır:
+   - `Code` yerine `PlateCode`, `CityCode`, `RegionCode` gibi spesifik isimler KULLANILMAZ
+   - Ülke/bölge ayrımı yapılacaksa `CountryId`, `RegionId` gibi referans alanları kullanılır
+
+3. **Koordinat Alanları:** Coğrafi veri içeren modüllerde standart alanlar:
+   - `Latitude` (double?) - Enlem
+   - `Longitude` (double?) - Boylam
+   - Bu alanlar PRD'de belirtilmişse MUTLAKA eklenmelidir
+
+---
+
+## 🔒 Interface Seviyesinde Zorunluluklar
+
+### Multi-Tenancy ve Soft-Delete Garantisi
+
+1. **Repository Interface Sözleşmesi:** Her Repository interface'i, TenantId ve Soft-Delete filtrelerinin uygulandığını XML comment ile BELİRTMELİDİR:
+   ```csharp
+   /// <summary>
+   /// Repository for {Entity} operations.
+   /// All queries automatically filter by TenantId and IsDeleted=false.
+   /// </summary>
+   public interface I{Entity}Repository
+   ```
+
+2. **Implementasyon Garantisi:** Repository implementasyonu `RepositoryBase<TEntity>` sınıfından miras almalı ve `TenantFilter` kullanmak ZORUNDADIR.
+
+3. **Controller Seviyesinde Tenant Doğrulama:** API endpoint'leri, tenant izolasyonunu sağlamak için `[HasPermission]` attribute ile korunmalıdır.
+
+---
+
 ## ✅ Kontrol Listesi
 - [ ] Proje yapısı 5 katmana uygun mu?
-- [ ] Domain katmanı hiçbir dış projeye referans veriyor mu? (Kontrol et: Veriyorsa düzelt).
+- [ ] Domain katmanında `using MongoDB.Bson;` veya `using MongoDB.Driver;` import var mı? (varsa ihlal)
 - [ ] Controller içinde MediatR dışında bir mantık var mı?
 - [ ] MongoDB implementasyonu sadece Persistence içinde mi?
+- [ ] Alan isimleri global ERP standartlarına uygun mu? (PlateCode → Code kontrolü)
+- [ ] Repository interface'inde TenantId/Soft-Delete garantisi XML comment olarak yazılmış mı?
+- [ ] PRD'deki TÜM alanlar Entity'ye eklendi mi? (Latitude, Longitude vb.)
+- [ ] `UpdateAsync` içinde `entity.UpdatedAt = DateTimeOffset.UtcNow` var mı?
+- [ ] `DeleteAsync` içinde hem `IsDeleted = true` hem `DeletedAt = UtcNow` set ediliyor mu?
+- [ ] `[HasPermission("Modules.{Module}.{Action}")]` veya en az `[Authorize]` koruması var mı?
+- [ ] Entity-base-template.md okundu mu? (Zorunlu/Opsiyonel alanlar doğru uygulandı mı?)
