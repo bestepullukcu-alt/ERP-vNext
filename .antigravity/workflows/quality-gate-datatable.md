@@ -44,13 +44,30 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **Controller Route:** Frontend controller `/{{ModuleName}}` (MDM area'sı olmadan kök) ile erişilebilir mi?
 - [ ] **Ocelot:** `ocelot.json` içinde `/api/{{ModuleNameLower}}` ve `/api/{{ModuleNameLower}}/{everything}` rotaları doğru servise yönlendirilmiş mi?
 
+### E. 🖥️ Runtime Browser Doğrulama (ZORUNLU)
+
+> ⚠️ Bu bölüm sadece kod incelemesiyle geçilemez. Agent, sayfayı **gerçek browser'da açarak** aşağıdaki kontrolleri yapmak ZORUNDADIR.
+
+- [ ] **Sayfa Yükleme:** Sayfa login redirect olmadan yükleniyor mu?
+- [ ] **DataTable Toolbar:** Search kutusu, Export dropdown, Filter butonu ve "Add New" butonu görünüyor mu?
+- [ ] **Localization:** Sayfa başlığı, alt başlık ve tablo kolon başlıkları raw key olarak DEĞİL çevrilmiş metin olarak görünüyor mu?
+- [ ] **Console Hatasızlık:** Browser console'da JavaScript hatası yok mu?
+- [ ] **Boş Durum:** Tablo boşsa "No records found" veya eşdeğer L10n mesajı düzgün gösteriliyor mu?
+
+### F. Localization Dosya İsimlendirme
+
+- [ ] **Marker Class:** `Views/{AreaName}/{ModuleName}/{ModuleName}Index.cs` dosyası oluşturulmuş mu? (Örn: `CountriesIndex.cs`)
+- [ ] **Resx Dosya Adı Eşleşmesi:** Resx dosya adı marker class adıyla birebir eşleşiyor mu? (Örn: class = `CountriesIndex` → `CountriesIndex.en.resx`, `CountriesIndex.tr.resx`, ...)
+- [ ] **PageDescription Key:** `.resx` dosyalarında `PageDescription` key'i tanımlı mı? Alt başlık hardcoded yazılmamış mı?
+
 ---
 
 ## 🔄 Workflow Adımları
 
 1. **Agent:** Geliştirmeyi tamamladıktan sonra bu listeyi kendi kendine işaretler.
-2. **Orkestratör:** Teslim raporunda bu listenin tamamlandığını onaylar.
-3. **Kullanıcı onayı:** Orkestratör, `run_all.sh` ile sistemi yeniden derleyip kullanıcıya "sayfa hazır" raporu sunar.
+2. **Agent:** Sayfayı browser'da açarak E bölümündeki runtime kontrollerini yapar.
+3. **Orkestratör:** Teslim raporunda bu listenin (A–F dahil) tamamlandığını onaylar.
+4. **Kullanıcı onayı:** Orkestratör, `run_all.sh` ile sistemi yeniden derleyip kullanıcıya "sayfa hazır" raporu sunar.
 
 ---
 

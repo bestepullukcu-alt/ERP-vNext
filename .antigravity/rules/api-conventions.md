@@ -65,7 +65,7 @@ Tüm hata yanıtları RFC 7807 (ProblemDetails) formatında dönülmelidir.
 ---
 
 ## ✅ Kontrol Listesi
-- [ ] Endpoint `/api/v1/` ile başlıyor mu?
+- [ ] Endpoint `/api/{resource}` formatında mı? (MDM servisleri için v1 ön eki kullanılmaz)
 - [ ] Kaynak isimleri çoğul mu?
 - [ ] `X-Tenant-Id` kontrolü yapıldı mı?
 - [ ] Hata durumunda `ProblemDetails` dönülüyor mu?

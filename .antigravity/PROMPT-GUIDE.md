@@ -4,6 +4,26 @@ Aşağıdaki şablonları kopyalayıp ilgili `{{değişkenleri}}` doldurarak kul
 
 ---
 
+@[.antigravity/agents/orchestrator.md]
+
+/add-module Countries (MDM servisi)
+
+Alan tanımları:
+- Name: string (zorunlu)
+- Iso2Code: string (zorunlu, ISO 3166-1 alpha-2)
+- Iso3Code: string (opsiyonel, ISO 3166-1 alpha-3)
+- PhoneCode: string (opsiyonel)
+- IsActive: bool
+
+İş kuralları:
+- Iso2Code benzersiz olmalı (Tenant bazlı)
+
+UI tipi: DataTable (Liste/CRUD)
+Referans: LegalEntities sayfası gibi olmalı.
+
+
+
+
 ## 🆕 1. Yeni Modül (En Kapsamlı)
 
 ```
@@ -138,7 +158,7 @@ Countries modülüne şu yeni L10n key'lerini ekle (8 dil):
 - Key: BulkImportSuccess → TR: "{0} ülke başarıyla içe aktarıldı", EN: "{0} countries imported"
 - Key: DuplicateIsoCode → TR: "Bu ISO kodu zaten mevcut", EN: "ISO code already exists"
 
-ViewResource'a ekle (Resources/Views/MDM/Countries/Index.{lang}.resx)
+ViewResource'a ekle (Resources/Views/MDM/Countries/CountriesIndex.{lang}.resx)
 ```
 
 ---

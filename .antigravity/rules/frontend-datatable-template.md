@@ -7,6 +7,23 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
 > - `<partial name="_Filter" />` her DataTable sayfasında **zorunludur** — kaldırma veya in-line yazma.
 > - JavaScript başlatma için `DtDefaults.create()` zorunludur — bakınız `frontend-js-standard.md`.
 > - Offcanvas içindeki her label `@Localizer[...]` veya `@SharedLocalizer[...]` üzerinden gelmelidir. Hardcoded string kesinlikle yasaktır.
+> - **`{AreaName}` = klasör gruplaması (Örn: `MDM`, `Identity`), ASP.NET Areas routing DEĞİLDİR.**
+>   - ✅ DOĞRU: `Views/MDM/Countries/Index.cshtml`
+>   - ❌ YANLIŞ: `Areas/MDM/Views/Countries/Index.cshtml`
+
+---
+
+## ⚠️ Localization Sınıf ve Dosya Adı Convention'ı
+
+> **KRİTİK KURAL:** Her modül için bir localization marker class oluşturulur.
+> - Class adı: `{ModuleName}Index` (örn: `CountriesIndex`, `LegalEntitiesIndex`)
+> - Class dosyası: `Views/{AreaName}/{ModuleName}/{ModuleName}Index.cs`
+> - Resx dosyaları: `Resources/Views/{AreaName}/{ModuleName}/{ModuleName}Index.{lang}.resx`
+> 
+> **Class adı ve resx dosya adı BIRE BIR AYNI OLMALIDIR.** Aksi halde `IHtmlLocalizer<T>` hiçbir key'i çözemez ve raw key görünür.
+>
+> ❌ YANLIŞ: Class = `CountriesIndex`, Resx = `Index.en.resx`
+> ✅ DOĞRU: Class = `CountriesIndex`, Resx = `CountriesIndex.en.resx`
 
 ---
 
@@ -14,9 +31,9 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
 
 ```html
 @model IEnumerable<Diten.Web.Models.{{ModelName}}ViewModel>
-@using Diten.Web.Views.{{AreaName}}
+@using Diten.Web.Views.{{AreaName}}.{{ModuleName}}
 @using Microsoft.AspNetCore.Mvc.Localization
-@inject IHtmlLocalizer<{{ModuleName}}> Localizer
+@inject IHtmlLocalizer<{{ModuleName}}Index> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Localizer["{{ModuleName}}Title"].Value;
@@ -29,6 +46,7 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-6 row-gap-4">
     <div class="d-flex flex-column justify-content-center">
         <h4 class="mb-1">@Localizer["{{ModuleName}}Title"]</h4>
+        {{!-- PageDescription key'i .resx dosyasında ZORUNLU tanımlanmalıdır. Hardcoded alt başlık YASAKTIR. --}}
         <p class="mb-0">@Localizer["PageDescription"]</p>
     </div>
 </div>

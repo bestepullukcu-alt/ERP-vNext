@@ -1,7 +1,7 @@
 @model Diten.Web.Models.CreateLegalEntityViewModel
-@using Diten.Web.Views.MDM
+@using Diten.Web.Views.MDM.LegalEntities
 @using Microsoft.AspNetCore.Mvc.Localization
-@inject IHtmlLocalizer<LegalEntities> Localizer
+@inject IHtmlLocalizer<LegalEntitiesIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     var isEditMode = Model != null && Model.Id.HasValue;

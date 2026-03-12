@@ -7,7 +7,7 @@ description: "WORKFLOW-001 — Diten ERP vNext Yeni Endpoint ve CQRS Geliştirme
 Bu akış, sistemde yeni bir API ucu oluşturulurken izlenecek standart operasyon adımlarını ve klasör hiyerarşisini tanımlar.
 
 ## 📥 1. Gerekli Inputlar
-- **HTTP Method + Route:** (Örn: POST `/api/v1/legal-entities`)
+- **HTTP Method + Route:** (Örn: POST `/api/legal-entities`)
 - **Request/Response DTO Şeması:** Giriş ve çıkış veri modelleri.
 - **Auth Gereksinimi:** (Public / Authorized / Policy)
 - **Validation Kuralları:** Alan zorunlulukları ve formatlar.

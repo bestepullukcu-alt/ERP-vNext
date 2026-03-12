@@ -1,4 +1,4 @@
-﻿'use strict'
+'use strict'
 /**
  * Initialize a character counter for any input or textarea.
  * @param {string} inputId - The ID of the input or textarea element.
@@ -103,6 +103,7 @@ async function loadMenu(response) {
       `;
             menuContainer.appendChild(headerLi);
             header.menus
+                .filter(menu => menu.menuName !== "Countries" && menu.menuName !== "Country") // BUILT-IN FILTER: Hide Countries module
                 .sort((a, b) => a.order - b.order)
                 .forEach(menu => {
                     // Ana menü seviyesi (altında sayfalar varsa toggle'lı olacak)

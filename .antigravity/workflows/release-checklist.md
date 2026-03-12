@@ -31,6 +31,18 @@ Her yeni sürüm, modül veya kritik hata düzeltmesi (hotfix) yayına alınmada
 - [ ] **Mongo Index:** Yeni koleksiyonlar için `TenantId` ile başlayan Compound Index'ler oluşturuldu mu?
 - [ ] **Async Safety:** Tüm I/O işlemlerinde `CancellationToken` kullanımı kontrol edildi mi?
 
+## 🖥️ 5. Browser Doğrulama (Smoke Test)
+- [ ] **Sayfa Yükleme:** Sayfa browser'da hatasız yükleniyor mu?
+- [ ] **DataTable Toolbar:** Search, Export, Filter ve Add New butonları görünüyor mu?
+- [ ] **Localization:** Tüm metinler çözümlenmiş durumda mı? (Raw key görünmüyor mu?)
+- [ ] **Console:** Browser console'da JavaScript hatası yok mu?
+- [ ] **Boş Durum:** Tablo boşsa "No records found" mesajı düzgün gösteriliyor mu?
+
+## 📝 6. Dokümantasyon
+- [ ] **API Dokümanı:** Yeni modülün Swagger/README dokümanı güncellenmiş mi?
+- [ ] **Kullanıcı Kılavuzu:** Son kullanıcı için ekran rehberi hazırlanmış mı?
+- [ ] **CHANGELOG:** Breaking change varsa `CHANGELOG.md`'ye kaydedilmiş mi?
+
 ---
 
 ## 📝 Çıktı Formatı (Report)

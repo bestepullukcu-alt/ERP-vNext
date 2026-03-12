@@ -1,12 +1,23 @@
 @model IEnumerable<Diten.Web.Models.LegalEntityViewModel>
-@using Diten.Web.Views.MDM
+@using Diten.Web.Views.MDM.LegalEntities
 @using Microsoft.AspNetCore.Mvc.Localization
-@inject IHtmlLocalizer<Index> Localizer
+@inject IHtmlLocalizer<LegalEntitiesIndex> Localizer
 @inject IHtmlLocalizer<SharedResource> SharedLocalizer
+@using Microsoft.AspNetCore.Localization
+@using System.Globalization
 @{
     ViewData["Title"] = Localizer["LegalEntitiesTitle"].Value;
     Layout = "_LayoutBackbone";
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var culture = requestCulture?.RequestCulture.Culture.Name ?? CultureInfo.CurrentCulture.Name;
 }
+
+<!-- DEBUG INFO:
+    Culture: @culture
+    Localizer["LegalEntitiesTitle"]: @Localizer["LegalEntitiesTitle"].Value
+    Localizer Type: @Localizer.GetType().FullName
+    SharedLocalizer["Estado"]: @SharedLocalizer["Status"].Value
+-->
 
 <partial name="_Filter" />
 
@@ -157,93 +168,20 @@
 </div>
 
 @section Scripts {
-    <script>
-        window.L10n = window.L10n || {};
-        window.L10n.Active = @Json.Serialize(SharedLocalizer["Active"].Value);
-        window.L10n.Passive = @Json.Serialize(SharedLocalizer["Passive"].Value);
-        window.L10n.Unknown = @Json.Serialize(SharedLocalizer["Unknown"].Value);
-        window.L10n.Actions = @Json.Serialize(Localizer["Actions"].Value);
-        window.L10n.Edit = @Json.Serialize(Localizer["EditBtn"].Value);
-        window.L10n.ViewDetails = @Json.Serialize(SharedLocalizer["ViewDetails"].Value);
-        window.L10n.Search = @Json.Serialize(SharedLocalizer["Search"].Value);
-        window.L10n.Export = @Json.Serialize(SharedLocalizer["Export"].Value);
-        window.L10n.Import = @Json.Serialize(SharedLocalizer["Import"].Value);
-        window.L10n.ComingSoon = @Json.Serialize(SharedLocalizer["ComingSoon"].Value);
-        window.L10n.Print = @Json.Serialize(SharedLocalizer["Print"].Value);
-        window.L10n.ShowAll = @Json.Serialize(SharedLocalizer["ShowAll"].Value);
-        window.L10n.AddNewCompany = @Json.Serialize(Localizer["AddNewCompany"].Value);
-        window.L10n.CompanyType = @Json.Serialize(Localizer["CompanyType"].Value);
-        window.L10n.SelectStatus = @Json.Serialize(SharedLocalizer["SelectStatus"].Value);
-        window.L10n.Filter = @Json.Serialize(SharedLocalizer["Filter"].Value);
-        window.L10n.Reset = @Json.Serialize(SharedLocalizer["Reset"].Value);
-        window.L10n.PDF = @Json.Serialize(SharedLocalizer["PDF"].Value);
-        window.L10n.Copy = @Json.Serialize(SharedLocalizer["Copy"].Value);
-        window.L10n.DtNoRecords = @Json.Serialize(SharedLocalizer["DtNoRecords"].Value);
-        window.L10n.DtInfo = @Json.Serialize(SharedLocalizer["DtInfo"].Value);
-        window.L10n.DtInfoEmpty = @Json.Serialize(SharedLocalizer["DtInfoEmpty"].Value);
-        window.L10n.DtInfoFiltered = @Json.Serialize(SharedLocalizer["DtInfoFiltered"].Value);
-        window.L10n.DtZeroRecords = @Json.Serialize(SharedLocalizer["DtZeroRecords"].Value);
-        window.L10n.DtEmptyTable = @Json.Serialize(SharedLocalizer["DtEmptyTable"].Value);
-        window.L10n.BulkDelete = @Json.Serialize(SharedLocalizer["BulkDelete"].Value);
-        window.L10n.BulkDeleteConfirm = @Json.Serialize(SharedLocalizer["BulkDeleteConfirm"].Value);
-        window.L10n.BulkDeleteSuccess = @Json.Serialize(SharedLocalizer["BulkDeleteSuccess"].Value);
-        window.L10n.ClearSelection = @Json.Serialize(SharedLocalizer["ClearSelection"].Value);
-        window.L10n.SelectedCount = @Json.Serialize(SharedLocalizer["SelectedCount"].Value);
-        window.L10n.AreYouSure = @Json.Serialize(SharedLocalizer["AreYouSure"].Value);
-        window.L10n.Cancel = @Json.Serialize(SharedLocalizer["Cancel"].Value);
+    <script>     window.L10n = window.L10n || {}; window.L10n.Active = @Json.Serialize(SharedLocalizer["Active"].Value); window.L10n.Passive = @Json.Serialize(SharedLocalizer["Passive"].Value); window.L10n.Unknown = @Json.Serialize(SharedLocalizer["Unknown"].Value); window.L10n.Actions = @Json.Serialize(Localizer["Actions"].Value); window.L10n.Edit = @Json.Serialize(Localizer["EditBtn"].Value); window.L10n.ViewDetails = @Json.Serialize(SharedLocalizer["ViewDetails"].Value); window.L10n.Search = @Json.Serialize(SharedLocalizer["Search"].Value); window.L10n.Export = @Json.Serialize(SharedLocalizer["Export"].Value); window.L10n.Import = @Json.Serialize(SharedLocalizer["Import"].Value); window.L10n.ComingSoon = @Json.Serialize(SharedLocalizer["ComingSoon"].Value); window.L10n.Print = @Json.Serialize(SharedLocalizer["Print"].Value); window.L10n.ShowAll = @Json.Serialize(SharedLocalizer["ShowAll"].Value); window.L10n.AddNewCompany = @Json.Serialize(Localizer["AddNewCompany"].Value); window.L10n.CompanyType = @Json.Serialize(Localizer["CompanyType"].Value); window.L10n.SelectStatus = @Json.Serialize(SharedLocalizer["SelectStatus"].Value); window.L10n.Filter = @Json.Serialize(SharedLocalizer["Filter"].Value); window.L10n.Reset = @Json.Serialize(SharedLocalizer["Reset"].Value); window.L10n.PDF = @Json.Serialize(SharedLocalizer["PDF"].Value); window.L10n.Copy = @Json.Serialize(SharedLocalizer["Copy"].Value); window.L10n.DtNoRecords = @Json.Serialize(SharedLocalizer["DtNoRecords"].Value); window.L10n.DtInfo = @Json.Serialize(SharedLocalizer["DtInfo"].Value); window.L10n.DtInfoEmpty = @Json.Serialize(SharedLocalizer["DtInfoEmpty"].Value); window.L10n.DtInfoFiltered = @Json.Serialize(SharedLocalizer["DtInfoFiltered"].Value); window.L10n.DtZeroRecords = @Json.Serialize(SharedLocalizer["DtZeroRecords"].Value); window.L10n.DtEmptyTable = @Json.Serialize(SharedLocalizer["DtEmptyTable"].Value); window.L10n.BulkDelete = @Json.Serialize(SharedLocalizer["BulkDelete"].Value); window.L10n.BulkDeleteConfirm = @Json.Serialize(SharedLocalizer["BulkDeleteConfirm"].Value); window.L10n.BulkDeleteSuccess = @Json.Serialize(SharedLocalizer["BulkDeleteSuccess"].Value); window.L10n.ClearSelection = @Json.Serialize(SharedLocalizer["ClearSelection"].Value); window.L10n.SelectedCount = @Json.Serialize(SharedLocalizer["SelectedCount"].Value); window.L10n.AreYouSure = @Json.Serialize(SharedLocalizer["AreYouSure"].Value); window.L10n.Cancel = @Json.Serialize(SharedLocalizer["Cancel"].Value);
 
     </script>
-    <script>
-        function populateOffcanvas(element) {
-            const dataStr = element.getAttribute('data-json').replace(/&#39;/g, "'");
-            let data = {};
-            try { data = JSON.parse(dataStr); } catch (e) { console.error("Could not parse row data", e); }
-
+    <script>     function populateOffcanvas(element) {
+            const dataStr = element.getAttribute('data-json').replace(/&#39;/g, "'"); let data = {}; try { data = JSON.parse(dataStr); } catch (e) { console.error("Could not parse row data", e); }
             document.getElementById('oc-title').innerText = data.title || '-';
-
-            let subtitleParts = [];
-            if (data.companyType) {
-                if (data.companyType === 'LimitedLiability') subtitleParts.push("Limited");
-                else if (data.companyType === 'Corporation') subtitleParts.push("Corp");
-                else if (data.companyType === 'SoleProprietorship') subtitleParts.push("Şahıs");
-                else subtitleParts.push(data.companyType);
+            let subtitleParts = []; if (data.companyType) { if (data.companyType === 'LimitedLiability') subtitleParts.push("Limited"); else if (data.companyType === 'Corporation') subtitleParts.push("Corp"); else if (data.companyType === 'SoleProprietorship') subtitleParts.push("Şahıs"); else subtitleParts.push(data.companyType); } if (data.sector) subtitleParts.push(data.sector); document.getElementById('oc-subtitle').innerText = subtitleParts.join(' • ') || '-';
+            let companyTypeStr = '-'; if (data.companyType) {
+                if (data.companyType === 'LimitedLiability') companyTypeStr = "LimitedLiability"; // This would normally use localization. Using exact type representation for now.             else if (data.companyType === 'Corporation') companyTypeStr = "Corporation";             else if (data.companyType === 'SoleProprietorship') companyTypeStr = "SoleProprietorship";             else companyTypeStr = data.companyType;         }
+                document.getElementById('oc-company-type').innerText = companyTypeStr; document.getElementById('oc-sector').innerText = data.sector || '-'; document.getElementById('oc-org-role').innerText = data.organizationRole || '-';
+                document.getElementById('oc-taxnumber').innerText = data.taxNumber || '-'; document.getElementById('oc-contact').innerText = data.contactPerson || '-'; document.getElementById('oc-phone').innerText = data.phone || '-'; document.getElementById('oc-email').innerText = data.email || '-'; document.getElementById('oc-website').innerText = data.website || '-'; document.getElementById('oc-address').innerText = data.address || '-'; document.getElementById('oc-taxoffice').innerText = data.taxOffice || '-'; document.getElementById('oc-jurisdiction').innerText = data.taxJurisdiction || '-'; document.getElementById('oc-currency').innerText = data.primaryCurrency || '-';
+                const statusEl = document.getElementById('oc-status'); if (data.isActive) { statusEl.className = 'badge bg-label-success'; statusEl.innerText = window.L10n.Active || 'Active'; } else { statusEl.className = 'badge bg-label-secondary'; statusEl.innerText = window.L10n.Passive || 'Passive'; }
+                document.getElementById('oc-btn-edit').href = `/LegalEntities/Edit/${data.id}`;
             }
-            if (data.sector) subtitleParts.push(data.sector);
-            document.getElementById('oc-subtitle').innerText = subtitleParts.join(' • ') || '-';
-
-            let companyTypeStr = '-';
-            if (data.companyType) {
-                if (data.companyType === 'LimitedLiability') companyTypeStr = "LimitedLiability"; // This would normally use localization. Using exact type representation for now.
-                else if (data.companyType === 'Corporation') companyTypeStr = "Corporation";
-                else if (data.companyType === 'SoleProprietorship') companyTypeStr = "SoleProprietorship";
-                else companyTypeStr = data.companyType;
-            }
-
-            document.getElementById('oc-company-type').innerText = companyTypeStr;
-            document.getElementById('oc-sector').innerText = data.sector || '-';
-            document.getElementById('oc-org-role').innerText = data.organizationRole || '-';
-
-            document.getElementById('oc-taxnumber').innerText = data.taxNumber || '-';
-            document.getElementById('oc-contact').innerText = data.contactPerson || '-';
-            document.getElementById('oc-phone').innerText = data.phone || '-';
-            document.getElementById('oc-email').innerText = data.email || '-';
-            document.getElementById('oc-website').innerText = data.website || '-';
-            document.getElementById('oc-address').innerText = data.address || '-';
-            document.getElementById('oc-taxoffice').innerText = data.taxOffice || '-';
-            document.getElementById('oc-jurisdiction').innerText = data.taxJurisdiction || '-';
-            document.getElementById('oc-currency').innerText = data.primaryCurrency || '-';
-
-            const statusEl = document.getElementById('oc-status');
-            if (data.isActive) {
-                statusEl.className = 'badge bg-label-success';
-                statusEl.innerText = window.L10n.Active || 'Active';
-            } else {
-                statusEl.className = 'badge bg-label-secondary';
-                statusEl.innerText = window.L10n.Passive || 'Passive';
-            }
-
-            document.getElementById('oc-btn-edit').href = `/LegalEntities/Edit/${data.id}`;
-        }
     </script>
     <script src="~/assets/js/MDM/LegalEntities/index.js" asp-append-version="true"></script>
 }

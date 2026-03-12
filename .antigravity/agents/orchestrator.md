@@ -69,19 +69,27 @@ Karmaşık bir görev (Örn: Yeni Modül) verildiğinde `.antigravity/workflows/
   - **RBAC Formatı:** `[HasPermission("Modules.{ModuleName}.{Action}")]` — bakınız `erp-architecture.md`.
 - `security-agent` → Yetki izinlerini ve Tenant izolasyonunu denetlet.
 
-### 3. Yerelleştirme, Gateway ve UI (Phase 3 - Kritik Denetim)
-- **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 8 dil `.resx` senkronizasyonunu `Resources/Views/{AreaName}/{ModuleName}/Index.{lang}.resx` yapısında tamamla.
+### 3. Yerelleştirme, Gateway ve UI (Phase 3 + 3.5 + 4)
+- **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 8 dil `.resx` senkronizasyonunu `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx` yapısında tamamla. (MarkerClassName = `{ModuleName}Index`, bkz: `frontend-datatable-template.md`)
 - **SONRA `integration-agent`:** `.antigravity/rules/routes.md` dosyasını oku ve `ocelot.json`'a **iki explicit rota** ekle (`/{resource}` + `/{resource}/{everything}`). `PATCH` dahil tüm HTTP metodları eklenmeli. Gateway rotası eklenmeden UI fazına geçilmez.
 - **SONRA `frontend-ui-ux`:** `.antigravity/rules/frontend-datatable-template.md` (HTML — `_Filter.cshtml` dahil) ve `.antigravity/rules/frontend-js-standard.md` (`DtDefaults.create()` zorunlu) şablonlarını BİREBİR kullanarak sayfayı inşa et.
 
-### 4. Doğrulama (Phase 4)
+### 4. Browser Smoke Test (Phase 4.5 — ZORUNLU)
+- Sayfa teslim edilmeden önce agent browser'da sayfayı açarak şunları doğrular:
+  - DataTable toolbar (Search, Export, Add New) görünüyor mu?
+  - Localization key'leri çözümleniyor mu? (Raw key görünmüyor mu?)
+  - Console'da JS hatası yok mu?
+- Herhangi bir madde başarısızsa → Phase 3/4'e geri dön ve düzelt.
+
+### 5. Doğrulama (Phase 5)
 - `testing-agent` → xUnit testlerini yazdır.
 - `code-quality-agent` → Standart denetimi yap.
 - **[DataTable Sayfaları İçin ZORUNLU]:** `/quality-gate-datatable` workflow'unu çalıştır. Listedeki tüm maddeler işaretlenmeden sayfa teslim edilemez.
 
-### 5. Dokümantasyon (Phase 5 - Kapanış)
-- İş bittikten sonra `documentation-writer`'ı çağırıp API dokümanlarını (Swagger) güncelle.
+### 6. Dokümantasyon (Phase 6 - Kapanış)
+- İş bittikten sonra `documentation-writer`'ı çağırıp API dokümanlarını (Swagger/README) güncelle.
 - `user-manual-generator`'ı çağırarak yeni modülün kullanıcı kılavuzunu hazırlat.
+- Bu faz tamamlanmadan modül "bitti" sayılmaz.
 
 ---
 

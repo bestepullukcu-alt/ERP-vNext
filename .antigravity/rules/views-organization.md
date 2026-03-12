@@ -10,6 +10,16 @@ Bu doküman, Diten.Web projesindeki klasör hiyerarşisini düzenlemek, yeni say
 
 Projeyi modüler ve ölçeklenebilir tutmak için Views klasörü altında rastgele dosya oluşturulamaz. Her sayfa bağlı olduğu ana modüle göre gruplanmalıdır.
 
+> ⚠️ **KRİTİK — `Areas/` Klasörü KULLANILMAZ!**
+> Proje ASP.NET Core Areas routing KULLANMAZ. Tüm view'lar `Views/` klasörü altında modül gruplarına göre düzenlenir.
+> `Areas/` klasörü ASP.NET'in özel bir routing özelliğidir ve Controller'da `[Area]` attribute gerektirir — bizde bu yapı YOKTUR.
+>
+> ❌ **YANLIŞ:** `Areas/MDM/Views/Countries/Index.cshtml`
+> ✅ **DOĞRU:** `Views/MDM/Countries/Index.cshtml`
+>
+> ❌ **YANLIŞ Namespace:** `Diten.Web.Areas.MDM.Views.Countries`
+> ✅ **DOĞRU Namespace:** `Diten.Web.Views.MDM.Countries`
+
 - KURAL: Yeni bir View oluşturulmadan önce mutlaka bağlam kontrol edilmeli veya kullanıcıya modül sorulmalıdır.
 - Standart Klasör Yapısı:
   - Views/MDM/ (Master Data Management - Altın Referans Katmanı)

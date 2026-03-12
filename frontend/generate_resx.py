@@ -1,9 +1,18 @@
 import os
 
+# ─── KONFİGÜRASYON ────────────────────────────────────────────────────────────
+# resx_base_name: Localization marker class adıyla BİREBİR eşleşmelidir.
+# Örnek: Marker class = LegalEntitiesIndex  →  resx_base_name = "LegalEntitiesIndex"
+# Örnek: Marker class = CountriesIndex      →  resx_base_name = "CountriesIndex"
+# ⚠️ Bu ad yanlış girilirse IHtmlLocalizer<T> hiçbir key'i çözemez!
+resx_base_name = "LegalEntitiesIndex"
+module_name = "LegalEntities"  # Klasör adı (Views/MDM/{module_name}/)
+# ──────────────────────────────────────────────────────────────────────────────
+
 def create_resx(lang, translations):
-    base_dir = "/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Resources/Views/MDM"
+    base_dir = f"/Users/alitufanoglu/Desktop/ERP-vNext/frontend/Diten.Web/Resources/Views/MDM/{module_name}"
     os.makedirs(base_dir, exist_ok=True)
-    file_path = f"{base_dir}/LegalEntities.{lang}.resx"
+    file_path = f"{base_dir}/{resx_base_name}.{lang}.resx"
 
     content = """<?xml version="1.0" encoding="utf-8"?>
 <root>

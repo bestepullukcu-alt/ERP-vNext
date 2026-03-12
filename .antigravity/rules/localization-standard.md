@@ -6,9 +6,9 @@ Diten ERP vNext projesinde "Hardcoded" (elle yazılmış) metin kullanmak KESİN
 Resmi desteklenen 8 dilin TAMAMI için `.resx` dosyaları oluşturulmalıdır. Sadece Türkçe (`tr`) oluşturup bırakmak kural ihlalidir.
 Desteklenen Diller: `en, es, ka, kk, ru, tr, uk, uz`
 
-**Dosya Yolu Standardı:** `Resources/Views/{AreaName}/{ModuleName}/Index.{lang}.resx`
-*(Örn: `Resources/Views/MDM/Countries/Index.en.resx`, `Resources/Views/MDM/Countries/Index.ru.resx` vb.)*
-**Kritik Kural:** Kaynak dosyası, hedeflediği `.cshtml` dosyasının adıyla birebir eşleşmelidir. Listeleme sayfaları için bu daima `Index`'tir. Klasörleme karmaşayı önlemek için ZORUNLUDUR.
+**Dosya Yolu Standardı:** `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
+*(Örn: `Resources/Views/MDM/Countries/CountriesIndex.en.resx`, `Resources/Views/MDM/LegalEntities/LegalEntitiesIndex.tr.resx` vb.)*
+**Kritik Kural:** Kaynak dosyası, Razor view'daki `IHtmlLocalizer<T>` sınıf adıyla birebir eşleşmelidir. Marker class convention: `{ModuleName}Index` (bkz: `frontend-datatable-template.md`). `Index.{lang}.resx` adı KULLANILMAZ.
 
 ## 2. Zorunlu Anahtarlar (Keys)
 Her modülün dil dosyasında ŞART olan standart anahtarlar:
