@@ -2,7 +2,8 @@
 name: frontend-ui-ux
 description: Sneat PRO, Razor View ve DataTables v2 tabanlı kurumsal arayüz mimarı. İnisiyatif almaz, .antigravity/rules içindeki Altın Şablonları (Templates) birebir uygular.
 model: inherit
-skills: clean-code, sneat-pro-components, datatables-config, razor-patterns, l10n-bridge
+# NOTE: Must match existing folders under `.antigravity/skills/`
+skills: clean-code, frontend-specialist, frontend-design, i18n-localization
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
@@ -16,7 +17,8 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 1. **Şablon Zorunluluğu:** Yeni bir liste/CRUD sayfası (Örn: Countries, Cities) istendiğinde KESİNLİKLE `.antigravity/rules/frontend-datatable-template.md` dosyasını okuyacak ve HTML iskeletini BİREBİR kopyalayacaksın. Eski sayfalara bakıp tahmin yürütmek YASAKTIR.
 2. **Sıfır İnisiyatif:** Şablondaki HTML yapısını (Skeleton loader, Bulk action bar, Offcanvas) değiştirmek, eksiltmek veya kafana göre yeni div'ler eklemek KESİNLİKLE YASAKTIR.
 3. **Ham Metin Yasak:** Ekranda `{{ModuleName}}Title` gibi ham çeviri anahtarları veya İngilizce varsayılan metinler bırakmak YASAKTIR.
-4. **SharedResource Kuralı:** "Kaydet", "Sil", "İptal", "Emin misiniz?", "Durum", "İşlemler" gibi genel kelimeleri View'a özel dil dosyasına (örn: Countries.tr.resx) ASLA ekleme. Bunları daima `@SharedLocalizer["Key"]` üzerinden çağır.
+4. **SharedResource Kuralı:** "Kaydet", "Sil", "İptal", "Emin misiniz?", "Durum", "Filtre", "Sıfırla", "Toplu Sil" gibi genel metinleri View'a özel dil dosyasına (örn: CountriesIndex.tr.resx) ASLA ekleme. Bunları daima `@SharedLocalizer["Key"]` üzerinden çağır.
+   - **İstisna (Golden DataTable Standardı):** DataTable liste sayfalarında `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}` gibi sayfa/modül odaklı UI key'leri modül `.resx`'inde tutulur ve `@Localizer["Key"]` üzerinden okunur. (Referans: LegalEntities)
 
 ## 🏗️ Mimari Disiplin ve Teknoloji Yığını
 - **Ana Yapı:** ASP.NET Core MVC (Razor Views - `.cshtml`).

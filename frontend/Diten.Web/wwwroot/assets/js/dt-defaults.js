@@ -218,6 +218,7 @@ window.DtDefaults = (function () {
         // Redraw durumunda class fixleri tazele
         var originalDrawCallback = merged.drawCallback;
         merged.drawCallback = function (settings) {
+            $('#skeleton-loader').fadeOut(200);
             applySneatClassFixes();
             if (typeof originalDrawCallback === 'function') {
                 originalDrawCallback.call(this, settings);
@@ -227,11 +228,12 @@ window.DtDefaults = (function () {
         return merged;
     }
 
+    var defaultExportColumns = [2, 3, 4, 5, 6, 7, 8];
+
     /**
      * Ortak export ayarları (HTML temizleme ve kolon seçimi).
      */
-    var commonExportOptions = {
-        columns: [2, 3, 4, 5, 6, 7, 8],
+    var commonExportOptionsBase = {
         rows: function (idx, data, node) {
             // Tablo genelinde seçili satır var mı kontrol et
             var $table = $(node).closest('table');
@@ -260,22 +262,33 @@ window.DtDefaults = (function () {
         }
     };
 
+    function buildExportOptions(columns) {
+        return $.extend(true, {}, commonExportOptionsBase, { columns: columns });
+    }
+
     /**
      * Standard export buttons + optional extras.
      */
-    function exportButtons(addNewText, addNewAttr, extraButtons) {
+    function exportButtons(addNewText, addNewAttr, extraButtons, options) {
         var l = L();
+        options = options || {};
+
+        var exportColumns = Array.isArray(options.exportColumns) ? options.exportColumns : defaultExportColumns;
+        var colvisColumns = Array.isArray(options.colvisColumns) ? options.colvisColumns : exportColumns;
+        var showAllColumns = Array.isArray(options.showAllColumns) ? options.showAllColumns : colvisColumns;
+
+        var exportOptions = buildExportOptions(exportColumns);
 
         var exportBtn = {
             extend: 'collection',
             className: 'btn btn-label-secondary dropdown-toggle',
             text: '<span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-export icon-sm"></i> <span class="d-none d-sm-inline-block">' + (l.Export || 'Export') + '</span></span>',
             buttons: [
-                { extend: 'print', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-printer me-2"></i>' + (l.Print || 'Print') + '</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
-                { extend: 'csv', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-file me-2"></i>CSV</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
-                { extend: 'excel', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-export me-2"></i>Excel</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
-                { extend: 'pdf', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-pdf me-2"></i>' + (l.PDF || 'PDF') + '</span>', className: 'dropdown-item', exportOptions: commonExportOptions },
-                { extend: 'copy', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-copy me-2"></i>' + (l.Copy || 'Copy') + '</span>', className: 'dropdown-item', exportOptions: commonExportOptions }
+                { extend: 'print', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-printer me-2"></i>' + (l.Print || 'Print') + '</span>', className: 'dropdown-item', exportOptions: exportOptions },
+                { extend: 'csv', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-file me-2"></i>CSV</span>', className: 'dropdown-item', exportOptions: exportOptions },
+                { extend: 'excel', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-export me-2"></i>Excel</span>', className: 'dropdown-item', exportOptions: exportOptions },
+                { extend: 'pdf', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-pdf me-2"></i>' + (l.PDF || 'PDF') + '</span>', className: 'dropdown-item', exportOptions: exportOptions },
+                { extend: 'copy', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-copy me-2"></i>' + (l.Copy || 'Copy') + '</span>', className: 'dropdown-item', exportOptions: exportOptions }
             ]
         };
 
@@ -284,12 +297,12 @@ window.DtDefaults = (function () {
             text: '<i class="icon-base bx bx-show icon-sm"></i>',
             className: 'btn btn-icon btn-label-secondary dt-colvis-btn position-relative',
             attr: { title: 'Column Visibility', 'data-bs-toggle': 'tooltip' },
-            columns: [2, 3, 4, 5, 6, 7, 8], // Exclude Index 0 (Control), 1 (Checkbox), 9 (Actions)
+            columns: colvisColumns, // Exclude Index 0 (Control), 1 (Checkbox), (Actions) based on module
             postfixButtons: [
                 {
                     extend: 'colvisGroup',
                     text: l.ShowAll || 'Tümünü Göster',
-                    show: [2, 3, 4, 5, 6, 7, 8],
+                    show: showAllColumns,
                     className: 'btn btn-outline-primary mt-2 w-100'
                 }
             ]

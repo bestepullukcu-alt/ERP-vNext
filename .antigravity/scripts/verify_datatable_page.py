@@ -1,0 +1,303 @@
+#!/usr/bin/env python3
+"""
+DataTable Page Verifier (vNext)
+===============================
+
+Static checks to enforce the "Golden DataTable" contract (LegalEntities baseline):
+- Index.cshtml structure markers exist (Filter partial, skeleton, offcanvas)
+- window.L10n bridge includes required keys (no raw keys in JS)
+- index.js uses DtDefaults + DataTables v2 constructor
+- Quick View is wired via event delegation (.js-quick-view) (no inline onclick)
+
+Usage:
+  python3 .antigravity/scripts/verify_datatable_page.py . --area MDM --module LegalEntities
+  python3 .antigravity/scripts/verify_datatable_page.py . --area MDM --module Countries
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Pattern, Tuple
+
+
+@dataclass(frozen=True)
+class Check:
+    name: str
+    ok: bool
+    details: str = ""
+
+
+def read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
+def has(pattern: Pattern[str], text: str) -> bool:
+    return pattern.search(text) is not None
+
+
+def check_file_exists(path: Path, label: str) -> Check:
+    if path.exists() and path.is_file():
+        return Check(label, True, str(path))
+    return Check(label, False, f"Missing: {path}")
+
+
+def check_contains(path: Path, text: str, pattern: Pattern[str], label: str, hint: str) -> Check:
+    if has(pattern, text):
+        return Check(label, True)
+    return Check(label, False, f"{hint} (file: {path})")
+
+
+def check_not_contains(path: Path, text: str, pattern: Pattern[str], label: str, hint: str) -> Check:
+    if has(pattern, text):
+        return Check(label, False, f"{hint} (file: {path})")
+    return Check(label, True)
+
+
+def print_report(checks: List[Check]) -> None:
+    failed = [c for c in checks if not c.ok]
+    passed = [c for c in checks if c.ok]
+
+    print("\nGolden DataTable Verify Report")
+    print("=" * 32)
+    print(f"Passed: {len(passed)}")
+    print(f"Failed: {len(failed)}\n")
+
+    for c in checks:
+        status = "[PASS]" if c.ok else "[FAIL]"
+        line = f"{status} {c.name}"
+        print(line)
+        if c.details and not c.ok:
+            print(f"  - {c.details}")
+
+    if failed:
+        print("\nResult: FAIL")
+    else:
+        print("\nResult: PASS")
+
+
+def compile_required_l10n_keys() -> List[Tuple[str, Pattern[str]]]:
+    # Enforce the minimum bridge used by frontend templates and LegalEntities.
+    keys = [
+        "Active",
+        "Passive",
+        "Unknown",
+        "Actions",
+        "Edit",
+        "ViewDetails",
+        "QuickView",
+        "BulkDelete",
+        "BulkDeleteConfirm",
+        "AreYouSure",
+        "Cancel",
+    ]
+    return [(k, re.compile(rf"window\.L10n\.{re.escape(k)}\s*=")) for k in keys]
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Verify vNext DataTable page contract (static checks).")
+    parser.add_argument("project", help="Repo root (e.g. .)")
+    parser.add_argument("--area", default="MDM", help="Area folder under Views/ and assets/js/ (default: MDM)")
+    parser.add_argument("--module", required=True, help="Module folder name (case-sensitive) (e.g. LegalEntities)")
+
+    args = parser.parse_args()
+
+    root = Path(args.project).resolve()
+    if not root.exists():
+        print(f"[FAIL] Project path does not exist: {root}")
+        return 1
+
+    area = args.area
+    module = args.module
+
+    index_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "Index.cshtml"
+    filter_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "_Filter.cshtml"
+    index_js = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / area / module / "index.js"
+
+    checks: List[Check] = []
+
+    checks.append(check_file_exists(index_cshtml, "Index.cshtml exists"))
+    checks.append(check_file_exists(filter_cshtml, "_Filter.cshtml exists"))
+    checks.append(check_file_exists(index_js, "index.js exists"))
+
+    # Stop early if core files missing (avoid confusing follow-up errors).
+    if any(not c.ok for c in checks[:3]):
+        print_report(checks)
+        return 1
+
+    index_html = read_text(index_cshtml)
+    js_text = read_text(index_js)
+
+    checks.append(
+        check_contains(
+            index_cshtml,
+            index_html,
+            re.compile(r"<partial\s+name\s*=\s*\"_Filter\"\s*/>"),
+            "Index.cshtml includes <partial name=\"_Filter\" />",
+            "Missing filter partial include",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_cshtml,
+            index_html,
+            re.compile(r"Layout\s*=\s*\"_LayoutBackbone\"\s*;"),
+            "Index.cshtml uses _LayoutBackbone",
+            "Missing Layout = \"_LayoutBackbone\";",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_cshtml,
+            index_html,
+            re.compile(r"id\s*=\s*\"skeleton-loader\""),
+            "Index.cshtml has #skeleton-loader",
+            "Missing skeleton loader (id=\"skeleton-loader\")",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_cshtml,
+            index_html,
+            re.compile(r"id\s*=\s*\"offcanvasDetailsPreview\""),
+            "Index.cshtml has #offcanvasDetailsPreview",
+            "Missing offcanvas (id=\"offcanvasDetailsPreview\")",
+        )
+    )
+
+    # L10n bridge sanity
+    checks.append(
+        check_contains(
+            index_cshtml,
+            index_html,
+            re.compile(r"window\.L10n\s*=\s*window\.L10n\s*\|\|\s*\{\s*\}"),
+            "Index.cshtml initializes window.L10n",
+            "Missing window.L10n initialization block",
+        )
+    )
+    for key, pat in compile_required_l10n_keys():
+        checks.append(
+            check_contains(
+                index_cshtml,
+                index_html,
+                pat,
+                f"Index.cshtml bridges window.L10n.{key}",
+                f"Missing L10n key: {key}",
+            )
+        )
+
+    # Script include should point to the module path (case-sensitive)
+    expected_script = f"~/assets/js/{area}/{module}/index.js"
+    checks.append(
+        check_contains(
+            index_cshtml,
+            index_html,
+            re.compile(re.escape(expected_script)),
+            f"Index.cshtml includes script: {expected_script}",
+            "Missing/incorrect index.js include path",
+        )
+    )
+
+    # Anti-patterns in Index.cshtml
+    checks.append(
+        check_not_contains(
+            index_cshtml,
+            index_html,
+            re.compile(r"onclick\s*="),
+            "Index.cshtml has no inline onclick=",
+            "Inline onclick= found (should be event delegation in index.js)",
+        )
+    )
+    checks.append(
+        check_not_contains(
+            index_cshtml,
+            index_html,
+            re.compile(r"populateOffcanvas\s*\("),
+            "Index.cshtml does not define/call populateOffcanvas(...)",
+            "populateOffcanvas(...) found in Index.cshtml (must live in index.js module scope)",
+        )
+    )
+
+    # JS contract
+    checks.append(
+        check_contains(
+            index_js,
+            js_text,
+            re.compile(r"new\s+DataTable\s*\("),
+            "index.js uses DataTables v2 constructor (new DataTable(...))",
+            "Missing new DataTable(...)",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_js,
+            js_text,
+            re.compile(r"window\.DtDefaults\.create\s*\("),
+            "index.js uses window.DtDefaults.create(...)",
+            "Missing window.DtDefaults.create(...)",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_js,
+            js_text,
+            re.compile(r"DtDefaults\.exportButtons\s*\("),
+            "index.js uses DtDefaults.exportButtons(...)",
+            "Missing DtDefaults.exportButtons(...)",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_js,
+            js_text,
+            re.compile(r"\.js-quick-view"),
+            "index.js includes .js-quick-view selector",
+            "Missing .js-quick-view wiring for Quick View",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_js,
+            js_text,
+            re.compile(r"closest\(\s*['\\\"]\.js-quick-view['\\\"]\s*\)"),
+            "index.js uses event delegation (closest('.js-quick-view'))",
+            "Quick View must use event delegation (closest('.js-quick-view'))",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_js,
+            js_text,
+            re.compile(r"getAuthHeaders\s*="),
+            "index.js defines getAuthHeaders()",
+            "Missing getAuthHeaders() helper",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_js,
+            js_text,
+            re.compile(r"headers\s*:\s*getAuthHeaders\s*\(\s*\)"),
+            "index.js uses getAuthHeaders() in fetch headers",
+            "Missing headers: getAuthHeaders() usage",
+        )
+    )
+    checks.append(
+        check_not_contains(
+            index_js,
+            js_text,
+            re.compile(r"\.(?:DataTable|dataTable)\s*\("),
+            "index.js does not use jQuery DataTable plugin (.(DataTable|dataTable)(...))",
+            "Found jQuery DataTable plugin usage; must use DataTables v2 constructor",
+        )
+    )
+
+    print_report(checks)
+    return 1 if any(not c.ok for c in checks) else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

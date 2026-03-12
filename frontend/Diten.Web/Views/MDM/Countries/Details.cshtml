@@ -1,0 +1,71 @@
+@model Diten.Web.Models.CountryViewModel
+@using Diten.Web.Views.MDM.Countries
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CountriesIndex> Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value + " - " + Model.Name;
+    Layout = "_LayoutBackbone";
+}
+
+<div
+    class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-6 row-gap-4">
+    <div class="d-flex flex-column justify-content-center">
+        <h4 class="mb-1">@Model.Name</h4>
+        <p class="mb-0">@($"{Model.Iso2Code} • {Model.Iso3Code}")</p>
+        <nav aria-label="breadcrumb" class="mt-2 text-muted">
+            <ol class="breadcrumb mb-0 py-0">
+                <li class="breadcrumb-item">
+                    <a href="/">@Localizer["BreadcrumbHome"]</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:void(0);">@Localizer["BreadcrumbMDM"]</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a asp-action="Index">@Localizer["CountriesTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-content-center flex-wrap gap-4">
+        <a asp-action="Index" class="btn btn-label-secondary border">@SharedLocalizer["BackToList"]</a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">@SharedLocalizer["EditRecord"]</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 fw-medium text-heading mb-2">@Localizer["Name"]</dt>
+                    <dd class="col-sm-8 mb-2">@Model.Name</dd>
+
+                    <dt class="col-sm-4 fw-medium text-heading mb-2">@Localizer["Iso2Code"]</dt>
+                    <dd class="col-sm-8 mb-2">@Model.Iso2Code</dd>
+
+                    <dt class="col-sm-4 fw-medium text-heading mb-2">@Localizer["Iso3Code"]</dt>
+                    <dd class="col-sm-8 mb-2">@Model.Iso3Code</dd>
+
+                    <dt class="col-sm-4 fw-medium text-heading mb-2">@Localizer["PhoneCode"]</dt>
+                    <dd class="col-sm-8 mb-2">@(!string.IsNullOrWhiteSpace(Model.PhoneCode) ? Model.PhoneCode : "-")</dd>
+
+                    <dt class="col-sm-4 fw-medium text-heading mb-2">@SharedLocalizer["Status"]</dt>
+                    <dd class="col-sm-8 mb-2">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-label-success">@SharedLocalizer["Active"]</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-label-secondary">@SharedLocalizer["Passive"]</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -85,6 +85,9 @@
   <data name="ViewBtn" xml:space="preserve">
     <value>ნახვა</value>
   </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>სწრაფი ნახვა</value>
+  </data>
   <data name="EditBtn" xml:space="preserve">
     <value>რედაქტირება</value>
   </data>

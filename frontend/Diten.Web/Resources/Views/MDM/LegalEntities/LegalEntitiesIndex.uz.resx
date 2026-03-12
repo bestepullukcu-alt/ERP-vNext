@@ -85,6 +85,9 @@
   <data name="ViewBtn" xml:space="preserve">
     <value>Ko'rish</value>
   </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>Tezkor ko'rish</value>
+  </data>
   <data name="EditBtn" xml:space="preserve">
     <value>Tahrirlash</value>
   </data>

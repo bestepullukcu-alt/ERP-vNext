@@ -72,6 +72,11 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
     - Sneat class düzeltmelerini `drawCallback` üzerinden uygular.
     - Hover Effect (`table-hover`) otomatik eklenir.
 
+### UI-020: Skeleton Loader Lifecycle
+- DataTable liste sayfalarında `#skeleton-loader` bloğu zorunludur (bkz: `views-organization.md`).
+- Skeleton show/hide davranışı merkezi olarak `DtDefaults.create()` ile yönetilir (`preXhr` + `drawCallback`).
+- Sayfa bazlı skeleton show/hide hack'leri ancak özel UX ihtiyacı varsa kabul edilir.
+
 ### UI-011: DataTable Responsive Header Layout (MOD-0022)
 - **Breakpoint:** `@media (max-width: 991.98px)`
 - **Row 1:** Length (100) solda, Search sağda — aynı satırda.

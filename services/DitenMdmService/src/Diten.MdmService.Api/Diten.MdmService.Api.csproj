@@ -22,4 +22,10 @@
             Include="..\Diten.MdmService.Persistence\Diten.MdmService.Persistence.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="..\\Diten.MdmService.Persistence\\SeedData\\countries.json" Link="SeedData\\countries.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>

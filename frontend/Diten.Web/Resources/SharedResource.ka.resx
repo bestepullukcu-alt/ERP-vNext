@@ -162,6 +162,9 @@
   <data name="LegalEntities" xml:space="preserve">
     <value>იურიდიული პირები</value>
   </data>
+  <data name="Countries" xml:space="preserve">
+    <value>ქვეყნები</value>
+  </data>
   <data name="Light" xml:space="preserve">
     <value>ნათელი</value>
   </data>

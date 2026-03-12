@@ -7,8 +7,8 @@ Orchestrates all validation scripts in priority order.
 Use this for incremental validation during development.
 
 Usage:
-    python scripts/checklist.py .                    # Run core checks
-    python scripts/checklist.py . --url <URL>        # Include performance checks
+    python3 .antigravity/scripts/checklist.py .              # Run core checks
+    python3 .antigravity/scripts/checklist.py . --url <URL>  # Include performance checks
 
 Priority Order:
     P0: Security Scan (vulnerabilities, secrets)
@@ -56,17 +56,17 @@ def print_error(text: str):
 
 # Define priority-ordered checks
 CORE_CHECKS = [
-    ("Security Scan", ".agent/skills/vulnerability-scanner/scripts/security_scan.py", True),
-    ("Lint Check", ".agent/skills/lint-and-validate/scripts/lint_runner.py", True),
-    ("Schema Validation", ".agent/skills/database-design/scripts/schema_validator.py", False),
-    ("Test Runner", ".agent/skills/testing-patterns/scripts/test_runner.py", False),
-    ("UX Audit", ".agent/skills/frontend-design/scripts/ux_audit.py", False),
-    ("SEO Check", ".agent/skills/seo-fundamentals/scripts/seo_checker.py", False),
+    ("Security Scan", ".antigravity/skills/vulnerability-scanner/scripts/security_scan.py", True),
+    ("Lint Check", ".antigravity/skills/lint-and-validate/scripts/lint_runner.py", True),
+    ("Schema Validation", ".antigravity/skills/database-design/scripts/schema_validator.py", False),
+    ("Test Runner", ".antigravity/skills/testing-patterns/scripts/test_runner.py", False),
+    ("UX Audit", ".antigravity/skills/frontend-design/scripts/ux_audit.py", False),
+    ("SEO Check", ".antigravity/skills/seo-fundamentals/scripts/seo_checker.py", False),
 ]
 
 PERFORMANCE_CHECKS = [
-    ("Lighthouse Audit", ".agent/skills/performance-profiling/scripts/lighthouse_audit.py", True),
-    ("Playwright E2E", ".agent/skills/webapp-testing/scripts/playwright_runner.py", False),
+    ("Lighthouse Audit", ".antigravity/skills/performance-profiling/scripts/lighthouse_audit.py", True),
+    ("Playwright E2E", ".antigravity/skills/webapp-testing/scripts/playwright_runner.py", False),
 ]
 
 def check_script_exists(script_path: Path) -> bool:
@@ -87,7 +87,8 @@ def run_script(name: str, script_path: Path, project_path: str, url: Optional[st
     print_step(f"Running: {name}")
     
     # Build command
-    cmd = ["python", str(script_path), project_path]
+    # Use the current interpreter (python3 on macOS, venv-aware).
+    cmd = [sys.executable, str(script_path), project_path]
     if url and ("lighthouse" in script_path.name.lower() or "playwright" in script_path.name.lower()):
         cmd.append(url)
     
@@ -165,8 +166,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python scripts/checklist.py .                      # Core checks only
-  python scripts/checklist.py . --url http://localhost:3000  # Include performance
+  python3 .antigravity/scripts/checklist.py .                      # Core checks only
+  python3 .antigravity/scripts/checklist.py . --url http://localhost:3000  # Include performance
         """
     )
     parser.add_argument("project", help="Project path to validate")

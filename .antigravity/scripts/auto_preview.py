@@ -5,9 +5,9 @@ Auto Preview - Antigravity Kit
 Manages (start/stop/status) the local development server for previewing the application.
 
 Usage:
-    python .agent/scripts/auto_preview.py start [port]
-    python .agent/scripts/auto_preview.py stop
-    python .agent/scripts/auto_preview.py status
+    python3 .antigravity/scripts/auto_preview.py start [port]
+    python3 .antigravity/scripts/auto_preview.py stop
+    python3 .antigravity/scripts/auto_preview.py status
 """
 
 import os
@@ -19,9 +19,9 @@ import argparse
 import subprocess
 from pathlib import Path
 
-AGENT_DIR = Path(".agent")
-PID_FILE = AGENT_DIR / "preview.pid"
-LOG_FILE = AGENT_DIR / "preview.log"
+RUNTIME_DIR = Path(".antigravity/.runtime")
+PID_FILE = RUNTIME_DIR / "preview.pid"
+LOG_FILE = RUNTIME_DIR / "preview.log"
 
 def get_project_root():
     return Path(".").resolve()
@@ -49,6 +49,8 @@ def get_start_command(root):
     return None
 
 def start_server(port=3000):
+    RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
+
     if PID_FILE.exists():
         try:
             pid = int(PID_FILE.read_text().strip())

@@ -6,7 +6,7 @@ description: .NET 8 Web API (CQRS/MediatR), MongoDB, X-Tenant-Id ile multi-tenan
 # Backend Specialist Skill
 
 ## Her zaman yap
-- Önce `.agent/rules/*` oku.
+- Önce `.antigravity/rules/*` oku.
 - Değişiklik öncesi dosya dosya plan çıkar.
 - TenantId filtresini repository’de otomatik uygulat.
 - Controller’ları ince tut (sadece MediatR).

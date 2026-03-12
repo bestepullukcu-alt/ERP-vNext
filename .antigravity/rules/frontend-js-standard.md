@@ -6,7 +6,7 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
 
 1. **Encapsulation:** Tüm değişkenler ve fonksiyonlar `const {{ModuleName}} = (function () { ... })();` içinde olmalıdır.
 2. **`DtDefaults.create()` ZORUNLU:** Ham `DataTable({...})` çağrısı KESİNLİKLE YASAKTIR. Her DataTable sayfası `window.DtDefaults.create({...})` ile başlatılır. Bu wrapper otomatik olarak skeleton, stateSave, responsive class fix ve hover'ı devreye alır.
-3. **`DtDefaults.exportButtons()` ZORUNLU:** Butonlar elle `layout` içinde tanımlanmaz. Her zaman `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons)` kullanılır.
+3. **`DtDefaults.exportButtons()` ZORUNLU:** Butonlar elle `layout` içinde tanımlanmaz. Her zaman `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons, options)` kullanılır. `options` ile `exportColumns` / `colvisColumns` override edilebilir.
 4. **AJAX Gateway:** Tüm istekler `window.ApiBaseUrl` (`/api/...`) üzerinden gider. Servis bazlı URL (`/mdm/api/v1/...`) kullanılmaz.
 5. **L10n Bridge:** Metinler JS içinde hardcoded yazılmaz; `window.L10n` objesinden okunur.
 6. **Silme:** Tek satır silme `window.showConfirm()`, toplu silme `Swal.fire` ile yapılır. Direkt `window.showConfirm` bypass edilemez.
@@ -18,19 +18,17 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
 
 ```javascript
 /**
- * {{ModuleName}} Management Module
- * Diten ERP vNext - {{AreaName}} Module
+ * {{ModuleName}} DataTables Page Script
+ * Diten ERP vNext - {{AreaName}}/{{ModuleName}}
  */
 'use strict';
 
 const {{ModuleName}}List = (function () {
-    // ── Variables ──────────────────────────────────────────────────────────
     let dt;
     const dtTableEl = document.querySelector('.datatables-{{ModuleNameLower}}');
     const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
     const L = window.L10n || {};
 
-    // ── Auth Helpers ───────────────────────────────────────────────────────
     const getTenantId = () => {
         try {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -55,18 +53,56 @@ const {{ModuleName}}List = (function () {
         };
     };
 
-    // ── DataTable Initialization ───────────────────────────────────────────
+    const statusObj = {
+        true: { title: L.Active, class: 'bg-label-success' },
+        false: { title: L.Passive, class: 'bg-label-secondary' }
+    };
+
+    const tryParseRowJson = (element) => {
+        if (!element) return null;
+        const raw = element.getAttribute('data-json');
+        if (!raw) return null;
+
+        try {
+            return JSON.parse(raw.replace(/&#39;/g, "'"));
+        } catch (err) {
+            console.error('[{{ModuleName}} QuickView] Could not parse row data', err);
+            return null;
+        }
+    };
+
+    const populateOffcanvas = (data) => {
+        if (!data) return;
+
+        document.getElementById('oc-title').innerText = data.name || data.title || '-';
+        document.getElementById('oc-subtitle').innerText = data.subtitle || '-';
+
+        const statusEl = document.getElementById('oc-status');
+        const status = statusObj[String(data.isActive)] || { title: L.Unknown || String(data.isActive), class: 'bg-label-primary' };
+        statusEl.className = `badge ${status.class}`;
+        statusEl.innerText = status.title || '-';
+
+        document.getElementById('oc-btn-edit').href = `/{{ModuleName}}/Edit/${data.id}`;
+
+        // DİNAMİK OFFCANVAS JS ATAMALARI — modüle özgü alanlar buraya
+        // {{DynamicOffcanvasJs}}
+    };
+
     const initDataTable = () => {
         if (!dtTableEl) return;
 
-        // Extra buttons (Filter + Import buttonları gerekli ise tanımla)
         const extraButtons = {
+            importBtn: {
+                text: '<i class="icon-base bx bx-import icon-sm"></i>',
+                className: 'btn btn-icon btn-label-secondary',
+                attr: { title: L.Import, 'data-bs-toggle': 'tooltip' },
+                action: function () { window.showToast?.(L.ComingSoon, 'info'); }
+            },
             filterBtn: {
                 text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
                 className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
-                attr: { title: L.Filter || 'Filter', 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasFilter' }
+                attr: { title: L.Filter, 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasFilter' }
             }
-            // importBtn: { ... }   // Gerekli ise buraya ekle
         };
 
         dt = new DataTable(dtTableEl, window.DtDefaults.create({
@@ -79,9 +115,9 @@ const {{ModuleName}}List = (function () {
             columns: [
                 { data: 'id',       name: 'control'   },   // Responsive control
                 { data: 'id',       name: 'checkbox'  },   // Checkbox
-                // {{JSColumns}} — modüle özgü kolonlar
+                // {{JSColumns}} — modüle özgü kolonlar (name: zorunlu)
                 { data: 'isActive', name: 'isActive'  },
-                { data: null,       name: 'action'    }
+                { data: 'action',   name: 'action'    }
             ],
             columnDefs: [
                 {
@@ -105,18 +141,18 @@ const {{ModuleName}}List = (function () {
                 },
                 // {{JSColumnDefs}} — modüle özgü kolonDef'ler buraya
                 {
-                    // Status Badge
+                    // Status Badge (display HTML, filter plain text)
                     targets: -2,
-                    render: (data) => {
-                        const cls = data ? 'bg-label-success' : 'bg-label-secondary';
-                        const txt = data ? (L.Active || 'Active') : (L.Passive || 'Passive');
-                        return `<span class="badge ${cls}">${txt}</span>`;
+                    render: (data, type) => {
+                        const status = statusObj[String(data)] || { title: L.Unknown || String(data), class: 'bg-label-primary' };
+                        if (type === 'display') return `<span class="badge ${status.class}" text-capitalized>${status.title}</span>`;
+                        return status.title || '';
                     }
                 },
                 {
                     // Actions
                     targets: -1,
-                    title: L.Actions || 'Actions',
+                    title: L.Actions,
                     searchable: false,
                     orderable: false,
                     className: 'cell-fit',
@@ -125,24 +161,65 @@ const {{ModuleName}}List = (function () {
                             <a href="javascript:;" class="btn btn-icon delete-record text-danger me-1"><i class="bx bx-trash icon-md"></i></a>
                             <a href="javascript:;" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded icon-md"></i></a>
                             <div class="dropdown-menu dropdown-menu-end m-0">
-                                <a href="/{{ModuleName}}/Details/${full.id}" class="dropdown-item">${L.ViewDetails || 'View Details'}</a>
-                                <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetailsPreview" onclick="populateOffcanvas(this)" data-json='${JSON.stringify(full).replace(/'/g, "&#39;")}'>${L.QuickView || 'Quick View'}</a>
-                                <a href="/{{ModuleName}}/Edit/${full.id}" class="dropdown-item">${L.Edit || 'Edit'}</a>
+                                <a href="/{{ModuleName}}/Details/${full.id}" class="dropdown-item">${L.ViewDetails}</a>
+                                <a href="javascript:void(0);" class="dropdown-item js-quick-view" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetailsPreview" data-json='${JSON.stringify(full).replace(/'/g, "&#39;")}'>${L.QuickView}</a>
+                                <a href="/{{ModuleName}}/Edit/${full.id}" class="dropdown-item">${L.Edit}</a>
                             </div>
                         </div>`
                 }
             ],
             // DtDefaults.exportButtons: 3 grup (Export, ColVis/Filter, AddNew)
             buttons: window.DtDefaults.exportButtons(
-                L.AddNew{{ModuleName}} || 'Add New',
+                L.AddNew{{ModuleName}},
                 { onclick: "window.location.href='/{{ModuleName}}/Create'" },
-                extraButtons
+                extraButtons,
+                {
+                    exportColumns: {{ExportColumns}},
+                    colvisColumns: {{ColvisColumns}}
+                }
             ),
+            initComplete: function () {
+                setupFilters(this.api());
+            },
             drawCallback: function () {
                 const filterCount = 0; // Aktif filtre sayısı (filtre implemente edildikçe güncelleyin)
                 window.DtDefaults.updateVisualState(this.api(), filterCount);
             }
         }));
+
+        dt.on('column-visibility.dt', function () {
+            const filterCount = 0;
+            window.DtDefaults.updateVisualState(dt, filterCount);
+        });
+    };
+
+    const setupFilters = (api) => {
+        // {{DynamicFilterSetup}}
+
+        const state = api.state.loaded();
+        let initialFilterCount = 0;
+        if (state) {
+            // {{DynamicFilterRestore}}
+        }
+
+        window.DtDefaults.updateVisualState(api, initialFilterCount);
+
+        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
+            // {{DynamicFilterApply}}
+            api.draw();
+
+            const filterCount = 0;
+            window.DtDefaults.updateVisualState(api, filterCount);
+
+            bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasFilter'))?.hide();
+        });
+
+        document.getElementById('btnFilterReset')?.addEventListener('click', () => {
+            // {{DynamicFilterReset}}
+            api.state.clear();
+            api.columns().search('').draw();
+            window.DtDefaults.updateVisualState(api, 0);
+        });
     };
 
     // ── Checkbox & Bulk Action ─────────────────────────────────────────────
@@ -191,29 +268,34 @@ const {{ModuleName}}List = (function () {
     const handleEvents = () => {
         if (!dtTableEl) return;
 
-        // Tek satır silme — window.showConfirm zorunludur
+        // Tek satır silme + Quick View click delegation
         dtTableEl.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.delete-record');
-            if (!deleteBtn) return;
+            if (deleteBtn) {
+                let tr = deleteBtn.closest('tr');
+                if (tr.classList.contains('child')) tr = tr.previousElementSibling;
+                const row = dt.row(tr);
+                const data = row.data();
 
-            let tr = deleteBtn.closest('tr');
-            if (tr.classList.contains('child')) tr = tr.previousElementSibling;
-            const row = dt.row(tr);
-            const data = row.data();
+                window.showConfirm?.('DeleteConfirmation', () => {
+                    fetch(`${apiUrl}/api/{{ModuleNameLower}}/${data.id}`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    }).then(res => {
+                        if (res.ok) {
+                            row.remove().draw();
+                            window.showToast?.('RecordDeleted', 'success');
+                        } else {
+                            window.showToast?.('ErrorOccurred', 'error');
+                        }
+                    }).catch(() => window.showToast?.('ErrorOccurred', 'error'));
+                }, data.name || data.title);
+            }
 
-            window.showConfirm?.('DeleteConfirmation', () => {
-                fetch(`${apiUrl}/api/{{ModuleNameLower}}/${data.id}`, {
-                    method: 'DELETE',
-                    headers: getAuthHeaders()
-                }).then(res => {
-                    if (res.ok) {
-                        row.remove().draw();
-                        window.showToast?.('RecordDeleted', 'success');
-                    } else {
-                        window.showToast?.('ErrorOccurred', 'error');
-                    }
-                }).catch(() => window.showToast?.('ErrorOccurred', 'error'));
-            }, data.name || data.title);
+            const quickViewBtn = e.target.closest('.js-quick-view');
+            if (quickViewBtn) {
+                populateOffcanvas(tryParseRowJson(quickViewBtn));
+            }
         });
 
         // Satır checkbox değişimi
@@ -242,14 +324,14 @@ const {{ModuleName}}List = (function () {
             const ids = getSelectedIds();
             if (!ids.length) return;
 
-            const msg = (L.BulkDeleteConfirm || 'Delete {0} selected records?').replace('{0}', ids.length);
+            const msg = (L.BulkDeleteConfirm || '').replace('{0}', ids.length);
             Swal.fire({
-                title: L.AreYouSure || 'Are you sure?',
+                title: L.AreYouSure,
                 html: `<div class="mb-2">${msg}</div>`,
                 iconHtml: '<div class="swal-icon-circle"><i class="bx bx-trash"></i></div>',
                 showCancelButton: true,
-                confirmButtonText: L.BulkDelete || 'Bulk Delete',
-                cancelButtonText: L.Cancel || 'Cancel',
+                confirmButtonText: L.BulkDelete,
+                cancelButtonText: L.Cancel,
                 width: '400px',
                 padding: '2.5rem 1.5rem 2rem',
                 customClass: {
@@ -274,7 +356,7 @@ const {{ModuleName}}List = (function () {
                     throw new Error('Bulk delete failed');
                 }).then(data => {
                     window.showToast?.(
-                        (L.BulkDeleteSuccess || '{0} records deleted').replace('{0}', data.deletedCount),
+                        (L.BulkDeleteSuccess || '').replace('{0}', data.deletedCount),
                         'success'
                     );
                     clearSelection();
@@ -300,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {{ModuleName}}List.init());
 | ❌ Yasak | ✅ Doğru |
 |----------|----------|
 | `$(...).DataTable({...})` | `new DataTable(el, DtDefaults.create({...}))` |
-| `layout: { topEnd: { buttons: [...] } }` elle tanımlama | `DtDefaults.exportButtons(text, attr, extras)` |
+| `layout: { topEnd: { buttons: [...] } }` elle tanımlama | `DtDefaults.exportButtons(text, attr, extras, options)` |
 | `Swal.fire(...)` tek satır sil | `window.showConfirm('Key', callback, entityName)` |
 | `toastr.success(...)` / `toastr.error(...)` | `window.showToast('Key', 'success'\|'error')` |
 | `url: window.ApiBaseUrl + '/mdm/api/v1/...'` | `url: apiUrl + '/api/{{ModuleNameLower}}'` |

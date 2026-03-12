@@ -85,6 +85,9 @@
   <data name="ViewBtn" xml:space="preserve">
     <value>Просмотр</value>
   </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>Быстрый просмотр</value>
+  </data>
   <data name="EditBtn" xml:space="preserve">
     <value>Редактировать</value>
   </data>

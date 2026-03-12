@@ -15,10 +15,11 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 ### A. JavaScript (index.js)
 
 - [ ] **DtDefaults:** `new DataTable(el, window.DtDefaults.create({...}))` kullanılıyor mu? Ham `$(...).DataTable({...})` yok mu?
-- [ ] **ExportButtons:** `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons)` kullanılıyor mu? Elle `layout.topEnd.buttons` tanımı yok mu?
+- [ ] **ExportButtons:** `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons, options)` kullanılıyor mu? Elle `layout.topEnd.buttons` tanımı yok mu?
 - [ ] **Bulk Action:** `getSelectedIds()`, `updateBulkBar()`, `clearSelection()` fonksiyonları implement edilmiş mi?
 - [ ] **Header Checkbox Sync:** `dt-checkboxes-select-all` değişince tüm satır checkbox'ları ve bar güncelleniyor mu? `indeterminate` state var mı?
 - [ ] **Tek Satır Silme:** `window.showConfirm()` wrapper'ı kullanılıyor mu? Direkt `Swal.fire` ile bypass edilmiyor mu?
+- [ ] **Quick View:** Inline `onclick="populateOffcanvas(...)"` yok mu? `.js-quick-view` + event delegation ile offcanvas doluyor mu?
 - [ ] **Toast:** Başarı/hata bildirimleri `window.showToast('Key', 'success'|'error')` üzerinden mi geçiyor?
 - [ ] **API URL:** `apiUrl + '/api/{{ModuleNameLower}}'` formatında mı? `/mdm/api/v1/...` formatı yok mu?
 - [ ] **Auth Headers:** `getAuthHeaders()` tüm fetch/ajax çağrılarına ekleniyor mu?
@@ -30,13 +31,14 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **_Filter.cshtml:** `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dosyası oluşturulmuş mu?
 - [ ] **Offcanvas Yapısı:** Offcanvas içeriği `<dl class="row">` + `<dt>/<dd>` yapısıyla mı yazılmış? (`<div class="row"><div class="col-6">` yapısı yasaktır)
 - [ ] **Hardcoded String:** Offcanvas dahil tüm görünür metinler `@Localizer[...]` veya `@SharedLocalizer[...]` üzerinden geliyor mu?
-- [ ] **L10n Bridge:** `@section Scripts` içinde `window.L10n` bloğu standart şablona göre dolu mu? (en azından `Active, Passive, Actions, Delete, BulkDelete, BulkDeleteConfirm, AreYouSure, Cancel` key'leri)?
+- [ ] **L10n Bridge:** `@section Scripts` içinde `window.L10n` bloğu standart şablona göre dolu mu? (en azından `Active, Passive, Unknown, Actions, Edit, ViewDetails, QuickView, BulkDelete, BulkDeleteConfirm, AreYouSure, Cancel` key'leri)?
 - [ ] **Layout:** `Layout = "_LayoutBackbone"` kullanılıyor mu?
 
 ### C. Localization
 
 - [ ] **8 Dil:** Modüle özgü tüm yeni key'ler (`en, tr, ru, es, ka, kk, uk, uz`) dosyalarına eklenmiş mi?
-- [ ] **SharedResource:** "Kaydet", "İptal", "Aktif", "Durum", "İşlemler" gibi genel key'ler modül `.resx`'ine değil, sadece `SharedLocalizer`'a eklenmiş mi?
+- [ ] **SharedResource:** Genel UI key'leri (`Active`, `Passive`, `Status`, `Filter`, `Reset`, `Apply`, `BulkDelete`, `AreYouSure`, `Cancel`, ...) sadece `SharedLocalizer` üzerinden mi geliyor?
+- [ ] **Module Resx:** Modül key'leri (`{{ModuleName}}Title`, `PageDescription`, `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}`, ...) sadece modül `.resx` dosyalarından mı geliyor?
 
 ### D. Routing & Sidebar
 
@@ -52,6 +54,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **DataTable Toolbar:** Search kutusu, Export dropdown, Filter butonu ve "Add New" butonu görünüyor mu?
 - [ ] **Localization:** Sayfa başlığı, alt başlık ve tablo kolon başlıkları raw key olarak DEĞİL çevrilmiş metin olarak görünüyor mu?
 - [ ] **Console Hatasızlık:** Browser console'da JavaScript hatası yok mu?
+- [ ] **Quick View:** "Quick View" offcanvas açılıyor ve alanlar doluyor mu?
 - [ ] **Boş Durum:** Tablo boşsa "No records found" veya eşdeğer L10n mesajı düzgün gösteriliyor mu?
 
 ### F. Localization Dosya İsimlendirme
@@ -80,3 +83,4 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 | `.antigravity/rules/frontend-standards.md` | CSS, UI, L10n genel kurallar |
 | `.antigravity/workflows/add-module.md` | Tam modül oluşturma orkestrasyonu |
 | `.antigravity/workflows/add-page.md` | Sayfa/action ekleme kuralları |
+| `.antigravity/scripts/verify_datatable_page.py` | Golden DataTable statik doğrulama (Index.cshtml + index.js kontratı) |

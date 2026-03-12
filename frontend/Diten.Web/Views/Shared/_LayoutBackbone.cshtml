@@ -127,6 +127,13 @@
                             <div>@SharedLocalizer["LegalEntities"]</div>
                         </a>
                     </li>
+                    <li
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Countries" ? "active" : "")">
+                        <a href="/Countries" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-world"></i>
+                            <div>@SharedLocalizer["Countries"]</div>
+                        </a>
+                    </li>
 
                 </ul>
             </aside>

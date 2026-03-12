@@ -162,6 +162,9 @@
   <data name="LegalEntities" xml:space="preserve">
     <value>Заңды тұлғалар</value>
   </data>
+  <data name="Countries" xml:space="preserve">
+    <value>Елдер</value>
+  </data>
   <data name="Light" xml:space="preserve">
     <value>Жарық</value>
   </data>

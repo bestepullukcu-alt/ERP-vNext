@@ -88,7 +88,7 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
                     <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
                     {{TableHeaders}}
                     <th>@SharedLocalizer["Status"]</th>
-                    <th class="cell-fit">@SharedLocalizer["Actions"]</th>
+                    <th class="cell-fit">@Localizer["Actions"]</th>
                 </tr>
             </thead>
         </table>
@@ -109,7 +109,8 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
                 <small id="oc-subtitle" class="text-muted">-</small>
             </div>
         </div>
-        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+            aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
 
     <div class="offcanvas-body flex-grow-1 p-0">
@@ -139,7 +140,7 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
         <button type="button" class="btn btn-label-secondary w-50 me-2" data-bs-dismiss="offcanvas">
             @SharedLocalizer["Cancel"]
         </button>
-        <a id="oc-btn-edit" href="#" class="btn btn-primary w-50">@SharedLocalizer["EditBtn"]</a>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary w-50">@Localizer["EditBtn"]</a>
     </div>
 </div>
 
@@ -149,14 +150,18 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
         window.L10n = window.L10n || {};
         window.L10n.Active              = @Json.Serialize(SharedLocalizer["Active"].Value);
         window.L10n.Passive             = @Json.Serialize(SharedLocalizer["Passive"].Value);
-        window.L10n.Actions             = @Json.Serialize(SharedLocalizer["Actions"].Value);
-        window.L10n.Edit                = @Json.Serialize(SharedLocalizer["EditBtn"].Value);
+        window.L10n.Unknown             = @Json.Serialize(SharedLocalizer["Unknown"].Value);
+        window.L10n.Actions             = @Json.Serialize(Localizer["Actions"].Value);
+        window.L10n.Edit                = @Json.Serialize(Localizer["EditBtn"].Value);
         window.L10n.ViewDetails         = @Json.Serialize(SharedLocalizer["ViewDetails"].Value);
-        window.L10n.QuickView           = @Json.Serialize(SharedLocalizer["ViewDetails"].Value);
+        window.L10n.QuickView           = @Json.Serialize(Localizer["QuickView"].Value);
         window.L10n.Search              = @Json.Serialize(SharedLocalizer["Search"].Value);
         window.L10n.Export              = @Json.Serialize(SharedLocalizer["Export"].Value);
-        window.L10n.Delete              = @Json.Serialize(SharedLocalizer["DeleteBtn"].Value);
+        window.L10n.Import              = @Json.Serialize(SharedLocalizer["Import"].Value);
+        window.L10n.ComingSoon          = @Json.Serialize(SharedLocalizer["ComingSoon"].Value);
         window.L10n.Filter              = @Json.Serialize(SharedLocalizer["Filter"].Value);
+        window.L10n.SelectStatus        = @Json.Serialize(SharedLocalizer["SelectStatus"].Value);
+        window.L10n.Reset               = @Json.Serialize(SharedLocalizer["Reset"].Value);
         window.L10n.Print               = @Json.Serialize(SharedLocalizer["Print"].Value);
         window.L10n.PDF                 = @Json.Serialize(SharedLocalizer["PDF"].Value);
         window.L10n.Copy                = @Json.Serialize(SharedLocalizer["Copy"].Value);
@@ -179,33 +184,6 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
         {{DynamicL10nScripts}}
     </script>
 
-    <script>
-        // ── Offcanvas Populate Function ─────────────────────────────────────
-        // populateOffcanvas — index.js değil bu blokta kalmalı (Razor Localizer erişimi için)
-        function populateOffcanvas(element) {
-            const dataStr = element.getAttribute('data-json').replace(/&#39;/g, "'");
-            let data = {};
-            try { data = JSON.parse(dataStr); } catch (e) { console.error('Could not parse row data', e); }
-
-            document.getElementById('oc-title').innerText = data.name || data.title || '-';
-            document.getElementById('oc-subtitle').innerText = data.{{SubtitleField}} || '-';
-
-            const statusEl = document.getElementById('oc-status');
-            if (data.isActive) {
-                statusEl.className = 'badge bg-label-success';
-                statusEl.innerText = window.L10n.Active || 'Active';
-            } else {
-                statusEl.className = 'badge bg-label-secondary';
-                statusEl.innerText = window.L10n.Passive || 'Passive';
-            }
-
-            document.getElementById('oc-btn-edit').href = `/{{ModuleName}}/Edit/${data.id}`;
-
-            // DİNAMİK OFFCANVAS JS ATAMALARI — Modüle özgü alanlar buraya
-            {{DynamicOffcanvasJs}}
-        }
-    </script>
-
     <script src="~/assets/js/{{AreaName}}/{{ModuleName}}/index.js" asp-append-version="true"></script>
 }
 ```
@@ -217,34 +195,36 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
 Her DataTable sayfasında `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dosyası mevcut olmalıdır.
 
 ```html
+@using Diten.Web.Views.{{AreaName}}.{{ModuleName}}
 @using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<{{ModuleName}}Index> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasFilter"
-     aria-labelledby="offcanvasFilterLabel" style="width: 380px;">
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasFilter" aria-labelledby="offcanvasFilterLabel">
     <div class="offcanvas-header border-bottom">
-        <h5 class="offcanvas-title" id="offcanvasFilterLabel">
-            <i class="bx bx-filter-alt me-2"></i>@SharedLocalizer["Filter"]
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <h5 id="offcanvasFilterLabel" class="offcanvas-title">@SharedLocalizer["Filter"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+            aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
-    <div class="offcanvas-body">
-        {{!-- Modüle özgü filtre alanları buraya (Select2, date range, vb.) --}}
-        <div class="mb-4 user_plan">
-            <label class="form-label">{{FilterLabel1}}</label>
-            {{!-- Select dinamik olarak JS içinde oluşturulur (setupFilters fonksiyonu) --}}
-        </div>
-        <div class="mb-4 user_status">
-            <label class="form-label">@SharedLocalizer["Status"]</label>
-        </div>
-    </div>
-    <div class="offcanvas-footer border-top p-4 d-flex gap-3">
-        <button type="button" id="btnFilterReset" class="btn btn-label-secondary w-50">
-            @SharedLocalizer["Reset"]
-        </button>
-        <button type="button" id="btnFilterApply" class="btn btn-primary w-50">
-            @SharedLocalizer["Apply"]
-        </button>
+    <div class="offcanvas-body mx-0 flex-grow-0 pt-4 h-100">
+        <form class="pt-0" id="filterForm">
+            <div class="filter-inputs-wrapper mb-6">
+                {{!-- Modüle özgü filtre alanları buraya (Select2, date range, vb.) --}}
+                <div class="mb-4 user_plan">
+                    <label class="form-label">@Localizer["{{FilterLabel1Key}}"]</label>
+                    {{!-- Select dinamik olarak JS içinde oluşturulur (setupFilters fonksiyonu) --}}
+                </div>
+                <div class="mb-4 user_status">
+                    <label class="form-label">@SharedLocalizer["Status"]</label>
+                </div>
+            </div>
+            <div class="d-flex mt-4 gap-6">
+                <button type="button" class="btn btn-primary d-grid w-100"
+                    id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                <button type="reset" class="btn btn-label-danger d-grid w-100"
+                    id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+            </div>
+        </form>
     </div>
 </div>
 ```

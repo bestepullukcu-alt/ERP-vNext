@@ -246,7 +246,7 @@ BACKEND:
 FRONTEND:
 - frontend/Diten.Web/Controllers/CountriesController.cs
 - frontend/Diten.Web/Views/MDM/Countries/ (tüm klasör)
-- frontend/Diten.Web/wwwroot/assets/js/mdm/countries/ (tüm klasör)
+- frontend/Diten.Web/wwwroot/assets/js/MDM/Countries/ (tüm klasör)
 - frontend/Diten.Web/Resources/Views/MDM/Countries/ (tüm klasör)
 
 GATEWAY:

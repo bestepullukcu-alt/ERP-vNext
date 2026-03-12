@@ -7,7 +7,7 @@ Runs COMPLETE validation including all checks + performance + E2E.
 Use this before deployment or major releases.
 
 Usage:
-    python scripts/verify_all.py . --url <URL>
+    python3 .antigravity/scripts/verify_all.py . --url <URL>
 
 Includes ALL checks:
     ✅ Security Scan (OWASP, secrets, dependencies)
@@ -63,8 +63,8 @@ VERIFICATION_SUITE = [
     {
         "category": "Security",
         "checks": [
-            ("Security Scan", ".agent/skills/vulnerability-scanner/scripts/security_scan.py", True),
-            ("Dependency Analysis", ".agent/skills/vulnerability-scanner/scripts/dependency_analyzer.py", False),
+            ("Security Scan", ".antigravity/skills/vulnerability-scanner/scripts/security_scan.py", True),
+            ("Dependency Analysis", ".antigravity/skills/vulnerability-scanner/scripts/dependency_analyzer.py", False),
         ]
     },
     
@@ -72,8 +72,8 @@ VERIFICATION_SUITE = [
     {
         "category": "Code Quality",
         "checks": [
-            ("Lint Check", ".agent/skills/lint-and-validate/scripts/lint_runner.py", True),
-            ("Type Coverage", ".agent/skills/lint-and-validate/scripts/type_coverage.py", False),
+            ("Lint Check", ".antigravity/skills/lint-and-validate/scripts/lint_runner.py", True),
+            ("Type Coverage", ".antigravity/skills/lint-and-validate/scripts/type_coverage.py", False),
         ]
     },
     
@@ -81,7 +81,7 @@ VERIFICATION_SUITE = [
     {
         "category": "Data Layer",
         "checks": [
-            ("Schema Validation", ".agent/skills/database-design/scripts/schema_validator.py", False),
+            ("Schema Validation", ".antigravity/skills/database-design/scripts/schema_validator.py", False),
         ]
     },
     
@@ -89,7 +89,7 @@ VERIFICATION_SUITE = [
     {
         "category": "Testing",
         "checks": [
-            ("Test Suite", ".agent/skills/testing-patterns/scripts/test_runner.py", False),
+            ("Test Suite", ".antigravity/skills/testing-patterns/scripts/test_runner.py", False),
         ]
     },
     
@@ -97,8 +97,8 @@ VERIFICATION_SUITE = [
     {
         "category": "UX & Accessibility",
         "checks": [
-            ("UX Audit", ".agent/skills/frontend-design/scripts/ux_audit.py", False),
-            ("Accessibility Check", ".agent/skills/frontend-design/scripts/accessibility_checker.py", False),
+            ("UX Audit", ".antigravity/skills/frontend-design/scripts/ux_audit.py", False),
+            ("Accessibility Check", ".antigravity/skills/frontend-design/scripts/accessibility_checker.py", False),
         ]
     },
     
@@ -106,8 +106,8 @@ VERIFICATION_SUITE = [
     {
         "category": "SEO & Content",
         "checks": [
-            ("SEO Check", ".agent/skills/seo-fundamentals/scripts/seo_checker.py", False),
-            ("GEO Check", ".agent/skills/geo-fundamentals/scripts/geo_checker.py", False),
+            ("SEO Check", ".antigravity/skills/seo-fundamentals/scripts/seo_checker.py", False),
+            ("GEO Check", ".antigravity/skills/geo-fundamentals/scripts/geo_checker.py", False),
         ]
     },
     
@@ -116,8 +116,8 @@ VERIFICATION_SUITE = [
         "category": "Performance",
         "requires_url": True,
         "checks": [
-            ("Lighthouse Audit", ".agent/skills/performance-profiling/scripts/lighthouse_audit.py", True),
-            ("Bundle Analysis", ".agent/skills/performance-profiling/scripts/bundle_analyzer.py", False),
+            ("Lighthouse Audit", ".antigravity/skills/performance-profiling/scripts/lighthouse_audit.py", True),
+            ("Bundle Analysis", ".antigravity/skills/performance-profiling/scripts/bundle_analyzer.py", False),
         ]
     },
     
@@ -126,7 +126,7 @@ VERIFICATION_SUITE = [
         "category": "E2E Testing",
         "requires_url": True,
         "checks": [
-            ("Playwright E2E", ".agent/skills/webapp-testing/scripts/playwright_runner.py", False),
+            ("Playwright E2E", ".antigravity/skills/webapp-testing/scripts/playwright_runner.py", False),
         ]
     },
     
@@ -134,7 +134,7 @@ VERIFICATION_SUITE = [
     {
         "category": "Mobile",
         "checks": [
-            ("Mobile Audit", ".agent/skills/mobile-design/scripts/mobile_audit.py", False),
+            ("Mobile Audit", ".antigravity/skills/mobile-design/scripts/mobile_audit.py", False),
         ]
     },
     
@@ -142,7 +142,7 @@ VERIFICATION_SUITE = [
     {
         "category": "Internationalization",
         "checks": [
-            ("i18n Check", ".agent/skills/i18n-localization/scripts/i18n_checker.py", False),
+            ("i18n Check", ".antigravity/skills/i18n-localization/scripts/i18n_checker.py", False),
         ]
     },
 ]
@@ -157,7 +157,8 @@ def run_script(name: str, script_path: Path, project_path: str, url: Optional[st
     start_time = datetime.now()
     
     # Build command
-    cmd = ["python", str(script_path), project_path]
+    # Use the current interpreter (python3 on macOS, venv-aware).
+    cmd = [sys.executable, str(script_path), project_path]
     if url and ("lighthouse" in script_path.name.lower() or "playwright" in script_path.name.lower()):
         cmd.append(url)
     
@@ -266,8 +267,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python scripts/verify_all.py . --url http://localhost:3000
-  python scripts/verify_all.py . --url https://staging.example.com --no-e2e
+  python3 .antigravity/scripts/verify_all.py . --url http://localhost:3000
+  python3 .antigravity/scripts/verify_all.py . --url https://staging.example.com --no-e2e
         """
     )
     parser.add_argument("project", help="Project path to validate")

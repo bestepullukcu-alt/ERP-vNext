@@ -40,8 +40,62 @@ const LegalEntitiesList = (function () {
     };
 
     const statusObj = {
-        true: { title: L.Active || 'Active', class: 'bg-label-success' },
-        false: { title: L.Passive || 'Passive', class: 'bg-label-secondary' }
+        true: { title: L.Active, class: 'bg-label-success' },
+        false: { title: L.Passive, class: 'bg-label-secondary' }
+    };
+
+    const getCompanyTypeLabel = (value) => {
+        const map = {
+            LimitedLiability: L.LimitedLiability,
+            Corporation: L.Corporation,
+            SoleProprietorship: L.SoleProprietorship
+        };
+        return map[value] || value || '-';
+    };
+
+    const populateOffcanvas = (data) => {
+        if (!data) return;
+
+        document.getElementById('oc-title').innerText = data.title || '-';
+
+        const subtitleParts = [];
+        if (data.companyType) subtitleParts.push(getCompanyTypeLabel(data.companyType));
+        if (data.sector) subtitleParts.push(data.sector);
+        document.getElementById('oc-subtitle').innerText = subtitleParts.filter(Boolean).join(' • ') || '-';
+
+        document.getElementById('oc-company-type').innerText = data.companyType ? getCompanyTypeLabel(data.companyType) : '-';
+        document.getElementById('oc-sector').innerText = data.sector || '-';
+        document.getElementById('oc-org-role').innerText = data.organizationRole || '-';
+        document.getElementById('oc-contact').innerText = data.contactPerson || '-';
+
+        document.getElementById('oc-taxnumber').innerText = data.taxNumber || '-';
+        document.getElementById('oc-phone').innerText = data.phone || '-';
+        document.getElementById('oc-email').innerText = data.email || '-';
+        document.getElementById('oc-website').innerText = data.website || '-';
+        document.getElementById('oc-address').innerText = data.address || '-';
+        document.getElementById('oc-taxoffice').innerText = data.taxOffice || '-';
+        document.getElementById('oc-jurisdiction').innerText = data.taxJurisdiction || '-';
+        document.getElementById('oc-currency').innerText = data.primaryCurrency || '-';
+
+        const statusEl = document.getElementById('oc-status');
+        const status = statusObj[String(data.isActive)] || { title: L.Unknown || String(data.isActive), class: 'bg-label-primary' };
+        statusEl.className = `badge ${status.class}`;
+        statusEl.innerText = status.title || '-';
+
+        document.getElementById('oc-btn-edit').href = `/LegalEntities/Edit/${data.id}`;
+    };
+
+    const tryParseRowJson = (element) => {
+        if (!element) return null;
+        const raw = element.getAttribute('data-json');
+        if (!raw) return null;
+
+        try {
+            return JSON.parse(raw.replace(/&#39;/g, "'"));
+        } catch (err) {
+            console.error('[LegalEntities QuickView] Could not parse row data', err);
+            return null;
+        }
     };
 
     /**
@@ -55,15 +109,15 @@ const LegalEntitiesList = (function () {
             importBtn: {
                 text: '<i class="icon-base bx bx-import icon-sm"></i>',
                 className: 'btn btn-icon btn-label-secondary',
-                attr: { title: L.Import || 'Import', 'data-bs-toggle': 'tooltip' },
+                attr: { title: L.Import, 'data-bs-toggle': 'tooltip' },
                 action: function () {
-                    if (window.showToast) window.showToast(L.ComingSoon || 'Coming soon', 'info');
+                    window.showToast?.(L.ComingSoon, 'info');
                 }
             },
             filterBtn: {
                 text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
                 className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
-                attr: { title: L.Filter || 'Filter', 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasFilter' }
+                attr: { title: L.Filter, 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasFilter' }
             }
         };
 
@@ -101,28 +155,39 @@ const LegalEntitiesList = (function () {
                 },
                 { targets: 5, render: (data) => data ? `<a href="mailto:${data}">${data}</a>` : '-' },
                 {
-                    targets: 8,
-                    render: (data) => {
-                        const status = statusObj[String(data)] || { title: L.Unknown || 'Unknown', class: 'bg-label-primary' };
-                        return `<span class="badge ${status.class}" text-capitalized>${status.title}</span>`;
+                    targets: 7,
+                    render: (data, type) => {
+                        const label = getCompanyTypeLabel(data);
+                        if (type === 'display') return label;
+                        return data || ''; // keep filters/sort stable across languages
                     }
                 },
                 {
-                    targets: -1, title: L.Actions || 'Actions', searchable: false, orderable: false,
+                    targets: 8,
+                    render: (data, type) => {
+                        const status = statusObj[String(data)] || { title: L.Unknown || String(data), class: 'bg-label-primary' };
+                        if (type === 'display') {
+                            return `<span class="badge ${status.class}" text-capitalized>${status.title}</span>`;
+                        }
+                        return status.title || '';
+                    }
+                },
+                {
+                    targets: -1, title: L.Actions, searchable: false, orderable: false,
                     className: 'cell-fit',
                     render: (data, type, full) => `
             <div class="d-flex align-items-center">
               <a href="javascript:;" class="btn btn-icon delete-record text-danger me-1"><i class="bx bx-trash icon-md"></i></a>
               <a href="javascript:;" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded icon-md"></i></a>
               <div class="dropdown-menu dropdown-menu-end m-0">
-                <a href="/LegalEntities/Details/${full['id']}" class="dropdown-item">${L.ViewDetails || 'View Details'}</a>
-                <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetailsPreview" onclick="populateOffcanvas(this)" data-json='${JSON.stringify(full).replace(/'/g, "&#39;")}'>Quick View</a>
-                <a href="/LegalEntities/Edit/${full['id']}" class="dropdown-item">${L.Edit || 'Edit'}</a>
+                <a href="/LegalEntities/Details/${full['id']}" class="dropdown-item">${L.ViewDetails}</a>
+                <a href="javascript:void(0);" class="dropdown-item js-quick-view" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetailsPreview" data-json='${JSON.stringify(full).replace(/'/g, "&#39;")}'>${L.QuickView}</a>
+                <a href="/LegalEntities/Edit/${full['id']}" class="dropdown-item">${L.Edit}</a>
               </div>
             </div>`
                 }
             ],
-            buttons: window.DtDefaults.exportButtons(L.AddNewCompany || 'Add New Company', {
+            buttons: window.DtDefaults.exportButtons(L.AddNewCompany, {
                 onclick: "window.location.href='/LegalEntities/Create'"
             }, extraButtons),
             initComplete: function () {
@@ -149,34 +214,33 @@ const LegalEntitiesList = (function () {
      * Setup Filters
      */
     const setupFilters = (api) => {
-        const createSelectFilter = (columnSelector, containerClass, selectId, defaultOptionText) => {
-            const container = document.querySelector(containerClass);
-            if (!container) return;
+        // Company Type Filter
+        const companyTypeContainer = document.querySelector('.user_plan');
+        if (companyTypeContainer) {
+            const selectId = 'UserPlan';
             const select = document.createElement('select');
             select.id = selectId;
             select.className = 'form-select select2 text-capitalize';
-            select.innerHTML = `<option value="">${defaultOptionText}</option>`;
-            container.appendChild(select);
+            select.innerHTML = `<option value="">${L.CompanyType}</option>`;
+            companyTypeContainer.appendChild(select);
 
-            const column = api.column(columnSelector);
-            Array.from(new Set(column.data().toArray())).sort().forEach(d => {
-                if (!d) return;
+            [
+                { value: 'LimitedLiability', label: L.LimitedLiability },
+                { value: 'Corporation', label: L.Corporation },
+                { value: 'SoleProprietorship', label: L.SoleProprietorship }
+            ].forEach((opt) => {
                 const option = document.createElement('option');
-                option.value = d;
-                option.textContent = d;
+                option.value = opt.value;
+                option.textContent = opt.label || opt.value;
                 select.appendChild(option);
             });
 
-            // Initialize Select2
             $(select).select2({
-                placeholder: defaultOptionText,
+                placeholder: L.CompanyType,
                 dropdownParent: $('#offcanvasFilter'),
                 minimumResultsForSearch: 5
             });
-        };
-
-        // Company Type Filter
-        createSelectFilter('companyType:name', '.user_plan', 'UserPlan', L.CompanyType || 'Select Type');
+        }
 
         // Status filter (special handling for statusObj)
         const statusContainer = document.querySelector('.user_status');
@@ -185,12 +249,13 @@ const LegalEntitiesList = (function () {
             const select = document.createElement('select');
             select.id = selectId;
             select.className = 'form-select select2 text-capitalize';
-            select.innerHTML = `<option value="">${L.SelectStatus || 'Select Status'}</option>`;
+            select.innerHTML = `<option value="">${L.SelectStatus}</option>`;
             statusContainer.appendChild(select);
 
-            const statusColumn = api.column('isActive:name');
-            Array.from(new Set(statusColumn.data().toArray())).sort().forEach(d => {
-                const status = statusObj[String(d)] || { title: L.Unknown || 'Unknown' };
+            [
+                statusObj.true,
+                statusObj.false
+            ].filter(Boolean).forEach((status) => {
                 const option = document.createElement('option');
                 option.value = status.title;
                 option.textContent = status.title;
@@ -199,7 +264,7 @@ const LegalEntitiesList = (function () {
 
             // Initialize Select2
             $(select).select2({
-                placeholder: L.SelectStatus || 'Select Status',
+                placeholder: L.SelectStatus,
                 dropdownParent: $('#offcanvasFilter'),
                 minimumResultsForSearch: Infinity // No search for status
             });
@@ -331,8 +396,13 @@ const LegalEntitiesList = (function () {
                                 window.showToast?.('RecordDeleted', 'success');
                             } else window.showToast?.('ErrorOccurred', 'error');
                         })
-                        .catch(() => window.showToast?.('Error deleting record', 'error'));
+                        .catch(() => window.showToast?.('ErrorOccurred', 'error'));
                 }, data.title);
+            }
+
+            const quickViewBtn = e.target.closest('.js-quick-view');
+            if (quickViewBtn) {
+                populateOffcanvas(tryParseRowJson(quickViewBtn));
             }
         });
 
@@ -364,15 +434,15 @@ const LegalEntitiesList = (function () {
             const ids = getSelectedIds();
             if (ids.length === 0) return;
 
-            const confirmMsg = (L.BulkDeleteConfirm || 'Are you sure you want to delete {0} selected records?').replace('{0}', ids.length);
+            const confirmMsg = (L.BulkDeleteConfirm || '').replace('{0}', ids.length);
 
             Swal.fire({
-                title: window.L10n?.AreYouSure || 'Are you sure?',
+                title: L.AreYouSure,
                 html: `<div class="mb-2">${confirmMsg}</div>`,
                 iconHtml: '<div class="swal-icon-circle"><i class="bx bx-trash"></i></div>',
                 showCancelButton: true,
-                confirmButtonText: L.BulkDelete || 'Bulk Delete',
-                cancelButtonText: L.Cancel || 'Cancel',
+                confirmButtonText: L.BulkDelete,
+                cancelButtonText: L.Cancel,
                 width: '400px',
                 padding: '2.5rem 1.5rem 2rem',
                 customClass: {
@@ -403,7 +473,7 @@ const LegalEntitiesList = (function () {
                             throw new Error('Bulk delete failed');
                         })
                         .then(data => {
-                            window.showToast?.((L.BulkDeleteSuccess || '{0} records deleted successfully').replace('{0}', data.deletedCount), 'success');
+                            window.showToast?.((L.BulkDeleteSuccess || '').replace('{0}', data.deletedCount), 'success');
                             clearSelection();
                             dt.ajax.reload();
                         })

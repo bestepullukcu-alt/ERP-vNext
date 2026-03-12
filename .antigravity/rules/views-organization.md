@@ -44,11 +44,9 @@ Sistemde iki farklı dünya (Eski Archive ve Yeni vNext) aynı anda yaşamaktad�
 
 Kullanıcının veri yüklenirken boş bir ekran görmesini engellemek için Skeleton Loader kullanımı zorunludur.
 
-- Yerleşim: DataTable içeren her liste sayfasında, .card-datatable div'inin İÇİNE #skeleton-loader bloğu yerleştirilmelidir.
-- Teknik Detaylar:
-  - Parent div (card-datatable) mutlaka style="position: relative; min-height: 200px;" ayarına sahip olmalıdır.
-  - Skeleton, tablonun toolbar'ını (Arama/Export alanı) örtmemesi için top: 72px; boşluğu ile position: absolute olarak konumlandırılmalıdır.
-- Kullanım: @await Html.PartialAsync("_SkeletonLoader") çağrısı veya manuel ID tanımlı Shimmer blokları kullanılır.
+- Yerleşim: DataTable içeren her liste sayfasında `.card` içinde `#skeleton-loader` bloğu bulunmalıdır (tablodan önce).
+- Davranış: `window.DtDefaults.create()` wrapper'ı AJAX başlangıcında skeleton'ı gösterir (`preXhr`) ve her draw sonunda otomatik kapatır (`drawCallback`).
+- Kural: ID mutlaka `skeleton-loader` olmalıdır. Sayfa özelinde ekstra show/hide JS yazmak ancak özel UX ihtiyacı varsa kabul edilir.
 
 ---
 
@@ -64,7 +62,7 @@ Kullanıcının veri yüklenirken boş bir ekran görmesini engellemek için Ske
 - [ ] Razor bloğunda Layout = "_LayoutBackbone" tanımlandı mı?
 - [ ] _ViewStart dosyasına dokunulmadı mı?
 - [ ] Liste sayfasında #skeleton-loader yapısı kuruldu mu?
-- [ ] Parent container'da min-height ve position: relative ayarları yapıldı mı?
+- [ ] Sayfa özelinde skeleton show/hide hack'i olmadan DtDefaults ile kapanıyor mu?
 
 ---
 Diten ERP vNext View Organization Standard - VIEW-001

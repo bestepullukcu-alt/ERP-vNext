@@ -12,13 +12,6 @@
     var culture = requestCulture?.RequestCulture.Culture.Name ?? CultureInfo.CurrentCulture.Name;
 }
 
-<!-- DEBUG INFO:
-    Culture: @culture
-    Localizer["LegalEntitiesTitle"]: @Localizer["LegalEntitiesTitle"].Value
-    Localizer Type: @Localizer.GetType().FullName
-    SharedLocalizer["Estado"]: @SharedLocalizer["Status"].Value
--->
-
 <partial name="_Filter" />
 
 
@@ -95,7 +88,8 @@
                 <small id="oc-subtitle" class="text-muted">-</small>
             </div>
         </div>
-        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+            aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
 
     <div class="offcanvas-body flex-grow-1 p-0">
@@ -104,84 +98,116 @@
             <!-- Contact Box -->
             <div class="bg-label-secondary rounded p-3 mb-4 d-flex align-items-center justify-content-between">
                 <div>
-                    <span class="d-block text-muted small fw-medium mb-1">Tax Number (VKN)</span>
+                    <span class="d-block text-muted small fw-medium mb-1">@SharedLocalizer["TaxNumber"]</span>
                     <span id="oc-taxnumber" class="fw-bold text-heading">-</span>
                 </div>
                 <div>
-                    <span class="d-block text-muted small fw-medium mb-1">Status</span>
+                    <span class="d-block text-muted small fw-medium mb-1">@SharedLocalizer["Status"]</span>
                     <span id="oc-status" class="badge bg-label-secondary">-</span>
                 </div>
             </div>
 
             <!-- Details List -->
-            <h6 class="text-uppercase text-muted fw-bold mb-3">General Information</h6>
+            <h6 class="text-uppercase text-muted fw-bold mb-3">@Localizer["GeneralInformation"]</h6>
             <dl class="row mb-4">
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-buildings text-muted me-2"></i>Company
-                    Type</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-buildings text-muted me-2"></i>@Localizer["CompanyType"]</dt>
                 <dd id="oc-company-type" class="col-7 mb-2">-</dd>
 
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-layer text-muted me-2"></i>Sector</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-layer text-muted me-2"></i>@Localizer["Sector"]</dt>
                 <dd id="oc-sector" class="col-7 mb-2">-</dd>
 
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-user-pin text-muted me-2"></i>Role</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-user-pin text-muted me-2"></i>@Localizer["OrganizationRole"]</dt>
                 <dd id="oc-org-role" class="col-7 mb-2">-</dd>
 
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-briefcase text-muted me-2"></i>Contact
-                    Person</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-briefcase text-muted me-2"></i>@Localizer["ContactPerson"]</dt>
                 <dd id="oc-contact" class="col-7 mb-2">-</dd>
             </dl>
 
-            <h6 class="text-uppercase text-muted fw-bold mb-3">Communication</h6>
+            <h6 class="text-uppercase text-muted fw-bold mb-3">@Localizer["Communication"]</h6>
             <dl class="row mb-4">
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-phone text-muted me-2"></i>Phone</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-phone text-muted me-2"></i>@Localizer["Phone"]</dt>
                 <dd id="oc-phone" class="col-7 mb-2">-</dd>
 
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-envelope text-muted me-2"></i>Email</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-envelope text-muted me-2"></i>@Localizer["Email"]</dt>
                 <dd id="oc-email" class="col-7 mb-2 text-primary">-</dd>
 
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-globe text-muted me-2"></i>Website</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-globe text-muted me-2"></i>@Localizer["Website"]</dt>
                 <dd id="oc-website" class="col-7 mb-2 text-primary">-</dd>
 
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-map-pin text-muted me-2"></i>Address</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-map-pin text-muted me-2"></i>@Localizer["Address"]</dt>
                 <dd id="oc-address" class="col-7 mb-2">-</dd>
             </dl>
 
-            <h6 class="text-uppercase text-muted fw-bold mb-3">Financial Details</h6>
+            <h6 class="text-uppercase text-muted fw-bold mb-3">@Localizer["FinancialRegistration"]</h6>
             <dl class="row mb-0">
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-building-house text-muted me-2"></i>Tax
-                    Office</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-building-house text-muted me-2"></i>@Localizer["TaxOffice"]</dt>
                 <dd id="oc-taxoffice" class="col-7 mb-2">-</dd>
 
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-globe text-muted me-2"></i>Jurisdiction
-                </dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-globe text-muted me-2"></i>@Localizer["TaxJurisdiction"]</dt>
                 <dd id="oc-jurisdiction" class="col-7 mb-2">-</dd>
 
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-money text-muted me-2"></i>Currency</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-money text-muted me-2"></i>@Localizer["PrimaryCurrency"]</dt>
                 <dd id="oc-currency" class="col-7 mb-2">-</dd>
             </dl>
         </div>
     </div>
     <div class="offcanvas-footer border-top p-4 d-flex justify-content-between">
-        <button type="button" class="btn btn-label-secondary w-50 me-2" data-bs-dismiss="offcanvas">Close</button>
-        <a id="oc-btn-edit" href="#" class="btn btn-primary w-50">Edit</a>
+        <button type="button" class="btn btn-label-secondary w-50 me-2"
+            data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary w-50">@Localizer["EditBtn"]</a>
     </div>
 </div>
 
 @section Scripts {
-    <script>     window.L10n = window.L10n || {}; window.L10n.Active = @Json.Serialize(SharedLocalizer["Active"].Value); window.L10n.Passive = @Json.Serialize(SharedLocalizer["Passive"].Value); window.L10n.Unknown = @Json.Serialize(SharedLocalizer["Unknown"].Value); window.L10n.Actions = @Json.Serialize(Localizer["Actions"].Value); window.L10n.Edit = @Json.Serialize(Localizer["EditBtn"].Value); window.L10n.ViewDetails = @Json.Serialize(SharedLocalizer["ViewDetails"].Value); window.L10n.Search = @Json.Serialize(SharedLocalizer["Search"].Value); window.L10n.Export = @Json.Serialize(SharedLocalizer["Export"].Value); window.L10n.Import = @Json.Serialize(SharedLocalizer["Import"].Value); window.L10n.ComingSoon = @Json.Serialize(SharedLocalizer["ComingSoon"].Value); window.L10n.Print = @Json.Serialize(SharedLocalizer["Print"].Value); window.L10n.ShowAll = @Json.Serialize(SharedLocalizer["ShowAll"].Value); window.L10n.AddNewCompany = @Json.Serialize(Localizer["AddNewCompany"].Value); window.L10n.CompanyType = @Json.Serialize(Localizer["CompanyType"].Value); window.L10n.SelectStatus = @Json.Serialize(SharedLocalizer["SelectStatus"].Value); window.L10n.Filter = @Json.Serialize(SharedLocalizer["Filter"].Value); window.L10n.Reset = @Json.Serialize(SharedLocalizer["Reset"].Value); window.L10n.PDF = @Json.Serialize(SharedLocalizer["PDF"].Value); window.L10n.Copy = @Json.Serialize(SharedLocalizer["Copy"].Value); window.L10n.DtNoRecords = @Json.Serialize(SharedLocalizer["DtNoRecords"].Value); window.L10n.DtInfo = @Json.Serialize(SharedLocalizer["DtInfo"].Value); window.L10n.DtInfoEmpty = @Json.Serialize(SharedLocalizer["DtInfoEmpty"].Value); window.L10n.DtInfoFiltered = @Json.Serialize(SharedLocalizer["DtInfoFiltered"].Value); window.L10n.DtZeroRecords = @Json.Serialize(SharedLocalizer["DtZeroRecords"].Value); window.L10n.DtEmptyTable = @Json.Serialize(SharedLocalizer["DtEmptyTable"].Value); window.L10n.BulkDelete = @Json.Serialize(SharedLocalizer["BulkDelete"].Value); window.L10n.BulkDeleteConfirm = @Json.Serialize(SharedLocalizer["BulkDeleteConfirm"].Value); window.L10n.BulkDeleteSuccess = @Json.Serialize(SharedLocalizer["BulkDeleteSuccess"].Value); window.L10n.ClearSelection = @Json.Serialize(SharedLocalizer["ClearSelection"].Value); window.L10n.SelectedCount = @Json.Serialize(SharedLocalizer["SelectedCount"].Value); window.L10n.AreYouSure = @Json.Serialize(SharedLocalizer["AreYouSure"].Value); window.L10n.Cancel = @Json.Serialize(SharedLocalizer["Cancel"].Value);
-
-    </script>
-    <script>     function populateOffcanvas(element) {
-            const dataStr = element.getAttribute('data-json').replace(/&#39;/g, "'"); let data = {}; try { data = JSON.parse(dataStr); } catch (e) { console.error("Could not parse row data", e); }
-            document.getElementById('oc-title').innerText = data.title || '-';
-            let subtitleParts = []; if (data.companyType) { if (data.companyType === 'LimitedLiability') subtitleParts.push("Limited"); else if (data.companyType === 'Corporation') subtitleParts.push("Corp"); else if (data.companyType === 'SoleProprietorship') subtitleParts.push("Şahıs"); else subtitleParts.push(data.companyType); } if (data.sector) subtitleParts.push(data.sector); document.getElementById('oc-subtitle').innerText = subtitleParts.join(' • ') || '-';
-            let companyTypeStr = '-'; if (data.companyType) {
-                if (data.companyType === 'LimitedLiability') companyTypeStr = "LimitedLiability"; // This would normally use localization. Using exact type representation for now.             else if (data.companyType === 'Corporation') companyTypeStr = "Corporation";             else if (data.companyType === 'SoleProprietorship') companyTypeStr = "SoleProprietorship";             else companyTypeStr = data.companyType;         }
-                document.getElementById('oc-company-type').innerText = companyTypeStr; document.getElementById('oc-sector').innerText = data.sector || '-'; document.getElementById('oc-org-role').innerText = data.organizationRole || '-';
-                document.getElementById('oc-taxnumber').innerText = data.taxNumber || '-'; document.getElementById('oc-contact').innerText = data.contactPerson || '-'; document.getElementById('oc-phone').innerText = data.phone || '-'; document.getElementById('oc-email').innerText = data.email || '-'; document.getElementById('oc-website').innerText = data.website || '-'; document.getElementById('oc-address').innerText = data.address || '-'; document.getElementById('oc-taxoffice').innerText = data.taxOffice || '-'; document.getElementById('oc-jurisdiction').innerText = data.taxJurisdiction || '-'; document.getElementById('oc-currency').innerText = data.primaryCurrency || '-';
-                const statusEl = document.getElementById('oc-status'); if (data.isActive) { statusEl.className = 'badge bg-label-success'; statusEl.innerText = window.L10n.Active || 'Active'; } else { statusEl.className = 'badge bg-label-secondary'; statusEl.innerText = window.L10n.Passive || 'Passive'; }
-                document.getElementById('oc-btn-edit').href = `/LegalEntities/Edit/${data.id}`;
-            }
+    <script>
+        window.L10n = window.L10n || {};
+        window.L10n.Active = @Json.Serialize(SharedLocalizer["Active"].Value);
+        window.L10n.Passive = @Json.Serialize(SharedLocalizer["Passive"].Value);
+        window.L10n.Unknown = @Json.Serialize(SharedLocalizer["Unknown"].Value);
+        window.L10n.Actions = @Json.Serialize(Localizer["Actions"].Value);
+        window.L10n.Edit = @Json.Serialize(Localizer["EditBtn"].Value);
+        window.L10n.ViewDetails = @Json.Serialize(SharedLocalizer["ViewDetails"].Value);
+        window.L10n.QuickView = @Json.Serialize(Localizer["QuickView"].Value);
+        window.L10n.Search = @Json.Serialize(SharedLocalizer["Search"].Value);
+        window.L10n.Export = @Json.Serialize(SharedLocalizer["Export"].Value);
+        window.L10n.Import = @Json.Serialize(SharedLocalizer["Import"].Value);
+        window.L10n.ComingSoon = @Json.Serialize(SharedLocalizer["ComingSoon"].Value);
+        window.L10n.Print = @Json.Serialize(SharedLocalizer["Print"].Value);
+        window.L10n.ShowAll = @Json.Serialize(SharedLocalizer["ShowAll"].Value);
+        window.L10n.AddNewCompany = @Json.Serialize(Localizer["AddNewCompany"].Value);
+        window.L10n.CompanyType = @Json.Serialize(Localizer["CompanyType"].Value);
+        window.L10n.LimitedLiability = @Json.Serialize(Localizer["LimitedLiability"].Value);
+        window.L10n.Corporation = @Json.Serialize(Localizer["Corporation"].Value);
+        window.L10n.SoleProprietorship = @Json.Serialize(Localizer["SoleProprietorship"].Value);
+        window.L10n.SelectStatus = @Json.Serialize(SharedLocalizer["SelectStatus"].Value);
+        window.L10n.Filter = @Json.Serialize(SharedLocalizer["Filter"].Value);
+        window.L10n.Reset = @Json.Serialize(SharedLocalizer["Reset"].Value);
+        window.L10n.PDF = @Json.Serialize(SharedLocalizer["PDF"].Value);
+        window.L10n.Copy = @Json.Serialize(SharedLocalizer["Copy"].Value);
+        window.L10n.DtNoRecords = @Json.Serialize(SharedLocalizer["DtNoRecords"].Value);
+        window.L10n.DtInfo = @Json.Serialize(SharedLocalizer["DtInfo"].Value);
+        window.L10n.DtInfoEmpty = @Json.Serialize(SharedLocalizer["DtInfoEmpty"].Value);
+        window.L10n.DtInfoFiltered = @Json.Serialize(SharedLocalizer["DtInfoFiltered"].Value);
+        window.L10n.DtZeroRecords = @Json.Serialize(SharedLocalizer["DtZeroRecords"].Value);
+        window.L10n.DtEmptyTable = @Json.Serialize(SharedLocalizer["DtEmptyTable"].Value);
+        window.L10n.BulkDelete = @Json.Serialize(SharedLocalizer["BulkDelete"].Value);
+        window.L10n.BulkDeleteConfirm = @Json.Serialize(SharedLocalizer["BulkDeleteConfirm"].Value);
+        window.L10n.BulkDeleteSuccess = @Json.Serialize(SharedLocalizer["BulkDeleteSuccess"].Value);
+        window.L10n.ClearSelection = @Json.Serialize(SharedLocalizer["ClearSelection"].Value);
+        window.L10n.SelectedCount = @Json.Serialize(SharedLocalizer["SelectedCount"].Value);
+        window.L10n.AreYouSure = @Json.Serialize(SharedLocalizer["AreYouSure"].Value);
+        window.L10n.Cancel = @Json.Serialize(SharedLocalizer["Cancel"].Value);
     </script>
     <script src="~/assets/js/MDM/LegalEntities/index.js" asp-append-version="true"></script>
 }

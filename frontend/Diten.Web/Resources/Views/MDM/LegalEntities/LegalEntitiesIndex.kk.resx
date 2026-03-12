@@ -85,6 +85,9 @@
   <data name="ViewBtn" xml:space="preserve">
     <value>Көру</value>
   </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>Жылдам қарау</value>
+  </data>
   <data name="EditBtn" xml:space="preserve">
     <value>Өңдеу</value>
   </data>

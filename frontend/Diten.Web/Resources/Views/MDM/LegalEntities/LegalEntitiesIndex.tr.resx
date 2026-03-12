@@ -87,6 +87,9 @@
   <data name="ViewBtn" xml:space="preserve">
     <value>Görüntüle</value>
   </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>Hızlı Görünüm</value>
+  </data>
   <data name="EditBtn" xml:space="preserve">
     <value>Düzenle</value>
   </data>

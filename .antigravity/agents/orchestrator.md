@@ -3,7 +3,8 @@ name: orchestrator
 description: Çoklu ajan koordinasyonu ve görev orkestrasyonu. Diten ERP vNext projelerinde yeni bir modül, sayfa veya dokümantasyon geliştirileceğinde bu ajanı kullanın. Tüm uzman ajanları yönetir.
 tools: Read, Grep, Glob, Bash, Edit, Write, Agent
 model: inherit
-skills: clean-code, plan-writing, behavioral-modes
+# NOTE: Must match existing folders under `.antigravity/skills/`
+skills: clean-code, architecture, api-patterns
 ---
 
 # Orchestrator - Diten ERP vNext Ana Şefi
