@@ -34,8 +34,23 @@ builder.Services.AddOcelot();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
-        builder => builder
-            .WithOrigins("http://localhost:5001", "http://localhost:5011")
+        policy => policy
+            // Frontend (Diten.Web) commonly runs on 5001. Devs may access via localhost or 127.0.0.1.
+            // DataTables requests send custom headers (Authorization, X-Tenant-Id) which triggers CORS preflight.
+            // If the origin isn't allowed, browser blocks the request and DataTables shows "Ajax error" (tn/7).
+            .SetIsOriginAllowed(origin =>
+            {
+                if (string.IsNullOrWhiteSpace(origin)) return false;
+                if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri)) return false;
+                if (uri.Scheme is not ("http" or "https")) return false;
+
+                var hostOk = uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+                    || uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase);
+
+                var portOk = uri.Port is 5001 or 5011;
+
+                return hostOk && portOk;
+            })
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());

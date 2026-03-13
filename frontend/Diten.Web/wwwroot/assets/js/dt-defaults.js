@@ -196,6 +196,26 @@ window.DtDefaults = (function () {
             delete merged.buttons;
         }
 
+        // Centralized Ajax error handler (helps diagnose DataTables "Ajax error" tn/7 quickly)
+        // Note: DataTables treats `ajax: { ... }` as an $.ajax config object.
+        if (merged.ajax && typeof merged.ajax === 'object') {
+            merged.ajax.error = merged.ajax.error || function (xhr, textStatus, errorThrown) {
+                try { $('#skeleton-loader').fadeOut(200); } catch (e) { }
+
+                var status = xhr && xhr.status ? xhr.status : 0;
+                var url = merged.ajax && merged.ajax.url ? merged.ajax.url : '(unknown url)';
+                var responseText = xhr && xhr.responseText ? xhr.responseText : '';
+
+                // eslint-disable-next-line no-console
+                console.error('[DtDefaults] Ajax error', { status: status, url: url, textStatus: textStatus, errorThrown: errorThrown, responseText: responseText });
+
+                if (window.showToast) {
+                    var msg = 'DataTables Ajax error (HTTP ' + status + ')';
+                    window.showToast(msg, 'error');
+                }
+            };
+        }
+
         // AJAX isteği başladığında skeleton'ı göster (Eğer varsa)
         var originalPreXhr = merged.preXhr;
         merged.preXhr = function (settings, data) {

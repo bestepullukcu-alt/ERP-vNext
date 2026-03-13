@@ -14,6 +14,7 @@
         "GET",
         "POST",
         "PUT",
+        "OPTIONS",
         "DELETE"
       ],
       "UpstreamScheme": "http"
@@ -32,6 +33,7 @@
         "GET",
         "POST",
         "PUT",
+        "OPTIONS",
         "DELETE"
       ],
       "UpstreamScheme": "http"
@@ -52,6 +54,7 @@
         "POST",
         "PUT",
         "PATCH",
+        "OPTIONS",
         "DELETE"
       ],
       "UpstreamScheme": "http"
@@ -71,6 +74,7 @@
         "POST",
         "PUT",
         "PATCH",
+        "OPTIONS",
         "DELETE"
       ],
       "UpstreamScheme": "http"
@@ -92,7 +96,8 @@
         "POST",
         "DELETE",
         "PUT",
-        "PATCH"
+        "PATCH",
+        "OPTIONS"
       ],
       "UpstreamScheme": "http"
     },
@@ -110,6 +115,7 @@
         "GET",
         "POST",
         "PUT",
+        "OPTIONS",
         "DELETE"
       ],
       "UpstreamScheme": "http"
@@ -128,6 +134,7 @@
         "GET",
         "POST",
         "PUT",
+        "OPTIONS",
         "DELETE"
       ],
       "UpstreamScheme": "http"
@@ -146,6 +153,7 @@
         "GET",
         "POST",
         "PUT",
+        "OPTIONS",
         "DELETE"
       ],
       "UpstreamScheme": "http"
@@ -161,7 +169,8 @@
       ],
       "UpstreamPathTemplate": "/api/permissions/{everything}",
       "UpstreamHttpMethod": [
-        "GET"
+        "GET",
+        "OPTIONS"
       ],
       "UpstreamScheme": "http",
       "AuthenticationOptions": {
