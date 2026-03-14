@@ -169,6 +169,70 @@
     </div>
 </div>
 
+@section Styles {
+    <style>
+        /* Inline Filter Bar (LegalEntities) */
+        #inlineFilterHost .dt-filter-bar {
+            row-gap: .5rem;
+        }
+
+        #inlineFilterHost .dt-filter-bar .filter-chip .select2-container {
+            width: auto !important;
+            min-width: 180px;
+        }
+
+        #inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single {
+            height: 34px;
+            border-radius: 999px;
+            border: 1px solid rgba(var(--bs-secondary-rgb), .25);
+            background: rgba(var(--bs-secondary-rgb), .10);
+            transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+        }
+
+        #inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__rendered {
+            line-height: 32px;
+            padding-left: .75rem;
+            padding-right: 2.25rem;
+            font-weight: 500;
+            color: var(--bs-heading-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__arrow {
+            height: 34px;
+            right: .5rem;
+        }
+
+        #inlineFilterHost .dt-filter-bar .filter-chip .select2-container--default.select2-container--open .select2-selection--single,
+        #inlineFilterHost .dt-filter-bar .filter-chip .select2-container--default .select2-selection--single:focus {
+            border-color: rgba(var(--bs-primary-rgb), .55);
+            box-shadow: 0 0 0 .2rem rgba(var(--bs-primary-rgb), .12);
+            background: rgba(var(--bs-primary-rgb), .06);
+        }
+
+        #inlineFilterHost .select2-dropdown {
+            border-radius: .5rem;
+            overflow: hidden;
+        }
+
+        #inlineFilterHost .select2-search--dropdown {
+            padding: .5rem;
+        }
+
+        #inlineFilterHost .select2-search--dropdown .select2-search__field {
+            height: 34px;
+            padding: .375rem .75rem;
+            border-radius: .5rem;
+        }
+
+        #inlineFilterHost .select2-results__option {
+            padding: .5rem .75rem;
+        }
+    </style>
+}
+
 @section Scripts {
     <script>
         window.L10n = window.L10n || {};

@@ -10,6 +10,8 @@ const LegalEntitiesList = (function () {
     const dtTableEl = document.querySelector('.datatables-legal-entities');
     const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
     const L = window.L10n || {};
+    const filterHostId = 'inlineFilterHost';
+    const filterCollapseId = 'inlineFilterCollapse';
 
     // Get TenantId from logged-in user or fallback
     const getTenantId = () => {
@@ -29,6 +31,58 @@ const LegalEntitiesList = (function () {
         const parts = value.split(`; ${name}=`);
         if (parts.length === 2) return parts.pop().split(';').shift();
         return null;
+    };
+
+    /**
+     * Mount inline filter panel right under DataTable toolbar row.
+     * (_Filter.cshtml is rendered on the page, we relocate it near the filter button.)
+     */
+    const mountInlineFilter = () => {
+        if (!dtTableEl) return;
+
+        const host = document.getElementById(filterHostId);
+        if (!host) return;
+
+        const filterBtn = document.querySelector('.dt-filter-btn');
+        const toolbarRow =
+            filterBtn?.closest('.dt-layout-row') ||
+            filterBtn?.closest('.row') ||
+            filterBtn?.closest('.dt-layout-end')?.parentElement;
+
+        if (toolbarRow) {
+            toolbarRow.insertAdjacentElement('afterend', host);
+            host.classList.add('mx-3');
+            return;
+        }
+
+        // Fallback: place it before the table within the same container
+        const dtContainer = dtTableEl.closest('.dt-container') || dtTableEl.closest('.dataTables_wrapper') || dtTableEl.parentElement;
+        if (dtContainer) {
+            dtContainer.insertAdjacentElement('beforeend', host);
+            host.classList.add('mx-3');
+        }
+    };
+
+    /**
+     * Some DataTables button render flows don't play nicely with Bootstrap's data-API.
+     * Bind explicit toggle behavior for the inline collapse.
+     */
+    const bindInlineFilterToggle = () => {
+        const btn = document.querySelector('.dt-filter-btn');
+        const el = document.getElementById(filterCollapseId);
+        if (!btn || !el) return;
+        if (btn.dataset.inlineFilterBound) return;
+        btn.dataset.inlineFilterBound = '1';
+
+        // Keep aria-expanded in sync
+        el.addEventListener('shown.bs.collapse', () => btn.setAttribute('aria-expanded', 'true'));
+        el.addEventListener('hidden.bs.collapse', () => btn.setAttribute('aria-expanded', 'false'));
+
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const instance = bootstrap.Collapse.getOrCreateInstance(el, { toggle: false });
+            if (el.classList.contains('show')) instance.hide(); else instance.show();
+        });
     };
 
     const getAuthHeaders = () => {
@@ -117,7 +171,11 @@ const LegalEntitiesList = (function () {
             filterBtn: {
                 text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
                 className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
-                attr: { title: L.Filter, 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasFilter' }
+                attr: {
+                    title: L.Filter,
+                    'aria-controls': filterCollapseId,
+                    'aria-expanded': 'false'
+                }
             }
         };
 
@@ -191,6 +249,8 @@ const LegalEntitiesList = (function () {
                 onclick: "window.location.href='/LegalEntities/Create'"
             }, extraButtons),
             initComplete: function () {
+                mountInlineFilter();
+                bindInlineFilterToggle();
                 setupFilters(this.api());
             },
             drawCallback: function () {
@@ -214,13 +274,43 @@ const LegalEntitiesList = (function () {
      * Setup Filters
      */
     const setupFilters = (api) => {
+        const collapseEl = document.getElementById(filterCollapseId);
+        const initSelect2 = () => {
+            const $companyType = $('#UserPlan');
+            if ($companyType.length && !$companyType.hasClass('select2-hidden-accessible')) {
+                $companyType.select2({
+                    placeholder: L.CompanyType,
+                    dropdownParent: $('#' + filterHostId),
+                    minimumResultsForSearch: 0,
+                    width: '100%'
+                });
+            }
+
+            const $status = $('#FilterTransaction');
+            if ($status.length && !$status.hasClass('select2-hidden-accessible')) {
+                $status.select2({
+                    placeholder: L.SelectStatus,
+                    dropdownParent: $('#' + filterHostId),
+                    minimumResultsForSearch: 0,
+                    width: '100%'
+                });
+            }
+        };
+
+        if (collapseEl && !collapseEl.dataset.select2InitBound) {
+            collapseEl.dataset.select2InitBound = '1';
+            collapseEl.addEventListener('shown.bs.collapse', () => {
+                initSelect2();
+            });
+        }
+
         // Company Type Filter
         const companyTypeContainer = document.querySelector('.user_plan');
         if (companyTypeContainer) {
             const selectId = 'UserPlan';
             const select = document.createElement('select');
             select.id = selectId;
-            select.className = 'form-select select2 text-capitalize';
+            select.className = 'filter-select text-capitalize';
             select.innerHTML = `<option value="">${L.CompanyType}</option>`;
             companyTypeContainer.appendChild(select);
 
@@ -235,11 +325,7 @@ const LegalEntitiesList = (function () {
                 select.appendChild(option);
             });
 
-            $(select).select2({
-                placeholder: L.CompanyType,
-                dropdownParent: $('#offcanvasFilter'),
-                minimumResultsForSearch: 5
-            });
+            // Select2 is initialized lazily when the collapse is shown
         }
 
         // Status filter (special handling for statusObj)
@@ -248,7 +334,7 @@ const LegalEntitiesList = (function () {
             const selectId = 'FilterTransaction';
             const select = document.createElement('select');
             select.id = selectId;
-            select.className = 'form-select select2 text-capitalize';
+            select.className = 'filter-select text-capitalize';
             select.innerHTML = `<option value="">${L.SelectStatus}</option>`;
             statusContainer.appendChild(select);
 
@@ -262,12 +348,7 @@ const LegalEntitiesList = (function () {
                 select.appendChild(option);
             });
 
-            // Initialize Select2
-            $(select).select2({
-                placeholder: L.SelectStatus,
-                dropdownParent: $('#offcanvasFilter'),
-                minimumResultsForSearch: Infinity // No search for status
-            });
+            // Select2 is initialized lazily when the collapse is shown
         }
 
         // Restore state values to UI
@@ -294,7 +375,12 @@ const LegalEntitiesList = (function () {
         window.DtDefaults.updateVisualState(api, initialFilterCount);
 
         // Buttons
-        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
+        const applyBtn = document.getElementById('btnFilterApply');
+        const resetBtn = document.getElementById('btnFilterReset');
+
+        if (applyBtn && !applyBtn.dataset.bound) {
+            applyBtn.dataset.bound = '1';
+            applyBtn.addEventListener('click', () => {
             const companyType = $('#UserPlan').val();
             const status = $('#FilterTransaction').val();
 
@@ -305,15 +391,20 @@ const LegalEntitiesList = (function () {
             let count = [companyType, status].filter(Boolean).length;
             window.DtDefaults.updateVisualState(api, count);
 
-            bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasFilter'))?.hide();
-        });
+            const el = document.getElementById(filterCollapseId);
+            if (el) bootstrap.Collapse.getOrCreateInstance(el).hide();
+            });
+        }
 
-        document.getElementById('btnFilterReset')?.addEventListener('click', () => {
+        if (resetBtn && !resetBtn.dataset.bound) {
+            resetBtn.dataset.bound = '1';
+            resetBtn.addEventListener('click', () => {
             $('#UserPlan, #FilterTransaction').val('').trigger('change');
             api.state.clear(); // Clear saved state
             api.columns().search('').draw();
             window.DtDefaults.updateVisualState(api, 0);
-        });
+            });
+        }
     };
 
     // =================== Checkbox Selection Management ===================
