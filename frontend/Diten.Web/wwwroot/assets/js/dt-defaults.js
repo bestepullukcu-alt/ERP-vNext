@@ -6,6 +6,90 @@
 
 window.DtDefaults = (function () {
     var L = function () { return window.L10n || {}; };
+    var _authRefreshInFlight = null;
+
+    function getCookie(name) {
+        var value = '; ' + document.cookie;
+        var parts = value.split('; ' + name + '=');
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+
+    function setCookie(name, value, expiryOrDays) {
+        var expires = '';
+        if (typeof expiryOrDays === 'string') {
+            expires = 'expires=' + new Date(expiryOrDays).toUTCString();
+        } else if (typeof expiryOrDays === 'number') {
+            var date = new Date();
+            date.setTime(date.getTime() + (expiryOrDays * 24 * 60 * 60 * 1000));
+            expires = 'expires=' + date.toUTCString();
+        }
+        document.cookie = name + '=' + value + ';' + expires + ';path=/;SameSite=Strict';
+    }
+
+    function clearCookie(name) {
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Strict';
+    }
+
+    function getTenantId() {
+        try {
+            var user = JSON.parse(localStorage.getItem('user') || '{}');
+            return user.tenantId || '00000000-0000-0000-0000-000000000001';
+        } catch (e) {
+            return '00000000-0000-0000-0000-000000000001';
+        }
+    }
+
+    function redirectToLogin() {
+        try {
+            clearCookie('access_token');
+            clearCookie('refresh_token');
+        } catch (e) { }
+        var returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = '/account/login?returnUrl=' + returnUrl;
+    }
+
+    function refreshTokenAndReload() {
+        if (_authRefreshInFlight) return _authRefreshInFlight;
+
+        var apiBaseUrl = window.ApiBaseUrl || '';
+        var accessToken = getCookie('access_token');
+        var refreshToken = getCookie('refresh_token');
+
+        if (!apiBaseUrl || !accessToken || !refreshToken) {
+            redirectToLogin();
+            return null;
+        }
+
+        _authRefreshInFlight = fetch(apiBaseUrl + '/api/auth/refresh-token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Tenant-Id': getTenantId()
+            },
+            body: JSON.stringify({ accessToken: accessToken, refreshToken: refreshToken })
+        })
+            .then(function (res) {
+                if (!res.ok) throw new Error('refresh-failed');
+                return res.json();
+            })
+            .then(function (data) {
+                // Auth service currently returns `expiresAt` as refresh-token expiry.
+                // Keep access_token cookie long-lived so we can refresh seamlessly when the JWT itself expires.
+                setCookie('access_token', data.accessToken, data.expiresAt);
+                setCookie('refresh_token', data.refreshToken, data.expiresAt);
+                try { localStorage.setItem('user', JSON.stringify(data.user || {})); } catch (e) { }
+                window.location.reload();
+            })
+            .catch(function () {
+                redirectToLogin();
+            })
+            .finally(function () {
+                _authRefreshInFlight = null;
+            });
+
+        return _authRefreshInFlight;
+    }
 
     /**
      * Ortak Responsive Renderer (Modal içi tablo oluşturucu).
@@ -208,6 +292,11 @@ window.DtDefaults = (function () {
 
                 // eslint-disable-next-line no-console
                 console.error('[DtDefaults] Ajax error', { status: status, url: url, textStatus: textStatus, errorThrown: errorThrown, responseText: responseText });
+
+                if (status === 401) {
+                    refreshTokenAndReload();
+                    return;
+                }
 
                 if (window.showToast) {
                     var msg = 'DataTables Ajax error (HTTP ' + status + ')';

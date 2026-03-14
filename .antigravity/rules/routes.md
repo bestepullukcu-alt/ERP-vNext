@@ -25,7 +25,7 @@ Bilinen her modül için **explicit** (açık) Upstream/Downstream çifti ekleni
   "DownstreamPathTemplate": "/api/v1/{resource}",
   "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
   "UpstreamPathTemplate": "/api/{resource}",
-  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 }
 ```
 
@@ -35,17 +35,19 @@ Bilinen her modül için **explicit** (açık) Upstream/Downstream çifti ekleni
   "DownstreamPathTemplate": "/api/countries",
   "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
   "UpstreamPathTemplate": "/api/countries",
-  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 },
 {
   "DownstreamPathTemplate": "/api/countries/{everything}",
   "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
   "UpstreamPathTemplate": "/api/countries/{everything}",
-  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 }
 ```
 
 > **Not:** Mevcut projedeki MDM Controller route'ları `/api/{resource}` formatındadır (v1 ön eki olmadan). Bu gerçek baz alınmaktadır. Yeni modüller de bu formatla eklenir.
+>
+> **CORS Notu (KRİTİK):** Frontend, `Authorization` ve `X-Tenant-Id` gibi custom header'lar gönderdiğinde browser otomatik olarak **preflight `OPTIONS`** isteği atar. Bu yüzden `UpstreamHttpMethod` listesinde **`OPTIONS` mutlaka bulunmalıdır**, aksi halde DataTables gibi bileşenler “Ajax error (tn/7)” gösterebilir.
 
 ### Strateji B — Catch-All Rota (Fallback)
 Explicit tanımlanmamış istekler için fallback. `ocelot.json`'da **en sona** konumlandırılmalıdır.
@@ -55,7 +57,7 @@ Explicit tanımlanmamış istekler için fallback. `ocelot.json`'da **en sona** 
   "DownstreamPathTemplate": "/{everything}",
   "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
   "UpstreamPathTemplate": "/services/mdm/{everything}",
-  "UpstreamHttpMethod": ["GET", "POST", "DELETE", "PUT", "PATCH"]
+  "UpstreamHttpMethod": ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
 }
 ```
 
@@ -102,7 +104,7 @@ Bir servis `201 Created` döndüğünde, yanıtın `Location` header'ı kullanı
 
 Yeni modül eklendiğinde `integration-agent` şu adımları takip eder:
 1. `ocelot.json`'a **explicit** iki rota ekle: `/{resource}` ve `/{resource}/{everything}`
-2. `UpstreamHttpMethod`'da `PATCH` dahil tüm metodları listele
+2. `UpstreamHttpMethod`'da `PATCH` ve **`OPTIONS`** dahil tüm metodları listele (CORS preflight için `OPTIONS` zorunludur)
 3. Explicit rotalar, catch-all rotadan (`/services/mdm/{everything}`) **ÖNCE** gelecek şekilde sırala
 4. Port: MDM → `5050`, Auth → `5056` (değişmez, `ports.md` referans aldır)
 
@@ -111,6 +113,7 @@ Yeni modül eklendiğinde `integration-agent` şu adımları takip eder:
 ## ✅ Kontrol Listesi
 - [ ] Explicit Upstream/Downstream çifti eklendi mi? (her modül için 2 rota)
 - [ ] `PATCH` HTTP metodu dahil mi?
+- [ ] `OPTIONS` HTTP metodu dahil mi? (CORS preflight)
 - [ ] Explicit rotalar catch-all'dan önce mi?
 - [ ] `X-Tenant-Id` header'ı GUID olarak tanımlandı mı?
 - [ ] Frontend JS `apiUrl + '/api/{resource}'` formatını kullanıyor mu?

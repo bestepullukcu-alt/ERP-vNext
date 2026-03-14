@@ -27,13 +27,13 @@ launch_service() {
     # Try AppleScript to open in new Terminal tabs (Mac standard)
     /usr/bin/osascript <<EOF
 tell application "Terminal"
-    do script "cd '$PWD/$DIR' && dotnet run --no-build --urls http://127.0.0.1:$PORT"
+    do script "cd '$PWD/$DIR' && dotnet run --no-build --urls http://localhost:$PORT"
 end tell
 EOF
 
     if [ $? -ne 0 ]; then
         echo "⚠️ Could not open new terminal tab for $NAME, running in background..."
-        cd "$PWD/$DIR" && dotnet run --no-build --urls "http://127.0.0.1:$PORT" > "/tmp/diten_$NAME.log" 2>&1 &
+        cd "$PWD/$DIR" && dotnet run --no-build --urls "http://localhost:$PORT" > "/tmp/diten_$NAME.log" 2>&1 &
         cd - > /dev/null
     fi
 }
@@ -44,4 +44,4 @@ launch_service "Gateway" "gateway/DitenApiGateway/Diten.ApiGateway" 5000
 launch_service "Web" "frontend/Diten.Web" 5001
 
 echo "✨ Services are launching."
-echo "🔗 Access: http://127.0.0.1:5001/LegalEntities?culture=en"
+echo "🔗 Access: http://localhost:5001/LegalEntities?culture=en"

@@ -119,12 +119,16 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    // Do something specific for production if needed
+    // Development: show full exception details for faster debugging (e.g., Mongo connectivity / serialization issues)
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler();   // global ProblemDetails
 }
 
-app.UseExceptionHandler();   // global ProblemDetails
 app.UseStatusCodePages();
 
 // Tenant middleware: auth'dan ÖNCE çalışmalı

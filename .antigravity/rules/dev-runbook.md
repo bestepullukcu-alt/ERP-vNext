@@ -8,12 +8,34 @@ Bu rehber, projenin tüm mikroservis bileşenlerini yerel ortamda (Localhost) ha
 
 ---
 
+## ✅ Ön Koşul: MongoDB (Port: 27017)
+
+Auth ve MDM servisleri MongoDB’ye bağlanır. MongoDB çalışmıyorsa:
+- Auth seeding (default admin user/role/permission) çalışmaz → login başarısız olur.
+- MDM repository çağrıları timeout/exception → Gateway üzerinden 500 döner → DataTable veri çekemez.
+
+**Hızlı kontrol:**
+
+# KOMUT BAŞI
+lsof -nP -iTCP:27017 -sTCP:LISTEN
+# KOMUT SONU
+
+**Başlatma (Mac/Homebrew):**
+
+# KOMUT BAŞI
+brew services start mongodb-community@7.0
+# KOMUT SONU
+
+> Not: `brew services` bazen `launchctl bootstrap ... exited with 5` hatasıyla fail olabilir. Bu durumda manuel `mongod` çalıştırma gerekebilir.
+
+---
+
 ## 🛑 Ön Hazırlık (Terminal Temizliği)
 
 Geliştirmeye başlamadan önce veya büyük bir kod değişikliği sonrası, port çakışmalarını önlemek için şu komutu çalıştırmak anayasa kuralıdır:
 
 # KOMUT BAŞI
-lsof -ti:5000,5001,5050,5056 | xargs kill -9
+lsof -ti :5000,5001,5050,5056 | xargs kill -9 2>/dev/null || true
 # KOMUT SONU
 
 ---
@@ -23,24 +45,27 @@ lsof -ti:5000,5001,5050,5056 | xargs kill -9
 Projeyi tam fonksiyonel çalıştırmak için VS Code terminalinde 4 ayrı sekme açın ve servisleri KESİNLİKLE aşağıdaki sırayla başlatın:
 
 ### 1. TAB 1: Auth Service (Port: 5056)
-- **Dizin:** src/Services/Diten.Auth.Api
-- **Komut:** dotnet run
+- **Dizin:** services/DitenAuthService/src/Diten.AuthService.Api
+- **Komut:** dotnet run (Development)
 - **Neden:** Diğer tüm servislerin yetki kontrolü (JWT validation) yapabilmesi için kimlik servisinin ayakta olması gerekir.
+- **Seed Kullanıcı (MongoDB açık olmalı):** `admin@diten.com` / `Admin123!`
 
 ### 2. TAB 2: MDM Service (Port: 5050)
-- **Dizin:** src/Services/Diten.MDM.Api
-- **Komut:** dotnet run
+- **Dizin:** services/DitenMdmService/src/Diten.MdmService.Api
+- **Komut:** dotnet run (Development)
 - **Kontrol:** MongoDB bağlantısının başarılı olduğunu loglardan doğrulayın.
 
 ### 3. TAB 3: API Gateway (Port: 5000)
-- **Dizin:** src/Gateways/Diten.ApiGateway
-- **Komut:** dotnet run
+- **Dizin:** gateway/DitenApiGateway/Diten.ApiGateway
+- **Komut:** dotnet run (Development)
 - **Önemli:** Auth ve MDM servisleri hazır olmadan Gateway'i başlatmayın.
 
 ### 4. TAB 4: Frontend Web (Port: 5001)
-- **Dizin:** src/Web/Diten.Web
-- **Komut:** dotnet run
-- **Erişim:** http://localhost:5001 adresine giderek Sneat PRO arayüzüne giriş yapın.
+- **Dizin:** frontend/Diten.Web
+- **Komut:** dotnet run (Development)
+- **Erişim:** http://localhost:5001 adresine giderek arayüze giriş yapın.
+
+> Host notu: `localhost` ve `127.0.0.1` farklı origin sayılır. Cookie/localStorage host’a bağlıdır; host değiştirince tekrar login gerekebilir.
 
 ---
 

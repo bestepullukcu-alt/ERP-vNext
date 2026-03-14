@@ -77,6 +77,10 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - Skeleton show/hide davranışı merkezi olarak `DtDefaults.create()` ile yönetilir (`preXhr` + `drawCallback`).
 - Sayfa bazlı skeleton show/hide hack'leri ancak özel UX ihtiyacı varsa kabul edilir.
 
+### UI-021: Template Customizer Dependencies (Pickr)
+- `_LayoutBackbone.cshtml` içinde `template-customizer.js` kullanılıyorsa `Pickr` global'ı da yüklenmelidir; aksi halde console'da `Pickr is not defined` hatası alınır.
+- Zorunlu vendor dosyaları: `assets/vendor/libs/pickr/pickr.js` + `assets/vendor/libs/pickr/pickr-themes.css`.
+
 ### UI-011: DataTable Responsive Header Layout (MOD-0022)
 - **Breakpoint:** `@media (max-width: 991.98px)`
 - **Row 1:** Length (100) solda, Search sağda — aynı satırda.

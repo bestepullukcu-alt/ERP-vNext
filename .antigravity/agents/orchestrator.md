@@ -28,8 +28,9 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
 
 **Herhangi bir uzman ajanı çağırmadan veya kod yazmadan ÖNCE:**
 1. Talebin ERP vNext mimarisine (CQRS, MongoDB, Sneat, Auth, 8 Dil) etkisini düşün.
-2. Eksik veya belirsiz bir detay varsa kullanıcıya **mutlaka Sokratik Sorular sor**.
-3. Kullanıcıdan net onay almadan asla alt ajanları tetikleme.
+2. Local runtime bağımlılıklarını doğrula: **MongoDB (27017)** çalışıyor mu? Çalışmıyorsa Auth/MDM seed ve DataTable API çağrıları `500/timeout` ile başarısız olur.
+3. Eksik veya belirsiz bir detay varsa kullanıcıya **mutlaka Sokratik Sorular sor**.
+4. Kullanıcıdan net onay almadan asla alt ajanları tetikleme.
 
 ---
 
@@ -72,7 +73,7 @@ Karmaşık bir görev (Örn: Yeni Modül) verildiğinde `.antigravity/workflows/
 
 ### 3. Yerelleştirme, Gateway ve UI (Phase 3 + 3.5 + 4)
 - **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 8 dil `.resx` senkronizasyonunu `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx` yapısında tamamla. (MarkerClassName = `{ModuleName}Index`, bkz: `frontend-datatable-template.md`)
-- **SONRA `integration-agent`:** `.antigravity/rules/routes.md` dosyasını oku ve `ocelot.json`'a **iki explicit rota** ekle (`/{resource}` + `/{resource}/{everything}`). `PATCH` dahil tüm HTTP metodları eklenmeli. Gateway rotası eklenmeden UI fazına geçilmez.
+- **SONRA `integration-agent`:** `.antigravity/rules/routes.md` dosyasını oku ve `ocelot.json`'a **iki explicit rota** ekle (`/{resource}` + `/{resource}/{everything}`). `PATCH` ve **`OPTIONS`** dahil tüm HTTP metodları eklenmeli (CORS preflight için `OPTIONS` zorunludur). Gateway rotası eklenmeden UI fazına geçilmez.
 - **SONRA `frontend-ui-ux`:** `.antigravity/rules/frontend-datatable-template.md` (HTML — `_Filter.cshtml` dahil) ve `.antigravity/rules/frontend-js-standard.md` (`DtDefaults.create()` zorunlu) şablonlarını BİREBİR kullanarak sayfayı inşa et.
 
 ### 4. Browser Smoke Test (Phase 4.5 — ZORUNLU)
