@@ -211,6 +211,7 @@
     <value>Кестеде деректер жоқ</value>
   </data>
   <data name="ShowAll" xml:space="preserve"><value>Барлығын көрсету</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Баған көрінімділігі</value></data>
   <data name="BulkDelete" xml:space="preserve"><value>Жаппай жою</value></data>
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>{0} таңдалған жазбаны жоюды қалайсыз ба?</value></data>
   <data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} жазба сәтті жойылды</value></data>
@@ -228,4 +229,31 @@
   <data name="ValidationErrors" xml:space="preserve"><value>Қателер: {0}</value></data>
   <data name="RequiredStatus" xml:space="preserve"><value>Міндетті: {0} / {1}</value></data>
   <data name="SelectPlaceholder" xml:space="preserve"><value>Таңдаңыз...</value></data>
-<data name="Login.Title" xml_space="preserve"><value>Sign In</value></data><data name="Login.Email" xml_space="preserve"><value>Email</value></data><data name="Login.Password" xml_space="preserve"><value>Password</value></data><data name="Login.RememberMe" xml_space="preserve"><value>Remember Me</value></data><data name="Login.Submit" xml_space="preserve"><value>Sign In</value></data><data name="Login.ErrorTitle" xml_space="preserve"><value>Error</value></data><data name="Login.ErrorRequired" xml_space="preserve"><value>Email and password are required</value></data><data name="Login.Error" xml_space="preserve"><value>Invalid email or password</value></data><data name="Login.Loading" xml_space="preserve"><value>Signing in...</value></data></root>
+  <data name="Overview" xml:space="preserve"><value>Шолу</value></data>
+  <data name="SubRecords" xml:space="preserve"><value>Қосымша жазбалар</value></data>
+  <data name="Details" xml:space="preserve"><value>Мәліметтер</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Тізімге қайту</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Жазбаны өңдеу</value></data>
+  <data name="About" xml:space="preserve"><value>Туралы</value></data>
+  <data name="Address" xml:space="preserve"><value>Мекенжай</value></data>
+  <data name="EmailAddress" xml:space="preserve"><value>Эл. пошта мекенжайы</value></data>
+  <data name="PhoneNumber" xml:space="preserve"><value>Телефон нөмірі</value></data>
+  <data name="Website" xml:space="preserve"><value>Веб-сайт</value></data>
+  <data name="Sector" xml:space="preserve"><value>Сектор</value></data>
+  <data name="ContactPerson" xml:space="preserve"><value>Байланыс тұлғасы</value></data>
+  <data name="PrimaryCurrency" xml:space="preserve"><value>Негізгі валюта</value></data>
+  <data name="DefaultTimeZone" xml:space="preserve"><value>Әдепкі уақыт белдеуі</value></data>
+  <data name="BasicInfo" xml:space="preserve"><value>Негізгі ақпарат</value></data>
+  <data name="NoRecordsFound" xml:space="preserve"><value>Қосымша жазбалар әлі жоқ.</value></data>
+  <data name="Sandbox" xml:space="preserve"><value>Песочница</value></data>
+  <data name="Login.Title" xml:space="preserve"><value>Кіру</value></data>
+  <data name="Login.Email" xml:space="preserve"><value>Эл. пошта</value></data>
+  <data name="Login.Password" xml:space="preserve"><value>Құпиясөз</value></data>
+  <data name="Login.RememberMe" xml:space="preserve"><value>Есте сақтау</value></data>
+  <data name="Login.Submit" xml:space="preserve"><value>Кіру</value></data>
+  <data name="Login.ErrorTitle" xml:space="preserve"><value>Қате</value></data>
+  <data name="Login.ErrorRequired" xml:space="preserve"><value>Эл. пошта мен құпиясөз қажет</value></data>
+  <data name="Login.Error" xml:space="preserve"><value>Эл. пошта немесе құпиясөз қате</value></data>
+  <data name="Login.Loading" xml:space="preserve"><value>Кіру...</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Көріністі Сақтау</value></data>
+</root>

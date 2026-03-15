@@ -200,45 +200,7 @@ window.DtDefaults = (function () {
         $('.dt-layout-end').removeClass('justify-content-between').addClass('d-flex gap-md-4 justify-content-md-between justify-content-center gap-4 flex-wrap mt-0');
         $('.dt-layout-start').addClass('mt-0');
 
-        $('.dt-buttons').each(function () {
-            var $container = $(this);
-            // MOD-0014: Remove any DataTables-generated internal wraps
-            $container.find('> .btn-group, > .dt-button-collection').each(function () {
-                $(this).contents().unwrap();
-            });
-
-            $container.addClass('mb-md-0 mb-6');
-            $container.removeClass('d-flex gap-1 gap-2 gap-3 gap-4'); // Remove any JS-injected gaps
-
-            if ($container.children().length > 1) {
-                $container.addClass('btn-group');
-
-                // Nuclear Fix for Border Radius & Dividers using Inline Styles (Overrides all sneat pseudo-classes)
-                var $btns = $container.children('button.btn');
-                $btns.each(function (index) {
-                    this.style.setProperty('border-radius', '0', 'important');
-                    this.style.setProperty('margin-left', '0', 'important');
-                    this.style.setProperty('position', 'relative', 'important');
-
-                    if (index === 0) {
-                        this.style.setProperty('border-top-left-radius', '0.375rem', 'important');
-                        this.style.setProperty('border-bottom-left-radius', '0.375rem', 'important');
-                    } else {
-                        var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                        var borderColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
-                        this.style.setProperty('border-left', '1px solid ' + borderColor, 'important');
-                    }
-
-                    if (index === $btns.length - 1) {
-                        this.style.setProperty('border-top-right-radius', '0.375rem', 'important');
-                        this.style.setProperty('border-bottom-right-radius', '0.375rem', 'important');
-                    }
-                });
-
-            } else {
-                $container.removeClass('btn-group');
-            }
-        });
+        refreshButtonGroupRadii();
 
         // Ensure dot z-index is protected
         $('.dt-colvis-btn').css('z-index', '4');
@@ -246,6 +208,73 @@ window.DtDefaults = (function () {
         $('.dt-layout-table').removeClass('row mt-2');
         $('.dt-layout-full').removeClass('col-md col-12');
         $('table.dataTable').addClass('table-hover');
+    }
+
+    /**
+     * Fix button-group border radius/dividers with respect to *visible* buttons.
+     * Important for cases where a button exists in DOM but is hidden (e.g., Save Filter).
+     */
+    function refreshButtonGroupRadii() {
+        $('.dt-buttons').each(function () {
+            var $container = $(this);
+            // MOD-0014: Remove any DataTables-generated internal wraps
+            // NOTE: Do not unwrap `.dt-button-collection` — it is the live dropdown container when a Buttons collection is open.
+            $container.find('> .btn-group').each(function () {
+                $(this).contents().unwrap();
+            });
+
+            $container.addClass('mb-md-0 mb-6');
+            $container.removeClass('d-flex gap-1 gap-2 gap-3 gap-4'); // Remove any JS-injected gaps
+
+            var $allBtns = $container.children('button.btn');
+            var $visibleBtns = $allBtns.filter(':visible').filter(function () {
+                return !this.classList.contains('d-none') && !this.hidden;
+            });
+
+            // Mark groups for responsive/layout styling (e.g., keep primary action controlled)
+            var hasAddNew = $container.find('.add-new').length > 0;
+            $container.toggleClass('dt-buttons-primary', hasAddNew);
+            $container.toggleClass('dt-buttons-actions', !hasAddNew);
+
+            // Reset all buttons first (including hidden ones), so stale radii won't remain.
+            $allBtns.each(function () {
+                this.style.setProperty('border-radius', '0', 'important');
+                this.style.setProperty('border-top-left-radius', '0', 'important');
+                this.style.setProperty('border-bottom-left-radius', '0', 'important');
+                this.style.setProperty('border-top-right-radius', '0', 'important');
+                this.style.setProperty('border-bottom-right-radius', '0', 'important');
+                this.style.setProperty('border-left', '0', 'important');
+                this.style.setProperty('margin-left', '0', 'important');
+                this.style.setProperty('position', 'relative', 'important');
+            });
+
+            if ($visibleBtns.length > 1) {
+                $container.addClass('btn-group');
+
+                var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                var borderColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
+
+                $visibleBtns.each(function (index) {
+                    if (index === 0) {
+                        this.style.setProperty('border-top-left-radius', '0.375rem', 'important');
+                        this.style.setProperty('border-bottom-left-radius', '0.375rem', 'important');
+                    } else {
+                        this.style.setProperty('border-left', '1px solid ' + borderColor, 'important');
+                    }
+
+                    if (index === $visibleBtns.length - 1) {
+                        this.style.setProperty('border-top-right-radius', '0.375rem', 'important');
+                        this.style.setProperty('border-bottom-right-radius', '0.375rem', 'important');
+                    }
+                });
+            } else {
+                $container.removeClass('btn-group');
+                if ($visibleBtns.length === 1) {
+                    // Single visible button should keep rounded corners
+                    $visibleBtns[0].style.setProperty('border-radius', '0.375rem', 'important');
+                }
+            }
+        });
     }
 
     /**
@@ -405,7 +434,7 @@ window.DtDefaults = (function () {
             extend: 'colvis',
             text: '<i class="icon-base bx bx-show icon-sm"></i>',
             className: 'btn btn-icon btn-label-secondary dt-colvis-btn position-relative',
-            attr: { title: 'Column Visibility', 'data-bs-toggle': 'tooltip' },
+            attr: { title: l.ColumnVisibility || 'Column Visibility', 'data-bs-toggle': 'tooltip' },
             columns: colvisColumns, // Exclude Index 0 (Control), 1 (Checkbox), (Actions) based on module
             postfixButtons: [
                 {
@@ -422,6 +451,7 @@ window.DtDefaults = (function () {
 
         var group2 = [colvisBtn];
         if (extraButtons && extraButtons.filterBtn) group2.push(extraButtons.filterBtn);
+        if (extraButtons && extraButtons.saveFilterBtn) group2.push(extraButtons.saveFilterBtn);
 
         var features = [
             { buttons: group1 },
@@ -458,7 +488,7 @@ window.DtDefaults = (function () {
             $filterBtn.find('.badge').remove();
             if (filterCount > 0) {
                 $filterBtn.removeClass('btn-label-secondary').addClass('btn-label-primary');
-                $filterBtn.append('<span class="badge badge-center rounded-pill bg-primary position-absolute top-0 start-100 translate-middle">' + filterCount + '</span>');
+                $filterBtn.append('<span class="badge badge-center rounded-pill bg-primary position-absolute top-0 end-0 translate-middle">' + filterCount + '</span>');
             } else {
                 $filterBtn.removeClass('btn-label-primary').addClass('btn-label-secondary');
             }
@@ -475,7 +505,7 @@ window.DtDefaults = (function () {
             $colvisBtn.find('.badge').remove();
             if (hiddenCount > 0) {
                 $colvisBtn.addClass('btn-label-primary').removeClass('btn-label-secondary');
-                $colvisBtn.append('<span class="badge badge-dot bg-primary position-absolute top-0 start-100 translate-middle"></span>');
+                $colvisBtn.append('<span class="badge badge-center rounded-pill bg-primary position-absolute top-0 end-0 translate-middle">' + hiddenCount + '</span>');
             } else {
                 $colvisBtn.removeClass('btn-label-primary').addClass('btn-label-secondary');
             }
@@ -497,6 +527,7 @@ window.DtDefaults = (function () {
         create: create,
         exportButtons: exportButtons,
         responsiveRenderer: responsiveRenderer,
-        updateVisualState: updateVisualState
+        updateVisualState: updateVisualState,
+        refreshButtonGroupRadii: refreshButtonGroupRadii
     };
 })();

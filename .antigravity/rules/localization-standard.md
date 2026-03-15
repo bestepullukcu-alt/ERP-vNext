@@ -6,6 +6,15 @@ Diten ERP vNext projesinde "Hardcoded" (elle yazılmış) metin kullanmak KESİN
 Resmi desteklenen 8 dilin TAMAMI için `.resx` dosyaları oluşturulmalıdır. Sadece Türkçe (`tr`) oluşturup bırakmak kural ihlalidir.
 Desteklenen Diller: `en, es, ka, kk, ru, tr, uk, uz`
 
+> ⛔ **Placeholder YASAK:** Non-English (`es/ru/uk/ka/kk/uz/tr`) `.resx` dosyalarında değerlerin İngilizce (en) ile aynı bırakılması kabul edilmez.
+> - Örn: `SaveView` → `es/ru/uk/...` dosyalarında `Save View` olarak bırakmak kural ihlalidir.
+> - Çeviri belirsizse, geliştirme durdurulur ve kullanıcıdan doğru kurumsal metin istenir.
+
+> ✅ **Casing Standardı (Tutarlılık):** UI aksiyon butonları için kullanılan SharedResource key'lerinde (örn: `SaveView`) değerler **tutarlı bir casing** ile yazılmalıdır.
+> - Varsayılan: **Title Case** (kelimelerin ilk harfi büyük) — `Save View`, `Görünümü Kaydet`, `Guardar Vista`, `Сохранить Вид` vb.
+> - Casing olmayan alfabelerde (örn: Gürcüce `ka`) bu kontrol uygulanmaz.
+> - Aynı key için bazı dillerde cümle düzeni/harf yapısı farklı bırakılmaz; teslim öncesi kontrol zorunludur.
+
 **Dosya Yolu Standardı:** `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
 *(Örn: `Resources/Views/MDM/Countries/CountriesIndex.en.resx`, `Resources/Views/MDM/LegalEntities/LegalEntitiesIndex.tr.resx` vb.)*
 **Kritik Kural:** Kaynak dosyası, Razor view'daki `IHtmlLocalizer<T>` sınıf adıyla birebir eşleşmelidir. Marker class convention: `{ModuleName}Index` (bkz: `frontend-datatable-template.md`). `Index.{lang}.resx` adı KULLANILMAZ.
@@ -27,3 +36,16 @@ Birden fazla sayfada kullanılan genel ifadeler ASLA View (sayfa) dil dosyaları
 **B. View-Specific Resource (Sayfaya Özel Metinler):**
 SADECE o sayfaya ve modüle ait olan, başka sayfalarda kullanılmayacak metinler `Resources/Views/{AreaName}/{ModuleName}.{lang}.resx` dosyalarına eklenmelidir.
 *Örnekler:* Sayfa başlığı (`CountriesTitle`), Sayfa açıklaması (`CountriesDescription`), Modüle özel tablo sütun isimleri (`IsoCode`, `TaxNumber`), Modüle özel mesajlar (`CountryAddedSuccessfully`).
+
+---
+
+## 4. DataTable Toolbar / Filter Vocabulary (ZORUNLU)
+
+DataTable liste sayfalarında toolbar ve filter UI için kullanılan temel kelimeler **SharedResource** üzerinden gelmelidir.
+
+**En az zorunlu anahtarlar (SharedResource):**
+- `Search`, `Export`, `Import`, `Filter`, `Apply`, `Reset`, `ShowAll`, `SaveView`, `ColumnVisibility`, `Status`, `Cancel`, `AreYouSure`
+
+**Kritik kural (fallback yasak):**
+- Toolbar/action metinlerinde “hardcoded fallback” (`|| 'Export'`) yaklaşımı **yasaktır**.
+- Eksik L10n key varsa teslim durur; key 8 dilde tamamlanmadan feature bitmiş sayılmaz.

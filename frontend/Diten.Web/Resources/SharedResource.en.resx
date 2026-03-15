@@ -211,6 +211,7 @@
     <value>No data available in table</value>
   </data>
   <data name="ShowAll" xml:space="preserve"><value>Show All</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Column Visibility</value></data>
   <data name="BulkDelete" xml:space="preserve"><value>Bulk Delete</value></data>
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>Are you sure you want to delete {0} selected records?</value></data>
   <data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} records deleted successfully</value></data>
@@ -272,4 +273,5 @@
     <value>Signing in...</value>
   </data>
   <data name="Sandbox" xml:space="preserve"><value>Sandbox</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Save View</value></data>
 </root>

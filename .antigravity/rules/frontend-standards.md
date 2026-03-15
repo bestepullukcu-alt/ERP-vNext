@@ -94,11 +94,25 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
     - **Grup 3:** Add New
 - Tüm butonlar birleştirilmemelidir (tek bir mega btn-group yapılmaz).
 
-### UI-002: DataTable Filtering (Offcanvas Pattern)
-- Tablo filtreleri için sağ taraftan açılan `#offcanvasFilter` kullanılır.
+### UI-002: DataTable Filtering (Inline Collapse Pattern)
+- Tablo filtreleri için **offcanvas kullanılmaz**.
 - Filtre kodu ayrı bir `_Filter.cshtml` partial view içerisinde tutulmalıdır.
+- Filter butonuna basıldığında sayfa içinde, toolbar’ın hemen altında açılan **inline collapsible** panel kullanılır:
+  - Host: `#inlineFilterHost`
+  - Collapse: `#inlineFilterCollapse`
+- Filtre kontrolleri kompakt “chip/dropdown” görünümünde olmalıdır (Select2).
+- Filtre dropdown’larında arama (**search**) zorunludur.
 - Filtreleme işlemi açık bir **Apply** (`btn-primary`) butonu ile tetiklenmelidir.
-- "Apply" butonuna tıklandığında offcanvas otomatik kapatılmalıdır.
+- "Apply" butonuna tıklandığında inline panel otomatik kapanmalıdır.
+- "Reset" butonu paneli kapatmaz.
+
+### UI-003: Save View (Default View)
+- Toolbar’da `Save View` butonu bulunur fakat default **gizlidir**.
+- Görünürlük kuralı: **Current UI state** ile **Saved default state** farklıysa görünür; aynıysa gizlenir.
+- Save View state kapsamı:
+  - **Kaydedilenler:** filtreler + search + column visibility + sorting (varsa)
+  - **Kaydedilmeyenler:** page number (pagination)
+- Localization: `SaveView` metni **SharedResource** üzerinden gelir ve 8 dilde eksiksiz olmalıdır.
 
 ### UI-004: Global Confirmation Standards (SweetAlert2)
 - Tüm silme veya kritik işlem onayları için `window.showConfirm(key, callback, entityName)` kullanılır.
@@ -121,8 +135,64 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - Yükseklik dengesi için yan yana gelen farklı kartlara `h-100` eklenmelidir.
 
 ### UI-010: State Persistence & Visual Feedback (StateSave)
-- Tüm liste sayfalarında `stateSave: true` zorunludur.
+- **Legacy (v1):** Bazı mevcut liste sayfaları `stateSave: true` kullanıyor olabilir.
+- **DataTable v2 Standard (data-dt-standard="v2") için otomatik cache YASAKTIR:**
+  - `stateSave: false` zorunludur (2 saatlik otomatik cache / restore kaldırılır).
+  - Kalıcılık yalnızca **Save View** mekanizmasıyla yapılır.
 - Aktif filtre/arama varsa `window.DtDefaults.updateVisualState(api, filterCount)` ile görsel bildirim (badge, border vurgusu) sağlanmalıdır.
+
+### UI-030: DataTable v2 Standard — State Model & Persistence (ZORUNLU)
+Bu bölüm yalnızca `data-dt-standard="v2"` ile işaretlenmiş DataTable sayfaları için geçerlidir.
+
+**A) State Tanımları**
+- **baselineDefault:** savedView yokken referans alınan temiz başlangıç state’i:
+  - filters: `''`, search: `''`, colVis: init default, sorting: init default (**single-sort**), pageLength: init default (**yalnız referans**)
+- **currentState (staged/UI):** ekranda seçili state (Apply basılmadan değişebilir)
+- **appliedState:** tabloya uygulanmış state (effective)
+- **savedView:** Save View ile persist edilen default view
+
+**B) Persistence Kapsamı**
+- Otomatik state cache/stateSave YOK.
+- Save View ile kaydedilenler: filters + search + colVis + sorting
+- Kaydedilmeyenler: page number + pageLength
+
+**C) Dirty-State (Save View görünürlük)**
+- `isDirty = normalize(currentState) != normalize(savedView || baselineDefault)`
+- Tetikleyiciler (Apply beklemez): filter/search/colVis/sorting
+- Apply: tabloyu günceller + paneli kapatır; Save View görünürlüğünü değiştirmez
+- Reset: savedView varsa ona, yoksa baseline’a döner → Save View gizlenir
+
+**D) normalize() Mekanik Kuralları**
+- `null|undefined|''` → `''`, string: `trim()`
+- filter primitive → string normalize (`1` == `"1"`, boolean → `"true"/"false"`)
+- colVis: **index-based** `Array<boolean>` (dinamik kolon mutasyonu varsa explicit override)
+- sorting: `Array<[index:number, dir:'asc'|'desc']>`; dir lower-case
+
+**E) Refresh / Unapplied Changes**
+- Apply basılmamış staged filtre değişiklikleri refresh ile persist edilmez.
+- Refresh:
+  - savedView yoksa baseline temiz state
+  - savedView varsa savedView restore
+
+### UI-031: DataTable v2 Standard — Responsive Öncelikleri (ZORUNLU)
+- Search küçük ekranlarda **full-width** önceliklidir.
+- Save View dar ekranda önce text kaybeder, sonra **icon-only** olur (tooltip + aria-label zorunlu).
+- Add New primary action’dır; görünür kalır, wrap kontrollü olur (md altı icon-only).
+- Export/Import grubu tek “block” gibi davranır; wrap kontrollü olur.
+- Inline filter bar’da Apply/Reset tablet ve altı **alt satıra** geçebilir; mobilde eşit genişlikte yan yana olmalıdır.
+
+### UI-032: Toolbar Stabilitesi (Hover / Z-Index / Clipping) (ZORUNLU)
+- Toolbar’da hover sırasında konum değişimi (transform/translateY) YASAKTIR.
+- Badge’ler (Filter/ColVis) hiçbir durumda kesilmez:
+  - `overflow:hidden` kaynaklı clipping engellenir
+  - z-index/stacking düzeni dropdown’larla çakışmaz
+- Action group border-radius Save View görünür/gizli iki durumda da temiz ve tutarlı görünmelidir.
+
+### UI-033: Accessibility (A11y) — Toolbar & Filter (ZORUNLU)
+- Icon-only butonlarda `aria-label` + lokalize tooltip/title zorunludur.
+- Filter trigger için `aria-controls="inlineFilterCollapse"` + `aria-expanded` zorunludur.
+- Dropdown açıldığında search input focus almalıdır (Select2).
+- Keyboard navigation: Tab ile erişilebilirlik, ESC kapanış davranışı QA’da doğrulanmalıdır.
 
 ---
 

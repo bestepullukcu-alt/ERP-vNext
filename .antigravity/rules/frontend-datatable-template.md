@@ -6,10 +6,62 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
 > - HTML iskeletine hiç dokunma. Sadece `{{DeğişkenAdlar}}` kısımlarını doldur.
 > - `<partial name="_Filter" />` her DataTable sayfasında **zorunludur** — kaldırma veya in-line yazma.
 > - JavaScript başlatma için `DtDefaults.create()` zorunludur — bakınız `frontend-js-standard.md`.
-> - Offcanvas içindeki her label `@Localizer[...]` veya `@SharedLocalizer[...]` üzerinden gelmelidir. Hardcoded string kesinlikle yasaktır.
+> - `_Filter.cshtml` inline collapse filter bar standardına uymalıdır (bkz. aşağıdaki minimum şablon).
+> - **DataTable v2 Standard Marker:** Yeni standartları uygulayan sayfalarda `<table ... data-dt-standard="v2" id="...">` zorunludur.
 > - **`{AreaName}` = klasör gruplaması (Örn: `MDM`, `Identity`), ASP.NET Areas routing DEĞİLDİR.**
 >   - ✅ DOĞRU: `Views/MDM/Countries/Index.cshtml`
 >   - ❌ YANLIŞ: `Areas/MDM/Views/Countries/Index.cshtml`
+
+---
+
+## ✅ DataTable v2 State Standard (Re-usable Contract)
+
+Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") uygulanması gereken state/persistence sözleşmesidir.
+
+### State Modeli (Tanımlar)
+- **baselineDefault:** savedView yokken referans alınan temiz başlangıç state’i.
+  - filters: `''` (boş)
+  - search: `''` (boş)
+  - colVis: DataTable init default görünürlük (index-based)
+  - sorting: DataTable init default order (single-sort)
+  - pageLength: DataTable init default length (**yalnız referans**, compare/persist dışı)
+- **currentState (UI / staged):** ekranda şu an seçili değerler (Apply basılmadan da değişebilir).
+- **appliedState (effective table):** tabloya uygulanmış state (filtre parametreleri + dt search/colvis/order).
+- **savedView:** kullanıcı “Save View” ile kaydettiği default view.
+
+### Persistence Kararları
+- Otomatik cache/stateSave **kullanılmaz** (2 saatlik state geri yükleme yasak).
+- Sadece kullanıcı “Save View”e bastığında `savedView` persist edilir.
+- **savedView içine kaydedilenler:** filters + search + colVis + sorting
+- **kaydedilmeyenler:** page number + pageLength
+- Panel açık/kapalı durumu persist edilmez.
+- **Storage Key Standardı:** `dt:view-default:{tenantId}:{userId}:{module}:{tableId}`
+  - `tableId` = `<table id="...">` zorunludur (çoklu DataTable çakışmasını engeller).
+
+### Dirty-State (Save View görünürlük kuralı)
+- `isDirty = normalize(currentState) != normalize(savedView || baselineDefault)`
+- Save View görünürlüğü **Apply beklemez**:
+  - filter değişimi (staged dahil)
+  - search değişimi (**immediate apply**)
+  - colVis değişimi (**immediate apply**)
+  - sorting değişimi (**immediate apply**; standart default **single-sort**, multi-sort ancak explicit)
+- Apply: tabloyu günceller + paneli kapatır; Save View görünürlüğünü değiştirmez.
+- Reset: savedView varsa ona döner, yoksa baseline’a döner → `isDirty=false` → Save View gizlenir.
+
+### normalize() Standardı (Mekanik)
+- `null | undefined | ''` → `''`
+- string: `trim()`
+- filter values: primitive → string normalize
+  - `1` ve `"1"` eşdeğer kabul edilir
+  - boolean → `"true"` / `"false"`
+- colVis: index-based `Array<boolean>` (runtime mutation varsa explicit override zorunlu)
+- sorting: `Array<[index:number, dir:'asc'|'desc']>`; dir lower-case
+- key ordering: object stringify öncesi sorted
+
+### Refresh & Unapplied Change Davranışı
+- Filtre seçilip Apply basılmadan refresh edilirse staged değişiklikler kaybolur:
+  - savedView yoksa: baseline temiz state
+  - savedView varsa: savedView restore
 
 ---
 
@@ -40,7 +92,7 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
     Layout = "_LayoutBackbone";
 }
 
-{{!-- ① ZORUNLU: Filter offcanvas partial'ı. _Filter.cshtml yoksa oluştur. --}}
+{{!-- ① ZORUNLU: Inline Filter partial'ı. _Filter.cshtml yoksa oluştur. --}}
 <partial name="_Filter" />
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-6 row-gap-4">
@@ -81,7 +133,7 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
     </div>
 
     <div class="card-datatable table-responsive">
-        <table class="datatables-{{ModuleNameLower}} table border-top">
+        <table id="dt-{{ModuleNameLower}}" data-dt-standard="v2" class="datatables-{{ModuleNameLower}} table border-top">
             <thead>
                 <tr>
                     <th></th>
@@ -160,12 +212,16 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
         window.L10n.Import              = @Json.Serialize(SharedLocalizer["Import"].Value);
         window.L10n.ComingSoon          = @Json.Serialize(SharedLocalizer["ComingSoon"].Value);
         window.L10n.Filter              = @Json.Serialize(SharedLocalizer["Filter"].Value);
+        window.L10n.Apply               = @Json.Serialize(SharedLocalizer["Apply"].Value);
+        window.L10n.SaveView            = @Json.Serialize(SharedLocalizer["SaveView"].Value);
         window.L10n.SelectStatus        = @Json.Serialize(SharedLocalizer["SelectStatus"].Value);
+        window.L10n.Status              = @Json.Serialize(SharedLocalizer["Status"].Value);
         window.L10n.Reset               = @Json.Serialize(SharedLocalizer["Reset"].Value);
         window.L10n.Print               = @Json.Serialize(SharedLocalizer["Print"].Value);
         window.L10n.PDF                 = @Json.Serialize(SharedLocalizer["PDF"].Value);
         window.L10n.Copy                = @Json.Serialize(SharedLocalizer["Copy"].Value);
         window.L10n.ShowAll             = @Json.Serialize(SharedLocalizer["ShowAll"].Value);
+        window.L10n.ColumnVisibility    = @Json.Serialize(SharedLocalizer["ColumnVisibility"].Value);
         window.L10n.AddNew{{ModuleName}} = @Json.Serialize(Localizer["AddNew{{ModuleName}}"].Value);
         window.L10n.DtNoRecords         = @Json.Serialize(SharedLocalizer["DtNoRecords"].Value);
         window.L10n.DtInfo              = @Json.Serialize(SharedLocalizer["DtInfo"].Value);
@@ -190,7 +246,7 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
 
 ---
 
-## `_Filter.cshtml` Minimum Şablonu
+## `_Filter.cshtml` Minimum Şablonu (Inline Collapse Filter Bar)
 
 Her DataTable sayfasında `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dosyası mevcut olmalıdır.
 
@@ -200,31 +256,47 @@ Her DataTable sayfasında `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dos
 @inject IHtmlLocalizer<{{ModuleName}}Index> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasFilter" aria-labelledby="offcanvasFilterLabel">
-    <div class="offcanvas-header border-bottom">
-        <h5 id="offcanvasFilterLabel" class="offcanvas-title">@SharedLocalizer["Filter"]</h5>
-        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
-            aria-label="@SharedLocalizer["Cancel"]"></button>
-    </div>
-    <div class="offcanvas-body mx-0 flex-grow-0 pt-4 h-100">
-        <form class="pt-0" id="filterForm">
-            <div class="filter-inputs-wrapper mb-6">
-                {{!-- Modüle özgü filtre alanları buraya (Select2, date range, vb.) --}}
-                <div class="mb-4 user_plan">
-                    <label class="form-label">@Localizer["{{FilterLabel1Key}}"]</label>
-                    {{!-- Select dinamik olarak JS içinde oluşturulur (setupFilters fonksiyonu) --}}
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-2 pb-3">
+            <form class="m-0" id="filterForm">
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-2">
+                    {{!-- Modüle özgü filtre alanları buraya (Select2, date range, vb.) --}}
+                    <div class="filter-chip user_plan"></div>
+                    <div class="filter-chip user_status"></div>
+
+                    <div class="ms-auto d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
                 </div>
-                <div class="mb-4 user_status">
-                    <label class="form-label">@SharedLocalizer["Status"]</label>
-                </div>
-            </div>
-            <div class="d-flex mt-4 gap-6">
-                <button type="button" class="btn btn-primary d-grid w-100"
-                    id="btnFilterApply">@SharedLocalizer["Apply"]</button>
-                <button type="reset" class="btn btn-label-danger d-grid w-100"
-                    id="btnFilterReset">@SharedLocalizer["Reset"]</button>
-            </div>
-        </form>
+            </form>
+        </div>
+        <div class="border-bottom"></div>
     </div>
 </div>
 ```
+
+---
+
+## ♿ Accessibility (A11y) Minimumları (v2)
+
+- Icon-only toolbar butonları için `title` (tooltip) + `aria-label` zorunludur.
+- Filter trigger (toolbar) için `aria-controls="inlineFilterCollapse"` + `aria-expanded` zorunludur.
+- Dropdown açıldığında search input focus almalıdır (Select2).
+- Focus ring kaldırma/override yasaktır.
+
+---
+
+## 📱 Responsive Breakpoint Standardı (v2) — Mekanik Tablo
+
+| Breakpoint | Toolbar | Save View | Add New | Inline Filter Bar |
+|---|---|---|---|---|
+| `≥ 992px (lg)` | Tek satır hedef | icon + text | icon + text | triggers solda, Apply/Reset sağda |
+| `768–991px (md)` | Kontrollü wrap (2 satır olabilir) | icon-only (tooltip + aria) | icon + text (gerekirse wrap) | Apply/Reset alt satıra geçebilir |
+| `< 768px (sm)` | Search full-width öncelikli, action groups kontrollü | icon-only | icon-only | Apply/Reset alt satır |
+| `< 576px (xs)` | Kontrollü 2–3 satır | icon-only | icon-only | Apply/Reset eşit genişlikte yan yana |

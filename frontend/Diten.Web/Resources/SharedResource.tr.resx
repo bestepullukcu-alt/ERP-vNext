@@ -211,6 +211,7 @@
     <value>Tabloda veri bulunmuyor</value>
   </data>
   <data name="ShowAll" xml:space="preserve"><value>Tümünü Göster</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütun Görünürlüğü</value></data>
   <data name="BulkDelete" xml:space="preserve"><value>Toplu Sil</value></data>
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili {0} kaydı silmek istediğinize emin misiniz?</value></data>
   <data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} kayıt başarıyla silindi</value></data>
@@ -272,4 +273,5 @@
     <value>Giriş yapılıyor...</value>
   </data>
   <data name="Sandbox" xml:space="preserve"><value>Sandbox</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü Kaydet</value></data>
 </root>

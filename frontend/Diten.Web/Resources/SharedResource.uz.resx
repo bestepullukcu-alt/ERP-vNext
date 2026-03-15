@@ -115,7 +115,7 @@
     <value>Chop etish</value>
   </data>
   <data name="Import" xml:space="preserve">
-    <value>Import</value>
+    <value>Import qilish</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Filtr</value>
@@ -211,6 +211,7 @@
     <value>Jadvalda ma'lumot yo'q</value>
   </data>
   <data name="ShowAll" xml:space="preserve"><value>Barchasini ko'rsatish</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Ustun ko‘rinishi</value></data>
   <data name="BulkDelete" xml:space="preserve"><value>Ommaviy o'chirish</value></data>
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>{0} tanlangan yozuvni o'chirishni xohlaysizmi?</value></data>
   <data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} ta yozuv muvaffaqiyatli o'chirildi</value></data>
@@ -228,4 +229,31 @@
   <data name="ValidationErrors" xml:space="preserve"><value>Xatolar: {0}</value></data>
   <data name="RequiredStatus" xml:space="preserve"><value>Zarur: {0} / {1}</value></data>
   <data name="SelectPlaceholder" xml:space="preserve"><value>Tanlang...</value></data>
-<data name="Login.Title" xml_space="preserve"><value>Sign In</value></data><data name="Login.Email" xml_space="preserve"><value>Email</value></data><data name="Login.Password" xml_space="preserve"><value>Password</value></data><data name="Login.RememberMe" xml_space="preserve"><value>Remember Me</value></data><data name="Login.Submit" xml_space="preserve"><value>Sign In</value></data><data name="Login.ErrorTitle" xml_space="preserve"><value>Error</value></data><data name="Login.ErrorRequired" xml_space="preserve"><value>Email and password are required</value></data><data name="Login.Error" xml_space="preserve"><value>Invalid email or password</value></data><data name="Login.Loading" xml_space="preserve"><value>Signing in...</value></data></root>
+  <data name="Overview" xml:space="preserve"><value>Umumiy ko‘rinish</value></data>
+  <data name="SubRecords" xml:space="preserve"><value>Qo‘shimcha yozuvlar</value></data>
+  <data name="Details" xml:space="preserve"><value>Tafsilotlar</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Ro‘yxatga qaytish</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Yozuvni tahrirlash</value></data>
+  <data name="About" xml:space="preserve"><value>Haqida</value></data>
+  <data name="Address" xml:space="preserve"><value>Manzil</value></data>
+  <data name="EmailAddress" xml:space="preserve"><value>Elektron pochta manzili</value></data>
+  <data name="PhoneNumber" xml:space="preserve"><value>Telefon raqami</value></data>
+  <data name="Website" xml:space="preserve"><value>Veb-sayt</value></data>
+  <data name="Sector" xml:space="preserve"><value>Sektor</value></data>
+  <data name="ContactPerson" xml:space="preserve"><value>Aloqa shaxsi</value></data>
+  <data name="PrimaryCurrency" xml:space="preserve"><value>Asosiy valyuta</value></data>
+  <data name="DefaultTimeZone" xml:space="preserve"><value>Standart vaqt mintaqasi</value></data>
+  <data name="BasicInfo" xml:space="preserve"><value>Asosiy ma’lumotlar</value></data>
+  <data name="NoRecordsFound" xml:space="preserve"><value>Hozircha qo‘shimcha yozuvlar topilmadi.</value></data>
+  <data name="Sandbox" xml:space="preserve"><value>Sinov muhiti</value></data>
+  <data name="Login.Title" xml:space="preserve"><value>Kirish</value></data>
+  <data name="Login.Email" xml:space="preserve"><value>Elektron pochta</value></data>
+  <data name="Login.Password" xml:space="preserve"><value>Parol</value></data>
+  <data name="Login.RememberMe" xml:space="preserve"><value>Meni eslab qolish</value></data>
+  <data name="Login.Submit" xml:space="preserve"><value>Kirish</value></data>
+  <data name="Login.ErrorTitle" xml:space="preserve"><value>Xato</value></data>
+  <data name="Login.ErrorRequired" xml:space="preserve"><value>Elektron pochta va parol talab qilinadi</value></data>
+  <data name="Login.Error" xml:space="preserve"><value>Noto‘g‘ri elektron pochta yoki parol</value></data>
+  <data name="Login.Loading" xml:space="preserve"><value>Kirish...</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Ko‘rinishni Saqlash</value></data>
+</root>

@@ -6,22 +6,21 @@
 <!-- Inline Collapsible Filter Panel (mounted under DataTable toolbar via JS) -->
 <div id="inlineFilterHost">
     <div class="collapse" id="inlineFilterCollapse">
-        <div class="card shadow-none border mt-3 mb-4">
-            <div class="card-body py-3">
-                <form class="m-0" id="filterForm">
-                    <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-2">
-                        <div class="filter-chip user_plan"></div>
-                        <div class="filter-chip user_status"></div>
+        <div class="pt-2 pb-3">
+            <form class="m-0" id="filterForm">
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-2">
+                    <div class="filter-chip user_plan"></div>
+                    <div class="filter-chip user_status"></div>
 
-                        <div class="ms-auto d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-primary"
-                                id="btnFilterApply">@SharedLocalizer["Apply"]</button>
-                            <button type="reset" class="btn btn-sm btn-label-danger"
-                                id="btnFilterReset">@SharedLocalizer["Reset"]</button>
-                        </div>
+                    <div class="ms-auto d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-primary"
+                            id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger"
+                            id="btnFilterReset">@SharedLocalizer["Reset"]</button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
+        <div class="border-bottom"></div>
     </div>
 </div>

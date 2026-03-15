@@ -9,9 +9,20 @@ const LegalEntitiesList = (function () {
     let dt;
     const dtTableEl = document.querySelector('.datatables-legal-entities');
     const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
-    const L = window.L10n || {};
+    let L = window.L10n || {};
     const filterHostId = 'inlineFilterHost';
     const filterCollapseId = 'inlineFilterCollapse';
+    let saveFilterArmed = false;
+    const baseOrder = [[2, 'desc']];
+
+    const syncL10n = () => {
+        const current = window.L10n;
+        if (current && typeof current === 'object' && Object.keys(current).length) {
+            L = current;
+            return;
+        }
+        L = L || {};
+    };
 
     // Get TenantId from logged-in user or fallback
     const getTenantId = () => {
@@ -31,6 +42,120 @@ const LegalEntitiesList = (function () {
         const parts = value.split(`; ${name}=`);
         if (parts.length === 2) return parts.pop().split(';').shift();
         return null;
+    };
+
+    const getCurrentUserKey = () => {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            return user.id || user.userId || 'anon';
+        } catch (e) {
+            return 'anon';
+        }
+    };
+
+    const getDefaultViewStorageKey = () => {
+        const tableId = dtTableEl?.id || '';
+        // v2 standard: dt:view-default:{tenantId}:{userId}:{module}:{tableId}
+        return `dt:view-default:${getTenantId()}:${getCurrentUserKey()}:MDM.LegalEntities:${tableId}`;
+    };
+
+    const loadDefaultView = () => {
+        try {
+            const raw = localStorage.getItem(getDefaultViewStorageKey());
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const saveDefaultView = (view) => {
+        try {
+            localStorage.setItem(getDefaultViewStorageKey(), JSON.stringify(view || {}));
+        } catch (e) { }
+    };
+
+    const getCurrentView = (api) => {
+        const companyType = $('#UserPlan').val() || '';
+        const status = $('#FilterTransaction').val() || '';
+        const search = typeof api?.search === 'function' ? (api.search() || '') : '';
+
+        let colVis = null;
+        try {
+            colVis = api?.columns?.().visible().toArray();
+        } catch (e) {
+            colVis = null;
+        }
+
+        let order = null;
+        try {
+            order = api?.order?.() || null;
+        } catch (e) {
+            order = null;
+        }
+
+        return { companyType: companyType, status: status, search: search, colVis: colVis, order: order };
+    };
+
+    const setSaveFilterVisible = (visible) => {
+        const btn = document.querySelector('.dt-save-filter-btn');
+        if (!btn) return;
+        btn.classList.toggle('d-none', !visible);
+        window.DtDefaults?.refreshButtonGroupRadii?.();
+    };
+
+    const isDirtyComparedToDefault = (api) => {
+        const def = loadDefaultView() || null;
+        const cur = getCurrentView(api);
+
+        const curHasHiddenCols = Array.isArray(cur.colVis) ? cur.colVis.some(v => !v) : false;
+
+        const ref = def || {
+            companyType: '',
+            status: '',
+            search: '',
+            colVis: Array.isArray(cur.colVis) ? cur.colVis.map(() => true) : null,
+            order: baseOrder
+        };
+
+        const refColVis = Array.isArray(ref.colVis) ? ref.colVis : null;
+        const curColVis = Array.isArray(cur.colVis) ? cur.colVis : null;
+        const colVisEqual =
+            Array.isArray(refColVis) &&
+                Array.isArray(curColVis) &&
+                refColVis.length === curColVis.length
+                ? refColVis.every((v, i) => !!v === !!curColVis[i])
+                : refColVis === curColVis; // both null
+
+        const refOrder = Array.isArray(ref.order) ? ref.order : null;
+        const curOrder = Array.isArray(cur.order) ? cur.order : null;
+        const orderEqual =
+            Array.isArray(refOrder) &&
+                Array.isArray(curOrder) &&
+                refOrder.length === curOrder.length
+                ? refOrder.every((o, i) => String(o?.[0]) === String(curOrder[i]?.[0]) && String(o?.[1]) === String(curOrder[i]?.[1]))
+                : refOrder === curOrder; // both null
+
+        if (!def) {
+            // No saved default: still show on any meaningful change from baseline
+            return [cur.companyType, cur.status].filter(Boolean).length > 0 ||
+                !!cur.search ||
+                curHasHiddenCols ||
+                !orderEqual;
+        }
+
+        return (String(cur.companyType || '') !== String(ref.companyType || '')) ||
+            (String(cur.status || '') !== String(ref.status || '')) ||
+            (String(cur.search || '') !== String(ref.search || '')) ||
+            !colVisEqual ||
+            !orderEqual;
+    };
+
+    const applyFilterValues = (api, values) => {
+        const companyType = values?.companyType || '';
+        const status = values?.status || '';
+
+        api.column('companyType:name').search(companyType ? `^${companyType}$` : '', true, false);
+        api.column('isActive:name').search(status ? `^${status}$` : '', true, false);
     };
 
     /**
@@ -157,6 +282,7 @@ const LegalEntitiesList = (function () {
      */
     const initDataTable = () => {
         if (!dtTableEl) return;
+        syncL10n();
 
         // Uzantı butonları (Merkezi butona ek olarak)
         const extraButtons = {
@@ -176,10 +302,23 @@ const LegalEntitiesList = (function () {
                     'aria-controls': filterCollapseId,
                     'aria-expanded': 'false'
                 }
+            },
+            saveFilterBtn: {
+                text: '<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">' + (L.SaveView || '') + '</span>',
+                className: 'btn btn-label-primary d-none dt-save-filter-btn',
+                attr: { title: L.SaveView, 'data-bs-toggle': 'tooltip' },
+                action: function (e, api) {
+                    const tableApi = api || dt;
+                    if (!tableApi) return;
+                    saveDefaultView(getCurrentView(tableApi));
+                    setSaveFilterVisible(false);
+                }
             }
         };
 
         dt = new DataTable(dtTableEl, window.DtDefaults.create({
+            // Disable DataTables stateSave (2h cache). Persistence is handled only via Save Filter default view.
+            stateSave: false,
             ajax: {
                 url: apiUrl + '/api/legal-entities',
                 type: 'GET',
@@ -252,6 +391,8 @@ const LegalEntitiesList = (function () {
                 mountInlineFilter();
                 bindInlineFilterToggle();
                 setupFilters(this.api());
+                // Arm Save Filter change detection after initial state/default restores are done
+                setTimeout(() => { saveFilterArmed = true; }, 0);
             },
             drawCallback: function () {
                 // Her çizimde (arama, sayfalama vb.) görsel durumları güncelle
@@ -267,6 +408,17 @@ const LegalEntitiesList = (function () {
         dt.on('column-visibility.dt', function () {
             const count = [$('#UserPlan').val(), $('#FilterTransaction').val()].filter(Boolean).length;
             window.DtDefaults.updateVisualState(dt, count);
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+        });
+
+        // Global search changes should also enable Save Filter
+        dt.on('search.dt', function () {
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+        });
+
+        // Sorting changes should also enable Save Filter (sorting is part of saved default)
+        dt.on('order.dt', function () {
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
     };
 
@@ -274,7 +426,15 @@ const LegalEntitiesList = (function () {
      * Setup Filters
      */
     const setupFilters = (api) => {
-        const collapseEl = document.getElementById(filterCollapseId);
+        const renderFilterTrigger = (label, hasValue) => {
+            const $wrap = $('<span class="dt-filter-trigger"></span>');
+            $wrap.append($('<span class="dt-filter-trigger-label"></span>').text(label || ''));
+            if (hasValue) {
+                $wrap.append($('<span class="badge rounded-pill bg-primary-subtle text-primary dt-filter-trigger-badge ms-2"></span>').text('1'));
+            }
+            return $wrap;
+        };
+
         const initSelect2 = () => {
             const $companyType = $('#UserPlan');
             if ($companyType.length && !$companyType.hasClass('select2-hidden-accessible')) {
@@ -282,6 +442,7 @@ const LegalEntitiesList = (function () {
                     placeholder: L.CompanyType,
                     dropdownParent: $('#' + filterHostId),
                     minimumResultsForSearch: 0,
+                    templateSelection: (data) => renderFilterTrigger(L.CompanyType, !!(data && data.id)),
                     width: '100%'
                 });
             }
@@ -289,20 +450,14 @@ const LegalEntitiesList = (function () {
             const $status = $('#FilterTransaction');
             if ($status.length && !$status.hasClass('select2-hidden-accessible')) {
                 $status.select2({
-                    placeholder: L.SelectStatus,
+                    placeholder: (L.Status || L.SelectStatus),
                     dropdownParent: $('#' + filterHostId),
                     minimumResultsForSearch: 0,
+                    templateSelection: (data) => renderFilterTrigger((L.Status || L.SelectStatus), !!(data && data.id)),
                     width: '100%'
                 });
             }
         };
-
-        if (collapseEl && !collapseEl.dataset.select2InitBound) {
-            collapseEl.dataset.select2InitBound = '1';
-            collapseEl.addEventListener('shown.bs.collapse', () => {
-                initSelect2();
-            });
-        }
 
         // Company Type Filter
         const companyTypeContainer = document.querySelector('.user_plan');
@@ -324,8 +479,6 @@ const LegalEntitiesList = (function () {
                 option.textContent = opt.label || opt.value;
                 select.appendChild(option);
             });
-
-            // Select2 is initialized lazily when the collapse is shown
         }
 
         // Status filter (special handling for statusObj)
@@ -347,32 +500,50 @@ const LegalEntitiesList = (function () {
                 option.textContent = status.title;
                 select.appendChild(option);
             });
-
-            // Select2 is initialized lazily when the collapse is shown
         }
 
-        // Restore state values to UI
-        const state = api.state.loaded();
+        // Initialize Select2 immediately to prevent FOUC when opening the panel
+        initSelect2();
+
         let initialFilterCount = 0;
 
-        if (state) {
-            const companyTypeCol = api.column('companyType:name').index();
-            const statusCol = api.column('isActive:name').index();
+        // Apply user's saved default view (if any). Otherwise keep a clean state on load.
+        const defaultView = loadDefaultView();
+        if (defaultView) {
+            $('#UserPlan').val(defaultView.companyType || '').trigger('change');
+            $('#FilterTransaction').val(defaultView.status || '').trigger('change');
 
-            if (companyTypeCol !== undefined && state.columns[companyTypeCol].search.search) {
-                const val = state.columns[companyTypeCol].search.search.replace(/\^|\$/g, '').replace(/\\/g, '');
-                $('#UserPlan').val(val).trigger('change');
-                if (val) initialFilterCount++;
+            if (typeof defaultView.search === 'string') {
+                api.search(defaultView.search);
             }
-            if (statusCol !== undefined && state.columns[statusCol].search.search) {
-                const val = state.columns[statusCol].search.search.replace(/\^|\$/g, '').replace(/\\/g, '');
-                $('#FilterTransaction').val(val).trigger('change');
-                if (val) initialFilterCount++;
+
+            if (Array.isArray(defaultView.colVis)) {
+                defaultView.colVis.forEach((vis, idx) => {
+                    try { api.column(idx).visible(!!vis, false); } catch (e) { }
+                });
             }
+
+            if (Array.isArray(defaultView.order)) {
+                try { api.order(defaultView.order); } catch (e) { }
+            }
+
+            applyFilterValues(api, defaultView);
+            api.draw();
+            initialFilterCount = [defaultView.companyType, defaultView.status].filter(Boolean).length;
         }
 
         // Initial visual sync
         window.DtDefaults.updateVisualState(api, initialFilterCount);
+
+        // Save Filter button visibility sync (hidden by default)
+        let filtersTouched = false;
+        $('#UserPlan, #FilterTransaction')
+            .off('change.saveFilter')
+            .on('change.saveFilter', () => {
+                filtersTouched = true;
+                if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
+            });
+        setSaveFilterVisible(false);
 
         // Buttons
         const applyBtn = document.getElementById('btnFilterApply');
@@ -381,28 +552,63 @@ const LegalEntitiesList = (function () {
         if (applyBtn && !applyBtn.dataset.bound) {
             applyBtn.dataset.bound = '1';
             applyBtn.addEventListener('click', () => {
-            const companyType = $('#UserPlan').val();
-            const status = $('#FilterTransaction').val();
+                const companyType = $('#UserPlan').val();
+                const status = $('#FilterTransaction').val();
 
-            api.column('companyType:name').search(companyType ? `^${companyType}$` : '', true, false);
-            api.column('isActive:name').search(status ? `^${status}$` : '', true, false);
-            api.draw();
+                applyFilterValues(api, { companyType: companyType, status: status });
+                api.draw();
 
-            let count = [companyType, status].filter(Boolean).length;
-            window.DtDefaults.updateVisualState(api, count);
+                let count = [companyType, status].filter(Boolean).length;
+                window.DtDefaults.updateVisualState(api, count);
+                filtersTouched = true;
 
-            const el = document.getElementById(filterCollapseId);
-            if (el) bootstrap.Collapse.getOrCreateInstance(el).hide();
+                const el = document.getElementById(filterCollapseId);
+                if (el) bootstrap.Collapse.getOrCreateInstance(el).hide();
             });
         }
 
         if (resetBtn && !resetBtn.dataset.bound) {
             resetBtn.dataset.bound = '1';
             resetBtn.addEventListener('click', () => {
-            $('#UserPlan, #FilterTransaction').val('').trigger('change');
-            api.state.clear(); // Clear saved state
-            api.columns().search('').draw();
-            window.DtDefaults.updateVisualState(api, 0);
+                const def = loadDefaultView();
+                if (def) {
+                    $('#UserPlan').val(def.companyType || '').trigger('change');
+                    $('#FilterTransaction').val(def.status || '').trigger('change');
+
+                    if (typeof def.search === 'string') {
+                        api.search(def.search);
+                    }
+
+                    if (Array.isArray(def.colVis)) {
+                        def.colVis.forEach((vis, idx) => {
+                            try { api.column(idx).visible(!!vis, false); } catch (e) { }
+                        });
+                    }
+
+                    if (Array.isArray(def.order)) {
+                        try { api.order(def.order); } catch (e) { }
+                    } else {
+                        try { api.order(baseOrder); } catch (e) { }
+                    }
+
+                    applyFilterValues(api, def);
+                    api.draw();
+                    window.DtDefaults.updateVisualState(api, [def.companyType, def.status].filter(Boolean).length);
+                } else {
+                    $('#UserPlan, #FilterTransaction').val('').trigger('change');
+                    applyFilterValues(api, { companyType: '', status: '' });
+
+                    try { api.search(''); } catch (e) { }
+                    try { api.columns().visible(true, false); } catch (e) { }
+                    try { api.order(baseOrder); } catch (e) { }
+
+                    api.draw();
+                    window.DtDefaults.updateVisualState(api, 0);
+                }
+
+                // Reset keeps panel open
+                filtersTouched = false;
+                setSaveFilterVisible(false);
             });
         }
     };
@@ -574,7 +780,13 @@ const LegalEntitiesList = (function () {
         });
     };
 
-    return { init: () => { initDataTable(); handleEvents(); } };
+    return {
+        init: () => {
+            syncL10n();
+            initDataTable();
+            handleEvents();
+        }
+    };
 })();
 
 document.addEventListener('DOMContentLoaded', () => LegalEntitiesList.init());

@@ -211,6 +211,7 @@
     <value>ცხრილში მონაცემები არ არის</value>
   </data>
   <data name="ShowAll" xml:space="preserve"><value>აჩვენე ყველა</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>სვეტების ხილვადობა</value></data>
   <data name="BulkDelete" xml:space="preserve"><value>მასობრივი წაშლა</value></data>
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>ნამდვილად გსურთ {0} არჩეული ჩანაწერის წაშლა?</value></data>
   <data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} ჩანაწერი წარმატებით წაიშალა</value></data>
@@ -228,4 +229,31 @@
   <data name="ValidationErrors" xml:space="preserve"><value>შეცდომა: {0}</value></data>
   <data name="RequiredStatus" xml:space="preserve"><value>სავალდებულო: {0} / {1}</value></data>
   <data name="SelectPlaceholder" xml:space="preserve"><value>აირჩიეთ...</value></data>
-<data name="Login.Title" xml_space="preserve"><value>Sign In</value></data><data name="Login.Email" xml_space="preserve"><value>Email</value></data><data name="Login.Password" xml_space="preserve"><value>Password</value></data><data name="Login.RememberMe" xml_space="preserve"><value>Remember Me</value></data><data name="Login.Submit" xml_space="preserve"><value>Sign In</value></data><data name="Login.ErrorTitle" xml_space="preserve"><value>Error</value></data><data name="Login.ErrorRequired" xml_space="preserve"><value>Email and password are required</value></data><data name="Login.Error" xml_space="preserve"><value>Invalid email or password</value></data><data name="Login.Loading" xml_space="preserve"><value>Signing in...</value></data></root>
+  <data name="Overview" xml:space="preserve"><value>მიმოხილვა</value></data>
+  <data name="SubRecords" xml:space="preserve"><value>ქვე-ჩანაწერები</value></data>
+  <data name="Details" xml:space="preserve"><value>დეტალები</value></data>
+  <data name="BackToList" xml:space="preserve"><value>სიისთვის დაბრუნება</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>ჩანაწერის რედაქტირება</value></data>
+  <data name="About" xml:space="preserve"><value>შესახებ</value></data>
+  <data name="Address" xml:space="preserve"><value>მისამართი</value></data>
+  <data name="EmailAddress" xml:space="preserve"><value>ელფოსტის მისამართი</value></data>
+  <data name="PhoneNumber" xml:space="preserve"><value>ტელეფონის ნომერი</value></data>
+  <data name="Website" xml:space="preserve"><value>ვებ-საიტი</value></data>
+  <data name="Sector" xml:space="preserve"><value>სექტორი</value></data>
+  <data name="ContactPerson" xml:space="preserve"><value>საკონტაქტო პირი</value></data>
+  <data name="PrimaryCurrency" xml:space="preserve"><value>ძირითადი ვალუტა</value></data>
+  <data name="DefaultTimeZone" xml:space="preserve"><value>ნაგულისხმევი დროის სარტყელი</value></data>
+  <data name="BasicInfo" xml:space="preserve"><value>ძირითადი ინფორმაცია</value></data>
+  <data name="NoRecordsFound" xml:space="preserve"><value>ქვე-ჩანაწერები ჯერ არ არის.</value></data>
+  <data name="Sandbox" xml:space="preserve"><value>სატესტო გარემო</value></data>
+  <data name="Login.Title" xml:space="preserve"><value>შესვლა</value></data>
+  <data name="Login.Email" xml:space="preserve"><value>ელფოსტა</value></data>
+  <data name="Login.Password" xml:space="preserve"><value>პაროლი</value></data>
+  <data name="Login.RememberMe" xml:space="preserve"><value>დამიმახსოვრე</value></data>
+  <data name="Login.Submit" xml:space="preserve"><value>შესვლა</value></data>
+  <data name="Login.ErrorTitle" xml:space="preserve"><value>შეცდომა</value></data>
+  <data name="Login.ErrorRequired" xml:space="preserve"><value>ელფოსტა და პაროლი სავალდებულოა</value></data>
+  <data name="Login.Error" xml:space="preserve"><value>არასწორი ელფოსტა ან პაროლი</value></data>
+  <data name="Login.Loading" xml:space="preserve"><value>შესვლა...</value></data>
+  <data name="SaveView" xml:space="preserve"><value>ხედის შენახვა</value></data>
+</root>

@@ -143,6 +143,7 @@ VERIFICATION_SUITE = [
         "category": "Internationalization",
         "checks": [
             ("i18n Check", ".antigravity/skills/i18n-localization/scripts/i18n_checker.py", False),
+            ("SharedResource RESX Check", ".antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py", True),
         ]
     },
 ]

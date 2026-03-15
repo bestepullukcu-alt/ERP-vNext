@@ -211,6 +211,7 @@
     <value>В таблице нет данных</value>
   </data>
   <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Видимость столбцов</value></data>
   <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>Вы уверены, что хотите удалить {0} выбранных записей?</value></data>
   <data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} записей успешно удалено</value></data>
@@ -228,4 +229,31 @@
   <data name="ValidationErrors" xml:space="preserve"><value>Ошибки: {0}</value></data>
   <data name="RequiredStatus" xml:space="preserve"><value>Обязательно: {0} / {1}</value></data>
   <data name="SelectPlaceholder" xml:space="preserve"><value>Выберите...</value></data>
-<data name="Login.Title" xml_space="preserve"><value>Sign In</value></data><data name="Login.Email" xml_space="preserve"><value>Email</value></data><data name="Login.Password" xml_space="preserve"><value>Password</value></data><data name="Login.RememberMe" xml_space="preserve"><value>Remember Me</value></data><data name="Login.Submit" xml_space="preserve"><value>Sign In</value></data><data name="Login.ErrorTitle" xml_space="preserve"><value>Error</value></data><data name="Login.ErrorRequired" xml_space="preserve"><value>Email and password are required</value></data><data name="Login.Error" xml_space="preserve"><value>Invalid email or password</value></data><data name="Login.Loading" xml_space="preserve"><value>Signing in...</value></data></root>
+  <data name="Overview" xml:space="preserve"><value>Обзор</value></data>
+  <data name="SubRecords" xml:space="preserve"><value>Подзаписи</value></data>
+  <data name="Details" xml:space="preserve"><value>Детали</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Редактировать запись</value></data>
+  <data name="About" xml:space="preserve"><value>О программе</value></data>
+  <data name="Address" xml:space="preserve"><value>Адрес</value></data>
+  <data name="EmailAddress" xml:space="preserve"><value>Адрес эл. почты</value></data>
+  <data name="PhoneNumber" xml:space="preserve"><value>Номер телефона</value></data>
+  <data name="Website" xml:space="preserve"><value>Веб-сайт</value></data>
+  <data name="Sector" xml:space="preserve"><value>Сектор</value></data>
+  <data name="ContactPerson" xml:space="preserve"><value>Контактное лицо</value></data>
+  <data name="PrimaryCurrency" xml:space="preserve"><value>Основная валюта</value></data>
+  <data name="DefaultTimeZone" xml:space="preserve"><value>Часовой пояс по умолчанию</value></data>
+  <data name="BasicInfo" xml:space="preserve"><value>Основная информация</value></data>
+  <data name="NoRecordsFound" xml:space="preserve"><value>Подзаписей пока нет.</value></data>
+  <data name="Sandbox" xml:space="preserve"><value>Песочница</value></data>
+  <data name="Login.Title" xml:space="preserve"><value>Вход</value></data>
+  <data name="Login.Email" xml:space="preserve"><value>Эл. почта</value></data>
+  <data name="Login.Password" xml:space="preserve"><value>Пароль</value></data>
+  <data name="Login.RememberMe" xml:space="preserve"><value>Запомнить меня</value></data>
+  <data name="Login.Submit" xml:space="preserve"><value>Войти</value></data>
+  <data name="Login.ErrorTitle" xml:space="preserve"><value>Ошибка</value></data>
+  <data name="Login.ErrorRequired" xml:space="preserve"><value>Требуются эл. почта и пароль</value></data>
+  <data name="Login.Error" xml:space="preserve"><value>Неверная эл. почта или пароль</value></data>
+  <data name="Login.Loading" xml:space="preserve"><value>Вход...</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить Вид</value></data>
+</root>

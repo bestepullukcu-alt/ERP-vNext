@@ -79,9 +79,15 @@ def print_report(checks: List[Check]) -> None:
         print("\nResult: PASS")
 
 
-def compile_required_l10n_keys() -> List[Tuple[str, Pattern[str]]]:
-    # Enforce the minimum bridge used by frontend templates and LegalEntities.
+def compile_required_l10n_keys(is_v2: bool) -> List[Tuple[str, Pattern[str]]]:
+    """
+    Required L10n bridge keys for DataTable pages.
+
+    v1 (legacy): minimal contract.
+    v2 (data-dt-standard="v2"): toolbar/filter vocabulary keys are mandatory.
+    """
     keys = [
+        # Core shared status/actions
         "Active",
         "Passive",
         "Unknown",
@@ -89,12 +95,40 @@ def compile_required_l10n_keys() -> List[Tuple[str, Pattern[str]]]:
         "Edit",
         "ViewDetails",
         "QuickView",
+        # Bulk actions / confirm
         "BulkDelete",
         "BulkDeleteConfirm",
         "AreYouSure",
         "Cancel",
     ]
-    return [(k, re.compile(rf"window\.L10n\.{re.escape(k)}\s*=")) for k in keys]
+
+    if is_v2:
+        keys.extend(
+            [
+                # Toolbar + filter vocabulary (v2)
+                "Search",
+                "Export",
+                "Import",
+                "Filter",
+                "Apply",
+                "Reset",
+                "ShowAll",
+                "SaveView",
+                "ColumnVisibility",
+                "Status",
+            ]
+        )
+
+    # Deduplicate while keeping order
+    seen = set()
+    ordered = []
+    for k in keys:
+        if k in seen:
+            continue
+        seen.add(k)
+        ordered.append(k)
+
+    return [(k, re.compile(rf"window\.L10n\.{re.escape(k)}\s*=")) for k in ordered]
 
 
 def main() -> int:
@@ -130,6 +164,7 @@ def main() -> int:
 
     index_html = read_text(index_cshtml)
     js_text = read_text(index_js)
+    is_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", index_html))
 
     checks.append(
         check_contains(
@@ -178,7 +213,7 @@ def main() -> int:
             "Missing window.L10n initialization block",
         )
     )
-    for key, pat in compile_required_l10n_keys():
+    for key, pat in compile_required_l10n_keys(is_v2):
         checks.append(
             check_contains(
                 index_cshtml,
@@ -186,6 +221,18 @@ def main() -> int:
                 pat,
                 f"Index.cshtml bridges window.L10n.{key}",
                 f"Missing L10n key: {key}",
+            )
+        )
+
+    # v2: Table identity marker (prevents multi-table storage key collisions)
+    if is_v2:
+        checks.append(
+            check_contains(
+                index_cshtml,
+                index_html,
+                re.compile(r"<table[^>]*(?:id\s*=\s*\"[^\"]+\")[^>]*data-dt-standard\s*=\s*\"v2\"|<table[^>]*data-dt-standard\s*=\s*\"v2\"[^>]*id\s*=\s*\"[^\"]+\"", re.IGNORECASE),
+                "Index.cshtml has <table id=\"...\" data-dt-standard=\"v2\">",
+                "Missing v2 marker and/or table id (required: <table id=\"...\" data-dt-standard=\"v2\">)",
             )
         )
 
