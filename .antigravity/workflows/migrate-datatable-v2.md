@@ -23,7 +23,7 @@ Bu workflow, legacy DataTable liste sayfalarını **DataTable v2 standardına** 
 - [ ] Toolbar hiyerarşisi korunuyor: Length, Search, Export, Import, ColVis, Filter, Save View, Add New.
 - [ ] Save View default gizli; dirty-state ile görünür.
 - [ ] Hover sırasında konum kayması yok (transform/translateY yasak).
-- [ ] Badge clipping yok; dropdown stacking/z-index sağlam.
+- [ ] Badge clipping yok; dropdown stacking/z-index sağlam. (Not: Clipping çözümü z-index değil; `backbone-custom.css (MOD-0022)` top safe-area padding ile sağlanır.)
 
 ### 3) State Model & Persistence (v2)
 - [ ] `baselineDefault` açık tanımlandı (boş filter/search + default colVis + default single-sort + default pageLength).

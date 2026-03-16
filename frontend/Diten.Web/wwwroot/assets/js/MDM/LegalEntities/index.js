@@ -176,7 +176,7 @@ const LegalEntitiesList = (function () {
 
         if (toolbarRow) {
             toolbarRow.insertAdjacentElement('afterend', host);
-            host.classList.add('mx-3');
+            host.classList.add('px-3');
             return;
         }
 
@@ -184,7 +184,7 @@ const LegalEntitiesList = (function () {
         const dtContainer = dtTableEl.closest('.dt-container') || dtTableEl.closest('.dataTables_wrapper') || dtTableEl.parentElement;
         if (dtContainer) {
             dtContainer.insertAdjacentElement('beforeend', host);
-            host.classList.add('mx-3');
+            host.classList.add('px-3');
         }
     };
 
@@ -436,26 +436,56 @@ const LegalEntitiesList = (function () {
         };
 
         const initSelect2 = () => {
+            const $dropdownParent = $('#' + filterHostId).closest('.card');
+
+            const clampInlineFilterDropdown = () => {
+                // Clamp the open dropdown into the viewport to prevent page scrollbars (x/y) while open.
+                // Applies to inline filter dropdowns only (dropdownCssClass: dt-inline-filter-dropdown).
+                window.requestAnimationFrame(() => {
+                    const dropdown = document.querySelector('.select2-dropdown.dt-inline-filter-dropdown');
+                    if (!dropdown) return;
+
+                    dropdown.style.transform = '';
+                    const rect = dropdown.getBoundingClientRect();
+                    const pad = 8;
+
+                    let tx = 0;
+                    let ty = 0;
+
+                    if (rect.right > window.innerWidth - pad) tx -= rect.right - (window.innerWidth - pad);
+                    if (rect.left < pad) tx += pad - rect.left;
+
+                    if (rect.bottom > window.innerHeight - pad) ty -= rect.bottom - (window.innerHeight - pad);
+                    if (rect.top < pad) ty += pad - rect.top;
+
+                    if (tx || ty) dropdown.style.transform = `translate(${tx}px, ${ty}px)`;
+                });
+            };
+
             const $companyType = $('#UserPlan');
             if ($companyType.length && !$companyType.hasClass('select2-hidden-accessible')) {
                 $companyType.select2({
                     placeholder: L.CompanyType,
-                    dropdownParent: $('#' + filterHostId),
+                    dropdownParent: $dropdownParent.length ? $dropdownParent : $(document.body),
                     minimumResultsForSearch: 0,
+                    dropdownCssClass: 'dt-inline-filter-dropdown',
                     templateSelection: (data) => renderFilterTrigger(L.CompanyType, !!(data && data.id)),
                     width: '100%'
                 });
+                $companyType.on('select2:open', clampInlineFilterDropdown);
             }
 
             const $status = $('#FilterTransaction');
             if ($status.length && !$status.hasClass('select2-hidden-accessible')) {
                 $status.select2({
                     placeholder: (L.Status || L.SelectStatus),
-                    dropdownParent: $('#' + filterHostId),
+                    dropdownParent: $dropdownParent.length ? $dropdownParent : $(document.body),
                     minimumResultsForSearch: 0,
+                    dropdownCssClass: 'dt-inline-filter-dropdown',
                     templateSelection: (data) => renderFilterTrigger((L.Status || L.SelectStatus), !!(data && data.id)),
                     width: '100%'
                 });
+                $status.on('select2:open', clampInlineFilterDropdown);
             }
         };
 

@@ -34,6 +34,10 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - JavaScript (`dt-defaults.js`) responsive layout amaçlı class ekleme/çıkarma yapmamalıdır.
 - CSS düzeltmeleri masaüstü görünümünü **kesinlikle bozmamalıdır**; tüm kurallar media query (`@media screen and (max-width: 991.98px)`) içinde kapsamlanır.
 - `display: contents` tekniği, `.dt-layout-end` hücresini mobilde eriterek çocuklarının (Search, Buttons) üst satırın doğrudan flex item'ları olmasını sağlar.
+- **Export Dropdown UI Notu (XS):** Toolbar’da `.btn-icon` (kare ikon buton) ile `extend:'collection'` Export butonu aynı grupta kullanıldığında, Export görsel olarak “üstten-alttan küçük” kalabilir. Bu durumda Export butonuna `dt-export-collection-btn` class’ı verilir ve responsive toolbar CSS’i Export’u ikon buton yüksekliğiyle hizalar.
+- **Badge Clipping (Mobile/Tablet):** Filter/ColVis badge’leri `top-0 end-0 translate-middle` ile butonun dışına taşar. Toolbar, `.card-datatable.table-responsive` (overflow) içinde olduğundan **z-index ile çözülemez**; çözüm `backbone-custom.css (MOD-0022)` içinde DataTable top row için **ek `padding-top` “safe area”** bırakmaktır. Bu kural kaldırılmaz.
+- **Select2 Shadow (Inline Filter):** `#inlineFilterHost` içindeki Select2 focus/open durumunda vendor `box-shadow` (active ring) kullanılmaz; `backbone-custom.css` içinde shadow kapatılır. Amaç “chip” görünümünde temiz kenar estetiğidir.
+- **Select2 Border Width (Inline Filter):** Vendor Select2 focus/open durumunda `border-width: 2px` yapabilir; inline filter chip’lerinde layout shift/scroll tetiklemesin diye `border-width: 1px` sabitlenir (kural `backbone-custom.css`).
 
 ### CSS-006: Unobtrusive Form Validation Feedback
 - ASP.NET Core Unobtrusive Validation'ın ürettiği `.input-validation-error` sınıfı için merkezi tanımlar (`backbone-custom.css`) geliştirilmiştir.
@@ -45,6 +49,9 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - Sayfanın en üst boşluğu (padding-top) Backbone template'inde `backbone-custom.css` üzerinden **16px** (1rem) olarak override edilir. Vendor `core.css` editlenmez.
 - Not: `mb-6` global olarak yasak değildir; sadece **Page Header wrapper** için `mb-4` standardı uygulanır.
 - Breadcrumb kullanılıyorsa `mt-2` kullanılmaz (üst boşluk verilmez). `nav` üzerinde sadece `text-muted` bırakılır.
+- **Page Description kuralı:** Liste/Index sayfalarında başlık altında `@Localizer["PageDescription"]` gösterilir. Breadcrumb bulunan Create/Edit/Details sayfalarında generic `PageDescription` kullanılmaz.
+- **Genel Kural (Breadcrumb'a bağlı):** Sayfada breadcrumb **yoksa** başlık altında `@Localizer["PageDescription"]` göstermek zorunludur. Breadcrumb **varsa** `PageDescription` gösterilmez.
+- **Inline Filter Spacing (MOD-0025):** `#inlineFilterHost` toolbar altına mount edildiğinde DataTable top row ile hizalı olması için **`px-3`** kullanır (`mx-*` ile dışarı taşırılmaz). Filtre paneli içindeki form sarmalayıcısı (`collapse` altındaki ilk `div`) üst boşluk olarak `pt-0` kullanmalıdır.
 
 ---
 
@@ -192,6 +199,7 @@ Bu bölüm yalnızca `data-dt-standard="v2"` ile işaretlenmiş DataTable sayfal
 - Badge’ler (Filter/ColVis) hiçbir durumda kesilmez:
   - `overflow:hidden` kaynaklı clipping engellenir
   - z-index/stacking düzeni dropdown’larla çakışmaz
+- Badge clipping fix’i, badge’i içeri taşıyarak ikonları kapatmak değil; **top row’da safe area** bırakmaktır (bkz: `backbone-custom.css` MOD-0022). “Sadece z-index artır” yaklaşımı kabul edilmez.
 - Action group border-radius Save View görünür/gizli iki durumda da temiz ve tutarlı görünmelidir.
 
 ### UI-033: Accessibility (A11y) — Toolbar & Filter (ZORUNLU)

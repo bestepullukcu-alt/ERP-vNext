@@ -6,7 +6,8 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
 
 1. **Encapsulation:** Tüm değişkenler ve fonksiyonlar `const {{ModuleName}} = (function () { ... })();` içinde olmalıdır.
 2. **`DtDefaults.create()` ZORUNLU:** Ham `DataTable({...})` çağrısı KESİNLİKLE YASAKTIR. Her DataTable sayfası `window.DtDefaults.create({...})` ile başlatılır. Bu wrapper otomatik olarak skeleton, stateSave, responsive class fix ve hover'ı devreye alır.
-3. **`DtDefaults.exportButtons()` ZORUNLU:** Butonlar elle `layout` içinde tanımlanmaz. Her zaman `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons, options)` kullanılır. `options` ile `exportColumns` / `colvisColumns` override edilebilir.
+3. **`DtDefaults.exportButtons()` ZORUNLU:** Butonlar elle `layout` içinde tanımlanmaz. Her zaman `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons, options)` kullanılır. `options` ile `exportColumns` / `colvisColumns` override edilebilir.  
+   - **Responsive UI guard:** `DtDefaults` içindeki Export (collection) butonu `dt-export-collection-btn` class’ını taşır; `backbone-custom.css` bu class ile Export’u mobil toolbar’da `.btn-icon` yüksekliğiyle hizalar. Bu class kaldırılmaz/değiştirilmez.
 4. **AJAX Gateway:** Tüm istekler `window.ApiBaseUrl` (`/api/...`) üzerinden gider. Servis bazlı URL (`/mdm/api/v1/...`) kullanılmaz.
 5. **L10n Bridge:** Metinler JS içinde hardcoded yazılmaz; `window.L10n` objesinden okunur.
 6. **Silme:** Tek satır silme `window.showConfirm()`, toplu silme `Swal.fire` ile yapılır. Direkt `window.showConfirm` bypass edilemez.

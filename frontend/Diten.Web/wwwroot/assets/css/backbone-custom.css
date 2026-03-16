@@ -156,7 +156,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
    
    Actual DOM structure:
    div.dt-container
-     > div.row.mx-3.my-0.justify-content-between       ← TOP ROW
+     > div.row.px-3.my-0.justify-content-between       ← TOP ROW
        > div.dt-layout-start.col-md-auto.me-auto        ← Length
        > div.dt-layout-end.col-md-auto.ms-auto          ← Search + .dt-buttons x3
    ================================================ */
@@ -168,7 +168,9 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
         flex-direction: row !important;
         flex-wrap: wrap !important;
         align-items: center !important;
-        padding: 0.5rem 1rem !important;
+        /* Reserve vertical room for corner badges (top-0 + translate-middle) inside .table-responsive */
+        padding: 0.5rem 1rem !important; /* keep side paddings unchanged */
+        padding-top: 1rem !important; /* only add extra top space */
         gap: 0.25rem !important;
     }
 
@@ -223,6 +225,13 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
         font-size: 0.75rem !important;
     }
 
+    /* Keep Export button height aligned with icon buttons (prevents shrink on responsive font-size) */
+    div.dt-container .dt-layout-end .dt-buttons .dt-export-collection-btn {
+        min-block-size: calc(2.2505001rem + calc(var(--bs-border-width) * 2)) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
     /* Override DT flex-wrap on button groups */
     div.dt-container .dt-layout-end .dt-buttons.flex-wrap {
         flex-wrap: nowrap !important;
@@ -233,6 +242,19 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     div.dt-container div.dt-search {
         margin-block: 0 !important;
     }
+}
+
+/* MOD-0031: Inline Filter Select2 — remove active shadow inside #inlineFilterHost */
+#inlineFilterHost .select2-container--default.select2-container--focus .select2-selection,
+#inlineFilterHost .select2-container--default.select2-container--open .select2-selection {
+    border-width: 1px !important;
+    box-shadow: none !important;
+}
+
+/* Inline filter Select2 dropdown is rendered in body (no clipping / no scroll-width growth) */
+.dt-inline-filter-dropdown {
+    z-index: 2000;
+    max-width: calc(100vw - 1rem);
 }
 
 /* ================================================

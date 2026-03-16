@@ -123,7 +123,7 @@ window.DtDefaults = (function () {
         var l = L();
         return {
             topStart: {
-                rowClass: 'row mx-3 my-0 justify-content-between',
+                rowClass: 'row px-3 my-0 justify-content-between',
                 features: [
                     {
                         pageLength: {
@@ -144,7 +144,7 @@ window.DtDefaults = (function () {
                 ]
             },
             bottomStart: {
-                rowClass: 'row mx-3 justify-content-between',
+                rowClass: 'row px-3 justify-content-between',
                 features: ['info']
             },
             bottomEnd: {
@@ -419,7 +419,7 @@ window.DtDefaults = (function () {
 
         var exportBtn = {
             extend: 'collection',
-            className: 'btn btn-label-secondary dropdown-toggle',
+            className: 'btn btn-label-secondary dropdown-toggle dt-export-collection-btn',
             text: '<span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-export icon-sm"></i> <span class="d-none d-sm-inline-block">' + (l.Export || 'Export') + '</span></span>',
             buttons: [
                 { extend: 'print', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-printer me-2"></i>' + (l.Print || 'Print') + '</span>', className: 'dropdown-item', exportOptions: exportOptions },

@@ -33,6 +33,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 
 - [ ] **_Filter Partial:** `<partial name="_Filter" />` sayfanın en üstünde mevcut mu?
 - [ ] **_Filter.cshtml:** `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dosyası oluşturulmuş mu?
+- [ ] **PageDescription:** Breadcrumb yoksa başlık altında `<p class="mb-0">@Localizer["PageDescription"]</p>` var mı?
 - [ ] **Inline Filter:** `#inlineFilterHost` + `#inlineFilterCollapse` mevcut mu? Offcanvas filter yok mu?
 - [ ] **Filter Bar UI:** Filtreler “chip/dropdown” (Select2) gibi kompakt mı? Dropdown search zorunlu mu?
 - [ ] **DataTable v2 Marker:** `<table ... data-dt-standard="v2" id="dt-...">` mevcut mu? (multi-table sayfalarda her tablo için id farklı mı?)
@@ -62,6 +63,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **≥992px:** Toolbar tek satır; Save View icon+text; Add New icon+text
 - [ ] **768–991px:** Save View icon-only (tooltip/aria); wrap kontrollü (random drop yok)
 - [ ] **<768px:** Search full-width öncelikli; action groups kontrollü wrap; Add New icon-only ve sağda kontrollü konum
+- [ ] **<576px Export UI:** Export dropdown, aynı gruptaki `.btn-icon` butonlarla yükseklik/vertical padding olarak hizalı mı? (Üstten-alttan küçük kalmıyor mu?) `dt-export-collection-btn` class’ı korunuyor mu?
 - [ ] **Inline Filter:** <992px Apply/Reset alt satıra geçiyor; <576px eşit genişlikte yan yana
 
 ### F. ♿ Accessibility (A11y) (v2)
@@ -76,6 +78,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **Badge Clipping:** Filter/ColVis badge hiçbir durumda kesilmiyor mu? (overflow hidden kaynaklı değil)
 - [ ] **Dropdown Stacking:** ColVis/Export/Filter dropdown’ları butonların altında kalmıyor mu?
 - [ ] **Action Group Radius:** Save View görünür/gizli iki durumda da border-radius tutarlı mı?
+- [ ] **Fix Strategy:** Badge clipping için “badge’i butonun içine alıp ikonu kapatma” veya “sadece z-index artır” yok; çözüm `backbone-custom.css (MOD-0022)` top safe-area padding + doğru stacking olmalı.
 
 ### D. Routing & Sidebar
 

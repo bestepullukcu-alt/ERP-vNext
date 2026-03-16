@@ -8,6 +8,7 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
 > - JavaScript başlatma için `DtDefaults.create()` zorunludur — bakınız `frontend-js-standard.md`.
 > - `_Filter.cshtml` inline collapse filter bar standardına uymalıdır (bkz. aşağıdaki minimum şablon).
 > - **DataTable v2 Standard Marker:** Yeni standartları uygulayan sayfalarda `<table ... data-dt-standard="v2" id="...">` zorunludur.
+> - **Toolbar Badge Clipping:** Filter/ColVis badge’leri `top-0 end-0 translate-middle` ile dışarı taşar; bu normaldir. Mobil/tablet’te kesilmemesi için çözüm `backbone-custom.css (MOD-0022)` içindeki **top safe-area padding**’dir. Sayfa bazlı “badge’i içeri taşı” veya “sadece z-index” hack’i YASAKTIR.
 > - **`{AreaName}` = klasör gruplaması (Örn: `MDM`, `Identity`), ASP.NET Areas routing DEĞİLDİR.**
 >   - ✅ DOĞRU: `Views/MDM/Countries/Index.cshtml`
 >   - ❌ YANLIŞ: `Areas/MDM/Views/Countries/Index.cshtml`
@@ -98,6 +99,7 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-4">
     <div class="d-flex flex-column justify-content-center">
         <h4 class="mb-1">@Localizer["{{ModuleName}}Title"]</h4>
+        <p class="mb-0">@Localizer["PageDescription"]</p>
     </div>
 </div>
 
@@ -256,14 +258,14 @@ Her DataTable sayfasında `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dos
 
 <div id="inlineFilterHost">
     <div class="collapse" id="inlineFilterCollapse">
-        <div class="pt-2 pb-3">
+        <div class="pt-0 pb-3">
             <form class="m-0" id="filterForm">
-                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-2">
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
                     {{!-- Modüle özgü filtre alanları buraya (Select2, date range, vb.) --}}
                     <div class="filter-chip user_plan"></div>
                     <div class="filter-chip user_status"></div>
 
-                    <div class="ms-auto d-flex gap-2">
+                    <div class="ms-auto d-flex gap-3">
                         <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
                             @SharedLocalizer["Apply"]
                         </button>

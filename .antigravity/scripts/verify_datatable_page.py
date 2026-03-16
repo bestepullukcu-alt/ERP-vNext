@@ -150,20 +150,24 @@ def main() -> int:
     index_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "Index.cshtml"
     filter_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "_Filter.cshtml"
     index_js = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / area / module / "index.js"
+    backbone_custom_css = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "css" / "backbone-custom.css"
 
     checks: List[Check] = []
 
     checks.append(check_file_exists(index_cshtml, "Index.cshtml exists"))
     checks.append(check_file_exists(filter_cshtml, "_Filter.cshtml exists"))
     checks.append(check_file_exists(index_js, "index.js exists"))
+    checks.append(check_file_exists(backbone_custom_css, "backbone-custom.css exists"))
 
     # Stop early if core files missing (avoid confusing follow-up errors).
-    if any(not c.ok for c in checks[:3]):
+    if any(not c.ok for c in checks[:4]):
         print_report(checks)
         return 1
 
     index_html = read_text(index_cshtml)
+    filter_html = read_text(filter_cshtml)
     js_text = read_text(index_js)
+    css_text = read_text(backbone_custom_css)
     is_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", index_html))
 
     checks.append(
@@ -200,6 +204,76 @@ def main() -> int:
             re.compile(r"id\s*=\s*\"offcanvasDetailsPreview\""),
             "Index.cshtml has #offcanvasDetailsPreview",
             "Missing offcanvas (id=\"offcanvasDetailsPreview\")",
+        )
+    )
+
+    checks.append(
+        check_contains(
+            index_cshtml,
+            index_html,
+            re.compile(r"Localizer\[\s*\"PageDescription\"\s*\]"),
+            "Index.cshtml shows @Localizer[\"PageDescription\"]",
+            "Missing PageDescription under the page title (required on non-breadcrumb pages like Index)",
+        )
+    )
+
+    # Inline filter spacing contract
+    checks.append(
+        check_contains(
+            filter_cshtml,
+            filter_html,
+            re.compile(r"class\s*=\s*\"[^\"]*\bpt-0\b[^\"]*\bpb-3\b[^\"]*\""),
+            "_Filter.cshtml uses pt-0 pb-3 wrapper",
+            "Expected filter wrapper spacing class 'pt-0 pb-3' (pt-2 is not allowed)",
+        )
+    )
+    checks.append(
+        check_not_contains(
+            filter_cshtml,
+            filter_html,
+            re.compile(r"\bpt-2\b"),
+            "_Filter.cshtml does not use pt-2",
+            "Found pt-2 in filter wrapper (should be pt-0)",
+        )
+    )
+
+    # Inline filter host alignment contract (avoid mx-* margins)
+    checks.append(
+        check_not_contains(
+            index_js,
+            js_text,
+            re.compile(r"classList\.add\(\s*['\"]mx-"),
+            "index.js does not add mx-* to inlineFilterHost",
+            "Inline filter host should not use mx-*; use px-3 to align with toolbar padding",
+        )
+    )
+
+    # Global CSS guards (toolbar responsive + badge safe area)
+    checks.append(
+        check_contains(
+            backbone_custom_css,
+            css_text,
+            re.compile(r"@media\s+screen\s+and\s+\(max-width:\s*991\.98px\)"),
+            "backbone-custom.css has MOD-0022 media query",
+            "Missing responsive toolbar media query (max-width: 991.98px)",
+        )
+    )
+    checks.append(
+        check_contains(
+            backbone_custom_css,
+            css_text,
+            re.compile(r"div\.dt-container\s*>\s*\.row:first-child\s*\{[^}]*padding-top\s*:", re.DOTALL),
+            "Responsive toolbar reserves top safe-area (padding-top)",
+            "Missing toolbar top safe-area (prevents badge clipping on mobile/tablet)",
+        )
+    )
+    checks.append(
+        check_contains(
+            backbone_custom_css,
+            css_text,
+            re.compile(r"\.dt-export-collection-btn\b[\s\S]*?min-block-size\s*:", re.MULTILINE),
+            "Export button height aligned (dt-export-collection-btn min-block-size)",
+            "Missing dt-export-collection-btn min-block-size alignment rule (prevents 'short' Export button on mobile)",
         )
     )
 

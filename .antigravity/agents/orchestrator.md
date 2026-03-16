@@ -21,6 +21,18 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
     - **Kalite Kapısı:** Teslimden önce `.antigravity/workflows/quality-gate-datatable.md` checklist'ini eksiksiz işaretle.
 3. **L10n (Dil) Denetimi:** `l10n-agent` çalıştığında, 8 dilin (`en, es, ka, kk, ru, tr, uk, uz`) tamamının `.resx` dosyalarının eksiksiz dolduğundan emin olmadan ASLA UI (Arayüz) fazına geçmeyeceksin. "Kaydet", "Sil" gibi ortak kelimeleri View dosyasına ekletmeyecek, daima `SharedLocalizer` kullandıracaksın.
 4. **Sıfır Halüsinasyon:** Ajanların kod uydurması, varsayılan İngilizce metinler bırakması veya onaylanmamış bir UI bileşeni eklemesi KESİNLİKLE YASAKTIR.
+5. **`.antigravity` Değişiklik Onayı (ZORUNLU):** Orkestratör, `.antigravity/` altındaki şablon/standart/workflow/guard dosyalarını **kullanıcı onayı olmadan** güncellemez.
+   - Akış:
+     1) Önce UI/UX düzeltmesi ürün kodunda uygulanır (View/CSS/JS).
+     2) Kullanıcı değişikliği runtime’da kontrol eder (QA/smoke).
+     3) Kullanıcı “tamam” derse orkestratör `.antigravity` referanslarını günceller.
+   - Kullanıcı açıkça “kuralları da güncelle” derse bu adım ayrıca onay sayılır.
+6. **Standartlaştırma (Onay Sonrası ZORUNLU):** Kullanıcı bir UI/UX düzeltmesini onayladıysa ve bu düzeltme “gelecek sayfalarda da standart” olacaksa, orkestratör aynı PR/çalışma içinde `.antigravity` altındaki ilgili referansları günceller:
+   - Şablon: `.antigravity/rules/frontend-datatable-template.md` (HTML/_Filter varsayılanları)
+   - Standart: `.antigravity/rules/frontend-standards.md` (CSS/UI kuralları + MOD notları)
+   - Kalite Kapısı: `.antigravity/workflows/quality-gate-datatable.md` ve/veya migration checklist
+   - Statik Guard (varsa): `.antigravity/scripts/verify_datatable_page.py` gibi doğrulayıcılar
+   - Amaç: Aynı bug’ın tekrar etmesini engellemek; sayfa-bazlı “hack” ile bırakmak YASAKTIR.
 
 ---
 
@@ -79,6 +91,7 @@ Karmaşık bir görev (Örn: Yeni Modül) verildiğinde `.antigravity/workflows/
 ### 4. Browser Smoke Test (Phase 4.5 — ZORUNLU)
 - Sayfa teslim edilmeden önce agent browser'da sayfayı açarak şunları doğrular:
   - DataTable toolbar (Search, Export, Add New) görünüyor mu?
+  - XS (<576px) toolbar’da Export dropdown, aynı gruptaki ikon butonlarla hizalı mı? (Üstten-alttan küçük kalma / split görünüm yok mu?)
   - Localization key'leri çözümleniyor mu? (Raw key görünmüyor mu?)
   - Console'da JS hatası yok mu?
 - Herhangi bir madde başarısızsa → Phase 3/4'e geri dön ve düzelt.
