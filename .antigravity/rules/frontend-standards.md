@@ -40,6 +40,12 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - Hatalı alanlar mutlaka **danger** (`var(--bs-danger)`) rengiyle kırmızı sınırlara (border) ve odaklanma anında (`:focus`) kırmızı estetik gölgelere (`box-shadow`) sahip olmalıdır.
 - Hata durumları için sayfa özelinde veya satır içi (inline) CSS yazılması **kesinlikle yasaktır**.
 
+### CSS-007: Standard Page Header Spacing
+- Her sayfanın ana başlık div'i (header) alt boşluk olarak `mb-4` (1rem) kullanmalıdır.
+- Sayfanın en üst boşluğu (padding-top) Backbone template'inde `backbone-custom.css` üzerinden **16px** (1rem) olarak override edilir. Vendor `core.css` editlenmez.
+- Not: `mb-6` global olarak yasak değildir; sadece **Page Header wrapper** için `mb-4` standardı uygulanır.
+- Breadcrumb kullanılıyorsa `mt-2` kullanılmaz (üst boşluk verilmez). `nav` üzerinde sadece `text-muted` bırakılır.
+
 ---
 
 ## ⚙️ JavaScript Kuralları

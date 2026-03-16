@@ -13,6 +13,12 @@
     display: none;
 }
 
+/* MOD-0026: Backbone template content top padding'i 16px (1rem) standardına çek (override vendor .container-p-y) */
+html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):not([class*=" pt-"]) {
+    padding-top: 1rem !important;
+    padding-block-start: 1rem !important;
+}
+
 /* ================================================
    Dark Mode: Toast & Modal Harmony
    Scoped to [data-bs-theme=dark] — light mode UNAFFECTED

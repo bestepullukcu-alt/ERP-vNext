@@ -95,11 +95,9 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
 {{!-- ① ZORUNLU: Inline Filter partial'ı. _Filter.cshtml yoksa oluştur. --}}
 <partial name="_Filter" />
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-6 row-gap-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-4">
     <div class="d-flex flex-column justify-content-center">
         <h4 class="mb-1">@Localizer["{{ModuleName}}Title"]</h4>
-        {{!-- PageDescription key'i .resx dosyasında ZORUNLU tanımlanmalıdır. Hardcoded alt başlık YASAKTIR. --}}
-        <p class="mb-0">@Localizer["PageDescription"]</p>
     </div>
 </div>
 

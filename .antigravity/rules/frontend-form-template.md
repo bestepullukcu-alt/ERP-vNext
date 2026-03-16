@@ -30,12 +30,11 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart **Create/Edit** form sa
     <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" asp-append-version="true" />
 }
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-6 row-gap-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-4">
     <div class="d-flex flex-column justify-content-center">
         <h4 class="mb-1">@(isEditMode ? Localizer["EditTitle"] : Localizer["CreateTitle"])</h4>
-        <p class="mb-0">@(isEditMode ? Localizer["EditDescription"] : Localizer["CreateDescription"])</p>
 
-        <nav aria-label="breadcrumb" class="mt-2 text-muted">
+        <nav aria-label="breadcrumb" class="text-muted">
             <ol class="breadcrumb mb-0 py-0">
                 <li class="breadcrumb-item"><a href="/">@Localizer["BreadcrumbHome"]</a></li>
                 <li class="breadcrumb-item"><a href="javascript:void(0);">@Localizer["Breadcrumb{{AreaName}}"]</a></li>
