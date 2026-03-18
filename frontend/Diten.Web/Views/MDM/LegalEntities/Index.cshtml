@@ -172,10 +172,6 @@
 @section Styles {
         <style>
             /* Inline Filter Bar (LegalEntities) */
-            #inlineFilterHost {
-                margin-top: .25rem;
-            }
-
             #inlineFilterHost .dt-filter-bar {
                 row-gap: .5rem;
             }
@@ -193,10 +189,12 @@
                 }
             }
 
-            #inlineFilterHost .dt-filter-bar .filter-chip .select2-container {
-                width: auto !important;
-                min-width: 180px;
-            }
+	            #inlineFilterHost .dt-filter-bar .filter-chip .select2-container {
+	                inline-size: auto !important;
+	                width: auto !important;
+	                min-inline-size: 180px;
+	                min-width: 180px;
+	            }
 
             #inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single {
                 height: 34px;

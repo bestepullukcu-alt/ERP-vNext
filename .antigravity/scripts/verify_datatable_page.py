@@ -56,6 +56,35 @@ def check_not_contains(path: Path, text: str, pattern: Pattern[str], label: str,
         return Check(label, False, f"{hint} (file: {path})")
     return Check(label, True)
 
+def check_inline_filter_host_alignment(filter_html: str, js_text: str, filter_path: Path, js_path: Path) -> Check:
+    """
+    Inline filter host alignment rule:
+    - Inline filter host must use px-6 (project standard).
+    - Implementation may be either:
+      a) _Filter.cshtml adds class="... px-6 ...", OR
+      b) index.js adds px-6 via host.classList.add('px-6') after mounting.
+    """
+    host_has_px6 = bool(
+        re.search(
+            r"<div[^>]*\bid\s*=\s*\"inlineFilterHost\"[^>]*\bclass\s*=\s*\"[^\"]*\bpx-6\b",
+            filter_html,
+            re.IGNORECASE,
+        )
+    )
+
+    js_adds_px6 = ("inlineFilterHost" in js_text) and bool(
+        re.search(r"classList\.add\(\s*[^)]*['\"]px-6['\"]", js_text)
+    )
+
+    if host_has_px6 or js_adds_px6:
+        return Check("Inline filter host aligns with px-6", True)
+
+    return Check(
+        "Inline filter host aligns with px-6",
+        False,
+        f"Expected px-6 on #inlineFilterHost (either in {filter_path} or added in {js_path}).",
+    )
+
 
 def print_report(checks: List[Check]) -> None:
     failed = [c for c in checks if not c.ok]
@@ -150,6 +179,7 @@ def main() -> int:
     index_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "Index.cshtml"
     filter_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "_Filter.cshtml"
     index_js = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / area / module / "index.js"
+    dt_defaults_js = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / "dt-defaults.js"
     backbone_custom_css = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "css" / "backbone-custom.css"
 
     checks: List[Check] = []
@@ -157,16 +187,18 @@ def main() -> int:
     checks.append(check_file_exists(index_cshtml, "Index.cshtml exists"))
     checks.append(check_file_exists(filter_cshtml, "_Filter.cshtml exists"))
     checks.append(check_file_exists(index_js, "index.js exists"))
+    checks.append(check_file_exists(dt_defaults_js, "dt-defaults.js exists"))
     checks.append(check_file_exists(backbone_custom_css, "backbone-custom.css exists"))
 
     # Stop early if core files missing (avoid confusing follow-up errors).
-    if any(not c.ok for c in checks[:4]):
+    if any(not c.ok for c in checks[:5]):
         print_report(checks)
         return 1
 
     index_html = read_text(index_cshtml)
     filter_html = read_text(filter_cshtml)
     js_text = read_text(index_js)
+    dt_defaults_text = read_text(dt_defaults_js)
     css_text = read_text(backbone_custom_css)
     is_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", index_html))
 
@@ -222,6 +254,24 @@ def main() -> int:
         check_contains(
             filter_cshtml,
             filter_html,
+            re.compile(r"id\s*=\s*\"inlineFilterHost\""),
+            "_Filter.cshtml has #inlineFilterHost",
+            "Missing inline filter host wrapper (id=\"inlineFilterHost\")",
+        )
+    )
+    checks.append(
+        check_contains(
+            filter_cshtml,
+            filter_html,
+            re.compile(r"id\s*=\s*\"inlineFilterCollapse\""),
+            "_Filter.cshtml has #inlineFilterCollapse",
+            "Missing inline filter collapse container (id=\"inlineFilterCollapse\")",
+        )
+    )
+    checks.append(
+        check_contains(
+            filter_cshtml,
+            filter_html,
             re.compile(r"class\s*=\s*\"[^\"]*\bpt-0\b[^\"]*\bpb-3\b[^\"]*\""),
             "_Filter.cshtml uses pt-0 pb-3 wrapper",
             "Expected filter wrapper spacing class 'pt-0 pb-3' (pt-2 is not allowed)",
@@ -244,7 +294,87 @@ def main() -> int:
             js_text,
             re.compile(r"classList\.add\(\s*['\"]mx-"),
             "index.js does not add mx-* to inlineFilterHost",
-            "Inline filter host should not use mx-*; use px-3 to align with toolbar padding",
+            "Inline filter host should not use mx-*; use px-6 (project standard)",
+        )
+    )
+    checks.append(check_inline_filter_host_alignment(filter_html, js_text, filter_cshtml, index_js))
+
+    # Save View + filter apply/reset contract (v2 pages only)
+    # - Reset must take effect immediately (no "Reset then Apply" behavior) -> prevent native form reset conflicts.
+    # - Save View visibility is based on applied/effective state: filter selections alone must not toggle Save View.
+    if is_v2 and re.search(r"\bdt-save-filter-btn\b", js_text):
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"getElementById\(\s*['\"]btnFilterApply['\"]\s*\)"),
+                "index.js references #btnFilterApply",
+                "Missing Apply button wiring (btnFilterApply)",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"getElementById\(\s*['\"]btnFilterReset['\"]\s*\)"),
+                "index.js references #btnFilterReset",
+                "Missing Reset button wiring (btnFilterReset)",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"btnFilterApply[\s\S]*addEventListener\(\s*['\"]click['\"][\s\S]*setSaveFilterVisible\s*\(", re.IGNORECASE),
+                "Apply click updates Save View visibility",
+                "Expected Apply handler to sync Save View visibility based on applied state",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"btnFilterReset[\s\S]*addEventListener\(\s*['\"]click['\"][\s\S]*preventDefault\s*\(", re.IGNORECASE),
+                "Reset click prevents native form reset",
+                "Expected Reset handler to call event.preventDefault() to avoid native reset overriding programmatic restore",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"btnFilterReset[\s\S]*addEventListener\(\s*['\"]click['\"][\s\S]*setSaveFilterVisible\s*\(", re.IGNORECASE),
+                "Reset click updates Save View visibility",
+                "Expected Reset handler to sync Save View visibility after applying reset",
+            )
+        )
+        checks.append(
+            check_not_contains(
+                index_js,
+                js_text,
+                re.compile(r"change\.saveFilter[\s\S]*setSaveFilterVisible\s*\(", re.IGNORECASE),
+                "Filter control change does not toggle Save View",
+                "Save View must not be toggled on staged filter changes; it should update after Apply/Reset",
+            )
+        )
+
+    # Global DT defaults layout padding contract (prevents toolbar padding drift)
+    checks.append(
+        check_contains(
+            dt_defaults_js,
+            dt_defaults_text,
+            re.compile(r"rowClass:\s*['\"]row\s+px-3\s+my-0\s+justify-content-between['\"]"),
+            "dt-defaults.js uses px-3 on topStart rowClass",
+            "Expected buildLayout().topStart.rowClass to be 'row px-3 my-0 justify-content-between'",
+        )
+    )
+    checks.append(
+        check_contains(
+            dt_defaults_js,
+            dt_defaults_text,
+            re.compile(r"rowClass:\s*['\"]row\s+px-3\s+justify-content-between['\"]"),
+            "dt-defaults.js uses px-3 on bottomStart rowClass",
+            "Expected buildLayout().bottomStart.rowClass to be 'row px-3 justify-content-between'",
         )
     )
 

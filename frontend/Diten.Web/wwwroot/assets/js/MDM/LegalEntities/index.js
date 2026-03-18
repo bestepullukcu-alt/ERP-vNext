@@ -9,11 +9,17 @@ const LegalEntitiesList = (function () {
     let dt;
     const dtTableEl = document.querySelector('.datatables-legal-entities');
     const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
+    const personalizationClient = window.personalizationClient;
+    const personalizationContext = { moduleKey: 'MDM', pageKey: 'LegalEntities' };
     let L = window.L10n || {};
     const filterHostId = 'inlineFilterHost';
     const filterCollapseId = 'inlineFilterCollapse';
+    const saveViewColumnIndexes = [2, 3, 4, 5, 6, 7, 8];
     let saveFilterArmed = false;
     const baseOrder = [[2, 'desc']];
+    let appliedFilters = { companyType: '', status: '' };
+    let defaultViewRecord = null;
+    let defaultViewState = null;
 
     const syncL10n = () => {
         const current = window.L10n;
@@ -44,44 +50,289 @@ const LegalEntitiesList = (function () {
         return null;
     };
 
-    const getCurrentUserKey = () => {
+    const normalizeSavedString = (value) => typeof value === 'string' ? value.trim() : '';
+
+    const getSavedViewFlag = (savedView, camelKey, pascalKey) => {
+        if (!savedView || typeof savedView !== 'object') {
+            return undefined;
+        }
+
+        if (typeof savedView[camelKey] !== 'undefined') {
+            return savedView[camelKey];
+        }
+
+        if (typeof savedView[pascalKey] !== 'undefined') {
+            return savedView[pascalKey];
+        }
+
+        return undefined;
+    };
+
+    const getSavedViewId = (savedView) =>
+        normalizeSavedString(
+            getSavedViewFlag(savedView, 'id', 'Id')
+            || getSavedViewFlag(savedView, '_id', '_id'));
+
+    const getSavedViewName = (savedView) =>
+        normalizeSavedString(getSavedViewFlag(savedView, 'viewName', 'ViewName'));
+
+    const isSavedViewDefault = (savedView) => {
+        const value = getSavedViewFlag(savedView, 'isDefault', 'IsDefault');
+        return value === true;
+    };
+
+    const getSavedViewDefinition = (savedView) => {
+        if (!savedView || typeof savedView !== 'object') {
+            return {};
+        }
+
+        const rawDefinition =
+            savedView.viewDefinition ??
+            savedView.ViewDefinition ??
+            savedView.viewDefinitionJson ??
+            savedView.ViewDefinitionJson ??
+            {};
+
+        if (rawDefinition && typeof rawDefinition === 'object') {
+            return rawDefinition;
+        }
+
+        if (typeof rawDefinition === 'string') {
+            try {
+                const parsed = JSON.parse(rawDefinition);
+                return parsed && typeof parsed === 'object' ? parsed : {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        return {};
+    };
+
+    const mapSavedViewToState = (savedView) => {
+        const definition = getSavedViewDefinition(savedView);
+
+        return {
+            companyType: normalizeSavedString(definition.companyType),
+            status: normalizeSavedString(definition.status),
+            search: normalizeSavedString(definition.search),
+            colVis: normalizeColumnVisibility(definition.colVis),
+            order: Array.isArray(definition.order) ? definition.order : null
+        };
+    };
+
+    const normalizeColumnVisibility = (colVis) => {
+        if (!colVis) return null;
+
+        const normalized = {};
+
+        if (Array.isArray(colVis)) {
+            saveViewColumnIndexes.forEach((columnIndex, position) => {
+                if (typeof colVis[columnIndex] === 'boolean') {
+                    normalized[columnIndex] = colVis[columnIndex];
+                    return;
+                }
+
+                if (typeof colVis[position] === 'boolean') {
+                    normalized[columnIndex] = colVis[position];
+                }
+            });
+        } else if (typeof colVis === 'object') {
+            saveViewColumnIndexes.forEach((columnIndex) => {
+                const rawValue = colVis[columnIndex];
+                if (typeof rawValue === 'boolean') {
+                    normalized[columnIndex] = rawValue;
+                }
+            });
+        }
+
+        return Object.keys(normalized).length ? normalized : null;
+    };
+
+    const captureColumnVisibility = (api) => {
+        const colVis = {};
+
+        saveViewColumnIndexes.forEach((columnIndex) => {
+            try {
+                colVis[columnIndex] = !!api.column(columnIndex).visible();
+            } catch (e) { }
+        });
+
+        return Object.keys(colVis).length ? colVis : null;
+    };
+
+    const applyColumnVisibility = (api, colVis) => {
+        const normalized = normalizeColumnVisibility(colVis);
+        if (!normalized) return;
+
+        saveViewColumnIndexes.forEach((columnIndex) => {
+            const shouldBeVisible = normalized[columnIndex];
+            if (typeof shouldBeVisible !== 'boolean') return;
+
+            try { api.column(columnIndex).visible(shouldBeVisible, false); } catch (e) { }
+        });
+    };
+
+    const syncSearchInput = (api, searchValue) => {
         try {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            return user.id || user.userId || 'anon';
+            const container = api.table().container();
+            const input = container?.querySelector('.dt-search input');
+            if (input) {
+                input.value = searchValue || '';
+            }
+        } catch (e) { }
+    };
+
+    const getSearchInputValue = (api) => {
+        try {
+            const container = api.table().container();
+            const input = container?.querySelector('.dt-search input');
+            return typeof input?.value === 'string' ? input.value : '';
         } catch (e) {
-            return 'anon';
+            return '';
         }
     };
 
-    const getDefaultViewStorageKey = () => {
-        const tableId = dtTableEl?.id || '';
-        // v2 standard: dt:view-default:{tenantId}:{userId}:{module}:{tableId}
-        return `dt:view-default:${getTenantId()}:${getCurrentUserKey()}:MDM.LegalEntities:${tableId}`;
+    const syncFilterControls = (values) => {
+        const companyType = normalizeSavedString(values?.companyType);
+        const status = normalizeSavedString(values?.status);
+
+        $('#UserPlan').val(companyType).trigger('change');
+        $('#FilterTransaction').val(status).trigger('change');
     };
 
-    const loadDefaultView = () => {
+    const syncPendingTableUiState = (api) => {
+        const inputSearch = getSearchInputValue(api);
+        const appliedSearch = typeof api?.search === 'function' ? (api.search() || '') : '';
+
+        if (inputSearch !== appliedSearch) {
+            try { api.search(inputSearch); } catch (e) { }
+        }
+    };
+
+    const applySavedTableState = (api, view, options) => {
+        const state = view || {};
+        const fallbackOrder = Array.isArray(options?.fallbackOrder) ? options.fallbackOrder : baseOrder;
+        const fallbackColVis = options?.resetColumns === true ? createDefaultColumnVisibility() : null;
+        const colVisToApply = state.colVis || fallbackColVis;
+
+        if (typeof state.search === 'string') {
+            try { api.search(state.search); } catch (e) { }
+            syncSearchInput(api, state.search);
+        } else if (options?.clearSearch === true) {
+            try { api.search(''); } catch (e) { }
+            syncSearchInput(api, '');
+        }
+
+        if (colVisToApply) {
+            applyColumnVisibility(api, colVisToApply);
+        }
+
+        if (Array.isArray(state.order)) {
+            try { api.order(state.order); } catch (e) { }
+        } else if (fallbackOrder) {
+            try { api.order(fallbackOrder); } catch (e) { }
+        }
+
+        appliedFilters = {
+            companyType: state.companyType || '',
+            status: state.status || ''
+        };
+
+        syncFilterControls(appliedFilters);
+        applyFilterValues(api, appliedFilters);
+
+        try { api.columns.adjust(); } catch (e) { }
+        api.draw(false);
+
+        setTimeout(() => {
+            syncFilterControls(appliedFilters);
+            syncSearchInput(api, typeof state.search === 'string' ? state.search : '');
+            window.DtDefaults.updateVisualState(api, getAppliedFilterCount(api));
+        }, 0);
+    };
+
+    const createDefaultColumnVisibility = () => {
+        return saveViewColumnIndexes.reduce((acc, columnIndex) => {
+            acc[columnIndex] = true;
+            return acc;
+        }, {});
+    };
+
+    const areColumnVisibilitiesEqual = (left, right) => {
+        const normalizedLeft = normalizeColumnVisibility(left);
+        const normalizedRight = normalizeColumnVisibility(right);
+
+        if (!normalizedLeft && !normalizedRight) return true;
+        if (!normalizedLeft || !normalizedRight) return false;
+
+        return saveViewColumnIndexes.every((columnIndex) => {
+            const leftValue = typeof normalizedLeft[columnIndex] === 'boolean' ? normalizedLeft[columnIndex] : true;
+            const rightValue = typeof normalizedRight[columnIndex] === 'boolean' ? normalizedRight[columnIndex] : true;
+            return leftValue === rightValue;
+        });
+    };
+
+    const loadDefaultView = async () => {
+        defaultViewRecord = null;
+        defaultViewState = null;
+
+        if (!personalizationClient?.getViews) {
+            return null;
+        }
+
         try {
-            const raw = localStorage.getItem(getDefaultViewStorageKey());
-            return raw ? JSON.parse(raw) : null;
-        } catch (e) {
+            const views = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
+            defaultViewRecord = Array.isArray(views)
+                ? (views.find(isSavedViewDefault) || views[0] || null)
+                : null;
+            defaultViewState = defaultViewRecord ? mapSavedViewToState(defaultViewRecord) : null;
+            return defaultViewState;
+        } catch (error) {
+            console.error('[LegalEntities SaveView] Failed to load saved views', error);
+            defaultViewRecord = null;
+            defaultViewState = null;
             return null;
         }
     };
 
-    const saveDefaultView = (view) => {
-        try {
-            localStorage.setItem(getDefaultViewStorageKey(), JSON.stringify(view || {}));
-        } catch (e) { }
+    const saveDefaultView = async (view) => {
+        if (!personalizationClient?.saveView || !personalizationClient?.updateView) {
+            throw new Error('Personalization client is unavailable.');
+        }
+
+        const payload = {
+            moduleKey: personalizationContext.moduleKey,
+            pageKey: personalizationContext.pageKey,
+            viewName: (getSavedViewName(defaultViewRecord) || L.SaveView || '').trim(),
+            viewDefinition: view || {},
+            isDefault: true,
+            visibility: 'private'
+        };
+
+        const existingViewId = getSavedViewId(defaultViewRecord);
+
+        const savedView = existingViewId
+            ? await personalizationClient.updateView(existingViewId, payload)
+            : await personalizationClient.saveView(payload);
+
+        defaultViewRecord = savedView;
+        defaultViewState = mapSavedViewToState(savedView);
+        return defaultViewState;
     };
 
     const getCurrentView = (api) => {
-        const companyType = $('#UserPlan').val() || '';
-        const status = $('#FilterTransaction').val() || '';
-        const search = typeof api?.search === 'function' ? (api.search() || '') : '';
+        // IMPORTANT: Save View is based on the *applied/effective* table state, not staged UI selections.
+        const companyType = appliedFilters?.companyType || '';
+        const status = appliedFilters?.status || '';
+        const inputSearch = getSearchInputValue(api);
+        const search = typeof inputSearch === 'string' && inputSearch.length >= 0
+            ? inputSearch
+            : (typeof api?.search === 'function' ? (api.search() || '') : '');
 
         let colVis = null;
         try {
-            colVis = api?.columns?.().visible().toArray();
+            colVis = captureColumnVisibility(api);
         } catch (e) {
             colVis = null;
         }
@@ -104,27 +355,20 @@ const LegalEntitiesList = (function () {
     };
 
     const isDirtyComparedToDefault = (api) => {
-        const def = loadDefaultView() || null;
+        const def = defaultViewState || null;
         const cur = getCurrentView(api);
 
-        const curHasHiddenCols = Array.isArray(cur.colVis) ? cur.colVis.some(v => !v) : false;
+        const curHasHiddenCols = !!saveViewColumnIndexes.find((columnIndex) => cur.colVis?.[columnIndex] === false);
 
         const ref = def || {
             companyType: '',
             status: '',
             search: '',
-            colVis: Array.isArray(cur.colVis) ? cur.colVis.map(() => true) : null,
+            colVis: createDefaultColumnVisibility(),
             order: baseOrder
         };
 
-        const refColVis = Array.isArray(ref.colVis) ? ref.colVis : null;
-        const curColVis = Array.isArray(cur.colVis) ? cur.colVis : null;
-        const colVisEqual =
-            Array.isArray(refColVis) &&
-                Array.isArray(curColVis) &&
-                refColVis.length === curColVis.length
-                ? refColVis.every((v, i) => !!v === !!curColVis[i])
-                : refColVis === curColVis; // both null
+        const colVisEqual = areColumnVisibilitiesEqual(ref.colVis, cur.colVis);
 
         const refOrder = Array.isArray(ref.order) ? ref.order : null;
         const curOrder = Array.isArray(cur.order) ? cur.order : null;
@@ -158,6 +402,16 @@ const LegalEntitiesList = (function () {
         api.column('isActive:name').search(status ? `^${status}$` : '', true, false);
     };
 
+    const getAppliedFilterCount = (api) => {
+        try {
+            const companyTypeSearch = api.column('companyType:name').search() || '';
+            const statusSearch = api.column('isActive:name').search() || '';
+            return [companyTypeSearch, statusSearch].filter(v => typeof v === 'string' ? v.trim() : !!v).length;
+        } catch (e) {
+            return [appliedFilters?.companyType, appliedFilters?.status].filter(Boolean).length;
+        }
+    };
+
     /**
      * Mount inline filter panel right under DataTable toolbar row.
      * (_Filter.cshtml is rendered on the page, we relocate it near the filter button.)
@@ -176,7 +430,7 @@ const LegalEntitiesList = (function () {
 
         if (toolbarRow) {
             toolbarRow.insertAdjacentElement('afterend', host);
-            host.classList.add('px-3');
+            host.classList.add('px-6');
             return;
         }
 
@@ -184,7 +438,7 @@ const LegalEntitiesList = (function () {
         const dtContainer = dtTableEl.closest('.dt-container') || dtTableEl.closest('.dataTables_wrapper') || dtTableEl.parentElement;
         if (dtContainer) {
             dtContainer.insertAdjacentElement('beforeend', host);
-            host.classList.add('px-3');
+            host.classList.add('px-6');
         }
     };
 
@@ -218,10 +472,10 @@ const LegalEntitiesList = (function () {
         };
     };
 
-    const statusObj = {
+    const getStatusMap = () => ({
         true: { title: L.Active, class: 'bg-label-success' },
         false: { title: L.Passive, class: 'bg-label-secondary' }
-    };
+    });
 
     const getCompanyTypeLabel = (value) => {
         const map = {
@@ -257,7 +511,7 @@ const LegalEntitiesList = (function () {
         document.getElementById('oc-currency').innerText = data.primaryCurrency || '-';
 
         const statusEl = document.getElementById('oc-status');
-        const status = statusObj[String(data.isActive)] || { title: L.Unknown || String(data.isActive), class: 'bg-label-primary' };
+        const status = getStatusMap()[String(data.isActive)] || { title: L.Unknown || String(data.isActive), class: 'bg-label-primary' };
         statusEl.className = `badge ${status.class}`;
         statusEl.innerText = status.title || '-';
 
@@ -280,9 +534,10 @@ const LegalEntitiesList = (function () {
     /**
      * Initialize DataTable
      */
-    const initDataTable = () => {
+    const initDataTable = async () => {
         if (!dtTableEl) return;
         syncL10n();
+        await loadDefaultView();
 
         // Uzantı butonları (Merkezi butona ek olarak)
         const extraButtons = {
@@ -307,11 +562,19 @@ const LegalEntitiesList = (function () {
                 text: '<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">' + (L.SaveView || '') + '</span>',
                 className: 'btn btn-label-primary d-none dt-save-filter-btn',
                 attr: { title: L.SaveView, 'data-bs-toggle': 'tooltip' },
-                action: function (e, api) {
+                action: async function (e, api) {
                     const tableApi = api || dt;
                     if (!tableApi) return;
-                    saveDefaultView(getCurrentView(tableApi));
-                    setSaveFilterVisible(false);
+
+                    try {
+                        syncPendingTableUiState(tableApi);
+                        await saveDefaultView(getCurrentView(tableApi));
+                        setSaveFilterVisible(false);
+                        window.showToast?.('RecordSaved', 'success');
+                    } catch (error) {
+                        console.error('[LegalEntities SaveView] Failed to save default view', error);
+                        window.showToast?.('ErrorOccurred', 'error');
+                    }
                 }
             }
         };
@@ -362,7 +625,7 @@ const LegalEntitiesList = (function () {
                 {
                     targets: 8,
                     render: (data, type) => {
-                        const status = statusObj[String(data)] || { title: L.Unknown || String(data), class: 'bg-label-primary' };
+                        const status = getStatusMap()[String(data)] || { title: L.Unknown || String(data), class: 'bg-label-primary' };
                         if (type === 'display') {
                             return `<span class="badge ${status.class}" text-capitalized>${status.title}</span>`;
                         }
@@ -396,7 +659,7 @@ const LegalEntitiesList = (function () {
             },
             drawCallback: function () {
                 // Her çizimde (arama, sayfalama vb.) görsel durumları güncelle
-                const count = [$('#UserPlan').val(), $('#FilterTransaction').val()].filter(Boolean).length;
+                const count = getAppliedFilterCount(this.api());
                 window.DtDefaults.updateVisualState(this.api(), count);
 
                 // Skeleton'ı gizle
@@ -406,7 +669,7 @@ const LegalEntitiesList = (function () {
 
         // Sütun görünürlüğü değiştiğinde görsel durumları tetikle
         dt.on('column-visibility.dt', function () {
-            const count = [$('#UserPlan').val(), $('#FilterTransaction').val()].filter(Boolean).length;
+            const count = getAppliedFilterCount(dt);
             window.DtDefaults.updateVisualState(dt, count);
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
@@ -436,29 +699,41 @@ const LegalEntitiesList = (function () {
         };
 
         const initSelect2 = () => {
-            const $dropdownParent = $('#' + filterHostId).closest('.card');
+            const $dropdownParent = $(document.body);
 
             const clampInlineFilterDropdown = () => {
                 // Clamp the open dropdown into the viewport to prevent page scrollbars (x/y) while open.
                 // Applies to inline filter dropdowns only (dropdownCssClass: dt-inline-filter-dropdown).
                 window.requestAnimationFrame(() => {
-                    const dropdown = document.querySelector('.select2-dropdown.dt-inline-filter-dropdown');
-                    if (!dropdown) return;
+                    window.requestAnimationFrame(() => {
+                        const dropdown = document.querySelector('.select2-dropdown.dt-inline-filter-dropdown');
+                        if (!dropdown) return;
 
-                    dropdown.style.transform = '';
-                    const rect = dropdown.getBoundingClientRect();
-                    const pad = 8;
+                        const rect = dropdown.getBoundingClientRect();
+                        const pad = 8;
 
-                    let tx = 0;
-                    let ty = 0;
+                        let dx = 0;
+                        let dy = 0;
 
-                    if (rect.right > window.innerWidth - pad) tx -= rect.right - (window.innerWidth - pad);
-                    if (rect.left < pad) tx += pad - rect.left;
+                        if (rect.right > window.innerWidth - pad) dx -= rect.right - (window.innerWidth - pad);
+                        if (rect.left < pad) dx += pad - rect.left;
 
-                    if (rect.bottom > window.innerHeight - pad) ty -= rect.bottom - (window.innerHeight - pad);
-                    if (rect.top < pad) ty += pad - rect.top;
+                        if (rect.bottom > window.innerHeight - pad) dy -= rect.bottom - (window.innerHeight - pad);
+                        if (rect.top < pad) dy += pad - rect.top;
 
-                    if (tx || ty) dropdown.style.transform = `translate(${tx}px, ${ty}px)`;
+                        if (!dx && !dy) return;
+
+                        const cs = window.getComputedStyle(dropdown);
+                        const cssLeft = parseFloat(cs.left);
+                        const cssTop = parseFloat(cs.top);
+
+                        const baseLeft = Number.isFinite(cssLeft) ? cssLeft : (rect.left + window.scrollX);
+                        const baseTop = Number.isFinite(cssTop) ? cssTop : (rect.top + window.scrollY);
+
+                        if (dx) dropdown.style.left = `${baseLeft + dx}px`;
+                        if (dy) dropdown.style.top = `${baseTop + dy}px`;
+                        dropdown.style.transform = 'none';
+                    });
                 });
             };
 
@@ -466,7 +741,7 @@ const LegalEntitiesList = (function () {
             if ($companyType.length && !$companyType.hasClass('select2-hidden-accessible')) {
                 $companyType.select2({
                     placeholder: L.CompanyType,
-                    dropdownParent: $dropdownParent.length ? $dropdownParent : $(document.body),
+                    dropdownParent: $dropdownParent,
                     minimumResultsForSearch: 0,
                     dropdownCssClass: 'dt-inline-filter-dropdown',
                     templateSelection: (data) => renderFilterTrigger(L.CompanyType, !!(data && data.id)),
@@ -479,7 +754,7 @@ const LegalEntitiesList = (function () {
             if ($status.length && !$status.hasClass('select2-hidden-accessible')) {
                 $status.select2({
                     placeholder: (L.Status || L.SelectStatus),
-                    dropdownParent: $dropdownParent.length ? $dropdownParent : $(document.body),
+                    dropdownParent: $dropdownParent,
                     minimumResultsForSearch: 0,
                     dropdownCssClass: 'dt-inline-filter-dropdown',
                     templateSelection: (data) => renderFilterTrigger((L.Status || L.SelectStatus), !!(data && data.id)),
@@ -511,7 +786,7 @@ const LegalEntitiesList = (function () {
             });
         }
 
-        // Status filter (special handling for statusObj)
+        // Status filter (special handling for localized status values)
         const statusContainer = document.querySelector('.user_status');
         if (statusContainer) {
             const selectId = 'FilterTransaction';
@@ -522,8 +797,8 @@ const LegalEntitiesList = (function () {
             statusContainer.appendChild(select);
 
             [
-                statusObj.true,
-                statusObj.false
+                getStatusMap().true,
+                getStatusMap().false
             ].filter(Boolean).forEach((status) => {
                 const option = document.createElement('option');
                 option.value = status.title;
@@ -538,41 +813,20 @@ const LegalEntitiesList = (function () {
         let initialFilterCount = 0;
 
         // Apply user's saved default view (if any). Otherwise keep a clean state on load.
-        const defaultView = loadDefaultView();
+        const defaultView = defaultViewState;
         if (defaultView) {
-            $('#UserPlan').val(defaultView.companyType || '').trigger('change');
-            $('#FilterTransaction').val(defaultView.status || '').trigger('change');
-
-            if (typeof defaultView.search === 'string') {
-                api.search(defaultView.search);
-            }
-
-            if (Array.isArray(defaultView.colVis)) {
-                defaultView.colVis.forEach((vis, idx) => {
-                    try { api.column(idx).visible(!!vis, false); } catch (e) { }
-                });
-            }
-
-            if (Array.isArray(defaultView.order)) {
-                try { api.order(defaultView.order); } catch (e) { }
-            }
-
-            applyFilterValues(api, defaultView);
-            api.draw();
-            initialFilterCount = [defaultView.companyType, defaultView.status].filter(Boolean).length;
+            applySavedTableState(api, defaultView, { fallbackOrder: baseOrder });
+        } else {
+            appliedFilters = { companyType: '', status: '' };
+            syncFilterControls(appliedFilters);
         }
+
+        initialFilterCount = getAppliedFilterCount(api);
 
         // Initial visual sync
         window.DtDefaults.updateVisualState(api, initialFilterCount);
 
-        // Save Filter button visibility sync (hidden by default)
-        let filtersTouched = false;
-        $('#UserPlan, #FilterTransaction')
-            .off('change.saveFilter')
-            .on('change.saveFilter', () => {
-                filtersTouched = true;
-                if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
-            });
+        // Save View starts hidden; it becomes visible only after an effective change is applied (Apply/Reset/search/colVis/order).
         setSaveFilterVisible(false);
 
         // Buttons
@@ -585,60 +839,47 @@ const LegalEntitiesList = (function () {
                 const companyType = $('#UserPlan').val();
                 const status = $('#FilterTransaction').val();
 
-                applyFilterValues(api, { companyType: companyType, status: status });
+                appliedFilters = { companyType: companyType || '', status: status || '' };
+                applyFilterValues(api, appliedFilters);
                 api.draw();
 
-                let count = [companyType, status].filter(Boolean).length;
+                let count = getAppliedFilterCount(api);
                 window.DtDefaults.updateVisualState(api, count);
-                filtersTouched = true;
+                if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
 
                 const el = document.getElementById(filterCollapseId);
-                if (el) bootstrap.Collapse.getOrCreateInstance(el).hide();
+                if (el) bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).hide();
             });
         }
 
         if (resetBtn && !resetBtn.dataset.bound) {
             resetBtn.dataset.bound = '1';
-            resetBtn.addEventListener('click', () => {
-                const def = loadDefaultView();
-                if (def) {
-                    $('#UserPlan').val(def.companyType || '').trigger('change');
-                    $('#FilterTransaction').val(def.status || '').trigger('change');
+            resetBtn.addEventListener('click', (e) => {
+                // Prevent native form reset from overriding programmatic restore/clear (especially when a savedView exists).
+                e.preventDefault();
 
-                    if (typeof def.search === 'string') {
-                        api.search(def.search);
-                    }
-
-                    if (Array.isArray(def.colVis)) {
-                        def.colVis.forEach((vis, idx) => {
-                            try { api.column(idx).visible(!!vis, false); } catch (e) { }
-                        });
-                    }
-
-                    if (Array.isArray(def.order)) {
-                        try { api.order(def.order); } catch (e) { }
-                    } else {
-                        try { api.order(baseOrder); } catch (e) { }
-                    }
-
-                    applyFilterValues(api, def);
-                    api.draw();
-                    window.DtDefaults.updateVisualState(api, [def.companyType, def.status].filter(Boolean).length);
-                } else {
+                const clearToBaseline = () => {
                     $('#UserPlan, #FilterTransaction').val('').trigger('change');
-                    applyFilterValues(api, { companyType: '', status: '' });
+                    applySavedTableState(api, { companyType: '', status: '', search: '' }, {
+                        fallbackOrder: baseOrder,
+                        clearSearch: true,
+                        resetColumns: true
+                    });
+                };
 
-                    try { api.search(''); } catch (e) { }
-                    try { api.columns().visible(true, false); } catch (e) { }
-                    try { api.order(baseOrder); } catch (e) { }
+                const restoreDefaultView = (def) => {
+                    applySavedTableState(api, def, { fallbackOrder: baseOrder });
+                };
 
-                    api.draw();
-                    window.DtDefaults.updateVisualState(api, 0);
-                }
+                const def = defaultViewState;
+                const hasSavedDefault = !!def;
+                const isDirty = hasSavedDefault ? isDirtyComparedToDefault(api) : false;
 
-                // Reset keeps panel open
-                filtersTouched = false;
-                setSaveFilterVisible(false);
+                if (hasSavedDefault && isDirty) restoreDefaultView(def);
+                else clearToBaseline();
+
+                // Reset keeps panel open; sync Save View visibility to effective state after reset.
+                if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
             });
         }
     };
@@ -811,12 +1052,14 @@ const LegalEntitiesList = (function () {
     };
 
     return {
-        init: () => {
+        init: async () => {
             syncL10n();
-            initDataTable();
+            await initDataTable();
             handleEvents();
         }
     };
 })();
 
-document.addEventListener('DOMContentLoaded', () => LegalEntitiesList.init());
+document.addEventListener('DOMContentLoaded', () => {
+    LegalEntitiesList.init();
+});

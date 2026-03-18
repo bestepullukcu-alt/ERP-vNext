@@ -160,6 +160,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
        > div.dt-layout-start.col-md-auto.me-auto        ← Length
        > div.dt-layout-end.col-md-auto.ms-auto          ← Search + .dt-buttons x3
    ================================================ */
+
 @media screen and (max-width: 991.98px) {
 
     /* ---- Top Row: flex-row with wrap ---- */
@@ -169,8 +170,10 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
         flex-wrap: wrap !important;
         align-items: center !important;
         /* Reserve vertical room for corner badges (top-0 + translate-middle) inside .table-responsive */
-        padding: 0.5rem 1rem !important; /* keep side paddings unchanged */
-        padding-top: 1rem !important; /* only add extra top space */
+        padding: 0.5rem 1rem !important;
+        /* keep side paddings consistent with .px-3 */
+        padding-top: 1rem !important;
+        /* only add extra top space */
         gap: 0.25rem !important;
     }
 
@@ -244,7 +247,12 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     }
 }
 
-/* MOD-0031: Inline Filter Select2 — remove active shadow inside #inlineFilterHost */
+/* MOD-0031: Inline Filter Host — spacing + Select2 chip focus/open cleanup */
+#inlineFilterHost {
+    margin-top: .25rem;
+}
+
+/* Remove active shadow inside #inlineFilterHost */
 #inlineFilterHost .select2-container--default.select2-container--focus .select2-selection,
 #inlineFilterHost .select2-container--default.select2-container--open .select2-selection {
     border-width: 1px !important;
@@ -266,7 +274,17 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 
 .input-validation-error:focus {
     border-color: var(--bs-danger) !important;
-    box-shadow: 0 0 0 0.15rem rgba(var(--bs-danger-rgb), 0.25) !important;
+    box-shadow: 0 0 0 0.05rem rgba(var(--bs-danger-rgb), 0.25) !important;
+}
+
+/* MOD-0033: Harmonize validation border for Input Groups (Icons, Prepend/Append) */
+.input-group:has(.input-validation-error) .input-group-text {
+    border-color: var(--bs-danger) !important;
+}
+
+/* Focus state for input group with validation error */
+.input-group:has(.input-validation-error:focus) .input-group-text {
+    border-color: var(--bs-danger) !important;
 }
 
 /* Semi-Dark Menu Fix */

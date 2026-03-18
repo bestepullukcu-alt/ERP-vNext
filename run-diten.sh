@@ -4,8 +4,8 @@
 echo "🚀 Starting Diten ERP Multi-Service Suite..."
 
 # 1. Kill old processes
-echo "🧹 Cleaning up ports 5000, 5001, 5050, 5056..."
-lsof -ti :5000,5001,5050,5056 | xargs kill -9 2>/dev/null || true
+echo "🧹 Cleaning up ports 5000, 5001, 5050, 5056, 5057..."
+lsof -ti :5000,5001,5050,5056,5057 | xargs kill -9 2>/dev/null || true
 sleep 1
 
 # 2. Build everything
@@ -13,6 +13,7 @@ echo "🛠️ Building projects..."
 dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug
 dotnet build services/DitenAuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj -c Debug
 dotnet build services/DitenMdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -c Debug
+dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Debug
 dotnet build gateway/DitenApiGateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
 
 echo "✅ Build complete. Launching services..."
@@ -40,6 +41,7 @@ EOF
 
 launch_service "Auth" "services/DitenAuthService/src/Diten.AuthService.Api" 5056
 launch_service "Mdm" "services/DitenMdmService/src/Diten.MdmService.Api" 5050
+launch_service "Platform" "services/Diten.Platform/src/Diten.Platform.API" 5057
 launch_service "Gateway" "gateway/DitenApiGateway/Diten.ApiGateway" 5000
 launch_service "Web" "frontend/Diten.Web" 5001
 

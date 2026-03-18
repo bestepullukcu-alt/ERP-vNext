@@ -40,13 +40,13 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
   - `tableId` = `<table id="...">` zorunludur (çoklu DataTable çakışmasını engeller).
 
 ### Dirty-State (Save View görünürlük kuralı)
-- `isDirty = normalize(currentState) != normalize(savedView || baselineDefault)`
-- Save View görünürlüğü **Apply beklemez**:
-  - filter değişimi (staged dahil)
-  - search değişimi (**immediate apply**)
-  - colVis değişimi (**immediate apply**)
-  - sorting değişimi (**immediate apply**; standart default **single-sort**, multi-sort ancak explicit)
-- Apply: tabloyu günceller + paneli kapatır; Save View görünürlüğünü değiştirmez.
+- `isDirty = normalize(appliedState) != normalize(savedView || baselineDefault)`
+- Save View görünürlüğü **yalnızca effective (applied) state** değişince güncellenir:
+  - Filter: **Apply / Reset** sonrası (staged seçimler tek başına Save View’u tetiklemez)
+  - Search: **immediate apply** (typing)
+  - colVis: **immediate apply**
+  - sorting: **immediate apply** (standart default **single-sort**, multi-sort ancak explicit)
+- Apply: tabloyu günceller + paneli kapatır; Save View görünürlüğü **appliedState’e göre** güncellenir.
 - Reset: savedView varsa ona döner, yoksa baseline’a döner → `isDirty=false` → Save View gizlenir.
 
 ### normalize() Standardı (Mekanik)
@@ -276,7 +276,6 @@ Her DataTable sayfasında `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dos
                 </div>
             </form>
         </div>
-        <div class="border-bottom"></div>
     </div>
 </div>
 ```

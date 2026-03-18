@@ -25,7 +25,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **Auth Headers:** `getAuthHeaders()` tüm fetch/ajax çağrılarına ekleniyor mu?
 - [ ] **drawCallback:** `DtDefaults.updateVisualState(this.api(), filterCount)` çağrılıyor mu?
 - [ ] **StateSave (v2):** Sayfa `data-dt-standard="v2"` ise `stateSave: false` set edilmiş mi? Otomatik cache/restore yok mu?
-- [ ] **Save View (v2):** Save View görünürlüğü Apply beklemeden tetikleniyor mu? (filter/search/colVis/sort)
+- [ ] **Save View (v2):** Save View görünürlüğü **applied/effective state**’e göre mi? (Filter için Apply/Reset sonrası; search/colVis/sort immediate apply)
 - [ ] **Save View Scope (v2):** Kaydedilenler: filters + search + colVis + sorting; kaydedilmeyenler: page number + pageLength
 - [ ] **Storage Key (v2):** `dt:view-default:{tenantId}:{userId}:{module}:{tableId}` formatı kullanılıyor mu? `tableId` çakışmasız mı?
 
@@ -34,7 +34,8 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **_Filter Partial:** `<partial name="_Filter" />` sayfanın en üstünde mevcut mu?
 - [ ] **_Filter.cshtml:** `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dosyası oluşturulmuş mu?
 - [ ] **PageDescription:** Breadcrumb yoksa başlık altında `<p class="mb-0">@Localizer["PageDescription"]</p>` var mı?
-- [ ] **Inline Filter:** `#inlineFilterHost` + `#inlineFilterCollapse` mevcut mu? Offcanvas filter yok mu?
+- [ ] **Inline Filter:** `#inlineFilterHost` + `#inlineFilterCollapse` mevcut mu? Offcanvas filter yok mu? Host hizası `px-6` ile mi? (`mx-*` yok mu?) Wrapper `pt-0 pb-3` mi?
+- [ ] **Filter Badge Count:** Filter butonundaki badge, Apply sonrası aktif filtre sayısını doğru gösteriyor mu? (örn. 2 select doluysa badge=2; Reset sonrası badge=0)
 - [ ] **Filter Bar UI:** Filtreler “chip/dropdown” (Select2) gibi kompakt mı? Dropdown search zorunlu mu?
 - [ ] **DataTable v2 Marker:** `<table ... data-dt-standard="v2" id="dt-...">` mevcut mu? (multi-table sayfalarda her tablo için id farklı mı?)
 - [ ] **Hardcoded String:** `_Filter.cshtml` dahil tüm görünür metinler `@Localizer[...]` veya `@SharedLocalizer[...]` üzerinden geliyor mu?
@@ -60,6 +61,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 
 ### E. 📱 Responsive (v2) — Breakpoint Doğrulama
 
+- [ ] **Toolbar Padding:** Toolbar row class `row px-3 my-0 justify-content-between` (DtDefaults) olarak mı geliyor? (px-6 olmamalı)
 - [ ] **≥992px:** Toolbar tek satır; Save View icon+text; Add New icon+text
 - [ ] **768–991px:** Save View icon-only (tooltip/aria); wrap kontrollü (random drop yok)
 - [ ] **<768px:** Search full-width öncelikli; action groups kontrollü wrap; Add New icon-only ve sağda kontrollü konum

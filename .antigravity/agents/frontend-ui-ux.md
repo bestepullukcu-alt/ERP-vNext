@@ -51,6 +51,7 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 7. **Layout & Asset Koruma:** `_Layout.cshtml` içindeki `helpers.js`, `template-customizer.js` ve `config.js` sıralaması asla değiştirilmemelidir.
 8. **Tema Senkronizasyonu:** Üst bar tema butonu ile sağdaki Customizer paneli senkronize çalışmalı ve `localStorage` ile kalıcı olmalıdır.
 9. **DataTables DOM Manipülasyonu:** DOM müdahaleleri `initComplete` veya `drawCallback` içinde yapılmalıdır.
+   - **Toolbar Padding Standardı:** DataTable toolbar row class'ı `row px-3 ...` standardında kalır (px-6 yapılmaz). Inline filter host padding standardı `px-6`’dır. Kaynak: `wwwroot/assets/js/dt-defaults.js` (`buildLayout().topStart.rowClass`) + `.antigravity/rules/frontend-standards.md`.
 10. **Geniş Form Tasarımı:** 10'dan fazla input içeren formlar mutlaka `col-md-6` grid yapısı ve mantıksal `card` blokları ile gruplandırılmalıdır.
 11. **TempData & Toast Senkronizasyonu:** Başarılı POST sonrası `TempData["SuccessMessage"]` atanmalı ve Index sayfasında toast tetiklenmelidir.
 12. **SweetAlert / Modal Tema:** `Swal.fire` konfigürasyonunda `buttonsStyling: false` parametresi zorunludur.

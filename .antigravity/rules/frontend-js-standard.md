@@ -12,6 +12,9 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
 5. **L10n Bridge:** Metinler JS içinde hardcoded yazılmaz; `window.L10n` objesinden okunur.
 6. **Silme:** Tek satır silme `window.showConfirm()`, toplu silme `Swal.fire` ile yapılır. Direkt `window.showConfirm` bypass edilemez.
 7. **Toast:** Başarı/hata bildirimleri her zaman `window.showToast('Key', 'success'|'error')` ile verilir.
+8. **Save View (v2) — Applied State:** Save View görünürlüğü ve kaydedilen state, staged UI seçimlerine göre değil **applied/effective** tablo state’ine göre hesaplanmalıdır:
+   - Filter değişimi tek başına (Apply basılmadan) Save View’u göstermemelidir.
+   - Uygulama paterni: `appliedFilters` (veya benzeri) state’ini sadece Apply/Reset’te güncelle; `getCurrentView()` filtre değerlerini buradan okusun.
 
 ---
 
@@ -29,6 +32,8 @@ const {{ModuleName}}List = (function () {
     const dtTableEl = document.querySelector('.datatables-{{ModuleNameLower}}');
     const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
     const L = window.L10n || {};
+    const filterHostId = 'inlineFilterHost';
+    const filterCollapseId = 'inlineFilterCollapse';
 
     const getTenantId = () => {
         try {
@@ -89,6 +94,58 @@ const {{ModuleName}}List = (function () {
         // {{DynamicOffcanvasJs}}
     };
 
+    /**
+     * Mount inline filter panel right under DataTable toolbar row.
+     * (_Filter.cshtml is rendered on the page, we relocate it near the filter button.)
+     */
+    const mountInlineFilter = () => {
+        if (!dtTableEl) return;
+
+        const host = document.getElementById(filterHostId);
+        if (!host) return;
+
+        const filterBtn = document.querySelector('.dt-filter-btn');
+        const toolbarRow =
+            filterBtn?.closest('.dt-layout-row') ||
+            filterBtn?.closest('.row') ||
+            filterBtn?.closest('.dt-layout-end')?.parentElement;
+
+        if (toolbarRow) {
+            toolbarRow.insertAdjacentElement('afterend', host);
+            host.classList.add('px-6'); // project standard (do not use mx-*)
+            return;
+        }
+
+        // Fallback: place it before the table within the same container
+        const dtContainer = dtTableEl.closest('.dt-container') || dtTableEl.closest('.dataTables_wrapper') || dtTableEl.parentElement;
+        if (dtContainer) {
+            dtContainer.insertAdjacentElement('beforeend', host);
+            host.classList.add('px-6');
+        }
+    };
+
+    /**
+     * Some DataTables button render flows don't play nicely with Bootstrap's data-API.
+     * Bind explicit toggle behavior for the inline collapse.
+     */
+    const bindInlineFilterToggle = () => {
+        const btn = document.querySelector('.dt-filter-btn');
+        const el = document.getElementById(filterCollapseId);
+        if (!btn || !el) return;
+        if (btn.dataset.inlineFilterBound) return;
+        btn.dataset.inlineFilterBound = '1';
+
+        // Keep aria-expanded in sync
+        el.addEventListener('shown.bs.collapse', () => btn.setAttribute('aria-expanded', 'true'));
+        el.addEventListener('hidden.bs.collapse', () => btn.setAttribute('aria-expanded', 'false'));
+
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const instance = bootstrap.Collapse.getOrCreateInstance(el, { toggle: false });
+            if (el.classList.contains('show')) instance.hide(); else instance.show();
+        });
+    };
+
     const initDataTable = () => {
         if (!dtTableEl) return;
 
@@ -102,7 +159,11 @@ const {{ModuleName}}List = (function () {
             filterBtn: {
                 text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
                 className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
-                attr: { title: L.Filter, 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasFilter' }
+                attr: {
+                    title: L.Filter,
+                    'aria-controls': filterCollapseId,
+                    'aria-expanded': 'false'
+                }
             }
         };
 
@@ -180,6 +241,8 @@ const {{ModuleName}}List = (function () {
                 }
             ),
             initComplete: function () {
+                mountInlineFilter();
+                bindInlineFilterToggle();
                 setupFilters(this.api());
             },
             drawCallback: function () {
@@ -212,7 +275,8 @@ const {{ModuleName}}List = (function () {
             const filterCount = 0;
             window.DtDefaults.updateVisualState(api, filterCount);
 
-            bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasFilter'))?.hide();
+            const el = document.getElementById(filterCollapseId);
+            if (el) bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).hide();
         });
 
         document.getElementById('btnFilterReset')?.addEventListener('click', () => {

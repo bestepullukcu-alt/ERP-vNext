@@ -51,7 +51,7 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - Breadcrumb kullanılıyorsa `mt-2` kullanılmaz (üst boşluk verilmez). `nav` üzerinde sadece `text-muted` bırakılır.
 - **Page Description kuralı:** Liste/Index sayfalarında başlık altında `@Localizer["PageDescription"]` gösterilir. Breadcrumb bulunan Create/Edit/Details sayfalarında generic `PageDescription` kullanılmaz.
 - **Genel Kural (Breadcrumb'a bağlı):** Sayfada breadcrumb **yoksa** başlık altında `@Localizer["PageDescription"]` göstermek zorunludur. Breadcrumb **varsa** `PageDescription` gösterilmez.
-- **Inline Filter Spacing (MOD-0025):** `#inlineFilterHost` toolbar altına mount edildiğinde DataTable top row ile hizalı olması için **`px-3`** kullanır (`mx-*` ile dışarı taşırılmaz). Filtre paneli içindeki form sarmalayıcısı (`collapse` altındaki ilk `div`) üst boşluk olarak `pt-0` kullanmalıdır.
+- **Inline Filter Spacing (MOD-0025):** `#inlineFilterHost` toolbar altına mount edildiğinde **host yatay padding standardı `px-6`**’dır (`mx-*` ile dışarı taşırılmaz). (Not: DataTable toolbar row padding standardı `px-3`’tür; host `px-6` olarak bırakılır.) Filtre paneli içindeki form sarmalayıcısı (`collapse` altındaki ilk `div`) üst boşluk olarak `pt-0` kullanmalıdır.
 
 ---
 
@@ -121,7 +121,7 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 
 ### UI-003: Save View (Default View)
 - Toolbar’da `Save View` butonu bulunur fakat default **gizlidir**.
-- Görünürlük kuralı: **Current UI state** ile **Saved default state** farklıysa görünür; aynıysa gizlenir.
+- Görünürlük kuralı: **Applied/effective table state** ile **Saved default state** farklıysa görünür; aynıysa gizlenir. (Staged filtre seçimleri Apply edilmeden Save View’u tetiklemez.)
 - Save View state kapsamı:
   - **Kaydedilenler:** filtreler + search + column visibility + sorting (varsa)
   - **Kaydedilmeyenler:** page number (pagination)
@@ -170,9 +170,11 @@ Bu bölüm yalnızca `data-dt-standard="v2"` ile işaretlenmiş DataTable sayfal
 - Kaydedilmeyenler: page number + pageLength
 
 **C) Dirty-State (Save View görünürlük)**
-- `isDirty = normalize(currentState) != normalize(savedView || baselineDefault)`
-- Tetikleyiciler (Apply beklemez): filter/search/colVis/sorting
-- Apply: tabloyu günceller + paneli kapatır; Save View görünürlüğünü değiştirmez
+- `isDirty = normalize(appliedState) != normalize(savedView || baselineDefault)`
+- Tetikleyiciler:
+  - Filter: **Apply / Reset** sonrası
+  - search/colVis/sorting: **immediate apply**
+- Apply: tabloyu günceller + paneli kapatır; Save View görünürlüğü appliedState’e göre güncellenir
 - Reset: savedView varsa ona, yoksa baseline’a döner → Save View gizlenir
 
 **D) normalize() Mekanik Kuralları**
