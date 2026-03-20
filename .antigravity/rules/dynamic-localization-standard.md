@@ -27,16 +27,51 @@ Kural: Yeni anahtar keşfedilen TÜM dosyalara (en, tr, es, ru, uk, ka, kk, uz) 
 
 JS dosyalarında ihtiyaç duyulan metinler için L10n Bridge deseni zorunludur.
 
+### Zorunlu Pattern: Partial + JSON Payload + Loader JS
 
+**Razor Partial (`_IndexL10n.cshtml`):**
+```cshtml
+<script id="module-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        MyNewKey = SharedLocalizer["MyNewKey"].Value,
+        MyModuleKey = Localizer["MyModuleKey"].Value
+    })
+</script>
+```
 
-**Razor View (.cshtml):**
-window.L10n = window.L10n || {};
-window.L10n.MyNewKey = @Json.Serialize(SharedLocalizer["MyNewKey"].Value);
+**Loader JS (`index.l10n.js`):**
+```javascript
+(function () {
+    const payload = document.getElementById('module-l10n');
+    if (!payload) return;
 
-**JavaScript (.js):**
-var label = (window.L10n && window.L10n.MyNewKey) || 'Fallback English';
+    // ASP.NET Json.Serialize outputs camelCase. Convert to PascalCase.
+    const toPascalCase = (key) => key.charAt(0).toUpperCase() + key.slice(1);
+    
+    try {
+        const raw = JSON.parse(payload.textContent || '{}');
+        const normalized = {};
+        for (const key of Object.keys(raw)) {
+            normalized[toPascalCase(key)] = raw[key];
+        }
+        window.L10n = Object.assign({}, window.L10n || {}, normalized);
+    } catch(err) {
+        console.error('Localization payload error', err);
+    }
+})();
+```
 
-> **KRİTİK:** Her zaman @Json.Serialize(...) kullanın. @Html.Raw(...) kullanmayın; Uzbekçe (o'zbekcha) gibi dillerdeki tek tırnaklar JS stringini bozar ve sayfayı patlatır.
+**Page JS (`index.js`):**
+```javascript
+const label = window.L10n?.MyNewKey;
+```
+
+### Yasak Pattern
+
+`Index.cshtml` içinde onlarca satır `window.L10n.MyKey = ...` assignment bloğu yazmak standart değildir. Yeni veya revize edilen sayfalarda bu pattern kullanılmaz.
+
+> **KRİTİK:** Her zaman `@Json.Serialize(...)` kullanın. `@Html.Raw(...)` kullanmayın; Uzbekçe (`o'zbekcha`) gibi dillerdeki tek tırnaklar JS stringini bozar ve sayfayı patlatır.
 
 ---
 

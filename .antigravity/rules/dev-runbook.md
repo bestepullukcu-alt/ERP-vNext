@@ -35,14 +35,14 @@ brew services start mongodb-community@7.0
 Geliştirmeye başlamadan önce veya büyük bir kod değişikliği sonrası, port çakışmalarını önlemek için şu komutu çalıştırmak anayasa kuralıdır:
 
 # KOMUT BAŞI
-lsof -ti :5000,5001,5050,5056 | xargs kill -9 2>/dev/null || true
+lsof -ti :5000,5001,5050,5056,5057 | xargs kill -9 2>/dev/null || true
 # KOMUT SONU
 
 ---
 
-## 🚀 Çalıştırma Sırası (4-Tab Düzeni)
+## 🚀 Çalıştırma Sırası (5-Servis Düzeni)
 
-Projeyi tam fonksiyonel çalıştırmak için VS Code terminalinde 4 ayrı sekme açın ve servisleri KESİNLİKLE aşağıdaki sırayla başlatın:
+Projeyi tam fonksiyonel çalıştırmak için servisleri aşağıdaki sırayla başlatın:
 
 ### 1. TAB 1: Auth Service (Port: 5056)
 - **Dizin:** services/DitenAuthService/src/Diten.AuthService.Api
@@ -55,17 +55,24 @@ Projeyi tam fonksiyonel çalıştırmak için VS Code terminalinde 4 ayrı sekme
 - **Komut:** dotnet run (Development)
 - **Kontrol:** MongoDB bağlantısının başarılı olduğunu loglardan doğrulayın.
 
-### 3. TAB 3: API Gateway (Port: 5000)
+### 3. TAB 3: Platform API (Port: 5057)
+- **Dizin:** services/Diten.Platform/src/Diten.Platform.API
+- **Komut:** dotnet run (Development)
+- **Neden:** Save View / personalization gibi ortak platform yetenekleri bu servis üzerinden sağlanır.
+
+### 4. TAB 4: API Gateway (Port: 5000)
 - **Dizin:** gateway/DitenApiGateway/Diten.ApiGateway
 - **Komut:** dotnet run (Development)
-- **Önemli:** Auth ve MDM servisleri hazır olmadan Gateway'i başlatmayın.
+- **Önemli:** Auth, MDM ve Platform servisleri hazır olmadan Gateway'i başlatmayın.
 
-### 4. TAB 4: Frontend Web (Port: 5001)
+### 5. TAB 5: Frontend Web (Port: 5001)
 - **Dizin:** frontend/Diten.Web
 - **Komut:** dotnet run (Development)
 - **Erişim:** http://localhost:5001 adresine giderek arayüze giriş yapın.
 
 > Host notu: `localhost` ve `127.0.0.1` farklı origin sayılır. Cookie/localStorage host’a bağlıdır; host değiştirince tekrar login gerekebilir.
+
+> Auth seed notu: Auth servisi başlangıçta `DuplicateKey` seeding uyarısı verebilir. Servis dinlemeye geçtiyse bu uyarı çoğu durumda non-blocking kabul edilir; ancak login/yetki davranışı bozuksa seed/idempotency ayrıca incelenmelidir.
 
 ---
 

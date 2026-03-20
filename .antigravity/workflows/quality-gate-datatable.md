@@ -26,8 +26,10 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **drawCallback:** `DtDefaults.updateVisualState(this.api(), filterCount)` çağrılıyor mu?
 - [ ] **StateSave (v2):** Sayfa `data-dt-standard="v2"` ise `stateSave: false` set edilmiş mi? Otomatik cache/restore yok mu?
 - [ ] **Save View (v2):** Save View görünürlüğü **applied/effective state**’e göre mi? (Filter için Apply/Reset sonrası; search/colVis/sort immediate apply)
-- [ ] **Save View Scope (v2):** Kaydedilenler: filters + search + colVis + sorting; kaydedilmeyenler: page number + pageLength
-- [ ] **Storage Key (v2):** `dt:view-default:{tenantId}:{userId}:{module}:{tableId}` formatı kullanılıyor mu? `tableId` çakışmasız mı?
+- [ ] **Save View Scope (v2):** Kaydedilenler: filters + search + colVis + columnOrder + sorting; kaydedilmeyenler: page number + pageLength
+- [ ] **Personalization Client (v2):** Save View localStorage ile değil `window.personalizationClient` üzerinden `/api/personalization/views` çağrılarıyla mı yapılıyor?
+- [ ] **401 / Expired JWT Guard (v2):** `personalizationClient` isteği `401 Unauthorized` aldığında shared refresh/login akışı devreye giriyor mu? Generic `ErrorOccurred` toast'ı ile maskelenmiyor mu?
+- [ ] **Column Reorder (v2):** `ColReorder` aktifse `columnOrder` capture/restore ediliyor mu? `column-reorder.dt` dirty-state hesabına dahil mi?
 
 ### B. HTML / Razor (Index.cshtml)
 
@@ -37,10 +39,15 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **Inline Filter:** `#inlineFilterHost` + `#inlineFilterCollapse` mevcut mu? Offcanvas filter yok mu? Host hizası `px-6` ile mi? (`mx-*` yok mu?) Wrapper `pt-0 pb-3` mi?
 - [ ] **Filter Badge Count:** Filter butonundaki badge, Apply sonrası aktif filtre sayısını doğru gösteriyor mu? (örn. 2 select doluysa badge=2; Reset sonrası badge=0)
 - [ ] **Filter Bar UI:** Filtreler “chip/dropdown” (Select2) gibi kompakt mı? Dropdown search zorunlu mu?
+- [ ] **Filter Select Styling:** Inline filter Select2 tetikleyicileri `form-select form-select-sm` estetiğine uyuyor mu? (`selectionCssClass` + merkezi CSS)
+- [ ] **Select2 Overflow (MOD-0031):** Herhangi bir inline filter Select2 açıldığında sayfada yatay/dikey scroll çıkmıyor mu? (`backbone-custom.css` içinde `.filter-chip .select2-selection { inline-size: auto !important; }` override'ı mevcut mu?)
 - [ ] **DataTable v2 Marker:** `<table ... data-dt-standard="v2" id="dt-...">` mevcut mu? (multi-table sayfalarda her tablo için id farklı mı?)
 - [ ] **Hardcoded String:** `_Filter.cshtml` dahil tüm görünür metinler `@Localizer[...]` veya `@SharedLocalizer[...]` üzerinden geliyor mu?
 - [ ] **L10n Bridge (v2):** `window.L10n` minimum key set’i tamam mı? (`Search, Export, Import, Filter, Apply, Reset, ShowAll, SaveView, ColumnVisibility, Status` dahil)
+- [ ] **L10n Delivery Pattern:** `Index.cshtml` içinde uzun `window.L10n.Key = ...` bloğu yok mu? `_IndexL10n.cshtml` payload partial'ı ve `index.l10n.js` loader scripti kullanılıyor mu?
+- [ ] **L10n Bridge (v2):** Reorder kullanılan sayfalarda `ColumnOrder` key’i de bridge ediliyor mu?
 - [ ] **Layout:** `Layout = "_LayoutBackbone"` kullanılıyor mu?
+- [ ] **Shared CSS Placement:** Reusable toolbar / inline-filter / Select2 stilleri `Index.cshtml @section Styles` içine gömülmemiş mi? Ortak kurallar `backbone-custom.css` içinde mi?
 
 ### C. Localization
 
@@ -57,6 +64,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **baselineDefault:** SavedView yokken referans state net mi? (boş filters/search + default colVis + default single-sort + default pageLength)
 - [ ] **pageLength Ayrımı:** `pageLength` baseline’da tanımlı; persistence/dirty compare kapsamı dışı mı?
 - [ ] **normalize:** `null/undefined/''` eşitliği, string trim, `1`==`\"1\"`, boolean→`\"true\"/\"false\"`, colVis index-based, sorting normalize kuralı uygulanıyor mu?
+- [ ] **normalize:** `columnOrder` tekil/tam kolon dizisi olarak normalize ediliyor mu?
 - [ ] **Unapplied Refresh:** Apply basılmadan staged filtre değişikliği yap → refresh: savedView yoksa temiz state, savedView varsa savedView restore davranışı doğru mu?
 
 ### E. 📱 Responsive (v2) — Breakpoint Doğrulama
@@ -66,6 +74,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **768–991px:** Save View icon-only (tooltip/aria); wrap kontrollü (random drop yok)
 - [ ] **<768px:** Search full-width öncelikli; action groups kontrollü wrap; Add New icon-only ve sağda kontrollü konum
 - [ ] **<576px Export UI:** Export dropdown, aynı gruptaki `.btn-icon` butonlarla yükseklik/vertical padding olarak hizalı mı? (Üstten-alttan küçük kalmıyor mu?) `dt-export-collection-btn` class’ı korunuyor mu?
+- [ ] **Column Drag UX:** Reorder aktifse header sürükleme davranışı çalışıyor mu? Control/checkbox/actions kolonları yanlışlıkla taşınmıyor mu?
 - [ ] **Inline Filter:** <992px Apply/Reset alt satıra geçiyor; <576px eşit genişlikte yan yana
 
 ### F. ♿ Accessibility (A11y) (v2)
@@ -103,7 +112,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 ### H. 🔍 Statik Guard (ZORUNLU / Opsiyonel Ayrımı)
 
 - [ ] **Zorunlu:** `python3 .antigravity/scripts/verify_datatable_page.py . --area {{AreaName}} --module {{ModuleName}}` çalıştırıldı mı?
-- [ ] **Zorunlu (v2 marker varsa):** table `id` + `data-dt-standard="v2"` ve required `window.L10n` bridge key'leri script tarafından doğrulandı mı?
+- [ ] **Zorunlu (v2 marker varsa):** table `id` + `data-dt-standard="v2"` ve required `window.L10n` bridge key'leri/payload loader pattern'i script tarafından doğrulandı mı?
 - [ ] **Opsiyonel:** Deeper pattern checks (override bayrakları, multi-sort QA) manuel olarak kontrol edildi mi?
 
 ### F. Localization Dosya İsimlendirme

@@ -7,8 +7,10 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
 > - `<partial name="_Filter" />` her DataTable sayfasında **zorunludur** — kaldırma veya in-line yazma.
 > - JavaScript başlatma için `DtDefaults.create()` zorunludur — bakınız `frontend-js-standard.md`.
 > - `_Filter.cshtml` inline collapse filter bar standardına uymalıdır (bkz. aşağıdaki minimum şablon).
+> - L10n bridge için `Index.cshtml` içine uzun `window.L10n.Key = ...` blokları yazılmaz; `_IndexL10n.cshtml` partial'ı JSON payload üretir, `index.l10n.js` bunu `window.L10n` içine merge eder.
 > - **DataTable v2 Standard Marker:** Yeni standartları uygulayan sayfalarda `<table ... data-dt-standard="v2" id="...">` zorunludur.
 > - **Toolbar Badge Clipping:** Filter/ColVis badge’leri `top-0 end-0 translate-middle` ile dışarı taşar; bu normaldir. Mobil/tablet’te kesilmemesi için çözüm `backbone-custom.css (MOD-0022)` içindeki **top safe-area padding**’dir. Sayfa bazlı “badge’i içeri taşı” veya “sadece z-index” hack’i YASAKTIR.
+> - **Shared CSS Placement:** Toolbar / inline filter / Select2 chip görünümleri page-level `@section Styles` içinde tekrar edilmez; ortak kurallar `wwwroot/assets/css/backbone-custom.css` içinde tutulur.
 > - **`{AreaName}` = klasör gruplaması (Örn: `MDM`, `Identity`), ASP.NET Areas routing DEĞİLDİR.**
 >   - ✅ DOĞRU: `Views/MDM/Countries/Index.cshtml`
 >   - ❌ YANLIŞ: `Areas/MDM/Views/Countries/Index.cshtml`
@@ -33,10 +35,12 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
 ### Persistence Kararları
 - Otomatik cache/stateSave **kullanılmaz** (2 saatlik state geri yükleme yasak).
 - Sadece kullanıcı “Save View”e bastığında `savedView` persist edilir.
-- **savedView içine kaydedilenler:** filters + search + colVis + sorting
+- Persist hedefi localStorage değildir; gateway üzerinden `/api/personalization/views` çağıran shared `personalizationClient` kullanılır.
+- **savedView içine kaydedilenler:** filters + search + colVis + columnOrder + sorting
 - **kaydedilmeyenler:** page number + pageLength
 - Panel açık/kapalı durumu persist edilmez.
-- **Storage Key Standardı:** `dt:view-default:{tenantId}:{userId}:{module}:{tableId}`
+- **Personalization Context Standardı:** `moduleKey + pageKey`
+  - Örnek: `moduleKey: "MDM"`, `pageKey: "LegalEntities"`
   - `tableId` = `<table id="...">` zorunludur (çoklu DataTable çakışmasını engeller).
 
 ### Dirty-State (Save View görünürlük kuralı)
@@ -56,6 +60,7 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
   - `1` ve `"1"` eşdeğer kabul edilir
   - boolean → `"true"` / `"false"`
 - colVis: index-based `Array<boolean>` (runtime mutation varsa explicit override zorunlu)
+- columnOrder: `Array<number>` ve tüm kolon indekslerini tekil olarak içermelidir
 - sorting: `Array<[index:number, dir:'asc'|'desc']>`; dir lower-case
 - key ordering: object stringify öncesi sorted
 
@@ -197,51 +202,93 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
 </div>
 
 @section Scripts {
-    <script>
-        // ── L10n Bridge ─────────────────────────────────────────────────────
-        window.L10n = window.L10n || {};
-        window.L10n.Active              = @Json.Serialize(SharedLocalizer["Active"].Value);
-        window.L10n.Passive             = @Json.Serialize(SharedLocalizer["Passive"].Value);
-        window.L10n.Unknown             = @Json.Serialize(SharedLocalizer["Unknown"].Value);
-        window.L10n.Actions             = @Json.Serialize(Localizer["Actions"].Value);
-        window.L10n.Edit                = @Json.Serialize(Localizer["EditBtn"].Value);
-        window.L10n.ViewDetails         = @Json.Serialize(SharedLocalizer["ViewDetails"].Value);
-        window.L10n.QuickView           = @Json.Serialize(Localizer["QuickView"].Value);
-        window.L10n.Search              = @Json.Serialize(SharedLocalizer["Search"].Value);
-        window.L10n.Export              = @Json.Serialize(SharedLocalizer["Export"].Value);
-        window.L10n.Import              = @Json.Serialize(SharedLocalizer["Import"].Value);
-        window.L10n.ComingSoon          = @Json.Serialize(SharedLocalizer["ComingSoon"].Value);
-        window.L10n.Filter              = @Json.Serialize(SharedLocalizer["Filter"].Value);
-        window.L10n.Apply               = @Json.Serialize(SharedLocalizer["Apply"].Value);
-        window.L10n.SaveView            = @Json.Serialize(SharedLocalizer["SaveView"].Value);
-        window.L10n.SelectStatus        = @Json.Serialize(SharedLocalizer["SelectStatus"].Value);
-        window.L10n.Status              = @Json.Serialize(SharedLocalizer["Status"].Value);
-        window.L10n.Reset               = @Json.Serialize(SharedLocalizer["Reset"].Value);
-        window.L10n.Print               = @Json.Serialize(SharedLocalizer["Print"].Value);
-        window.L10n.PDF                 = @Json.Serialize(SharedLocalizer["PDF"].Value);
-        window.L10n.Copy                = @Json.Serialize(SharedLocalizer["Copy"].Value);
-        window.L10n.ShowAll             = @Json.Serialize(SharedLocalizer["ShowAll"].Value);
-        window.L10n.ColumnVisibility    = @Json.Serialize(SharedLocalizer["ColumnVisibility"].Value);
-        window.L10n.AddNew{{ModuleName}} = @Json.Serialize(Localizer["AddNew{{ModuleName}}"].Value);
-        window.L10n.DtNoRecords         = @Json.Serialize(SharedLocalizer["DtNoRecords"].Value);
-        window.L10n.DtInfo              = @Json.Serialize(SharedLocalizer["DtInfo"].Value);
-        window.L10n.DtInfoEmpty         = @Json.Serialize(SharedLocalizer["DtInfoEmpty"].Value);
-        window.L10n.DtInfoFiltered      = @Json.Serialize(SharedLocalizer["DtInfoFiltered"].Value);
-        window.L10n.DtZeroRecords       = @Json.Serialize(SharedLocalizer["DtZeroRecords"].Value);
-        window.L10n.DtEmptyTable        = @Json.Serialize(SharedLocalizer["DtEmptyTable"].Value);
-        window.L10n.BulkDelete          = @Json.Serialize(SharedLocalizer["BulkDelete"].Value);
-        window.L10n.BulkDeleteConfirm   = @Json.Serialize(SharedLocalizer["BulkDeleteConfirm"].Value);
-        window.L10n.BulkDeleteSuccess   = @Json.Serialize(SharedLocalizer["BulkDeleteSuccess"].Value);
-        window.L10n.ClearSelection      = @Json.Serialize(SharedLocalizer["ClearSelection"].Value);
-        window.L10n.SelectedCount       = @Json.Serialize(SharedLocalizer["SelectedCount"].Value);
-        window.L10n.AreYouSure          = @Json.Serialize(SharedLocalizer["AreYouSure"].Value);
-        window.L10n.Cancel              = @Json.Serialize(SharedLocalizer["Cancel"].Value);
-        // DİNAMİK L10N — Modüle özgü ek key'leri buraya ekle
-        {{DynamicL10nScripts}}
-    </script>
-
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/{{AreaName}}/{{ModuleName}}/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/{{AreaName}}/{{ModuleName}}/index.js" asp-append-version="true"></script>
 }
+```
+
+## `_IndexL10n.cshtml` Standardı
+
+```html
+@using Diten.Web.Views.{{AreaName}}.{{ModuleName}}
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<{{ModuleName}}Index> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="{{ModuleNameLower}}-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Edit = Localizer["EditBtn"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        SelectStatus = SharedLocalizer["SelectStatus"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Print = SharedLocalizer["Print"].Value,
+        PDF = SharedLocalizer["PDF"].Value,
+        Copy = SharedLocalizer["Copy"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ColumnOrder = SharedLocalizer["ColumnOrder"].Value,
+        AddNew{{ModuleName}} = Localizer["AddNew{{ModuleName}}"].Value,
+        DtNoRecords = SharedLocalizer["DtNoRecords"].Value,
+        DtInfo = SharedLocalizer["DtInfo"].Value,
+        DtInfoEmpty = SharedLocalizer["DtInfoEmpty"].Value,
+        DtInfoFiltered = SharedLocalizer["DtInfoFiltered"].Value,
+        DtZeroRecords = SharedLocalizer["DtZeroRecords"].Value,
+        DtEmptyTable = SharedLocalizer["DtEmptyTable"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        BulkDeleteSuccess = SharedLocalizer["BulkDeleteSuccess"].Value,
+        ClearSelection = SharedLocalizer["ClearSelection"].Value,
+        SelectedCount = SharedLocalizer["SelectedCount"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value
+        // Modüle özgü ek key'leri burada genişlet
+    })
+</script>
+```
+
+## `index.l10n.js` Standardı
+
+```javascript
+'use strict';
+
+(function () {
+    const payload = document.getElementById('{{ModuleNameLower}}-l10n');
+    if (!payload) {
+        window.L10n = window.L10n || {};
+        return;
+    }
+
+    // ASP.NET Json.Serialize outputs camelCase keys by default.
+    // JS code accesses PascalCase (e.g. L.AddNewCompany), so restore the first letter to uppercase.
+    const toPascalCase = (key) => key.charAt(0).toUpperCase() + key.slice(1);
+
+    try {
+        const raw = JSON.parse(payload.textContent || '{}');
+        const normalized = {};
+        for (const key of Object.keys(raw)) {
+            normalized[toPascalCase(key)] = raw[key];
+        }
+        window.L10n = Object.assign({}, window.L10n || {}, normalized);
+    } catch (error) {
+        console.error('{{ModuleName}} localization payload could not be parsed.', error);
+        window.L10n = window.L10n || {};
+    }
+})();
 ```
 
 ---

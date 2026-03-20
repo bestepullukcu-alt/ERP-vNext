@@ -2,6 +2,7 @@
 
 window.personalizationClient = (function () {
     const apiBaseUrl = window.ApiBaseUrl || '';
+    const authRefreshSignal = 'auth-refresh-in-progress';
 
     const getCookie = (name) => {
         const value = `; ${document.cookie}`;
@@ -36,6 +37,20 @@ window.personalizationClient = (function () {
         return headers;
     };
 
+    const redirectToLogin = () => {
+        const returnUrl = encodeURIComponent(`${window.location.pathname}${window.location.search}`);
+        window.location.href = `/account/login?returnUrl=${returnUrl}`;
+    };
+
+    const handleUnauthorized = () => {
+        if (window.DtDefaults?.handleUnauthorized) {
+            window.DtDefaults.handleUnauthorized();
+            return;
+        }
+
+        redirectToLogin();
+    };
+
     const handleResponse = async (response) => {
         if (response.ok) {
             if (response.status === 204) {
@@ -43,6 +58,15 @@ window.personalizationClient = (function () {
             }
 
             return await response.json();
+        }
+
+        if (response.status === 401) {
+            handleUnauthorized();
+
+            const authError = new Error(authRefreshSignal);
+            authError.code = authRefreshSignal;
+            authError.authHandled = true;
+            throw authError;
         }
 
         let message = 'ErrorOccurred';

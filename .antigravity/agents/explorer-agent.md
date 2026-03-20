@@ -22,6 +22,7 @@ Sen, Diten ERP vNext projesinin "Gözleri ve Kulakları"sın. Görevin, karmaş�
 
 ### 3. Frontend & L10n Audit
 - Razor View'larda hardcoded string olup olmadığını tarar.
+- `window.L10n` bridge’in legacy inline assignment mı, yoksa `_IndexL10n.cshtml` + `index.l10n.js` standardı mı kullandığını raporlar.
 - `LegalEntities` (Altın Referans) yapısına olan benzerliği veya sapmaları raporlar.
 
 ---

@@ -528,6 +528,7 @@ window.DtDefaults = (function () {
         exportButtons: exportButtons,
         responsiveRenderer: responsiveRenderer,
         updateVisualState: updateVisualState,
-        refreshButtonGroupRadii: refreshButtonGroupRadii
+        refreshButtonGroupRadii: refreshButtonGroupRadii,
+        handleUnauthorized: refreshTokenAndReload
     };
 })();

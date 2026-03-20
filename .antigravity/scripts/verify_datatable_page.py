@@ -5,7 +5,7 @@ DataTable Page Verifier (vNext)
 
 Static checks to enforce the "Golden DataTable" contract (LegalEntities baseline):
 - Index.cshtml structure markers exist (Filter partial, skeleton, offcanvas)
-- window.L10n bridge includes required keys (no raw keys in JS)
+- window.L10n bridge uses payload partial + loader JS and includes required keys
 - index.js uses DtDefaults + DataTables v2 constructor
 - Quick View is wired via event delegation (.js-quick-view) (no inline onclick)
 
@@ -55,6 +55,29 @@ def check_not_contains(path: Path, text: str, pattern: Pattern[str], label: str,
     if has(pattern, text):
         return Check(label, False, f"{hint} (file: {path})")
     return Check(label, True)
+
+
+def check_shared_css_not_embedded(index_path: Path, index_html: str) -> List[Check]:
+    checks: List[Check] = []
+    checks.append(
+        check_not_contains(
+            index_path,
+            index_html,
+            re.compile(r"@section\s+Styles[\s\S]*#inlineFilterHost", re.IGNORECASE),
+            "Index.cshtml does not embed inline filter CSS in @section Styles",
+            "Reusable #inlineFilterHost styles belong in backbone-custom.css, not page-level @section Styles",
+        )
+    )
+    checks.append(
+        check_not_contains(
+            index_path,
+            index_html,
+            re.compile(r"@section\s+Styles[\s\S]*\.dt-layout-end", re.IGNORECASE),
+            "Index.cshtml does not embed toolbar CSS in @section Styles",
+            "Reusable .dt-layout-end toolbar styles belong in backbone-custom.css, not page-level @section Styles",
+        )
+    )
+    return checks
 
 def check_inline_filter_host_alignment(filter_html: str, js_text: str, filter_path: Path, js_path: Path) -> Check:
     """
@@ -157,7 +180,7 @@ def compile_required_l10n_keys(is_v2: bool) -> List[Tuple[str, Pattern[str]]]:
         seen.add(k)
         ordered.append(k)
 
-    return [(k, re.compile(rf"window\.L10n\.{re.escape(k)}\s*=")) for k in ordered]
+    return [(k, re.compile(rf"(?<![A-Za-z0-9_]){re.escape(k)}\s*=")) for k in ordered]
 
 
 def main() -> int:
@@ -178,7 +201,9 @@ def main() -> int:
 
     index_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "Index.cshtml"
     filter_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "_Filter.cshtml"
+    index_l10n_partial = root / "frontend" / "Diten.Web" / "Views" / area / module / "_IndexL10n.cshtml"
     index_js = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / area / module / "index.js"
+    index_l10n_js = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / area / module / "index.l10n.js"
     dt_defaults_js = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / "dt-defaults.js"
     backbone_custom_css = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "css" / "backbone-custom.css"
 
@@ -186,18 +211,22 @@ def main() -> int:
 
     checks.append(check_file_exists(index_cshtml, "Index.cshtml exists"))
     checks.append(check_file_exists(filter_cshtml, "_Filter.cshtml exists"))
+    checks.append(check_file_exists(index_l10n_partial, "_IndexL10n.cshtml exists"))
     checks.append(check_file_exists(index_js, "index.js exists"))
+    checks.append(check_file_exists(index_l10n_js, "index.l10n.js exists"))
     checks.append(check_file_exists(dt_defaults_js, "dt-defaults.js exists"))
     checks.append(check_file_exists(backbone_custom_css, "backbone-custom.css exists"))
 
     # Stop early if core files missing (avoid confusing follow-up errors).
-    if any(not c.ok for c in checks[:5]):
+    if any(not c.ok for c in checks[:7]):
         print_report(checks)
         return 1
 
     index_html = read_text(index_cshtml)
     filter_html = read_text(filter_cshtml)
+    index_l10n_html = read_text(index_l10n_partial)
     js_text = read_text(index_js)
+    index_l10n_js_text = read_text(index_l10n_js)
     dt_defaults_text = read_text(dt_defaults_js)
     css_text = read_text(backbone_custom_css)
     is_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", index_html))
@@ -406,24 +435,89 @@ def main() -> int:
             "Missing dt-export-collection-btn min-block-size alignment rule (prevents 'short' Export button on mobile)",
         )
     )
+    checks.append(
+        check_contains(
+            backbone_custom_css,
+            css_text,
+            re.compile(r"#inlineFilterHost\s+\.dt-filter-bar\s+\.filter-chip\s+\.select2-selection--single", re.MULTILINE),
+            "backbone-custom.css has shared inline filter Select2 styling",
+            "Missing centralized inline filter Select2 rules in backbone-custom.css",
+        )
+    )
+    if ("form-select-sm" in css_text) or ("selectionCssClass" in js_text):
+        checks.append(Check("Inline filter styling follows form-select-sm standard", True))
+    else:
+        checks.append(
+            Check(
+                "Inline filter styling follows form-select-sm standard",
+                False,
+                "Missing form-select-sm-aligned inline filter styling contract in backbone-custom.css and/or index.js",
+            )
+        )
+    checks.extend(check_shared_css_not_embedded(index_cshtml, index_html))
 
     # L10n bridge sanity
     checks.append(
         check_contains(
             index_cshtml,
             index_html,
-            re.compile(r"window\.L10n\s*=\s*window\.L10n\s*\|\|\s*\{\s*\}"),
-            "Index.cshtml initializes window.L10n",
-            "Missing window.L10n initialization block",
+            re.compile(r"<partial\s+name\s*=\s*\"_IndexL10n\"\s*/>"),
+            "Index.cshtml includes <partial name=\"_IndexL10n\" />",
+            "Missing _IndexL10n partial include",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_cshtml,
+            index_html,
+            re.compile(re.escape(f"~/assets/js/{area}/{module}/index.l10n.js")),
+            f"Index.cshtml includes script: ~/assets/js/{area}/{module}/index.l10n.js",
+            "Missing/incorrect index.l10n.js include path",
+        )
+    )
+    checks.append(
+        check_not_contains(
+            index_cshtml,
+            index_html,
+            re.compile(r"window\.L10n\.[A-Za-z0-9_]+\s*="),
+            "Index.cshtml does not inline-assign window.L10n keys",
+            "Found legacy inline window.L10n assignment block in Index.cshtml",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_l10n_partial,
+            index_l10n_html,
+            re.compile(r"<script[^>]*type\s*=\s*\"application/json\""),
+            "_IndexL10n.cshtml renders application/json payload",
+            "Missing application/json payload in _IndexL10n.cshtml",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_l10n_js,
+            index_l10n_js_text,
+            re.compile(r"JSON\.parse\(\s*payload\.textContent\s*\|\|\s*['\"]\{\}['\"]\s*\)"),
+            "index.l10n.js parses payload JSON",
+            "Missing JSON.parse(payload.textContent || '{}') in index.l10n.js",
+        )
+    )
+    checks.append(
+        check_contains(
+            index_l10n_js,
+            index_l10n_js_text,
+            re.compile(r"window\.L10n\s*=\s*Object\.assign\("),
+            "index.l10n.js merges payload into window.L10n",
+            "Missing Object.assign merge into window.L10n in index.l10n.js",
         )
     )
     for key, pat in compile_required_l10n_keys(is_v2):
         checks.append(
             check_contains(
-                index_cshtml,
-                index_html,
+                index_l10n_partial,
+                index_l10n_html,
                 pat,
-                f"Index.cshtml bridges window.L10n.{key}",
+                f"_IndexL10n.cshtml provides {key}",
                 f"Missing L10n key: {key}",
             )
         )

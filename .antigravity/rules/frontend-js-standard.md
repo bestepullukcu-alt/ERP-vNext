@@ -8,13 +8,24 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
 2. **`DtDefaults.create()` ZORUNLU:** Ham `DataTable({...})` çağrısı KESİNLİKLE YASAKTIR. Her DataTable sayfası `window.DtDefaults.create({...})` ile başlatılır. Bu wrapper otomatik olarak skeleton, stateSave, responsive class fix ve hover'ı devreye alır.
 3. **`DtDefaults.exportButtons()` ZORUNLU:** Butonlar elle `layout` içinde tanımlanmaz. Her zaman `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons, options)` kullanılır. `options` ile `exportColumns` / `colvisColumns` override edilebilir.  
    - **Responsive UI guard:** `DtDefaults` içindeki Export (collection) butonu `dt-export-collection-btn` class’ını taşır; `backbone-custom.css` bu class ile Export’u mobil toolbar’da `.btn-icon` yüksekliğiyle hizalar. Bu class kaldırılmaz/değiştirilmez.
-4. **AJAX Gateway:** Tüm istekler `window.ApiBaseUrl` (`/api/...`) üzerinden gider. Servis bazlı URL (`/mdm/api/v1/...`) kullanılmaz.
-5. **L10n Bridge:** Metinler JS içinde hardcoded yazılmaz; `window.L10n` objesinden okunur.
-6. **Silme:** Tek satır silme `window.showConfirm()`, toplu silme `Swal.fire` ile yapılır. Direkt `window.showConfirm` bypass edilemez.
-7. **Toast:** Başarı/hata bildirimleri her zaman `window.showToast('Key', 'success'|'error')` ile verilir.
-8. **Save View (v2) — Applied State:** Save View görünürlüğü ve kaydedilen state, staged UI seçimlerine göre değil **applied/effective** tablo state’ine göre hesaplanmalıdır:
+4. **Personalization Client ZORUNLU:** Save View / kullanıcı tercihleri için raw `fetch('/api/personalization/...')` veya localStorage helper yazılmaz. Her zaman shared `window.personalizationClient` kullanılır.
+   - **401/Auth Refresh Guard:** `window.personalizationClient` içindeki istekler `401 Unauthorized` aldığında merkezi unauthorized akışını kullanmalıdır (`window.DtDefaults.handleUnauthorized()` veya proje eşdeğeri). Expired JWT senaryosu generic `ErrorOccurred` toast'ı ile gizlenmez; kullanıcı refresh/login akışına taşınır.
+5. **AJAX Gateway:** Tüm istekler `window.ApiBaseUrl` (`/api/...`) üzerinden gider. Servis bazlı URL (`/mdm/api/v1/...`) kullanılmaz.
+6. **L10n Bridge:** Metinler JS içinde hardcoded yazılmaz; `window.L10n` objesinden okunur. `window.L10n` payload'ı `_IndexL10n.cshtml` + `index.l10n.js` deseniyle yüklenir; `Index.cshtml` içine uzun assignment bloğu gömülmez.
+7. **Silme:** Tek satır silme `window.showConfirm()`, toplu silme `Swal.fire` ile yapılır. Direkt `window.showConfirm` bypass edilemez.
+8. **Toast:** Başarı/hata bildirimleri her zaman `window.showToast('Key', 'success'|'error')` ile verilir.
+   - İstisna: auth refresh/login'e devredilmiş `401` akışında kullanıcıya ek olarak generic hata toast'ı basılmaz.
+9. **Save View (v2) — Applied State:** Save View görünürlüğü ve kaydedilen state, staged UI seçimlerine göre değil **applied/effective** tablo state’ine göre hesaplanmalıdır:
    - Filter değişimi tek başına (Apply basılmadan) Save View’u göstermemelidir.
    - Uygulama paterni: `appliedFilters` (veya benzeri) state’ini sadece Apply/Reset’te güncelle; `getCurrentView()` filtre değerlerini buradan okusun.
+10. **Save View (v2) — Shared Payload:** Saved View payload’ı minimum olarak `filters + search + colVis + columnOrder + sorting` içermelidir. `pageNumber/pageLength` persist edilmez.
+11. **ColReorder (v2):** Kolon sürükle-bırak aktif edilen sayfalarda:
+   - `colReorder` DataTable config’i `DtDefaults.create({...})` içine verilir.
+   - `columnOrder` Save View kapsamına eklenir.
+   - `column-reorder.dt` / `columns-reordered.dt` event’leri dirty-state hesabına dahil edilir.
+12. **Inline Filter Select2 Styling:** `#inlineFilterHost` içindeki Select2 single-select filtrelerinde `selectionCssClass: 'form-select form-select-sm'` kullanılır. Görsel standardın CSS karşılığı `backbone-custom.css` içindedir; Index.cshtml içine tekrar yazılmaz.
+    > ⚠️ **Overflow uyarısı:** `selectionCssClass: 'form-select form-select-sm'` Bootstrap'ın `.form-select` sınıfı üzerinden `.select2-selection` elementine `inline-size: 100% !important` uygular. Select açıldığında sayfa yatay/dikey scroll yapabilir. `backbone-custom.css` içindeki `#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection { inline-size: auto !important; }` override'ı bu bug'ı önler ve kaldırılamaz (MOD-0031).
+13. **Shared CSS Placement:** Toolbar, inline filter, badge stacking ve Select2 dropdown stilleri tekrar kullanılabilir ise `backbone-custom.css` içinde tutulur; `@section Styles` yalnızca gerçekten modüle özgü istisnalar için kullanılır.
 
 ---
 
@@ -31,9 +42,19 @@ const {{ModuleName}}List = (function () {
     let dt;
     const dtTableEl = document.querySelector('.datatables-{{ModuleNameLower}}');
     const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
-    const L = window.L10n || {};
+    let L = window.L10n || {};
     const filterHostId = 'inlineFilterHost';
     const filterCollapseId = 'inlineFilterCollapse';
+
+    const syncL10n = () => {
+        const current = window.L10n;
+        if (current && typeof current === 'object' && Object.keys(current).length) {
+            L = current;
+            return;
+        }
+
+        L = L || {};
+    };
 
     const getTenantId = () => {
         try {
@@ -59,10 +80,10 @@ const {{ModuleName}}List = (function () {
         };
     };
 
-    const statusObj = {
+    const getStatusMap = () => ({
         true: { title: L.Active, class: 'bg-label-success' },
         false: { title: L.Passive, class: 'bg-label-secondary' }
-    };
+    });
 
     const tryParseRowJson = (element) => {
         if (!element) return null;
@@ -84,7 +105,7 @@ const {{ModuleName}}List = (function () {
         document.getElementById('oc-subtitle').innerText = data.subtitle || '-';
 
         const statusEl = document.getElementById('oc-status');
-        const status = statusObj[String(data.isActive)] || { title: L.Unknown || String(data.isActive), class: 'bg-label-primary' };
+        const status = getStatusMap()[String(data.isActive)] || { title: L.Unknown || String(data.isActive), class: 'bg-label-primary' };
         statusEl.className = `badge ${status.class}`;
         statusEl.innerText = status.title || '-';
 
@@ -174,6 +195,8 @@ const {{ModuleName}}List = (function () {
                 dataSrc: (json) => json.data || json,
                 headers: getAuthHeaders()
             },
+            // İhtiyaç varsa aktif et:
+            // colReorder: { columns: ':gt(1):not(:last-child)' },
             columns: [
                 { data: 'id',       name: 'control'   },   // Responsive control
                 { data: 'id',       name: 'checkbox'  },   // Checkbox
@@ -206,7 +229,7 @@ const {{ModuleName}}List = (function () {
                     // Status Badge (display HTML, filter plain text)
                     targets: -2,
                     render: (data, type) => {
-                        const status = statusObj[String(data)] || { title: L.Unknown || String(data), class: 'bg-label-primary' };
+                        const status = getStatusMap()[String(data)] || { title: L.Unknown || String(data), class: 'bg-label-primary' };
                         if (type === 'display') return `<span class="badge ${status.class}" text-capitalized>${status.title}</span>`;
                         return status.title || '';
                     }
@@ -252,6 +275,11 @@ const {{ModuleName}}List = (function () {
         }));
 
         dt.on('column-visibility.dt', function () {
+            const filterCount = 0;
+            window.DtDefaults.updateVisualState(dt, filterCount);
+        });
+
+        dt.on('column-reorder.dt columns-reordered.dt', function () {
             const filterCount = 0;
             window.DtDefaults.updateVisualState(dt, filterCount);
         });
@@ -439,6 +467,15 @@ const {{ModuleName}}List = (function () {
 
 document.addEventListener('DOMContentLoaded', () => {{ModuleName}}List.init());
 ```
+
+## L10n Loader Contract
+
+- `Index.cshtml` yükleme sırası zorunludur:
+  1. `<partial name="_IndexL10n" />`
+  2. `index.l10n.js`
+  3. `index.js`
+- `index.l10n.js` sadece payload parse + `window.L10n` merge yapar; DataTable init veya event binding içermez.
+- `index.js` defensive olarak `syncL10n()` benzeri bir guard çağırabilir.
 
 ---
 

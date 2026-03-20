@@ -13,7 +13,7 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
 - **Frontend**: ASP.NET Core MVC (Diten.Web), Sneat Bootstrap 5.3.3
 - **Kimlik & Yetki**: Custom Auth Service (JWT + BCrypt + Dynamic RBAC)
 - **Tenancy**: Tek Veritabanı, Çoklu Kiracı (TenantId Filtreli - Guid)
-- **Localization**: 8 Dil (TR, EN, RU, ES, KA, KK, UK, UZ) - Resx + JS Bridge (window.L10n)
+- **Localization**: 8 Dil (TR, EN, RU, ES, KA, KK, UK, UZ) - Resx + JS Bridge (`_IndexL10n.cshtml` JSON payload + `index.l10n.js` -> `window.L10n`)
 
 ---
 
@@ -109,7 +109,7 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
 | 3 | **frontend-ui-ux** | Razor View, Sneat PRO, DataTables v2, 20+ Anayasa kuralı |
 | 4 | **security-agent** | Zero Trust, JWT, RBAC, HasPermission, Tenant Shield |
 | 5 | **data-agent** | MongoDB Index, Collection tasarımı, Idempotent Seed Data |
-| 6 | **l10n-agent** | 8 dil .resx senkronizasyonu, window.L10n bridge |
+| 6 | **l10n-agent** | 8 dil .resx senkronizasyonu, `window.L10n` bridge (partial + loader JS) |
 | 7 | **testing-agent** | xUnit, Moq, FluentAssertions, Tenant isolation testleri |
 | 8 | **integration-agent** | Ocelot Gateway routing, JWT pass-through, servis iletişimi |
 | 9 | **debugger** | Katmanlı izolasyon (FE→GW→Auth→Service→DB), 4 fazlı araştırma |
@@ -192,10 +192,12 @@ Ajanların uyması gereken zorunlu dosyalar (`.antigravity/rules/`):
 - **details-page-rules.md**: Detay sayfası UI standardı (Offcanvas vs Full Page)
 
 ### Operasyonel
-- **dev-runbook.md**: 4-Tab yerel geliştirme düzeni (Auth → MDM → GW → FE)
+- **dev-runbook.md**: 5-servis yerel geliştirme düzeni (Auth → MDM → Platform → GW → FE)
 - **logging-observability.md**: Structured logging, CorrelationId, PII koruması
 - **mongo-indexing.md**: Tenant-First compound index, ESR kuralı
 - **git-backup-policy.md**: Branch naming convention (backup/YYYYMMDD-HHmm_ozet)
+- **Git backup standardı:** Varsayılan güvenli yedek yöntemi `.git-backups/` altında `bundle + working-tree.patch + untracked.tar.gz` artefact üçlüsüdür. Branch/commit tabanlı backup yalnız kullanıcı bunu açıkça istediğinde zorunlu hale gelir.
+- **Frontend CSS standardı:** Reusable DataTable toolbar / inline filter / Select2 stilleri page-level View içine gömülmez; merkezi olarak `frontend/Diten.Web/wwwroot/assets/css/backbone-custom.css` içinde tutulur.
 
 ---
 

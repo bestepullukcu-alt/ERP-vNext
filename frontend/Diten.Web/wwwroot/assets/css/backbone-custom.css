@@ -247,22 +247,190 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     }
 }
 
-/* MOD-0031: Inline Filter Host — spacing + Select2 chip focus/open cleanup */
+/* MOD-0031: Inline Filter Host — spacing + Select2 styling */
 #inlineFilterHost {
     margin-top: .25rem;
 }
 
-/* Remove active shadow inside #inlineFilterHost */
+#inlineFilterHost .dt-filter-bar {
+    row-gap: .5rem;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-container {
+    inline-size: auto !important;
+    width: auto !important;
+    min-inline-size: 180px;
+    min-width: 180px;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection {
+    inline-size: auto !important;
+    width: auto !important;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single {
+    height: calc(2rem + 2px);
+    border-radius: var(--bs-border-radius-sm);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    background-color: var(--bs-body-bg);
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__rendered {
+    line-height: calc(2rem);
+    padding-left: .875rem;
+    padding-right: 2.5rem;
+    font-size: .8125rem;
+    font-weight: 400;
+    color: var(--bs-body-color);
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__arrow {
+    height: calc(2rem + 2px);
+    right: .625rem;
+}
+
+#inlineFilterHost .dt-filter-trigger-badge {
+    font-size: .75rem;
+    line-height: 1;
+    padding: .2rem .4rem;
+    position: relative;
+    top: -1px;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-container--default.select2-container--open .select2-selection--single,
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-container--default .select2-selection--single:focus,
 #inlineFilterHost .select2-container--default.select2-container--focus .select2-selection,
 #inlineFilterHost .select2-container--default.select2-container--open .select2-selection {
     border-width: 1px !important;
-    box-shadow: none !important;
+    border-color: rgba(var(--bs-primary-rgb), .4);
+    box-shadow: 0 0 0 .15rem rgba(var(--bs-primary-rgb), .16) !important;
+    background-color: var(--bs-body-bg);
+}
+
+#inlineFilterHost .select2-dropdown {
+    border-radius: .5rem;
+    overflow: hidden;
+}
+
+#inlineFilterHost .select2-search--dropdown {
+    padding: .5rem;
+}
+
+#inlineFilterHost .select2-search--dropdown .select2-search__field {
+    height: 34px;
+    padding: .375rem .75rem;
+    border-radius: .5rem;
+}
+
+#inlineFilterHost .select2-results__option {
+    padding: .5rem .75rem;
+}
+
+#inlineFilterHost .btn:hover,
+#inlineFilterHost .btn:focus,
+#inlineFilterHost .btn:active {
+    transform: none !important;
+}
+
+@media (max-width: 575.98px) {
+    #inlineFilterHost .dt-filter-bar .ms-auto {
+        width: 100%;
+        margin-left: 0 !important;
+        justify-content: space-between;
+    }
+
+    #inlineFilterHost .dt-filter-bar .ms-auto .btn {
+        flex: 1 1 0;
+    }
 }
 
 /* Inline filter Select2 dropdown is rendered in body (no clipping / no scroll-width growth) */
 .dt-inline-filter-dropdown {
     z-index: 2000;
     max-width: calc(100vw - 1rem);
+}
+
+/* Shared DataTable toolbar stability + responsive wrapping */
+.dt-layout-end {
+    align-items: center !important;
+}
+
+.dt-layout-end .btn:hover,
+.dt-layout-end .btn:focus,
+.dt-layout-end .btn:active {
+    transform: none !important;
+}
+
+.dt-layout-end .dt-buttons {
+    display: inline-flex;
+    align-items: center;
+    overflow: visible !important;
+}
+
+/* Keep button badges visible above adjacent grouped buttons */
+.dt-layout-end .dt-buttons > .btn {
+    z-index: 1;
+}
+
+.dt-layout-end .dt-buttons > .dt-save-filter-btn {
+    z-index: 2;
+}
+
+.dt-layout-end .dt-buttons > .dt-filter-btn {
+    z-index: 3;
+}
+
+.dt-layout-end .dt-buttons > .dt-colvis-btn {
+    z-index: 4;
+}
+
+.dt-save-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.dt-button-collection {
+    z-index: 2000;
+}
+
+.dt-colvis-btn .badge,
+.dt-filter-btn .badge {
+    z-index: 10;
+    pointer-events: none;
+}
+
+@media (max-width: 991.98px) {
+    .dt-layout-end {
+        row-gap: .5rem;
+        column-gap: .75rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .dt-layout-end .dt-search {
+        flex: 1 1 100%;
+        order: 1;
+    }
+
+    .dt-layout-end .dt-buttons-actions {
+        order: 2;
+    }
+
+    .dt-layout-end .dt-buttons-primary {
+        order: 3;
+        flex: 1 1 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .dt-layout-end .dt-buttons-primary .add-new {
+        white-space: nowrap;
+    }
 }
 
 /* ================================================

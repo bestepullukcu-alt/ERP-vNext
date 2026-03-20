@@ -11,3 +11,6 @@
 node_modules/
 dist/
 wwwroot/lib/
+services.log
+.git-backups/
+tmp/

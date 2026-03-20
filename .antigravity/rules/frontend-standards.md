@@ -21,8 +21,9 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - `site.css` dosyası `_LayoutBackbone`'da yüklenmez; sadece modern `backbone-custom.css` kullanılır.
 
 ### CSS-003: No Focus Override
-- `.btn:focus`, `.form-control:focus` gibi focus ring override'ları yapılmaz.
+- Sayfa bazlı `.btn:focus`, `.form-control:focus` gibi focus ring override'ları yapılmaz.
 - Sneat'in merkezi focus tanımları geçerlidir.
+- **İstisna:** `#inlineFilterHost` altındaki Select2 trigger'ları için, vendor shadow yerine `backbone-custom.css` içinde tanımlanan standart focus görünümü kullanılabilir. Bu override sayfa içinde tekrar yazılamaz.
 
 ### CSS-004: DataTable Cellfit Columns
 - Bulk checkbox ve Actions gibi sabit genişlikli kolonlar ColVis ile diğer kolonlar gizlendiğinde **genişlememeli**dir.
@@ -37,7 +38,10 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - **Export Dropdown UI Notu (XS):** Toolbar’da `.btn-icon` (kare ikon buton) ile `extend:'collection'` Export butonu aynı grupta kullanıldığında, Export görsel olarak “üstten-alttan küçük” kalabilir. Bu durumda Export butonuna `dt-export-collection-btn` class’ı verilir ve responsive toolbar CSS’i Export’u ikon buton yüksekliğiyle hizalar.
 - **Badge Clipping (Mobile/Tablet):** Filter/ColVis badge’leri `top-0 end-0 translate-middle` ile butonun dışına taşar. Toolbar, `.card-datatable.table-responsive` (overflow) içinde olduğundan **z-index ile çözülemez**; çözüm `backbone-custom.css (MOD-0022)` içinde DataTable top row için **ek `padding-top` “safe area”** bırakmaktır. Bu kural kaldırılmaz.
 - **Select2 Shadow (Inline Filter):** `#inlineFilterHost` içindeki Select2 focus/open durumunda vendor `box-shadow` (active ring) kullanılmaz; `backbone-custom.css` içinde shadow kapatılır. Amaç “chip” görünümünde temiz kenar estetiğidir.
+- **Select2 Form-Select Estetiği (Inline Filter):** Inline filter Select2 tekli seçim yüzeyi, Sneat `form-select form-select-sm` estetiğine yakın yükseklik/border/padding ile `backbone-custom.css` içinde standardize edilir.
+- **Select2 Form-Select Overflow Bug (MOD-0031):** `selectionCssClass: 'form-select form-select-sm'` ile başlatılan Select2, Bootstrap'ın `.form-select` kuralı üzerinden `.select2-selection` elementine `inline-size: 100% !important` uygular. Bu, select açıldığında sayfada yatay/dikey scroll ve sağ/alt gereksiz boşluk yaratır. Çözüm: `backbone-custom.css` içinde `#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection { inline-size: auto !important; width: auto !important; }` override'ı zorunludur. Bu kural kaldırılamaz.
 - **Select2 Border Width (Inline Filter):** Vendor Select2 focus/open durumunda `border-width: 2px` yapabilir; inline filter chip’lerinde layout shift/scroll tetiklemesin diye `border-width: 1px` sabitlenir (kural `backbone-custom.css`).
+- **Shared CSS Placement:** `#inlineFilterHost`, `.dt-layout-end`, badge stacking, Select2 dropdown/search/result ve benzeri tekrar kullanılabilir DataTable/UI stilleri page-level `@section Styles` içinde tutulmaz; merkezi olarak `backbone-custom.css` içinde yaşar.
 
 ### CSS-006: Unobtrusive Form Validation Feedback
 - ASP.NET Core Unobtrusive Validation'ın ürettiği `.input-validation-error` sınıfı için merkezi tanımlar (`backbone-custom.css`) geliştirilmiştir.
@@ -61,8 +65,9 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - Yeni sayfa JS'leri `window` objesine yalnızca şu standart anahtarları ekleyebilir:
   - `window.L10n` (L10n bridge)
   - `window.showToast`, `window.showConfirm`
-  - `window.ApiBaseUrl`, `window.DtDefaults`
+  - `window.ApiBaseUrl`, `window.DtDefaults`, `window.personalizationClient`
 - Bunlar dışında `window.*` ataması **yasaktır**. Module pattern veya IIFE kullanılmalıdır.
+- `window.L10n` veri besleme standardı: view içindeki inline assignment listesi yerine `_IndexL10n.cshtml` JSON payload + `index.l10n.js` merge pattern'i kullanılır.
 
 ### JS-002: Module Pattern for Page Scripts
 - Her sayfa için özel hazırlanan JavaScript dosyaları (örn: `index.js`, `create.js`) **Module Pattern** yapısında olmalıdır.
@@ -122,10 +127,20 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 ### UI-003: Save View (Default View)
 - Toolbar’da `Save View` butonu bulunur fakat default **gizlidir**.
 - Görünürlük kuralı: **Applied/effective table state** ile **Saved default state** farklıysa görünür; aynıysa gizlenir. (Staged filtre seçimleri Apply edilmeden Save View’u tetiklemez.)
+- Persist hedefi localStorage değildir; shared personalization capability kullanılır:
+  - Gateway route: `/api/personalization/*`
+  - Frontend client: `window.personalizationClient`
+  - Backend owner: `Diten.Platform`
 - Save View state kapsamı:
-  - **Kaydedilenler:** filtreler + search + column visibility + sorting (varsa)
+  - **Kaydedilenler:** filtreler + search + column visibility + column order + sorting (varsa)
   - **Kaydedilmeyenler:** page number (pagination)
 - Localization: `SaveView` metni **SharedResource** üzerinden gelir ve 8 dilde eksiksiz olmalıdır.
+
+### UI-005: Column Reorder (v2)
+- Kolon sürükle-bırak sıralama gerekiyorsa DataTables `ColReorder` kullanılır; custom sortable header hack’i yazılmaz.
+- `ColReorder` sadece anlamlı data kolonlarında açılır; control/checkbox/actions kolonları reorder kapsamına alınmaz.
+- `columnOrder` Save View state’inin bir parçasıdır ve refresh sonrası restore edilmelidir.
+- `column-reorder.dt` / `columns-reordered.dt` event’leri dirty-state ve Save View görünürlüğünü güncellemelidir.
 
 ### UI-004: Global Confirmation Standards (SweetAlert2)
 - Tüm silme veya kritik işlem onayları için `window.showConfirm(key, callback, entityName)` kullanılır.
@@ -166,7 +181,7 @@ Bu bölüm yalnızca `data-dt-standard="v2"` ile işaretlenmiş DataTable sayfal
 
 **B) Persistence Kapsamı**
 - Otomatik state cache/stateSave YOK.
-- Save View ile kaydedilenler: filters + search + colVis + sorting
+- Save View ile kaydedilenler: filters + search + colVis + columnOrder + sorting
 - Kaydedilmeyenler: page number + pageLength
 
 **C) Dirty-State (Save View görünürlük)**
@@ -181,6 +196,7 @@ Bu bölüm yalnızca `data-dt-standard="v2"` ile işaretlenmiş DataTable sayfal
 - `null|undefined|''` → `''`, string: `trim()`
 - filter primitive → string normalize (`1` == `"1"`, boolean → `"true"/"false"`)
 - colVis: **index-based** `Array<boolean>` (dinamik kolon mutasyonu varsa explicit override)
+- columnOrder: `Array<number>` ve tüm kolon indekslerini bir kez içermeli
 - sorting: `Array<[index:number, dir:'asc'|'desc']>`; dir lower-case
 
 **E) Refresh / Unapplied Changes**

@@ -15,11 +15,13 @@ const LegalEntitiesList = (function () {
     const filterHostId = 'inlineFilterHost';
     const filterCollapseId = 'inlineFilterCollapse';
     const saveViewColumnIndexes = [2, 3, 4, 5, 6, 7, 8];
+    const totalColumnCount = 10;
     let saveFilterArmed = false;
     const baseOrder = [[2, 'desc']];
     let appliedFilters = { companyType: '', status: '' };
     let defaultViewRecord = null;
     let defaultViewState = null;
+    const isAuthHandledError = (error) => error?.authHandled === true || error?.code === 'auth-refresh-in-progress';
 
     const syncL10n = () => {
         const current = window.L10n;
@@ -117,6 +119,7 @@ const LegalEntitiesList = (function () {
             status: normalizeSavedString(definition.status),
             search: normalizeSavedString(definition.search),
             colVis: normalizeColumnVisibility(definition.colVis),
+            columnOrder: normalizeColumnOrder(definition.columnOrder),
             order: Array.isArray(definition.order) ? definition.order : null
         };
     };
@@ -161,6 +164,46 @@ const LegalEntitiesList = (function () {
         return Object.keys(colVis).length ? colVis : null;
     };
 
+    const normalizeColumnOrder = (columnOrder) => {
+        if (!Array.isArray(columnOrder) || columnOrder.length !== totalColumnCount) {
+            return null;
+        }
+
+        const normalized = columnOrder
+            .map((index) => Number(index))
+            .filter((index) => Number.isInteger(index) && index >= 0 && index < totalColumnCount);
+
+        if (normalized.length !== totalColumnCount) {
+            return null;
+        }
+
+        if (new Set(normalized).size !== totalColumnCount) {
+            return null;
+        }
+
+        return normalized;
+    };
+
+    const captureColumnOrder = (api) => {
+        try {
+            const order = api?.colReorder?.order?.();
+            return normalizeColumnOrder(order);
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const applyColumnOrder = (api, columnOrder) => {
+        const normalized = normalizeColumnOrder(columnOrder);
+        if (!normalized || typeof api?.colReorder?.order !== 'function') {
+            return;
+        }
+
+        try {
+            api.colReorder.order(normalized, true);
+        } catch (e) { }
+    };
+
     const applyColumnVisibility = (api, colVis) => {
         const normalized = normalizeColumnVisibility(colVis);
         if (!normalized) return;
@@ -201,6 +244,13 @@ const LegalEntitiesList = (function () {
         $('#FilterTransaction').val(status).trigger('change');
     };
 
+    const areColumnOrdersEqual = (left, right) => {
+        const normalizedLeft = normalizeColumnOrder(left) || Array.from({ length: totalColumnCount }, (_, index) => index);
+        const normalizedRight = normalizeColumnOrder(right) || Array.from({ length: totalColumnCount }, (_, index) => index);
+
+        return normalizedLeft.every((value, index) => value === normalizedRight[index]);
+    };
+
     const syncPendingTableUiState = (api) => {
         const inputSearch = getSearchInputValue(api);
         const appliedSearch = typeof api?.search === 'function' ? (api.search() || '') : '';
@@ -214,7 +264,11 @@ const LegalEntitiesList = (function () {
         const state = view || {};
         const fallbackOrder = Array.isArray(options?.fallbackOrder) ? options.fallbackOrder : baseOrder;
         const fallbackColVis = options?.resetColumns === true ? createDefaultColumnVisibility() : null;
+        const fallbackColumnOrder = options?.resetColumnOrder === true
+            ? Array.from({ length: totalColumnCount }, (_, index) => index)
+            : null;
         const colVisToApply = state.colVis || fallbackColVis;
+        const columnOrderToApply = state.columnOrder || fallbackColumnOrder;
 
         if (typeof state.search === 'string') {
             try { api.search(state.search); } catch (e) { }
@@ -222,6 +276,10 @@ const LegalEntitiesList = (function () {
         } else if (options?.clearSearch === true) {
             try { api.search(''); } catch (e) { }
             syncSearchInput(api, '');
+        }
+
+        if (columnOrderToApply) {
+            applyColumnOrder(api, columnOrderToApply);
         }
 
         if (colVisToApply) {
@@ -289,6 +347,10 @@ const LegalEntitiesList = (function () {
             defaultViewState = defaultViewRecord ? mapSavedViewToState(defaultViewRecord) : null;
             return defaultViewState;
         } catch (error) {
+            if (isAuthHandledError(error)) {
+                return null;
+            }
+
             console.error('[LegalEntities SaveView] Failed to load saved views', error);
             defaultViewRecord = null;
             defaultViewState = null;
@@ -344,7 +406,14 @@ const LegalEntitiesList = (function () {
             order = null;
         }
 
-        return { companyType: companyType, status: status, search: search, colVis: colVis, order: order };
+        return {
+            companyType: companyType,
+            status: status,
+            search: search,
+            colVis: colVis,
+            columnOrder: captureColumnOrder(api),
+            order: order
+        };
     };
 
     const setSaveFilterVisible = (visible) => {
@@ -365,10 +434,12 @@ const LegalEntitiesList = (function () {
             status: '',
             search: '',
             colVis: createDefaultColumnVisibility(),
+            columnOrder: Array.from({ length: totalColumnCount }, (_, index) => index),
             order: baseOrder
         };
 
         const colVisEqual = areColumnVisibilitiesEqual(ref.colVis, cur.colVis);
+        const columnOrderEqual = areColumnOrdersEqual(ref.columnOrder, cur.columnOrder);
 
         const refOrder = Array.isArray(ref.order) ? ref.order : null;
         const curOrder = Array.isArray(cur.order) ? cur.order : null;
@@ -384,6 +455,7 @@ const LegalEntitiesList = (function () {
             return [cur.companyType, cur.status].filter(Boolean).length > 0 ||
                 !!cur.search ||
                 curHasHiddenCols ||
+                !columnOrderEqual ||
                 !orderEqual;
         }
 
@@ -391,6 +463,7 @@ const LegalEntitiesList = (function () {
             (String(cur.status || '') !== String(ref.status || '')) ||
             (String(cur.search || '') !== String(ref.search || '')) ||
             !colVisEqual ||
+            !columnOrderEqual ||
             !orderEqual;
     };
 
@@ -572,6 +645,10 @@ const LegalEntitiesList = (function () {
                         setSaveFilterVisible(false);
                         window.showToast?.('RecordSaved', 'success');
                     } catch (error) {
+                        if (isAuthHandledError(error)) {
+                            return;
+                        }
+
                         console.error('[LegalEntities SaveView] Failed to save default view', error);
                         window.showToast?.('ErrorOccurred', 'error');
                     }
@@ -582,6 +659,9 @@ const LegalEntitiesList = (function () {
         dt = new DataTable(dtTableEl, window.DtDefaults.create({
             // Disable DataTables stateSave (2h cache). Persistence is handled only via Save Filter default view.
             stateSave: false,
+            colReorder: {
+                columns: ':gt(1):not(:last-child)'
+            },
             ajax: {
                 url: apiUrl + '/api/legal-entities',
                 type: 'GET',
@@ -674,6 +754,12 @@ const LegalEntitiesList = (function () {
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
 
+        dt.on('columns-reordered.dt column-reorder.dt', function () {
+            const count = getAppliedFilterCount(dt);
+            window.DtDefaults.updateVisualState(dt, count);
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+        });
+
         // Global search changes should also enable Save Filter
         dt.on('search.dt', function () {
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
@@ -744,6 +830,7 @@ const LegalEntitiesList = (function () {
                     dropdownParent: $dropdownParent,
                     minimumResultsForSearch: 0,
                     dropdownCssClass: 'dt-inline-filter-dropdown',
+                    selectionCssClass: 'form-select form-select-sm',
                     templateSelection: (data) => renderFilterTrigger(L.CompanyType, !!(data && data.id)),
                     width: '100%'
                 });
@@ -757,6 +844,7 @@ const LegalEntitiesList = (function () {
                     dropdownParent: $dropdownParent,
                     minimumResultsForSearch: 0,
                     dropdownCssClass: 'dt-inline-filter-dropdown',
+                    selectionCssClass: 'form-select form-select-sm',
                     templateSelection: (data) => renderFilterTrigger((L.Status || L.SelectStatus), !!(data && data.id)),
                     width: '100%'
                 });
@@ -770,7 +858,7 @@ const LegalEntitiesList = (function () {
             const selectId = 'UserPlan';
             const select = document.createElement('select');
             select.id = selectId;
-            select.className = 'filter-select text-capitalize';
+            select.className = 'filter-select form-select form-select-sm text-capitalize';
             select.innerHTML = `<option value="">${L.CompanyType}</option>`;
             companyTypeContainer.appendChild(select);
 
@@ -792,7 +880,7 @@ const LegalEntitiesList = (function () {
             const selectId = 'FilterTransaction';
             const select = document.createElement('select');
             select.id = selectId;
-            select.className = 'filter-select text-capitalize';
+            select.className = 'filter-select form-select form-select-sm text-capitalize';
             select.innerHTML = `<option value="">${L.SelectStatus}</option>`;
             statusContainer.appendChild(select);
 
@@ -863,12 +951,16 @@ const LegalEntitiesList = (function () {
                     applySavedTableState(api, { companyType: '', status: '', search: '' }, {
                         fallbackOrder: baseOrder,
                         clearSearch: true,
-                        resetColumns: true
+                        resetColumns: true,
+                        resetColumnOrder: true
                     });
                 };
 
                 const restoreDefaultView = (def) => {
-                    applySavedTableState(api, def, { fallbackOrder: baseOrder });
+                    applySavedTableState(api, def, {
+                        fallbackOrder: baseOrder,
+                        resetColumnOrder: !def?.columnOrder
+                    });
                 };
 
                 const def = defaultViewState;

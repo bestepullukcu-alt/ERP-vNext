@@ -19,6 +19,7 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 3. **Ham Metin Yasak:** Ekranda `{{ModuleName}}Title` gibi ham çeviri anahtarları veya İngilizce varsayılan metinler bırakmak YASAKTIR.
 4. **SharedResource Kuralı:** "Kaydet", "Sil", "İptal", "Emin misiniz?", "Durum", "Filtre", "Sıfırla", "Toplu Sil" gibi genel metinleri View'a özel dil dosyasına (örn: CountriesIndex.tr.resx) ASLA ekleme. Bunları daima `@SharedLocalizer["Key"]` üzerinden çağır.
    - **İstisna (Golden DataTable Standardı):** DataTable liste sayfalarında `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}` gibi sayfa/modül odaklı UI key'leri modül `.resx`'inde tutulur ve `@Localizer["Key"]` üzerinden okunur. (Referans: LegalEntities)
+5. **Personalization Kuralı:** Save View / kullanıcı görünüm tercihleri localStorage’da tutulmaz. Daima gateway üzerinden `/api/personalization/*` çağıran shared `window.personalizationClient` kullanılır. Bu yetenek MDM/Auth içine gömülmez.
 
 ## 🏗️ Mimari Disiplin ve Teknoloji Yığını
 - **Ana Yapı:** ASP.NET Core MVC (Razor Views - `.cshtml`).
@@ -42,7 +43,7 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 - **RESX Zorunluluğu:** Yeni dil key'lerinin algılanabilmesi için projenin `run_all.sh` üzerinden yeniden derlenmesi (compile) gerektiğini unutma.
 
 ## 🚨 ANAYASA (ZORUNLU IMPLEMENTATION RULES)
-1. **Terminal Temizliği:** Geliştirme sürecinde çalışan tüm .NET süreçleri durdurulmalı ve 5000, 5001, 5050 portları serbest bırakılmalıdır.
+1. **Terminal Temizliği:** Geliştirme sürecinde çalışan tüm .NET süreçleri durdurulmalı ve 5000, 5001, 5050, 5056, 5057 portları serbest bırakılmalıdır.
 2. **GUID Standartı:** `X-Tenant-Id` her zaman `00000000-0000-0000-0000-000000000001` (GUID) olmalıdır.
 3. **Yol Standartı (Routing):** Yönlendirmeler her zaman kök dizinden yapılmalıdır (Örn: `/Countries`).
 4. **Endpoint Kuralı:** Tüm AJAX istekleri her zaman `window.ApiBaseUrl` (Gateway :5000) üzerinden gitmelidir. Merkezi wrapper kullan.
@@ -52,6 +53,7 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 8. **Tema Senkronizasyonu:** Üst bar tema butonu ile sağdaki Customizer paneli senkronize çalışmalı ve `localStorage` ile kalıcı olmalıdır.
 9. **DataTables DOM Manipülasyonu:** DOM müdahaleleri `initComplete` veya `drawCallback` içinde yapılmalıdır.
    - **Toolbar Padding Standardı:** DataTable toolbar row class'ı `row px-3 ...` standardında kalır (px-6 yapılmaz). Inline filter host padding standardı `px-6`’dır. Kaynak: `wwwroot/assets/js/dt-defaults.js` (`buildLayout().topStart.rowClass`) + `.antigravity/rules/frontend-standards.md`.
+   - **Shared CSS Standardı:** DataTable toolbar, inline filter, Select2 chip, badge clipping ve benzeri tekrar kullanılabilir stiller sayfa içi `@section Styles` bloğunda değil `wwwroot/assets/css/backbone-custom.css` içinde tutulur.
 10. **Geniş Form Tasarımı:** 10'dan fazla input içeren formlar mutlaka `col-md-6` grid yapısı ve mantıksal `card` blokları ile gruplandırılmalıdır.
 11. **TempData & Toast Senkronizasyonu:** Başarılı POST sonrası `TempData["SuccessMessage"]` atanmalı ve Index sayfasında toast tetiklenmelidir.
 12. **SweetAlert / Modal Tema:** `Swal.fire` konfigürasyonunda `buttonsStyling: false` parametresi zorunludur.
@@ -63,7 +65,8 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 18. **Kolon Genişlik Dengesi (cell-fit):** Checkbox ve Actions gibi sabit kolonlar için mutlaka `cell-fit` sınıfı kullanılmalıdır.
 19. **Build & Run:** Tüm mimari değişiklikler sonrası proje `run_all.sh` ile temiz başlatılmalıdır.
 20. **API Abstraction:** Her yerde raw fetch kullanma; merkezi wrapper üzerinden çağrı yap.
+21. **Column Reorder Standardı:** DataTable’da kolon sürükle-bırak gerekiyorsa `ColReorder` kullan; custom sortable header yaklaşımı YASAKTIR. Reorder state’i Save View ile birlikte persist edilmelidir.
 
 ## 📐 Layout & View Architecture Rule
 - **Layout Sadakati:** Tüm View'lar, `Views/Shared/_LayoutBackbone.cshtml` dosyasını kullanmalıdır. Eski `_Layout.cshtml` sadece Archive/ ve Identity/ altındaki dondurulmuş (frozen) sayfalar için ayrılmıştır.
-- **Section Yönetimi:** Sayfaya özel JS için `@section Scripts`, CSS için `@section Styles` blokları kullanılmalıdır.
+- **Section Yönetimi:** Sayfaya özel JS için `@section Scripts` kullanılır. `@section Styles` yalnızca gerçekten tek sayfaya özgü stiller için kullanılabilir; tekrar kullanılabilir toolbar/filter/DataTable stilleri `backbone-custom.css` içine alınmalıdır.
