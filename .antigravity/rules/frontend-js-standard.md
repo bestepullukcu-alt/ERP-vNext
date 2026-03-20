@@ -12,9 +12,14 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - **401/Auth Refresh Guard:** `window.personalizationClient` içindeki istekler `401 Unauthorized` aldığında merkezi unauthorized akışını kullanmalıdır (`window.DtDefaults.handleUnauthorized()` veya proje eşdeğeri). Expired JWT senaryosu generic `ErrorOccurred` toast'ı ile gizlenmez; kullanıcı refresh/login akışına taşınır.
 5. **AJAX Gateway:** Tüm istekler `window.ApiBaseUrl` (`/api/...`) üzerinden gider. Servis bazlı URL (`/mdm/api/v1/...`) kullanılmaz.
 6. **L10n Bridge:** Metinler JS içinde hardcoded yazılmaz; `window.L10n` objesinden okunur. `window.L10n` payload'ı `_IndexL10n.cshtml` + `index.l10n.js` deseniyle yüklenir; `Index.cshtml` içine uzun assignment bloğu gömülmez.
-7. **Silme:** Tek satır silme `window.showConfirm()`, toplu silme `Swal.fire` ile yapılır. Direkt `window.showConfirm` bypass edilemez.
-8. **Toast:** Başarı/hata bildirimleri her zaman `window.showToast('Key', 'success'|'error')` ile verilir.
+7. **Silme:** Tek satır silme ve toplu silme aynı görsel dilde confirm açmalı ve aynı success lifecycle'ını kullanmalıdır.
+   - Tek satır silmede `window.showConfirm()` veya onunla aynı görsel standardı üreten ortak helper kullanılabilir.
+   - Başarılı silme sonrası `row.remove().draw()` ile lokal DOM manipülasyonu yapıp hemen toast basmak YASAKTIR.
+   - Doğru pattern: başarılı DELETE → `clearSelection()` → `dt.ajax.reload(callback, false)` → callback içinde success toast.
+   - `false` ile mevcut paging korunur.
+8. **Toast:** Başarı/hata bildirimleri her zaman `window.showToast('KeyOrMessage', 'success'|'error'|'warning'|'info')` ile verilir.
    - İstisna: auth refresh/login'e devredilmiş `401` akışında kullanıcıya ek olarak generic hata toast'ı basılmaz.
+   - Import gibi henüz uygulanmamış ama hata olmayan aksiyonlar `warning` veya `info` ile gösterilir; hata toast'ı kullanılmaz.
 9. **Save View (v2) — Applied State:** Save View görünürlüğü ve kaydedilen state, staged UI seçimlerine göre değil **applied/effective** tablo state’ine göre hesaplanmalıdır:
    - Filter değişimi tek başına (Apply basılmadan) Save View’u göstermemelidir.
    - Uygulama paterni: `appliedFilters` (veya benzeri) state’ini sadece Apply/Reset’te güncelle; `getCurrentView()` filtre değerlerini buradan okusun.
@@ -25,7 +30,12 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - `column-reorder.dt` / `columns-reordered.dt` event’leri dirty-state hesabına dahil edilir.
 12. **Inline Filter Select2 Styling:** `#inlineFilterHost` içindeki Select2 single-select filtrelerinde `selectionCssClass: 'form-select form-select-sm'` kullanılır. Görsel standardın CSS karşılığı `backbone-custom.css` içindedir; Index.cshtml içine tekrar yazılmaz.
     > ⚠️ **Overflow uyarısı:** `selectionCssClass: 'form-select form-select-sm'` Bootstrap'ın `.form-select` sınıfı üzerinden `.select2-selection` elementine `inline-size: 100% !important` uygular. Select açıldığında sayfa yatay/dikey scroll yapabilir. `backbone-custom.css` içindeki `#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection { inline-size: auto !important; }` override'ı bu bug'ı önler ve kaldırılamaz (MOD-0031).
-13. **Shared CSS Placement:** Toolbar, inline filter, badge stacking ve Select2 dropdown stilleri tekrar kullanılabilir ise `backbone-custom.css` içinde tutulur; `@section Styles` yalnızca gerçekten modüle özgü istisnalar için kullanılır.
+13. **Inline Filter Naming:** Semantik filter container class'ları kullanılır.
+   - Company type filtresi: `.filter-company-type`
+   - Status filtresi: `.filter-status`
+   - `user_plan` ve `user_status` yeni sayfalarda kullanılmaz.
+   - Geçiş/migration döneminde mevcut sayfalar için JS tarafında fallback desteklenebilir; yeni şablon üretiminde bu legacy isimler referans alınmaz.
+14. **Shared CSS Placement:** Toolbar, inline filter, badge stacking ve Select2 dropdown stilleri tekrar kullanılabilir ise `backbone-custom.css` içinde tutulur; `@section Styles` yalnızca gerçekten modüle özgü istisnalar için kullanılır.
 
 ---
 
@@ -175,7 +185,7 @@ const {{ModuleName}}List = (function () {
                 text: '<i class="icon-base bx bx-import icon-sm"></i>',
                 className: 'btn btn-icon btn-label-secondary',
                 attr: { title: L.Import, 'data-bs-toggle': 'tooltip' },
-                action: function () { window.showToast?.(L.ComingSoon, 'info'); }
+                action: function () { window.showToast?.(L.ComingSoon, 'warning'); }
             },
             filterBtn: {
                 text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
@@ -356,6 +366,49 @@ const {{ModuleName}}List = (function () {
         updateBulkBar();
     };
 
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>\"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+
+    const openDeleteDialog = ({ confirmMessage, entityName, confirmButtonText }) => {
+        const html = entityName
+            ? `<div class="mb-2">${L.ConfirmAction || ''}</div><div class="badge bg-label-primary fs-6 mt-1 py-2 px-3">${escapeHtml(entityName)}</div>`
+            : `<div class="mb-2">${confirmMessage || ''}</div>`;
+
+        return Swal.fire({
+            title: L.AreYouSure,
+            html: html,
+            iconHtml: '<div class="swal-icon-circle"><i class="bx bx-trash"></i></div>',
+            showCancelButton: true,
+            confirmButtonText: confirmButtonText || L.BulkDelete,
+            cancelButtonText: L.Cancel,
+            width: '400px',
+            padding: '2.5rem 1.5rem 2rem',
+            customClass: {
+                popup: 'rounded-4 shadow-lg',
+                title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
+                htmlContainer: 'text-muted mb-3 d-block w-100 text-center',
+                actions: 'd-flex justify-content-center mt-4 w-100',
+                confirmButton: 'btn btn-danger waves-effect waves-light mx-2',
+                cancelButton: 'btn btn-label-secondary waves-effect mx-2',
+                icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'
+            },
+            buttonsStyling: false,
+            reverseButtons: true
+        }).then(result => result.isConfirmed);
+    };
+
+    const reloadTableAndToastSuccess = (message) => {
+        clearSelection();
+        dt.ajax.reload(() => {
+            window.showToast?.(message, 'success');
+        }, false);
+    };
+
     // ── Event Handlers ─────────────────────────────────────────────────────
 
     const handleEvents = () => {
@@ -367,22 +420,25 @@ const {{ModuleName}}List = (function () {
             if (deleteBtn) {
                 let tr = deleteBtn.closest('tr');
                 if (tr.classList.contains('child')) tr = tr.previousElementSibling;
-                const row = dt.row(tr);
-                const data = row.data();
+                const data = dt.row(tr).data();
 
-                window.showConfirm?.('DeleteConfirmation', () => {
+                openDeleteDialog({
+                    entityName: data.name || data.title,
+                    confirmButtonText: L.DeleteConfirmationYesBtn || L.BulkDelete
+                }).then(isConfirmed => {
+                    if (!isConfirmed) return;
+
                     fetch(`${apiUrl}/api/{{ModuleNameLower}}/${data.id}`, {
                         method: 'DELETE',
                         headers: getAuthHeaders()
                     }).then(res => {
                         if (res.ok) {
-                            row.remove().draw();
-                            window.showToast?.('RecordDeleted', 'success');
+                            reloadTableAndToastSuccess('RecordDeleted');
                         } else {
                             window.showToast?.('ErrorOccurred', 'error');
                         }
                     }).catch(() => window.showToast?.('ErrorOccurred', 'error'));
-                }, data.name || data.title);
+                });
             }
 
             const quickViewBtn = e.target.closest('.js-quick-view');
@@ -418,28 +474,11 @@ const {{ModuleName}}List = (function () {
             if (!ids.length) return;
 
             const msg = (L.BulkDeleteConfirm || '').replace('{0}', ids.length);
-            Swal.fire({
-                title: L.AreYouSure,
-                html: `<div class="mb-2">${msg}</div>`,
-                iconHtml: '<div class="swal-icon-circle"><i class="bx bx-trash"></i></div>',
-                showCancelButton: true,
-                confirmButtonText: L.BulkDelete,
-                cancelButtonText: L.Cancel,
-                width: '400px',
-                padding: '2.5rem 1.5rem 2rem',
-                customClass: {
-                    popup: 'rounded-4 shadow-lg',
-                    title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
-                    htmlContainer: 'text-muted mb-3 d-block w-100 text-center',
-                    actions: 'd-flex justify-content-center mt-4 w-100',
-                    confirmButton: 'btn btn-danger waves-effect waves-light mx-2',
-                    cancelButton: 'btn btn-label-secondary waves-effect mx-2',
-                    icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'
-                },
-                buttonsStyling: false,
-                reverseButtons: true
-            }).then(result => {
-                if (!result.isConfirmed) return;
+            openDeleteDialog({
+                confirmMessage: msg,
+                confirmButtonText: L.BulkDelete
+            }).then(isConfirmed => {
+                if (!isConfirmed) return;
                 fetch(`${apiUrl}/api/{{ModuleNameLower}}/bulk`, {
                     method: 'DELETE',
                     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
@@ -448,12 +487,9 @@ const {{ModuleName}}List = (function () {
                     if (res.ok) return res.json();
                     throw new Error('Bulk delete failed');
                 }).then(data => {
-                    window.showToast?.(
-                        (L.BulkDeleteSuccess || '').replace('{0}', data.deletedCount),
-                        'success'
+                    reloadTableAndToastSuccess(
+                        (L.BulkDeleteSuccess || '').replace('{0}', data.deletedCount)
                     );
-                    clearSelection();
-                    dt.ajax.reload();
                 }).catch(() => window.showToast?.('ErrorOccurred', 'error'));
             });
         });
@@ -485,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {{ModuleName}}List.init());
 |----------|----------|
 | `$(...).DataTable({...})` | `new DataTable(el, DtDefaults.create({...}))` |
 | `layout: { topEnd: { buttons: [...] } }` elle tanımlama | `DtDefaults.exportButtons(text, attr, extras, options)` |
-| `Swal.fire(...)` tek satır sil | `window.showConfirm('Key', callback, entityName)` |
-| `toastr.success(...)` / `toastr.error(...)` | `window.showToast('Key', 'success'\|'error')` |
+| `row.remove().draw(); showToast('RecordDeleted', 'success')` | `dt.ajax.reload(() => showToast('RecordDeleted', 'success'), false)` |
+| `toastr.success(...)` / `toastr.error(...)` | `window.showToast('KeyOrMessage', 'success'\|'error'\|'warning'\|'info')` |
 | `url: window.ApiBaseUrl + '/mdm/api/v1/...'` | `url: apiUrl + '/api/{{ModuleNameLower}}'` |
 | `$.ajax(...)` CRUD | `fetch(...)` ile native async |

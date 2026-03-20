@@ -19,8 +19,9 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **Bulk Action:** `getSelectedIds()`, `updateBulkBar()`, `clearSelection()` fonksiyonları implement edilmiş mi?
 - [ ] **Header Checkbox Sync:** `dt-checkboxes-select-all` değişince tüm satır checkbox'ları ve bar güncelleniyor mu? `indeterminate` state var mı?
 - [ ] **Tek Satır Silme:** `window.showConfirm()` wrapper'ı kullanılıyor mu? Direkt `Swal.fire` ile bypass edilmiyor mu?
+- [ ] **Delete Success Lifecycle:** Tek satır silme success akışı `row.remove().draw()` yerine `dt.ajax.reload(..., false)` ile mi tamamlanıyor? Toast tablo yenilendikten sonra mı gösteriliyor?
 - [ ] **Quick View:** Inline `onclick="populateOffcanvas(...)"` yok mu? `.js-quick-view` + event delegation ile offcanvas doluyor mu?
-- [ ] **Toast:** Başarı/hata bildirimleri `window.showToast('Key', 'success'|'error')` üzerinden mi geçiyor?
+- [ ] **Toast:** Başarı/hata bildirimleri `window.showToast('KeyOrMessage', 'success'|'error'|'warning'|'info')` üzerinden mi geçiyor?
 - [ ] **API URL:** `apiUrl + '/api/{{ModuleNameLower}}'` formatında mı? `/mdm/api/v1/...` formatı yok mu?
 - [ ] **Auth Headers:** `getAuthHeaders()` tüm fetch/ajax çağrılarına ekleniyor mu?
 - [ ] **drawCallback:** `DtDefaults.updateVisualState(this.api(), filterCount)` çağrılıyor mu?
@@ -108,6 +109,9 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **Network Sağlamlığı:** `/api/{{ModuleNameLower}}` çağrısı `200` dönüyor mu? `401/500` yok mu? (`500` ise önce MongoDB 27017 ve backend logları kontrol edilmeden UI teslim edilmez.)
 - [ ] **Quick View:** "Quick View" offcanvas açılıyor ve alanlar doluyor mu?
 - [ ] **Boş Durum:** Tablo boşsa "No records found" veya eşdeğer L10n mesajı düzgün gösteriliyor mu?
+- [ ] **Import Placeholder Toast:** Import/ComingSoon aksiyonu hata gibi görünmeyen `warning` veya `info` toast ile mi gösteriliyor? Yanlışlıkla `error` hissi üretmiyor mu?
+- [ ] **Delete Toast Parity:** Tek satır delete toast'ı create success ve bulk delete success ile aynı görsel/lifecycle parity'de mi? Solda beyaz şerit, ripple artığı veya error hissi yok mu?
+- [ ] **Delete State Preservation:** Tek satır delete sonrası mevcut page/filter/search state korunuyor mu? Bulk action bar ve header checkbox stale kalmıyor mu?
 
 ### H. 🔍 Statik Guard (ZORUNLU / Opsiyonel Ayrımı)
 

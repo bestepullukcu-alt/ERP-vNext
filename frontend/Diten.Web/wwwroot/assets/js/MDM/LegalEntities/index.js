@@ -619,7 +619,7 @@ const LegalEntitiesList = (function () {
                 className: 'btn btn-icon btn-label-secondary',
                 attr: { title: L.Import, 'data-bs-toggle': 'tooltip' },
                 action: function () {
-                    window.showToast?.(L.ComingSoon, 'info');
+                    window.showToast?.(L.ComingSoon, 'warning');
                 }
             },
             filterBtn: {
@@ -853,7 +853,7 @@ const LegalEntitiesList = (function () {
         };
 
         // Company Type Filter
-        const companyTypeContainer = document.querySelector('.user_plan');
+        const companyTypeContainer = document.querySelector('.filter-company-type, .user_plan');
         if (companyTypeContainer) {
             const selectId = 'UserPlan';
             const select = document.createElement('select');
@@ -875,7 +875,7 @@ const LegalEntitiesList = (function () {
         }
 
         // Status filter (special handling for localized status values)
-        const statusContainer = document.querySelector('.user_status');
+        const statusContainer = document.querySelector('.filter-status, .user_status');
         if (statusContainer) {
             const selectId = 'FilterTransaction';
             const select = document.createElement('select');
@@ -1028,6 +1028,53 @@ const LegalEntitiesList = (function () {
         updateBulkBar();
     };
 
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+
+    const openDeleteDialog = ({ confirmMessage, entityName, confirmButtonText }) => {
+        const html = entityName
+            ? `<div class="mb-2">${L.ConfirmAction || ''}</div><div class="badge bg-label-primary fs-6 mt-1 py-2 px-3">${escapeHtml(entityName)}</div>`
+            : `<div class="mb-2">${confirmMessage || ''}</div>`;
+
+        if (typeof Swal === 'undefined') {
+            return Promise.resolve(window.confirm(L.AreYouSure || 'Are you sure?'));
+        }
+
+        return Swal.fire({
+            title: L.AreYouSure,
+            html: html,
+            iconHtml: '<div class="swal-icon-circle"><i class="bx bx-trash"></i></div>',
+            showCancelButton: true,
+            confirmButtonText: confirmButtonText || L.BulkDelete,
+            cancelButtonText: L.Cancel,
+            width: '400px',
+            padding: '2.5rem 1.5rem 2rem',
+            customClass: {
+                popup: 'rounded-4 shadow-lg',
+                title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
+                htmlContainer: 'text-muted mb-3 d-block w-100 text-center',
+                actions: 'd-flex justify-content-center mt-4 w-100',
+                confirmButton: 'btn btn-danger waves-effect waves-light mx-2',
+                cancelButton: 'btn btn-label-secondary waves-effect mx-2',
+                icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'
+            },
+            buttonsStyling: false,
+            reverseButtons: true
+        }).then((result) => result.isConfirmed);
+    };
+
+    const reloadTableAndToastSuccess = (message) => {
+        clearSelection();
+        dt.ajax.reload(() => {
+            window.showToast?.(message, 'success');
+        }, false);
+    };
+
     // =================== Event Handlers ===================
 
     /**
@@ -1042,22 +1089,25 @@ const LegalEntitiesList = (function () {
             if (deleteBtn) {
                 let tr = deleteBtn.closest('tr');
                 if (tr.classList.contains('child')) tr = tr.previousElementSibling;
-                const row = dt.row(tr);
-                const data = row.data();
+                const data = dt.row(tr).data();
 
-                window.showConfirm?.('DeleteConfirmation', () => {
+                openDeleteDialog({
+                    entityName: data.title,
+                    confirmButtonText: L.DeleteConfirmationYesBtn || L.BulkDelete
+                }).then((isConfirmed) => {
+                    if (!isConfirmed) return;
+
                     fetch(`${apiUrl}/api/legal-entities/${data.id}`, {
                         method: 'DELETE',
                         headers: getAuthHeaders()
                     })
                         .then(res => {
                             if (res.ok) {
-                                row.remove().draw();
-                                window.showToast?.('RecordDeleted', 'success');
+                                reloadTableAndToastSuccess('RecordDeleted');
                             } else window.showToast?.('ErrorOccurred', 'error');
                         })
                         .catch(() => window.showToast?.('ErrorOccurred', 'error'));
-                }, data.title);
+                });
             }
 
             const quickViewBtn = e.target.closest('.js-quick-view');
@@ -1096,28 +1146,11 @@ const LegalEntitiesList = (function () {
 
             const confirmMsg = (L.BulkDeleteConfirm || '').replace('{0}', ids.length);
 
-            Swal.fire({
-                title: L.AreYouSure,
-                html: `<div class="mb-2">${confirmMsg}</div>`,
-                iconHtml: '<div class="swal-icon-circle"><i class="bx bx-trash"></i></div>',
-                showCancelButton: true,
-                confirmButtonText: L.BulkDelete,
-                cancelButtonText: L.Cancel,
-                width: '400px',
-                padding: '2.5rem 1.5rem 2rem',
-                customClass: {
-                    popup: 'rounded-4 shadow-lg',
-                    title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
-                    htmlContainer: 'text-muted mb-3 d-block w-100 text-center',
-                    actions: 'd-flex justify-content-center mt-4 w-100',
-                    confirmButton: 'btn btn-danger waves-effect waves-light mx-2',
-                    cancelButton: 'btn btn-label-secondary waves-effect mx-2',
-                    icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'
-                },
-                buttonsStyling: false,
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
+            openDeleteDialog({
+                confirmMessage: confirmMsg,
+                confirmButtonText: L.BulkDelete
+            }).then((isConfirmed) => {
+                if (isConfirmed) {
                     fetch(`${apiUrl}/api/legal-entities/bulk`, {
                         method: 'DELETE',
                         headers: {
@@ -1133,9 +1166,7 @@ const LegalEntitiesList = (function () {
                             throw new Error('Bulk delete failed');
                         })
                         .then(data => {
-                            window.showToast?.((L.BulkDeleteSuccess || '').replace('{0}', data.deletedCount), 'success');
-                            clearSelection();
-                            dt.ajax.reload();
+                            reloadTableAndToastSuccess((L.BulkDeleteSuccess || '').replace('{0}', data.deletedCount));
                         })
                         .catch(() => window.showToast?.('ErrorOccurred', 'error'));
                 }

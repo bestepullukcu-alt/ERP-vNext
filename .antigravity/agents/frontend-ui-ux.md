@@ -56,16 +56,17 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
    - **Shared CSS Standardı:** DataTable toolbar, inline filter, Select2 chip, badge clipping ve benzeri tekrar kullanılabilir stiller sayfa içi `@section Styles` bloğunda değil `wwwroot/assets/css/backbone-custom.css` içinde tutulur.
 10. **Geniş Form Tasarımı:** 10'dan fazla input içeren formlar mutlaka `col-md-6` grid yapısı ve mantıksal `card` blokları ile gruplandırılmalıdır.
 11. **TempData & Toast Senkronizasyonu:** Başarılı POST sonrası `TempData["SuccessMessage"]` atanmalı ve Index sayfasında toast tetiklenmelidir.
-12. **SweetAlert / Modal Tema:** `Swal.fire` konfigürasyonunda `buttonsStyling: false` parametresi zorunludur.
-13. **DataTables Button Group:** Buton köşe (radius) düzeltmeleri kesinlikle inline JS (`this.style.setProperty`) ile `!important` kullanılarak yapılmalıdır.
-14. **DataTable Bulk Action:** Toplu işlem barındaki silme butonu her zaman `btn-label-danger` olmalıdır.
-15. **Seçim Estetiği:** Seçili satırların arka planı `rgba(var(--bs-primary-rgb), 0.08)` olmalıdır.
-16. **Inset Shadow Temizliği:** `tr.selected` hücrelerindeki agresif `box-shadow` değerleri CSS ile `none !important` yapılarak sıfırlanmalıdır.
-17. **Dinamik Export:** Seçili satır varsa sadece onlar, yoksa tablonun tamamı dışa aktarılmalıdır.
-18. **Kolon Genişlik Dengesi (cell-fit):** Checkbox ve Actions gibi sabit kolonlar için mutlaka `cell-fit` sınıfı kullanılmalıdır.
-19. **Build & Run:** Tüm mimari değişiklikler sonrası proje `run_all.sh` ile temiz başlatılmalıdır.
-20. **API Abstraction:** Her yerde raw fetch kullanma; merkezi wrapper üzerinden çağrı yap.
-21. **Column Reorder Standardı:** DataTable’da kolon sürükle-bırak gerekiyorsa `ColReorder` kullan; custom sortable header yaklaşımı YASAKTIR. Reorder state’i Save View ile birlikte persist edilmelidir.
+12. **Delete Toast Parity:** Tek satır silme success akışı create/bulk delete success baseline'ı ile aynı lifecycle'ı kullanmalıdır. `row.remove().draw()` sonrası hemen toast basmak yerine tablo `dt.ajax.reload(..., false)` ile yenilenmeli, sonra success toast gösterilmelidir.
+13. **SweetAlert / Modal Tema:** `Swal.fire` konfigürasyonunda `buttonsStyling: false` parametresi zorunludur.
+14. **DataTables Button Group:** Buton köşe (radius) düzeltmeleri kesinlikle inline JS (`this.style.setProperty`) ile `!important` kullanılarak yapılmalıdır.
+15. **DataTable Bulk Action:** Toplu işlem barındaki silme butonu her zaman `btn-label-danger` olmalıdır.
+16. **Seçim Estetiği:** Seçili satırların arka planı `rgba(var(--bs-primary-rgb), 0.08)` olmalıdır.
+17. **Inset Shadow Temizliği:** `tr.selected` hücrelerindeki agresif `box-shadow` değerleri CSS ile `none !important` yapılarak sıfırlanmalıdır.
+18. **Dinamik Export:** Seçili satır varsa sadece onlar, yoksa tablonun tamamı dışa aktarılmalıdır.
+19. **Kolon Genişlik Dengesi (cell-fit):** Checkbox ve Actions gibi sabit kolonlar için mutlaka `cell-fit` sınıfı kullanılmalıdır.
+20. **Build & Run:** Tüm mimari değişiklikler sonrası proje `run_all.sh` ile temiz başlatılmalıdır.
+21. **API Abstraction:** Her yerde raw fetch kullanma; merkezi wrapper üzerinden çağrı yap.
+22. **Column Reorder Standardı:** DataTable’da kolon sürükle-bırak gerekiyorsa `ColReorder` kullan; custom sortable header yaklaşımı YASAKTIR. Reorder state’i Save View ile birlikte persist edilmelidir.
 
 ## 📐 Layout & View Architecture Rule
 - **Layout Sadakati:** Tüm View'lar, `Views/Shared/_LayoutBackbone.cshtml` dosyasını kullanmalıdır. Eski `_Layout.cshtml` sadece Archive/ ve Identity/ altındaki dondurulmuş (frozen) sayfalar için ayrılmıştır.

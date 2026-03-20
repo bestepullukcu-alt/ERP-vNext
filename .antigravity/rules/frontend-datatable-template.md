@@ -309,8 +309,8 @@ Her DataTable sayfasında `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dos
             <form class="m-0" id="filterForm">
                 <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
                     {{!-- Modüle özgü filtre alanları buraya (Select2, date range, vb.) --}}
-                    <div class="filter-chip user_plan"></div>
-                    <div class="filter-chip user_status"></div>
+                    <div class="filter-chip filter-company-type"></div>
+                    <div class="filter-chip filter-status"></div>
 
                     <div class="ms-auto d-flex gap-3">
                         <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">

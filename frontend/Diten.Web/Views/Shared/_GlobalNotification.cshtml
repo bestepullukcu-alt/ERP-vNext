@@ -46,13 +46,23 @@
         border-radius: 50% !important;
     }
 
-    /* Delete Success: Danger Red */
-    .notyf__toast--delete-success {
-        background: #e74c3c !important;
+    /* Warning: Theme warning amber */
+    .notyf__toast--warning {
+        background: linear-gradient(135deg, #ffab00 0%, #f59e0b 100%) !important;
     }
 
-    .notyf__toast--delete-success .notyf__icon {
-        background: rgba(255, 255, 255, 0.25) !important;
+    .notyf__toast--warning .notyf__icon {
+        background: rgba(255, 255, 255, 0.22) !important;
+        border-radius: 50% !important;
+    }
+
+    /* Info: keep existing non-error informational toasts stable */
+    .notyf__toast--info {
+        background: linear-gradient(135deg, #03c3ec 0%, #0ea5e9 100%) !important;
+    }
+
+    .notyf__toast--info .notyf__icon {
+        background: rgba(255, 255, 255, 0.22) !important;
         border-radius: 50% !important;
     }
 
@@ -91,11 +101,6 @@
         type = type || 'success';
         console.log('[MOD-0013 showToast] Triggered - Key:', key, '| Type:', type);
 
-        // Normalize RecordDeleted to delete-success type
-        if ((key === 'RecordDeleted' || key === 'RecordDeleted_Success') && (type === 'success' || type === 'delete-success')) {
-            type = 'delete-success';
-        }
-
         var messages = {
             'RecordCreated': @Json.Serialize(SharedLocalizer["RecordCreated"].Value),
             'RecordUpdated': @Json.Serialize(SharedLocalizer["RecordUpdated"].Value),
@@ -121,18 +126,26 @@
                         ripple: true,
                         types: [
                             {
-                                type: 'delete-success',
-                                background: '#ea5455', // Improved red for danger/delete
-                                icon: {
-                                    className: 'bx bx-trash icon-md text-white',
-                                    tagName: 'i'
-                                }
-                            },
-                            {
                                 type: 'success',
                                 background: '#71dd37',
                                 icon: {
                                     className: 'bx bx-check-circle icon-md text-white',
+                                    tagName: 'i'
+                                }
+                            },
+                            {
+                                type: 'warning',
+                                background: '#ffab00',
+                                icon: {
+                                    className: 'bx bx-error-circle icon-md text-white',
+                                    tagName: 'i'
+                                }
+                            },
+                            {
+                                type: 'info',
+                                background: '#03c3ec',
+                                icon: {
+                                    className: 'bx bx-info-circle icon-md text-white',
                                     tagName: 'i'
                                 }
                             }
@@ -140,10 +153,12 @@
                     });
                 }
 
-                if (type === 'delete-success' || key === 'RecordDeleted') {
-                    _notyfInstance.open({ type: 'delete-success', message: message });
-                } else if (type === 'success') {
+                if (type === 'success') {
                     _notyfInstance.success(message);
+                } else if (type === 'warning') {
+                    _notyfInstance.open({ type: 'warning', message: message });
+                } else if (type === 'info') {
+                    _notyfInstance.open({ type: 'info', message: message });
                 } else if (type === 'error') {
                     _notyfInstance.error(message);
                 } else {
@@ -167,12 +182,12 @@
                     cssAnimationStyle: 'from-right'
                 });
 
-                if (type === 'delete-success' || key === 'RecordDeleted') {
-                    Notiflix.Notify.success(message, {
-                        success: { background: '#ea5455', childClassName: 'notiflix-notify-success' }
-                    });
-                } else if (type === 'success') {
+                if (type === 'success') {
                     Notiflix.Notify.success(message);
+                } else if (type === 'warning') {
+                    Notiflix.Notify.warning(message);
+                } else if (type === 'info') {
+                    Notiflix.Notify.info(message);
                 } else {
                     Notiflix.Notify.failure(message);
                 }
