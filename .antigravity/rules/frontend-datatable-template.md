@@ -255,6 +255,8 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
         ClearSelection = SharedLocalizer["ClearSelection"].Value,
         SelectedCount = SharedLocalizer["SelectedCount"].Value,
         AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        ConfirmAction = SharedLocalizer["ConfirmAction"].Value,
+        DeleteConfirmationYesBtn = SharedLocalizer["DeleteConfirmationYesBtn"].Value,
         Cancel = SharedLocalizer["Cancel"].Value
         // Modüle özgü ek key'leri burada genişlet
     })

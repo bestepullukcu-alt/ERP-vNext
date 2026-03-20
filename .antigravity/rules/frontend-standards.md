@@ -25,6 +25,12 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - Sneat'in merkezi focus tanımları geçerlidir.
 - **İstisna:** `#inlineFilterHost` altındaki Select2 trigger'ları için, vendor shadow yerine `backbone-custom.css` içinde tanımlanan standart focus görünümü kullanılabilir. Bu override sayfa içinde tekrar yazılamaz.
 
+### CSS-003b: DataTable Row Selection & Hover (MOD-0018)
+- DataTable satır seçimi (`.selected` class) ve hover renkleri, DataTables/Bootstrap'ın varsayılan agresif mavisini ezmek için `backbone-custom.css` içinde merkezi olarak tanımlanır.
+- Selector **mutlaka** `[class*="datatables-"]` ile yazılır; modül adına özgü (`datatables-countries`, `datatables-legal-entities`) class'larla **yazılmaz**. Aksi hâlde yeni her modülde kural tekrar eklenmesi gerekir.
+- Kural kapsamı: seçili satır arka planı (`0.08` opacity), normal hover (`0.04`), seçili+hover (`0.12`), `box-shadow` sıfırlama, `color: inherit`.
+- Sayfa bazlı override **yasaktır**; tüm DataTable sayfaları bu merkezi kuraldan otomatik yararlanır.
+
 ### CSS-004: DataTable Cellfit Columns
 - Bulk checkbox ve Actions gibi sabit genişlikli kolonlar ColVis ile diğer kolonlar gizlendiğinde **genişlememeli**dir.
 - Bu kolonlara `cellfit` class'ı verilir ve CSS tanımı `backbone-custom.css` içinde yapılır.

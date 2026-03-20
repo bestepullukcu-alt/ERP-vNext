@@ -111,8 +111,8 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 
 /* MOD-0018: DataTable Row Selection & Hover (Sneat Aesthetic - Dynamic Theme Support) */
 /* Seçili satırlar için agresif maviyi temanın primary renginin soft haliyle değiştir */
-.datatables-legal-entities tbody tr.selected,
-.datatables-legal-entities tbody tr.selected>td {
+[class*="datatables-"] tbody tr.selected,
+[class*="datatables-"] tbody tr.selected>td {
     background-color: rgba(var(--bs-primary-rgb), 0.08) !important;
     box-shadow: none !important;
     /* DataTables'in 999px'lik devasa mavi gölgesini öldür */
@@ -120,16 +120,16 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 
 
 /* Hover efektini tema ile uyumlu hale getir */
-.datatables-legal-entities tbody tr:hover {
+[class*="datatables-"] tbody tr:hover {
     background-color: rgba(var(--bs-primary-rgb), 0.04) !important;
 }
 
-.datatables-legal-entities tbody tr.selected:hover {
+[class*="datatables-"] tbody tr.selected:hover {
     background-color: rgba(var(--bs-primary-rgb), 0.12) !important;
 }
 
 /* Seçili satırlardaki yazı renklerinin bozulmasını engelle */
-.datatables-legal-entities tbody tr.selected td {
+[class*="datatables-"] tbody tr.selected td {
     color: inherit !important;
 }
 

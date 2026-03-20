@@ -85,12 +85,13 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **Keyboard:** Tab ile erişim, dropdown focus, ESC kapanış çalışıyor mu?
 - [ ] **Badge:** Screen reader akışını bozmuyor mu? (decorative ise aria-hidden stratejisi uygulanmış mı?)
 
-### G. 🧱 Overlay / Z-Index / Clipping (v2)
+### G. 🧱 Overlay / Z-Index / Clipping / Row Selection (v2)
 
 - [ ] **Badge Clipping:** Filter/ColVis badge hiçbir durumda kesilmiyor mu? (overflow hidden kaynaklı değil)
 - [ ] **Dropdown Stacking:** ColVis/Export/Filter dropdown’ları butonların altında kalmıyor mu?
 - [ ] **Action Group Radius:** Save View görünür/gizli iki durumda da border-radius tutarlı mı?
 - [ ] **Fix Strategy:** Badge clipping için “badge’i butonun içine alıp ikonu kapatma” veya “sadece z-index artır” yok; çözüm `backbone-custom.css (MOD-0022)` top safe-area padding + doğru stacking olmalı.
+- [ ] **Row Selection Hover (MOD-0018):** Bulk seçim sonrası satır üzerine gelindiğinde agresif mavi yok mu? `backbone-custom.css` içindeki `[class*=”datatables-”]` kuralı geçerli mi? Modüle özgü override yazılmamış mı?
 
 ### D. Routing & Sidebar
 

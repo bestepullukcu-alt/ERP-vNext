@@ -13,6 +13,8 @@ Bu workflow, legacy DataTable liste sayfalarını **DataTable v2 standardına** 
 ## ✅ Migration Checklist
 
 ### 1) UI / Layout
+- [ ] Sayfa header wrapper `mb-4` kullanıyor (CSS-007 standardı); `mb-6` veya başka değer değiştirildi.
+- [ ] `<table>` elementinde `id="dt-{{ModuleNameLower}}"` ve `data-dt-standard="v2"` attribute'ları mevcut.
 - [ ] Offcanvas filter kaldırıldı; toolbar altına **inline collapsible** filter panel eklendi (`#inlineFilterHost` + `#inlineFilterCollapse`).
 - [ ] Filter bar “compact chip/dropdown” görünümünde; form-grid (`col-md`) kullanılmıyor; wrap destekli.
 - [ ] Inline filter Select2 trigger'ları `form-select form-select-sm` estetiğine geçirildi; bu görünüm `backbone-custom.css` içindeki ortak kurallarla sağlanıyor.
@@ -48,6 +50,11 @@ Bu workflow, legacy DataTable liste sayfalarını **DataTable v2 standardına** 
 - [ ] Keyboard: Tab erişimi, dropdown focus, ESC kapanış test edildi.
 
 ### 6) Localization
+- [ ] **L10n Pattern Migrasyonu:** `Index.cshtml` içindeki `window.L10n.Key = @Json.Serialize(...)` satırları kaldırıldı.
+- [ ] `Views/{{AreaName}}/{{ModuleName}}/_IndexL10n.cshtml` oluşturuldu (JSON payload script tag'i ile).
+- [ ] `wwwroot/assets/js/{{AreaName}}/{{ModuleName}}/index.l10n.js` oluşturuldu (payload parse + PascalCase normalize + `window.L10n` merge).
+- [ ] `Index.cshtml @section Scripts` yükleme sırası: `<partial name="_IndexL10n" />` → `index.l10n.js` → `index.js`.
+- [ ] `_IndexL10n.cshtml` minimum key seti tamam: `AreYouSure`, `ConfirmAction`, `DeleteConfirmationYesBtn`, `BulkDelete`, `BulkDeleteConfirm`, `BulkDeleteSuccess`, `ClearSelection`, `SelectedCount`, `Cancel`, `SaveView`, `ColumnVisibility`, `Filter`, `Apply`, `Reset`, `ShowAll`, `Search`, `Export`, `Import`, `Status`.
 - [ ] Toolbar vocabulary SharedResource üzerinden geliyor (`Search/Export/Import/Filter/Apply/Reset/ShowAll/SaveView/ColumnVisibility/...`).
 - [ ] 8 dil tam; placeholder yok; hardcoded fallback yok.
 - [ ] `python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py .` PASS.
