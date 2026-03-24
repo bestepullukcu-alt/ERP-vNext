@@ -22,17 +22,19 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
     - **L10n Bridge Delivery:** "`Index.cshtml` içine uzun `window.L10n.Key = ...` blokları yazma. `_IndexL10n.cshtml` partial'ı JSON payload üretmeli; `index.l10n.js` bunu alırken `toPascalCase` dönüşümü yapıp `window.L10n` içine merge etmeli; sonra `index.js` yüklenmelidir."
     - **Personalization:** "Save View için localStorage veya MDM/Auth servisi kullanma. Daima gateway üzerinden `/api/personalization/*` çağıran shared `personalizationClient` kullan. Backend sahibi `Diten.Platform` servisidir."
     - **Auth Refresh Guard:** "`personalizationClient` `401 Unauthorized` aldığında shared unauthorized/refresh akışını (`DtDefaults` veya eşdeğer merkezi auth helper) kullanmalı. Expired JWT durumu generic `ErrorOccurred` toast'ı ile maskelenmez; kullanıcı refresh/login akışına yönlendirilir."
+    - **ColReorder (ZORUNLU):** "Standart kolon yapısına sahip tüm liste sayfalarında `colReorder: { columns: ':gt(1):not(:last-child)' }` aktif edilmeli; `column-reorder.dt`/`columns-reordered.dt` event'leri dirty-state hesabına bağlanmalıdır. (bkz. `frontend-js-standard.md §11`)"
     - **Inline Filter (ZORUNLU):** "Offcanvas filter YASAK. `_Filter.cshtml` içinde `#inlineFilterHost` + `#inlineFilterCollapse` olmalı; `index.js` içinde `_Filter` toolbar altına mount edilmeli ve host hizası **px-6** ile korunmalı (mx-* YASAK). Reusable toolbar / inline-filter / Select2 stilleri sayfa içine gömülmez; `backbone-custom.css` içinde tutulur. Teslim öncesi `python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName}` çalıştır."
     - **Kalite Kapısı:** Teslimden önce `.antigravity/workflows/quality-gate-datatable.md` checklist'ini eksiksiz işaretle.
 3. **L10n (Dil) Denetimi:** `l10n-agent` çalıştığında, 8 dilin (`en, es, ka, kk, ru, tr, uk, uz`) tamamının `.resx` dosyalarının eksiksiz dolduğundan emin olmadan ASLA UI (Arayüz) fazına geçmeyeceksin. "Kaydet", "Sil" gibi ortak kelimeleri View dosyasına ekletmeyecek, daima `SharedLocalizer` kullandıracaksın.
 4. **Sıfır Halüsinasyon:** Ajanların kod uydurması, varsayılan İngilizce metinler bırakması veya onaylanmamış bir UI bileşeni eklemesi KESİNLİKLE YASAKTIR.
-5. **`.antigravity` Değişiklik Onayı (ZORUNLU):** Orkestratör, `.antigravity/` altındaki şablon/standart/workflow/guard dosyalarını **kullanıcı onayı olmadan** güncellemez.
+5. **Rebuild Guard (ZORUNLU):** Mevcut bir modül yeniden yapılırken (refactor, rebuild, fix) Create/Edit/Details sayfaları silinirse **aynı çalışmada** yeniden yapılmak ZORUNDADIR. "Sadece Index'i düzelt" talebi bu sayfaları silmeye izin vermez. Silinen her sayfa için yeni sürüm aynı PR/commit içinde teslim edilir.
+6. **`.antigravity` Değişiklik Onayı (ZORUNLU):** Orkestratör, `.antigravity/` altındaki şablon/standart/workflow/guard dosyalarını **kullanıcı onayı olmadan** güncellemez.
    - Akış:
      1) Önce UI/UX düzeltmesi ürün kodunda uygulanır (View/CSS/JS).
      2) Kullanıcı değişikliği runtime’da kontrol eder (QA/smoke).
      3) Kullanıcı “tamam” derse orkestratör `.antigravity` referanslarını günceller.
    - Kullanıcı açıkça “kuralları da güncelle” derse bu adım ayrıca onay sayılır.
-6. **Standartlaştırma (Onay Sonrası ZORUNLU):** Kullanıcı bir UI/UX düzeltmesini onayladıysa ve bu düzeltme “gelecek sayfalarda da standart” olacaksa, orkestratör aynı PR/çalışma içinde `.antigravity` altındaki ilgili referansları günceller:
+7. **Standartlaştırma (Onay Sonrası ZORUNLU):** Kullanıcı bir UI/UX düzeltmesini onayladıysa ve bu düzeltme “gelecek sayfalarda da standart” olacaksa, orkestratör aynı PR/çalışma içinde `.antigravity` altındaki ilgili referansları günceller:
    - Şablon: `.antigravity/rules/frontend-datatable-template.md` (HTML/_Filter varsayılanları)
    - Standart: `.antigravity/rules/frontend-standards.md` (CSS/UI kuralları + MOD notları)
    - Kalite Kapısı: `.antigravity/workflows/quality-gate-datatable.md` ve/veya migration checklist
@@ -141,7 +143,10 @@ Alt bir ajanı göreve çağırırken, ona **TAM BAĞLAM (Full Context)** ve **K
 - [x] ocelot.json rotaları eklendi (integration-agent).
 - [x] L10n standartları, Altın HTML Şablonu ve DtDefaults.create() uygulandı.
 - [x] Quality Gate Datatable checklist işaretlendi.
-- [ ] Dokümantasyon yazıldı (Bekliyor).
+- [x] CRUD sayfaları tamamlandı: Create ✓ / Details ✓ / Edit ✓ (bkz. add-module.md Phase 4a)
+- [x] Dokümantasyon yazıldı: API dokümanı (documentation-writer) ✓ / Kullanıcı kılavuzu (user-manual-generator) ✓
+
+> ⛔ Yukarıdaki CRUD ve Dokümantasyon maddeleri işaretlenmeden rapor "tamamlandı" olarak gönderilemez.
 
 ### Sonraki Adım
 [Kullanıcıdan beklenen onay veya sıradaki işlem]

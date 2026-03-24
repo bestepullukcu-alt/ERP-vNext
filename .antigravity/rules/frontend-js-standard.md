@@ -24,10 +24,11 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - Filter değişimi tek başına (Apply basılmadan) Save View’u göstermemelidir.
    - Uygulama paterni: `appliedFilters` (veya benzeri) state’ini sadece Apply/Reset’te güncelle; `getCurrentView()` filtre değerlerini buradan okusun.
 10. **Save View (v2) — Shared Payload:** Saved View payload’ı minimum olarak `filters + search + colVis + columnOrder + sorting` içermelidir. `pageNumber/pageLength` persist edilmez.
-11. **ColReorder (v2):** Kolon sürükle-bırak aktif edilen sayfalarda:
-   - `colReorder` DataTable config’i `DtDefaults.create({...})` içine verilir.
-   - `columnOrder` Save View kapsamına eklenir.
-   - `column-reorder.dt` / `columns-reordered.dt` event’leri dirty-state hesabına dahil edilir.
+11. **ColReorder (v2) — Varsayılan Aktif:** Standart kolon yapısına sahip tüm liste sayfalarında (control + checkbox + N veri + action) `colReorder` **varsayılan olarak aktiftir**.
+   - `colReorder: { columns: ‘:gt(1):not(:last-child)’ }` DataTable config’e **her zaman** eklenir.
+   - Sadece ≤2 veri kolonu olan özel sayfalarda devre dışı bırakılabilir; bırakılırsa neden belirten yorum satırı zorunludur.
+   - `columnOrder` Save View kapsamına eklenir (`captureColumnOrder` / `applyColumnOrder`).
+   - `column-reorder.dt` / `columns-reordered.dt` event’leri dirty-state hesabına **mutlaka** dahil edilir.
 12. **Inline Filter Select2 Styling:** `#inlineFilterHost` içindeki Select2 single-select filtrelerinde `selectionCssClass: 'form-select form-select-sm'` kullanılır. Görsel standardın CSS karşılığı `backbone-custom.css` içindedir; Index.cshtml içine tekrar yazılmaz.
     > ⚠️ **Overflow uyarısı:** `selectionCssClass: 'form-select form-select-sm'` Bootstrap'ın `.form-select` sınıfı üzerinden `.select2-selection` elementine `inline-size: 100% !important` uygular. Select açıldığında sayfa yatay/dikey scroll yapabilir. `backbone-custom.css` içindeki `#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection { inline-size: auto !important; }` override'ı bu bug'ı önler ve kaldırılamaz (MOD-0031).
 13. **Inline Filter Naming:** Semantik filter container class'ları kullanılır.
@@ -52,6 +53,21 @@ const {{ModuleName}}List = (function () {
     let dt;
     const dtTableEl = document.querySelector('.datatables-{{ModuleNameLower}}');
     const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
+    // ── Save View (personalizationClient) ─────────────────────────────────────
+    // Bkz: §Save View — Tam İmplementasyon Şablonu
+    const personalizationClient = window.personalizationClient;
+    const personalizationContext = { moduleKey: '{{AreaName}}', pageKey: '{{ModuleName}}' };
+    // saveViewColumnIndexes: control(0) + checkbox(1) + action(last) HARİÇ tüm kolon indeksleri
+    // Örn: 8 kolonlu tablo → [2, 3, 4, 5, 6]; 10 kolonlu → [2, 3, 4, 5, 6, 7, 8]
+    const saveViewColumnIndexes = {{SaveViewColumnIndexes}}; // [2, 3, ..., N-2]
+    const totalColumnCount = {{TotalColumnCount}};           // thead <th> sayısı
+    let saveFilterArmed = false;
+    const baseOrder = [[2, 'desc']];
+    let appliedFilters = {{AppliedFiltersInit}};             // Örn: { status: '' } veya { companyType: '', status: '' }
+    let defaultViewRecord = null;
+    let defaultViewState = null;
+    const isAuthHandledError = (e) => e?.authHandled === true || e?.code === 'auth-refresh-in-progress';
+    // ─────────────────────────────────────────────────────────────────────────
     let L = window.L10n || {};
     const filterHostId = 'inlineFilterHost';
     const filterCollapseId = 'inlineFilterCollapse';
@@ -177,8 +193,11 @@ const {{ModuleName}}List = (function () {
         });
     };
 
-    const initDataTable = () => {
+    // initDataTable ASYNC'tir — loadDefaultView() await edilmesi zorunludur
+    const initDataTable = async () => {
         if (!dtTableEl) return;
+        syncL10n();
+        await loadDefaultView(); // personalizationClient'tan kaydedilmiş view yükle
 
         const extraButtons = {
             importBtn: {
@@ -195,6 +214,26 @@ const {{ModuleName}}List = (function () {
                     'aria-controls': filterCollapseId,
                     'aria-expanded': 'false'
                 }
+            },
+            // Save View butonu: başlangıçta d-none; appliedState ≠ savedView/baseline iken görünür
+            saveFilterBtn: {
+                text: '<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">' + (L.SaveView || '') + '</span>',
+                className: 'btn btn-label-primary d-none dt-save-filter-btn',
+                attr: { title: L.SaveView, 'data-bs-toggle': 'tooltip' },
+                action: async function (e, api) {
+                    const tableApi = api || dt;
+                    if (!tableApi) return;
+                    try {
+                        syncPendingTableUiState(tableApi);
+                        await saveDefaultView(getCurrentView(tableApi));
+                        setSaveFilterVisible(false);
+                        window.showToast?.(L.RecordSaved || 'RecordSaved', 'success');
+                    } catch (error) {
+                        if (isAuthHandledError(error)) return;
+                        console.error('[{{ModuleName}} SaveView] Failed to save default view', error);
+                        window.showToast?.(L.ErrorOccurred, 'error');
+                    }
+                }
             }
         };
 
@@ -205,8 +244,8 @@ const {{ModuleName}}List = (function () {
                 dataSrc: (json) => json.data || json,
                 headers: getAuthHeaders()
             },
-            // İhtiyaç varsa aktif et:
-            // colReorder: { columns: ':gt(1):not(:last-child)' },
+            stateSave: false, // data-dt-standard="v2": custom personalizationClient handles persistence
+            colReorder: { columns: ':gt(1):not(:last-child)' }, // Varsayılan aktif — control(0), checkbox(1), action(son) sabit; sadece ≤2 veri kolonu olan özel sayfalarda devre dışı bırakılabilir (neden yorumu zorunlu)
             columns: [
                 { data: 'id',       name: 'control'   },   // Responsive control
                 { data: 'id',       name: 'checkbox'  },   // Checkbox
@@ -277,52 +316,86 @@ const {{ModuleName}}List = (function () {
                 mountInlineFilter();
                 bindInlineFilterToggle();
                 setupFilters(this.api());
+                // Save View dirty-detection'ı init restore bittikten sonra arm et
+                setTimeout(() => { saveFilterArmed = true; }, 0);
             },
             drawCallback: function () {
-                const filterCount = 0; // Aktif filtre sayısı (filtre implemente edildikçe güncelleyin)
-                window.DtDefaults.updateVisualState(this.api(), filterCount);
+                window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount(this.api()));
             }
         }));
 
         dt.on('column-visibility.dt', function () {
-            const filterCount = 0;
-            window.DtDefaults.updateVisualState(dt, filterCount);
+            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount(dt));
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
 
         dt.on('column-reorder.dt columns-reordered.dt', function () {
-            const filterCount = 0;
-            window.DtDefaults.updateVisualState(dt, filterCount);
+            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount(dt));
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+        });
+
+        dt.on('search.dt', function () {
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+        });
+
+        dt.on('order.dt', function () {
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
     };
 
     const setupFilters = (api) => {
-        // {{DynamicFilterSetup}}
+        // Select2 init (modüle özgü filtre input'ları için)
+        // {{DynamicSelect2Init}}
 
-        const state = api.state.loaded();
-        let initialFilterCount = 0;
-        if (state) {
-            // {{DynamicFilterRestore}}
+        // Kaydedilmiş view varsa uygula; yoksa temiz state'de kal
+        const defaultView = defaultViewState;
+        if (defaultView) {
+            applySavedTableState(api, defaultView, { fallbackOrder: baseOrder });
+        } else {
+            // {{ResetAppliedFiltersToDefault}} — Örn: appliedFilters = { status: '' };
+            syncFilterControls(appliedFilters);
         }
 
-        window.DtDefaults.updateVisualState(api, initialFilterCount);
+        window.DtDefaults.updateVisualState(api, getAppliedFilterCount(api));
+        setSaveFilterVisible(false);
 
-        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
-            // {{DynamicFilterApply}}
-            api.draw();
+        const applyBtn = document.getElementById('btnFilterApply');
+        const resetBtn = document.getElementById('btnFilterReset');
 
-            const filterCount = 0;
-            window.DtDefaults.updateVisualState(api, filterCount);
+        if (applyBtn && !applyBtn.dataset.bound) {
+            applyBtn.dataset.bound = '1';
+            applyBtn.addEventListener('click', () => {
+                // {{ReadFilterValues}} — Örn: const status = $('#filterStatus').val() || '';
+                // {{SetAppliedFilters}} — Örn: appliedFilters = { status };
+                applyFilterValues(api, appliedFilters);
+                api.draw();
+                window.DtDefaults.updateVisualState(api, getAppliedFilterCount(api));
+                if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
+                const el = document.getElementById(filterCollapseId);
+                if (el) bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).hide();
+            });
+        }
 
-            const el = document.getElementById(filterCollapseId);
-            if (el) bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).hide();
-        });
-
-        document.getElementById('btnFilterReset')?.addEventListener('click', () => {
-            // {{DynamicFilterReset}}
-            api.state.clear();
-            api.columns().search('').draw();
-            window.DtDefaults.updateVisualState(api, 0);
-        });
+        if (resetBtn && !resetBtn.dataset.bound) {
+            resetBtn.dataset.bound = '1';
+            resetBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // form reset'i engelle (savedView restore için)
+                const def = defaultViewState;
+                const hasSavedDefault = !!def;
+                const isDirty = hasSavedDefault ? isDirtyComparedToDefault(api) : false;
+                if (hasSavedDefault && isDirty) {
+                    applySavedTableState(api, def, { fallbackOrder: baseOrder, resetColumnOrder: !def?.columnOrder });
+                } else {
+                    applySavedTableState(api, { {{FilterKeys}}: '', search: '' }, {
+                        fallbackOrder: baseOrder,
+                        clearSearch: true,
+                        resetColumns: true,
+                        resetColumnOrder: true
+                    });
+                }
+                if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
+            });
+        }
     };
 
     // ── Checkbox & Bulk Action ─────────────────────────────────────────────
@@ -503,6 +576,327 @@ const {{ModuleName}}List = (function () {
 
 document.addEventListener('DOMContentLoaded', () => {{ModuleName}}List.init());
 ```
+
+---
+
+## 💾 Save View — Tam İmplementasyon Şablonu
+
+> Bu bölüm, her yeni DataTable modülü için **kopyala-yapıştır** yapısındadır.
+> `{{...}}` değerlerini modüle göre doldur. LegalEntities = referans implementasyon.
+
+### Değişken Değerleri (modüle göre doldur)
+
+| Placeholder | Nasıl Hesaplanır | Örnek (Countries, 8 kolon) |
+|-------------|-----------------|---------------------------|
+| `{{SaveViewColumnIndexes}}` | `[2 .. toplam-2]` — control(0), checkbox(1), action(son) HARİÇ | `[2, 3, 4, 5, 6]` |
+| `{{TotalColumnCount}}` | `thead <th>` sayısı | `8` |
+| `{{AppliedFiltersInit}}` | her filtre key'i için `''` | `{ status: '' }` |
+| `{{AreaName}}` / `{{ModuleName}}` | personalizationContext | `'MDM'` / `'Countries'` |
+
+### Helper Fonksiyonlar (IIFE içine, initDataTable öncesine ekle)
+
+```javascript
+// ─── Save View Helpers ─────────────────────────────────────────────────────
+
+const normalizeSavedString = (value) => typeof value === 'string' ? value.trim() : '';
+
+const getSavedViewFlag = (savedView, camelKey, pascalKey) => {
+    if (!savedView || typeof savedView !== 'object') return undefined;
+    if (typeof savedView[camelKey] !== 'undefined') return savedView[camelKey];
+    if (typeof savedView[pascalKey] !== 'undefined') return savedView[pascalKey];
+    return undefined;
+};
+
+const getSavedViewDefinition = (savedView) => {
+    if (!savedView || typeof savedView !== 'object') return {};
+    const raw = savedView.viewDefinition ?? savedView.ViewDefinition ??
+                savedView.viewDefinitionJson ?? savedView.ViewDefinitionJson ?? {};
+    if (raw && typeof raw === 'object') return raw;
+    if (typeof raw === 'string') {
+        try { const p = JSON.parse(raw); return (p && typeof p === 'object') ? p : {}; } catch (e) { return {}; }
+    }
+    return {};
+};
+
+const getSavedViewId   = (sv) => normalizeSavedString(getSavedViewFlag(sv, 'id', 'Id') || getSavedViewFlag(sv, '_id', '_id'));
+const getSavedViewName = (sv) => normalizeSavedString(getSavedViewFlag(sv, 'viewName', 'ViewName'));
+const isSavedViewDefault = (sv) => getSavedViewFlag(sv, 'isDefault', 'IsDefault') === true;
+
+const createDefaultColumnVisibility = () =>
+    saveViewColumnIndexes.reduce((acc, i) => { acc[i] = true; return acc; }, {});
+
+const normalizeColumnVisibility = (colVis) => {
+    if (!colVis) return null;
+    const n = {};
+    if (Array.isArray(colVis)) {
+        saveViewColumnIndexes.forEach((idx, pos) => {
+            if (typeof colVis[idx] === 'boolean') { n[idx] = colVis[idx]; return; }
+            if (typeof colVis[pos] === 'boolean') n[idx] = colVis[pos];
+        });
+    } else if (typeof colVis === 'object') {
+        saveViewColumnIndexes.forEach((idx) => { if (typeof colVis[idx] === 'boolean') n[idx] = colVis[idx]; });
+    }
+    return Object.keys(n).length ? n : null;
+};
+
+const areColumnVisibilitiesEqual = (left, right) => {
+    const l = normalizeColumnVisibility(left), r = normalizeColumnVisibility(right);
+    if (!l && !r) return true;
+    if (!l || !r) return false;
+    return saveViewColumnIndexes.every((i) => {
+        const lv = typeof l[i] === 'boolean' ? l[i] : true;
+        const rv = typeof r[i] === 'boolean' ? r[i] : true;
+        return lv === rv;
+    });
+};
+
+const captureColumnVisibility = (api) => {
+    const cv = {};
+    saveViewColumnIndexes.forEach((i) => { try { cv[i] = !!api.column(i).visible(); } catch (e) {} });
+    return Object.keys(cv).length ? cv : null;
+};
+
+const applyColumnVisibility = (api, colVis) => {
+    const n = normalizeColumnVisibility(colVis);
+    if (!n) return;
+    saveViewColumnIndexes.forEach((i) => {
+        if (typeof n[i] === 'boolean') try { api.column(i).visible(n[i], false); } catch (e) {}
+    });
+};
+
+const normalizeColumnOrder = (order) => {
+    if (!Array.isArray(order) || order.length !== totalColumnCount) return null;
+    const n = order.map(Number).filter((i) => Number.isInteger(i) && i >= 0 && i < totalColumnCount);
+    if (n.length !== totalColumnCount || new Set(n).size !== totalColumnCount) return null;
+    return n;
+};
+
+const areColumnOrdersEqual = (left, right) => {
+    const l = normalizeColumnOrder(left)  || Array.from({ length: totalColumnCount }, (_, i) => i);
+    const r = normalizeColumnOrder(right) || Array.from({ length: totalColumnCount }, (_, i) => i);
+    return l.every((v, i) => v === r[i]);
+};
+
+const captureColumnOrder = (api) => {
+    try { return normalizeColumnOrder(api?.colReorder?.order?.()); } catch (e) { return null; }
+};
+
+const applyColumnOrder = (api, order) => {
+    const n = normalizeColumnOrder(order);
+    if (!n || typeof api?.colReorder?.order !== 'function') return;
+    try { api.colReorder.order(n, true); } catch (e) {}
+};
+
+const getSearchInputValue = (api) => {
+    try { const i = api.table().container()?.querySelector('.dt-search input'); return typeof i?.value === 'string' ? i.value : ''; }
+    catch (e) { return ''; }
+};
+
+const syncSearchInput = (api, val) => {
+    try { const i = api.table().container()?.querySelector('.dt-search input'); if (i) i.value = val || ''; }
+    catch (e) {}
+};
+
+// applyFilterValues: modüle özgü kolon search çağrıları
+// Örn (status only):
+//   const applyFilterValues = (api, values) => {
+//       api.column('isActive:name').search(values?.status || '');
+//   };
+// {{ApplyFilterValues}}
+
+// syncFilterControls: Select2 / input elementlerini appliedFilters'a göre senkronize et
+// Örn: const syncFilterControls = (v) => { $('#filterStatus').val(v?.status || '').trigger('change'); };
+// {{SyncFilterControls}}
+
+// getAppliedFilterCount: tabloya uygulanmış filtre sayısı
+// Örn: const getAppliedFilterCount = (api) => {
+//   try { return [api.column('isActive:name').search()].filter(v => v?.trim()).length; }
+//   catch (e) { return [appliedFilters?.status].filter(Boolean).length; }
+// };
+// {{GetAppliedFilterCount}}
+
+const mapSavedViewToState = (savedView) => {
+    const d = getSavedViewDefinition(savedView);
+    return {
+        // {{FilterKeyMappings}} — Örn: status: normalizeSavedString(d.status),
+        search: normalizeSavedString(d.search),
+        colVis: normalizeColumnVisibility(d.colVis),
+        columnOrder: normalizeColumnOrder(d.columnOrder),
+        order: Array.isArray(d.order) ? d.order : null
+    };
+};
+
+const getCurrentView = (api) => {
+    // {{FilterKeyCapture}} — Örn: const status = appliedFilters?.status || '';
+    const inputSearch = getSearchInputValue(api);
+    const search = typeof inputSearch === 'string' ? inputSearch : (api?.search?.() || '');
+    let colVis = null; try { colVis = captureColumnVisibility(api); } catch (e) {}
+    let order  = null; try { order  = api?.order?.() || null; } catch (e) {}
+    return {
+        // {{FilterKeysInReturn}} — Örn: status,
+        search, colVis, columnOrder: captureColumnOrder(api), order
+    };
+};
+
+const applySavedTableState = (api, view, options) => {
+    const state = view || {};
+    const fallbackOrder = Array.isArray(options?.fallbackOrder) ? options.fallbackOrder : baseOrder;
+    const colVisToApply    = state.colVis       || (options?.resetColumns     === true ? createDefaultColumnVisibility() : null);
+    const colOrderToApply  = state.columnOrder  || (options?.resetColumnOrder === true ? Array.from({ length: totalColumnCount }, (_, i) => i) : null);
+
+    if (typeof state.search === 'string') { try { api.search(state.search); } catch (e) {} syncSearchInput(api, state.search); }
+    else if (options?.clearSearch === true) { try { api.search(''); } catch (e) {} syncSearchInput(api, ''); }
+
+    if (colOrderToApply) applyColumnOrder(api, colOrderToApply);
+    if (colVisToApply)   applyColumnVisibility(api, colVisToApply);
+
+    if (Array.isArray(state.order)) { try { api.order(state.order); } catch (e) {} }
+    else if (fallbackOrder) { try { api.order(fallbackOrder); } catch (e) {} }
+
+    // {{UpdateAppliedFilters}} — Örn: appliedFilters = { status: state.status || '' };
+    syncFilterControls(appliedFilters);
+    applyFilterValues(api, appliedFilters);
+
+    try { api.columns.adjust(); } catch (e) {}
+    api.draw(false);
+
+    setTimeout(() => {
+        syncFilterControls(appliedFilters);
+        syncSearchInput(api, typeof state.search === 'string' ? state.search : '');
+        window.DtDefaults.updateVisualState(api, getAppliedFilterCount(api));
+    }, 0);
+};
+
+const syncPendingTableUiState = (api) => {
+    const inputSearch   = getSearchInputValue(api);
+    const appliedSearch = typeof api?.search === 'function' ? (api.search() || '') : '';
+    if (inputSearch !== appliedSearch) try { api.search(inputSearch); } catch (e) {}
+};
+
+const loadDefaultView = async () => {
+    defaultViewRecord = null;
+    defaultViewState  = null;
+    if (!personalizationClient?.getViews) return null;
+    try {
+        const views = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
+        defaultViewRecord = Array.isArray(views) ? (views.find(isSavedViewDefault) || views[0] || null) : null;
+        defaultViewState  = defaultViewRecord ? mapSavedViewToState(defaultViewRecord) : null;
+        return defaultViewState;
+    } catch (error) {
+        if (isAuthHandledError(error)) return null;
+        console.error('[{{ModuleName}} SaveView] Failed to load saved views', error);
+        defaultViewRecord = null; defaultViewState = null;
+        return null;
+    }
+};
+
+const saveDefaultView = async (view) => {
+    if (!personalizationClient?.saveView || !personalizationClient?.updateView)
+        throw new Error('Personalization client is unavailable.');
+    const payload = {
+        moduleKey:      personalizationContext.moduleKey,
+        pageKey:        personalizationContext.pageKey,
+        viewName:       (getSavedViewName(defaultViewRecord) || L.SaveView || '').trim(),
+        viewDefinition: view || {},
+        isDefault:      true,
+        visibility:     'private'
+    };
+    const existingId = getSavedViewId(defaultViewRecord);
+    const saved = existingId
+        ? await personalizationClient.updateView(existingId, payload)
+        : await personalizationClient.saveView(payload);
+    defaultViewRecord = saved;
+    defaultViewState  = mapSavedViewToState(saved);
+    return defaultViewState;
+};
+
+const setSaveFilterVisible = (visible) => {
+    const btn = document.querySelector('.dt-save-filter-btn');
+    if (!btn) return;
+    btn.classList.toggle('d-none', !visible);
+    window.DtDefaults?.refreshButtonGroupRadii?.();
+};
+
+const isDirtyComparedToDefault = (api) => {
+    const def = defaultViewState;
+    const cur = getCurrentView(api);
+    const curHasHiddenCols = !!saveViewColumnIndexes.find((i) => cur.colVis?.[i] === false);
+    const ref = def || {
+        // {{FilterKeyDefaults}} — Örn: status: '',
+        search: '',
+        colVis: createDefaultColumnVisibility(),
+        columnOrder: Array.from({ length: totalColumnCount }, (_, i) => i),
+        order: baseOrder
+    };
+    const colVisEqual    = areColumnVisibilitiesEqual(ref.colVis, cur.colVis);
+    const colOrderEqual  = areColumnOrdersEqual(ref.columnOrder, cur.columnOrder);
+    const refOrd = Array.isArray(ref.order) ? ref.order : null;
+    const curOrd = Array.isArray(cur.order) ? cur.order : null;
+    const orderEqual = Array.isArray(refOrd) && Array.isArray(curOrd) && refOrd.length === curOrd.length
+        ? refOrd.every((o, i) => String(o?.[0]) === String(curOrd[i]?.[0]) && String(o?.[1]) === String(curOrd[i]?.[1]))
+        : refOrd === curOrd;
+    if (!def) {
+        // {{FilterKeyDirtyCheck}} — Örn: return [cur.status].filter(Boolean).length > 0 || ...
+        return !!cur.search || curHasHiddenCols || !colOrderEqual || !orderEqual;
+    }
+    return (String(cur.search || '') !== String(ref.search || '')) ||
+        // {{FilterKeyCompare}} — Örn: (String(cur.status || '') !== String(ref.status || '')) ||
+        !colVisEqual || !colOrderEqual || !orderEqual;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+```
+
+### Somut Örnek (tek status filtreli modül — Countries)
+
+```javascript
+// Değişkenler:
+const saveViewColumnIndexes = [2, 3, 4, 5, 6]; // name, iso2, iso3, phone, isActive
+const totalColumnCount = 8;
+let appliedFilters = { status: '' };
+
+// applyFilterValues:
+const applyFilterValues = (api, values) => {
+    api.column('isActive:name').search(values?.status || '');
+};
+
+// syncFilterControls:
+const syncFilterControls = (values) => {
+    $('#filterStatus').val(normalizeSavedString(values?.status)).trigger('change');
+};
+
+// getAppliedFilterCount:
+const getAppliedFilterCount = (api) => {
+    try { return [api.column('isActive:name').search()].filter(v => v?.trim()).length; }
+    catch (e) { return [appliedFilters?.status].filter(Boolean).length; }
+};
+
+// mapSavedViewToState — status key ekle:
+//   status: normalizeSavedString(d.status),
+
+// getCurrentView — status capture:
+//   const status = appliedFilters?.status || '';
+//   return { status, search, colVis, ... };
+
+// applySavedTableState — appliedFilters update:
+//   appliedFilters = { status: state.status || '' };
+
+// isDirtyComparedToDefault — filter compare:
+//   if (!def) return [cur.status].filter(Boolean).length > 0 || !!cur.search || ...
+//   return (String(cur.status || '') !== String(ref.status || '')) || ...
+```
+
+### İki filtreli modül farkı (LegalEntities — companyType + status)
+
+```javascript
+const saveViewColumnIndexes = [2, 3, 4, 5, 6, 7, 8];
+const totalColumnCount = 10;
+let appliedFilters = { companyType: '', status: '' };
+// ... applyFilterValues her iki kolonu da search eder
+// ... isDirtyComparedToDefault her iki key'i karşılaştırır
+```
+
+---
 
 ## L10n Loader Contract
 

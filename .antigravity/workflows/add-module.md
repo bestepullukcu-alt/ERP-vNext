@@ -61,8 +61,16 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      - Bu adın `.resx` dosya adlarıyla birebir eşleşmesi ZORUNLUDUR.
    - `Views/{AreaName}/{ModuleName}/_Filter.cshtml` partial view'ını oluştur.
    - `wwwroot/assets/js/{AreaName}/{ModuleName}/index.js` dosyasını `DtDefaults.create()` ve Module Pattern (IIFE) ile oluştur. Bakınız: `.antigravity/rules/frontend-js-standard.md`
+   - **[ZORUNLU]** `colReorder: { columns: ':gt(1):not(:last-child)' }` DataTable config'e eklenmelidir (standart kolon yapısı için varsayılan; bkz. `frontend-js-standard.md §11`). `column-reorder.dt`/`columns-reordered.dt` event'leri dirty-state hesabına bağlanmalıdır.
    - `_LayoutBackbone` içine menü linkini ekle ve aktif state için `ViewContext.RouteData` dinamik kontrolü yap.
    - **Edit link formatı:** `/{ModuleName}/Edit/{id}` (Area prefix OLMADAN). ❌ `/{AreaName}/{ModuleName}/Edit/{id}` YANLIŞTIR.
+
+4a. **Phase 4a: CRUD Alt Sayfaları (ZORUNLU)**
+   - **Bu adım atlanamaz.** Index (liste) sayfası yapıldıktan sonra aşağıdaki CRUD sayfaları da oluşturulmalıdır:
+   - `Views/{AreaName}/{ModuleName}/Create.cshtml` → `add-page.md §B Form Sayfası` şablonunu kullan.
+   - `Views/{AreaName}/{ModuleName}/Details.cshtml` → `add-page.md §C Details Sayfası` şablonunu kullan.
+   - Edit sayfası ayrı sayfa olabilir (`Edit.cshtml`) veya Details içinde edit modu olabilir — modülün karmaşıklığına göre karar ver.
+   - **⚠️ Rebuild Guard:** Mevcut bir modül yeniden yapılırken Create/Edit/Details sayfaları silinirse **aynı çalışmada** yeniden yapılmak ZORUNDADIR. "Sadece Index'i düzelt" yorumu bu sayfaları silmeye izin vermez.
 
 4.5. **Phase 4.5: Browser Smoke Test (ORKESTRATÖR — ZORUNLU)**
    - **Bu adım atlanamaz.** Sayfa teslim edilmeden önce agent browser'da sayfayı açarak aşağıdaki kontrolleri yapar:
@@ -81,10 +89,10 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 6. **Phase 6: Dokümantasyon (documentation-writer & user-manual-generator)**
    - `documentation-writer` → Yeni modülün API dokümanlarını (Swagger/README) güncelle.
    - `user-manual-generator` → Son kullanıcı kılavuzunu hazırla (modülün ekranları, alanları, adım adım rehber).
-   - Bu faz tamamlanmadan modül "bitti" sayılmaz.
+   - ⛔ **BLOCKER:** Bu faz atlanamaz. Orchestration Report'ta "Dokümantasyon yazıldı" işaretlenmeden modül **kapanmaz**. `documentation-writer` ve `user-manual-generator` tamamlanmadan "teslim edildi" denilmez.
 
 ## ⚖️ Altın Kurallar
 - **Sıfır İnisiyatif Kuralı:** Ajan, standart Liste/CRUD (DataTable) sayfaları için arayüz uyduramaz, kesinlikle Master Template'i kullanmak zorundadır.
 - Modül mutlaka `MDM/` (veya ilgili Area) klasörü altında olmalıdır.
 - Soft Delete ve TenantId filtrelemesi asla atlanamaz.
-- Details/Edit gibi alt sayfalar yapıldığında Sneat PRO standartlarına ve 3'lü kart düzenine sadık kalınmalıdır.
+- Details/Edit sayfaları `add-page.md §B/§C` şablonları ile yapılır; Sneat PRO standartlarına ve 3'lü kart düzenine sadık kalınır. Bu sayfalar opsiyonel değil, modülün zorunlu parçalarıdır.

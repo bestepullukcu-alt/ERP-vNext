@@ -1,115 +1,14 @@
-<?xml version='1.0' encoding='utf-8'?>
-<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:schema id="root">
-    <xs:element name="root" ns1:IsDataSet="true">
-      <xs:complexType>
-        <xs:choice maxOccurs="unbounded">
-          <xs:element name="metadata">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:element name="value" type="xsd:string" minOccurs="0" />
-              </xs:sequence>
-              <xs:attribute name="name" type="xsd:string" />
-              <xs:attribute name="type" type="xsd:string" />
-              <xs:attribute name="mimetype" type="xsd:string" />
-            </xs:complexType>
-          </xs:element>
-          <xs:element name="assembly">
-            <xs:complexType>
-              <xs:attribute name="alias" type="xsd:string" />
-              <xs:attribute name="name" type="xsd:string" />
-            </xs:complexType>
-          </xs:element>
-          <xs:element name="data">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
-                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
-              </xs:sequence>
-              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
-              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
-              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
-            </xs:complexType>
-          </xs:element>
-          <xs:element name="resheader">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
-              </xs:sequence>
-              <xs:attribute name="name" type="xsd:string" use="required" />
-            </xs:complexType>
-          </xs:element>
-        </xs:choice>
-      </xs:complexType>
-    </xs:element>
-  </xs:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
-      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
-      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <data name="CountriesTitle" xml:space="preserve">
-    <value>ქვეყნები</value>
-  </data>
-  <data name="PageDescription" xml:space="preserve">
-    <value>მართეთ ქვეყნები.</value>
-  </data>
-  <data name="AddNewCountry" xml:space="preserve">
-    <value>ახალი ქვეყნის დამატება</value>
-  </data>
-  <data name="AddNewCountryDescription" xml:space="preserve">
-    <value>შექმენით ახალი ქვეყნის ჩანაწერი.</value>
-  </data>
-  <data name="EditCountry" xml:space="preserve">
-    <value>ქვეყნის რედაქტირება</value>
-  </data>
-  <data name="EditCountryDescription" xml:space="preserve">
-    <value>განაახლეთ ქვეყნის დეტალები.</value>
-  </data>
-  <data name="Name" xml:space="preserve">
-    <value>დასახელება</value>
-  </data>
-  <data name="Iso2Code" xml:space="preserve">
-    <value>ISO2 კოდი</value>
-  </data>
-  <data name="Iso3Code" xml:space="preserve">
-    <value>ISO3 კოდი</value>
-  </data>
-  <data name="PhoneCode" xml:space="preserve">
-    <value>სატელეფონო კოდი</value>
-  </data>
-  <data name="Actions" xml:space="preserve">
-    <value>ქმედებები</value>
-  </data>
-  <data name="EditBtn" xml:space="preserve">
-    <value>რედაქტირება</value>
-  </data>
-  <data name="QuickView" xml:space="preserve">
-    <value>სწრაფი ნახვა</value>
-  </data>
-  <data name="GeneralInformation" xml:space="preserve">
-    <value>ზოგადი ინფორმაცია</value>
-  </data>
-  <data name="CreatedAt" xml:space="preserve">
-    <value>შექმნის თარიღი</value>
-  </data>
-  <data name="UpdatedAt" xml:space="preserve">
-    <value>განახლების თარიღი</value>
-  </data>
-  <data name="BreadcrumbHome" xml:space="preserve">
-    <value>მთავარი</value>
-  </data>
-  <data name="BreadcrumbMDM" xml:space="preserve">
-    <value>MDM</value>
-  </data>
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="CountriesTitle" xml:space="preserve"><value>ქვეყნები</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>ამ ეკრანიდან შეგიძლიათ მართოთ ყველა ქვეყანა.</value></data>
+  <data name="AddNewCountries" xml:space="preserve"><value>ახალი ქვეყნის დამატება</value></data>
+  <data name="Actions" xml:space="preserve"><value>მოქმედებები</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>რედაქტირება</value></data>
+  <data name="QuickView" xml:space="preserve"><value>სწრაფი ხედვა</value></data>
+  <data name="Name" xml:space="preserve"><value>სახელი</value></data>
+  <data name="Iso2Code" xml:space="preserve"><value>ISO 2</value></data>
+  <data name="Iso3Code" xml:space="preserve"><value>ISO 3</value></data>
+  <data name="PhoneCode" xml:space="preserve"><value>ტელეფონის კოდი</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>ზოგადი ინფორმაცია</value></data>
 </root>
-

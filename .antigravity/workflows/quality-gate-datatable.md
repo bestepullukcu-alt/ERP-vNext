@@ -25,12 +25,17 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **API URL:** `apiUrl + '/api/{{ModuleNameLower}}'` formatında mı? `/mdm/api/v1/...` formatı yok mu?
 - [ ] **Auth Headers:** `getAuthHeaders()` tüm fetch/ajax çağrılarına ekleniyor mu?
 - [ ] **drawCallback:** `DtDefaults.updateVisualState(this.api(), filterCount)` çağrılıyor mu?
-- [ ] **StateSave (v2):** Sayfa `data-dt-standard="v2"` ise `stateSave: false` set edilmiş mi? Otomatik cache/restore yok mu?
+- [ ] **StateSave (v2):** `stateSave: false` DataTable config’de AÇIKÇA set edilmiş mi? (DtDefaults baseConfig’deki `true`’yu override eder; bkz: `frontend-js-standard.md §JS Mimari Kuralları`)
+- [ ] **Save View — async init:** `initDataTable` `async` mi? `await loadDefaultView()` DataTable init’ten önce çağrılıyor mu?
+- [ ] **Save View — helpers:** `loadDefaultView`, `saveDefaultView`, `setSaveFilterVisible`, `isDirtyComparedToDefault`, `applySavedTableState`, `getCurrentView` fonksiyonları implement edilmiş mi? (bkz: `frontend-js-standard.md §Save View — Tam İmplementasyon Şablonu`)
+- [ ] **Save View — extraButtons:** `saveFilterBtn` (`dt-save-filter-btn` class, başlangıçta `d-none`) `DtDefaults.exportButtons()` `extraButtons`’a eklenmiş mi?
+- [ ] **Save View — arm:** `initComplete` içinde `setTimeout(() => { saveFilterArmed = true; }, 0)` var mı?
 - [ ] **Save View (v2):** Save View görünürlüğü **applied/effective state**’e göre mi? (Filter için Apply/Reset sonrası; search/colVis/sort immediate apply)
 - [ ] **Save View Scope (v2):** Kaydedilenler: filters + search + colVis + columnOrder + sorting; kaydedilmeyenler: page number + pageLength
-- [ ] **Personalization Client (v2):** Save View localStorage ile değil `window.personalizationClient` üzerinden `/api/personalization/views` çağrılarıyla mı yapılıyor?
-- [ ] **401 / Expired JWT Guard (v2):** `personalizationClient` isteği `401 Unauthorized` aldığında shared refresh/login akışı devreye giriyor mu? Generic `ErrorOccurred` toast'ı ile maskelenmiyor mu?
-- [ ] **Column Reorder (v2):** `ColReorder` aktifse `columnOrder` capture/restore ediliyor mu? `column-reorder.dt` dirty-state hesabına dahil mi?
+- [ ] **Personalization Client (v2):** `window.personalizationClient` doğru `moduleKey`/`pageKey` ile çağrılıyor mu? (`moduleKey`: AreaName, `pageKey`: ModuleName)
+- [ ] **401 / Expired JWT Guard (v2):** `personalizationClient` isteği `401 Unauthorized` aldığında `isAuthHandledError()` kontrolü var mı? Generic `ErrorOccurred` toast’ı ile maskelenmiyor mu?
+- [ ] **ColReorder Aktivasyon (v2):** Standart kolon yapısında (control + checkbox + N veri + action) `colReorder: { columns: ‘:gt(1):not(:last-child)’ }` DataTable config’de **aktif mi**? (Devre dışıysa neden belirten yorum satırı var mı?)
+- [ ] **ColReorder Save View (v2):** `column-reorder.dt` + `columns-reordered.dt` event’leri dirty-state hesabına (`isDirtyComparedToDefault`) dahil mi? `captureColumnOrder` / `applyColumnOrder` implement edilmiş mi?
 
 ### B. HTML / Razor (Index.cshtml)
 
@@ -120,6 +125,17 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **Zorunlu (v2 marker varsa):** table `id` + `data-dt-standard="v2"` ve required `window.L10n` bridge key'leri/payload loader pattern'i script tarafından doğrulandı mı?
 - [ ] **Opsiyonel:** Deeper pattern checks (override bayrakları, multi-sort QA) manuel olarak kontrol edildi mi?
 
+### I. 📋 Module CRUD Completeness (ZORUNLU)
+
+> ⛔ Bu bölüm yalnızca DataTable sayfasını değil, **tam modülü** kapsar. Tek bir madde eksikse modül teslim edilemez.
+
+- [ ] **Create sayfası:** `Views/{AreaName}/{ModuleName}/Create.cshtml` mevcut mu? (`add-page.md §B` şablonuna uyuyor mu?)
+- [ ] **Details sayfası:** `Views/{AreaName}/{ModuleName}/Details.cshtml` mevcut mu? (`add-page.md §C` şablonuna uyuyor mu?)
+- [ ] **Edit sayfası:** Ayrı `Edit.cshtml` veya Details içinde edit modu mevcut mu?
+- [ ] **Rebuild Guard:** Yeniden yapım söz konusuysa silinmiş Create/Edit/Details sayfaları yeni sürümüyle değiştirildi mi?
+- [ ] **API Dokümantasyonu:** `documentation-writer` Swagger/README güncellemesini tamamladı mı?
+- [ ] **Kullanıcı Kılavuzu:** `user-manual-generator` son kullanıcı rehberini hazırladı mı?
+
 ### F. Localization Dosya İsimlendirme
 
 - [ ] **Marker Class:** `Views/{AreaName}/{ModuleName}/{ModuleName}Index.cs` dosyası oluşturulmuş mu? (Örn: `CountriesIndex.cs`)
@@ -142,7 +158,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 | Dosya | Konu |
 |-------|------|
 | `.antigravity/rules/frontend-datatable-template.md` | HTML/Razor şablonu |
-| `.antigravity/rules/frontend-js-standard.md` | JavaScript şablonu (DtDefaults tabanlı) |
+| `.antigravity/rules/frontend-js-standard.md` | JavaScript şablonu (DtDefaults tabanlı) + **§Save View — Tam İmplementasyon Şablonu** |
 | `.antigravity/rules/frontend-standards.md` | CSS, UI, L10n genel kurallar |
 | `.antigravity/workflows/add-module.md` | Tam modül oluşturma orkestrasyonu |
 | `.antigravity/workflows/add-page.md` | Sayfa/action ekleme kuralları |

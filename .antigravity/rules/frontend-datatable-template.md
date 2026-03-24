@@ -34,11 +34,14 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
 
 ### Persistence Kararları
 - Otomatik cache/stateSave **kullanılmaz** (2 saatlik state geri yükleme yasak).
+- `stateSave: false` DataTable config'e **AÇIKÇA** yazılır (DtDefaults baseConfig'deki `true`'yu override eder).
 - Sadece kullanıcı “Save View”e bastığında `savedView` persist edilir.
 - Persist hedefi localStorage değildir; gateway üzerinden `/api/personalization/views` çağıran shared `personalizationClient` kullanılır.
+- **`initDataTable` ASYNC olmalıdır** — `await loadDefaultView()` DataTable init'ten önce çağrılır.
 - **savedView içine kaydedilenler:** filters + search + colVis + columnOrder + sorting
 - **kaydedilmeyenler:** page number + pageLength
 - Panel açık/kapalı durumu persist edilmez.
+- **colReorder varsayılan aktif:** `colReorder: { columns: ':gt(1):not(:last-child)' }` standart liste sayfalarında her zaman eklenir. `column-reorder.dt` / `columns-reordered.dt` event'leri dirty-state kapsamındadır.
 - **Personalization Context Standardı:** `moduleKey + pageKey`
   - Örnek: `moduleKey: "MDM"`, `pageKey: "LegalEntities"`
   - `tableId` = `<table id="...">` zorunludur (çoklu DataTable çakışmasını engeller).
@@ -50,6 +53,7 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
   - Search: **immediate apply** (typing)
   - colVis: **immediate apply**
   - sorting: **immediate apply** (standart default **single-sort**, multi-sort ancak explicit)
+  - columnOrder: **immediate apply** (colReorder aktif sayfalarda header sürükleme — `column-reorder.dt`/`columns-reordered.dt`)
 - Apply: tabloyu günceller + paneli kapatır; Save View görünürlüğü **appliedState’e göre** güncellenir.
 - Reset: savedView varsa ona döner, yoksa baseline’a döner → `isDirty=false` → Save View gizlenir.
 
