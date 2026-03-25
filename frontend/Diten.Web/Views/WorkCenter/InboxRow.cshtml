@@ -17,13 +17,24 @@
                 <span class="inbox-row__meta-separator">•</span>
                 <span data-field="assignedBy">-</span>
             </div>
+            <div class="inbox-row__line inbox-row__line--tertiary text-muted">
+                <span class="inbox-row__meta-item">
+                    <i class="bx bx-calendar inbox-row__calendar-icon"></i>
+                    <span data-field="dueDate">-</span>
+                </span>
+                <span class="inbox-row__meta-separator">•</span>
+                <span class="badge inbox-row__priority" data-field="priority">-</span>
+            </div>
         </div>
         <div class="inbox-row__actions">
-            <button type="button" class="btn btn-sm btn-text-success" data-action="accept">@Localizer["Accept"]</button>
+            <button type="button" class="btn btn-sm btn-text-success d-inline-flex align-items-center gap-1" data-action="accept">
+                <i class="bx bx-check icon-base"></i>
+                <span>@Localizer["Accept"]</span>
+            </button>
             <div class="dropdown">
-                <button class="btn btn-icon btn-sm btn-text-secondary" type="button" data-bs-toggle="dropdown"
+                <button class="btn btn-icon btn-sm dropdown-toggle hide-arrow" type="button" data-bs-toggle="dropdown"
                     aria-expanded="false" aria-label="@Localizer["MoreActions"]" title="@Localizer["MoreActions"]">
-                    <i class="bx bx-dots-vertical-rounded icon-base"></i>
+                    <i class="bx bx-dots-vertical-rounded icon-md"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li data-action-item="return"><button class="dropdown-item" type="button" data-action="return">@Localizer["ReturnWithReason"]</button></li>

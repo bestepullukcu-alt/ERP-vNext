@@ -10,10 +10,16 @@
                 <h6 class="mb-0 lh-1">@Localizer["InboxInfoTitle"]</h6>
             </div>
             <div class="d-flex align-items-center gap-2 flex-grow-1 flex-lg-grow-0">
-                <input type="search" id="inboxSearchInput"
-                       class="form-control form-control-sm wc-inbox-search flex-grow-1"
-                       placeholder="@Localizer["SearchPlaceholder"]"
-                       autocomplete="off" />
+                <div class="wc-search-wrap">
+                    <input type="search" id="inboxSearchInput"
+                           class="form-control form-control-sm wc-inbox-search flex-grow-1"
+                           placeholder="@Localizer["SearchPlaceholder"]"
+                           autocomplete="off"
+                           aria-autocomplete="list"
+                           aria-expanded="false"
+                           aria-controls="inboxSearchSuggestions" />
+                    <ul id="inboxSearchSuggestions" class="wc-search-suggestions d-none" role="listbox" aria-label="@Localizer["SearchPlaceholder"]"></ul>
+                </div>
                 <button type="button" id="inboxFilterBtn"
                         class="btn btn-sm btn-icon btn-label-secondary position-relative flex-shrink-0"
                         aria-label="@Localizer["Filter"]"

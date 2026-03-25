@@ -395,9 +395,59 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
                 background-color .15s ease-in-out;
 }
 
+.wc-search-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.wc-search-wrap .wc-inbox-search {
+    width: 100%;
+}
+
+.wc-search-suggestions {
+    position: absolute;
+    top: calc(100% + .3rem);
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: .25rem;
+    list-style: none;
+    z-index: 1100;
+    border: 1px solid rgba(var(--bs-secondary-rgb), 0.2);
+    border-radius: .5rem;
+    background-color: var(--bs-card-bg, var(--bs-paper-bg));
+    box-shadow: var(--bs-box-shadow-lg, 0 .5rem 1rem rgba(0, 0, 0, .1));
+    max-height: 14rem;
+    overflow-y: auto;
+}
+
+.wc-search-suggestion-item {
+    margin: 0;
+}
+
+.wc-search-suggestion-btn {
+    width: 100%;
+    border: 0;
+    border-radius: .4rem;
+    background: transparent;
+    text-align: left;
+    padding: .4rem .5rem;
+    font-size: .78rem;
+    color: var(--bs-body-color);
+}
+
+.wc-search-suggestion-item.is-active .wc-search-suggestion-btn,
+.wc-search-suggestion-btn:hover,
+.wc-search-suggestion-btn:focus {
+    background-color: rgba(var(--bs-primary-rgb), .12);
+    color: var(--bs-emphasis-color);
+    outline: none;
+}
+
 .wc-inbox-search:focus {
     border-color: rgba(var(--bs-primary-rgb), .4);
-    box-shadow: 0 0 0 .15rem rgba(var(--bs-primary-rgb), .16);
+    box-shadow: none !important;
 }
 
 .wc-inbox-search.border-primary {
@@ -427,6 +477,10 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 @media (max-width: 991.98px) {
     .wc-inbox-search {
         min-width: 0;
+    }
+
+    .wc-search-wrap {
+        width: 100%;
     }
 
     .wc-filter-select {
@@ -482,7 +536,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     align-items: center;
     justify-content: space-between;
     gap: .55rem;
-    padding: .75rem 1rem;
+    padding: .85rem 1rem;
     border: 1px solid rgba(var(--bs-secondary-rgb), 0.12);
     border-radius: var(--bs-border-radius-lg, .5rem);
     background-color: var(--bs-card-bg, var(--bs-paper-bg)) !important;
@@ -494,6 +548,9 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 .inbox-row__main {
     min-width: 0;
     flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    row-gap: .42rem;
 }
 
 .inbox-row__line {
@@ -504,11 +561,22 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 }
 
 .inbox-row__line--primary {
-    margin-bottom: .12rem;
+    order: 1;
+    margin: 0;
 }
 
 .inbox-row__line--secondary {
+    order: 2;
     font-size: .74rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inbox-row__line--tertiary {
+    order: 3;
+    margin: 0;
+    font-size: .72rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -517,6 +585,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 .inbox-row__title {
     font-size: .875rem;
     font-weight: 600;
+    line-height: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -540,7 +609,47 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     opacity: .55;
 }
 
+.inbox-row__meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+    min-width: 0;
+    line-height: 1;
+}
+
+.inbox-row__meta-item .icon-base {
+    opacity: .8;
+}
+
+.inbox-row__calendar-icon {
+    font-size: .78rem !important;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+    flex: 0 0 auto;
+    position: relative;
+    top: -1px;
+}
+
+.inbox-row__meta-item .inbox-row__calendar-icon {
+    font-size: .78rem !important;
+    line-height: 1 !important;
+}
+
+.inbox-row__meta-item > span[data-field="dueDate"] {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
 .inbox-row__type {
+    font-size: .64rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: .2rem .38rem;
+}
+
+.inbox-row__priority {
     font-size: .64rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -550,21 +659,21 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 .inbox-row__actions {
     display: inline-flex;
     align-items: center;
-    gap: .08rem;
+    gap: .25rem;
     opacity: 1;
     transition: opacity .15s ease;
     flex: 0 0 auto;
 }
 
+.inbox-row__actions .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .inbox-row:hover .inbox-row__actions,
 .inbox-row--selected .inbox-row__actions {
     opacity: 1;
-}
-
-.inbox-row__actions .btn {
-    --bs-btn-padding-y: .1rem;
-    --bs-btn-padding-x: .32rem;
-    --bs-btn-font-size: .68rem;
 }
 
 .inbox-row__actions .btn:hover,
@@ -580,7 +689,9 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 }
 
 .inbox-row:hover {
-    background-color: rgba(var(--bs-primary-rgb), 0.04) !important;
+    background-color: var(--bs-primary-bg-subtle, rgba(var(--bs-primary-rgb), 0.12)) !important;
+    border-color: var(--bs-primary-border-subtle, rgba(var(--bs-primary-rgb), 0.24)) !important;
+    color: var(--bs-primary-text-emphasis, inherit) !important;
 }
 
 .inbox-row--selected {
@@ -592,10 +703,40 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
         align-items: flex-start;
     }
 
+    .inbox-row__line--tertiary {
+        white-space: normal;
+        overflow: visible;
+    }
+
     .inbox-row__actions {
         opacity: 1;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        align-items: center;
         justify-content: flex-end;
+        align-self: center;
+    }
+
+    .inbox-row__actions .dropdown {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .inbox-row__actions .btn {
+        display: inline-flex;
+        align-items: center;
+        line-height: 1;
+        height: 1.875rem;
+    }
+
+    .inbox-row__actions .btn.btn-icon {
+        width: 1.875rem;
+        padding: 0;
+    }
+
+    .inbox-row__actions .btn .icon-base,
+    .inbox-row__actions .btn .icon-md {
+        display: block;
+        line-height: 1;
     }
 }
 

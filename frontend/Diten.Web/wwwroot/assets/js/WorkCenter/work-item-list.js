@@ -82,10 +82,18 @@
 
     WorkItemList.prototype.resolveTypeClass = function (type) {
         const normalized = (type || '').toLowerCase();
-        if (normalized === 'task') return 'bg-label-primary';
+        if (normalized === 'task') return 'bg-info text-white';
         if (normalized === 'issue') return 'bg-label-danger';
         if (normalized === 'meeting') return 'bg-label-warning';
         return 'bg-label-dark';
+    };
+
+    WorkItemList.prototype.resolvePriorityClass = function (priority) {
+        const normalized = (priority || '').toLowerCase();
+        if (normalized === 'yuksek' || normalized === 'high') return 'bg-label-danger';
+        if (normalized === 'orta' || normalized === 'medium') return 'bg-label-warning';
+        if (normalized === 'dusuk' || normalized === 'low') return 'bg-label-success';
+        return 'bg-label-secondary';
     };
 
     WorkItemList.prototype.renderRow = function (item) {
@@ -130,9 +138,16 @@
             typeBadge.className = `badge inbox-row__type ${this.resolveTypeClass(item.type)}`;
         }
 
+        const priorityBadge = row.querySelector('[data-field="priority"]');
+        if (priorityBadge) {
+            priorityBadge.textContent = item.priority || '-';
+            priorityBadge.className = `badge inbox-row__priority ${this.resolvePriorityClass(item.priority)}`;
+        }
+
         setField('title', item.title);
         setField('context', item.context);
         setField('assignedBy', item.assignedBy);
+        setField('dueDate', this.formatDate(item.dueDate || item.createdDate));
         setField('requiredAction', item.requiredAction || (this.l10n.NoAction || '-'));
 
         return fragment;

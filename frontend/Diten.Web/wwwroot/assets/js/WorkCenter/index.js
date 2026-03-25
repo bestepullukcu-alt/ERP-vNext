@@ -4,6 +4,7 @@
     const l10n = window.L10n || {};
     const removedItemIds = new Set();
     const PAGE_SIZE = 20;
+    const LOAD_MORE_DEFAULT_LABEL = l10n.LoadMore || 'Load More';
 
     const elements = {
         inboxTabTrigger: document.getElementById('workcenter-inbox-tab'),
@@ -14,6 +15,8 @@
         inboxRoot: document.querySelector('[data-work-item-list="inbox"]'),
         allWorkRoot: document.querySelector('[data-work-item-list="allwork"]'),
         inboxSearchInput: document.getElementById('inboxSearchInput'),
+        inboxSearchWrap: document.querySelector('.wc-search-wrap'),
+        inboxSearchSuggestions: document.getElementById('inboxSearchSuggestions'),
         inboxFilterTypeSelect: document.getElementById('inboxFilterType'),
         btnInboxFilterApply: document.getElementById('btnInboxFilterApply'),
         btnInboxFilterReset: document.getElementById('btnInboxFilterReset')
@@ -118,22 +121,26 @@
 
     const buildMockInboxItems = (count) => {
         const today = new Date('2026-03-24T09:00:00');
+        const priorities = ['Yuksek', 'Orta', 'Dusuk'];
         return Array.from({ length: count }, function (_, index) {
             const template = baseInboxItems[index % baseInboxItems.length];
             const sequence = index + 1;
             const createdDate = new Date(today);
             createdDate.setDate(today.getDate() - (index % 9));
+            const dueDate = new Date(createdDate);
+            dueDate.setDate(createdDate.getDate() + ((index % 5) + 1));
 
             return {
                 id: `inb-${String(sequence).padStart(3, '0')}`,
                 type: template.type,
                 status: 'Backlog',
-                priority: 'Orta',
+                priority: priorities[index % priorities.length],
                 title: sequence > baseInboxItems.length ? `${template.title} #${sequence}` : template.title,
                 source: template.source,
                 context: template.context,
                 assignedBy: template.assignedBy,
                 createdDate: createdDate.toISOString().slice(0, 10),
+                dueDate: dueDate.toISOString().slice(0, 10),
                 meta: template.meta,
                 requiredAction: template.requiredAction,
                 isUnread: index % 3 !== 0
@@ -143,11 +150,13 @@
 
     const state = {
         activeTab: 'inbox',
-        inboxItems: buildMockInboxItems(40),
+        inboxItems: [],
         visibleCount: PAGE_SIZE,
         selectedItemId: null,
         filterText: '',
-        filterType: ''
+        filterType: '',
+        searchSuggestions: [],
+        searchSuggestionIndex: -1
     };
 
     const getInboxItems = () => state.inboxItems.filter((item) => !removedItemIds.has(item.id));
@@ -171,6 +180,84 @@
 
     const getVisibleInboxItems = () => getFilteredInboxItems().slice(0, state.visibleCount);
 
+    const closeSearchSuggestions = () => {
+        if (!elements.inboxSearchSuggestions) {
+            return;
+        }
+        state.searchSuggestions = [];
+        state.searchSuggestionIndex = -1;
+        elements.inboxSearchSuggestions.innerHTML = '';
+        elements.inboxSearchSuggestions.classList.add('d-none');
+        elements.inboxSearchInput?.setAttribute('aria-expanded', 'false');
+    };
+
+    const buildSearchSuggestions = (query) => {
+        const q = (query || '').trim().toLowerCase();
+        if (q.length < 2) {
+            return [];
+        }
+
+        const suggestions = getInboxItems()
+            .map((item) => ({
+                id: item.id,
+                title: item.title || ''
+            }))
+            .filter((item) => item.title.toLowerCase().includes(q))
+            .sort((a, b) => {
+                const aStarts = a.title.toLowerCase().startsWith(q) ? 0 : 1;
+                const bStarts = b.title.toLowerCase().startsWith(q) ? 0 : 1;
+                if (aStarts !== bStarts) {
+                    return aStarts - bStarts;
+                }
+                return a.title.localeCompare(b.title);
+            })
+            .slice(0, 6);
+
+        return suggestions;
+    };
+
+    const renderSearchSuggestions = () => {
+        if (!elements.inboxSearchSuggestions) {
+            return;
+        }
+
+        const items = state.searchSuggestions;
+        if (!items.length) {
+            closeSearchSuggestions();
+            return;
+        }
+
+        const listHtml = items.map((item, index) => {
+            const activeClass = index === state.searchSuggestionIndex ? ' is-active' : '';
+            return `<li role="option" aria-selected="${index === state.searchSuggestionIndex}" class="wc-search-suggestion-item${activeClass}">
+                        <button type="button" class="wc-search-suggestion-btn" data-suggestion-id="${item.id}">
+                            ${item.title}
+                        </button>
+                    </li>`;
+        }).join('');
+
+        elements.inboxSearchSuggestions.innerHTML = listHtml;
+        elements.inboxSearchSuggestions.classList.remove('d-none');
+        elements.inboxSearchInput?.setAttribute('aria-expanded', 'true');
+    };
+
+    const applySuggestion = (suggestionId) => {
+        const selected = state.searchSuggestions.find((item) => item.id === suggestionId);
+        if (!selected) {
+            return;
+        }
+
+        state.filterText = selected.title;
+        state.selectedItemId = selected.id;
+        state.visibleCount = PAGE_SIZE;
+        if (elements.inboxSearchInput) {
+            elements.inboxSearchInput.value = selected.title;
+            elements.inboxSearchInput.classList.add('border-primary', 'bg-label-primary');
+        }
+        closeSearchSuggestions();
+        renderInbox();
+    };
+
     const notify = (message, type) => {
         if (typeof window.showToast === 'function') {
             window.showToast(message, type || 'info');
@@ -187,6 +274,28 @@
         const hasMore = getFilteredInboxItems().length > getVisibleInboxItems().length;
         const shouldShow = state.activeTab === 'inbox' && hasMore;
         elements.inboxLoadMoreBtn.classList.toggle('d-none', !shouldShow);
+    };
+
+    const setLoadMoreBusy = (isBusy) => {
+        if (!elements.inboxLoadMoreBtn) {
+            return;
+        }
+
+        elements.inboxLoadMoreBtn.disabled = Boolean(isBusy);
+        if (isBusy) {
+            elements.inboxLoadMoreBtn.innerHTML = `
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                ${l10n.Loading || 'Loading...'}
+            `;
+            return;
+        }
+
+        elements.inboxLoadMoreBtn.textContent = LOAD_MORE_DEFAULT_LABEL;
+    };
+
+    const loadInboxItems = async () => {
+        // Mock data stays in frontend scope for now; async shape matches future API usage.
+        return Promise.resolve(buildMockInboxItems(40));
     };
 
     const renderInbox = () => {
@@ -293,9 +402,15 @@
             updateLoadMoreVisibility();
         });
 
-        elements.inboxLoadMoreBtn?.addEventListener('click', () => {
-            state.visibleCount += PAGE_SIZE;
-            renderInbox();
+        elements.inboxLoadMoreBtn?.addEventListener('click', async () => {
+            setLoadMoreBusy(true);
+            try {
+                await Promise.resolve();
+                state.visibleCount += PAGE_SIZE;
+                renderInbox();
+            } finally {
+                setLoadMoreBusy(false);
+            }
         });
 
         elements.inboxSearchInput?.addEventListener('input', () => {
@@ -303,7 +418,65 @@
             state.visibleCount = PAGE_SIZE;
             elements.inboxSearchInput.classList.toggle('border-primary', !!state.filterText);
             elements.inboxSearchInput.classList.toggle('bg-label-primary', !!state.filterText);
+            state.searchSuggestions = buildSearchSuggestions(state.filterText);
+            state.searchSuggestionIndex = state.searchSuggestions.length ? 0 : -1;
+            renderSearchSuggestions();
             renderInbox();
+        });
+
+        elements.inboxSearchInput?.addEventListener('keydown', (event) => {
+            if (!state.searchSuggestions.length) {
+                if (event.key === 'Escape') {
+                    closeSearchSuggestions();
+                }
+                return;
+            }
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                state.searchSuggestionIndex = (state.searchSuggestionIndex + 1) % state.searchSuggestions.length;
+                renderSearchSuggestions();
+                return;
+            }
+
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                state.searchSuggestionIndex = (state.searchSuggestionIndex - 1 + state.searchSuggestions.length) % state.searchSuggestions.length;
+                renderSearchSuggestions();
+                return;
+            }
+
+            if (event.key === 'Enter') {
+                if (state.searchSuggestionIndex < 0) {
+                    return;
+                }
+                event.preventDefault();
+                const selected = state.searchSuggestions[state.searchSuggestionIndex];
+                applySuggestion(selected.id);
+                return;
+            }
+
+            if (event.key === 'Escape') {
+                closeSearchSuggestions();
+            }
+        });
+
+        elements.inboxSearchSuggestions?.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-suggestion-id]');
+            if (!button) {
+                return;
+            }
+            applySuggestion(button.getAttribute('data-suggestion-id'));
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!elements.inboxSearchWrap) {
+                return;
+            }
+            if (elements.inboxSearchWrap.contains(event.target)) {
+                return;
+            }
+            closeSearchSuggestions();
         });
 
         elements.btnInboxFilterApply?.addEventListener('click', () => {
@@ -316,6 +489,7 @@
             state.filterType = '';
             state.filterText = '';
             state.visibleCount = PAGE_SIZE;
+            closeSearchSuggestions();
             if (elements.inboxFilterTypeSelect) {
                 elements.inboxFilterTypeSelect.value = '';
             }
@@ -327,22 +501,25 @@
         });
     };
 
-    const init = () => {
+    const init = async () => {
         bindEvents();
         applyViewSwitchRules();
 
         inboxList.setLoading(true);
         elements.inboxLoadMoreBtn?.classList.add('d-none');
+        setLoadMoreBusy(false);
 
         if (allWorkList) {
             allWorkList.setLoading(false);
             allWorkList.setItems([]);
         }
 
-        setTimeout(() => {
+        try {
+            state.inboxItems = await loadInboxItems();
+        } finally {
             inboxList.setLoading(false);
             renderInbox();
-        }, 500);
+        }
     };
 
     init();
