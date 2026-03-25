@@ -44,4 +44,33 @@
   <data name="SearchPlaceholder" xml:space="preserve"><value>İş öğesi ara...</value></data>
   <data name="Filter" xml:space="preserve"><value>Filtrele</value></data>
   <data name="FilterType" xml:space="preserve"><value>Tüm Türler</value></data>
+  <data name="TypeFilter" xml:space="preserve"><value>Tür Filtresi</value></data>
+  <data name="TypeAll" xml:space="preserve"><value>Tümü</value></data>
+  <data name="TypeTask" xml:space="preserve"><value>Görev</value></data>
+  <data name="TypeIssue" xml:space="preserve"><value>Sorun</value></data>
+  <data name="TypeMeeting" xml:space="preserve"><value>Toplantı</value></data>
+  <data name="TypeNote" xml:space="preserve"><value>Not</value></data>
+  <data name="ScopeNav" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Tüm Durumlar</value></data>
+  <data name="ColType" xml:space="preserve"><value>Tür</value></data>
+  <data name="ColTitle" xml:space="preserve"><value>Başlık</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="ColPriority" xml:space="preserve"><value>Öncelik</value></data>
+  <data name="ColRequiredAction" xml:space="preserve"><value>Gerekli Aksiyon</value></data>
+  <data name="ColContext" xml:space="preserve"><value>Bağlam</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="ColOwner" xml:space="preserve"><value>Sahip / Atanan</value></data>
+  <data name="ColDueDate" xml:space="preserve"><value>Bitiş Tarihi</value></data>
+  <data name="ColSeverity" xml:space="preserve"><value>Şiddet</value></data>
+  <data name="ColBlocker" xml:space="preserve"><value>Bloklayan</value></data>
+  <data name="ColDateTime" xml:space="preserve"><value>Tarih / Saat</value></data>
+  <data name="ColResponseStatus" xml:space="preserve"><value>Yanıt Durumu</value></data>
+  <data name="ColOrganizer" xml:space="preserve"><value>Organizatör</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>Konum / Bağlantı</value></data>
+  <data name="ColReviewStatus" xml:space="preserve"><value>İnceleme Durumu</value></data>
+  <data name="ColNoteDate" xml:space="preserve"><value>Not Tarihi</value></data>
+  <data name="ColAuthor" xml:space="preserve"><value>Yazar</value></data>
+  <data name="ColConvertAction" xml:space="preserve"><value>Dönüştür</value></data>
+  <data name="ColLastUpdate" xml:space="preserve"><value>Son Güncelleme</value></data>
+  <data name="ColActions" xml:space="preserve"><value>İşlemler</value></data>
 </root>

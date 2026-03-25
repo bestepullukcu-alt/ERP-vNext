@@ -3,14 +3,78 @@
 @inject IHtmlLocalizer<WorkCenterIndex> Localizer
 
 <div class="tab-pane fade" id="workcenter-allwork-pane" role="tabpanel" aria-labelledby="workcenter-allwork-tab">
-    <div class="card">
-        <div class="card-body p-0">
-            <partial name="InboxList" view-data='new ViewDataDictionary(ViewData)
-            {
-                ["ListId"] = "allwork",
-                ["EmptyTitle"] = Localizer["AllWorkPlaceholderTitle"].Value,
-                ["EmptyDescription"] = Localizer["AllWorkPlaceholderDescription"].Value
-            }' />
+
+    @* 1. Type Filter + Sub-scope bar *@
+    <div class="card mb-3">
+        <div class="card-body py-3 px-4">
+
+            @* Type filter button group *@
+            <div class="btn-group btn-group-sm aw-type-filter mb-2" role="group" id="allWorkTypeFilter"
+                 aria-label="@Localizer["TypeFilter"]">
+                <button type="button" class="btn btn-outline-primary active"
+                        data-allwork-type="all" aria-pressed="true">
+                    <i class="bx bx-layer icon-base me-1" aria-hidden="true"></i>@Localizer["TypeAll"]
+                </button>
+                <button type="button" class="btn btn-outline-secondary"
+                        data-allwork-type="task" aria-pressed="false">
+                    <i class="bx bx-check-square icon-base me-1" aria-hidden="true"></i>@Localizer["TypeTask"]
+                </button>
+                <button type="button" class="btn btn-outline-secondary"
+                        data-allwork-type="issue" aria-pressed="false">
+                    <i class="bx bx-error-circle icon-base me-1" aria-hidden="true"></i>@Localizer["TypeIssue"]
+                </button>
+                <button type="button" class="btn btn-outline-secondary"
+                        data-allwork-type="meeting" aria-pressed="false">
+                    <i class="bx bx-calendar-event icon-base me-1" aria-hidden="true"></i>@Localizer["TypeMeeting"]
+                </button>
+                <button type="button" class="btn btn-outline-secondary"
+                        data-allwork-type="note" aria-pressed="false">
+                    <i class="bx bx-note icon-base me-1" aria-hidden="true"></i>@Localizer["TypeNote"]
+                </button>
+            </div>
+
+            @* Sub-scope nav — JS tarafından render edilir *@
+            <nav id="allWorkScopeNav" aria-label="@Localizer["ScopeNav"]"></nav>
+
         </div>
     </div>
+
+    @* 2. Inline filter panel *@
+    <partial name="_AllWorkFilter" />
+
+    @* 3. DataTable card *@
+    <div class="card">
+        <div class="card-datatable table-responsive">
+            <table id="dt-all-work" class="datatables-all-work table border-top">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th><input type="checkbox" class="form-check-input dt-checkboxes-select-all" /></th>
+                        <th data-col="type">@Localizer["ColType"]</th>
+                        <th data-col="title">@Localizer["ColTitle"]</th>
+                        <th data-col="status">@Localizer["ColStatus"]</th>
+                        <th data-col="priority">@Localizer["ColPriority"]</th>
+                        <th data-col="requiredAction">@Localizer["ColRequiredAction"]</th>
+                        <th data-col="context">@Localizer["ColContext"]</th>
+                        <th data-col="source">@Localizer["ColSource"]</th>
+                        <th data-col="owner">@Localizer["ColOwner"]</th>
+                        <th data-col="dueDate">@Localizer["ColDueDate"]</th>
+                        <th data-col="severity">@Localizer["ColSeverity"]</th>
+                        <th data-col="blocker">@Localizer["ColBlocker"]</th>
+                        <th data-col="dateTime">@Localizer["ColDateTime"]</th>
+                        <th data-col="responseStatus">@Localizer["ColResponseStatus"]</th>
+                        <th data-col="organizer">@Localizer["ColOrganizer"]</th>
+                        <th data-col="location">@Localizer["ColLocation"]</th>
+                        <th data-col="reviewStatus">@Localizer["ColReviewStatus"]</th>
+                        <th data-col="noteDate">@Localizer["ColNoteDate"]</th>
+                        <th data-col="author">@Localizer["ColAuthor"]</th>
+                        <th data-col="convertAction">@Localizer["ColConvertAction"]</th>
+                        <th data-col="lastUpdate">@Localizer["ColLastUpdate"]</th>
+                        <th>@Localizer["ColActions"]</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
 </div>

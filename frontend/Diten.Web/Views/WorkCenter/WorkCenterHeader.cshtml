@@ -2,32 +2,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<WorkCenterIndex> Localizer
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-3">
-    <div class="d-flex flex-column justify-content-center">
-        <h4 class="mb-1">@Localizer["WorkCenterTitle"]</h4>
-        <p class="mb-0 text-muted">@Localizer["WorkCenterDescription"]</p>
-    </div>
-
-    <div class="btn-group work-center-view-switch" role="group" aria-label="@Localizer["ViewSwitch"]">
-        <button type="button" class="btn btn-outline-secondary btn-icon" data-view-switch="data-table" disabled
-            aria-label="@Localizer["DataTable"]" title="@Localizer["DataTable"]">
-            <i class="bx bx-table icon-base" aria-hidden="true"></i>
-        </button>
-        <button type="button" class="btn btn-outline-primary active btn-icon" data-view-switch="list"
-            aria-label="@Localizer["List"]" title="@Localizer["List"]">
-            <i class="bx bx-list-ul icon-base" aria-hidden="true"></i>
-        </button>
-        <button type="button" class="btn btn-outline-secondary btn-icon" data-view-switch="kanban" disabled
-            aria-label="@Localizer["Kanban"]" title="@Localizer["Kanban"]">
-            <i class="bx bx-grid-alt icon-base" aria-hidden="true"></i>
-        </button>
-        <button type="button" class="btn btn-outline-secondary btn-icon" data-view-switch="calendar" disabled
-            aria-label="@Localizer["Calendar"]" title="@Localizer["Calendar"]">
-            <i class="bx bx-calendar icon-base" aria-hidden="true"></i>
-        </button>
-        <button type="button" class="btn btn-outline-secondary btn-icon" data-view-switch="gantt" disabled
-            aria-label="@Localizer["Gantt"]" title="@Localizer["Gantt"]">
-            <i class="bx bx-bar-chart-alt-2 icon-base" aria-hidden="true"></i>
-        </button>
-    </div>
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["WorkCenterTitle"]</h5>
+    <p class="mb-0 text-muted" style="font-size: 0.85rem;">@Localizer["WorkCenterDescription"]</p>
 </div>

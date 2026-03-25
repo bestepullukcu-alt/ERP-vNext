@@ -517,6 +517,36 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     display: block;
 }
 
+.workcenter-allwork-type-filter {
+    min-width: 0;
+}
+
+.workcenter-allwork-type-filter .btn-group {
+    flex-wrap: nowrap;
+}
+
+.workcenter-allwork-type-filter .btn {
+    min-width: 2.1rem;
+    padding-inline: .5rem;
+}
+
+.workcenter-allwork-type-filter .btn,
+.workcenter-allwork-type-filter .btn:hover,
+.workcenter-allwork-type-filter .btn:focus,
+.workcenter-allwork-type-filter .btn:active {
+    transform: none !important;
+    translate: none !important;
+    top: 0 !important;
+}
+
+@media (max-width: 767.98px) {
+    .workcenter-allwork-type-filter {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: .125rem;
+    }
+}
+
 .inbox-list {
     border: none;
     background: transparent;
@@ -529,6 +559,20 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     flex-direction: column;
     gap: .5rem;
     padding: 0;
+}
+
+.all-work-shell {
+    min-height: 320px;
+    border: 1px dashed rgba(var(--bs-secondary-rgb), 0.24);
+    border-radius: var(--bs-border-radius-lg, .5rem);
+    background: rgba(var(--bs-secondary-rgb), 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.all-work-shell__placeholder {
+    width: 100%;
 }
 
 .inbox-row {
@@ -858,4 +902,65 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
         padding: 0.4rem 0.6rem !important;
         font-size: 0.75rem !important;
     }
+}
+
+/* ── MOD-0035: AllWork Type Filter (tab-pane içi) ─────────────────────── */
+.aw-type-filter .btn,
+.aw-type-filter .btn:hover,
+.aw-type-filter .btn:focus,
+.aw-type-filter .btn:active {
+    transform: none !important;
+    translate: none !important;
+    top: 0 !important;
+}
+
+/* ── MOD-0036: AllWork Sub-Scope Pills ────────────────────────────────── */
+.aw-scope-pills {
+    scrollbar-width: none;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+    padding-bottom: 2px;
+}
+
+.aw-scope-pills::-webkit-scrollbar {
+    display: none;
+}
+
+.aw-scope-pills .nav-link {
+    font-size: .78rem;
+    padding: .2rem .65rem;
+    white-space: nowrap;
+    border-radius: 20px;
+    border: 1px solid rgba(var(--bs-secondary-rgb), .3);
+    color: var(--bs-body-color);
+    background: transparent;
+    transition: background .12s, border-color .12s, color .12s;
+}
+
+.aw-scope-pills .nav-link:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.aw-scope-pills .nav-link.active {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+.aw-scope-pills .nav-link.aw-scope-muted {
+    color: var(--bs-secondary-color);
+    border-color: rgba(var(--bs-secondary-rgb), .18);
+}
+
+.aw-scope-pills .nav-link.aw-scope-muted:hover {
+    border-color: var(--bs-secondary);
+    color: var(--bs-secondary);
+}
+
+.aw-scope-pills .nav-link.aw-scope-muted.active {
+    background: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+    color: #fff;
 }

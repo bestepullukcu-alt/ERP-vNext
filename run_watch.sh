@@ -22,7 +22,7 @@ echo "=========================================================="
 echo "🚀 İzleniyor: Auth (AuthService.Api)"
 echo "🚀 İzleniyor: Backend (MdmService.Api)"
 echo "🚀 İzleniyor: Platform (Diten.Platform.API)"
-echo "🚀 İzleniyor: Gateway (ApiGateway)"
+echo "🚀 İzleniyor: Gateway (ApiGateway)"@
 echo "🚀 İzleniyor: Frontend (Diten.Web)"
 echo "=========================================================="
 echo ""

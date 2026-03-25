@@ -9,11 +9,11 @@
     const elements = {
         inboxTabTrigger: document.getElementById('workcenter-inbox-tab'),
         allWorkTabTrigger: document.getElementById('workcenter-allwork-tab'),
+        allWorkViewSwitchHost: document.getElementById('allWorkViewSwitch'),
         viewSwitchButtons: Array.from(document.querySelectorAll('[data-view-switch]')),
         inboxLoadMoreBtn: document.getElementById('inboxLoadMoreBtn'),
         rowTemplate: document.getElementById('inboxRowTemplate'),
         inboxRoot: document.querySelector('[data-work-item-list="inbox"]'),
-        allWorkRoot: document.querySelector('[data-work-item-list="allwork"]'),
         inboxSearchInput: document.getElementById('inboxSearchInput'),
         inboxSearchWrap: document.querySelector('.wc-search-wrap'),
         inboxSearchSuggestions: document.getElementById('inboxSearchSuggestions'),
@@ -150,6 +150,7 @@
 
     const state = {
         activeTab: 'inbox',
+        allWorkView: 'data-table',
         inboxItems: [],
         visibleCount: PAGE_SIZE,
         selectedItemId: null,
@@ -305,15 +306,9 @@
     };
 
     const applyViewSwitchRules = () => {
-        const isInboxActive = state.activeTab === 'inbox';
-        elements.viewSwitchButtons.forEach((button) => {
-            const view = button.getAttribute('data-view-switch');
-            const shouldEnable = isInboxActive && view === 'list';
-            button.disabled = !shouldEnable;
-            button.classList.toggle('active', shouldEnable);
-            button.classList.toggle('btn-outline-primary', shouldEnable);
-            button.classList.toggle('btn-outline-secondary', !shouldEnable);
-        });
+        const isAllWorkActive = state.activeTab === 'all-work';
+
+        elements.allWorkViewSwitchHost?.classList.toggle('d-none', !isAllWorkActive);
     };
 
     const inboxList = new window.WorkItemList({
@@ -379,16 +374,6 @@
         }
     });
 
-    const allWorkList = elements.allWorkRoot
-        ? new window.WorkItemList({
-            root: elements.allWorkRoot,
-            rowTemplate: elements.rowTemplate,
-            l10n: l10n,
-            onSelect: function () { },
-            onAction: function () { }
-        })
-        : null;
-
     const bindEvents = () => {
         elements.inboxTabTrigger?.addEventListener('shown.bs.tab', () => {
             state.activeTab = 'inbox';
@@ -398,8 +383,10 @@
 
         elements.allWorkTabTrigger?.addEventListener('shown.bs.tab', () => {
             state.activeTab = 'all-work';
+            state.allWorkView = 'data-table';
             applyViewSwitchRules();
             updateLoadMoreVisibility();
+            window.AllWork?.onTabActivated();
         });
 
         elements.inboxLoadMoreBtn?.addEventListener('click', async () => {
@@ -505,14 +492,16 @@
         bindEvents();
         applyViewSwitchRules();
 
+        if (window.bootstrap?.Tooltip) {
+            const tooltipButtons = Array.from(document.querySelectorAll('#workCenterPage [data-bs-toggle="tooltip"]'));
+            tooltipButtons.forEach((button) => {
+                window.bootstrap.Tooltip.getOrCreateInstance(button);
+            });
+        }
+
         inboxList.setLoading(true);
         elements.inboxLoadMoreBtn?.classList.add('d-none');
         setLoadMoreBusy(false);
-
-        if (allWorkList) {
-            allWorkList.setLoading(false);
-            allWorkList.setItems([]);
-        }
 
         try {
             state.inboxItems = await loadInboxItems();

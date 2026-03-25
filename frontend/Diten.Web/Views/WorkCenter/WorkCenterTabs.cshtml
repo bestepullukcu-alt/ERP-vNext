@@ -3,28 +3,60 @@
 @inject IHtmlLocalizer<WorkCenterIndex> Localizer
 
 <div class="card mb-4">
-    <div class="card-header p-4">
-        <div class="nav-align-top">
-            <ul class="nav nav-pills d-inline-flex gap-2" role="tablist">
-                <li class="nav-item mb-1 mb-sm-0" role="presentation">
-                    <button class="nav-link active" id="workcenter-inbox-tab" data-bs-toggle="tab" data-bs-target="#workcenter-inbox-pane"
-                        type="button" role="tab" aria-controls="workcenter-inbox-pane" aria-selected="true">
-                        <span class="d-none d-sm-inline-flex align-items-center">
-                            <i class="icon-base bx bx-envelope icon-sm me-1_5"></i>@Localizer["Inbox"]
-                        </span>
-                        <i class="icon-base bx bx-envelope icon-sm d-sm-none"></i>
+    <div class="card-header p-3">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="nav-align-top">
+                <ul class="nav nav-pills d-inline-flex gap-2" role="tablist">
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button class="nav-link active small border shadow-none" style="padding: 0.35rem 0.75rem; font-size: 0.8125rem; min-height: auto; font-weight: 500;" id="workcenter-inbox-tab" data-bs-toggle="tab" data-bs-target="#workcenter-inbox-pane"
+                            type="button" role="tab" aria-controls="workcenter-inbox-pane" aria-selected="true">
+                            <span class="d-none d-sm-inline-flex align-items-center">
+                                <i class="bx bx-envelope me-1" style="font-size: 1.1rem;"></i>@Localizer["Inbox"]
+                            </span>
+                            <i class="bx bx-envelope d-sm-none" style="font-size: 1.1rem;"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link small border shadow-none" style="padding: 0.35rem 0.75rem; font-size: 0.8125rem; min-height: auto; font-weight: 500;" id="workcenter-allwork-tab" data-bs-toggle="tab" data-bs-target="#workcenter-allwork-pane"
+                            type="button" role="tab" aria-controls="workcenter-allwork-pane" aria-selected="false">
+                            <span class="d-none d-sm-inline-flex align-items-center">
+                                <i class="bx bx-briefcase-alt-2 me-1" style="font-size: 1.1rem;"></i>@Localizer["AllWork"]
+                            </span>
+                            <i class="bx bx-briefcase-alt-2 d-sm-none" style="font-size: 1.1rem;"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="allWorkViewSwitch" class="ms-auto d-none">
+                <div class="btn-group btn-group-sm work-center-view-switch" role="group" aria-label="@Localizer["ViewSwitch"]">
+                    <button type="button" class="btn btn-outline-primary active btn-icon" data-view-switch="data-table"
+                        aria-label="@Localizer["DataTable"]" title="@Localizer["DataTable"]"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom">
+                        <i class="bx bx-table icon-base" aria-hidden="true"></i>
                     </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="workcenter-allwork-tab" data-bs-toggle="tab" data-bs-target="#workcenter-allwork-pane"
-                        type="button" role="tab" aria-controls="workcenter-allwork-pane" aria-selected="false">
-                        <span class="d-none d-sm-inline-flex align-items-center">
-                            <i class="icon-base bx bx-briefcase-alt-2 icon-sm me-1_5"></i>@Localizer["AllWork"]
-                        </span>
-                        <i class="icon-base bx bx-briefcase-alt-2 icon-sm d-sm-none"></i>
+                    <button type="button" class="btn btn-outline-secondary btn-icon" data-view-switch="list" disabled
+                        aria-label="@Localizer["List"]" title="@Localizer["List"]"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom">
+                        <i class="bx bx-list-ul icon-base" aria-hidden="true"></i>
                     </button>
-                </li>
-            </ul>
+                    <button type="button" class="btn btn-outline-secondary btn-icon" data-view-switch="kanban" disabled
+                        aria-label="@Localizer["Kanban"]" title="@Localizer["Kanban"]"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom">
+                        <i class="bx bx-grid-alt icon-base" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-icon" data-view-switch="calendar" disabled
+                        aria-label="@Localizer["Calendar"]" title="@Localizer["Calendar"]"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom">
+                        <i class="bx bx-calendar icon-base" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-icon" data-view-switch="gantt" disabled
+                        aria-label="@Localizer["Gantt"]" title="@Localizer["Gantt"]"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom">
+                        <i class="bx bx-bar-chart-alt-2 icon-base" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
