@@ -19,7 +19,14 @@
         inboxSearchSuggestions: document.getElementById('inboxSearchSuggestions'),
         inboxFilterTypeSelect: document.getElementById('inboxFilterType'),
         btnInboxFilterApply: document.getElementById('btnInboxFilterApply'),
-        btnInboxFilterReset: document.getElementById('btnInboxFilterReset')
+        btnInboxFilterReset: document.getElementById('btnInboxFilterReset'),
+        inboxMasterCheckbox: document.getElementById('inboxMasterCheckbox'),
+        inboxSelectionLabel: document.getElementById('inboxSelectionLabel'),
+        inboxDefaultState: document.getElementById('inboxDefaultState'),
+        inboxBulkState: document.getElementById('inboxBulkState'),
+        btnBulkAccept: document.getElementById('btnBulkAccept'),
+        btnBulkSnooze: document.getElementById('btnBulkSnooze'),
+        btnBulkReturn: document.getElementById('btnBulkReturn')
     };
 
     if (!elements.rowTemplate || !elements.inboxRoot || typeof window.WorkItemList !== 'function') {
@@ -154,6 +161,7 @@
         inboxItems: [],
         visibleCount: PAGE_SIZE,
         selectedItemId: null,
+        selectedItemIds: new Set(),
         filterText: '',
         filterType: '',
         searchSuggestions: [],
@@ -299,10 +307,41 @@
         return Promise.resolve(buildMockInboxItems(40));
     };
 
+    const updateBulkActionBar = () => {
+        if (!elements.inboxMasterCheckbox || !elements.inboxBulkState || !elements.inboxDefaultState) return;
+        
+        const count = state.selectedItemIds.size;
+        const visibleItems = getVisibleInboxItems();
+
+        if (count > 0) {
+            elements.inboxDefaultState.classList.add('d-none');
+            elements.inboxDefaultState.classList.remove('d-flex');
+            elements.inboxBulkState.classList.remove('d-none');
+            elements.inboxBulkState.classList.add('d-flex');
+            elements.inboxSelectionLabel.textContent = `${count} Kayıt Seçildi`;
+            elements.inboxMasterCheckbox.checked = true;
+            
+            const allSelected = visibleItems.length > 0 && visibleItems.every(i => state.selectedItemIds.has(i.id));
+            elements.inboxMasterCheckbox.indeterminate = !allSelected;
+        } else {
+            elements.inboxBulkState.classList.add('d-none');
+            elements.inboxBulkState.classList.remove('d-flex');
+            elements.inboxDefaultState.classList.remove('d-none');
+            elements.inboxDefaultState.classList.add('d-flex');
+            elements.inboxSelectionLabel.textContent = 'Tümünü Seç';
+            elements.inboxMasterCheckbox.checked = false;
+            elements.inboxMasterCheckbox.indeterminate = false;
+        }
+    };
+
     const renderInbox = () => {
+        if (typeof inboxList.setSelectedItemIds === 'function') {
+            inboxList.setSelectedItemIds(state.selectedItemIds);
+        }
         inboxList.setItems(getVisibleInboxItems());
         inboxList.setSelectedItemId(state.selectedItemId);
         updateLoadMoreVisibility();
+        updateBulkActionBar();
     };
 
     const applyViewSwitchRules = () => {
@@ -484,6 +523,53 @@
                 elements.inboxSearchInput.value = '';
                 elements.inboxSearchInput.classList.remove('border-primary', 'bg-label-primary');
             }
+            renderInbox();
+        });
+
+        // Bulk Selection Events
+        elements.inboxMasterCheckbox?.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            const visibleItems = getVisibleInboxItems();
+            
+            if (isChecked) {
+                visibleItems.forEach(item => state.selectedItemIds.add(item.id));
+            } else {
+                state.selectedItemIds.clear();
+            }
+            renderInbox(); 
+        });
+
+        elements.inboxRoot?.addEventListener('change', (e) => {
+            if (e.target.classList.contains('item-checkbox')) {
+                const row = e.target.closest('[data-work-item-row]');
+                if (!row) return;
+                const itemId = row.getAttribute('data-item-id');
+                if (e.target.checked) {
+                    state.selectedItemIds.add(itemId);
+                } else {
+                    state.selectedItemIds.delete(itemId);
+                }
+                updateBulkActionBar();
+            }
+        });
+
+        elements.btnBulkAccept?.addEventListener('click', () => {
+            const count = state.selectedItemIds.size;
+            state.selectedItemIds.forEach(id => removedItemIds.add(id));
+            state.selectedItemIds.clear();
+            notify(`${count} kayıt başarıyla onaylandı.`, 'success');
+            renderInbox();
+        });
+
+        elements.btnBulkSnooze?.addEventListener('click', () => {
+            notify(`${state.selectedItemIds.size} kayıt ertelendi.`, 'warning');
+            state.selectedItemIds.clear();
+            renderInbox();
+        });
+
+        elements.btnBulkReturn?.addEventListener('click', () => {
+            notify(`${state.selectedItemIds.size} kayıt iade edildi.`, 'danger');
+            state.selectedItemIds.clear();
             renderInbox();
         });
     };

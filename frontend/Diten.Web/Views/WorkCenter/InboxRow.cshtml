@@ -3,7 +3,10 @@
 @inject IHtmlLocalizer<WorkCenterIndex> Localizer
 
 <template id="inboxRowTemplate">
-    <article class="inbox-row p-3" data-work-item-row>
+    <article class="inbox-row p-3 d-flex align-items-center" data-work-item-row>
+        <div class="inbox-row__checkbox me-3">
+            <input class="form-check-input item-checkbox" type="checkbox" style="cursor:pointer;" />
+        </div>
         <div class="inbox-row__main">
             <div class="inbox-row__line inbox-row__line--primary">
                 <span class="badge inbox-row__type" data-field="type">-</span>
@@ -26,8 +29,8 @@
                 <span class="badge inbox-row__priority" data-field="priority">-</span>
             </div>
         </div>
-        <div class="inbox-row__actions">
-            <button type="button" class="btn btn-sm btn-text-success d-inline-flex align-items-center gap-1" data-action="accept">
+        <div class="inbox-row__actions d-flex align-items-center gap-1">
+            <button type="button" class="btn btn-sm btn-text-success d-none d-md-inline-flex align-items-center gap-1" data-action="accept">
                 <i class="bx bx-check icon-base"></i>
                 <span>@Localizer["Accept"]</span>
             </button>
@@ -37,6 +40,7 @@
                     <i class="bx bx-dots-vertical-rounded icon-md"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
+                    <li data-action-item="accept" class="d-md-none"><button class="dropdown-item" type="button" data-action="accept">@Localizer["Accept"]</button></li>
                     <li data-action-item="return"><button class="dropdown-item" type="button" data-action="return">@Localizer["ReturnWithReason"]</button></li>
                     <li data-action-item="reassign"><button class="dropdown-item" type="button" data-action="reassign">@Localizer["Reassign"]</button></li>
                     <li data-action-item="decline"><button class="dropdown-item" type="button" data-action="decline">@Localizer["Decline"]</button></li>

@@ -4,32 +4,44 @@
 
 <div class="tab-pane fade show active" id="workcenter-inbox-pane" role="tabpanel" aria-labelledby="workcenter-inbox-tab">
     <div class="card mb-4">
-        <div class="card-body px-4 py-3 d-flex flex-row align-items-center justify-content-between gap-3">
-            <div class="d-none d-lg-inline-flex align-items-center gap-2 lh-1">
-                <i class="bx bx-envelope-open text-primary" style="font-size: 1.15rem;"></i>
-                <span class="mb-0 lh-1 fw-semibold text-heading" style="font-size: 0.85rem;">@Localizer["InboxInfoTitle"]</span>
+        <div class="card-body px-3 py-2 d-flex flex-row align-items-center justify-content-between gap-2" style="min-height: 54px;">
+            <div class="d-inline-flex align-items-center flex-shrink-0">
+                <input class="form-check-input mb-0" type="checkbox" id="inboxMasterCheckbox" style="cursor:pointer;" />
+                <label for="inboxMasterCheckbox" class="mb-0 ms-2 text-heading fw-semibold text-nowrap" style="font-size: 0.85rem; cursor:pointer;" id="inboxSelectionLabel">
+                    Tümünü Seç
+                </label>
             </div>
-            <div class="d-flex align-items-center gap-2 flex-grow-1 flex-lg-grow-0">
-                <div class="wc-search-wrap">
-                    <input type="search" id="inboxSearchInput"
-                           class="form-control form-control-sm wc-inbox-search flex-grow-1"
-                           placeholder="@Localizer["SearchPlaceholder"]"
-                           autocomplete="off"
-                           aria-autocomplete="list"
-                           aria-expanded="false"
-                           aria-controls="inboxSearchSuggestions" />
-                    <ul id="inboxSearchSuggestions" class="wc-search-suggestions d-none" role="listbox" aria-label="@Localizer["SearchPlaceholder"]"></ul>
+            
+            <div class="d-flex align-items-center gap-2 flex-grow-1 justify-content-end" id="inboxStateContainer">
+                <!-- State A: Default Search -->
+                <div id="inboxDefaultState" class="d-flex align-items-center gap-2 w-100 justify-content-end" style="transition: opacity 0.2s ease;">
+                    <div class="wc-search-wrap flex-grow-1 d-none d-md-block" style="max-width: 300px;">
+                        <input type="search" id="inboxSearchInput"
+                               class="form-control form-control-sm wc-inbox-search w-100"
+                               placeholder="@Localizer["SearchPlaceholder"]"
+                               autocomplete="off" aria-expanded="false" aria-controls="inboxSearchSuggestions" />
+                        <ul id="inboxSearchSuggestions" class="wc-search-suggestions d-none" role="listbox" aria-label="@Localizer["SearchPlaceholder"]"></ul>
+                    </div>
+                    <button type="button" id="inboxFilterBtn"
+                            class="btn btn-sm btn-icon btn-label-secondary flex-shrink-0"
+                            aria-label="@Localizer["Filter"]" title="@Localizer["Filter"]"
+                            data-bs-toggle="collapse" data-bs-target="#inboxFilterCollapse" aria-expanded="false">
+                        <i class="bx bx-filter-alt icon-base"></i>
+                    </button>
                 </div>
-                <button type="button" id="inboxFilterBtn"
-                        class="btn btn-sm btn-icon btn-label-secondary position-relative flex-shrink-0"
-                        aria-label="@Localizer["Filter"]"
-                        title="@Localizer["Filter"]"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#inboxFilterCollapse"
-                        aria-expanded="false"
-                        aria-controls="inboxFilterCollapse">
-                    <i class="bx bx-filter-alt icon-base"></i>
-                </button>
+
+                <!-- State B: Bulk Actions -->
+                <div id="inboxBulkState" class="d-none align-items-center gap-1 gap-md-2" style="transition: opacity 0.2s ease;">
+                    <button type="button" class="btn btn-sm btn-outline-success px-2 px-md-3" id="btnBulkAccept" title="Accept">
+                        <i class="bx bx-check"></i><span class="d-none d-md-inline ms-1">Accept</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-warning px-2 px-md-3" id="btnBulkSnooze" title="Snooze">
+                        <i class="bx bx-bell-minus"></i><span class="d-none d-md-inline ms-1">Snooze</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger px-2 px-md-3" id="btnBulkReturn" title="Return">
+                        <i class="bx bx-undo"></i><span class="d-none d-md-inline ms-1">Return</span>
+                    </button>
+                </div>
             </div>
         </div>
         <partial name="_InboxFilter" />

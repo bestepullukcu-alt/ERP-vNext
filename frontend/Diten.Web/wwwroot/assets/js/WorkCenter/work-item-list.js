@@ -10,7 +10,8 @@
         this.state = {
             items: [],
             loading: true,
-            selectedItemId: null
+            selectedItemId: null,
+            selectedItemIds: new Set()
         };
 
         this.elements = {
@@ -44,7 +45,7 @@
                 return;
             }
 
-            if (isDropdownToggle || isDropdownMenu) {
+            if (event.target.closest('.item-checkbox') || isDropdownToggle || isDropdownMenu) {
                 return;
             }
 
@@ -67,6 +68,10 @@
     WorkItemList.prototype.setSelectedItemId = function (itemId) {
         this.state.selectedItemId = itemId || null;
         this.render();
+    };
+
+    WorkItemList.prototype.setSelectedItemIds = function (idsSet) {
+        this.state.selectedItemIds = idsSet || new Set();
     };
 
     WorkItemList.prototype.formatDate = function (value) {
@@ -105,6 +110,11 @@
 
         row.setAttribute('data-item-id', item.id);
         row.classList.toggle('inbox-row--selected', item.id === this.state.selectedItemId);
+
+        const checkbox = row.querySelector('.item-checkbox');
+        if (checkbox) {
+            checkbox.checked = this.state.selectedItemIds && this.state.selectedItemIds.has(item.id);
+        }
 
         const type = (item.type || '').toLowerCase();
         const actions = {
