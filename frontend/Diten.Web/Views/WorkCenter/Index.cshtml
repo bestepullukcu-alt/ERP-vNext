@@ -1,0 +1,16 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["WorkCenterTitle"].Value;
+    Layout = "_LayoutBackbone";
+}
+
+<partial name="WorkCenterPage" />
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/WorkCenter/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenter/work-item-list.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenter/index.js" asp-append-version="true"></script>
+}

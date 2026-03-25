@@ -1,0 +1,38 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+
+<template id="inboxRowTemplate">
+    <article class="inbox-row p-3" data-work-item-row>
+        <div class="inbox-row__main">
+            <div class="inbox-row__line inbox-row__line--primary">
+                <span class="badge inbox-row__type" data-field="type">-</span>
+                <h5 class="inbox-row__title mb-0" data-field="title">-</h5>
+            </div>
+            <div class="inbox-row__line inbox-row__line--secondary text-muted">
+                <span class="inbox-row__required-arrow">→</span>
+                <span class="inbox-row__required-text" data-field="requiredAction">-</span>
+                <span class="inbox-row__meta-separator">•</span>
+                <span data-field="context">-</span>
+                <span class="inbox-row__meta-separator">•</span>
+                <span data-field="assignedBy">-</span>
+            </div>
+        </div>
+        <div class="inbox-row__actions">
+            <button type="button" class="btn btn-sm btn-text-success" data-action="accept">@Localizer["Accept"]</button>
+            <div class="dropdown">
+                <button class="btn btn-icon btn-sm btn-text-secondary" type="button" data-bs-toggle="dropdown"
+                    aria-expanded="false" aria-label="@Localizer["MoreActions"]" title="@Localizer["MoreActions"]">
+                    <i class="bx bx-dots-vertical-rounded icon-base"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li data-action-item="return"><button class="dropdown-item" type="button" data-action="return">@Localizer["ReturnWithReason"]</button></li>
+                    <li data-action-item="reassign"><button class="dropdown-item" type="button" data-action="reassign">@Localizer["Reassign"]</button></li>
+                    <li data-action-item="decline"><button class="dropdown-item" type="button" data-action="decline">@Localizer["Decline"]</button></li>
+                    <li data-action-item="propose-time"><button class="dropdown-item" type="button" data-action="propose-time">@Localizer["ProposeNewTime"]</button></li>
+                    <li data-action-item="snooze"><button class="dropdown-item" type="button" data-action="snooze">@Localizer["Snooze"]</button></li>
+                </ul>
+            </div>
+        </div>
+    </article>
+</template>

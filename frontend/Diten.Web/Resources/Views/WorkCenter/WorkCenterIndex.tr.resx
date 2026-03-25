@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="WorkCenterTitle" xml:space="preserve"><value>Görev Merkezi</value></data>
+  <data name="WorkCenterDescription" xml:space="preserve"><value>Inbox alanında yeni gelen işleri triage ederek yürütmeye almadan önce yönetebilirsiniz.</value></data>
+  <data name="ViewSwitch" xml:space="preserve"><value>Görünüm Seçici</value></data>
+  <data name="DataTable" xml:space="preserve"><value>Data Table</value></data>
+  <data name="List" xml:space="preserve"><value>Liste</value></data>
+  <data name="Kanban" xml:space="preserve"><value>Kanban</value></data>
+  <data name="Calendar" xml:space="preserve"><value>Takvim</value></data>
+  <data name="Gantt" xml:space="preserve"><value>Gantt</value></data>
+  <data name="Inbox" xml:space="preserve"><value>Gelen Kutusu</value></data>
+  <data name="AllWork" xml:space="preserve"><value>All Work</value></data>
+  <data name="InboxDescription" xml:space="preserve"><value>Inbox kabul edilmemiş işleri gösterir. Accept sonrası item listeden çıkar.</value></data>
+  <data name="InboxEmptyTitle" xml:space="preserve"><value>Gelen kutusu temiz</value></data>
+  <data name="InboxEmptyDescription" xml:space="preserve"><value>Triage bekleyen bir öğe bulunmuyor.</value></data>
+  <data name="SelectedRow" xml:space="preserve"><value>Seçili Satır</value></data>
+  <data name="AllWorkPlaceholderTitle" xml:space="preserve"><value>All Work henüz hazır değil</value></data>
+  <data name="AllWorkPlaceholderDescription" xml:space="preserve"><value>Bu sekme bu skeleton aşamasında placeholder olarak bırakıldı.</value></data>
+  <data name="Source" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="Context" xml:space="preserve"><value>Bağlam</value></data>
+  <data name="AssignedBy" xml:space="preserve"><value>Atayan</value></data>
+  <data name="CreatedDate" xml:space="preserve"><value>Oluşturulma Tarihi</value></data>
+  <data name="RequiredAction" xml:space="preserve"><value>Gerekli Aksiyon</value></data>
+  <data name="Unread" xml:space="preserve"><value>Okunmadı</value></data>
+  <data name="Read" xml:space="preserve"><value>Okundu</value></data>
+  <data name="Accept" xml:space="preserve"><value>Onayla</value></data>
+  <data name="ReturnWithReason" xml:space="preserve"><value>İade Et</value></data>
+  <data name="Reassign" xml:space="preserve"><value>Sahip Ata</value></data>
+  <data name="Decline" xml:space="preserve"><value>Reddet</value></data>
+  <data name="ProposeNewTime" xml:space="preserve"><value>Yeni Zaman Öner</value></data>
+  <data name="Snooze" xml:space="preserve"><value>Ertele</value></data>
+  <data name="OpenDetail" xml:space="preserve"><value>Detayı Aç</value></data>
+  <data name="NoAction" xml:space="preserve"><value>Gerekli aksiyon yok</value></data>
+  <data name="ActionAcceptSuccess" xml:space="preserve"><value>Öğe kabul edildi ve Inbox listesinden çıkarıldı.</value></data>
+  <data name="ActionRejectSuccess" xml:space="preserve"><value>Öğe geri gönderildi (mock).</value></data>
+  <data name="ActionReassignSuccess" xml:space="preserve"><value>Yeniden atama akışı başlatıldı (mock).</value></data>
+  <data name="ActionSnoozeSuccess" xml:space="preserve"><value>Öğe ertelendi (mock).</value></data>
+  <data name="ActionDetailOpened" xml:space="preserve"><value>Öğe detayı açıldı.</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Değerlendir</value></data>
+  <data name="MoreActions" xml:space="preserve"><value>Daha Fazla Aksiyon</value></data>
+  <data name="InboxInfoTitle" xml:space="preserve"><value>Henüz değerlendirilmemiş görevler</value></data>
+  <data name="InboxInfoHint" xml:space="preserve"><value>Önce Değerlendirildi aşamasına geçmelidir</value></data>
+  <data name="LoadMore" xml:space="preserve"><value>Daha Fazla Yükle</value></data>
+</root>

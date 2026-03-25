@@ -1,0 +1,30 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+
+<div class="card mb-4">
+    <div class="card-header p-4">
+        <div class="nav-align-top">
+            <ul class="nav nav-pills d-inline-flex gap-2" role="tablist">
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button class="nav-link active" id="workcenter-inbox-tab" data-bs-toggle="tab" data-bs-target="#workcenter-inbox-pane"
+                        type="button" role="tab" aria-controls="workcenter-inbox-pane" aria-selected="true">
+                        <span class="d-none d-sm-inline-flex align-items-center">
+                            <i class="icon-base bx bx-envelope icon-sm me-1_5"></i>@Localizer["Inbox"]
+                        </span>
+                        <i class="icon-base bx bx-envelope icon-sm d-sm-none"></i>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="workcenter-allwork-tab" data-bs-toggle="tab" data-bs-target="#workcenter-allwork-pane"
+                        type="button" role="tab" aria-controls="workcenter-allwork-pane" aria-selected="false">
+                        <span class="d-none d-sm-inline-flex align-items-center">
+                            <i class="icon-base bx bx-briefcase-alt-2 icon-sm me-1_5"></i>@Localizer["AllWork"]
+                        </span>
+                        <i class="icon-base bx bx-briefcase-alt-2 icon-sm d-sm-none"></i>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

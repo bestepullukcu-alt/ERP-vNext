@@ -1,0 +1,40 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+
+<script id="workcenter-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        WorkCenterTitle = Localizer["WorkCenterTitle"].Value,
+        WorkCenterDescription = Localizer["WorkCenterDescription"].Value,
+        Inbox = Localizer["Inbox"].Value,
+        AllWork = Localizer["AllWork"].Value,
+        DataTable = Localizer["DataTable"].Value,
+        List = Localizer["List"].Value,
+        Kanban = Localizer["Kanban"].Value,
+        Calendar = Localizer["Calendar"].Value,
+        Gantt = Localizer["Gantt"].Value,
+        InboxDescription = Localizer["InboxDescription"].Value,
+        InboxEmptyTitle = Localizer["InboxEmptyTitle"].Value,
+        InboxEmptyDescription = Localizer["InboxEmptyDescription"].Value,
+        SelectedRow = Localizer["SelectedRow"].Value,
+        Source = Localizer["Source"].Value,
+        Context = Localizer["Context"].Value,
+        AssignedBy = Localizer["AssignedBy"].Value,
+        CreatedDate = Localizer["CreatedDate"].Value,
+        RequiredAction = Localizer["RequiredAction"].Value,
+        Unread = Localizer["Unread"].Value,
+        Read = Localizer["Read"].Value,
+        Accept = Localizer["Accept"].Value,
+        Reject = Localizer["Reject"].Value,
+        Reassign = Localizer["Reassign"].Value,
+        Snooze = Localizer["Snooze"].Value,
+        OpenDetail = Localizer["OpenDetail"].Value,
+        NoAction = Localizer["NoAction"].Value,
+        ActionAcceptSuccess = Localizer["ActionAcceptSuccess"].Value,
+        ActionRejectSuccess = Localizer["ActionRejectSuccess"].Value,
+        ActionReassignSuccess = Localizer["ActionReassignSuccess"].Value,
+        ActionSnoozeSuccess = Localizer["ActionSnoozeSuccess"].Value,
+        ActionDetailOpened = Localizer["ActionDetailOpened"].Value
+    })
+</script>

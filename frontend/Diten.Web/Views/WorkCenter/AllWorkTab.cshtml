@@ -1,0 +1,16 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+
+<div class="tab-pane fade" id="workcenter-allwork-pane" role="tabpanel" aria-labelledby="workcenter-allwork-tab">
+    <div class="card">
+        <div class="card-body p-0">
+            <partial name="InboxList" view-data='new ViewDataDictionary(ViewData)
+            {
+                ["ListId"] = "allwork",
+                ["EmptyTitle"] = Localizer["AllWorkPlaceholderTitle"].Value,
+                ["EmptyDescription"] = Localizer["AllWorkPlaceholderDescription"].Value
+            }' />
+        </div>
+    </div>
+</div>
