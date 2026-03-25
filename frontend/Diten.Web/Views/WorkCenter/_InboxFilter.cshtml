@@ -1,0 +1,30 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<!-- WorkCenter Inbox Inline Collapsible Filter Panel -->
+<div id="inboxFilterHost">
+    <div class="collapse" id="inboxFilterCollapse">
+        <div class="px-4 pb-4 pt-0">
+            <form class="m-0" id="inboxFilterForm">
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip">
+                        <select id="inboxFilterType" class="form-select form-select-sm wc-filter-select">
+                            <option value="">@Localizer["FilterType"]</option>
+                            <option value="Task">Task</option>
+                            <option value="Issue">Issue</option>
+                            <option value="Review">Review</option>
+                            <option value="Meeting">Meeting</option>
+                            <option value="Note">Note</option>
+                        </select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnInboxFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnInboxFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

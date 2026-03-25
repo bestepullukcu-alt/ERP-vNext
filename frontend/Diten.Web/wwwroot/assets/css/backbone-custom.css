@@ -388,6 +388,67 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     z-index: 4;
 }
 
+/* MOD-0034: WorkCenter Inbox Search & Filter */
+.wc-inbox-search {
+    min-width: 180px;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out,
+                background-color .15s ease-in-out;
+}
+
+.wc-inbox-search:focus {
+    border-color: rgba(var(--bs-primary-rgb), .4);
+    box-shadow: 0 0 0 .15rem rgba(var(--bs-primary-rgb), .16);
+}
+
+.wc-inbox-search.border-primary {
+    border-color: var(--bs-primary) !important;
+}
+
+#inboxFilterBtn[aria-expanded="true"] {
+    background-color: rgba(var(--bs-primary-rgb), .16) !important;
+    border-color: transparent !important;
+    color: var(--bs-primary) !important;
+}
+
+#inboxFilterHost .dt-filter-bar {
+    row-gap: .5rem;
+}
+
+.wc-filter-select {
+    min-width: 160px;
+}
+
+#inboxFilterHost .btn:hover,
+#inboxFilterHost .btn:focus,
+#inboxFilterHost .btn:active {
+    transform: none !important;
+}
+
+@media (max-width: 991.98px) {
+    .wc-inbox-search {
+        min-width: 0;
+    }
+
+    .wc-filter-select {
+        min-width: 0;
+        width: 100%;
+    }
+
+    #inboxFilterHost .dt-filter-bar .filter-chip {
+        flex: 1 1 100%;
+    }
+
+    #inboxFilterHost .dt-filter-bar .ms-auto {
+        width: 100%;
+        margin-left: 0 !important;
+        justify-content: space-between;
+    }
+
+    #inboxFilterHost .dt-filter-bar .ms-auto .btn {
+        flex: 1 1 0;
+    }
+}
+
 /* Work Center: prevent icon view-switch buttons from vertical jitter on hover/focus */
 .work-center-view-switch > .btn,
 .work-center-view-switch > .btn:hover,

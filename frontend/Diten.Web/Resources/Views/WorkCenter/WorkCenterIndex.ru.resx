@@ -39,4 +39,7 @@
   <data name="InboxInfoTitle" xml:space="preserve"><value>Unreviewed tasks</value></data>
   <data name="InboxInfoHint" xml:space="preserve"><value>Items must move to the Evaluated stage first</value></data>
   <data name="LoadMore" xml:space="preserve"><value>Load More</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Search work items...</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="FilterType" xml:space="preserve"><value>All Types</value></data>
 </root>

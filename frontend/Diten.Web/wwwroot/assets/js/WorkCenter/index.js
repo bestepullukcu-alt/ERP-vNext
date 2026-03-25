@@ -12,7 +12,11 @@
         inboxLoadMoreBtn: document.getElementById('inboxLoadMoreBtn'),
         rowTemplate: document.getElementById('inboxRowTemplate'),
         inboxRoot: document.querySelector('[data-work-item-list="inbox"]'),
-        allWorkRoot: document.querySelector('[data-work-item-list="allwork"]')
+        allWorkRoot: document.querySelector('[data-work-item-list="allwork"]'),
+        inboxSearchInput: document.getElementById('inboxSearchInput'),
+        inboxFilterTypeSelect: document.getElementById('inboxFilterType'),
+        btnInboxFilterApply: document.getElementById('btnInboxFilterApply'),
+        btnInboxFilterReset: document.getElementById('btnInboxFilterReset')
     };
 
     if (!elements.rowTemplate || !elements.inboxRoot || typeof window.WorkItemList !== 'function') {
@@ -141,12 +145,31 @@
         activeTab: 'inbox',
         inboxItems: buildMockInboxItems(40),
         visibleCount: PAGE_SIZE,
-        selectedItemId: null
+        selectedItemId: null,
+        filterText: '',
+        filterType: ''
     };
 
     const getInboxItems = () => state.inboxItems.filter((item) => !removedItemIds.has(item.id));
 
-    const getVisibleInboxItems = () => getInboxItems().slice(0, state.visibleCount);
+    const getFilteredInboxItems = () => {
+        let items = getInboxItems();
+        if (state.filterText) {
+            const q = state.filterText.toLowerCase();
+            items = items.filter((item) =>
+                (item.title || '').toLowerCase().includes(q) ||
+                (item.source || '').toLowerCase().includes(q) ||
+                (item.context || '').toLowerCase().includes(q) ||
+                (item.assignedBy || '').toLowerCase().includes(q)
+            );
+        }
+        if (state.filterType) {
+            items = items.filter((item) => item.type === state.filterType);
+        }
+        return items;
+    };
+
+    const getVisibleInboxItems = () => getFilteredInboxItems().slice(0, state.visibleCount);
 
     const notify = (message, type) => {
         if (typeof window.showToast === 'function') {
@@ -161,7 +184,7 @@
             return;
         }
 
-        const hasMore = getInboxItems().length > getVisibleInboxItems().length;
+        const hasMore = getFilteredInboxItems().length > getVisibleInboxItems().length;
         const shouldShow = state.activeTab === 'inbox' && hasMore;
         elements.inboxLoadMoreBtn.classList.toggle('d-none', !shouldShow);
     };
@@ -272,6 +295,34 @@
 
         elements.inboxLoadMoreBtn?.addEventListener('click', () => {
             state.visibleCount += PAGE_SIZE;
+            renderInbox();
+        });
+
+        elements.inboxSearchInput?.addEventListener('input', () => {
+            state.filterText = elements.inboxSearchInput.value.trim();
+            state.visibleCount = PAGE_SIZE;
+            elements.inboxSearchInput.classList.toggle('border-primary', !!state.filterText);
+            elements.inboxSearchInput.classList.toggle('bg-label-primary', !!state.filterText);
+            renderInbox();
+        });
+
+        elements.btnInboxFilterApply?.addEventListener('click', () => {
+            state.filterType = elements.inboxFilterTypeSelect?.value || '';
+            state.visibleCount = PAGE_SIZE;
+            renderInbox();
+        });
+
+        elements.btnInboxFilterReset?.addEventListener('click', () => {
+            state.filterType = '';
+            state.filterText = '';
+            state.visibleCount = PAGE_SIZE;
+            if (elements.inboxFilterTypeSelect) {
+                elements.inboxFilterTypeSelect.value = '';
+            }
+            if (elements.inboxSearchInput) {
+                elements.inboxSearchInput.value = '';
+                elements.inboxSearchInput.classList.remove('border-primary', 'bg-label-primary');
+            }
             renderInbox();
         });
     };

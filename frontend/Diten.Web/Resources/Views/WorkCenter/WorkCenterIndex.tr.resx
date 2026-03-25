@@ -41,4 +41,7 @@
   <data name="InboxInfoTitle" xml:space="preserve"><value>Henüz değerlendirilmemiş görevler</value></data>
   <data name="InboxInfoHint" xml:space="preserve"><value>Önce Değerlendirildi aşamasına geçmelidir</value></data>
   <data name="LoadMore" xml:space="preserve"><value>Daha Fazla Yükle</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>İş öğesi ara...</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrele</value></data>
+  <data name="FilterType" xml:space="preserve"><value>Tüm Türler</value></data>
 </root>
