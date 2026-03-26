@@ -226,16 +226,13 @@
     // ── DOM REFS ──────────────────────────────────────────────────────────────
     var el = {
         taskIdLabel:          document.getElementById('taskIdLabel'),
-        taskTypeBadge:        document.getElementById('taskTypeBadge'),
+        taskBreadcrumbContext: document.getElementById('taskBreadcrumbContext'),
+        taskBreadcrumbItem:   document.getElementById('taskBreadcrumbItem'),
         taskTitle:            document.getElementById('taskTitle'),
-        taskHeaderProject:    document.getElementById('taskHeaderProject'),
-        taskHeaderSource:     document.getElementById('taskHeaderSource'),
         taskAssignee:         document.getElementById('taskAssignee'),
         taskCreatedBy:        document.getElementById('taskCreatedBy'),
         taskDueDate:          document.getElementById('taskDueDate'),
-        taskDueStateBadge:    document.getElementById('taskDueStateBadge'),
-        taskPriorityBadge:    document.getElementById('taskPriorityBadge'),
-        taskDependencyImpactBadge: document.getElementById('taskDependencyImpactBadge'),
+        taskOverdueBadge:     document.getElementById('taskOverdueBadge'),
         taskStatusBadge:      document.getElementById('taskStatusBadge'),
         taskStepBar:          document.getElementById('taskStepBar'),
         taskDescription:      document.getElementById('taskDescription'),
@@ -327,9 +324,9 @@
     };
 
     var computeDueState = function (dueDate) {
-        if (!dueDate) { return { label: '-', cls: 'bg-label-secondary' }; }
+        if (!dueDate) { return { kind: 'unknown', label: '-', cls: 'bg-label-secondary' }; }
         var due = new Date(dueDate);
-        if (isNaN(due.getTime())) { return { label: '-', cls: 'bg-label-secondary' }; }
+        if (isNaN(due.getTime())) { return { kind: 'unknown', label: '-', cls: 'bg-label-secondary' }; }
 
         var now = new Date();
         var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -337,12 +334,12 @@
         var diffDays = Math.floor((dueDay.getTime() - today.getTime()) / 86400000);
 
         if (diffDays < 0) {
-            return { label: (l10n.Overdue || 'Overdue') + ' (' + Math.abs(diffDays) + ' ' + (l10n.DaysAgo || 'days ago') + ')', cls: 'bg-label-danger' };
+            return { kind: 'overdue', label: (l10n.Overdue || 'Overdue') + ' (' + Math.abs(diffDays) + ' ' + (l10n.DaysAgo || 'days ago') + ')', cls: 'bg-label-danger' };
         }
         if (diffDays <= 2) {
-            return { label: (l10n.DueSoon || 'Due Soon') + ' (' + (l10n.DueInDays || 'due in') + ' ' + diffDays + 'd)', cls: 'bg-label-warning' };
+            return { kind: 'due_soon', label: (l10n.DueSoon || 'Due Soon') + ' (' + (l10n.DueInDays || 'due in') + ' ' + diffDays + 'd)', cls: 'bg-label-warning' };
         }
-        return { label: l10n.OnTrack || 'On Track', cls: 'bg-label-success' };
+        return { kind: 'on_track', label: l10n.OnTrack || 'On Track', cls: 'bg-label-success' };
     };
 
     var totalLoggedMinutes = function () {
@@ -360,36 +357,17 @@
     // ── RENDER ────────────────────────────────────────────────────────────────
     var renderHeader = function () {
         var item = state.item;
-        var isDependencyBlocked = !!(item.dependencies && item.dependencies.blockedBy && item.dependencies.blockedBy.length);
         var dueState = computeDueState(item.dueDate);
         if (el.taskIdLabel)       { el.taskIdLabel.textContent = '#' + item.id.toUpperCase(); }
-        if (el.taskTypeBadge)     { el.taskTypeBadge.textContent = item.taskType || item.type || 'Task'; }
+        if (el.taskBreadcrumbContext) { el.taskBreadcrumbContext.textContent = item.project || item.source || 'Task'; }
+        if (el.taskBreadcrumbItem) { el.taskBreadcrumbItem.textContent = item.id ? item.id.toUpperCase() : '-'; }
         if (el.taskTitle)         { el.taskTitle.textContent = item.title || '-'; }
-        if (el.taskHeaderProject) { el.taskHeaderProject.textContent = (l10n.Project || 'Project') + ': ' + (item.project || '-'); }
-        if (el.taskHeaderSource)  { el.taskHeaderSource.textContent = (l10n.Source || 'Source') + ': ' + (item.source || '-'); }
         if (el.taskAssignee)      { el.taskAssignee.textContent = item.assignee || '-'; }
         if (el.taskCreatedBy)     { el.taskCreatedBy.textContent = (l10n.CreatedBy || 'Created By') + ': ' + (item.createdBy || '-'); }
         if (el.taskDueDate)       { el.taskDueDate.textContent = formatDate(item.dueDate); }
-        if (el.taskDueStateBadge) {
-            el.taskDueStateBadge.textContent = dueState.label;
-            el.taskDueStateBadge.className = 'badge ' + dueState.cls;
-        }
-        if (el.taskPriorityBadge) {
-            el.taskPriorityBadge.textContent = item.priority || '-';
-            el.taskPriorityBadge.className = 'badge ' + resolvePriorityClass(item.priority);
-        }
-        if (el.taskDependencyImpactBadge) {
-            if (isDependencyBlocked && item.status === 'BLOCKED') {
-                el.taskDependencyImpactBadge.textContent = l10n.BlockedByDependency || 'Blocked';
-                el.taskDependencyImpactBadge.className = 'badge bg-label-danger';
-                el.taskDependencyImpactBadge.classList.remove('d-none');
-            } else if (isDependencyBlocked) {
-                el.taskDependencyImpactBadge.textContent = l10n.BlockedByDependency || 'Blocked';
-                el.taskDependencyImpactBadge.className = 'badge bg-label-warning';
-                el.taskDependencyImpactBadge.classList.remove('d-none');
-            } else {
-                el.taskDependencyImpactBadge.classList.add('d-none');
-            }
+        if (el.taskOverdueBadge) {
+            el.taskOverdueBadge.classList.toggle('d-none', dueState.kind !== 'overdue');
+            if (dueState.kind === 'overdue') { el.taskOverdueBadge.textContent = dueState.label; }
         }
         if (el.taskStatusBadge) {
             el.taskStatusBadge.textContent = STATUS_LABELS[item.status] || item.status;
