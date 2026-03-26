@@ -8,9 +8,10 @@
             <input class="form-check-input item-checkbox" type="checkbox" style="cursor:pointer;" />
         </div>
         <div class="inbox-row__main">
-            <div class="inbox-row__line inbox-row__line--primary">
-                <span class="badge inbox-row__type" data-field="type">-</span>
-                <h5 class="inbox-row__title mb-0" data-field="title">-</h5>
+            <div class="inbox-row__line inbox-row__line--primary d-flex align-items-center gap-2">
+                <span class="badge inbox-row__type inbox-row__badge-outline inbox-row__badge--type-default flex-shrink-0" data-field="type">-</span>
+                <span class="badge inbox-row__badge-outline inbox-row__badge--role-default d-none flex-shrink-0" data-field="role">-</span>
+                <h5 class="inbox-row__title mb-0 text-truncate" data-field="title">-</h5>
             </div>
             <div class="inbox-row__line inbox-row__line--secondary text-muted">
                 <span class="inbox-row__required-arrow">→</span>
@@ -30,22 +31,41 @@
             </div>
         </div>
         <div class="inbox-row__actions d-flex align-items-center gap-1">
-            <button type="button" class="btn btn-sm btn-text-success d-none d-md-inline-flex align-items-center gap-1" data-action="accept">
-                <i class="bx bx-check icon-base"></i>
-                <span>@Localizer["Accept"]</span>
-            </button>
-            <div class="dropdown">
+            <div class="d-none d-md-flex align-items-center gap-1">
+                <button class="btn btn-sm btn-success inbox-row__action-primary d-inline-flex align-items-center gap-1" type="button" data-action="accept" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="@Localizer["Accept"]">
+                    <i class="bx bx-check icon-base"></i><span class="d-none d-xl-inline">@Localizer["Accept"]</span>
+                </button>
+                <div class="vr mx-1 text-muted"></div>
+                <button class="btn btn-icon btn-sm btn-label-secondary inbox-row__action-secondary d-none" type="button" data-action="snooze" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="@Localizer["Snooze"]"><i class="bx bx-time-five"></i></button>
+                <button class="btn btn-icon btn-sm btn-label-secondary inbox-row__action-secondary d-none" type="button" data-action="return" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="@Localizer["ReturnWithReason"]"><i class="bx bx-undo"></i></button>
+                <button class="btn btn-icon btn-sm btn-label-secondary inbox-row__action-secondary d-none" type="button" data-action="reassign" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="@Localizer["Reassign"]"><i class="bx bx-user-pin"></i></button>
+                <button class="btn btn-icon btn-sm btn-label-secondary inbox-row__action-secondary d-none" type="button" data-action="chat" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="Chat"><i class="bx bx-message-rounded-dots"></i></button>
+                <button class="btn btn-icon btn-sm btn-label-secondary inbox-row__action-secondary d-none" type="button" data-action="priority-change" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="Priority Change"><i class="bx bx-error"></i></button>
+                <button class="btn btn-icon btn-sm btn-label-secondary inbox-row__action-secondary d-none" type="button" data-action="history" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="History"><i class="bx bx-history"></i></button>
+                <button class="btn btn-icon btn-sm btn-label-secondary inbox-row__action-secondary d-none" type="button" data-action="decline" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="@Localizer["Decline"]"><i class="bx bx-x-circle"></i></button>
+                <button class="btn btn-icon btn-sm btn-label-secondary inbox-row__action-secondary d-none" type="button" data-action="calendar" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="Calendar"><i class="bx bx-calendar-plus"></i></button>
+                <button class="btn btn-icon btn-sm btn-label-secondary inbox-row__action-secondary d-none" type="button" data-action="convert-to-task" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="Convert to Task"><i class="bx bx-list-plus"></i></button>
+                <button class="btn btn-icon btn-sm btn-label-secondary inbox-row__action-secondary d-none" type="button" data-action="archive" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="Archive"><i class="bx bx-archive"></i></button>
+                <button class="btn btn-icon btn-sm btn-label-secondary inbox-row__action-secondary d-none" type="button" data-action="share" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="bg-label-secondary text-body fw-medium" title="Share"><i class="bx bx-share-alt"></i></button>
+            </div>
+            <div class="dropdown d-md-none">
                 <button class="btn btn-icon btn-sm dropdown-toggle hide-arrow" type="button" data-bs-toggle="dropdown"
                     aria-expanded="false" aria-label="@Localizer["MoreActions"]" title="@Localizer["MoreActions"]">
                     <i class="bx bx-dots-vertical-rounded icon-md"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li data-action-item="accept" class="d-md-none"><button class="dropdown-item" type="button" data-action="accept">@Localizer["Accept"]</button></li>
-                    <li data-action-item="return"><button class="dropdown-item" type="button" data-action="return">@Localizer["ReturnWithReason"]</button></li>
-                    <li data-action-item="reassign"><button class="dropdown-item" type="button" data-action="reassign">@Localizer["Reassign"]</button></li>
-                    <li data-action-item="decline"><button class="dropdown-item" type="button" data-action="decline">@Localizer["Decline"]</button></li>
-                    <li data-action-item="propose-time"><button class="dropdown-item" type="button" data-action="propose-time">@Localizer["ProposeNewTime"]</button></li>
-                    <li data-action-item="snooze"><button class="dropdown-item" type="button" data-action="snooze">@Localizer["Snooze"]</button></li>
+                    <li data-action-item="accept"><button class="dropdown-item" type="button" data-action="accept">@Localizer["Accept"]</button></li>
+                    <li data-action-item="snooze" class="d-none"><button class="dropdown-item" type="button" data-action="snooze">@Localizer["Snooze"]</button></li>
+                    <li data-action-item="return" class="d-none"><button class="dropdown-item" type="button" data-action="return">@Localizer["ReturnWithReason"]</button></li>
+                    <li data-action-item="reassign" class="d-none"><button class="dropdown-item" type="button" data-action="reassign">@Localizer["Reassign"]</button></li>
+                    <li data-action-item="chat" class="d-none"><button class="dropdown-item" type="button" data-action="chat">Chat</button></li>
+                    <li data-action-item="priority-change" class="d-none"><button class="dropdown-item" type="button" data-action="priority-change">Priority Change</button></li>
+                    <li data-action-item="history" class="d-none"><button class="dropdown-item" type="button" data-action="history">History</button></li>
+                    <li data-action-item="decline" class="d-none"><button class="dropdown-item" type="button" data-action="decline">@Localizer["Decline"]</button></li>
+                    <li data-action-item="calendar" class="d-none"><button class="dropdown-item" type="button" data-action="calendar">Calendar</button></li>
+                    <li data-action-item="convert-to-task" class="d-none"><button class="dropdown-item" type="button" data-action="convert-to-task">Convert to Task</button></li>
+                    <li data-action-item="archive" class="d-none"><button class="dropdown-item" type="button" data-action="archive">Archive</button></li>
+                    <li data-action-item="share" class="d-none"><button class="dropdown-item" type="button" data-action="share">Share</button></li>
                 </ul>
             </div>
         </div>

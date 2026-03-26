@@ -123,6 +123,15 @@
             assignedBy: 'Ela R.',
             meta: 'Submission package ready for acceptance.',
             requiredAction: 'Paket uygunlugunu kontrol et'
+        },
+        {
+            type: 'Note',
+            title: 'Q2 All Hands Summary',
+            source: 'Corporate',
+            context: 'Standalone',
+            assignedBy: 'Ceren K.',
+            meta: 'Summary of the all hands meeting.',
+            requiredAction: 'Oku'
         }
     ];
 
@@ -142,6 +151,7 @@
                 type: template.type,
                 status: 'Backlog',
                 priority: priorities[index % priorities.length],
+                role: index % 3 === 0 ? 'Owner' : (index % 2 === 0 ? 'Reviewer' : 'Informed'),
                 title: sequence > baseInboxItems.length ? `${template.title} #${sequence}` : template.title,
                 source: template.source,
                 context: template.context,
@@ -309,7 +319,7 @@
 
     const updateBulkActionBar = () => {
         if (!elements.inboxMasterCheckbox || !elements.inboxBulkState || !elements.inboxDefaultState) return;
-        
+
         const count = state.selectedItemIds.size;
         const visibleItems = getVisibleInboxItems();
 
@@ -320,7 +330,7 @@
             elements.inboxBulkState.classList.add('d-flex');
             elements.inboxSelectionLabel.textContent = `${count} Kayıt Seçildi`;
             elements.inboxMasterCheckbox.checked = true;
-            
+
             const allSelected = visibleItems.length > 0 && visibleItems.every(i => state.selectedItemIds.has(i.id));
             elements.inboxMasterCheckbox.indeterminate = !allSelected;
         } else {
@@ -409,6 +419,41 @@
 
             if (action === 'snooze') {
                 notify(l10n.ActionSnoozeSuccess || 'Item snoozed (mock).', 'info');
+                return;
+            }
+
+            if (action === 'chat') {
+                notify('Chat panel opened (mock).', 'info');
+                return;
+            }
+
+            if (action === 'priority-change') {
+                notify('Priority updated (mock).', 'warning');
+                return;
+            }
+
+            if (action === 'history') {
+                notify('History log opened (mock).', 'info');
+                return;
+            }
+
+            if (action === 'calendar') {
+                notify('Calendar opened (mock).', 'info');
+                return;
+            }
+
+            if (action === 'convert-to-task') {
+                notify('Note converted to task (mock).', 'success');
+                return;
+            }
+
+            if (action === 'archive') {
+                notify('Item archived (mock).', 'info');
+                return;
+            }
+
+            if (action === 'share') {
+                notify('Share dialog opened (mock).', 'info');
             }
         }
     });
@@ -530,13 +575,13 @@
         elements.inboxMasterCheckbox?.addEventListener('change', (e) => {
             const isChecked = e.target.checked;
             const visibleItems = getVisibleInboxItems();
-            
+
             if (isChecked) {
                 visibleItems.forEach(item => state.selectedItemIds.add(item.id));
             } else {
                 state.selectedItemIds.clear();
             }
-            renderInbox(); 
+            renderInbox();
         });
 
         elements.inboxRoot?.addEventListener('change', (e) => {

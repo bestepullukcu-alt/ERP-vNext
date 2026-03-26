@@ -7,7 +7,7 @@
         <div class="card-body px-3 py-2 d-flex flex-row align-items-center justify-content-between gap-2" style="min-height: 54px;">
             <div class="d-inline-flex align-items-center flex-shrink-0">
                 <input class="form-check-input mb-0" type="checkbox" id="inboxMasterCheckbox" style="cursor:pointer;" />
-                <label for="inboxMasterCheckbox" class="mb-0 ms-2 text-heading fw-semibold text-nowrap" style="font-size: 0.85rem; cursor:pointer;" id="inboxSelectionLabel">
+                <label for="inboxMasterCheckbox" class="mb-0 ms-2 text-heading fw-semibold text-nowrap" style="font-size: 0.75rem; cursor:pointer;" id="inboxSelectionLabel">
                     Tümünü Seç
                 </label>
             </div>
@@ -15,7 +15,7 @@
             <div class="d-flex align-items-center gap-2 flex-grow-1 justify-content-end" id="inboxStateContainer">
                 <!-- State A: Default Search -->
                 <div id="inboxDefaultState" class="d-flex align-items-center gap-2 w-100 justify-content-end" style="transition: opacity 0.2s ease;">
-                    <div class="wc-search-wrap flex-grow-1 d-none d-md-block" style="max-width: 300px;">
+                    <div class="wc-search-wrap flex-grow-1">
                         <input type="search" id="inboxSearchInput"
                                class="form-control form-control-sm wc-inbox-search w-100"
                                placeholder="@Localizer["SearchPlaceholder"]"
@@ -32,13 +32,13 @@
 
                 <!-- State B: Bulk Actions -->
                 <div id="inboxBulkState" class="d-none align-items-center gap-1 gap-md-2" style="transition: opacity 0.2s ease;">
-                    <button type="button" class="btn btn-sm btn-outline-success px-2 px-md-3" id="btnBulkAccept" title="Accept">
+                    <button type="button" class="btn btn-sm btn-label-success px-2 px-md-3" id="btnBulkAccept" title="Accept">
                         <i class="bx bx-check"></i><span class="d-none d-md-inline ms-1">Accept</span>
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-warning px-2 px-md-3" id="btnBulkSnooze" title="Snooze">
+                    <button type="button" class="btn btn-sm btn-label-warning px-2 px-md-3" id="btnBulkSnooze" title="Snooze">
                         <i class="bx bx-bell-minus"></i><span class="d-none d-md-inline ms-1">Snooze</span>
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger px-2 px-md-3" id="btnBulkReturn" title="Return">
+                    <button type="button" class="btn btn-sm btn-label-danger px-2 px-md-3" id="btnBulkReturn" title="Return">
                         <i class="bx bx-undo"></i><span class="d-none d-md-inline ms-1">Return</span>
                     </button>
                 </div>
