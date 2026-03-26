@@ -1107,3 +1107,158 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     border-color: var(--bs-secondary);
     color: #fff;
 }
+
+/* Work Center - inline style cleanup */
+.wc-lang-menu {
+    font-size: 0.8125rem;
+    min-width: 10rem;
+}
+
+.wc-lang-flag {
+    width: 18px;
+    height: 18px;
+}
+
+.wc-muted-caption {
+    font-size: 0.85rem;
+}
+
+.wc-tab-compact {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8125rem;
+    min-height: auto;
+    font-weight: 500;
+}
+
+.wc-tab-icon {
+    font-size: 1.1rem;
+}
+
+.wc-cursor-pointer {
+    cursor: pointer;
+}
+
+.wc-inbox-toolbar {
+    min-height: 54px;
+}
+
+.wc-inbox-selection-label {
+    font-size: 0.75rem;
+}
+
+.wc-fade-transition {
+    transition: opacity 0.2s ease;
+}
+
+/* Work Center Task Detail */
+.task-step-bar {
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+.task-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 64px;
+}
+
+.task-step-label {
+    font-size: 0.65rem;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.task-step-connector {
+    flex: 1;
+    height: 2px;
+    min-width: 16px;
+    background: var(--bs-border-color);
+    align-self: center;
+    margin-bottom: 14px;
+}
+
+.task-step--done i {
+    color: var(--bs-success);
+}
+
+.task-step--done .task-step-label {
+    color: var(--bs-success);
+}
+
+.task-step--current i {
+    color: var(--bs-primary);
+    font-size: 1.25rem;
+}
+
+.task-step--current .task-step-label {
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+.task-step--paused i {
+    color: var(--bs-warning);
+}
+
+.task-step--paused .task-step-label {
+    color: var(--bs-warning);
+}
+
+.task-step--future i {
+    color: var(--bs-secondary-color);
+}
+
+.task-step--future .task-step-label {
+    color: var(--bs-secondary-color);
+}
+
+.task-step-offflow {
+    display: flex;
+    align-items: center;
+}
+
+.task-activity-feed {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.task-collapse-trigger {
+    cursor: pointer;
+}
+
+.task-collapse-chevron {
+    transition: transform 0.2s ease;
+}
+
+.task-collapse-chevron--open {
+    transform: rotate(180deg);
+}
+
+.task-breadcrumb {
+    line-height: 1.2;
+}
+
+.task-header-title {
+    letter-spacing: 0.01em;
+}
+
+.task-time-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.task-time-unit-input {
+    width: 60px;
+}
+
+.task-timer-row {
+    padding: 8px 10px;
+    border: 1px solid #eef1f4;
+    border-radius: 0.5rem;
+    background: #fafbfc;
+}
+
+.task-description-text {
+    white-space: pre-wrap;
+}

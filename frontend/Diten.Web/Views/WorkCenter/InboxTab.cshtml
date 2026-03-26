@@ -4,17 +4,17 @@
 
 <div class="tab-pane fade show active" id="workcenter-inbox-pane" role="tabpanel" aria-labelledby="workcenter-inbox-tab">
     <div class="card mb-4">
-        <div class="card-body px-3 py-2 d-flex flex-row align-items-center justify-content-between gap-2" style="min-height: 54px;">
+        <div class="card-body px-3 py-2 d-flex flex-row align-items-center justify-content-between gap-2 wc-inbox-toolbar">
             <div class="d-inline-flex align-items-center flex-shrink-0">
-                <input class="form-check-input mb-0" type="checkbox" id="inboxMasterCheckbox" style="cursor:pointer;" />
-                <label for="inboxMasterCheckbox" class="mb-0 ms-2 text-heading fw-semibold text-nowrap" style="font-size: 0.75rem; cursor:pointer;" id="inboxSelectionLabel">
+                <input class="form-check-input mb-0 wc-cursor-pointer" type="checkbox" id="inboxMasterCheckbox" />
+                <label for="inboxMasterCheckbox" class="mb-0 ms-2 text-heading fw-semibold text-nowrap wc-inbox-selection-label wc-cursor-pointer" id="inboxSelectionLabel">
                     Tümünü Seç
                 </label>
             </div>
             
             <div class="d-flex align-items-center gap-2 flex-grow-1 justify-content-end" id="inboxStateContainer">
                 <!-- State A: Default Search -->
-                <div id="inboxDefaultState" class="d-flex align-items-center gap-2 w-100 justify-content-end" style="transition: opacity 0.2s ease;">
+                <div id="inboxDefaultState" class="d-flex align-items-center gap-2 w-100 justify-content-end wc-fade-transition">
                     <div class="wc-search-wrap flex-grow-1">
                         <input type="search" id="inboxSearchInput"
                                class="form-control form-control-sm wc-inbox-search w-100"
@@ -31,7 +31,7 @@
                 </div>
 
                 <!-- State B: Bulk Actions -->
-                <div id="inboxBulkState" class="d-none align-items-center gap-1 gap-md-2" style="transition: opacity 0.2s ease;">
+                <div id="inboxBulkState" class="d-none align-items-center gap-1 gap-md-2 wc-fade-transition">
                     <button type="button" class="btn btn-sm btn-label-success px-2 px-md-3" id="btnBulkAccept" title="Accept">
                         <i class="bx bx-check"></i><span class="d-none d-md-inline ms-1">Accept</span>
                     </button>
