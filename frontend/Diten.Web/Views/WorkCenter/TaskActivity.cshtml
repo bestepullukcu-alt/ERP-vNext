@@ -1,0 +1,36 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+
+<div class="card mb-4">
+    <div class="card-header p-3 border-0 d-flex align-items-center justify-content-between"
+         data-bs-toggle="collapse"
+         data-bs-target="#taskActivityCollapse"
+         style="cursor: pointer;"
+         aria-expanded="false"
+         aria-controls="taskActivityCollapse">
+        <h6 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+            @Localizer["Activity"]
+            <span class="badge bg-label-secondary" id="taskActivityCount">0</span>
+        </h6>
+        <i class="bx bx-chevron-down icon-base text-muted task-collapse-chevron"></i>
+    </div>
+    <div class="collapse" id="taskActivityCollapse">
+        <div class="card-body p-3 pt-0">
+            <div id="taskActivityFeed" class="task-activity-feed mb-3">
+                <!-- Rendered by task-detail.js -->
+            </div>
+            <div class="d-flex gap-2 align-items-start">
+                <textarea id="taskCommentInput"
+                          class="form-control form-control-sm"
+                          rows="2"
+                          placeholder="@Localizer["WriteComment"]"></textarea>
+                <button type="button"
+                        class="btn btn-sm btn-primary flex-shrink-0"
+                        id="taskCommentSubmit">
+                    @Localizer["Send"]
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

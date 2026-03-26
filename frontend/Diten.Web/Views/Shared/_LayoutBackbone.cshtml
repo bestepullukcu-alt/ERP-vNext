@@ -138,6 +138,16 @@
                         </a>
                     </li>
 
+                    <!-- Platform -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">@SharedLocalizer["Platform"]</span>
+                    </li>
+                    <li class="menu-item @(ViewBag.ActiveMenu == "workcenter" ? "active" : "")">
+                        <a href="/WorkCenter" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
+                            <div>@SharedLocalizer["WorkCenterMenu"]</div>
+                        </a>
+                    </li>
                 </ul>
             </aside>
 
@@ -178,23 +188,25 @@
                                     data-bs-toggle="dropdown">
                                     <i class="icon-base bx bx-globe icon-md"></i>
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="?culture=en"
-                                            data-language="en"><span>English</span></a></li>
-                                    <li><a class="dropdown-item" href="?culture=tr"
-                                            data-language="tr"><span>Türkçe</span></a></li>
-                                    <li><a class="dropdown-item" href="?culture=es"
-                                            data-language="es"><span>Español</span></a></li>
-                                    <li><a class="dropdown-item" href="?culture=ru"
-                                            data-language="ru"><span>Русский</span></a></li>
-                                    <li><a class="dropdown-item" href="?culture=uk"
-                                            data-language="uk"><span>Українська</span></a></li>
-                                    <li><a class="dropdown-item" href="?culture=ka"
-                                            data-language="ka"><span>ქართული</span></a></li>
-                                    <li><a class="dropdown-item" href="?culture=kk"
-                                            data-language="kk"><span>Қазақша</span></a></li>
-                                    <li><a class="dropdown-item" href="?culture=uz"
-                                            data-language="uz"><span>O'zbekcha</span></a></li>
+                                <ul class="dropdown-menu dropdown-menu-end" style="font-size: 0.8125rem; min-width: 10rem;">
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=en"
+                                            data-language="en"><span class="fi fi-gb fis rounded-circle" style="width:18px;height:18px;"></span><span>English</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=tr"
+                                            data-language="tr"><span class="fi fi-tr fis rounded-circle" style="width:18px;height:18px;"></span><span>Türkçe</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=az"
+                                            data-language="az"><span class="fi fi-az fis rounded-circle" style="width:18px;height:18px;"></span><span>Azərbaycanca</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=uz"
+                                            data-language="uz"><span class="fi fi-uz fis rounded-circle" style="width:18px;height:18px;"></span><span>O'zbekcha</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=kk"
+                                            data-language="kk"><span class="fi fi-kz fis rounded-circle" style="width:18px;height:18px;"></span><span>Қазақша</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=ru"
+                                            data-language="ru"><span class="fi fi-ru fis rounded-circle" style="width:18px;height:18px;"></span><span>Русский</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=uk"
+                                            data-language="uk"><span class="fi fi-ua fis rounded-circle" style="width:18px;height:18px;"></span><span>Українська</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=ka"
+                                            data-language="ka"><span class="fi fi-ge fis rounded-circle" style="width:18px;height:18px;"></span><span>ქართული</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=es"
+                                            data-language="es"><span class="fi fi-es fis rounded-circle" style="width:18px;height:18px;"></span><span>Español</span></a></li>
                                 </ul>
                             </li>
 

@@ -79,7 +79,7 @@ Projeyi tam fonksiyonel çalıştırmak için servisleri aşağıdaki sırayla b
 ## 🛠️ Önemli Geliştirme Notları
 
 ### 🌍 Dil Dosyaları (.resx) Hatırlatması
-UI tarafındaki metinlerin (Örn: LegalEntities ekranları) 8 dilde doğru görünmesi için, .resx dosyalarında yapılan her değişiklikten sonra tüm çözümü yeniden derlemeniz gerekir:
+UI tarafındaki metinlerin (Örn: LegalEntities ekranları) 9 dilde doğru görünmesi için, .resx dosyalarında yapılan her değişiklikten sonra tüm çözümü yeniden derlemeniz gerekir:
 - dotnet build veya run_all.sh betiğini kullanın.
 
 ### 🆔 Sabit Test Verisi

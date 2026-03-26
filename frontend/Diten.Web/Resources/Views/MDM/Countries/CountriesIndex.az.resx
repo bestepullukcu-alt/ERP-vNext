@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="CountriesTitle" xml:space="preserve"><value>Ölkələr</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Bu ekrandan tüm ülkeleri yönetebilirsiniz.</value></data>
+  <data name="AddNewCountries" xml:space="preserve"><value>Yeni Ölkə Əlavə et</value></data>
+  <data name="Actions" xml:space="preserve"><value>Əməliyyatlar</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Redaktə et</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Bakış</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Iso2Code" xml:space="preserve"><value>ISO 2</value></data>
+  <data name="Iso3Code" xml:space="preserve"><value>ISO 3</value></data>
+  <data name="PhoneCode" xml:space="preserve"><value>Telefon Kodu</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Ümumi Məlumat</value></data>
+</root>

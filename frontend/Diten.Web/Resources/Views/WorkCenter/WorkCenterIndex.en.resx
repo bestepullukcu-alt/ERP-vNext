@@ -73,4 +73,39 @@
   <data name="ColConvertAction" xml:space="preserve"><value>Convert</value></data>
   <data name="ColLastUpdate" xml:space="preserve"><value>Last Update</value></data>
   <data name="ColActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AllWorkEmptyTitle" xml:space="preserve"><value>No items found</value></data>
+  <data name="AllWorkEmptyDescription" xml:space="preserve"><value>No work items match the selected scope.</value></data>
+  <data name="TaskDetailTitle" xml:space="preserve"><value>Task Detail</value></data>
+  <data name="Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Subtasks" xml:space="preserve"><value>Subtasks</value></data>
+  <data name="Activity" xml:space="preserve"><value>Activity</value></data>
+  <data name="WriteComment" xml:space="preserve"><value>Write a comment...</value></data>
+  <data name="Send" xml:space="preserve"><value>Send</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="TimeEntry" xml:space="preserve"><value>Time Entries</value></data>
+  <data name="TimeNote" xml:space="preserve"><value>Note (optional)</value></data>
+  <data name="Log" xml:space="preserve"><value>Log</value></data>
+  <data name="StartTimer" xml:space="preserve"><value>Start Timer</value></data>
+  <data name="StopTimer" xml:space="preserve"><value>Stop Timer</value></data>
+  <data name="NoTimeLogged" xml:space="preserve"><value>No time logged yet.</value></data>
+  <data name="Dependencies" xml:space="preserve"><value>Dependencies</value></data>
+  <data name="BlockedBy" xml:space="preserve"><value>Blocked By</value></data>
+  <data name="Blocks" xml:space="preserve"><value>Blocks</value></data>
+  <data name="RejectionNote" xml:space="preserve"><value>Rejection Note</value></data>
+  <data name="RejectionNotePlaceholder" xml:space="preserve"><value>Describe the reason for rejection...</value></data>
+  <data name="ConfirmReject" xml:space="preserve"><value>Confirm Rejection</value></data>
+  <data name="Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="RequestInfo" xml:space="preserve"><value>Request Info</value></data>
+  <data name="Plan" xml:space="preserve"><value>Plan</value></data>
+  <data name="StartWork" xml:space="preserve"><value>Start Work</value></data>
+  <data name="LogTime" xml:space="preserve"><value>Log Time</value></data>
+  <data name="Complete" xml:space="preserve"><value>Complete</value></data>
+  <data name="Block" xml:space="preserve"><value>Block</value></data>
+  <data name="Unblock" xml:space="preserve"><value>Unblock</value></data>
+  <data name="Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="RejectReview" xml:space="preserve"><value>Reject Review</value></data>
+  <data name="TimeEntryRequired" xml:space="preserve"><value>Log at least one time entry before completing.</value></data>
+  <data name="CommentAdded" xml:space="preserve"><value>Comment added.</value></data>
+  <data name="TimeLogged" xml:space="preserve"><value>Time logged.</value></data>
 </root>

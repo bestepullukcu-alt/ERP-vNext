@@ -1,0 +1,40 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+
+<div class="card mb-4">
+    <div class="card-body p-3">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <a href="#" id="taskBackBtn" class="btn btn-sm btn-icon btn-label-secondary flex-shrink-0" title="@Localizer["Back"]">
+                <i class="bx bx-arrow-back icon-base"></i>
+            </a>
+            <span class="text-muted small" id="taskIdLabel">-</span>
+            <span class="badge bg-label-info flex-shrink-0" id="taskTypeBadge">Task</span>
+        </div>
+
+        <h5 class="mb-2 fw-semibold lh-sm" id="taskTitle">-</h5>
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <span class="badge bg-label-primary task-context-chip" id="taskHeaderProject">Project: -</span>
+            <span class="badge bg-label-info task-context-chip" id="taskHeaderSource">Source: -</span>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <span class="d-flex align-items-center gap-1 text-muted small">
+                <i class="bx bx-user icon-base"></i>
+                <span id="taskAssignee">-</span>
+            </span>
+            <span class="d-flex align-items-center gap-1 text-muted small">
+                <i class="bx bx-user-check icon-base"></i>
+                <span id="taskCreatedBy">-</span>
+            </span>
+            <span class="d-flex align-items-center gap-1 text-muted small">
+                <i class="bx bx-calendar icon-base"></i>
+                <span id="taskDueDate">-</span>
+            </span>
+            <span class="badge bg-label-secondary" id="taskDueStateBadge">-</span>
+            <span class="badge bg-label-secondary" id="taskPriorityBadge">-</span>
+            <span class="badge bg-label-danger d-none" id="taskDependencyImpactBadge">Blocked</span>
+            <span class="badge bg-label-secondary ms-auto" id="taskStatusBadge">-</span>
+        </div>
+    </div>
+</div>

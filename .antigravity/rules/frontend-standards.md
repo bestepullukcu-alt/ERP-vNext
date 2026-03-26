@@ -140,7 +140,7 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - Save View state kapsamı:
   - **Kaydedilenler:** filtreler + search + column visibility + column order + sorting (varsa)
   - **Kaydedilmeyenler:** page number (pagination)
-- Localization: `SaveView` metni **SharedResource** üzerinden gelir ve 8 dilde eksiksiz olmalıdır.
+- Localization: `SaveView` metni **SharedResource** üzerinden gelir ve 9 dilde eksiksiz olmalıdır.
 
 ### UI-005: Column Reorder (v2)
 - Kolon sürükle-bırak sıralama gerekiyorsa DataTables `ColReorder` kullanılır; custom sortable header hack’i yazılmaz.
@@ -240,7 +240,7 @@ Bu bölüm yalnızca `data-dt-standard="v2"` ile işaretlenmiş DataTable sayfal
 - `_LayoutBackbone.cshtml` içindeki tüm metinler `@SharedLocalizer["Key"]` ile dile bağlanır.
 
 ### L10N-002: Universal Coverage (8 Languages)
-- Yeni eklenen her Key, sistemdeki **tüm 8 dil dosyasına** (`en, tr, ru, es, ka, kk, uk, uz`) eksiksiz eklenmelidir.
+- Yeni eklenen her Key, sistemdeki **tüm 9 dil dosyasına** (`az, en, tr, ru, es, ka, kk, uk, uz`) eksiksiz eklenmelidir.
 - Diğer dillerde metnin "Key" ismiyle görünmesi kabul edilemez.
 
 ---

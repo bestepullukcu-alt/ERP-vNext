@@ -12,7 +12,7 @@ Bir kaydın "Salt Okunur Detaylarını" oluştururken veya düzenlerken, aşağ�
 ### Model A: Offcanvas "Hızlı Bakış" (Hafif Veriler İçin)
 - **Kullanım:** 5-10 kısa özellik, karmaşık sekme (tab) içermeyen yapılar.
 - **Tetikleme:** Liste/Index sayfasındaki DataTable satırından tıklanır.
-- **Diten Şartı:** İçerik AJAX ile yüklenmeli ve `window.L10n` bridge yapısı ile yerelleştirilmelidir (8 dil desteği).
+- **Diten Şartı:** İçerik AJAX ile yüklenmeli ve `window.L10n` bridge yapısı ile yerelleştirilmelidir (9 dil desteği).
 
 ### Model B: İzole Tam Detay Sayfası (Ağır Veriler İçin)
 - **Kullanım:** İlişkili tablolar, çok sayıda sekme veya finansal/iletişim gibi blok grupları.

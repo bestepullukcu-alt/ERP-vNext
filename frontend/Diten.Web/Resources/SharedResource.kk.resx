@@ -256,4 +256,6 @@
   <data name="Login.Error" xml:space="preserve"><value>Эл. пошта немесе құпиясөз қате</value></data>
   <data name="Login.Loading" xml:space="preserve"><value>Кіру...</value></data>
   <data name="SaveView" xml:space="preserve"><value>Көріністі Сақтау</value></data>
+  <data name="Platform" xml:space="preserve"><value>Platform</value></data>
+  <data name="WorkCenterMenu" xml:space="preserve"><value>Work Center</value></data>
 </root>

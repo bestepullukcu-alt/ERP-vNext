@@ -21,7 +21,7 @@ Bu komut; yeni testler oluşturur, mevcut testleri çalıştırır veya test kap
 1. **AAA Deseni:** Testler mutlaka "Arrange (Hazırla) - Act (Çalıştır) - Assert (Doğrula)" yapısında olmalıdır.
 2. **Mocking:** Veritabanı (MongoDB) ve dış servisler mutlaka `Moq` veya `NSubstitute` ile taklit edilmelidir.
 3. **Multi-Tenancy Check:** Her test senaryosu mutlaka "Farklı TenantId" durumunu test etmelidir.
-4. **8 Dil Check:** Hata mesajlarının `SharedLocalizer` üzerinden doğru Key ile dönüp dönmediği kontrol edilmelidir.
+4. **9 Dil Check:** Hata mesajlarının `SharedLocalizer` üzerinden doğru Key ile dönüp dönmediği kontrol edilmelidir.
 
 ---
 
@@ -32,7 +32,7 @@ Bu komut; yeni testler oluşturur, mevcut testleri çalıştırır veya test kap
 |-----------|------|----------|
 | Şehir başarıyla oluşturulmalı | Unit | Happy Path |
 | Geçersiz TenantId reddedilmeli | Security | İzolasyon |
-| Boş isim hatası (8 dil) dönmeli | Validation | L10n |
+| Boş isim hatası (9 dil) dönmeli | Validation | L10n |
 
 ### Üretilen Test (C# / xUnit)
 ```csharp

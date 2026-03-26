@@ -53,7 +53,7 @@ description: "WORKFLOW-002 — Mevcut Modüle Action Bazlı Sayfa ve UI Bileşen
 - [ ] **QuickView Check:** `.js-quick-view` + event delegation var mı? Inline `onclick` yok mu?
 - [ ] **Confirm Check:** Tekil silme `window.showConfirm` üzerinden mi?
 - [ ] **Toast Check:** Bildirimler `window.showToast` üzerinden mi?
-- [ ] **L10n Check:** Hardcoded string yok mu? `window.L10n` bridge dolu mu (8 dil)?
+- [ ] **L10n Check:** Hardcoded string yok mu? `window.L10n` bridge dolu mu (9 dil)?
 - [ ] **CSRF Check:** Formlarda `@Html.AntiForgeryToken()` var mı?
 
 ---

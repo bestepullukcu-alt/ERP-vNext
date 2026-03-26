@@ -25,28 +25,15 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
     - **ColReorder (ZORUNLU):** "Standart kolon yapısına sahip tüm liste sayfalarında `colReorder: { columns: ':gt(1):not(:last-child)' }` aktif edilmeli; `column-reorder.dt`/`columns-reordered.dt` event'leri dirty-state hesabına bağlanmalıdır. (bkz. `frontend-js-standard.md §11`)"
     - **Inline Filter (ZORUNLU):** "Offcanvas filter YASAK. `_Filter.cshtml` içinde `#inlineFilterHost` + `#inlineFilterCollapse` olmalı; `index.js` içinde `_Filter` toolbar altına mount edilmeli ve host hizası **px-6** ile korunmalı (mx-* YASAK). Reusable toolbar / inline-filter / Select2 stilleri sayfa içine gömülmez; `backbone-custom.css` içinde tutulur. Teslim öncesi `python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName}` çalıştır."
     - **Kalite Kapısı:** Teslimden önce `.antigravity/workflows/quality-gate-datatable.md` checklist'ini eksiksiz işaretle.
-3. **L10n (Dil) Denetimi:** `l10n-agent` çalıştığında, 8 dilin (`en, es, ka, kk, ru, tr, uk, uz`) tamamının `.resx` dosyalarının eksiksiz dolduğundan emin olmadan ASLA UI (Arayüz) fazına geçmeyeceksin. "Kaydet", "Sil" gibi ortak kelimeleri View dosyasına ekletmeyecek, daima `SharedLocalizer` kullandıracaksın.
+3. **L10n (Dil) Denetimi:** `l10n-agent` çalıştığında, 9 dilin (`az, en, es, ka, kk, ru, tr, uk, uz`) tamamının `.resx` dosyalarının eksiksiz dolduğundan emin olmadan ASLA UI (Arayüz) fazına geçmeyeceksin. "Kaydet", "Sil" gibi ortak kelimeleri View dosyasına ekletmeyecek, daima `SharedLocalizer` kullandıracaksın.
 4. **Sıfır Halüsinasyon:** Ajanların kod uydurması, varsayılan İngilizce metinler bırakması veya onaylanmamış bir UI bileşeni eklemesi KESİNLİKLE YASAKTIR.
 5. **Rebuild Guard (ZORUNLU):** Mevcut bir modül yeniden yapılırken (refactor, rebuild, fix) Create/Edit/Details sayfaları silinirse **aynı çalışmada** yeniden yapılmak ZORUNDADIR. "Sadece Index'i düzelt" talebi bu sayfaları silmeye izin vermez. Silinen her sayfa için yeni sürüm aynı PR/commit içinde teslim edilir.
-6. **`.antigravity` Değişiklik Onayı (ZORUNLU):** Orkestratör, `.antigravity/` altındaki şablon/standart/workflow/guard dosyalarını **kullanıcı onayı olmadan** güncellemez.
-   - Akış:
-     1) Önce UI/UX düzeltmesi ürün kodunda uygulanır (View/CSS/JS).
-     2) Kullanıcı değişikliği runtime’da kontrol eder (QA/smoke).
-     3) Kullanıcı “tamam” derse orkestratör `.antigravity` referanslarını günceller.
-   - Kullanıcı açıkça “kuralları da güncelle” derse bu adım ayrıca onay sayılır.
-7. **Standartlaştırma (Onay Sonrası ZORUNLU):** Kullanıcı bir UI/UX düzeltmesini onayladıysa ve bu düzeltme “gelecek sayfalarda da standart” olacaksa, orkestratör aynı PR/çalışma içinde `.antigravity` altındaki ilgili referansları günceller:
-   - Şablon: `.antigravity/rules/frontend-datatable-template.md` (HTML/_Filter varsayılanları)
-   - Standart: `.antigravity/rules/frontend-standards.md` (CSS/UI kuralları + MOD notları)
-   - Kalite Kapısı: `.antigravity/workflows/quality-gate-datatable.md` ve/veya migration checklist
-   - Statik Guard (varsa): `.antigravity/scripts/verify_datatable_page.py` gibi doğrulayıcılar
-   - Amaç: Aynı bug’ın tekrar etmesini engellemek; sayfa-bazlı “hack” ile bırakmak YASAKTIR.
-
 ---
 
 ## 🔴 AŞAMA 0: BAĞLAM KONTROLÜ VE SOKRATİK KAPI (ZORUNLU)
 
 **Herhangi bir uzman ajanı çağırmadan veya kod yazmadan ÖNCE:**
-1. Talebin ERP vNext mimarisine (CQRS, MongoDB, Sneat, Auth, 8 Dil) etkisini düşün.
+1. Talebin ERP vNext mimarisine (CQRS, MongoDB, Sneat, Auth, 9 Dil) etkisini düşün.
 2. Local runtime bağımlılıklarını doğrula: **MongoDB (27017)** çalışıyor mu? Çalışmıyorsa Auth/MDM seed ve DataTable API çağrıları `500/timeout` ile başarısız olur.
 3. Eksik veya belirsiz bir detay varsa kullanıcıya **mutlaka Sokratik Sorular sor**.
 4. Kullanıcıdan net onay almadan asla alt ajanları tetikleme.
@@ -62,7 +49,7 @@ Aşağıdaki 13 ajanı görev dağıtımı için kullanacaksın. Her ajan SADECE
 - `frontend-ui-ux`: Razor Views, DataTables v2, JS modülleri (Daima `.antigravity` şablonlarına uyar).
 - `security-agent`: JWT, RBAC Policy, `[HasPermission]`, Tenant Filter
 - `data-agent`: MongoDB Index, Collection tasarımı, Seed Data
-- **`l10n-agent`**: `.resx` dosyaları (8 dil), `window.L10n` köprüsü (partial + JSON payload + loader JS standardı, camelCase to PascalCase dönüşümü dahil)
+- **`l10n-agent`**: `.resx` dosyaları (9 dil), `window.L10n` köprüsü (partial + JSON payload + loader JS standardı, camelCase to PascalCase dönüşümü dahil)
 - `integration-agent`: Ocelot Gateway konfigürasyonu, mikroservis iletişimi, `ocelot.json` rota yönetimi
 - `testing-agent`: xUnit, Moq, Integration Test yazımı
 - `devops-agent`: Dockerfile, CI/CD, deployment senaryoları
@@ -91,7 +78,7 @@ Karmaşık bir görev (Örn: Yeni Modül) verildiğinde `.antigravity/workflows/
 - `security-agent` → Yetki izinlerini ve Tenant izolasyonunu denetlet.
 
 ### 3. Yerelleştirme, Gateway ve UI (Phase 3 + 3.5 + 4)
-- **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 8 dil `.resx` senkronizasyonunu `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx` yapısında tamamla. (MarkerClassName = `{ModuleName}Index`, bkz: `frontend-datatable-template.md`)
+- **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 9 dil `.resx` senkronizasyonunu `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx` yapısında tamamla. (MarkerClassName = `{ModuleName}Index`, bkz: `frontend-datatable-template.md`)
 - **SONRA `integration-agent`:** `.antigravity/rules/routes.md` dosyasını oku ve `ocelot.json`'a **iki explicit rota** ekle (`/{resource}` + `/{resource}/{everything}`). `PATCH` ve **`OPTIONS`** dahil tüm HTTP metodları eklenmeli (CORS preflight için `OPTIONS` zorunludur). Gateway rotası eklenmeden UI fazına geçilmez.
   - **Personalization rotası kuralı:** Save View / kullanıcı tercihleri için upstream rota daima `/api/personalization/*` olur. Bu yetenek MDM veya Auth altında konumlandırılamaz.
 - **SONRA `frontend-ui-ux`:** `.antigravity/rules/frontend-datatable-template.md` (HTML — `_Filter.cshtml` dahil) ve `.antigravity/rules/frontend-js-standard.md` (`DtDefaults.create()` zorunlu) şablonlarını BİREBİR kullanarak sayfayı inşa et.

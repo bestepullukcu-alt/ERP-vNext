@@ -1,0 +1,32 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+
+<div class="card mb-4">
+    <div class="card-header p-3 border-0">
+        <h6 class="mb-0 fw-semibold">@Localizer["Actions"]</h6>
+    </div>
+    <div class="card-body p-3 pt-0">
+        <div id="taskActionsPanel">
+            <div id="taskPrimaryActions" class="d-grid gap-2 mb-2"></div>
+            <div id="taskSecondaryActions" class="d-grid gap-2"></div>
+            <hr class="my-3 d-none" id="taskDestructiveDivider" />
+            <div id="taskDestructiveActions" class="d-grid gap-2"></div>
+        </div>
+        <div id="taskActionFeedback" class="mt-2 small text-danger d-none"></div>
+
+        <div id="taskRejectReviewForm" class="d-none mt-3">
+            <label class="form-label small fw-semibold" for="taskRejectNote">@Localizer["RejectionNote"]</label>
+            <textarea id="taskRejectNote"
+                      class="form-control form-control-sm mb-2"
+                      rows="2"
+                      placeholder="@Localizer["RejectionNotePlaceholder"]"></textarea>
+            <button type="button"
+                    class="btn btn-sm btn-danger w-100"
+                    id="taskRejectReviewConfirm"
+                    disabled>
+                @Localizer["ConfirmReject"]
+            </button>
+        </div>
+    </div>
+</div>

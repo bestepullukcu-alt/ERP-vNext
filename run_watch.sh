@@ -16,27 +16,22 @@ prefix_logs() {
     done
 }
 
-echo "=========================================================="
-echo "🚀 Servisler WATCH / HOT-RELOAD Modunda Başlatılıyor..."
-echo "=========================================================="
-echo "🚀 İzleniyor: Auth (AuthService.Api)"
-echo "🚀 İzleniyor: Backend (MdmService.Api)"
-echo "🚀 İzleniyor: Platform (Diten.Platform.API)"
-echo "🚀 İzleniyor: Gateway (ApiGateway)"@
-echo "🚀 İzleniyor: Frontend (Diten.Web)"
-echo "=========================================================="
+echo "========================================="
+echo "🚀 Servisler WATCH modunda başlatılıyor..."
+echo "========================================="
 echo ""
 
 # Terminate processes on our target ports
-pkill -f run_all.sh 2>/dev/null || true
 lsof -ti :5000,5001,5050,5056,5057 | xargs kill -9 2>/dev/null || true
 killall -9 dotnet 2>/dev/null || true
 
-prefix_logs "[AUTH    ]" "dotnet watch --project services/DitenAuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj run --urls http://0.0.0.0:5056" &
+# Watch mode commands
+# Note: dotnet watch run --project <path>
+prefix_logs "[AUTH    ]" "dotnet watch run --non-interactive --project services/DitenAuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj --urls http://0.0.0.0:5056" &
 sleep 2 # Auth service needs more startup time for seeding
-prefix_logs "[BACKEND ]" "dotnet watch --project services/DitenMdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj run --urls http://0.0.0.0:5050" &
-prefix_logs "[PLATFORM]" "dotnet watch --project services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj run --urls http://0.0.0.0:5057" &
-prefix_logs "[GATEWAY ]" "dotnet watch --project gateway/DitenApiGateway/Diten.ApiGateway/Diten.ApiGateway.csproj run --urls http://0.0.0.0:5000" &
-prefix_logs "[FRONTEND]" "dotnet watch --project frontend/Diten.Web/Diten.Web.csproj run --urls http://0.0.0.0:5001" &
+prefix_logs "[BACKEND ]" "dotnet watch run --non-interactive --project services/DitenMdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj --urls http://0.0.0.0:5050" &
+prefix_logs "[PLATFORM]" "dotnet watch run --non-interactive --project services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj --urls http://0.0.0.0:5057" &
+prefix_logs "[GATEWAY ]" "dotnet watch run --non-interactive --project gateway/DitenApiGateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000" &
+prefix_logs "[FRONTEND]" "dotnet watch run --non-interactive --project frontend/Diten.Web/Diten.Web.csproj --urls http://0.0.0.0:5001" &
 
 wait

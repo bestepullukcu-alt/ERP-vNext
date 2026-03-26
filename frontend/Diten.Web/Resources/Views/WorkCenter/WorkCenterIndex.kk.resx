@@ -71,4 +71,38 @@
   <data name="ColConvertAction" xml:space="preserve"><value>Convert</value></data>
   <data name="ColLastUpdate" xml:space="preserve"><value>Last Update</value></data>
   <data name="ColActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AllWorkEmptyTitle" xml:space="preserve"><value>No items found</value></data>
+  <data name="AllWorkEmptyDescription" xml:space="preserve"><value>No work items match the selected scope.</value></data>
+  <data name="TaskDetailTitle" xml:space="preserve"><value>Тапсырма мәліметі</value></data>
+  <data name="Back" xml:space="preserve"><value>Артқа</value></data>
+  <data name="Description" xml:space="preserve"><value>Сипаттама</value></data>
+  <data name="Subtasks" xml:space="preserve"><value>Ішкі тапсырмалар</value></data>
+  <data name="Activity" xml:space="preserve"><value>Белсенділік</value></data>
+  <data name="WriteComment" xml:space="preserve"><value>Пікір жазыңыз...</value></data>
+  <data name="Send" xml:space="preserve"><value>Жіберу</value></data>
+  <data name="Actions" xml:space="preserve"><value>Іс-әрекеттер</value></data>
+  <data name="TimeEntry" xml:space="preserve"><value>Уақыт жазбалары</value></data>
+  <data name="TimeNote" xml:space="preserve"><value>Ескертпе (міндетті емес)</value></data>
+  <data name="Log" xml:space="preserve"><value>Тіркеу</value></data>
+  <data name="StartTimer" xml:space="preserve"><value>Таймерді іске қосу</value></data>
+  <data name="StopTimer" xml:space="preserve"><value>Таймерді тоқтату</value></data>
+  <data name="NoTimeLogged" xml:space="preserve"><value>Уақыт жазылмаған.</value></data>
+  <data name="Dependencies" xml:space="preserve"><value>Тәуелділіктер</value></data>
+  <data name="BlockedBy" xml:space="preserve"><value>Блоктаушы</value></data>
+  <data name="Blocks" xml:space="preserve"><value>Блоктайды</value></data>
+  <data name="RejectionNote" xml:space="preserve"><value>Бас тарту себебі</value></data>
+  <data name="RejectionNotePlaceholder" xml:space="preserve"><value>Бас тарту себебін сипаттаңыз...</value></data>
+  <data name="ConfirmReject" xml:space="preserve"><value>Бас тартуды растау</value></data>
+  <data name="RequestInfo" xml:space="preserve"><value>Ақпарат сұрау</value></data>
+  <data name="Plan" xml:space="preserve"><value>Жоспарлау</value></data>
+  <data name="StartWork" xml:space="preserve"><value>Жұмысты бастау</value></data>
+  <data name="LogTime" xml:space="preserve"><value>Уақытты тіркеу</value></data>
+  <data name="Complete" xml:space="preserve"><value>Аяқтау</value></data>
+  <data name="Block" xml:space="preserve"><value>Блоктау</value></data>
+  <data name="Unblock" xml:space="preserve"><value>Блоктан шығару</value></data>
+  <data name="Approve" xml:space="preserve"><value>Бекіту</value></data>
+  <data name="RejectReview" xml:space="preserve"><value>Шолуды бас тарту</value></data>
+  <data name="TimeEntryRequired" xml:space="preserve"><value>Аяқтамас бұрын кем дегенде бір уақыт жазбасын енгізіңіз.</value></data>
+  <data name="CommentAdded" xml:space="preserve"><value>Пікір қосылды.</value></data>
+  <data name="TimeLogged" xml:space="preserve"><value>Уақыт тіркелді.</value></data>
 </root>

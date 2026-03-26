@@ -1,5 +1,5 @@
 ---
-description: "MOD-0013 Dynamic Localization Standard — UI metinlerinin 8 dilde senkronize olmasını garanti eder"
+description: "MOD-0013 Dynamic Localization Standard — UI metinlerinin 9 dilde senkronize olmasını garanti eder"
 ---
 
 # Dynamic-Localization-Standard (MOD-0013)
@@ -15,7 +15,7 @@ description: "MOD-0013 Dynamic Localization Standard — UI metinlerinin 8 dilde
 Yeni bir anahtar eklemeden önce tüm dil dosyalarını keşfet:
 find frontend/Diten.Web/Resources -name "SharedResource.*.resx" -type f
 
-Kural: Yeni anahtar keşfedilen TÜM dosyalara (en, tr, es, ru, uk, ka, kk, uz) aynı anda eklenmelidir.
+Kural: Yeni anahtar keşfedilen TÜM dosyalara (az, en, tr, es, ru, uk, ka, kk, uz) aynı anda eklenmelidir.
 
 ### 3. Gerçek Çeviri Disiplini
 - İngilizce metni diğer dosyalara yer tutucu olarak kopyalamayın.

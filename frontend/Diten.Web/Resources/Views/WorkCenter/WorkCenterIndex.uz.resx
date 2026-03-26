@@ -71,4 +71,38 @@
   <data name="ColConvertAction" xml:space="preserve"><value>Convert</value></data>
   <data name="ColLastUpdate" xml:space="preserve"><value>Last Update</value></data>
   <data name="ColActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AllWorkEmptyTitle" xml:space="preserve"><value>No items found</value></data>
+  <data name="AllWorkEmptyDescription" xml:space="preserve"><value>No work items match the selected scope.</value></data>
+  <data name="TaskDetailTitle" xml:space="preserve"><value>Topshiriq tafsiloti</value></data>
+  <data name="Back" xml:space="preserve"><value>Orqaga</value></data>
+  <data name="Description" xml:space="preserve"><value>Tavsif</value></data>
+  <data name="Subtasks" xml:space="preserve"><value>Ichki topshiriqlar</value></data>
+  <data name="Activity" xml:space="preserve"><value>Faollik</value></data>
+  <data name="WriteComment" xml:space="preserve"><value>Izoh yozing...</value></data>
+  <data name="Send" xml:space="preserve"><value>Yuborish</value></data>
+  <data name="Actions" xml:space="preserve"><value>Harakatlar</value></data>
+  <data name="TimeEntry" xml:space="preserve"><value>Vaqt yozuvlari</value></data>
+  <data name="TimeNote" xml:space="preserve"><value>Izoh (ixtiyoriy)</value></data>
+  <data name="Log" xml:space="preserve"><value>Yozish</value></data>
+  <data name="StartTimer" xml:space="preserve"><value>Taymerni boshlash</value></data>
+  <data name="StopTimer" xml:space="preserve"><value>Taymerni to'xtatish</value></data>
+  <data name="NoTimeLogged" xml:space="preserve"><value>Vaqt hali qayd etilmagan.</value></data>
+  <data name="Dependencies" xml:space="preserve"><value>Bog'liqliklar</value></data>
+  <data name="BlockedBy" xml:space="preserve"><value>Bloklovchi</value></data>
+  <data name="Blocks" xml:space="preserve"><value>Bloklaydi</value></data>
+  <data name="RejectionNote" xml:space="preserve"><value>Rad etish sababi</value></data>
+  <data name="RejectionNotePlaceholder" xml:space="preserve"><value>Rad etish sababini tasvirlab bering...</value></data>
+  <data name="ConfirmReject" xml:space="preserve"><value>Rad etishni tasdiqlash</value></data>
+  <data name="RequestInfo" xml:space="preserve"><value>Ma'lumot so'rash</value></data>
+  <data name="Plan" xml:space="preserve"><value>Rejalashtirish</value></data>
+  <data name="StartWork" xml:space="preserve"><value>Ishni boshlash</value></data>
+  <data name="LogTime" xml:space="preserve"><value>Vaqtni yozish</value></data>
+  <data name="Complete" xml:space="preserve"><value>Yakunlash</value></data>
+  <data name="Block" xml:space="preserve"><value>Bloklash</value></data>
+  <data name="Unblock" xml:space="preserve"><value>Blokdan chiqarish</value></data>
+  <data name="Approve" xml:space="preserve"><value>Tasdiqlash</value></data>
+  <data name="RejectReview" xml:space="preserve"><value>Ko'rib chiqishni rad etish</value></data>
+  <data name="TimeEntryRequired" xml:space="preserve"><value>Yakunlashdan oldin kamida bitta vaqt yozuvini kiriting.</value></data>
+  <data name="CommentAdded" xml:space="preserve"><value>Izoh qo'shildi.</value></data>
+  <data name="TimeLogged" xml:space="preserve"><value>Vaqt yozildi.</value></data>
 </root>

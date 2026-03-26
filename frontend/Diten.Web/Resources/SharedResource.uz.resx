@@ -256,4 +256,6 @@
   <data name="Login.Error" xml:space="preserve"><value>Noto‘g‘ri elektron pochta yoki parol</value></data>
   <data name="Login.Loading" xml:space="preserve"><value>Kirish...</value></data>
   <data name="SaveView" xml:space="preserve"><value>Ko‘rinishni Saqlash</value></data>
+  <data name="Platform" xml:space="preserve"><value>Platform</value></data>
+  <data name="WorkCenterMenu" xml:space="preserve"><value>Work Center</value></data>
 </root>

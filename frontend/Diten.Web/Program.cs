@@ -34,7 +34,7 @@ builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
-var supportedCultures = new[] { "en", "tr", "es", "ru", "uz", "uk", "ka", "kk" };
+var supportedCultures = new[] { "az", "en", "tr", "es", "ru", "uz", "uk", "ka", "kk" };
 var localizationOptions = new RequestLocalizationOptions()
     .SetDefaultCulture("en")
     .AddSupportedCultures(supportedCultures)

@@ -1,0 +1,27 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+
+<div class="card mb-4">
+    <div class="card-header p-3 border-0 d-flex align-items-center justify-content-between"
+         data-bs-toggle="collapse"
+         data-bs-target="#taskDependenciesCollapse"
+         style="cursor: pointer;"
+         aria-expanded="false"
+         aria-controls="taskDependenciesCollapse">
+        <h6 class="mb-0 fw-semibold">@Localizer["Dependencies"]</h6>
+        <i class="bx bx-chevron-down icon-base text-muted task-collapse-chevron"></i>
+    </div>
+    <div class="collapse" id="taskDependenciesCollapse">
+        <div class="card-body p-3 pt-0">
+            <p class="small fw-semibold text-muted mb-1">@Localizer["BlockedBy"]</p>
+            <ul class="list-unstyled mb-3" id="taskBlockedByList">
+                <li class="text-muted small">No blockers</li>
+            </ul>
+            <p class="small fw-semibold text-muted mb-1">@Localizer["Blocks"]</p>
+            <ul class="list-unstyled mb-0" id="taskBlocksList">
+                <li class="text-muted small">No dependent tasks</li>
+            </ul>
+        </div>
+    </div>
+</div>

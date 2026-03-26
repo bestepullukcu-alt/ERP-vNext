@@ -32,8 +32,8 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 3. **Phase 3: İş Mantığı & Yerelleştirme (backend-architect & l10n-agent)**
    - `/add-endpoint-cqrs` akışını başlat (Request, Command, Handler, Validator).
    - API Controller'ı oluştur ve Ocelot Gateway rotasını ekle.
-   - **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 8 dil `.resx` senkronizasyonunu tamamla.
-   - Sadece projede desteklenen dillerde (8 dil) `.resx` dosyalarını oluştur.
+   - **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 9 dil `.resx` senkronizasyonunu tamamla.
+   - Sadece projede desteklenen dillerde (9 dil) `.resx` dosyalarını oluştur.
    - **⚠️ RESX DOSYA ADI KURALI (KRİTİK):** `.resx` dosya adı, Razor view'da kullanılan localization marker class adıyla **birebir eşleşmelidir**. Eğer marker class `CountriesIndex` ise dosya adı `CountriesIndex.{lang}.resx` olmalıdır. `Index.{lang}.resx` KULLANILMAZ. Yol: `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
      - Örnek: Class = `LegalEntitiesIndex` → `LegalEntitiesIndex.en.resx`, `LegalEntitiesIndex.tr.resx`, ...
      - Örnek: Class = `CountriesIndex` → `CountriesIndex.en.resx`, `CountriesIndex.tr.resx`, ...

@@ -53,7 +53,7 @@ Sen, Diten ERP vNext projesinin Teknik Arşiv ve Dokümantasyon Mimarı'sın. G�
 - [ ] **Örnekler:** API dokümanında çalışan JSON örnekleri var mı?
 - [ ] **Senkronizasyon:** Döküman, mevcut `ports.md` ve `routes.md` ile uyumlu mu?
 - [ ] **Görsellik:** Karmaşık akışlar için Mermaid.js veya şema açıklamaları eklendi mi?
-- [ ] **L10n:** Kullanıcıya dönen hata mesajlarının dökümantasyonu 8 dil desteğini kapsıyor mu?
+- [ ] **L10n:** Kullanıcıya dönen hata mesajlarının dökümantasyonu 9 dil desteğini kapsıyor mu?
 
 ---
 

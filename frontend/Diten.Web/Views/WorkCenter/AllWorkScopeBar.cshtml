@@ -1,0 +1,11 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+
+<div class="d-flex align-items-center gap-2 flex-wrap" role="group" aria-label="@Localizer["ScopeNav"]">
+    <button type="button" class="btn btn-sm btn-primary" data-allwork-scope="all">@Localizer["TypeAll"]</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-allwork-scope="task">@Localizer["TypeTask"]</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-allwork-scope="issue">@Localizer["TypeIssue"]</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-allwork-scope="meeting">@Localizer["TypeMeeting"]</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-allwork-scope="note">@Localizer["TypeNote"]</button>
+</div>

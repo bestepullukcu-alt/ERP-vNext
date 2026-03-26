@@ -73,4 +73,39 @@
   <data name="ColConvertAction" xml:space="preserve"><value>Dönüştür</value></data>
   <data name="ColLastUpdate" xml:space="preserve"><value>Son Güncelleme</value></data>
   <data name="ColActions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="AllWorkEmptyTitle" xml:space="preserve"><value>Kayıt bulunamadı</value></data>
+  <data name="AllWorkEmptyDescription" xml:space="preserve"><value>Seçili kapsama uygun iş öğesi bulunmuyor.</value></data>
+  <data name="TaskDetailTitle" xml:space="preserve"><value>Görev Detayı</value></data>
+  <data name="Back" xml:space="preserve"><value>Geri</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="Subtasks" xml:space="preserve"><value>Alt Görevler</value></data>
+  <data name="Activity" xml:space="preserve"><value>Aktivite</value></data>
+  <data name="WriteComment" xml:space="preserve"><value>Yorum yaz...</value></data>
+  <data name="Send" xml:space="preserve"><value>Gönder</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+  <data name="TimeEntry" xml:space="preserve"><value>Süre Kayıtları</value></data>
+  <data name="TimeNote" xml:space="preserve"><value>Not (opsiyonel)</value></data>
+  <data name="Log" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="StartTimer" xml:space="preserve"><value>Zamanlayıcıyı Başlat</value></data>
+  <data name="StopTimer" xml:space="preserve"><value>Zamanlayıcıyı Durdur</value></data>
+  <data name="NoTimeLogged" xml:space="preserve"><value>Henüz süre kaydı yok.</value></data>
+  <data name="Dependencies" xml:space="preserve"><value>Bağımlılıklar</value></data>
+  <data name="BlockedBy" xml:space="preserve"><value>Engelleyenler</value></data>
+  <data name="Blocks" xml:space="preserve"><value>Engellenenler</value></data>
+  <data name="RejectionNote" xml:space="preserve"><value>Red Notu</value></data>
+  <data name="RejectionNotePlaceholder" xml:space="preserve"><value>Reddetme sebebini açıklayın...</value></data>
+  <data name="ConfirmReject" xml:space="preserve"><value>Reddi Onayla</value></data>
+  <data name="Reject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="RequestInfo" xml:space="preserve"><value>Bilgi İste</value></data>
+  <data name="Plan" xml:space="preserve"><value>Planla</value></data>
+  <data name="StartWork" xml:space="preserve"><value>Çalışmaya Başla</value></data>
+  <data name="LogTime" xml:space="preserve"><value>Süre Kaydet</value></data>
+  <data name="Complete" xml:space="preserve"><value>Tamamla</value></data>
+  <data name="Block" xml:space="preserve"><value>Engelle</value></data>
+  <data name="Unblock" xml:space="preserve"><value>Engeli Kaldır</value></data>
+  <data name="Approve" xml:space="preserve"><value>Onayla</value></data>
+  <data name="RejectReview" xml:space="preserve"><value>İncelemeyi Reddet</value></data>
+  <data name="TimeEntryRequired" xml:space="preserve"><value>Tamamlamadan önce en az bir süre kaydı girin.</value></data>
+  <data name="CommentAdded" xml:space="preserve"><value>Yorum eklendi.</value></data>
+  <data name="TimeLogged" xml:space="preserve"><value>Süre kaydedildi.</value></data>
 </root>

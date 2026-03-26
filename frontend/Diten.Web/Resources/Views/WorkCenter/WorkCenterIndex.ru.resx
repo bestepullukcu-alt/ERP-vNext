@@ -71,4 +71,38 @@
   <data name="ColConvertAction" xml:space="preserve"><value>Convert</value></data>
   <data name="ColLastUpdate" xml:space="preserve"><value>Last Update</value></data>
   <data name="ColActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AllWorkEmptyTitle" xml:space="preserve"><value>No items found</value></data>
+  <data name="AllWorkEmptyDescription" xml:space="preserve"><value>No work items match the selected scope.</value></data>
+  <data name="TaskDetailTitle" xml:space="preserve"><value>Детали задачи</value></data>
+  <data name="Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="Subtasks" xml:space="preserve"><value>Подзадачи</value></data>
+  <data name="Activity" xml:space="preserve"><value>Активность</value></data>
+  <data name="WriteComment" xml:space="preserve"><value>Написать комментарий...</value></data>
+  <data name="Send" xml:space="preserve"><value>Отправить</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="TimeEntry" xml:space="preserve"><value>Записи времени</value></data>
+  <data name="TimeNote" xml:space="preserve"><value>Заметка (необязательно)</value></data>
+  <data name="Log" xml:space="preserve"><value>Записать</value></data>
+  <data name="StartTimer" xml:space="preserve"><value>Запустить таймер</value></data>
+  <data name="StopTimer" xml:space="preserve"><value>Остановить таймер</value></data>
+  <data name="NoTimeLogged" xml:space="preserve"><value>Время ещё не записано.</value></data>
+  <data name="Dependencies" xml:space="preserve"><value>Зависимости</value></data>
+  <data name="BlockedBy" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="Blocks" xml:space="preserve"><value>Блокирует</value></data>
+  <data name="RejectionNote" xml:space="preserve"><value>Причина отклонения</value></data>
+  <data name="RejectionNotePlaceholder" xml:space="preserve"><value>Опишите причину отклонения...</value></data>
+  <data name="ConfirmReject" xml:space="preserve"><value>Подтвердить отклонение</value></data>
+  <data name="RequestInfo" xml:space="preserve"><value>Запросить информацию</value></data>
+  <data name="Plan" xml:space="preserve"><value>Запланировать</value></data>
+  <data name="StartWork" xml:space="preserve"><value>Начать работу</value></data>
+  <data name="LogTime" xml:space="preserve"><value>Записать время</value></data>
+  <data name="Complete" xml:space="preserve"><value>Завершить</value></data>
+  <data name="Block" xml:space="preserve"><value>Заблокировать</value></data>
+  <data name="Unblock" xml:space="preserve"><value>Разблокировать</value></data>
+  <data name="Approve" xml:space="preserve"><value>Одобрить</value></data>
+  <data name="RejectReview" xml:space="preserve"><value>Отклонить проверку</value></data>
+  <data name="TimeEntryRequired" xml:space="preserve"><value>Добавьте хотя бы одну запись времени перед завершением.</value></data>
+  <data name="CommentAdded" xml:space="preserve"><value>Комментарий добавлен.</value></data>
+  <data name="TimeLogged" xml:space="preserve"><value>Время записано.</value></data>
 </root>

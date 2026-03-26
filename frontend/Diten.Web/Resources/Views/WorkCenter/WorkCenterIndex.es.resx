@@ -71,4 +71,38 @@
   <data name="ColConvertAction" xml:space="preserve"><value>Convert</value></data>
   <data name="ColLastUpdate" xml:space="preserve"><value>Last Update</value></data>
   <data name="ColActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AllWorkEmptyTitle" xml:space="preserve"><value>No items found</value></data>
+  <data name="AllWorkEmptyDescription" xml:space="preserve"><value>No work items match the selected scope.</value></data>
+  <data name="TaskDetailTitle" xml:space="preserve"><value>Detalle de Tarea</value></data>
+  <data name="Back" xml:space="preserve"><value>Volver</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="Subtasks" xml:space="preserve"><value>Subtareas</value></data>
+  <data name="Activity" xml:space="preserve"><value>Actividad</value></data>
+  <data name="WriteComment" xml:space="preserve"><value>Escribe un comentario...</value></data>
+  <data name="Send" xml:space="preserve"><value>Enviar</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="TimeEntry" xml:space="preserve"><value>Registros de Tiempo</value></data>
+  <data name="TimeNote" xml:space="preserve"><value>Nota (opcional)</value></data>
+  <data name="Log" xml:space="preserve"><value>Registrar</value></data>
+  <data name="StartTimer" xml:space="preserve"><value>Iniciar Temporizador</value></data>
+  <data name="StopTimer" xml:space="preserve"><value>Detener Temporizador</value></data>
+  <data name="NoTimeLogged" xml:space="preserve"><value>Aún no hay tiempo registrado.</value></data>
+  <data name="Dependencies" xml:space="preserve"><value>Dependencias</value></data>
+  <data name="BlockedBy" xml:space="preserve"><value>Bloqueado Por</value></data>
+  <data name="Blocks" xml:space="preserve"><value>Bloquea a</value></data>
+  <data name="RejectionNote" xml:space="preserve"><value>Nota de Rechazo</value></data>
+  <data name="RejectionNotePlaceholder" xml:space="preserve"><value>Describe el motivo del rechazo...</value></data>
+  <data name="ConfirmReject" xml:space="preserve"><value>Confirmar Rechazo</value></data>
+  <data name="RequestInfo" xml:space="preserve"><value>Solicitar Información</value></data>
+  <data name="Plan" xml:space="preserve"><value>Planificar</value></data>
+  <data name="StartWork" xml:space="preserve"><value>Empezar Trabajo</value></data>
+  <data name="LogTime" xml:space="preserve"><value>Registrar Tiempo</value></data>
+  <data name="Complete" xml:space="preserve"><value>Completar</value></data>
+  <data name="Block" xml:space="preserve"><value>Bloquear</value></data>
+  <data name="Unblock" xml:space="preserve"><value>Desbloquear</value></data>
+  <data name="Approve" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="RejectReview" xml:space="preserve"><value>Rechazar Revisión</value></data>
+  <data name="TimeEntryRequired" xml:space="preserve"><value>Registre al menos un tiempo antes de completar.</value></data>
+  <data name="CommentAdded" xml:space="preserve"><value>Comentario agregado.</value></data>
+  <data name="TimeLogged" xml:space="preserve"><value>Tiempo registrado.</value></data>
 </root>

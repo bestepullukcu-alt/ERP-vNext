@@ -1,0 +1,147 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["TaskDetailTitle"].Value;
+    Layout = "_LayoutBackbone";
+    var taskId = ViewBag.TaskId as string ?? string.Empty;
+    var returnUrl = ViewBag.ReturnUrl as string ?? "/WorkCenter";
+}
+
+<style>
+    .task-step-bar { flex-wrap: nowrap; min-width: 0; }
+    .task-step { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; }
+    .task-step-label { font-size: 0.65rem; text-align: center; white-space: nowrap; }
+    .task-step-connector { flex: 1; height: 2px; min-width: 16px; background: #dee2e6; align-self: center; margin-bottom: 14px; }
+    .task-step--done i { color: var(--bs-success); }
+    .task-step--done .task-step-label { color: var(--bs-success); }
+    .task-step--current i { color: var(--bs-primary); font-size: 1.25rem; }
+    .task-step--current .task-step-label { color: var(--bs-primary); font-weight: 600; }
+    .task-step--paused i { color: var(--bs-warning); }
+    .task-step--paused .task-step-label { color: var(--bs-warning); }
+    .task-step--future i { color: #c8ccd0; }
+    .task-step--future .task-step-label { color: #c8ccd0; }
+    .task-step-offflow { display: flex; align-items: center; }
+    .task-activity-feed { max-height: 320px; overflow-y: auto; }
+    .task-collapse-chevron { transition: transform 0.2s ease; }
+    .task-collapse-chevron--open { transform: rotate(180deg); }
+    .task-context-chip { font-size: 0.72rem; font-weight: 600; }
+    .task-time-grid { display: grid; gap: 10px; }
+    .task-time-unit-input { width: 60px; }
+    .task-timer-row { padding: 8px 10px; border: 1px solid #eef1f4; border-radius: 0.5rem; background: #fafbfc; }
+</style>
+
+<div id="taskDetailPage"
+     data-task-id="@taskId"
+     data-return-url="@Html.Raw(System.Text.Encodings.Web.HtmlEncoder.Default.Encode(returnUrl))">
+
+    <partial name="TaskHeader" />
+    <partial name="TaskStepBar" />
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <partial name="TaskDescription" />
+            <partial name="TaskSubtasks" />
+            <partial name="TaskActivity" />
+        </div>
+        <div class="col-12 col-lg-4">
+            <partial name="TaskActionsPanel" />
+            <partial name="TaskTimeEntry" />
+            <partial name="TaskMetadataSummary" />
+            <partial name="TaskDependencies" />
+            <partial name="TaskSecondaryMeta" />
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script id="task-detail-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        TaskDetailTitle  = Localizer["TaskDetailTitle"].Value,
+        Back             = Localizer["Back"].Value,
+        Description      = Localizer["Description"].Value,
+        Subtasks         = Localizer["Subtasks"].Value,
+        Activity         = Localizer["Activity"].Value,
+        WriteComment     = Localizer["WriteComment"].Value,
+        Send             = Localizer["Send"].Value,
+        Actions          = Localizer["Actions"].Value,
+        TimeEntry        = Localizer["TimeEntry"].Value,
+        TimeNote         = Localizer["TimeNote"].Value,
+        Log              = Localizer["Log"].Value,
+        StartTimer       = Localizer["StartTimer"].Value,
+        StopTimer        = Localizer["StopTimer"].Value,
+        NoTimeLogged     = Localizer["NoTimeLogged"].Value,
+        Dependencies     = Localizer["Dependencies"].Value,
+        BlockedBy        = Localizer["BlockedBy"].Value,
+        Blocks           = Localizer["Blocks"].Value,
+        RejectionNote    = Localizer["RejectionNote"].Value,
+        RejectionNotePlaceholder = Localizer["RejectionNotePlaceholder"].Value,
+        ConfirmReject    = Localizer["ConfirmReject"].Value,
+        Accept           = Localizer["Accept"].Value,
+        Reject           = Localizer["Reject"].Value,
+        RequestInfo      = Localizer["RequestInfo"].Value,
+        Reassign         = Localizer["Reassign"].Value,
+        Plan             = Localizer["Plan"].Value,
+        StartWork        = Localizer["StartWork"].Value,
+        LogTime          = Localizer["LogTime"].Value,
+        Complete         = Localizer["Complete"].Value,
+        Block            = Localizer["Block"].Value,
+        Unblock          = Localizer["Unblock"].Value,
+        Approve          = Localizer["Approve"].Value,
+        RejectReview     = Localizer["RejectReview"].Value,
+        TimeEntryRequired = Localizer["TimeEntryRequired"].Value,
+        CommentAdded     = Localizer["CommentAdded"].Value,
+        TimeLogged       = Localizer["TimeLogged"].Value,
+        ActionAcceptSuccess   = Localizer["ActionAcceptSuccess"].Value,
+        ActionRejectSuccess   = Localizer["ActionRejectSuccess"].Value,
+        ActionReassignSuccess = Localizer["ActionReassignSuccess"].Value,
+        Project               = "Project",
+        Source                = "Source",
+        Tags                  = "Tags",
+        Reviewer              = "Reviewer",
+        Watchers              = "Watchers",
+        Attachments           = "Attachments",
+        PlannedAt             = "Planned At",
+        MetadataSummary       = "Metadata Summary",
+        SecondaryInfo         = "Secondary Details",
+        Market                = "Market",
+        Domain                = "Domain",
+        ExternalParty         = "External Party",
+        Estimation            = "Estimation",
+        DependencyState       = "Dependency State",
+        NoTags                = "No tags",
+        NoWatchers            = "No watchers",
+        NoAttachments         = "No attachments",
+        NoDependencies        = "No dependencies",
+        NoBlockers            = "No blockers",
+        NoDependentTasks      = "No dependent tasks",
+        DependencyStateFilled = "Has dependencies",
+        PlannedDateUnknown    = "Not planned",
+        CreatedBy             = "Created By",
+        SourceReference       = "Source Reference",
+        AssignmentContext     = "Assignment Context",
+        ReassignedFrom        = "Reassigned from",
+        InitialAssignment     = "Initial assignment",
+        TotalLoggedTime       = "Total Logged Time",
+        EstimatedTime         = "Estimated Time",
+        Comparison            = "Comparison",
+        RemainingTime         = "Remaining Time",
+        Overrun               = "Overrun",
+        OnTrack               = "On Track",
+        DueSoon               = "Due Soon",
+        Overdue               = "Overdue",
+        DueInDays             = "due in",
+        DaysAgo               = "days ago",
+        BlockedByDependency   = "Blocked",
+        HasBlockers           = "Has blockers",
+        BlockedStatusMismatch = "Dependency blockers exist",
+        ChecklistCompleted    = "completed",
+        NoEstimate            = "No estimate",
+        SourceRelationType    = "Source Relation Type",
+        UnderEstimateBy       = "Under estimate by",
+        OnEstimate            = "On estimate"
+    })
+</script>
+<script src="~/assets/js/WorkCenter/task-detail.js" asp-append-version="true"></script>
+}

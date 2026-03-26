@@ -57,9 +57,9 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 
 ### C. Localization
 
-- [ ] **8 Dil:** Modüle özgü tüm yeni key'ler (`en, tr, ru, es, ka, kk, uk, uz`) dosyalarına eklenmiş mi?
+- [ ] **9 Dil:** Modüle özgü tüm yeni key'ler (`az, en, tr, ru, es, ka, kk, uk, uz`) dosyalarına eklenmiş mi?
 - [ ] **SharedResource:** Genel UI key'leri (`Active`, `Passive`, `Status`, `Filter`, `Reset`, `Apply`, `BulkDelete`, `AreYouSure`, `Cancel`, ...) sadece `SharedLocalizer` üzerinden mi geliyor?
-- [ ] **SaveView Key:** `SharedResource.*.resx` içinde `SaveView` key'i 8 dilde mevcut mu? `window.L10n.SaveView` bridge ediliyor mu?
+- [ ] **SaveView Key:** `SharedResource.*.resx` içinde `SaveView` key'i 9 dilde mevcut mu? `window.L10n.SaveView` bridge ediliyor mu?
 - [ ] **Vocabulary:** `Search/Export/Import/Filter/Apply/Reset/ShowAll/ColumnVisibility` gibi toolbar metinleri SharedResource üzerinden mi geliyor?
 - [ ] **No Fallback:** Toolbar/action metinlerinde hardcoded fallback (`|| 'Export'`) yok mu? (Eksik key teslimi bloklar.)
 - [ ] **RESX Placeholder Check:** `python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py .` çalıştırıldı mı? (Non-English dosyalarda English placeholder bırakmak teslimi bloklar.)
