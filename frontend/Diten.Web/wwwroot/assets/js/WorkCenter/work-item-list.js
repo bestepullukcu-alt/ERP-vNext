@@ -115,7 +115,7 @@
             task: {
                 primary: { action: 'accept', label: this.l10n.Accept || 'Accept', icon: 'bx bx-check icon-base' },
                 secondary: [
-                    { action: 'snooze', label: this.l10n.Snooze || 'Snooze', icon: 'bx bx-time-five' },
+                    { action: 'snooze', label: this.l10n.Snooze || 'Snooze', icon: 'bx bx-time' },
                     { action: 'return', label: this.l10n.ReturnWithReason || 'Return', icon: 'bx bx-undo' },
                     { action: 'reassign', label: this.l10n.Reassign || 'Reassign', icon: 'bx bx-user-pin' },
                     { action: 'chat', label: 'Chat', icon: 'bx bx-message-rounded-dots' }
@@ -134,7 +134,8 @@
                 primary: { action: 'accept', label: 'Confirm', icon: 'bx bx-check icon-base' },
                 secondary: [
                     { action: 'decline', label: this.l10n.Decline || 'Decline', icon: 'bx bx-x-circle' },
-                    { action: 'snooze', label: this.l10n.Snooze || 'Snooze / Propose Time', icon: 'bx bx-time-five' },
+                    { action: 'snooze', label: this.l10n.Snooze || 'Snooze', icon: 'bx bx-time' },
+                    { action: 'propose-time', label: this.l10n.ProposeNewTime || 'Propose New Time', icon: 'bx bx-calendar-edit' },
                     { action: 'chat', label: 'Meeting Chat', icon: 'bx bx-message-rounded-dots' },
                     { action: 'calendar', label: 'Open Calendar', icon: 'bx bx-calendar-plus' }
                 ]
