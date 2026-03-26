@@ -3,27 +3,33 @@
 @inject IHtmlLocalizer<WorkCenterIndex> Localizer
 
 <div class="mb-4">
-    <div class="d-flex align-items-start justify-content-between gap-3 mb-1">
-        <h4 class="mb-0 fw-semibold lh-sm task-header-title">
-            <span id="taskTitle">-</span>
-            <small class="text-muted ms-2" id="taskIdLabel">-</small>
-        </h4>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center row-gap-3 mb-3">
+        <div class="d-flex flex-column justify-content-center">
+            <h5 class="mb-1 fw-semibold lh-sm task-header-title">
+                <span id="taskTitle">-</span>
+                <small class="text-muted ms-2" id="taskIdLabel">-</small>
+            </h5>
+            <nav aria-label="breadcrumb" class="text-muted task-breadcrumb">
+                <ol class="breadcrumb mb-0 py-0">
+                    <li class="breadcrumb-item">
+                        <a href="#" id="taskBackBtn">Work Center</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span id="taskBreadcrumbContext">-</span>
+                    </li>
+                    <li class="breadcrumb-item active text-primary">
+                        <span id="taskBreadcrumbItem">-</span>
+                    </li>
+                </ol>
+            </nav>
+        </div>
         <div class="d-flex align-items-center gap-2 flex-shrink-0">
             <span class="badge bg-label-danger d-none" id="taskOverdueBadge">Overdue</span>
             <span class="badge bg-label-secondary" id="taskStatusBadge">-</span>
         </div>
     </div>
-
-    <nav class="small text-muted task-breadcrumb mb-2" aria-label="breadcrumb">
-        <a href="#" id="taskBackBtn">Work Center</a>
-        <span class="mx-1">/</span>
-        <span id="taskBreadcrumbContext">-</span>
-        <span class="mx-1">/</span>
-        <span id="taskBreadcrumbItem">-</span>
-    </nav>
-
     <div class="card">
-        <div class="card-body py-2 px-3">
+        <div class="card-body py-3 px-3">
             <div class="d-flex flex-wrap align-items-center gap-3 small text-muted">
                 <span class="d-flex align-items-center gap-1">
                     <i class="bx bx-user icon-base"></i>

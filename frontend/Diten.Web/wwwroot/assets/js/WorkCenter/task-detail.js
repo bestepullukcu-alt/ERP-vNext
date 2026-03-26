@@ -210,9 +210,9 @@
 
     var ACTION_DEFS = {
         accept:      { label: l10n.Accept      || 'Accept',        icon: 'bx-check',          cls: 'btn-success' },
-        reject:      { label: l10n.Reject      || 'Reject',        icon: 'bx-x',              cls: 'btn-outline-danger' },
-        requestInfo: { label: l10n.RequestInfo || 'Request Info',  icon: 'bx-question-mark',  cls: 'btn-outline-warning' },
-        reassign:    { label: l10n.Reassign    || 'Reassign',      icon: 'bx-user-pin',       cls: 'btn-outline-secondary' },
+        reject:      { label: l10n.Reject      || 'Reject',        icon: 'bx-x',              cls: 'btn-danger' },
+        requestInfo: { label: l10n.RequestInfo || 'Request Info',  icon: 'bx-question-mark',  cls: 'btn-label-warning' },
+        reassign:    { label: l10n.Reassign    || 'Reassign',      icon: 'bx-user-pin',       cls: 'btn-label-secondary' },
         plan:        { label: l10n.Plan        || 'Plan',          icon: 'bx-calendar-check', cls: 'btn-label-info' },
         startWork:   { label: l10n.StartWork   || 'Start Work',    icon: 'bx-play',           cls: 'btn-primary' },
         logTime:     { label: l10n.LogTime     || 'Log Time',      icon: 'bx-time',           cls: 'btn-outline-secondary' },
@@ -391,28 +391,31 @@
             effectiveIndex = STATUS_LIFECYCLE.length - 1; // CANCELLED → last step
         }
 
+        var getStepState = function (i) {
+            return {
+                done: i < effectiveIndex,
+                current: i === effectiveIndex && !isOffFlow,
+                paused: i === effectiveIndex && isOffFlow
+            };
+        };
+
         var parts = [];
         STATUS_LIFECYCLE.forEach(function (step, i) {
-            var isDone    = i < effectiveIndex;
-            var isCurrent = i === effectiveIndex && !isOffFlow;
-            var isPaused  = i === effectiveIndex && isOffFlow;
-
+            var stateFlags = getStepState(i);
             var stepCls = 'task-step';
             var iconCls;
-            if (isDone)         { stepCls += ' task-step--done';    iconCls = 'bx-check-circle'; }
-            else if (isCurrent) { stepCls += ' task-step--current'; iconCls = 'bx-radio-circle-marked'; }
-            else if (isPaused)  { stepCls += ' task-step--paused';  iconCls = (status === 'BLOCKED' ? 'bx-block' : 'bx-time'); }
-            else                { stepCls += ' task-step--future';  iconCls = 'bx-circle'; }
+            if (stateFlags.done)         { stepCls += ' task-step--done';    iconCls = 'bx-check-circle'; }
+            else if (stateFlags.current) { stepCls += ' task-step--current'; iconCls = 'bx-radio-circle-marked'; }
+            else if (stateFlags.paused)  { stepCls += ' task-step--paused';  iconCls = (status === 'BLOCKED' ? 'bx-block' : 'bx-time'); }
+            else                         { stepCls += ' task-step--future';  iconCls = 'bx-circle'; }
 
             var connector = i > 0 ? '<div class="task-step-connector"></div>' : '';
             parts.push(connector + '<div class="' + stepCls + '" role="listitem" title="' + esc(STATUS_LABELS[step] || step) + '"><i class="bx ' + iconCls + ' icon-base"></i><span class="task-step-label">' + esc(STATUS_LABELS[step] || step) + '</span></div>');
         });
-
         if (isOffFlow && status !== 'CANCELLED') {
             var badgeCls = status === 'BLOCKED' ? 'bg-label-danger' : 'bg-label-warning';
             parts.push('<div class="task-step-offflow ms-3 flex-shrink-0"><span class="badge ' + badgeCls + '">' + esc(STATUS_LABELS[status] || status) + '</span></div>');
         }
-
         el.taskStepBar.innerHTML = parts.join('');
     };
 
@@ -473,7 +476,7 @@
         var toButton = function (action) {
             var def = ACTION_DEFS[action];
             if (!def) { return null; }
-            return '<button type="button" class="btn btn-sm ' + def.cls + ' d-flex align-items-center justify-content-center gap-1" data-task-action="' + action + '"><i class="bx ' + def.icon + ' icon-base"></i>' + esc(def.label) + '</button>';
+            return '<button type="button" class="btn btn-sm ' + def.cls + ' d-flex align-items-center justify-content-center gap-1 w-100" data-task-action="' + action + '"><i class="bx ' + def.icon + ' icon-base"></i>' + esc(def.label) + '</button>';
         };
 
         var primaryButtons = [];
@@ -495,7 +498,24 @@
         });
 
         if (el.taskPrimaryActions) { el.taskPrimaryActions.innerHTML = primaryButtons.join(''); }
-        if (el.taskSecondaryActions) { el.taskSecondaryActions.innerHTML = secondaryButtons.join(''); }
+        if (el.taskSecondaryActions) {
+            var hasRequestInfo = actions.indexOf('requestInfo') >= 0;
+            var hasReassign = actions.indexOf('reassign') >= 0;
+            if (hasRequestInfo && hasReassign) {
+                el.taskSecondaryActions.className = 'row g-2';
+                el.taskSecondaryActions.innerHTML = secondaryButtons.map(function (btn, i) {
+                    var actionName = btn.indexOf('data-task-action="requestInfo"') >= 0 ? 'requestInfo'
+                        : (btn.indexOf('data-task-action="reassign"') >= 0 ? 'reassign' : '');
+                    if (actionName === 'requestInfo' || actionName === 'reassign') {
+                        return '<div class="col-6">' + btn + '</div>';
+                    }
+                    return '<div class="col-12">' + btn + '</div>';
+                }).join('');
+            } else {
+                el.taskSecondaryActions.className = 'd-grid gap-2';
+                el.taskSecondaryActions.innerHTML = secondaryButtons.join('');
+            }
+        }
         if (el.taskDestructiveActions) { el.taskDestructiveActions.innerHTML = destructiveButtons.join(''); }
         if (el.taskDestructiveDivider) { el.taskDestructiveDivider.classList.toggle('d-none', destructiveButtons.length === 0); }
     };

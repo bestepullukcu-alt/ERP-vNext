@@ -12,22 +12,20 @@
     .task-step-bar { flex-wrap: nowrap; min-width: 0; }
     .task-step { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; }
     .task-step-label { font-size: 0.65rem; text-align: center; white-space: nowrap; }
-    .task-step-connector { flex: 1; height: 2px; min-width: 16px; background: #dee2e6; align-self: center; margin-bottom: 14px; }
+    .task-step-connector { flex: 1; height: 2px; min-width: 16px; background: var(--bs-border-color); align-self: center; margin-bottom: 14px; }
     .task-step--done i { color: var(--bs-success); }
     .task-step--done .task-step-label { color: var(--bs-success); }
     .task-step--current i { color: var(--bs-primary); font-size: 1.25rem; }
     .task-step--current .task-step-label { color: var(--bs-primary); font-weight: 600; }
     .task-step--paused i { color: var(--bs-warning); }
     .task-step--paused .task-step-label { color: var(--bs-warning); }
-    .task-step--future i { color: #c8ccd0; }
-    .task-step--future .task-step-label { color: #c8ccd0; }
+    .task-step--future i { color: var(--bs-secondary-color); }
+    .task-step--future .task-step-label { color: var(--bs-secondary-color); }
     .task-step-offflow { display: flex; align-items: center; }
     .task-activity-feed { max-height: 320px; overflow-y: auto; }
     .task-collapse-chevron { transition: transform 0.2s ease; }
     .task-collapse-chevron--open { transform: rotate(180deg); }
     .task-breadcrumb { line-height: 1.2; }
-    .task-breadcrumb a { color: inherit; text-decoration: none; }
-    .task-breadcrumb a:hover { text-decoration: underline; }
     .task-header-title { letter-spacing: 0.01em; }
     .task-time-grid { display: grid; gap: 10px; }
     .task-time-unit-input { width: 60px; }
