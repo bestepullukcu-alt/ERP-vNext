@@ -165,7 +165,7 @@
     var OFF_FLOW = { WAITING_INFO: true, BLOCKED: true, CANCELLED: true };
 
     var STATUS_LABELS = {
-        NEW:          'New',
+        NEW:          'Incoming',
         WAITING_INFO: 'Waiting Info',
         BACKLOG:      'Backlog',
         PLANNED:      'Planned',
@@ -255,6 +255,8 @@
         taskTimeMinutes:      document.getElementById('taskTimeMinutes'),
         taskTimeNote:         document.getElementById('taskTimeNote'),
         taskTimeLogBtn:       document.getElementById('taskTimeLogBtn'),
+        taskTimeEntryCard:    document.getElementById('taskTimeEntryCard'),
+        taskTimeStateMessage: document.getElementById('taskTimeStateMessage'),
         taskTimerToggle:      document.getElementById('taskTimerToggle'),
         taskTimerIcon:        document.getElementById('taskTimerIcon'),
         taskTimerDisplay:     document.getElementById('taskTimerDisplay'),
@@ -346,6 +348,10 @@
         return state.timeEntries.reduce(function (sum, e) { return sum + (e.hours * 60) + e.minutes; }, 0);
     };
 
+    var isTimeEntryEnabledStatus = function () {
+        return state.item && state.item.status === 'IN_PROGRESS';
+    };
+
     var esc = function (str) {
         return String(str || '')
             .replace(/&/g, '&amp;')
@@ -403,14 +409,25 @@
         STATUS_LIFECYCLE.forEach(function (step, i) {
             var stateFlags = getStepState(i);
             var stepCls = 'task-step';
-            var iconCls;
-            if (stateFlags.done)         { stepCls += ' task-step--done';    iconCls = 'bx-check-circle'; }
-            else if (stateFlags.current) { stepCls += ' task-step--current'; iconCls = 'bx-radio-circle-marked'; }
-            else if (stateFlags.paused)  { stepCls += ' task-step--paused';  iconCls = (status === 'BLOCKED' ? 'bx-block' : 'bx-time'); }
-            else                         { stepCls += ' task-step--future';  iconCls = 'bx-circle'; }
+            var connectorCls = 'task-step-connector task-step-connector--future';
+            if (stateFlags.done) {
+                stepCls += ' task-step--done';
+                connectorCls = 'task-step-connector task-step-connector--done';
+            } else if (stateFlags.current) {
+                stepCls += ' task-step--current';
+                connectorCls = 'task-step-connector task-step-connector--current';
+            } else if (stateFlags.paused) {
+                stepCls += ' task-step--paused';
+                connectorCls = 'task-step-connector task-step-connector--paused';
+            } else {
+                stepCls += ' task-step--future';
+            }
 
-            var connector = i > 0 ? '<div class="task-step-connector"></div>' : '';
-            parts.push(connector + '<div class="' + stepCls + '" role="listitem" title="' + esc(STATUS_LABELS[step] || step) + '"><i class="bx ' + iconCls + ' icon-base"></i><span class="task-step-label">' + esc(STATUS_LABELS[step] || step) + '</span></div>');
+            var connector = i > 0 ? '<div class="' + connectorCls + '"></div>' : '';
+            var stepIndexContent = stateFlags.done
+                ? '<i class="bx bx-check task-step-index-icon" aria-hidden="true"></i>'
+                : String(i + 1);
+            parts.push(connector + '<div class="' + stepCls + '" role="listitem" title="' + esc(STATUS_LABELS[step] || step) + '"><span class="task-step-index">' + stepIndexContent + '</span><span class="task-step-label">' + esc(STATUS_LABELS[step] || step) + '</span></div>');
         });
         if (isOffFlow && status !== 'CANCELLED') {
             var badgeCls = status === 'BLOCKED' ? 'bg-label-danger' : 'bg-label-warning';
@@ -521,6 +538,7 @@
     };
 
     var renderTimeLog = function () {
+        if (el.taskTimeEntryCard && el.taskTimeEntryCard.classList.contains('d-none')) { return; }
         var estimatedMinutes = typeof state.item.estimatedMinutes === 'number' ? state.item.estimatedMinutes : null;
         var setTimeSummary = function (totalMinutes) {
             if (el.taskLoggedSummary) { el.taskLoggedSummary.textContent = formatMinutes(totalMinutes); }
@@ -568,6 +586,46 @@
         var tm = total % 60;
         if (el.taskTotalTime) { el.taskTotalTime.textContent = th + 'h ' + tm + 'm'; }
         setTimeSummary(total);
+    };
+
+    var renderTimeEntryState = function () {
+        var status = state.item ? state.item.status : '';
+        var isInProgress = status === 'IN_PROGRESS';
+        var isInReview = status === 'IN_REVIEW';
+        var isVisible = isInProgress || isInReview;
+        var isReadOnly = isInReview;
+
+        if (el.taskTimeEntryCard) {
+            el.taskTimeEntryCard.classList.toggle('d-none', !isVisible);
+        }
+
+        if (!isVisible) {
+            if (state.timerActive) { stopTimer(); }
+            return;
+        }
+
+        var controls = [
+            el.taskTimeHours,
+            el.taskTimeMinutes,
+            el.taskTimeNote,
+            el.taskTimeLogBtn,
+            el.taskTimerToggle
+        ];
+        controls.forEach(function (control) {
+            if (control) { control.disabled = isReadOnly; }
+        });
+
+        if (isReadOnly && state.timerActive) { stopTimer(); }
+
+        if (el.taskTimeStateMessage) {
+            if (isReadOnly) {
+                el.taskTimeStateMessage.textContent = l10n.TimeEntryReadOnlyInReview || 'Time entry is read-only in review';
+                el.taskTimeStateMessage.classList.remove('d-none');
+            } else {
+                el.taskTimeStateMessage.textContent = '';
+                el.taskTimeStateMessage.classList.add('d-none');
+            }
+        }
     };
 
     var renderDependencies = function () {
@@ -700,6 +758,7 @@
         renderSubtasks();
         renderActivity();
         renderActionsPanel();
+        renderTimeEntryState();
         renderTimeLog();
         renderMetadataSummary();
         renderDependencies();
@@ -902,6 +961,7 @@
 
         // Time log
         el.taskTimeLogBtn && el.taskTimeLogBtn.addEventListener('click', function () {
+            if (!isTimeEntryEnabledStatus()) { return; }
             var h = parseInt(el.taskTimeHours   ? el.taskTimeHours.value   : '0', 10) || 0;
             var m = parseInt(el.taskTimeMinutes ? el.taskTimeMinutes.value : '0', 10) || 0;
             if (h === 0 && m === 0) { return; }
@@ -921,6 +981,7 @@
 
         // Timer toggle
         el.taskTimerToggle && el.taskTimerToggle.addEventListener('click', function () {
+            if (!isTimeEntryEnabledStatus()) { return; }
             if (state.timerActive) { stopTimer(); } else { startTimer(); }
         });
 
