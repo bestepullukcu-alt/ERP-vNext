@@ -8,8 +8,9 @@
             <input class="form-check-input item-checkbox wc-cursor-pointer" type="checkbox" />
         </div>
         <div class="inbox-row__main">
-            <div class="inbox-row__line inbox-row__line--primary d-flex align-items-center gap-2">
+            <div class="inbox-row__line inbox-row__line--primary d-flex align-items-center gap-2 flex-wrap">
                 <span class="badge inbox-row__type inbox-row__badge-outline inbox-row__badge--type-default flex-shrink-0" data-field="type">-</span>
+                <span class="badge inbox-row__status bg-label-secondary flex-shrink-0" data-field="status">-</span>
                 <span class="badge inbox-row__badge-outline inbox-row__badge--role-default d-none flex-shrink-0" data-field="role">-</span>
                 <h5 class="inbox-row__title mb-0 text-truncate" data-field="title">-</h5>
             </div>
@@ -28,7 +29,9 @@
                 </span>
                 <span class="inbox-row__meta-separator">•</span>
                 <span class="badge inbox-row__priority" data-field="priority">-</span>
+                <span class="badge inbox-row__due-state bg-label-secondary" data-field="dueState">-</span>
             </div>
+            <div class="inbox-row__line inbox-row__line--signals d-none" data-field-container="signals"></div>
         </div>
         <div class="inbox-row__actions d-flex align-items-center gap-1">
             <div class="d-none d-md-flex align-items-center gap-1">

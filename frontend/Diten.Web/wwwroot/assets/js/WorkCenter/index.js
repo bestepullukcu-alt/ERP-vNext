@@ -2,10 +2,10 @@
 
 (function () {
     const l10n = window.L10n || {};
+    const mockData = window.WorkCenterMockData || null;
     const PAGE_SIZE = 20;
     const LOAD_MORE_DEFAULT_LABEL = l10n.LoadMore || 'Load More';
     const SCOPE_STORAGE_KEY = 'workcenter.activeScope';
-    const INBOX_ALLOWED_STATUSES = new Set(['NEW', 'WAITING_INFO', 'IN_REVIEW']);
 
     const normalizeTab = (value) => (value === 'all' ? 'all' : 'inbox');
     const normalizeScope = (value) => {
@@ -80,61 +80,130 @@
         searchSuggestionIndex: -1
     };
 
+    const currentUserName = mockData?.currentUser?.name || '';
+
     const initialTabFromServer = normalizeTab((elements.workCenterPage?.dataset.initialTab || '').toLowerCase());
     if (!window.location.search || !new URLSearchParams(window.location.search).has('tab')) {
         state.activeTab = initialTabFromServer;
     }
-
-    const baseItems = [
-        { type: 'Task', status: 'NEW', title: 'Menolyt sosyal medya kit - AZ/UA', source: 'Icra / Uygulama', context: 'Project Atlas', assignedBy: 'Lina K.', meta: 'Menolyt Rebrand & Genisleme', requiredAction: 'Icerik onayla' },
-        { type: 'Issue', status: 'WAITING_INFO', title: 'Inventory sync failed for WH-04', source: 'Supply Chain', context: 'Standalone', assignedBy: 'Ops Bot', meta: '8 SKU update failed due to stale lock.', requiredAction: 'Kayitlari incele' },
-        { type: 'Task', status: 'IN_REVIEW', title: 'Vendor onboarding policy review', source: 'Procurement', context: 'Project Horizon', assignedBy: 'Mert A.', meta: 'SLA clauses require legal pre-check.', requiredAction: 'Review et' },
-        { type: 'Meeting', status: 'DONE', title: 'Risk committee weekly triage', source: 'PMO', context: 'Program Phoenix', assignedBy: 'Deniz C.', meta: 'Agenda finalization and attendee confirmation.', requiredAction: 'Katilimi onayla' },
-        { type: 'Issue', status: 'CLOSED', title: 'Customer escalation context note', source: 'CRM', context: 'Standalone', assignedBy: 'Bora T.', meta: 'Contains escalation timeline summary.', requiredAction: 'Notu dogrula' },
-        { type: 'Task', status: 'NEW', title: 'Complete Q2 warehouse audit prep', source: 'Warehouse', context: 'Project Atlas', assignedBy: 'Aylin E.', meta: 'Attach variance report before submission.', requiredAction: 'Kanit paketi hazirla' },
-        { type: 'Issue', status: 'IN_REVIEW', title: 'Payment export timeout on large batch', source: 'Accounting', context: 'Standalone', assignedBy: 'System Monitor', meta: 'Exports above 1200 records exceed timeout.', requiredAction: 'Fix onceliklendir' },
-        { type: 'Task', status: 'WAITING_INFO', title: 'Contract amendment quality gate', source: 'Legal', context: 'Project Horizon', assignedBy: 'Nadia P.', meta: 'Clause wording waiting business confirmation.', requiredAction: 'Maddeleri onayla' },
-        { type: 'Meeting', status: 'DONE', title: 'Sprint retrospective moderation', source: 'Engineering', context: 'Program Neon', assignedBy: 'Kerem I.', meta: 'Facilitator needed for action items.', requiredAction: 'Toplantiyi yonet' },
-        { type: 'Task', status: 'NEW', title: 'Regulatory submission reminder', source: 'Compliance', context: 'Standalone', assignedBy: 'Ela R.', meta: 'Submission package ready for acceptance.', requiredAction: 'Paket uygunlugunu kontrol et' },
-        { type: 'Note', status: 'CLOSED', title: 'Q2 All Hands Summary', source: 'Corporate', context: 'Standalone', assignedBy: 'Ceren K.', meta: 'Summary of the all hands meeting.', requiredAction: 'Oku' }
-    ];
-
-    const buildMockItems = (count) => {
-        const today = new Date('2026-03-24T09:00:00');
-        const priorities = ['Yuksek', 'Orta', 'Dusuk'];
-        return Array.from({ length: count }, (_, index) => {
-            const template = baseItems[index % baseItems.length];
-            const sequence = index + 1;
-            const createdDate = new Date(today);
-            createdDate.setDate(today.getDate() - (index % 9));
-            const dueDate = new Date(createdDate);
-            dueDate.setDate(createdDate.getDate() + ((index % 5) + 1));
-
-            return {
-                id: `wi-${String(sequence).padStart(3, '0')}`,
-                type: template.type,
-                status: template.status,
-                priority: priorities[index % priorities.length],
-                role: index % 3 === 0 ? 'Owner' : (index % 2 === 0 ? 'Reviewer' : 'Informed'),
-                title: sequence > baseItems.length ? `${template.title} #${sequence}` : template.title,
-                source: template.source,
-                context: template.context,
-                assignedBy: template.assignedBy,
-                createdDate: createdDate.toISOString().slice(0, 10),
-                dueDate: dueDate.toISOString().slice(0, 10),
-                meta: template.meta,
-                requiredAction: template.requiredAction,
-                isUnread: index % 3 !== 0
-            };
-        });
-    };
 
     const notify = (message, type) => {
         if (typeof window.showToast === 'function') {
             window.showToast(message, type || 'info');
             return;
         }
+
         console.log('[WorkCenter]', type || 'info', message);
+    };
+
+    const resolveViewerRole = (item) => {
+        if (!currentUserName) {
+            return '';
+        }
+
+        if (item.approver === currentUserName) {
+            return 'Approver';
+        }
+
+        if (item.reviewer === currentUserName) {
+            return 'Reviewer';
+        }
+
+        if (item.assignee === currentUserName) {
+            return 'Owner';
+        }
+
+        if (item.creator === currentUserName) {
+            return 'Creator';
+        }
+
+        return '';
+    };
+
+    const buildFlags = (item) => {
+        const flags = [];
+        const progress = String(item.checklistProgress || '').split('/');
+        const completed = parseInt(progress[0], 10);
+        const total = parseInt(progress[1], 10);
+        const checklistComplete = Number.isFinite(completed) && Number.isFinite(total) && total > 0 && completed >= total;
+
+        if (item.blocked) {
+            flags.push({
+                label: 'Blocked',
+                kind: 'danger',
+                title: item.blockedReason || 'Blocked'
+            });
+        }
+
+        if (item.dependencySummary) {
+            flags.push({
+                label: 'Dependency',
+                kind: 'warning',
+                title: item.dependencySummary
+            });
+        }
+
+        if (item.waitingInfo) {
+            flags.push({
+                label: `Waiting: ${item.waitingInfo}`,
+                kind: 'warning',
+                title: `Waiting for ${item.waitingInfo}`
+            });
+        }
+
+        if (item.reviewRequired) {
+            flags.push({
+                label: 'Review',
+                kind: 'info',
+                title: item.reviewer ? `Reviewer: ${item.reviewer}` : 'Review required'
+            });
+        }
+
+        if (item.approvalRequired) {
+            flags.push({
+                label: 'Approval',
+                kind: 'primary',
+                title: item.approver ? `Approver: ${item.approver}` : 'Approval required'
+            });
+        }
+
+        if (item.hasChecklist) {
+            flags.push({
+                label: `Checklist ${item.checklistProgress || '0/0'}`,
+                kind: checklistComplete ? 'success' : 'secondary',
+                title: `Checklist progress ${item.checklistProgress || '0/0'}`
+            });
+        }
+
+        if (item.hasSubtasks) {
+            flags.push({
+                label: 'Subtasks',
+                kind: 'secondary',
+                title: 'Contains subtasks'
+            });
+        }
+
+        return flags;
+    };
+
+    const refreshDerivedFields = (item) => {
+        if (!item) {
+            return item;
+        }
+
+        const dueState = typeof mockData?.computeDueState === 'function'
+            ? mockData.computeDueState(item.dueDate)
+            : { kind: 'unknown', label: '-' };
+
+        item.assignedBy = item.creator;
+        item.displayType = item.displayType || ((item.type || '').charAt(0).toUpperCase() + (item.type || '').slice(1));
+        item.displayPriority = item.displayPriority || ((item.priority || '').charAt(0).toUpperCase() + (item.priority || '').slice(1));
+        item.viewerRole = resolveViewerRole(item);
+        item.dueStateKind = dueState.kind;
+        item.dueStateLabel = dueState.label;
+        item.flags = buildFlags(item);
+
+        return item;
     };
 
     const syncTabToUrl = (tab, replace) => {
@@ -151,35 +220,49 @@
         if (currentTab === targetTab) {
             return;
         }
+
         window.history.pushState({ tab: targetTab }, '', url);
     };
 
-    const getInboxItems = () => state.workItems.filter((item) => INBOX_ALLOWED_STATUSES.has(item.status));
+    const getInboxItems = () => state.workItems.slice();
 
     const getFilteredInboxItems = () => {
         let items = getInboxItems();
+
         if (state.filterText) {
-            const q = state.filterText.toLowerCase();
+            const query = state.filterText.toLowerCase();
             items = items.filter((item) =>
-                (item.title || '').toLowerCase().includes(q) ||
-                (item.source || '').toLowerCase().includes(q) ||
-                (item.context || '').toLowerCase().includes(q) ||
-                (item.assignedBy || '').toLowerCase().includes(q)
+                (item.id || '').toLowerCase().includes(query) ||
+                (item.title || '').toLowerCase().includes(query) ||
+                (item.source || '').toLowerCase().includes(query) ||
+                (item.context || '').toLowerCase().includes(query) ||
+                (item.assignedBy || '').toLowerCase().includes(query)
             );
         }
+
         if (state.filterType) {
             items = items.filter((item) => (item.type || '').toLowerCase() === state.filterType.toLowerCase());
         }
+
         return items;
     };
 
     const getVisibleInboxItems = () => getFilteredInboxItems().slice(0, state.visibleCount);
+
+    const getBulkSelectableItems = (items) => {
+        const sourceItems = Array.isArray(items) ? items : [];
+        return sourceItems.filter((item) => {
+            const config = mockData?.getListActionConfig ? mockData.getListActionConfig(item) : null;
+            return Boolean(config?.bulkSelectable);
+        });
+    };
 
     const getAllWorkItems = () => {
         const items = state.workItems.slice();
         if (state.activeScope === 'all') {
             return items;
         }
+
         return items.filter((item) => (item.type || '').toLowerCase() === state.activeScope);
     };
 
@@ -187,6 +270,7 @@
         if (!elements.inboxSearchSuggestions) {
             return;
         }
+
         state.searchSuggestions = [];
         state.searchSuggestionIndex = -1;
         elements.inboxSearchSuggestions.innerHTML = '';
@@ -195,14 +279,14 @@
     };
 
     const buildSearchSuggestions = (query) => {
-        const q = (query || '').trim().toLowerCase();
-        if (q.length < 2) {
+        const normalized = (query || '').trim().toLowerCase();
+        if (normalized.length < 2) {
             return [];
         }
 
         return getInboxItems()
             .map((item) => ({ id: item.id, title: item.title || '' }))
-            .filter((item) => item.title.toLowerCase().includes(q))
+            .filter((item) => item.id.toLowerCase().includes(normalized) || item.title.toLowerCase().includes(normalized))
             .sort((a, b) => a.title.localeCompare(b.title))
             .slice(0, 6);
     };
@@ -212,16 +296,15 @@
             return;
         }
 
-        const items = state.searchSuggestions;
-        if (!items.length) {
+        if (!state.searchSuggestions.length) {
             closeSearchSuggestions();
             return;
         }
 
-        elements.inboxSearchSuggestions.innerHTML = items.map((item, index) => {
+        elements.inboxSearchSuggestions.innerHTML = state.searchSuggestions.map((item, index) => {
             const activeClass = index === state.searchSuggestionIndex ? ' is-active' : '';
             return `<li role="option" aria-selected="${index === state.searchSuggestionIndex}" class="wc-search-suggestion-item${activeClass}">
-                        <button type="button" class="wc-search-suggestion-btn" data-suggestion-id="${item.id}">${item.title}</button>
+                        <button type="button" class="wc-search-suggestion-btn" data-suggestion-id="${item.id}">${item.id} · ${item.title}</button>
                     </li>`;
         }).join('');
 
@@ -254,8 +337,7 @@
         }
 
         const hasMore = getFilteredInboxItems().length > getVisibleInboxItems().length;
-        const shouldShow = state.activeTab === 'inbox' && hasMore;
-        elements.inboxLoadMoreBtn.classList.toggle('d-none', !shouldShow);
+        elements.inboxLoadMoreBtn.classList.toggle('d-none', !(state.activeTab === 'inbox' && hasMore));
     };
 
     const setLoadMoreBusy = (isBusy) => {
@@ -268,6 +350,7 @@
             elements.inboxLoadMoreBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>${l10n.Loading || 'Loading...'} `;
             return;
         }
+
         elements.inboxLoadMoreBtn.textContent = LOAD_MORE_DEFAULT_LABEL;
     };
 
@@ -277,17 +360,19 @@
         }
 
         const count = state.selectedItemIds.size;
-        const visibleItems = getVisibleInboxItems();
+        const selectableVisibleItems = getBulkSelectableItems(getVisibleInboxItems());
+
+        elements.inboxMasterCheckbox.disabled = selectableVisibleItems.length === 0;
 
         if (count > 0) {
             elements.inboxDefaultState.classList.add('d-none');
             elements.inboxDefaultState.classList.remove('d-flex');
             elements.inboxBulkState.classList.remove('d-none');
             elements.inboxBulkState.classList.add('d-flex');
-            elements.inboxSelectionLabel.textContent = `${count} Kayıt Seçildi`;
+            elements.inboxSelectionLabel.textContent = `${count} Kayit Secildi`;
             elements.inboxMasterCheckbox.checked = true;
-            const allSelected = visibleItems.length > 0 && visibleItems.every((i) => state.selectedItemIds.has(i.id));
-            elements.inboxMasterCheckbox.indeterminate = !allSelected;
+            const allSelected = selectableVisibleItems.length > 0 && selectableVisibleItems.every((item) => state.selectedItemIds.has(item.id));
+            elements.inboxMasterCheckbox.indeterminate = selectableVisibleItems.length > 0 && !allSelected;
             return;
         }
 
@@ -295,7 +380,7 @@
         elements.inboxBulkState.classList.remove('d-flex');
         elements.inboxDefaultState.classList.remove('d-none');
         elements.inboxDefaultState.classList.add('d-flex');
-        elements.inboxSelectionLabel.textContent = 'Tümünü Seç';
+        elements.inboxSelectionLabel.textContent = 'Tumunu Sec';
         elements.inboxMasterCheckbox.checked = false;
         elements.inboxMasterCheckbox.indeterminate = false;
     };
@@ -320,91 +405,43 @@
         });
     };
 
-    const loadWorkItems = async () => Promise.resolve(buildMockItems(40));
+    const loadWorkItems = async () => {
+        const items = typeof mockData?.buildMockItems === 'function' ? mockData.buildMockItems() : [];
+        return Promise.resolve(items.map((item) => refreshDerivedFields(item)));
+    };
 
     const navigateToTaskDetail = (itemId, tab) => {
         const returnUrl = encodeURIComponent('/WorkCenter?tab=' + tab);
         window.location.href = '/WorkCenter/Task/' + encodeURIComponent(itemId) + '?returnUrl=' + returnUrl;
     };
 
-    const inboxList = new window.WorkItemList({
-        root: elements.inboxRoot,
-        rowTemplate: elements.rowTemplate,
-        l10n: l10n,
-        onSelect: (itemId) => {
-            const selected = getInboxItems().find((item) => item.id === itemId);
-            if (!selected) {
-                return;
-            }
-
-            if (selected.type === 'Task') {
-                navigateToTaskDetail(itemId, 'inbox');
-                return;
-            }
-
-            selected.isUnread = false;
-            state.selectedItemId = itemId;
-            renderCurrentList();
-            notify(l10n.ActionDetailOpened || 'Item detail opened.', 'info');
-        },
-        onAction: (itemId, action) => {
-            const selected = getInboxItems().find((item) => item.id === itemId);
-            if (!selected) {
-                return;
-            }
-
-            if (action === 'accept') {
-                selected.status = 'DONE';
-                if (state.selectedItemId === itemId) {
-                    state.selectedItemId = null;
-                }
-                state.selectedItemIds.delete(itemId);
-                renderCurrentList();
-                notify(l10n.ActionAcceptSuccess || 'Item accepted and removed from Inbox.', 'success');
-                return;
-            }
-
-            if (action === 'return' || action === 'reject') {
-                notify(l10n.ActionReturnSuccess || 'Item was returned (mock).', 'warning');
-                return;
-            }
-
-            if (action === 'decline') {
-                notify(l10n.ActionDeclineSuccess || 'Item was declined (mock).', 'warning');
-                return;
-            }
-
-            if (action === 'propose-time') {
-                notify(l10n.ActionProposeTimeSuccess || 'New time proposed (mock).', 'info');
-                return;
-            }
-
-            if (action === 'reassign') {
-                notify(l10n.ActionReassignSuccess || 'Reassign flow started (mock).', 'info');
-                return;
-            }
-
-            if (action === 'snooze') {
-                notify(l10n.ActionSnoozeSuccess || 'Item snoozed (mock).', 'info');
-            }
+    const openWorkItem = (item, tab) => {
+        if (!item) {
+            return;
         }
-    });
 
-    const allWorkList = new window.WorkItemList({
-        root: elements.allWorkRoot,
-        rowTemplate: elements.rowTemplate,
-        l10n: l10n,
-        onSelect: (itemId) => {
-            const selected = state.workItems.find((item) => item.id === itemId);
-            if (selected && selected.type === 'Task') {
-                navigateToTaskDetail(itemId, 'all');
-                return;
+        if ((item.type || '').toLowerCase() === 'task') {
+            navigateToTaskDetail(item.id, tab);
+            return;
+        }
+
+        item.isUnread = false;
+        state.selectedItemId = item.id;
+        renderCurrentList();
+        notify(l10n.ActionDetailOpened || 'Item detail opened.', 'info');
+    };
+
+    const pruneSelection = () => {
+        const nextSelection = new Set();
+        Array.from(state.selectedItemIds).forEach((id) => {
+            const item = state.workItems.find((candidate) => candidate.id === id);
+            const config = item && mockData?.getListActionConfig ? mockData.getListActionConfig(item) : null;
+            if (item && config?.bulkSelectable) {
+                nextSelection.add(id);
             }
-            state.selectedItemId = itemId;
-            renderCurrentList();
-        },
-        onAction: () => { }
-    });
+        });
+        state.selectedItemIds = nextSelection;
+    };
 
     const applyViewSwitchRules = () => {
         const isAllWorkActive = state.activeTab === 'all';
@@ -412,6 +449,8 @@
     };
 
     const renderCurrentList = () => {
+        pruneSelection();
+
         if (state.activeTab === 'all') {
             allWorkList.setSelectedItemId(state.selectedItemId);
             allWorkList.setItems(getAllWorkItems());
@@ -428,6 +467,110 @@
         updateLoadMoreVisibility();
         updateBulkActionBar();
     };
+
+    const handleInboxAction = (selected, action) => {
+        if (!selected) {
+            return;
+        }
+
+        switch (action) {
+            case 'approve':
+                selected.status = 'Pending Acceptance';
+                selected.approvalRequired = false;
+                selected.approver = '';
+                selected.viewerRole = resolveViewerRole(selected);
+                notify('Approval completed. Item moved to Pending Acceptance.', 'success');
+                break;
+
+            case 'accept':
+                selected.status = 'Open';
+                selected.approvalRequired = false;
+                notify('Item accepted and moved to Open.', 'success');
+                state.selectedItemIds.delete(selected.id);
+                break;
+
+            case 'reject':
+                selected.status = 'Cancelled';
+                selected.approvalRequired = false;
+                selected.blocked = false;
+                notify('Item rejected and moved to Cancelled.', 'warning');
+                state.selectedItemIds.delete(selected.id);
+                break;
+
+            case 'start-work':
+                selected.status = 'In Progress';
+                selected.blocked = false;
+                selected.blockedReason = '';
+                notify('Execution started.', 'success');
+                break;
+
+            case 'request-info':
+                selected.status = 'Waiting for Information';
+                selected.waitingInfo = selected.waitingInfo || 'Business Owner';
+                notify('Item moved to Waiting for Information.', 'warning');
+                break;
+
+            case 'reject-review':
+                selected.status = 'In Progress';
+                selected.blocked = false;
+                notify('Review rejected. Item returned to In Progress.', 'warning');
+                break;
+
+            case 'reassign':
+                notify(l10n.ActionReassignSuccess || 'Reassign workflow started (mock).', 'info');
+                break;
+
+            case 'inspect-blocker':
+                openWorkItem(selected, 'inbox');
+                notify(selected.blockedReason || 'Blocking reason opened.', 'warning');
+                break;
+
+            case 'continue':
+            case 'investigate':
+            case 'follow-up':
+            case 'review':
+            case 'view-summary':
+            case 'view-reason':
+            case 'history':
+            case 'open-detail':
+                openWorkItem(selected, 'inbox');
+                break;
+
+            default:
+                notify('No mock action is configured for this item.', 'info');
+                break;
+        }
+
+        refreshDerivedFields(selected);
+        renderCurrentList();
+    };
+
+    const inboxList = new window.WorkItemList({
+        root: elements.inboxRoot,
+        rowTemplate: elements.rowTemplate,
+        l10n: l10n,
+        onSelect: (itemId) => {
+            const selected = getInboxItems().find((item) => item.id === itemId);
+            openWorkItem(selected, 'inbox');
+        },
+        onAction: (itemId, action) => {
+            const selected = getInboxItems().find((item) => item.id === itemId);
+            handleInboxAction(selected, action);
+        }
+    });
+
+    const allWorkList = new window.WorkItemList({
+        root: elements.allWorkRoot,
+        rowTemplate: elements.rowTemplate,
+        l10n: l10n,
+        onSelect: (itemId) => {
+            const selected = state.workItems.find((item) => item.id === itemId);
+            if (selected) {
+                openWorkItem(selected, 'all');
+            }
+        },
+        onAction: () => { }
+    });
 
     let suppressPushState = false;
 
@@ -578,12 +721,12 @@
 
         elements.inboxMasterCheckbox?.addEventListener('change', (event) => {
             const isChecked = event.target.checked;
-            const visibleItems = getVisibleInboxItems();
+            const selectableVisibleItems = getBulkSelectableItems(getVisibleInboxItems());
 
             if (isChecked) {
-                visibleItems.forEach((item) => state.selectedItemIds.add(item.id));
+                selectableVisibleItems.forEach((item) => state.selectedItemIds.add(item.id));
             } else {
-                state.selectedItemIds.clear();
+                selectableVisibleItems.forEach((item) => state.selectedItemIds.delete(item.id));
             }
             renderCurrentList();
         });
@@ -614,25 +757,35 @@
         elements.btnBulkAccept?.addEventListener('click', () => {
             const selectedIds = Array.from(state.selectedItemIds);
             selectedIds.forEach((id) => {
-                const item = state.workItems.find((x) => x.id === id);
+                const item = state.workItems.find((candidate) => candidate.id === id);
                 if (item) {
-                    item.status = 'DONE';
+                    item.status = 'Open';
+                    item.approvalRequired = false;
+                    refreshDerivedFields(item);
                 }
             });
+
             const count = selectedIds.length;
             state.selectedItemIds.clear();
-            notify(`${count} kayıt başarıyla onaylandı.`, 'success');
+            notify(`${count} item moved to Open.`, 'success');
             renderCurrentList();
         });
 
         elements.btnBulkSnooze?.addEventListener('click', () => {
-            notify(`${state.selectedItemIds.size} kayıt ertelendi.`, 'warning');
+            notify(`${state.selectedItemIds.size} item snoozed in mock mode.`, 'warning');
             state.selectedItemIds.clear();
             renderCurrentList();
         });
 
         elements.btnBulkReturn?.addEventListener('click', () => {
-            notify(`${state.selectedItemIds.size} kayıt iade edildi.`, 'danger');
+            Array.from(state.selectedItemIds).forEach((id) => {
+                const item = state.workItems.find((candidate) => candidate.id === id);
+                if (item) {
+                    item.status = 'Cancelled';
+                    refreshDerivedFields(item);
+                }
+            });
+            notify(`${state.selectedItemIds.size} item returned in mock mode.`, 'danger');
             state.selectedItemIds.clear();
             renderCurrentList();
         });

@@ -14,51 +14,11 @@
         try { l10n = JSON.parse(l10nEl.textContent); } catch (e) { /* ignore */ }
     }
 
-    // ── MOCK DATA (mirrors index.js buildMockItems) ────────────────────────────
-    var baseItems = [
-        { type: 'Task',    status: 'NEW',          title: 'Menolyt sosyal medya kit - AZ/UA',         source: 'Icra / Uygulama', context: 'Project Atlas',    assignedBy: 'Lina K.',         meta: 'Menolyt Rebrand & Genisleme',                             requiredAction: 'Icerik onayla' },
-        { type: 'Issue',   status: 'WAITING_INFO',  title: 'Inventory sync failed for WH-04',          source: 'Supply Chain',    context: 'Standalone',       assignedBy: 'Ops Bot',         meta: '8 SKU update failed due to stale lock.',                 requiredAction: 'Kayitlari incele' },
-        { type: 'Task',    status: 'IN_REVIEW',     title: 'Vendor onboarding policy review',          source: 'Procurement',     context: 'Project Horizon',  assignedBy: 'Mert A.',         meta: 'SLA clauses require legal pre-check.',                   requiredAction: 'Review et' },
-        { type: 'Meeting', status: 'COMPLETED',     title: 'Risk committee weekly triage',             source: 'PMO',             context: 'Program Phoenix',  assignedBy: 'Deniz C.',        meta: 'Agenda finalization and attendee confirmation.',          requiredAction: 'Katilimi onayla' },
-        { type: 'Issue',   status: 'CANCELLED',     title: 'Customer escalation context note',         source: 'CRM',             context: 'Standalone',       assignedBy: 'Bora T.',         meta: 'Contains escalation timeline summary.',                  requiredAction: 'Notu dogrula' },
-        { type: 'Task',    status: 'NEW',            title: 'Complete Q2 warehouse audit prep',         source: 'Warehouse',       context: 'Project Atlas',    assignedBy: 'Aylin E.',        meta: 'Attach variance report before submission.',              requiredAction: 'Kanit paketi hazirla' },
-        { type: 'Issue',   status: 'IN_REVIEW',     title: 'Payment export timeout on large batch',    source: 'Accounting',      context: 'Standalone',       assignedBy: 'System Monitor', meta: 'Exports above 1200 records exceed timeout.',             requiredAction: 'Fix onceliklendir' },
-        { type: 'Task',    status: 'WAITING_INFO',  title: 'Contract amendment quality gate',          source: 'Legal',           context: 'Project Horizon',  assignedBy: 'Nadia P.',        meta: 'Clause wording waiting business confirmation.',          requiredAction: 'Maddeleri onayla' },
-        { type: 'Meeting', status: 'COMPLETED',     title: 'Sprint retrospective moderation',          source: 'Engineering',     context: 'Program Neon',     assignedBy: 'Kerem I.',        meta: 'Facilitator needed for action items.',                   requiredAction: 'Toplantiyi yonet' },
-        { type: 'Task',    status: 'NEW',            title: 'Regulatory submission reminder',           source: 'Compliance',      context: 'Standalone',       assignedBy: 'Ela R.',          meta: 'Submission package ready for acceptance.',               requiredAction: 'Paket uygunlugunu kontrol et' },
-        { type: 'Note',    status: 'CANCELLED',      title: 'Q2 All Hands Summary',                     source: 'Corporate',       context: 'Standalone',       assignedBy: 'Ceren K.',        meta: 'Summary of the all hands meeting.',                      requiredAction: 'Oku' }
-    ];
-
-    var buildMockItems = function (count) {
-        var today = new Date('2026-03-24T09:00:00');
-        var priorities = ['Yuksek', 'Orta', 'Dusuk'];
-        var items = [];
-        for (var index = 0; index < count; index++) {
-            var template = baseItems[index % baseItems.length];
-            var sequence = index + 1;
-            var createdDate = new Date(today);
-            createdDate.setDate(today.getDate() - (index % 9));
-            var dueDate = new Date(createdDate);
-            dueDate.setDate(createdDate.getDate() + ((index % 5) + 1));
-            items.push({
-                id: 'wi-' + String(sequence).padStart(3, '0'),
-                type: template.type,
-                status: template.status,
-                priority: priorities[index % priorities.length],
-                role: index % 3 === 0 ? 'Owner' : (index % 2 === 0 ? 'Reviewer' : 'Informed'),
-                title: sequence > baseItems.length ? template.title + ' #' + sequence : template.title,
-                source: template.source,
-                context: template.context,
-                assignedBy: template.assignedBy,
-                createdBy: index % 2 === 0 ? 'Mina Y.' : 'Arda T.',
-                createdDate: createdDate.toISOString().slice(0, 10),
-                dueDate: dueDate.toISOString().slice(0, 10),
-                meta: template.meta,
-                requiredAction: template.requiredAction
-            });
-        }
-        return items;
-    };
+    // ── MOCK DATA (shared with index.js) ───────────────────────────────────────
+    var currentUserName = (window.WorkCenterMockData && window.WorkCenterMockData.currentUser && window.WorkCenterMockData.currentUser.name) || '';
+    var baseItems = (window.WorkCenterMockData && typeof window.WorkCenterMockData.buildMockItems === 'function')
+        ? window.WorkCenterMockData.buildMockItems()
+        : [];
 
     var enrichItem = function (item) {
         var plannedDate = item.createdDate;
@@ -72,17 +32,22 @@
         var firstTag = tagPool[item.id.length % tagPool.length];
         var secondTag = tagPool[(item.id.length + 2) % tagPool.length];
 
-        var blockedBy = item.status === 'BLOCKED' || item.status === 'IN_REVIEW'
-            ? [{ id: 'INF-142', title: 'Data sync prerequisite' }]
+        var blockedBy = item.dependencySummary
+            ? [{ id: 'DEP-' + item.id.slice(-3), title: item.dependencySummary }]
             : [];
-        var blocks = item.status === 'IN_PROGRESS' || item.status === 'PLANNED'
-            ? [{ id: 'OPS-223', title: 'Deployment checklist' }]
+        var blocks = item.hasSubtasks
+            ? [{ id: 'SUB-' + item.id.slice(-3), title: 'Follow-up subtasks depend on this item.' }]
             : [];
         var taskTypeByStatus = {
-            IN_REVIEW: 'review',
-            COMPLETED: 'info',
-            WAITING_INFO: 'info',
-            NEW: 'execution'
+            'Pending Approval': 'approval',
+            'Pending Acceptance': 'execution',
+            'Open': 'execution',
+            'Planned': 'execution',
+            'In Progress': 'execution',
+            'Waiting for Information': 'info',
+            'Pending Review': 'review',
+            'Closed': 'info',
+            'Cancelled': 'info'
         };
         var sourceTypePool = ['Issue', 'SalesOrder', 'Contract', 'Shipment', 'Workflow'];
         var sourceSeed = parseInt((item.id || '').replace(/\D/g, ''), 10) || 0;
@@ -91,33 +56,67 @@
             (sourceType === 'SalesOrder' ? 'SO-' :
             (sourceType === 'Contract' ? 'CTR-' :
             (sourceType === 'Shipment' ? 'SHP-' : 'WF-')));
-        var sourceRefNum = item.id.replace('wi-', '');
-        var estimatedMinutes = item.type === 'Meeting' ? 60 : 390;
-        var reassignedFrom = item.status === 'IN_REVIEW' || item.status === 'IN_PROGRESS' ? 'Mert A.' : '';
+        var estimatedMinutes = item.type === 'meeting' ? 60 : 390;
+        var reassignedFrom = item.status === 'Pending Review' || item.status === 'In Progress' ? 'Mert Aksoy' : '';
         var relationPool = ['Created from', 'Triggered by', 'Child of', 'Related to'];
         var sourceRelationType = relationPool[sourceSeed % relationPool.length];
+        var checklistParts = String(item.checklistProgress || '0/0').split('/');
+        var checklistDone = parseInt(checklistParts[0], 10) || 0;
+        var checklistTotal = parseInt(checklistParts[1], 10) || 0;
+        var subtasks = [];
+
+        if (item.hasChecklist && checklistTotal > 0) {
+            for (var i = 0; i < checklistTotal; i++) {
+                subtasks.push({
+                    id: item.id + '-c' + (i + 1),
+                    title: 'Checklist item ' + (i + 1),
+                    done: i < checklistDone
+                });
+            }
+        } else if (item.hasSubtasks) {
+            subtasks = [
+                { id: item.id + '-s1', title: 'Review requirements', done: true },
+                { id: item.id + '-s2', title: 'Prepare working draft', done: false },
+                { id: item.id + '-s3', title: 'Share final package', done: false }
+            ];
+        }
+
+        var descriptionParts = [
+            'This work item belongs to ' + item.context + ' and is owned by ' + (item.assignee || '-') + '.',
+            item.requiredAction || '',
+            item.blockedReason ? 'Blocked reason: ' + item.blockedReason : '',
+            item.waitingInfo ? 'Waiting on: ' + item.waitingInfo : '',
+            item.dependencySummary ? 'Dependency: ' + item.dependencySummary : ''
+        ].filter(Boolean);
 
         return {
-            id:          item.id,
-            type:        item.type,
-            taskType:    taskTypeByStatus[item.status] || (item.type === 'Issue' ? 'approval' : 'execution'),
-            status:      item.status,
-            priority:    item.priority,
-            title:       item.title,
-            source:      item.source,
-            sourceType:  sourceType,
-            sourceId:    sourcePrefix + sourceRefNum,
+            id: item.id,
+            type: item.type,
+            taskType: taskTypeByStatus[item.status] || (item.type === 'issue' ? 'approval' : 'execution'),
+            status: item.status,
+            priority: item.priority,
+            title: item.title,
+            source: item.source,
+            sourceType: sourceType,
+            sourceId: sourcePrefix + item.id.replace('TASK-', ''),
             sourceTitle: item.title,
             sourceRelationType: sourceRelationType,
-            context:     item.context,
-            assignee:    item.assignedBy,
-            createdBy:   item.createdBy || item.assignedBy,
+            context: item.context,
+            assignee: item.assignee,
+            createdBy: item.creator,
             createdDate: item.createdDate,
             dueDate:     item.dueDate,
             plannedAt:   plannedDate,
             meta:        item.meta,
             project:     item.context,
-            reviewer:    item.role === 'Reviewer' ? item.assignedBy : 'Selin R.',
+            reviewer:    item.reviewer || '-',
+            approver:    item.approver || '-',
+            blocked:     !!item.blocked,
+            blockedReason: item.blockedReason || '',
+            waitingInfo: item.waitingInfo || '',
+            reviewRequired: !!item.reviewRequired,
+            approvalRequired: !!item.approvalRequired,
+            flowAnchorStatus: item.status === 'Waiting for Information' ? (item.blocked ? 'Planned' : 'Open') : '',
             tags:        [firstTag, secondTag],
             watchers:    ['PMO Bot', 'Nadia P.'],
             attachments: [
@@ -126,31 +125,28 @@
             ],
             market:      'TR',
             domain:      item.source,
-            externalParty: item.type === 'Issue' ? 'Vendor Team' : '-',
-            estimation:  item.type === 'Meeting' ? '1h 0m' : '6h 30m',
+            externalParty: item.type === 'issue' ? 'Vendor Team' : '-',
+            estimation:  item.type === 'meeting' ? '1h 0m' : '6h 30m',
             estimatedMinutes: estimatedMinutes,
             reassignedFrom: reassignedFrom,
-            description: 'This task covers work related to ' + item.context + ' in the ' + item.source + ' domain.\n\n' + item.meta + '\n\nKey deliverables are outlined in the required action: ' + item.requiredAction + '.',
-            subtasks: [
-                { id: item.id + '-s1', title: 'Review requirements',    done: true  },
-                { id: item.id + '-s2', title: 'Draft initial approach',  done: false },
-                { id: item.id + '-s3', title: 'Submit for review',       done: false }
-            ],
+            description: descriptionParts.join('\n\n'),
+            subtasks: subtasks,
             activity: [
-                { type: 'status_change', text: 'Task created and assigned.',                    author: item.assignedBy, timestamp: item.createdDate },
-                { type: 'status_change', text: 'Status set to ' + item.status + '.',            author: 'System',        timestamp: item.createdDate }
+                { type: 'status_change', text: 'Task created and assigned.', author: item.creator, timestamp: item.createdDate },
+                { type: 'status_change', text: 'Status set to ' + item.status + '.', author: 'System', timestamp: item.createdDate }
             ],
             dependencies: { blockedBy: blockedBy, blocks: blocks },
-            hasReview: true
+            hasReview: !!item.reviewRequired
         };
     };
 
-    var allItems = buildMockItems(40);
+    var allItems = baseItems;
     var baseItem = null;
     for (var i = 0; i < allItems.length; i++) {
         if (allItems[i].id === TASK_ID) { baseItem = allItems[i]; break; }
     }
     if (!baseItem) { baseItem = allItems[0]; }
+    if (!baseItem) { return; }
 
     var state = {
         item:         enrichItem(baseItem),
@@ -161,31 +157,31 @@
     };
 
     // ── CONSTANTS ─────────────────────────────────────────────────────────────
-    var STATUS_LIFECYCLE = ['NEW', 'BACKLOG', 'PLANNED', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED'];
-    var OFF_FLOW = { WAITING_INFO: true, BLOCKED: true, CANCELLED: true };
+    var STATUS_LIFECYCLE = ['Pending Approval', 'Pending Acceptance', 'Open', 'Planned', 'In Progress', 'Pending Review', 'Closed'];
+    var OFF_FLOW = { 'Waiting for Information': true, 'Cancelled': true };
 
     var STATUS_LABELS = {
-        NEW:          'Incoming',
-        WAITING_INFO: 'Waiting Info',
-        BACKLOG:      'Backlog',
-        PLANNED:      'Planned',
-        IN_PROGRESS:  'In Progress',
-        BLOCKED:      'Blocked',
-        IN_REVIEW:    'In Review',
-        COMPLETED:    'Completed',
-        CANCELLED:    'Cancelled'
+        'Pending Approval': 'Pending Approval',
+        'Pending Acceptance': 'Pending Acceptance',
+        'Open': 'Open',
+        'Planned': 'Planned',
+        'In Progress': 'In Progress',
+        'Waiting for Information': 'Waiting for Information',
+        'Pending Review': 'Pending Review',
+        'Closed': 'Closed',
+        'Cancelled': 'Cancelled'
     };
 
     var STATUS_BADGE_CLASS = {
-        NEW:          'bg-label-info',
-        WAITING_INFO: 'bg-label-warning',
-        BACKLOG:      'bg-label-secondary',
-        PLANNED:      'bg-label-primary',
-        IN_PROGRESS:  'bg-label-primary',
-        BLOCKED:      'bg-label-danger',
-        IN_REVIEW:    'bg-label-warning',
-        COMPLETED:    'bg-label-success',
-        CANCELLED:    'bg-label-secondary'
+        'Pending Approval': 'bg-label-primary',
+        'Pending Acceptance': 'bg-label-info',
+        'Open': 'bg-label-secondary',
+        'Planned': 'bg-label-warning',
+        'In Progress': 'bg-label-primary',
+        'Waiting for Information': 'bg-label-warning',
+        'Pending Review': 'bg-label-info',
+        'Closed': 'bg-label-success',
+        'Cancelled': 'bg-label-secondary'
     };
 
     var SOURCE_ROUTE_BUILDERS = {
@@ -195,32 +191,50 @@
         Shipment: function (id) { return '/logistics/shipments/' + encodeURIComponent(id); }
     };
 
-    // Actions visible per status — geçersiz aksiyonlar hiç gösterilmez
-    var STATUS_ACTIONS = {
-        NEW:          ['accept', 'reject', 'requestInfo', 'reassign'],
-        WAITING_INFO: ['reassign'],
-        BACKLOG:      ['plan', 'reassign'],
-        PLANNED:      ['startWork', 'reassign'],
-        IN_PROGRESS:  ['logTime', 'complete', 'block', 'requestInfo', 'reassign'],
-        BLOCKED:      ['unblock', 'reassign'],
-        IN_REVIEW:    ['approve', 'rejectReview'],
-        COMPLETED:    [],
-        CANCELLED:    []
+    var getStatusActions = function (item) {
+        if (!item) { return []; }
+
+        switch (item.status) {
+            case 'Pending Approval':
+                return item.approver === currentUserName ? ['approve', 'reject'] : [];
+            case 'Pending Acceptance':
+                return item.assignee === currentUserName ? ['accept', 'reassign'] : [];
+            case 'Open':
+                if (item.blocked) { return ['inspectBlocker', 'reassign']; }
+                return item.type === 'issue' ? ['investigate', 'requestInfo', 'reassign'] : ['plan', 'reassign'];
+            case 'Planned':
+                return item.blocked ? ['inspectBlocker', 'reassign'] : ['startWork', 'reassign'];
+            case 'In Progress':
+                return item.blocked ? ['inspectBlocker', 'reassign'] : ['continueWork', 'requestInfo', 'reassign'];
+            case 'Waiting for Information':
+                return ['followUp', 'reassign'];
+            case 'Pending Review':
+                return item.reviewer === currentUserName ? ['review', 'rejectReview'] : [];
+            case 'Closed':
+                return ['viewSummary'];
+            case 'Cancelled':
+                return ['viewReason'];
+            default:
+                return [];
+        }
     };
 
     var ACTION_DEFS = {
-        accept:      { label: l10n.Accept      || 'Accept',        icon: 'bx-check',          cls: 'btn-success' },
-        reject:      { label: l10n.Reject      || 'Reject',        icon: 'bx-x',              cls: 'btn-danger' },
-        requestInfo: { label: l10n.RequestInfo || 'Request Info',  icon: 'bx-question-mark',  cls: 'btn-label-warning' },
-        reassign:    { label: l10n.Reassign    || 'Reassign',      icon: 'bx-user-pin',       cls: 'btn-label-secondary' },
-        plan:        { label: l10n.Plan        || 'Plan',          icon: 'bx-calendar-check', cls: 'btn-label-info' },
-        startWork:   { label: l10n.StartWork   || 'Start Work',    icon: 'bx-play',           cls: 'btn-primary' },
-        logTime:     { label: l10n.LogTime     || 'Log Time',      icon: 'bx-time',           cls: 'btn-outline-secondary' },
-        complete:    { label: l10n.Complete    || 'Complete',      icon: 'bx-check-double',   cls: 'btn-success' },
-        block:       { label: l10n.Block       || 'Block',         icon: 'bx-block',          cls: 'btn-outline-danger' },
-        unblock:     { label: l10n.Unblock     || 'Unblock',       icon: 'bx-lock-open',      cls: 'btn-outline-success' },
-        approve:     { label: l10n.Approve     || 'Approve',       icon: 'bx-check-shield',   cls: 'btn-success' },
-        rejectReview:{ label: l10n.RejectReview|| 'Reject Review', icon: 'bx-x-circle',       cls: 'btn-outline-danger' }
+        accept:        { label: l10n.Accept || 'Accept', icon: 'bx-check', cls: 'btn-success' },
+        reject:        { label: l10n.Reject || 'Reject', icon: 'bx-x', cls: 'btn-danger' },
+        requestInfo:   { label: l10n.RequestInfo || 'Request Info', icon: 'bx-question-mark', cls: 'btn-label-warning' },
+        reassign:      { label: l10n.Reassign || 'Reassign', icon: 'bx-user-pin', cls: 'btn-label-secondary' },
+        plan:          { label: l10n.Plan || 'Plan', icon: 'bx-calendar-check', cls: 'btn-label-info' },
+        startWork:     { label: l10n.StartWork || 'Start Work', icon: 'bx-play', cls: 'btn-primary' },
+        approve:       { label: l10n.Approve || 'Approve', icon: 'bx-check-shield', cls: 'btn-success' },
+        review:        { label: 'Review', icon: 'bx-check-circle', cls: 'btn-success' },
+        rejectReview:  { label: l10n.RejectReview || 'Reject Review', icon: 'bx-x-circle', cls: 'btn-outline-danger' },
+        followUp:      { label: 'Follow Up', icon: 'bx-refresh', cls: 'btn-label-warning' },
+        continueWork:  { label: 'Continue', icon: 'bx-right-arrow-alt', cls: 'btn-primary' },
+        investigate:   { label: 'Investigate', icon: 'bx-search', cls: 'btn-primary' },
+        inspectBlocker:{ label: 'Inspect Blocker', icon: 'bx-block', cls: 'btn-label-warning' },
+        viewSummary:   { label: 'View Summary', icon: 'bx-file', cls: 'btn-label-secondary' },
+        viewReason:    { label: 'View Reason', icon: 'bx-info-circle', cls: 'btn-label-secondary' }
     };
 
     // ── DOM REFS ──────────────────────────────────────────────────────────────
@@ -330,7 +344,9 @@
         var due = new Date(dueDate);
         if (isNaN(due.getTime())) { return { kind: 'unknown', label: '-', cls: 'bg-label-secondary' }; }
 
-        var now = new Date();
+        var now = window.WorkCenterMockData && window.WorkCenterMockData.todayIso
+            ? new Date(window.WorkCenterMockData.todayIso)
+            : new Date();
         var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         var dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
         var diffDays = Math.floor((dueDay.getTime() - today.getTime()) / 86400000);
@@ -349,7 +365,7 @@
     };
 
     var isTimeEntryEnabledStatus = function () {
-        return state.item && state.item.status === 'IN_PROGRESS';
+        return state.item && state.item.status === 'In Progress';
     };
 
     var esc = function (str) {
@@ -389,12 +405,10 @@
         var effectiveIndex;
         if (!isOffFlow) {
             effectiveIndex = STATUS_LIFECYCLE.indexOf(status);
-        } else if (status === 'WAITING_INFO') {
-            effectiveIndex = 0; // stuck at NEW
-        } else if (status === 'BLOCKED') {
-            effectiveIndex = STATUS_LIFECYCLE.indexOf('IN_PROGRESS');
+        } else if (status === 'Waiting for Information') {
+            effectiveIndex = STATUS_LIFECYCLE.indexOf(state.item.flowAnchorStatus || 'Open');
         } else {
-            effectiveIndex = STATUS_LIFECYCLE.length - 1; // CANCELLED → last step
+            effectiveIndex = STATUS_LIFECYCLE.length - 1;
         }
 
         var getStepState = function (i) {
@@ -429,8 +443,8 @@
                 : String(i + 1);
             parts.push(connector + '<div class="' + stepCls + '" role="listitem" title="' + esc(STATUS_LABELS[step] || step) + '"><span class="task-step-index">' + stepIndexContent + '</span><span class="task-step-label">' + esc(STATUS_LABELS[step] || step) + '</span></div>');
         });
-        if (isOffFlow && status !== 'CANCELLED') {
-            var badgeCls = status === 'BLOCKED' ? 'bg-label-danger' : 'bg-label-warning';
+        if (isOffFlow && status !== 'Cancelled') {
+            var badgeCls = 'bg-label-warning';
             parts.push('<div class="task-step-offflow ms-3 flex-shrink-0"><span class="badge ' + badgeCls + '">' + esc(STATUS_LABELS[status] || status) + '</span></div>');
         }
         el.taskStepBar.innerHTML = parts.join('');
@@ -476,7 +490,7 @@
 
     var renderActionsPanel = function () {
         if (!el.taskActionsPanel) { return; }
-        var actions = STATUS_ACTIONS[state.item.status] || [];
+        var actions = getStatusActions(state.item);
         if (el.taskRejectReviewForm) { el.taskRejectReviewForm.classList.add('d-none'); }
 
         if (!actions.length) {
@@ -487,8 +501,20 @@
             return;
         }
 
-        var primarySet = { accept: true, startWork: true, complete: true, approve: true };
-        var destructiveSet = { reject: true, rejectReview: true, block: true };
+        var primarySet = {
+            accept: true,
+            plan: true,
+            startWork: true,
+            approve: true,
+            review: true,
+            followUp: true,
+            continueWork: true,
+            investigate: true,
+            inspectBlocker: true,
+            viewSummary: true,
+            viewReason: true
+        };
+        var destructiveSet = { reject: true, rejectReview: true };
 
         var toButton = function (action) {
             var def = ACTION_DEFS[action];
@@ -590,8 +616,8 @@
 
     var renderTimeEntryState = function () {
         var status = state.item ? state.item.status : '';
-        var isInProgress = status === 'IN_PROGRESS';
-        var isInReview = status === 'IN_REVIEW';
+        var isInProgress = status === 'In Progress';
+        var isInReview = status === 'Pending Review';
         var isVisible = isInProgress || isInReview;
         var isReadOnly = isInReview;
 
@@ -699,7 +725,7 @@
         if (el.taskPlannedAtValue) { el.taskPlannedAtValue.textContent = item.plannedAt ? formatDate(item.plannedAt) : (l10n.PlannedDateUnknown || 'Not planned'); }
 
         if (el.taskDependenciesStateBadge) {
-            if (hasBlockers && item.status !== 'BLOCKED') {
+            if (hasBlockers && !item.blocked) {
                 el.taskDependenciesStateBadge.className = 'badge bg-label-warning';
                 el.taskDependenciesStateBadge.textContent = l10n.BlockedStatusMismatch || 'Dependency blockers exist';
             } else if (hasDependencies) {
@@ -792,20 +818,22 @@
 
         switch (action) {
             case 'accept':
-                addActivity('Status changed to Backlog.', 'You', 'status_change');
-                item.status = 'BACKLOG';
+                addActivity('Status changed to Open.', 'You', 'status_change');
+                item.status = 'Open';
+                item.approvalRequired = false;
                 notify(l10n.ActionAcceptSuccess || 'Task accepted.', 'success');
                 break;
 
             case 'reject':
                 addActivity('Task rejected.', 'You', 'status_change');
-                item.status = 'CANCELLED';
+                item.status = 'Cancelled';
                 notify(l10n.ActionRejectSuccess || 'Task rejected.', 'warning');
                 break;
 
             case 'requestInfo':
                 addActivity('Additional information requested.', 'You', 'status_change');
-                item.status = 'WAITING_INFO';
+                item.status = 'Waiting for Information';
+                item.waitingInfo = item.waitingInfo || 'Business Owner';
                 notify(l10n.RequestInfo || 'Request Info sent.', 'info');
                 break;
 
@@ -815,56 +843,28 @@
 
             case 'plan':
                 addActivity('Task planned.', 'You', 'status_change');
-                item.status = 'PLANNED';
+                item.status = 'Planned';
                 notify(l10n.Plan || 'Task planned.', 'success');
                 break;
 
             case 'startWork':
                 addActivity('Work started.', 'You', 'status_change');
-                item.status = 'IN_PROGRESS';
+                item.status = 'In Progress';
+                item.blocked = false;
+                item.blockedReason = '';
                 notify(l10n.StartWork || 'Work started.', 'success');
                 break;
 
-            case 'logTime':
-                // Scroll to time entry card
-                var timeCard = document.getElementById('taskTimeEntryCollapse');
-                if (timeCard) {
-                    timeCard.closest('.card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    var collapse = window.bootstrap && window.bootstrap.Collapse.getOrCreateInstance(timeCard);
-                    if (collapse) { collapse.show(); }
-                }
-                return; // no status change
-
-            case 'complete':
-                if (!state.timeEntries.length) {
-                    showActionFeedback(l10n.TimeEntryRequired || 'Log at least one time entry before completing.');
-                    return;
-                }
-                if (item.hasReview) {
-                    addActivity('Task completed, moved to review.', 'You', 'status_change');
-                    item.status = 'IN_REVIEW';
-                } else {
-                    addActivity('Task completed.', 'You', 'status_change');
-                    item.status = 'COMPLETED';
-                }
-                notify(l10n.Complete || 'Task completed.', 'success');
-                break;
-
-            case 'block':
-                addActivity('Task blocked.', 'You', 'status_change');
-                item.status = 'BLOCKED';
-                notify(l10n.Block || 'Task blocked.', 'warning');
-                break;
-
-            case 'unblock':
-                addActivity('Task unblocked.', 'You', 'status_change');
-                item.status = 'IN_PROGRESS';
-                notify(l10n.Unblock || 'Task unblocked.', 'success');
-                break;
-
             case 'approve':
-                addActivity('Task approved and completed.', 'You', 'status_change');
-                item.status = 'COMPLETED';
+                if (item.status === 'Pending Approval') {
+                    addActivity('Approval completed. Item moved to Pending Acceptance.', 'You', 'status_change');
+                    item.status = 'Pending Acceptance';
+                    item.approvalRequired = false;
+                    item.approver = '';
+                } else {
+                    addActivity('Review approved. Item closed.', 'You', 'status_change');
+                    item.status = 'Closed';
+                }
                 notify(l10n.Approve || 'Task approved.', 'success');
                 break;
 
@@ -873,6 +873,16 @@
                     el.taskRejectReviewForm.classList.toggle('d-none');
                 }
                 return; // handled by form submit
+
+            case 'continueWork':
+            case 'investigate':
+            case 'followUp':
+            case 'review':
+            case 'inspectBlocker':
+            case 'viewSummary':
+            case 'viewReason':
+                notify('Mock action opened contextual details.', 'info');
+                return;
 
             default:
                 break;
@@ -941,7 +951,7 @@
             var note = el.taskRejectNote ? el.taskRejectNote.value.trim() : '';
             if (!note) { return; }
             addActivity('Review rejected: ' + note, 'You', 'comment');
-            state.item.status = 'IN_PROGRESS';
+            state.item.status = 'In Progress';
             if (el.taskRejectReviewForm) { el.taskRejectReviewForm.classList.add('d-none'); }
             if (el.taskRejectNote)       { el.taskRejectNote.value = ''; }
             if (el.taskRejectReviewConfirm) { el.taskRejectReviewConfirm.disabled = true; }

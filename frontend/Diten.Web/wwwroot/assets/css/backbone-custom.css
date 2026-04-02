@@ -681,6 +681,13 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     text-overflow: ellipsis;
 }
 
+.inbox-row__line--signals {
+    order: 4;
+    margin: 0;
+    flex-wrap: wrap;
+    row-gap: .35rem;
+}
+
 .inbox-row__title {
     font-size: .875rem;
     font-weight: 650;
@@ -791,6 +798,11 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     color: rgb(var(--bs-warning-rgb));
 }
 
+.inbox-row__badge--role-approver {
+    border-color: rgba(var(--bs-success-rgb), 0.62);
+    color: rgb(var(--bs-success-rgb));
+}
+
 .inbox-row__badge--role-default {
     border-color: rgba(var(--bs-secondary-rgb), 0.55);
     color: var(--bs-secondary-color);
@@ -824,6 +836,17 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 [data-bs-theme="dark"] .inbox-row__badge--role-reviewer {
     border-color: rgba(var(--bs-warning-rgb), 0.78);
     color: rgb(var(--bs-warning-rgb));
+}
+
+.inbox-row__status,
+.inbox-row__due-state,
+.inbox-row__signal {
+    font-size: .67rem;
+    font-weight: 600;
+}
+
+.inbox-row__signal {
+    white-space: nowrap;
 }
 
 .inbox-row__priority {
