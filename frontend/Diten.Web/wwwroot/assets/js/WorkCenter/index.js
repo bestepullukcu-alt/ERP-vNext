@@ -415,13 +415,23 @@
         window.location.href = '/WorkCenter/Task/' + encodeURIComponent(itemId) + '?returnUrl=' + returnUrl;
     };
 
+    const navigateToMeetingDetail = (itemId, tab) => {
+        const returnUrl = encodeURIComponent('/WorkCenter?tab=' + tab);
+        window.location.href = '/WorkCenter/Meeting/' + encodeURIComponent(itemId) + '?returnUrl=' + returnUrl;
+    };
+
     const openWorkItem = (item, tab) => {
         if (!item) {
             return;
         }
 
-        if ((item.type || '').toLowerCase() === 'task') {
+        const itemType = (item.type || '').toLowerCase();
+        if (itemType === 'task') {
             navigateToTaskDetail(item.id, tab);
+            return;
+        }
+        if (itemType === 'meeting') {
+            navigateToMeetingDetail(item.id, tab);
             return;
         }
 

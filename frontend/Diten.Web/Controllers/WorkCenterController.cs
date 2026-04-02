@@ -34,6 +34,19 @@ public class WorkCenterController : Controller
     }
 
     [HttpGet]
+    public IActionResult Meeting(string id, string? returnUrl)
+    {
+        if (!string.IsNullOrEmpty(returnUrl) && !Url.IsLocalUrl(returnUrl))
+            returnUrl = null;
+
+        ViewBag.MeetingId = id ?? string.Empty;
+        ViewBag.ReturnUrl = returnUrl ?? Url.Action("Index", "WorkCenter");
+        ViewBag.ActiveMenu = "workcenter";
+
+        return View();
+    }
+
+    [HttpGet]
     public IActionResult DevScenarios()
     {
         ViewBag.ActiveMenu = "workcenter";
