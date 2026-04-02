@@ -1,1019 +1,1976 @@
 'use strict';
 
 (function () {
-    var page = document.getElementById('taskDetailPage');
-    if (!page) { return; }
-
-    var TASK_ID = page.dataset.taskId || '';
-    var RETURN_URL = page.dataset.returnUrl || '/WorkCenter';
-
-    // ── L10n ──────────────────────────────────────────────────────────────────
-    var l10nEl = document.getElementById('task-detail-l10n');
-    var l10n = {};
-    if (l10nEl) {
-        try { l10n = JSON.parse(l10nEl.textContent); } catch (e) { /* ignore */ }
+    var root = document.getElementById('taskDetailPageV2');
+    if (!root) {
+        return;
     }
 
-    // ── MOCK DATA (shared with index.js) ───────────────────────────────────────
-    var currentUserName = (window.WorkCenterMockData && window.WorkCenterMockData.currentUser && window.WorkCenterMockData.currentUser.name) || '';
-    var baseItems = (window.WorkCenterMockData && typeof window.WorkCenterMockData.buildMockItems === 'function')
-        ? window.WorkCenterMockData.buildMockItems()
-        : [];
-
-    var enrichItem = function (item) {
-        var plannedDate = item.createdDate;
-        if (plannedDate) {
-            var p = new Date(plannedDate);
-            p.setDate(p.getDate() + 1);
-            plannedDate = p.toISOString().slice(0, 10);
-        }
-
-        var tagPool = ['Compliance', 'Urgent', 'Customer', 'Release', 'Audit'];
-        var firstTag = tagPool[item.id.length % tagPool.length];
-        var secondTag = tagPool[(item.id.length + 2) % tagPool.length];
-
-        var blockedBy = item.dependencySummary
-            ? [{ id: 'DEP-' + item.id.slice(-3), title: item.dependencySummary }]
-            : [];
-        var blocks = item.hasSubtasks
-            ? [{ id: 'SUB-' + item.id.slice(-3), title: 'Follow-up subtasks depend on this item.' }]
-            : [];
-        var taskTypeByStatus = {
-            'Pending Approval': 'approval',
-            'Pending Acceptance': 'execution',
-            'Open': 'execution',
-            'Planned': 'execution',
-            'In Progress': 'execution',
-            'Waiting for Information': 'info',
-            'Pending Review': 'review',
-            'Closed': 'info',
-            'Cancelled': 'info'
-        };
-        var sourceTypePool = ['Issue', 'SalesOrder', 'Contract', 'Shipment', 'Workflow'];
-        var sourceSeed = parseInt((item.id || '').replace(/\D/g, ''), 10) || 0;
-        var sourceType = sourceTypePool[sourceSeed % sourceTypePool.length];
-        var sourcePrefix = sourceType === 'Issue' ? 'ISSUE-' :
-            (sourceType === 'SalesOrder' ? 'SO-' :
-            (sourceType === 'Contract' ? 'CTR-' :
-            (sourceType === 'Shipment' ? 'SHP-' : 'WF-')));
-        var estimatedMinutes = item.type === 'meeting' ? 60 : 390;
-        var reassignedFrom = item.status === 'Pending Review' || item.status === 'In Progress' ? 'Mert Aksoy' : '';
-        var relationPool = ['Created from', 'Triggered by', 'Child of', 'Related to'];
-        var sourceRelationType = relationPool[sourceSeed % relationPool.length];
-        var checklistParts = String(item.checklistProgress || '0/0').split('/');
-        var checklistDone = parseInt(checklistParts[0], 10) || 0;
-        var checklistTotal = parseInt(checklistParts[1], 10) || 0;
-        var subtasks = [];
-
-        if (item.hasChecklist && checklistTotal > 0) {
-            for (var i = 0; i < checklistTotal; i++) {
-                subtasks.push({
-                    id: item.id + '-c' + (i + 1),
-                    title: 'Checklist item ' + (i + 1),
-                    done: i < checklistDone
-                });
-            }
-        } else if (item.hasSubtasks) {
-            subtasks = [
-                { id: item.id + '-s1', title: 'Review requirements', done: true },
-                { id: item.id + '-s2', title: 'Prepare working draft', done: false },
-                { id: item.id + '-s3', title: 'Share final package', done: false }
-            ];
-        }
-
-        var descriptionParts = [
-            'This work item belongs to ' + item.context + ' and is owned by ' + (item.assignee || '-') + '.',
-            item.requiredAction || '',
-            item.blockedReason ? 'Blocked reason: ' + item.blockedReason : '',
-            item.waitingInfo ? 'Waiting on: ' + item.waitingInfo : '',
-            item.dependencySummary ? 'Dependency: ' + item.dependencySummary : ''
-        ].filter(Boolean);
-
-        return {
-            id: item.id,
-            type: item.type,
-            taskType: taskTypeByStatus[item.status] || (item.type === 'issue' ? 'approval' : 'execution'),
-            status: item.status,
-            priority: item.priority,
-            title: item.title,
-            source: item.source,
-            sourceType: sourceType,
-            sourceId: sourcePrefix + item.id.replace('TASK-', ''),
-            sourceTitle: item.title,
-            sourceRelationType: sourceRelationType,
-            context: item.context,
-            assignee: item.assignee,
-            createdBy: item.creator,
-            createdDate: item.createdDate,
-            dueDate:     item.dueDate,
-            plannedAt:   plannedDate,
-            meta:        item.meta,
-            project:     item.context,
-            reviewer:    item.reviewer || '-',
-            approver:    item.approver || '-',
-            blocked:     !!item.blocked,
-            blockedReason: item.blockedReason || '',
-            waitingInfo: item.waitingInfo || '',
-            reviewRequired: !!item.reviewRequired,
-            approvalRequired: !!item.approvalRequired,
-            flowAnchorStatus: item.status === 'Waiting for Information' ? (item.blocked ? 'Planned' : 'Open') : '',
-            tags:        [firstTag, secondTag],
-            watchers:    ['PMO Bot', 'Nadia P.'],
-            attachments: [
-                { name: 'brief-' + item.id + '.pdf', size: '420 KB' },
-                { name: 'checklist-' + item.id + '.xlsx', size: '96 KB' }
-            ],
-            market:      'TR',
-            domain:      item.source,
-            externalParty: item.type === 'issue' ? 'Vendor Team' : '-',
-            estimation:  item.type === 'meeting' ? '1h 0m' : '6h 30m',
-            estimatedMinutes: estimatedMinutes,
-            reassignedFrom: reassignedFrom,
-            description: descriptionParts.join('\n\n'),
-            subtasks: subtasks,
-            activity: [
-                { type: 'status_change', text: 'Task created and assigned.', author: item.creator, timestamp: item.createdDate },
-                { type: 'status_change', text: 'Status set to ' + item.status + '.', author: 'System', timestamp: item.createdDate }
-            ],
-            dependencies: { blockedBy: blockedBy, blocks: blocks },
-            hasReview: !!item.reviewRequired
-        };
-    };
-
-    var allItems = baseItems;
-    var baseItem = null;
-    for (var i = 0; i < allItems.length; i++) {
-        if (allItems[i].id === TASK_ID) { baseItem = allItems[i]; break; }
-    }
-    if (!baseItem) { baseItem = allItems[0]; }
-    if (!baseItem) { return; }
+    var taskId = root.dataset.taskId || '';
+    var returnUrl = root.dataset.returnUrl || '/WorkCenter';
+    var actingAs = root.dataset.actingAs || '';
 
     var state = {
-        item:         enrichItem(baseItem),
-        timeEntries:  [],
-        timerActive:  false,
-        timerStartMs: null,
-        timerInterval: null
-    };
-
-    // ── CONSTANTS ─────────────────────────────────────────────────────────────
-    var STATUS_LIFECYCLE = ['Pending Approval', 'Pending Acceptance', 'Open', 'Planned', 'In Progress', 'Pending Review', 'Closed'];
-    var OFF_FLOW = { 'Waiting for Information': true, 'Cancelled': true };
-
-    var STATUS_LABELS = {
-        'Pending Approval': 'Pending Approval',
-        'Pending Acceptance': 'Pending Acceptance',
-        'Open': 'Open',
-        'Planned': 'Planned',
-        'In Progress': 'In Progress',
-        'Waiting for Information': 'Waiting for Information',
-        'Pending Review': 'Pending Review',
-        'Closed': 'Closed',
-        'Cancelled': 'Cancelled'
-    };
-
-    var STATUS_BADGE_CLASS = {
-        'Pending Approval': 'bg-label-primary',
-        'Pending Acceptance': 'bg-label-info',
-        'Open': 'bg-label-secondary',
-        'Planned': 'bg-label-warning',
-        'In Progress': 'bg-label-primary',
-        'Waiting for Information': 'bg-label-warning',
-        'Pending Review': 'bg-label-info',
-        'Closed': 'bg-label-success',
-        'Cancelled': 'bg-label-secondary'
-    };
-
-    var SOURCE_ROUTE_BUILDERS = {
-        SalesOrder: function (id) { return '/sales/orders/' + encodeURIComponent(id); },
-        Issue: function (id) { return '/ppm/issues/' + encodeURIComponent(id); },
-        Contract: function (id) { return '/commercial/contracts/' + encodeURIComponent(id); },
-        Shipment: function (id) { return '/logistics/shipments/' + encodeURIComponent(id); }
-    };
-
-    var getStatusActions = function (item) {
-        if (!item) { return []; }
-
-        switch (item.status) {
-            case 'Pending Approval':
-                return item.approver === currentUserName ? ['approve', 'reject'] : [];
-            case 'Pending Acceptance':
-                return item.assignee === currentUserName ? ['accept', 'reassign'] : [];
-            case 'Open':
-                if (item.blocked) { return ['inspectBlocker', 'reassign']; }
-                return item.type === 'issue' ? ['investigate', 'requestInfo', 'reassign'] : ['plan', 'reassign'];
-            case 'Planned':
-                return item.blocked ? ['inspectBlocker', 'reassign'] : ['startWork', 'reassign'];
-            case 'In Progress':
-                return item.blocked ? ['inspectBlocker', 'reassign'] : ['continueWork', 'requestInfo', 'reassign'];
-            case 'Waiting for Information':
-                return ['followUp', 'reassign'];
-            case 'Pending Review':
-                return item.reviewer === currentUserName ? ['review', 'rejectReview'] : [];
-            case 'Closed':
-                return ['viewSummary'];
-            case 'Cancelled':
-                return ['viewReason'];
-            default:
-                return [];
+        loading: true,
+        pending: false,
+        error: '',
+        notice: null,
+        task: null,
+        openForm: null,
+        decisionNote: '',
+        collapsed: {},
+        forms: {
+            planDate: '',
+            logDate: '',
+            logDescription: '',
+            logDuration: '',
+            requestRecipientId: '',
+            requestQuestion: '',
+            reassignAssigneeId: '',
+            closureSummary: ''
         }
     };
 
-    var ACTION_DEFS = {
-        accept:        { label: l10n.Accept || 'Accept', icon: 'bx-check', cls: 'btn-success' },
-        reject:        { label: l10n.Reject || 'Reject', icon: 'bx-x', cls: 'btn-danger' },
-        requestInfo:   { label: l10n.RequestInfo || 'Request Info', icon: 'bx-question-mark', cls: 'btn-label-warning' },
-        reassign:      { label: l10n.Reassign || 'Reassign', icon: 'bx-user-pin', cls: 'btn-label-secondary' },
-        plan:          { label: l10n.Plan || 'Plan', icon: 'bx-calendar-check', cls: 'btn-label-info' },
-        startWork:     { label: l10n.StartWork || 'Start Work', icon: 'bx-play', cls: 'btn-primary' },
-        approve:       { label: l10n.Approve || 'Approve', icon: 'bx-check-shield', cls: 'btn-success' },
-        review:        { label: 'Review', icon: 'bx-check-circle', cls: 'btn-success' },
-        rejectReview:  { label: l10n.RejectReview || 'Reject Review', icon: 'bx-x-circle', cls: 'btn-outline-danger' },
-        followUp:      { label: 'Follow Up', icon: 'bx-refresh', cls: 'btn-label-warning' },
-        continueWork:  { label: 'Continue', icon: 'bx-right-arrow-alt', cls: 'btn-primary' },
-        investigate:   { label: 'Investigate', icon: 'bx-search', cls: 'btn-primary' },
-        inspectBlocker:{ label: 'Inspect Blocker', icon: 'bx-block', cls: 'btn-label-warning' },
-        viewSummary:   { label: 'View Summary', icon: 'bx-file', cls: 'btn-label-secondary' },
-        viewReason:    { label: 'View Reason', icon: 'bx-info-circle', cls: 'btn-label-secondary' }
+    var lang = (window.L10n && window.L10n.TaskDetail) ? window.L10n.TaskDetail : {};
+    function t(key, defaultVal) {
+        return lang[key] !== undefined ? lang[key] : defaultVal;
+    }
+
+    var statusLabelMap = {
+        PendingApproval: t('StatusPendingApproval', 'Pending Approval'),
+        PendingAcceptance: t('StatusPendingAcceptance', 'Pending Acceptance'),
+        Open: t('StatusOpen', 'Open'),
+        Planned: t('StatusPlanned', 'Planned'),
+        InProgress: t('StatusInProgress', 'In Progress'),
+        WaitingForInformation: t('StatusWaitingForInformation', 'Waiting for Information'),
+        PendingReview: t('StatusPendingReview', 'Pending Review'),
+        Closed: t('StatusClosed', 'Closed'),
+        Cancelled: t('StatusCancelled', 'Cancelled')
     };
 
-    // ── DOM REFS ──────────────────────────────────────────────────────────────
-    var el = {
-        taskIdLabel:          document.getElementById('taskIdLabel'),
-        taskBreadcrumbContext: document.getElementById('taskBreadcrumbContext'),
-        taskBreadcrumbItem:   document.getElementById('taskBreadcrumbItem'),
-        taskTitle:            document.getElementById('taskTitle'),
-        taskAssignee:         document.getElementById('taskAssignee'),
-        taskCreatedBy:        document.getElementById('taskCreatedBy'),
-        taskDueDate:          document.getElementById('taskDueDate'),
-        taskOverdueBadge:     document.getElementById('taskOverdueBadge'),
-        taskStatusBadge:      document.getElementById('taskStatusBadge'),
-        taskStepBar:          document.getElementById('taskStepBar'),
-        taskDescription:      document.getElementById('taskDescription'),
-        taskSubtasksList:     document.getElementById('taskSubtasksList'),
-        taskSubtasksProgress: document.getElementById('taskSubtasksProgress'),
-        taskActivityCount:    document.getElementById('taskActivityCount'),
-        taskActivityFeed:     document.getElementById('taskActivityFeed'),
-        taskCommentInput:     document.getElementById('taskCommentInput'),
-        taskCommentSubmit:    document.getElementById('taskCommentSubmit'),
-        taskActionsPanel:     document.getElementById('taskActionsPanel'),
-        taskPrimaryActions:   document.getElementById('taskPrimaryActions'),
-        taskSecondaryActions: document.getElementById('taskSecondaryActions'),
-        taskDestructiveDivider: document.getElementById('taskDestructiveDivider'),
-        taskDestructiveActions: document.getElementById('taskDestructiveActions'),
-        taskActionFeedback:   document.getElementById('taskActionFeedback'),
-        taskRejectReviewForm: document.getElementById('taskRejectReviewForm'),
-        taskRejectNote:       document.getElementById('taskRejectNote'),
-        taskRejectReviewConfirm: document.getElementById('taskRejectReviewConfirm'),
-        taskTimeHours:        document.getElementById('taskTimeHours'),
-        taskTimeMinutes:      document.getElementById('taskTimeMinutes'),
-        taskTimeNote:         document.getElementById('taskTimeNote'),
-        taskTimeLogBtn:       document.getElementById('taskTimeLogBtn'),
-        taskTimeEntryCard:    document.getElementById('taskTimeEntryCard'),
-        taskTimeStateMessage: document.getElementById('taskTimeStateMessage'),
-        taskTimerToggle:      document.getElementById('taskTimerToggle'),
-        taskTimerIcon:        document.getElementById('taskTimerIcon'),
-        taskTimerDisplay:     document.getElementById('taskTimerDisplay'),
-        taskTotalTime:        document.getElementById('taskTotalTime'),
-        taskLoggedSummary:    document.getElementById('taskLoggedSummary'),
-        taskEstimatedSummary: document.getElementById('taskEstimatedSummary'),
-        taskVarianceSummary:  document.getElementById('taskVarianceSummary'),
-        taskRemainingSummary: document.getElementById('taskRemainingSummary'),
-        taskTimeLogList:      document.getElementById('taskTimeLogList'),
-        taskBlockedByList:    document.getElementById('taskBlockedByList'),
-        taskBlocksList:       document.getElementById('taskBlocksList'),
-        taskSourceRefLink:    document.getElementById('taskSourceRefLink'),
-        taskSourceRefValue:   document.getElementById('taskSourceRefValue'),
-        taskSourceTitleValue: document.getElementById('taskSourceTitleValue'),
-        taskSourceRelationValue: document.getElementById('taskSourceRelationValue'),
-        taskReviewerValue:    document.getElementById('taskReviewerValue'),
-        taskReassignmentValue: document.getElementById('taskReassignmentValue'),
-        taskPlannedAtValue:   document.getElementById('taskPlannedAtValue'),
-        taskDependenciesStateBadge: document.getElementById('taskDependenciesStateBadge'),
-        taskTagsList:         document.getElementById('taskTagsList'),
-        taskWatchersList:     document.getElementById('taskWatchersList'),
-        taskAttachmentsList:  document.getElementById('taskAttachmentsList'),
-        taskMarketValue:      document.getElementById('taskMarketValue'),
-        taskDomainValue:      document.getElementById('taskDomainValue'),
-        taskExternalPartyValue: document.getElementById('taskExternalPartyValue'),
-        taskEstimationValue:  document.getElementById('taskEstimationValue'),
-        taskBackBtn:          document.getElementById('taskBackBtn')
+    var dependencyTypeLabelMap = {
+        FS: t('DepFS', 'Finish-to-Start'),
+        SS: t('DepSS', 'Start-to-Start'),
+        FF: t('DepFF', 'Finish-to-Finish'),
+        SF: t('DepSF', 'Start-to-Finish')
     };
 
-    // ── HELPERS ───────────────────────────────────────────────────────────────
-    var notify = function (msg, type) {
-        if (typeof window.showToast === 'function') {
-            window.showToast(msg, type || 'info');
-            return;
-        }
-        console.log('[TaskDetail]', type || 'info', msg);
+    var urgencyMap = {
+        OnTrack: { label: t('UrgOnTrack', 'On Track'), cls: 'badge bg-label-success' },
+        DueSoon: { label: t('UrgDueSoon', 'Due Soon'), cls: 'badge bg-label-warning' },
+        Overdue: { label: t('UrgOverdue', 'Overdue'), cls: 'badge bg-label-danger' }
     };
 
-    var formatDate = function (value) {
-        if (!value) { return '-'; }
-        var d = new Date(value);
-        if (isNaN(d.getTime())) { return value; }
-        return d.toLocaleDateString();
-    };
-
-    var resolvePriorityClass = function (priority) {
-        var p = (priority || '').toLowerCase();
-        if (p === 'yuksek' || p === 'high')   { return 'bg-label-danger'; }
-        if (p === 'orta'   || p === 'medium') { return 'bg-label-warning'; }
-        if (p === 'dusuk'  || p === 'low')    { return 'bg-label-success'; }
-        return 'bg-label-secondary';
-    };
-
-    var formatDuration = function (totalMs) {
-        var totalSec = Math.floor(totalMs / 1000);
-        var h = Math.floor(totalSec / 3600);
-        var m = Math.floor((totalSec % 3600) / 60);
-        var s = totalSec % 60;
-        return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-    };
-
-    var formatMinutes = function (totalMin) {
-        if (typeof totalMin !== 'number' || isNaN(totalMin) || totalMin < 0) { return '-'; }
-        var h = Math.floor(totalMin / 60);
-        var m = totalMin % 60;
-        return h + 'h ' + m + 'm';
-    };
-
-    var computeDueState = function (dueDate) {
-        if (!dueDate) { return { kind: 'unknown', label: '-', cls: 'bg-label-secondary' }; }
-        var due = new Date(dueDate);
-        if (isNaN(due.getTime())) { return { kind: 'unknown', label: '-', cls: 'bg-label-secondary' }; }
-
-        var now = window.WorkCenterMockData && window.WorkCenterMockData.todayIso
-            ? new Date(window.WorkCenterMockData.todayIso)
-            : new Date();
-        var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        var dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
-        var diffDays = Math.floor((dueDay.getTime() - today.getTime()) / 86400000);
-
-        if (diffDays < 0) {
-            return { kind: 'overdue', label: (l10n.Overdue || 'Overdue') + ' (' + Math.abs(diffDays) + ' ' + (l10n.DaysAgo || 'days ago') + ')', cls: 'bg-label-danger' };
-        }
-        if (diffDays <= 2) {
-            return { kind: 'due_soon', label: (l10n.DueSoon || 'Due Soon') + ' (' + (l10n.DueInDays || 'due in') + ' ' + diffDays + 'd)', cls: 'bg-label-warning' };
-        }
-        return { kind: 'on_track', label: l10n.OnTrack || 'On Track', cls: 'bg-label-success' };
-    };
-
-    var totalLoggedMinutes = function () {
-        return state.timeEntries.reduce(function (sum, e) { return sum + (e.hours * 60) + e.minutes; }, 0);
-    };
-
-    var isTimeEntryEnabledStatus = function () {
-        return state.item && state.item.status === 'In Progress';
-    };
-
-    var esc = function (str) {
-        return String(str || '')
+    function escapeHtml(value) {
+        return String(value || '')
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    };
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
 
-    // ── RENDER ────────────────────────────────────────────────────────────────
-    var renderHeader = function () {
-        var item = state.item;
-        var dueState = computeDueState(item.dueDate);
-        if (el.taskIdLabel)       { el.taskIdLabel.textContent = '#' + item.id.toUpperCase(); }
-        if (el.taskBreadcrumbContext) { el.taskBreadcrumbContext.textContent = item.project || item.source || 'Task'; }
-        if (el.taskBreadcrumbItem) { el.taskBreadcrumbItem.textContent = item.id ? item.id.toUpperCase() : '-'; }
-        if (el.taskTitle)         { el.taskTitle.textContent = item.title || '-'; }
-        if (el.taskAssignee)      { el.taskAssignee.textContent = item.assignee || '-'; }
-        if (el.taskCreatedBy)     { el.taskCreatedBy.textContent = (l10n.CreatedBy || 'Created By') + ': ' + (item.createdBy || '-'); }
-        if (el.taskDueDate)       { el.taskDueDate.textContent = formatDate(item.dueDate); }
-        if (el.taskOverdueBadge) {
-            el.taskOverdueBadge.classList.toggle('d-none', dueState.kind !== 'overdue');
-            if (dueState.kind === 'overdue') { el.taskOverdueBadge.textContent = dueState.label; }
+    function statusLabel(status) {
+        return statusLabelMap[status] || status || '-';
+    }
+
+    function statusBadgeClass(status) {
+        switch (status) {
+            case 'PendingApproval': return 'badge bg-label-primary';
+            case 'PendingAcceptance': return 'badge bg-label-warning';
+            case 'Open': return 'badge bg-label-secondary';
+            case 'Planned': return 'badge bg-label-warning';
+            case 'InProgress': return 'badge bg-label-dark';
+            case 'WaitingForInformation': return 'badge bg-label-warning';
+            case 'PendingReview': return 'badge bg-label-info';
+            case 'Closed': return 'badge bg-label-success';
+            case 'Cancelled': return 'badge bg-label-danger';
+            default: return 'badge bg-label-secondary';
         }
-        if (el.taskStatusBadge) {
-            el.taskStatusBadge.textContent = STATUS_LABELS[item.status] || item.status;
-            el.taskStatusBadge.className = 'badge ms-auto ' + (STATUS_BADGE_CLASS[item.status] || 'bg-label-secondary');
-        }
-    };
+    }
 
-    var renderStepBar = function () {
-        if (!el.taskStepBar) { return; }
-        var status = state.item.status;
-        var isOffFlow = !!OFF_FLOW[status];
-
-        var effectiveIndex;
-        if (!isOffFlow) {
-            effectiveIndex = STATUS_LIFECYCLE.indexOf(status);
-        } else if (status === 'Waiting for Information') {
-            effectiveIndex = STATUS_LIFECYCLE.indexOf(state.item.flowAnchorStatus || 'Open');
-        } else {
-            effectiveIndex = STATUS_LIFECYCLE.length - 1;
+    function formatDate(value) {
+        if (!value) {
+            return '-';
         }
 
-        var getStepState = function (i) {
-            return {
-                done: i < effectiveIndex,
-                current: i === effectiveIndex && !isOffFlow,
-                paused: i === effectiveIndex && isOffFlow
+        var date = new Date(value);
+        if (isNaN(date.getTime())) {
+            var plain = String(value);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(plain)) {
+                return plain.split('-').reverse().join('.');
+            }
+            return plain;
+        }
+
+        var day = String(date.getDate()).padStart(2, '0');
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var year = date.getFullYear();
+        return day + '.' + month + '.' + year;
+    }
+
+    function formatDateTime(value) {
+        if (!value) {
+            return '-';
+        }
+
+        var date = new Date(value);
+        if (isNaN(date.getTime())) {
+            return String(value);
+        }
+
+        var datePart = formatDate(value);
+        var hh = String(date.getHours()).padStart(2, '0');
+        var mm = String(date.getMinutes()).padStart(2, '0');
+        return datePart + ' ' + hh + ':' + mm;
+    }
+
+    function toInputDate(value) {
+        if (!value) {
+            return '';
+        }
+
+        var raw = String(value);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+            return raw;
+        }
+
+        var date = new Date(value);
+        if (isNaN(date.getTime())) {
+            return '';
+        }
+
+        return date.toISOString().slice(0, 10);
+    }
+
+    function iconForActivity(type) {
+        switch (type) {
+            case 'transition': return '→';
+            case 'timeLog': return '⊙';
+            case 'comment': return '◎';
+            case 'infoRequest': return '⊗';
+            case 'cancellation': return '✕';
+            default: return '•';
+        }
+    }
+
+    function iconClassForActivity(type) {
+        switch (type) {
+            case 'transition': return 'task-v2-activity-inline-icon--transition';
+            case 'timeLog': return 'task-v2-activity-inline-icon--time-log';
+            case 'comment': return 'task-v2-activity-inline-icon--comment';
+            case 'infoRequest': return 'task-v2-activity-inline-icon--info-request';
+            case 'cancellation': return 'task-v2-activity-inline-icon--cancellation';
+            default: return 'task-v2-activity-inline-icon--default';
+        }
+    }
+
+    function apiUrl(path) {
+        var query = actingAs ? ('?as=' + encodeURIComponent(actingAs)) : '';
+        return path + query;
+    }
+
+    function clearNotice() {
+        state.notice = null;
+    }
+
+    function setNotice(type, message) {
+        state.notice = { type: type, message: message };
+    }
+
+    function isCollapsed(id) {
+        return !!state.collapsed[id];
+    }
+
+    function toggleSection(id) {
+        state.collapsed[id] = !state.collapsed[id];
+        render();
+    }
+
+    function syncFormDefaults(task) {
+        if (!task) {
+            return;
+        }
+
+        if (!state.forms.planDate) {
+            state.forms.planDate = toInputDate(task.planDate) || toInputDate(task.dueDate);
+        }
+
+        if (!state.forms.logDate) {
+            state.forms.logDate = new Date().toISOString().slice(0, 10);
+        }
+
+        if (!state.forms.requestRecipientId && task.directory && task.directory.length > 0) {
+            var defaultRecipient = task.directory.find(function (x) {
+                return x.id !== task.assignee.id;
+            });
+            state.forms.requestRecipientId = defaultRecipient ? defaultRecipient.id : task.directory[0].id;
+        }
+
+        if (!state.forms.reassignAssigneeId) {
+            state.forms.reassignAssigneeId = task.assignee.id;
+        }
+
+        if (!state.forms.closureSummary && task.closureSummary) {
+            state.forms.closureSummary = task.closureSummary;
+        }
+    }
+
+    function setCollapsedIfUnset(id, isCollapsedByDefault) {
+        if (state.collapsed[id] === undefined) {
+            state.collapsed[id] = !!isCollapsedByDefault;
+        }
+    }
+
+    function applyPendingAcceptanceCollapseDefaults(task, initialLoad) {
+        if (!initialLoad || !task || task.status !== 'PendingAcceptance') {
+            return;
+        }
+
+        // Reduce low-information visual noise on first load only.
+        if (!task.subtasks || task.subtasks.length === 0) {
+            setCollapsedIfUnset('subtasks', true);
+        }
+        if (!task.dependencies || task.dependencies.length === 0) {
+            setCollapsedIfUnset('dependencies', true);
+        }
+        if (!task.informationRequests || task.informationRequests.length === 0) {
+            setCollapsedIfUnset('information-requests', true);
+        }
+        if (!task.timeLogged || !task.timeLogged.entries || task.timeLogged.entries.length === 0) {
+            setCollapsedIfUnset('time-logged', true);
+        }
+    }
+
+    function applyOpenCollapseDefaults(task, initialLoad) {
+        if (!initialLoad || !task || task.status !== 'Open') {
+            return;
+        }
+
+        // Reduce low-information visual noise on first load only.
+        if (!task.subtasks || task.subtasks.length === 0) {
+            setCollapsedIfUnset('subtasks', true);
+        }
+        if (!task.dependencies || task.dependencies.length === 0) {
+            setCollapsedIfUnset('dependencies', true);
+        }
+        if (!task.informationRequests || task.informationRequests.length === 0) {
+            setCollapsedIfUnset('information-requests', true);
+        }
+        if (!task.timeLogged || !task.timeLogged.entries || task.timeLogged.entries.length === 0) {
+            setCollapsedIfUnset('time-logged', true);
+        }
+    }
+
+    function applyPlannedCollapseDefaults(task, initialLoad) {
+        if (!initialLoad || !task || task.status !== 'Planned') {
+            return;
+        }
+
+        // Reduce low-information visual noise on first load only.
+        if (!task.subtasks || task.subtasks.length === 0) {
+            setCollapsedIfUnset('subtasks', true);
+        }
+        if (!task.dependencies || task.dependencies.length === 0) {
+            setCollapsedIfUnset('dependencies', true);
+        }
+        if (!task.informationRequests || task.informationRequests.length === 0) {
+            setCollapsedIfUnset('information-requests', true);
+        }
+        if (!task.timeLogged || !task.timeLogged.entries || task.timeLogged.entries.length === 0) {
+            setCollapsedIfUnset('time-logged', true);
+        }
+    }
+
+    async function fetchTask(initialLoad) {
+        if (initialLoad) {
+            state.loading = true;
+            render();
+        }
+
+        state.error = '';
+
+        try {
+            var response = await fetch(apiUrl('/api/tasks/' + encodeURIComponent(taskId)), {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'X-WorkCenter-User': actingAs || ''
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Task detail request failed (' + response.status + ').');
+            }
+
+            state.task = await response.json();
+            syncFormDefaults(state.task);
+            applyPendingAcceptanceCollapseDefaults(state.task, initialLoad);
+            applyOpenCollapseDefaults(state.task, initialLoad);
+            applyPlannedCollapseDefaults(state.task, initialLoad);
+        } catch (error) {
+            state.error = error && error.message ? error.message : 'Task detail could not be loaded.';
+        } finally {
+            state.loading = false;
+            render();
+        }
+    }
+
+    async function postAction(path, payload) {
+        state.pending = true;
+        render();
+
+        try {
+            var options = {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-WorkCenter-User': actingAs || ''
+                }
             };
-        };
+
+            if (payload !== undefined) {
+                options.headers['Content-Type'] = 'application/json';
+                options.body = JSON.stringify(payload);
+            }
+
+            var response = await fetch(apiUrl(path), options);
+            var body = null;
+
+            try {
+                body = await response.json();
+            } catch (_err) {
+                body = null;
+            }
+
+            if (!response.ok) {
+                throw new Error((body && body.message) ? body.message : ('Action failed (' + response.status + ').'));
+            }
+
+            setNotice('success', (body && body.message) ? body.message : 'Action completed.');
+            state.openForm = null;
+            clearFormDraftsAfterSubmit();
+            await fetchTask(false);
+        } catch (error) {
+            setNotice('danger', error && error.message ? error.message : 'Action failed.');
+            render();
+        } finally {
+            state.pending = false;
+            render();
+        }
+    }
+
+    function clearFormDraftsAfterSubmit() {
+        state.forms.logDescription = '';
+        state.forms.logDuration = '';
+        state.forms.requestQuestion = '';
+    }
+
+    function findAction(actionId) {
+        if (!state.task || !Array.isArray(state.task.availableActions)) {
+            return null;
+        }
+
+        return state.task.availableActions.find(function (action) {
+            return action.id === actionId;
+        }) || null;
+    }
+
+    function actionRoute(actionId, status) {
+        var id = encodeURIComponent(taskId);
+
+        switch (actionId) {
+            case 'accept': return '/api/tasks/' + id + '/accept';
+            case 'plan': return '/api/tasks/' + id + '/plan';
+            case 'start': return '/api/tasks/' + id + '/start';
+            case 'logTime': return '/api/tasks/' + id + '/log-time';
+            case 'requestInfo': return '/api/tasks/' + id + '/request-info';
+            case 'resume': return '/api/tasks/' + id + '/resume';
+            case 'complete': return '/api/tasks/' + id + '/complete';
+            case 'reassign': return '/api/tasks/' + id + '/reassign';
+            case 'cancel': return '/api/tasks/' + id + '/cancel';
+            case 'approve':
+                if (status === 'PendingApproval') {
+                    return '/api/tasks/' + id + '/gates/approval/approve';
+                }
+                return '/api/tasks/' + id + '/gates/review/approve';
+            case 'reject':
+                if (status === 'PendingApproval') {
+                    return '/api/tasks/' + id + '/gates/approval/reject';
+                }
+                return '/api/tasks/' + id + '/gates/review/reject';
+            default:
+                return '';
+        }
+    }
+
+    function actionHasInlineForm(actionId) {
+        return actionId === 'logTime' ||
+            actionId === 'requestInfo' ||
+            actionId === 'complete' ||
+            actionId === 'reassign';
+    }
+
+    async function handleSwalAction(actionId) {
+        var task = state.task;
+        if (!task) return;
+
+        var route = actionRoute(actionId, task.status);
+        if (!route) return;
+
+        if (actionId === 'approve' || actionId === 'reject') {
+            if (task.status === 'PendingApproval' || task.status === 'PendingReview') {
+                await postAction(route, { note: state.decisionNote || null });
+                return;
+            }
+
+            var isApprove = actionId === 'approve';
+            var res = await Swal.fire({
+                title: isApprove ? 'Approve Task?' : 'Reject Task?',
+                text: 'Please provide a note for this decision (optional).',
+                input: 'textarea',
+                inputValue: state.decisionNote || '',
+                showCancelButton: true,
+                confirmButtonText: isApprove ? 'Approve' : 'Reject',
+                customClass: {
+                    confirmButton: isApprove ? 'btn btn-success me-3' : 'btn btn-danger me-3',
+                    cancelButton: 'btn btn-label-secondary'
+                },
+                buttonsStyling: false
+            });
+
+            if (res.isConfirmed) {
+                await postAction(route, { note: res.value || null });
+            }
+            return;
+        }
+
+        if (actionId === 'logTime') {
+            var resLog = await Swal.fire({
+                title: 'Log Time',
+                html: '<div class="text-start">' +
+                      '<div class="mb-3"><label class="form-label">Date</label><input id="swal-log-date" class="form-control" type="date" value="' + escapeHtml(state.forms.logDate) + '"></div>' +
+                      '<div class="mb-3"><label class="form-label">Description</label><input id="swal-log-desc" class="form-control" type="text" placeholder="What did you work on?"></div>' +
+                      '<div class="mb-3"><label class="form-label">Duration</label><input id="swal-log-dur" class="form-control" type="text" placeholder="e.g. 2h, 1.5h, 01:30"></div>' +
+                      '</div>',
+                showCancelButton: true,
+                confirmButtonText: 'Record Time',
+                customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' },
+                buttonsStyling: false,
+                preConfirm: function() {
+                    return {
+                        date: document.getElementById('swal-log-date').value,
+                        desc: document.getElementById('swal-log-desc').value,
+                        dur: document.getElementById('swal-log-dur').value
+                    };
+                }
+            });
+            if (resLog.isConfirmed) {
+                var v = resLog.value;
+                if (!v.date || !v.desc || !v.dur) { setNotice('warning', 'Date, description and duration are required.'); render(); return; }
+                await postAction(route, { date: v.date, description: v.desc, duration: v.dur });
+            }
+            return;
+        }
+
+        if (actionId === 'requestInfo') {
+            var options = (task.directory || []).map(function (person) {
+                return '<option value="' + escapeHtml(person.id) + '">' + escapeHtml(person.name) + '</option>';
+            }).join('');
+            var resReq = await Swal.fire({
+                title: 'Request Information',
+                html: '<div class="text-start">' +
+                      '<div class="mb-3"><label class="form-label">Recipient</label><select id="swal-req-rec" class="form-select">' + options + '</select></div>' +
+                      '<div class="mb-3"><label class="form-label">Question</label><textarea id="swal-req-q" class="form-control" rows="3" placeholder="What information is needed?"></textarea></div>' +
+                      '</div>',
+                showCancelButton: true,
+                confirmButtonText: 'Send Request',
+                customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' },
+                buttonsStyling: false,
+                preConfirm: function() {
+                    return { rec: document.getElementById('swal-req-rec').value, q: document.getElementById('swal-req-q').value };
+                }
+            });
+            if (resReq.isConfirmed) {
+                var rv = resReq.value;
+                if (!rv.rec || !rv.q) { setNotice('warning', 'Recipient and question are required.'); render(); return; }
+                await postAction(route, { recipientId: rv.rec, question: rv.q });
+            }
+            return;
+        }
+
+        if (actionId === 'reassign') {
+            var people = (task.directory || []).map(function (person) {
+                return '<option value="' + escapeHtml(person.id) + '">' + escapeHtml(person.name) + '</option>';
+            }).join('');
+            var resReas = await Swal.fire({
+                title: 'Reassign Task',
+                html: '<div class="text-start mb-3"><label class="form-label">New Assignee</label><select id="swal-reas-ass" class="form-select">' + people + '</select></div>',
+                showCancelButton: true,
+                confirmButtonText: 'Reassign',
+                customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' },
+                buttonsStyling: false,
+                preConfirm: function() { return document.getElementById('swal-reas-ass').value; }
+            });
+            if (resReas.isConfirmed) {
+                if (!resReas.value) { setNotice('warning', 'Assignee is required.'); render(); return; }
+                await postAction(route, { assigneeId: resReas.value });
+            }
+            return;
+        }
+
+        if (actionId === 'complete') {
+            var resComp = await Swal.fire({
+                title: 'Complete Task',
+                html: '<div class="text-start mb-3"><label class="form-label">Closure Summary (optional)</label>' +
+                      '<textarea id="swal-comp-sum" class="form-control" rows="4" placeholder="Describe what was done..."></textarea></div>',
+                showCancelButton: true,
+                confirmButtonText: 'Complete',
+                customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' },
+                buttonsStyling: false,
+                preConfirm: function() { return document.getElementById('swal-comp-sum').value; }
+            });
+            if (resComp.isConfirmed) {
+                await postAction(route, { closureSummary: resComp.value || null });
+            }
+            return;
+        }
+
+        if (actionId === 'cancel') {
+            var resCancel = await Swal.fire({
+                title: 'Cancel Task',
+                html: '<div class="text-start mb-3"><label class="form-label">Reason (optional)</label>' +
+                      '<textarea id="swal-cancel-reason" class="form-control" rows="3" placeholder="Why is this task being cancelled?"></textarea></div>',
+                showCancelButton: true,
+                confirmButtonText: 'Cancel Task',
+                customClass: { confirmButton: 'btn btn-danger me-3', cancelButton: 'btn btn-label-secondary' },
+                buttonsStyling: false,
+                preConfirm: function() { return document.getElementById('swal-cancel-reason').value; }
+            });
+            if (resCancel.isConfirmed) {
+                await postAction(route, { reason: resCancel.value || null });
+            }
+            return;
+        }
+    }
+
+    async function executeDirectAction(actionId) {
+        var task = state.task;
+        if (!task) {
+            return;
+        }
+
+        var action = findAction(actionId);
+        if (!action) {
+            setNotice('warning', 'Action is not available in current state.');
+            render();
+            return;
+        }
+
+        if (action.isBlocked) {
+            setNotice('warning', action.blockReason || 'Action is blocked.');
+            render();
+            return;
+        }
+
+        if (actionId === 'plan' && task.status === 'Open') {
+            state.openForm = state.openForm === 'plan' ? null : 'plan';
+            if (!state.forms.planDate) {
+                state.forms.planDate = toInputDate(task.planDate) || toInputDate(task.dueDate);
+            }
+            render();
+            return;
+        }
+
+        if (task.status === 'InProgress' && (actionId === 'complete' || actionId === 'logTime' || actionId === 'requestInfo')) {
+            state.openForm = state.openForm === actionId ? null : actionId;
+
+            if (actionId === 'logTime' && !state.forms.logDate) {
+                state.forms.logDate = new Date().toLocaleDateString('en-CA');
+            }
+
+            if (actionId === 'requestInfo' && !state.forms.requestRecipientId && task.directory && task.directory.length > 0) {
+                var defaultRecipient = task.directory.find(function (x) {
+                    return x.id !== task.assignee.id;
+                });
+                state.forms.requestRecipientId = defaultRecipient ? defaultRecipient.id : task.directory[0].id;
+            }
+
+            render();
+            return;
+        }
+
+        if (actionHasInlineForm(actionId) || actionId === 'approve' || actionId === 'reject') {
+            handleSwalAction(actionId);
+            return;
+        }
+
+        var route = actionRoute(actionId, task.status);
+        if (!route) {
+            setNotice('warning', 'Action route is not defined.');
+            render();
+            return;
+        }
+
+        if (actionId === 'accept' && task.status === 'PendingAcceptance') {
+            await postAction(route);
+            return;
+        }
+
+        if (actionId === 'start' && (task.status === 'Open' || task.status === 'Planned')) {
+            await postAction(route);
+            return;
+        }
+
+        if (actionId === 'cancel') {
+            handleSwalAction(actionId);
+            return;
+        }
+
+        var res = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to proceed with this action?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, proceed',
+            customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' },
+            buttonsStyling: false
+        });
+
+        if (res.isConfirmed) {
+            await postAction(route);
+        }
+    }
+
+    function getActionDescription(task, actionId) {
+        switch (task.status) {
+            case 'PendingApproval':
+                if (actionId === 'approve') return 'Releases task to assignee inbox.';
+                if (actionId === 'reject') return 'Cancels the task permanently.';
+                if (actionId === 'cancel') return 'Withdraws the task from approval and cancels it.';
+                break;
+            case 'PendingAcceptance':
+                if (actionId === 'accept') return 'Moves task to Open.';
+                if (actionId === 'reassign') return 'Assigns task to another owner.';
+                break;
+            case 'Open':
+                if (actionId === 'plan') return 'Moves task to Planned with a target date.';
+                if (actionId === 'start') return 'Moves task to In Progress.';
+                if (actionId === 'reassign') return 'Assigns task to another owner.';
+                break;
+            case 'Planned':
+                if (actionId === 'start') return 'Moves task to In Progress.';
+                if (actionId === 'reassign') return 'Assigns task to another owner.';
+                break;
+            case 'InProgress':
+                if (actionId === 'complete') {
+                    return task.gates.review.required
+                        ? 'Sends task to review.'
+                        : 'Closes the task.';
+                }
+                if (actionId === 'logTime') return 'Records a time entry.';
+                if (actionId === 'requestInfo') return 'Pauses task and moves it to Waiting for Information.';
+                if (actionId === 'reassign') return 'Assigns task to another owner.';
+                if (actionId === 'cancel') return 'Permanently cancels this task.';
+                break;
+            case 'WaitingForInformation':
+                if (actionId === 'resume') return 'Returns task to previous state. Answer open information requests before resuming.';
+                if (actionId === 'reassign') return 'Assigns task to another owner.';
+                if (actionId === 'cancel') return 'Permanently cancels this task.';
+                break;
+            case 'PendingReview':
+                if (actionId === 'approve') return 'Closes the task.';
+                if (actionId === 'reject') return 'Returns task to In Progress.';
+                break;
+        }
+
+        return '';
+    }
+
+    function getActionLayout(status) {
+        switch (status) {
+            case 'PendingApproval':
+                return { primary: ['approve'], secondary: ['reject'], other: ['cancel'] };
+            case 'PendingAcceptance':
+                return { primary: ['accept'], secondary: [], other: ['reassign'] };
+            case 'Open':
+                return { primary: ['plan', 'start'], secondary: [], other: ['reassign'] };
+            case 'Planned':
+                return { primary: ['start'], secondary: [], other: ['reassign'] };
+            case 'InProgress':
+                return { primary: ['complete'], secondary: ['logTime', 'requestInfo'], other: ['reassign', 'cancel'] };
+            case 'WaitingForInformation':
+                return { primary: ['resume'], secondary: [], other: ['reassign', 'cancel'] };
+            case 'PendingReview':
+                return { primary: ['approve'], secondary: ['reject'], other: [] };
+            default:
+                return { primary: [], secondary: [], other: [] };
+        }
+    }
+
+    function getButtonClass(actionId, lane) {
+        if (actionId === 'approve') {
+            return 'btn btn-success';
+        }
+
+        if (actionId === 'reject') {
+            return 'btn btn-outline-danger';
+        }
+
+        if (lane === 'primary') {
+            return 'btn btn-dark';
+        }
+
+        if (lane === 'secondary') {
+            return 'btn btn-outline-secondary';
+        }
+
+        return 'btn btn-outline-dark';
+    }
+
+    function renderNotification() {
+        if (!state.notice) {
+            return '';
+        }
+
+        var cls = state.notice.type === 'success'
+            ? 'alert alert-success'
+            : (state.notice.type === 'warning' ? 'alert alert-warning' : 'alert alert-danger');
+
+        return '<div class="' + cls + ' d-flex mb-4" role="alert">' +
+            '<span class="alert-icon rounded-circle"><i class="bx ' + (state.notice.type === 'success' ? 'bx-check' : 'bx-error') + '"></i></span>' +
+            '<div class="d-flex flex-column ps-1">' +
+            '<h6 class="alert-heading d-flex align-items-center fw-bold mb-1">' + escapeHtml(state.notice.type === 'success' ? 'Success' : 'Attention') + '</h6>' +
+            '<span>' + escapeHtml(state.notice.message) + '</span>' +
+            '</div></div>';
+    }
+
+    function renderRoleChip(label, person) {
+        if (!person) {
+            return '';
+        }
+
+        return '<div class="d-flex align-items-center me-4 mb-2">' +
+            '<div class="avatar avatar-sm me-2">' +
+                '<span class="avatar-initial rounded-circle bg-label-primary">' + escapeHtml(person.initials || '--') + '</span>' +
+            '</div>' +
+            '<div class="d-flex flex-column">' +
+                '<span class="fw-medium">' + escapeHtml(person.name || '-') + '</span>' +
+                '<small class="text-muted">' + escapeHtml(label) + '</small>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function renderHeader(task) {
+        var assigneeLabel = task.assignee && task.assignee.isPlanned ? 'Planned Assignee' : 'Assignee';
+        var localizedAssigneeLabel = t(task.assignee && task.assignee.isPlanned ? 'RolePlannedAssignee' : 'RoleAssignee', assigneeLabel);
+
+        var urgency = task.urgency ? urgencyMap[task.urgency] : null;
+        var urgencyBadge = urgency
+            ? '<span class="' + urgency.cls + '"><i class="bx bx-error-circle me-1"></i>' + escapeHtml(urgency.label) + '</span>'
+            : '';
+        var planDateFact = task.planDate
+            ? '<div class="d-flex flex-column"><span><i class="bx bx-calendar-event me-1"></i> ' + escapeHtml(t('PlanDate', 'Plan date')) + '</span><strong class="text-body">' + escapeHtml(formatDate(task.planDate)) + '</strong></div>'
+            : '';
+
+        return '' +
+            '<div class="card mb-4">' +
+                '<div class="card-body">' +
+                    '<div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-3">' +
+                        '<a class="btn btn-label-secondary btn-sm mb-3 mb-md-0" href="' + escapeHtml(returnUrl) + '"><i class="bx bx-arrow-back me-1"></i> ' + escapeHtml(t('BackToList', 'Back to list')) + '</a>' +
+                        '<div class="d-flex flex-wrap justify-content-md-end">' +
+                            renderRoleChip(localizedAssigneeLabel, task.assignee) +
+                            renderRoleChip(t('RoleCreator', 'Creator'), task.creator) +
+                            renderRoleChip(t('RoleReviewer', 'Reviewer'), task.reviewer) +
+                            renderRoleChip(t('RoleApprover', 'Approver'), task.approver) +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="d-flex align-items-center gap-2 mb-2">' +
+                        '<span class="text-muted small">[' + escapeHtml(task.id) + ']</span>' +
+                        '<span class="' + statusBadgeClass(task.status) + '">' + escapeHtml(statusLabel(task.status)) + '</span>' +
+                        urgencyBadge +
+                    '</div>' +
+                    '<h4 class="card-title mb-4">' + escapeHtml(task.title) + '</h4>' +
+                    '<div class="d-flex flex-wrap gap-4 small text-muted">' +
+                        '<div class="d-flex flex-column"><span><i class="bx bx-calendar me-1"></i> ' + escapeHtml(t('DueDate', 'Due date')) + '</span><strong class="text-body">' + escapeHtml(formatDate(task.dueDate)) + '</strong></div>' +
+                        planDateFact +
+                        '<div class="d-flex flex-column"><span><i class="bx bx-user me-1"></i> ' + escapeHtml(t('RoleCreator', 'Creator')) + '</span><strong class="text-body">' + escapeHtml(task.creator && task.creator.name ? task.creator.name : '-') + '</strong></div>' +
+                        '<div class="d-flex flex-column"><span><i class="bx bx-show me-1"></i> ' + escapeHtml(t('RoleReviewer', 'Reviewer')) + '</span><strong class="text-body">' + escapeHtml(task.reviewer && task.reviewer.name ? task.reviewer.name : '-') + '</strong></div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+    }
+
+    function renderBanner(task) {
+        var role = task.userRole;
+        var status = task.status;
+        var pendingRequests = (task.informationRequests || []).filter(function (req) {
+            return req.status === 'Waiting';
+        }).length;
+
+        var title = '';
+        var lines = [];
+        var cls = 'task-v2-banner task-v2-banner--muted';
+
+        if (status === 'PendingApproval') {
+            cls = role === 'approver'
+                ? 'task-v2-banner task-v2-banner--pink'
+                : 'task-v2-banner task-v2-banner--pink-soft';
+            title = 'Task requires approval before assignment';
+            if (role === 'approver') {
+                lines.push('You are the approver.');
+                lines.push('Awaiting your decision.');
+            } else {
+                lines.push('Awaiting decision from ' + (task.approver && task.approver.name ? task.approver.name : 'approver') + '.');
+            }
+        } else if (status === 'PendingAcceptance') {
+            if (role === 'assignee') {
+                cls = 'task-v2-banner task-v2-banner--yellow';
+                title = 'This task is waiting for your acceptance';
+                lines.push('You are the assignee.');
+                lines.push('Accept to begin working, or reassign if this is not yours.');
+            } else {
+                cls = 'task-v2-banner task-v2-banner--muted';
+                title = 'Waiting for assignee acceptance.';
+            }
+        } else if (status === 'WaitingForInformation') {
+            cls = 'task-v2-banner task-v2-banner--orange';
+            title = 'Task is paused — waiting for information';
+            if (role === 'assignee') {
+                lines.push('You requested information.');
+                lines.push(pendingRequests + ' requests pending.');
+            }
+        } else if (status === 'PendingReview') {
+            cls = 'task-v2-banner task-v2-banner--purple';
+            title = 'Work completed — awaiting decision';
+            if (role === 'reviewer') {
+                lines.push('You are the reviewer.');
+            } else if (task.reviewer && task.reviewer.name) {
+                lines.push(task.reviewer.name + ' needs to approve or reject.');
+            }
+        } else if (status === 'Closed') {
+            cls = 'task-v2-banner task-v2-banner--green';
+            title = 'Task completed and closed';
+            if (task.closureSummary) {
+                lines.push('See Closure Summary section for details.');
+            }
+        } else if (status === 'Cancelled') {
+            cls = 'task-v2-banner task-v2-banner--red';
+            title = 'Task has been cancelled';
+            var approval = task.gates && task.gates.approval ? task.gates.approval : null;
+            var rejectedByApproval = approval && approval.status === 'rejected';
+            if (!rejectedByApproval && approval && Array.isArray(approval.history)) {
+                rejectedByApproval = approval.history.some(function (entry) {
+                    return entry && entry.text && /reject/i.test(String(entry.text));
+                });
+            }
+            if (rejectedByApproval) {
+                lines.push('Cancelled after approval rejection.');
+            }
+            lines.push(task.cancellationReason || 'No cancellation reason provided.');
+        }
+
+        if (!title) {
+            return '';
+        }
+
+        return '<section class="' + cls + '">' +
+            '<h3>' + escapeHtml(title) + '</h3>' +
+            lines.map(function (line) {
+                return '<p>' + escapeHtml(line) + '</p>';
+            }).join('') +
+        '</section>';
+    }
+
+    function blockerBadgeText(sourceKind, dependencyType) {
+        if (sourceKind === 'completion') {
+            return 'Prevents completion';
+        }
+
+        if (dependencyType === 'FF') {
+            return 'Prevents completion';
+        }
+
+        return 'Prevents starting work';
+    }
+
+    function renderDependencyBlocker(item, sourceKind) {
+        var depType = item.dependencyType || '';
+        var depTypeLabel = dependencyTypeLabelMap[depType] || depType;
+
+        return '<div class="task-v2-blocker-item">' +
+            '<div class="task-v2-blocker-item__head">' +
+                '<span class="task-v2-blocker-icon">⊙</span>' +
+                '<div>' +
+                    '<strong>Depends on ' + escapeHtml(item.taskId || '-') + ' (' + escapeHtml(depTypeLabel) + ')</strong>' +
+                    '<span class="task-v2-pill task-v2-pill--danger">' + blockerBadgeText(sourceKind, depType) + '</span>' +
+                '</div>' +
+            '</div>' +
+            '<p>"' + escapeHtml(item.title || '-') + '" must be closed first.</p>' +
+        '</div>';
+    }
+
+    function renderSubtaskBlocker(item) {
+        var list = (item.items || []).map(function (subtask) {
+            return escapeHtml(subtask.id) + ': ' +
+                escapeHtml(subtask.title) +
+                ' (' + escapeHtml(statusLabel(subtask.status)) + ')';
+        }).join('; ');
+
+        return '<div class="task-v2-blocker-item">' +
+            '<div class="task-v2-blocker-item__head">' +
+                '<span class="task-v2-blocker-icon">⊙</span>' +
+                '<div>' +
+                    '<strong>' + String(item.count || 0) + ' subtasks still open</strong>' +
+                    '<span class="task-v2-pill task-v2-pill--danger">Prevents completion</span>' +
+                '</div>' +
+            '</div>' +
+            '<p>' + escapeHtml(list || '-') + '</p>' +
+        '</div>';
+    }
+
+    function renderBlockers(task) {
+        var blockers = task.blockers || {};
+        var starting = blockers.startingWork || [];
+        var completion = blockers.completion || [];
+        var total = starting.length + completion.length;
+
+        if (!total) {
+            return '';
+        }
 
         var parts = [];
-        STATUS_LIFECYCLE.forEach(function (step, i) {
-            var stateFlags = getStepState(i);
-            var stepCls = 'task-step';
-            var connectorCls = 'task-step-connector task-step-connector--future';
-            if (stateFlags.done) {
-                stepCls += ' task-step--done';
-                connectorCls = 'task-step-connector task-step-connector--done';
-            } else if (stateFlags.current) {
-                stepCls += ' task-step--current';
-                connectorCls = 'task-step-connector task-step-connector--current';
-            } else if (stateFlags.paused) {
-                stepCls += ' task-step--paused';
-                connectorCls = 'task-step-connector task-step-connector--paused';
-            } else {
-                stepCls += ' task-step--future';
-            }
 
-            var connector = i > 0 ? '<div class="' + connectorCls + '"></div>' : '';
-            var stepIndexContent = stateFlags.done
-                ? '<i class="bx bx-check task-step-index-icon" aria-hidden="true"></i>'
-                : String(i + 1);
-            parts.push(connector + '<div class="' + stepCls + '" role="listitem" title="' + esc(STATUS_LABELS[step] || step) + '"><span class="task-step-index">' + stepIndexContent + '</span><span class="task-step-label">' + esc(STATUS_LABELS[step] || step) + '</span></div>');
+        if (starting.length) {
+            parts.push('<h4 class="task-v2-blocker-group-title">Blocking starting work</h4>');
+            starting.forEach(function (item) {
+                parts.push(renderDependencyBlocker(item, 'starting'));
+            });
+        }
+
+        if (completion.length) {
+            parts.push('<h4 class="task-v2-blocker-group-title">Blocking completion</h4>');
+            completion.forEach(function (item) {
+                if (item.type === 'subtasks') {
+                    parts.push(renderSubtaskBlocker(item));
+                } else {
+                    parts.push(renderDependencyBlocker(item, 'completion'));
+                }
+            });
+        }
+
+        return '<section class="task-v2-card task-v2-blockers">' +
+            '<header>⊙ ' + total + ' blockers preventing actions</header>' +
+            '<div class="task-v2-blockers__body">' + parts.join('') + '</div>' +
+        '</section>';
+    }
+
+    function renderInlineForm(actionId, task) {
+        if (!task || !state.openForm || state.openForm !== actionId) {
+            return '';
+        }
+
+        if (task.status === 'Open' && actionId === 'plan') {
+            return '' +
+                '<form class="task-v2-inline-form" data-inline-form="plan">' +
+                    '<label for="inline-plan-date">' + escapeHtml(t('PlanDate', 'Plan date')) + '</label>' +
+                    '<input id="inline-plan-date" class="form-control" type="date" name="planDate" value="' + escapeHtml(state.forms.planDate) + '" required>' +
+                    '<div class="task-v2-inline-form__actions">' +
+                        '<button type="submit" class="btn btn-primary btn-sm me-2"' + (state.pending ? ' disabled' : '') + '>Save Plan</button>' +
+                        '<button type="button" class="btn btn-label-secondary btn-sm" data-close-inline-form="plan"' + (state.pending ? ' disabled' : '') + '>Cancel</button>' +
+                    '</div>' +
+                '</form>';
+        }
+
+        if (task.status === 'InProgress' && actionId === 'logTime') {
+            return '' +
+                '<form class="task-v2-inline-form" data-inline-form="logTime">' +
+                    '<label for="inline-log-date">Date</label>' +
+                    '<input id="inline-log-date" class="form-control" type="date" name="logDate" value="' + escapeHtml(state.forms.logDate) + '" required>' +
+                    '<label for="inline-log-description">Description</label>' +
+                    '<input id="inline-log-description" class="form-control" type="text" name="logDescription" value="' + escapeHtml(state.forms.logDescription) + '" placeholder="What did you work on?" required>' +
+                    '<label for="inline-log-duration">Duration</label>' +
+                    '<input id="inline-log-duration" class="form-control" type="text" name="logDuration" value="' + escapeHtml(state.forms.logDuration) + '" placeholder="e.g. 2h, 1.5h, 01:30" required>' +
+                    '<div class="task-v2-inline-form__actions">' +
+                        '<button type="submit" class="btn btn-primary btn-sm me-2"' + (state.pending ? ' disabled' : '') + '>Record Time</button>' +
+                        '<button type="button" class="btn btn-label-secondary btn-sm" data-close-inline-form="logTime"' + (state.pending ? ' disabled' : '') + '>Cancel</button>' +
+                    '</div>' +
+                '</form>';
+        }
+
+        if (task.status === 'InProgress' && actionId === 'requestInfo') {
+            var options = (task.directory || []).map(function (person) {
+                var selected = person.id === state.forms.requestRecipientId ? ' selected' : '';
+                return '<option value="' + escapeHtml(person.id) + '"' + selected + '>' + escapeHtml(person.name) + '</option>';
+            }).join('');
+
+            return '' +
+                '<form class="task-v2-inline-form" data-inline-form="requestInfo">' +
+                    '<label for="inline-request-recipient">Recipient</label>' +
+                    '<select id="inline-request-recipient" class="form-select" name="requestRecipientId" required>' + options + '</select>' +
+                    '<label for="inline-request-question">Question</label>' +
+                    '<textarea id="inline-request-question" class="form-control" rows="3" name="requestQuestion" placeholder="What information is needed?" required>' + escapeHtml(state.forms.requestQuestion) + '</textarea>' +
+                    '<div class="task-v2-inline-form__actions">' +
+                        '<button type="submit" class="btn btn-primary btn-sm me-2"' + (state.pending ? ' disabled' : '') + '>Send Request</button>' +
+                        '<button type="button" class="btn btn-label-secondary btn-sm" data-close-inline-form="requestInfo"' + (state.pending ? ' disabled' : '') + '>Cancel</button>' +
+                    '</div>' +
+                '</form>';
+        }
+
+        if (task.status === 'InProgress' && actionId === 'complete') {
+            return '' +
+                '<form class="task-v2-inline-form" data-inline-form="complete">' +
+                    '<label for="inline-complete-summary">Closure Summary (optional)</label>' +
+                    '<textarea id="inline-complete-summary" class="form-control" rows="4" name="closureSummary" placeholder="Describe what was done...">' + escapeHtml(state.forms.closureSummary) + '</textarea>' +
+                    '<div class="task-v2-inline-form__actions">' +
+                        '<button type="submit" class="btn btn-primary btn-sm me-2"' + (state.pending ? ' disabled' : '') + '>Complete</button>' +
+                        '<button type="button" class="btn btn-label-secondary btn-sm" data-close-inline-form="complete"' + (state.pending ? ' disabled' : '') + '>Cancel</button>' +
+                    '</div>' +
+                '</form>';
+        }
+
+        return '';
+    }
+
+    function renderActionButton(task, action, lane) {
+        var description = getActionDescription(task, action.id);
+        var disabled = (action.isBlocked || state.pending) ? 'disabled' : '';
+
+        var body = '' +
+            '<div class="d-flex align-items-center mb-2">' +
+                '<button type="button" class="' + getButtonClass(action.id, lane) + ' me-2" data-action-id="' + escapeHtml(action.id) + '" ' + disabled + '>' +
+                    escapeHtml(action.label) +
+                '</button>' +
+            '</div>' +
+            (description ? '<p class="text-muted small mb-1">' + escapeHtml(description) + '</p>' : '');
+
+        if (action.isBlocked && action.blockReason) {
+            body += '<p class="text-danger small mb-0"><i class="bx bx-error-circle me-1"></i>' + escapeHtml(action.label) + ': ' + escapeHtml(action.blockReason) + '</p>';
+        }
+
+        return '<div class="mb-4">' + body + renderInlineForm(action.id, task) + '</div>';
+    }
+
+    function renderChecklistHint(task) {
+        var checklist = task.checklist || { total: 0, completed: 0 };
+        var remaining = Math.max(0, (checklist.total || 0) - (checklist.completed || 0));
+
+        if (!remaining) {
+            return '';
+        }
+
+        if (task.status === 'InProgress') {
+            return '<p class="task-v2-checklist-hint task-v2-checklist-hint--warning">⚠ ' + remaining + ' of ' + checklist.total + ' checklist items incomplete (non-blocking).</p>';
+        }
+
+        if (task.status === 'PendingReview') {
+            return '<p class="task-v2-checklist-hint task-v2-checklist-hint--info">ℹ ' + remaining + ' of ' + checklist.total + ' checklist items incomplete (non-blocking).</p>';
+        }
+
+        return '';
+    }
+
+    function shouldRenderDecisionNote(task) {
+        if (!task || !task.availableActions) {
+            return false;
+        }
+
+        var hasDecisionActions = task.availableActions.some(function (action) {
+            return action.id === 'approve' || action.id === 'reject';
         });
-        if (isOffFlow && status !== 'Cancelled') {
-            var badgeCls = 'bg-label-warning';
-            parts.push('<div class="task-step-offflow ms-3 flex-shrink-0"><span class="badge ' + badgeCls + '">' + esc(STATUS_LABELS[status] || status) + '</span></div>');
-        }
-        el.taskStepBar.innerHTML = parts.join('');
-    };
 
-    var renderDescription = function () {
-        if (el.taskDescription) { el.taskDescription.textContent = state.item.description || '-'; }
-    };
-
-    var renderSubtasks = function () {
-        if (!el.taskSubtasksList) { return; }
-        var subtasks = state.item.subtasks || [];
-        if (!subtasks.length) {
-            el.taskSubtasksList.innerHTML = '<li class="text-muted small">-</li>';
-            if (el.taskSubtasksProgress) { el.taskSubtasksProgress.textContent = '0/0 ' + (l10n.ChecklistCompleted || 'completed') + ' (0%)'; }
-            return;
-        }
-        var doneCount = subtasks.filter(function (s) { return s.done; }).length;
-        var percent = Math.round((doneCount / subtasks.length) * 100);
-        if (el.taskSubtasksProgress) { el.taskSubtasksProgress.textContent = doneCount + '/' + subtasks.length + ' ' + (l10n.ChecklistCompleted || 'completed') + ' (' + percent + '%)'; }
-        el.taskSubtasksList.innerHTML = subtasks.map(function (s) {
-            var iconCls = s.done ? 'bx-check-circle text-success' : 'bx-circle text-muted';
-            var textCls = s.done ? 'text-muted text-decoration-line-through' : '';
-            return '<li class="d-flex align-items-center gap-2 py-1"><i class="bx ' + iconCls + ' icon-base flex-shrink-0"></i><span class="small ' + textCls + '">' + esc(s.title) + '</span></li>';
-        }).join('');
-    };
-
-    var renderActivity = function () {
-        if (!el.taskActivityFeed) { return; }
-        var activity = state.item.activity || [];
-        if (el.taskActivityCount) { el.taskActivityCount.textContent = String(activity.length); }
-        if (!activity.length) {
-            el.taskActivityFeed.innerHTML = '<p class="text-muted small mb-0">-</p>';
-            return;
-        }
-        el.taskActivityFeed.innerHTML = activity.map(function (a) {
-            var isSystem = a.type === 'status_change';
-            var iconCls  = isSystem ? 'bx-info-circle text-info' : 'bx-message-rounded text-primary';
-            return '<div class="task-activity-item d-flex gap-2 mb-2"><div class="flex-shrink-0 mt-1"><i class="bx ' + iconCls + ' icon-base"></i></div><div class="flex-grow-1"><p class="mb-0 small">' + esc(a.text) + '</p><span class="text-muted" style="font-size:0.7rem;">' + esc(a.author) + ' · ' + formatDate(a.timestamp) + '</span></div></div>';
-        }).join('');
-        el.taskActivityFeed.scrollTop = el.taskActivityFeed.scrollHeight;
-    };
-
-    var renderActionsPanel = function () {
-        if (!el.taskActionsPanel) { return; }
-        var actions = getStatusActions(state.item);
-        if (el.taskRejectReviewForm) { el.taskRejectReviewForm.classList.add('d-none'); }
-
-        if (!actions.length) {
-            if (el.taskPrimaryActions) { el.taskPrimaryActions.innerHTML = ''; }
-            if (el.taskSecondaryActions) { el.taskSecondaryActions.innerHTML = '<p class="text-muted small mb-0">-</p>'; }
-            if (el.taskDestructiveActions) { el.taskDestructiveActions.innerHTML = ''; }
-            if (el.taskDestructiveDivider) { el.taskDestructiveDivider.classList.add('d-none'); }
-            return;
+        if (!hasDecisionActions) {
+            return false;
         }
 
-        var primarySet = {
-            accept: true,
-            plan: true,
-            startWork: true,
-            approve: true,
-            review: true,
-            followUp: true,
-            continueWork: true,
-            investigate: true,
-            inspectBlocker: true,
-            viewSummary: true,
-            viewReason: true
-        };
-        var destructiveSet = { reject: true, rejectReview: true };
+        if (task.status === 'PendingApproval') {
+            return task.userRole === 'approver';
+        }
 
-        var toButton = function (action) {
-            var def = ACTION_DEFS[action];
-            if (!def) { return null; }
-            return '<button type="button" class="btn btn-sm ' + def.cls + ' d-flex align-items-center justify-content-center gap-1 w-100" data-task-action="' + action + '"><i class="bx ' + def.icon + ' icon-base"></i>' + esc(def.label) + '</button>';
-        };
+        if (task.status === 'PendingReview') {
+            return task.userRole === 'reviewer';
+        }
 
-        var primaryButtons = [];
-        var secondaryButtons = [];
-        var destructiveButtons = [];
+        return false;
+    }
 
+    function renderActions(task) {
+        if (task.status === 'Closed' || task.status === 'Cancelled') {
+            return '';
+        }
+
+        var actions = task.availableActions || [];
+        var layout = getActionLayout(task.status);
+        var actionsById = {};
         actions.forEach(function (action) {
-            var button = toButton(action);
-            if (!button) { return; }
-            if (primarySet[action]) {
-                primaryButtons.push(button);
-                return;
-            }
-            if (destructiveSet[action]) {
-                destructiveButtons.push(button);
-                return;
-            }
-            secondaryButtons.push(button);
+            actionsById[action.id] = action;
         });
 
-        if (el.taskPrimaryActions) { el.taskPrimaryActions.innerHTML = primaryButtons.join(''); }
-        if (el.taskSecondaryActions) {
-            var hasRequestInfo = actions.indexOf('requestInfo') >= 0;
-            var hasReassign = actions.indexOf('reassign') >= 0;
-            if (hasRequestInfo && hasReassign) {
-                el.taskSecondaryActions.className = 'row g-2';
-                el.taskSecondaryActions.innerHTML = secondaryButtons.map(function (btn, i) {
-                    var actionName = btn.indexOf('data-task-action="requestInfo"') >= 0 ? 'requestInfo'
-                        : (btn.indexOf('data-task-action="reassign"') >= 0 ? 'reassign' : '');
-                    if (actionName === 'requestInfo' || actionName === 'reassign') {
-                        return '<div class="col-6">' + btn + '</div>';
-                    }
-                    return '<div class="col-12">' + btn + '</div>';
-                }).join('');
-            } else {
-                el.taskSecondaryActions.className = 'd-grid gap-2';
-                el.taskSecondaryActions.innerHTML = secondaryButtons.join('');
-            }
-        }
-        if (el.taskDestructiveActions) { el.taskDestructiveActions.innerHTML = destructiveButtons.join(''); }
-        if (el.taskDestructiveDivider) { el.taskDestructiveDivider.classList.toggle('d-none', destructiveButtons.length === 0); }
-    };
+        var noActionsForPendingApproval = task.status === 'PendingApproval' && task.userRole !== 'approver' && task.userRole !== 'assignee';
+        var noActionsForPendingAcceptance = task.status === 'PendingAcceptance' && task.userRole !== 'assignee';
+        var noActionsForPlanned = task.status === 'Planned' && task.userRole !== 'assignee';
+        var noActionsForWaitingForInformation = task.status === 'WaitingForInformation' && task.userRole !== 'assignee';
+        var noActionsForPendingReview = task.status === 'PendingReview' && task.userRole !== 'reviewer';
 
-    var renderTimeLog = function () {
-        if (el.taskTimeEntryCard && el.taskTimeEntryCard.classList.contains('d-none')) { return; }
-        var estimatedMinutes = typeof state.item.estimatedMinutes === 'number' ? state.item.estimatedMinutes : null;
-        var setTimeSummary = function (totalMinutes) {
-            if (el.taskLoggedSummary) { el.taskLoggedSummary.textContent = formatMinutes(totalMinutes); }
-            if (el.taskEstimatedSummary) { el.taskEstimatedSummary.textContent = estimatedMinutes === null ? (l10n.NoEstimate || 'No estimate') : formatMinutes(estimatedMinutes); }
-            if (el.taskVarianceSummary) {
-                if (estimatedMinutes === null) {
-                    el.taskVarianceSummary.textContent = '-';
-                } else {
-                    var diff = totalMinutes - estimatedMinutes;
-                    if (diff > 0) {
-                        el.taskVarianceSummary.textContent = (l10n.Overrun || 'Overrun') + ': ' + formatMinutes(diff);
-                    } else if (diff < 0) {
-                        el.taskVarianceSummary.textContent = (l10n.UnderEstimateBy || 'Under estimate by') + ' ' + formatMinutes(Math.abs(diff));
-                    } else {
-                        el.taskVarianceSummary.textContent = l10n.OnEstimate || 'On estimate';
-                    }
-                }
-            }
-            if (el.taskRemainingSummary) {
-                if (estimatedMinutes === null) {
-                    el.taskRemainingSummary.textContent = '-';
-                } else {
-                    var remaining = estimatedMinutes - totalMinutes;
-                    if (remaining < 0) {
-                        el.taskRemainingSummary.textContent = (l10n.Overrun || 'Overrun') + ' ' + formatMinutes(Math.abs(remaining));
-                    } else {
-                        el.taskRemainingSummary.textContent = formatMinutes(remaining);
-                    }
-                }
-            }
-        };
-
-        if (!el.taskTimeLogList) { return; }
-        if (!state.timeEntries.length) {
-            el.taskTimeLogList.innerHTML = '<li class="text-muted small">' + esc(l10n.NoTimeLogged || 'No time logged yet.') + '</li>';
-            if (el.taskTotalTime) { el.taskTotalTime.textContent = '0h 0m'; }
-            setTimeSummary(0);
-            return;
+        if (noActionsForPendingApproval) {
+            return '<section class="task-v2-card task-v2-actions">' +
+                '<header>AVAILABLE ACTIONS</header>' +
+                '<div class="task-v2-actions__body">' +
+                    '<p class="task-v2-awaiting-note">Awaiting approval from ' +
+                        escapeHtml(task.approver && task.approver.name ? task.approver.name : 'approver') +
+                        ' before this task can be assigned.</p>' +
+                '</div>' +
+            '</section>';
         }
-        el.taskTimeLogList.innerHTML = state.timeEntries.map(function (e) {
-            return '<li class="d-flex gap-2 align-items-start mb-1 small"><i class="bx bx-time text-muted icon-base flex-shrink-0 mt-1"></i><div><span class="fw-semibold">' + e.hours + 'h ' + e.minutes + 'm</span>' + (e.note ? '<span class="text-muted ms-1">· ' + esc(e.note) + '</span>' : '') + '<div class="text-muted" style="font-size:0.7rem;">' + esc(e.loggedAt) + '</div></div></li>';
+
+        if (noActionsForPendingAcceptance) {
+            return '<section class="task-v2-card task-v2-actions">' +
+                '<header>AVAILABLE ACTIONS</header>' +
+                '<div class="task-v2-actions__body">' +
+                    '<p class="task-v2-awaiting-note">Waiting for assignee acceptance.</p>' +
+                '</div>' +
+            '</section>';
+        }
+
+        if (noActionsForPlanned) {
+            return '<section class="task-v2-card task-v2-actions">' +
+                '<header>AVAILABLE ACTIONS</header>' +
+                '<div class="task-v2-actions__body">' +
+                    '<p class="task-v2-awaiting-note">Task is planned and waiting for execution.</p>' +
+                '</div>' +
+            '</section>';
+        }
+
+        if (noActionsForWaitingForInformation) {
+            return '<section class="task-v2-card task-v2-actions">' +
+                '<header>AVAILABLE ACTIONS</header>' +
+                '<div class="task-v2-actions__body">' +
+                    '<p class="task-v2-awaiting-note">Task is paused and waiting for information.</p>' +
+                '</div>' +
+            '</section>';
+        }
+
+        if (noActionsForPendingReview) {
+            return '<section class="task-v2-card task-v2-actions">' +
+                '<header>AVAILABLE ACTIONS</header>' +
+                '<div class="task-v2-actions__body">' +
+                    '<p class="task-v2-awaiting-note">Work completed — awaiting reviewer decision.</p>' +
+                '</div>' +
+            '</section>';
+        }
+
+        var rendered = [];
+
+        function renderLane(laneName, ids) {
+            var laneItems = ids
+                .map(function (id) { return actionsById[id]; })
+                .filter(function (x) { return !!x; })
+                .map(function (action) { return renderActionButton(task, action, laneName); })
+                .join('');
+
+            if (!laneItems) {
+                return '';
+            }
+
+            return '<div class="task-v2-action-lane task-v2-action-lane--' + laneName + '">' + laneItems + '</div>';
+        }
+
+        rendered.push(renderLane('primary', layout.primary));
+        rendered.push(renderLane('secondary', layout.secondary));
+        rendered.push(renderLane('other', layout.other));
+
+        var content = rendered.join('');
+        if (!content) {
+            content = '<p class="task-v2-empty">No actions available for this status and role.</p>';
+        }
+
+        var decisionNote = shouldRenderDecisionNote(task)
+            ? '<div class="task-v2-decision-note">' +
+                '<label>Add decision note (optional)</label>' +
+                '<textarea class="form-control" rows="3" name="decisionNote" placeholder="Explain your decision for future reference...">' + escapeHtml(state.decisionNote) + '</textarea>' +
+                '<small>This note will be recorded in the activity log.</small>' +
+              '</div>'
+            : '';
+
+        return '<section class="task-v2-card task-v2-actions">' +
+            '<header>AVAILABLE ACTIONS</header>' +
+            '<div class="task-v2-actions__body">' +
+                content +
+                renderChecklistHint(task) +
+                decisionNote +
+            '</div>' +
+        '</section>';
+    }
+
+    function renderStepper(task) {
+        var lifecycle = task.lifecycle || { steps: [] };
+        var steps = lifecycle.steps || [];
+
+        var html = steps.map(function (step, index) {
+            var stateClass = 'task-v2-step task-v2-step--' + step.state;
+            var marker = step.state === 'completed'
+                ? '✓'
+                : String(index + 1);
+
+            var connectorClass = 'task-v2-step-connector';
+            if (index > 0) {
+                var prev = steps[index - 1];
+                connectorClass += prev.state === 'completed' ? ' task-v2-step-connector--done' : ' task-v2-step-connector--upcoming';
+            }
+
+            return '' +
+                (index > 0 ? '<div class="' + connectorClass + '"></div>' : '') +
+                '<div class="' + stateClass + '">' +
+                    '<span class="task-v2-step__index">' + marker + '</span>' +
+                    '<span class="task-v2-step__label">' + escapeHtml(step.label) + '</span>' +
+                '</div>';
         }).join('');
-        var total = totalLoggedMinutes();
-        var th = Math.floor(total / 60);
-        var tm = total % 60;
-        if (el.taskTotalTime) { el.taskTotalTime.textContent = th + 'h ' + tm + 'm'; }
-        setTimeSummary(total);
-    };
 
-    var renderTimeEntryState = function () {
-        var status = state.item ? state.item.status : '';
-        var isInProgress = status === 'In Progress';
-        var isInReview = status === 'Pending Review';
-        var isVisible = isInProgress || isInReview;
-        var isReadOnly = isInReview;
+        var pauseLine = lifecycle.isPaused
+            ? '<p class="task-v2-stepper-line task-v2-stepper-line--paused">⊙ Currently paused: Waiting for Information</p>'
+            : '';
 
-        if (el.taskTimeEntryCard) {
-            el.taskTimeEntryCard.classList.toggle('d-none', !isVisible);
+        var cancelLine = lifecycle.isCancelled
+            ? '<p class="task-v2-stepper-line task-v2-stepper-line--cancelled">✕ Task cancelled</p>'
+            : '';
+
+        return '<section class="task-v2-card task-v2-stepper">' +
+            '<div class="task-v2-stepper__track">' + html + '</div>' +
+            pauseLine +
+            cancelLine +
+        '</section>';
+    }
+
+    function sectionCard(id, title, body, subtitle) {
+        if (!body) {
+            return '';
         }
 
-        if (!isVisible) {
-            if (state.timerActive) { stopTimer(); }
+        var collapsed = isCollapsed(id);
+
+        return '<div class="card mb-4">' +
+            '<div class="card-header d-flex justify-content-between align-items-center cursor-pointer" data-toggle-section="' + escapeHtml(id) + '">' +
+                '<div class="d-flex flex-column">' +
+                    '<h5 class="card-title mb-0">' + escapeHtml(title) + '</h5>' +
+                    (subtitle ? '<small class="text-muted">' + escapeHtml(subtitle) + '</small>' : '') +
+                '</div>' +
+                '<i class="bx ' + (collapsed ? 'bx-chevron-right' : 'bx-chevron-down') + '"></i>' +
+            '</div>' +
+            '<div class="card-body ' + (collapsed ? 'd-none' : '') + '">' + body + '</div>' +
+        '</div>';
+    }
+
+    function renderDescriptionAndContext(task) {
+        if (task && task.status === 'PendingApproval') {
+            return '';
+        }
+
+        var body = '<div class="task-v2-two-col">' +
+            '<article>' +
+                '<h4>Description</h4>' +
+                '<p>' + escapeHtml(task.description || '-') + '</p>' +
+            '</article>' +
+            '<article>' +
+                '<h4>Business Context</h4>' +
+                '<p>' + escapeHtml(task.businessContext || '-') + '</p>' +
+            '</article>' +
+        '</div>';
+
+        return sectionCard('description-context', 'Description + Business Context', body);
+    }
+
+    function renderBusinessContextReview(task) {
+        if (task.status !== 'PendingApproval') {
+            return '';
+        }
+
+        var body = '<div class="task-v2-highlight">' +
+            '<h4>Review before deciding</h4>' +
+            '<p>' + escapeHtml(task.businessContext || '-') + '</p>' +
+        '</div>';
+
+        return sectionCard('business-context-review', 'Business Context', body);
+    }
+
+    function renderDependencySummary(task) {
+        if (task.status !== 'PendingApproval') {
+            return '';
+        }
+
+        var blockedBy = (task.dependencies || []).filter(function (dep) {
+            return dep.relation === 'BlockedBy';
+        });
+
+        var body = blockedBy.length
+            ? '<ul class="task-v2-simple-list">' +
+                blockedBy.map(function (dep) {
+                    return '<li>' +
+                        '<strong>' + escapeHtml(dep.id) + '</strong> · ' +
+                        escapeHtml(dep.title) + ' (' + escapeHtml(dependencyTypeLabelMap[dep.type] || dep.type) + ')' +
+                    '</li>';
+                }).join('') +
+              '</ul>'
+            : '<p class="task-v2-empty">No dependencies.</p>';
+
+        return sectionCard('dependency-summary', 'Dependency Summary', body);
+    }
+
+    function renderClosureSummary(task) {
+        if (task.status !== 'PendingReview' && task.status !== 'Closed' && task.status !== 'Cancelled') {
+            return '';
+        }
+
+        if (task.status === 'Cancelled' && !task.closureSummary) {
+            return '';
+        }
+
+        var body = task.closureSummary
+            ? '<p>' + escapeHtml(task.closureSummary) + '</p>'
+            : '<p class="task-v2-empty">Closure summary is not provided.</p>';
+
+        return sectionCard('closure-summary', 'Closure Summary', body);
+    }
+
+    function renderSubtasks(task) {
+        var subtasks = task.subtasks || [];
+        if (task.status === 'PendingApproval' && subtasks.length === 0) {
+            return '';
+        }
+
+        var openCount = subtasks.filter(function (subtask) {
+            return subtask.status !== 'Closed' && subtask.status !== 'Cancelled';
+        }).length;
+
+        var summary = subtasks.length + ' total · ' + openCount + ' open';
+
+        var allClosedBanner = openCount === 0 && subtasks.length > 0
+            ? '<div class="task-v2-good-banner">All subtasks completed — no subtask-related blockers.</div>'
+            : '';
+
+        var body = subtasks.length
+            ? allClosedBanner +
+                '<div class="task-v2-list">' + subtasks.map(function (subtask) {
+                    return '<div class="task-v2-list-row">' +
+                        '<div class="task-v2-list-row__main">' +
+                            '<strong>' + escapeHtml(subtask.id) + '</strong> ' + escapeHtml(subtask.title) +
+                        '</div>' +
+                        '<div class="task-v2-list-row__meta">' +
+                            '<span class="task-v2-avatar task-v2-avatar--sm">' + escapeHtml(subtask.assignee && subtask.assignee.initials ? subtask.assignee.initials : '--') + '</span>' +
+                            '<span class="' + statusBadgeClass(subtask.status) + '">● ' + escapeHtml(statusLabel(subtask.status)) + '</span>' +
+                        '</div>' +
+                    '</div>';
+                }).join('') + '</div>'
+            : '<p class="task-v2-empty">No subtasks.</p>';
+
+        return sectionCard('subtasks', 'Subtasks', body, summary);
+    }
+
+    function renderChecklist(task) {
+        var checklist = task.checklist || { total: 0, completed: 0, items: [] };
+        var total = checklist.total || 0;
+        var completed = checklist.completed || 0;
+        var progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        var list = (checklist.items || []).map(function (item) {
+            return '<li class="task-v2-check-row">' +
+                '<span>' + (item.isCompleted ? '☑' : '☐') + '</span>' +
+                '<span>' + escapeHtml(item.text) + '</span>' +
+            '</li>';
+        }).join('');
+
+        var body = '' +
+            '<p class="task-v2-muted">This checklist does not block completion. Incomplete items are kept for reference.</p>' +
+            '<div class="task-v2-progress-wrap">' +
+                '<div class="task-v2-progress"><span style="width:' + progress + '%"></span></div>' +
+                '<small>' + progress + '%</small>' +
+            '</div>' +
+            '<ul class="task-v2-checklist">' + (list || '<li class="task-v2-empty">No checklist items.</li>') + '</ul>';
+
+        return sectionCard('checklist', 'Checklist', body, completed + '/' + total + ' · Non-blocking');
+    }
+
+    function renderDependencyLine(dep) {
+        var relationBadge = dep.relation === 'BlockedBy'
+            ? '<span class="task-v2-pill task-v2-pill--danger">BLOCKED BY</span>'
+            : '<span class="task-v2-pill task-v2-pill--info">BLOCKS</span>';
+
+        var blockerBadge = '';
+        if (dep.relation === 'BlockedBy' && dep.isActive) {
+            if (dep.type === 'FF') {
+                blockerBadge = '<span class="task-v2-pill task-v2-pill--danger">Prevents completion</span>';
+            } else if (dep.type === 'FS' || dep.type === 'SS') {
+                blockerBadge = '<span class="task-v2-pill task-v2-pill--danger">Prevents starting work</span>';
+            }
+        }
+
+        return '<div class="task-v2-dep-row">' +
+            '<div class="task-v2-dep-row__left">' +
+                relationBadge +
+                '<div><strong>' + escapeHtml(dep.title) + '</strong></div>' +
+                '<small>' + escapeHtml(dep.id) + ' · ' + escapeHtml(dependencyTypeLabelMap[dep.type] || dep.type) + '</small>' +
+            '</div>' +
+            '<div class="task-v2-dep-row__right">' +
+                blockerBadge +
+                '<span class="' + statusBadgeClass(dep.status) + '">● ' + escapeHtml(statusLabel(dep.status)) + '</span>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function renderDependencies(task) {
+        var dependencies = task.dependencies || [];
+        if (task.status === 'PendingApproval' && dependencies.length === 0) {
+            return '';
+        }
+
+        var blockingCount = dependencies.filter(function (dep) {
+            if (!(dep.relation === 'BlockedBy' && dep.isActive)) {
+                return false;
+            }
+            return dep.type === 'FS' || dep.type === 'SS' || dep.type === 'FF' || dep.type === 'SF';
+        }).length;
+
+        var body = dependencies.length
+            ? '<div class="task-v2-list">' + dependencies.map(renderDependencyLine).join('') + '</div>'
+            : '<p class="task-v2-empty">No dependencies.</p>';
+
+        return sectionCard('dependencies', 'Dependencies', body, dependencies.length + ' total · ' + blockingCount + ' blocking');
+    }
+
+    function renderInformationRequests(task) {
+        var requests = task.informationRequests || [];
+        if (task.status === 'PendingApproval' && requests.length === 0) {
+            return '';
+        }
+
+        var waitingCount = requests.filter(function (req) { return req.status === 'Waiting'; }).length;
+
+        var pauseWarning = task.timeLogged && task.timeLogged.isPaused
+            ? '<p class="task-v2-warning">⚠ Open requests are blocking task completion. Recipients must answer before the task can be completed.</p>'
+            : '';
+
+        var currentUserId = actingAs || '';
+
+        var body = requests.length
+            ? pauseWarning +
+                '<div class="task-v2-list">' + requests.map(function (req) {
+                    var answerBlock = req.answer
+                        ? '<blockquote>' + escapeHtml(req.answer) + '<footer>Answered ' + escapeHtml(formatDate(req.answeredAt)) + '</footer></blockquote>'
+                        : '';
+
+                    var isRecipient = currentUserId && req.to && req.to.id &&
+                        req.to.id.toLowerCase() === currentUserId.toLowerCase();
+                    var answerBtn = (req.status === 'Waiting' && isRecipient)
+                        ? '<button class="btn btn-sm btn-outline-primary mt-2" data-ir-answer-id="' + escapeHtml(req.id) + '">Answer</button>'
+                        : '';
+
+                    return '<div class="task-v2-info-row">' +
+                        '<div class="task-v2-info-row__head">' +
+                            '<strong>' + escapeHtml(req.from && req.from.name ? req.from.name : '-') + ' → ' + escapeHtml(req.to && req.to.name ? req.to.name : '-') + '</strong>' +
+                            '<span class="' + statusBadgeClass(req.status === 'Waiting' ? 'WaitingForInformation' : 'Closed') + '">' + escapeHtml(req.status) + '</span>' +
+                        '</div>' +
+                        '<p>' + escapeHtml(req.question) + '</p>' +
+                        answerBlock +
+                        answerBtn +
+                    '</div>';
+                }).join('') +
+                '</div>'
+            : '<p class="task-v2-empty">No information requests.</p>';
+
+        return sectionCard('information-requests', 'Information Requests', body, waitingCount + ' waiting');
+    }
+
+    function renderGates(task) {
+        var approval = task.gates && task.gates.approval ? task.gates.approval : { required: false, status: 'not_required', history: [] };
+        var review = task.gates && task.gates.review ? task.gates.review : { required: false, status: 'not_required' };
+
+        var approvalCardClass = approval.required && task.status === 'PendingApproval'
+            ? 'task-v2-gate task-v2-gate--active'
+            : 'task-v2-gate';
+
+        var approvalHistory = approval.history && approval.history.length
+            ? '<div class="task-v2-gate-history"><h5>APPROVAL HISTORY</h5>' +
+                approval.history.map(function (entry) {
+                    return '<p>' + escapeHtml(formatDate(entry.timestamp)) + ' — ' + escapeHtml(entry.text) + '</p>';
+                }).join('') +
+              '</div>'
+            : '';
+
+        var reviewHistory = review.history && review.history.length
+            ? '<div class="task-v2-gate-history"><h5>REVIEW HISTORY</h5>' +
+                review.history.map(function (entry) {
+                    return '<p>' + escapeHtml(formatDate(entry.timestamp)) + ' — ' + escapeHtml(entry.text) + '</p>';
+                }).join('') +
+              '</div>'
+            : '';
+
+        var body = '' +
+            '<div class="task-v2-gates-grid">' +
+                '<article class="' + approvalCardClass + '">' +
+                    '<h4>Approval Gate ' + (approval.required && task.status === 'PendingApproval' ? '<span class="task-v2-pill task-v2-pill--violet">ACTIVE</span>' : '') + '</h4>' +
+                    '<p>' + (approval.required ? 'Required' : 'Not required') + '</p>' +
+                    '<p>' + escapeHtml(task.approver && task.approver.name ? task.approver.initials + ' ' + task.approver.name : '-') + '</p>' +
+                    '<small>Approve → Pending Acceptance · Reject → Cancelled</small>' +
+                '</article>' +
+                '<article class="task-v2-gate">' +
+                    '<h4>Review Gate</h4>' +
+                    '<p>' + (review.required ? 'Required' : 'Not required') + '</p>' +
+                    '<p>' + escapeHtml(task.reviewer && task.reviewer.name ? task.reviewer.initials + ' ' + task.reviewer.name : '-') + '</p>' +
+                    '<small>Complete → Pending Review · Approve → Closed · Reject → In Progress</small>' +
+                '</article>' +
+            '</div>' +
+            approvalHistory +
+            reviewHistory;
+
+        return sectionCard('gates', 'Review & Approval Gates', body);
+    }
+
+    function renderTimeLogged(task) {
+        var entries = task.timeLogged && task.timeLogged.entries ? task.timeLogged.entries : [];
+        var pauseWarning = task.timeLogged && task.timeLogged.isPaused
+            ? '<p class="task-v2-warning">⚠ Time logging is paused while this task is waiting for information.</p>'
+            : '';
+
+        var body = entries.length
+            ? pauseWarning +
+                '<div class="task-v2-list">' + entries.map(function (entry) {
+                    return '<div class="task-v2-list-row">' +
+                        '<div class="task-v2-list-row__main">' +
+                            '<strong>' + escapeHtml(formatDate(entry.date)) + '</strong> ' + escapeHtml(entry.description) +
+                        '</div>' +
+                        '<div class="task-v2-list-row__meta"><strong>' + escapeHtml(entry.durationFormatted) + '</strong></div>' +
+                    '</div>';
+                }).join('') + '</div>'
+            : '<p class="task-v2-empty">No time entries.</p>';
+
+        return sectionCard('time-logged', 'Time Logged · ' + escapeHtml(task.timeLogged ? task.timeLogged.totalFormatted : '0h'), body);
+    }
+
+    function renderActivity(task) {
+        var activity = task.activity || [];
+
+        var body = activity.length
+            ? '<ul class="timeline ms-1 mb-0">' + activity.map(function (item) {
+                var statusBadge = item.statusBadge
+                    ? '<span class="' + statusBadgeClass(item.statusBadge) + ' ms-2">' + escapeHtml(statusLabel(item.statusBadge)) + '</span>'
+                    : '';
+                var activityIcon = iconForActivity(item.type);
+                var activityIconClass = iconClassForActivity(item.type);
+
+                return '<li class="timeline-item timeline-item-transparent">' +
+                    '<span class="timeline-point timeline-point-primary"></span>' +
+                    '<div class="timeline-event">' +
+                        '<div class="timeline-header mb-1">' +
+                            '<h6 class="mb-0">' + escapeHtml(item.actor && item.actor.name ? item.actor.name : '-') + statusBadge + '</h6>' +
+                            '<small class="text-muted">' + escapeHtml(formatDateTime(item.timestamp)) + '</small>' +
+                        '</div>' +
+                        '<p class="mb-0"><span class="task-v2-activity-inline-icon ' + activityIconClass + '">' + escapeHtml(activityIcon) + '</span>' + escapeHtml(item.text) + '</p>' +
+                    '</div>' +
+                '</li>';
+            }).join('') + '</ul>'
+            : '<p class="text-muted mb-0">No activity entries.</p>';
+
+        return sectionCard('activity', 'Activity (' + activity.length + ')', body);
+    }
+
+    function renderMetadata(task) {
+        var metadata = task.metadata || {};
+        var tags = metadata.tags || [];
+        var watchers = metadata.watchers || [];
+        var effectivePlanDate = metadata.planDate || task.planDate;
+        var planDateField = effectivePlanDate
+            ? '<div><span>PLAN DATE</span><strong>' + escapeHtml(formatDate(effectivePlanDate)) + '</strong></div>'
+            : '';
+
+        var body = '' +
+            '<div class="task-v2-metadata-grid">' +
+                '<div><span>DOMAIN</span><strong>' + escapeHtml(metadata.domain || '-') + '</strong></div>' +
+                '<div><span>SOURCE</span><strong>' + escapeHtml(metadata.source || '-') + '</strong></div>' +
+                '<div><span>RELATION</span><strong>' + escapeHtml(metadata.relation || '-') + '</strong></div>' +
+                planDateField +
+                '<div><span>CREATED</span><strong>' + escapeHtml(formatDate(metadata.createdAt)) + '</strong></div>' +
+                '<div><span>LAST UPDATED</span><strong>' + escapeHtml(formatDateTime(metadata.lastUpdatedAt)) + '</strong></div>' +
+            '</div>' +
+            '<div class="task-v2-meta-group">' +
+                '<h5>TAGS</h5>' +
+                '<div class="task-v2-chip-wrap">' +
+                    (tags.length ? tags.map(function (tag) {
+                        return '<span class="task-v2-pill task-v2-pill--neutral">' + escapeHtml(tag) + '</span>';
+                    }).join('') : '<span class="task-v2-empty">No tags.</span>') +
+                '</div>' +
+            '</div>' +
+            '<div class="task-v2-meta-group">' +
+                '<h5>WATCHERS</h5>' +
+                '<div class="task-v2-chip-wrap">' +
+                    (watchers.length ? watchers.map(function (watcher) {
+                        return '<span class="task-v2-avatar task-v2-avatar--sm">' + escapeHtml(watcher.initials) + '</span>';
+                    }).join('') : '<span class="task-v2-empty">No watchers.</span>') +
+                '</div>' +
+            '</div>';
+
+        return sectionCard('metadata', 'Metadata', body);
+    }
+
+    function renderSections(task) {
+        if (task && task.status === 'InProgress') {
+            return '' +
+                renderBusinessContextReview(task) +
+                renderDependencySummary(task) +
+                renderDescriptionAndContext(task) +
+                renderClosureSummary(task) +
+                renderSubtasks(task) +
+                renderDependencies(task) +
+                renderInformationRequests(task) +
+                renderTimeLogged(task) +
+                renderChecklist(task) +
+                renderGates(task) +
+                renderActivity(task) +
+                renderMetadata(task);
+        }
+
+        if (task && task.status === 'WaitingForInformation') {
+            return '' +
+                renderBusinessContextReview(task) +
+                renderDependencySummary(task) +
+                renderDescriptionAndContext(task) +
+                renderClosureSummary(task) +
+                renderInformationRequests(task) +
+                renderTimeLogged(task) +
+                renderSubtasks(task) +
+                renderChecklist(task) +
+                renderDependencies(task) +
+                renderGates(task) +
+                renderActivity(task) +
+                renderMetadata(task);
+        }
+
+        if (task && task.status === 'PendingReview') {
+            return '' +
+                renderBusinessContextReview(task) +
+                renderDependencySummary(task) +
+                renderDescriptionAndContext(task) +
+                renderClosureSummary(task) +
+                renderTimeLogged(task) +
+                renderActivity(task) +
+                renderSubtasks(task) +
+                renderDependencies(task) +
+                renderInformationRequests(task) +
+                renderChecklist(task) +
+                renderGates(task) +
+                renderMetadata(task);
+        }
+
+        if (task && task.status === 'Closed') {
+            return '' +
+                renderBusinessContextReview(task) +
+                renderDependencySummary(task) +
+                renderDescriptionAndContext(task) +
+                renderClosureSummary(task) +
+                renderSubtasks(task) +
+                renderDependencies(task) +
+                renderChecklist(task) +
+                renderInformationRequests(task) +
+                renderTimeLogged(task) +
+                renderActivity(task) +
+                renderGates(task) +
+                renderMetadata(task);
+        }
+
+        if (task && task.status === 'Cancelled') {
+            return '' +
+                renderBusinessContextReview(task) +
+                renderDependencySummary(task) +
+                renderDescriptionAndContext(task) +
+                renderClosureSummary(task) +
+                renderGates(task) +
+                renderActivity(task) +
+                renderSubtasks(task) +
+                renderChecklist(task) +
+                renderDependencies(task) +
+                renderInformationRequests(task) +
+                renderTimeLogged(task) +
+                renderMetadata(task);
+        }
+
+        return '' +
+            renderBusinessContextReview(task) +
+            renderDependencySummary(task) +
+            renderDescriptionAndContext(task) +
+            renderClosureSummary(task) +
+            renderSubtasks(task) +
+            renderChecklist(task) +
+            renderDependencies(task) +
+            renderInformationRequests(task) +
+            renderGates(task) +
+            renderTimeLogged(task) +
+            renderActivity(task) +
+            renderMetadata(task);
+    }
+
+    function renderErrorState() {
+        return '<section class="task-v2-error">' +
+            '<h3>Task detail could not be loaded</h3>' +
+            '<p>' + escapeHtml(state.error || 'Unknown error.') + '</p>' +
+            '<button class="btn btn-dark" type="button" data-refresh-task>Retry</button>' +
+        '</section>';
+    }
+
+    function renderLoadingState() {
+        return '<div class="task-v2-loading py-5 text-center">' +
+            '<div class="spinner-border text-primary" role="status" aria-hidden="true"></div>' +
+            '<p class="mt-3 mb-0 text-muted">Loading task detail...</p>' +
+        '</div>';
+    }
+
+    function render() {
+        if (state.loading) {
+            root.innerHTML = renderLoadingState();
             return;
         }
 
-        var controls = [
-            el.taskTimeHours,
-            el.taskTimeMinutes,
-            el.taskTimeNote,
-            el.taskTimeLogBtn,
-            el.taskTimerToggle
-        ];
-        controls.forEach(function (control) {
-            if (control) { control.disabled = isReadOnly; }
+        if (state.error) {
+            root.innerHTML = renderErrorState();
+            return;
+        }
+
+        var task = state.task;
+        if (!task) {
+            root.innerHTML = '<p class="task-v2-empty">Task not found.</p>';
+            return;
+        }
+
+        root.innerHTML = '' +
+            '<div class="task-v2-shell">' +
+                renderNotification() +
+                renderHeader(task) +
+                renderBanner(task) +
+                renderBlockers(task) +
+                renderActions(task) +
+                renderStepper(task) +
+                renderSections(task) +
+            '</div>';
+    }
+
+    function onClick(event) {
+        var refreshBtn = event.target.closest('[data-refresh-task]');
+        if (refreshBtn) {
+            clearNotice();
+            fetchTask(false);
+            return;
+        }
+
+        var inlineClose = event.target.closest('[data-close-inline-form]');
+        if (inlineClose) {
+            state.openForm = null;
+            render();
+            return;
+        }
+
+        var sectionToggle = event.target.closest('[data-toggle-section]');
+        if (sectionToggle) {
+            toggleSection(sectionToggle.getAttribute('data-toggle-section'));
+            return;
+        }
+
+        var actionButton = event.target.closest('[data-action-id]');
+        if (actionButton) {
+            var actionId = actionButton.getAttribute('data-action-id');
+            clearNotice();
+            executeDirectAction(actionId);
+        }
+
+        var irAnswerBtn = event.target.closest('[data-ir-answer-id]');
+        if (irAnswerBtn) {
+            var irId = irAnswerBtn.getAttribute('data-ir-answer-id');
+            clearNotice();
+            handleIrAnswer(irId);
+        }
+    }
+
+    function onInput(event) {
+        var name = event.target.getAttribute('name');
+        if (!name) {
+            return;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(state.forms, name)) {
+            state.forms[name] = event.target.value;
+        }
+
+        if (name === 'decisionNote') {
+            state.decisionNote = event.target.value;
+        }
+    }
+
+    async function handleIrAnswer(irId) {
+        var res = await Swal.fire({
+            title: 'Answer Information Request',
+            html: '<div class="text-start mb-3"><label class="form-label">Your Answer</label>' +
+                  '<textarea id="swal-ir-answer" class="form-control" rows="4" placeholder="Provide the requested information..."></textarea></div>',
+            showCancelButton: true,
+            confirmButtonText: 'Submit Answer',
+            customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' },
+            buttonsStyling: false,
+            preConfirm: function() { return document.getElementById('swal-ir-answer').value; }
         });
 
-        if (isReadOnly && state.timerActive) { stopTimer(); }
-
-        if (el.taskTimeStateMessage) {
-            if (isReadOnly) {
-                el.taskTimeStateMessage.textContent = l10n.TimeEntryReadOnlyInReview || 'Time entry is read-only in review';
-                el.taskTimeStateMessage.classList.remove('d-none');
-            } else {
-                el.taskTimeStateMessage.textContent = '';
-                el.taskTimeStateMessage.classList.add('d-none');
-            }
-        }
-    };
-
-    var renderDependencies = function () {
-        var deps = state.item.dependencies || {};
-        var toDependencyLabel = function (item) {
-            if (typeof item === 'string') { return esc(item); }
-            if (!item) { return '-'; }
-            var id = item.id ? esc(item.id) : '';
-            var title = item.title ? esc(item.title) : '';
-            if (id && title) { return '<span class="fw-semibold">' + id + '</span> · ' + title; }
-            return id || title || '-';
-        };
-
-        if (el.taskBlockedByList) {
-            if (!deps.blockedBy || !deps.blockedBy.length) {
-                el.taskBlockedByList.innerHTML = '<li class="text-muted small">' + esc(l10n.NoBlockers || 'No blockers') + '</li>';
-            } else {
-                el.taskBlockedByList.innerHTML = deps.blockedBy.map(function (d) {
-                    return '<li class="small d-flex align-items-start gap-1 mb-1"><i class="bx bx-block text-danger icon-base mt-1"></i><span>' + toDependencyLabel(d) + '</span></li>';
-                }).join('');
-            }
-        }
-        if (el.taskBlocksList) {
-            if (!deps.blocks || !deps.blocks.length) {
-                el.taskBlocksList.innerHTML = '<li class="text-muted small">' + esc(l10n.NoDependentTasks || 'No dependent tasks') + '</li>';
-            } else {
-                el.taskBlocksList.innerHTML = deps.blocks.map(function (d) {
-                    return '<li class="small d-flex align-items-start gap-1 mb-1"><i class="bx bx-block text-warning icon-base mt-1"></i><span>' + toDependencyLabel(d) + '</span></li>';
-                }).join('');
-            }
-        }
-    };
-
-    var renderMetadataSummary = function () {
-        var item = state.item;
-        var deps = item.dependencies || {};
-        var blockedByCount = (deps.blockedBy || []).length;
-        var blocksCount = (deps.blocks || []).length;
-        var hasDependencies = blockedByCount + blocksCount > 0;
-        var hasBlockers = blockedByCount > 0;
-        var sourceType = item.sourceType || '';
-        var sourceId = item.sourceId || '';
-        var sourceBuilder = sourceType ? SOURCE_ROUTE_BUILDERS[sourceType] : null;
-        var sourceHref = sourceBuilder && sourceId ? sourceBuilder(sourceId) : '';
-        var sourceLabel = (sourceType || '-') + ': ' + (sourceId || '-');
-
-        if (el.taskSourceRefLink && el.taskSourceRefValue) {
-            if (sourceHref) {
-                el.taskSourceRefLink.href = sourceHref;
-                el.taskSourceRefLink.textContent = sourceLabel;
-                el.taskSourceRefLink.classList.remove('d-none');
-                el.taskSourceRefValue.classList.add('d-none');
-            } else {
-                el.taskSourceRefValue.textContent = sourceLabel;
-                el.taskSourceRefValue.classList.remove('d-none');
-                el.taskSourceRefLink.classList.add('d-none');
-            }
-        } else if (el.taskSourceRefValue) {
-            el.taskSourceRefValue.textContent = sourceLabel;
-        }
-        if (el.taskSourceTitleValue) { el.taskSourceTitleValue.textContent = item.sourceTitle || ''; }
-        if (el.taskSourceRelationValue) { el.taskSourceRelationValue.textContent = item.sourceRelationType || '-'; }
-        if (el.taskReviewerValue) { el.taskReviewerValue.textContent = item.reviewer || '-'; }
-        if (el.taskReassignmentValue) {
-            if (item.reassignedFrom) {
-                el.taskReassignmentValue.textContent = (l10n.ReassignedFrom || 'Reassigned from') + ' ' + item.reassignedFrom;
-            } else {
-                el.taskReassignmentValue.textContent = l10n.InitialAssignment || 'Initial assignment';
-            }
-        }
-        if (el.taskPlannedAtValue) { el.taskPlannedAtValue.textContent = item.plannedAt ? formatDate(item.plannedAt) : (l10n.PlannedDateUnknown || 'Not planned'); }
-
-        if (el.taskDependenciesStateBadge) {
-            if (hasBlockers && !item.blocked) {
-                el.taskDependenciesStateBadge.className = 'badge bg-label-warning';
-                el.taskDependenciesStateBadge.textContent = l10n.BlockedStatusMismatch || 'Dependency blockers exist';
-            } else if (hasDependencies) {
-                el.taskDependenciesStateBadge.className = 'badge bg-label-warning';
-                el.taskDependenciesStateBadge.textContent = (l10n.DependencyStateFilled || 'Has dependencies') + ' (' + blockedByCount + '/' + blocksCount + ')';
-            } else {
-                el.taskDependenciesStateBadge.className = 'badge bg-label-success';
-                el.taskDependenciesStateBadge.textContent = l10n.NoDependencies || 'No dependencies';
-            }
-        }
-
-        if (el.taskTagsList) {
-            if (!item.tags || !item.tags.length) {
-                el.taskTagsList.innerHTML = '<span class="text-muted small">' + esc(l10n.NoTags || 'No tags') + '</span>';
-            } else {
-                el.taskTagsList.innerHTML = item.tags.map(function (tag) {
-                    return '<span class="badge bg-label-secondary">' + esc(tag) + '</span>';
-                }).join('');
-            }
-        }
-    };
-
-    var renderSecondaryMeta = function () {
-        var item = state.item;
-
-        if (el.taskWatchersList) {
-            if (!item.watchers || !item.watchers.length) {
-                el.taskWatchersList.innerHTML = '<li class="text-muted small">' + esc(l10n.NoWatchers || 'No watchers') + '</li>';
-            } else {
-                el.taskWatchersList.innerHTML = item.watchers.map(function (w) {
-                    return '<li class="small d-flex align-items-center gap-1 mb-1"><i class="bx bx-user-circle text-muted icon-base"></i>' + esc(w) + '</li>';
-                }).join('');
-            }
-        }
-
-        if (el.taskAttachmentsList) {
-            if (!item.attachments || !item.attachments.length) {
-                el.taskAttachmentsList.innerHTML = '<li class="text-muted small">' + esc(l10n.NoAttachments || 'No attachments') + '</li>';
-            } else {
-                el.taskAttachmentsList.innerHTML = item.attachments.map(function (a) {
-                    return '<li class="small d-flex align-items-center gap-1 mb-1"><i class="bx bx-paperclip text-muted icon-base"></i><span>' + esc(a.name) + '</span><span class="text-muted">(' + esc(a.size) + ')</span></li>';
-                }).join('');
-            }
-        }
-
-        if (el.taskMarketValue) { el.taskMarketValue.textContent = item.market || '-'; }
-        if (el.taskDomainValue) { el.taskDomainValue.textContent = item.domain || '-'; }
-        if (el.taskExternalPartyValue) { el.taskExternalPartyValue.textContent = item.externalParty || '-'; }
-        if (el.taskEstimationValue) { el.taskEstimationValue.textContent = item.estimation || '-'; }
-    };
-
-    var renderAll = function () {
-        renderHeader();
-        renderStepBar();
-        renderDescription();
-        renderSubtasks();
-        renderActivity();
-        renderActionsPanel();
-        renderTimeEntryState();
-        renderTimeLog();
-        renderMetadataSummary();
-        renderDependencies();
-        renderSecondaryMeta();
-    };
-
-    // ── ACTION HANDLERS ───────────────────────────────────────────────────────
-    var showActionFeedback = function (msg) {
-        if (!el.taskActionFeedback) { return; }
-        el.taskActionFeedback.textContent = msg;
-        el.taskActionFeedback.classList.remove('d-none');
-        setTimeout(function () { el.taskActionFeedback.classList.add('d-none'); }, 5000);
-    };
-
-    var clearActionFeedback = function () {
-        if (el.taskActionFeedback) { el.taskActionFeedback.classList.add('d-none'); }
-    };
-
-    var addActivity = function (text, author, type) {
-        state.item.activity.push({
-            type:      type || 'status_change',
-            text:      text,
-            author:    author || 'You',
-            timestamp: new Date().toISOString().slice(0, 10)
-        });
-    };
-
-    var handleAction = function (action) {
-        var item = state.item;
-        clearActionFeedback();
-
-        switch (action) {
-            case 'accept':
-                addActivity('Status changed to Open.', 'You', 'status_change');
-                item.status = 'Open';
-                item.approvalRequired = false;
-                notify(l10n.ActionAcceptSuccess || 'Task accepted.', 'success');
-                break;
-
-            case 'reject':
-                addActivity('Task rejected.', 'You', 'status_change');
-                item.status = 'Cancelled';
-                notify(l10n.ActionRejectSuccess || 'Task rejected.', 'warning');
-                break;
-
-            case 'requestInfo':
-                addActivity('Additional information requested.', 'You', 'status_change');
-                item.status = 'Waiting for Information';
-                item.waitingInfo = item.waitingInfo || 'Business Owner';
-                notify(l10n.RequestInfo || 'Request Info sent.', 'info');
-                break;
-
-            case 'reassign':
-                notify(l10n.ActionReassignSuccess || 'Reassign flow started (mock).', 'info');
-                return; // no status change
-
-            case 'plan':
-                addActivity('Task planned.', 'You', 'status_change');
-                item.status = 'Planned';
-                notify(l10n.Plan || 'Task planned.', 'success');
-                break;
-
-            case 'startWork':
-                addActivity('Work started.', 'You', 'status_change');
-                item.status = 'In Progress';
-                item.blocked = false;
-                item.blockedReason = '';
-                notify(l10n.StartWork || 'Work started.', 'success');
-                break;
-
-            case 'approve':
-                if (item.status === 'Pending Approval') {
-                    addActivity('Approval completed. Item moved to Pending Acceptance.', 'You', 'status_change');
-                    item.status = 'Pending Acceptance';
-                    item.approvalRequired = false;
-                    item.approver = '';
-                } else {
-                    addActivity('Review approved. Item closed.', 'You', 'status_change');
-                    item.status = 'Closed';
-                }
-                notify(l10n.Approve || 'Task approved.', 'success');
-                break;
-
-            case 'rejectReview':
-                if (el.taskRejectReviewForm) {
-                    el.taskRejectReviewForm.classList.toggle('d-none');
-                }
-                return; // handled by form submit
-
-            case 'continueWork':
-            case 'investigate':
-            case 'followUp':
-            case 'review':
-            case 'inspectBlocker':
-            case 'viewSummary':
-            case 'viewReason':
-                notify('Mock action opened contextual details.', 'info');
+        if (res.isConfirmed) {
+            if (!res.value || !res.value.trim()) {
+                setNotice('warning', 'Answer is required.');
+                render();
                 return;
-
-            default:
-                break;
-        }
-
-        renderAll();
-    };
-
-    // ── TIMER ─────────────────────────────────────────────────────────────────
-    var updateTimerDisplay = function () {
-        if (!state.timerActive || !state.timerStartMs) { return; }
-        if (el.taskTimerDisplay) {
-            el.taskTimerDisplay.textContent = formatDuration(Date.now() - state.timerStartMs);
-        }
-    };
-
-    var startTimer = function () {
-        state.timerActive  = true;
-        state.timerStartMs = Date.now();
-        if (el.taskTimerIcon)   { el.taskTimerIcon.className = 'bx bx-stop icon-base'; }
-        if (el.taskTimerToggle) { el.taskTimerToggle.setAttribute('title', l10n.StopTimer || 'Stop Timer'); }
-        state.timerInterval = setInterval(updateTimerDisplay, 1000);
-    };
-
-    var stopTimer = function () {
-        state.timerActive = false;
-        clearInterval(state.timerInterval);
-        state.timerInterval = null;
-
-        if (state.timerStartMs) {
-            var elapsed  = Date.now() - state.timerStartMs;
-            var totalMin = Math.floor(elapsed / 60000);
-            if (el.taskTimeHours)   { el.taskTimeHours.value   = Math.floor(totalMin / 60); }
-            if (el.taskTimeMinutes) { el.taskTimeMinutes.value = totalMin % 60; }
-        }
-        state.timerStartMs = null;
-        if (el.taskTimerIcon)    { el.taskTimerIcon.className = 'bx bx-play icon-base'; }
-        if (el.taskTimerToggle)  { el.taskTimerToggle.setAttribute('title', l10n.StartTimer || 'Start Timer'); }
-        if (el.taskTimerDisplay) { el.taskTimerDisplay.textContent = '0:00:00'; }
-    };
-
-    // ── EVENT BINDING ─────────────────────────────────────────────────────────
-    var bindEvents = function () {
-        // Back navigation
-        el.taskBackBtn && el.taskBackBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            window.location.href = RETURN_URL;
-        });
-
-        // Actions panel (event delegation)
-        el.taskActionsPanel && el.taskActionsPanel.addEventListener('click', function (e) {
-            var btn = e.target.closest('[data-task-action]');
-            if (!btn) { return; }
-            handleAction(btn.getAttribute('data-task-action'));
-        });
-
-        // Reject review note input enables confirm button
-        el.taskRejectNote && el.taskRejectNote.addEventListener('input', function () {
-            if (el.taskRejectReviewConfirm) {
-                el.taskRejectReviewConfirm.disabled = !el.taskRejectNote.value.trim();
             }
-        });
+            var id = encodeURIComponent(taskId);
+            var encodedIrId = encodeURIComponent(irId);
+            await postAction('/api/tasks/' + id + '/info-requests/' + encodedIrId + '/answer', { answer: res.value.trim() });
+        }
+    }
 
-        // Reject review confirm
-        el.taskRejectReviewConfirm && el.taskRejectReviewConfirm.addEventListener('click', function () {
-            var note = el.taskRejectNote ? el.taskRejectNote.value.trim() : '';
-            if (!note) { return; }
-            addActivity('Review rejected: ' + note, 'You', 'comment');
-            state.item.status = 'In Progress';
-            if (el.taskRejectReviewForm) { el.taskRejectReviewForm.classList.add('d-none'); }
-            if (el.taskRejectNote)       { el.taskRejectNote.value = ''; }
-            if (el.taskRejectReviewConfirm) { el.taskRejectReviewConfirm.disabled = true; }
-            notify(l10n.RejectReview || 'Review rejected, task returned to in progress.', 'warning');
-            renderAll();
-        });
+    async function submitInlineForm(formId) {
+        var task = state.task;
+        if (!task) {
+            return;
+        }
 
-        // Comment submit
-        el.taskCommentSubmit && el.taskCommentSubmit.addEventListener('click', function () {
-            var text = el.taskCommentInput ? el.taskCommentInput.value.trim() : '';
-            if (!text) { return; }
-            addActivity(text, 'You', 'comment');
-            if (el.taskCommentInput) { el.taskCommentInput.value = ''; }
-            renderActivity();
-            notify(l10n.CommentAdded || 'Comment added.', 'success');
-        });
+        if (formId === 'plan') {
+            var action = findAction('plan');
+            if (!action) {
+                setNotice('warning', 'Action is not available in current state.');
+                render();
+                return;
+            }
 
-        // Time log
-        el.taskTimeLogBtn && el.taskTimeLogBtn.addEventListener('click', function () {
-            if (!isTimeEntryEnabledStatus()) { return; }
-            var h = parseInt(el.taskTimeHours   ? el.taskTimeHours.value   : '0', 10) || 0;
-            var m = parseInt(el.taskTimeMinutes ? el.taskTimeMinutes.value : '0', 10) || 0;
-            if (h === 0 && m === 0) { return; }
-            var note = el.taskTimeNote ? el.taskTimeNote.value.trim() : '';
-            state.timeEntries.push({
-                hours:    h,
-                minutes:  m,
-                note:     note,
-                loggedAt: new Date().toLocaleDateString()
+            if (action.isBlocked) {
+                setNotice('warning', action.blockReason || 'Action is blocked.');
+                render();
+                return;
+            }
+
+            if (!state.forms.planDate) {
+                setNotice('warning', 'Plan date is required.');
+                render();
+                return;
+            }
+
+            var route = actionRoute('plan', task.status);
+            if (!route) {
+                setNotice('warning', 'Action route is not defined.');
+                render();
+                return;
+            }
+
+            await postAction(route, { planDate: state.forms.planDate });
+            return;
+        }
+
+        if (formId === 'logTime') {
+            var logAction = findAction('logTime');
+            if (!logAction) {
+                setNotice('warning', 'Action is not available in current state.');
+                render();
+                return;
+            }
+
+            if (logAction.isBlocked) {
+                setNotice('warning', logAction.blockReason || 'Action is blocked.');
+                render();
+                return;
+            }
+
+            if (!state.forms.logDate || !state.forms.logDescription || !state.forms.logDuration) {
+                setNotice('warning', 'Date, description and duration are required.');
+                render();
+                return;
+            }
+
+            var logRoute = actionRoute('logTime', task.status);
+            if (!logRoute) {
+                setNotice('warning', 'Action route is not defined.');
+                render();
+                return;
+            }
+
+            await postAction(logRoute, {
+                date: state.forms.logDate,
+                description: state.forms.logDescription,
+                duration: state.forms.logDuration
             });
-            if (el.taskTimeHours)   { el.taskTimeHours.value   = ''; }
-            if (el.taskTimeMinutes) { el.taskTimeMinutes.value = ''; }
-            if (el.taskTimeNote)    { el.taskTimeNote.value    = ''; }
-            renderTimeLog();
-            notify(l10n.TimeLogged || 'Time logged.', 'success');
-        });
+            return;
+        }
 
-        // Timer toggle
-        el.taskTimerToggle && el.taskTimerToggle.addEventListener('click', function () {
-            if (!isTimeEntryEnabledStatus()) { return; }
-            if (state.timerActive) { stopTimer(); } else { startTimer(); }
-        });
+        if (formId === 'requestInfo') {
+            var infoAction = findAction('requestInfo');
+            if (!infoAction) {
+                setNotice('warning', 'Action is not available in current state.');
+                render();
+                return;
+            }
 
-        // Collapse chevron rotation — driven by Bootstrap collapse events
-        var collapses = document.querySelectorAll('#taskDetailPage [data-bs-toggle="collapse"]');
-        collapses.forEach(function (trigger) {
-            var targetId = (trigger.getAttribute('data-bs-target') || '').replace('#', '');
-            var target   = targetId ? document.getElementById(targetId) : null;
-            if (!target) { return; }
-            target.addEventListener('shown.bs.collapse', function () {
-                var chevron = trigger.querySelector('.task-collapse-chevron');
-                if (chevron) { chevron.classList.add('task-collapse-chevron--open'); }
+            if (infoAction.isBlocked) {
+                setNotice('warning', infoAction.blockReason || 'Action is blocked.');
+                render();
+                return;
+            }
+
+            if (!state.forms.requestRecipientId || !state.forms.requestQuestion) {
+                setNotice('warning', 'Recipient and question are required.');
+                render();
+                return;
+            }
+
+            var infoRoute = actionRoute('requestInfo', task.status);
+            if (!infoRoute) {
+                setNotice('warning', 'Action route is not defined.');
+                render();
+                return;
+            }
+
+            await postAction(infoRoute, {
+                recipientId: state.forms.requestRecipientId,
+                question: state.forms.requestQuestion
             });
-            target.addEventListener('hidden.bs.collapse', function () {
-                var chevron = trigger.querySelector('.task-collapse-chevron');
-                if (chevron) { chevron.classList.remove('task-collapse-chevron--open'); }
-            });
-        });
-    };
+            return;
+        }
 
-    // ── INIT ──────────────────────────────────────────────────────────────────
-    bindEvents();
-    renderAll();
+        if (formId === 'complete') {
+            var completeAction = findAction('complete');
+            if (!completeAction) {
+                setNotice('warning', 'Action is not available in current state.');
+                render();
+                return;
+            }
 
+            if (completeAction.isBlocked) {
+                setNotice('warning', completeAction.blockReason || 'Action is blocked.');
+                render();
+                return;
+            }
+
+            var completeRoute = actionRoute('complete', task.status);
+            if (!completeRoute) {
+                setNotice('warning', 'Action route is not defined.');
+                render();
+                return;
+            }
+
+            await postAction(completeRoute, { closureSummary: state.forms.closureSummary || null });
+            return;
+        }
+    }
+
+    function onSubmit(event) {
+        var form = event.target.closest('[data-inline-form]');
+        if (!form) {
+            return;
+        }
+
+        event.preventDefault();
+        clearNotice();
+        submitInlineForm(form.getAttribute('data-inline-form'));
+    }
+
+    root.addEventListener('click', onClick);
+    root.addEventListener('input', onInput);
+    root.addEventListener('submit', onSubmit);
+
+    fetchTask(true);
 })();

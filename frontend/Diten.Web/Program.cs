@@ -1,4 +1,5 @@
 using Diten.Web;
+using Diten.Web.Services.WorkCenter;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Localization;
 using System.Security.Claims;
@@ -31,6 +32,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 builder.Services.AddHttpClient();
+builder.Services.AddSingleton<ITaskDetailService, TaskDetailService>();
 
 var app = builder.Build();
 
@@ -99,6 +101,8 @@ app.UseEndpoints(endpoints =>
         context.Response.Redirect("/LegalEntities");
     });
 });
+
+app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",

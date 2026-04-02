@@ -32,4 +32,11 @@ public class WorkCenterController : Controller
 
         return View();
     }
+
+    [HttpGet]
+    public IActionResult DevScenarios()
+    {
+        ViewBag.ActiveMenu = "workcenter";
+        return View();
+    }
 }

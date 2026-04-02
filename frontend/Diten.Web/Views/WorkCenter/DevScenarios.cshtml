@@ -1,0 +1,215 @@
+@{
+    ViewData["Title"] = "Task Detail — Dev Scenarios";
+    Layout = "_LayoutBackbone";
+
+    var returnUrl = Url.Action("DevScenarios", "WorkCenter") ?? "/WorkCenter/DevScenarios";
+    var encodedReturn = System.Net.WebUtility.UrlEncode(returnUrl);
+
+    string TaskUrl(string id, string? asUser = null)
+    {
+        var url = $"/WorkCenter/Task/{Uri.EscapeDataString(id)}?returnUrl={encodedReturn}";
+        if (!string.IsNullOrEmpty(asUser))
+            url += $"&as={Uri.EscapeDataString(asUser)}";
+        return url;
+    }
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-1">Task Detail — Dev Scenarios</h4>
+            <p class="text-muted mb-0 small">Her status için owner / approver / reviewer görünümü. Test sayfasıdır.</p>
+        </div>
+        <a href="/WorkCenter" class="btn btn-outline-secondary btn-sm">← WorkCenter</a>
+    </div>
+
+    @{
+        var statuses = new[]
+        {
+            new { Order = 1,  Status = "PendingApproval",        Label = "Pending Approval",         Id = "TASK-4100",
+                  Owner = "elif-kaya", Approver = "selin-korkmaz", Reviewer = (string?)null,    IrRecipient = (string?)null,
+                  Notes = "Approver: Selin Korkmaz · Owner can Withdraw" },
+
+            new { Order = 2,  Status = "PendingAcceptance",      Label = "Pending Acceptance",       Id = "TASK-4200",
+                  Owner = "elif-kaya", Approver = (string?)null,         Reviewer = (string?)null,    IrRecipient = (string?)null,
+                  Notes = "Owner: Accept veya Reassign yapabilir" },
+
+            new { Order = 3,  Status = "Open",                   Label = "Open",                     Id = "TASK-4300",
+                  Owner = "elif-kaya", Approver = (string?)null,         Reviewer = (string?)null,    IrRecipient = (string?)null,
+                  Notes = "FS blocker mevcut (TASK-2801)" },
+
+            new { Order = 4,  Status = "Open_SSBlock",           Label = "Open (SS Blocker)",        Id = "TASK-AUDIT-SS-BLOCK",
+                  Owner = "elif-kaya", Approver = (string?)null,         Reviewer = (string?)null,    IrRecipient = (string?)null,
+                  Notes = "SS tipi blocker: Start Work engelleniyor" },
+
+            new { Order = 5,  Status = "Planned",                Label = "Planned",                  Id = "TASK-4400",
+                  Owner = "elif-kaya", Approver = (string?)null,         Reviewer = (string?)null,    IrRecipient = (string?)null,
+                  Notes = "FS blocker mevcut" },
+
+            new { Order = 6,  Status = "InProgress",             Label = "In Progress",              Id = "TASK-2847",
+                  Owner = "elif-kaya", Approver = "selin-korkmaz",       Reviewer = "ahmet-yilmaz",   IrRecipient = "mert-demir",
+                  Notes = "Canonical task: subtask, dep, IR, checklist hepsi var" },
+
+            new { Order = 7,  Status = "InProgress_NoReview",    Label = "In Progress (No Review)",  Id = "TASK-AUDIT-NOREVIEW",
+                  Owner = "elif-kaya", Approver = (string?)null,         Reviewer = (string?)null,    IrRecipient = (string?)null,
+                  Notes = "Review gate yok → Complete direkt Closed'a gider" },
+
+            new { Order = 8,  Status = "InProgress_ReadyComplete", Label = "In Progress (Complete Ready)", Id = "TASK-AUDIT-COMPLETE-OK",
+                  Owner = "elif-kaya", Approver = (string?)null,         Reviewer = "ahmet-yilmaz",   IrRecipient = (string?)null,
+                  Notes = "Tüm subtasklar kapalı, dep aktif değil → Complete unblocked" },
+
+            new { Order = 9,  Status = "WaitingForInformation",  Label = "Waiting for Information",  Id = "TASK-4600",
+                  Owner = "elif-kaya", Approver = (string?)null,         Reviewer = (string?)null,    IrRecipient = "mert-demir",
+                  Notes = "IR recipient: Mert Demir · Answer butonu IR listesinde görünür" },
+
+            new { Order = 10, Status = "PendingReview",          Label = "Pending Review",           Id = "TASK-4700",
+                  Owner = "elif-kaya", Approver = (string?)null,         Reviewer = "ahmet-yilmaz",   IrRecipient = (string?)null,
+                  Notes = "Reviewer: Ahmet Yılmaz · Approve → Closed / Reject → InProgress" },
+
+            new { Order = 11, Status = "Closed",                 Label = "Closed",                   Id = "TASK-4800",
+                  Owner = "elif-kaya", Approver = (string?)null,         Reviewer = (string?)null,    IrRecipient = (string?)null,
+                  Notes = "Terminal durum — action yok" },
+
+            new { Order = 12, Status = "Cancelled",              Label = "Cancelled",                Id = "TASK-4900",
+                  Owner = "elif-kaya", Approver = (string?)null,         Reviewer = (string?)null,    IrRecipient = (string?)null,
+                  Notes = "Terminal durum — action yok" },
+        };
+
+        var statusColors = new Dictionary<string, string>
+        {
+            ["PendingApproval"]          = "bg-label-primary",
+            ["PendingAcceptance"]        = "bg-label-info",
+            ["Open"]                     = "bg-label-secondary",
+            ["Open_SSBlock"]             = "bg-label-secondary",
+            ["Planned"]                  = "bg-label-warning",
+            ["InProgress"]               = "bg-label-primary",
+            ["InProgress_NoReview"]      = "bg-label-primary",
+            ["InProgress_ReadyComplete"] = "bg-label-primary",
+            ["WaitingForInformation"]    = "bg-label-warning",
+            ["PendingReview"]            = "bg-label-info",
+            ["Closed"]                   = "bg-label-success",
+            ["Cancelled"]                = "bg-label-dark",
+        };
+    }
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:32px">#</th>
+                        <th style="width:160px">Status</th>
+                        <th>Task ID</th>
+                        <th>Notes</th>
+                        <th class="text-center">Owner<br><small class="text-muted fw-normal">elif-kaya</small></th>
+                        <th class="text-center">Approver<br><small class="text-muted fw-normal">selin-korkmaz</small></th>
+                        <th class="text-center">Reviewer<br><small class="text-muted fw-normal">ahmet-yilmaz</small></th>
+                        <th class="text-center">IR Recipient<br><small class="text-muted fw-normal">mert-demir</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in statuses)
+                    {
+                        var color = statusColors.TryGetValue(s.Status, out var c) ? c : "bg-label-secondary";
+                        <tr>
+                            <td class="text-muted small align-middle">@s.Order</td>
+                            <td class="align-middle">
+                                <span class="badge @color">@s.Label</span>
+                            </td>
+                            <td class="align-middle">
+                                <code class="text-body">@s.Id</code>
+                            </td>
+                            <td class="align-middle small text-muted">@s.Notes</td>
+
+                            <td class="text-center align-middle">
+                                <a href="@TaskUrl(s.Id, s.Owner)" class="btn btn-sm btn-outline-dark">
+                                    Owner
+                                </a>
+                            </td>
+
+                            <td class="text-center align-middle">
+                                @if (s.Approver != null)
+                                {
+                                    <a href="@TaskUrl(s.Id, s.Approver)" class="btn btn-sm btn-outline-primary">
+                                        Approver
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+
+                            <td class="text-center align-middle">
+                                @if (s.Reviewer != null)
+                                {
+                                    <a href="@TaskUrl(s.Id, s.Reviewer)" class="btn btn-sm btn-outline-info">
+                                        Reviewer
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+
+                            <td class="text-center align-middle">
+                                @if (s.IrRecipient != null)
+                                {
+                                    <a href="@TaskUrl(s.Id, s.IrRecipient)" class="btn btn-sm btn-outline-warning">
+                                        Recipient
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h6 class="mb-0">Kullanıcı Rehberi</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <h6 class="small fw-bold text-uppercase text-muted mb-2">Roller</h6>
+                    <ul class="list-unstyled small mb-0">
+                        <li><code>elif-kaya</code> — Elif Kaya · <strong>Owner (Assignee)</strong></li>
+                        <li><code>ahmet-yilmaz</code> — Ahmet Yılmaz · <strong>Reviewer</strong></li>
+                        <li><code>selin-korkmaz</code> — Selin Korkmaz · <strong>Approver</strong></li>
+                        <li><code>mert-demir</code> — Mert Demir · <strong>IR Recipient</strong></li>
+                        <li><code>burak-sari</code> — Burak Sarı · <strong>Subtask Assignee</strong></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="small fw-bold text-uppercase text-muted mb-2">ID Pattern (Varyant Motoru)</h6>
+                    <ul class="list-unstyled small mb-0">
+                        <li><code>41xx</code> → Pending Approval</li>
+                        <li><code>42xx</code> → Pending Acceptance</li>
+                        <li><code>43xx</code> → Open</li>
+                        <li><code>44xx</code> → Planned</li>
+                        <li><code>45xx</code> → In Progress</li>
+                        <li><code>46xx</code> → Waiting for Information</li>
+                        <li><code>47xx</code> → Pending Review</li>
+                        <li><code>48xx</code> → Closed</li>
+                        <li><code>49xx</code> → Cancelled</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-3">
+            <p class="small text-muted mb-0">
+                URL formatı: <code>/WorkCenter/Task/&#123;id&#125;?as=&#123;userId&#125;</code><br>
+                <code>as</code> parametresi boş bırakılırsa sistem seni <strong>owner</strong> olarak görür.
+            </p>
+        </div>
+    </div>
+
+</div>
