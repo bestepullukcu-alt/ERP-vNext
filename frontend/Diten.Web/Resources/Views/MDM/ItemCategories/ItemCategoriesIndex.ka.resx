@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ItemCategoriesTitle" xml:space="preserve"><value>კატეგორიების მართვა</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>ამ ეკრანიდან შეგიძლიათ მართოთ ნივთის კატეგორიები და იერარქიული კლასიფიკაციის წესები.</value></data>
+  <data name="AddNewItemCategories" xml:space="preserve"><value>ახალი კატეგორიის დამატება</value></data>
+  <data name="Actions" xml:space="preserve"><value>მოქმედებები</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>რედაქტირება</value></data>
+  <data name="Code" xml:space="preserve"><value>კოდი</value></data>
+  <data name="Name" xml:space="preserve"><value>დასახელება</value></data>
+  <data name="ItemType" xml:space="preserve"><value>ნივთის ტიპი</value></data>
+  <data name="ParentCategory" xml:space="preserve"><value>მშობელი კატეგორია</value></data>
+  <data name="Description" xml:space="preserve"><value>აღწერა</value></data>
+  <data name="QuickView" xml:space="preserve"><value>სწრაფი ნახვა</value></data>
+</root>

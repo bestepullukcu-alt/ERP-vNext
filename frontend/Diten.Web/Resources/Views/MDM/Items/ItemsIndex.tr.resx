@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ItemsTitle" xml:space="preserve"><value>Kalem Kartı</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kalem ana verilerini, sınıflandırmayı, özellikleri ve varyantları bu ekrandan yönetebilirsiniz.</value></data>
+  <data name="AddNewItems" xml:space="preserve"><value>Yeni Kalem Ekle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Bakış</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Kalem Tipi</value></data>
+  <data name="Category" xml:space="preserve"><value>Kategori</value></data>
+  <data name="BaseUom" xml:space="preserve"><value>Temel Ölçü Birimi</value></data>
+  <data name="TrackingPolicy" xml:space="preserve"><value>İzleme Politikası</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Yaşam Döngüsü Durumu</value></data>
+  <data name="ShortDescription" xml:space="preserve"><value>Kısa Açıklama</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Genel Bilgiler</value></data>
+  <data name="IdentityAndClassification" xml:space="preserve"><value>Kimlik ve Sınıflandırma</value></data>
+  <data name="OperationalFlags" xml:space="preserve"><value>Operasyonel Bayraklar</value></data>
+  <data name="TraceabilityAndAssignments" xml:space="preserve"><value>İzlenebilirlik ve Atamalar</value></data>
+  <data name="VariantModel" xml:space="preserve"><value>Varyant Modeli</value></data>
+  <data name="Stockable" xml:space="preserve"><value>Stoklanabilir</value></data>
+  <data name="Purchasable" xml:space="preserve"><value>Satın Alınabilir</value></data>
+  <data name="Sellable" xml:space="preserve"><value>Satılabilir</value></data>
+  <data name="ServiceItem" xml:space="preserve"><value>Hizmet Kalemi</value></data>
+  <data name="AddVariant" xml:space="preserve"><value>Varyant Ekle</value></data>
+  <data name="VariantModelHint" xml:space="preserve"><value>Kalem özelliklerini ve varyant kombinasyonlarını yönetmek için bir varyant modeli seçin.</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>Ana Sayfa</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Kalemi Düzenle</value></data>
+  <data name="NoAttributesAssigned" xml:space="preserve"><value>Henüz atanmış özellik yok.</value></data>
+  <data name="NoVariantsAssigned" xml:space="preserve"><value>Henüz atanmış varyant yok.</value></data>
+  <data name="Value" xml:space="preserve"><value>Değer</value></data>
+  <data name="NoAttributeTemplateSelected" xml:space="preserve"><value>Henüz özellik şablonu seçilmedi.</value></data>
+  <data name="NoVariantAxisDefined" xml:space="preserve"><value>Bu model için varyant ekseni tanımlanmadı.</value></data>
+  <data name="NoVariantsDefined" xml:space="preserve"><value>Henüz varyant tanımlanmadı.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="Variant" xml:space="preserve"><value>Varyant</value></data>
+</root>

@@ -1,0 +1,49 @@
+@using Diten.Web.Views.MDM.ItemCategories
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ItemCategoriesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="item-categories-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Print = SharedLocalizer["Print"].Value,
+        PDF = SharedLocalizer["PDF"].Value,
+        Copy = SharedLocalizer["Copy"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ColumnOrder = SharedLocalizer["ColumnOrder"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        BulkDeleteSuccess = SharedLocalizer["BulkDeleteSuccess"].Value,
+        ClearSelection = SharedLocalizer["ClearSelection"].Value,
+        SelectedCount = SharedLocalizer["SelectedCount"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        DeleteConfirmationYesBtn = SharedLocalizer["DeleteConfirmationYesBtn"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        AddNewItemCategories = Localizer["AddNewItemCategories"].Value,
+        Code = Localizer["Code"].Value,
+        Name = Localizer["Name"].Value,
+        ItemType = Localizer["ItemType"].Value,
+        ParentCategory = Localizer["ParentCategory"].Value,
+        Description = Localizer["Description"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Edit = Localizer["EditBtn"].Value
+    })
+</script>

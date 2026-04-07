@@ -258,4 +258,10 @@
   <data name="SaveView" xml:space="preserve"><value>Зберегти Вигляд</value></data>
   <data name="Platform" xml:space="preserve"><value>Platform</value></data>
   <data name="WorkCenterMenu" xml:space="preserve"><value>Work Center</value></data>
+  <data name="ItemMaster" xml:space="preserve"><value>Довідник номенклатури</value></data>
+  <data name="CategoryManagement" xml:space="preserve"><value>Керування категоріями</value></data>
+  <data name="VariantManagement" xml:space="preserve"><value>Керування варіантами</value></data>
+  <data name="Attributes" xml:space="preserve"><value>Атрибути</value></data>
+  <data name="Variants" xml:space="preserve"><value>Варіанти</value></data>
+  <data name="ColumnOrder" xml:space="preserve"><value>Порядок стовпців</value></data>
 </root>

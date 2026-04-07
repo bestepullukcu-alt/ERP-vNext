@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ItemVariantModelsTitle" xml:space="preserve"><value>ვარიანტების მართვა</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>ამ ეკრანიდან შეგიძლიათ მართოთ მრავალჯერადი გამოყენების ვარიანტის შაბლონები და ატრიბუტების ღერძები.</value></data>
+  <data name="AddNewItemVariantModels" xml:space="preserve"><value>ახალი ვარიანტის მოდელის დამატება</value></data>
+  <data name="Actions" xml:space="preserve"><value>მოქმედებები</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>რედაქტირება</value></data>
+  <data name="Code" xml:space="preserve"><value>კოდი</value></data>
+  <data name="Name" xml:space="preserve"><value>დასახელება</value></data>
+  <data name="ItemType" xml:space="preserve"><value>ნივთის ტიპი</value></data>
+  <data name="Description" xml:space="preserve"><value>აღწერა</value></data>
+  <data name="VariantAttributes" xml:space="preserve"><value>ვარიანტის ატრიბუტები</value></data>
+  <data name="QuickView" xml:space="preserve"><value>სწრაფი ნახვა</value></data>
+  <data name="AddAttribute" xml:space="preserve"><value>ატრიბუტის დამატება</value></data>
+  <data name="NoAttributesDefined" xml:space="preserve"><value>ატრიბუტები ჯერ განსაზღვრული არ არის.</value></data>
+  <data name="Type" xml:space="preserve"><value>ტიპი</value></data>
+  <data name="Required" xml:space="preserve"><value>სავალდებულო</value></data>
+  <data name="VariantAxis" xml:space="preserve"><value>ვარიანტის ღერძი</value></data>
+  <data name="Remove" xml:space="preserve"><value>წაშლა</value></data>
+  <data name="TextDataType" xml:space="preserve"><value>ტექსტი</value></data>
+</root>

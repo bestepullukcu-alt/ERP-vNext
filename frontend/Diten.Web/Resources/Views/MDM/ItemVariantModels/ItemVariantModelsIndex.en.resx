@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ItemVariantModelsTitle" xml:space="preserve"><value>Variant Management</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage reusable variant templates and attribute axes from this screen.</value></data>
+  <data name="AddNewItemVariantModels" xml:space="preserve"><value>Add New Variant Model</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Edit</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Item Type</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="VariantAttributes" xml:space="preserve"><value>Variant Attributes</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
+  <data name="AddAttribute" xml:space="preserve"><value>Add Attribute</value></data>
+  <data name="NoAttributesDefined" xml:space="preserve"><value>No attributes defined yet.</value></data>
+  <data name="Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Required" xml:space="preserve"><value>Required</value></data>
+  <data name="VariantAxis" xml:space="preserve"><value>Variant Axis</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="TextDataType" xml:space="preserve"><value>Text</value></data>
+</root>

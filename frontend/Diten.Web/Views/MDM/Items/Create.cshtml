@@ -1,0 +1,44 @@
+@model Diten.Web.Models.Items.ItemEditViewModel
+@using Diten.Web.Views.MDM.Items
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ItemsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["AddNewItems"].Value;
+    Layout = "_LayoutBackbone";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/select2/select2.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-4">
+    <div class="d-flex flex-column justify-content-center">
+        <h4 class="mb-1">@Localizer["AddNewItems"]</h4>
+        <nav aria-label="breadcrumb" class="text-muted">
+            <ol class="breadcrumb mb-0 py-0">
+                <li class="breadcrumb-item"><a href="/">@Localizer["BreadcrumbHome"]</a></li>
+                <li class="breadcrumb-item"><a href="javascript:void(0);">@Localizer["BreadcrumbMDM"]</a></li>
+                <li class="breadcrumb-item"><a asp-action="Index">@Localizer["ItemsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["AddNewItems"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-content-center flex-wrap gap-4">
+        <a asp-action="Index" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="formItem" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<partial name="~/Views/Shared/_ItemsSecondaryNav.cshtml" />
+
+<div class="row">
+    <div class="col-12">
+        <partial name="_Form" model="Model" />
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/select2/select2.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MDM/Items/form.js" asp-append-version="true"></script>
+}

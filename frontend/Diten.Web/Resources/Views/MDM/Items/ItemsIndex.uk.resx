@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ItemsTitle" xml:space="preserve"><value>Довідник номенклатури</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>На цьому екрані можна керувати майстер-даними, класифікацією, атрибутами та варіантами номенклатури.</value></data>
+  <data name="AddNewItems" xml:space="preserve"><value>Додати номенклатуру</value></data>
+  <data name="Actions" xml:space="preserve"><value>Дії</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Редагувати</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Швидкий перегляд</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Назва</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Тип номенклатури</value></data>
+  <data name="Category" xml:space="preserve"><value>Категорія</value></data>
+  <data name="BaseUom" xml:space="preserve"><value>Базова од. вим.</value></data>
+  <data name="TrackingPolicy" xml:space="preserve"><value>Політика відстеження</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Стан життєвого циклу</value></data>
+  <data name="ShortDescription" xml:space="preserve"><value>Короткий опис</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Загальна інформація</value></data>
+  <data name="IdentityAndClassification" xml:space="preserve"><value>Ідентифікація та класифікація</value></data>
+  <data name="OperationalFlags" xml:space="preserve"><value>Операційні прапорці</value></data>
+  <data name="TraceabilityAndAssignments" xml:space="preserve"><value>Відстеження та призначення</value></data>
+  <data name="VariantModel" xml:space="preserve"><value>Модель варіанту</value></data>
+  <data name="Stockable" xml:space="preserve"><value>Складська позиція</value></data>
+  <data name="Purchasable" xml:space="preserve"><value>Закуповується</value></data>
+  <data name="Sellable" xml:space="preserve"><value>Продається</value></data>
+  <data name="ServiceItem" xml:space="preserve"><value>Сервісна позиція</value></data>
+  <data name="AddVariant" xml:space="preserve"><value>Додати варіант</value></data>
+  <data name="VariantModelHint" xml:space="preserve"><value>Виберіть модель варіанту, щоб керувати атрибутами та комбінаціями варіантів номенклатури.</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>Головна</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Редагувати номенклатуру</value></data>
+  <data name="NoAttributesAssigned" xml:space="preserve"><value>Атрибути ще не призначені.</value></data>
+  <data name="NoVariantsAssigned" xml:space="preserve"><value>Варіанти ще не призначені.</value></data>
+  <data name="Value" xml:space="preserve"><value>Значення</value></data>
+  <data name="NoAttributeTemplateSelected" xml:space="preserve"><value>Шаблон атрибута ще не вибрано.</value></data>
+  <data name="NoVariantAxisDefined" xml:space="preserve"><value>Для цієї моделі не визначено вісь варіанту.</value></data>
+  <data name="NoVariantsDefined" xml:space="preserve"><value>Варіанти ще не визначені.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Видалити</value></data>
+  <data name="Variant" xml:space="preserve"><value>Варіант</value></data>
+</root>

@@ -1,4 +1,4 @@
-using Diten.MdmService.Application.Features.Sample.Commands;
+using Diten.MdmService.Application;
 using Diten.MdmService.Infrastructure;
 using Diten.MdmService.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -9,12 +9,9 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Katman DI ──────────────────────────────────────────────────────────────
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddPersistence(builder.Configuration);
-
-// ── MediatR ───────────────────────────────────────────────────────────────
-builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssemblyContaining<CreateSampleCommand>());
 
 // ── JWT ───────────────────────────────────────────────────────────────────
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];

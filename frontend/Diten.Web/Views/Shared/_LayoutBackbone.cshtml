@@ -137,6 +137,15 @@
                             <div>@SharedLocalizer["Countries"]</div>
                         </a>
                     </li>
+                    <li
+                        class="menu-item @((ViewContext.RouteData.Values["controller"]?.ToString() == "Items"
+                            || ViewContext.RouteData.Values["controller"]?.ToString() == "ItemCategories"
+                            || ViewContext.RouteData.Values["controller"]?.ToString() == "ItemVariantModels") ? "active" : "")">
+                        <a href="/Items" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-package"></i>
+                            <div>@SharedLocalizer["ItemMaster"]</div>
+                        </a>
+                    </li>
 
                     <!-- Platform -->
                     <li class="menu-header small text-uppercase">

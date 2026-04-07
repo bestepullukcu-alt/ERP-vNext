@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ItemsTitle" xml:space="preserve"><value>Номенклатура картасы</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Осы экраннан номенклатураның негізгі деректерін, жіктелуін, атрибуттарын және нұсқаларын басқара аласыз.</value></data>
+  <data name="AddNewItems" xml:space="preserve"><value>Жаңа номенклатура қосу</value></data>
+  <data name="Actions" xml:space="preserve"><value>Әрекеттер</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Өңдеу</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Жедел қарау</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Атауы</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Номенклатура түрі</value></data>
+  <data name="Category" xml:space="preserve"><value>Санат</value></data>
+  <data name="BaseUom" xml:space="preserve"><value>Негізгі өлшем бірлігі</value></data>
+  <data name="TrackingPolicy" xml:space="preserve"><value>Бақылау саясаты</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Өмірлік цикл күйі</value></data>
+  <data name="ShortDescription" xml:space="preserve"><value>Қысқаша сипаттама</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Жалпы ақпарат</value></data>
+  <data name="IdentityAndClassification" xml:space="preserve"><value>Сәйкестік және жіктеу</value></data>
+  <data name="OperationalFlags" xml:space="preserve"><value>Операциялық белгілер</value></data>
+  <data name="TraceabilityAndAssignments" xml:space="preserve"><value>Қадағалау және тағайындаулар</value></data>
+  <data name="VariantModel" xml:space="preserve"><value>Нұсқа моделі</value></data>
+  <data name="Stockable" xml:space="preserve"><value>Қоймада сақталады</value></data>
+  <data name="Purchasable" xml:space="preserve"><value>Сатып алынады</value></data>
+  <data name="Sellable" xml:space="preserve"><value>Сатылады</value></data>
+  <data name="ServiceItem" xml:space="preserve"><value>Қызмет номенклатурасы</value></data>
+  <data name="AddVariant" xml:space="preserve"><value>Нұсқа қосу</value></data>
+  <data name="VariantModelHint" xml:space="preserve"><value>Номенклатура атрибуттары мен нұсқа комбинацияларын басқару үшін нұсқа моделін таңдаңыз.</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>Басты бет</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Номенклатураны өңдеу</value></data>
+  <data name="NoAttributesAssigned" xml:space="preserve"><value>Әлі атрибуттар тағайындалмаған.</value></data>
+  <data name="NoVariantsAssigned" xml:space="preserve"><value>Әлі нұсқалар тағайындалмаған.</value></data>
+  <data name="Value" xml:space="preserve"><value>Мәні</value></data>
+  <data name="NoAttributeTemplateSelected" xml:space="preserve"><value>Әлі атрибут үлгісі таңдалмаған.</value></data>
+  <data name="NoVariantAxisDefined" xml:space="preserve"><value>Бұл модель үшін нұсқа осі анықталмаған.</value></data>
+  <data name="NoVariantsDefined" xml:space="preserve"><value>Әлі нұсқалар анықталмаған.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Өшіру</value></data>
+  <data name="Variant" xml:space="preserve"><value>Нұсқа</value></data>
+</root>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ItemCategoriesTitle" xml:space="preserve"><value>Kateqoriya İdarəetməsi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Bu ekrandan məhsul kateqoriyalarını və ana-uşaq təsnifat qaydalarını idarə edə bilərsiniz.</value></data>
+  <data name="AddNewItemCategories" xml:space="preserve"><value>Yeni Kateqoriya Əlavə Et</value></data>
+  <data name="Actions" xml:space="preserve"><value>Əməliyyatlar</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Redaktə et</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Məhsul Növü</value></data>
+  <data name="ParentCategory" xml:space="preserve"><value>Ana Kateqoriya</value></data>
+  <data name="Description" xml:space="preserve"><value>Təsvir</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Sürətli Baxış</value></data>
+</root>

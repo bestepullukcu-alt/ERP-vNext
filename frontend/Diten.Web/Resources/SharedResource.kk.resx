@@ -258,4 +258,10 @@
   <data name="SaveView" xml:space="preserve"><value>Көріністі Сақтау</value></data>
   <data name="Platform" xml:space="preserve"><value>Platform</value></data>
   <data name="WorkCenterMenu" xml:space="preserve"><value>Work Center</value></data>
+  <data name="ItemMaster" xml:space="preserve"><value>Номенклатура картасы</value></data>
+  <data name="CategoryManagement" xml:space="preserve"><value>Санаттарды басқару</value></data>
+  <data name="VariantManagement" xml:space="preserve"><value>Нұсқаларды басқару</value></data>
+  <data name="Attributes" xml:space="preserve"><value>Атрибуттар</value></data>
+  <data name="Variants" xml:space="preserve"><value>Нұсқалар</value></data>
+  <data name="ColumnOrder" xml:space="preserve"><value>Бағандар реті</value></data>
 </root>

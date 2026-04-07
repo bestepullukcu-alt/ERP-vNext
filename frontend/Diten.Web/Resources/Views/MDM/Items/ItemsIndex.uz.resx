@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ItemsTitle" xml:space="preserve"><value>Mahsulot kartasi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Ushbu ekranda mahsulot master ma'lumotlari, tasnifi, atributlari va variantlarini boshqarishingiz mumkin.</value></data>
+  <data name="AddNewItems" xml:space="preserve"><value>Yangi mahsulot qo'shish</value></data>
+  <data name="Actions" xml:space="preserve"><value>Amallar</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Tahrirlash</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Tezkor ko'rish</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Nomi</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Mahsulot turi</value></data>
+  <data name="Category" xml:space="preserve"><value>Kategoriya</value></data>
+  <data name="BaseUom" xml:space="preserve"><value>Asosiy o'lchov birligi</value></data>
+  <data name="TrackingPolicy" xml:space="preserve"><value>Kuzatuv siyosati</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Hayotiy sikl holati</value></data>
+  <data name="ShortDescription" xml:space="preserve"><value>Qisqa tavsif</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Umumiy ma'lumot</value></data>
+  <data name="IdentityAndClassification" xml:space="preserve"><value>Identifikatsiya va tasnif</value></data>
+  <data name="OperationalFlags" xml:space="preserve"><value>Operatsion belgilar</value></data>
+  <data name="TraceabilityAndAssignments" xml:space="preserve"><value>Kuzatuv va biriktirishlar</value></data>
+  <data name="VariantModel" xml:space="preserve"><value>Variant modeli</value></data>
+  <data name="Stockable" xml:space="preserve"><value>Omborda saqlanadi</value></data>
+  <data name="Purchasable" xml:space="preserve"><value>Xarid qilinadi</value></data>
+  <data name="Sellable" xml:space="preserve"><value>Sotiladi</value></data>
+  <data name="ServiceItem" xml:space="preserve"><value>Xizmat mahsuloti</value></data>
+  <data name="AddVariant" xml:space="preserve"><value>Variant qo'shish</value></data>
+  <data name="VariantModelHint" xml:space="preserve"><value>Mahsulot atributlari va variant kombinatsiyalarini boshqarish uchun variant modelini tanlang.</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>Bosh sahifa</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Mahsulotni tahrirlash</value></data>
+  <data name="NoAttributesAssigned" xml:space="preserve"><value>Hali atributlar biriktirilmagan.</value></data>
+  <data name="NoVariantsAssigned" xml:space="preserve"><value>Hali variantlar biriktirilmagan.</value></data>
+  <data name="Value" xml:space="preserve"><value>Qiymat</value></data>
+  <data name="NoAttributeTemplateSelected" xml:space="preserve"><value>Hali atribut shabloni tanlanmagan.</value></data>
+  <data name="NoVariantAxisDefined" xml:space="preserve"><value>Bu model uchun variant o'qi belgilanmagan.</value></data>
+  <data name="NoVariantsDefined" xml:space="preserve"><value>Hali variantlar belgilanmagan.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Olib tashlash</value></data>
+  <data name="Variant" xml:space="preserve"><value>Variant</value></data>
+</root>

@@ -1,0 +1,59 @@
+@using Diten.Web.Views.MDM.Items
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ItemsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="items-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Edit = Localizer["EditBtn"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Print = SharedLocalizer["Print"].Value,
+        PDF = SharedLocalizer["PDF"].Value,
+        Copy = SharedLocalizer["Copy"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ColumnOrder = SharedLocalizer["ColumnOrder"].Value,
+        AddNewItems = Localizer["AddNewItems"].Value,
+        DtNoRecords = SharedLocalizer["DtNoRecords"].Value,
+        DtInfo = SharedLocalizer["DtInfo"].Value,
+        DtInfoEmpty = SharedLocalizer["DtInfoEmpty"].Value,
+        DtInfoFiltered = SharedLocalizer["DtInfoFiltered"].Value,
+        DtZeroRecords = SharedLocalizer["DtZeroRecords"].Value,
+        DtEmptyTable = SharedLocalizer["DtEmptyTable"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        BulkDeleteSuccess = SharedLocalizer["BulkDeleteSuccess"].Value,
+        ClearSelection = SharedLocalizer["ClearSelection"].Value,
+        SelectedCount = SharedLocalizer["SelectedCount"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        ConfirmAction = SharedLocalizer["ConfirmAction"].Value,
+        DeleteConfirmationYesBtn = SharedLocalizer["DeleteConfirmationYesBtn"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Code = Localizer["Code"].Value,
+        Name = Localizer["Name"].Value,
+        ItemType = Localizer["ItemType"].Value,
+        Category = Localizer["Category"].Value,
+        BaseUom = Localizer["BaseUom"].Value,
+        TrackingPolicy = Localizer["TrackingPolicy"].Value,
+        LifecycleState = Localizer["LifecycleState"].Value,
+        ShortDescription = Localizer["ShortDescription"].Value
+    })
+</script>

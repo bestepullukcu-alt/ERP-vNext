@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ItemCategoriesTitle" xml:space="preserve"><value>Kategoriya boshqaruvi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Ushbu ekranda mahsulot kategoriyalari va iyerarxik tasnif qoidalarini boshqarishingiz mumkin.</value></data>
+  <data name="AddNewItemCategories" xml:space="preserve"><value>Yangi kategoriya qo'shish</value></data>
+  <data name="Actions" xml:space="preserve"><value>Amallar</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Tahrirlash</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Nomi</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Mahsulot turi</value></data>
+  <data name="ParentCategory" xml:space="preserve"><value>Ota kategoriya</value></data>
+  <data name="Description" xml:space="preserve"><value>Tavsif</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Tezkor ko'rish</value></data>
+</root>

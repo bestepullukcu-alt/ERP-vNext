@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ItemVariantModelsTitle" xml:space="preserve"><value>Gestión de Variantes</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Administre desde esta pantalla plantillas reutilizables de variantes y ejes de atributos.</value></data>
+  <data name="AddNewItemVariantModels" xml:space="preserve"><value>Agregar Modelo de Variante</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Editar</value></data>
+  <data name="Code" xml:space="preserve"><value>Código</value></data>
+  <data name="Name" xml:space="preserve"><value>Nombre</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Tipo de Artículo</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="VariantAttributes" xml:space="preserve"><value>Atributos de Variante</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista Rápida</value></data>
+  <data name="AddAttribute" xml:space="preserve"><value>Agregar Atributo</value></data>
+  <data name="NoAttributesDefined" xml:space="preserve"><value>Aún no se han definido atributos.</value></data>
+  <data name="Type" xml:space="preserve"><value>Tipo</value></data>
+  <data name="Required" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="VariantAxis" xml:space="preserve"><value>Eje de Variante</value></data>
+  <data name="Remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="TextDataType" xml:space="preserve"><value>Texto</value></data>
+</root>

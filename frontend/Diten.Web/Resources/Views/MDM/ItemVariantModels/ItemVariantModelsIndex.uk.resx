@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ItemVariantModelsTitle" xml:space="preserve"><value>Керування варіантами</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>На цьому екрані можна керувати повторно використовуваними шаблонами варіантів і осями атрибутів.</value></data>
+  <data name="AddNewItemVariantModels" xml:space="preserve"><value>Додати модель варіанту</value></data>
+  <data name="Actions" xml:space="preserve"><value>Дії</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Редагувати</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Назва</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Тип номенклатури</value></data>
+  <data name="Description" xml:space="preserve"><value>Опис</value></data>
+  <data name="VariantAttributes" xml:space="preserve"><value>Атрибути варіанту</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Швидкий перегляд</value></data>
+  <data name="AddAttribute" xml:space="preserve"><value>Додати атрибут</value></data>
+  <data name="NoAttributesDefined" xml:space="preserve"><value>Атрибути ще не визначені.</value></data>
+  <data name="Type" xml:space="preserve"><value>Тип</value></data>
+  <data name="Required" xml:space="preserve"><value>Обов'язковий</value></data>
+  <data name="VariantAxis" xml:space="preserve"><value>Вісь варіанту</value></data>
+  <data name="Remove" xml:space="preserve"><value>Видалити</value></data>
+  <data name="TextDataType" xml:space="preserve"><value>Текст</value></data>
+</root>
