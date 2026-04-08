@@ -14,7 +14,8 @@ const LegalEntityCreateManager = (function () {
                 const $el = $(this);
                 $el.wrap('<div class="position-relative"></div>').select2({
                     placeholder: $el.find('option[value=""]').text() || 'Select',
-                    dropdownParent: $el.parent()
+                    dropdownParent: $el.parent(),
+                    allowClear: true
                 });
             });
         }

@@ -45,8 +45,13 @@ Bu dosya, Diten.Web frontend katmanı için zorunlu kuralları tanımlar. Tüm a
 - **Badge Clipping (Mobile/Tablet):** Filter/ColVis badge’leri `top-0 end-0 translate-middle` ile butonun dışına taşar. Toolbar, `.card-datatable.table-responsive` (overflow) içinde olduğundan **z-index ile çözülemez**; çözüm `backbone-custom.css (MOD-0022)` içinde DataTable top row için **ek `padding-top` “safe area”** bırakmaktır. Bu kural kaldırılmaz.
 - **Select2 Shadow (Inline Filter):** `#inlineFilterHost` içindeki Select2 focus/open durumunda vendor `box-shadow` (active ring) kullanılmaz; `backbone-custom.css` içinde shadow kapatılır. Amaç “chip” görünümünde temiz kenar estetiğidir.
 - **Select2 Form-Select Estetiği (Inline Filter):** Inline filter Select2 tekli seçim yüzeyi, Sneat `form-select form-select-sm` estetiğine yakın yükseklik/border/padding ile `backbone-custom.css` içinde standardize edilir.
-- **Select2 Form-Select Overflow Bug (MOD-0031):** `selectionCssClass: 'form-select form-select-sm'` ile başlatılan Select2, Bootstrap'ın `.form-select` kuralı üzerinden `.select2-selection` elementine `inline-size: 100% !important` uygular. Bu, select açıldığında sayfada yatay/dikey scroll ve sağ/alt gereksiz boşluk yaratır. Çözüm: `backbone-custom.css` içinde `#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection { inline-size: auto !important; width: auto !important; }` override'ı zorunludur. Bu kural kaldırılamaz.
+- **Select2 Inline Filter Scroll Bug (MOD-0031):** Inline filter chip'lerinde Select2'nin yanlış init'i sayfa scroll'una neden olur. Kök neden: (1) `dropdownParent: $select.parent()` — dropdown 180px chip container'a append edilirse taşar, (2) search input DOM'a eklenir ve Select2 `setTimeout(focus, 1)` ile focus atar — Sneat layout'ta scroll container `window`'dur (`content-wrapper`'ın overflow'u yoktur), browser focused elementi görünür kılmak için sayfayı scroll eder. **Zorunlu çözüm:** `dropdownParent: $(document.body)` + `minimumResultsForSearch: Infinity` + `dropdownCssClass: 'dt-inline-filter-dropdown'` + `width: 'element'` kombinasyonu kullanılır. Detay: `frontend-js-standard.md` Kural 12.
 - **Select2 Border Width (Inline Filter):** Vendor Select2 focus/open durumunda `border-width: 2px` yapabilir; inline filter chip’lerinde layout shift/scroll tetiklemesin diye `border-width: 1px` sabitlenir (kural `backbone-custom.css`).
+- **Select2 Chevron & Clear Alignment (Premium Standard):** Filtre chiplerinde ok (chevron) ve temizleme butonunun (x) çakışmaması ve her iki tipte (single/multi) görsel tutarlılık sağlanması için şu hiyerarşi zorunludur:
+    - **Chevron (Ok):** Her durumda `.select2-selection__arrow::after` üzerinden çizilir. Konumu sabit `right: .7rem`'dir.
+    - **Single-Select Clear (x):** Okun solunda, `right: 1.85rem` konumunda olmalıdır.
+    - **Multi-Select Actions (Count + Clear):** Okun solunda, grup olarak `right: 1.95rem` konumunda başlamalıdır.
+    - **Padding:** Multi-select özet metni, sağdaki interaktif alanla çakışmaması için `right: 3.85rem` padding kullanmalıdır.
 - **Shared CSS Placement:** `#inlineFilterHost`, `.dt-layout-end`, badge stacking, Select2 dropdown/search/result ve benzeri tekrar kullanılabilir DataTable/UI stilleri page-level `@section Styles` içinde tutulmaz; merkezi olarak `backbone-custom.css` içinde yaşar.
 
 ### CSS-006: Unobtrusive Form Validation Feedback
@@ -229,7 +234,7 @@ Bu bölüm yalnızca `data-dt-standard="v2"` ile işaretlenmiş DataTable sayfal
 ### UI-033: Accessibility (A11y) — Toolbar & Filter (ZORUNLU)
 - Icon-only butonlarda `aria-label` + lokalize tooltip/title zorunludur.
 - Filter trigger için `aria-controls="inlineFilterCollapse"` + `aria-expanded` zorunludur.
-- Dropdown açıldığında search input focus almalıdır (Select2).
+- Inline filter chip Select2'lerinde search input **kullanılmaz** (`minimumResultsForSearch: Infinity`). Search input DOM'a eklenince Select2 focus tetikler ve sayfa scroll yapar (MOD-0031).
 - Keyboard navigation: Tab ile erişilebilirlik, ESC kapanış davranışı QA’da doğrulanmalıdır.
 
 ---

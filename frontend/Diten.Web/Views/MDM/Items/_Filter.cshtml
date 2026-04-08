@@ -9,17 +9,19 @@
             <form class="m-0" id="filterForm">
                 <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
                     <div class="filter-chip filter-item-type">
-                        <select class="form-select form-select-sm select2" id="filterItemType" data-placeholder="@Localizer["ItemType"]">
-                            <option value=""></option>
+                        <select class="form-select form-select-sm select2" id="filterItemType" data-placeholder="@Localizer["ItemType"]" multiple="multiple">
                         </select>
                     </div>
                     <div class="filter-chip filter-category">
-                        <select class="form-select form-select-sm select2" id="filterCategory" data-placeholder="@Localizer["Category"]">
-                            <option value=""></option>
+                        <select class="form-select form-select-sm select2" id="filterCategory" data-placeholder="@Localizer["Category"]" multiple="multiple">
                         </select>
                     </div>
                     <div class="filter-chip filter-lifecycle">
-                        <select class="form-select form-select-sm select2" id="filterLifecycleState" data-placeholder="@Localizer["LifecycleState"]">
+                        <select class="form-select form-select-sm select2" id="filterLifecycleState" data-placeholder="@Localizer["LifecycleState"]" multiple="multiple">
+                        </select>
+                    </div>
+                    <div class="filter-chip filter-tracking-policy">
+                        <select class="form-select form-select-sm select2" id="filterTrackingPolicy" data-placeholder="@Localizer["TrackingPolicy"]">
                             <option value=""></option>
                         </select>
                     </div>

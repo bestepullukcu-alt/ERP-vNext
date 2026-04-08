@@ -145,6 +145,126 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     box-shadow: none !important;
 }
 
+/* --- MultiSelect Compactness & Fixes --- */
+#inlineFilterHost .select2-container--default .select2-selection--multiple {
+    border: 1px solid var(--bs-border-color);
+    background-color: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius);
+    padding: 0 30px 0 8px !important;
+    /* Extra padding on right for Clear button */
+    min-height: 38px !important;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    /* Prevent wrapping */
+    overflow: hidden;
+    position: relative;
+    box-shadow: none !important;
+}
+
+#inlineFilterHost .select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: var(--bs-primary);
+}
+
+#inlineFilterHost .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100%;
+    overflow: hidden;
+    list-style: none;
+}
+
+#inlineFilterHost .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: rgba(var(--bs-primary-rgb), 0.1) !important;
+    border: none !important;
+    border-radius: 4px !important;
+    color: var(--bs-primary) !important;
+    padding: 2px 8px !important;
+    margin: 0 4px 0 0 !important;
+    font-size: 0.75rem !important;
+    font-weight: 500;
+    line-height: 1.4 !important;
+    display: inline-flex !important;
+    align-items: center;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+#inlineFilterHost .select2-container--default .select2-selection--multiple .select2-selection__choice:empty {
+    display: none !important;
+}
+
+/* Hide choice-level 'x' for cleaner look in filter bar, use the global 'X' instead */
+#inlineFilterHost .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    display: none !important;
+}
+
+#inlineFilterHost .select2-container--default .select2-selection--multiple .select2-search--inline {
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-grow: 1;
+}
+
+#inlineFilterHost .select2-container--default .select2-selection--multiple .select2-search__field {
+    margin: 0 !important;
+    height: 32px !important;
+    font-size: 0.875rem !important;
+    line-height: 32px !important;
+    background: transparent !important;
+}
+
+/* Position Global Clear Button strictly on the right */
+#inlineFilterHost .select2-container--default .select2-selection--multiple .select2-selection__clear {
+    position: absolute !important;
+    right: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: var(--bs-secondary) !important;
+    font-size: 1.2rem !important;
+    background: transparent !important;
+    border: none !important;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    z-index: 5;
+    cursor: pointer;
+}
+
+#inlineFilterHost .select2-container--default .select2-selection--multiple .select2-selection__clear:hover {
+    opacity: 1;
+    color: var(--bs-danger) !important;
+}
+
+/* Dropdown Results Styling */
+.dt-inline-filter-dropdown .select2-results__option {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    color: var(--bs-body-color);
+    border-radius: .375rem;
+}
+
+/* Hover — Sneat referans: hafif gri arka plan, metin rengi korunur */
+.dt-inline-filter-dropdown .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--bs-select-dropdown-link-hover-bg) !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* Seçili item — primary renk tonu, referansla uyumlu */
+.dt-inline-filter-dropdown .select2-results__option[aria-selected=true] {
+    background-color: var(--bs-select-dropdown-link-active-bg) !important;
+    color: var(--bs-primary) !important;
+}
+
+/* Seçili + hover aynı anda */
+.dt-inline-filter-dropdown .select2-results__option--highlighted[aria-selected=true] {
+    background-color: var(--bs-select-dropdown-link-active-bg) !important;
+    color: var(--bs-primary) !important;
+}
+
 /* MOD-0021: Remove box-shadow from ColVis 'Show All' button */
 .buttons-colvisGroup {
     box-shadow: none !important;
@@ -256,41 +376,185 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     row-gap: .5rem;
 }
 
-#inlineFilterHost .dt-filter-bar .filter-chip .select2-container {
-    inline-size: auto !important;
-    width: auto !important;
-    min-inline-size: 180px;
+#inlineFilterHost .dt-filter-bar .filter-chip {
+    flex: 0 0 180px;
+    width: 180px;
     min-width: 180px;
+    max-width: 180px;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-container {
+    width: 100% !important;
+    min-width: 100%;
+    max-width: 100%;
 }
 
 #inlineFilterHost .dt-filter-bar .filter-chip .select2-selection {
-    inline-size: auto !important;
-    width: auto !important;
+    width: 100% !important;
 }
 
-#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single {
-    height: calc(2rem + 2px);
-    border-radius: var(--bs-border-radius-sm);
+/* === Shared chip base (single + multiple) === */
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single,
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--multiple {
+    height: calc(1.85rem + 2px);
+    min-height: calc(1.85rem + 2px);
+    border-radius: var(--bs-border-radius);
     border: var(--bs-border-width) solid var(--bs-border-color);
     background-color: var(--bs-body-bg);
+    position: relative;
+    overflow: hidden;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
 
+/* === Single Select === */
 #inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__rendered {
-    line-height: calc(2rem);
-    padding-left: .875rem;
-    padding-right: 2.5rem;
-    font-size: .8125rem;
-    font-weight: 400;
+    line-height: calc(1.85rem);
+    padding-left: .75rem;
+    padding-right: 3.25rem;
+    /* room for X + chevron zone */
+    font-size: .785rem;
+    font-weight: 500;
     color: var(--bs-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    height: 100%;
     display: flex;
     align-items: center;
-    white-space: nowrap;
 }
 
-#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__arrow {
-    height: calc(2rem + 2px);
-    right: .625rem;
+/* Single clear (×): DOM-first in __rendered but positioned abs so it appears right of text */
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__clear {
+    position: absolute;
+    right: 1.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
+    font-size: .95rem;
+    line-height: 1;
+    color: var(--bs-secondary-color);
+    opacity: .5;
+    cursor: pointer;
+    transition: opacity .12s ease;
+    z-index: 1;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__clear:hover {
+    opacity: 1;
+}
+
+/* Single & Multi chevron: hide default <b>, draw chevron via ::after on __arrow */
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__arrow,
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--multiple .select2-selection__arrow {
+    position: absolute;
+    right: .7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    height: .6rem;
+    width: .6rem;
+    z-index: 5;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__arrow b,
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--multiple .select2-selection__arrow b {
+    display: none;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__arrow::after,
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--multiple .select2-selection__arrow::after {
+    content: "";
+    display: block;
+    width: .46rem;
+    height: .46rem;
+    border-right: 1.5px solid var(--bs-secondary-color);
+    border-bottom: 1.5px solid var(--bs-secondary-color);
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+/* === Multi Select (summary chip mode) === */
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--multiple {
+    padding: 0 .75rem;
+    display: flex;
+    align-items: center;
+    min-block-size: calc(1.85rem + 2px) !important;
+    min-height: calc(1.85rem + 2px) !important;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection--multiple .select2-selection__rendered {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .dt-inline-filter-multi .dt-inline-filter-multi__summary {
+    display: block;
+    position: absolute;
+    left: .75rem;
+    right: 3.85rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: calc(1.85rem);
+    font-size: .785rem;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .dt-inline-filter-multi.dt-inline-filter-multi--has-value .dt-inline-filter-multi__summary {
+    color: var(--bs-body-color);
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .dt-inline-filter-multi .dt-inline-filter-multi__actions {
+    position: absolute;
+    right: 1.95rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: .125rem;
+    z-index: 3;
+    pointer-events: auto;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .dt-inline-filter-multi .dt-inline-filter-multi__count {
+    min-width: 1rem;
+    padding: .08rem .28rem;
+    font-size: .6rem;
+    line-height: 1.1;
+    pointer-events: none;
+}
+
+
+
+/* Hide individual tags + inline search in summary mode */
+#inlineFilterHost .dt-filter-bar .filter-chip .dt-inline-filter-multi .select2-selection--multiple .select2-selection__choice,
+#inlineFilterHost .dt-filter-bar .filter-chip .dt-inline-filter-multi .select2-selection--multiple .select2-search--inline {
+    display: none !important;
+}
+
+/* Multi clear button (×) — same visual as single __clear */
+#inlineFilterHost .dt-filter-bar .filter-chip .dt-inline-filter-multi .select2-selection--multiple .dt-multi-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    font-size: .95rem;
+    line-height: 1;
+    color: var(--bs-secondary-color);
+    opacity: .5;
+    cursor: pointer !important;
+    transition: opacity .12s ease;
+    user-select: none;
+    pointer-events: auto;
+}
+
+#inlineFilterHost .dt-filter-bar .filter-chip .dt-inline-filter-multi .select2-selection--multiple .dt-multi-clear-btn:hover {
+    opacity: 1;
+    color: var(--bs-secondary-color);
 }
 
 #inlineFilterHost .dt-filter-trigger-badge {
@@ -337,6 +601,13 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 }
 
 @media (max-width: 575.98px) {
+    #inlineFilterHost .dt-filter-bar .filter-chip {
+        flex: 1 1 100%;
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+    }
+
     #inlineFilterHost .dt-filter-bar .ms-auto {
         width: 100%;
         margin-left: 0 !important;
@@ -372,19 +643,19 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 }
 
 /* Keep button badges visible above adjacent grouped buttons */
-.dt-layout-end .dt-buttons > .btn {
+.dt-layout-end .dt-buttons>.btn {
     z-index: 1;
 }
 
-.dt-layout-end .dt-buttons > .dt-save-filter-btn {
+.dt-layout-end .dt-buttons>.dt-save-filter-btn {
     z-index: 2;
 }
 
-.dt-layout-end .dt-buttons > .dt-filter-btn {
+.dt-layout-end .dt-buttons>.dt-filter-btn {
     z-index: 3;
 }
 
-.dt-layout-end .dt-buttons > .dt-colvis-btn {
+.dt-layout-end .dt-buttons>.dt-colvis-btn {
     z-index: 4;
 }
 
@@ -392,7 +663,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 .wc-inbox-search {
     min-width: 180px;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out,
-                background-color .15s ease-in-out;
+        background-color .15s ease-in-out;
 }
 
 .wc-search-wrap {
@@ -505,13 +776,13 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 }
 
 @media (max-width: 767.98px) {
-    #workcenter-inbox-pane > .card > .card-body {
+    #workcenter-inbox-pane>.card>.card-body {
         flex-wrap: nowrap;
         align-items: center !important;
         column-gap: .5rem;
     }
 
-    #workcenter-inbox-pane > .card > .card-body > .d-inline-flex {
+    #workcenter-inbox-pane>.card>.card-body>.d-inline-flex {
         order: 1;
         margin-left: 0 !important;
         flex: 0 0 auto;
@@ -555,16 +826,16 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 }
 
 /* Work Center: prevent icon view-switch buttons from vertical jitter on hover/focus */
-.work-center-view-switch > .btn,
-.work-center-view-switch > .btn:hover,
-.work-center-view-switch > .btn:focus,
-.work-center-view-switch > .btn:active {
+.work-center-view-switch>.btn,
+.work-center-view-switch>.btn:hover,
+.work-center-view-switch>.btn:focus,
+.work-center-view-switch>.btn:active {
     transform: none !important;
     translate: none !important;
     top: 0 !important;
 }
 
-.work-center-view-switch > .btn.btn-icon .icon-base {
+.work-center-view-switch>.btn.btn-icon .icon-base {
     display: block;
 }
 
@@ -743,7 +1014,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     line-height: 1 !important;
 }
 
-.inbox-row__meta-item > span[data-field="dueDate"] {
+.inbox-row__meta-item>span[data-field="dueDate"] {
     display: inline-flex;
     align-items: center;
     line-height: 1;
@@ -1386,7 +1657,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     box-shadow: 0 8px 22px rgba(17, 24, 39, 0.05);
 }
 
-.task-v2-card > header {
+.task-v2-card>header {
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.07em;
@@ -1485,7 +1756,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     margin-top: 0.9rem;
 }
 
-.task-v2-header__facts > div {
+.task-v2-header__facts>div {
     background: rgba(255, 255, 255, 0.8);
     border: 1px solid #e5ebf2;
     border-radius: 0.6rem;
@@ -2118,7 +2389,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     font-size: 0.82rem;
 }
 
-.task-v2-simple-list li + li {
+.task-v2-simple-list li+li {
     margin-top: 0.3rem;
 }
 
@@ -2237,7 +2508,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     color: #334155;
 }
 
-.task-v2-gate-history p + p {
+.task-v2-gate-history p+p {
     margin-top: 0.3rem;
 }
 
@@ -2320,7 +2591,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     gap: 0.6rem;
 }
 
-.task-v2-metadata-grid > div {
+.task-v2-metadata-grid>div {
     border: 1px solid #e4eaf2;
     background: #fbfdff;
     border-radius: 0.6rem;

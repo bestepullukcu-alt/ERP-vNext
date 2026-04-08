@@ -590,7 +590,8 @@ const CountriesList = (function () {
             $('#filterStatus').select2({
                 dropdownParent: $('#inlineFilterCollapse'),
                 minimumResultsForSearch: -1,
-                selectionCssClass: 'form-select form-select-sm'
+                selectionCssClass: 'form-select form-select-sm',
+                allowClear: true
             });
         }
 

@@ -68,7 +68,8 @@ const ItemFormPage = (function () {
 
         $(formEl).find('.select2').each(function () {
             $(this).select2({
-                width: '100%'
+                width: '100%',
+                allowClear: true
             });
         });
     };

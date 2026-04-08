@@ -81,8 +81,8 @@ const ItemVariantModelsList = (function () {
         document.getElementById('VariantModelItemTypeId').innerHTML = `<option value=""></option>${markup}`;
 
         if (window.jQuery && $.fn.select2) {
-            $('#filterItemType, #filterStatus').select2({ dropdownParent: $('#inlineFilterCollapse'), selectionCssClass: 'form-select form-select-sm' });
-            $('#VariantModelItemTypeId').select2({ dropdownParent: $('#offcanvasVariantModelEditor') });
+            $('#filterItemType, #filterStatus').select2({ dropdownParent: $('#inlineFilterCollapse'), selectionCssClass: 'form-select form-select-sm', allowClear: true });
+            $('#VariantModelItemTypeId').select2({ dropdownParent: $('#offcanvasVariantModelEditor'), allowClear: true });
         }
     };
 

@@ -90,8 +90,8 @@ const ItemCategoriesList = (function () {
         document.getElementById('ParentCategoryId').innerHTML = `<option value=""></option>${parentMarkup}`;
 
         if (window.jQuery && $.fn.select2) {
-            $('#filterItemType, #filterStatus').select2({ dropdownParent: $('#inlineFilterCollapse'), selectionCssClass: 'form-select form-select-sm' });
-            $('#CategoryItemTypeId, #ParentCategoryId').select2({ dropdownParent: $('#offcanvasCategoryEditor') });
+            $('#filterItemType, #filterStatus').select2({ dropdownParent: $('#inlineFilterCollapse'), selectionCssClass: 'form-select form-select-sm', allowClear: true });
+            $('#CategoryItemTypeId, #ParentCategoryId').select2({ dropdownParent: $('#offcanvasCategoryEditor'), allowClear: true });
         }
     };
 

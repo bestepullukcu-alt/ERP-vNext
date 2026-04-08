@@ -19,8 +19,9 @@ const ItemsList = (function () {
     const filterCollapseId = 'inlineFilterCollapse';
     const saveViewColumnIndexes = [2, 3, 4, 5, 6, 7, 8, 9];
     const totalColumnCount = 11;
+    const defaultVisibleColumnIndexes = [2, 3, 4, 5, 9];
     const baseOrder = [[2, 'asc']];
-    let appliedFilters = { itemType: '', category: '', lifecycleState: '', status: '' };
+    let appliedFilters = { itemType: [], category: [], lifecycleState: [], trackingPolicy: '', status: '' };
     let L = window.L10n || {};
 
     const syncL10n = () => {
@@ -64,6 +65,47 @@ const ItemsList = (function () {
     };
 
     const normalizeString = (value) => (typeof value === 'string' ? value.trim() : '');
+    const normalizeArray = (value) => {
+        if (Array.isArray(value)) {
+            return Array.from(new Set(value.map((item) => normalizeString(String(item))).filter(Boolean)));
+        }
+
+        const normalized = normalizeString(value);
+        return normalized ? [normalized] : [];
+    };
+    const sortNormalizedArray = (value) => normalizeArray(value).slice().sort((left, right) => left.localeCompare(right));
+    const hasFilterValue = (value) => Array.isArray(value) ? normalizeArray(value).length > 0 : normalizeString(value).length > 0;
+    const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const encodeHtml = (value) => String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    const matchesMultiFilter = (selectedValues, actualValue) => {
+        const normalizedSelected = normalizeArray(selectedValues);
+        if (!normalizedSelected.length) {
+            return true;
+        }
+
+        return normalizedSelected.includes(normalizeString(actualValue));
+    };
+    const matchesSingleFilter = (selectedValue, actualValue) => {
+        const normalizedSelected = normalizeString(selectedValue);
+        if (!normalizedSelected) {
+            return true;
+        }
+
+        return normalizeString(actualValue) === normalizedSelected;
+    };
+    const matchesStatusFilter = (selectedValue, actualValue) => {
+        const normalizedSelected = normalizeString(selectedValue);
+        if (!normalizedSelected) {
+            return true;
+        }
+
+        return String(Boolean(actualValue)) === normalizedSelected;
+    };
 
     const normalizeColumnVisibility = (colVis) => {
         if (!colVis) {
@@ -122,6 +164,13 @@ const ItemsList = (function () {
         }
     };
 
+    const createDefaultColumnVisibility = () => {
+        return saveViewColumnIndexes.reduce((acc, columnIndex) => {
+            acc[columnIndex] = defaultVisibleColumnIndexes.includes(columnIndex);
+            return acc;
+        }, {});
+    };
+
     const applyColumnOrder = (api, columnOrder) => {
         const normalized = normalizeColumnOrder(columnOrder);
         if (!normalized || typeof api?.colReorder?.order !== 'function') {
@@ -164,9 +213,10 @@ const ItemsList = (function () {
     };
 
     const getCurrentView = (api) => ({
-        itemType: normalizeString(appliedFilters.itemType),
-        category: normalizeString(appliedFilters.category),
-        lifecycleState: normalizeString(appliedFilters.lifecycleState),
+        itemType: normalizeArray(appliedFilters.itemType),
+        category: normalizeArray(appliedFilters.category),
+        lifecycleState: normalizeArray(appliedFilters.lifecycleState),
+        trackingPolicy: normalizeString(appliedFilters.trackingPolicy),
         status: normalizeString(appliedFilters.status),
         search: normalizeString(getSearchInputValue(api) || api.search()),
         colVis: captureColumnVisibility(api),
@@ -194,9 +244,10 @@ const ItemsList = (function () {
     const mapSavedViewToState = (savedView) => {
         const definition = getSavedViewDefinition(savedView);
         return {
-            itemType: normalizeString(definition.itemType),
-            category: normalizeString(definition.category),
-            lifecycleState: normalizeString(definition.lifecycleState),
+            itemType: normalizeArray(definition.itemType),
+            category: normalizeArray(definition.category),
+            lifecycleState: normalizeArray(definition.lifecycleState),
+            trackingPolicy: normalizeString(definition.trackingPolicy),
             status: normalizeString(definition.status),
             search: normalizeString(definition.search),
             colVis: normalizeColumnVisibility(definition.colVis),
@@ -206,12 +257,13 @@ const ItemsList = (function () {
     };
 
     const serializeView = (view) => JSON.stringify({
-        itemType: normalizeString(view?.itemType),
-        category: normalizeString(view?.category),
-        lifecycleState: normalizeString(view?.lifecycleState),
+        itemType: sortNormalizedArray(view?.itemType),
+        category: sortNormalizedArray(view?.category),
+        lifecycleState: sortNormalizedArray(view?.lifecycleState),
+        trackingPolicy: normalizeString(view?.trackingPolicy),
         status: normalizeString(view?.status),
         search: normalizeString(view?.search),
-        colVis: normalizeColumnVisibility(view?.colVis) || {},
+        colVis: normalizeColumnVisibility(view?.colVis) || createDefaultColumnVisibility(),
         columnOrder: normalizeColumnOrder(view?.columnOrder) || Array.from({ length: totalColumnCount }, (_, index) => index),
         order: Array.isArray(view?.order) ? view.order : baseOrder
     });
@@ -228,15 +280,13 @@ const ItemsList = (function () {
 
     const isDirtyComparedToDefault = (api) => {
         const baseline = defaultViewState || {
-            itemType: '',
-            category: '',
-            lifecycleState: '',
+            itemType: [],
+            category: [],
+            lifecycleState: [],
+            trackingPolicy: '',
             status: '',
             search: '',
-            colVis: saveViewColumnIndexes.reduce((acc, columnIndex) => {
-                acc[columnIndex] = true;
-                return acc;
-            }, {}),
+            colVis: createDefaultColumnVisibility(),
             columnOrder: Array.from({ length: totalColumnCount }, (_, index) => index),
             order: baseOrder
         };
@@ -315,17 +365,113 @@ const ItemsList = (function () {
         });
     };
 
-    const populateSelect = (selector, options) => {
+    const populateSelect = (selector, options, config = {}) => {
         const el = document.querySelector(selector);
         if (!el) {
             return;
         }
 
-        const currentValue = el.value;
-        const optionMarkup = options.map((option) => `<option value="${option.id}">${option.name}</option>`).join('');
-        el.innerHTML = `<option value=""></option>${optionMarkup}`;
-        if (currentValue) {
+        const currentValue = el.multiple
+            ? (window.jQuery ? ($(el).val() || []) : Array.from(el.selectedOptions).map((option) => option.value))
+            : el.value;
+
+        const optionMarkup = options.map((option) => {
+            const optionValue = encodeHtml(typeof config.getValue === 'function' ? config.getValue(option) : (option.name ?? option.id ?? ''));
+            const optionLabel = encodeHtml(typeof config.getLabel === 'function' ? config.getLabel(option) : (option.name ?? option.label ?? optionValue));
+            return `<option value="${optionValue}">${optionLabel}</option>`;
+        }).join('');
+
+        el.innerHTML = el.multiple ? optionMarkup : `<option value=""></option>${optionMarkup}`;
+        if (window.jQuery) {
+            $(el).val(currentValue).trigger('change.select2');
+        } else if (el.multiple && Array.isArray(currentValue)) {
+            Array.from(el.options).forEach((option) => {
+                option.selected = currentValue.includes(option.value);
+            });
+        } else if (currentValue) {
             el.value = currentValue;
+        }
+    };
+
+    const registerTableFilters = () => {
+        if (!window.jQuery?.fn?.dataTable?.ext?.search || dtTableEl?.dataset.itemsFilterBound === '1') {
+            return;
+        }
+
+        dtTableEl.dataset.itemsFilterBound = '1';
+        $.fn.dataTable.ext.search.push((settings, _searchData, dataIndex, rowData) => {
+            if (settings.nTable !== dtTableEl) {
+                return true;
+            }
+
+            const effectiveRow = rowData || dt?.row(dataIndex)?.data?.() || null;
+            if (!effectiveRow) {
+                return true;
+            }
+
+            return matchesMultiFilter(appliedFilters.itemType, effectiveRow.itemType)
+                && matchesMultiFilter(appliedFilters.category, effectiveRow.category)
+                && matchesMultiFilter(appliedFilters.lifecycleState, effectiveRow.lifecycleState)
+                && matchesSingleFilter(appliedFilters.trackingPolicy, effectiveRow.trackingPolicy)
+                && matchesStatusFilter(appliedFilters.status, effectiveRow.isActive);
+        });
+    };
+
+    const syncMultiSelectSummary = ($select) => {
+        const $container = $select.next('.select2-container');
+        const $rendered = $container.find('.select2-selection__rendered');
+        const $selection = $container.find('.select2-selection--multiple');
+        if (!$container.length || !$rendered.length || !$selection.length) {
+            return;
+        }
+
+        let $summary = $selection.find('.dt-inline-filter-multi__summary');
+        let $actions = $selection.find('.dt-inline-filter-multi__actions');
+        let $count = $selection.find('.dt-inline-filter-multi__count');
+        let $arrow = $selection.find('.select2-selection__arrow');
+
+        if (!$summary.length) {
+            $summary = $('<span class="dt-inline-filter-multi__summary"></span>');
+            $selection.prepend($summary);
+        }
+
+        if (!$actions.length) {
+            $actions = $('<span class="dt-inline-filter-multi__actions"></span>');
+            $selection.append($actions);
+        }
+
+        if (!$count.length) {
+            $count = $('<span class="dt-inline-filter-multi__count badge rounded-pill bg-label-primary d-none"></span>');
+            $actions.append($count);
+        }
+
+        if (!$arrow.length) {
+            $arrow = $('<span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span>');
+            $selection.append($arrow);
+        }
+
+        const placeholder = normalizeString($select.data('placeholder')) || '';
+        const selectedValues = normalizeArray($select.val());
+        const selectedTexts = ($select.select2('data') || [])
+            .map((item) => normalizeString(item.text))
+            .filter(Boolean);
+
+        $summary.text(placeholder);
+        $rendered.attr('title', selectedTexts.join(', ') || placeholder);
+        $container.toggleClass('dt-inline-filter-multi--has-value', selectedValues.length > 0);
+        $count.toggleClass('d-none', selectedValues.length === 0);
+        $count.text(String(selectedValues.length));
+
+        // Clear (×) butonu: değer varsa inject et, yoksa kaldır
+        $actions.find('.dt-multi-clear-btn').remove();
+        if (selectedValues.length > 0) {
+            const $clearBtn = $('<span class="dt-multi-clear-btn" role="button" aria-label="Clear" title="Temizle">×</span>');
+            $clearBtn.on('mousedown', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $select.val(null).trigger('change');
+            });
+            $actions.append($clearBtn);
         }
     };
 
@@ -335,24 +481,101 @@ const ItemsList = (function () {
         }
 
         try {
-            const [itemTypesResponse, categoriesResponse, lifecycleResponse] = await Promise.all([
+            const [itemTypesResponse, categoriesResponse, lifecycleResponse, trackingPolicyResponse] = await Promise.all([
                 fetch(`${apiUrl}/api/item-types`, { headers: getAuthHeaders() }),
                 fetch(`${apiUrl}/api/item-categories`, { headers: getAuthHeaders() }),
-                fetch(`${apiUrl}/api/lifecycle-states`, { headers: getAuthHeaders() })
+                fetch(`${apiUrl}/api/lifecycle-states`, { headers: getAuthHeaders() }),
+                fetch(`${apiUrl}/api/tracking-policies`, { headers: getAuthHeaders() })
             ]);
 
             const itemTypes = itemTypesResponse.ok ? ((await itemTypesResponse.json()).data || []) : [];
             const categories = categoriesResponse.ok ? ((await categoriesResponse.json()).data || []) : [];
             const lifecycleStates = lifecycleResponse.ok ? ((await lifecycleResponse.json()).data || []) : [];
+            const trackingPolicies = trackingPolicyResponse.ok ? ((await trackingPolicyResponse.json()).data || []) : [];
+            const trackingPolicyOptions = ['Batch', 'Serial', 'None']
+                .map((name) => trackingPolicies.find((policy) => normalizeString(policy.name).toLowerCase() === name.toLowerCase()) || { name })
+                .filter((policy, index, collection) => collection.findIndex((entry) => normalizeString(entry.name) === normalizeString(policy.name)) === index);
 
             populateSelect('#filterItemType', itemTypes);
             populateSelect('#filterCategory', categories);
             populateSelect('#filterLifecycleState', lifecycleStates);
+            populateSelect('#filterTrackingPolicy', trackingPolicyOptions);
 
             if (window.jQuery && $.fn.select2) {
-                $('#filterItemType, #filterCategory, #filterLifecycleState, #filterStatus').select2({
-                    dropdownParent: $('#inlineFilterCollapse'),
-                    selectionCssClass: 'form-select form-select-sm'
+                const $dropdownParent = $(document.body);
+
+                const clampDropdown = () => {
+                    requestAnimationFrame(() => {
+                        const dropdown = document.querySelector('.select2-dropdown.dt-inline-filter-dropdown');
+                        if (!dropdown) return;
+
+                        const rect = dropdown.getBoundingClientRect();
+                        const pad = 8;
+                        let dx = 0;
+                        let dy = 0;
+
+                        if (rect.right > window.innerWidth - pad) dx -= rect.right - (window.innerWidth - pad);
+                        if (rect.left < pad) dx += pad - rect.left;
+                        if (rect.bottom > window.innerHeight - pad) dy -= rect.bottom - (window.innerHeight - pad);
+                        if (rect.top < pad) dy += pad - rect.top;
+
+                        if (!dx && !dy) return;
+
+                        const cs = window.getComputedStyle(dropdown);
+                        const cssLeft = parseFloat(cs.left);
+                        const cssTop = parseFloat(cs.top);
+                        const baseLeft = Number.isFinite(cssLeft) ? cssLeft : (rect.left + window.scrollX);
+                        const baseTop = Number.isFinite(cssTop) ? cssTop : (rect.top + window.scrollY);
+
+                        if (dx) dropdown.style.left = `${baseLeft + dx}px`;
+                        if (dy) dropdown.style.top = `${baseTop + dy}px`;
+                        dropdown.style.transform = 'none';
+                    });
+                };
+
+                $('#filterItemType, #filterCategory, #filterLifecycleState').each(function () {
+                    const $select = $(this);
+
+                    if ($select.hasClass('select2-hidden-accessible')) {
+                        $select.select2('destroy');
+                    }
+
+                    $select.select2({
+                        dropdownParent: $dropdownParent,
+                        dropdownCssClass: 'dt-inline-filter-dropdown',
+                        containerCssClass: 'dt-inline-filter-multi',
+                        selectionCssClass: 'form-select form-select-sm',
+                        placeholder: $select.data('placeholder') || '',
+                        minimumResultsForSearch: Infinity,
+                        width: 'element',
+                        closeOnSelect: false
+                    });
+
+                    $select.on('select2:open', clampDropdown);
+                    $select.on('change.select2-summary', function () {
+                        syncMultiSelectSummary($select);
+                    });
+                    requestAnimationFrame(() => syncMultiSelectSummary($select));
+                });
+
+                $('#filterTrackingPolicy, #filterStatus').each(function () {
+                    const $select = $(this);
+
+                    if ($select.hasClass('select2-hidden-accessible')) {
+                        $select.select2('destroy');
+                    }
+
+                    $select.select2({
+                        dropdownParent: $dropdownParent,
+                        dropdownCssClass: 'dt-inline-filter-dropdown',
+                        selectionCssClass: 'form-select form-select-sm',
+                        placeholder: $select.data('placeholder') || '',
+                        minimumResultsForSearch: Infinity,
+                        width: 'element',
+                        allowClear: true
+                    });
+
+                    $select.on('select2:open', clampDropdown);
                 });
             }
 
@@ -362,31 +585,36 @@ const ItemsList = (function () {
         }
     };
 
-    const applyFilterValues = (api, values) => {
-        api.column('itemType:name').search(values.itemType || '');
-        api.column('category:name').search(values.category || '');
-        api.column('lifecycleState:name').search(values.lifecycleState || '');
-        api.column('isActive:name').search(values.status || '');
+    const applyFilterValues = (api) => {
+        api.draw();
     };
 
     const syncFilterControls = (values) => {
-        $('#filterItemType').val(values.itemType || '').trigger('change');
-        $('#filterCategory').val(values.category || '').trigger('change');
-        $('#filterLifecycleState').val(values.lifecycleState || '').trigger('change');
+        $('#filterItemType').val(normalizeArray(values.itemType)).trigger('change');
+        $('#filterCategory').val(normalizeArray(values.category)).trigger('change');
+        $('#filterLifecycleState').val(normalizeArray(values.lifecycleState)).trigger('change');
+        $('#filterTrackingPolicy').val(values.trackingPolicy || '').trigger('change');
         $('#filterStatus').val(values.status || '').trigger('change');
     };
 
     const applySavedTableState = (api, view, options) => {
         const state = view || {};
+        const fallbackOrder = Array.isArray(options?.fallbackOrder) ? options.fallbackOrder : baseOrder;
+        const fallbackColVis = options?.resetColumns === true ? createDefaultColumnVisibility() : null;
+        const fallbackColumnOrder = options?.resetColumnOrder === true
+            ? Array.from({ length: totalColumnCount }, (_, index) => index)
+            : null;
+
         appliedFilters = {
-            itemType: state.itemType || '',
-            category: state.category || '',
-            lifecycleState: state.lifecycleState || '',
+            itemType: normalizeArray(state.itemType),
+            category: normalizeArray(state.category),
+            lifecycleState: normalizeArray(state.lifecycleState),
+            trackingPolicy: normalizeString(state.trackingPolicy),
             status: state.status || ''
         };
 
         syncFilterControls(appliedFilters);
-        applyFilterValues(api, appliedFilters);
+        applyFilterValues(api);
 
         if (typeof state.search === 'string') {
             api.search(state.search);
@@ -396,12 +624,12 @@ const ItemsList = (function () {
             syncSearchInput(api, '');
         }
 
-        applyColumnOrder(api, state.columnOrder || options?.fallbackColumnOrder);
-        applyColumnVisibility(api, state.colVis || options?.fallbackColVis);
+        applyColumnOrder(api, state.columnOrder || fallbackColumnOrder);
+        applyColumnVisibility(api, state.colVis || fallbackColVis);
         if (Array.isArray(state.order)) {
             api.order(state.order);
         } else {
-            api.order(baseOrder);
+            api.order(fallbackOrder);
         }
 
         api.draw(false);
@@ -411,8 +639,8 @@ const ItemsList = (function () {
     };
 
     const getAppliedFilterCount = () => {
-        return [appliedFilters.itemType, appliedFilters.category, appliedFilters.lifecycleState, appliedFilters.status]
-            .filter((value) => normalizeString(value)).length;
+        return [appliedFilters.itemType, appliedFilters.category, appliedFilters.lifecycleState, appliedFilters.trackingPolicy, appliedFilters.status]
+            .filter((value) => hasFilterValue(value)).length;
     };
 
     const getStatusMap = () => ({
@@ -515,13 +743,13 @@ const ItemsList = (function () {
 
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
             appliedFilters = {
-                itemType: document.getElementById('filterItemType')?.value || '',
-                category: document.getElementById('filterCategory')?.value || '',
-                lifecycleState: document.getElementById('filterLifecycleState')?.value || '',
+                itemType: $('#filterItemType').val() || [],
+                category: $('#filterCategory').val() || [],
+                lifecycleState: $('#filterLifecycleState').val() || [],
+                trackingPolicy: document.getElementById('filterTrackingPolicy')?.value || '',
                 status: document.getElementById('filterStatus')?.value || ''
             };
-            applyFilterValues(api, appliedFilters);
-            api.draw();
+            applyFilterValues(api);
             window.DtDefaults.updateVisualState(api, getAppliedFilterCount());
             if (saveFilterArmed) {
                 setSaveFilterVisible(isDirtyComparedToDefault(api));
@@ -535,10 +763,32 @@ const ItemsList = (function () {
 
         document.getElementById('btnFilterReset')?.addEventListener('click', (event) => {
             event.preventDefault();
-            appliedFilters = defaultViewState
-                ? { ...defaultViewState }
-                : { itemType: '', category: '', lifecycleState: '', status: '' };
-            applySavedTableState(api, defaultViewState || { itemType: '', category: '', lifecycleState: '', status: '', search: '' }, { clearSearch: !defaultViewState });
+
+            const clearToBaseline = () => {
+                applySavedTableState(api, { itemType: [], category: [], lifecycleState: [], trackingPolicy: '', status: '', search: '' }, {
+                    fallbackOrder: baseOrder,
+                    clearSearch: true,
+                    resetColumns: true,
+                    resetColumnOrder: true
+                });
+            };
+
+            const restoreDefaultView = (view) => {
+                applySavedTableState(api, view, {
+                    fallbackOrder: baseOrder,
+                    resetColumnOrder: !view?.columnOrder
+                });
+            };
+
+            const hasSavedDefault = !!defaultViewState;
+            const isDirty = hasSavedDefault ? isDirtyComparedToDefault(api) : false;
+
+            if (hasSavedDefault && isDirty) {
+                restoreDefaultView(defaultViewState);
+            } else {
+                clearToBaseline();
+            }
+
             if (saveFilterArmed) {
                 setSaveFilterVisible(isDirtyComparedToDefault(api));
             }
@@ -718,6 +968,10 @@ const ItemsList = (function () {
                     render: (data) => `<span class="fw-medium text-heading">${data}</span>`
                 },
                 {
+                    targets: [6, 7, 8],
+                    visible: false
+                },
+                {
                     targets: 9,
                     render: (data, type) => {
                         const status = getStatusMap()[String(data)] || { title: L.Unknown, class: 'bg-label-primary' };
@@ -767,7 +1021,21 @@ const ItemsList = (function () {
             }
         }));
 
-        dt.on('search.dt order.dt column-visibility.dt column-reorder.dt columns-reordered.dt', function () {
+        dt.on('column-visibility.dt', function () {
+            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
+            if (saveFilterArmed) {
+                setSaveFilterVisible(isDirtyComparedToDefault(dt));
+            }
+        });
+
+        dt.on('search.dt order.dt', function () {
+            if (saveFilterArmed) {
+                setSaveFilterVisible(isDirtyComparedToDefault(dt));
+            }
+        });
+
+        dt.on('column-reorder.dt columns-reordered.dt', function () {
+            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
             if (saveFilterArmed) {
                 setSaveFilterVisible(isDirtyComparedToDefault(dt));
             }
@@ -776,6 +1044,7 @@ const ItemsList = (function () {
 
     return {
         init: function () {
+            registerTableFilters();
             initDataTable();
             bindEvents();
         }

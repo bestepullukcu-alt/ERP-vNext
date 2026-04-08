@@ -434,7 +434,11 @@ window.DtDefaults = (function () {
             extend: 'colvis',
             text: '<i class="icon-base bx bx-show icon-sm"></i>',
             className: 'btn btn-icon btn-label-secondary dt-colvis-btn position-relative',
-            attr: { title: l.ColumnVisibility || 'Column Visibility', 'data-bs-toggle': 'tooltip' },
+            attr: {
+                title: l.ColumnVisibility || 'Column Visibility',
+                'data-bs-toggle': 'tooltip',
+                'data-colvis-columns': Array.isArray(colvisColumns) ? colvisColumns.join(',') : ''
+            },
             columns: colvisColumns, // Exclude Index 0 (Control), 1 (Checkbox), (Actions) based on module
             postfixButtons: [
                 {
@@ -497,9 +501,17 @@ window.DtDefaults = (function () {
         // 2. ColVis Button Sync (Gizlenen kolon varsa işaretle)
         var $colvisBtn = $('.dt-colvis-btn');
         if ($colvisBtn.length) {
-            // Varsayılan gizli kolonlar dışındakileri saymak daha doğru olur ama basitçe herhangi bir gizli kolon varsa gösterelim
-            var hiddenCount = api.columns().flatten().filter(function (idx) {
-                return !api.column(idx).visible();
+            var managedColumns = ($colvisBtn.attr('data-colvis-columns') || '')
+                .split(',')
+                .map(function (value) { return parseInt(value, 10); })
+                .filter(function (value) { return Number.isInteger(value); });
+
+            var hiddenCount = managedColumns.filter(function (idx) {
+                try {
+                    return !api.column(idx).visible();
+                } catch (e) {
+                    return false;
+                }
             }).length;
 
             $colvisBtn.find('.badge').remove();

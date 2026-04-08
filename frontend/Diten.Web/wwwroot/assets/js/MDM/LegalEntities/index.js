@@ -787,39 +787,58 @@ const LegalEntitiesList = (function () {
         const initSelect2 = () => {
             const $dropdownParent = $(document.body);
 
-            const clampInlineFilterDropdown = () => {
-                // Clamp the open dropdown into the viewport to prevent page scrollbars (x/y) while open.
-                // Applies to inline filter dropdowns only (dropdownCssClass: dt-inline-filter-dropdown).
-                window.requestAnimationFrame(() => {
-                    window.requestAnimationFrame(() => {
-                        const dropdown = document.querySelector('.select2-dropdown.dt-inline-filter-dropdown');
-                        if (!dropdown) return;
+            // Gerçek scroll container: window (.content-wrapper'ın overflow'u yok).
+            // Select2 search input'a setTimeout(focus, 1) ile focus atar.
+            // Strateji (çift güvence):
+            //   1) Tüm prototype zincirini patch et → preventScroll:true
+            //   2) setTimeout(50) ile window scroll'u restore et (Select2'nin 1ms'inden SONRA koşar)
+            const makeScrollGuard = () => {
+                const savedX = window.scrollX;
+                const savedY = window.scrollY;
 
-                        const rect = dropdown.getBoundingClientRect();
-                        const pad = 8;
+                const protos = [Element.prototype, HTMLElement.prototype, HTMLInputElement.prototype]
+                    .filter(p => p && Object.prototype.hasOwnProperty.call(p, 'focus'));
+                const originals = protos.map(p => p.focus);
+                protos.forEach((p, i) => {
+                    p.focus = function (opts) {
+                        originals[i].call(this, Object.assign({}, opts || {}, { preventScroll: true }));
+                    };
+                });
 
-                        let dx = 0;
-                        let dy = 0;
+                setTimeout(() => {
+                    protos.forEach((p, i) => { p.focus = originals[i]; });
+                    if (window.scrollX !== savedX || window.scrollY !== savedY) {
+                        window.scrollTo({ left: savedX, top: savedY, behavior: 'instant' });
+                    }
+                }, 50);
+            };
 
-                        if (rect.right > window.innerWidth - pad) dx -= rect.right - (window.innerWidth - pad);
-                        if (rect.left < pad) dx += pad - rect.left;
+            const clampDropdown = () => {
+                requestAnimationFrame(() => {
+                    const dropdown = document.querySelector('.select2-dropdown.dt-inline-filter-dropdown');
+                    if (!dropdown) return;
 
-                        if (rect.bottom > window.innerHeight - pad) dy -= rect.bottom - (window.innerHeight - pad);
-                        if (rect.top < pad) dy += pad - rect.top;
+                    const rect = dropdown.getBoundingClientRect();
+                    const pad = 8;
+                    let dx = 0;
+                    let dy = 0;
 
-                        if (!dx && !dy) return;
+                    if (rect.right > window.innerWidth - pad) dx -= rect.right - (window.innerWidth - pad);
+                    if (rect.left < pad) dx += pad - rect.left;
+                    if (rect.bottom > window.innerHeight - pad) dy -= rect.bottom - (window.innerHeight - pad);
+                    if (rect.top < pad) dy += pad - rect.top;
 
-                        const cs = window.getComputedStyle(dropdown);
-                        const cssLeft = parseFloat(cs.left);
-                        const cssTop = parseFloat(cs.top);
+                    if (!dx && !dy) return;
 
-                        const baseLeft = Number.isFinite(cssLeft) ? cssLeft : (rect.left + window.scrollX);
-                        const baseTop = Number.isFinite(cssTop) ? cssTop : (rect.top + window.scrollY);
+                    const cs = window.getComputedStyle(dropdown);
+                    const cssLeft = parseFloat(cs.left);
+                    const cssTop = parseFloat(cs.top);
+                    const baseLeft = Number.isFinite(cssLeft) ? cssLeft : (rect.left + window.scrollX);
+                    const baseTop = Number.isFinite(cssTop) ? cssTop : (rect.top + window.scrollY);
 
-                        if (dx) dropdown.style.left = `${baseLeft + dx}px`;
-                        if (dy) dropdown.style.top = `${baseTop + dy}px`;
-                        dropdown.style.transform = 'none';
-                    });
+                    if (dx) dropdown.style.left = `${baseLeft + dx}px`;
+                    if (dy) dropdown.style.top = `${baseTop + dy}px`;
+                    dropdown.style.transform = 'none';
                 });
             };
 
@@ -832,9 +851,11 @@ const LegalEntitiesList = (function () {
                     dropdownCssClass: 'dt-inline-filter-dropdown',
                     selectionCssClass: 'form-select form-select-sm',
                     templateSelection: (data) => renderFilterTrigger(L.CompanyType, !!(data && data.id)),
-                    width: '100%'
+                    width: 'element',
+                    allowClear: true
                 });
-                $companyType.on('select2:open', clampInlineFilterDropdown);
+                $companyType.on('select2:opening', makeScrollGuard);
+                $companyType.on('select2:open', clampDropdown);
             }
 
             const $status = $('#FilterTransaction');
@@ -846,9 +867,11 @@ const LegalEntitiesList = (function () {
                     dropdownCssClass: 'dt-inline-filter-dropdown',
                     selectionCssClass: 'form-select form-select-sm',
                     templateSelection: (data) => renderFilterTrigger((L.Status || L.SelectStatus), !!(data && data.id)),
-                    width: '100%'
+                    width: 'element',
+                    allowClear: true
                 });
-                $status.on('select2:open', clampInlineFilterDropdown);
+                $status.on('select2:opening', makeScrollGuard);
+                $status.on('select2:open', clampDropdown);
             }
         };
 

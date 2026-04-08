@@ -29,9 +29,27 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - Sadece ≤2 veri kolonu olan özel sayfalarda devre dışı bırakılabilir; bırakılırsa neden belirten yorum satırı zorunludur.
    - `columnOrder` Save View kapsamına eklenir (`captureColumnOrder` / `applyColumnOrder`).
    - `column-reorder.dt` / `columns-reordered.dt` event’leri dirty-state hesabına **mutlaka** dahil edilir.
-12. **Inline Filter Select2 Styling:** `#inlineFilterHost` içindeki Select2 single-select filtrelerinde `selectionCssClass: 'form-select form-select-sm'` kullanılır. Görsel standardın CSS karşılığı `backbone-custom.css` içindedir; Index.cshtml içine tekrar yazılmaz.
-    > ⚠️ **Overflow uyarısı:** `selectionCssClass: 'form-select form-select-sm'` Bootstrap'ın `.form-select` sınıfı üzerinden `.select2-selection` elementine `inline-size: 100% !important` uygular. Select açıldığında sayfa yatay/dikey scroll yapabilir. `backbone-custom.css` içindeki `#inlineFilterHost .dt-filter-bar .filter-chip .select2-selection { inline-size: auto !important; }` override'ı bu bug'ı önler ve kaldırılamaz (MOD-0031).
-13. **Inline Filter Naming:** Semantik filter container class'ları kullanılır.
+12. **Inline Filter Select2 — Zorunlu Init Paterni:** `#inlineFilterHost` içindeki tüm Select2 filtreler aşağıdaki 4 parametre ile başlatılır, eksiği olan implementasyon geçersizdir:
+    ```javascript
+    $select.select2({
+        dropdownParent: $(document.body),          // ZORUNLU — body'e append et, chip container'a değil
+        dropdownCssClass: 'dt-inline-filter-dropdown', // ZORUNLU — viewport clamp CSS kuralı devreye girer
+        minimumResultsForSearch: Infinity,         // ZORUNLU — search kutusu yok → focus yok → scroll yok
+        selectionCssClass: 'form-select form-select-sm',
+        width: 'element'                           // ZORUNLU — '100%' değil, computed width'i okur
+    });
+    $select.on('select2:open', clampDropdown);     // ZORUNLU — viewport dışına taşan dropdown'ı geri çek
+    ```
+    > 🚫 **`dropdownParent: $select.parent()`** — KESİNLİKLE YASAK. Dropdown chip container'a (180px) append edilirse browser scroll tetiklenir.  
+    > 🚫 **`width: '100%'`** — YASAK. Select2'nin dropdown genişlik hesabını bozar, `inline-size` çakışmasına yol açar.  
+    > 🚫 **`minimumResultsForSearch: 0` veya kaldırılmış** — YASAK. Search input DOM'a eklenince Select2 ona `setTimeout(focus, 1)` çağırır; browser focused elementi görünür kılmak için scroll tetikler (Sneat layout'ta `window` scroll container'dır, `content-wrapper`'ın overflow'u yoktur).  
+    > ℹ️ `selectionCssClass: 'form-select form-select-sm'` görsel standardını korur. CSS karşılığı `backbone-custom.css` içindedir; Index.cshtml içine tekrar yazılmaz.
+13. **Inline Filter Select2 Multi-Select Dynamic Summary (ZORUNLU):** Multi-select filtreleri tek satırda tutmak ve özetlemek için aşağıdaki `syncMultiSelectSummary` mantığı uygulanmalıdır:
+    - **Davranış:** 0 seçim varsa placeholder, 1 seçim varsa elemanın adı, 2+ seçim varsa `Placeholder (Sayı)` gösterilir (Örn: "Category (3)").
+    - **DOM Sync:** Multi-select'e de bir `.select2-selection__arrow` kabı zorunlu olarak enjekte edilmelidir; aksi halde ok (chevron) Single-select ile eşleşemez.
+    - **Clear Button:** Temizleme butonu (x) native `button` değil, `span` (role="button") olarak enjekte edilmelidir; native tarayıcı stilleri estetiği bozmamalıdır.
+    - **Seçici:** Multi-select state'ini stile bağlamak için `.select2-container`'a değer varken `dt-inline-filter-multi--has-value` sınıfı eklenmelidir.
+14. **Inline Filter Naming:** Semantik filter container class'ları kullanılır.
    - Company type filtresi: `.filter-company-type`
    - Status filtresi: `.filter-status`
    - `user_plan` ve `user_status` yeni sayfalarda kullanılmaz.
@@ -344,8 +362,48 @@ const {{ModuleName}}List = (function () {
     };
 
     const setupFilters = (api) => {
-        // Select2 init (modüle özgü filtre input'ları için)
-        // {{DynamicSelect2Init}}
+        // Select2 init — zorunlu 4 parametre + clampDropdown (bkz. Kural 12)
+        if (window.jQuery && $.fn.select2) {
+            const $dropdownParent = $(document.body);
+
+            const clampDropdown = () => {
+                requestAnimationFrame(() => {
+                    const dropdown = document.querySelector('.select2-dropdown.dt-inline-filter-dropdown');
+                    if (!dropdown) return;
+                    const rect = dropdown.getBoundingClientRect();
+                    const pad = 8;
+                    let dx = 0, dy = 0;
+                    if (rect.right > window.innerWidth - pad) dx -= rect.right - (window.innerWidth - pad);
+                    if (rect.left < pad) dx += pad - rect.left;
+                    if (rect.bottom > window.innerHeight - pad) dy -= rect.bottom - (window.innerHeight - pad);
+                    if (rect.top < pad) dy += pad - rect.top;
+                    if (!dx && !dy) return;
+                    const cs = window.getComputedStyle(dropdown);
+                    const cssLeft = parseFloat(cs.left), cssTop = parseFloat(cs.top);
+                    const baseLeft = Number.isFinite(cssLeft) ? cssLeft : rect.left + window.scrollX;
+                    const baseTop  = Number.isFinite(cssTop)  ? cssTop  : rect.top  + window.scrollY;
+                    if (dx) dropdown.style.left = `${baseLeft + dx}px`;
+                    if (dy) dropdown.style.top  = `${baseTop  + dy}px`;
+                    dropdown.style.transform = 'none';
+                });
+            };
+
+            // {{DynamicSelect2Init}} — her filtre select için aşağıdaki bloğu kopyala:
+            // $('#filter{{FieldName}}').select2({
+            //     dropdownParent: $dropdownParent,
+            //     dropdownCssClass: 'dt-inline-filter-dropdown',
+            //     minimumResultsForSearch: Infinity,
+            //     selectionCssClass: 'form-select form-select-sm',
+            //     width: 'element'
+            // });
+            // $('#filter{{FieldName}}').on('select2:open', clampDropdown);
+            // // Multi ise özetleyiciyi bağla (Kural 13 & 14):
+            // if ($('#filter{{FieldName}}').prop('multiple')) {
+            //     $('#filter{{FieldName}}').next('.select2-container').addClass('dt-inline-filter-multi');
+            //     $('#filter{{FieldName}}').on('change.select2-summary', function() { syncMultiSelectSummary($(this)); });
+            //     requestAnimationFrame(() => syncMultiSelectSummary($('#filter{{FieldName}}')));
+            // }
+        }
 
         // Kaydedilmiş view varsa uygula; yoksa temiz state'de kal
         const defaultView = defaultViewState;
@@ -736,6 +794,46 @@ const getCurrentView = (api) => {
         // {{FilterKeysInReturn}} — Örn: status,
         search, colVis, columnOrder: captureColumnOrder(api), order
     };
+};
+
+// ─── Multi-Select Summary Standard (Kural 13) ───────────────────────────────
+const syncMultiSelectSummary = ($select) => {
+    const $container = $select.next('.select2-container');
+    const $rendered = $container.find('.select2-selection__rendered');
+    const $selection = $container.find('.select2-selection--multiple');
+    if (!$container.length || !$rendered.length || !$selection.length) return;
+
+    let $summary = $selection.find('.dt-inline-filter-multi__summary');
+    let $actions = $selection.find('.dt-inline-filter-multi__actions');
+    let $count = $selection.find('.dt-inline-filter-multi__count');
+    let $arrow = $selection.find('.select2-selection__arrow');
+
+    if (!$summary.length) { $summary = $('<span class="dt-inline-filter-multi__summary"></span>'); $selection.prepend($summary); }
+    if (!$actions.length) { $actions = $('<span class="dt-inline-filter-multi__actions"></span>'); $selection.append($actions); }
+    if (!$count.length) { $count = $('<span class="dt-inline-filter-multi__count badge rounded-pill bg-label-primary d-none"></span>'); $actions.append($count); }
+    if (!$arrow.length) { $arrow = $('<span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span>'); $selection.append($arrow); }
+
+    const placeholder = $select.data('placeholder') || '';
+    const selectedValues = $select.val() || [];
+    const selectedTexts = ($select.select2('data') || []).map(item => item.text);
+
+    let summary = placeholder;
+    if (selectedValues.length === 1 && selectedTexts.length > 0) {
+        summary = selectedTexts[0];
+    } else if (selectedValues.length > 1) {
+        summary = `${placeholder} (${selectedValues.length})`;
+    }
+
+    $summary.text(summary);
+    $container.toggleClass('dt-inline-filter-multi--has-value', selectedValues.length > 0);
+    $count.toggleClass('d-none', selectedValues.length === 0).text(selectedValues.length);
+
+    $actions.find('.dt-multi-clear-btn').remove();
+    if (selectedValues.length > 0) {
+        const $clearBtn = $('<span class="dt-multi-clear-btn" role="button" aria-label="Clear" title="Temizle">×</span>');
+        $clearBtn.on('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); $select.val(null).trigger('change'); });
+        $actions.append($clearBtn);
+    }
 };
 
 const applySavedTableState = (api, view, options) => {
