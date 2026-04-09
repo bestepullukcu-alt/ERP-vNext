@@ -577,6 +577,7 @@ const ItemsList = (function () {
 
                     $select.on('select2:open', clampDropdown);
                 });
+
             }
 
             filterOptionsLoaded = true;

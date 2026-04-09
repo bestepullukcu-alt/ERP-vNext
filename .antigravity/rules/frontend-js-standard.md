@@ -29,21 +29,42 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - Sadece ≤2 veri kolonu olan özel sayfalarda devre dışı bırakılabilir; bırakılırsa neden belirten yorum satırı zorunludur.
    - `columnOrder` Save View kapsamına eklenir (`captureColumnOrder` / `applyColumnOrder`).
    - `column-reorder.dt` / `columns-reordered.dt` event’leri dirty-state hesabına **mutlaka** dahil edilir.
-12. **Inline Filter Select2 — Zorunlu Init Paterni:** `#inlineFilterHost` içindeki tüm Select2 filtreler aşağıdaki 4 parametre ile başlatılır, eksiği olan implementasyon geçersizdir:
+12. **Inline Filter Select2 — Zorunlu Init Paterni:** `#inlineFilterHost` içindeki tüm Select2 filtreler aşağıdaki parametrelerle başlatılır. Eksiği olan implementasyon geçersizdir.
+
+    **Single-select (allowClear destekli):**
     ```javascript
     $select.select2({
-        dropdownParent: $(document.body),          // ZORUNLU — body'e append et, chip container'a değil
-        dropdownCssClass: 'dt-inline-filter-dropdown', // ZORUNLU — viewport clamp CSS kuralı devreye girer
-        minimumResultsForSearch: Infinity,         // ZORUNLU — search kutusu yok → focus yok → scroll yok
+        dropdownParent: $(document.body),           // ZORUNLU
+        dropdownCssClass: 'dt-inline-filter-dropdown', // ZORUNLU
+        minimumResultsForSearch: Infinity,          // ZORUNLU
         selectionCssClass: 'form-select form-select-sm',
-        width: 'element'                           // ZORUNLU — '100%' değil, computed width'i okur
+        width: 'element',
+        allowClear: true
     });
-    $select.on('select2:open', clampDropdown);     // ZORUNLU — viewport dışına taşan dropdown'ı geri çek
+    $select.on('select2:open', clampDropdown);
     ```
-    > 🚫 **`dropdownParent: $select.parent()`** — KESİNLİKLE YASAK. Dropdown chip container'a (180px) append edilirse browser scroll tetiklenir.  
-    > 🚫 **`width: '100%'`** — YASAK. Select2'nin dropdown genişlik hesabını bozar, `inline-size` çakışmasına yol açar.  
-    > 🚫 **`minimumResultsForSearch: 0` veya kaldırılmış** — YASAK. Search input DOM'a eklenince Select2 ona `setTimeout(focus, 1)` çağırır; browser focused elementi görünür kılmak için scroll tetikler (Sneat layout'ta `window` scroll container'dır, `content-wrapper`'ın overflow'u yoktur).  
-    > ℹ️ `selectionCssClass: 'form-select form-select-sm'` görsel standardını korur. CSS karşılığı `backbone-custom.css` içindedir; Index.cshtml içine tekrar yazılmaz.
+
+    **Multi-select:**
+    ```javascript
+    $select.select2({
+        dropdownParent: $(document.body),           // ZORUNLU
+        dropdownCssClass: 'dt-inline-filter-dropdown', // ZORUNLU
+        minimumResultsForSearch: Infinity,          // ZORUNLU
+        selectionCssClass: 'form-select form-select-sm',
+        width: 'element',
+        closeOnSelect: false
+    });
+    // ZORUNLU: Multi-select'te Select2 her zaman .select2-search--inline üretir
+    // ve open'da setTimeout(focus,1) ile focus atar → window scroll tetiklenir.
+    // minimumResultsForSearch:Infinity bunu durdurmaz. Çözüm CSS katmanındaki 
+    // MOD-0031 (fixed position input) kuralıdır.
+    $select.on('select2:open', clampDropdown);
+    ```
+
+    > 🚫 **`dropdownParent: $select.parent()`** — KESİNLİKLE YASAK.  
+    > 🚫 **`width: '100%'`** — YASAK.  
+    > 🚫 **Multi-select'te MOD-0031 CSS kuralının uygulanmaması** — YASAK. Yapılmazsa sayfa scroll eder.  
+    > ℹ️ Sneat layout'ta scroll container `window`'dur; `content-wrapper`'ın overflow'u yoktur. Focus tabanlı tüm scroll sorunları `backbone-custom.css` içindeki merkezi MOD-0031 kuralı ile çözülür.
 13. **Inline Filter Select2 Multi-Select Dynamic Summary (ZORUNLU):** Multi-select filtreleri tek satırda tutmak ve özetlemek için aşağıdaki `syncMultiSelectSummary` mantığı uygulanmalıdır:
     - **Davranış:** 0 seçim varsa placeholder, 1 seçim varsa elemanın adı, 2+ seçim varsa `Placeholder (Sayı)` gösterilir (Örn: "Category (3)").
     - **DOM Sync:** Multi-select'e de bir `.select2-selection__arrow` kabı zorunlu olarak enjekte edilmelidir; aksi halde ok (chevron) Single-select ile eşleşemez.
