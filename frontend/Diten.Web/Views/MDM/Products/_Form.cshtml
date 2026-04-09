@@ -1,0 +1,138 @@
+@model Diten.Web.Models.Products.ProductEditViewModel
+@using Diten.Web.Views.MDM.Products
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEditMode = Model.Id.HasValue;
+}
+
+<form asp-action="@(isEditMode ? "Edit" : "Create")" method="post" id="formProduct" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-6 d-flex align-items-center" role="alert">
+        <i class="bx bx-error-alt me-2"></i>
+        <div>@SharedLocalizer["ValidationFailed"]</div>
+    </div>
+
+    <div class="row g-6">
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0 d-flex align-items-center">
+                        <i class="bx bx-barcode-reader me-2"></i>@Localizer["IdentityCard"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-6">
+                        <div class="col-md-6">
+                            <label asp-for="Code" class="form-label">@Localizer["Code"] <span class="text-danger">*</span></label>
+                            <input asp-for="Code" class="form-control" />
+                            <span asp-validation-for="Code" class="invalid-feedback"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label">@Localizer["Name"] <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="invalid-feedback"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ShortName" class="form-label">@Localizer["ShortName"]</label>
+                            <input asp-for="ShortName" class="form-control" />
+                            <span asp-validation-for="ShortName" class="invalid-feedback"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label">@Localizer["Description"]</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Description" class="invalid-feedback"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0 d-flex align-items-center">
+                        <i class="bx bx-sitemap me-2"></i>@Localizer["ClassificationCard"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-6">
+                        <div class="col-md-6">
+                            <label asp-for="ProductType" class="form-label">@Localizer["ProductType"] <span class="text-danger">*</span></label>
+                            <select asp-for="ProductType" class="form-select select2" id="ProductType">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var option in Model.ProductTypes)
+                                {
+                                    <option value="@option.Value">@option.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="ProductType" class="invalid-feedback"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="CategoryId" class="form-label">@Localizer["Category"] <span class="text-danger">*</span></label>
+                            <select asp-for="CategoryId" class="form-select select2" id="CategoryId">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var option in Model.Categories)
+                                {
+                                    <option value="@option.Id" data-product-type="@option.ProductType">@option.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="CategoryId" class="invalid-feedback"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="LifecycleStateId" class="form-label">@Localizer["LifecycleState"] <span class="text-danger">*</span></label>
+                            <select asp-for="LifecycleStateId" class="form-select select2">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var option in Model.LifecycleStates)
+                                {
+                                    <option value="@option.Id">@option.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="LifecycleStateId" class="invalid-feedback"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0 d-flex align-items-center">
+                        <i class="bx bx-toggle-right me-2"></i>@Localizer["CommercialFlags"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-6">
+                        <div class="col-12 col-lg-6">
+                            <div class="form-check form-switch mb-4">
+                                <input asp-for="IsSaleable" class="form-check-input" type="checkbox" />
+                                <label asp-for="IsSaleable" class="form-check-label">@Localizer["IsSaleable"]</label>
+                            </div>
+                            <div class="form-check form-switch mb-4">
+                                <input asp-for="IsPurchasable" class="form-check-input" type="checkbox" />
+                                <label asp-for="IsPurchasable" class="form-check-label">@Localizer["IsPurchasable"]</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input asp-for="IsManufacturable" class="form-check-input" type="checkbox" />
+                                <label asp-for="IsManufacturable" class="form-check-label">@Localizer["IsManufacturable"]</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <div class="alert alert-label-info mb-0 h-100 d-flex align-items-start">
+                                <i class="bx bx-info-circle me-2 mt-1"></i>
+                                <div>
+                                    <div class="fw-medium mb-1">@Localizer["SoftFlagHintTitle"]</div>
+                                    <p class="mb-0">@Localizer["SoftFlagHintDescription"]</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

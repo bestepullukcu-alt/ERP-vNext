@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ProductsTitle" xml:space="preserve"><value>Керування продуктами</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Керуйте комерційними ідентичностями продукту та його життєвим циклом з цього екрана.</value></data>
+  <data name="AddNewProducts" xml:space="preserve"><value>Додати Новий Продукт</value></data>
+  <data name="CreateTitle" xml:space="preserve"><value>Створити Продукт</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Редагувати Продукт</value></data>
+  <data name="Actions" xml:space="preserve"><value>Дії</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Редагувати</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Швидкий Перегляд</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Назва</value></data>
+  <data name="ShortName" xml:space="preserve"><value>Коротка Назва</value></data>
+  <data name="Description" xml:space="preserve"><value>Опис</value></data>
+  <data name="ProductType" xml:space="preserve"><value>Тип Продукту</value></data>
+  <data name="Category" xml:space="preserve"><value>Категорія</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Стан Життєвого Циклу</value></data>
+  <data name="IdentityCard" xml:space="preserve"><value>Ідентичність</value></data>
+  <data name="ClassificationCard" xml:space="preserve"><value>Класифікація</value></data>
+  <data name="CommercialFlags" xml:space="preserve"><value>Комерційні Прапорці</value></data>
+  <data name="SoftFlagHintTitle" xml:space="preserve"><value>Обсяг Фази 1</value></data>
+  <data name="SoftFlagHintDescription" xml:space="preserve"><value>Ці прапорці є рекомендаційними у Фазі 1. Операційне застосування пізніше буде забезпечене SKU / Номенклатурою.</value></data>
+  <data name="Overview" xml:space="preserve"><value>Огляд</value></data>
+  <data name="CurrentLifecycle" xml:space="preserve"><value>Поточний Життєвий Цикл</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>Життєвий Цикл</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Загальна Інформація</value></data>
+  <data name="ProductTypeFinishedGood" xml:space="preserve"><value>Готовий Продукт</value></data>
+  <data name="ProductTypeService" xml:space="preserve"><value>Послуга</value></data>
+  <data name="ProductTypeDigital" xml:space="preserve"><value>Цифровий</value></data>
+  <data name="CategoryStandard" xml:space="preserve"><value>Стандартний</value></data>
+  <data name="CategoryRegulated" xml:space="preserve"><value>Регульований</value></data>
+  <data name="CategoryProfessional" xml:space="preserve"><value>Професійний</value></data>
+  <data name="CategorySupport" xml:space="preserve"><value>Підтримка</value></data>
+  <data name="CategoryLicense" xml:space="preserve"><value>Ліцензія</value></data>
+  <data name="CategorySubscription" xml:space="preserve"><value>Підписка</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Чернетка</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Активний</value></data>
+  <data name="LifecycleBlocked" xml:space="preserve"><value>Заблокований</value></data>
+  <data name="LifecycleObsolete" xml:space="preserve"><value>Застарілий</value></data>
+  <data name="Activate" xml:space="preserve"><value>Активувати</value></data>
+  <data name="Block" xml:space="preserve"><value>Заблокувати</value></data>
+  <data name="MarkAsObsolete" xml:space="preserve"><value>Позначити як Застарілий</value></data>
+  <data name="NoLifecycleTransitions" xml:space="preserve"><value>Подальші переходи життєвого циклу недоступні.</value></data>
+  <data name="RelatedModules" xml:space="preserve"><value>Пов’язані Модулі</value></data>
+  <data name="RelatedSku" xml:space="preserve"><value>Пов’язаний SKU</value></data>
+  <data name="RelatedComposition" xml:space="preserve"><value>Пов’язана Композиція</value></data>
+  <data name="RelatedPackaging" xml:space="preserve"><value>Пов’язане Пакування</value></data>
+  <data name="NoRelatedSku" xml:space="preserve"><value>Пов’язані записи SKU ще відсутні. Ця область доступна лише для читання у Фазі 1.</value></data>
+  <data name="NoRelatedComposition" xml:space="preserve"><value>Пов’язані записи композиції ще відсутні. Ця область доступна лише для читання у Фазі 1.</value></data>
+  <data name="NoRelatedPackaging" xml:space="preserve"><value>Пов’язані записи пакування ще відсутні. Ця область доступна лише для читання у Фазі 1.</value></data>
+  <data name="IsSaleable" xml:space="preserve"><value>Можна Продавати</value></data>
+  <data name="IsPurchasable" xml:space="preserve"><value>Можна Закуповувати</value></data>
+  <data name="IsManufacturable" xml:space="preserve"><value>Можна Виробляти</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>Головна</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
+</root>

@@ -41,6 +41,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 
 - [ ] **_Filter Partial:** `<partial name="_Filter" />` sayfanın en üstünde mevcut mu?
 - [ ] **_Filter.cshtml:** `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dosyası oluşturulmuş mu?
+- [ ] **Title Block Standardı:** Breadcrumb olmayan Index sayfalarında üst başlık kompakt `Item Master` standardında mı? (`<div class="mb-3">` + `<h5 class="mb-0">` + `<p class="mb-0 text-muted">`)
 - [ ] **PageDescription:** Breadcrumb yoksa başlık altında `<p class="mb-0">@Localizer["PageDescription"]</p>` var mı?
 - [ ] **Inline Filter:** `#inlineFilterHost` + `#inlineFilterCollapse` mevcut mu? Offcanvas filter yok mu? Host hizası `px-6` ile mi? (`mx-*` yok mu?) Wrapper `pt-0 pb-3` mi?
 - [ ] **Filter Badge Count:** Filter butonundaki badge, Apply sonrası aktif filtre sayısını doğru gösteriyor mu? (örn. 2 select doluysa badge=2; Reset sonrası badge=0)

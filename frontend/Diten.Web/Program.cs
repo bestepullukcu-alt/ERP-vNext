@@ -98,7 +98,7 @@ app.UseEndpoints(endpoints =>
 {
     endpoints.MapGet("/", async context =>
     {
-        context.Response.Redirect("/LegalEntities");
+        context.Response.Redirect("/Products");
     });
 });
 
@@ -106,6 +106,6 @@ app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=LegalEntities}/{action=Index}/{id?}");
+    pattern: "{controller=Products}/{action=Index}/{id?}");
 
 app.Run();

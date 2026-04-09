@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ProductsTitle" xml:space="preserve"><value>Mahsulot boshqaruvi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Ushbu ekranda mahsulotning tijoriy identifikatori va hayotiy siklini boshqaring.</value></data>
+  <data name="AddNewProducts" xml:space="preserve"><value>Yangi Mahsulot Qo‘shish</value></data>
+  <data name="CreateTitle" xml:space="preserve"><value>Mahsulot Yaratish</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Mahsulotni Tahrirlash</value></data>
+  <data name="Actions" xml:space="preserve"><value>Amallar</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Tahrirlash</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Tezkor Ko‘rish</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Nomi</value></data>
+  <data name="ShortName" xml:space="preserve"><value>Qisqa Nomi</value></data>
+  <data name="Description" xml:space="preserve"><value>Tavsif</value></data>
+  <data name="ProductType" xml:space="preserve"><value>Mahsulot Turi</value></data>
+  <data name="Category" xml:space="preserve"><value>Toifa</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Hayotiy Sikl Holati</value></data>
+  <data name="IdentityCard" xml:space="preserve"><value>Identifikatsiya</value></data>
+  <data name="ClassificationCard" xml:space="preserve"><value>Tasnif</value></data>
+  <data name="CommercialFlags" xml:space="preserve"><value>Tijoriy Belgilar</value></data>
+  <data name="SoftFlagHintTitle" xml:space="preserve"><value>1-Bosqich Qamrovi</value></data>
+  <data name="SoftFlagHintDescription" xml:space="preserve"><value>Bu belgilar 1-bosqichda faqat yo‘naltiruvchi. Operatsion qo‘llash keyinroq SKU / Mahsulot kartasi tomonidan boshqariladi.</value></data>
+  <data name="Overview" xml:space="preserve"><value>Umumiy Ko‘rinish</value></data>
+  <data name="CurrentLifecycle" xml:space="preserve"><value>Joriy Hayotiy Sikl</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>Hayotiy Sikl</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Umumiy Ma’lumot</value></data>
+  <data name="ProductTypeFinishedGood" xml:space="preserve"><value>Tayyor Mahsulot</value></data>
+  <data name="ProductTypeService" xml:space="preserve"><value>Xizmat</value></data>
+  <data name="ProductTypeDigital" xml:space="preserve"><value>Raqamli</value></data>
+  <data name="CategoryStandard" xml:space="preserve"><value>Standart</value></data>
+  <data name="CategoryRegulated" xml:space="preserve"><value>Tartibga Solinadigan</value></data>
+  <data name="CategoryProfessional" xml:space="preserve"><value>Professional</value></data>
+  <data name="CategorySupport" xml:space="preserve"><value>Qo‘llab-quvvatlash</value></data>
+  <data name="CategoryLicense" xml:space="preserve"><value>Litsenziya</value></data>
+  <data name="CategorySubscription" xml:space="preserve"><value>Obuna</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Qoralama</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Faol</value></data>
+  <data name="LifecycleBlocked" xml:space="preserve"><value>Bloklangan</value></data>
+  <data name="LifecycleObsolete" xml:space="preserve"><value>Eskirgan</value></data>
+  <data name="Activate" xml:space="preserve"><value>Faollashtirish</value></data>
+  <data name="Block" xml:space="preserve"><value>Bloklash</value></data>
+  <data name="MarkAsObsolete" xml:space="preserve"><value>Eskirgan Deb Belgilash</value></data>
+  <data name="NoLifecycleTransitions" xml:space="preserve"><value>Qo‘shimcha hayotiy sikl o‘tishlari mavjud emas.</value></data>
+  <data name="RelatedModules" xml:space="preserve"><value>Bog‘liq Modullar</value></data>
+  <data name="RelatedSku" xml:space="preserve"><value>Bog‘liq SKU</value></data>
+  <data name="RelatedComposition" xml:space="preserve"><value>Bog‘liq Kompozitsiya</value></data>
+  <data name="RelatedPackaging" xml:space="preserve"><value>Bog‘liq Qadoqlash</value></data>
+  <data name="NoRelatedSku" xml:space="preserve"><value>Hozircha bog‘liq SKU yozuvlari yo‘q. Bu maydon 1-bosqichda faqat o‘qish uchun.</value></data>
+  <data name="NoRelatedComposition" xml:space="preserve"><value>Hozircha bog‘liq kompozitsiya yozuvlari yo‘q. Bu maydon 1-bosqichda faqat o‘qish uchun.</value></data>
+  <data name="NoRelatedPackaging" xml:space="preserve"><value>Hozircha bog‘liq qadoqlash yozuvlari yo‘q. Bu maydon 1-bosqichda faqat o‘qish uchun.</value></data>
+  <data name="IsSaleable" xml:space="preserve"><value>Sotiladigan</value></data>
+  <data name="IsPurchasable" xml:space="preserve"><value>Xarid Qilinadigan</value></data>
+  <data name="IsManufacturable" xml:space="preserve"><value>Ishlab Chiqariladigan</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>Asosiy</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
+</root>

@@ -1,0 +1,44 @@
+@model Diten.Web.Models.Products.ProductIndexPageViewModel
+@using Diten.Web.Views.MDM.Products
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm">
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-product-type">
+                        <select class="form-select form-select-sm select2" id="filterProductType" data-placeholder="@Localizer["ProductType"]" multiple="multiple">
+                            @foreach (var option in Model.ProductTypes)
+                            {
+                                <option value="@option.Code">@option.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="filter-chip filter-category">
+                        <select class="form-select form-select-sm select2" id="filterCategory" data-placeholder="@Localizer["Category"]" multiple="multiple">
+                            @foreach (var option in Model.Categories)
+                            {
+                                <option value="@option.Code">@option.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="filter-chip filter-lifecycle">
+                        <select class="form-select form-select-sm select2" id="filterLifecycleState" data-placeholder="@Localizer["LifecycleState"]" multiple="multiple">
+                            @foreach (var option in Model.LifecycleStates)
+                            {
+                                <option value="@option.Code">@option.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

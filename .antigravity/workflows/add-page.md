@@ -18,6 +18,12 @@ description: "WORKFLOW-002 — Mevcut Modüle Action Bazlı Sayfa ve UI Bileşen
 - **Şablon:** `.antigravity/rules/frontend-form-template.md`
 - **Layout:** `_LayoutBackbone.cshtml` zorunludur.
 - **Validation:** `novalidate` + Bootstrap `invalid-feedback`.
+- **Header/Breadcrumb Standardı:** Üst blok kompakt action-page standardında olmalıdır:
+  - wrapper: `d-flex ... mb-3 row-gap-4`
+  - başlık: `h5.mb-0`
+  - breadcrumb: `{{ModuleName}}Title > Current Action`
+  - `Home` / area breadcrumb varsayılanı kullanılmaz
+  - `PageDescription` eklenmez
 
 ### C. Details (Read-Only) Sayfası
 - **Şablon:** `.antigravity/rules/frontend-details-template.md`

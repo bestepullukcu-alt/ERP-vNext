@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ProductsTitle" xml:space="preserve"><value>Өнімдерді басқару</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Осы экраннан өнімнің коммерциялық сәйкестігін және өмірлік циклін басқарыңыз.</value></data>
+  <data name="AddNewProducts" xml:space="preserve"><value>Жаңа Өнім Қосу</value></data>
+  <data name="CreateTitle" xml:space="preserve"><value>Өнім Құру</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Өнімді Өңдеу</value></data>
+  <data name="Actions" xml:space="preserve"><value>Әрекеттер</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Өңдеу</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Жылдам Қарау</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Атауы</value></data>
+  <data name="ShortName" xml:space="preserve"><value>Қысқа Атау</value></data>
+  <data name="Description" xml:space="preserve"><value>Сипаттама</value></data>
+  <data name="ProductType" xml:space="preserve"><value>Өнім Түрі</value></data>
+  <data name="Category" xml:space="preserve"><value>Санат</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Өмірлік Цикл Күйі</value></data>
+  <data name="IdentityCard" xml:space="preserve"><value>Сәйкестік</value></data>
+  <data name="ClassificationCard" xml:space="preserve"><value>Жіктеу</value></data>
+  <data name="CommercialFlags" xml:space="preserve"><value>Коммерциялық Жалаушалар</value></data>
+  <data name="SoftFlagHintTitle" xml:space="preserve"><value>1-Фаза Ауқымы</value></data>
+  <data name="SoftFlagHintDescription" xml:space="preserve"><value>Бұл жалаушалар 1-фазада тек бағыттаушы. Операциялық қолдану кейінірек SKU / Номенклатура арқылы іске асады.</value></data>
+  <data name="Overview" xml:space="preserve"><value>Шолу</value></data>
+  <data name="CurrentLifecycle" xml:space="preserve"><value>Ағымдағы Өмірлік Цикл</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>Өмірлік Цикл</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Жалпы Ақпарат</value></data>
+  <data name="ProductTypeFinishedGood" xml:space="preserve"><value>Дайын Өнім</value></data>
+  <data name="ProductTypeService" xml:space="preserve"><value>Қызмет</value></data>
+  <data name="ProductTypeDigital" xml:space="preserve"><value>Сандық</value></data>
+  <data name="CategoryStandard" xml:space="preserve"><value>Стандартты</value></data>
+  <data name="CategoryRegulated" xml:space="preserve"><value>Реттелетін</value></data>
+  <data name="CategoryProfessional" xml:space="preserve"><value>Кәсіби</value></data>
+  <data name="CategorySupport" xml:space="preserve"><value>Қолдау</value></data>
+  <data name="CategoryLicense" xml:space="preserve"><value>Лицензия</value></data>
+  <data name="CategorySubscription" xml:space="preserve"><value>Жазылым</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Жоба</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Белсенді</value></data>
+  <data name="LifecycleBlocked" xml:space="preserve"><value>Бұғатталған</value></data>
+  <data name="LifecycleObsolete" xml:space="preserve"><value>Ескірген</value></data>
+  <data name="Activate" xml:space="preserve"><value>Белсендіру</value></data>
+  <data name="Block" xml:space="preserve"><value>Бұғаттау</value></data>
+  <data name="MarkAsObsolete" xml:space="preserve"><value>Ескірген деп Белгілеу</value></data>
+  <data name="NoLifecycleTransitions" xml:space="preserve"><value>Қосымша өмірлік цикл ауысулары қолжетімсіз.</value></data>
+  <data name="RelatedModules" xml:space="preserve"><value>Байланысты Модульдер</value></data>
+  <data name="RelatedSku" xml:space="preserve"><value>Байланысты SKU</value></data>
+  <data name="RelatedComposition" xml:space="preserve"><value>Байланысты Құрам</value></data>
+  <data name="RelatedPackaging" xml:space="preserve"><value>Байланысты Қаптама</value></data>
+  <data name="NoRelatedSku" xml:space="preserve"><value>Әзірге байланысты SKU жазбалары жоқ. Бұл аймақ 1-фазада тек оқу үшін.</value></data>
+  <data name="NoRelatedComposition" xml:space="preserve"><value>Әзірге байланысты құрам жазбалары жоқ. Бұл аймақ 1-фазада тек оқу үшін.</value></data>
+  <data name="NoRelatedPackaging" xml:space="preserve"><value>Әзірге байланысты қаптама жазбалары жоқ. Бұл аймақ 1-фазада тек оқу үшін.</value></data>
+  <data name="IsSaleable" xml:space="preserve"><value>Сатуға Болады</value></data>
+  <data name="IsPurchasable" xml:space="preserve"><value>Сатып Алынатын</value></data>
+  <data name="IsManufacturable" xml:space="preserve"><value>Өндіруге Болады</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>Басты бет</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
+</root>

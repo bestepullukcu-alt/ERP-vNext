@@ -124,17 +124,10 @@
                         <span class="menu-header-text">@SharedLocalizer["MDM"]</span>
                     </li>
                     <li
-                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "LegalEntities" ? "active" : "")">
-                        <a href="/LegalEntities" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-building"></i>
-                            <div>@SharedLocalizer["LegalEntities"]</div>
-                        </a>
-                    </li>
-                    <li
-                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Countries" ? "active" : "")">
-                        <a href="/Countries" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-world"></i>
-                            <div>@SharedLocalizer["Countries"]</div>
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Products" ? "active" : "")">
+                        <a href="/Products" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-box"></i>
+                            <div>@SharedLocalizer["ProductManagement"]</div>
                         </a>
                     </li>
                     <li

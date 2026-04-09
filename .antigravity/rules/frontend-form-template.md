@@ -8,6 +8,9 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart **Create/Edit** form sa
 > - `col-lg-10 mx-auto` kullanılmaz. Kartlar `col-12` içinde tam genişlikte olmalıdır.
 > - Görünen tüm metinler `@Localizer[...]` veya `@SharedLocalizer[...]` üzerinden gelmelidir.
 > - Form `novalidate` ile çalışır; validation feedback Bootstrap 5 `invalid-feedback` ile yapılır.
+> - Create/Edit üst başlığı kompakt action-page standardında olmalıdır: wrapper `mb-3`, başlık `h5.mb-0`.
+> - Create/Edit sayfalarında breadcrumb korunur; ancak varsayılan zincir `{{ModuleName}}Title > Current Action` olmalıdır. `Home` ve `Breadcrumb{{AreaName}}` breadcrumb'ı standart form şablonunda kullanılmaz.
+> - Form sayfalarında liste ekranındaki `PageDescription` bloğu tekrar edilmez.
 
 ---
 
@@ -30,14 +33,12 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart **Create/Edit** form sa
     <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" asp-append-version="true" />
 }
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
     <div class="d-flex flex-column justify-content-center">
-        <h4 class="mb-1">@(isEditMode ? Localizer["EditTitle"] : Localizer["CreateTitle"])</h4>
+        <h5 class="mb-0">@(isEditMode ? Localizer["EditTitle"] : Localizer["CreateTitle"])</h5>
 
         <nav aria-label="breadcrumb" class="text-muted">
             <ol class="breadcrumb mb-0 py-0">
-                <li class="breadcrumb-item"><a href="/">@Localizer["BreadcrumbHome"]</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0);">@Localizer["Breadcrumb{{AreaName}}"]</a></li>
                 <li class="breadcrumb-item"><a asp-action="Index">@Localizer["{{ModuleName}}Title"]</a></li>
                 <li class="breadcrumb-item active text-primary">@(isEditMode ? Localizer["EditTitle"] : Localizer["CreateTitle"])</li>
             </ol>

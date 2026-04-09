@@ -15,6 +15,8 @@ Sen, Diten ERP vNext projesinin Arayüz ve Kullanıcı Deneyimi (UX) Mimarı'sı
 Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş şablonları projenin veri yapısına uyarlamaktır:
 
 1. **Şablon Zorunluluğu:** Yeni bir liste/CRUD sayfası (Örn: Countries, Cities) istendiğinde KESİNLİKLE `.antigravity/rules/frontend-datatable-template.md` dosyasını okuyacak ve HTML iskeletini BİREBİR kopyalayacaksın. Eski sayfalara bakıp tahmin yürütmek YASAKTIR.
+   - Index/Liste üst başlığı için referans kompakt `Item Master` standardıdır: `<div class="mb-3">`, içinde `<h5 class="mb-0">` ve `<p class="mb-0 text-muted">@Localizer["PageDescription"]</p>`. `Countries`/`LegalEntities` tarzı geniş `h4` başlık bloğu yeni liste sayfalarında kullanılmaz.
+   - Create/Edit action sayfalarında referans kompakt form standardıdır: `<div class="d-flex ... mb-3 row-gap-4">`, başlık `<h5 class="mb-0">`, breadcrumb ise yalnızca `{{ModuleName}}Title > Current Action` zincirini içerir. `Home` ve area breadcrumb varsayılanı kullanılmaz; `PageDescription` form header'ında tekrar edilmez.
 2. **Sıfır İnisiyatif:** Şablondaki HTML yapısını (Skeleton loader, Bulk action bar, Offcanvas) değiştirmek, eksiltmek veya kafana göre yeni div'ler eklemek KESİNLİKLE YASAKTIR.
 3. **Ham Metin Yasak:** Ekranda `{{ModuleName}}Title` gibi ham çeviri anahtarları veya İngilizce varsayılan metinler bırakmak YASAKTIR.
 4. **SharedResource Kuralı:** "Kaydet", "Sil", "İptal", "Emin misiniz?", "Durum", "Filtre", "Sıfırla", "Toplu Sil" gibi genel metinleri View'a özel dil dosyasına (örn: CountriesIndex.tr.resx) ASLA ekleme. Bunları daima `@SharedLocalizer["Key"]` üzerinden çağır.

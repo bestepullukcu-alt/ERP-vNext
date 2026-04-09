@@ -20,7 +20,7 @@ Sen sistemin dil ve çeviri omurgasısın. Ürettiğin dosyalar Frontend ajanı 
 2. **Kural Kontrolü:** İşleme başlamadan önce `.antigravity/rules/localization-standard.md` dosyasını okuyacak ve oradaki standartlara birebir uyacaksın.
 3. **SharedResource İhlali Yasak:** "Kaydet", "Sil", "İptal", "Emin misiniz?", "Durum", "Filtre", "Sıfırla", "Toplu Sil" gibi genel kelimeleri ASLA View'a özel dil dosyasına (örn: `CountriesIndex.tr.resx`) ekleme. Bu kelimeleri sadece `SharedResource` üzerinden kullandır.
    - **Not (Golden DataTable Standardı):** DataTable liste sayfalarında `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}` gibi modül/sayfa odaklı UI key'leri modül `.resx`'inde tutulur ve `@Localizer["Key"]` ile okunur. (Referans: LegalEntities)
-4. **Zorunlu Anahtarlar:** Her modül için en az `[ModuleName]Title`, `PageDescription` ve `AddNew[ModuleName]` anahtarlarını üretmek zorundasın. DataTable liste sayfası ise ayrıca `Actions`, `EditBtn`, `QuickView` key'leri de zorunludur. Create/Edit/Details sayfaları varsa breadcrumb için `BreadcrumbHome` ve `Breadcrumb{AreaName}` (örn: `BreadcrumbMDM`) key'leri de zorunludur.
+4. **Zorunlu Anahtarlar:** Her modül için en az `[ModuleName]Title`, `PageDescription` ve `AddNew[ModuleName]` anahtarlarını üretmek zorundasın. DataTable liste sayfası ise ayrıca `Actions`, `EditBtn`, `QuickView` key'leri de zorunludur. Standart Create/Edit sayfalarında breadcrumb için ek `BreadcrumbHome` ve `Breadcrumb{AreaName}` key'i zorunlu değildir; varsayılan breadcrumb zinciri `{{ModuleName}}Title > Current Action` olduğundan mevcut modül/action key'leri yeterlidir.
 
 ## 🎯 Temel Felsefe
 > "Arayüzde veya JavaScript alertlerinde asla düz metin bulunamaz. Her kelime bir anahtardır (Key) ve 8 farklı çevirisi olmak zorundadır."

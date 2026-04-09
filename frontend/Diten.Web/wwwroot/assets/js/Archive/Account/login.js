@@ -110,7 +110,7 @@ function handleFormSubmit(fv) {
         localStorage.setItem("expiration", fakeExpiration);
         localStorage.setItem("user", JSON.stringify({ name: "Bypass User" }));
         
-        window.location.href = window.location.origin + "/LegalEntities";
+        window.location.href = window.location.origin + "/Products";
     });
 }
 

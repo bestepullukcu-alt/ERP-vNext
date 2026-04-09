@@ -1,7 +1,7 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/legal-entities",
+      "DownstreamPathTemplate": "/api/products",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -9,45 +9,7 @@
           "Port": 5050
         }
       ],
-      "UpstreamPathTemplate": "/api/legal-entities",
-      "UpstreamHttpMethod": [
-        "GET",
-        "POST",
-        "PUT",
-        "OPTIONS",
-        "DELETE"
-      ],
-      "UpstreamScheme": "http"
-    },
-    {
-      "DownstreamPathTemplate": "/api/legal-entities/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5050
-        }
-      ],
-      "UpstreamPathTemplate": "/api/legal-entities/{everything}",
-      "UpstreamHttpMethod": [
-        "GET",
-        "POST",
-        "PUT",
-        "OPTIONS",
-        "DELETE"
-      ],
-      "UpstreamScheme": "http"
-    },
-    {
-      "DownstreamPathTemplate": "/api/countries",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5050
-        }
-      ],
-      "UpstreamPathTemplate": "/api/countries",
+      "UpstreamPathTemplate": "/api/products",
       "UpstreamHttpMethod": [
         "GET",
         "POST",
@@ -59,7 +21,7 @@
       "UpstreamScheme": "http"
     },
     {
-      "DownstreamPathTemplate": "/api/countries/{everything}",
+      "DownstreamPathTemplate": "/api/products/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -67,7 +29,7 @@
           "Port": 5050
         }
       ],
-      "UpstreamPathTemplate": "/api/countries/{everything}",
+      "UpstreamPathTemplate": "/api/products/{everything}",
       "UpstreamHttpMethod": [
         "GET",
         "POST",

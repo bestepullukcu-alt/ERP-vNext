@@ -259,6 +259,7 @@
   <data name="Platform" xml:space="preserve"><value>Platform</value></data>
   <data name="WorkCenterMenu" xml:space="preserve"><value>Work Center</value></data>
   <data name="ItemMaster" xml:space="preserve"><value>Номенклатура картасы</value></data>
+  <data name="ProductManagement" xml:space="preserve"><value>Өнімдерді басқару</value></data>
   <data name="CategoryManagement" xml:space="preserve"><value>Санаттарды басқару</value></data>
   <data name="VariantManagement" xml:space="preserve"><value>Нұсқаларды басқару</value></data>
   <data name="Attributes" xml:space="preserve"><value>Атрибуттар</value></data>
