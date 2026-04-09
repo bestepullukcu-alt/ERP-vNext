@@ -60,10 +60,12 @@
     </div>
 </div>
 
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="offcanvasDetailsPreviewLabel" style="width: 480px;">
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview"
+    aria-labelledby="offcanvasDetailsPreviewLabel" style="width: 480px;">
     <div class="offcanvas-header border-bottom">
         <div class="d-flex align-items-center">
-            <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+            <div
+                class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
                 <i class="bx bx-box fs-4"></i>
             </div>
             <div>
@@ -71,7 +73,8 @@
                 <small id="oc-subtitle" class="text-muted">-</small>
             </div>
         </div>
-        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+            aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
 
     <div class="offcanvas-body flex-grow-1 p-0">
@@ -83,32 +86,47 @@
                 </div>
             </div>
 
+            <div class="mb-4">
+                <h6 class="text-uppercase text-muted fw-bold mb-3">@Localizer["Lifecycle"]</h6>
+                <div id="oc-lifecycle-actions" class="d-flex flex-wrap gap-2"></div>
+                <div id="oc-no-lifecycle-actions" class="small text-muted d-none">@Localizer["NoLifecycleTransitions"]
+                </div>
+            </div>
+
             <h6 class="text-uppercase text-muted fw-bold mb-3">@Localizer["GeneralInformation"]</h6>
             <dl class="row mb-0">
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-barcode text-muted me-2"></i>@Localizer["Code"]</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-barcode text-muted me-2"></i>@Localizer["Code"]</dt>
                 <dd id="oc-code" class="col-7 mb-2">-</dd>
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-rename text-muted me-2"></i>@Localizer["ShortName"]</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-rename text-muted me-2"></i>@Localizer["ShortName"]</dt>
                 <dd id="oc-shortName" class="col-7 mb-2">-</dd>
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-category text-muted me-2"></i>@Localizer["ProductType"]</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-category text-muted me-2"></i>@Localizer["ProductType"]</dt>
                 <dd id="oc-productType" class="col-7 mb-2">-</dd>
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-collection text-muted me-2"></i>@Localizer["Category"]</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-collection text-muted me-2"></i>@Localizer["Category"]</dt>
                 <dd id="oc-category" class="col-7 mb-2">-</dd>
-                <dt class="col-5 fw-medium text-heading mb-2"><i class="bx bx-text text-muted me-2"></i>@Localizer["Description"]</dt>
+                <dt class="col-5 fw-medium text-heading mb-2"><i
+                        class="bx bx-text text-muted me-2"></i>@Localizer["Description"]</dt>
                 <dd id="oc-description" class="col-7 mb-2">-</dd>
             </dl>
         </div>
     </div>
 
-    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between">
-        <button type="button" class="btn btn-label-secondary w-50 me-2" data-bs-dismiss="offcanvas">
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">
             @SharedLocalizer["Cancel"]
         </button>
-        <a id="oc-btn-edit" href="#" class="btn btn-primary w-50">@Localizer["EditBtn"]</a>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary flex-grow-1">@Localizer["EditBtn"]</a>
+        <button id="oc-btn-delete" type="button" class="btn btn-label-danger flex-grow-1 d-none">
+            <i class="bx bx-trash me-1"></i> @SharedLocalizer["Delete"]
+        </button>
     </div>
 </div>
 
 @section Scripts {
-    <partial name="_IndexL10n" />
+    <partial name="_IndexL10n" model="Model" />
     <script src="~/assets/js/MDM/Products/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/MDM/Products/index.js" asp-append-version="true"></script>
 }

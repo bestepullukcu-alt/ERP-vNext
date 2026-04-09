@@ -16,6 +16,8 @@ public sealed class ChangeProductLifecycleRequest : IRequest<bool>
 {
     public Guid Id { get; set; }
     public Guid LifecycleStateId { get; set; }
+    public string? Reason { get; set; }
+    public string ChangedBy { get; set; } = string.Empty;
 }
 
 public sealed class DeleteProductRequest : IRequest<bool>

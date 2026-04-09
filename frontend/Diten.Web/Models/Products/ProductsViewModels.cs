@@ -34,6 +34,7 @@ public sealed class ProductIndexPageViewModel
     public List<ProductTypeOptionViewModel> ProductTypes { get; set; } = [];
     public List<ProductCategoryOptionViewModel> Categories { get; set; } = [];
     public List<ProductLifecycleOptionViewModel> LifecycleStates { get; set; } = [];
+    public bool CanRestore { get; set; }
 }
 
 public sealed class ProductEditViewModel
@@ -67,40 +68,10 @@ public sealed class ProductEditViewModel
     public List<ProductLifecycleOptionViewModel> LifecycleStates { get; set; } = [];
 }
 
-public sealed class ProductLifecycleTransitionViewModel
-{
-    public Guid LifecycleStateId { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public string ButtonClass { get; set; } = "btn-label-secondary";
-}
-
-public sealed class ProductDetailViewModel
-{
-    public Guid Id { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public string? ShortName { get; set; }
-    public string? Description { get; set; }
-    public int ProductType { get; set; }
-    public string ProductTypeCode { get; set; } = string.Empty;
-    public string ProductTypeName { get; set; } = string.Empty;
-    public Guid CategoryId { get; set; }
-    public string CategoryCode { get; set; } = string.Empty;
-    public string CategoryName { get; set; } = string.Empty;
-    public Guid LifecycleStateId { get; set; }
-    public string LifecycleStateCode { get; set; } = string.Empty;
-    public string LifecycleStateName { get; set; } = string.Empty;
-    public string LifecycleBadgeClass { get; set; } = "bg-label-secondary";
-    public bool IsSaleable { get; set; }
-    public bool IsPurchasable { get; set; }
-    public bool IsManufacturable { get; set; }
-    public List<ProductLifecycleTransitionViewModel> AvailableTransitions { get; set; } = [];
-}
-
 public sealed class ProductLifecycleSavePayload
 {
     public Guid LifecycleStateId { get; set; }
+    public string? Reason { get; set; }
 }
 
 public sealed class ProductSavePayload

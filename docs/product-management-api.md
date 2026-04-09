@@ -89,3 +89,19 @@ Permission sabitleri [ProductPermissions.cs](/Users/alitufanoglu/Desktop/ERP-vNe
 - `Modules.Products.Patch`
 
 Mevcut repoda MDM servisi icin permission enforcement surface hazirdir; runtime authorization entegrasyonu mevcut yapinin geri kalanıyla ayni seviyededir.
+
+## Architecture & Folders
+
+- **Handlers:** `Diten.MdmService.Application/Features/Products/Handlers/`
+  - `CommandHandlers/`: Create, Update, Delete, Patch işlemleri.
+  - `QueryHandlers/`: GetAll, GetById işlemleri.
+- **Logic Helper:** `Diten.MdmService.Application/Features/Products/ProductLogicHelper.cs` (Validation ve Mapping logic).
+- **Frontend Controller:** `Diten.Web/Controllers/ProductsController.cs`
+- **Frontend UI:** `Diten.Web/Views/MDM/Products/`
+
+## Performance Optimization
+
+- **Zero-Seed Overhead:** Handler katmanında seed data kontrolleri bulunmaz; istekler doğrudan veritabanı sorgusuna odaklanır.
+- **Efficient Mapping:** Domain to DTO dönüşümleri `ProductMapping` üzerinden optimize edilmiştir.
+- **Compound Indexing:** `TenantId + Code + IsDeleted` indeksi ile tenant-wide lookup hızı optimize edilmiştir.
+- **Skeleton Loading:** Frontend listeleme sırasında DataTable v2 skeleton-loader standardını kullanır.

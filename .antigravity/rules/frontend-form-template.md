@@ -11,6 +11,8 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart **Create/Edit** form sa
 > - Create/Edit üst başlığı kompakt action-page standardında olmalıdır: wrapper `mb-3`, başlık `h5.mb-0`.
 > - Create/Edit sayfalarında breadcrumb korunur; ancak varsayılan zincir `{{ModuleName}}Title > Current Action` olmalıdır. `Home` ve `Breadcrumb{{AreaName}}` breadcrumb'ı standart form şablonunda kullanılmaz.
 > - Form sayfalarında liste ekranındaki `PageDescription` bloğu tekrar edilmez.
+> - Bağımlı select (örn. `ProductType -> Category`) varsa child alan başlangıçta disabled olabilir; ancak parent seçimi sonrası child seçenekleri DOM'da yeniden oluşturulmalı, uygunsuz eski değer temizlenmeli ve select2 state'i yeniden senkronlanmalıdır. Uygunsuz seçenekleri dropdown içinde disabled/gri halde bırakmak standart dışıdır.
+> - Razor tarafında boolean HTML attribute'ları için `disabled="False"` benzeri kullanım YASAKTIR. Attribute ya tamamen render edilir ya da hiç render edilmez.
 
 ---
 
@@ -143,10 +145,69 @@ const {{ModuleName}}FormManager = (function () {
         });
     };
 
+    const rebuildDependentSelect = (parentEl, childEl) => {
+        if (!parentEl || !childEl) return;
+
+        const selectedParent = parentEl.value || '';
+        const placeholder = childEl.querySelector('option[value=\"\"]')?.textContent || '';
+        const allOptions = Array.from(childEl.options)
+            .filter((option) => option.value)
+            .map((option) => ({
+                value: option.value,
+                text: option.text,
+                parent: option.dataset.parent || ''
+            }));
+
+        const syncChild = () => {
+            const currentValue = childEl.value;
+            const filtered = allOptions.filter((option) => option.parent === selectedParent);
+
+            childEl.innerHTML = '';
+            childEl.append(new Option(placeholder, ''));
+
+            filtered.forEach((option) => {
+                const rendered = new Option(option.text, option.value);
+                rendered.dataset.parent = option.parent;
+                childEl.append(rendered);
+            });
+
+            childEl.value = filtered.some((option) => option.value === currentValue) ? currentValue : '';
+            childEl.disabled = !selectedParent;
+
+            if (window.jQuery && $.fn.select2) {
+                const $child = $(childEl);
+                $child.prop('disabled', !selectedParent);
+
+                if ($child.hasClass('select2-hidden-accessible')) {
+                    $child.select2('destroy');
+                }
+
+                $child.select2({
+                    placeholder,
+                    dropdownParent: $child.parent(),
+                    width: '100%',
+                    allowClear: true
+                }).trigger('change');
+            }
+        };
+
+        parentEl.addEventListener('change', syncChild);
+        if (window.jQuery && $.fn.select2) {
+            $(parentEl).on('change.dependent-select', syncChild);
+        }
+
+        syncChild();
+    };
+
     const init = () => {
         initSelect2();
         initFlatpickr();
         initInputRestrictions();
+        // Gerekirse parent/child select referanslarini verip aktif et:
+        // rebuildDependentSelect(
+        //     document.getElementById('{{ParentSelectId}}'),
+        //     document.getElementById('{{ChildSelectId}}')
+        // );
     };
 
     return { init };

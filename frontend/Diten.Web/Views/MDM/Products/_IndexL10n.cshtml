@@ -1,3 +1,4 @@
+@model Diten.Web.Models.Products.ProductIndexPageViewModel
 @using Diten.Web.Views.MDM.Products
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<ProductsIndex> Localizer
@@ -11,8 +12,8 @@
         Unknown = SharedLocalizer["Unknown"].Value,
         Actions = Localizer["Actions"].Value,
         Edit = Localizer["EditBtn"].Value,
-        ViewDetails = SharedLocalizer["ViewDetails"].Value,
-        QuickView = Localizer["QuickView"].Value,
+        View = Localizer["QuickView"].Value,
+        Restore = Localizer["Restore"].Value,
         Search = SharedLocalizer["Search"].Value,
         Export = SharedLocalizer["Export"].Value,
         Import = SharedLocalizer["Import"].Value,
@@ -53,18 +54,34 @@
         Category = Localizer["Category"].Value,
         LifecycleState = Localizer["LifecycleState"].Value,
         CurrentLifecycle = Localizer["CurrentLifecycle"].Value,
-        ProductTypeFinishedGood = Localizer["ProductTypeFinishedGood"].Value,
+        ProductTypeFinishedProduct = Localizer["ProductTypeFinishedProduct"].Value,
+        ProductTypeSemiFinishedProduct = Localizer["ProductTypeSemiFinishedProduct"].Value,
         ProductTypeService = Localizer["ProductTypeService"].Value,
-        ProductTypeDigital = Localizer["ProductTypeDigital"].Value,
-        CategoryStandard = Localizer["CategoryStandard"].Value,
-        CategoryRegulated = Localizer["CategoryRegulated"].Value,
-        CategoryProfessional = Localizer["CategoryProfessional"].Value,
+        ProductTypeTechnology = Localizer["ProductTypeTechnology"].Value,
+        CategoryCns = Localizer["CategoryCns"].Value,
+        CategoryPediatric = Localizer["CategoryPediatric"].Value,
+        CategoryUrology = Localizer["CategoryUrology"].Value,
+        CategoryAntiInfective = Localizer["CategoryAntiInfective"].Value,
+        CategorySupplement = Localizer["CategorySupplement"].Value,
+        CategoryDisinfectant = Localizer["CategoryDisinfectant"].Value,
+        CategoryManufacturingService = Localizer["CategoryManufacturingService"].Value,
+        CategoryConsulting = Localizer["CategoryConsulting"].Value,
         CategorySupport = Localizer["CategorySupport"].Value,
-        CategoryLicense = Localizer["CategoryLicense"].Value,
-        CategorySubscription = Localizer["CategorySubscription"].Value,
+        CategoryDigitalSolution = Localizer["CategoryDigitalSolution"].Value,
+        CategoryPlatform = Localizer["CategoryPlatform"].Value,
+        CategoryIntegration = Localizer["CategoryIntegration"].Value,
         LifecycleDraft = Localizer["LifecycleDraft"].Value,
         LifecycleActive = Localizer["LifecycleActive"].Value,
         LifecycleBlocked = Localizer["LifecycleBlocked"].Value,
-        LifecycleObsolete = Localizer["LifecycleObsolete"].Value
+        LifecycleObsolete = Localizer["LifecycleObsolete"].Value,
+        Activate = Localizer["Activate"].Value,
+        Block = Localizer["Block"].Value,
+        MarkAsObsolete = Localizer["MarkAsObsolete"].Value,
+        NoLifecycleTransitions = Localizer["NoLifecycleTransitions"].Value,
+        Reason = Localizer["Reason"].Value,
+        ReasonHelperText = Localizer["ReasonHelperText"].Value,
+        RestoreReasonRequired = Localizer["RestoreReasonRequired"].Value,
+        CanRestore = Model.CanRestore,
+        LifecycleStateIds = Model.LifecycleStates.ToDictionary(x => x.Code, x => x.Id)
     })
 </script>

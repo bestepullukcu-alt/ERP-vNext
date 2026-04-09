@@ -7,14 +7,21 @@
   <data name="EditTitle" xml:space="preserve"><value>Məhsulu Redaktə Et</value></data>
   <data name="Actions" xml:space="preserve"><value>Əməliyyatlar</value></data>
   <data name="EditBtn" xml:space="preserve"><value>Redaktə Et</value></data>
-  <data name="QuickView" xml:space="preserve"><value>Sürətli Baxış</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Bax</value></data>
   <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="CodeHelperText" xml:space="preserve"><value>Məhsulun kommersiya qısa kodudur. Unikal və mənalı olmalıdır.</value></data>
   <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="NameHelperText" xml:space="preserve"><value>Ekranda göstəriləcək tam məhsul adıdır.</value></data>
   <data name="ShortName" xml:space="preserve"><value>Qısa Ad</value></data>
+  <data name="ShortNameHelperText" xml:space="preserve"><value>Qısa siyahılarda istifadə olunacaq məhsul adıdır.</value></data>
   <data name="Description" xml:space="preserve"><value>Təsvir</value></data>
+  <data name="DescriptionHelperText" xml:space="preserve"><value>Qısa kommersiya təsviridir. Texniki məzmun və ya qablaşdırma məlumatı daxil edilməməlidir.</value></data>
   <data name="ProductType" xml:space="preserve"><value>Məhsul Növü</value></data>
+  <data name="ProductTypeHelperText" xml:space="preserve"><value>Məhsulun kommersiya növüdür. Operativ item və ya SKU deyil.</value></data>
   <data name="Category" xml:space="preserve"><value>Kateqoriya</value></data>
+  <data name="CategoryHelperText" xml:space="preserve"><value>Məhsulu təsnif etmək üçün istifadə olunur. Faza 1-də müvəqqəti siyahı ola bilər.</value></data>
   <data name="LifecycleState" xml:space="preserve"><value>Həyat Dövrü Vəziyyəti</value></data>
+  <data name="LifecycleStateHelperText" xml:space="preserve"><value>Məhsulun həyat dövrü vəziyyətidir. Sistemin tək vəziyyət mənbəyidir.</value></data>
   <data name="IdentityCard" xml:space="preserve"><value>Kimlik</value></data>
   <data name="ClassificationCard" xml:space="preserve"><value>Təsnifat</value></data>
   <data name="CommercialFlags" xml:space="preserve"><value>Kommersiya Bayraqları</value></data>
@@ -24,22 +31,33 @@
   <data name="CurrentLifecycle" xml:space="preserve"><value>Cari Həyat Dövrü</value></data>
   <data name="Lifecycle" xml:space="preserve"><value>Həyat Dövrü</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>Ümumi Məlumat</value></data>
-  <data name="ProductTypeFinishedGood" xml:space="preserve"><value>Hazır Məhsul</value></data>
+  <data name="ProductTypeFinishedProduct" xml:space="preserve"><value>Hazır Məhsul</value></data>
+  <data name="ProductTypeSemiFinishedProduct" xml:space="preserve"><value>Yarı Hazır Məhsul</value></data>
   <data name="ProductTypeService" xml:space="preserve"><value>Xidmət</value></data>
-  <data name="ProductTypeDigital" xml:space="preserve"><value>Rəqəmsal</value></data>
-  <data name="CategoryStandard" xml:space="preserve"><value>Standart</value></data>
-  <data name="CategoryRegulated" xml:space="preserve"><value>Tənzimlənən</value></data>
-  <data name="CategoryProfessional" xml:space="preserve"><value>Peşəkar</value></data>
+  <data name="ProductTypeTechnology" xml:space="preserve"><value>Texnologiya</value></data>
+  <data name="CategoryCns" xml:space="preserve"><value>CNS</value></data>
+  <data name="CategoryAntiInfective" xml:space="preserve"><value>Anti-İnfektiv</value></data>
+  <data name="CategorySupplement" xml:space="preserve"><value>Qida Əlavəsi</value></data>
+  <data name="CategoryDisinfectant" xml:space="preserve"><value>Dezinfektant</value></data>
+  <data name="CategoryManufacturingService" xml:space="preserve"><value>İstehsal Xidməti</value></data>
+  <data name="CategoryConsulting" xml:space="preserve"><value>Məsləhət</value></data>
+  <data name="CategoryIntegration" xml:space="preserve"><value>İnteqrasiya</value></data>
+  <data name="CategoryPediatric" xml:space="preserve"><value>Pediatrik</value></data>
+  <data name="CategoryUrology" xml:space="preserve"><value>Urologiya</value></data>
   <data name="CategorySupport" xml:space="preserve"><value>Dəstək</value></data>
-  <data name="CategoryLicense" xml:space="preserve"><value>Lisenziya</value></data>
-  <data name="CategorySubscription" xml:space="preserve"><value>Abunəlik</value></data>
+  <data name="CategoryDigitalSolution" xml:space="preserve"><value>Rəqəmsal Həll</value></data>
+  <data name="CategoryPlatform" xml:space="preserve"><value>Platforma</value></data>
   <data name="LifecycleDraft" xml:space="preserve"><value>Qaralama</value></data>
   <data name="LifecycleActive" xml:space="preserve"><value>Aktiv</value></data>
   <data name="LifecycleBlocked" xml:space="preserve"><value>Bloklanmış</value></data>
   <data name="LifecycleObsolete" xml:space="preserve"><value>Köhnəlmiş</value></data>
   <data name="Activate" xml:space="preserve"><value>Aktivləşdir</value></data>
+  <data name="Restore" xml:space="preserve"><value>Bərpa Et</value></data>
   <data name="Block" xml:space="preserve"><value>Blokla</value></data>
   <data name="MarkAsObsolete" xml:space="preserve"><value>Köhnəlmiş Et</value></data>
+  <data name="Reason" xml:space="preserve"><value>Səbəb</value></data>
+  <data name="ReasonHelperText" xml:space="preserve"><value>Həyat dövrü dəyişiklikləri üçün qısa qeyd daxil edin. Bərpa üçün məcburidir.</value></data>
+  <data name="RestoreReasonRequired" xml:space="preserve"><value>Köhnəlmiş məhsulu bərpa etmək üçün səbəb məcburidir.</value></data>
   <data name="NoLifecycleTransitions" xml:space="preserve"><value>Əlavə həyat dövrü keçidi mövcud deyil.</value></data>
   <data name="RelatedModules" xml:space="preserve"><value>Əlaqəli Modullar</value></data>
   <data name="RelatedSku" xml:space="preserve"><value>Əlaqəli SKU</value></data>
@@ -49,8 +67,11 @@
   <data name="NoRelatedComposition" xml:space="preserve"><value>Hələ əlaqəli kompozisiya qeydi yoxdur. Bu sahə Faza 1-də yalnız oxunur.</value></data>
   <data name="NoRelatedPackaging" xml:space="preserve"><value>Hələ əlaqəli qablaşdırma qeydi yoxdur. Bu sahə Faza 1-də yalnız oxunur.</value></data>
   <data name="IsSaleable" xml:space="preserve"><value>Satıla Bilən</value></data>
+  <data name="IsSaleableHelperText" xml:space="preserve"><value>Faza 1-də yalnız kommersiya niyyəti məlumatıdır.</value></data>
   <data name="IsPurchasable" xml:space="preserve"><value>Alına Bilən</value></data>
+  <data name="IsPurchasableHelperText" xml:space="preserve"><value>Faza 1-də yalnız niyyət məlumatıdır.</value></data>
   <data name="IsManufacturable" xml:space="preserve"><value>İstehsal Olunan</value></data>
+  <data name="IsManufacturableHelperText" xml:space="preserve"><value>Faza 1-də yalnız niyyət məlumatıdır.</value></data>
   <data name="BreadcrumbHome" xml:space="preserve"><value>Ana Səhifə</value></data>
   <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
 </root>

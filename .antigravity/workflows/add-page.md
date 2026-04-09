@@ -24,6 +24,12 @@ description: "WORKFLOW-002 — Mevcut Modüle Action Bazlı Sayfa ve UI Bileşen
   - breadcrumb: `{{ModuleName}}Title > Current Action`
   - `Home` / area breadcrumb varsayılanı kullanılmaz
   - `PageDescription` eklenmez
+- **Dependent Select Standardı:** Parent/child select ilişkisi varsa:
+  - child alan parent seçilmeden disabled başlar
+  - parent seçilince child seçenekleri uygun alt kümeyle yeniden oluşturulur
+  - uygunsuz mevcut seçim temizlenir
+  - select2 kullanılıyorsa disabled state ve seçenekler UI tarafında yeniden senkronlanır
+  - uygunsuz seçenekler dropdown içinde disabled/gri halde bırakılmaz
 
 ### C. Details (Read-Only) Sayfası
 - **Şablon:** `.antigravity/rules/frontend-details-template.md`
@@ -61,6 +67,7 @@ description: "WORKFLOW-002 — Mevcut Modüle Action Bazlı Sayfa ve UI Bileşen
 - [ ] **Toast Check:** Bildirimler `window.showToast` üzerinden mi?
 - [ ] **L10n Check:** Hardcoded string yok mu? `window.L10n` bridge dolu mu (9 dil)?
 - [ ] **CSRF Check:** Formlarda `@Html.AntiForgeryToken()` var mı?
+- [ ] **Dependent Select Check:** Parent/child select varsa child alan parent seçimi sonrası aktifleşiyor, sadece geçerli seçenekleri gösteriyor ve eski uygunsuz değerleri temizliyor mu?
 
 ---
 Diten ERP vNext Page Extension Standard - 2024

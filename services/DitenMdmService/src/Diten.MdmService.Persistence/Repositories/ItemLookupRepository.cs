@@ -111,6 +111,14 @@ public sealed class ItemLookupRepository : RepositoryBase<ItemType>, IItemLookup
         return await _lifecycleStates.Find(ByIdFilter<LifecycleState>(id)).FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<LifecycleState?> GetLifecycleStateByCodeAsync(string code, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<LifecycleState>.Filter.And(
+            TenantFilterFor<LifecycleState>(),
+            Builders<LifecycleState>.Filter.Eq(x => x.Code, code));
+        return await _lifecycleStates.Find(filter).FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<UnitOfMeasure?> GetUnitOfMeasureByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _unitOfMeasures.Find(ByIdFilter<UnitOfMeasure>(id)).FirstOrDefaultAsync(cancellationToken);

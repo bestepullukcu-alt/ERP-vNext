@@ -86,10 +86,11 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - `/tenant-audit` komutunu çalıştırarak sızıntı kontrolü yap.
    - `code-quality-agent` → İsimlendirme, dosya yapısı ve standart denetimi yap.
 
-6. **Phase 6: Dokümantasyon (documentation-writer & user-manual-generator)**
+6. **Phase 6: Dokümantasyon ve Denetim (documentation-writer & user-manual-generator)**
    - `documentation-writer` → Yeni modülün API dokümanlarını (Swagger/README) güncelle.
    - `user-manual-generator` → Son kullanıcı kılavuzunu hazırla (modülün ekranları, alanları, adım adım rehber).
-   - ⛔ **BLOCKER:** Bu faz atlanamaz. Orchestration Report'ta "Dokümantasyon yazıldı" işaretlenmeden modül **kapanmaz**. `documentation-writer` ve `user-manual-generator` tamamlanmadan "teslim edildi" denilmez.
+   - **Mimari Denetim (Audit Report):** Geliştirilen modülün standartlara uygunluğunu belgeleyen bir denetim raporu oluştur ve `/docs/audits/{module-name}-audit.md` adresine kaydet.
+   - ⛔ **BLOCKER:** Bu faz atlanamaz. Orchestration Report'ta "Dokümantasyon ve Denetim tamamlandı" işaretlenmeden modül **kapanmaz**. `documentation-writer`, `user-manual-generator` ve Audit Report tamamlanmadan "teslim edildi" denilmez.
 
 ## ⚖️ Altın Kurallar
 - **Sıfır İnisiyatif Kuralı:** Ajan, standart Liste/CRUD (DataTable) sayfaları için arayüz uyduramaz, kesinlikle Master Template'i kullanmak zorundadır.

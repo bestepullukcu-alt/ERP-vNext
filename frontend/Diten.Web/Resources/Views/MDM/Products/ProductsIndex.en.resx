@@ -7,14 +7,21 @@
   <data name="EditTitle" xml:space="preserve"><value>Edit Product</value></data>
   <data name="Actions" xml:space="preserve"><value>Actions</value></data>
   <data name="EditBtn" xml:space="preserve"><value>Edit</value></data>
-  <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
   <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="CodeHelperText" xml:space="preserve"><value>Commercial short code for the product. It should be unique and meaningful.</value></data>
   <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="NameHelperText" xml:space="preserve"><value>Full product name for display.</value></data>
   <data name="ShortName" xml:space="preserve"><value>Short Name</value></data>
+  <data name="ShortNameHelperText" xml:space="preserve"><value>Product name used in short lists.</value></data>
   <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="DescriptionHelperText" xml:space="preserve"><value>Short commercial description. Do not enter technical content or packaging details.</value></data>
   <data name="ProductType" xml:space="preserve"><value>Product Type</value></data>
+  <data name="ProductTypeHelperText" xml:space="preserve"><value>Commercial type of the product. It is not an operational item or SKU.</value></data>
   <data name="Category" xml:space="preserve"><value>Category</value></data>
+  <data name="CategoryHelperText" xml:space="preserve"><value>Used to classify the product. A temporary list may be used in Phase 1.</value></data>
   <data name="LifecycleState" xml:space="preserve"><value>Lifecycle State</value></data>
+  <data name="LifecycleStateHelperText" xml:space="preserve"><value>Lifecycle status of the product. This is the system's single state source.</value></data>
   <data name="IdentityCard" xml:space="preserve"><value>Identity</value></data>
   <data name="ClassificationCard" xml:space="preserve"><value>Classification</value></data>
   <data name="CommercialFlags" xml:space="preserve"><value>Commercial Flags</value></data>
@@ -24,22 +31,33 @@
   <data name="CurrentLifecycle" xml:space="preserve"><value>Current Lifecycle</value></data>
   <data name="Lifecycle" xml:space="preserve"><value>Lifecycle</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
-  <data name="ProductTypeFinishedGood" xml:space="preserve"><value>Finished Good</value></data>
+  <data name="ProductTypeFinishedProduct" xml:space="preserve"><value>Finished Product</value></data>
+  <data name="ProductTypeSemiFinishedProduct" xml:space="preserve"><value>Semi Finished Product</value></data>
   <data name="ProductTypeService" xml:space="preserve"><value>Service</value></data>
-  <data name="ProductTypeDigital" xml:space="preserve"><value>Digital</value></data>
-  <data name="CategoryStandard" xml:space="preserve"><value>Standard</value></data>
-  <data name="CategoryRegulated" xml:space="preserve"><value>Regulated</value></data>
-  <data name="CategoryProfessional" xml:space="preserve"><value>Professional</value></data>
+  <data name="ProductTypeTechnology" xml:space="preserve"><value>Technology</value></data>
+  <data name="CategoryCns" xml:space="preserve"><value>CNS</value></data>
+  <data name="CategoryAntiInfective" xml:space="preserve"><value>Anti-Infective</value></data>
+  <data name="CategorySupplement" xml:space="preserve"><value>Supplement</value></data>
+  <data name="CategoryDisinfectant" xml:space="preserve"><value>Disinfectant</value></data>
+  <data name="CategoryManufacturingService" xml:space="preserve"><value>Manufacturing Service</value></data>
+  <data name="CategoryConsulting" xml:space="preserve"><value>Consulting</value></data>
+  <data name="CategoryIntegration" xml:space="preserve"><value>Integration</value></data>
+  <data name="CategoryPediatric" xml:space="preserve"><value>Pediatric</value></data>
+  <data name="CategoryUrology" xml:space="preserve"><value>Urology</value></data>
   <data name="CategorySupport" xml:space="preserve"><value>Support</value></data>
-  <data name="CategoryLicense" xml:space="preserve"><value>License</value></data>
-  <data name="CategorySubscription" xml:space="preserve"><value>Subscription</value></data>
+  <data name="CategoryDigitalSolution" xml:space="preserve"><value>Digital Solution</value></data>
+  <data name="CategoryPlatform" xml:space="preserve"><value>Platform</value></data>
   <data name="LifecycleDraft" xml:space="preserve"><value>Draft</value></data>
   <data name="LifecycleActive" xml:space="preserve"><value>Active</value></data>
   <data name="LifecycleBlocked" xml:space="preserve"><value>Blocked</value></data>
   <data name="LifecycleObsolete" xml:space="preserve"><value>Obsolete</value></data>
   <data name="Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Restore" xml:space="preserve"><value>Restore</value></data>
   <data name="Block" xml:space="preserve"><value>Block</value></data>
   <data name="MarkAsObsolete" xml:space="preserve"><value>Mark as Obsolete</value></data>
+  <data name="Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="ReasonHelperText" xml:space="preserve"><value>Provide a short note for lifecycle changes. It is required for restore.</value></data>
+  <data name="RestoreReasonRequired" xml:space="preserve"><value>Reason is required to restore an obsolete product.</value></data>
   <data name="NoLifecycleTransitions" xml:space="preserve"><value>No further lifecycle transitions are available.</value></data>
   <data name="RelatedModules" xml:space="preserve"><value>Related Modules</value></data>
   <data name="RelatedSku" xml:space="preserve"><value>Related SKU</value></data>
@@ -49,8 +67,11 @@
   <data name="NoRelatedComposition" xml:space="preserve"><value>No related composition records are linked yet. This area is read-only in Phase 1.</value></data>
   <data name="NoRelatedPackaging" xml:space="preserve"><value>No related packaging records are linked yet. This area is read-only in Phase 1.</value></data>
   <data name="IsSaleable" xml:space="preserve"><value>Saleable</value></data>
+  <data name="IsSaleableHelperText" xml:space="preserve"><value>In Phase 1, this is advisory commercial intent only.</value></data>
   <data name="IsPurchasable" xml:space="preserve"><value>Purchasable</value></data>
+  <data name="IsPurchasableHelperText" xml:space="preserve"><value>In Phase 1, this is advisory intent only.</value></data>
   <data name="IsManufacturable" xml:space="preserve"><value>Manufacturable</value></data>
+  <data name="IsManufacturableHelperText" xml:space="preserve"><value>In Phase 1, this is advisory intent only.</value></data>
   <data name="BreadcrumbHome" xml:space="preserve"><value>Home</value></data>
   <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
 </root>

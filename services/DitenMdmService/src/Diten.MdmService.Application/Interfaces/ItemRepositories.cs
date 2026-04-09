@@ -58,5 +58,6 @@ public interface IItemLookupRepository
     Task<ItemType?> GetItemTypeByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<TrackingPolicy?> GetTrackingPolicyByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<LifecycleState?> GetLifecycleStateByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<LifecycleState?> GetLifecycleStateByCodeAsync(string code, CancellationToken cancellationToken = default);
     Task<UnitOfMeasure?> GetUnitOfMeasureByIdAsync(Guid id, CancellationToken cancellationToken = default);
 }

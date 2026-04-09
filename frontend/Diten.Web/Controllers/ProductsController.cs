@@ -12,6 +12,7 @@ namespace Diten.Web.Controllers;
 [Authorize]
 public sealed class ProductsController : Controller
 {
+    private const string RestorePermission = "Modules.Products.Restore";
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
@@ -23,19 +24,32 @@ public sealed class ProductsController : Controller
 
     private static readonly ProductTypeOptionViewModel[] ProductTypeCatalog =
     [
-        new() { Value = 1, Code = "FINISHED_GOOD" },
-        new() { Value = 2, Code = "SERVICE" },
-        new() { Value = 3, Code = "DIGITAL" }
+        new() { Value = 1, Code = "FINISHED_PRODUCT" },
+        new() { Value = 2, Code = "SEMI_FINISHED_PRODUCT" },
+        new() { Value = 3, Code = "SERVICE" },
+        new() { Value = 4, Code = "TECHNOLOGY" }
     ];
 
     private static readonly ProductCategoryOptionViewModel[] ProductCategoryCatalog =
     [
-        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000001"), ProductType = 1, Code = "STANDARD" },
-        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000002"), ProductType = 1, Code = "REGULATED" },
-        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000003"), ProductType = 2, Code = "PROFESSIONAL" },
-        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000004"), ProductType = 2, Code = "SUPPORT" },
-        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000005"), ProductType = 3, Code = "LICENSE" },
-        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000006"), ProductType = 3, Code = "SUBSCRIPTION" }
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000001"), ProductType = 1, Code = "CNS" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000002"), ProductType = 1, Code = "PEDIATRIC" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000003"), ProductType = 1, Code = "UROLOGY" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000004"), ProductType = 1, Code = "ANTI_INFECTIVE" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000005"), ProductType = 1, Code = "SUPPLEMENT" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000006"), ProductType = 1, Code = "DISINFECTANT" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000007"), ProductType = 2, Code = "CNS" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000008"), ProductType = 2, Code = "PEDIATRIC" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000009"), ProductType = 2, Code = "UROLOGY" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-00000000000A"), ProductType = 2, Code = "ANTI_INFECTIVE" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-00000000000B"), ProductType = 2, Code = "SUPPLEMENT" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-00000000000C"), ProductType = 2, Code = "DISINFECTANT" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-00000000000D"), ProductType = 3, Code = "MANUFACTURING_SERVICE" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-00000000000E"), ProductType = 3, Code = "CONSULTING" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-00000000000F"), ProductType = 3, Code = "SUPPORT" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000010"), ProductType = 4, Code = "DIGITAL_SOLUTION" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000011"), ProductType = 4, Code = "PLATFORM" },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000012"), ProductType = 4, Code = "INTEGRATION" }
     ];
 
     public ProductsController(
@@ -118,23 +132,10 @@ public sealed class ProductsController : Controller
         if (response.IsSuccessStatusCode)
         {
             TempData["SuccessMessage"] = "RecordUpdated";
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
-        await AddGatewayErrorAsync(response);
-        return View(model);
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> Details(Guid id)
-    {
-        var model = await LoadDetailsModelAsync(id);
-        if (model is null)
-        {
-            TempData["ErrorMessage"] = _sharedLocalizer["GatewayError"].Value;
             return RedirectToAction(nameof(Index));
         }
 
+        await AddGatewayErrorAsync(response);
         return View(model);
     }
 
@@ -158,7 +159,7 @@ public sealed class ProductsController : Controller
             TempData["ErrorMessage"] = await ReadErrorAsync(response);
         }
 
-        return RedirectToAction(nameof(Details), new { id });
+        return RedirectToAction(nameof(Index));
     }
 
     private async Task<ProductIndexPageViewModel> BuildIndexPageModelAsync()
@@ -166,8 +167,9 @@ public sealed class ProductsController : Controller
         return new ProductIndexPageViewModel
         {
             ProductTypes = BuildProductTypeOptions(),
-            Categories = BuildCategoryOptions(),
-            LifecycleStates = await GetLifecycleOptionsAsync()
+            Categories = BuildCategoryFilterOptions(),
+            LifecycleStates = await GetLifecycleOptionsAsync(),
+            CanRestore = HasPermission(RestorePermission)
         };
     }
 
@@ -204,47 +206,6 @@ public sealed class ProductsController : Controller
             IsSaleable = detail.IsSaleable,
             IsPurchasable = detail.IsPurchasable,
             IsManufacturable = detail.IsManufacturable
-        };
-    }
-
-    private async Task<ProductDetailViewModel?> LoadDetailsModelAsync(Guid id)
-    {
-        var detail = await LoadProductApiModelAsync(id);
-        if (detail is null)
-        {
-            return null;
-        }
-
-        var lifecycleOptions = await GetLifecycleOptionsAsync();
-        var currentLifecycle = lifecycleOptions.FirstOrDefault(x => x.Id == detail.LifecycleStateId)
-            ?? new ProductLifecycleOptionViewModel
-            {
-                Id = detail.LifecycleStateId,
-                Code = detail.LifecycleStateCode,
-                Name = LocalizeLifecycle(detail.LifecycleStateCode, detail.LifecycleState)
-            };
-
-        return new ProductDetailViewModel
-        {
-            Id = detail.Id,
-            Code = detail.Code,
-            Name = detail.Name,
-            ShortName = detail.ShortName,
-            Description = detail.Description,
-            ProductType = ProductTypeCatalog.FirstOrDefault(x => x.Code == detail.ProductTypeCode)?.Value ?? 0,
-            ProductTypeCode = detail.ProductTypeCode,
-            ProductTypeName = LocalizeProductType(detail.ProductTypeCode, detail.ProductType),
-            CategoryId = detail.CategoryId,
-            CategoryCode = detail.CategoryCode,
-            CategoryName = LocalizeCategory(detail.CategoryCode, detail.Category),
-            LifecycleStateId = currentLifecycle.Id,
-            LifecycleStateCode = currentLifecycle.Code,
-            LifecycleStateName = currentLifecycle.Name,
-            LifecycleBadgeClass = GetLifecycleBadgeClass(currentLifecycle.Code),
-            IsSaleable = detail.IsSaleable,
-            IsPurchasable = detail.IsPurchasable,
-            IsManufacturable = detail.IsManufacturable,
-            AvailableTransitions = BuildLifecycleTransitions(currentLifecycle.Code, lifecycleOptions)
         };
     }
 
@@ -305,54 +266,22 @@ public sealed class ProductsController : Controller
             .ToList();
     }
 
-    private List<ProductLifecycleTransitionViewModel> BuildLifecycleTransitions(
-        string currentLifecycleCode,
-        IReadOnlyList<ProductLifecycleOptionViewModel> allStates)
+    private List<ProductCategoryOptionViewModel> BuildCategoryFilterOptions()
     {
-        var allowedCodes = (currentLifecycleCode ?? string.Empty).Trim().ToUpperInvariant() switch
-        {
-            "DRAFT" => new[] { "ACTIVE" },
-            "ACTIVE" => new[] { "BLOCKED", "OBSOLETE" },
-            "BLOCKED" => new[] { "ACTIVE", "OBSOLETE" },
-            _ => Array.Empty<string>()
-        };
-
-        return allStates
-            .Where(x => allowedCodes.Contains(x.Code))
-            .Select(x => new ProductLifecycleTransitionViewModel
-            {
-                LifecycleStateId = x.Id,
-                Code = x.Code,
-                Name = GetLifecycleActionName(x.Code, x.Name),
-                ButtonClass = x.Code switch
-                {
-                    "ACTIVE" => "btn-success",
-                    "BLOCKED" => "btn-warning",
-                    "OBSOLETE" => "btn-dark",
-                    _ => "btn-label-secondary"
-                }
-            })
+        return BuildCategoryOptions()
+            .GroupBy(x => x.Code, StringComparer.OrdinalIgnoreCase)
+            .Select(x => x.First())
             .ToList();
-    }
-
-    private string GetLifecycleActionName(string code, string fallback)
-    {
-        return (code ?? string.Empty).Trim().ToUpperInvariant() switch
-        {
-            "ACTIVE" => _productLocalizer["Activate"].Value,
-            "BLOCKED" => _productLocalizer["Block"].Value,
-            "OBSOLETE" => _productLocalizer["MarkAsObsolete"].Value,
-            _ => fallback
-        };
     }
 
     private string LocalizeProductType(string code, string fallback)
     {
         return (code ?? string.Empty).Trim().ToUpperInvariant() switch
         {
-            "FINISHED_GOOD" => _productLocalizer["ProductTypeFinishedGood"].Value,
+            "FINISHED_PRODUCT" => _productLocalizer["ProductTypeFinishedProduct"].Value,
+            "SEMI_FINISHED_PRODUCT" => _productLocalizer["ProductTypeSemiFinishedProduct"].Value,
             "SERVICE" => _productLocalizer["ProductTypeService"].Value,
-            "DIGITAL" => _productLocalizer["ProductTypeDigital"].Value,
+            "TECHNOLOGY" => _productLocalizer["ProductTypeTechnology"].Value,
             _ => fallback
         };
     }
@@ -361,12 +290,18 @@ public sealed class ProductsController : Controller
     {
         return (code ?? string.Empty).Trim().ToUpperInvariant() switch
         {
-            "STANDARD" => _productLocalizer["CategoryStandard"].Value,
-            "REGULATED" => _productLocalizer["CategoryRegulated"].Value,
-            "PROFESSIONAL" => _productLocalizer["CategoryProfessional"].Value,
+            "CNS" => _productLocalizer["CategoryCns"].Value,
+            "PEDIATRIC" => _productLocalizer["CategoryPediatric"].Value,
+            "UROLOGY" => _productLocalizer["CategoryUrology"].Value,
+            "ANTI_INFECTIVE" => _productLocalizer["CategoryAntiInfective"].Value,
+            "SUPPLEMENT" => _productLocalizer["CategorySupplement"].Value,
+            "DISINFECTANT" => _productLocalizer["CategoryDisinfectant"].Value,
+            "MANUFACTURING_SERVICE" => _productLocalizer["CategoryManufacturingService"].Value,
+            "CONSULTING" => _productLocalizer["CategoryConsulting"].Value,
             "SUPPORT" => _productLocalizer["CategorySupport"].Value,
-            "LICENSE" => _productLocalizer["CategoryLicense"].Value,
-            "SUBSCRIPTION" => _productLocalizer["CategorySubscription"].Value,
+            "DIGITAL_SOLUTION" => _productLocalizer["CategoryDigitalSolution"].Value,
+            "PLATFORM" => _productLocalizer["CategoryPlatform"].Value,
+            "INTEGRATION" => _productLocalizer["CategoryIntegration"].Value,
             _ => fallback
         };
     }
@@ -380,17 +315,6 @@ public sealed class ProductsController : Controller
             "BLOCKED" => _productLocalizer["LifecycleBlocked"].Value,
             "OBSOLETE" => _productLocalizer["LifecycleObsolete"].Value,
             _ => fallback
-        };
-    }
-
-    private static string GetLifecycleBadgeClass(string code)
-    {
-        return (code ?? string.Empty).Trim().ToUpperInvariant() switch
-        {
-            "ACTIVE" => "bg-label-success",
-            "BLOCKED" => "bg-label-warning",
-            "OBSOLETE" => "bg-label-dark",
-            _ => "bg-label-secondary"
         };
     }
 
@@ -454,5 +378,43 @@ public sealed class ProductsController : Controller
         }
 
         return "00000000-0000-0000-0000-000000000001";
+    }
+
+    private bool HasPermission(string permission)
+    {
+        if (string.IsNullOrWhiteSpace(permission))
+        {
+            return false;
+        }
+
+        foreach (var claim in User.Claims)
+        {
+            var claimValue = claim.Value?.Trim();
+            if (string.IsNullOrWhiteSpace(claimValue))
+            {
+                continue;
+            }
+
+            if (string.Equals(claimValue, permission, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            foreach (var token in claimValue.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (string.Equals(token, permission, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            if (claimValue.StartsWith("[", StringComparison.Ordinal)
+                && claimValue.IndexOf(permission, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

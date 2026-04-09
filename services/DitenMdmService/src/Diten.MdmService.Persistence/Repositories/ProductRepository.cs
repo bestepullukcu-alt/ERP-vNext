@@ -17,6 +17,43 @@ public sealed class ProductRepository : RepositoryBase<Product>, IProductReposit
         Collection.Indexes.CreateOne(new CreateIndexModel<Product>(indexKeys, new CreateIndexOptions { Unique = true }));
     }
 
+    public async Task EnsureSeedDataAsync(CancellationToken cancellationToken = default)
+    {
+        // Not using TenantFilter here because we need to check even deleted records.
+        // Also checking by Id globally because Id is a unique index for the entire collection.
+        var seedProducts = ProductSeedData.BuildProducts();
+        var seedIds = seedProducts.Select(p => p.Id).ToList();
+        var seedCodes = seedProducts.Select(p => p.Code).ToList();
+
+        var existingEntities = await Collection.Find(
+            Builders<Product>.Filter.Or(
+                Builders<Product>.Filter.In(x => x.Id, seedIds),
+                Builders<Product>.Filter.Eq(x => x.TenantId, TenantContext.TenantId) // Only check codes for current tenant
+            ))
+            .Project(x => new { x.Id, x.Code })
+            .ToListAsync(cancellationToken);
+
+        var existingIdSet = existingEntities.Select(x => x.Id).ToHashSet();
+        var existingCodeSet = existingEntities
+            .Where(x => x.Code != null)
+            .Select(x => x.Code.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var missingProducts = seedProducts
+            .Where(x => !existingIdSet.Contains(x.Id) && !existingCodeSet.Contains(x.Code))
+            .ToList();
+
+        if (missingProducts.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var product in missingProducts)
+        {
+            await InsertAsync(product, cancellationToken);
+        }
+    }
+
     public async Task<Product> CreateAsync(Product entity, CancellationToken cancellationToken = default)
     {
         return await InsertAsync(entity, cancellationToken);

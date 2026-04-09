@@ -10,5 +10,6 @@ public static class ProductPermissions
         public const string Delete = "Modules.Products.Delete";
         public const string BulkDelete = "Modules.Products.BulkDelete";
         public const string Patch = "Modules.Products.Patch";
+        public const string Restore = "Modules.Products.Restore";
     }
 }

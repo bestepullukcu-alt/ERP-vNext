@@ -147,7 +147,7 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
                     <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
                     {{TableHeaders}}
                     <th>@SharedLocalizer["Status"]</th>
-                    <th class="cell-fit">@Localizer["Actions"]</th>
+                    <th class="cell-fit text-end">@Localizer["Actions"]</th>
                 </tr>
             </thead>
         </table>

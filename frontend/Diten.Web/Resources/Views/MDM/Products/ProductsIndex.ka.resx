@@ -7,14 +7,21 @@
   <data name="EditTitle" xml:space="preserve"><value>პროდუქტის რედაქტირება</value></data>
   <data name="Actions" xml:space="preserve"><value>მოქმედებები</value></data>
   <data name="EditBtn" xml:space="preserve"><value>რედაქტირება</value></data>
-  <data name="QuickView" xml:space="preserve"><value>სწრაფი ნახვა</value></data>
+  <data name="QuickView" xml:space="preserve"><value>ნახვა</value></data>
   <data name="Code" xml:space="preserve"><value>კოდი</value></data>
+  <data name="CodeHelperText" xml:space="preserve"><value>ეს არის პროდუქტის მოკლე კომერციული კოდი. ის უნდა იყოს უნიკალური და შინაარსიანი.</value></data>
   <data name="Name" xml:space="preserve"><value>სახელი</value></data>
+  <data name="NameHelperText" xml:space="preserve"><value>პროდუქტის სრული სახელია ეკრანზე გამოსატანად.</value></data>
   <data name="ShortName" xml:space="preserve"><value>მოკლე სახელი</value></data>
+  <data name="ShortNameHelperText" xml:space="preserve"><value>პროდუქტის სახელი, რომელიც გამოიყენება მოკლე სიებში.</value></data>
   <data name="Description" xml:space="preserve"><value>აღწერა</value></data>
+  <data name="DescriptionHelperText" xml:space="preserve"><value>მოკლე კომერციული აღწერა. არ უნდა შეიყვანოთ ტექნიკური შინაარსი ან შეფუთვის ინფორმაცია.</value></data>
   <data name="ProductType" xml:space="preserve"><value>პროდუქტის ტიპი</value></data>
+  <data name="ProductTypeHelperText" xml:space="preserve"><value>ეს არის პროდუქტის კომერციული ტიპი. ის არ არის ოპერაციული item ან SKU.</value></data>
   <data name="Category" xml:space="preserve"><value>კატეგორია</value></data>
+  <data name="CategoryHelperText" xml:space="preserve"><value>გამოიყენება პროდუქტის კლასიფიკაციისთვის. ფაზა 1-ში შეიძლება დროებითი სია იყოს.</value></data>
   <data name="LifecycleState" xml:space="preserve"><value>სიცოცხლის ციკლის მდგომარეობა</value></data>
+  <data name="LifecycleStateHelperText" xml:space="preserve"><value>ეს არის პროდუქტის სიცოცხლის ციკლის მდგომარეობა. ეს არის სისტემის ერთადერთი მდგომარეობის წყარო.</value></data>
   <data name="IdentityCard" xml:space="preserve"><value>იდენტობა</value></data>
   <data name="ClassificationCard" xml:space="preserve"><value>კლასიფიკაცია</value></data>
   <data name="CommercialFlags" xml:space="preserve"><value>კომერციული ნიშნები</value></data>
@@ -24,22 +31,33 @@
   <data name="CurrentLifecycle" xml:space="preserve"><value>მიმდინარე სიცოცხლის ციკლი</value></data>
   <data name="Lifecycle" xml:space="preserve"><value>სიცოცხლის ციკლი</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>ზოგადი ინფორმაცია</value></data>
-  <data name="ProductTypeFinishedGood" xml:space="preserve"><value>მზა პროდუქტი</value></data>
+  <data name="ProductTypeFinishedProduct" xml:space="preserve"><value>მზა პროდუქტი</value></data>
+  <data name="ProductTypeSemiFinishedProduct" xml:space="preserve"><value>ნახევარფაბრიკატი პროდუქტი</value></data>
   <data name="ProductTypeService" xml:space="preserve"><value>სერვისი</value></data>
-  <data name="ProductTypeDigital" xml:space="preserve"><value>ციფრული</value></data>
-  <data name="CategoryStandard" xml:space="preserve"><value>სტანდარტული</value></data>
-  <data name="CategoryRegulated" xml:space="preserve"><value>რეგულირებადი</value></data>
-  <data name="CategoryProfessional" xml:space="preserve"><value>პროფესიული</value></data>
+  <data name="ProductTypeTechnology" xml:space="preserve"><value>ტექნოლოგია</value></data>
+  <data name="CategoryCns" xml:space="preserve"><value>CNS</value></data>
+  <data name="CategoryAntiInfective" xml:space="preserve"><value>ანტიინფექციური</value></data>
+  <data name="CategorySupplement" xml:space="preserve"><value>დანამატი</value></data>
+  <data name="CategoryDisinfectant" xml:space="preserve"><value>დეზინფექტანტი</value></data>
+  <data name="CategoryManufacturingService" xml:space="preserve"><value>წარმოების სერვისი</value></data>
+  <data name="CategoryConsulting" xml:space="preserve"><value>კონსალტინგი</value></data>
+  <data name="CategoryIntegration" xml:space="preserve"><value>ინტეგრაცია</value></data>
+  <data name="CategoryPediatric" xml:space="preserve"><value>პედიატრიული</value></data>
+  <data name="CategoryUrology" xml:space="preserve"><value>უროლოგია</value></data>
   <data name="CategorySupport" xml:space="preserve"><value>მხარდაჭერა</value></data>
-  <data name="CategoryLicense" xml:space="preserve"><value>ლიცენზია</value></data>
-  <data name="CategorySubscription" xml:space="preserve"><value>გამოწერა</value></data>
+  <data name="CategoryDigitalSolution" xml:space="preserve"><value>ციფრული გადაწყვეტა</value></data>
+  <data name="CategoryPlatform" xml:space="preserve"><value>პლატფორმა</value></data>
   <data name="LifecycleDraft" xml:space="preserve"><value>მონახაზი</value></data>
   <data name="LifecycleActive" xml:space="preserve"><value>აქტიური</value></data>
   <data name="LifecycleBlocked" xml:space="preserve"><value>დაბლოკილი</value></data>
   <data name="LifecycleObsolete" xml:space="preserve"><value>მოძველებული</value></data>
   <data name="Activate" xml:space="preserve"><value>აქტივაცია</value></data>
+  <data name="Restore" xml:space="preserve"><value>აღდგენა</value></data>
   <data name="Block" xml:space="preserve"><value>დაბლოკვა</value></data>
   <data name="MarkAsObsolete" xml:space="preserve"><value>მოძველებულად მონიშვნა</value></data>
+  <data name="Reason" xml:space="preserve"><value>მიზეზი</value></data>
+  <data name="ReasonHelperText" xml:space="preserve"><value>სიცოცხლის ციკლის ცვლილებისთვის შეიყვანეთ მოკლე შენიშვნა. აღდგენისთვის სავალდებულოა.</value></data>
+  <data name="RestoreReasonRequired" xml:space="preserve"><value>მოძველებული პროდუქტის აღსადგენად მიზეზი სავალდებულოა.</value></data>
   <data name="NoLifecycleTransitions" xml:space="preserve"><value>სიცოცხლის ციკლის შემდგომი გადასვლები ხელმისაწვდომი არ არის.</value></data>
   <data name="RelatedModules" xml:space="preserve"><value>დაკავშირებული მოდულები</value></data>
   <data name="RelatedSku" xml:space="preserve"><value>დაკავშირებული SKU</value></data>
@@ -49,8 +67,11 @@
   <data name="NoRelatedComposition" xml:space="preserve"><value>დაკავშირებული კომპოზიციის ჩანაწერები ჯერ არ არის. ეს ზონა ფაზა 1-ში მხოლოდ წაკითხვისთვისაა.</value></data>
   <data name="NoRelatedPackaging" xml:space="preserve"><value>დაკავშირებული შეფუთვის ჩანაწერები ჯერ არ არის. ეს ზონა ფაზა 1-ში მხოლოდ წაკითხვისთვისაა.</value></data>
   <data name="IsSaleable" xml:space="preserve"><value>გასაყიდი</value></data>
+  <data name="IsSaleableHelperText" xml:space="preserve"><value>ფაზა 1-ში ეს მხოლოდ კომერციული განზრახვის ნიშნულია.</value></data>
   <data name="IsPurchasable" xml:space="preserve"><value>შესასყიდი</value></data>
+  <data name="IsPurchasableHelperText" xml:space="preserve"><value>ფაზა 1-ში ეს მხოლოდ განზრახვის ნიშნულია.</value></data>
   <data name="IsManufacturable" xml:space="preserve"><value>საწარმოებელი</value></data>
+  <data name="IsManufacturableHelperText" xml:space="preserve"><value>ფაზა 1-ში ეს მხოლოდ განზრახვის ნიშნულია.</value></data>
   <data name="BreadcrumbHome" xml:space="preserve"><value>მთავარი</value></data>
   <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
 </root>

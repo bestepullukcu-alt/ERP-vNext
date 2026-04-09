@@ -7,14 +7,21 @@
   <data name="EditTitle" xml:space="preserve"><value>Редагувати Продукт</value></data>
   <data name="Actions" xml:space="preserve"><value>Дії</value></data>
   <data name="EditBtn" xml:space="preserve"><value>Редагувати</value></data>
-  <data name="QuickView" xml:space="preserve"><value>Швидкий Перегляд</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Перегляд</value></data>
   <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="CodeHelperText" xml:space="preserve"><value>Це короткий комерційний код продукту. Він має бути унікальним і зрозумілим.</value></data>
   <data name="Name" xml:space="preserve"><value>Назва</value></data>
+  <data name="NameHelperText" xml:space="preserve"><value>Повна назва продукту для відображення.</value></data>
   <data name="ShortName" xml:space="preserve"><value>Коротка Назва</value></data>
+  <data name="ShortNameHelperText" xml:space="preserve"><value>Назва продукту для використання у коротких списках.</value></data>
   <data name="Description" xml:space="preserve"><value>Опис</value></data>
+  <data name="DescriptionHelperText" xml:space="preserve"><value>Короткий комерційний опис. Не вводьте технічний вміст або дані про пакування.</value></data>
   <data name="ProductType" xml:space="preserve"><value>Тип Продукту</value></data>
+  <data name="ProductTypeHelperText" xml:space="preserve"><value>Це комерційний тип продукту. Це не операційна номенклатура і не SKU.</value></data>
   <data name="Category" xml:space="preserve"><value>Категорія</value></data>
+  <data name="CategoryHelperText" xml:space="preserve"><value>Використовується для класифікації продукту. На Фазі 1 може застосовуватися тимчасовий список.</value></data>
   <data name="LifecycleState" xml:space="preserve"><value>Стан Життєвого Циклу</value></data>
+  <data name="LifecycleStateHelperText" xml:space="preserve"><value>Це стан життєвого циклу продукту. Це єдине джерело стану в системі.</value></data>
   <data name="IdentityCard" xml:space="preserve"><value>Ідентичність</value></data>
   <data name="ClassificationCard" xml:space="preserve"><value>Класифікація</value></data>
   <data name="CommercialFlags" xml:space="preserve"><value>Комерційні Прапорці</value></data>
@@ -24,22 +31,33 @@
   <data name="CurrentLifecycle" xml:space="preserve"><value>Поточний Життєвий Цикл</value></data>
   <data name="Lifecycle" xml:space="preserve"><value>Життєвий Цикл</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>Загальна Інформація</value></data>
-  <data name="ProductTypeFinishedGood" xml:space="preserve"><value>Готовий Продукт</value></data>
+  <data name="ProductTypeFinishedProduct" xml:space="preserve"><value>Готовий Продукт</value></data>
+  <data name="ProductTypeSemiFinishedProduct" xml:space="preserve"><value>Напівфабрикат</value></data>
   <data name="ProductTypeService" xml:space="preserve"><value>Послуга</value></data>
-  <data name="ProductTypeDigital" xml:space="preserve"><value>Цифровий</value></data>
-  <data name="CategoryStandard" xml:space="preserve"><value>Стандартний</value></data>
-  <data name="CategoryRegulated" xml:space="preserve"><value>Регульований</value></data>
-  <data name="CategoryProfessional" xml:space="preserve"><value>Професійний</value></data>
+  <data name="ProductTypeTechnology" xml:space="preserve"><value>Технологія</value></data>
+  <data name="CategoryCns" xml:space="preserve"><value>ЦНС</value></data>
+  <data name="CategoryAntiInfective" xml:space="preserve"><value>Антиінфекційний</value></data>
+  <data name="CategorySupplement" xml:space="preserve"><value>Добавка</value></data>
+  <data name="CategoryDisinfectant" xml:space="preserve"><value>Дезінфектант</value></data>
+  <data name="CategoryManufacturingService" xml:space="preserve"><value>Виробнича Послуга</value></data>
+  <data name="CategoryConsulting" xml:space="preserve"><value>Консалтинг</value></data>
+  <data name="CategoryIntegration" xml:space="preserve"><value>Інтеграція</value></data>
+  <data name="CategoryPediatric" xml:space="preserve"><value>Педіатричний</value></data>
+  <data name="CategoryUrology" xml:space="preserve"><value>Урологія</value></data>
   <data name="CategorySupport" xml:space="preserve"><value>Підтримка</value></data>
-  <data name="CategoryLicense" xml:space="preserve"><value>Ліцензія</value></data>
-  <data name="CategorySubscription" xml:space="preserve"><value>Підписка</value></data>
+  <data name="CategoryDigitalSolution" xml:space="preserve"><value>Цифрове Рішення</value></data>
+  <data name="CategoryPlatform" xml:space="preserve"><value>Платформа</value></data>
   <data name="LifecycleDraft" xml:space="preserve"><value>Чернетка</value></data>
   <data name="LifecycleActive" xml:space="preserve"><value>Активний</value></data>
   <data name="LifecycleBlocked" xml:space="preserve"><value>Заблокований</value></data>
   <data name="LifecycleObsolete" xml:space="preserve"><value>Застарілий</value></data>
   <data name="Activate" xml:space="preserve"><value>Активувати</value></data>
+  <data name="Restore" xml:space="preserve"><value>Відновити</value></data>
   <data name="Block" xml:space="preserve"><value>Заблокувати</value></data>
   <data name="MarkAsObsolete" xml:space="preserve"><value>Позначити як Застарілий</value></data>
+  <data name="Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="ReasonHelperText" xml:space="preserve"><value>Вкажіть коротку причину для змін життєвого циклу. Для відновлення це обов’язково.</value></data>
+  <data name="RestoreReasonRequired" xml:space="preserve"><value>Для відновлення застарілого продукту потрібна причина.</value></data>
   <data name="NoLifecycleTransitions" xml:space="preserve"><value>Подальші переходи життєвого циклу недоступні.</value></data>
   <data name="RelatedModules" xml:space="preserve"><value>Пов’язані Модулі</value></data>
   <data name="RelatedSku" xml:space="preserve"><value>Пов’язаний SKU</value></data>
@@ -49,8 +67,11 @@
   <data name="NoRelatedComposition" xml:space="preserve"><value>Пов’язані записи композиції ще відсутні. Ця область доступна лише для читання у Фазі 1.</value></data>
   <data name="NoRelatedPackaging" xml:space="preserve"><value>Пов’язані записи пакування ще відсутні. Ця область доступна лише для читання у Фазі 1.</value></data>
   <data name="IsSaleable" xml:space="preserve"><value>Можна Продавати</value></data>
+  <data name="IsSaleableHelperText" xml:space="preserve"><value>На Фазі 1 це лише ознака комерційного наміру.</value></data>
   <data name="IsPurchasable" xml:space="preserve"><value>Можна Закуповувати</value></data>
+  <data name="IsPurchasableHelperText" xml:space="preserve"><value>На Фазі 1 це лише ознака наміру.</value></data>
   <data name="IsManufacturable" xml:space="preserve"><value>Можна Виробляти</value></data>
+  <data name="IsManufacturableHelperText" xml:space="preserve"><value>На Фазі 1 це лише ознака наміру.</value></data>
   <data name="BreadcrumbHome" xml:space="preserve"><value>Головна</value></data>
   <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
 </root>

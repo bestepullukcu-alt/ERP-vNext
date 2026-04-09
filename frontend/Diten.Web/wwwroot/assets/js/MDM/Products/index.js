@@ -9,6 +9,8 @@ const ProductsList = (function () {
     let defaultViewState = null;
     let defaultViewRecord = null;
     let saveFilterArmed = false;
+    let activeOffcanvasProduct = null;
+    let selectedLifecycleAction = null;
 
     const dtTableEl = document.querySelector('.datatables-products');
     const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
@@ -21,6 +23,12 @@ const ProductsList = (function () {
     const baseOrder = [[2, 'asc']];
     let appliedFilters = { productType: [], category: [], lifecycleState: [] };
     let L = window.L10n || {};
+    const fallbackLifecycleStateIds = {
+        DRAFT: '40000000-0000-0000-0000-000000000001',
+        ACTIVE: '40000000-0000-0000-0000-000000000002',
+        BLOCKED: '40000000-0000-0000-0000-000000000003',
+        OBSOLETE: '40000000-0000-0000-0000-000000000004'
+    };
 
     const syncL10n = () => {
         const current = window.L10n;
@@ -500,18 +508,25 @@ const ProductsList = (function () {
     };
 
     const resolveProductTypeLabel = (code, fallback) => ({
-        FINISHED_GOOD: L.ProductTypeFinishedGood,
+        FINISHED_PRODUCT: L.ProductTypeFinishedProduct,
+        SEMI_FINISHED_PRODUCT: L.ProductTypeSemiFinishedProduct,
         SERVICE: L.ProductTypeService,
-        DIGITAL: L.ProductTypeDigital
+        TECHNOLOGY: L.ProductTypeTechnology
     })[normalizeString(code).toUpperCase()] || fallback || code || '-';
 
     const resolveCategoryLabel = (code, fallback) => ({
-        STANDARD: L.CategoryStandard,
-        REGULATED: L.CategoryRegulated,
-        PROFESSIONAL: L.CategoryProfessional,
+        CNS: L.CategoryCns,
+        PEDIATRIC: L.CategoryPediatric,
+        UROLOGY: L.CategoryUrology,
+        ANTI_INFECTIVE: L.CategoryAntiInfective,
+        SUPPLEMENT: L.CategorySupplement,
+        DISINFECTANT: L.CategoryDisinfectant,
+        MANUFACTURING_SERVICE: L.CategoryManufacturingService,
+        CONSULTING: L.CategoryConsulting,
         SUPPORT: L.CategorySupport,
-        LICENSE: L.CategoryLicense,
-        SUBSCRIPTION: L.CategorySubscription
+        DIGITAL_SOLUTION: L.CategoryDigitalSolution,
+        PLATFORM: L.CategoryPlatform,
+        INTEGRATION: L.CategoryIntegration
     })[normalizeString(code).toUpperCase()] || fallback || code || '-';
 
     const resolveLifecycleLabel = (code, fallback) => ({
@@ -520,6 +535,28 @@ const ProductsList = (function () {
         BLOCKED: L.LifecycleBlocked,
         OBSOLETE: L.LifecycleObsolete
     })[normalizeString(code).toUpperCase()] || fallback || code || '-';
+
+    const getLifecycleStateId = (code) => {
+        const lifecycleStateIds = L.LifecycleStateIds || {};
+        const normalized = normalizeString(code).toUpperCase();
+        return lifecycleStateIds[normalized] || fallbackLifecycleStateIds[normalized] || null;
+    };
+
+    const getLifecycleActions = (code) => {
+        const normalized = normalizeString(code).toUpperCase();
+        return {
+            DRAFT: [{ code: 'ACTIVE', label: L.Activate, className: 'btn-success' }],
+            ACTIVE: [
+                { code: 'BLOCKED', label: L.Block, className: 'btn-danger' },
+                { code: 'OBSOLETE', label: L.MarkAsObsolete, className: 'btn-dark' }
+            ],
+            BLOCKED: [
+                { code: 'ACTIVE', label: L.Activate, className: 'btn-success' },
+                { code: 'OBSOLETE', label: L.MarkAsObsolete, className: 'btn-dark' }
+            ],
+            OBSOLETE: [{ code: 'ACTIVE', label: L.Restore, className: 'btn-label-success' }]
+        }[normalized] || [];
+    };
 
     const getLifecycleMeta = (code, fallback) => {
         const normalized = normalizeString(code).toUpperCase();
@@ -544,8 +581,116 @@ const ProductsList = (function () {
         try {
             return JSON.parse(raw.replace(/&#39;/g, "'"));
         } catch (error) {
-            console.error('[Products QuickView] Failed to parse row data.', error);
+            console.error('[Products View] Failed to parse row data.', error);
             return null;
+        }
+    };
+
+    const renderLifecycleActions = (data) => {
+        const actionsHost = document.getElementById('oc-lifecycle-actions');
+        const emptyHost = document.getElementById('oc-no-lifecycle-actions');
+        const composerEl = document.getElementById('oc-lifecycle-composer');
+        const reasonEl = document.getElementById('oc-lifecycle-reason');
+        const selectedActionEl = document.getElementById('oc-selected-action');
+        const applyBtn = document.getElementById('oc-apply-lifecycle');
+        if (!actionsHost || !emptyHost) {
+            return;
+        }
+
+        selectedLifecycleAction = null;
+        actionsHost.innerHTML = '';
+        if (reasonEl) {
+            reasonEl.value = '';
+            reasonEl.disabled = true;
+        }
+        if (selectedActionEl) {
+            selectedActionEl.textContent = '';
+        }
+        if (applyBtn) {
+            applyBtn.disabled = true;
+        }
+        if (composerEl) {
+            composerEl.classList.add('d-none');
+        }
+        const actions = getLifecycleActions(data?.lifecycleStateCode);
+
+        if (!actions.length) {
+            emptyHost.classList.remove('d-none');
+            return;
+        }
+
+        emptyHost.classList.add('d-none');
+
+        actions.forEach((action) => {
+            const targetLifecycleId = getLifecycleStateId(action.code);
+            if (!targetLifecycleId) {
+                return;
+            }
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `btn ${action.className}`;
+            button.dataset.productId = data.id;
+            button.dataset.targetLifecycleId = targetLifecycleId;
+            button.dataset.targetLifecycleCode = action.code;
+            button.dataset.actionLabel = action.label || action.code;
+            button.textContent = action.label || action.code;
+            actionsHost.appendChild(button);
+        });
+
+        if (!actionsHost.childElementCount) {
+            emptyHost.classList.remove('d-none');
+        }
+    };
+
+    // selectLifecycleAction removed as it is no longer used
+
+    const buildLifecycleActionPayload = (actionBtn) => {
+        if (!actionBtn) {
+            return null;
+        }
+
+        return {
+            productId: actionBtn.dataset.productId,
+            targetLifecycleId: actionBtn.dataset.targetLifecycleId,
+            targetLifecycleCode: actionBtn.dataset.targetLifecycleCode,
+            label: actionBtn.dataset.actionLabel || actionBtn.textContent || ''
+        };
+    };
+
+    const isRestoreLifecycleAction = (action) => {
+        return normalizeString(action?.targetLifecycleCode).toUpperCase() === 'ACTIVE'
+            && normalizeString(activeOffcanvasProduct?.lifecycleStateCode).toUpperCase() === 'OBSOLETE';
+    };
+
+    const executeLifecycleChange = async (action, modalReason = '') => {
+        if (!action) {
+            return;
+        }
+
+        const reason = (typeof modalReason === 'string') ? modalReason : '';
+        if (!action.productId || !action.targetLifecycleId) {
+            return;
+        }
+
+        toggleLifecycleActionButtons(true);
+        try {
+            const response = await fetch(`${apiUrl}/api/products/${action.productId}/lifecycle`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(true),
+                body: JSON.stringify({ lifecycleStateId: action.targetLifecycleId, reason: reason || null })
+            });
+
+            if (!response.ok) {
+                throw new Error('Lifecycle patch failed.');
+            }
+
+            reloadAndRefreshOffcanvas(action.productId);
+        } catch (error) {
+            console.error(error);
+            window.showToast?.(L.ErrorOccurred, 'error');
+        } finally {
+            toggleLifecycleActionButtons(false);
         }
     };
 
@@ -553,6 +698,8 @@ const ProductsList = (function () {
         if (!data) {
             return;
         }
+
+        activeOffcanvasProduct = data;
 
         document.getElementById('oc-title').innerText = data.name || '-';
         document.getElementById('oc-subtitle').innerText = data.code || '-';
@@ -562,11 +709,70 @@ const ProductsList = (function () {
         document.getElementById('oc-category').innerText = resolveCategoryLabel(data.categoryCode, data.category);
         document.getElementById('oc-description').innerText = data.description || '-';
         document.getElementById('oc-btn-edit').href = `/Products/Edit/${data.id}`;
+        
+        const deleteBtn = document.getElementById('oc-btn-delete');
+        if (deleteBtn) {
+            deleteBtn.classList.toggle('d-none', (data.lifecycleStateCode || '').toUpperCase() !== 'DRAFT');
+            deleteBtn.dataset.productId = data.id;
+            deleteBtn.dataset.productName = data.name;
+        }
 
         const lifecycleEl = document.getElementById('oc-lifecycle');
         const lifecycle = getLifecycleMeta(data.lifecycleStateCode);
         lifecycleEl.className = `badge ${lifecycle.class}`;
         lifecycleEl.innerText = lifecycle.title;
+        renderLifecycleActions(data);
+    };
+
+    const loadProductDetail = async (productId) => {
+        const response = await fetch(`${apiUrl}/api/products/${productId}`, {
+            method: 'GET',
+            headers: getAuthHeaders()
+        });
+
+        if (!response.ok) {
+            throw new Error('Detail load failed.');
+        }
+
+        return await response.json();
+    };
+
+    const openProductView = async (productId, fallbackData) => {
+        if (!productId) {
+            return;
+        }
+
+        try {
+            const detail = await loadProductDetail(productId);
+            populateOffcanvas(detail);
+        } catch (error) {
+            console.error(error);
+            if (fallbackData) {
+                populateOffcanvas(fallbackData);
+            } else {
+                window.showToast?.(L.ErrorOccurred, 'error');
+            }
+        }
+    };
+
+    const toggleLifecycleActionButtons = (disabled) => {
+        document.querySelectorAll('#oc-lifecycle-actions button').forEach((button) => {
+            button.disabled = disabled;
+        });
+        const applyBtn = document.getElementById('oc-apply-lifecycle');
+        if (applyBtn) {
+            applyBtn.disabled = disabled || !selectedLifecycleAction;
+        }
+    };
+
+    const reloadAndRefreshOffcanvas = (productId) => {
+        dt.ajax.reload(async () => {
+            try {
+                await openProductView(productId, activeOffcanvasProduct);
+            } finally {
+                window.showToast?.(L.RecordSaved, 'success');
+            }
+        }, false);
     };
 
     const getSelectedIds = () => Array.from(dtTableEl.querySelectorAll('.dt-checkboxes:checked')).map((checkbox) => checkbox.value);
@@ -679,10 +885,29 @@ const ProductsList = (function () {
     };
 
     const bindEvents = () => {
-        dtTableEl.addEventListener('click', (event) => {
+        document.addEventListener('click', (event) => {
             const quickViewBtn = event.target.closest('.js-quick-view');
             if (quickViewBtn) {
-                populateOffcanvas(tryParseRowJson(quickViewBtn));
+                const rowData = tryParseRowJson(quickViewBtn);
+                if (rowData?.id) {
+                    openProductView(rowData.id, rowData);
+                }
+            }
+
+            const lifecycleActionBtn = event.target.closest('#oc-lifecycle-actions button[data-target-lifecycle-id]');
+            if (lifecycleActionBtn) {
+                const action = buildLifecycleActionPayload(lifecycleActionBtn);
+                if (!action) {
+                    return;
+                }
+
+                window.showConfirm?.(L.AreYouSure, async () => {
+                    await executeLifecycleChange(action);
+                }, {
+                    entityName: activeOffcanvasProduct?.name,
+                    confirmButtonText: action.label,
+                    type: action.targetLifecycleCode === 'ACTIVE' ? 'success' : (action.targetLifecycleCode === 'BLOCKED' || action.targetLifecycleCode === 'OBSOLETE' ? 'danger' : 'info')
+                });
             }
 
             const deleteBtn = event.target.closest('.delete-record');
@@ -712,8 +937,13 @@ const ProductsList = (function () {
                     console.error(error);
                     window.showToast?.(L.ErrorOccurred, 'error');
                 }
-            }, data.name);
+            }, {
+                entityName: data.name,
+                type: 'danger'
+            });
         });
+
+        // oc-apply-lifecycle removed
 
         $(dtTableEl).on('change', '.dt-checkboxes', function () {
             $(this).closest('tr').toggleClass('selected', this.checked);
@@ -730,6 +960,35 @@ const ProductsList = (function () {
         });
 
         document.getElementById('btnClearSelection')?.addEventListener('click', clearSelection);
+        
+        document.getElementById('oc-btn-delete')?.addEventListener('click', function () {
+            const productId = this.dataset.productId;
+            const productName = this.dataset.productName;
+            if (!productId) return;
+
+            window.showConfirm?.(L.AreYouSure, async () => {
+                try {
+                    const response = await fetch(`${apiUrl}/api/products/${productId}`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    });
+                    if (!response.ok) throw new Error('Delete failed.');
+
+                    const offcanvasEl = document.getElementById('offcanvasDetailsPreview');
+                    if (offcanvasEl) {
+                        bootstrap.Offcanvas.getInstance(offcanvasEl)?.hide();
+                    }
+                    reloadWithSuccessToast('RecordDeleted');
+                } catch (error) {
+                    console.error(error);
+                    window.showToast?.(L.ErrorOccurred, 'error');
+                }
+            }, {
+                entityName: productName,
+                type: 'danger'
+            });
+        });
+
         document.getElementById('btnBulkDelete')?.addEventListener('click', async () => {
             const ids = getSelectedIds();
             if (!ids.length) {
@@ -754,7 +1013,10 @@ const ProductsList = (function () {
                     console.error(error);
                     window.showToast?.(L.ErrorOccurred, 'error');
                 }
-            }, String(ids.length));
+            }, {
+                entityName: `${ids.length} ${L.SelectedCount}`,
+                type: 'danger'
+            });
         });
     };
 
@@ -874,20 +1136,28 @@ const ProductsList = (function () {
                     targets: -1,
                     searchable: false,
                     orderable: false,
-                    className: 'cell-fit',
+                    className: 'cell-fit text-end',
                     responsivePriority: 4,
                     render: (data, type, full) => {
                         if (type !== 'display') {
                             return data;
                         }
 
-                        return `<div class="d-inline-flex align-items-center">
-              <a href="javascript:;" class="btn btn-icon delete-record text-danger me-1"><i class="bx bx-trash icon-md"></i></a>
+                        const isDraft = (full.lifecycleStateCode || '').toUpperCase() === 'DRAFT';
+                        const deleteBtn = isDraft 
+                            ? `<a href="javascript:;" class="btn btn-icon delete-record text-danger me-1"><i class="bx bx-trash icon-md"></i></a>` 
+                            : '';
+                        const deleteMenuItem = isDraft 
+                            ? `<a href="javascript:;" class="dropdown-item delete-record text-danger">${L.Delete || 'Delete'}</a>` 
+                            : '';
+
+                        return `<div class="d-flex align-items-center justify-content-end">
+              ${deleteBtn}
               <a href="javascript:;" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded icon-md"></i></a>
               <div class="dropdown-menu dropdown-menu-end m-0">
-                <a href="/Products/Details/${full.id}" class="dropdown-item">${L.ViewDetails}</a>
-                <a href="javascript:void(0);" class="dropdown-item js-quick-view" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetailsPreview" data-json='${JSON.stringify(full).replace(/'/g, '&#39;')}'>${L.QuickView}</a>
+                <a href="javascript:void(0);" class="dropdown-item js-quick-view" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetailsPreview" data-json='${JSON.stringify(full).replace(/'/g, '&#39;')}'>${L.View}</a>
                 <a href="/Products/Edit/${full.id}" class="dropdown-item">${L.Edit}</a>
+                ${deleteMenuItem}
               </div>
             </div>`;
                     }

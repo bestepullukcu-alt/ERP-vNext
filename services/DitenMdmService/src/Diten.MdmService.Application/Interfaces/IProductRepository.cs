@@ -8,6 +8,7 @@ namespace Diten.MdmService.Application.Interfaces;
 /// </summary>
 public interface IProductRepository
 {
+    Task EnsureSeedDataAsync(CancellationToken cancellationToken = default);
     Task<Product> CreateAsync(Product entity, CancellationToken cancellationToken = default);
     Task<bool> UpdateAsync(Product entity, CancellationToken cancellationToken = default);
     Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);

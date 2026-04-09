@@ -13,7 +13,8 @@ document.addEventListener("DOMContentLoaded", function () {
     forms.forEach(form => {
         const inputs = form.querySelectorAll("input, select, textarea");
         inputs.forEach(input => {
-            const isRequired = input.hasAttribute("required") || input.hasAttribute("data-val-required");
+            const hasHtmlRequired = input.hasAttribute("required");
+            const hasValidationRequired = input.hasAttribute("data-val-required");
 
             // Check if label has asterisk
             let labelHasAsterisk = false;
@@ -24,7 +25,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
 
-            if (isRequired || labelHasAsterisk) {
+            const shouldTrackRequired = (input.type === "checkbox" || input.type === "radio")
+                ? (hasHtmlRequired || labelHasAsterisk)
+                : (hasHtmlRequired || hasValidationRequired || labelHasAsterisk);
+
+            if (shouldTrackRequired) {
                 if (input.type !== 'hidden') {
                     requiredElements.push(input);
                 }

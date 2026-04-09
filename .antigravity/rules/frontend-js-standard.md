@@ -328,9 +328,9 @@ const {{ModuleName}}List = (function () {
                     title: L.Actions,
                     searchable: false,
                     orderable: false,
-                    className: 'cell-fit',
+                    className: 'cell-fit text-end',
                     render: (data, type, full) =>
-                        `<div class="d-flex align-items-center">
+                        `<div class="d-flex align-items-center justify-content-end">
                             <a href="javascript:;" class="btn btn-icon delete-record text-danger me-1"><i class="bx bx-trash icon-md"></i></a>
                             <a href="javascript:;" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded icon-md"></i></a>
                             <div class="dropdown-menu dropdown-menu-end m-0">

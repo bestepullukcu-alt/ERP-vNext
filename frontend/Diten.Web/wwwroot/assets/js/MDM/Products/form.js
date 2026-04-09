@@ -4,6 +4,8 @@ const ProductFormPage = (function () {
     const formEl = document.getElementById('formProduct');
     const productTypeEl = document.getElementById('ProductType');
     const categoryEl = document.getElementById('CategoryId');
+    let categoryPlaceholder = '';
+    let categoryOptions = [];
 
     if (!formEl) {
         return { init: function () { } };
@@ -27,6 +29,38 @@ const ProductFormPage = (function () {
                 allowClear: true
             });
         });
+
+        if (categoryEl && window.jQuery) {
+            categoryPlaceholder = $(categoryEl).find('option[value=""]').text() || '';
+        }
+
+        if (categoryEl) {
+            categoryOptions = Array.from(categoryEl.options)
+                .filter((option) => option.value)
+                .map((option) => ({
+                    value: option.value,
+                    text: option.text,
+                    productType: option.dataset.productType || ''
+                }));
+        }
+    };
+
+    const refreshCategorySelect2 = () => {
+        if (!categoryEl || !window.jQuery || !$.fn.select2) {
+            return;
+        }
+
+        const $category = $(categoryEl);
+        if ($category.hasClass('select2-hidden-accessible')) {
+            $category.select2('destroy');
+        }
+
+        $category.select2({
+            placeholder: categoryPlaceholder || $category.find('option[value=""]').text() || '',
+            dropdownParent: $category.parent(),
+            width: '100%',
+            allowClear: true
+        });
     };
 
     const filterCategoryOptions = () => {
@@ -35,26 +69,34 @@ const ProductFormPage = (function () {
             return;
         }
 
-        Array.from(categoryEl.options).forEach((option) => {
-            if (!option.value) {
-                option.hidden = false;
-                return;
-            }
+        const currentValue = categoryEl.value;
+        const filteredOptions = categoryOptions.filter((option) => option.productType === selectedProductType);
 
-            const matches = !selectedProductType || option.dataset.productType === selectedProductType;
-            option.hidden = !matches;
+        categoryEl.innerHTML = '';
+        categoryEl.append(new Option(categoryPlaceholder, ''));
+
+        filteredOptions.forEach((option) => {
+            const renderedOption = new Option(option.text, option.value);
+            renderedOption.dataset.productType = option.productType;
+            categoryEl.append(renderedOption);
         });
 
-        if (categoryEl.selectedOptions[0]?.hidden) {
-            categoryEl.value = '';
-            if (window.jQuery) {
-                $(categoryEl).trigger('change');
-            }
+        const hasCurrentValue = filteredOptions.some((option) => option.value === currentValue);
+        categoryEl.value = hasCurrentValue ? currentValue : '';
+
+        categoryEl.disabled = !selectedProductType;
+        if (window.jQuery) {
+            $(categoryEl).prop('disabled', !selectedProductType);
+            refreshCategorySelect2();
+            $(categoryEl).trigger('change');
         }
     };
 
     const bindEvents = () => {
         productTypeEl?.addEventListener('change', filterCategoryOptions);
+        if (productTypeEl && window.jQuery) {
+            $(productTypeEl).on('change.product-form', filterCategoryOptions);
+        }
     };
 
     return {
