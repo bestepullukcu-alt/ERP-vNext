@@ -283,4 +283,5 @@
   <data name="Attributes" xml:space="preserve"><value>Atributlar</value></data>
   <data name="Variants" xml:space="preserve"><value>Variantlar</value></data>
   <data name="ColumnOrder" xml:space="preserve"><value>Sütun Sırası</value></data>
+  <data name="SKUManagement" xml:space="preserve"><value>SKU İdarəetməsi</value></data>
 </root>

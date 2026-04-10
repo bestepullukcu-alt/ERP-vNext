@@ -60,4 +60,6 @@ public interface IItemLookupRepository
     Task<LifecycleState?> GetLifecycleStateByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<LifecycleState?> GetLifecycleStateByCodeAsync(string code, CancellationToken cancellationToken = default);
     Task<UnitOfMeasure?> GetUnitOfMeasureByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<DosageForm>> GetDosageFormsAsync(CancellationToken cancellationToken = default);
+    Task<DosageForm?> GetDosageFormByIdAsync(Guid id, CancellationToken cancellationToken = default);
 }

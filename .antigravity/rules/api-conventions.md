@@ -24,6 +24,12 @@ Bu doküman, tüm mikroservisler (MDM, Auth vb.) ve Gateway katmanı için geçe
 - *Örnek:* `http://localhost:5000/api/countries` → MDM servisine iletilir
 - Bkz: `.antigravity/rules/routes.md` — Ocelot konfigürasyon detayları için
 
+### 3. Versiyonlama (Versioning) Endpoints
+İş birimi bazlı versiyonlama (Revision) kullanılan modüllerde aşağıdaki endpoint isimleri standarttır:
+- **Tarihçe:** `GET /api/{resource}/{id}/history`
+- **Aktivasyon:** `PATCH /api/{resource}/versions/{versionId}/activate`
+- **Spesifik Versiyon:** `GET /api/{resource}/{id}?versionId={versionId}`
+
 ---
 
 ## 🚦 HTTP Status Codes (Durum Kodları)

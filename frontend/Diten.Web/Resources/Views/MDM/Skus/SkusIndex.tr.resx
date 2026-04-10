@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="SkusTitle" xml:space="preserve"><value>SKU / Kalem Yönetimi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Stok kalemlerini, ambalaj bilgilerini ve kompozisyon bağlantılarını bu ekrandan yönetin.</value></data>
+  <data name="SkuCode" xml:space="preserve"><value>SKU Kodu</value></data>
+  <data name="Product" xml:space="preserve"><value>Ürün</value></data>
+  <data name="Composition" xml:space="preserve"><value>Kompozisyon</value></data>
+  <data name="Version" xml:space="preserve"><value>Versiyon</value></data>
+  <data name="Packaging" xml:space="preserve"><value>Ambalaj</value></data>
+  <data name="PackagingForm" xml:space="preserve"><value>Form</value></data>
+  <data name="PackagingQuantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="Barcode" xml:space="preserve"><value>Barkod</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Yeni SKU Ekle</value></data>
+  <data name="Edit" xml:space="preserve"><value>SKU Düzenle</value></data>
+  <data name="Details" xml:space="preserve"><value>SKU Detayları</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+</root>

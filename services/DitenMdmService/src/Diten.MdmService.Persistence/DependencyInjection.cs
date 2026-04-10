@@ -35,6 +35,10 @@ public static class DependencyInjection
         services.AddScoped<IItemRepository, ItemRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IProductLifecycleHistoryRepository, ProductLifecycleHistoryRepository>();
+        services.AddScoped<ICompositionRepository, CompositionRepository>();
+        services.AddScoped<ICompositionVersionRepository, CompositionVersionRepository>();
+        services.AddScoped<ISkuRepository, SkuRepository>();
+        services.AddScoped<IPackagingDefinitionRepository, PackagingDefinitionRepository>();
 
         return services;
     }

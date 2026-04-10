@@ -63,5 +63,21 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart **Details (salt-okunur)
     </div>
 
     {{!-- Diğer kartlar buraya... --}}
+    
+    {{!-- Versiyon Geçmişi Sütunu (Opsiyonel) --}}
+    <div class="col-12 col-md-4">
+        <div class="card h-100">
+            <div class="card-header border-bottom">
+                <h5 class="card-title mb-0 d-flex align-items-center">
+                    <i class="bx bx-history me-2"></i>@Localizer["RevisionHistory"]
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    @* Versiyon listesi döngüsü *@
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 ```

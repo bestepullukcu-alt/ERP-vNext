@@ -23,6 +23,10 @@ public sealed class LifecycleState : LookupEntityBase
 {
 }
 
+public sealed class DosageForm : LookupEntityBase
+{
+}
+
 public sealed class UnitOfMeasure : LookupEntityBase
 {
 }

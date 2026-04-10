@@ -265,4 +265,5 @@
   <data name="Attributes" xml:space="preserve"><value>ატრიბუტები</value></data>
   <data name="Variants" xml:space="preserve"><value>ვარიანტები</value></data>
   <data name="ColumnOrder" xml:space="preserve"><value>სვეტების რიგი</value></data>
+  <data name="SKUManagement" xml:space="preserve"><value>SKU მართვა</value></data>
 </root>

@@ -12,6 +12,17 @@ public sealed class ItemLookupRepository : RepositoryBase<ItemType>, IItemLookup
     private readonly IMongoCollection<TrackingPolicy> _trackingPolicies;
     private readonly IMongoCollection<LifecycleState> _lifecycleStates;
     private readonly IMongoCollection<UnitOfMeasure> _unitOfMeasures;
+    private readonly IMongoCollection<DosageForm> _dosageForms;
+
+    private static readonly DosageForm[] DefaultDosageForms =
+    [
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000001"), Code = "TABLET", Name = "Tablet", SortOrder = 10 },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000002"), Code = "CAPSULE", Name = "Capsule", SortOrder = 20 },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000003"), Code = "INJECTION", Name = "Injection", SortOrder = 30 },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000004"), Code = "SYRUP", Name = "Syrup", SortOrder = 40 },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000005"), Code = "CREAM", Name = "Cream", SortOrder = 50 },
+        new() { Id = Guid.Parse("60000000-0000-0000-0000-000000000006"), Code = "POWDER", Name = "Powder", SortOrder = 60 }
+    ];
 
     private static readonly ItemType[] DefaultItemTypes =
     [
@@ -44,12 +55,16 @@ public sealed class ItemLookupRepository : RepositoryBase<ItemType>, IItemLookup
     [
         new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000001"), Code = "EA", Name = "EA", SortOrder = 10 },
         new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000002"), Code = "KG", Name = "KG", SortOrder = 20 },
-        new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000003"), Code = "G", Name = "G", SortOrder = 30 },
+        new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000003"), Code = "G", Name = "g", SortOrder = 30 },
         new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000004"), Code = "L", Name = "L", SortOrder = 40 },
-        new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000005"), Code = "ML", Name = "ML", SortOrder = 50 },
+        new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000005"), Code = "ML", Name = "ml", SortOrder = 50 },
         new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000006"), Code = "BOX", Name = "BOX", SortOrder = 60 },
         new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000007"), Code = "PACK", Name = "PACK", SortOrder = 70 },
-        new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000008"), Code = "SERVICE", Name = "SERVICE", SortOrder = 80 }
+        new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000008"), Code = "SERVICE", Name = "SERVICE", SortOrder = 80 },
+        new() { Id = Guid.Parse("50000000-0000-0000-0000-000000000009"), Code = "MG", Name = "mg", SortOrder = 90 },
+        new() { Id = Guid.Parse("50000000-0000-0000-0000-00000000000A"), Code = "MCG", Name = "mcg", SortOrder = 100 },
+        new() { Id = Guid.Parse("50000000-0000-0000-0000-00000000000B"), Code = "PERCENT", Name = "%", SortOrder = 110 },
+        new() { Id = Guid.Parse("50000000-0000-0000-0000-00000000000C"), Code = "IU", Name = "IU", SortOrder = 120 }
     ];
 
     public ItemLookupRepository(IMongoDatabase database, ITenantContext tenantContext)
@@ -60,6 +75,7 @@ public sealed class ItemLookupRepository : RepositoryBase<ItemType>, IItemLookup
         _trackingPolicies = database.GetCollection<TrackingPolicy>("tracking_policies");
         _lifecycleStates = database.GetCollection<LifecycleState>("lifecycle_states");
         _unitOfMeasures = database.GetCollection<UnitOfMeasure>("unit_of_measures");
+        _dosageForms = database.GetCollection<DosageForm>("dosage_forms");
     }
 
     public async Task EnsureSeedDataAsync(CancellationToken cancellationToken = default)
@@ -68,6 +84,7 @@ public sealed class ItemLookupRepository : RepositoryBase<ItemType>, IItemLookup
         await EnsureLookupSeedAsync(_trackingPolicies, DefaultTrackingPolicies, cancellationToken);
         await EnsureLookupSeedAsync(_lifecycleStates, DefaultLifecycleStates, cancellationToken);
         await EnsureLookupSeedAsync(_unitOfMeasures, DefaultUnits, cancellationToken);
+        await EnsureLookupSeedAsync(_dosageForms, DefaultDosageForms, cancellationToken);
 
         var collections = await _database.ListCollectionNames().ToListAsync(cancellationToken);
         if (!collections.Contains("uom_conversions"))
@@ -122,6 +139,16 @@ public sealed class ItemLookupRepository : RepositoryBase<ItemType>, IItemLookup
     public async Task<UnitOfMeasure?> GetUnitOfMeasureByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _unitOfMeasures.Find(ByIdFilter<UnitOfMeasure>(id)).FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<DosageForm>> GetDosageFormsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dosageForms.Find(TenantFilterFor<DosageForm>()).SortBy(x => x.SortOrder).ThenBy(x => x.Name).ToListAsync(cancellationToken);
+    }
+
+    public async Task<DosageForm?> GetDosageFormByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dosageForms.Find(ByIdFilter<DosageForm>(id)).FirstOrDefaultAsync(cancellationToken);
     }
 
     private async Task EnsureLookupSeedAsync<TEntity>(

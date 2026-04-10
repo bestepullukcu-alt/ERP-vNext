@@ -265,4 +265,5 @@
   <data name="Attributes" xml:space="preserve"><value>Атрибуты</value></data>
   <data name="Variants" xml:space="preserve"><value>Варианты</value></data>
   <data name="ColumnOrder" xml:space="preserve"><value>Порядок столбцов</value></data>
+  <data name="SKUManagement" xml:space="preserve"><value>Управление SKU</value></data>
 </root>

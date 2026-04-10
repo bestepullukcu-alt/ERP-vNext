@@ -278,9 +278,11 @@
   <data name="WorkCenterMenu" xml:space="preserve"><value>Work Center</value></data>
   <data name="ItemMaster" xml:space="preserve"><value>Item Master</value></data>
   <data name="ProductManagement" xml:space="preserve"><value>Product Management</value></data>
+  <data name="CompositionManagement" xml:space="preserve"><value>Composition Management</value></data>
   <data name="CategoryManagement" xml:space="preserve"><value>Category Management</value></data>
   <data name="VariantManagement" xml:space="preserve"><value>Variant Management</value></data>
   <data name="Attributes" xml:space="preserve"><value>Attributes</value></data>
   <data name="Variants" xml:space="preserve"><value>Variants</value></data>
   <data name="ColumnOrder" xml:space="preserve"><value>Column Order</value></data>
+  <data name="SKUManagement" xml:space="preserve"><value>SKU Management</value></data>
 </root>

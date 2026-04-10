@@ -1,0 +1,144 @@
+@model Diten.Web.Models.Skus.SkuEditViewModel
+@using Diten.Web.Views.MDM.Skus
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SkusIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEditMode = Model != null && Model.Id.HasValue;
+    ViewData["Title"] = isEditMode ? Localizer["Edit"].Value : Localizer["AddNew"].Value;
+    Layout = "_LayoutBackbone";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/select2/select2.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
+    <div class="d-flex flex-column justify-content-center">
+        <h5 class="mb-0">@(isEditMode ? Localizer["Edit"] : Localizer["AddNew"])</h5>
+
+        <nav aria-label="breadcrumb" class="text-muted">
+            <ol class="breadcrumb mb-0 py-0">
+                <li class="breadcrumb-item"><a asp-action="Index">@Localizer["SkusTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@(isEditMode ? Localizer["Edit"] : Localizer["AddNew"])</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="d-flex align-content-center flex-wrap gap-4">
+        <a asp-action="Index" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="formSkus" class="btn btn-primary">
+            @(isEditMode ? SharedLocalizer["Update"] : SharedLocalizer["Save"])
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <form asp-action="@(isEditMode ? "Edit" : "Create")" method="post" id="formSkus" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-6 d-flex align-items-center" role="alert">
+                <i class="bx bx-error-alt me-2"></i>
+                <div>
+                    <ul class="mb-0"><li>@SharedLocalizer["FormValidationError"]</li></ul>
+                </div>
+            </div>
+
+            <div class="row g-6">
+                <div class="col-12 col-lg-8">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0 d-flex align-items-center">
+                                <i class="bx bx-package me-2"></i>@Localizer["Details"]
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-6">
+                                <div class="col-md-6">
+                                    <label asp-for="Code" class="form-label">@Localizer["SkuCode"] <span class="text-danger">*</span></label>
+                                    <input asp-for="Code" class="form-control" placeholder="SKU-XXXXX" required />
+                                    <span asp-validation-for="Code" class="invalid-feedback"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Barcode" class="form-label">@Localizer["Barcode"]</label>
+                                    <input asp-for="Barcode" class="form-control" placeholder="GTIN/EAN" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label asp-for="ProductId" class="form-label">@Localizer["Product"] <span class="text-danger">*</span></label>
+                                    <select asp-for="ProductId" class="select2 form-select" required
+                                            asp-items="@(new SelectList(Model.Products, "Id", "Name"))">
+                                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                    </select>
+                                    <span asp-validation-for="ProductId" class="invalid-feedback"></span>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label asp-for="CompositionId" class="form-label">@Localizer["Composition"] <span class="text-danger">*</span></label>
+                                    <select asp-for="CompositionId" class="select2 form-select" required
+                                            asp-items="@(new SelectList(Model.Compositions, "Id", "Name"))">
+                                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                    </select>
+                                    <span asp-validation-for="CompositionId" class="invalid-feedback"></span>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label asp-for="CompositionVersion" class="form-label">@Localizer["Version"]</label>
+                                    <input asp-for="CompositionVersion" type="number" class="form-control" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label asp-for="CompositionRevision" class="form-label">Revision</label>
+                                    <input asp-for="CompositionRevision" type="number" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="card mb-6">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">@Localizer["Packaging"]</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-6">
+                                <label asp-for="PackagingForm" class="form-label">@Localizer["PackagingForm"] <span class="text-danger">*</span></label>
+                                <input asp-for="PackagingForm" class="form-control" placeholder="Bottle, Box, etc." required />
+                                <span asp-validation-for="PackagingForm" class="invalid-feedback"></span>
+                            </div>
+                            <div class="mb-6">
+                                <label asp-for="PackagingQuantity" class="form-label">@Localizer["PackagingQuantity"] <span class="text-danger">*</span></label>
+                                <input asp-for="PackagingQuantity" type="number" step="0.0001" class="form-control" required />
+                                <span asp-validation-for="PackagingQuantity" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">@SharedLocalizer["Status"]</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-6">
+                                <label asp-for="LifecycleStateId" class="form-label">@SharedLocalizer["Status"] <span class="text-danger">*</span></label>
+                                <select asp-for="LifecycleStateId" class="select2 form-select" required
+                                        asp-items="@(new SelectList(Model.LifecycleStates, "Id", "Name"))">
+                                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                </select>
+                                <span asp-validation-for="LifecycleStateId" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/vendor/libs/select2/select2.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MDM/Skus/create.js" asp-append-version="true"></script>
+}

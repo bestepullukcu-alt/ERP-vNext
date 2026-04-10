@@ -661,7 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {{ModuleName}}List.init());
 ## 💾 Save View — Tam İmplementasyon Şablonu
 
 > Bu bölüm, her yeni DataTable modülü için **kopyala-yapıştır** yapısındadır.
-> `{{...}}` değerlerini modüle göre doldur. LegalEntities = referans implementasyon.
+> `{{...}}` değerlerini modüle göre doldur. Products = referans implementasyon (`frontend/Diten.Web/wwwroot/assets/js/MDM/Products/`).
 
 ### Değişken Değerleri (modüle göre doldur)
 
@@ -1005,7 +1005,7 @@ const getAppliedFilterCount = (api) => {
 //   return (String(cur.status || '') !== String(ref.status || '')) || ...
 ```
 
-### İki filtreli modül farkı (LegalEntities — companyType + status)
+### İki filtreli modül farkı (Products — productType + category)
 
 ```javascript
 const saveViewColumnIndexes = [2, 3, 4, 5, 6, 7, 8];

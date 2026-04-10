@@ -43,7 +43,7 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
 - Panel açık/kapalı durumu persist edilmez.
 - **colReorder varsayılan aktif:** `colReorder: { columns: ':gt(1):not(:last-child)' }` standart liste sayfalarında her zaman eklenir. `column-reorder.dt` / `columns-reordered.dt` event'leri dirty-state kapsamındadır.
 - **Personalization Context Standardı:** `moduleKey + pageKey`
-  - Örnek: `moduleKey: "MDM"`, `pageKey: "LegalEntities"`
+  - Örnek: `moduleKey: "MDM"`, `pageKey: "Products"`
   - `tableId` = `<table id="...">` zorunludur (çoklu DataTable çakışmasını engeller).
 
 ### Dirty-State (Save View görünürlük kuralı)

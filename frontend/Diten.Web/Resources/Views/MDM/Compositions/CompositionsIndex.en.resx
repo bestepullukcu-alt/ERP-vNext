@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="CompositionsTitle" xml:space="preserve"><value>Composition Management</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage technical compositions, versioning and component structures from this screen.</value></data>
+  <data name="AddNewComposition" xml:space="preserve"><value>Add New Composition</value></data>
+  <data name="EditComposition" xml:space="preserve"><value>Edit Composition</value></data>
+  <data name="AddNewCompositions" xml:space="preserve"><value>Add New Composition</value></data>
+  <data name="CreateTitle" xml:space="preserve"><value>Create Composition</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Edit Composition</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Composition Details</value></data>
+  <data name="FormulationCode" xml:space="preserve"><value>Composition Code</value></data>
+  <data name="FormulationCodeHelperText" xml:space="preserve"><value>Unique technical code for the composition.</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="NameHelperText" xml:space="preserve"><value>Descriptive name of the composition.</value></data>
+  <data name="Product" xml:space="preserve"><value>Product</value></data>
+  <data name="ProductHelperText" xml:space="preserve"><value>Commercial product reference linked to this composition.</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Revision" xml:space="preserve"><value>Revision</value></data>
+  <data name="DosageForm" xml:space="preserve"><value>Dosage Form</value></data>
+  <data name="DosageFormHelperText" xml:space="preserve"><value>Physical form of the composition (e.g., Tablet).</value></data>
+  <data name="Strength" xml:space="preserve"><value>Strength</value></data>
+  <data name="StrengthHelperText" xml:space="preserve"><value>Concentration or potency (e.g., 500mg).</value></data>
+  <data name="TechnicalFillAmount" xml:space="preserve"><value>Fill Amount</value></data>
+  <data name="TechnicalFillUnit" xml:space="preserve"><value>Fill Unit</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Lifecycle State</value></data>
+  <data name="Components" xml:space="preserve"><value>Components</value></data>
+  <data name="Ingredients" xml:space="preserve"><value>Ingredients</value></data>
+  <data name="ComponentId" xml:space="preserve"><value>Ingredient</value></data>
+  <data name="ComponentType" xml:space="preserve"><value>Type</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Excipient" xml:space="preserve"><value>Excipient</value></data>
+  <data name="TechnicalDetails" xml:space="preserve"><value>Technical Details</value></data>
+  <data name="IdentityCard" xml:space="preserve"><value>Composition Identity</value></data>
+  <data name="StructureCard" xml:space="preserve"><value>Structure</value></data>
+  <data name="TechnicalLifecycle" xml:space="preserve"><value>Technical Lifecycle</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>Home</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Edit</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
+  <data name="AddComponent" xml:space="preserve"><value>Add Component</value></data>
+  <data name="ProductOptionalHelperText" xml:space="preserve"><value>Product reference is optional. A composition can be created as a standalone technical identity.</value></data>
+  <data name="DraftLifecycleHint" xml:space="preserve"><value>New compositions always start in Draft.</value></data>
+  <data name="DraftStateLabel" xml:space="preserve"><value>Draft</value></data>
+  <data name="Api" xml:space="preserve"><value>API</value></data>
+  <data name="Coating" xml:space="preserve"><value>Coating</value></data>
+  <data name="Solvent" xml:space="preserve"><value>Solvent</value></data>
+  <data name="Preservative" xml:space="preserve"><value>Preservative</value></data>
+  <data name="Flavor" xml:space="preserve"><value>Flavor</value></data>
+  <data name="AtLeastOneComponentRequired" xml:space="preserve"><value>At least one component is required</value></data>
+  <data name="ComponentsValidationMessage" xml:space="preserve"><value>Complete every component row before saving.</value></data>
+  <data name="ComponentIngredientRequired" xml:space="preserve"><value>Ingredient selection is required for each component.</value></data>
+  <data name="ComponentQuantityRequired" xml:space="preserve"><value>Component quantity must be greater than zero.</value></data>
+  <data name="ComponentUnitRequired" xml:space="preserve"><value>Component unit is required.</value></data>
+  <data name="IngredientSearchPlaceholder" xml:space="preserve"><value>Search ingredient...</value></data>
+  <data name="OnlySingleUnitSupported" xml:space="preserve"><value>Only single-unit strength is supported in Phase 1 (no ratio like mg/ml)</value></data>
+  <data name="FillAmountLabelLong" xml:space="preserve"><value>Fill Amount (per unit / formulation basis)</value></data>
+  <data name="DuplicateIngredientError" xml:space="preserve"><value>Duplicate ingredients are not allowed in a single composition.</value></data>
+  <data name="CompositionDetails" xml:space="preserve"><value>Composition Details</value></data>
+  <data name="ActivateVersion" xml:space="preserve"><value>Activate Version</value></data>
+  <data name="NewRevision" xml:space="preserve"><value>New Revision</value></data>
+  <data name="RevisionHistory" xml:space="preserve"><value>Revision History</value></data>
+  <data name="CURRENT" xml:space="preserve"><value>CURRENT</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
+  <data name="CreatedOn" xml:space="preserve"><value>Created On</value></data>
+  <data name="StrengthValue" xml:space="preserve"><value>Strength</value></data>
+  <data name="CompositionName" xml:space="preserve"><value>Composition Name</value></data>
+  <data name="LifecycleReadOnlyHint" xml:space="preserve"><value>Lifecycle is managed via activation and cannot be edited manually.</value></data>
+  <data name="CompositionsTitle" xml:space="preserve"><value>Composition Management</value></data>
+</root>

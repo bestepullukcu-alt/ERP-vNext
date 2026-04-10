@@ -265,4 +265,5 @@
   <data name="Attributes" xml:space="preserve"><value>Атрибуттар</value></data>
   <data name="Variants" xml:space="preserve"><value>Нұсқалар</value></data>
   <data name="ColumnOrder" xml:space="preserve"><value>Бағандар реті</value></data>
+  <data name="SKUManagement" xml:space="preserve"><value>SKU басқару</value></data>
 </root>

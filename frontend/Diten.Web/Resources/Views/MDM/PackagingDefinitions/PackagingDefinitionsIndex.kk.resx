@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Қаптама анықтамалары</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Қаптама анықтамалары мен иерархиясын басқару</value>
+  </data>
+  <data name="FormTitle" xml:space="preserve">
+    <value>Қаптама мәліметтері</value>
+  </data>
+  <data name="Code" xml:space="preserve">
+    <value>Коды</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Аты</value>
+  </data>
+  <data name="PackagingType" xml:space="preserve">
+    <value>Түрі</value>
+  </data>
+  <data name="PackagingLevel" xml:space="preserve">
+    <value>Деңгейі</value>
+  </data>
+  <data name="UnitsPerPack" xml:space="preserve">
+    <value>Пакеттегі бірліктер</value>
+  </data>
+</root>

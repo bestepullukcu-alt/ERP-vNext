@@ -131,6 +131,20 @@
                         </a>
                     </li>
                     <li
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Compositions" ? "active" : "")">
+                        <a href="/Compositions" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-vial"></i>
+                            <div>@SharedLocalizer["CompositionManagement"]</div>
+                        </a>
+                    </li>
+                    <li
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Skus" ? "active" : "")">
+                        <a href="/Skus" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-barcode-reader"></i>
+                            <div>@SharedLocalizer["SKUManagement"]</div>
+                        </a>
+                    </li>
+                    <li
                         class="menu-item @((ViewContext.RouteData.Values["controller"]?.ToString() == "Items"
                             || ViewContext.RouteData.Values["controller"]?.ToString() == "ItemCategories"
                             || ViewContext.RouteData.Values["controller"]?.ToString() == "ItemVariantModels") ? "active" : "")">

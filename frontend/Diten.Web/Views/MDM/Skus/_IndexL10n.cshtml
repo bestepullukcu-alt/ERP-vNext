@@ -1,0 +1,40 @@
+@using Diten.Web.Views.MDM.Skus
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SkusIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="skus-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Edit = Localizer["Edit"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        QuickView = Localizer["Details"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ColumnOrder = SharedLocalizer["ColumnOrder"].Value,
+        AddNewSku = Localizer["AddNew"].Value,
+        DtNoRecords = SharedLocalizer["DtNoRecords"].Value,
+        DtInfo = SharedLocalizer["DtInfo"].Value,
+        DtEmptyTable = SharedLocalizer["DtEmptyTable"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        BulkDeleteSuccess = SharedLocalizer["BulkDeleteSuccess"].Value,
+        ClearSelection = SharedLocalizer["ClearSelection"].Value,
+        SelectedCount = SharedLocalizer["SelectedCount"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Product = Localizer["Product"].Value,
+        SelectProduct = SharedLocalizer["SelectPlaceholder"].Value
+    })
+</script>

@@ -1,0 +1,269 @@
+@model Diten.Web.Models.Compositions.CompositionEditViewModel
+@using Diten.Web.Models.Compositions
+@using Diten.Web.Views.MDM.Compositions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CompositionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEditMode = Model.Id.HasValue;
+    var preferredUnitId = Model.FillUnits.FirstOrDefault(x => string.Equals(x.Code, "MG", StringComparison.OrdinalIgnoreCase))?.Id
+        ?? Model.FillUnits.FirstOrDefault()?.Id
+        ?? Guid.Empty;
+    var strengthUnitId = Model.StrengthUnitId == Guid.Empty ? preferredUnitId : Model.StrengthUnitId;
+    var lifecycleDisplayName = Model.LifecycleState;
+    var componentRoles = new Dictionary<int, string>
+    {
+        [1] = Localizer["Api"].Value,
+        [2] = Localizer["Excipient"].Value,
+        [3] = Localizer["Coating"].Value,
+        [4] = Localizer["Solvent"].Value,
+        [5] = Localizer["Preservative"].Value,
+        [6] = Localizer["Flavor"].Value
+    };
+}
+
+<form asp-action="@(isEditMode ? "Edit" : "Create")"
+      method="post"
+      id="formComposition"
+      novalidate
+      data-default-unit-id="@(preferredUnitId == Guid.Empty ? string.Empty : preferredUnitId.ToString())"
+      data-ingredient-placeholder="@Localizer["IngredientSearchPlaceholder"].Value"
+      data-components-required-message="@Localizer["AtLeastOneComponentRequired"].Value"
+      data-components-validation-message="@Localizer["ComponentsValidationMessage"].Value"
+      data-component-ingredient-message="@Localizer["ComponentIngredientRequired"].Value"
+      data-component-quantity-message="@Localizer["ComponentQuantityRequired"].Value"
+      data-component-unit-message="@Localizer["ComponentUnitRequired"].Value"
+      data-duplicate-ingredient-message="@Localizer["DuplicateIngredientError"].Value">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Version" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-6 d-flex align-items-center" role="alert">
+        <i class="bx bx-error-alt me-2"></i>
+        <div>@SharedLocalizer["ValidationFailed"]</div>
+    </div>
+
+    <div class="row g-6 align-items-stretch">
+        <div class="col-12 col-lg-8">
+            <div class="card mb-6">
+                <div class="card-header border-bottom py-4 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 d-flex align-items-center">
+                        <i class="bx bx-vial text-primary me-2"></i>@Localizer["IdentityCard"]
+                    </h5>
+                    <span class="badge bg-label-secondary">@Localizer["Version"]: @Model.VersionLabel @(isEditMode ? "" : "(auto)")</span>
+                </div>
+                <div class="card-body pt-5">
+                    <div class="row g-5">
+                        <div class="col-md-6 text-primary">
+                            <label asp-for="FormulationCode" class="form-label">@Localizer["FormulationCode"] <span class="text-danger">*</span></label>
+                            <input asp-for="FormulationCode" class="form-control" />
+                            <div class="form-text">@Localizer["FormulationCodeHelperText"]</div>
+                            <span asp-validation-for="FormulationCode" class="invalid-feedback"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label">@Localizer["Name"] <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" />
+                            <div class="form-text">@Localizer["NameHelperText"]</div>
+                            <span asp-validation-for="Name" class="invalid-feedback"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header border-bottom py-4 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 d-flex align-items-center">
+                        <i class="bx bx-list-check text-primary me-2"></i>@Localizer["Components"]
+                    </h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddComponent">
+                        <i class="bx bx-plus me-1"></i>@Localizer["AddComponent"]
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive text-nowrap">
+                        <table class="table table-hover mb-0" id="tableComponents">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%" class="text-center">#</th>
+                                    <th width="35%">@Localizer["ComponentId"]</th>
+                                    <th width="20%">@Localizer["ComponentType"]</th>
+                                    <th width="20%">@Localizer["Quantity"]</th>
+                                    <th width="15%">@Localizer["Unit"]</th>
+                                    <th width="5%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="componentsContainer">
+                                @for (var i = 0; i < Model.Components.Count; i++)
+                                {
+                                    var selectedUnitId = Model.Components[i].UnitId == Guid.Empty ? preferredUnitId : Model.Components[i].UnitId;
+                                    <tr class="component-row" data-index="@i">
+                                        <td class="text-center align-middle">
+                                            <span class="row-sequence">@(i + 1)</span>
+                                            <input type="hidden" name="Components[@i].Sequence" value="@(i + 1)" class="row-sequence-input" />
+                                        </td>
+                                        <td>
+                                            <select name="Components[@i].ComponentId" class="form-select select2-component" required>
+                                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                                @if (Model.Components[i].ComponentId != Guid.Empty)
+                                                {
+                                                    <option value="@Model.Components[i].ComponentId" selected="selected">@Model.Components[i].ComponentName</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="Components[@i].ComponentType" class="form-select" required>
+                                                @foreach (var role in componentRoles)
+                                                {
+                                                    <option value="@role.Key" selected="@(Model.Components[i].ComponentType == role.Key ? "selected" : null)">@role.Value</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="number" min="0.000001" step="0.000001" name="Components[@i].Quantity" value="@Model.Components[i].Quantity" class="form-control" required />
+                                        </td>
+                                        <td>
+                                            <select name="Components[@i].UnitId" class="form-select select2-simple" required>
+                                                @foreach (var unit in Model.FillUnits)
+                                                {
+                                                    <option value="@unit.Id" selected="@(selectedUnitId == unit.Id ? "selected" : null)">@unit.Name</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-icon btn-label-danger btn-remove-component">
+                                                <i class="bx bx-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="componentsValidationMessage" class="px-4 py-3 text-danger small d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="card mb-6">
+                <div class="card-header border-bottom py-4">
+                    <h5 class="card-title mb-0 d-flex align-items-center">
+                        <i class="bx bx-cog text-primary me-2"></i>@Localizer["TechnicalDetails"]
+                    </h5>
+                </div>
+                <div class="card-body pt-5">
+                    <div class="row g-5">
+                        <div class="col-12">
+                            <label asp-for="DosageFormId" class="form-label">@Localizer["DosageForm"] <span class="text-danger">*</span></label>
+                            <select asp-for="DosageFormId" class="form-select select2">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var dosageForm in Model.DosageForms)
+                                {
+                                    <option value="@dosageForm.Id">@dosageForm.Name</option>
+                                }
+                            </select>
+                            <div class="form-text">@Localizer["DosageFormHelperText"]</div>
+                            <span asp-validation-for="DosageFormId" class="invalid-feedback"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">@Localizer["Strength"] <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input asp-for="StrengthValue" class="form-control" placeholder="e.g. 500" />
+                                <select asp-for="StrengthUnitId" class="form-select select2" id="StrengthUnitId">
+                                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                    @foreach (var unit in Model.FillUnits)
+                                    {
+                                        <option value="@unit.Id" selected="@(strengthUnitId == unit.Id ? "selected" : null)">@unit.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-text">@Localizer["OnlySingleUnitSupported"]</div>
+                            <span asp-validation-for="StrengthValue" class="invalid-feedback"></span>
+                            <span asp-validation-for="StrengthUnitId" class="invalid-feedback"></span>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="TechnicalFillAmount" class="form-label">@Localizer["FillAmountLabelLong"]</label>
+                            <input asp-for="TechnicalFillAmount" class="form-control" placeholder="e.g. 1" />
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="TechnicalFillUnitId" class="form-label">@Localizer["TechnicalFillUnit"]</label>
+                            <select asp-for="TechnicalFillUnitId" class="form-select select2">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var unit in Model.FillUnits)
+                                {
+                                    <option value="@unit.Id">@unit.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="TechnicalFillUnitId" class="invalid-feedback"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header border-bottom py-4">
+                    <h5 class="card-title mb-0 d-flex align-items-center">
+                        <i class="bx bx-flag text-primary me-2"></i>@Localizer["TechnicalLifecycle"]
+                    </h5>
+                </div>
+                <div class="card-body pt-5">
+                    <div class="row g-5">
+                        <div class="col-12">
+                            @if (isEditMode && Model.LifecycleState != "Draft")
+                            {
+                                <label asp-for="LifecycleState" class="form-label">@Localizer["LifecycleState"]</label>
+                                <input asp-for="LifecycleState" class="form-control" readonly />
+                                <div class="form-text">@Localizer["LifecycleReadOnlyHint"]</div>
+                            }
+                            else
+                            {
+                                <input type="hidden" asp-for="LifecycleState" />
+                                <label class="form-label">@Localizer["LifecycleState"]</label>
+                                <input type="text" class="form-control" value="@(string.IsNullOrEmpty(Model.LifecycleState) ? "Draft" : Model.LifecycleState)" readonly />
+                                <div class="form-text">@Localizer["DraftLifecycleHint"]</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<template id="templateComponentRow">
+    <tr class="component-row" data-index="{index}">
+        <td class="text-center align-middle">
+            <span class="row-sequence">{sequence}</span>
+            <input type="hidden" name="Components[{index}].Sequence" value="{sequence}" class="row-sequence-input" />
+        </td>
+        <td>
+            <select name="Components[{index}].ComponentId" class="form-select select2-component" required>
+                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+            </select>
+        </td>
+        <td>
+            <select name="Components[{index}].ComponentType" class="form-select" required>
+                @foreach (var role in componentRoles)
+                {
+                    <option value="@role.Key" selected="@(role.Key == 1 ? "selected" : null)">@role.Value</option>
+                }
+            </select>
+        </td>
+        <td>
+            <input type="number" min="0.000001" step="0.000001" name="Components[{index}].Quantity" class="form-control" required />
+        </td>
+        <td>
+            <select name="Components[{index}].UnitId" class="form-select select2-simple" required>
+                @foreach (var unit in Model.FillUnits)
+                {
+                    <option value="@unit.Id" selected="@(unit.Id == preferredUnitId ? "selected" : null)">@unit.Name</option>
+                }
+            </select>
+        </td>
+        <td class="text-center">
+            <button type="button" class="btn btn-icon btn-label-danger btn-remove-component">
+                <i class="bx bx-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
