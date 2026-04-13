@@ -1,0 +1,26 @@
+@{
+    var title = (ViewData["HeroTitle"]?.ToString() ?? "Planning & Periods");
+    var subtitle = (ViewData["HeroSubtitle"]?.ToString() ?? string.Empty);
+    var badgeText = (ViewData["HeroBadgeText"]?.ToString() ?? string.Empty);
+    var badgeClass = (ViewData["HeroBadgeClass"]?.ToString() ?? "is-info");
+    var note = (ViewData["HeroNote"]?.ToString() ?? string.Empty);
+}
+<div class="es-planning-hero">
+    <div class="es-planning-hero-main">
+        <h5 class="es-planning-hero-title">@title</h5>
+        @if (!string.IsNullOrWhiteSpace(subtitle))
+        {
+            <p class="es-planning-hero-subtitle">@subtitle</p>
+        }
+    </div>
+    <div class="es-planning-hero-meta">
+        @if (!string.IsNullOrWhiteSpace(badgeText))
+        {
+            <span class="es-status-pill @badgeClass">@badgeText</span>
+        }
+        @if (!string.IsNullOrWhiteSpace(note))
+        {
+            <div class="es-planning-hero-note">@note</div>
+        }
+    </div>
+</div>

@@ -1,0 +1,46 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Goal Detail";
+    var goalId = (ViewData["GoalId"]?.ToString() ?? string.Empty);
+}
+
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="row g-3">
+    <div class="col-12 col-lg-8">
+        <div class="card mb-3">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Goal @goalId</h5>
+                <div class="btn-group btn-group-sm">
+                    <a href="/management-governance/enterprise-strategy-business-performance/goals" class="btn btn-outline-secondary">Back to List</a>
+                    <a href="/management-governance/delivery-execution/initiatives" class="btn btn-outline-secondary">Open Delivery Initiatives</a>
+                    <a href="/management-governance/delivery-execution/projects" class="btn btn-outline-secondary">Open Delivery Projects</a>
+                    <a id="goal-detail-edit" class="btn btn-primary" href="/management-governance/enterprise-strategy-business-performance/goals/@Uri.EscapeDataString(goalId)/edit">Edit</a>
+                </div>
+            </div>
+        </div>
+        <ul class="nav nav-pills mb-3">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#goal-overview-tab">Overview</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#goal-metrics-tab">Metrics</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#goal-objectives-tab">Objectives Alignment</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#goal-execution-tab">Aligned Delivery Summary</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#goal-evidence-tab">Decisions & Evidence</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#goal-audit-tab">Audit / Change Log</button></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="goal-overview-tab"><div class="card"><div class="card-body" id="goal-detail-overview"></div></div></div>
+            <div class="tab-pane fade" id="goal-metrics-tab"><div class="card"><div class="card-body"><div id="goal-detail-metrics"></div></div></div></div>
+            <div class="tab-pane fade" id="goal-objectives-tab"><div class="card"><div class="card-body"><div id="goal-detail-objectives"></div></div></div></div>
+            <div class="tab-pane fade" id="goal-execution-tab"><div class="card"><div class="card-body"><div id="goal-detail-execution"></div></div></div></div>
+            <div class="tab-pane fade" id="goal-evidence-tab"><div class="card"><div class="card-body"><div id="goal-detail-evidence"></div></div></div></div>
+            <div class="tab-pane fade" id="goal-audit-tab"><div class="card"><div class="card-body"><div id="goal-detail-audit"></div></div></div></div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">@await Html.PartialAsync("Components/_GovernanceSidePanel")</div>
+</div>
+
+@section Scripts {
+    <script>window.goalDetailId = "@goalId";</script>
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/goal-detail.js"></script>
+}

@@ -1,0 +1,23 @@
+<details id="goal-sec-governance" class="es-goal-section" open>
+  <summary><span>7. Governance &amp; Traceability</span><span id="goal-sec-governance-state" class="es-goal-section-state state-optional">Optional</span></summary>
+  <div class="goal-step-helper-banner mb-3 mt-2">
+    <span class="badge bg-label-info">Governance Ready</span>
+    <span>Capture the decision reference, evidence link, and traceability markers needed to keep the draft audit-ready from the start.</span>
+  </div>
+  <div class="row g-2 mt-1">
+    <div class="col-12 col-md-6 form-control-validation">
+      <label for="goal-change-log-ref" class="form-label">Change Log Ref <span class="es-field-tag tag-required">Required for publish</span></label>
+      <input id="goal-change-log-ref" class="form-control" maxlength="100" />
+    </div>
+  </div>
+  @{
+    ViewData["Prefix"] = "goal";
+    ViewData["IncludeVersion"] = "true";
+    ViewData["DecisionLabel"] = "Decision Reference";
+    ViewData["EvidenceLabel"] = "Evidence Link";
+    ViewData["DecisionRequiredForPublish"] = "true";
+  }
+  <div class="es-form-grid mt-2">
+    @await Html.PartialAsync("Components/Forms/_GovernanceFields")
+  </div>
+</details>

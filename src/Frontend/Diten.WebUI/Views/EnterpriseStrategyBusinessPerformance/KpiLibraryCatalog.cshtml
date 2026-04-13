@@ -1,0 +1,68 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "KPI Library Catalog";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="card mb-3">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+        <input id="kpi-lib-search" class="form-control form-control-sm w-auto" placeholder="Search templates" />
+        <select id="kpi-lib-category" class="form-select form-select-sm w-auto"><option value="">KPI Category</option></select>
+        <select id="kpi-lib-perspective" class="form-select form-select-sm w-auto"><option value="">Strategic Perspective</option></select>
+        <select id="kpi-lib-type" class="form-select form-select-sm w-auto"><option value="">KPI Type</option></select>
+        <select id="kpi-lib-object-level" class="form-select form-select-sm w-auto"><option value="">Object Level</option></select>
+        <select id="kpi-lib-frequency" class="form-select form-select-sm w-auto"><option value="">Reporting Frequency</option></select>
+        <select id="kpi-lib-status" class="form-select form-select-sm w-auto"><option value="">Status</option></select>
+        <select id="kpi-lib-threshold" class="form-select form-select-sm w-auto"><option value="">Threshold Model</option></select>
+        <select id="kpi-lib-polarity" class="form-select form-select-sm w-auto"><option value="">Polarity</option></select>
+        <button id="kpi-lib-apply" class="btn btn-sm btn-outline-secondary">Apply</button>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/threshold-models">Threshold Models</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/scorecard-packs">Scorecard Packs</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/governance">KPI Governance</a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Templates</div><div class="h5 mb-0" id="kpi-lib-total">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Published</div><div class="h5 mb-0" id="kpi-lib-published">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">In Review</div><div class="h5 mb-0" id="kpi-lib-review">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Usage Total</div><div class="h5 mb-0" id="kpi-lib-usage">0</div></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm mb-0" id="kpi-lib-table">
+            <thead>
+                <tr>
+                    <th>KPI Template Code</th>
+                    <th>KPI Name</th>
+                    <th>KPI Category</th>
+                    <th>Strategic Perspective</th>
+                    <th>KPI Type</th>
+                    <th>Object Level</th>
+                    <th>Polarity</th>
+                    <th>Unit of Measure</th>
+                    <th>Aggregation Method</th>
+                    <th>Reporting Frequency</th>
+                    <th>Threshold Model</th>
+                    <th>Default Owner Role</th>
+                    <th>Version</th>
+                    <th>Status</th>
+                    <th>Usage Count</th>
+                    <th>Publish Date</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/kpi-library-catalog.js" asp-append-version="true"></script>
+}

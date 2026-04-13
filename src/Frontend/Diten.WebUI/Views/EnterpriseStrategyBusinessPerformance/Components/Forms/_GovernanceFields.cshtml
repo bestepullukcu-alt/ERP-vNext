@@ -1,0 +1,24 @@
+@{
+    var prefix = (ViewData["Prefix"]?.ToString() ?? "entity");
+    var includeVersion = (ViewData["IncludeVersion"]?.ToString() ?? "true");
+    var decisionLabel = (ViewData["DecisionLabel"]?.ToString() ?? "Decision Reference");
+    var evidenceLabel = (ViewData["EvidenceLabel"]?.ToString() ?? "Evidence Reference");
+    var decisionRequiredForPublish = string.Equals(ViewData["DecisionRequiredForPublish"]?.ToString(), "true", StringComparison.OrdinalIgnoreCase);
+}
+<div class="row g-3">
+    <div class="col-12 col-md-6">
+        <label for="@($"{prefix}-decision-reference")" class="form-label">@decisionLabel @if (decisionRequiredForPublish) { <span class="es-field-tag tag-required">Required for publish</span> }</label>
+        <input id="@($"{prefix}-decision-reference")" class="form-control" />
+    </div>
+    <div class="col-12 col-md-6">
+        <label for="@($"{prefix}-evidence-reference")" class="form-label">@evidenceLabel</label>
+        <input id="@($"{prefix}-evidence-reference")" class="form-control" />
+    </div>
+    @if (includeVersion == "true")
+    {
+        <div class="col-12 col-md-6">
+            <label for="@($"{prefix}-version")" class="form-label">Version <span class="es-field-tag tag-system">System-managed</span></label>
+            <input id="@($"{prefix}-version")" class="form-control bg-light" readonly disabled tabindex="-1" title="Version is assigned by the system" />
+        </div>
+    }
+</div>

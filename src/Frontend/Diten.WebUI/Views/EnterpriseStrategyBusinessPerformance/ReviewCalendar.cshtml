@@ -1,0 +1,39 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Review Calendar";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="card mb-3">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/reviews/pack">Review Pack</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/reviews/decisions">Decisions & Actions</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/reviews/history">Review History</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Review Date</th>
+                    <th>Review Type</th>
+                    <th>Goal</th>
+                    <th>Objective</th>
+                    <th>Scorecard Scope</th>
+                    <th>Owner / Facilitator</th>
+                    <th>Status</th>
+                    <th class="text-end es-row-actions-col">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="review-calendar-table"></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/row-actions-menu.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/review-calendar.js" asp-append-version="true"></script>
+}

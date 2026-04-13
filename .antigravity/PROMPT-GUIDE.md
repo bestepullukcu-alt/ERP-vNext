@@ -7,7 +7,7 @@ Varsayilan giris noktasi `@[.antigravity/agents/orchestrator.md]` olmalidir. Dog
 ## Temel Ilkeler
 
 - `@orchestrator` varsayilan giris noktasi. Yeni modul, cok dosyali degisiklik, test+doc+gateway etkisi olan her istekte bunu kullan.
-- "LegalEntities gibi olsun" tek basina yeterli degildir. Beklenen davranislari maddeler halinde yaz.
+- "Products gibi olsun" tek basina yeterli degildir. Beklenen davranislari maddeler halinde yaz.
 - Prompt; kapsam, degistirilmeyecekler, kabul kriterleri ve dogrulama beklentisi icermelidir.
 - DataTable islerinde ilgili rule ve workflow dosyalarini acikca referans ver.
 - Dokumantasyon ve test isteniyorsa bunu ayrica yaz. Yazilmazsa unutulma riski vardir.
@@ -68,7 +68,7 @@ Yanlis:
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries sayfasini LegalEntities gibi yap.
+Countries sayfasini Products gibi yap.
 ```
 
 Dogru:
@@ -101,7 +101,7 @@ Dogru:
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-LegalEntities liste sayfasini duzelt.
+Products liste sayfasini duzelt.
 Zorunlu referanslar:
 - .antigravity/rules/frontend-datatable-template.md
 - .antigravity/rules/frontend-js-standard.md
@@ -392,7 +392,7 @@ Kullanim: Var olan DataTable'a toplu islem butonu eklerken.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-LegalEntities liste sayfasina yeni bulk activate aksiyonu ekle.
+Products liste sayfasina yeni bulk activate aksiyonu ekle.
 
 Beklenti:
 - checkbox secim modeli mevcut pattern ile ayni olsun
@@ -450,7 +450,7 @@ Kullanim: Save View cikmiyor, calismiyor veya auth refresh akisi bozuksa.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-LegalEntities Save View akisindaki sorunu duzelt.
+Products Save View akisindaki sorunu duzelt.
 
 Beklenti:
 - Save View gorunurlugu applied state'e gore hesaplansin
@@ -499,7 +499,7 @@ Kullanim: Inline filter select acildiginda sayfa scroll/ripple bozuluyorsa.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-LegalEntities inline filter icindeki Select2 scroll bug'ini duzelt.
+Products inline filter icindeki Select2 scroll bug'ini duzelt.
 
 Kabul kriterleri:
 - dropdown acildiginda sayfada yatay/dikey scroll cikmasin
@@ -685,7 +685,7 @@ Kullanim: DataTable tesliminden once runtime kontrol istendiginde.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-LegalEntities liste sayfasi icin browser smoke ve quality gate calistir.
+Products liste sayfasi icin browser smoke ve quality gate calistir.
 
 Beklenti:
 - toolbar render
@@ -740,7 +740,7 @@ Kullanim: Daha once bozulmus bir akis tekrar risk altindaysa.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-LegalEntities ve Countries DataTable akislari icin regression review yap.
+Products ve Countries DataTable akislari icin regression review yap.
 
 Ozellikle kontrol et:
 - Save View
@@ -794,7 +794,7 @@ Ne zaman dogrudan kullanilir: Onemli mimari karar alinmis ve kayda gecirilecekse
 ```text
 @[.antigravity/agents/documentation-writer.md]
 
-LegalEntities ve Countries DataTable v2 standardi icin ADR yaz.
+Products ve Countries DataTable v2 standardi icin ADR yaz.
 
 Karar:
 - offcanvas filter yerine inline collapsible filter

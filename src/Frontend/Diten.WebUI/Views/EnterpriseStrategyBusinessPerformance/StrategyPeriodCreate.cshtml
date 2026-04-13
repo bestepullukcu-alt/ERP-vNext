@@ -1,0 +1,66 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Create Strategy Period";
+    ViewData["Active"] = "periods";
+    var prefillPlanningCycleId = (ViewData["PrefillPlanningCycleId"]?.ToString() ?? string.Empty);
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="planning-workspace strategy-period-create-page es-planning-page-shell row g-3">
+    <div class="col-12">
+        @await Html.PartialAsync("Components/Planning/_WorkspaceSubtabs")
+    </div>
+
+    <div class="col-12">
+        <div class="es-create-workspace-shell">
+            <div class="es-create-workspace-header sticky-top">
+                <div>
+                    <h5 class="es-create-workspace-title mb-0">Create Strategy Period</h5>
+                    <p class="es-create-workspace-subtitle mb-0">Scoped period workspace aligned to Goal Create page quality, with immediate horizon and scope validation.</p>
+                </div>
+                <div class="es-create-workspace-actions">
+                    <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/planning/strategy-periods">Cancel / Back</a>
+                    <button type="button" id="strategy-period-save" class="btn btn-sm btn-primary">Create Strategy Period</button>
+                </div>
+            </div>
+
+            <div class="es-create-workspace-body">
+                <div class="row g-3">
+                    <div class="col-12 col-xl-8">
+                        <div id="strategy-period-form-error" class="alert alert-danger d-none mb-3 es-validation-summary" role="alert" aria-live="assertive"></div>
+
+                        @await Html.PartialAsync("Components/Planning/_StrategyPeriodFormFields")
+
+                        @await Html.PartialAsync(
+                            "Components/Planning/_ReadinessPanel",
+                            viewData: new ViewDataDictionary(ViewData)
+                            {
+                                ["ReadinessPanelId"] = "strategy-period-readiness-panel",
+                                ["ReadinessIndicatorId"] = "strategy-period-readiness-indicator",
+                                ["ReadinessIndicatorText"] = "Readiness: Blocked",
+                                ["ReadinessTextId"] = "strategy-period-readiness-text",
+                                ["ReadinessText"] = "Complete required fields to save this Strategy Period.",
+                                ["ReadinessMissingId"] = "strategy-period-readiness-missing",
+                                ["ReadinessMissingTitle"] = "Missing required fields",
+                                ["ReadinessBlockersId"] = "strategy-period-readiness-blockers",
+                                ["ReadinessBlockersTitle"] = "Conflicts / blockers"
+                            })
+                    </div>
+
+                    <div class="col-12 col-xl-4 d-flex">
+                        @await Html.PartialAsync("Components/Planning/_GovernancePanel")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.strategyPeriodEditorMode = "create-page";
+        window.strategyPeriodPrefillCycleId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(prefillPlanningCycleId));
+    </script>
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-periods.js" asp-append-version="true"></script>
+}

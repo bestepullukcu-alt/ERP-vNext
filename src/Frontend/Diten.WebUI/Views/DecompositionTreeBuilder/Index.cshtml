@@ -1,0 +1,180 @@
+@{
+    ViewData["Title"] = "Decomposition Tree Builder";
+}
+<div class="decomp-redesign-page w-100" data-testid="decomp-page" data-structure-id="@ViewData["StructureId"]">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "DemandIdeas")">Demand &amp; Idea Management</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "DemandIdeas")">Ideas &amp; Demand</a></li>
+            <li class="breadcrumb-item active">Decomposition Tree Builder</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm border rounded-3 mb-3">
+        <div class="card-body d-flex flex-wrap align-items-center gap-2 justify-content-between">
+            <div class="min-w-0">
+                <h1 class="h4 mb-1">Decomposition Tree Builder</h1>
+                <p class="text-muted mb-0 small">Tree builder + unified inspector + Drawflow map for enterprise decomposition.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <span class="badge bg-label-secondary text-secondary" id="decomp-structure-status">Draft</span>
+                <span class="badge bg-label-primary text-primary" id="decomp-readiness-summary">Readiness 0%</span>
+                <span class="badge bg-label-warning text-warning" id="decomp-issue-summary">0 issues</span>
+                <input type="search" id="decomp-global-search" class="form-control form-control-sm w-auto" placeholder="Search code, title, owner..." />
+                <button class="btn btn-sm btn-outline-primary" id="decomp-validate-btn">Validate</button>
+                <button class="btn btn-sm btn-outline-warning" id="decomp-readiness-btn">Readiness</button>
+                <button class="btn btn-sm btn-primary" id="decomp-approval-btn">Approve</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-xl-3">
+            <div class="card shadow-sm border rounded-3 mb-3">
+                <div class="card-header py-2 d-flex align-items-center justify-content-between">
+                    <span class="fw-semibold">Tree Structure Filters</span>
+                    <button class="btn btn-sm btn-outline-secondary" id="decomp-filter-reset">Reset</button>
+                </div>
+                <div class="card-body decomp-panel-scroll">
+                    <div id="decomp-active-filter-chips" class="mb-2"></div>
+                    <div class="mb-2 small fw-semibold">Type</div>
+                    <div id="decomp-filter-types" class="mb-3"></div>
+                    <div class="mb-2 small fw-semibold">Status</div>
+                    <div id="decomp-filter-statuses" class="mb-3"></div>
+                    <div class="mb-2 small fw-semibold">Owner</div>
+                    <div id="decomp-filter-owners" class="mb-3"></div>
+                    <div class="mb-2 small fw-semibold">Validation / Flags</div>
+                    <div id="decomp-filter-flags" class="mb-3"></div>
+                    <div class="mb-2 small fw-semibold">Depth</div>
+                    <div id="decomp-filter-depth" class="mb-3"></div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="decomp-lineage-toggle" checked>
+                        <label class="form-check-label small" for="decomp-lineage-toggle">Preserve lineage path</label>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm border rounded-3">
+                <div class="card-header py-2 fw-semibold">Node Library</div>
+                <div class="card-body">
+                    <div id="decomp-node-library" class="d-grid gap-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border rounded-3">
+                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2 py-2">
+                    <ul class="nav nav-pills" id="decomp-view-tabs" role="tablist">
+                        <li class="nav-item"><button class="nav-link" data-view="map" type="button">Map View</button></li>
+                        <li class="nav-item"><button class="nav-link active" data-view="tree" type="button">Tree View</button></li>
+                        <li class="nav-item"><button class="nav-link" data-view="outline" type="button">Outline View</button></li>
+                    </ul>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">Outline Display</button>
+                            <div class="dropdown-menu dropdown-menu-end p-2" style="min-width:260px;">
+                                <label class="form-label small mb-1">Preset</label>
+                                <select id="decomp-outline-preset" class="form-select form-select-sm mb-2">
+                                    <option value="compact">Compact</option>
+                                    <option value="detailed">Detailed</option>
+                                    <option value="governance">Governance</option>
+                                    <option value="financial">Financial</option>
+                                </select>
+                                <div id="decomp-outline-columns" class="small"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body decomp-work-area">
+                    <div id="decomp-work-state" class="small text-muted mb-2"></div>
+                    <div id="decomp-view-map" class="decomp-view-pane d-none"></div>
+                    <div id="decomp-view-tree" class="decomp-view-pane"></div>
+                    <div id="decomp-view-outline" class="decomp-view-pane d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-3">
+            <div class="card shadow-sm border rounded-3 h-100">
+                <div class="card-header py-2 d-flex align-items-center justify-content-between">
+                    <span class="fw-semibold">Unified Inspector</span>
+                    <span id="decomp-selected-code" class="badge bg-label-primary text-primary">None</span>
+                </div>
+                <div class="card-body decomp-panel-scroll">
+                    <ul class="nav nav-tabs nav-sm mb-3" id="decomp-inspector-tabs">
+                        <li class="nav-item"><button type="button" class="nav-link active" data-tab="overview">Overview</button></li>
+                        <li class="nav-item"><button type="button" class="nav-link" data-tab="properties">Properties</button></li>
+                        <li class="nav-item"><button type="button" class="nav-link" data-tab="dependencies">Dependencies</button></li>
+                        <li class="nav-item"><button type="button" class="nav-link" data-tab="governance">Governance</button></li>
+                        <li class="nav-item"><button type="button" class="nav-link" data-tab="history">History</button></li>
+                    </ul>
+
+                    <div class="decomp-inspector-panel" data-panel="overview">
+                        <div class="d-grid gap-2">
+                            <div><label class="form-label small mb-1">Code</label><input id="decomp-node-code" class="form-control form-control-sm" readonly /></div>
+                            <div><label class="form-label small mb-1">Path</label><input id="decomp-node-path" class="form-control form-control-sm" readonly /></div>
+                            <div><label class="form-label small mb-1">Type</label><select id="decomp-node-type" class="form-select form-select-sm"></select></div>
+                            <div><label class="form-label small mb-1">Title</label><input id="decomp-node-title" class="form-control form-control-sm" /></div>
+                            <div><label class="form-label small mb-1">Status</label><select id="decomp-node-status" class="form-select form-select-sm"></select></div>
+                            <div><label class="form-label small mb-1">Owner</label><input id="decomp-node-owner" class="form-control form-control-sm" /></div>
+                            <div><label class="form-label small mb-1">Due date</label><input id="decomp-node-due" type="date" class="form-control form-control-sm" /></div>
+                            <div><label class="form-label small mb-1">Parent</label><input id="decomp-node-parent" class="form-control form-control-sm" readonly /></div>
+                        </div>
+                    </div>
+
+                    <div class="decomp-inspector-panel d-none" data-panel="properties">
+                        <div class="d-grid gap-2">
+                            <div><label class="form-label small mb-1">Description</label><textarea id="decomp-node-description" class="form-control form-control-sm" rows="3"></textarea></div>
+                            <div><label class="form-label small mb-1">Budget</label><input id="decomp-node-budget" type="number" step="0.01" class="form-control form-control-sm" /></div>
+                            <div><label class="form-label small mb-1">Budget mode</label><input id="decomp-node-budget-mode" class="form-control form-control-sm" /></div>
+                        </div>
+                    </div>
+
+                    <div class="decomp-inspector-panel d-none" data-panel="dependencies">
+                        <div class="d-grid gap-2">
+                            <div><label class="form-label small mb-1">Depends on node</label><select id="decomp-dependency-target" class="form-select form-select-sm"></select></div>
+                            <div><label class="form-label small mb-1">Dependency type</label><select id="decomp-dependency-type" class="form-select form-select-sm"><option>FS</option><option>SS</option><option>FF</option></select></div>
+                            <button class="btn btn-sm btn-outline-primary" id="decomp-add-dependency">Add dependency</button>
+                            <div id="decomp-dependency-list" class="small border rounded p-2 bg-body-tertiary"></div>
+                        </div>
+                    </div>
+
+                    <div class="decomp-inspector-panel d-none" data-panel="governance">
+                        <div class="alert alert-light border small mb-2" id="decomp-governance-state">
+                            Validation: <strong>Pending</strong><br />
+                            Readiness: <strong>0%</strong>
+                        </div>
+                        <div id="decomp-issue-list" class="small border rounded p-2 bg-body-tertiary"></div>
+                    </div>
+
+                    <div class="decomp-inspector-panel d-none" data-panel="history">
+                        <div id="decomp-history" class="small border rounded p-2 bg-body-tertiary"></div>
+                    </div>
+
+                    <hr class="my-3" />
+                    <div class="d-grid gap-2 mb-2">
+                        <div><label class="form-label small mb-1">Move under parent</label><select id="decomp-reparent-target" class="form-select form-select-sm"></select></div>
+                        <button class="btn btn-sm btn-outline-dark" id="decomp-reparent-apply">Apply Move/Reparent</button>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-sm btn-outline-primary" id="decomp-add-child">Add Child</button>
+                        <button class="btn btn-sm btn-outline-secondary" id="decomp-add-sibling">Add Sibling</button>
+                        <button class="btn btn-sm btn-outline-dark" id="decomp-move-up">Move Up</button>
+                        <button class="btn btn-sm btn-outline-dark" id="decomp-move-down">Move Down</button>
+                        <button class="btn btn-sm btn-outline-danger" id="decomp-delete-node">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.css" />
+    <link rel="stylesheet" href="~/assets/css/pages/decomposition-redesign.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.js"></script>
+    <script src="~/assets/js/pages/decomposition/decompositionPage.js" asp-append-version="true"></script>
+}

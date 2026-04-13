@@ -1,0 +1,634 @@
+@model Diten.WebUI.Models.DemandIdeas.DemandIdeaCapturePageViewModel
+@{
+    var ro = Model.IsReadOnly || !Model.CanEditFields;
+    string IdeaDisplayId(string id) =>
+        id.StartsWith("DEM-", StringComparison.OrdinalIgnoreCase) && id.Length > 4
+            ? "IC-2026-" + id[4..]
+            : id;
+    var reviewerRow = Model.AssignedStakeholders.FirstOrDefault(s => string.Equals(s.Role, "Reviewer", StringComparison.OrdinalIgnoreCase));
+    var requestTypes = new[] { "Process Improvement", "Program", "Enhancement", "Compliance", "New Capability", "Platform", "Infrastructure", "Regulatory" };
+    var strategic = new[] { "Growth & Revenue", "Operational Excellence", "Digital Transformation", "Cost Reduction", "Customer Experience", "Risk & Compliance", "Innovation & R&D" };
+    var businessUnits = new[] { "IT", "HR", "Risk", "Operations", "Engineering", "Security", "Sales", "Finance", "Corporate", "Legal", "Product" };
+    var categories = new[] { "Program", "Enhancement", "Compliance", "New Capability", "Platform", "Technology", "Operations", "Customer Experience", "Data & Analytics", "Security", "Infrastructure", "HR / People", "Finance", "Other" };
+    var demandSources = new[] { "Internal", "External", "Regulatory", "Audit", "Customer" };
+    var priorities = new[] { "Low", "Medium", "High", "Critical" };
+    var threeScale = new[] { "Low", "Medium", "High" };
+    var complianceScale = new[] { "None", "Low", "Medium", "High" };
+}
+
+<div class="row g-4 align-items-start">
+    <div class="col-lg-8">
+        @* Core information (mock: document icon, title + narrative only) *@
+        <section class="dc-section dc-section--mock" aria-labelledby="dc-sec-core">
+            <div class="dc-section-header">
+                <div class="dc-section-icon-wrap" aria-hidden="true"><i class="bx bx-file-blank"></i></div>
+                <div>
+                    <h2 class="dc-section-title" id="dc-sec-core">Core information</h2>
+                    <p class="dc-section-hint">Fields marked <span class="text-danger">*</span> are required before submission.</p>
+                </div>
+            </div>
+            <div class="dc-section-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="cap-title">Idea title <span class="text-danger">*</span></label>
+                        <input id="cap-title" name="title" value="@Model.Title" maxlength="500" class="form-control dc-input @(ro ? "form-control-plaintext border-bottom rounded-0 px-0" : "")" @(ro ? "readonly" : "required") placeholder="Enter a clear, descriptive title" />
+                        <div class="invalid-feedback">Enter an idea title.</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="cap-problem">Business need / problem statement <span class="text-danger">*</span></label>
+                        <textarea id="cap-problem" name="problemStatement" rows="4" class="form-control dc-input @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : "required") placeholder="Describe the business need, problem, or opportunity this idea addresses">@Model.ProblemStatement</textarea>
+                        <div class="invalid-feedback">Describe the business need (at least a few sentences).</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="cap-outcome">Expected outcome <span class="text-danger">*</span></label>
+                        <textarea id="cap-outcome" name="expectedOutcome" rows="3" class="form-control dc-input @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : "required") placeholder="What should be achieved if this idea is implemented?">@Model.ExpectedOutcome</textarea>
+                        <div class="invalid-feedback">State the expected outcome.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* General information *@
+        <section class="dc-section dc-section--mock" aria-labelledby="dc-sec-gen">
+            <div class="dc-section-header">
+                <div class="dc-section-icon-wrap" aria-hidden="true"><i class="bx bx-detail"></i></div>
+                <div>
+                    <h2 class="dc-section-title" id="dc-sec-gen">General information</h2>
+                    <p class="dc-section-hint">Classification of the request, alignment, and key contacts.</p>
+                </div>
+            </div>
+            <div class="dc-section-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="cap-reqtype">Request type <span class="text-danger">*</span></label>
+                        <select id="cap-reqtype" name="requestType" class="form-select dc-input" @(ro ? "disabled" : "required")>
+                            @foreach (var o in requestTypes)
+                            {
+                                if (Model.RequestType == o)
+                                {
+                                    <option value="@o" selected>@o</option>
+                                }
+                                else
+                                {
+                                    <option value="@o">@o</option>
+                                }
+                            }
+                        </select>
+                        <div class="invalid-feedback">Select a request type.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="cap-strategic">Strategic alignment</label>
+                        <select id="cap-strategic" name="strategicAlignment" class="form-select dc-input" @(ro ? "disabled" : null)>
+                            @foreach (var o in strategic)
+                            {
+                                if (Model.StrategicAlignment == o)
+                                {
+                                    <option value="@o" selected>@o</option>
+                                }
+                                else
+                                {
+                                    <option value="@o">@o</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="cap-bu">Business unit <span class="text-danger">*</span></label>
+                        <select id="cap-bu" name="businessUnit" class="form-select dc-input" @(ro ? "disabled" : "required")>
+                            @foreach (var o in businessUnits)
+                            {
+                                if (Model.BusinessUnit == o)
+                                {
+                                    <option value="@o" selected>@o</option>
+                                }
+                                else
+                                {
+                                    <option value="@o">@o</option>
+                                }
+                            }
+                        </select>
+                        <div class="invalid-feedback">Select a business unit.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="cap-requestor">Requestor <span class="text-danger">*</span></label>
+                        <input id="cap-requestor" name="requestor" value="@Model.Requestor" class="form-control dc-input @(ro ? "form-control-plaintext border-bottom rounded-0 px-0" : "")" @(ro ? "readonly" : "required") placeholder="Name" />
+                        <div class="invalid-feedback">Identify the requestor.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="cap-sponsor">Sponsor</label>
+                        <input id="cap-sponsor" name="sponsor" value="@Model.Sponsor" class="form-control dc-input @(ro ? "form-control-plaintext border-bottom rounded-0 px-0" : "")" @(ro ? "readonly" : null) placeholder="Name" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* Scope framing *@
+        <section class="dc-section dc-section--mock" aria-labelledby="dc-sec-b">
+            <div class="dc-section-header">
+                <div class="dc-section-icon-wrap" aria-hidden="true"><i class="bx bx-bullseye"></i></div>
+                <div>
+                    <h2 class="dc-section-title" id="dc-sec-b">Scope framing</h2>
+                    <p class="dc-section-hint">Define boundaries so reviewers can assess fit and dependencies quickly.</p>
+                </div>
+            </div>
+            <div class="dc-section-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="cap-scope-in">Proposed scope</label>
+                        <textarea id="cap-scope-in" name="proposedScope" rows="3" class="form-control dc-input @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : null) placeholder="Define what is included in this initiative">@Model.ProposedScope</textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="cap-scope-out">Out of scope</label>
+                        <textarea id="cap-scope-out" name="outOfScope" rows="3" class="form-control dc-input @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : null) placeholder="Clarify what is explicitly excluded">@Model.OutOfScope</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="cap-assumptions">Assumptions</label>
+                        <textarea id="cap-assumptions" name="assumptions" rows="3" class="form-control dc-input @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : null) placeholder="List key assumptions">@Model.Assumptions</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="cap-constraints">Constraints</label>
+                        <textarea id="cap-constraints" name="constraints" rows="3" class="form-control dc-input @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : null) placeholder="List known constraints">@Model.Constraints</textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* Expected benefits *@
+        <section class="dc-section dc-section--mock" aria-labelledby="dc-sec-c">
+            <div class="dc-section-header">
+                <div class="dc-section-icon-wrap" aria-hidden="true"><i class="bx bx-trending-up"></i></div>
+                <div>
+                    <h2 class="dc-section-title" id="dc-sec-c">Expected benefits</h2>
+                    <p class="dc-section-hint">Describe value creation and how success will be measured.</p>
+                </div>
+            </div>
+            <div class="dc-section-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="cap-bi">Business impact</label>
+                        <textarea id="cap-bi" name="businessImpact" rows="3" class="form-control dc-input @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : null) placeholder="Describe the expected business impact and value creation">@Model.BusinessImpact</textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="cap-benefits">Expected benefits</label>
+                        <textarea id="cap-benefits" name="expectedBenefits" rows="3" class="form-control @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : null)>@Model.ExpectedBenefits</textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="cap-value-notes">Value / benefit notes</label>
+                        <textarea id="cap-value-notes" name="valueNotes" rows="2" class="form-control @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : null)>@Model.ValueNotes</textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* Classification *@
+        <section class="dc-section dc-section--mock" aria-labelledby="dc-sec-d">
+            <div class="dc-section-header">
+                <div class="dc-section-icon-wrap" aria-hidden="true"><i class="bx bx-buildings"></i></div>
+                <div>
+                    <h2 class="dc-section-title" id="dc-sec-d">Classification</h2>
+                    <p class="dc-section-hint">Routing, risk, and sizing signals for governance queues.</p>
+                </div>
+            </div>
+            <div class="dc-section-body">
+                <div class="row g-3">
+                    <div class="col-md-6 col-xl-4">
+                        <label class="form-label" for="cap-category">Category</label>
+                        <select id="cap-category" name="category" class="form-select dc-input" @(ro ? "disabled" : null)>
+                            @foreach (var o in categories)
+                            {
+                                if (Model.Category == o)
+                                {
+                                    <option value="@o" selected>@o</option>
+                                }
+                                else
+                                {
+                                    <option value="@o">@o</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <label class="form-label" for="cap-dsource">Demand source</label>
+                        <select id="cap-dsource" name="demandSource" class="form-select dc-input" @(ro ? "disabled" : null)>
+                            @foreach (var o in demandSources)
+                            {
+                                if (Model.DemandSource == o)
+                                {
+                                    <option value="@o" selected>@o</option>
+                                }
+                                else
+                                {
+                                    <option value="@o">@o</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <label class="form-label" for="cap-priority">Priority <span class="text-danger">*</span></label>
+                        <select id="cap-priority" name="priority" class="form-select dc-input" @(ro ? "disabled" : "required")>
+                            @foreach (var o in priorities)
+                            {
+                                if (Model.Priority == o)
+                                {
+                                    <option value="@o" selected>@o</option>
+                                }
+                                else
+                                {
+                                    <option value="@o">@o</option>
+                                }
+                            }
+                        </select>
+                        <div class="invalid-feedback">Assign a priority.</div>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <label class="form-label" for="cap-compliance">Compliance impact</label>
+                        <select id="cap-compliance" name="complianceImpact" class="form-select dc-input" @(ro ? "disabled" : null)>
+                            @foreach (var o in complianceScale)
+                            {
+                                if (string.Equals(Model.ComplianceImpact, o, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <option value="@o" selected>@o</option>
+                                }
+                                else
+                                {
+                                    <option value="@o">@o</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <label class="form-label" for="cap-complexity">Estimated complexity</label>
+                        <select id="cap-complexity" name="estimatedComplexity" class="form-select dc-input" @(ro ? "disabled" : null)>
+                            @foreach (var o in threeScale)
+                            {
+                                if (Model.EstimatedComplexity == o)
+                                {
+                                    <option value="@o" selected>@o</option>
+                                }
+                                else
+                                {
+                                    <option value="@o">@o</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <label class="form-label" for="cap-risk">Risk sensitivity</label>
+                        <select id="cap-risk" name="riskSensitivity" class="form-select dc-input" @(ro ? "disabled" : null)>
+                            @foreach (var o in threeScale)
+                            {
+                                if (Model.RiskSensitivity == o)
+                                {
+                                    <option value="@o" selected>@o</option>
+                                }
+                                else
+                                {
+                                    <option value="@o">@o</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* Supporting material *@
+        <section class="dc-section dc-section--mock" aria-labelledby="dc-sec-e">
+            <div class="dc-section-header">
+                <div class="dc-section-icon-wrap" aria-hidden="true"><i class="bx bx-paperclip"></i></div>
+                <div>
+                    <h2 class="dc-section-title" id="dc-sec-e">Supporting material</h2>
+                    <p class="dc-section-hint">Evidence accelerates review — policies, estimates, or architecture references.</p>
+                </div>
+            </div>
+            <div class="dc-section-body">
+                <label class="form-label d-block">File attachments</label>
+                @if (!ro)
+                {
+                    <div id="demand-dropzone" class="border border-2 border-dashed rounded-3 p-4 text-center text-muted mb-3 demand-dropzone dc-dropzone" role="button" tabindex="0" aria-label="Upload files">
+                        <i class="bx bx-paperclip bx-md d-block mb-2 opacity-50"></i>
+                        <span class="d-block small">Drag and drop files here, or </span>
+                        <label class="text-primary text-decoration-underline mb-0" style="cursor:pointer">browse<input type="file" class="d-none" id="demand-file-input" multiple accept=".pdf,.doc,.docx,.xlsx,.pptx,.png,.jpg,.jpeg" /></label>
+                    </div>
+                }
+                <label class="form-label d-block small text-uppercase fw-semibold text-muted mt-2">Uploaded files</label>
+                <ul class="list-group list-group-flush border rounded-3 mb-3" id="demand-attachment-list">
+                    @foreach (var a in Model.Attachments)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                            <span><i class="bx bx-file me-2 text-primary"></i>@a.FileName</span><span class="text-muted small">@a.SizeLabel</span>
+                        </li>
+                    }
+                </ul>
+                @if (Model.Attachments.Count == 0)
+                {
+                    <p class="text-muted small mb-3" id="demand-attachment-empty">No files attached yet.</p>
+                }
+                <label class="form-label">Supporting links</label>
+                <div id="demand-links-container" class="d-flex flex-column gap-2 mb-2">
+                    @foreach (var link in Model.SupportingLinks)
+                    {
+                        <div class="input-group demand-link-row">
+                            <span class="input-group-text"><i class="bx bx-link-alt"></i></span>
+                            <input type="url" class="form-control" name="supportingLinks" value="@link" @(ro ? "readonly" : null) placeholder="Add a relevant URL" />
+                            @if (!ro)
+                            {
+                                <button class="btn btn-outline-secondary demand-link-remove" type="button" aria-label="Remove link">&times;</button>
+                            }
+                        </div>
+                    }
+                    @if (Model.SupportingLinks.Count == 0 && !ro)
+                    {
+                        <div class="input-group demand-link-row">
+                            <span class="input-group-text"><i class="bx bx-link-alt"></i></span>
+                            <input type="url" class="form-control" name="supportingLinks" placeholder="Add a relevant URL" />
+                        </div>
+                    }
+                </div>
+                @if (!ro)
+                {
+                    <button type="button" class="btn btn-sm btn-link text-decoration-none px-0 mb-3" id="demand-add-link"><i class="bx bx-link-alt me-1"></i>Add another link</button>
+                }
+                <div class="mb-3">
+                    <label class="form-label" for="cap-notes">Notes</label>
+                    <textarea id="cap-notes" name="notes" rows="3" class="form-control dc-input @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : null) placeholder="Additional notes or context">@Model.Notes</textarea>
+                </div>
+                <label class="form-label" for="demand-tag-input">Tags</label>
+                <div class="d-flex flex-wrap gap-2 mb-2" id="demand-tags-visual">
+                    @foreach (var t in Model.Tags)
+                    {
+                        <span class="badge bg-label-secondary rounded-pill px-3 py-2 demand-tag-pill" data-tag="@t">
+                            @t @if (!ro){<button type="button" class="btn-close btn-close-sm ms-1 demand-tag-remove" aria-label="Remove tag"></button>}
+                        </span>
+                    }
+                </div>
+                @if (!ro)
+                {
+                    <input type="text" class="form-control form-control-sm dc-input" id="demand-tag-input" placeholder="Add tags (press Enter)" autocomplete="off" />
+                }
+            </div>
+        </section>
+
+        @* Reviewer comments (mock: thread + add comment) *@
+        @if (Model.ShowReviewerSection)
+        {
+            <section class="dc-section dc-section--mock dc-section--reviewer" aria-labelledby="dc-sec-f">
+                <div class="dc-section-header">
+                    <div class="dc-section-icon-wrap" aria-hidden="true"><i class="bx bx-group"></i></div>
+                    <div>
+                        <h2 class="dc-section-title" id="dc-sec-f">Reviewer comments</h2>
+                        <p class="dc-section-hint">Governance feedback visible during review and after decision.</p>
+                    </div>
+                </div>
+                <div class="dc-section-body">
+                    @if (!string.IsNullOrWhiteSpace(Model.ReviewerComments))
+                    {
+                        <div class="dc-comment-thread border rounded-3 p-3 mb-3 bg-light bg-opacity-50">
+                            <div class="d-flex gap-2">
+                                <span class="avatar flex-shrink-0"><span class="avatar-initial rounded-circle bg-label-primary">@(reviewerRow?.Initials ?? "JD")</span></span>
+                                <div class="min-w-0 flex-grow-1">
+                                    <div class="d-flex flex-wrap align-items-baseline gap-2">
+                                        <span class="fw-semibold small">@(reviewerRow?.Name ?? "Jane Doe")</span>
+                                        <span class="text-muted small">@(Model.ReviewerCommentTimestampLabel ?? "—")</span>
+                                    </div>
+                                    <p class="small mb-0 mt-1">@Model.ReviewerComments</p>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="reviewerComments" value="@Model.ReviewerComments" />
+                    }
+                    <div class="row g-3">
+                        @if (string.IsNullOrWhiteSpace(Model.ReviewerComments))
+                        {
+                            <div class="col-12">
+                                <label class="form-label" for="cap-rev-comments">Reviewer comments</label>
+                                <textarea id="cap-rev-comments" name="reviewerComments" rows="3" class="form-control dc-input @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : null) placeholder="Enter your comment"></textarea>
+                            </div>
+                        }
+                        else if (!ro)
+                        {
+                            <div class="col-12">
+                                <label class="form-label" for="cap-add-comment">Add comment</label>
+                                <textarea id="cap-add-comment" class="form-control dc-input" rows="3" placeholder="Enter your comment"></textarea>
+                            </div>
+                        }
+                        <div class="col-12">
+                            <label class="form-label" for="cap-internal">Internal notes</label>
+                            <textarea id="cap-internal" name="internalNotes" rows="2" class="form-control dc-input @(ro ? "form-control-plaintext" : "")" @(ro ? "readonly" : null)>@Model.InternalNotes</textarea>
+                            <div class="form-text">PMO administrators only in production.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        }
+    </div>
+
+    @* Right sidebar (mock order: pillar → context → workflow → people → checklist → activity → transfer) *@
+    <aside class="col-lg-4 dc-sidebar">
+        <div class="dc-sticky-sidebar">
+            <div class="dc-sidebar-pillar mb-3">
+                <span class="badge rounded-pill dc-pillar-badge px-3 py-2">@Model.StrategicAlignment</span>
+            </div>
+
+            <div class="dc-side-card">
+                <div class="dc-side-card-header"><i class="bx bx-git-compare"></i> Related ideas</div>
+                <div class="dc-side-card-body p-0">
+                    @if (Model.RelatedIdeas.Count == 0)
+                    {
+                        <div class="dc-empty px-3"><i class="bx bx-bulb"></i>No similar ideas suggested yet.</div>
+                    }
+                    else
+                    {
+                        foreach (var r in Model.RelatedIdeas)
+                        {
+                            <a href="@Url.Action("Capture", new { id = r.Id })" class="dc-related-row px-3">
+                                <div class="small">
+                                    <span class="font-monospace text-primary fw-medium">@IdeaDisplayId(r.Id)</span>
+                                    <span class="text-muted"> — @r.Title</span>
+                                    <span class="badge bg-label-primary rounded-pill ms-1">@r.MatchPercent% match</span>
+                                </div>
+                            </a>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="dc-side-card">
+                <div class="dc-side-card-header"><i class="bx bx-copy-alt"></i> Possible duplicates</div>
+                <div class="dc-side-card-body">
+                    @if (Model.PossibleDuplicates.Count == 0)
+                    {
+                        <div class="dc-empty py-2"><i class="bx bx-check-shield"></i>No duplicates detected</div>
+                    }
+                    else
+                    {
+                        foreach (var d in Model.PossibleDuplicates)
+                        {
+                            <div class="border-bottom pb-2 mb-2">
+                                <span class="font-monospace small text-muted">@d.Id</span>
+                                <div class="fw-medium small">@d.Title</div>
+                                <div class="text-muted small">@d.Reason</div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="dc-side-card">
+                <div class="dc-side-card-header"><i class="bx bx-planet"></i> Linked strategic themes</div>
+                <div class="dc-side-card-body d-flex flex-wrap gap-2">
+                    @foreach (var th in Model.LinkedStrategicThemes)
+                    {
+                        <span class="badge bg-label-primary rounded-pill px-3 py-2">@th</span>
+                    }
+                </div>
+            </div>
+
+            <div class="dc-side-card">
+                <div class="dc-side-card-header"><i class="bx bx-time"></i> Workflow timeline</div>
+                <div class="dc-side-card-body">
+                    <ul class="dc-sidebar-timeline list-unstyled mb-0">
+                        @foreach (var step in Model.WorkflowTimeline)
+                        {
+                            var itemCls = "dc-st-item";
+                            if (step.Complete) { itemCls += " dc-st-item--done"; }
+                            if (step.Current) { itemCls += " dc-st-item--current"; }
+                            if (step.IsPending) { itemCls += " dc-st-item--pending"; }
+                            <li class="@itemCls">
+                                <span class="dc-st-dot" aria-hidden="true"></span>
+                                <div class="dc-st-body">
+                                    <div class="dc-st-title">@step.Label</div>
+                                    @if (!string.IsNullOrEmpty(step.MetaLine))
+                                    {
+                                        <div class="dc-st-meta text-muted small">@step.MetaLine</div>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="dc-side-card">
+                <div class="dc-side-card-header"><i class="bx bx-check-circle"></i> Decision history</div>
+                <div class="dc-side-card-body">
+                    @if (Model.DecisionHistory.Count == 0)
+                    {
+                        <p class="text-muted small mb-0">No decisions recorded yet.</p>
+                    }
+                    else
+                    {
+                        foreach (var d in Model.DecisionHistory)
+                        {
+                            <div class="small border-bottom pb-2 mb-2">
+                                <div class="fw-semibold">@d.Decision</div>
+                                <div class="text-muted">@d.Actor · @d.WhenLabel</div>
+                                <div>@d.Note</div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="dc-side-card">
+                <div class="dc-side-card-header"><i class="bx bx-info-circle"></i> Next steps</div>
+                <div class="dc-side-card-body">
+                    @{
+                        var firstOpen = Model.NextStepChecklist.FirstOrDefault(n => !n.Done);
+                    }
+                    @if (firstOpen != null)
+                    {
+                        <div class="dc-next-alert rounded-3 p-3 mb-3">
+                            <div class="d-flex gap-2">
+                                <i class="bx bx-check-circle text-primary dc-next-icon"></i>
+                                <div>
+                                    <div class="fw-semibold small">@firstOpen.Title</div>
+                                    <div class="text-muted small">@firstOpen.Description</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <ul class="list-unstyled small mb-0">
+                        @foreach (var n in Model.NextStepChecklist)
+                        {
+                            <li class="d-flex gap-2 mb-2 @(n.Done ? "text-success" : "")">
+                                <i class="bx @(n.Done ? "bx-check-circle" : "bx-time-five text-muted") mt-1"></i>
+                                <span><span class="fw-medium">@n.Title</span><span class="text-muted d-block">@n.Description</span></span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="dc-side-card">
+                <div class="dc-side-card-header"><i class="bx bx-group"></i> Assigned stakeholders</div>
+                <div class="dc-side-card-body">
+                    @if (Model.AssignedStakeholders.Count == 0)
+                    {
+                        <div class="dc-empty py-2"><i class="bx bx-user-plus"></i>Stakeholders appear when requestor and sponsor are set.</div>
+                    }
+                    else
+                    {
+                        foreach (var s in Model.AssignedStakeholders)
+                        {
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <span class="avatar avatar-sm flex-shrink-0"><span class="avatar-initial rounded-circle bg-label-primary">@s.Initials</span></span>
+                                <div class="min-w-0">
+                                    <div class="fw-medium small text-truncate">@s.Name</div>
+                                    <div class="text-muted small">@s.Role</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="dc-side-card">
+                <div class="dc-side-card-header"><i class="bx bx-list-check"></i> Submission checklist</div>
+                <div class="dc-side-card-body">
+                    @foreach (var c in Model.SubmissionChecklist)
+                    {
+                        <div class="dc-check-item">
+                            <i class="bx @(c.Done ? "bx-check-square text-success" : "bx-square text-muted")"></i>
+                            <span>@c.Label</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="dc-side-card">
+                <div class="dc-side-card-header"><i class="bx bx-pulse"></i> Recent activity</div>
+                <div class="dc-side-card-body">
+                    <ul class="list-unstyled mb-0 small dc-activity-list">
+                        @foreach (var a in Model.RecentActivity)
+                        {
+                            <li class="mb-3 pb-3 border-bottom">
+                                <span class="fw-medium">@a.Text</span>
+                                <div class="text-muted mt-1">@a.WhenLabel</div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            @if (Model.ShowTransferInSidebar && Model.Transfer != null)
+            {
+                var t = Model.Transfer;
+                <div class="dc-side-card border-primary border-opacity-50">
+                    <div class="dc-side-card-header text-primary"><i class="bx bx-export"></i> Transfer information</div>
+                    <div class="dc-side-card-body small d-grid gap-2">
+                        <div><span class="text-muted d-block small text-uppercase fw-semibold">Transfer status</span>@t.Status</div>
+                        <div><span class="text-muted d-block small text-uppercase fw-semibold">Transfer target type</span>@t.TargetType</div>
+                        <div><span class="text-muted d-block small text-uppercase fw-semibold">Target initiative / project ID</span><span class="font-monospace">@t.TargetId</span></div>
+                        <div><span class="text-muted d-block small text-uppercase fw-semibold">Transfer date</span>@(t.TransferDate?.ToString("d") ?? "—")</div>
+                        <div><span class="text-muted d-block small text-uppercase fw-semibold">Transferred by</span>@(t.TransferredBy ?? "—")</div>
+                        @if (!string.IsNullOrEmpty(t.LinkedRecordUrl))
+                        {
+                            <a href="@t.LinkedRecordUrl" class="btn btn-sm btn-primary mt-1"><i class="bx bx-link-external me-1"></i>Open linked record</a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </aside>
+</div>

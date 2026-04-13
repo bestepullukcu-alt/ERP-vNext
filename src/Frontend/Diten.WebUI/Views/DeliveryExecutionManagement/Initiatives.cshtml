@@ -1,0 +1,238 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Initiatives";
+}
+@await Html.PartialAsync("~/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml", Model)
+
+<div class="card mb-3 esbp-toolbar-card">
+    <div class="card-body">
+        <div class="esbp-toolbar esbp-toolbar-shell">
+            <div class="esbp-toolbar-main">
+                <input id="initiative-search" class="form-control esbp-toolbar-search" placeholder="Search initiatives" />
+                <div class="esbp-filter-trigger-group">
+                    <button id="initiative-open-filters" class="btn btn-outline-secondary" type="button">Filter</button>
+                    <button id="initiative-columns-btn" class="btn btn-outline-secondary" type="button">Columns</button>
+                </div>
+            </div>
+            <div class="esbp-toolbar-actions">
+                <button id="initiative-create-ppm" class="btn btn-primary esbp-create-btn">New Delivery Initiative</button>
+                <button id="initiative-link-existing" class="btn btn-outline-primary">Link Existing Delivery Initiative</button>
+                <div class="dropdown">
+                    <button id="initiative-bulk-actions-toggle" class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled>Bulk Actions</button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3">
+                        <li><button type="button" class="dropdown-item" id="initiative-bulk-export-csv">Export selected CSV</button></li>
+                        <li><button type="button" class="dropdown-item" id="initiative-bulk-export-xlsx">Export selected Excel</button></li>
+                        <li><button type="button" class="dropdown-item" id="initiative-bulk-export-workbook">Export selected workbook</button></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><button type="button" class="dropdown-item" id="initiative-bulk-clear-selection">Clear selection</button></li>
+                        <li><button type="button" class="dropdown-item" id="initiative-bulk-activate">Mark selected active</button></li>
+                        <li><button type="button" class="dropdown-item text-danger" id="initiative-bulk-archive">Archive selected</button></li>
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Data Actions</button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3">
+                <li><button type="button" class="dropdown-item" id="initiative-sync">Sync delivery references from PPM</button></li>
+                <li><button type="button" class="dropdown-item" id="initiative-data-import-page">Import current page dataset</button></li>
+                <li><button type="button" class="dropdown-item" id="initiative-data-import-workbook">Import workbook</button></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><button type="button" class="dropdown-item" id="initiative-export">Export CSV</button></li>
+                <li><button type="button" class="dropdown-item" id="initiative-export-xlsx">Export Excel</button></li>
+                <li><button type="button" class="dropdown-item" id="initiative-export-workbook">Export all sheets</button></li>
+            </ul>
+        </div>
+            </div>
+        </div>
+        <div id="initiative-active-filters"></div>
+        <input id="initiative-import-file" type="file" accept=".csv,.xlsx" class="d-none" />
+        <input id="initiative-import-workbook-file" type="file" accept=".xlsx" class="d-none" />
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end esbp-filter-drawer" tabindex="-1" id="initiativeFilterDrawer" aria-labelledby="initiative-filter-drawer-title">
+    <div class="offcanvas-header">
+        <div>
+            <h5 class="offcanvas-title" id="initiative-filter-drawer-title">Filter Initiatives</h5>
+            <div class="small text-muted">Refine delivery initiatives without changing the working page action layout.</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="esbp-filter-section">
+            <div class="esbp-filter-section-title">Core Filters</div>
+            <div class="row g-3">
+                <div class="col-12 form-control-validation">
+                    <label class="form-label" for="initiative-filter-owner">Owner</label>
+                    <select id="initiative-filter-owner" class="select2 form-select form-select-lg"><option value="">All owners</option></select>
+                </div>
+                <div class="col-12 col-md-6 form-control-validation">
+                    <label class="form-label" for="initiative-filter-status">Status</label>
+                    <select id="initiative-filter-status" class="select2 form-select form-select-lg"><option value="">All statuses</option></select>
+                </div>
+                <div class="col-12 col-md-6 form-control-validation">
+                    <label class="form-label" for="initiative-filter-type">Type</label>
+                    <select id="initiative-filter-type" class="select2 form-select form-select-lg"><option value="">All types</option></select>
+                </div>
+                <div class="col-12 col-md-6 form-control-validation">
+                    <label class="form-label" for="initiative-filter-parent-goal">Parent Goal</label>
+                    <select id="initiative-filter-parent-goal" class="select2 form-select form-select-lg"><option value="">All parent goals</option></select>
+                </div>
+                <div class="col-12 col-md-6 form-control-validation">
+                    <label class="form-label" for="initiative-filter-parent-objective">Parent Objective</label>
+                    <select id="initiative-filter-parent-objective" class="select2 form-select form-select-lg"><option value="">All parent objectives</option></select>
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label" for="initiative-filter-wave">Planning Wave / Phase</label>
+                    <select id="initiative-filter-wave" class="select2 form-select form-select-lg"><option value="">All waves / phases</option></select>
+                </div>
+            </div>
+        </div>
+        <div class="esbp-filter-section">
+            <div class="esbp-filter-section-title">Delivery Context</div>
+            <div class="row g-3">
+                <div class="col-12 col-md-6 form-control-validation">
+                    <label class="form-label" for="initiative-filter-priority">Priority</label>
+                    <select id="initiative-filter-priority" class="select2 form-select form-select-lg"><option value="">All priorities</option></select>
+                </div>
+                <div class="col-12 col-md-6 form-control-validation">
+                    <label class="form-label" for="initiative-filter-complexity">Complexity</label>
+                    <select id="initiative-filter-complexity" class="select2 form-select form-select-lg"><option value="">All complexity levels</option></select>
+                </div>
+                <div class="col-12 col-md-6 form-control-validation">
+                    <label class="form-label" for="initiative-filter-maturity">Maturity / Readiness</label>
+                    <select id="initiative-filter-maturity" class="select2 form-select form-select-lg"><option value="">All maturity states</option></select>
+                </div>
+                <div class="col-12 col-md-6 form-control-validation">
+                    <label class="form-label" for="initiative-filter-class">Initiative Class</label>
+                    <select id="initiative-filter-class" class="select2 form-select form-select-lg"><option value="">All initiative classes</option></select>
+                </div>
+                <div class="col-12 col-md-6 form-control-validation">
+                    <label class="form-label" for="initiative-filter-sponsoring-company">Sponsoring Company</label>
+                    <input id="initiative-filter-sponsoring-company" class="form-control form-control-lg" placeholder="Sponsoring Company" list="initiative-company-list" />
+                </div>
+                <div class="col-12 col-md-6 form-control-validation">
+                    <label class="form-label" for="initiative-filter-participating-company">Participating Company</label>
+                    <input id="initiative-filter-participating-company" class="form-control form-control-lg" placeholder="Participating Company" list="initiative-company-list" />
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label" for="initiative-filter-scope">Entity Scope</label>
+                    <input id="initiative-filter-scope" class="form-control form-control-lg" placeholder="Entity Scope" />
+                </div>
+            </div>
+        </div>
+        <div class="esbp-filter-footer">
+            <div class="esbp-filter-footer-actions">
+                <button id="initiative-clear-filters" type="button" class="btn btn-filter-clear">Clear</button>
+                <button id="initiative-cancel-filters" type="button" class="btn btn-filter-cancel">Cancel</button>
+                <button id="initiative-apply-filters" type="button" class="btn btn-filter-apply">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card esbp-table-card">
+    <div class="table-responsive">
+        <table class="table table-sm" id="initiatives-table">
+            <thead>
+                <tr id="initiatives-header-row"></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card mt-3 d-none" id="initiative-detail-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Initiative Detail</strong>
+        <button id="initiative-detail-link-btn" class="btn btn-sm btn-outline-primary">Open Initiative Detail</button>
+    </div>
+    <div class="card-body">
+        <div id="initiative-detail-content" class="small text-muted"></div>
+    </div>
+</div>
+
+<div class="modal fade es-modal" id="initiativePpmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">New Initiative in PPM</h5>
+                    <p class="small text-muted mb-0">Create in PPM first, then align to strategy context.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @{
+                    ViewData["Id"] = "initiative-ppm-error";
+                }
+                @await Html.PartialAsync("~/Views/EnterpriseStrategyBusinessPerformance/Components/Forms/_ValidationSummary.cshtml")
+                <div class="es-form-section-header">
+                    <h6 class="mb-1">PPM Creation Basics</h6>
+                    <p class="text-muted small mb-0">Required core fields for handoff to PPM.</p>
+                </div>
+                <div class="row g-2">
+                    <div class="col-12 col-md-6"><label class="form-label es-required">Initiative Name</label><input id="ppm-initiative-name" class="form-control" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required">Parent Objective</label><input id="ppm-parent-objective" class="form-control" list="ppm-objective-list" required /></div>
+                    <div class="col-12 col-md-6"><label class="form-label">Parent Goal (derived)</label><input id="ppm-parent-goal" class="form-control" readonly /><div class="es-field-help">Derived from Parent Objective.</div></div>
+                    <div class="col-12"><label class="form-label">Initiative Description</label><textarea id="ppm-initiative-description" rows="2" class="form-control"></textarea></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required">Initiative Owner</label><select id="ppm-initiative-owner" class="form-select" required><option value="">Select owner</option></select></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required">Initiative Type</label><input id="ppm-initiative-type" class="form-control" required /></div>
+                    <div class="col-12 col-md-4"><label class="form-label es-required">Planning Wave / Phase</label><input id="ppm-wave" class="form-control" placeholder="2027-Q1" required /></div>
+                    <div class="col-12 col-md-4"><label class="form-label">Priority</label><input id="ppm-priority" class="form-control" /></div>
+                    <div class="col-12 col-md-4"><label class="form-label">Complexity</label><input id="ppm-complexity" class="form-control" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required">Start Period</label><input id="ppm-start-period" class="form-control" placeholder="2027-Q1" required /></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required">End Period</label><input id="ppm-end-period" class="form-control" placeholder="2028-Q4" required /></div>
+                </div>
+                <div class="es-form-section-header">
+                    <h6 class="mb-1">Planning &amp; Ownership</h6>
+                </div>
+                <div class="row g-2">
+                    <div class="col-12 col-md-6"><label class="form-label">Primary KPI / Success Measure</label><input id="ppm-primary-kpi" class="form-control" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label">Entity Scope</label><input id="ppm-entity-scope" class="form-control" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label">Budget Envelope</label><input id="ppm-budget-envelope" class="form-control" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label">Maturity / Readiness</label><input id="ppm-readiness" class="form-control" /></div>
+                </div>
+                <div class="es-form-section-header">
+                    <h6 class="mb-1">Strategy Context</h6>
+                </div>
+                <div class="row g-2">
+                    <div class="col-12"><label class="form-label">Strategy Alignment Note</label><input id="ppm-alignment-note" class="form-control" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required">Sponsoring Company</label><input id="ppm-sponsoring-company" class="form-control" list="initiative-company-list" required /></div>
+                    <div class="col-12 col-md-6"><label class="form-label">Participating Companies</label><input id="ppm-participating-companies" class="form-control" placeholder="Comma-separated company IDs" /></div>
+                </div>
+                <datalist id="ppm-objective-list"></datalist>
+                <datalist id="initiative-company-list"></datalist>
+            </div>
+            <div class="modal-footer sticky-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary" id="initiative-ppm-create">Create in PPM</button></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade es-modal" id="initiativeLinkModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Link Existing Initiative</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                @{
+                    ViewData["Id"] = "initiative-link-error";
+                }
+                @await Html.PartialAsync("~/Views/EnterpriseStrategyBusinessPerformance/Components/Forms/_ValidationSummary.cshtml")
+                <div class="row g-2">
+                    <div class="col-12"><label class="form-label es-required">Initiative search</label><input id="link-initiative-id" class="form-control" list="link-initiative-list" required /></div>
+                    <div class="col-12"><label class="form-label es-required">Parent Objective</label><input id="link-parent-objective" class="form-control" list="ppm-objective-list" required /></div>
+                    <div class="col-12"><label class="form-label">Parent Goal (derived)</label><input id="link-parent-goal" class="form-control" readonly /></div>
+                    <div class="col-12"><label class="form-label">Strategy Alignment Note</label><textarea id="link-alignment-note" rows="2" class="form-control"></textarea></div>
+                    <div class="col-12 col-md-6"><label class="form-label">Contribution Weight</label><input id="link-contribution-weight" class="form-control" type="number" min="0" max="100" step="0.01" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label">Notes</label><input id="link-notes" class="form-control" /></div>
+                </div>
+                <datalist id="link-initiative-list"></datalist>
+            </div>
+            <div class="modal-footer sticky-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary" id="initiative-link-confirm">Link Initiative</button></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/delivery-execution/initiatives.js" asp-append-version="true"></script>
+}

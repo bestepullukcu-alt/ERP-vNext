@@ -1,0 +1,31 @@
+@model Diten.WebUI.Models.ManagementGovernance.ManagementGovernancePageViewModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+    var workspaceRoute = Model.AppliedFilters.TryGetValue("WorkspaceRoute", out var route)
+        ? route
+        : "/management-governance";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance.css" />
+}
+
+<partial name="Components/_DomainHeader" model="Model" />
+
+<section class="card mg-card">
+    <div class="card-body">
+        <h2 class="h5 mb-2">@Model.PageTitle</h2>
+        <p class="text-muted mb-3">@Model.PageSubtitle</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-primary btn-sm" href="@workspaceRoute">Open Workspace</a>
+            @if (Model.CurrentSubdomain != null)
+            {
+                <a class="btn btn-outline-secondary btn-sm" href="/management-governance/subdomains/@Model.CurrentSubdomain.Slug">Back to Subdomain</a>
+            }
+        </div>
+        <hr />
+        <p class="small text-muted mb-0">
+            This route is owned by Management & Governance information architecture and points to the underlying module workspace.
+        </p>
+    </div>
+</section>

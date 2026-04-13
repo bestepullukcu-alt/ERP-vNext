@@ -1,0 +1,68 @@
+@{
+    var panelId = (ViewData["ReadinessPanelId"]?.ToString() ?? string.Empty);
+    var indicatorId = (ViewData["ReadinessIndicatorId"]?.ToString() ?? string.Empty);
+    var indicatorClass = (ViewData["ReadinessIndicatorClass"]?.ToString() ?? "is-blocked");
+    var indicatorText = (ViewData["ReadinessIndicatorText"]?.ToString() ?? "Readiness: Blocked");
+    var textId = (ViewData["ReadinessTextId"]?.ToString() ?? string.Empty);
+    var text = (ViewData["ReadinessText"]?.ToString() ?? "Complete required fields to continue.");
+    var missingId = (ViewData["ReadinessMissingId"]?.ToString() ?? string.Empty);
+    var missingTitle = (ViewData["ReadinessMissingTitle"]?.ToString() ?? "Missing required fields");
+    var blockersId = (ViewData["ReadinessBlockersId"]?.ToString() ?? string.Empty);
+    var blockersTitle = (ViewData["ReadinessBlockersTitle"]?.ToString() ?? "Conflicts / blockers");
+    var showLegend = !string.Equals(ViewData["ReadinessShowLegend"]?.ToString(), "false", StringComparison.OrdinalIgnoreCase);
+}
+<aside id="@(string.IsNullOrWhiteSpace(panelId) ? null : panelId)" class="es-workspace-readiness" aria-live="polite">
+    <div class="es-readiness-header">
+        <div>
+            @if (string.IsNullOrWhiteSpace(indicatorId))
+            {
+                <strong class="es-status-pill @indicatorClass">@indicatorText</strong>
+            }
+            else
+            {
+                <strong id="@indicatorId" class="es-status-pill @indicatorClass">@indicatorText</strong>
+            }
+            @if (string.IsNullOrWhiteSpace(textId))
+            {
+                <div class="es-readiness-text">@text</div>
+            }
+            else
+            {
+                <div id="@textId" class="es-readiness-text">@text</div>
+            }
+        </div>
+    </div>
+    <div class="es-readiness-columns">
+        <div>
+            <div class="es-readiness-subtitle">@missingTitle</div>
+            @if (string.IsNullOrWhiteSpace(missingId))
+            {
+                <ul class="mb-0"></ul>
+            }
+            else
+            {
+                <ul id="@missingId" class="mb-0"></ul>
+            }
+        </div>
+        <div>
+            <div class="es-readiness-subtitle">@blockersTitle</div>
+            @if (string.IsNullOrWhiteSpace(blockersId))
+            {
+                <ul class="mb-0"></ul>
+            }
+            else
+            {
+                <ul id="@blockersId" class="mb-0"></ul>
+            }
+        </div>
+    </div>
+    @if (showLegend)
+    {
+        <div class="es-readiness-legend">
+            <span class="es-field-tag tag-required">Required</span>
+            <span class="es-field-tag tag-optional">Optional</span>
+            <span class="es-field-tag tag-derived">Derived</span>
+            <span class="es-field-tag tag-system">System-managed</span>
+        </div>
+    }
+</aside>

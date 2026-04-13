@@ -1,0 +1,21 @@
+@model Diten.WebUI.Models.ManagementGovernance.ManagementGovernancePageViewModel
+@{
+    ViewData["Title"] = "Governance Reports";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance.css" />
+}
+
+<partial name="Components/_DomainHeader" model="Model" />
+<section class="card mg-card">
+    <div class="card-body">
+        <h2 class="h6">Reporting Shell</h2>
+        <p class="text-muted">This area provides report discovery and exports. Detailed transactional reporting remains in module workspaces.</p>
+        <div class="row g-3">
+            <div class="col-12 col-md-6 col-xl-4"><div class="mg-tile">Executive Governance Pack</div></div>
+            <div class="col-12 col-md-6 col-xl-4"><div class="mg-tile">Risk & Compliance Snapshot</div></div>
+            <div class="col-12 col-md-6 col-xl-4"><div class="mg-tile">Decision Aging Report</div></div>
+        </div>
+    </div>
+</section>

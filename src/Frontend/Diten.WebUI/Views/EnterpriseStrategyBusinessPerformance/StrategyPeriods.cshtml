@@ -1,0 +1,112 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Strategy Periods";
+    ViewData["Active"] = "periods";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="planning-workspace strategy-periods-page es-planning-page-shell row g-3">
+    <div class="col-12 mb-2">
+        <div class="row g-4 mb-0">
+            <div class="col-lg-3 col-sm-6">
+                <div class="card card-border-shadow-primary h-100 cursor-pointer planning-filter-card" data-filter-status="all">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="avatar me-4">
+                                <span class="avatar-initial rounded bg-label-primary"><i class="icon-base bx bx-calendar icon-lg"></i></span>
+                            </div>
+                            <h4 id="strategy-period-total" class="mb-0 planning-stat-value">0</h4>
+                        </div>
+                        <p class="mb-2">Total Strategy Periods</p>
+                        <p class="mb-0">
+                            <span class="text-body-secondary">All periods</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+                <div class="card card-border-shadow-success h-100 cursor-pointer planning-filter-card" data-filter-status="Active">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="avatar me-4">
+                                <span class="avatar-initial rounded bg-label-success"><i class="icon-base bx bx-check-circle icon-lg"></i></span>
+                            </div>
+                            <h4 id="strategy-period-active" class="mb-0 planning-stat-value">0</h4>
+                        </div>
+                        <p class="mb-2">Active Strategy Periods</p>
+                        <p class="mb-0">
+                            <span class="text-body-secondary">Currently active</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+                <div class="card card-border-shadow-warning h-100 cursor-pointer planning-filter-card" data-filter-status="Draft">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="avatar me-4">
+                                <span class="avatar-initial rounded bg-label-warning"><i class="icon-base bx bx-edit icon-lg"></i></span>
+                            </div>
+                            <h4 id="strategy-period-draft" class="mb-0 planning-stat-value">0</h4>
+                        </div>
+                        <p class="mb-2">Draft Strategy Periods</p>
+                        <p class="mb-0">
+                            <span class="text-body-secondary">In preparation</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+                <div class="card card-border-shadow-secondary h-100 cursor-pointer planning-filter-card" data-filter-status="Used">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="avatar me-4">
+                                <span class="avatar-initial rounded bg-label-secondary"><i class="icon-base bx bx-layer icon-lg"></i></span>
+                            </div>
+                            <h4 id="strategy-period-in-use" class="mb-0 planning-stat-value">0</h4>
+                        </div>
+                        <p class="mb-2">Periods in Use</p>
+                        <p class="mb-0">
+                            <span class="text-body-secondary">Linked to goals</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 text-end mt-2 d-none">
+        <div id="strategy-period-form-error" class="alert alert-danger mb-0 es-validation-summary"></div>
+    </div>
+
+    <div class="col-12">
+        <div class="card" id="strategy-periods-card">
+            @await Html.PartialAsync("Components/Planning/_WorkspaceSubtabs", new ViewDataDictionary(ViewData) { { "HideCardWrapper", true } })
+            <div class="card-header border-bottom">
+                <h5 class="card-title mb-0">Strategy Period Register</h5>
+            </div>
+            <div id="filterCollapse" class="collapse">
+                <div class="card-body border-bottom">
+                    <div class="row g-4 align-items-end">
+                        <div class="col-md-3 strategy_period_cycle"></div>
+                        <div class="col-md-3 strategy_period_company"></div>
+                        <div class="col-md-2 strategy_period_review"></div>
+                        <div class="col-md-2 strategy_period_status"></div>
+                        <div class="col-md-2 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-sm btn-primary btn-apply-filter w-100">Apply</button>
+                            <button type="button" class="btn btn-sm btn-label-danger btn-reset-filter w-100">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @await Html.PartialAsync("Components/Planning/_StrategyPeriodStandardTable")
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("Components/Planning/_StrategyPeriodOffcanvas")
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-periods.js" asp-append-version="true"></script>
+}

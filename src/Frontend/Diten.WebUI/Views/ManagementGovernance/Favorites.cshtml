@@ -1,0 +1,28 @@
+@using Diten.WebUI.Config
+@model Diten.WebUI.Models.ManagementGovernance.ManagementGovernancePageViewModel
+@{
+    ViewData["Title"] = "Governance Favorites";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance.css" />
+}
+
+<partial name="Components/_DomainHeader" model="Model" />
+
+<section class="card mg-card">
+    <div class="card-header"><h2 class="h6 mb-0">Pinned Modules</h2></div>
+    <div class="card-body">
+        <div class="row g-3">
+            @foreach (var id in Model.Domain.FavoriteModuleIds)
+            {
+                if (ManagementGovernanceRegistry.ModulesById.TryGetValue(id, out var module))
+                {
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <partial name="Components/_ModuleCard" model="module" />
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>

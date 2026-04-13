@@ -1,0 +1,199 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Strategy Objectives";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card mb-3 goal-toolbar-card">
+            <div class="card-body">
+                <div class="esbp-toolbar goal-toolbar-shell">
+                    <div class="esbp-toolbar-main">
+                        <input id="objective-search" class="form-control esbp-toolbar-search" placeholder="Search objectives" />
+                        <div class="esbp-filter-trigger-group">
+                            <button id="objective-open-filters" class="btn btn-outline-secondary goal-toolbar-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#objectiveFilterDrawer" aria-controls="objectiveFilterDrawer">Filter</button>
+                            <button id="objective-columns-btn" class="btn btn-outline-secondary goal-toolbar-btn" type="button">Columns</button>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 justify-content-end align-items-start goal-toolbar-actions">
+                        <a id="objective-create" class="btn btn-sm btn-primary goal-toolbar-btn esbp-create-btn" href="/management-governance/enterprise-strategy-business-performance/objectives/new">Create</a>
+                        <a class="btn btn-sm btn-outline-secondary goal-toolbar-btn" href="/management-governance/enterprise-strategy-business-performance/objectives/alignment">Alignment Register</a>
+                        <div class="dropdown">
+                            <button id="objective-bulk-actions-toggle" class="btn btn-sm btn-outline-secondary dropdown-toggle goal-toolbar-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled>Bulk Actions</button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3">
+                                <li><button type="button" class="dropdown-item" id="objective-export-csv">Export selected CSV</button></li>
+                                <li><button type="button" class="dropdown-item" id="objective-export-xlsx">Export selected Excel</button></li>
+                                <li><button type="button" class="dropdown-item" id="objective-export-workbook">Export selected workbook</button></li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><button type="button" class="dropdown-item" id="objective-bulk-clear-selection">Clear selection</button></li>
+                                <li><button type="button" class="dropdown-item text-danger" id="objective-bulk-archive">Archive selected</button></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle goal-toolbar-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">View</button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3">
+                                <li><button type="button" class="dropdown-item" id="objective-density-default">Default density</button></li>
+                                <li><button type="button" class="dropdown-item" id="objective-density-compact">Compact density</button></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div id="objective-active-filters" class="mt-3"></div>
+            </div>
+        </div>
+
+        <div class="offcanvas offcanvas-end esbp-filter-drawer" tabindex="-1" id="objectiveFilterDrawer" aria-labelledby="objective-filter-drawer-title">
+            <div class="offcanvas-header">
+                <div>
+                    <h5 class="offcanvas-title" id="objective-filter-drawer-title">Filter Objectives</h5>
+                    <div class="small text-muted">Use the same governed filter drawer pattern applied on Goals.</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="esbp-filter-section">
+                    <div class="esbp-filter-section-title">Core Filters</div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6 form-control-validation">
+                            <label class="form-label" for="objective-filter-parent">Parent Goal</label>
+                            <select id="objective-filter-parent" class="select2 form-select form-select-lg">
+                                <option value="">All parent goals</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 form-control-validation">
+                            <label class="form-label" for="objective-filter-owner">Owner</label>
+                            <select id="objective-filter-owner" class="select2 form-select form-select-lg">
+                                <option value="">All owners</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 form-control-validation">
+                            <label class="form-label" for="objective-filter-status">Status</label>
+                            <select id="objective-filter-status" class="select2 form-select form-select-lg">
+                                <option value="">All statuses</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 form-control-validation">
+                            <label class="form-label" for="objective-filter-type">Type</label>
+                            <select id="objective-filter-type" class="select2 form-select form-select-lg">
+                                <option value="">All types</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 form-control-validation">
+                            <label class="form-label" for="objective-filter-priority">Priority</label>
+                            <select id="objective-filter-priority" class="select2 form-select form-select-lg">
+                                <option value="">All priorities</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="esbp-filter-section">
+                    <div class="esbp-filter-section-title">Scope &amp; Horizon</div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6 form-control-validation">
+                            <label class="form-label" for="objective-filter-inherit-company">Scope Mode</label>
+                            <select id="objective-filter-inherit-company" class="select2 form-select form-select-lg">
+                                <option value="">All scope modes</option>
+                                <option value="true">Inherited</option>
+                                <option value="false">Override</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 form-control-validation">
+                            <label class="form-label" for="objective-filter-company">Company</label>
+                            <input id="objective-filter-company" class="form-control form-control-lg" placeholder="Company" list="objective-filter-company-list" />
+                        </div>
+                        <div class="col-12 col-md-6 form-control-validation">
+                            <label class="form-label" for="objective-filter-scope">Entity Scope</label>
+                            <input id="objective-filter-scope" class="form-control form-control-lg" placeholder="Entity Scope" />
+                        </div>
+                        <div class="col-12 col-md-6 form-control-validation">
+                            <label class="form-label" for="objective-filter-year-range">Year Range</label>
+                            <input id="objective-filter-year-range" class="form-control form-control-lg" placeholder="2027-2031" inputmode="numeric" />
+                        </div>
+                    </div>
+                </div>
+                <div class="esbp-filter-footer">
+                    <div class="esbp-filter-footer-actions">
+                        <button id="objective-apply-filters" type="button" class="btn btn-filter-apply">Apply</button>
+                        <button id="objective-cancel-filters" type="button" class="btn btn-filter-cancel">Cancel</button>
+                        <button id="objective-clear-filters" type="button" class="btn btn-filter-clear">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card goal-table-card">
+            <div class="table-responsive">
+                <table class="table" id="objectives-table">
+                    <thead>
+                        <tr id="objectives-header-row"></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<datalist id="objective-filter-company-list"></datalist>
+
+<style>
+    .goal-toolbar-shell .goal-toolbar-field { min-width: 140px; }
+    .goal-toolbar-shell .goal-toolbar-field-search { min-width: min(100%, 240px); }
+    .goal-toolbar-shell .goal-toolbar-actions { min-width: 320px; }
+    .goal-toolbar-shell .esbp-toolbar-main { display: flex; align-items: center; gap: .55rem; flex-wrap: nowrap; flex: 1 1 auto; min-width: 0; }
+    .goal-toolbar-shell .esbp-toolbar-search { flex: 1 1 auto; min-width: 180px; }
+    .goal-toolbar-shell .esbp-filter-trigger-group { flex: 0 0 auto; display: flex; align-items: center; gap: .45rem; }
+    .goal-toolbar-shell #objective-open-filters { white-space: nowrap; }
+    .goal-toolbar-shell { --goal-toolbar-control-height: 2.5rem; }
+    .goal-toolbar-shell .goal-toolbar-actions { align-items: stretch !important; }
+    .goal-toolbar-shell .goal-toolbar-actions .dropdown,
+    .goal-toolbar-shell .goal-toolbar-actions .btn-group,
+    .goal-toolbar-shell .esbp-filter-trigger-group {
+        display: inline-flex;
+        align-items: stretch;
+    }
+    .goal-toolbar-shell #objective-open-filters,
+    .goal-toolbar-shell #objective-create,
+    .goal-toolbar-shell #objective-bulk-actions-toggle,
+    .goal-toolbar-shell .goal-toolbar-actions .dropdown > .btn,
+    .goal-toolbar-shell .goal-toolbar-actions .btn-group > .btn,
+    .goal-toolbar-shell .esbp-toolbar-search {
+        height: var(--goal-toolbar-control-height) !important;
+        min-height: var(--goal-toolbar-control-height) !important;
+        max-height: var(--goal-toolbar-control-height) !important;
+        line-height: 1.1 !important;
+        font-size: .82rem !important;
+        box-sizing: border-box;
+    }
+    .goal-toolbar-shell #objective-open-filters,
+    .goal-toolbar-shell #objective-create,
+    .goal-toolbar-shell #objective-bulk-actions-toggle,
+    .goal-toolbar-shell .goal-toolbar-actions .dropdown > .btn,
+    .goal-toolbar-shell .goal-toolbar-actions .btn-group > .btn {
+        padding: .45rem .8rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center;
+        border-radius: .4rem;
+    }
+    .goal-toolbar-shell .esbp-toolbar-search { padding: .45rem .75rem !important; }
+    .goal-toolbar-shell .goal-toolbar-btn {
+        height: var(--goal-toolbar-control-height) !important;
+        min-height: var(--goal-toolbar-control-height) !important;
+        max-height: var(--goal-toolbar-control-height) !important;
+        line-height: 1.1 !important;
+        font-size: .82rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+    #objective-active-filters .goal-filter-chip { display: inline-flex; align-items: center; gap: .35rem; margin: 0 .35rem .35rem 0; padding: .35rem .55rem; border: 1px solid #d8deef; border-radius: 999px; background: #f8faff; font-size: .82rem; }
+    #objective-active-filters .goal-filter-chip button { border: 0; background: transparent; padding: 0; line-height: 1; color: #6c757d; }
+    #objective-active-filters .goal-filter-chip button:hover { color: #212529; }
+    #objectives-table.table-sm td, #objectives-table.table-sm th { padding-top: .45rem; padding-bottom: .45rem; }
+</style>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/objectives.js" asp-append-version="true"></script>
+}

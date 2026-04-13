@@ -1,0 +1,11 @@
+@{
+    var title = (ViewData["Title"]?.ToString() ?? string.Empty);
+    var subtitle = (ViewData["Subtitle"]?.ToString() ?? string.Empty);
+}
+<div class="es-form-section-header">
+    <h6 class="mb-1">@title</h6>
+    @if (!string.IsNullOrWhiteSpace(subtitle))
+    {
+        <p class="text-muted small mb-0">@subtitle</p>
+    }
+</div>

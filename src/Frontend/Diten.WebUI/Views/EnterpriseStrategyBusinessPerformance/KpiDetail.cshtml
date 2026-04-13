@@ -1,0 +1,67 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "KPI Detail";
+    var kpiId = (ViewData["KpiId"]?.ToString() ?? string.Empty);
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<input type="hidden" id="kpi-detail-id" value="@kpiId" />
+<div class="card mb-3">
+    <div class="card-body d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis">KPI Catalog</a>
+        <a class="btn btn-sm btn-outline-secondary" id="kpi-detail-edit" href="#">Edit KPI</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/ownership">Metric Ownership</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/scorecard">Scorecard Dashboard</a>
+    </div>
+</div>
+
+<div id="kpi-detail-state" class="small text-muted mb-2">Loading KPI...</div>
+<div class="row g-3">
+    <div class="col-12 col-xl-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Overview</strong></div>
+            <div class="card-body" id="kpi-detail-overview"></div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Definition</strong></div>
+            <div class="card-body" id="kpi-detail-definition"></div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Ownership</strong></div>
+            <div class="card-body" id="kpi-detail-ownership"></div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Thresholds / Targets</strong></div>
+            <div class="card-body" id="kpi-detail-thresholds"></div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Aggregation / Reporting</strong></div>
+            <div class="card-body" id="kpi-detail-reporting"></div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Governance / Evidence / Audit</strong></div>
+            <div class="card-body" id="kpi-detail-governance"></div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><strong>Used By</strong></div>
+            <div class="card-body" id="kpi-detail-used-by"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/kpi-detail.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,895 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "Create Initiative";
+    var editId = ViewData["InitiativeEditId"]?.ToString() ?? string.Empty;
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div id="initiative-create-workspace" class="goal-create-workspace" data-edit-id="@editId">
+    <div class="goal-workspace-shell initiative-workspace-shell">
+        <div class="goal-workspace-header sticky-top">
+            <div class="goal-workspace-title-wrap">
+                <h5 class="goal-workspace-title mb-0" id="initiative-modal-title">@ViewData["Title"]</h5>
+                <p class="goal-workspace-subtitle mb-0" id="initiative-modal-subtitle">Plan an execution initiative with strategy anchor, accountable ownership, phased contribution, and light governance readiness.</p>
+            </div>
+            <div class="goal-workspace-actions">
+                <a href="/management-governance/delivery-execution/initiatives" class="btn btn-sm btn-outline-secondary">Cancel / Back</a>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="initiative-step-back">Back</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="initiative-step-next">Next</button>
+                <button type="button" class="btn btn-sm btn-primary d-none" id="initiative-save">Save Initiative</button>
+            </div>
+        </div>
+
+        <div class="goal-workspace-body">
+            @{
+                ViewData["Id"] = "initiative-form-error";
+            }
+            @await Html.PartialAsync("Components/Forms/_ValidationSummary")
+
+            <div id="initiative-creation-mode" class="goal-source-panel mb-3">
+                <div class="goal-source-controls">
+                    <div class="goal-source-control">
+                        <label class="form-label small mb-1" for="initiative-creation-mode-select">Creation mode / source context</label>
+                        <select id="initiative-creation-mode-select" class="form-select form-select-sm">
+                            <option value="Blank">Blank</option>
+                            <option value="Template">From Initiative Template</option>
+                            <option value="ObjectiveTemplate">From Objective + Initiative Template</option>
+                        </select>
+                    </div>
+                    <div class="goal-source-control">
+                        <button type="button" id="initiative-browse-source" class="btn btn-sm btn-outline-primary w-100">Browse source...</button>
+                    </div>
+                    <div class="goal-source-control">
+                        <button type="button" id="initiative-clear-source" class="btn btn-sm btn-outline-secondary w-100">Clear source</button>
+                    </div>
+                </div>
+                <div id="initiative-source-summary" class="goal-source-summary-card is-empty">
+                    <div class="goal-source-summary-name">Blank Initiative create</div>
+                    <div class="goal-source-summary-note">Start with a blank delivery-planning initiative, or apply an Initiative Template with optional parent Objective context.</div>
+                </div>
+            </div>
+
+            <div id="initiative-wizard-steps" class="objective-wizard-nav mb-3" role="tablist" aria-label="Initiative Wizard Steps">
+                <button type="button" class="btn objective-wizard-step-btn active" data-step="1">1. Identity &amp; Strategy Anchor</button>
+                <button type="button" class="btn objective-wizard-step-btn" data-step="2">2. Ownership &amp; Scope</button>
+                <button type="button" class="btn objective-wizard-step-btn" data-step="3">3. Delivery Planning</button>
+                <button type="button" class="btn objective-wizard-step-btn" data-step="4">4. Contribution &amp; Benefits</button>
+                <button type="button" class="btn objective-wizard-step-btn" data-step="5">5. Financials &amp; Governance</button>
+            </div>
+
+            <section class="es-goal-section initiative-wizard-step-pane" data-step="1">
+                @{
+                    ViewData["Title"] = "Identity & Strategy Anchor";
+                    ViewData["Subtitle"] = "Define the delivery identity and lock the initiative to a parent Objective before planning work begins.";
+                }
+                @await Html.PartialAsync("Components/Forms/_SectionHeader")
+                <div class="objective-helper-banner mb-3">
+                    <span class="badge bg-label-info">Derived</span>
+                    <span>Parent Goal is inherited from the selected Parent Objective and cannot be edited directly inside the Initiative wizard.</span>
+                </div>
+                <div class="row g-3 es-form-grid">
+                    <div class="col-12 col-md-3">
+                        <label for="initiative-id" class="form-label">Initiative Code / ID</label>
+                        <input id="initiative-id" class="form-control bg-light" readonly placeholder="Assigned on first save" />
+                    </div>
+                    <div class="col-12 col-md-5">
+                        <label for="initiative-name" class="form-label es-required">Initiative Name</label>
+                        <input id="initiative-name" class="form-control" required />
+                        <div class="es-field-help mt-1">Use an operational initiative name that teams can plan and report against.</div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-type" class="form-label es-required">Initiative Type</label>
+                        <select id="initiative-type" class="form-select select2" required>
+                            <option value="">Select type</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="initiative-parent-objective" class="form-label es-required">Parent Objective</label>
+                        <select id="initiative-parent-objective" class="form-select select2" required>
+                            <option value="">Select parent objective</option>
+                        </select>
+                        <div class="es-field-help mt-1">Search for the Objective this Initiative contributes into. Parent Goal is derived from that choice.</div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="initiative-parent-goal" class="form-label">Parent Goal <span class="badge bg-label-info ms-1">Derived</span></label>
+                        <input id="initiative-parent-goal" class="form-control bg-light" readonly tabindex="-1" />
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="initiative-status-readonly" class="form-label">Initiative Code State</label>
+                        <input id="initiative-status-readonly" class="form-control bg-light" value="Draft" readonly disabled tabindex="-1" />
+                        <input id="initiative-status" type="hidden" value="Draft" />
+                    </div>
+                    <div class="col-12">
+                        <label for="initiative-description" class="form-label">Initiative Description</label>
+                        <textarea id="initiative-description" class="form-control" rows="3" placeholder="Describe the operational intervention, intended scope, and why it matters."></textarea>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-strategy-period" class="form-label">Parent Strategy Period <span class="badge bg-label-info ms-1">Derived</span></label>
+                        <input id="initiative-strategy-period" class="form-control bg-light" readonly tabindex="-1" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-objective-granularity" class="form-label">Objective Target Granularity <span class="badge bg-label-info ms-1">Derived</span></label>
+                        <input id="initiative-objective-granularity" class="form-control bg-light" readonly tabindex="-1" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-objective-horizon" class="form-label">Objective Horizon <span class="badge bg-label-info ms-1">Derived</span></label>
+                        <input id="initiative-objective-horizon" class="form-control bg-light" readonly tabindex="-1" />
+                    </div>
+                </div>
+            </section>
+
+            <section class="es-goal-section initiative-wizard-step-pane d-none" data-step="2">
+                @{
+                    ViewData["Title"] = "Ownership & Scope";
+                    ViewData["Subtitle"] = "Assign accountable ownership, sponsorship, and participating entity scope for this Initiative.";
+                }
+                @await Html.PartialAsync("Components/Forms/_SectionHeader")
+                <div class="objective-helper-banner objective-helper-banner-muted mb-3">
+                    <span class="badge bg-label-primary">Lineage Rule</span>
+                    <span>Parent Goal remains derived from Parent Objective. Ownership and applicability belong to the Initiative itself.</span>
+                </div>
+                <div class="row g-3 es-form-grid">
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-owner-company" class="form-label">Owner Company / Org</label>
+                        <select id="initiative-owner-company" class="form-select select2">
+                            <option value="">Select owner company / org</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-owner-role" class="form-label">Owner Role</label>
+                        <select id="initiative-owner-role" class="form-select select2">
+                            <option value="">Select owner role</option>
+                        </select>
+                        <div id="initiative-owner-role-help" class="es-field-help mt-1">Owner role defaults from template when available.</div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-owner-person" class="form-label es-required">Initiative Owner</label>
+                        <select id="initiative-owner-person" class="form-select select2">
+                            <option value="">Select owner</option>
+                        </select>
+                        <div id="initiative-owner-person-help" class="es-field-help mt-1">Choose the accountable delivery owner for this Initiative.</div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-executive-sponsor" class="form-label">Accountable Sponsor</label>
+                        <input id="initiative-executive-sponsor" class="form-control" placeholder="Name or accountable sponsor" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-sponsor-role" class="form-label">Sponsor Role</label>
+                        <select id="initiative-sponsor-role" class="form-select select2">
+                            <option value="">Select sponsor role</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-sponsoring-company" class="form-label es-required">Sponsoring Company</label>
+                        <select id="initiative-sponsoring-company" class="form-select select2">
+                            <option value="">Select sponsoring company</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label" for="initiative-participating-companies-select">Participating Companies</label>
+                        <select id="initiative-participating-companies-select" class="d-none" multiple></select>
+                        <div id="initiative-participating-companies-picker" class="es-company-multi-select" data-placeholder="Search and select participating companies...">
+                            <button type="button"
+                                    id="initiative-participating-companies-toggle"
+                                    class="form-select es-company-multi-select-toggle"
+                                    aria-haspopup="listbox"
+                                    aria-expanded="false"
+                                    aria-controls="initiative-participating-companies-panel">
+                                <span id="initiative-participating-companies-display" class="es-company-multi-select-display">Search and select participating companies...</span>
+                            </button>
+                            <div id="initiative-participating-companies-panel" class="es-company-multi-select-panel d-none" role="dialog" aria-label="Participating Companies">
+                                <div class="es-company-multi-select-toolbar">
+                                    <button type="button" id="initiative-participating-companies-select-all" class="btn btn-sm btn-outline-secondary">Select all</button>
+                                    <button type="button" id="initiative-participating-companies-clear-all" class="btn btn-sm btn-outline-secondary">Clear all</button>
+                                </div>
+                                <div class="es-company-multi-select-search-wrap">
+                                    <input id="initiative-participating-companies-search"
+                                           class="form-control form-control-sm es-company-multi-select-search"
+                                           type="text"
+                                           placeholder="Search companies..."
+                                           autocomplete="off" />
+                                </div>
+                                <div id="initiative-participating-companies-options"
+                                     class="es-company-multi-select-options"
+                                     role="listbox"
+                                     aria-multiselectable="true"
+                                     tabindex="0"></div>
+                            </div>
+                        </div>
+                        <div class="es-field-help mt-1">Use governed company selection, not free text, to show participating entity coverage.</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="initiative-entity-scope" class="form-label">Delivery Scope / Applicability Scope</label>
+                        <input id="initiative-entity-scope" class="form-control" placeholder="Enterprise / BU / Region / Function scope" />
+                        <div class="es-field-help mt-1">Describe the delivery reach or applicability boundary of this Initiative.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="es-goal-section initiative-wizard-step-pane d-none" data-step="3">
+                @{
+                    ViewData["Title"] = "Delivery Planning";
+                    ViewData["Subtitle"] = "Set the operational planning window, phase, priority, and readiness posture for delivery.";
+                }
+                @await Html.PartialAsync("Components/Forms/_SectionHeader")
+                <div class="row g-3 es-form-grid">
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-status-editable" class="form-label">Status</label>
+                        <select id="initiative-status-editable" class="form-select select2">
+                            <option value="">Select status</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-wave" class="form-label">Planning Wave / Phase</label>
+                        <select id="initiative-wave" class="form-select select2">
+                            <option value="">Select wave / phase</option>
+                        </select>
+                        <div class="es-field-help mt-1">Keep this lightweight. Do not model project/program orchestration here.</div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="initiative-maturity" class="form-label">Maturity / Readiness</label>
+                        <select id="initiative-maturity" class="form-select select2">
+                            <option value="">Select maturity / readiness</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="initiative-priority" class="form-label">Priority</label>
+                        <select id="initiative-priority" class="form-select select2">
+                            <option value="">Select priority</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="initiative-complexity" class="form-label">Complexity</label>
+                        <select id="initiative-complexity" class="form-select select2">
+                            <option value="">Select complexity</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="initiative-class" class="form-label">Initiative Class</label>
+                        <input id="initiative-class" class="form-control" placeholder="Growth / Capability / Compliance" />
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="initiative-start-date" class="form-label es-required">Start Period</label>
+                        <input id="initiative-start-date" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="initiative-end-date" class="form-label es-required">End Period</label>
+                        <input id="initiative-end-date" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="initiative-reporting-frequency" class="form-label">Reporting Frequency</label>
+                        <select id="initiative-reporting-frequency" class="form-select select2">
+                            <option value="">Select frequency</option>
+                        </select>
+                        <div class="es-field-help mt-1">Reporting Frequency is separate from Contribution Plan Granularity and does not generate plan rows.</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div id="initiative-planning-window-banner" class="objective-helper-banner objective-helper-banner-muted">
+                            <span class="badge bg-label-warning">Horizon Guardrails</span>
+                            <span>Initiative Start and End Periods must fit inside the Parent Objective horizon and Parent Strategy Period.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="es-goal-section initiative-wizard-step-pane d-none" data-step="4">
+                @{
+                    ViewData["Title"] = "Contribution & Benefits";
+                    ViewData["Subtitle"] = "Plan the Initiative's contribution to the Parent Objective without taking ownership of the Objective target itself.";
+                }
+                @await Html.PartialAsync("Components/Forms/_SectionHeader")
+                <div class="objective-performance-stack">
+                    <section class="objective-performance-card">
+                        <div class="objective-performance-card-header">
+                            <div>
+                                <h6 class="objective-performance-card-title mb-1">Contribution Definition</h6>
+                                <p class="objective-performance-card-copy mb-0">Initiative contribution belongs here. The Parent Objective target stays governed upstream.</p>
+                            </div>
+                        </div>
+                        <div class="row g-3 es-form-grid">
+                            <div class="col-12 col-md-5">
+                                <label for="initiative-contribution-metric" class="form-label">Contribution Metric / Success Measure</label>
+                                <input id="initiative-contribution-metric" class="form-control" placeholder="What success measure this Initiative contributes to" />
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label for="initiative-contribution-unit" class="form-label">Unit of Measure</label>
+                                <input id="initiative-contribution-unit" class="form-control" placeholder="%, count, days, value" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="initiative-contribution-granularity" class="form-label">Contribution Plan Granularity</label>
+                                <select id="initiative-contribution-granularity" class="form-select select2">
+                                    <option value="InheritFromObjective">Inherit from Objective</option>
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="Quarterly">Quarterly</option>
+                                    <option value="Yearly">Yearly</option>
+                                    <option value="TotalInitiativeHorizon">Total Initiative Horizon</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="initiative-contribution-method" class="form-label">Contribution Method / Aggregation Method</label>
+                                <select id="initiative-contribution-method" class="form-select select2">
+                                    <option value="">Select method</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="initiative-contribution-timing" class="form-label">Contribution Timing</label>
+                                <select id="initiative-contribution-timing" class="form-select select2">
+                                    <option value="">Select timing</option>
+                                    <option value="FrontLoaded">Front-loaded</option>
+                                    <option value="Phased">Phased</option>
+                                    <option value="BackLoaded">Back-loaded</option>
+                                    <option value="MilestoneBased">Milestone-based</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="initiative-benefit-start" class="form-label">Benefit Realization Start</label>
+                                <input id="initiative-benefit-start" type="date" class="form-control" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="initiative-benefit-end" class="form-label">Benefit Realization End</label>
+                                <input id="initiative-benefit-end" type="date" class="form-control" />
+                            </div>
+                            <div class="col-12">
+                                <label for="initiative-benefit-hypothesis" class="form-label">Expected Contribution / Benefit Hypothesis</label>
+                                <textarea id="initiative-benefit-hypothesis" class="form-control" rows="3" placeholder="Explain how this Initiative contributes to the Parent Objective, why it should work, and when benefits should land."></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="objective-performance-card">
+                        <div class="objective-performance-card-header">
+                            <div>
+                                <h6 class="objective-performance-card-title mb-1">Contribution Plan by Period</h6>
+                                <p class="objective-performance-card-copy mb-0">Generate rows from Initiative timing, Contribution Plan Granularity, and Parent Objective timing constraints.</p>
+                            </div>
+                            <span id="initiative-plan-status-chip" class="es-status-pill is-info">Plan: Not generated</span>
+                        </div>
+                        <div id="initiative-plan-context" class="es-field-help mb-2">Select Parent Objective plus Initiative start and end periods to generate contribution rows.</div>
+                        <div class="objective-target-plan-toolbar mb-3">
+                            <button type="button" id="initiative-generate-plan" class="btn btn-sm btn-outline-primary">Generate Contribution Plan</button>
+                            <button type="button" id="initiative-regenerate-plan" class="btn btn-sm btn-outline-secondary">Regenerate</button>
+                            <input id="initiative-plan-flat-value" type="number" step="0.01" class="form-control form-control-sm initiative-plan-flat-input" placeholder="Flat value" />
+                            <button type="button" id="initiative-fill-flat-plan" class="btn btn-sm btn-outline-secondary">Fill flat</button>
+                            <button type="button" id="initiative-copy-down-plan" class="btn btn-sm btn-outline-secondary">Copy down</button>
+                            <button type="button" id="initiative-interpolate-plan" class="btn btn-sm btn-outline-secondary">Interpolate</button>
+                            <button type="button" id="initiative-clear-plan" class="btn btn-sm btn-outline-secondary">Clear values</button>
+                        </div>
+                        <div id="initiative-plan-empty" class="objective-target-plan-empty">Generate contribution rows to define the Initiative's planned contribution by period.</div>
+                        <div class="table-responsive objective-target-plan-table-wrap">
+                            <table class="table table-sm align-middle objective-target-plan-table">
+                                <thead>
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Period Start</th>
+                                        <th>Period End</th>
+                                        <th>Planned Contribution *</th>
+                                        <th>Forecast</th>
+                                        <th>Actual</th>
+                                        <th>Commentary</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="initiative-contribution-plan-body"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <section class="es-goal-section initiative-wizard-step-pane d-none" data-step="5">
+                @{
+                    ViewData["Title"] = "Financials & Governance";
+                    ViewData["Subtitle"] = "Capture lightweight financial and governance fields, then confirm draft, save, and planning readiness.";
+                }
+                @await Html.PartialAsync("Components/Forms/_SectionHeader")
+                <div class="objective-performance-stack">
+                    <section class="objective-performance-card">
+                        <div class="row g-3 es-form-grid">
+                            <div class="col-12 col-md-4">
+                                <label for="initiative-budget-envelope" class="form-label">Budget Envelope</label>
+                                <input id="initiative-budget-envelope" class="form-control" placeholder="Envelope / range / budget note" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="initiative-budget-amount" class="form-label">Budget Amount</label>
+                                <input id="initiative-budget-amount" type="number" step="0.01" class="form-control" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="initiative-currency" class="form-label">Currency</label>
+                                <select id="initiative-currency" class="form-select select2">
+                                    <option value="">Select currency</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="initiative-funding-source" class="form-label">Funding Source</label>
+                                <input id="initiative-funding-source" class="form-control" placeholder="Funding source if applicable" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="initiative-governance-stage" class="form-label">Governance Stage</label>
+                                <input id="initiative-governance-stage" class="form-control" placeholder="Draft / Review / Approved" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label">Dependency Flag</label>
+                                <div class="initiative-checkbox-card">
+                                    <div>
+                                        <div class="initiative-checkbox-title">Light dependency flag only</div>
+                                        <div class="initiative-checkbox-copy">Mark whether the Initiative has meaningful dependencies. Do not manage the network here yet.</div>
+                                    </div>
+                                    <div class="form-check form-switch m-0">
+                                        <input id="initiative-dependency-flag" class="form-check-input" type="checkbox" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label for="initiative-strategy-alignment-note" class="form-label">Strategy Alignment Note</label>
+                                <textarea id="initiative-strategy-alignment-note" class="form-control" rows="2" placeholder="Explain how the Initiative aligns with the Parent Objective and broader strategy context."></textarea>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="initiative-governance-notes" class="form-label">Governance / Evidence Note</label>
+                                <textarea id="initiative-governance-notes" class="form-control" rows="2" placeholder="Capture decision, governance, or evidence context."></textarea>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="initiative-evidence-reference" class="form-label">Evidence Reference</label>
+                                <textarea id="initiative-evidence-reference" class="form-control" rows="2" placeholder="Optional evidence, document, or traceability reference."></textarea>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="initiative-decision-reference" class="form-label">Decision Reference</label>
+                                <input id="initiative-decision-reference" class="form-control" />
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="initiative-notes" class="form-label">Working Notes</label>
+                                <textarea id="initiative-notes" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="objective-performance-card">
+                        <div class="objective-performance-card-header">
+                            <div>
+                                <h6 class="objective-performance-card-title mb-1">Readiness / Validation</h6>
+                                <p class="objective-performance-card-copy mb-0">Separate draft save readiness from planning and publish readiness so teams can save work in progress without losing operational truth.</p>
+                            </div>
+                        </div>
+                        <div class="objective-readiness-facts">
+                            <span id="initiative-readiness-draft-chip" class="goal-readiness-chip">Draft readiness: Blocked</span>
+                            <span id="initiative-readiness-plan-chip" class="goal-readiness-chip">Planning readiness: Blocked</span>
+                            <span id="initiative-readiness-publish-chip" class="goal-readiness-chip">Publish readiness: Blocked</span>
+                            <span id="initiative-readiness-rows-chip" class="goal-readiness-chip">Contribution rows: 0</span>
+                        </div>
+                        <aside class="es-workspace-readiness" aria-live="polite">
+                            <div class="es-readiness-header">
+                                <div>
+                                    <strong id="initiative-readiness-indicator" class="es-status-pill is-blocked">Planning Readiness: Blocked</strong>
+                                    <div id="initiative-readiness-text" class="es-readiness-text">Complete the strategy anchor, ownership, planning window, and contribution setup before the Initiative is planning-ready.</div>
+                                </div>
+                            </div>
+                            <div class="es-readiness-columns objective-readiness-columns initiative-readiness-columns">
+                                <div>
+                                    <div class="es-readiness-subtitle">Missing required items</div>
+                                    <ul id="initiative-readiness-missing" class="mb-0"></ul>
+                                </div>
+                                <div>
+                                    <div class="es-readiness-subtitle">Save blockers</div>
+                                    <ul id="initiative-readiness-save-blockers" class="mb-0"></ul>
+                                </div>
+                                <div>
+                                    <div class="es-readiness-subtitle">Planning / publish blockers</div>
+                                    <ul id="initiative-readiness-planning-blockers" class="mb-0"></ul>
+                                </div>
+                                <div>
+                                    <div class="es-readiness-subtitle">Warnings</div>
+                                    <ul id="initiative-readiness-warnings" class="mb-0"></ul>
+                                </div>
+                            </div>
+                        </aside>
+                    </section>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade es-modal" id="initiativeSourcePickerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Choose Initiative Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2 mb-2">
+                    <div class="col-12 col-lg-5">
+                        <input id="initiative-source-picker-search" class="form-control form-control-sm" placeholder="Search by name or description..." />
+                    </div>
+                    <div class="col-12 col-lg-3">
+                        <select id="initiative-source-picker-type" class="form-select form-select-sm">
+                            <option value="">All types</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <select id="initiative-source-picker-status" class="form-select form-select-sm">
+                            <option value="">All statuses</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <input id="initiative-source-picker-parent-objective-template" class="form-control form-control-sm" readonly placeholder="Parent Objective Template" />
+                    </div>
+                </div>
+                <div id="initiative-source-picker-helper" class="es-field-help mb-2">Browse Initiative Templates from Strategy Library.</div>
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Template ID</th>
+                                <th>Parent Objective Template</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Type</th>
+                                <th>Owner</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="initiative-source-picker-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #initiative-create-workspace {
+        padding-bottom: 1.25rem;
+    }
+
+    #initiative-create-workspace .goal-workspace-shell {
+        border: 1px solid rgba(176, 189, 230, 0.28);
+        border-radius: .8rem;
+        background: linear-gradient(180deg, rgba(38, 45, 73, .94) 0%, rgba(35, 42, 68, .94) 100%);
+        overflow: hidden;
+    }
+
+    #initiative-create-workspace .goal-workspace-header {
+        top: .5rem;
+        z-index: 8;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .8rem;
+        padding: .85rem 1rem;
+        border-bottom: 1px solid rgba(176, 189, 230, 0.22);
+        backdrop-filter: blur(10px);
+        background: rgba(26, 33, 57, .82);
+    }
+
+    #initiative-create-workspace .goal-workspace-body {
+        padding: .95rem;
+    }
+
+    #initiative-create-workspace .objective-wizard-nav {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: .5rem;
+    }
+
+    #initiative-create-workspace .goal-source-panel,
+    #initiative-create-workspace .es-goal-section,
+    #initiative-create-workspace .objective-performance-card {
+        border: 1px solid rgba(176, 189, 230, 0.28);
+        border-radius: .75rem;
+        background: rgba(22, 30, 52, .72);
+    }
+
+    #initiative-create-workspace .goal-source-panel,
+    #initiative-create-workspace .es-goal-section {
+        padding: .9rem;
+    }
+
+    #initiative-create-workspace .goal-source-controls {
+        display: grid;
+        gap: .6rem;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, .9fr) minmax(0, .9fr);
+        margin-bottom: .75rem;
+    }
+
+    #initiative-create-workspace .goal-source-summary-card {
+        border: 1px dashed rgba(176, 189, 230, .34);
+        border-radius: .75rem;
+        padding: .9rem 1rem;
+        background: rgba(176, 189, 230, .08);
+        color: #d5e1ff;
+    }
+
+    #initiative-create-workspace .goal-source-summary-card.is-empty {
+        background: rgba(176, 189, 230, .05);
+    }
+
+    #initiative-create-workspace .goal-source-summary-name {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: .2rem;
+    }
+
+    #initiative-create-workspace .goal-source-summary-note,
+    #initiative-create-workspace .objective-performance-card-copy {
+        color: #afbddf;
+        font-size: .84rem;
+    }
+
+    #initiative-create-workspace .objective-wizard-step-btn {
+        border: 1px solid rgba(176, 189, 230, .28);
+        border-radius: .6rem;
+        color: #c9d5f5;
+        text-align: left;
+        font-weight: 700;
+        background: rgba(176, 189, 230, .08);
+        padding: .72rem .8rem;
+        min-height: 4rem;
+    }
+
+    #initiative-create-workspace .objective-wizard-step-btn.active {
+        border-color: rgba(var(--bs-primary-rgb), .55);
+        color: #edf2ff;
+        background: rgba(var(--bs-primary-rgb), .18);
+    }
+
+    #initiative-create-workspace .objective-helper-banner {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        align-items: center;
+        border: 1px solid rgba(176, 189, 230, .24);
+        border-radius: .65rem;
+        padding: .72rem .85rem;
+        background: rgba(176, 189, 230, .09);
+        color: #d7e2ff;
+    }
+
+    #initiative-create-workspace .objective-performance-stack {
+        display: flex;
+        flex-direction: column;
+        gap: .9rem;
+    }
+
+    #initiative-create-workspace .objective-performance-card {
+        padding: .95rem;
+    }
+
+    #initiative-create-workspace .objective-performance-card-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: .8rem;
+    }
+
+    #initiative-create-workspace .objective-performance-card-title {
+        font-size: .98rem;
+        font-weight: 700;
+        color: #edf2ff;
+    }
+
+    #initiative-create-workspace .objective-target-plan-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        align-items: center;
+    }
+
+    #initiative-create-workspace .initiative-plan-flat-input {
+        width: 8rem;
+        background: rgba(16, 22, 40, .62);
+        color: #eef4ff;
+        border-color: rgba(176, 189, 230, .26);
+    }
+
+    #initiative-create-workspace .objective-target-plan-empty {
+        border: 1px dashed rgba(176, 189, 230, .28);
+        border-radius: .65rem;
+        padding: .9rem 1rem;
+        color: #aebcde;
+        background: rgba(176, 189, 230, .04);
+        margin-bottom: .75rem;
+    }
+
+    #initiative-create-workspace .objective-target-plan-table-wrap {
+        border: 1px solid rgba(176, 189, 230, .16);
+        border-radius: .65rem;
+        overflow: hidden;
+        background: rgba(16, 22, 40, .4);
+    }
+
+    #initiative-create-workspace .objective-target-plan-table {
+        margin-bottom: 0;
+        min-width: 68rem;
+    }
+
+    #initiative-create-workspace .objective-target-plan-table thead th {
+        white-space: nowrap;
+        font-size: .78rem;
+        letter-spacing: .02em;
+        text-transform: uppercase;
+        color: #aebcde;
+        background: rgba(176, 189, 230, .08);
+    }
+
+    #initiative-create-workspace .objective-readiness-facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+        margin-bottom: .75rem;
+    }
+
+    #initiative-create-workspace .goal-readiness-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        border-radius: 999px;
+        border: 1px solid rgba(176, 189, 230, .24);
+        background: rgba(176, 189, 230, .08);
+        color: #d9e5ff;
+        font-size: .76rem;
+        font-weight: 600;
+        padding: .3rem .65rem;
+    }
+
+    #initiative-create-workspace .initiative-readiness-columns {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    #initiative-create-workspace .initiative-checkbox-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: .75rem;
+        min-height: calc(1.5em + 1rem + 2px);
+        border: 1px solid rgba(176, 189, 230, .18);
+        border-radius: .6rem;
+        padding: .7rem .8rem;
+        background: rgba(176, 189, 230, .06);
+        color: #dbe6ff;
+    }
+
+    #initiative-create-workspace .initiative-checkbox-title {
+        font-weight: 700;
+        font-size: .84rem;
+    }
+
+    #initiative-create-workspace .initiative-checkbox-copy {
+        color: #afbddf;
+        font-size: .78rem;
+    }
+
+    #initiative-create-workspace .es-company-multi-select {
+        position: relative;
+    }
+
+    #initiative-create-workspace .es-company-multi-select-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: calc(1.5em + .75rem + 2px);
+        padding-right: 2rem;
+        cursor: pointer;
+        background: rgba(16, 22, 40, .62);
+        color: #edf2ff;
+        border-color: rgba(176, 189, 230, .26);
+    }
+
+    #initiative-create-workspace .es-company-multi-select-toggle::after {
+        content: "";
+        position: absolute;
+        right: .9rem;
+        top: 50%;
+        width: .55rem;
+        height: .55rem;
+        border-right: 2px solid rgba(217, 229, 255, .82);
+        border-bottom: 2px solid rgba(217, 229, 255, .82);
+        transform: translateY(-62%) rotate(45deg);
+        transition: transform .15s ease;
+        pointer-events: none;
+    }
+
+    #initiative-create-workspace .es-company-multi-select-toggle.is-open::after {
+        transform: translateY(-32%) rotate(-135deg);
+    }
+
+    #initiative-create-workspace .es-company-multi-select-display {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #initiative-create-workspace .es-company-multi-select-panel {
+        position: absolute;
+        z-index: 12;
+        inset: calc(100% + .4rem) 0 auto 0;
+        border: 1px solid rgba(176, 189, 230, .24);
+        border-radius: .75rem;
+        background: rgba(17, 24, 42, .98);
+        box-shadow: 0 1rem 2rem rgba(8, 12, 24, .34);
+        padding: .7rem;
+    }
+
+    #initiative-create-workspace .es-company-multi-select-toolbar {
+        display: flex;
+        justify-content: space-between;
+        gap: .5rem;
+        margin-bottom: .55rem;
+    }
+
+    #initiative-create-workspace .es-company-multi-select-options {
+        max-height: 14rem;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+        outline: none;
+    }
+
+    #initiative-create-workspace .es-company-multi-select-option {
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        width: 100%;
+        border: 1px solid rgba(176, 189, 230, .18);
+        border-radius: .55rem;
+        background: rgba(176, 189, 230, .05);
+        color: #e7efff;
+        padding: .45rem .55rem;
+        text-align: left;
+    }
+
+    #initiative-create-workspace .es-company-multi-select-option:hover,
+    #initiative-create-workspace .es-company-multi-select-option.is-active {
+        border-color: rgba(var(--bs-primary-rgb), .48);
+        background: rgba(var(--bs-primary-rgb), .16);
+    }
+
+    #initiative-create-workspace .es-company-multi-select-empty {
+        padding: .75rem;
+        border: 1px dashed rgba(176, 189, 230, .24);
+        border-radius: .55rem;
+        color: #afbddf;
+        text-align: center;
+    }
+
+    @@media (max-width: 1199.98px) {
+        #initiative-create-workspace .initiative-readiness-columns {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 991.98px) {
+        #initiative-create-workspace .goal-workspace-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        #initiative-create-workspace .objective-wizard-nav {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        #initiative-create-workspace .goal-source-controls,
+        #initiative-create-workspace .objective-wizard-nav,
+        #initiative-create-workspace .initiative-readiness-columns {
+            grid-template-columns: 1fr;
+        }
+
+        #initiative-create-workspace .objective-target-plan-toolbar {
+            align-items: stretch;
+        }
+
+        #initiative-create-workspace .initiative-plan-flat-input {
+            width: 100%;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/initiative-workspace.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,9 @@
+@model Diten.WebUI.Models.ManagementGovernance.KPIWidgetModel
+
+<article class="card mg-card h-100">
+    <div class="card-body">
+        <div class="text-muted small text-uppercase">@Model.Label</div>
+        <div class="h4 mb-1">@Model.Value</div>
+        <div class="small @(Model.TrendDirection == "Up" ? "text-warning" : Model.TrendDirection == "Down" ? "text-success" : "text-muted")">@Model.Trend</div>
+    </div>
+</article>

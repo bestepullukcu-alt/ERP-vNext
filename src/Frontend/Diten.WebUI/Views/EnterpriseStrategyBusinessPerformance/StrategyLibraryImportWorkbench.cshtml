@@ -1,0 +1,55 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Import & Mapping Workbench";
+}
+
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label">Workbook File</label>
+                <input id="library-import-file" type="file" class="form-control form-control-sm" accept=".xlsx,.xls,.csv" />
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Batch Name</label>
+                <input id="library-import-batch-name" class="form-control form-control-sm" placeholder="Goals-Objectives-Initiatives-Projects v2" />
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button id="library-import-run" class="btn btn-sm btn-primary w-100">Validate & Import</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card mb-3">
+    <div class="card-body">
+        <h6>Import Batch</h6>
+        <div id="library-import-summary" class="small text-muted">No batch run yet.</div>
+        <div class="d-flex mt-2">
+            <button id="library-import-approve" class="btn btn-sm btn-outline-primary ms-auto" disabled>Approve Batch</button>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <h6>Issues</h6>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle" id="library-import-issues-table">
+                <thead>
+                    <tr>
+                        <th>Severity</th>
+                        <th>Sheet</th>
+                        <th>Row</th>
+                        <th>Code</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-library-import.js" asp-append-version="true"></script>
+}

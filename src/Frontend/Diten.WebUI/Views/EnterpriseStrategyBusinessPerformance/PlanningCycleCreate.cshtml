@@ -1,0 +1,62 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Create Planning Cycle";
+    ViewData["Active"] = "cycles";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="planning-workspace planning-cycle-create-page es-planning-page-shell row g-3">
+    <div class="col-12">
+        @await Html.PartialAsync("Components/Planning/_WorkspaceSubtabs")
+    </div>
+
+    <div class="col-12">
+        <div class="es-create-workspace-shell">
+            <div class="es-create-workspace-header sticky-top">
+                <div>
+                    <h5 class="es-create-workspace-title mb-0">Create Planning Cycle</h5>
+                    <p class="es-create-workspace-subtitle mb-0">Governed planning-cycle workspace aligned to Goal Create page form rhythm and readiness visibility.</p>
+                </div>
+                <div class="es-create-workspace-actions">
+                    <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/planning/cycles">Cancel / Back</a>
+                    <button type="button" id="planning-cycle-save" class="btn btn-sm btn-primary">Create Planning Cycle</button>
+                </div>
+            </div>
+
+            <div class="es-create-workspace-body">
+                <div class="row g-3">
+                    <div class="col-12 col-xl-8">
+                        <div id="planning-cycle-form-error" class="alert alert-danger d-none mb-3 es-validation-summary" role="alert" aria-live="assertive"></div>
+
+                        @await Html.PartialAsync("Components/Planning/_PlanningCycleFormFields")
+
+                        @await Html.PartialAsync(
+                            "Components/Planning/_ReadinessPanel",
+                            viewData: new ViewDataDictionary(ViewData)
+                            {
+                                ["ReadinessPanelId"] = "planning-cycle-readiness-panel",
+                                ["ReadinessIndicatorId"] = "planning-cycle-readiness-indicator",
+                                ["ReadinessIndicatorText"] = "Readiness: Blocked",
+                                ["ReadinessTextId"] = "planning-cycle-readiness-text",
+                                ["ReadinessText"] = "Complete required fields to save.",
+                                ["ReadinessMissingId"] = "planning-cycle-readiness-missing",
+                                ["ReadinessMissingTitle"] = "Missing required fields",
+                                ["ReadinessBlockersId"] = "planning-cycle-readiness-blockers",
+                                ["ReadinessBlockersTitle"] = "Activation blockers"
+                            })
+                    </div>
+
+                    <div class="col-12 col-xl-4 d-flex">
+                        @await Html.PartialAsync("Components/Planning/_GovernancePanel")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>window.planningCycleEditorMode = "create-page";</script>
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/planning-cycles.js" asp-append-version="true"></script>
+}

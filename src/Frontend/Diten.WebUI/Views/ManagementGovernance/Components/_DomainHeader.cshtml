@@ -1,0 +1,32 @@
+@model Diten.WebUI.Models.ManagementGovernance.ManagementGovernancePageViewModel
+
+<section class="card mg-card mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2">
+                        @foreach (var crumb in Model.Breadcrumbs)
+                        {
+                            <li class="breadcrumb-item">@crumb</li>
+                        }
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-1">@Model.PageTitle</h1>
+                <p class="text-muted mb-0">@Model.PageSubtitle</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-primary btn-sm" href="/management-governance/search">Search</a>
+                <a class="btn btn-outline-secondary btn-sm" href="/management-governance/work-queue">Open Queue</a>
+                <a class="btn btn-primary btn-sm" href="/management-governance/cadence">Cadence</a>
+            </div>
+        </div>
+        <div class="mt-3 d-flex flex-nowrap gap-2 overflow-auto pb-1">
+            @foreach (var tab in Model.Tabs)
+            {
+                <a class="mg-top-nav @(Model.ActiveNav == tab.Key ? "active" : "")" href="@tab.Route">@tab.Label</a>
+            }
+        </div>
+    </div>
+</section>
+<div id="mg-global-state" class="mg-empty d-none mb-3" role="status" aria-live="polite"></div>

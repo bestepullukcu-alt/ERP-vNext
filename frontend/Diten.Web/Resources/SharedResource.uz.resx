@@ -159,12 +159,6 @@
   <data name="GatewayError" xml:space="preserve">
     <value>Server bilan aloqa o'rnatishda xatolik yuz berdi.</value>
   </data>
-  <data name="LegalEntities" xml:space="preserve">
-    <value>Yuridik shaxslar</value>
-  </data>
-  <data name="Countries" xml:space="preserve">
-    <value>Mamlakatlar</value>
-  </data>
   <data name="Light" xml:space="preserve">
     <value>Yorug'</value>
   </data>

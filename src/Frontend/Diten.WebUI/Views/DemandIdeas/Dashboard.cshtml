@@ -1,0 +1,76 @@
+@{
+    ViewData["Title"] = "Demand Dashboard";
+}
+<div class="container-xxl flex-grow-1 container-p-y" data-testid="demand-dashboard">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item text-muted">Management &amp; Governance</li>
+            <li class="breadcrumb-item active">Demand &amp; Idea Management</li>
+        </ol>
+    </nav>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Demand &amp; Idea Dashboard</h1>
+            <p class="text-muted mb-0">Pipeline health and governance entry points</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Index")" class="btn btn-primary btn-sm"><i class="bx bx-list-ul me-1"></i>Ideas &amp; Demand</a>
+            <a href="@Url.Action("Capture")" class="btn btn-outline-primary btn-sm"><i class="bx bx-plus me-1"></i>New capture</a>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card shadow-sm border rounded-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small text-uppercase fw-semibold">Open pipeline</span>
+                        <span class="avatar avatar-sm"><span class="avatar-initial rounded bg-label-primary text-primary"><i class="bx bx-folder-open"></i></span></span>
+                    </div>
+                    <h3 class="mb-0">12</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card shadow-sm border rounded-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small text-uppercase fw-semibold">In review</span>
+                        <span class="avatar avatar-sm"><span class="avatar-initial rounded bg-label-warning text-warning"><i class="bx bx-search-alt"></i></span></span>
+                    </div>
+                    <h3 class="mb-0">5</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card shadow-sm border rounded-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small text-uppercase fw-semibold">Transferred</span>
+                        <span class="avatar avatar-sm"><span class="avatar-initial rounded bg-label-primary text-primary"><i class="bx bx-export"></i></span></span>
+                    </div>
+                    <h3 class="mb-0">2</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card shadow-sm border rounded-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small text-uppercase fw-semibold">SLA risk</span>
+                        <span class="avatar avatar-sm"><span class="avatar-initial rounded bg-label-danger text-danger"><i class="bx bx-error-circle"></i></span></span>
+                    </div>
+                    <h3 class="mb-0">1</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card shadow-sm border rounded-3">
+        <div class="card-header py-3"><span class="fw-semibold">Quick links</span></div>
+        <div class="card-body row g-2">
+            <div class="col-md-6"><a class="d-flex align-items-center gap-3 p-3 rounded-3 border text-body text-decoration-none" href="@Url.Action("Index", new { statuses = "Under Review" })"><i class="bx bx-show text-primary"></i><div><div class="fw-semibold">Review queue</div><div class="small text-muted">Under Review</div></div></a></div>
+            <div class="col-md-6"><a class="d-flex align-items-center gap-3 p-3 rounded-3 border text-body text-decoration-none" href="@Url.Action("Index", new { transferred = "yes" })"><i class="bx bx-link-external text-primary"></i><div><div class="fw-semibold">Transferred</div><div class="small text-muted">PPM-linked</div></div></a></div>
+            <div class="col-md-6"><a class="d-flex align-items-center gap-3 p-3 rounded-3 border text-body text-decoration-none" href="@Url.Action("Decomposition")"><i class="bx bx-sitemap text-primary"></i><div><div class="fw-semibold">Decomposition</div><div class="small text-muted">WBS workspace</div></div></a></div>
+            <div class="col-md-6"><a class="d-flex align-items-center gap-3 p-3 rounded-3 border text-body text-decoration-none" href="@Url.Action("TransferToPpm")"><i class="bx bx-send text-primary"></i><div><div class="fw-semibold">Transfer to PPM</div></div></a></div>
+        </div>
+    </div>
+</div>

@@ -159,12 +159,6 @@
   <data name="GatewayError" xml:space="preserve">
     <value>Произошла ошибка при обращении к серверу.</value>
   </data>
-  <data name="LegalEntities" xml:space="preserve">
-    <value>Юридические лица</value>
-  </data>
-  <data name="Countries" xml:space="preserve">
-    <value>Страны</value>
-  </data>
   <data name="Light" xml:space="preserve">
     <value>Светлая</value>
   </data>

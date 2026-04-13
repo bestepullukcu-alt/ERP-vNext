@@ -1,0 +1,64 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Enterprise Strategy Overview";
+}
+
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+<div class="alert alert-info">
+    Initiative and Project master ownership has moved to Delivery &amp; Execution Management. ES&amp;BP now consumes those records as aligned reference views only.
+</div>
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn btn-sm btn-outline-secondary" href="/management-governance/delivery-execution/initiatives">Open Aligned Initiatives in Delivery</a>
+    <a class="btn btn-sm btn-outline-secondary" href="/management-governance/delivery-execution/projects">Open Aligned Projects in Delivery</a>
+    <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/connections">Open Strategy Alignment Register</a>
+</div>
+<div class="row g-3">
+    <div class="col-12 col-lg-8">
+        <div class="row g-2 mb-3" id="overview-summary-cards"></div>
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Modules</strong>
+                <div class="btn-group btn-group-sm">
+                    <a class="btn btn-primary esbp-create-btn" href="/management-governance/enterprise-strategy-business-performance/goals" title="Create Goal">Create</a>
+                    <a class="btn btn-primary esbp-create-btn" href="/management-governance/enterprise-strategy-business-performance/objectives/new" title="Create Objective">Create</a>
+                    <a class="btn btn-outline-primary" href="/management-governance/enterprise-strategy-business-performance/kpis">Open KPI Catalog</a>
+                    <a class="btn btn-outline-primary" href="/management-governance/enterprise-strategy-business-performance/cascade/builder">Open Cascade Builder</a>
+                    <a class="btn btn-outline-primary" href="/management-governance/enterprise-strategy-business-performance/reviews/calendar">Open Review Calendar</a>
+                    <a class="btn btn-outline-primary" href="/management-governance/enterprise-strategy-business-performance/connections">Open Strategy Alignment Register</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-4"><a class="card p-3 h-100 text-decoration-none" href="/management-governance/enterprise-strategy-business-performance/goals"><strong>Goals</strong><span class="text-muted small">Owned SoR</span></a></div>
+                    <div class="col-md-4"><a class="card p-3 h-100 text-decoration-none" href="/management-governance/enterprise-strategy-business-performance/objectives"><strong>Objectives</strong><span class="text-muted small">Owned SoR</span></a></div>
+                    <div class="col-md-4"><a class="card p-3 h-100 text-decoration-none" href="/management-governance/delivery-execution/initiatives"><strong>Aligned Initiatives</strong><span class="text-muted small">Open in Delivery</span></a></div>
+                    <div class="col-md-4"><a class="card p-3 h-100 text-decoration-none" href="/management-governance/delivery-execution/projects"><strong>Aligned Projects</strong><span class="text-muted small">Open in Delivery</span></a></div>
+                    <div class="col-md-4"><a class="card p-3 h-100 text-decoration-none" href="/management-governance/enterprise-strategy-business-performance/connections"><strong>Strategy Alignment Register</strong><span class="text-muted small">Owned lineage</span></a></div>
+                    <div class="col-md-4"><a class="card p-3 h-100 text-decoration-none" href="/management-governance/enterprise-strategy-business-performance/kpis"><strong>KPI Catalog</strong><span class="text-muted small">Strategic metrics</span></a></div>
+                    <div class="col-md-4"><a class="card p-3 h-100 text-decoration-none" href="/management-governance/enterprise-strategy-business-performance/kpis/ownership"><strong>Metric Ownership</strong><span class="text-muted small">Accountability</span></a></div>
+                    <div class="col-md-4"><a class="card p-3 h-100 text-decoration-none" href="/management-governance/enterprise-strategy-business-performance/kpis/scorecard"><strong>Scorecard Dashboard</strong><span class="text-muted small">Executive review</span></a></div>
+                    <div class="col-md-4"><a class="card p-3 h-100 text-decoration-none" href="/management-governance/enterprise-strategy-business-performance/cascade/builder"><strong>Cascade Builder</strong><span class="text-muted small">Top-down allocation</span></a></div>
+                    <div class="col-md-4"><a class="card p-3 h-100 text-decoration-none" href="/management-governance/enterprise-strategy-business-performance/cascade/consolidation"><strong>Consolidation View</strong><span class="text-muted small">Bottom-up rollup</span></a></div>
+                    <div class="col-md-4"><a class="card p-3 h-100 text-decoration-none" href="/management-governance/enterprise-strategy-business-performance/reviews/calendar"><strong>Strategic Reviews</strong><span class="text-muted small">Cadence & actions</span></a></div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h6>Work Queue</h6>
+                <div id="overview-work-queue" class="small text-muted">Loading queue...</div>
+                <hr />
+                <h6>Health Snapshot</h6>
+                <div id="overview-health-snapshot" class="small text-muted">Loading health...</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        @await Html.PartialAsync("Components/_GovernanceSidePanel")
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/overview.js"></script>
+}

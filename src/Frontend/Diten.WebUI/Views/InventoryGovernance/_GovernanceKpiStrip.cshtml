@@ -1,0 +1,30 @@
+@model dynamic
+@{
+    var cashRelease = Model?.cashRelease;
+    var expiryDue = Model?.expiryDue;
+    var stockoutPending = Model?.stockoutPending;
+}
+
+<div class="row g-3 row-cols-1 row-cols-md-3" data-testid="ig-kpi-strip">
+    <div class="col">
+        <div class="ig-card h-100" data-testid="ig-kpi-cash-release">
+            <div class="ig-kpi-label">Cash Release Potential</div>
+            <div class="ig-kpi-value">@((cashRelease?.value ?? 0).ToString())</div>
+            <div class="ig-kpi-sub">Target: @((cashRelease?.target ?? 0).ToString()) @((cashRelease?.currency ?? "USD").ToString())</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="ig-card h-100" data-testid="ig-kpi-expiry-due">
+            <div class="ig-kpi-label">Expiry Due</div>
+            <div class="ig-kpi-value">@((expiryDue?.lotsDue ?? 0).ToString())</div>
+            <div class="ig-kpi-sub">Exposure: @((expiryDue?.exposureValue ?? 0).ToString()) @((expiryDue?.currency ?? "USD").ToString())</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="ig-card h-100" data-testid="ig-kpi-stockout-pending">
+            <div class="ig-kpi-label">Projected Stockouts</div>
+            <div class="ig-kpi-value">@((stockoutPending?.itemsPending ?? 0).ToString())</div>
+            <div class="ig-kpi-sub">Earliest week: @((stockoutPending?.earliestWeek ?? "-").ToString())</div>
+        </div>
+    </div>
+</div>

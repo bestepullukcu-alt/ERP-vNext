@@ -1,0 +1,78 @@
+<details id="goal-sec-company" class="es-goal-section" open>
+  <summary><span>4. Company Applicability *</span><span id="goal-sec-company-state" class="es-goal-section-state state-empty">Empty</span></summary>
+  <div class="goal-step-helper-banner mb-3 mt-2">
+    <span class="badge bg-label-info">Applicability Metadata Only</span>
+    <span>Define where the goal applies without turning this step into downstream execution planning or operational distribution.</span>
+  </div>
+  <div class="row g-2 mt-1">
+    <div class="col-12 col-md-3 form-control-validation">
+      <label for="goal-scope-mode" class="form-label es-required">Applicability Mode</label>
+      <select id="goal-scope-mode" class="form-select" required>
+        <option value="">Select...</option>
+      </select>
+      <div id="goal-company-mode-hint" class="form-text">Enterprise or selected-company applicability only.</div>
+    </div>
+    <div class="col-12 col-md-3 form-control-validation d-none">
+      <label for="goal-primary-company" class="form-label">Primary Company</label>
+      <select id="goal-primary-company" class="form-select" data-placeholder="Search primary company...">
+        <option value="">Select company...</option>
+      </select>
+      <div id="goal-primary-company-hint" class="form-text">Primary Company is not a controlling field at Goal level.</div>
+    </div>
+    <div class="col-12 col-md-3 form-control-validation">
+      <label for="goal-applies-to-all-companies" class="form-label">Applies to all companies?</label>
+      <div class="form-check mt-2">
+        <input id="goal-applies-to-all-companies" class="form-check-input" type="checkbox" disabled />
+        <label class="form-check-label" for="goal-applies-to-all-companies">Enterprise-wide applicability</label>
+      </div>
+      <div class="form-text">Derived from Applicability Mode to avoid duplicating scope logic.</div>
+    </div>
+    <div class="col-12 col-md-6 form-control-validation">
+      <label for="goal-applicable-companies" class="form-label">Applicable Companies</label>
+      <select id="goal-applicable-companies" class="form-select d-none" data-placeholder="Search and select applicable companies..." multiple></select>
+      <div id="goal-applicable-companies-picker" class="es-company-multi-select" data-placeholder="Search and select applicable companies...">
+        <button type="button"
+                id="goal-applicable-companies-toggle"
+                class="form-select es-company-multi-select-toggle"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-controls="goal-applicable-companies-panel">
+          <span id="goal-applicable-companies-display" class="es-company-multi-select-display">Search and select applicable companies...</span>
+        </button>
+        <div id="goal-applicable-companies-panel" class="es-company-multi-select-panel d-none" role="dialog" aria-label="Applicable Companies">
+          <div class="es-company-multi-select-toolbar">
+            <button type="button" id="goal-applicable-companies-select-all" class="btn btn-sm btn-outline-secondary">Select all</button>
+            <button type="button" id="goal-applicable-companies-clear-all" class="btn btn-sm btn-outline-secondary">Clear all</button>
+          </div>
+          <div class="es-company-multi-select-search-wrap">
+            <input id="goal-applicable-companies-search"
+                   class="form-control form-control-sm es-company-multi-select-search"
+                   type="text"
+                   placeholder="Search companies..."
+                   autocomplete="off" />
+          </div>
+          <div id="goal-applicable-companies-options"
+               class="es-company-multi-select-options"
+               role="listbox"
+               aria-multiselectable="true"
+               tabindex="0"></div>
+        </div>
+      </div>
+      <div id="goal-applicable-companies-hint" class="form-text">Select one or more companies for scope.</div>
+    </div>
+    <div class="col-12 col-md-6 form-control-validation">
+      <label for="goal-business-unit" class="form-label">Business Unit / Function</label>
+      <input id="goal-business-unit" class="form-control" maxlength="200" placeholder="Optional business unit or function scope" />
+    </div>
+    <div class="col-12 col-md-6 form-control-validation">
+      <label for="goal-region" class="form-label">Region / Geography</label>
+      <input id="goal-region" class="form-control" maxlength="200" placeholder="Optional regional or geographic scope" />
+    </div>
+    <input id="goal-entity-scope" type="hidden" />
+    <div class="col-12 form-control-validation">
+      <label for="goal-related-entity-scope-summary" class="form-label">Related Entity Scope Summary <span class="es-field-tag tag-derived">Derived</span></label>
+      <input id="goal-related-entity-scope-summary" class="form-control" maxlength="500" readonly />
+      <div class="form-text">Derived from applicability selections, business unit or function, region, and strategic scope metadata.</div>
+    </div>
+  </div>
+</details>

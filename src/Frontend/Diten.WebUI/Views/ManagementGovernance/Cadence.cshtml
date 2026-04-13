@@ -1,0 +1,48 @@
+@model Diten.WebUI.Models.ManagementGovernance.ManagementGovernancePageViewModel
+@{
+    ViewData["Title"] = "Cadence";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance.css" />
+}
+
+<partial name="Components/_DomainHeader" model="Model" />
+
+<div class="row g-3">
+    <div class="col-12 col-xl-8">
+        <section class="card mg-card h-100">
+            <div class="card-header"><h2 class="h6 mb-0">Monthly / Weekly Agenda</h2></div>
+            <div class="card-body">
+                <div class="mg-chart-placeholder">Calendar shell placeholder with monthly/weekly lanes</div>
+                <div class="mt-3">
+                    <partial name="Components/_CadenceWidget" model="Model.GovernanceEvents" />
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-xl-4">
+        <section class="card mg-card h-100">
+            <div class="card-header"><h2 class="h6 mb-0">Upcoming Deadlines</h2></div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    @foreach (var cycle in Model.ReviewCycles.OrderBy(x => x.DueAtUtc))
+                    {
+                        <li class="mb-2">
+                            <div class="fw-semibold small">@cycle.Name</div>
+                            <div class="small text-muted">@cycle.DueAtUtc.ToString("dd MMM yyyy") • @cycle.CycleType</div>
+                            <partial name="Components/_StatusBadge" model="cycle.Status" />
+                        </li>
+                    }
+                </ul>
+                <hr />
+                <div class="small text-muted">Status legend: Planned, In Progress, Closed</div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/management-governance/mg-data-adapter.js"></script>
+    <script src="~/assets/js/pages/management-governance/mg-page.js"></script>
+}

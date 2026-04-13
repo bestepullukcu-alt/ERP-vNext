@@ -1,0 +1,301 @@
+@* Demand & Ideas Capture — main form + sidebar (demandIdeaCapture.js) *@
+<div class="row g-3 g-xl-4 align-items-start dc-main-layout">
+    <div class="col-lg-12 dc-form-column">
+        <section class="dc-section dc-section--core" aria-labelledby="dc-sec-core" data-section="core">
+            <div class="dc-section-header" data-bs-toggle="collapse" data-bs-target="#dc-sec-core-body" aria-expanded="false" aria-controls="dc-sec-core-body" role="button" style="cursor:pointer;">
+                <div class="dc-section-icon-wrap" aria-hidden="true"><i class="bx bx-file-blank"></i></div>
+                <div class="flex-grow-1 min-w-0">
+                    <h2 class="dc-section-title" id="dc-sec-core">Core information</h2>
+                    <p class="dc-section-hint mb-0">Define the demand narrative, alignment, and accountable contacts. Fields required for <strong>submission</strong> are marked <span class="dc-req-star text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span>.</p>
+                </div>
+                <span class="btn btn-sm btn-outline-secondary ms-auto" aria-hidden="true"><i class="bx bx-chevron-down me-1"></i>Expand</span>
+            </div>
+            <div id="dc-sec-core-body" class="dc-section-body collapse">
+                <p class="dc-field-group-label dc-field-group-label--soft mb-2">Narrative</p>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label dc-field-label" for="cap-title">Idea title <span class="dc-req-star text-danger">*</span></label>
+                        <input id="cap-title" name="title" maxlength="500" class="form-control dc-input" placeholder="Short, clear title for this demand or idea" />
+                        <div class="invalid-feedback" data-field-error="title"></div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label dc-field-label" for="cap-problem">Business need / problem statement <span class="dc-req-star text-danger">*</span></label>
+                        <textarea id="cap-problem" name="problemStatement" rows="4" class="form-control dc-input dc-textarea-fixed" placeholder="Describe the problem, opportunity, or constraint driving this demand"></textarea>
+                        <div class="invalid-feedback" data-field-error="problemStatement"></div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label dc-field-label" for="cap-outcome">Expected outcome <span class="dc-req-star text-danger">*</span></label>
+                        <textarea id="cap-outcome" name="expectedOutcome" rows="3" class="form-control dc-input dc-textarea-fixed" placeholder="Describe the measurable business result or success criteria"></textarea>
+                        <div class="invalid-feedback" data-field-error="expectedOutcome"></div>
+                    </div>
+                </div>
+                <hr class="dc-section-divider my-3 my-md-4" />
+                <p class="dc-field-group-label dc-field-group-label--soft mb-2">Classification &amp; alignment</p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="dc-field dc-field--select">
+                            <label class="form-label dc-field-label" for="cap-reqtype">Request type <span class="dc-req-star text-danger">*</span></label>
+                            <div class="dc-select-wrap">
+                                <select id="cap-reqtype" name="requestType" class="form-select dc-input dc-enterprise-select"><option value="">Select...</option></select>
+                            </div>
+                            <div class="invalid-feedback" data-field-error="requestType"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="dc-field dc-field--select">
+                            <label class="form-label dc-field-label" for="cap-strategic">Strategic alignment</label>
+                            <div class="dc-select-wrap">
+                                <select id="cap-strategic" name="strategicAlignment" class="form-select dc-input dc-enterprise-select"><option value="">Select...</option></select>
+                            </div>
+                            <p class="form-text dc-form-hint small mb-0">Maps this demand to an enterprise strategic theme.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="dc-field dc-field--select">
+                            <label class="form-label dc-field-label" for="cap-bu">Business unit <span class="dc-req-star text-danger">*</span></label>
+                            <div class="dc-select-wrap">
+                                <select id="cap-bu" name="businessUnit" class="form-select dc-input dc-enterprise-select"><option value="">Select...</option></select>
+                            </div>
+                            <div class="invalid-feedback" data-field-error="businessUnit"></div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="dc-section-divider my-3 my-md-4" />
+                <p class="dc-field-group-label dc-field-group-label--soft mb-2">People</p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label dc-field-label" for="cap-requestor">Requestor <span class="dc-req-star text-danger">*</span></label>
+                        <div class="input-group dc-entity-input">
+                            <span class="input-group-text dc-input-group-icon" aria-hidden="true"><i class="bx bx-user"></i></span>
+                            <input id="cap-requestor" name="requestor" class="form-control dc-input" placeholder="Name of the person raising this demand" autocomplete="name" />
+                        </div>
+                        <p class="form-text dc-form-hint small mb-0">Primary contact for clarification (typically the requestor).</p>
+                        <div class="invalid-feedback" data-field-error="requestor"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label dc-field-label" for="cap-sponsor">Sponsor</label>
+                        <div class="input-group dc-entity-input">
+                            <span class="input-group-text dc-input-group-icon" aria-hidden="true"><i class="bx bx-briefcase"></i></span>
+                            <input id="cap-sponsor" name="sponsor" class="form-control dc-input" placeholder="Executive accountable for outcome and funding" autocomplete="off" />
+                        </div>
+                        <p class="form-text dc-form-hint small mb-0">Optional for draft; recommended before submission.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="dc-section dc-section--scope dc-section-spacing" aria-labelledby="dc-sec-scope" data-section="scope">
+            <div class="dc-section-header" data-bs-toggle="collapse" data-bs-target="#dc-sec-scope-body" aria-expanded="false" aria-controls="dc-sec-scope-body" role="button" style="cursor:pointer;">
+                <div class="dc-section-icon-wrap" aria-hidden="true"><i class="bx bx-shape-square"></i></div>
+                <div>
+                    <h2 class="dc-section-title" id="dc-sec-scope">Scope framing</h2>
+                    <p class="dc-section-hint mb-0">Define what is included, excluded, assumed, and constrained for this demand so reviewers can judge boundaries quickly.</p>
+                </div>
+                <span class="btn btn-sm btn-outline-secondary ms-auto" aria-hidden="true"><i class="bx bx-chevron-down me-1"></i>Expand</span>
+            </div>
+            <div id="dc-sec-scope-body" class="dc-section-body collapse">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label dc-field-label" for="cap-scope">Proposed scope</label>
+                        <textarea id="cap-scope" name="proposedScope" rows="3" class="form-control dc-input dc-textarea-fixed" placeholder="What is in scope for this demand or initiative"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label dc-field-label" for="cap-outofscope">Out of scope</label>
+                        <textarea id="cap-outofscope" name="outOfScope" rows="3" class="form-control dc-input dc-textarea-fixed" placeholder="What is explicitly out of scope (to prevent scope creep)"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label dc-field-label" for="cap-assumptions">Assumptions</label>
+                        <textarea id="cap-assumptions" name="assumptions" rows="3" class="form-control dc-input dc-textarea-fixed" placeholder="Key assumptions planning depends on"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label dc-field-label" for="cap-constraints">Constraints</label>
+                        <textarea id="cap-constraints" name="constraints" rows="3" class="form-control dc-input dc-textarea-fixed" placeholder="Time, budget, policy, or resource constraints"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="dc-section dc-section--class dc-section-spacing" aria-labelledby="dc-sec-class" data-section="class">
+            <div class="dc-section-header" data-bs-toggle="collapse" data-bs-target="#dc-sec-class-body" aria-expanded="false" aria-controls="dc-sec-class-body" role="button" style="cursor:pointer;">
+                <div class="dc-section-icon-wrap" aria-hidden="true"><i class="bx bx-grid-alt"></i></div>
+                <div>
+                    <h2 class="dc-section-title" id="dc-sec-class">Classification</h2>
+                    <p class="dc-section-hint mb-0">Categorize the demand and record risk posture. <strong>Priority</strong> is required to submit.</p>
+                </div>
+                <span class="btn btn-sm btn-outline-secondary ms-auto" aria-hidden="true"><i class="bx bx-chevron-down me-1"></i>Expand</span>
+            </div>
+            <div id="dc-sec-class-body" class="dc-section-body collapse">
+                <div class="row g-2 g-md-3 dc-class-grid">
+                    <div class="col-md-6">
+                        <div class="dc-field dc-field--select">
+                            <label class="form-label" for="cap-category">Category</label>
+                            <div class="dc-select-wrap">
+                                <select id="cap-category" name="category" class="form-select dc-input dc-enterprise-select" aria-label="Category">
+                                    <option value="">Select...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="dc-field dc-field--select">
+                            <label class="form-label" for="cap-demand-source">Demand source</label>
+                            <div class="dc-select-wrap">
+                                <select id="cap-demand-source" name="demandSource" class="form-select dc-input dc-enterprise-select" aria-label="Demand source">
+                                    <option value="">Select...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="dc-field dc-field--select">
+                            <label class="form-label" for="cap-priority">Priority <span class="dc-req-star text-danger" aria-hidden="true">*</span></label>
+                            <div class="dc-select-wrap">
+                                <select id="cap-priority" name="priority" class="form-select dc-input dc-enterprise-select" aria-required="true" aria-invalid="false" aria-describedby="cap-priority-feedback" aria-label="Priority, required">
+                                    <option value="">Select...</option>
+                                </select>
+                            </div>
+                            <div class="invalid-feedback" id="cap-priority-feedback" data-field-error="priority"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="dc-field dc-field--select">
+                            <label class="form-label" for="cap-compliance">Compliance impact</label>
+                            <div class="dc-select-wrap">
+                                <select id="cap-compliance" name="complianceImpact" class="form-select dc-input dc-enterprise-select" aria-label="Compliance impact">
+                                    <option value="">Select...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="dc-field dc-field--select">
+                            <label class="form-label" for="cap-complexity">Estimated complexity</label>
+                            <div class="dc-select-wrap">
+                                <select id="cap-complexity" name="estimatedComplexity" class="form-select dc-input dc-enterprise-select" aria-label="Estimated complexity">
+                                    <option value="">Select...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="dc-field dc-field--select">
+                            <label class="form-label" for="cap-risk">Risk sensitivity</label>
+                            <div class="dc-select-wrap">
+                                <select id="cap-risk" name="riskSensitivity" class="form-select dc-input dc-enterprise-select" aria-label="Risk sensitivity">
+                                    <option value="">Select...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <div class="dc-field dc-field--date">
+                            <label class="form-label" for="cap-review-due">Review due date</label>
+                            <div class="dc-date-field">
+                                <span class="dc-date-field__icon" aria-hidden="true"><i class="bx bx-calendar"></i></span>
+                                <input type="text"
+                                       id="cap-review-due"
+                                       name="reviewDueDate"
+                                       class="form-control dc-input dc-date-input"
+                                       autocomplete="off"
+                                       placeholder=""
+                                       aria-describedby="cap-review-due-hint" />
+                            </div>
+                            <p class="form-text dc-form-hint small mb-0" id="cap-review-due-hint">Optional. Target date for governance review; calendar uses your locale.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="dc-section dc-section--support dc-section-spacing" aria-labelledby="dc-sec-support" data-section="support">
+            <div class="dc-section-header" data-bs-toggle="collapse" data-bs-target="#dc-sec-support-body" aria-expanded="false" aria-controls="dc-sec-support-body" role="button" style="cursor:pointer;">
+                <div class="dc-section-icon-wrap" aria-hidden="true"><i class="bx bx-paperclip"></i></div>
+                <div>
+                    <h2 class="dc-section-title" id="dc-sec-support">Supporting material</h2>
+                    <p class="dc-section-hint mb-0">Evidence, references, and notes for reviewers and portfolio triage.</p>
+                </div>
+                <span class="btn btn-sm btn-outline-secondary ms-auto" aria-hidden="true"><i class="bx bx-chevron-down me-1"></i>Expand</span>
+            </div>
+            <div id="dc-sec-support-body" class="dc-section-body collapse">
+                <div class="dc-support-block dc-support-block--files mb-4">
+                    <div class="dc-support-block__head">
+                        <span class="dc-support-block__icon" aria-hidden="true"><i class="bx bx-cloud-upload"></i></span>
+                        <div>
+                            <span class="dc-support-block__title">File attachments</span>
+                            <p class="dc-support-block__sub small mb-0">Documents, diagrams, or exports that support this demand.</p>
+                        </div>
+                    </div>
+                    <div id="cap-dropzone" class="demand-dropzone dc-dropzone border border-2 border-dashed rounded-3 p-3 p-md-4 text-center position-relative mt-2">
+                        <div id="cap-dropzone-overlay" class="dc-dropzone-overlay d-none align-items-center justify-content-center gap-2">
+                            <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
+                            <span class="small">Uploading…</span>
+                        </div>
+                        <i class="bx bx-cloud-upload bx-lg dc-dropzone-icon d-block mx-auto" aria-hidden="true"></i>
+                        <p class="mb-1 small fw-semibold mt-2 mb-0">Drag files here or <label class="text-primary text-decoration-underline mb-0 dc-dropzone-browse" style="cursor:pointer"><input type="file" id="cap-file-input" class="d-none" multiple />browse</label></p>
+                        <p class="text-muted small mb-0 dc-dropzone-hint">Attachments unlock after the first <strong>Save draft</strong> (a record ID is required).</p>
+                    </div>
+                    <ul id="cap-attachments-list" class="list-unstyled small mt-3 mb-0 dc-attach-list"></ul>
+                </div>
+
+                <div class="dc-support-block dc-support-block--links mb-4">
+                    <div class="dc-support-block__head">
+                        <span class="dc-support-block__icon" aria-hidden="true"><i class="bx bx-link-alt"></i></span>
+                        <div>
+                            <span class="dc-support-block__title">Supporting links</span>
+                            <p class="dc-support-block__sub small mb-0">URLs to specs, tickets, architecture, or external references.</p>
+                        </div>
+                    </div>
+                    <div id="cap-links-list" class="d-flex flex-column gap-2 mt-2"></div>
+                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="cap-add-link"><i class="bx bx-plus me-1" aria-hidden="true"></i>Add another link</button>
+                </div>
+
+                <div class="dc-support-block mb-4">
+                    <label class="form-label dc-field-label fw-semibold" for="cap-notes">Notes</label>
+                    <p class="dc-form-hint small mb-2">Internal working notes for your team (not shown as a formal field elsewhere).</p>
+                    <textarea id="cap-notes" name="notes" rows="3" class="form-control dc-input dc-textarea-fixed" placeholder="Context, decisions, or follow-ups for reviewers"></textarea>
+                </div>
+
+                <div class="dc-support-block dc-support-block--tags">
+                    <label class="form-label dc-field-label fw-semibold" for="cap-tag-input">Tags</label>
+                    <p class="dc-form-hint small mb-2">Keywords for search, deduplication, and portfolio reporting.</p>
+                    <div class="d-flex flex-column flex-sm-row gap-2 mb-2">
+                        <input type="text" id="cap-tag-input" class="form-control form-control-sm dc-tag-input" placeholder="Type a tag, then press Enter or Add" autocomplete="off" />
+                        <button type="button" class="btn btn-sm btn-outline-primary align-self-stretch align-self-sm-center dc-tag-add-btn" id="cap-tag-add">Add</button>
+                    </div>
+                    <div id="demand-tags-visual" class="d-flex flex-wrap gap-1 dc-tags-chips"></div>
+                </div>
+
+                <div class="dc-support-block mt-4" id="related-ideas-panel">
+                    <div class="dc-side-card-header mb-2 d-flex align-items-center justify-content-between" data-bs-toggle="collapse" data-bs-target="#dc-related-ideas-body" aria-expanded="false" aria-controls="dc-related-ideas-body" role="button" style="cursor:pointer;">
+                        <span><i class="bx bx-git-merge me-1" aria-hidden="true"></i>Related ideas</span>
+                        <span class="btn btn-sm btn-outline-secondary" aria-hidden="true"><i class="bx bx-chevron-down me-1"></i>Expand</span>
+                    </div>
+                    <div id="dc-related-ideas-body" class="collapse">
+                    <div class="dc-related-connected mb-3 pb-3 border-bottom">
+                        <label class="form-label small fw-semibold mb-1" id="related-connected-label">Connected ideas</label>
+                        <p class="small text-muted mb-2 mb-0">Link other demand records to show relationships. Saved with <strong>Save draft</strong>.</p>
+                        <div id="related-connected-host" class="d-flex flex-wrap gap-1 dc-related-chips mb-1" aria-labelledby="related-connected-label"></div>
+                        <p class="small text-muted mb-0 d-none" id="related-connected-empty" role="status">No linked ideas yet — connect from suggestions below or paste an ID.</p>
+                    </div>
+                    <div class="dc-related-manual mb-3 pb-3 border-bottom">
+                        <label class="form-label small fw-semibold mb-1" for="dc-open-related-id">Open or connect by ID</label>
+                        <p class="small text-muted mb-2 mb-0">Paste the record <strong>ID</strong> (GUID) from the demand list or from the page URL after <code>?id=</code>.</p>
+                        <div class="input-group input-group-sm mt-2">
+                            <input type="text" id="dc-open-related-id" class="form-control font-monospace" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" />
+                            <button type="button" class="btn btn-outline-secondary" id="dc-connect-related-btn" title="Link this record as related">Connect</button>
+                            <button type="button" class="btn btn-outline-primary" id="dc-open-related-btn">Open</button>
+                        </div>
+                        <a href="@Url.Action("Index")" class="small d-inline-block mt-2 text-decoration-none">Browse all ideas <i class="bx bx-chevron-right"></i></a>
+                    </div>
+                    <ul class="list-unstyled small mb-0 dc-side-list" id="related-ideas-list"></ul>
+                    <div class="dc-empty dc-empty--compact d-none" id="related-ideas-empty" role="status">
+                        <i class="bx bx-bulb" aria-hidden="true"></i>
+                        <span class="dc-empty-title">No matches yet</span>
+                        <span class="dc-empty-text">Enter a title in Core information to find related demands.</span>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

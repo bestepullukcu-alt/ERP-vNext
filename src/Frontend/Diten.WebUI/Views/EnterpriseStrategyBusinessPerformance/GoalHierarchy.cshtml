@@ -1,0 +1,40 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Goal Hierarchy";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="alert alert-info">
+    Initiatives and Projects appear here as aligned delivery references. Open Delivery &amp; Execution Management for native execution record management.
+</div>
+
+<div class="card mb-3">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+        <input id="goal-hierarchy-search" class="form-control form-control-sm w-auto" placeholder="Search goal/objective/aligned initiative/project" />
+        <button id="goal-hierarchy-expand-all" class="btn btn-sm btn-outline-secondary">Expand all</button>
+        <button id="goal-hierarchy-collapse-all" class="btn btn-sm btn-outline-secondary">Collapse all</button>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/goals">Goals List</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/delivery-execution/initiatives">Open Delivery Initiatives</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/delivery-execution/projects">Open Delivery Projects</a>
+        <a class="btn btn-sm btn-primary ms-auto" href="/management-governance/enterprise-strategy-business-performance/goals">Create/Edit Goal</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-3" id="goal-hierarchy-kpis">
+    <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Goals</div><div class="h6 mb-0" id="gh-kpi-goals">0</div></div></div>
+    <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Objectives</div><div class="h6 mb-0" id="gh-kpi-objectives">0</div></div></div>
+    <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Aligned Initiatives</div><div class="h6 mb-0" id="gh-kpi-initiatives">0</div></div></div>
+    <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Aligned Projects</div><div class="h6 mb-0" id="gh-kpi-projects">0</div></div></div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div id="goal-hierarchy-state" class="small text-muted mb-2">Loading hierarchy...</div>
+        <div id="goal-hierarchy-tree"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/goal-hierarchy.js" asp-append-version="true"></script>
+}

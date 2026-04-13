@@ -1,0 +1,64 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "KPI Governance";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Total KPI Templates</div><div class="h5 mb-0" id="gov-total">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Draft</div><div class="h5 mb-0" id="gov-draft">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">In Review</div><div class="h5 mb-0" id="gov-review">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Approved</div><div class="h5 mb-0" id="gov-approved">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Published</div><div class="h5 mb-0" id="gov-published">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Retired</div><div class="h5 mb-0" id="gov-retired">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Missing Owner</div><div class="h5 mb-0" id="gov-missing-owner">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Missing Threshold</div><div class="h5 mb-0" id="gov-missing-threshold">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Missing Formula</div><div class="h5 mb-0" id="gov-missing-formula">0</div></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">Exceptions</div>
+    <div class="table-responsive">
+        <table class="table table-sm mb-0" id="gov-exceptions-table">
+            <thead>
+                <tr>
+                    <th>Template Code</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Exception Type</th>
+                    <th>Message</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Lifecycle / Audit Activity</div>
+    <div class="table-responsive">
+        <table class="table table-sm mb-0" id="gov-actions-table">
+            <thead>
+                <tr>
+                    <th>When</th>
+                    <th>Entity</th>
+                    <th>Action</th>
+                    <th>Before</th>
+                    <th>After</th>
+                    <th>Actor</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/kpi-governance.js" asp-append-version="true"></script>
+}

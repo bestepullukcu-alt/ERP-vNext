@@ -159,12 +159,6 @@
   <data name="GatewayError" xml:space="preserve">
     <value>Sunucu ile iletişim sırasında bir hata oluştu.</value>
   </data>
-  <data name="LegalEntities" xml:space="preserve">
-    <value>Tüzel Kişilikler</value>
-  </data>
-  <data name="Countries" xml:space="preserve">
-    <value>Ülkeler</value>
-  </data>
   <data name="Light" xml:space="preserve">
     <value>Aydınlık</value>
   </data>

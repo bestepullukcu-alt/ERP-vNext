@@ -159,12 +159,6 @@
   <data name="GatewayError" xml:space="preserve">
     <value>Server ilə əlaqə zamanı xəta baş verdi.</value>
   </data>
-  <data name="LegalEntities" xml:space="preserve">
-    <value>Tüzel Kişilikler</value>
-  </data>
-  <data name="Countries" xml:space="preserve">
-    <value>Ölkələr</value>
-  </data>
   <data name="Light" xml:space="preserve">
     <value>Aydınlık</value>
   </data>

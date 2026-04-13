@@ -1,0 +1,161 @@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="strategyPeriodOffcanvas" aria-labelledby="strategyPeriodOffcanvasLabel">
+    <div class="offcanvas-header border-bottom">
+        <div>
+            <h5 id="strategyPeriodOffcanvasLabel" class="offcanvas-title">Create Strategy Period</h5>
+            <p id="strategyPeriodOffcanvasSubtitle" class="small text-muted mb-0">Add a strategy period under this cycle with scope and review governance controls.</p>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 p-6 h-100">
+        <div id="cycle-period-form-error" class="alert alert-danger d-none mb-3 es-validation-summary"></div>
+
+        <!-- In-Use Banner — kısıtlı düzenleme modunda gösterilir -->
+        <div class="alert alert-warning d-flex align-items-center d-none mb-3"
+             id="cycle-period-in-use-banner" role="alert">
+            <i class="bx bx-lock-alt me-2 fs-5"></i>
+            <div>
+                <strong>Kısıtlı Düzenleme Modu</strong><br>
+                Bu Strategy Period
+                <strong><span id="in-use-goal-count">0</span></strong> Goal ve
+                <strong><span id="in-use-obj-count">0</span></strong> Objective
+                tarafından kullanılmaktadır.
+                Yapısal alanlar kilitlenmiştir.
+            </div>
+        </div>
+
+        <section class="es-workspace-section mb-6">
+            @await Html.PartialAsync(
+                "Components/Planning/_SectionCardHeader",
+                viewData: new ViewDataDictionary(ViewData)
+                {
+                    ["SectionNumber"] = "",
+                    ["SectionTitle"] = "Period Identity",
+                    ["SectionSubtitle"] = "",
+                    ["SectionStatusId"] = "cycle-period-sec-identity-state",
+                    ["SectionStatusText"] = "",
+                    ["SectionStatusClass"] = "is-blocked"
+                })
+            <div class="row g-3 px-3">
+                <div class="col-12 form-control-validation">
+                    <label class="form-label es-required" for="cycle-period-cycle">Parent Planning Cycle <span class="text-danger">*</span></label>
+                    <select id="cycle-period-cycle" class="form-select select2">
+                        <option value="">Select cycle</option>
+                    </select>
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label es-required" for="cycle-period-name">Name <span class="text-danger">*</span></label>
+                    <input id="cycle-period-name" class="form-control" placeholder="Annual Strategy 2026" />
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label" for="cycle-period-code">Code <span class="es-field-tag tag-system small">System-managed</span></label>
+                    <input id="cycle-period-code" class="form-control" readonly />
+                    <div class="small text-muted">Generated and maintained by the system.</div>
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label es-required" for="cycle-period-owner-company">Owner Company / Org <span class="text-danger">*</span></label>
+                    <select id="cycle-period-owner-company" class="form-select select2">
+                        <option value="">Select company</option>
+                    </select>
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label es-required" for="cycle-period-owner-position">Owner Position <span class="text-danger">*</span></label>
+                    <select id="cycle-period-owner-position" class="form-select select2" disabled>
+                        <option value="">Select company first</option>
+                    </select>
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label" for="cycle-period-current-owner-person">Current Owner</label>
+                    <select id="cycle-period-current-owner-person" class="form-select select2">
+                        <option value="">Select person</option>
+                    </select>
+                </div>
+                <div class="col-12 mt-4">
+                    <hr class="m-0 opacity-50">
+                </div>
+            </div>
+        </section>
+
+        <section class="es-workspace-section mb-6">
+            @await Html.PartialAsync(
+                "Components/Planning/_SectionCardHeader",
+                viewData: new ViewDataDictionary(ViewData)
+                {
+                    ["SectionNumber"] = "",
+                    ["SectionTitle"] = "Scope",
+                    ["SectionSubtitle"] = "",
+                    ["SectionStatusId"] = "cycle-period-sec-scope-state",
+                    ["SectionStatusText"] = "",
+                    ["SectionStatusClass"] = "is-blocked"
+                })
+            <div class="row g-3 px-3">
+                <div class="col-12 form-control-validation">
+                    <label class="form-label es-required" for="cycle-period-company">Company <span class="text-danger">*</span></label>
+                    <select id="cycle-period-company" class="form-select select2">
+                        <option value="">Select company</option>
+                    </select>
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label" for="cycle-period-bu">Business Unit / Function</label>
+                    <select id="cycle-period-bu" class="form-select">
+                        <option value="">Select business unit</option>
+                    </select>
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label" for="cycle-period-region">Region / Geography</label>
+                    <select id="cycle-period-region" class="form-select">
+                        <option value="">Select region</option>
+                    </select>
+                </div>
+                <div class="col-12 form-control-validation">
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="checkbox" id="cycle-period-default" />
+                        <label class="form-check-label" for="cycle-period-default">Is Default for Scope</label>
+                    </div>
+                    <div class="small text-muted">Keep one active default per scope for auto-resolution behavior.</div>
+                </div>
+                <div class="col-12 mt-4">
+                    <hr class="m-0 opacity-50">
+                </div>
+            </div>
+        </section>
+
+        <section class="es-workspace-section mb-6">
+            @await Html.PartialAsync(
+                "Components/Planning/_SectionCardHeader",
+                viewData: new ViewDataDictionary(ViewData)
+                {
+                    ["SectionNumber"] = "",
+                    ["SectionTitle"] = "Timing & Review",
+                    ["SectionSubtitle"] = "Dates must be consistent and fit the parent cycle horizon.",
+                    ["SectionStatusId"] = "cycle-period-sec-timing-state",
+                    ["SectionStatusText"] = "",
+                    ["SectionStatusClass"] = "is-blocked"
+                })
+            <div class="row g-3 px-3">
+                <div class="col-12 form-control-validation">
+                    <label class="form-label es-required" for="cycle-period-review">Review Cadence <span class="text-danger">*</span></label>
+                    <select id="cycle-period-review" class="form-select">
+                        <option value="">Select</option>
+                    </select>
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label es-required" for="cycle-period-start">Start Date <span class="text-danger">*</span></label>
+                    <input id="cycle-period-start" type="date" class="form-control" />
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label es-required" for="cycle-period-end">End Date <span class="text-danger">*</span></label>
+                    <input id="cycle-period-end" type="date" class="form-control" />
+                </div>
+                <div class="col-12 form-control-validation">
+                    <label class="form-label" for="cycle-period-notes">Notes</label>
+                    <textarea id="cycle-period-notes" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+        </section>
+
+        <div class="pt-4 mt-6 border-top">
+            <button type="submit" id="cycle-period-save" class="btn btn-primary me-3">Submit</button>
+            <button type="reset" class="btn btn-label-danger" data-bs-dismiss="offcanvas">Cancel</button>
+        </div>
+    </div>
+</div>

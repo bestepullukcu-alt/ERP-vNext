@@ -1,0 +1,20 @@
+@model Diten.WebUI.Models.ManagementGovernance.ModuleSummary
+
+<section class="card mg-card">
+    <div class="card-body text-center py-5">
+        <h2 class="h5 mb-2">@Model.Name</h2>
+        <p class="text-muted mb-3">@Model.Description</p>
+        <div class="d-flex justify-content-center gap-2 mb-3">
+            <partial name="Components/_StatusBadge" model="Model.Status" />
+            <partial name="Components/_RiskBadge" model="Model.RiskLevel" />
+        </div>
+        <p class="small text-muted mb-4">
+            This module workspace is not implemented in this domain shell yet.
+            Routing is stable and reserved for future integration.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a class="btn btn-primary btn-sm" href="/management-governance/work-queue?module=@Model.Id">Open Related Queue</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/management-governance/search?q=@Uri.EscapeDataString(Model.Name)">Find Signals</a>
+        </div>
+    </div>
+</section>

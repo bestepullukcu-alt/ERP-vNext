@@ -1,0 +1,8 @@
+@{
+    var saveId = (ViewData["SaveId"]?.ToString() ?? "modal-save");
+    var saveLabel = (ViewData["SaveLabel"]?.ToString() ?? "Save");
+}
+<div class="modal-footer sticky-footer">
+    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button id="@saveId" type="button" class="btn btn-primary" disabled>@saveLabel</button>
+</div>

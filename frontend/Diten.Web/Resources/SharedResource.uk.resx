@@ -159,12 +159,6 @@
   <data name="GatewayError" xml:space="preserve">
     <value>Під час зв'язку із сервером сталася помилка.</value>
   </data>
-  <data name="LegalEntities" xml:space="preserve">
-    <value>Юридичні особи</value>
-  </data>
-  <data name="Countries" xml:space="preserve">
-    <value>Країни</value>
-  </data>
   <data name="Light" xml:space="preserve">
     <value>Світла</value>
   </data>

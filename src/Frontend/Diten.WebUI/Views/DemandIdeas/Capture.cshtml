@@ -1,0 +1,73 @@
+@model Diten.WebUI.Models.DemandIdeas.CaptureShellViewModel
+@{
+    ViewData["Title"] = "Demand & Ideas Capture";
+}
+@* Capture UI: enterprise intake workspace (data-capture-ui-version for cache bust / QA) *@
+<div id="demand-capture-root"
+     class="demand-capture-page w-100 pb-3 pb-md-4"
+     data-capture-ui-version="enterprise-b2b-2026-02-r"
+     data-capture-layout="@(ViewData["CaptureLayoutVersion"] ?? "")"
+     data-api-base="@Model.ApiBaseUrl"
+     data-initial-id="@(Model.InitialRecordId ?? "")">
+    <div class="container-xxl flex-grow-1 container-p-y dc-shell">
+
+        <div class="dc-sticky-head-wrap mb-2 mb-md-3">
+            <header class="dc-page-hero dc-page-hero--unified position-relative mb-0 rounded-bottom-0 border-bottom-0">
+                <div class="dc-hero-accent" aria-hidden="true"></div>
+                <div class="position-relative px-1 px-sm-0">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                        <nav aria-label="Breadcrumb" class="flex-grow-1 min-w-0">
+                            <ol class="breadcrumb dc-breadcrumb mb-0 small">
+                                <li class="breadcrumb-item"><a href="@Url.Action("Index")" class="text-decoration-none">Demand &amp; Ideas</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Capture</li>
+                            </ol>
+                        </nav>
+                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                            <div id="dc-loading-indicator" class="dc-loading-indicator d-none align-items-center gap-2 text-muted small" role="status" aria-live="polite">
+                                <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
+                                <span>Loading…</span>
+                            </div>
+                            <span class="badge rounded-pill px-2 px-sm-3 py-2 dc-status-pill" id="dc-status-badge">Draft</span>
+                        </div>
+                    </div>
+
+                    <a href="@Url.Action("Index")" class="dc-back-link text-body text-decoration-none d-inline-flex align-items-center gap-1 mb-2">
+                        <i class="bx bx-chevron-left" aria-hidden="true"></i> Back to all ideas
+                    </a>
+
+                    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 dc-hero-main">
+                        <div class="flex-grow-1 dc-hero-title-block" style="min-width:min(100%, 280px);">
+                            <h1 class="dc-page-title mb-1">Demand &amp; Ideas Capture</h1>
+                        </div>
+                        <div class="dc-header-actions dc-header-actions--sticky d-flex flex-wrap align-items-center gap-2 gap-sm-2 pt-lg-1" id="dc-header-actions">
+                            <a href="@Url.Action("Index")" class="btn btn-sm btn-outline-secondary dc-btn-secondary" id="demand-cap-cancel"><i class="bx bx-x me-1" aria-hidden="true"></i>Cancel</a>
+                            <button type="button" class="btn btn-sm btn-outline-primary dc-btn-draft" id="demand-cap-draft"><span class="dc-btn-label"><i class="bx bx-save me-1" aria-hidden="true"></i>Save draft</span><span class="dc-btn-loading spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span></button>
+                            <button type="button" class="btn btn-sm btn-primary dc-btn-submit" id="demand-cap-submit"><span class="dc-btn-label"><i class="bx bx-send me-1" aria-hidden="true"></i>Submit</span><span class="dc-btn-loading spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span></button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <div class="dc-action-bar-ribbon small text-muted px-3 py-2 border border-top-0 rounded-bottom d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 gap-sm-3">
+                <span class="dc-ribbon-hint flex-grow-1"><i class="bx bx-info-circle me-1 text-primary" aria-hidden="true"></i><strong>Save draft</strong> stores your work. <strong>Submit</strong> validates required fields and sends this demand for governance review.</span>
+                <button type="button" class="btn btn-sm btn-outline-secondary dc-copy-link-btn flex-shrink-0" id="dc-copy-page-link" title="Copy URL to this capture page">
+                    <i class="bx bx-link-alt me-1" aria-hidden="true"></i><span class="dc-copy-link-label">Copy page link</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="dc-validation-summary" class="alert dc-validation-alert border-0 shadow-sm d-none mb-3" role="alert" aria-live="assertive"></div>
+        <div id="dc-api-alert" class="alert d-none border-0 shadow-sm mb-3" role="alert"></div>
+
+        <form id="demand-capture-form" class="needs-validation dc-capture-form" novalidate autocomplete="off">
+            @await Html.PartialAsync("_CaptureApiFormPartial")
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/demand-idea-capture.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/assets/js/pages/demand-ideas/demandIdeaCapture.js" asp-append-version="true"></script>
+}

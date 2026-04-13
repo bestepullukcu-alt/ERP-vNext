@@ -1,0 +1,85 @@
+<section class="es-workspace-section" id="planning-cycle-sec-identity">
+    @await Html.PartialAsync(
+        "~/Views/EnterpriseStrategyBusinessPerformance/Components/Planning/_SectionCardHeader.cshtml",
+        viewData: new ViewDataDictionary(ViewData)
+        {
+            ["SectionNumber"] = "1",
+            ["SectionTitle"] = "Cycle Identity *",
+            ["SectionSubtitle"] = "Define cycle code, ownership, and management metadata.",
+            ["SectionStatusId"] = "planning-cycle-sec-identity-state",
+            ["SectionStatusText"] = "Blocked",
+            ["SectionStatusClass"] = "is-blocked"
+        })
+    <div class="row g-2">
+        <div class="col-12 col-md-6 form-control-validation">
+            <label class="form-label es-required" for="planning-cycle-name">Name</label>
+            <input id="planning-cycle-name" class="form-control" />
+        </div>
+        <div class="col-12 col-md-6 form-control-validation">
+            <label class="form-label" for="planning-cycle-code">Code <span class="es-field-tag tag-system">System-managed</span></label>
+            <input id="planning-cycle-code" class="form-control" readonly />
+            <div class="small text-muted">Generated from planning-cycle details during create flow.</div>
+        </div>
+        <div class="col-12 col-md-6 form-control-validation">
+            <label class="form-label es-required" for="planning-cycle-type">Planning Cycle Type</label>
+            <select id="planning-cycle-type" class="form-select"><option value="">Select</option></select>
+        </div>
+        <div class="col-12 col-md-6 form-control-validation">
+            <label class="form-label" for="planning-cycle-status">Status / Lifecycle State</label>
+            <input id="planning-cycle-status" class="form-control" value="Draft" readonly />
+            <div class="small text-muted">Create starts in Draft and can be activated after governance review.</div>
+        </div>
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label es-required" for="planning-cycle-owner-company">Owner Company / Org</label>
+            <select id="planning-cycle-owner-company" class="form-select" required>
+                <option value="">Select owner company / org</option>
+            </select>
+            <div id="planning-cycle-owner-company-help" class="small text-muted">Owner Company / Org defines the accountability context for this planning cycle.</div>
+        </div>
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label es-required" for="planning-cycle-owner-position">Owner Position</label>
+            <select id="planning-cycle-owner-position" class="form-select" required disabled>
+                <option value="">Select owner company / org first</option>
+            </select>
+            <div id="planning-cycle-owner-position-help" class="small text-muted">Owner Position defines the governance seat accountable for the cycle.</div>
+        </div>
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label" for="planning-cycle-current-owner-person-display">Current Owner Person</label>
+            <input id="planning-cycle-current-owner-person-display" class="form-control" readonly placeholder="Auto-filled from selected position" />
+            <input id="planning-cycle-current-owner-person" type="hidden" />
+            <div id="planning-cycle-current-owner-person-help" class="small text-muted">Current Owner Person is resolved automatically from the active incumbent.</div>
+        </div>
+        <div class="col-12 form-control-validation">
+            <label class="form-label" for="planning-cycle-accountability-summary">Accountability Summary</label>
+            <input id="planning-cycle-accountability-summary" class="form-control" readonly value="-" />
+        </div>
+        <div class="col-12 form-control-validation">
+            <label class="form-label" for="planning-cycle-description">Description <span class="es-field-tag tag-optional">Optional</span></label>
+            <textarea id="planning-cycle-description" class="form-control" rows="2"></textarea>
+        </div>
+    </div>
+</section>
+
+<section class="es-workspace-section" id="planning-cycle-sec-horizon">
+    @await Html.PartialAsync(
+        "~/Views/EnterpriseStrategyBusinessPerformance/Components/Planning/_SectionCardHeader.cshtml",
+        viewData: new ViewDataDictionary(ViewData)
+        {
+            ["SectionNumber"] = "2",
+            ["SectionTitle"] = "Effective Horizon *",
+            ["SectionSubtitle"] = "Effective To must be on or after Effective From.",
+            ["SectionStatusId"] = "planning-cycle-sec-horizon-state",
+            ["SectionStatusText"] = "Blocked",
+            ["SectionStatusClass"] = "is-blocked"
+        })
+    <div class="row g-2">
+        <div class="col-12 col-md-6 form-control-validation">
+            <label class="form-label es-required" for="planning-cycle-effective-from">Effective From</label>
+            <input id="planning-cycle-effective-from" type="date" class="form-control" />
+        </div>
+        <div class="col-12 col-md-6 form-control-validation">
+            <label class="form-label es-required" for="planning-cycle-effective-to">Effective To</label>
+            <input id="planning-cycle-effective-to" type="date" class="form-control" />
+        </div>
+    </div>
+</section>

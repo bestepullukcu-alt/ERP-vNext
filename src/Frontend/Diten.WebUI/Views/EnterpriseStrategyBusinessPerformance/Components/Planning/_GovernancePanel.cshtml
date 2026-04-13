@@ -1,0 +1,37 @@
+@{
+    var isSoon = ViewData["IsSoon"] != null && (bool)ViewData["IsSoon"];
+    var disabledClass = isSoon ? "is-soon-disabled" : "";
+}
+<div class="card esbp-table-card es-governance-panel-card h-100 @disabledClass">
+    <div class="card-body">
+        @await Html.PartialAsync(
+            "Components/Planning/_SectionCardHeader",
+            viewData: new ViewDataDictionary(ViewData)
+            {
+                ["SectionNumber"] = "04",
+                ["SectionTitle"] = "Governance & Traceability",
+                ["SectionSubtitle"] = "Decision references, evidence hooks, and policy context for controlled lifecycle actions.",
+                ["SectionStatusText"] = isSoon ? "Upcoming" : "Governed",
+                ["SectionStatusClass"] = isSoon ? "bg-label-secondary" : "is-info",
+                ["ShowSoonBadge"] = isSoon
+            })
+
+        <div class="es-governance-kv-list mb-3">
+            <div><span>Decision Register:</span> Active</div>
+            <div><span>Evidence Requirement:</span> Mandatory on publish/activate</div>
+            <div><span>Audit Trail:</span> Enabled</div>
+            <div><span>Policy Note:</span> Scope or horizon updates should include rationale and evidence links.</div>
+        </div>
+
+        <div class="es-governance-chip-group mb-3">
+            <span class="es-field-tag tag-system">DEC-2301</span>
+            <span class="es-field-tag tag-derived">EVD-812</span>
+            <span class="es-field-tag tag-derived">EVD-901</span>
+            <span class="es-field-tag tag-optional">POL-ESBP-04</span>
+        </div>
+
+        <div class="es-governance-note">
+            Governance and usage annotations are rendered from currently available data contracts. Additional decision/evidence fields can be surfaced when backend support is expanded.
+        </div>
+    </div>
+</div>

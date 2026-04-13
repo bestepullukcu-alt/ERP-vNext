@@ -1,0 +1,29 @@
+@{
+    ViewData["Title"] = ViewData["ModuleTitle"]?.ToString() ?? "Module";
+    var title = ViewData["ModuleTitle"]?.ToString() ?? "Module";
+}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "DemandIdeas")">Demand &amp; Idea Management</a></li>
+            <li class="breadcrumb-item active">@title</li>
+        </ol>
+    </nav>
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border rounded-3">
+                <div class="card-body text-center py-5 px-4">
+                    <div class="avatar avatar-xl mx-auto mb-3">
+                        <span class="avatar-initial rounded-circle bg-label-secondary text-secondary"><i class="bx bx-cog bx-lg"></i></span>
+                    </div>
+                    <h4 class="mb-2">@title</h4>
+                    <p class="text-muted mb-4 mx-auto" style="max-width:32rem">This workspace connects to your Management &amp; Governance processes. Wire APIs and workflows when ready.</p>
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <a href="@Url.Action("Dashboard")" class="btn btn-outline-secondary btn-sm">Dashboard</a>
+                        <a href="@Url.Action("Index")" class="btn btn-primary btn-sm">Ideas &amp; Demand</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

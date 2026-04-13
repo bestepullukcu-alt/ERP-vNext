@@ -1,0 +1,14 @@
+<svg id="wizardSubmit" width="54" height="54" xmlns="http://www.w3.org/2000/svg">
+  <g fill-rule="nonzero">
+    <!-- Document -->
+    <path d="M8 6a2 2 0 0 0-2 2v38a2 2 0 0 0 2 2h28l12-12V8a2 2 0 0 0-2-2H8zm0 2h28v22h-10a2 2 0 0 0-2 2v10H8V8zm20 30v6l6-6h-6z"/>
+
+    <!-- Clock icon (küçültülüp, hafifçe içe alındı) -->
+    <path d="M33 19a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-.5 1.5v2.5l2 1.2a.75.75 0 1 1-.75 1.3l-2.75-1.65V22a.75.75 0 0 1 1.25-.65z"/>
+
+    <!-- Submit arrow -->
+    <path d="M16 26l4 4-4 4v-3h-6v-2h6v-3z"/>
+  </g>
+</svg>
+
+

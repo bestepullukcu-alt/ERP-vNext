@@ -1,0 +1,952 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "Create Project";
+    var prefillParentInitiativeId = ViewData["PrefillParentInitiativeId"]?.ToString() ?? string.Empty;
+}
+@await Html.PartialAsync("~/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml", Model)
+
+<div id="project-create-workspace" class="goal-create-workspace" data-prefill-parent-initiative-id="@prefillParentInitiativeId">
+    <div class="goal-workspace-shell project-workspace-shell">
+        <div class="goal-workspace-header sticky-top">
+            <div class="goal-workspace-title-wrap">
+                <h5 class="goal-workspace-title mb-0">@ViewData["Title"]</h5>
+                <p class="goal-workspace-subtitle mb-0">Create a governed Project under a Parent Initiative with locked lineage, compatible template defaults, delivery planning, and budget governance.</p>
+            </div>
+            <div class="goal-workspace-actions">
+                <a href="/management-governance/delivery-execution/projects" class="btn btn-sm btn-outline-secondary">Cancel / Back</a>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="project-step-back">Back</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="project-step-next">Next</button>
+                <button type="button" class="btn btn-sm btn-outline-light" id="project-save-draft">Save Draft</button>
+                <button type="button" class="btn btn-sm btn-primary d-none" id="project-create-submit">Create Project</button>
+                <button type="button" class="btn btn-sm btn-primary d-none" id="project-create-open">Create and Open Detail</button>
+            </div>
+        </div>
+
+        <div class="goal-workspace-body">
+            @{
+                ViewData["Id"] = "project-form-error";
+            }
+            @await Html.PartialAsync("~/Views/EnterpriseStrategyBusinessPerformance/Components/Forms/_ValidationSummary.cshtml")
+
+            <div id="project-wizard-error" class="d-none"></div>
+
+            <div class="project-field-legend mb-3">
+                <span class="badge bg-label-info">Inherited</span>
+                <span>Locked to the selected Parent Initiative</span>
+                <span class="badge bg-label-primary">Editable</span>
+                <span>User-authored in the workspace</span>
+                <span class="badge bg-label-warning">Template Default</span>
+                <span>Suggested by a compatible Project Template only</span>
+            </div>
+
+            <div id="project-wizard-steps" class="project-wizard-nav mb-3" role="tablist" aria-label="Project Wizard Steps">
+                <button type="button" class="btn project-step-btn active" data-step="1">1. Identity &amp; Strategy Anchor</button>
+                <button type="button" class="btn project-step-btn" data-step="2">2. Ownership &amp; Operating Scope</button>
+                <button type="button" class="btn project-step-btn" data-step="3">3. Delivery Planning</button>
+                <button type="button" class="btn project-step-btn" data-step="4">4. Execution Controls &amp; Readiness</button>
+                <button type="button" class="btn project-step-btn" data-step="5">5. Budgeting &amp; Financial Governance</button>
+                <button type="button" class="btn project-step-btn" data-step="6">6. Review &amp; Create</button>
+            </div>
+
+            <section class="es-goal-section project-step-pane" data-step="1">
+                @{
+                    ViewData["Title"] = "Identity & Strategy Anchor";
+                    ViewData["Subtitle"] = "Define the delivery identity and lock the Project to a parent Initiative before planning work begins.";
+                }
+                @await Html.PartialAsync("~/Views/EnterpriseStrategyBusinessPerformance/Components/Forms/_SectionHeader.cshtml")
+                <div class="project-step-copy mb-3">
+                    <span class="badge bg-label-info me-2">Anchor Rule</span>
+                    Parent Initiative is the first control. Parent Objective, Parent Goal, Parent Type, and EntityScope are inherited from that Initiative, and compatible templates load only after the anchor is selected.
+                </div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label es-required" for="project-parent-initiative">Parent Initiative <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-parent-initiative" class="form-select select2" required>
+                            <option value="">Select Parent Initiative</option>
+                        </select>
+                        <div class="project-inline-hint mt-1">Select the Parent Initiative first so this Project can inherit strategic lineage, operating scope, and compatible template context.</div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="project-derived-context-card">
+                            <div class="project-derived-context-header">
+                                <div>
+                                    <h6 class="project-derived-context-title mb-1">Derived Strategy Context</h6>
+                                    <p class="project-inline-hint mb-0">This Project inherits lineage and governed context from the selected Parent Initiative.</p>
+                                </div>
+                                <span class="badge bg-label-info">Derived</span>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6 col-xl-3">
+                                    <label class="form-label" for="project-parent-objective">Derived Parent Objective <span class="badge bg-label-info ms-1">Inherited</span></label>
+                                    <input id="project-parent-objective" class="form-control project-readonly-field" readonly />
+                                </div>
+                                <div class="col-12 col-md-6 col-xl-3">
+                                    <label class="form-label" for="project-parent-goal">Derived Parent Goal <span class="badge bg-label-info ms-1">Inherited</span></label>
+                                    <input id="project-parent-goal" class="form-control project-readonly-field" readonly />
+                                </div>
+                                <div class="col-12 col-md-6 col-xl-3">
+                                    <label class="form-label" for="project-parent-type">Derived Parent Type <span class="badge bg-label-info ms-1">Inherited</span></label>
+                                    <input id="project-parent-type" class="form-control project-readonly-field" readonly />
+                                </div>
+                                <div class="col-12 col-md-6 col-xl-3">
+                                    <label class="form-label" for="project-entity-scope">Derived EntityScope <span class="badge bg-label-info ms-1">Inherited</span></label>
+                                    <input id="project-entity-scope" class="form-control project-readonly-field" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="project-source-panel">
+                            <div class="project-source-controls">
+                                <div class="project-source-control project-source-control-select">
+                                    <label class="form-label mb-1" for="project-creation-mode">Creation Mode</label>
+                                    <select id="project-creation-mode" class="form-select" disabled>
+                                        <option value="Blank">Blank</option>
+                                        <option value="Template">From Project Template</option>
+                                    </select>
+                                </div>
+                                <div class="project-source-control project-source-control-action">
+                                    <label class="form-label d-block mb-1">&nbsp;</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary w-100" id="project-template-browse" disabled>Browse template...</button>
+                                </div>
+                                <div class="project-source-control project-source-control-action">
+                                    <label class="form-label d-block mb-1">&nbsp;</label>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="project-template-clear" disabled>Clear template</button>
+                                </div>
+                            </div>
+                            <div id="project-template-filter-note" class="project-inline-hint mt-2">Select Parent Initiative first.</div>
+                            <div class="col-12 d-none mt-2" id="project-template-host">
+                                <select id="project-template-select" class="form-select d-none">
+                                    <option value="">Select compatible template</option>
+                                </select>
+                                <div class="project-inline-hint">Use Browse template to open the compatible Project Template picker.</div>
+                            </div>
+                            <div id="project-template-preview" class="project-template-preview d-none mt-3">
+                                <div class="project-template-preview-header">
+                                    <div>
+                                        <div class="fw-semibold mb-1">Template Prefill Preview</div>
+                                        <div class="project-inline-hint mb-0">Review the editable fields that will be defaulted before applying or reapplying this template.</div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-warning" id="project-template-reapply" disabled>Reapply Template Defaults</button>
+                                </div>
+                                <ul id="project-template-prefill-list" class="mb-0"></ul>
+                            </div>
+                            <div id="project-source-summary" class="project-source-summary-card is-empty mt-3">
+                                <div id="project-source-summary-name" class="project-source-summary-name">Blank Project create</div>
+                                <div id="project-source-summary-note" class="project-source-summary-note">Blank starts without template defaults, but the Project still must remain anchored to a Parent Initiative.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label class="form-label" for="project-id">Project Code / ID <span class="badge bg-label-secondary ms-1">System</span></label>
+                        <input id="project-id" class="form-control project-readonly-field" readonly placeholder="Assigned on first save" />
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <label class="form-label es-required" for="project-name">Project Name <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <input id="project-name" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label es-required" for="project-description">Project Description <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <textarea id="project-description" rows="4" class="form-control"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section class="es-goal-section project-step-pane d-none" data-step="2">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label es-required" for="project-owner-pm">Project Owner / PM <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-owner-pm" class="form-select select2"><option value="">Select owner / PM</option></select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label es-required" for="project-executive-sponsor">Executive Sponsor <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-executive-sponsor" class="form-select select2"><option value="">Select executive sponsor</option></select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label" for="project-business-owner">Business Owner / Benefit Owner <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-business-owner" class="form-select select2"><option value="">Select business owner</option></select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label es-required" for="project-delivery-company">Delivery Company <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-delivery-company" class="form-select select2"><option value="">Select delivery company</option></select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label" for="project-owning-function">Owning Function / Department <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <input id="project-owning-function" class="form-control" />
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <label class="form-label" for="project-delivery-partner">Delivery Partner / Vendor <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <input id="project-delivery-partner" class="form-control" />
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <label class="form-label es-required" for="project-scope-summary">Scope Summary <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <textarea id="project-scope-summary" rows="3" class="form-control"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="project-out-of-scope">Out-of-Scope Note <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <textarea id="project-out-of-scope" rows="3" class="form-control"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section class="es-goal-section project-step-pane d-none" data-step="3">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label class="form-label es-required" for="project-status">Project Status <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-status" class="form-select">
+                            <option value="Draft">Draft</option>
+                            <option value="Planned">Planned</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Active">Active</option>
+                            <option value="On Hold">On Hold</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label class="form-label es-required" for="project-phase">Stage / Phase <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-phase" class="form-select"><option value="">Select stage / phase</option></select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label class="form-label es-required" for="project-delivery-type">Delivery Type <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-delivery-type" class="form-select"><option value="">Select delivery type</option></select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label class="form-label es-required" for="project-delivery-methodology">Delivery Methodology <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-delivery-methodology" class="form-select"><option value="">Select methodology</option></select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label class="form-label es-required" for="project-priority">Priority <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-priority" class="form-select"><option value="">Select priority</option></select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label class="form-label" for="project-complexity">Complexity / Size <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-complexity" class="form-select"><option value="">Select complexity / size</option></select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label class="form-label es-required" for="project-start-date">Start Date <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <input id="project-start-date" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label class="form-label es-required" for="project-end-date">End Date <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <input id="project-end-date" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label" for="project-go-live">Go-Live / Target Milestone <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <input id="project-go-live" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label" for="project-reporting-cadence">Reporting Cadence <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-reporting-cadence" class="form-select"><option value="">Select cadence</option></select>
+                    </div>
+                </div>
+            </section>
+
+            <section class="es-goal-section project-step-pane d-none" data-step="4">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label" for="project-success-metric">Success Metric <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <input id="project-success-metric" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label" for="project-baseline">Baseline <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <input id="project-baseline" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label" for="project-target">Target <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <input id="project-target" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label es-required" for="project-readiness-status">Readiness Status <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-readiness-status" class="form-select"><option value="">Select readiness</option></select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label es-required" for="project-risk-rating">Risk Rating <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-risk-rating" class="form-select"><option value="">Select risk</option></select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label" for="project-health">Overall Health / RAG <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-health" class="form-select"><option value="">Select health</option></select>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <label class="form-label" for="project-compliance-impact">Compliance / Regulatory Impact <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <textarea id="project-compliance-impact" rows="3" class="form-control"></textarea>
+                    </div>
+                    <div class="col-12 col-xl-3">
+                        <label class="form-label" for="project-dependency-flag">Dependency Flag <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-dependency-flag" class="form-select">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-xl-3">
+                        <label class="form-label" for="project-evidence-required">Evidence Required Flag <span class="badge bg-label-primary ms-1">Editable</span></label>
+                        <select id="project-evidence-required" class="form-select">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <section class="es-goal-section project-step-pane d-none" data-step="5">
+                <div class="project-step-copy mb-3">
+                    Budgeting is a first-class governance checkpoint for Project creation and for any status beyond Draft. Complete the required controls here before progressing a Project into Planned, Approved, Active, On Hold, or Closed.
+                </div>
+                <div id="project-budget-governance-banner" class="alert alert-info mb-3 d-none"></div>
+                <div class="project-budget-step-shell">
+                    <div class="project-budget-panel">
+                        <h6 class="mb-1">Governance Decision</h6>
+                        <p class="project-inline-hint mb-3">Decide whether this Project requires governed budget approval or a documented no-budget exception.</p>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6 col-xl-4">
+                                <label class="form-label es-required" for="project-budget-required">Budget Required <span class="badge bg-label-primary ms-1">Editable</span></label>
+                                <select id="project-budget-required" class="form-select">
+                                    <option value="">Select</option>
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-4">
+                                <label class="form-label" for="project-funding-company">Funding / Owning Company <span class="badge bg-label-primary ms-1">Editable</span></label>
+                                <select id="project-funding-company" class="form-select select2"><option value="">Select funding / owning company</option></select>
+                            </div>
+                            <div class="col-12 col-xl-4">
+                                <label class="form-label" for="project-financial-notes">Financial Notes <span class="badge bg-label-primary ms-1">Editable</span></label>
+                                <textarea id="project-financial-notes" rows="3" class="form-control"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-budget-panel d-none" id="project-budget-required-yes-group">
+                        <h6 class="mb-1">Required Financial Controls</h6>
+                        <p class="project-inline-hint mb-3">Budget-governed Projects must capture the approved financial basis before leaving Draft.</p>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <label class="form-label" for="project-budget-amount">Budget Amount <span class="badge bg-label-primary ms-1">Editable</span></label>
+                                <input id="project-budget-amount" type="number" step="0.01" min="0" class="form-control" />
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <label class="form-label" for="project-currency">Currency <span class="badge bg-label-primary ms-1">Editable</span></label>
+                                <select id="project-currency" class="form-select"><option value="">Select currency</option></select>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <label class="form-label" for="project-budget-type">Budget Type <span class="badge bg-label-warning ms-1">Template Default</span></label>
+                                <select id="project-budget-type" class="form-select">
+                                    <option value="">Select budget type</option>
+                                    <option value="CapEx">CapEx</option>
+                                    <option value="OpEx">OpEx</option>
+                                    <option value="Mixed">Mixed</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <label class="form-label" for="project-budget-basis">Budget Basis <span class="badge bg-label-warning ms-1">Template Default</span></label>
+                                <select id="project-budget-basis" class="form-select">
+                                    <option value="">Select basis</option>
+                                    <option value="Estimate">Estimate</option>
+                                    <option value="Requested">Requested</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Baseline">Baseline</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <label class="form-label" for="project-funding-source">Funding Source <span class="badge bg-label-warning ms-1">Template Default</span></label>
+                                <input id="project-funding-source" class="form-control" />
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <label class="form-label" for="project-cost-center">Cost Center <span class="badge bg-label-warning ms-1">Template Default</span></label>
+                                <input id="project-cost-center" class="form-control" />
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <label class="form-label" for="project-budget-owner">Budget Owner <span class="badge bg-label-primary ms-1">Editable</span></label>
+                                <select id="project-budget-owner" class="form-select select2"><option value="">Select budget owner</option></select>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <label class="form-label" for="project-approval-route">Approval Route <span class="badge bg-label-warning ms-1">Template Default</span></label>
+                                <input id="project-approval-route" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-budget-panel d-none" id="project-budget-required-no-group">
+                        <h6 class="mb-1">No-Budget Exception</h6>
+                        <p class="project-inline-hint mb-3">If budget is not required, document the governance reason before the Project can leave Draft.</p>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label" for="project-no-budget-reason">No-Budget Reason <span class="badge bg-label-primary ms-1">Editable</span></label>
+                                <textarea id="project-no-budget-reason" rows="3" class="form-control"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="es-goal-section project-step-pane d-none" data-step="6">
+                <div class="row g-3">
+                    <div class="col-12 col-xl-6">
+                        <div class="project-review-card">
+                            <h6>Identity Summary</h6>
+                            <div id="project-review-identity"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="project-review-card">
+                            <h6>Parent Anchor Summary</h6>
+                            <div id="project-review-anchor"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="project-review-card">
+                            <h6>Ownership Summary</h6>
+                            <div id="project-review-ownership"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="project-review-card">
+                            <h6>Planning Summary</h6>
+                            <div id="project-review-planning"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="project-review-card">
+                            <h6>Controls Summary</h6>
+                            <div id="project-review-controls"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="project-review-card">
+                            <h6>Budget Summary</h6>
+                            <div id="project-review-budget"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="project-review-card review-list-card">
+                            <h6>Blocking Validations</h6>
+                            <ul id="project-review-blockers" class="mb-0"></ul>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="project-review-card review-list-card">
+                            <h6>Warning Messages</h6>
+                            <ul id="project-review-warnings" class="mb-0"></ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade es-modal" id="projectTemplatePickerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable project-template-picker-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Choose Project Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="project-template-picker-context" class="project-template-picker-context mb-3">
+                    <div class="project-template-picker-context-header">
+                        <div>
+                            <div class="project-template-picker-context-kicker">Delivery Anchor Context</div>
+                            <h6 class="project-template-picker-context-title mb-1">Choose a template that fits the selected Parent Initiative.</h6>
+                            <p class="project-template-picker-context-copy mb-0">Review the live initiative anchor and derived context below. Project Template compatibility is evaluated against the selected Parent Initiative type before you apply defaults.</p>
+                        </div>
+                        <div class="project-template-picker-context-badges">
+                            <span class="badge bg-label-info">Parent-driven</span>
+                            <span class="badge bg-label-primary">Type-matched templates</span>
+                        </div>
+                    </div>
+                    <div class="project-template-picker-context-grid">
+                        <div class="project-template-picker-context-item is-anchor">
+                            <div class="project-template-picker-context-label">Parent Initiative</div>
+                            <div id="project-template-picker-current-initiative" class="project-template-picker-context-value">Select Parent Initiative first</div>
+                        </div>
+                        <div class="project-template-picker-context-item">
+                            <div class="project-template-picker-context-label">Parent Objective</div>
+                            <div id="project-template-picker-current-objective" class="project-template-picker-context-value">-</div>
+                        </div>
+                        <div class="project-template-picker-context-item">
+                            <div class="project-template-picker-context-label">Parent Goal</div>
+                            <div id="project-template-picker-current-goal" class="project-template-picker-context-value">-</div>
+                        </div>
+                        <div class="project-template-picker-context-item">
+                            <div class="project-template-picker-context-label">Parent Type</div>
+                            <div id="project-template-picker-current-type" class="project-template-picker-context-value">-</div>
+                        </div>
+                        <div class="project-template-picker-context-item">
+                            <div class="project-template-picker-context-label">Entity Scope</div>
+                            <div id="project-template-picker-current-scope" class="project-template-picker-context-value">-</div>
+                        </div>
+                    </div>
+                    <div id="project-template-picker-context-warning" class="alert alert-warning d-none mt-3 mb-0" role="alert"></div>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-12 col-xl-6">
+                        <input id="project-template-picker-search" class="form-control form-control-sm" placeholder="Search by name or description..." />
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <select id="project-template-picker-type" class="form-select form-select-sm">
+                            <option value="">All types</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <select id="project-template-picker-entity-scope" class="form-select form-select-sm">
+                            <option value="">All entity scopes</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="project-template-picker-helper" class="project-inline-hint mb-2">Showing Project Templates compatible with the selected Parent Initiative.</div>
+                <div class="table-responsive project-template-picker-table-wrap">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Template ID</th>
+                                <th>Project Name</th>
+                                <th>Description</th>
+                                <th>Parent Type</th>
+                                <th>Owner / PM</th>
+                                <th>Sponsor</th>
+                                <th>Entity Scope</th>
+                                <th>Status</th>
+                                <th>Lifecycle</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="project-template-picker-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #project-create-workspace {
+        padding-bottom: 1.25rem;
+    }
+
+    #project-create-workspace .goal-workspace-shell {
+        border: 1px solid rgba(176, 189, 230, 0.28);
+        border-radius: .8rem;
+        background: linear-gradient(180deg, rgba(38, 45, 73, .94) 0%, rgba(35, 42, 68, .94) 100%);
+        overflow: hidden;
+    }
+
+    #project-create-workspace .goal-workspace-header {
+        top: .5rem;
+        z-index: 8;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .8rem;
+        padding: .85rem 1rem;
+        border-bottom: 1px solid rgba(176, 189, 230, 0.22);
+        backdrop-filter: blur(10px);
+        background: rgba(26, 33, 57, .82);
+    }
+
+    #project-create-workspace .goal-workspace-body {
+        padding: .95rem;
+    }
+
+    #project-create-workspace .project-field-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem .75rem;
+        align-items: center;
+        padding: .9rem 1rem;
+        border-radius: .75rem;
+        background: rgba(16, 24, 42, 0.76);
+        border: 1px solid rgba(138, 156, 196, 0.18);
+        color: #c9d6ee;
+    }
+
+    #project-create-workspace .project-wizard-nav {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: .5rem;
+    }
+
+    #project-create-workspace .project-step-btn {
+        border: 1px solid rgba(138, 156, 196, 0.2);
+        color: #dce6fb;
+        background: rgba(20, 31, 54, 0.65);
+        text-align: left;
+        font-weight: 700;
+        min-height: 4rem;
+    }
+
+    #project-create-workspace .project-step-btn.active {
+        background: linear-gradient(135deg, rgba(107, 166, 255, 0.28), rgba(74, 119, 210, 0.44));
+        border-color: rgba(124, 182, 255, 0.8);
+        color: #fff;
+    }
+
+    #project-create-workspace .project-step-btn.completed {
+        background: rgba(23, 76, 66, 0.62);
+        border-color: rgba(96, 194, 171, 0.38);
+        color: #d7fff4;
+    }
+
+    #project-create-workspace .project-step-pane,
+    #project-create-workspace #project-wizard-error.alert,
+    #project-create-workspace .project-review-card,
+    #project-create-workspace .project-template-preview {
+        border: 1px solid rgba(176, 189, 230, 0.28);
+        border-radius: .75rem;
+        background: rgba(22, 30, 52, 0.72);
+    }
+
+    #project-create-workspace .project-step-pane {
+        padding: 1rem;
+    }
+
+    #project-create-workspace .project-step-copy {
+        border-radius: .75rem;
+        padding: .85rem 1rem;
+        background: rgba(19, 33, 60, 0.78);
+        border: 1px solid rgba(138, 156, 196, 0.18);
+        color: #ced8ee;
+    }
+
+    #project-create-workspace .project-derived-context-card,
+    #project-create-workspace .project-source-panel {
+        border: 1px solid rgba(176, 189, 230, 0.28);
+        border-radius: .75rem;
+        background: rgba(22, 30, 52, 0.72);
+        padding: .9rem;
+    }
+
+    #project-create-workspace .project-derived-context-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: .8rem;
+    }
+
+    #project-create-workspace .project-derived-context-title {
+        color: #edf2ff;
+        font-size: .98rem;
+        font-weight: 700;
+    }
+
+    #project-create-workspace .project-source-controls {
+        display: grid;
+        gap: .6rem;
+        grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, .9fr));
+        margin-bottom: .25rem;
+    }
+
+    #project-create-workspace .project-source-control {
+        min-width: 0;
+    }
+
+    #project-create-workspace .project-source-summary-card {
+        border: 1px dashed rgba(176, 189, 230, .34);
+        border-radius: .75rem;
+        padding: .9rem 1rem;
+        background: rgba(176, 189, 230, .08);
+        color: #d5e1ff;
+    }
+
+    #project-create-workspace .project-source-summary-card.is-empty {
+        background: rgba(176, 189, 230, .05);
+    }
+
+    #project-create-workspace .project-source-summary-name {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: .2rem;
+    }
+
+    #project-create-workspace .project-source-summary-note {
+        color: #afbddf;
+        font-size: .84rem;
+    }
+
+    #project-create-workspace .project-readonly-field {
+        background: rgba(8, 13, 24, 0.72);
+        color: #cdd8ef;
+        border-color: rgba(138, 156, 196, 0.2);
+    }
+
+    #project-create-workspace .project-templated-field {
+        border-color: rgba(255, 200, 119, 0.55) !important;
+        box-shadow: 0 0 0 .12rem rgba(255, 200, 119, 0.12);
+    }
+
+    #project-create-workspace .project-field-muted {
+        opacity: .58;
+    }
+
+    #project-create-workspace .project-budget-step-shell {
+        display: grid;
+        gap: 1rem;
+    }
+
+    #project-create-workspace .project-budget-panel {
+        border-radius: .75rem;
+        padding: 1rem;
+        background: rgba(10, 18, 33, 0.72);
+        border: 1px solid rgba(138, 156, 196, 0.16);
+    }
+
+    #project-create-workspace .project-budget-panel h6 {
+        color: #f4f8ff;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-dialog {
+        width: min(96vw, 1800px);
+        max-width: min(96vw, 1800px);
+        height: calc(100vh - 1.5rem);
+        margin: .75rem auto;
+    }
+
+    #projectTemplatePickerModal .modal-content {
+        height: 100%;
+    }
+
+    #projectTemplatePickerModal .modal-body {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-table-wrap {
+        flex: 1 1 auto;
+        max-height: none;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-context {
+        border: 1px solid rgba(104, 120, 168, .18);
+        border-radius: .9rem;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, .18) 0%, rgba(104, 120, 168, .05) 100%),
+            rgba(104, 120, 168, .06);
+        padding: .9rem 1rem;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-context-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-bottom: .8rem;
+        margin-bottom: .85rem;
+        border-bottom: 1px solid rgba(104, 120, 168, .16);
+    }
+
+    #projectTemplatePickerModal .project-template-picker-context-kicker {
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #afbddf;
+        margin-bottom: .2rem;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-context-title {
+        color: #edf2ff;
+        font-weight: 700;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-context-copy {
+        color: #afbddf;
+        max-width: 62rem;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-context-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .4rem;
+        justify-content: flex-end;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-context-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: .75rem;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-context-item {
+        min-width: 0;
+        border: 1px solid rgba(104, 120, 168, .14);
+        border-radius: .85rem;
+        background: rgba(255, 255, 255, .38);
+        padding: .8rem .85rem;
+        min-height: 6rem;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-context-item.is-anchor {
+        background: linear-gradient(135deg, rgba(88, 99, 255, .11), rgba(104, 120, 168, .06));
+    }
+
+    #projectTemplatePickerModal .project-template-picker-context-label {
+        font-size: .76rem;
+        font-weight: 700;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        color: #afbddf;
+        margin-bottom: .2rem;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-context-value {
+        color: #edf2ff;
+        font-weight: 600;
+        word-break: break-word;
+        line-height: 1.4;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-row {
+        cursor: pointer;
+    }
+
+    #projectTemplatePickerModal .project-template-picker-row:hover,
+    #projectTemplatePickerModal .project-template-picker-row:focus-visible {
+        background: rgba(88, 99, 255, .06);
+        outline: none;
+    }
+
+    #project-create-workspace .project-template-preview {
+        padding: 1rem;
+    }
+
+    #project-create-workspace .project-template-preview-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: .85rem;
+    }
+
+    #project-create-workspace #project-template-prefill-list {
+        padding-left: 1rem;
+        display: grid;
+        gap: .35rem;
+        color: #f3e8c8;
+    }
+
+    #project-create-workspace .project-inline-hint {
+        color: #b8c5df;
+        font-size: .84rem;
+    }
+
+    #project-create-workspace .project-review-card {
+        height: 100%;
+        padding: 1rem;
+    }
+
+    #project-create-workspace .project-review-card h6 {
+        margin-bottom: .75rem;
+    }
+
+    #project-create-workspace .review-list-card ul {
+        padding-left: 1rem;
+    }
+
+    #project-create-workspace .project-summary-list {
+        display: grid;
+        gap: .45rem;
+    }
+
+    #project-create-workspace .project-summary-list div {
+        color: #d7e2fa;
+    }
+
+    #project-create-workspace .project-summary-list strong {
+        color: #fff;
+    }
+
+    #project-create-workspace .form-control,
+    #project-create-workspace .form-select,
+    #project-create-workspace textarea {
+        background: rgba(7, 14, 26, 0.72);
+        color: #edf3ff;
+        border-color: rgba(138, 156, 196, 0.22);
+    }
+
+    @@media (max-width: 1199.98px) {
+        #project-create-workspace .project-source-controls {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        #projectTemplatePickerModal .project-template-picker-context-header {
+            flex-direction: column;
+        }
+
+        #projectTemplatePickerModal .project-template-picker-context-badges {
+            justify-content: flex-start;
+        }
+
+        #projectTemplatePickerModal .project-template-picker-context-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        #project-create-workspace .project-source-controls {
+            grid-template-columns: 1fr;
+        }
+
+        #project-create-workspace .project-template-preview-header {
+            flex-direction: column;
+        }
+
+        #projectTemplatePickerModal .project-template-picker-context-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    #project-create-workspace .form-control::placeholder,
+    #project-create-workspace textarea::placeholder {
+        color: #9fb0cf;
+    }
+
+    #project-create-workspace .form-label {
+        color: #f3f7ff;
+    }
+
+    #project-create-workspace .text-muted {
+        color: #b3c0db !important;
+    }
+
+    #project-create-workspace .is-invalid {
+        border-color: #ff8b8b !important;
+        box-shadow: 0 0 0 .2rem rgba(255, 113, 113, .14);
+    }
+
+    #project-create-workspace .invalid-feedback {
+        display: block;
+        color: #ffb2b2;
+    }
+
+    @@media (max-width: 1199.98px) {
+        #project-create-workspace .project-wizard-nav {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 991.98px) {
+        #project-create-workspace .goal-workspace-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        #project-create-workspace .project-wizard-nav {
+            grid-template-columns: 1fr;
+        }
+
+        #project-create-workspace .project-source-controls {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/project-workspace.js" asp-append-version="true"></script>
+}

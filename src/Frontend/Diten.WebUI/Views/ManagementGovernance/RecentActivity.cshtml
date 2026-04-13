@@ -1,0 +1,11 @@
+@model Diten.WebUI.Models.ManagementGovernance.ManagementGovernancePageViewModel
+@{
+    ViewData["Title"] = "Governance Recent Activity";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance.css" />
+}
+
+<partial name="Components/_DomainHeader" model="Model" />
+<partial name="Components/_ActivityFeed" model="Model.RecentActivity" />

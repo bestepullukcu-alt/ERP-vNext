@@ -1,0 +1,110 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Instantiate to Live";
+    var sourceType = (ViewData["SourceType"]?.ToString() ?? string.Empty);
+    var sourceId = (ViewData["SourceId"]?.ToString() ?? string.Empty);
+}
+
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+<div class="card">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Source Type</label>
+                <select id="library-inst-source-type" class="form-select form-select-sm">
+                    <option value="Goal">Goal Template</option>
+                    <option value="Objective">Objective Template</option>
+                    <option value="Initiative">Initiative Template</option>
+                    <option value="Project">Project Template</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Template</label>
+                <input type="hidden" id="library-inst-source-id" value="@sourceId" />
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="library-inst-open-picker">Browse catalog…</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="library-inst-clear-selection">Clear</button>
+                </div>
+                <div class="small text-muted mt-1">Select a published template from the searchable catalog—no manual ID entry required.</div>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="library-inst-full-chain" checked />
+                    <label class="form-check-label" for="library-inst-full-chain">Full Chain</label>
+                </div>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="library-inst-allow-duplicates" />
+                    <label class="form-check-label" for="library-inst-allow-duplicates">Allow Duplicates</label>
+                </div>
+            </div>
+            <div class="col-12" id="library-inst-summary-wrap">
+                <div class="border rounded p-3 bg-label-secondary" id="library-inst-summary-card">
+                    <div class="fw-semibold mb-1">Selected source</div>
+                    <div class="small text-muted" id="library-inst-summary-body">No template selected yet.</div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">Default Overrides (key=value, comma separated)</label>
+                <input id="library-inst-overrides" class="form-control form-control-sm" placeholder="owner=Strategy Office,status=Active" />
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/library/catalog">Back to Catalog</a>
+            <button id="library-inst-run" class="btn btn-sm btn-primary ms-auto">Instantiate</button>
+        </div>
+    </div>
+</div>
+<div class="card mt-3">
+    <div class="card-body">
+        <h6>Result</h6>
+        <pre id="library-inst-result" class="small mb-0" style="white-space:pre-wrap;">No run yet.</pre>
+    </div>
+</div>
+
+<div class="modal fade" id="library-inst-picker-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2 mb-3">
+                    <div class="col-12">
+                        <input type="search" id="library-inst-picker-search" class="form-control form-control-sm" placeholder="Search code, name, owner…" />
+                    </div>
+                </div>
+                <div class="table-responsive" style="max-height: 420px;">
+                    <table class="table table-sm align-middle" id="library-inst-picker-table">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Ver.</th>
+                                <th>Scope</th>
+                                <th>Applicability</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.__strategyLibraryInstantiateDefaults = {
+        sourceType: "@sourceType",
+        sourceId: "@sourceId"
+    };
+</script>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-library-instantiate.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,18 @@
+@model string
+@{
+    var cls = Model switch
+    {
+        "Active" => "bg-success-subtle text-success",
+        "Monitor" => "bg-warning-subtle text-warning-emphasis",
+        "Planned" => "bg-secondary-subtle text-secondary",
+        "In Progress" => "bg-primary-subtle text-primary",
+        "Open" => "bg-info-subtle text-info-emphasis",
+        "Closed" => "bg-dark-subtle text-dark",
+        "Low" => "bg-success-subtle text-success",
+        "Medium" => "bg-info-subtle text-info-emphasis",
+        "High" => "bg-warning-subtle text-warning-emphasis",
+        "Critical" => "bg-danger-subtle text-danger",
+        _ => "bg-secondary-subtle text-secondary"
+    };
+}
+<span class="badge rounded-pill @cls">@Model</span>

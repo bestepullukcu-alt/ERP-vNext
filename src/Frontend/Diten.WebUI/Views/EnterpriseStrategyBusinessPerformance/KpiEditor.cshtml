@@ -1,0 +1,64 @@
+@model Diten.WebUI.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "KPI Create/Edit";
+    var kpiId = (ViewData["KpiId"]?.ToString() ?? string.Empty);
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<input type="hidden" id="kpi-editor-id" value="@kpiId" />
+
+<div class="card mb-3">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis">Back to KPI Catalog</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/ownership">Metric Ownership</a>
+        <span class="small text-muted ms-auto">Use this page for controlled KPI authoring and governance metadata.</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div id="kpi-editor-error"></div>
+        <form id="kpi-editor-form" novalidate>
+            <div class="row g-3">
+                <div class="col-12"><h6 class="mb-0">Basics</h6></div>
+                <div class="col-12 col-lg-4"><label class="form-label es-required" for="editor-kpi-id">KPI ID</label><input id="editor-kpi-id" class="form-control" required /></div>
+                <div class="col-12 col-lg-8"><label class="form-label es-required" for="editor-kpi-name">KPI Name</label><input id="editor-kpi-name" class="form-control" required /></div>
+                <div class="col-12 col-lg-4"><label class="form-label es-required" for="editor-kpi-category">KPI Category</label><select id="editor-kpi-category" class="form-select"><option value="">Select category</option></select></div>
+                <div class="col-12 col-lg-4"><label class="form-label es-required" for="editor-kpi-type">KPI Type</label><select id="editor-kpi-type" class="form-select"><option value="">Select type</option></select></div>
+                <div class="col-12 col-lg-4"><label class="form-label es-required" for="editor-kpi-status">Status</label><select id="editor-kpi-status" class="form-select"><option value="">Select status</option></select></div>
+                <div class="col-12"><label class="form-label" for="editor-kpi-description">Description</label><textarea id="editor-kpi-description" rows="2" class="form-control"></textarea></div>
+
+                <div class="col-12"><hr /><h6 class="mb-0">Measurement</h6></div>
+                <div class="col-12 col-lg-3"><label class="form-label es-required" for="editor-kpi-unit">Unit of Measure</label><select id="editor-kpi-unit" class="form-select"><option value="">Select unit</option></select></div>
+                <div class="col-12 col-lg-3"><label class="form-label es-required" for="editor-kpi-agg">Aggregation Method</label><select id="editor-kpi-agg" class="form-select"><option value="">Select method</option></select></div>
+                <div class="col-12 col-lg-3"><label class="form-label es-required" for="editor-kpi-frequency">Reporting Frequency</label><select id="editor-kpi-frequency" class="form-select"><option value="">Select frequency</option></select></div>
+                <div class="col-12 col-lg-3"><label class="form-label" for="editor-kpi-threshold">Threshold Model</label><select id="editor-kpi-threshold" class="form-select"><option value="">Select threshold model</option></select></div>
+                <div class="col-12 col-lg-6"><label class="form-label" for="editor-kpi-baseline">Baseline Value</label><input id="editor-kpi-baseline" type="number" class="form-control" /></div>
+                <div class="col-12 col-lg-6"><label class="form-label" for="editor-kpi-target">Target Value</label><input id="editor-kpi-target" type="number" class="form-control" /></div>
+
+                <div class="col-12"><hr /><h6 class="mb-0">Ownership</h6></div>
+                <div class="col-12 col-lg-4"><label class="form-label es-required" for="editor-kpi-owner">Owner</label><select id="editor-kpi-owner" class="form-select"><option value="">Select owner</option></select></div>
+                <div class="col-12 col-lg-4"><label class="form-label" for="editor-kpi-backup-owner">Backup Owner / Steward</label><select id="editor-kpi-backup-owner" class="form-select"><option value="">Select backup owner</option></select></div>
+                <div class="col-12 col-lg-4"><label class="form-label" for="editor-kpi-source">Source System / Derived</label><select id="editor-kpi-source" class="form-select"><option>Derived</option><option>Source</option></select></div>
+                <div class="col-12 col-lg-6"><label class="form-label" for="editor-kpi-scope">Company Scope</label><select id="editor-kpi-scope" class="form-select"><option value="">Select scope</option></select></div>
+                <div class="col-12 col-lg-6"><label class="form-label" for="editor-kpi-company">Company</label><input id="editor-kpi-company" class="form-control" list="editor-kpi-company-list" /></div>
+                <datalist id="editor-kpi-company-list"></datalist>
+
+                <div class="col-12"><hr /><h6 class="mb-0">Governance</h6></div>
+                <div class="col-12 col-lg-4"><label class="form-label" for="editor-kpi-decision">Decision Ref</label><input id="editor-kpi-decision" class="form-control" /></div>
+                <div class="col-12 col-lg-4"><label class="form-label" for="editor-kpi-evidence">Evidence Ref</label><input id="editor-kpi-evidence" class="form-control" /></div>
+                <div class="col-12 col-lg-4"><label class="form-label" for="editor-kpi-version">Version</label><input id="editor-kpi-version" class="form-control" type="number" min="1" step="1" /></div>
+                <div class="col-12"><label class="form-label" for="editor-kpi-notes">Notes</label><textarea id="editor-kpi-notes" rows="2" class="form-control"></textarea></div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" id="editor-kpi-save" class="btn btn-primary">Save KPI</button>
+                <a class="btn btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/kpi-editor.js" asp-append-version="true"></script>
+}
