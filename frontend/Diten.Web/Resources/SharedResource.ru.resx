@@ -253,11 +253,9 @@
   <data name="Platform" xml:space="preserve"><value>Platform</value></data>
   <data name="WorkCenterMenu" xml:space="preserve"><value>Work Center</value></data>
   <data name="ItemMaster" xml:space="preserve"><value>Справочник номенклатуры</value></data>
-  <data name="ProductManagement" xml:space="preserve"><value>Управление продуктами</value></data>
-  <data name="CategoryManagement" xml:space="preserve"><value>Управление категориями</value></data>
-  <data name="VariantManagement" xml:space="preserve"><value>Управление вариантами</value></data>
   <data name="Attributes" xml:space="preserve"><value>Атрибуты</value></data>
   <data name="Variants" xml:space="preserve"><value>Варианты</value></data>
   <data name="ColumnOrder" xml:space="preserve"><value>Порядок столбцов</value></data>
   <data name="SKUManagement" xml:space="preserve"><value>Управление SKU</value></data>
+  <data name="ProductMaster" xml:space="preserve"><value>Справочник продуктов</value></data>
 </root>

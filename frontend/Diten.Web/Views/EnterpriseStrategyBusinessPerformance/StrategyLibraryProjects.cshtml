@@ -1,0 +1,71 @@
+@model Diten.Web.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Projects Library";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+<div class="alert alert-secondary small mb-3">
+    Library-layer <strong>project templates</strong> (not live PPM/runtime projects). Data is loaded from the persisted strategy library API including embedded seed when configured.
+</div>
+<div class="card mb-3">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+        <input id="proj-lib-search" class="form-control form-control-sm w-auto" style="min-width:220px;" placeholder="Search ID / name / owner..." />
+        <select id="proj-lib-status" class="form-select form-select-sm w-auto"><option value="">Project status</option></select>
+        <select id="proj-lib-phase" class="form-select form-select-sm w-auto"><option value="">Stage / phase</option></select>
+        <select id="proj-lib-delivery" class="form-select form-select-sm w-auto"><option value="">Delivery type</option></select>
+        <button id="proj-lib-apply" class="btn btn-sm btn-outline-secondary">Apply</button>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/library/catalog">Back to Catalog</a>
+        <a class="btn btn-sm btn-primary ms-auto" href="/management-governance/enterprise-strategy-business-performance/library/instantiate?sourceType=Project">Instantiate project</a>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle" id="proj-lib-table">
+                <thead>
+                    <tr>
+                        <th>Project ID</th>
+                        <th>Project</th>
+                        <th>Owner / PM</th>
+                        <th>Sponsor</th>
+                        <th>Status</th>
+                        <th>Phase</th>
+                        <th>Delivery</th>
+                        <th>Scope</th>
+                        <th>Risk</th>
+                        <th>Readiness</th>
+                        <th>Version</th>
+                        <th>Metrics</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="small text-muted mt-2" id="proj-lib-summary"></div>
+    </div>
+</div>
+<div class="card mt-3 d-none" id="proj-lib-metrics-card">
+    <div class="card-header"><strong>Detail / metrics</strong> <span class="text-muted small" id="proj-lib-metrics-for"></span></div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm mb-0" id="proj-lib-metrics-table">
+                <thead>
+                    <tr>
+                        <th>Success metric</th>
+                        <th>Type</th>
+                        <th>Baseline</th>
+                        <th>Target</th>
+                        <th>UoM</th>
+                        <th>Aggregation</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-library-projects.js" asp-append-version="true"></script>
+}

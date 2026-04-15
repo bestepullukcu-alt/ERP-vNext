@@ -1,4 +1,17 @@
-# GOLDEN RULE: JavaScript Module Pattern & DataTable v2 Standard
+## JS-015: Client-Side Lookup Loading (Mandatory)
+Form sayfalarında (Create/Edit) ve Liste sayfalarındaki (Index) filtrelerde Select/Dropdown listeleri asla sunucu tarafında (`ViewModel` + `asp-items`) doldurulmaz. Tüm lookup verileri AJAX/Fetch ile çekilmeli ve dinamik olarak render edilmelidir.
+
+**Standard Application for Filters (Index):**
+1.  **Placement:** `setupFilters` fonksiyonu içerisinde lookup verileri çekilmelidir.
+2.  **Execution:** DataTable çizilmeden önce veya `initComplete` içerisinde filtreler beslenmelidir.
+3.  **Dependency:** Filtre select kutuları doldurulmadan kullanıcıya "Apply" izni verilmemelidir (veya boş state handle edilmelidir).
+
+## JS-016: L10n Bridge Debugging & Fallback
+`window.L10n` nesnesi oluşturulurken eksik anahtarların tespiti geliştirme aşamasında kritiktir.
+
+**Standart Uygulama:**
+- `index.l10n.js` veya merkezi L10n loader içerisinde, gelen değer `undefined` veya anahtarın kendisiyle aynı ise (Localizer fallback durumu) konsola `[L10N WARNING]` basılmalıdır.
+- **CamelCase Rule:** Backend'den dönen JSON property isimleri ile JS tarafındaki `data.property` eşleşmelerinde case-sensitivity hatalarını önlemek için `payload.name || payload.Name` gibi çift yönlü kontrol standarttır.
 
 Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Module Pattern" (IIFE) yapısında olmalıdır. Global Scope asla kirletilmez.
 
@@ -10,13 +23,15 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - **Responsive UI guard:** `DtDefaults` içindeki Export (collection) butonu `dt-export-collection-btn` class’ını taşır; `backbone-custom.css` bu class ile Export’u mobil toolbar’da `.btn-icon` yüksekliğiyle hizalar. Bu class kaldırılmaz/değiştirilmez.
 4. **Personalization Client ZORUNLU:** Save View / kullanıcı tercihleri için raw `fetch('/api/personalization/...')` veya localStorage helper yazılmaz. Her zaman shared `window.personalizationClient` kullanılır.
    - **401/Auth Refresh Guard:** `window.personalizationClient` içindeki istekler `401 Unauthorized` aldığında merkezi unauthorized akışını kullanmalıdır (`window.DtDefaults.handleUnauthorized()` veya proje eşdeğeri). Expired JWT senaryosu generic `ErrorOccurred` toast'ı ile gizlenmez; kullanıcı refresh/login akışına taşınır.
-5. **AJAX Gateway:** Tüm istekler `window.ApiBaseUrl` (`/api/...`) üzerinden gider. Servis bazlı URL (`/mdm/api/v1/...`) kullanılmaz.
+5. **AJAX Gateway (SSOT):** Tüm istekler merkezi `window.API` objesi (Örn: `API.mdm`, `API.ppm`) üzerinden yönetilir. Ajanlar asla doğrudan `localhost:5000` gibi hardcoded URL'ler yazmamalıdır.
 6. **L10n Bridge:** Metinler JS içinde hardcoded yazılmaz; `window.L10n` objesinden okunur. `window.L10n` payload'ı `_IndexL10n.cshtml` + `index.l10n.js` deseniyle yüklenir; `Index.cshtml` içine uzun assignment bloğu gömülmez.
 7. **Silme:** Tek satır silme ve toplu silme aynı görsel dilde confirm açmalı ve aynı success lifecycle'ını kullanmalıdır.
    - Tek satır silmede `window.showConfirm()` veya onunla aynı görsel standardı üreten ortak helper kullanılabilir.
    - Başarılı silme sonrası `row.remove().draw()` ile lokal DOM manipülasyonu yapıp hemen toast basmak YASAKTIR.
    - Doğru pattern: başarılı DELETE → `clearSelection()` → `dt.ajax.reload(callback, false)` → callback içinde success toast.
    - `false` ile mevcut paging korunur.
+   - **Endpoint sahipliği zorunludur:** Tekil ve bulk delete çağrıları yalnızca modülün kendi endpoint'ine yapılır (`/api/{module}` + `/api/{module}/bulk`). Başka modül endpoint'ine silme isteği göndermek YASAKTIR.
+   - **Bulk confirm zorunluluğu:** Bulk delete de tekil delete ile aynı confirm standardını (`window.showConfirm`/ortak wrapper) kullanır; farklı modal/component kullanımı YASAKTIR.
 8. **Toast:** Başarı/hata bildirimleri her zaman `window.showToast('KeyOrMessage', 'success'|'error'|'warning'|'info')` ile verilir.
    - İstisna: auth refresh/login'e devredilmiş `401` akışında kullanıcıya ek olarak generic hata toast'ı basılmaz.
    - Import gibi henüz uygulanmamış ama hata olmayan aksiyonlar `warning` veya `info` ile gösterilir; hata toast'ı kullanılmaz.
@@ -24,6 +39,7 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - Filter değişimi tek başına (Apply basılmadan) Save View’u göstermemelidir.
    - Uygulama paterni: `appliedFilters` (veya benzeri) state’ini sadece Apply/Reset’te güncelle; `getCurrentView()` filtre değerlerini buradan okusun.
 10. **Save View (v2) — Shared Payload:** Saved View payload’ı minimum olarak `filters + search + colVis + columnOrder + sorting` içermelidir. `pageNumber/pageLength` persist edilmez.
+10.1 **Save View CTA Render (ZORUNLU):** Toolbar `extraButtons` içinde `saveFilterBtn` tanımı bulunmak zorundadır (`className` içinde `dt-save-filter-btn` + başlangıçta `d-none`). Dirty-state tespitinde buton görünürlüğü `setSaveFilterVisible()` ile yönetilir.
 11. **ColReorder (v2) — Varsayılan Aktif:** Standart kolon yapısına sahip tüm liste sayfalarında (control + checkbox + N veri + action) `colReorder` **varsayılan olarak aktiftir**.
    - `colReorder: { columns: ‘:gt(1):not(:last-child)’ }` DataTable config’e **her zaman** eklenir.
    - Sadece ≤2 veri kolonu olan özel sayfalarda devre dışı bırakılabilir; bırakılırsa neden belirten yorum satırı zorunludur.
@@ -67,8 +83,9 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
     > ℹ️ Sneat layout'ta scroll container `window`'dur; `content-wrapper`'ın overflow'u yoktur. Focus tabanlı tüm scroll sorunları `backbone-custom.css` içindeki merkezi MOD-0031 kuralı ile çözülür.
 13. **Inline Filter Select2 Multi-Select Dynamic Summary (ZORUNLU):** Multi-select filtreleri tek satırda tutmak ve özetlemek için aşağıdaki `syncMultiSelectSummary` mantığı uygulanmalıdır:
     - **Davranış:** 0 seçim varsa placeholder, 1 seçim varsa elemanın adı, 2+ seçim varsa `Placeholder (Sayı)` gösterilir (Örn: "Category (3)").
-    - **DOM Sync:** Multi-select'e de bir `.select2-selection__arrow` kabı zorunlu olarak enjekte edilmelidir; aksi halde ok (chevron) Single-select ile eşleşemez.
-    - **Clear Button:** Temizleme butonu (x) native `button` değil, `span` (role="button") olarak enjekte edilmelidir; native tarayıcı stilleri estetiği bozmamalıdır.
+    - **DOM Sync (KRİTİK):** Multi-select container'ına (`.select2-selection--multiple`) bir `.select2-selection__arrow` kabı zorunlu olarak enjekte edilmelidir; aksi halde ok (chevron) hiza/yükseklik farkı oluşur.
+    - **Clear Button:** Temizleme butonu (x) native `button` değil, `span` (role="button") olarak enjekte edilmelidir.
+    - **Radius Fix (KRİTİK):** "Save View" butonu (`.dt-save-filter-btn`) görünürlüğü her değiştiğinde `window.DtDefaults.refreshButtonGroupRadii()` fonksiyonu çağrılmalıdır. Aksi takdirde buton grubunun köşeleri bozulur.
     - **Seçici:** Multi-select state'ini stile bağlamak için `.select2-container`'a değer varken `dt-inline-filter-multi--has-value` sınıfı eklenmelidir.
 14. **Inline Filter Naming:** Semantik filter container class'ları kullanılır.
    - Company type filtresi: `.filter-company-type`
@@ -76,6 +93,7 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - `user_plan` ve `user_status` yeni sayfalarda kullanılmaz.
    - Geçiş/migration döneminde mevcut sayfalar için JS tarafında fallback desteklenebilir; yeni şablon üretiminde bu legacy isimler referans alınmaz.
 14. **Shared CSS Placement:** Toolbar, inline filter, badge stacking ve Select2 dropdown stilleri tekrar kullanılabilir ise `backbone-custom.css` içinde tutulur; `@section Styles` yalnızca gerçekten modüle özgü istisnalar için kullanılır.
+15. **CRUD Surface Boundary (ZORUNLU):** Index script'i Quick View offcanvas yönetebilir; ancak Create/Edit formunu offcanvas içinde çalıştıramaz. Create/Edit akışı route tabanlı ayrı sayfalara gider (`/{ModuleName}/Create`, `/{ModuleName}/Edit/{id}`).
 
 ---
 
@@ -265,7 +283,7 @@ const {{ModuleName}}List = (function () {
                     try {
                         syncPendingTableUiState(tableApi);
                         await saveDefaultView(getCurrentView(tableApi));
-                        setSaveFilterVisible(false);
+                        setSaveFilterVisible(false); // Bu fonksiyon içeriden refreshButtonGroupRadii()'yi çağırmalıdır.
                         window.showToast?.(L.RecordSaved || 'RecordSaved', 'success');
                     } catch (error) {
                         if (isAuthHandledError(error)) return;
@@ -665,16 +683,18 @@ document.addEventListener('DOMContentLoaded', () => {{ModuleName}}List.init());
 
 ### Değişken Değerleri (modüle göre doldur)
 
-| Placeholder | Nasıl Hesaplanır | Örnek (Countries, 8 kolon) |
+| Placeholder | Nasıl Hesaplanır | Örnek (SampleModule, 8 kolon) |
 |-------------|-----------------|---------------------------|
 | `{{SaveViewColumnIndexes}}` | `[2 .. toplam-2]` — control(0), checkbox(1), action(son) HARİÇ | `[2, 3, 4, 5, 6]` |
 | `{{TotalColumnCount}}` | `thead <th>` sayısı | `8` |
 | `{{AppliedFiltersInit}}` | her filtre key'i için `''` | `{ status: '' }` |
-| `{{AreaName}}` / `{{ModuleName}}` | personalizationContext | `'MDM'` / `'Countries'` |
+| `{{AreaName}}` / `{{ModuleName}}` | personalizationContext | `'MDM'` / `'SampleModule'` |
 
 ### Helper Fonksiyonlar (IIFE içine, initDataTable öncesine ekle)
 
 ```javascript
+// ─── Save View Helpers ─────────────────────────────────────────────────────
+
 // ─── Save View Helpers ─────────────────────────────────────────────────────
 
 const normalizeSavedString = (value) => typeof value === 'string' ? value.trim() : '';
@@ -776,24 +796,6 @@ const syncSearchInput = (api, val) => {
     catch (e) {}
 };
 
-// applyFilterValues: modüle özgü kolon search çağrıları
-// Örn (status only):
-//   const applyFilterValues = (api, values) => {
-//       api.column('isActive:name').search(values?.status || '');
-//   };
-// {{ApplyFilterValues}}
-
-// syncFilterControls: Select2 / input elementlerini appliedFilters'a göre senkronize et
-// Örn: const syncFilterControls = (v) => { $('#filterStatus').val(v?.status || '').trigger('change'); };
-// {{SyncFilterControls}}
-
-// getAppliedFilterCount: tabloya uygulanmış filtre sayısı
-// Örn: const getAppliedFilterCount = (api) => {
-//   try { return [api.column('isActive:name').search()].filter(v => v?.trim()).length; }
-//   catch (e) { return [appliedFilters?.status].filter(Boolean).length; }
-// };
-// {{GetAppliedFilterCount}}
-
 const mapSavedViewToState = (savedView) => {
     const d = getSavedViewDefinition(savedView);
     return {
@@ -807,166 +809,74 @@ const mapSavedViewToState = (savedView) => {
 
 const getCurrentView = (api) => {
     // {{FilterKeyCapture}} — Örn: const status = appliedFilters?.status || '';
-    const inputSearch = getSearchInputValue(api);
-    const search = typeof inputSearch === 'string' ? inputSearch : (api?.search?.() || '');
-    let colVis = null; try { colVis = captureColumnVisibility(api); } catch (e) {}
-    let order  = null; try { order  = api?.order?.() || null; } catch (e) {}
+    const search = getSearchInputValue(api);
     return {
-        // {{FilterKeysInReturn}} — Örn: status,
-        search, colVis, columnOrder: captureColumnOrder(api), order
+        // status,
+        search,
+        colVis: captureColumnVisibility(api),
+        columnOrder: captureColumnOrder(api),
+        order: (typeof api.order === 'function') ? api.order() : null
     };
 };
 
-// ─── Multi-Select Summary Standard (Kural 13) ───────────────────────────────
-const syncMultiSelectSummary = ($select) => {
-    const $container = $select.next('.select2-container');
-    const $rendered = $container.find('.select2-selection__rendered');
-    const $selection = $container.find('.select2-selection--multiple');
-    if (!$container.length || !$rendered.length || !$selection.length) return;
-
-    let $summary = $selection.find('.dt-inline-filter-multi__summary');
-    let $actions = $selection.find('.dt-inline-filter-multi__actions');
-    let $count = $selection.find('.dt-inline-filter-multi__count');
-    let $arrow = $selection.find('.select2-selection__arrow');
-
-    if (!$summary.length) { $summary = $('<span class="dt-inline-filter-multi__summary"></span>'); $selection.prepend($summary); }
-    if (!$actions.length) { $actions = $('<span class="dt-inline-filter-multi__actions"></span>'); $selection.append($actions); }
-    if (!$count.length) { $count = $('<span class="dt-inline-filter-multi__count badge rounded-pill bg-label-primary d-none"></span>'); $actions.append($count); }
-    if (!$arrow.length) { $arrow = $('<span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span>'); $selection.append($arrow); }
-
-    const placeholder = $select.data('placeholder') || '';
-    const selectedValues = $select.val() || [];
-    const selectedTexts = ($select.select2('data') || []).map(item => item.text);
-
-    let summary = placeholder;
-    if (selectedValues.length === 1 && selectedTexts.length > 0) {
-        summary = selectedTexts[0];
-    } else if (selectedValues.length > 1) {
-        summary = `${placeholder} (${selectedValues.length})`;
-    }
-
-    $summary.text(summary);
-    $container.toggleClass('dt-inline-filter-multi--has-value', selectedValues.length > 0);
-    $count.toggleClass('d-none', selectedValues.length === 0).text(selectedValues.length);
-
-    $actions.find('.dt-multi-clear-btn').remove();
-    if (selectedValues.length > 0) {
-        const $clearBtn = $('<span class="dt-multi-clear-btn" role="button" aria-label="Clear" title="Temizle">×</span>');
-        $clearBtn.on('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); $select.val(null).trigger('change'); });
-        $actions.append($clearBtn);
-    }
-};
-
-const applySavedTableState = (api, view, options) => {
-    const state = view || {};
+const applySavedTableState = (api, state, options) => {
+    if (!api || !state) return;
     const fallbackOrder = Array.isArray(options?.fallbackOrder) ? options.fallbackOrder : baseOrder;
-    const colVisToApply    = state.colVis       || (options?.resetColumns     === true ? createDefaultColumnVisibility() : null);
-    const colOrderToApply  = state.columnOrder  || (options?.resetColumnOrder === true ? Array.from({ length: totalColumnCount }, (_, i) => i) : null);
 
-    if (typeof state.search === 'string') { try { api.search(state.search); } catch (e) {} syncSearchInput(api, state.search); }
-    else if (options?.clearSearch === true) { try { api.search(''); } catch (e) {} syncSearchInput(api, ''); }
-
-    if (colOrderToApply) applyColumnOrder(api, colOrderToApply);
-    if (colVisToApply)   applyColumnVisibility(api, colVisToApply);
-
-    if (Array.isArray(state.order)) { try { api.order(state.order); } catch (e) {} }
-    else if (fallbackOrder) { try { api.order(fallbackOrder); } catch (e) {} }
-
-    // {{UpdateAppliedFilters}} — Örn: appliedFilters = { status: state.status || '' };
+    // 1. Filters
+    // {{FilterKeySync}} — Örn: appliedFilters = { status: state.status || '' };
     syncFilterControls(appliedFilters);
     applyFilterValues(api, appliedFilters);
 
-    try { api.columns.adjust(); } catch (e) {}
-    api.draw(false);
-
-    setTimeout(() => {
-        syncFilterControls(appliedFilters);
-        syncSearchInput(api, typeof state.search === 'string' ? state.search : '');
-        window.DtDefaults.updateVisualState(api, getAppliedFilterCount(api));
-    }, 0);
-};
-
-const syncPendingTableUiState = (api) => {
-    const inputSearch   = getSearchInputValue(api);
-    const appliedSearch = typeof api?.search === 'function' ? (api.search() || '') : '';
-    if (inputSearch !== appliedSearch) try { api.search(inputSearch); } catch (e) {}
-};
-
-const loadDefaultView = async () => {
-    defaultViewRecord = null;
-    defaultViewState  = null;
-    if (!personalizationClient?.getViews) return null;
-    try {
-        const views = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
-        defaultViewRecord = Array.isArray(views) ? (views.find(isSavedViewDefault) || views[0] || null) : null;
-        defaultViewState  = defaultViewRecord ? mapSavedViewToState(defaultViewRecord) : null;
-        return defaultViewState;
-    } catch (error) {
-        if (isAuthHandledError(error)) return null;
-        console.error('[{{ModuleName}} SaveView] Failed to load saved views', error);
-        defaultViewRecord = null; defaultViewState = null;
-        return null;
+    // 2. Search
+    if (typeof state.search === 'string') {
+        api.search(state.search);
+        syncSearchInput(api, state.search);
+    } else if (options?.clearSearch) {
+        api.search('');
+        syncSearchInput(api, '');
     }
+
+    // 3. Layout (Order & Vis)
+    applyColumnOrder(api, state.columnOrder || (options?.resetColumnOrder ? Array.from({ length: totalColumnCount }, (_, i) => i) : null));
+    applyColumnVisibility(api, state.colVis || (options?.resetColumns ? createDefaultColumnVisibility() : null));
+
+    // 4. Sorting
+    if (Array.isArray(state.order)) api.order(state.order); else if (fallbackOrder) api.order(fallbackOrder);
+
+    api.draw(false);
 };
 
-const saveDefaultView = async (view) => {
-    if (!personalizationClient?.saveView || !personalizationClient?.updateView)
-        throw new Error('Personalization client is unavailable.');
-    const payload = {
-        moduleKey:      personalizationContext.moduleKey,
-        pageKey:        personalizationContext.pageKey,
-        viewName:       (getSavedViewName(defaultViewRecord) || L.SaveView || '').trim(),
-        viewDefinition: view || {},
-        isDefault:      true,
-        visibility:     'private'
+const serializeView = (view) => JSON.stringify({
+    // filters: { anyKey: view?.anyKey },
+    search: view?.search || '',
+    colVis: normalizeColumnVisibility(view?.colVis) || createDefaultColumnVisibility(),
+    columnOrder: normalizeColumnOrder(view?.columnOrder) || Array.from({ length: totalColumnCount }, (_, i) => i),
+    order: Array.isArray(view?.order) ? view.order : baseOrder
+});
+
+const isDirtyComparedToDefault = (api) => {
+    const baseline = defaultViewState || {
+        // filters: {}, 
+        search: '',
+        colVis: createDefaultColumnVisibility(),
+        columnOrder: Array.from({ length: totalColumnCount }, (_, i) => i),
+        order: baseOrder
     };
-    const existingId = getSavedViewId(defaultViewRecord);
-    const saved = existingId
-        ? await personalizationClient.updateView(existingId, payload)
-        : await personalizationClient.saveView(payload);
-    defaultViewRecord = saved;
-    defaultViewState  = mapSavedViewToState(saved);
-    return defaultViewState;
+    return serializeView(getCurrentView(api)) !== serializeView(baseline);
 };
 
 const setSaveFilterVisible = (visible) => {
     const btn = document.querySelector('.dt-save-filter-btn');
     if (!btn) return;
     btn.classList.toggle('d-none', !visible);
-    window.DtDefaults?.refreshButtonGroupRadii?.();
-};
-
-const isDirtyComparedToDefault = (api) => {
-    const def = defaultViewState;
-    const cur = getCurrentView(api);
-    const curHasHiddenCols = !!saveViewColumnIndexes.find((i) => cur.colVis?.[i] === false);
-    const ref = def || {
-        // {{FilterKeyDefaults}} — Örn: status: '',
-        search: '',
-        colVis: createDefaultColumnVisibility(),
-        columnOrder: Array.from({ length: totalColumnCount }, (_, i) => i),
-        order: baseOrder
-    };
-    const colVisEqual    = areColumnVisibilitiesEqual(ref.colVis, cur.colVis);
-    const colOrderEqual  = areColumnOrdersEqual(ref.columnOrder, cur.columnOrder);
-    const refOrd = Array.isArray(ref.order) ? ref.order : null;
-    const curOrd = Array.isArray(cur.order) ? cur.order : null;
-    const orderEqual = Array.isArray(refOrd) && Array.isArray(curOrd) && refOrd.length === curOrd.length
-        ? refOrd.every((o, i) => String(o?.[0]) === String(curOrd[i]?.[0]) && String(o?.[1]) === String(curOrd[i]?.[1]))
-        : refOrd === curOrd;
-    if (!def) {
-        // {{FilterKeyDirtyCheck}} — Örn: return [cur.status].filter(Boolean).length > 0 || ...
-        return !!cur.search || curHasHiddenCols || !colOrderEqual || !orderEqual;
-    }
-    return (String(cur.search || '') !== String(ref.search || '')) ||
-        // {{FilterKeyCompare}} — Örn: (String(cur.status || '') !== String(ref.status || '')) ||
-        !colVisEqual || !colOrderEqual || !orderEqual;
+    window.DtDefaults?.refreshButtonGroupRadii?.(); // ZORUNLU: Radius fix
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 ```
 
-### Somut Örnek (tek status filtreli modül — Countries)
+### Somut Örnek (tek status filtreli modül — SampleModule)
 
 ```javascript
 // Değişkenler:
@@ -1038,3 +948,139 @@ let appliedFilters = { companyType: '', status: '' };
 | `toastr.success(...)` / `toastr.error(...)` | `window.showToast('KeyOrMessage', 'success'\|'error'\|'warning'\|'info')` |
 | `url: window.ApiBaseUrl + '/mdm/api/v1/...'` | `url: apiUrl + '/api/{{ModuleNameLower}}'` |
 | `$.ajax(...)` CRUD | `fetch(...)` ile native async |
+
+---
+
+## 🥇 ALTIN ÖRNEK: "SampleModule" (JS Standartı)
+
+Ajanlar, fiziksel bir dosya yerine aşağıdaki kodu "Kusursuz Modüler JavaScript" olarak referans almalıdır.
+
+### `wwwroot/assets/js/MDM/SampleModule/index.js`
+```javascript
+'use strict';
+
+const SampleModuleList = (function () {
+    let dt;
+    const dtTableEl = document.querySelector('.datatables-sample-module');
+    const apiUrl = window.API?.mdm || 'http://localhost:5000'; // SSOT Pattern: window.API.serviceName
+    const personalizationClient = window.personalizationClient;
+    const personalizationContext = { moduleKey: 'MDM', pageKey: 'SampleModule' };
+    
+    // 8 kolonlu tablo varsayımı: [2, 3, 4, 5, 6] veri kolonlarıdır
+    const saveViewColumnIndexes = [2, 3, 4, 5, 6]; 
+    const totalColumnCount = 8;
+    const baseOrder = [[2, 'asc']];
+    let appliedFilters = { companyType: '', status: '' };
+    let saveFilterArmed = false;
+    let defaultViewRecord = null;
+    let defaultViewState = null;
+    let L = window.L10n || {};
+
+    const syncL10n = () => { L = window.L10n || {}; };
+
+    const getAuthHeaders = () => ({
+        'X-Tenant-Id': '00000000-0000-0000-0000-000000000001',
+        'Authorization': `Bearer ${document.cookie.split('; access_token=')?.[1]?.split(';')?.[0] || ''}`
+    });
+
+    const normalizeString = (v) => typeof v === 'string' ? v.trim() : '';
+    
+    // --- Save View Mechanics ---
+    const captureView = (api) => ({
+        companyType: appliedFilters.companyType,
+        status: appliedFilters.status,
+        search: normalizeString(api.table().container()?.querySelector('.dt-search input')?.value || api.search()),
+        colVis: saveViewColumnIndexes.reduce((acc, i) => { acc[i] = !!api.column(i).visible(); return acc; }, {}),
+        columnOrder: api?.colReorder?.order?.(),
+        order: api.order()
+    });
+
+    const serialize = (v) => JSON.stringify(v);
+
+    const isDirty = (api) => {
+        const baseline = defaultViewState || { 
+            companyType: '', status: '', search: '', 
+            colVis: saveViewColumnIndexes.reduce((a, i) => { a[i]=true; return a; }, {}),
+            columnOrder: Array.from({length: totalColumnCount}, (_, i) => i),
+            order: baseOrder 
+        };
+        return serialize(captureView(api)) !== serialize(baseline);
+    };
+
+    const loadDefaultView = async () => {
+        if (!personalizationClient?.getViews) return;
+        const views = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
+        defaultViewRecord = views.find(v => v.isDefault) || views[0] || null;
+        if (defaultViewRecord) {
+            const def = defaultViewRecord.viewDefinition;
+            defaultViewState = typeof def === 'string' ? JSON.parse(def) : def;
+        }
+    };
+
+    const setSaveFilterVisible = (v) => {
+        const btn = document.querySelector('.dt-save-filter-btn');
+        if (btn) btn.classList.toggle('d-none', !v);
+    };
+
+    // --- DataTable Init ---
+    const initDataTable = async () => {
+        if (!dtTableEl) return;
+        syncL10n();
+        await loadDefaultView();
+
+        const extraButtons = {
+            filterBtn: {
+                text: '<i class="bx bx-filter-alt icon-sm"></i>',
+                className: 'btn btn-icon btn-label-secondary dt-filter-btn',
+                attr: { title: L.Filter, 'aria-controls': 'inlineFilterCollapse', 'aria-expanded': 'false' }
+            },
+            saveFilterBtn: {
+                text: '<i class="bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">'+L.SaveView+'</span>',
+                className: 'btn btn-label-primary d-none dt-save-filter-btn',
+                action: async (e, api) => {
+                    const view = captureView(api);
+                    defaultViewRecord = defaultViewRecord 
+                        ? await personalizationClient.updateView(defaultViewRecord.id, { ...defaultViewRecord, viewDefinition: view })
+                        : await personalizationClient.saveView({ ...personalizationContext, viewName: 'Default', viewDefinition: view, isDefault: true });
+                    defaultViewState = view;
+                    setSaveFilterVisible(false);
+                    window.showToast?.(L.RecordSaved, 'success');
+                }
+            }
+        };
+
+        dt = new DataTable(dtTableEl, window.DtDefaults.create({
+            ajax: { url: apiUrl + '/api/sample-module', headers: getAuthHeaders() },
+            colReorder: { columns: ':gt(1):not(:last-child)' },
+            columns: [
+                { data: 'id', name: 'control' },
+                { data: 'id', name: 'checkbox' },
+                { data: 'taxId', name: 'taxId' },
+                { data: 'commercialTitle', name: 'commercialTitle' },
+                { data: 'city', name: 'city' },
+                { data: 'isActive', name: 'isActive' },
+                { data: 'id', name: 'action' }
+            ],
+            buttons: window.DtDefaults.exportButtons(L.AddNewSampleModule, { onclick: "location.href='/SampleModule/Create'" }, extraButtons),
+            initComplete: function() {
+                if (defaultViewState) {
+                    const api = this.api();
+                    appliedFilters = { companyType: defaultViewState.companyType || '', status: defaultViewState.status || '' };
+                    api.search(defaultViewState.search || '');
+                    if (defaultViewState.order) api.order(defaultViewState.order);
+                    api.draw();
+                }
+                setTimeout(() => { saveFilterArmed = true; }, 100);
+            }
+        }));
+
+        dt.on('search.dt order.dt column-visibility.dt column-reorder.dt', () => {
+            if (saveFilterArmed) setSaveFilterVisible(isDirty(dt));
+        });
+    };
+
+    return { init: () => initDataTable() };
+})();
+
+document.addEventListener('DOMContentLoaded', () => SampleModuleList.init());
+```

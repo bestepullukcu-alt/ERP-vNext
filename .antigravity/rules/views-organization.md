@@ -14,11 +14,11 @@ Projeyi modüler ve ölçeklenebilir tutmak için Views klasörü altında rastg
 > Proje ASP.NET Core Areas routing KULLANMAZ. Tüm view'lar `Views/` klasörü altında modül gruplarına göre düzenlenir.
 > `Areas/` klasörü ASP.NET'in özel bir routing özelliğidir ve Controller'da `[Area]` attribute gerektirir — bizde bu yapı YOKTUR.
 >
-> ❌ **YANLIŞ:** `Areas/MDM/Views/Countries/Index.cshtml`
-> ✅ **DOĞRU:** `Views/MDM/Countries/Index.cshtml`
+> ❌ **YANLIŞ:** `Areas/MDM/Views/SampleModule/Index.cshtml`
+> ✅ **DOĞRU:** `Views/MDM/SampleModule/Index.cshtml`
 >
-> ❌ **YANLIŞ Namespace:** `Diten.Web.Areas.MDM.Views.Countries`
-> ✅ **DOĞRU Namespace:** `Diten.Web.Views.MDM.Countries`
+> ❌ **YANLIŞ Namespace:** `Diten.Web.Areas.MDM.Views.SampleModule`
+> ✅ **DOĞRU Namespace:** `Diten.Web.Views.MDM.SampleModule`
 
 - KURAL: Yeni bir View oluşturulmadan önce mutlaka bağlam kontrol edilmeli veya kullanıcıya modül sorulmalıdır.
 - Standart Klasör Yapısı:
@@ -53,7 +53,7 @@ Kullanıcının veri yüklenirken boş bir ekran görmesini engellemek için Ske
 ## 🚨 Önemli Notlar
 - Views root klasörüne doğrudan .cshtml dosyası eklemek kesinlikle yasaktır.
 - Yeni modüller oluşturulurken klasör isimleri her zaman PascalCase olmalıdır (Örn: Finance, HumanResources).
-- Her modül klasörü kendi içinde sayfa bazlı alt klasörlere (Örn: Views/MDM/LegalEntities/Index.cshtml) sahip olabilir.
+- Her modül klasörü kendi içinde sayfa bazlı alt klasörlere (Örn: Views/MDM/SampleModule/Index.cshtml) sahip olabilir.
 
 ---
 

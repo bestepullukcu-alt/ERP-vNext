@@ -4,7 +4,7 @@ description: "QUALITY-GATE-DT — DataTable Sayfası Teslim Öncesi Zorunlu Kont
 
 # /quality-gate-datatable — DataTable Sayfası Kalite Kapısı
 
-Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) tamamlandığında **hem agent hem orkestratör tarafından işaretlenmesi zorunlu** kontrol listesidir.
+Bu workflow, bir DataTable liste sayfası (SampleModule, Cities, Currencies, vb.) tamamlandığında **hem agent hem orkestratör tarafından işaretlenmesi zorunlu** kontrol listesidir.
 
 > ⛔ Aşağıdaki listede **tek bir madde bile işaretlenmemişse** sayfa teslim edilemez. İlgili agent geri döner ve sorunu düzeltir.
 
@@ -30,10 +30,13 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **Save View — helpers:** `loadDefaultView`, `saveDefaultView`, `setSaveFilterVisible`, `isDirtyComparedToDefault`, `applySavedTableState`, `getCurrentView` fonksiyonları implement edilmiş mi? (bkz: `frontend-js-standard.md §Save View — Tam İmplementasyon Şablonu`)
 - [ ] **Save View — extraButtons:** `saveFilterBtn` (`dt-save-filter-btn` class, başlangıçta `d-none`) `DtDefaults.exportButtons()` `extraButtons`’a eklenmiş mi?
 - [ ] **Save View — arm:** `initComplete` içinde `setTimeout(() => { saveFilterArmed = true; }, 0)` var mı?
+- [ ] **Save View Görünürlük Testi:** Dirty-state üretildiğinde `dt-save-filter-btn` görünür oluyor mu? Baseline'a dönünce tekrar gizleniyor mu?
 - [ ] **Save View (v2):** Save View görünürlüğü **applied/effective state**’e göre mi? (Filter için Apply/Reset sonrası; search/colVis/sort immediate apply)
 - [ ] **Save View Scope (v2):** Kaydedilenler: filters + search + colVis + columnOrder + sorting; kaydedilmeyenler: page number + pageLength
 - [ ] **Personalization Client (v2):** `window.personalizationClient` doğru `moduleKey`/`pageKey` ile çağrılıyor mu? (`moduleKey`: AreaName, `pageKey`: ModuleName)
 - [ ] **401 / Expired JWT Guard (v2):** `personalizationClient` isteği `401 Unauthorized` aldığında `isAuthHandledError()` kontrolü var mı? Generic `ErrorOccurred` toast’ı ile maskelenmiyor mu?
+- [ ] **Delete Endpoint Ownership:** Tekil delete ve bulk delete URL'leri modül endpoint'ini mi kullanıyor? (`/api/{{ModuleNameLower}}` + `/api/{{ModuleNameLower}}/bulk`) Başka modül endpoint'i var mı?
+- [ ] **Bulk Delete Confirm Parity:** Bulk delete confirm akışı tekil delete ile aynı ortak wrapper/görsel standardı kullanıyor mu? Farklı modal/component kullanımı var mı?
 - [ ] **ColReorder Aktivasyon (v2):** Standart kolon yapısında (control + checkbox + N veri + action) `colReorder: { columns: ‘:gt(1):not(:last-child)’ }` DataTable config’de **aktif mi**? (Devre dışıysa neden belirten yorum satırı var mı?)
 - [ ] **ColReorder Save View (v2):** `column-reorder.dt` + `columns-reordered.dt` event’leri dirty-state hesabına (`isDirtyComparedToDefault`) dahil mi? `captureColumnOrder` / `applyColumnOrder` implement edilmiş mi?
 
@@ -47,6 +50,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **Filter Badge Count:** Filter butonundaki badge, Apply sonrası aktif filtre sayısını doğru gösteriyor mu? (örn. 2 select doluysa badge=2; Reset sonrası badge=0)
 - [ ] **Filter Bar UI:** Filtreler “chip/dropdown” (Select2) gibi kompakt mı? Dropdown search zorunlu mu?
 - [ ] **Filter Select Styling:** Inline filter Select2 tetikleyicileri `form-select form-select-sm` estetiğine uyuyor mu? (`selectionCssClass` + merkezi CSS)
+- [ ] **Filter Select2 Init Contract:** Inline filter selectleri `frontend-js-standard.md` init contract'ına uyuyor mu? (`dropdownParent: $(document.body)`, `dropdownCssClass: 'dt-inline-filter-dropdown'`, `minimumResultsForSearch`, `width: 'element'`; yasak pattern: `dropdownParent: $select.parent()`, `width:'100%'`)
 - [ ] **Select2 Overflow (MOD-0031):** Herhangi bir inline filter Select2 açıldığında sayfada yatay/dikey scroll çıkmıyor mu? (`backbone-custom.css` içinde `.filter-chip .select2-selection { inline-size: auto !important; }` override'ı mevcut mu?)
 - [ ] **DataTable v2 Marker:** `<table ... data-dt-standard="v2" id="dt-...">` mevcut mu? (multi-table sayfalarda her tablo için id farklı mı?)
 - [ ] **Hardcoded String:** `_Filter.cshtml` dahil tüm görünür metinler `@Localizer[...]` veya `@SharedLocalizer[...]` üzerinden geliyor mu?
@@ -55,6 +59,7 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **L10n Bridge (v2):** Reorder kullanılan sayfalarda `ColumnOrder` key’i de bridge ediliyor mu?
 - [ ] **Layout:** `Layout = "_LayoutBackbone"` kullanılıyor mu?
 - [ ] **Shared CSS Placement:** Reusable toolbar / inline-filter / Select2 stilleri `Index.cshtml @section Styles` içine gömülmemiş mi? Ortak kurallar `backbone-custom.css` içinde mi?
+- [ ] **Index Form Surface Boundary:** Index içinde create/edit amaçlı editor offcanvas yok mu? Offcanvas sadece Quick View için mi kullanılıyor?
 
 ### C. Localization
 
@@ -133,14 +138,15 @@ Bu workflow, bir DataTable liste sayfası (Countries, Cities, Currencies, vb.) t
 - [ ] **Create sayfası:** `Views/{AreaName}/{ModuleName}/Create.cshtml` mevcut mu? (`add-page.md §B` şablonuna uyuyor mu?)
 - [ ] **Details sayfası:** `Views/{AreaName}/{ModuleName}/Details.cshtml` mevcut mu? (`add-page.md §C` şablonuna uyuyor mu?)
 - [ ] **Edit sayfası:** Ayrı `Edit.cshtml` veya Details içinde edit modu mevcut mu?
+- [ ] **Create Navigation Pattern:** "Add New" aksiyonu offcanvas form açmak yerine route tabanlı Create sayfasına yönleniyor mu?
 - [ ] **Rebuild Guard:** Yeniden yapım söz konusuysa silinmiş Create/Edit/Details sayfaları yeni sürümüyle değiştirildi mi?
 - [ ] **API Dokümantasyonu:** `documentation-writer` Swagger/README güncellemesini tamamladı mı?
 - [ ] **Kullanıcı Kılavuzu:** `user-manual-generator` son kullanıcı rehberini hazırladı mı?
 
 ### F. Localization Dosya İsimlendirme
 
-- [ ] **Marker Class:** `Views/{AreaName}/{ModuleName}/{ModuleName}Index.cs` dosyası oluşturulmuş mu? (Örn: `CountriesIndex.cs`)
-- [ ] **Resx Dosya Adı Eşleşmesi:** Resx dosya adı marker class adıyla birebir eşleşiyor mu? (Örn: class = `CountriesIndex` → `CountriesIndex.en.resx`, `CountriesIndex.tr.resx`, ...)
+- [ ] **Marker Class:** `Views/{AreaName}/{ModuleName}/{ModuleName}Index.cs` dosyası oluşturulmuş mu? (Örn: `SampleModuleIndex.cs`)
+- [ ] **Resx Dosya Adı Eşleşmesi:** Resx dosya adı marker class adıyla birebir eşleşiyor mu? (Örn: class = `SampleModuleIndex` → `SampleModuleIndex.en.resx`, `SampleModuleIndex.tr.resx`, ...)
 - [ ] **PageDescription Key:** `.resx` dosyalarında `PageDescription` key'i tanımlı mı? Alt başlık hardcoded yazılmamış mı?
 
 ---

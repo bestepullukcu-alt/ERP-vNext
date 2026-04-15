@@ -21,18 +21,35 @@ DateTimeOffset? UpdatedAt   // Son güncelleme zamanı (UTC, UpdateAsync'te set 
 
 ## 📋 Opsiyonel Audit Alanları
 
-Bu alanlar **EntityBase içinde değildir**. User-aware modüllerde (örn. LegalEntities, Users) entity'ye **manuel olarak** eklenir:
+Bu alanlar **EntityBase içinde değildir**. İlgili modülün türüne göre aşağıdaki politika uygulanır:
+
+### Eklenme Politikası
+
+| Modül Türü | `CreatedBy` / `UpdatedBy` | Örnek |
+|------------|--------------------------|-------|
+| **İş Modülü** (kullanıcı aksiyonu içeren) | **ZORUNLU** | Products, SampleModule, Tasks, Orders |
+| **Referans / Seed Veri** (sistem tarafından yönetilen) | **YASAK** | SampleModule, Currencies, LifecycleStates, Categories |
+| **Sistem Kaydı** (arka plan işlemi) | **OPSIYONEL** | AuditLog, SystemEvent |
+
+> **Karar sorusu:** "Bu kaydı kim oluşturdu?" sorusu kullanıcıya gösterilecek mi veya iş kuralına girdi mi?
+> Evet → ekle. Hayır → ekleme.
 
 ```csharp
-// Entity içine manuel ekle (gerekirse):
+// Entity içine manuel ekle (iş modüllerinde zorunlu):
 [BsonRepresentation(BsonType.String)]
-Guid? CreatedBy  // İşlemi yapan kullanıcının ID'si
+public Guid? CreatedBy { get; set; }  // User ID who created this record
 
 [BsonRepresentation(BsonType.String)]
-Guid? UpdatedBy  // Son güncelleyen kullanıcının ID'si
+public Guid? UpdatedBy { get; set; }  // User ID who last updated this record
 ```
 
-> **Ne zaman eklenecek?** Modülde "Kimin oluşturdu?" sorusu iş gereksinimi ise ekle. MDM referans veriler (Countries, Cities, Currencies) bu alanları gerektirmez.
+Handler içinde set edilme şekli:
+
+```csharp
+// Handler içinde — token'dan alınır, DTO'dan değil
+entity.CreatedBy = _currentUserContext.UserId;   // oluşturmada
+entity.UpdatedBy = _currentUserContext.UserId;   // güncellemede
+```
 
 ---
 
@@ -80,34 +97,33 @@ public class {Entity} : EntityBase
 
 ## 🏗️ Repository Şablonu (Özet)
 
+> **ÖNEMLİ:** `I{Entity}Repository` daima `IRepository<{Entity}>`'den extend eder.
+> Standart CRUD metotları (`CreateAsync`, `GetByIdAsync`, `GetAllAsync`, `UpdateAsync`, `DeleteAsync`, `ExistsAsync`) generic base'den gelir, specific interface'e **tekrar yazılmaz**.
+> Bkz: `.antigravity/rules/repository-standard.md`
+
 ```csharp
+// Specific interface — sadece entity'e özgü metodlar
+public interface I{Entity}Repository : IRepository<{Entity}>
+{
+    Task<bool> ExistsByCodeAsync(string code, Guid? excludeId, CancellationToken ct = default);
+    // Standart CRUD buraya YAZILMAZ — IRepository<T>'den gelir
+}
+
+// Concrete implementation
 public sealed class {Entity}Repository : RepositoryBase<{Entity}>, I{Entity}Repository
 {
     public {Entity}Repository(IMongoDatabase database, ITenantContext tenantContext)
         : base(database, tenantContext, "{collection_name}") { }
 
-    public async Task<bool> UpdateAsync({Entity} entity, CancellationToken ct = default)
+    // Sadece entity-specific metodlar implement edilir
+    public async Task<bool> ExistsByCodeAsync(string code, Guid? excludeId, CancellationToken ct = default)
     {
         var filter = Builders<{Entity}>.Filter.And(
             TenantFilter,
-            Builders<{Entity}>.Filter.Eq(e => e.Id, entity.Id));
-
-        entity.UpdatedAt = DateTimeOffset.UtcNow; // ZORUNLU
-        var result = await Collection.ReplaceOneAsync(filter, entity, cancellationToken: ct);
-        return result.ModifiedCount > 0;
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
-    {
-        var filter = Builders<{Entity}>.Filter.And(
-            TenantFilter,
-            Builders<{Entity}>.Filter.Eq(e => e.Id, id));
-
-        var update = Builders<{Entity}>.Update
-            .Set(e => e.IsDeleted, true)
-            .Set(e => e.DeletedAt, DateTimeOffset.UtcNow); // ZORUNLU
-
-        await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+            Builders<{Entity}>.Filter.Eq(x => x.Code, code));
+        if (excludeId.HasValue)
+            filter &= Builders<{Entity}>.Filter.Ne(x => x.Id, excludeId.Value);
+        return await Collection.Find(filter).AnyAsync(ct);
     }
 }
 ```
@@ -122,3 +138,5 @@ public sealed class {Entity}Repository : RepositoryBase<{Entity}>, I{Entity}Repo
 - [ ] `Repository.UpdateAsync` içinde `entity.UpdatedAt = DateTimeOffset.UtcNow` var mı?
 - [ ] `Repository.DeleteAsync` içinde hem `IsDeleted = true` hem `DeletedAt = UtcNow` set ediliyor mu?
 - [ ] `TenantId` hiçbir DTO veya Request Body'de bulunmuyor mu?
+- [ ] Modül türü kontrol edildi mi? İş modülü ise `CreatedBy`/`UpdatedBy` eklendi mi?
+- [ ] `CreatedBy`/`UpdatedBy` DTO'dan değil, `_currentUserContext.UserId`'den set ediliyor mu?

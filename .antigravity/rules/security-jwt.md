@@ -23,7 +23,7 @@ Diten ERP vNext, merkezi olmayan (Decentralized) bir doğrulama yapısı kullan�
 Sistemde "Varsayılan Olarak Yasak" (Default Deny) prensibi geçerlidir.
 
 - **Güvenli Endpointler:** Tüm `POST`, `PUT`, `PATCH` ve `DELETE` endpoint'leri varsayılan olarak `[Authorize]` attribute'u ile korunmalıdır. Bir endpoint'in anonim erişime açılması için (Örn: `/health`) açıkça talep veya özel mimari izin gereklidir.
-- **Permission-Based Access:** Sadece giriş yapmış olmak yetmez; her işlem kullanıcının sahip olduğu `Permission` (Yetki Anahtarı) ile denetlenmelidir (Örn: `[HasPermission("Modules.LegalEntities.Delete")]`).
+- **Permission-Based Access:** Sadece giriş yapmış olmak yetmez; her işlem kullanıcının sahip olduğu `Permission` (Yetki Anahtarı) ile denetlenmelidir (Örn: `[HasPermission("Modules.SampleModule.Delete")]`).
 - **Tenant İzolasyonu:** JWT içindeki `TenantId` claim'i, istek başlığındaki `X-Tenant-Id` ile eşleşmelidir. Bu, `debugger` ve `security-agent` tarafından denetlenir.
 
 ---

@@ -31,7 +31,7 @@ Sen sistemin kalkanı ve son denetçisisin. Aşağıdaki kurallara İSTİSNASIZ 
 
 ### 2. Authentication & Authorization (Kimlik ve Yetki)
 - **Auth Service:** Tüm kimlik doğrulama işlemleri merkezi `DitenAuthService` üzerinden yürütülür.
-- **Granular Permissions:** Sadece `[Authorize]` yeterli değildir. Her action için `[HasPermission("Modules.Countries.Create")]` gibi spesifik izinler zorunludur.
+- **Granular Permissions:** Sadece `[Authorize]` yeterli değildir. Her action için `[HasPermission("Modules.SampleModule.Create")]` gibi spesifik izinler zorunludur.
 - **JWT Integrity:** Token içindeki `sub` (UserId) ve `tenant` claim'lerinin sistemdeki `TenantContext` ile tutarlılığını doğrula.
 
 ### 3. Gateway (Ocelot) ve API Güvenliği

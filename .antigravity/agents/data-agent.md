@@ -26,7 +26,7 @@ Sen sistemin veri güvenliği ve performans bekçisisin. Aşağıdaki kurallara 
 
 ### 1. NoSQL Doküman Tasarımı
 - Join işlemlerinden (MongoDB `$lookup`) olabildiğince kaçın. Sık okunan ilişkili verileri (Örn: Ülke adı, Para Birimi Sembolü) ana dokümanın içine göm (Denormalization).
-- Collection isimleri daima Çoğul (Plural) olmalıdır (Örn: `Countries`, `Users`).
+- Collection isimleri daima Çoğul (Plural) olmalıdır (Örn: `SampleModule`, `Users`).
 
 ### 2. Multi-Tenant Index Stratejisi (KRİTİK)
 - Sistem Single DB, Multi-Tenant yapısındadır.

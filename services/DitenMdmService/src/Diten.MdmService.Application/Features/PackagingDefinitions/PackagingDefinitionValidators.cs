@@ -10,7 +10,7 @@ public sealed class CreatePackagingDefinitionValidator : AbstractValidator<Creat
         RuleFor(x => x.Code)
             .NotEmpty().WithMessage("Code is required.")
             .MaximumLength(50).WithMessage("Code cannot exceed 50 characters.")
-            .MustAsync(async (code, ct) => !await repository.ExistsByCodeAsync(code, cancellationToken: ct))
+            .MustAsync(async (code, ct) => !await repository.ExistsByCodeAsync(code, ct: ct))
             .WithMessage("Packaging code must be unique.");
 
         RuleFor(x => x.Name)

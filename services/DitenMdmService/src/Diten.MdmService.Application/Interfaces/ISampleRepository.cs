@@ -3,12 +3,10 @@ using Diten.MdmService.Domain.Entities;
 namespace Diten.MdmService.Application.Interfaces;
 
 /// <summary>
-/// SampleEntity için repository sözleşmesi.
-/// Tüm implementasyonlar tenant filtresini otomatik uygular.
+/// Repository for SampleEntity operations.
+/// All implementations automatically apply tenant filter.
 /// </summary>
-public interface ISampleRepository
+public interface ISampleRepository : IRepository<SampleEntity>
 {
-    Task<SampleEntity?> GetByIdAsync(Guid id, CancellationToken ct = default);
-    Task<IReadOnlyList<SampleEntity>> GetAllAsync(CancellationToken ct = default);
-    Task<SampleEntity> CreateAsync(SampleEntity entity, CancellationToken ct = default);
+    // No additional specific methods currently needed — standard CRUD inherited from IRepository<SampleEntity>
 }

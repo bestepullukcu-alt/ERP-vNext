@@ -1,0 +1,188 @@
+@model Diten.Web.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Planning Cycle Detail";
+    ViewData["Active"] = "cycles";
+    var cycleId = (ViewData["PlanningCycleId"]?.ToString() ?? string.Empty);
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="planning-workspace planning-cycle-detail-page es-planning-page-shell row g-3">
+    <div class="col-12 d-none">
+        @await Html.PartialAsync("Components/Planning/_WorkspaceSubtabs")
+    </div>
+
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-widget-separator-wrapper">
+                <div class="card-body card-widget-separator">
+                    <div class="row gy-4 gy-sm-1">
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="d-flex justify-content-between align-items-center card-widget-1 border-end pb-4 pb-sm-0">
+                                <div>
+                                    <h4 class="mb-0" id="pc-widget-periods">0</h4>
+                                    <p class="mb-0">Strategy Periods</p>
+                                </div>
+                                <div class="avatar me-sm-6">
+                                    <span class="avatar-initial rounded bg-label-secondary text-heading">
+                                        <i class="icon-base bx bx-calendar icon-26px"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <hr class="d-none d-sm-block d-lg-none me-6">
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="d-flex justify-content-between align-items-center card-widget-2 border-end pb-4 pb-sm-0">
+                                <div>
+                                    <h4 class="mb-0" id="pc-widget-goals">0</h4>
+                                    <p class="mb-0">Linked Goals</p>
+                                </div>
+                                <div class="avatar me-lg-6">
+                                    <span class="avatar-initial rounded bg-label-secondary text-heading">
+                                        <i class="icon-base bx bx-target-lock icon-26px"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <hr class="d-none d-sm-block d-lg-none">
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="d-flex justify-content-between align-items-center border-end pb-4 pb-sm-0 card-widget-3">
+                                <div>
+                                    <h4 class="mb-0" id="pc-widget-objectives">0</h4>
+                                    <p class="mb-0">Objectives</p>
+                                </div>
+                                <div class="avatar me-sm-6">
+                                    <span class="avatar-initial rounded bg-label-secondary text-heading">
+                                        <i class="icon-base bx bx-list-check icon-26px"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h4 class="mb-0" id="pc-widget-initiatives">0</h4>
+                                    <p class="mb-0">Initiatives</p>
+                                </div>
+                                <div class="avatar">
+                                    <span class="avatar-initial rounded bg-label-secondary text-heading">
+                                        <i class="icon-base bx bx-rocket icon-26px"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-8">
+        <div class="card es-detail-main-card es-workspace-block-card mb-3">
+            <div class="card-header border-bottom py-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h5 class="card-title mb-0 es-detail-title">Planning Cycle @cycleId</h5>
+                            <span id="planning-cycle-status-badge" class="badge bg-label-info">-</span>
+                        </div>
+                        <small class="text-muted">Organize project execution by grouping work into structured workstreams.</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="es-action-cluster d-flex gap-2">
+                            <a href="/management-governance/enterprise-strategy-business-performance/planning/cycles" class="btn btn-sm btn-outline-secondary">
+                                <i class="bx bx-chevron-left me-1"></i> Back
+                            </a>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-primary dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Actions <i class="bx bx-dots-vertical-rounded ms-1"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" id="planning-cycle-detail-edit" href="javascript:void(0);">
+                                            <i class="bx bx-edit-alt me-2"></i> Edit
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-success" id="planning-cycle-detail-activate" href="javascript:void(0);">
+                                            <i class="bx bx-check-circle me-2"></i> Activate
+                                        </a>
+                                    </li>
+                                    <li id="planning-cycle-detail-divider"><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" id="planning-cycle-detail-archive" href="javascript:void(0);">
+                                            <i class="bx bx-archive-in me-2"></i> Archive
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="planning-cycle-detail-metadata" class="text-muted small">Loading...</div>
+            </div>
+        </div>
+
+        <div class="card es-detail-main-card es-workspace-block-card">
+            <div class="card-body pb-0">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-xs me-2">
+                            <span class="avatar-initial rounded bg-label-primary">
+                                <i class="icon-base bx bx-list-check icon-sm"></i>
+                            </span>
+                        </div>
+                        <h5 class="mb-0 text-heading">Linked Strategy Periods</h5>
+                        <small id="planning-cycle-linked-total" class="text-muted ms-2 ps-2 border-start">0 total</small>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div id="planning-cycle-linked-draft" class="badge bg-label-primary es-usage-chip d-flex align-items-center py-2 px-3 cursor-pointer" style="font-size: 0.85rem;">
+                        <i class="icon-base bx bx-history me-1"></i>
+                        <span>0 Draft</span>
+                    </div>
+                    <div id="planning-cycle-linked-active" class="badge bg-label-success es-usage-chip d-flex align-items-center py-2 px-3 cursor-pointer" style="font-size: 0.85rem;">
+                        <i class="icon-base bx bx-check-circle me-1"></i>
+                        <span>0 Active</span>
+                    </div>
+                    <div id="planning-cycle-linked-archived" class="badge bg-label-secondary es-usage-chip d-flex align-items-center py-2 px-3 cursor-pointer" style="font-size: 0.85rem;">
+                        <i class="icon-base bx bx-archive me-1"></i>
+                        <span>0 Archived</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="periodFilterCollapse" class="collapse">
+                <div class="card-body border-bottom pt-0">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center">
+                            <span class="text-muted small me-3">Filter by Status:</span>
+                            <div class="period-status-filter-group d-flex gap-2">
+                                <span class="badge bg-label-primary cursor-pointer period-status-filter" data-status="Draft">Draft</span>
+                                <span class="badge bg-label-success cursor-pointer period-status-filter" data-status="Active">Active</span>
+                                <span class="badge bg-label-secondary cursor-pointer period-status-filter" data-status="Archived">Archived</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-label-danger btn-reset-period-filter">Reset Filters</button>
+                    </div>
+                </div>
+            </div>
+            @await Html.PartialAsync("Components/Planning/_StrategyPeriodStandardTable")
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-4 d-flex">
+        @await Html.PartialAsync("Components/Planning/_GovernancePanel")
+    </div>
+</div>
+
+@await Html.PartialAsync("Components/Planning/_PlanningCycleOffcanvas")
+@await Html.PartialAsync("Components/Planning/_StrategyPeriodOffcanvas")
+
+@section Scripts {
+    <script>window.planningCycleDetailId = "@cycleId";</script>
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/planning-cycle-detail.js" asp-append-version="true"></script>
+}

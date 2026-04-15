@@ -10,7 +10,7 @@ namespace Diten.Web.Controllers
         public IActionResult Login(string returnUrl = null)
         {
             if (User.Identity?.IsAuthenticated == true || HasValidToken())
-                return Redirect(returnUrl ?? "/Products");
+                return Redirect(returnUrl ?? "/Skus");
             
             ViewBag.ReturnUrl = returnUrl;
             return View();

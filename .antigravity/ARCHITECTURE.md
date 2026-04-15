@@ -30,7 +30,7 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
     │   └── Diten.Web/           # MVC Projesi (Port: 5001)
     │       ├── Controllers/
     │       │   ├── AccountController.cs      # Login/Logout (AuthService entegrasyonu)
-    │       │   ├── LegalEntitiesController.cs # MDM aktif controller
+    │       │   ├── SampleModuleController.cs # MDM aktif controller (Örnek)
     │       │   └── Archive/                   # Legacy controller'lar (FROZEN)
     │       ├── Views/
     │       │   ├── Shared/
@@ -106,7 +106,7 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
 |---|---|---|
 | 1 | **orchestrator** | Ana şef — görev dağıtımı ve 5 fazlı iş akışı yönetimi |
 | 2 | **backend-architect** | .NET 8, CQRS (MediatR), Repository, Domain, Controller |
-| 3 | **frontend-ui-ux** | Razor View, Sneat PRO, DataTables v2, 20+ Anayasa kuralı |
+| 3 | **frontend-ui-ux** | Razor View, Sneat PRO, DataTables v2, Statik Şablonlar |
 | 4 | **security-agent** | Zero Trust, JWT, RBAC, HasPermission, Tenant Shield |
 | 5 | **data-agent** | MongoDB Index, Collection tasarımı, Idempotent Seed Data |
 | 6 | **l10n-agent** | 9 dil .resx senkronizasyonu, `window.L10n` bridge (partial + loader JS) |

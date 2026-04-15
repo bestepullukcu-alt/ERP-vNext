@@ -1,0 +1,20 @@
+@model IReadOnlyList<Diten.Web.Models.ManagementGovernance.SavedView>
+
+<section class="card mg-card">
+    <div class="card-body py-2">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="text-muted small text-uppercase">Saved Views</span>
+            @if (!Model.Any())
+            {
+                <span class="small text-muted">No saved views.</span>
+            }
+            else
+            {
+                @foreach (var view in Model)
+                {
+                    <a class="btn btn-sm btn-outline-secondary" href="@view.Route" title="@view.Description">@view.Name</a>
+                }
+            }
+        </div>
+    </div>
+</section>

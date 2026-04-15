@@ -28,27 +28,41 @@ Bu akış, sistemde yeni bir API ucu oluşturulurken izlenecek standart operasyo
 - Repository katmanındaki tüm sorgular (Find/List) otomatik olarak `IsDeleted == false` filtresini içermelidir.
 
 ### 🚨 Hata Yönetimi ve Statü Kodları
-Handler içinde hata oluştuğunda asla `return null` veya `return false` dönülmez. Uygun exception fırlatılır (throw). Bu exception'lar Global Exception Middleware tarafından şu HTTP kodlarına dönüştürülür:
 
-- **ArgumentNullException / ValidationException:** `400 Bad Request`.
-- **KeyNotFoundException:** `404 Not Found` (Kayıt yok veya başka bir Tenant'a ait veriye erişim denemesi).
-- **UnauthorizedAccessException:** `403 Forbidden`.
-- **ConflictException:** `409 Conflict`.
+Handler içinde hata oluştuğunda `return null`, `return false` ve `throw Exception` YASAKTIR.
+Tüm iş mantığı hataları `Response<T>.Fail(message, statusCode)` ile döndürülür.
+Bkz: `response-envelope.md`.
 
-> **Güvenlik Notu:** Başka bir kiracıya ait ID ile işlem yapılmaya çalışıldığında, sistemin varlığını açık etmemek için `403` yerine `404 Not Found` fırlatılmalıdır.
+| Senaryo | Dönüş |
+|---------|-------|
+| Kayıt bulunamadı | `Response<T>.Fail("... not found.", 404)` |
+| Duplicate kayıt | `Response<T>.Fail("Code already exists.", 409)` |
+| Yetki eksikliği | `Response<T>.Fail("Insufficient permissions.", 403)` |
+| Validation hatası | `ValidationBehavior` pipeline'ı otomatik döndürür (`400`) |
+| Beklenmedik sistem hatası | `ExceptionHandlingBehavior` pipeline'ı otomatik yakalar (`500`) |
+
+> **Güvenlik Notu:** Başka bir kiracıya ait ID ile işlem yapılmaya çalışıldığında sistemin varlığını açık etmemek için `403` yerine `404` döndürülür.
+
+Controller tarafında:
+```csharp
+var response = await _mediator.Send(request, ct);
+return CreateActionResultInstance(response); // CustomBaseController metodu
+```
 
 ### 🌐 HTTP Method Standartları
-- **Create:** `POST` kullanılır.
-- **Update:** Aksiyon bazlı tutarlılık ve firewall/proxy uyumluluğu açısından **POST** tercih edilir. (Örn: `POST /api/legal-entities/{id}`)
-- **Delete:** `DELETE` veya `POST /delete` kullanılabilir.
-- **Read:** `GET` kullanılır.
+- **Create:** `POST` kullanılır. Dönüş: `Response<Guid>.Success(id, 201)`.
+- **Update:** `PUT /{id}` kullanılır. Dönüş: `Response<NoContent>.Success(204)`.
+- **Partial Update / State:** `PATCH /{id}/{action}` kullanılır.
+- **Delete:** `DELETE /{id}` kullanılır. Dönüş: `Response<NoContent>.Success(204)`.
+- **Read (liste):** `GET` kullanılır. Dönüş: `Response<IReadOnlyList<T>>.Success(list)`.
+- **Read (tekil):** `GET /{id}` kullanılır. Dönüş: `Response<TDto>.Success(dto)` veya `Response<TDto>.Fail("not found", 404)`.
 
 ### 🚫 Controller Temizliği
 - Controller dosyası içerisinde **ASLA** `record` veya `class` (Request/Response DTO) tanımı yapılamaz.
 - Controller sadece API uçlarını yöneten, MediatR'a komut gönderen "ince" bir katman olarak kalmalıdır.
 
 ### 📁 Klasör Hiyerarşisi (Zorunlu)
-Her bir feature (Örn: `LegalEntities`) altında şu yapı kurulmalıdır:
+Her bir feature (Örn: `SampleModule`) altında şu yapı kurulmalıdır:
 
 - **`Requests/`**: API'den gelen ham istek modelleri.
 - **`Commands/`**: MediatR `IRequest` modelleri (Sadece veri taşır).
@@ -66,11 +80,12 @@ Her bir feature (Örn: `LegalEntities`) altında şu yapı kurulmalıdır:
 
 ## 🚀 3. Uygulama Sıralaması
 
-1. **Önce Plan:** Kod yazmadan önce dosya yapısını ve akış planını sun ve onay al.
-2. **Requests & Commands:** İstek modellerini ve MediatR komutlarını oluştur.
-3. **Handlers:** İlgili `Handlers/` klasörü altına iş mantığını ve **Soft Delete/Guard Clause** kontrollerini yaz.
-4. **Validation & Index:** Gerekli doğrulamaları ekle ve veritabanı performansını (index) kontrol et.
-5. **Controller:** API ucunu tanımla ve MediatR çağrısını yap.
+1. **Ön Kontrol:** `Application/Behaviors/` klasörü ve 4 pipeline behavior mevcut mu? `CustomBaseController` mevcut mu? Eksikse önce kur.
+2. **Önce Plan:** Kod yazmadan önce dosya yapısını ve akış planını sun ve onay al.
+3. **Requests & Commands:** `IRequest<Response<T>>` formatında istek modellerini oluştur.
+4. **Validators:** FluentValidation sınıflarını yaz. Validator olmadan Handler yazılamaz.
+5. **Handlers:** `Handlers/CommandHandlers` veya `Handlers/QueryHandlers` altına yaz. `Response<T>.Fail()` / `Response<T>.Success()` kullan. Guard clause'ları ilk satırlara yaz.
+6. **Controller:** `CustomBaseController`'dan miras alan controller yaz. `return CreateActionResultInstance(response)` kullan. `[HasPermission(...)]` ekle.
 
 ---
 Diten ERP vNext Endpoint Standard - WORKFLOW-001

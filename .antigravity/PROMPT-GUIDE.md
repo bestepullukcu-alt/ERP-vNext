@@ -68,7 +68,7 @@ Yanlis:
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries sayfasini Products gibi yap.
+SampleModule sayfasini Products gibi yap.
 ```
 
 Dogru:
@@ -76,7 +76,7 @@ Dogru:
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries sayfasini su davranislarla duzelt:
+SampleModule sayfasini su davranislarla duzelt:
 - inline filter kullan
 - stateSave:false yap
 - Save View shared personalizationClient ile manuel calissin
@@ -184,7 +184,7 @@ Yanlis:
 ```text
 @[.antigravity/agents/frontend-ui-ux.md]
 
-Countries modulune RBAC ekle.
+SampleModule modulune RBAC ekle.
 ```
 
 Dogru:
@@ -192,7 +192,7 @@ Dogru:
 ```text
 @[.antigravity/agents/security-agent.md]
 
-Countries endpoint'lerine HasPermission ekle.
+SampleModule endpoint'lerine HasPermission ekle.
 ```
 
 ### 8. data-dt-standard attribute'unu atlamak
@@ -374,7 +374,7 @@ Kullanim: Mevcut modulu yeni API davranisiyla genisletmek istediginde.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-/add-endpoint-cqrs Countries modulune
+/add-endpoint-cqrs SampleModule modulune
 
 Yeni endpoint: POST /api/countries/bulk-import
 Is mantigi: JSON body icindeki ulkeleri toplu ekle, duplicate ISO2 olanlari atla ve sonuc raporu don
@@ -382,7 +382,7 @@ Validation:
 - liste bos olamaz
 - her item icin Name ve Iso2Code zorunlu
 - ISO2 uzunlugu 2 olmali
-Auth: [HasPermission("Modules.Countries.Create")]
+Auth: [HasPermission("Modules.SampleModule.Create")]
 ```
 
 #### 7. Yeni bulk action ekleme
@@ -410,7 +410,7 @@ Kullanim: Liste sayfasina placeholder yerine gercek import eklerken.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries modulune gercek Excel import ozelligi ekle.
+SampleModule modulune gercek Excel import ozelligi ekle.
 
 Beklenti:
 - import placeholder kaldirilsin
@@ -428,7 +428,7 @@ Kullanim: Legacy liste sayfasini yeni standarda tasimak istediginde.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries liste sayfasini DataTable v2 standardina tasi.
+SampleModule liste sayfasini DataTable v2 standardina tasi.
 
 Zorunlu referanslar:
 - .antigravity/workflows/migrate-datatable-v2.md
@@ -514,7 +514,7 @@ Kullanim: XS/SM breakpoint'te toolbar bozuluyorsa.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries toolbar responsive davranisini duzelt.
+SampleModule toolbar responsive davranisini duzelt.
 
 Beklenti:
 - XS'te export dropdown ikon butonlarla hizali olsun
@@ -544,7 +544,7 @@ Kullanim: Tekil silme ile bulk silme davranisi farkliysa.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries single delete akisini bulk delete ile ayni yasam dongusune tasi.
+SampleModule single delete akisini bulk delete ile ayni yasam dongusune tasi.
 
 Beklenti:
 - ortak confirm dili
@@ -562,14 +562,14 @@ Kullanim: Endpoint'ler yalnizca `[Authorize]` ile korunuyorsa.
 ```text
 @[.antigravity/agents/security-agent.md]
 
-Countries endpoint'lerine RBAC attribute ekle.
+SampleModule endpoint'lerine RBAC attribute ekle.
 
 Beklenti:
-- GET -> [HasPermission("Modules.Countries.Read")]
-- POST -> [HasPermission("Modules.Countries.Create")]
-- PUT -> [HasPermission("Modules.Countries.Update")]
-- DELETE -> [HasPermission("Modules.Countries.Delete")]
-- BULK DELETE -> [HasPermission("Modules.Countries.BulkDelete")]
+- GET -> [HasPermission("Modules.SampleModule.Read")]
+- POST -> [HasPermission("Modules.SampleModule.Create")]
+- PUT -> [HasPermission("Modules.SampleModule.Update")]
+- DELETE -> [HasPermission("Modules.SampleModule.Delete")]
+- BULK DELETE -> [HasPermission("Modules.SampleModule.BulkDelete")]
 ```
 
 #### 18. Tenant audit
@@ -579,7 +579,7 @@ Kullanim: Multi-tenant izolasyonu kontrol etmek istediginde.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries modulunu tenant izolasyonu acisindan incele ve rapor ver.
+SampleModule modulunu tenant izolasyonu acisindan incele ve rapor ver.
 
 Kontrol et:
 - repository filtreleri
@@ -597,7 +597,7 @@ Kullanim: Fiziksel silme riski veya soft delete eksigi supheliyse.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries modulunu soft delete uyumu acisindan incele.
+SampleModule modulunu soft delete uyumu acisindan incele.
 
 Kontrol et:
 - DeleteAsync IsDeleted ve DeletedAt set ediyor mu
@@ -614,7 +614,7 @@ Kullanim: Ocelot tarafinda route eksigi veya method eksigi varsa.
 ```text
 @[.antigravity/agents/integration-agent.md]
 
-Countries modulu icin gateway rotalarini kontrol et ve duzelt.
+SampleModule modulu icin gateway rotalarini kontrol et ve duzelt.
 
 Beklenti:
 - /api/countries
@@ -630,7 +630,7 @@ Kullanim: Endpoint isimlendirme ve status code standardi denetlemek istediginde.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries API katmanini .antigravity/rules/api-conventions.md acisindan incele.
+SampleModule API katmanini .antigravity/rules/api-conventions.md acisindan incele.
 
 Kontrol et:
 - rota isimleri
@@ -648,7 +648,7 @@ Kullanim: Modulun katmanli mimariye uyup uymadigini denetlemek icin.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries modulunu .antigravity/rules/erp-architecture.md ve .antigravity/ARCHITECTURE.md acisindan incele.
+SampleModule modulunu .antigravity/rules/erp-architecture.md ve .antigravity/ARCHITECTURE.md acisindan incele.
 
 Kontrol et:
 - Api -> Application -> Domain akisina uyum
@@ -669,7 +669,7 @@ Ne zaman dogrudan kullanilir: Sadece test uretilecekse ve urun kodu degismeyecek
 ```text
 @[.antigravity/agents/testing-agent.md]
 
-Countries modulu icin xUnit testleri yaz.
+SampleModule modulu icin xUnit testleri yaz.
 
 Senaryolar:
 - create duplicate iso2 reddedilir
@@ -703,7 +703,7 @@ Kullanim: Canliya yakin son kontrolde.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries modulu icin release-checklist calistir.
+SampleModule modulu icin release-checklist calistir.
 
 Kontrol et:
 - build
@@ -722,7 +722,7 @@ Kullanim: Genel saglik kontrolu ve risk odakli review istendiginde.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries modulunu review et.
+SampleModule modulunu review et.
 
 Odak:
 - bug
@@ -740,7 +740,7 @@ Kullanim: Daha once bozulmus bir akis tekrar risk altindaysa.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Products ve Countries DataTable akislari icin regression review yap.
+Products ve SampleModule DataTable akislari icin regression review yap.
 
 Ozellikle kontrol et:
 - Save View
@@ -760,7 +760,7 @@ Ne zaman dogrudan kullanilir: Kod tamam ve yalniz dokumantasyon ihtiyaci varsa.
 ```text
 @[.antigravity/agents/documentation-writer.md]
 
-Countries modulu tamamlandi. Swagger ve README dokumantasyonunu guncelle.
+SampleModule modulu tamamlandi. Swagger ve README dokumantasyonunu guncelle.
 
 Dahil et:
 - endpoint ozeti
@@ -776,7 +776,7 @@ Ne zaman dogrudan kullanilir: Son kullanici rehberi istendiginde.
 ```text
 @[.antigravity/agents/user-manual-generator.md]
 
-Countries modulu icin son kullanici kilavuzu hazirla.
+SampleModule modulu icin son kullanici kilavuzu hazirla.
 
 Dahil et:
 - ekran tanitimi
@@ -794,7 +794,7 @@ Ne zaman dogrudan kullanilir: Onemli mimari karar alinmis ve kayda gecirilecekse
 ```text
 @[.antigravity/agents/documentation-writer.md]
 
-Products ve Countries DataTable v2 standardi icin ADR yaz.
+Products ve SampleModule DataTable v2 standardi icin ADR yaz.
 
 Karar:
 - offcanvas filter yerine inline collapsible filter
@@ -813,26 +813,26 @@ Kullanim: Hatali modulu temizleyip bastan dogru kurmak istediginde.
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-Countries modulunu tamamen temizle. Yeniden yazilacak.
+SampleModule modulunu tamamen temizle. Yeniden yazilacak.
 
 Silinecekler:
 BACKEND:
-- services/DitenMdmService/src/.../Features/Countries/ (tum klasor)
+- services/DitenMdmService/src/.../Features/SampleModule/ (tum klasor)
 - services/DitenMdmService/src/Diten.MdmService.Persistence/Repositories/CountryRepository.cs
-- services/DitenMdmService/src/Diten.MdmService.Api/Controllers/CountriesController.cs
+- services/DitenMdmService/src/Diten.MdmService.Api/Controllers/SampleModuleController.cs
 - services/DitenMdmService/src/Diten.MdmService.Domain/Entities/Country.cs
 
 FRONTEND:
-- frontend/Diten.Web/Controllers/CountriesController.cs
-- frontend/Diten.Web/Views/MDM/Countries/ (tum klasor)
-- frontend/Diten.Web/wwwroot/assets/js/MDM/Countries/ (tum klasor)
-- frontend/Diten.Web/Resources/Views/MDM/Countries/ (tum klasor)
+- frontend/Diten.Web/Controllers/SampleModuleController.cs
+- frontend/Diten.Web/Views/MDM/SampleModule/ (tum klasor)
+- frontend/Diten.Web/wwwroot/assets/js/MDM/SampleModule/ (tum klasor)
+- frontend/Diten.Web/Resources/Views/MDM/SampleModule/ (tum klasor)
 
 GATEWAY:
 - ocelot.json icindeki /api/countries ve /api/countries/{everything} rotalari
 
 SIDEBAR:
-- _LayoutBackbone.cshtml icindeki Countries menu item'i
+- _LayoutBackbone.cshtml icindeki SampleModule menu item'i
 
 Dokunulmayacaklar:
 - SharedResource.*.resx
@@ -848,7 +848,7 @@ Ne zaman dogrudan kullanilir: Once neden analizi istendiginde.
 ```text
 @[.antigravity/agents/debugger.md]
 
-Countries Save View neden calismiyor, root cause analizi yap.
+SampleModule Save View neden calismiyor, root cause analizi yap.
 
 Katmanlar:
 - browser

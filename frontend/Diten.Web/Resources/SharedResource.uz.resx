@@ -253,11 +253,9 @@
   <data name="Platform" xml:space="preserve"><value>Platform</value></data>
   <data name="WorkCenterMenu" xml:space="preserve"><value>Work Center</value></data>
   <data name="ItemMaster" xml:space="preserve"><value>Mahsulot kartasi</value></data>
-  <data name="ProductManagement" xml:space="preserve"><value>Mahsulot boshqaruvi</value></data>
-  <data name="CategoryManagement" xml:space="preserve"><value>Kategoriya boshqaruvi</value></data>
-  <data name="VariantManagement" xml:space="preserve"><value>Variantlar boshqaruvi</value></data>
   <data name="Attributes" xml:space="preserve"><value>Atributlar</value></data>
   <data name="Variants" xml:space="preserve"><value>Variantlar</value></data>
   <data name="ColumnOrder" xml:space="preserve"><value>Ustunlar tartibi</value></data>
   <data name="SKUManagement" xml:space="preserve"><value>SKU boshqaruvi</value></data>
+  <data name="ProductMaster" xml:space="preserve"><value>Mahsulot kartasi</value></data>
 </root>

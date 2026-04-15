@@ -1,77 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <data name="ProductsTitle" xml:space="preserve"><value>Gestión de Productos</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Gestione las identidades comerciales de producto y su ciclo de vida desde esta pantalla.</value></data>
-  <data name="AddNewProducts" xml:space="preserve"><value>Agregar Nuevo Producto</value></data>
-  <data name="CreateTitle" xml:space="preserve"><value>Crear Producto</value></data>
-  <data name="EditTitle" xml:space="preserve"><value>Editar Producto</value></data>
-  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
-  <data name="EditBtn" xml:space="preserve"><value>Editar</value></data>
-  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
-  <data name="Code" xml:space="preserve"><value>Código</value></data>
-  <data name="CodeHelperText" xml:space="preserve"><value>Es el código comercial corto del producto. Debe ser único y significativo.</value></data>
-  <data name="Name" xml:space="preserve"><value>Nombre</value></data>
-  <data name="NameHelperText" xml:space="preserve"><value>Nombre completo del producto para mostrar.</value></data>
-  <data name="ShortName" xml:space="preserve"><value>Nombre Corto</value></data>
-  <data name="ShortNameHelperText" xml:space="preserve"><value>Es el nombre del producto que se usará en listas cortas.</value></data>
-  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
-  <data name="DescriptionHelperText" xml:space="preserve"><value>Descripción comercial breve. No se deben ingresar datos técnicos ni de empaque.</value></data>
-  <data name="ProductType" xml:space="preserve"><value>Tipo de Producto</value></data>
-  <data name="ProductTypeHelperText" xml:space="preserve"><value>Es el tipo comercial del producto. No es un ítem operativo ni un SKU.</value></data>
-  <data name="Category" xml:space="preserve"><value>Categoría</value></data>
-  <data name="CategoryHelperText" xml:space="preserve"><value>Se utiliza para clasificar el producto. En la Fase 1 puede ser una lista temporal.</value></data>
-  <data name="LifecycleState" xml:space="preserve"><value>Estado del Ciclo de Vida</value></data>
-  <data name="LifecycleStateHelperText" xml:space="preserve"><value>Es el estado del ciclo de vida del producto. Es la única fuente de estado del sistema.</value></data>
-  <data name="IdentityCard" xml:space="preserve"><value>Identidad</value></data>
-  <data name="ClassificationCard" xml:space="preserve"><value>Clasificación</value></data>
-  <data name="CommercialFlags" xml:space="preserve"><value>Indicadores Comerciales</value></data>
-  <data name="SoftFlagHintTitle" xml:space="preserve"><value>Alcance de la Fase 1</value></data>
-  <data name="SoftFlagHintDescription" xml:space="preserve"><value>Estos indicadores son orientativos en la Fase 1. La aplicación operativa será gestionada más adelante por SKU / Ítem.</value></data>
-  <data name="Overview" xml:space="preserve"><value>Resumen</value></data>
-  <data name="CurrentLifecycle" xml:space="preserve"><value>Ciclo de Vida Actual</value></data>
-  <data name="Lifecycle" xml:space="preserve"><value>Ciclo de Vida</value></data>
-  <data name="GeneralInformation" xml:space="preserve"><value>Información General</value></data>
-  <data name="ProductTypeFinishedProduct" xml:space="preserve"><value>Producto Terminado</value></data>
-  <data name="ProductTypeSemiFinishedProduct" xml:space="preserve"><value>Producto Semielaborado</value></data>
-  <data name="ProductTypeService" xml:space="preserve"><value>Servicio</value></data>
-  <data name="ProductTypeTechnology" xml:space="preserve"><value>Tecnología</value></data>
-  <data name="CategoryCns" xml:space="preserve"><value>SNC</value></data>
-  <data name="CategoryAntiInfective" xml:space="preserve"><value>Antiinfeccioso</value></data>
-  <data name="CategorySupplement" xml:space="preserve"><value>Suplemento</value></data>
-  <data name="CategoryDisinfectant" xml:space="preserve"><value>Desinfectante</value></data>
-  <data name="CategoryManufacturingService" xml:space="preserve"><value>Servicio de Manufactura</value></data>
-  <data name="CategoryConsulting" xml:space="preserve"><value>Consultoría</value></data>
-  <data name="CategoryIntegration" xml:space="preserve"><value>Integración</value></data>
-  <data name="CategoryPediatric" xml:space="preserve"><value>Pediátrico</value></data>
-  <data name="CategoryUrology" xml:space="preserve"><value>Urología</value></data>
-  <data name="CategorySupport" xml:space="preserve"><value>Soporte</value></data>
-  <data name="CategoryDigitalSolution" xml:space="preserve"><value>Solución Digital</value></data>
-  <data name="CategoryPlatform" xml:space="preserve"><value>Plataforma</value></data>
-  <data name="LifecycleDraft" xml:space="preserve"><value>Borrador</value></data>
-  <data name="LifecycleActive" xml:space="preserve"><value>Activo</value></data>
-  <data name="LifecycleBlocked" xml:space="preserve"><value>Bloqueado</value></data>
-  <data name="LifecycleObsolete" xml:space="preserve"><value>Obsoleto</value></data>
-  <data name="Activate" xml:space="preserve"><value>Activar</value></data>
-  <data name="Restore" xml:space="preserve"><value>Restaurar</value></data>
-  <data name="Block" xml:space="preserve"><value>Bloquear</value></data>
-  <data name="MarkAsObsolete" xml:space="preserve"><value>Marcar como Obsoleto</value></data>
-  <data name="Reason" xml:space="preserve"><value>Motivo</value></data>
-  <data name="ReasonHelperText" xml:space="preserve"><value>Ingrese una nota corta para los cambios de ciclo de vida. Es obligatoria para restaurar.</value></data>
-  <data name="RestoreReasonRequired" xml:space="preserve"><value>El motivo es obligatorio para restaurar un producto obsoleto.</value></data>
-  <data name="NoLifecycleTransitions" xml:space="preserve"><value>No hay más transiciones de ciclo de vida disponibles.</value></data>
-  <data name="RelatedModules" xml:space="preserve"><value>Módulos Relacionados</value></data>
-  <data name="RelatedSku" xml:space="preserve"><value>SKU Relacionado</value></data>
-  <data name="RelatedComposition" xml:space="preserve"><value>Composición Relacionada</value></data>
-  <data name="RelatedPackaging" xml:space="preserve"><value>Empaque Relacionado</value></data>
-  <data name="NoRelatedSku" xml:space="preserve"><value>Aún no hay registros SKU relacionados. Esta área es de solo lectura en la Fase 1.</value></data>
-  <data name="NoRelatedComposition" xml:space="preserve"><value>Aún no hay registros de composición relacionados. Esta área es de solo lectura en la Fase 1.</value></data>
-  <data name="NoRelatedPackaging" xml:space="preserve"><value>Aún no hay registros de empaque relacionados. Esta área es de solo lectura en la Fase 1.</value></data>
-  <data name="IsSaleable" xml:space="preserve"><value>Vendible</value></data>
-  <data name="IsSaleableHelperText" xml:space="preserve"><value>En la Fase 1 es solo una señal de intención comercial.</value></data>
-  <data name="IsPurchasable" xml:space="preserve"><value>Comprable</value></data>
-  <data name="IsPurchasableHelperText" xml:space="preserve"><value>En la Fase 1 es solo una señal de intención.</value></data>
-  <data name="IsManufacturable" xml:space="preserve"><value>Fabricable</value></data>
-  <data name="IsManufacturableHelperText" xml:space="preserve"><value>En la Fase 1 es solo una señal de intención.</value></data>
-  <data name="BreadcrumbHome" xml:space="preserve"><value>Inicio</value></data>
-  <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM</value></data>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ProductsTitle" xml:space="preserve"><value>Product Master</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage product records, type, lifecycle, and operational capabilities.</value></data>
+  <data name="AddNewProduct" xml:space="preserve"><value>Add New Product</value></data>
+  <data name="EditProduct" xml:space="preserve"><value>Edit Product</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="ShortName" xml:space="preserve"><value>Short Name</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="ProductType" xml:space="preserve"><value>Product Type</value></data>
+  <data name="Category" xml:space="preserve"><value>Category</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Lifecycle State</value></data>
+  <data name="Capabilities" xml:space="preserve"><value>Capabilities</value></data>
+  <data name="IsSaleable" xml:space="preserve"><value>Saleable</value></data>
+  <data name="IsPurchasable" xml:space="preserve"><value>Purchasable</value></data>
+  <data name="IsManufacturable" xml:space="preserve"><value>Manufacturable</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
+  <data name="ProductTypeFinished" xml:space="preserve"><value>Finished Product</value></data>
+  <data name="ProductTypeSemiFinished" xml:space="preserve"><value>Semi-Finished Product</value></data>
+  <data name="ProductTypeService" xml:space="preserve"><value>Service</value></data>
+  <data name="ProductTypeTechnology" xml:space="preserve"><value>Technology</value></data>
+  <data name="ProductTypeUnknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>Home</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>Master Data</value></data>
 </root>

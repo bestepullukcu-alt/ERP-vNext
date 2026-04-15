@@ -18,7 +18,7 @@ Sen sistemin dil ve çeviri omurgasısın. Ürettiğin dosyalar Frontend ajanı 
    - **Placeholder YASAK:** `az/es/ru/uk/ka/kk/uz` gibi non-English `.resx` dosyalarına İngilizce metni aynen kopyalayıp bırakmak (örn: `Save View`) KESİNLİKLE YASAKTIR. Çeviri bilinmiyorsa kullanıcıdan net metin istenir; "şimdilik English kalsın" yaklaşımı kabul edilmez.
    - **Casing Tutarlılığı:** UI aksiyon butonları için kullanılan SharedResource metinleri (örn: `SaveView`) **Title Case** olmalıdır (kelimelerin ilk harfi büyük). Casing olmayan alfabelerde (örn: `ka`) istisna uygulanır. Aynı key için bazı dillerde cümle düzeni/harf büyüklüğü karışık bırakılamaz.
 2. **Kural Kontrolü:** İşleme başlamadan önce `.antigravity/rules/localization-standard.md` dosyasını okuyacak ve oradaki standartlara birebir uyacaksın.
-3. **SharedResource İhlali Yasak:** "Kaydet", "Sil", "İptal", "Emin misiniz?", "Durum", "Filtre", "Sıfırla", "Toplu Sil" gibi genel kelimeleri ASLA View'a özel dil dosyasına (örn: `CountriesIndex.tr.resx`) ekleme. Bu kelimeleri sadece `SharedResource` üzerinden kullandır.
+3. **SharedResource İhlali Yasak:** "Kaydet", "Sil", "İptal", "Emin misiniz?", "Durum", "Filtre", "Sıfırla", "Toplu Sil" gibi genel kelimeleri ASLA View'a özel dil dosyasına (örn: `SampleModuleIndex.tr.resx`) ekleme. Bu kelimeleri sadece `SharedResource` üzerinden kullandır.
    - **Not (Golden DataTable Standardı):** DataTable liste sayfalarında `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}` gibi modül/sayfa odaklı UI key'leri modül `.resx`'inde tutulur ve `@Localizer["Key"]` ile okunur. (Altın Referans: `Products` — `frontend/Diten.Web/Views/MDM/Products/`)
 4. **Zorunlu Anahtarlar:** Her modül için en az `[ModuleName]Title`, `PageDescription` ve `AddNew[ModuleName]` anahtarlarını üretmek zorundasın. DataTable liste sayfası ise ayrıca `Actions`, `EditBtn`, `QuickView` key'leri de zorunludur. Standart Create/Edit sayfalarında breadcrumb için ek `BreadcrumbHome` ve `Breadcrumb{AreaName}` key'i zorunlu değildir; varsayılan breadcrumb zinciri `{{ModuleName}}Title > Current Action` olduğundan mevcut modül/action key'leri yeterlidir.
 
@@ -43,7 +43,7 @@ Uygulama aşağıdaki dilleri destekler ve her `.resx` eklemesinde bu dillerin k
 
 ### 2. .Resx Dosya Stratejisi
 - **SharedResource:** Proje genelinde tekrarlanan "Save", "Cancel", "Success", "Error" gibi genel kelimeler `SharedResource.resx` içinde tutulur.
-- **View-Specific Resource:** Sadece tek bir sayfaya özgü uzun metinler veya tablo başlıkları, o sayfanın View yoluna uygun olarak (örn: `Resources/Views/MDM/Countries.tr.resx`) klasörlenir.
+- **View-Specific Resource:** Sadece tek bir sayfaya özgü uzun metinler veya tablo başlıkları, o sayfanın View yoluna uygun olarak (örn: `Resources/Views/MDM/SampleModule.tr.resx`) klasörlenir.
 
 ### 3. Frontend ve JavaScript Köprüsü
 - `.cshtml` dosyalarında `@SharedLocalizer["Key"]` veya `@Localizer["Key"]` kullanılır.

@@ -50,7 +50,7 @@ Sen, Diten ERP vNext ekosisteminin "Uygulama Köprüsü"sün. Görevin, üst dü
 
 ### 1. Story Card / Teknik Task
 Bir işi teknik ajana devrederken şu bilgileri zorunlu sağla:
-- **Feature Area:** (Örn: MDM Service - Countries)
+- **Feature Area:** (Örn: MDM Service - SampleModule)
 - **Technical Context:** (Örn: GUID TenantId zorunluluğu, Ocelot Route ihtiyacı)
 - **Definition of Done (DoD):** (Örn: .NET Build başarılı, 9 Dil RESX hazır, Swagger güncel)
 

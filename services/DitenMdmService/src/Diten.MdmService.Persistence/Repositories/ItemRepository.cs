@@ -23,73 +23,50 @@ public sealed class ItemRepository : RepositoryBase<Item>, IItemRepository
         Collection.Indexes.CreateOne(new CreateIndexModel<Item>(indexKeys, new CreateIndexOptions { Unique = true }));
     }
 
-    public async Task<Item> CreateAsync(Item entity, CancellationToken cancellationToken = default)
+    // Override GetAllAsync to apply default sort by Code
+    public override async Task<IReadOnlyList<Item>> GetAllAsync(CancellationToken ct = default)
     {
-        return await InsertAsync(entity, cancellationToken);
+        return await Collection.Find(TenantFilter).SortBy(x => x.Code).ToListAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(Item entity, CancellationToken cancellationToken = default)
+    // Override DeleteAsync to cascade soft-delete to child collections
+    public override async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        var filter = Builders<Item>.Filter.And(
-            TenantFilter,
-            Builders<Item>.Filter.Eq(x => x.Id, entity.Id));
-
-        entity.UpdatedAt = DateTimeOffset.UtcNow;
-        entity.TenantId = TenantContext.TenantId;
-        var result = await Collection.ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
-        return result.ModifiedCount > 0;
-    }
-
-    public async Task<Item?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await FindByIdAsync(id, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Item>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await Collection.Find(TenantFilter).SortBy(x => x.Code).ToListAsync(cancellationToken);
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        await SoftDeleteAsync(Collection, Builders<Item>.Filter.And(TenantFilter, Builders<Item>.Filter.Eq(x => x.Id, id)), cancellationToken);
+        await base.DeleteAsync(id, ct);
         await SoftDeleteManyAsync(
             _attributeValues,
             Builders<ItemAttributeValue>.Filter.And(TenantFilterFor<ItemAttributeValue>(), Builders<ItemAttributeValue>.Filter.Eq(x => x.ItemId, id)),
-            cancellationToken);
+            ct);
         await SoftDeleteManyAsync(
             _variants,
             Builders<ItemVariant>.Filter.And(TenantFilterFor<ItemVariant>(), Builders<ItemVariant>.Filter.Eq(x => x.ItemId, id)),
-            cancellationToken);
+            ct);
     }
 
-    public async Task<int> BulkDeleteAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+    public async Task<int> BulkDeleteAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
     {
         var idList = ids.Distinct().ToList();
-        if (idList.Count == 0)
-        {
-            return 0;
-        }
+        if (idList.Count == 0) return 0;
 
         var filter = Builders<Item>.Filter.And(
             TenantFilter,
             Builders<Item>.Filter.In(x => x.Id, idList));
-        var itemResult = await SoftDeleteManyAsync(Collection, filter, cancellationToken);
+        var itemResult = await SoftDeleteManyAsync(Collection, filter, ct);
 
         var attributeFilter = Builders<ItemAttributeValue>.Filter.And(
             TenantFilterFor<ItemAttributeValue>(),
             Builders<ItemAttributeValue>.Filter.In(x => x.ItemId, idList));
-        await SoftDeleteManyAsync(_attributeValues, attributeFilter, cancellationToken);
+        await SoftDeleteManyAsync(_attributeValues, attributeFilter, ct);
 
         var variantFilter = Builders<ItemVariant>.Filter.And(
             TenantFilterFor<ItemVariant>(),
             Builders<ItemVariant>.Filter.In(x => x.ItemId, idList));
-        await SoftDeleteManyAsync(_variants, variantFilter, cancellationToken);
+        await SoftDeleteManyAsync(_variants, variantFilter, ct);
 
         return (int)itemResult.ModifiedCount;
     }
 
-    public async Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default)
     {
         var filter = Builders<Item>.Filter.And(
             TenantFilter,
@@ -100,21 +77,18 @@ public sealed class ItemRepository : RepositoryBase<Item>, IItemRepository
             filter &= Builders<Item>.Filter.Ne(x => x.Id, excludeId.Value);
         }
 
-        return await Collection.Find(filter).AnyAsync(cancellationToken);
+        return await Collection.Find(filter).AnyAsync(ct);
     }
 
-    public async Task ReplaceAttributeValuesAsync(Guid itemId, IEnumerable<ItemAttributeValue> values, CancellationToken cancellationToken = default)
+    public async Task ReplaceAttributeValuesAsync(Guid itemId, IEnumerable<ItemAttributeValue> values, CancellationToken ct = default)
     {
         var deleteFilter = Builders<ItemAttributeValue>.Filter.And(
             TenantFilterFor<ItemAttributeValue>(),
             Builders<ItemAttributeValue>.Filter.Eq(x => x.ItemId, itemId));
-        await _attributeValues.DeleteManyAsync(deleteFilter, cancellationToken);
+        await _attributeValues.DeleteManyAsync(deleteFilter, ct);
 
         var valueList = values.ToList();
-        if (valueList.Count == 0)
-        {
-            return;
-        }
+        if (valueList.Count == 0) return;
 
         foreach (var value in valueList)
         {
@@ -124,29 +98,26 @@ public sealed class ItemRepository : RepositoryBase<Item>, IItemRepository
             value.IsDeleted = false;
         }
 
-        await _attributeValues.InsertManyAsync(valueList, cancellationToken: cancellationToken);
+        await _attributeValues.InsertManyAsync(valueList, cancellationToken: ct);
     }
 
-    public async Task<IReadOnlyList<ItemAttributeValue>> GetAttributeValuesAsync(Guid itemId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ItemAttributeValue>> GetAttributeValuesAsync(Guid itemId, CancellationToken ct = default)
     {
         var filter = Builders<ItemAttributeValue>.Filter.And(
             TenantFilterFor<ItemAttributeValue>(),
             Builders<ItemAttributeValue>.Filter.Eq(x => x.ItemId, itemId));
-        return await _attributeValues.Find(filter).ToListAsync(cancellationToken);
+        return await _attributeValues.Find(filter).ToListAsync(ct);
     }
 
-    public async Task ReplaceVariantsAsync(Guid itemId, IEnumerable<ItemVariant> variants, CancellationToken cancellationToken = default)
+    public async Task ReplaceVariantsAsync(Guid itemId, IEnumerable<ItemVariant> variants, CancellationToken ct = default)
     {
         var deleteFilter = Builders<ItemVariant>.Filter.And(
             TenantFilterFor<ItemVariant>(),
             Builders<ItemVariant>.Filter.Eq(x => x.ItemId, itemId));
-        await _variants.DeleteManyAsync(deleteFilter, cancellationToken);
+        await _variants.DeleteManyAsync(deleteFilter, ct);
 
         var variantList = variants.ToList();
-        if (variantList.Count == 0)
-        {
-            return;
-        }
+        if (variantList.Count == 0) return;
 
         foreach (var variant in variantList)
         {
@@ -156,15 +127,15 @@ public sealed class ItemRepository : RepositoryBase<Item>, IItemRepository
             variant.IsDeleted = false;
         }
 
-        await _variants.InsertManyAsync(variantList, cancellationToken: cancellationToken);
+        await _variants.InsertManyAsync(variantList, cancellationToken: ct);
     }
 
-    public async Task<IReadOnlyList<ItemVariant>> GetVariantsAsync(Guid itemId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ItemVariant>> GetVariantsAsync(Guid itemId, CancellationToken ct = default)
     {
         var filter = Builders<ItemVariant>.Filter.And(
             TenantFilterFor<ItemVariant>(),
             Builders<ItemVariant>.Filter.Eq(x => x.ItemId, itemId));
-        return await _variants.Find(filter).SortBy(x => x.Code).ToListAsync(cancellationToken);
+        return await _variants.Find(filter).SortBy(x => x.Code).ToListAsync(ct);
     }
 
     private FilterDefinition<TEntity> TenantFilterFor<TEntity>() where TEntity : EntityBase
@@ -177,24 +148,12 @@ public sealed class ItemRepository : RepositoryBase<Item>, IItemRepository
     private async Task<UpdateResult> SoftDeleteManyAsync<TEntity>(
         IMongoCollection<TEntity> collection,
         FilterDefinition<TEntity> filter,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
         where TEntity : EntityBase
     {
         var update = Builders<TEntity>.Update
             .Set(x => x.IsDeleted, true)
             .Set(x => x.DeletedAt, DateTimeOffset.UtcNow);
-        return await collection.UpdateManyAsync(filter, update, cancellationToken: cancellationToken);
-    }
-
-    private async Task SoftDeleteAsync<TEntity>(
-        IMongoCollection<TEntity> collection,
-        FilterDefinition<TEntity> filter,
-        CancellationToken cancellationToken)
-        where TEntity : EntityBase
-    {
-        var update = Builders<TEntity>.Update
-            .Set(x => x.IsDeleted, true)
-            .Set(x => x.DeletedAt, DateTimeOffset.UtcNow);
-        await collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        return await collection.UpdateManyAsync(filter, update, cancellationToken: ct);
     }
 }

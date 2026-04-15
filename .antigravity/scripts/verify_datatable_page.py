@@ -3,15 +3,15 @@
 DataTable Page Verifier (vNext)
 ===============================
 
-Static checks to enforce the "Golden DataTable" contract (LegalEntities baseline):
+Static checks to enforce the "Golden DataTable" contract (SampleModule baseline):
 - Index.cshtml structure markers exist (Filter partial, skeleton, offcanvas)
 - window.L10n bridge uses payload partial + loader JS and includes required keys
 - index.js uses DtDefaults + DataTables v2 constructor
 - Quick View is wired via event delegation (.js-quick-view) (no inline onclick)
 
 Usage:
-  python3 .antigravity/scripts/verify_datatable_page.py . --area MDM --module LegalEntities
-  python3 .antigravity/scripts/verify_datatable_page.py . --area MDM --module Countries
+  python3 .antigravity/scripts/verify_datatable_page.py . --area MDM --module SampleModule
+  python3 .antigravity/scripts/verify_datatable_page.py . --area MDM --module SampleModule
 """
 
 from __future__ import annotations
@@ -187,7 +187,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Verify vNext DataTable page contract (static checks).")
     parser.add_argument("project", help="Repo root (e.g. .)")
     parser.add_argument("--area", default="MDM", help="Area folder under Views/ and assets/js/ (default: MDM)")
-    parser.add_argument("--module", required=True, help="Module folder name (case-sensitive) (e.g. LegalEntities)")
+    parser.add_argument("--module", required=True, help="Module folder name (case-sensitive) (e.g. SampleModule)")
 
     args = parser.parse_args()
 

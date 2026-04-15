@@ -12,10 +12,9 @@
     try {
         const raw = JSON.parse(payload.textContent || '{}');
         const normalized = {};
-        for (const key of Object.keys(raw)) {
+        Object.keys(raw).forEach((key) => {
             normalized[toPascalCase(key)] = raw[key];
-        }
-
+        });
         window.L10n = Object.assign({}, window.L10n || {}, normalized);
     } catch (error) {
         console.error('Products localization payload could not be parsed.', error);

@@ -19,7 +19,7 @@ Yeni servis açarken “rastgele port” seçilmez. Diten ERP vNext vizyonuna sa
 | :--- | :--- | :--- |
 | **Diten.ApiGateway (Ocelot)** | `5000` | Tüm dış isteklerin karşılandığı ana kapı. |
 | **Diten.Web (Frontend)** | `5001` | Sneat PRO, Razor Pages ve DataTables arayüzü. |
-| **Diten.MDM.Api** | `5050` | Master Data Management (Countries, vb.) |
+| **Diten.MDM.Api** | `5050` | Master Data Management (SampleModule, vb.) |
 | **Diten.Auth.Api** | `5056` | Kimlik doğrulama, JWT ve RBAC yönetim servisi. |
 
 > **Kural:** Frontend (5001) hiçbir zaman doğrudan MDM (5050) veya Auth (5056) servisine istek atamaz. Frontend'in yapacağı tüm API çağrıları Gateway (5000) üzerinden geçmek ZORUNDADIR.

@@ -253,11 +253,9 @@
   <data name="Platform" xml:space="preserve"><value>Platform</value></data>
   <data name="WorkCenterMenu" xml:space="preserve"><value>Work Center</value></data>
   <data name="ItemMaster" xml:space="preserve"><value>ნივთის ბარათი</value></data>
-  <data name="ProductManagement" xml:space="preserve"><value>პროდუქტის მართვა</value></data>
-  <data name="CategoryManagement" xml:space="preserve"><value>კატეგორიების მართვა</value></data>
-  <data name="VariantManagement" xml:space="preserve"><value>ვარიანტების მართვა</value></data>
   <data name="Attributes" xml:space="preserve"><value>ატრიბუტები</value></data>
   <data name="Variants" xml:space="preserve"><value>ვარიანტები</value></data>
   <data name="ColumnOrder" xml:space="preserve"><value>სვეტების რიგი</value></data>
   <data name="SKUManagement" xml:space="preserve"><value>SKU მართვა</value></data>
+  <data name="ProductMaster" xml:space="preserve"><value>პროდუქტის ბარათი</value></data>
 </root>

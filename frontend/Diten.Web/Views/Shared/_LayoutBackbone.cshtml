@@ -55,6 +55,11 @@
     <script src="~/assets/vendor/js/template-customizer.js"></script>
     <script>
         window.ApiBaseUrl = window.location.protocol + "//" + window.location.hostname + ":5000";
+        window.API = {
+            mdm: window.ApiBaseUrl,
+            auth: window.ApiBaseUrl,
+            platform: window.ApiBaseUrl
+        };
         window.CurrentLanguage = "@System.Threading.Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName";
     </script>
     <script src="~/assets/js/config.js" asp-append-version="true"></script>
@@ -124,13 +129,6 @@
                         <span class="menu-header-text">@SharedLocalizer["MDM"]</span>
                     </li>
                     <li
-                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Products" ? "active" : "")">
-                        <a href="/Products" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-box"></i>
-                            <div>@SharedLocalizer["ProductManagement"]</div>
-                        </a>
-                    </li>
-                    <li
                         class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Compositions" ? "active" : "")">
                         <a href="/Compositions" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-vial"></i>
@@ -142,6 +140,13 @@
                         <a href="/Skus" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-barcode-reader"></i>
                             <div>@SharedLocalizer["SKUManagement"]</div>
+                        </a>
+                    </li>
+                    <li
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Products" ? "active" : "")">
+                        <a href="/Products" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-box"></i>
+                            <div>@SharedLocalizer["ProductMaster"]</div>
                         </a>
                     </li>
                     <li

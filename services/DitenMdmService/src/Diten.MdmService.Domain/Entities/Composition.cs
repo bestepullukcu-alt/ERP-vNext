@@ -19,6 +19,9 @@ public sealed class Composition : EntityBase
     public CompositionLifecycleState LifecycleState { get; set; } = CompositionLifecycleState.Draft;
 
     [BsonRepresentation(BsonType.String)]
+    public Guid LifecycleStateId { get; set; }
+
+    [BsonRepresentation(BsonType.String)]
     public Guid? CreatedBy { get; set; }
 
     [BsonRepresentation(BsonType.String)]

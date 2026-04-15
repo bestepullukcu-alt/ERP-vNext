@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Diten.Web.Models.Products;
+using Diten.Web.Models;
 
 namespace Diten.Web.Models.Skus;
 

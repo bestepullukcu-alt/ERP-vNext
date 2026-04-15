@@ -14,7 +14,7 @@ public sealed class Sku : EntityBase
     public string Code { get; set; } = string.Empty;
 
     [BsonRepresentation(BsonType.String)]
-    public Guid ProductId { get; set; }
+    public Guid ItemId { get; set; }
 
     [BsonRepresentation(BsonType.String)]
     public Guid CompositionId { get; set; }

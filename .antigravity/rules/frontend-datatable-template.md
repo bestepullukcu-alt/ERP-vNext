@@ -1,6 +1,6 @@
 # GOLDEN RULE: Standard DataTable UI Blueprint
 
-Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları (Örn: Countries, Cities, Currencies) için ZORUNLU HTML/Razor şablonudur.
+Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları (Örn: SampleModule, Cities, Currencies) için ZORUNLU HTML/Razor şablonudur.
 
 > ⚠️ **MANDATES:**
 > - HTML iskeletine hiç dokunma. Sadece `{{DeğişkenAdlar}}` kısımlarını doldur.
@@ -11,9 +11,13 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
 > - **DataTable v2 Standard Marker:** Yeni standartları uygulayan sayfalarda `<table ... data-dt-standard="v2" id="...">` zorunludur.
 > - **Toolbar Badge Clipping:** Filter/ColVis badge’leri `top-0 end-0 translate-middle` ile dışarı taşar; bu normaldir. Mobil/tablet’te kesilmemesi için çözüm `backbone-custom.css (MOD-0022)` içindeki **top safe-area padding**’dir. Sayfa bazlı “badge’i içeri taşı” veya “sadece z-index” hack’i YASAKTIR.
 > - **Shared CSS Placement:** Toolbar / inline filter / Select2 chip görünümleri page-level `@section Styles` içinde tekrar edilmez; ortak kurallar `wwwroot/assets/css/backbone-custom.css` içinde tutulur.
+> - **Create/Edit Surface Rule (ZORUNLU):** Standart CRUD modüllerde kayıt oluşturma ve düzenleme akışları ayrı sayfalar (`Create.cshtml`, `Edit.cshtml`, gerekirse `Details.cshtml`) üzerinden yürür. Index içinde create/edit offcanvas formu açmak YASAKTIR. Offcanvas sadece Quick View amaçlıdır.
+> - **Delete Endpoint Ownership (ZORUNLU):** Tekil silme ve bulk silme çağrıları yalnızca modülün kendi resource endpoint’ine gider (`/api/{module}` ve `/api/{module}/bulk`). Kardeş modül endpoint’i kullanmak YASAKTIR.
+> - **Bulk Delete Confirmation Parity (ZORUNLU):** Bulk delete için generic/yanlış modal değil, tekil silme ile aynı görsel dilde confirm akışı (`window.showConfirm` standardı) kullanılmalıdır.
+> - **Save View CTA (ZORUNLU):** DataTable toolbar’ında `dt-save-filter-btn` başlangıçta `d-none` olsa bile render edilmek zorundadır; dirty-state olduğunda görünür olmalıdır.
 > - **`{AreaName}` = klasör gruplaması (Örn: `MDM`, `Identity`), ASP.NET Areas routing DEĞİLDİR.**
->   - ✅ DOĞRU: `Views/MDM/Countries/Index.cshtml`
->   - ❌ YANLIŞ: `Areas/MDM/Views/Countries/Index.cshtml`
+>   - ✅ DOĞRU: `Views/MDM/SampleModule/Index.cshtml`
+>   - ❌ YANLIŞ: `Areas/MDM/Views/SampleModule/Index.cshtml`
 
 ---
 
@@ -40,11 +44,34 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
 - **`initDataTable` ASYNC olmalıdır** — `await loadDefaultView()` DataTable init'ten önce çağrılır.
 - **savedView içine kaydedilenler:** filters + search + colVis + columnOrder + sorting
 - **kaydedilmeyenler:** page number + pageLength
-- Panel açık/kapalı durumu persist edilmez.
+- Panel açık/kalalı durumu persist edilmez.
 - **colReorder varsayılan aktif:** `colReorder: { columns: ':gt(1):not(:last-child)' }` standart liste sayfalarında her zaman eklenir. `column-reorder.dt` / `columns-reordered.dt` event'leri dirty-state kapsamındadır.
 - **Personalization Context Standardı:** `moduleKey + pageKey`
   - Örnek: `moduleKey: "MDM"`, `pageKey: "Products"`
   - `tableId` = `<table id="...">` zorunludur (çoklu DataTable çakışmasını engeller).
+
+### UI-019: Delete Confirmation Standard (SweetAlert2)
+Silme işlemleri için her zaman `window.showConfirm` (veya Sneat SweetAlert2 wrapper) kullanılmalıdır.
+
+**Görsel Standartlar:**
+- **Confirm Button:** Her zaman Kırmızı (`btn-danger`) olmalıdır.
+- **Cancel Button:** Her zaman Gri/Birim (`btn-label-secondary`) olmalıdır.
+- **Icon:** Uyarı (`warning`) ikonu kullanılmalıdır.
+
+**Örnek Standart Kod:**
+```javascript
+window.showConfirm?.({
+    title: L.AreYouSure,
+    entityName: data.name || data.Name, // Fallback for case sensitivity
+    confirmButtonText: L.Delete, // resx'den "Sil"
+    confirmButtonClass: 'btn btn-danger me-3', // Sneat spesifik sınıf
+    cancelButtonClass: 'btn btn-label-secondary',
+    showLoaderOnConfirm: true
+}).then(isConfirmed => {
+    if (!isConfirmed) return;
+    // AJAX Silme işlemini başlat...
+});
+```
 
 ### Dirty-State (Save View görünürlük kuralı)
 - `isDirty = normalize(appliedState) != normalize(savedView || baselineDefault)`
@@ -78,14 +105,14 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
 ## ⚠️ Localization Sınıf ve Dosya Adı Convention'ı
 
 > **KRİTİK KURAL:** Her modül için bir localization marker class oluşturulur.
-> - Class adı: `{ModuleName}Index` (örn: `CountriesIndex`, `LegalEntitiesIndex`)
+> - Class adı: `{ModuleName}Index` (örn: `SampleModuleIndex`, `SampleModuleIndex`)
 > - Class dosyası: `Views/{AreaName}/{ModuleName}/{ModuleName}Index.cs`
 > - Resx dosyaları: `Resources/Views/{AreaName}/{ModuleName}/{ModuleName}Index.{lang}.resx`
 > 
 > **Class adı ve resx dosya adı BIRE BIR AYNI OLMALIDIR.** Aksi halde `IHtmlLocalizer<T>` hiçbir key'i çözemez ve raw key görünür.
 >
-> ❌ YANLIŞ: Class = `CountriesIndex`, Resx = `Index.en.resx`
-> ✅ DOĞRU: Class = `CountriesIndex`, Resx = `CountriesIndex.en.resx`
+> ❌ YANLIŞ: Class = `SampleModuleIndex`, Resx = `Index.en.resx`
+> ✅ DOĞRU: Class = `SampleModuleIndex`, Resx = `SampleModuleIndex.en.resx`
 
 ---
 
@@ -102,7 +129,7 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
     Layout = "_LayoutBackbone";
 }
 
-{{!-- ① ZORUNLU: Inline Filter partial'ı. _Filter.cshtml yoksa oluştur. --}}
+{{!-- ① ZORUNLU: Inline Filter partial'ı. --}}
 <partial name="_Filter" />
 
 <div class="mb-3">
@@ -110,7 +137,7 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
 
-{{!-- ② Bulk Action Bar (Satır seçilince gösterilir) --}}
+{{!-- ② Bulk Action Bar --}}
 <div id="bulkActionBar" class="card mb-4 d-none">
     <div class="card-body d-flex align-items-center justify-content-between py-3">
         <div class="d-flex align-items-center gap-2">
@@ -154,13 +181,12 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
     </div>
 </div>
 
-{{!-- ④ Offcanvas — Hızlı Görüntüleme (Quick View) --}}
+{{!-- ④ Offcanvas — Quick View --}}
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview"
     aria-labelledby="offcanvasDetailsPreviewLabel" style="width: 480px;">
     <div class="offcanvas-header border-bottom">
         <div class="d-flex align-items-center">
             <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
-                {{!-- Modüle özgü bir ikon seç. Örn: bx-buildings, bx-world, bx-coin, vb. --}}
                 <i class="bx {{ModuleIcon}} fs-4"></i>
             </div>
             <div>
@@ -174,32 +200,24 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
 
     <div class="offcanvas-body flex-grow-1 p-0">
         <div class="p-4">
-            {{!-- Status Kutusu (her modülde sabit kalır) --}}
             <div class="bg-label-secondary rounded p-3 mb-4 d-flex align-items-center justify-content-between">
                 <div>
                     <span class="d-block text-muted small fw-medium mb-1">@SharedLocalizer["Status"]</span>
                     <span id="oc-status" class="badge bg-label-secondary">-</span>
                 </div>
             </div>
-
-            {{!-- MODÜLE ÖZGÜ DETAYLAR — <dl>/<dt>/<dd> yapısını kullan. Örnek: --}}
-            {{!--
             <h6 class="text-uppercase text-muted fw-bold mb-3">@Localizer["GeneralInformation"]</h6>
-            <dl class="row mb-4">
-                <dt class="col-5 fw-medium text-heading mb-2">
-                    <i class="bx bx-rename text-muted me-2"></i>@Localizer["FieldLabel"]
-                </dt>
-                <dd id="oc-fieldName" class="col-7 mb-2">-</dd>
+            <dl class="row mb-4" id="oc-details-list">
+                {{!-- Details list items injected via JS --}}
             </dl>
-            --}}
         </div>
     </div>
 
-    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between">
-        <button type="button" class="btn btn-label-secondary w-50 me-2" data-bs-dismiss="offcanvas">
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">
             @SharedLocalizer["Cancel"]
         </button>
-        <a id="oc-btn-edit" href="#" class="btn btn-primary w-50">@Localizer["EditBtn"]</a>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary flex-grow-1">@Localizer["EditBtn"]</a>
     </div>
 </div>
 
@@ -207,6 +225,110 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
     <partial name="_IndexL10n" />
     <script src="~/assets/js/{{AreaName}}/{{ModuleName}}/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/{{AreaName}}/{{ModuleName}}/index.js" asp-append-version="true"></script>
+}
+```
+
+---
+
+## 🥇 ALTIN ÖRNEK: "SampleCompanies" (Statik Referans)
+
+Ajanlar, fiziksel bir dosya yerine aşağıdaki kodu "Kusursuz Uygulama" olarak referans almalıdır.
+
+### `Views/MDM/SampleCompanies/Index.cshtml`
+```html
+@model Diten.Web.Models.SampleCompanies.SampleCompanyIndexViewModel
+@using Diten.Web.Views.MDM.SampleCompanies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SampleCompaniesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["CompaniesTitle"].Value;
+    Layout = "_LayoutBackbone";
+}
+
+<partial name="_Filter" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["CompaniesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="bulkActionBar" class="card mb-4 d-none">
+    <div class="card-body d-flex align-items-center justify-content-between py-3">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bx bx-check-circle text-primary icon-md"></i>
+            <span id="bulkSelectedCount" class="fw-medium text-heading">0</span>
+            <span class="text-muted" id="bulkSelectedLabel">@SharedLocalizer["SelectedCount"]</span>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" id="btnBulkDelete" class="btn btn-label-danger">
+                <i class="bx bx-trash me-1"></i> @SharedLocalizer["BulkDelete"]
+            </button>
+            <button type="button" id="btnClearSelection" class="btn btn-label-secondary">
+                @SharedLocalizer["ClearSelection"]
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-datatable table-responsive">
+        <table id="dt-sample-companies" data-dt-standard="v2" class="datatables-sample-companies table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
+                    <th>@Localizer["TaxId"]</th>
+                    <th>@Localizer["CommercialTitle"]</th>
+                    <th>@Localizer["City"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="cell-fit text-end">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview" style="width: 480px;">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="bx bx-buildings fs-4"></i>
+            </div>
+            <div>
+                <h5 id="oc-title" class="offcanvas-title mb-0">-</h5>
+                <small id="oc-subtitle" class="text-muted">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-0">
+        <div class="p-4">
+            <div class="bg-label-secondary rounded p-3 mb-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="d-block text-muted small fw-medium mb-1">@SharedLocalizer["Status"]</span>
+                    <span id="oc-status" class="badge bg-label-secondary">-</span>
+                </div>
+            </div>
+            <h6 class="text-uppercase text-muted fw-bold mb-3">@Localizer["GeneralInformation"]</h6>
+            <dl class="row mb-4">
+                <dt class="col-5 fw-medium text-heading mb-2">@Localizer["TaxId"]</dt>
+                <dd id="oc-taxId" class="col-7 mb-2">-</dd>
+                <dt class="col-5 fw-medium text-heading mb-2">@Localizer["City"]</dt>
+                <dd id="oc-city" class="col-7 mb-2">-</dd>
+            </dl>
+        </div>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary flex-grow-1">@Localizer["EditBtn"]</a>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/MDM/SampleCompanies/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MDM/SampleCompanies/index.js" asp-append-version="true"></script>
 }
 ```
 

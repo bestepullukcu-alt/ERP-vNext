@@ -24,7 +24,7 @@ public sealed class ChangeCompositionLifecycleCommandValidator : AbstractValidat
     public ChangeCompositionLifecycleCommandValidator()
     {
         RuleFor(x => x.Id).NotEmpty();
-        RuleFor(x => x.TargetStateId).NotEmpty();
+        RuleFor(x => x.TargetState).NotEmpty();
     }
 }
 

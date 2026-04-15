@@ -20,7 +20,7 @@ public sealed class CreateCompositionRequestHandler : IRequestHandler<CreateComp
 
     public async Task<Guid> Handle(CreateCompositionCommand request, CancellationToken cancellationToken)
     {
-        if (await _repository.ExistsByCodeAsync(request.FormulationCode, cancellationToken: cancellationToken))
+        if (await _repository.ExistsByCodeAsync(request.FormulationCode, ct: cancellationToken))
         {
             throw new Exception($"Composition with code {request.FormulationCode} already exists.");
         }

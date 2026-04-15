@@ -1,40 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Diten.Web.Models;
 
 namespace Diten.Web.Models.Products;
 
-public sealed class ApiListResponse<T>
-{
-    public List<T> Data { get; set; } = [];
-}
-
-public sealed class ProductTypeOptionViewModel
-{
-    public int Value { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-}
-
-public sealed class ProductCategoryOptionViewModel
-{
-    public Guid Id { get; set; }
-    public int ProductType { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-}
-
-public sealed class ProductLifecycleOptionViewModel
-{
-    public Guid Id { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-}
-
 public sealed class ProductIndexPageViewModel
 {
-    public List<ProductTypeOptionViewModel> ProductTypes { get; set; } = [];
-    public List<ProductCategoryOptionViewModel> Categories { get; set; } = [];
-    public List<ProductLifecycleOptionViewModel> LifecycleStates { get; set; } = [];
-    public bool CanRestore { get; set; }
+    public List<LookupApiViewModel> Categories { get; set; } = [];
+    public List<LookupApiViewModel> LifecycleStates { get; set; } = [];
 }
 
 public sealed class ProductEditViewModel
@@ -50,8 +22,8 @@ public sealed class ProductEditViewModel
     public string? ShortName { get; set; }
     public string? Description { get; set; }
 
-    [Range(1, int.MaxValue)]
-    public int ProductType { get; set; }
+    [Range(1, 4)]
+    public int ProductType { get; set; } = 1;
 
     [Required]
     public Guid CategoryId { get; set; }
@@ -60,18 +32,34 @@ public sealed class ProductEditViewModel
     public Guid LifecycleStateId { get; set; }
 
     public bool IsSaleable { get; set; } = true;
-    public bool IsPurchasable { get; set; }
+    public bool IsPurchasable { get; set; } = true;
     public bool IsManufacturable { get; set; }
 
-    public List<ProductTypeOptionViewModel> ProductTypes { get; set; } = [];
-    public List<ProductCategoryOptionViewModel> Categories { get; set; } = [];
-    public List<ProductLifecycleOptionViewModel> LifecycleStates { get; set; } = [];
+    public List<LookupApiViewModel> Categories { get; set; } = [];
+    public List<LookupApiViewModel> LifecycleStates { get; set; } = [];
+
+    public string CategoryName { get; set; } = string.Empty;
+    public string LifecycleStateName { get; set; } = string.Empty;
 }
 
-public sealed class ProductLifecycleSavePayload
+public sealed class ProductDetailViewModel
 {
+    public Guid Id { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string? ShortName { get; set; }
+    public string? Description { get; set; }
+    public int ProductType { get; set; }
+    public Guid CategoryId { get; set; }
+    public string CategoryCode { get; set; } = string.Empty;
+    public string CategoryName { get; set; } = string.Empty;
     public Guid LifecycleStateId { get; set; }
-    public string? Reason { get; set; }
+    public string LifecycleStateCode { get; set; } = string.Empty;
+    public string LifecycleStateName { get; set; } = string.Empty;
+    public bool IsSaleable { get; set; }
+    public bool IsPurchasable { get; set; }
+    public bool IsManufacturable { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 
 public sealed class ProductSavePayload
@@ -83,34 +71,7 @@ public sealed class ProductSavePayload
     public int ProductType { get; set; }
     public Guid CategoryId { get; set; }
     public Guid LifecycleStateId { get; set; }
-    public bool IsSaleable { get; set; } = true;
-    public bool IsPurchasable { get; set; }
-    public bool IsManufacturable { get; set; }
-}
-
-public sealed class ProductApiDetailViewModel
-{
-    public Guid Id { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public string? ShortName { get; set; }
-    public string? Description { get; set; }
-    public string ProductTypeCode { get; set; } = string.Empty;
-    public string ProductType { get; set; } = string.Empty;
-    public Guid CategoryId { get; set; }
-    public string CategoryCode { get; set; } = string.Empty;
-    public string Category { get; set; } = string.Empty;
-    public Guid LifecycleStateId { get; set; }
-    public string LifecycleStateCode { get; set; } = string.Empty;
-    public string LifecycleState { get; set; } = string.Empty;
     public bool IsSaleable { get; set; }
     public bool IsPurchasable { get; set; }
     public bool IsManufacturable { get; set; }
-}
-
-public sealed class LookupApiViewModel
-{
-    public Guid Id { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
 }

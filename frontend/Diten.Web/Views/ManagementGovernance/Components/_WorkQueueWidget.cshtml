@@ -1,0 +1,44 @@
+@model IReadOnlyList<Diten.Web.Models.ManagementGovernance.WorkQueueItem>
+
+<section class="card mg-card h-100">
+    <div class="card-header">
+        <h2 class="h6 mb-0">Work Queue</h2>
+    </div>
+    <div class="card-body">
+        @if (!Model.Any())
+        {
+            <div class="mg-empty">No queue items.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Priority</th>
+                            <th>Assignee</th>
+                            <th>Due</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Take(8))
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@item.Title</div>
+                                <div class="small text-muted">@item.Type</div>
+                            </td>
+                            <td><partial name="Components/_StatusBadge" model="item.Priority" /></td>
+                            <td>@item.Assignee</td>
+                            <td>@item.DueAtUtc.ToString("dd MMM")</td>
+                            <td><a href="@item.SourceModuleRoute">Open</a></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>

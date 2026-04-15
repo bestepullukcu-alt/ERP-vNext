@@ -12,12 +12,5 @@ public sealed class SampleRepository : RepositoryBase<SampleEntity>, ISampleRepo
     {
     }
 
-    public Task<SampleEntity?> GetByIdAsync(Guid id, CancellationToken ct = default)
-        => FindByIdAsync(id, ct);
-
-    public Task<IReadOnlyList<SampleEntity>> GetAllAsync(CancellationToken ct = default)
-        => FindAllAsync(ct);
-
-    public Task<SampleEntity> CreateAsync(SampleEntity entity, CancellationToken ct = default)
-        => InsertAsync(entity, ct);
+    // All CRUD methods inherited from RepositoryBase<SampleEntity> via IRepository<SampleEntity>
 }

@@ -1,5 +1,5 @@
 using Diten.MdmService.Application.Features.PackagingDefinitions;
-using DitenAuthService.Application.Security;
+using Diten.MdmService.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

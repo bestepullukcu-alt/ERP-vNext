@@ -11,7 +11,7 @@ Bu doküman, tüm mikroservisler (MDM, Auth vb.) ve Gateway katmanı için geçe
 ### 1. Mikroservis İçi (Downstream)
 - **İsimlendirme:** Kebab-case ve Çoğul (Plural) isimler kullanılmalıdır.
 - *Doğru:* `/api/legal-entities`, `/api/countries`
-- *Yanlış:* `/api/GetCountries`, `/api/Country`
+- *Yanlış:* `/api/GetSampleModule`, `/api/Country`
 
 > **Versiyonlama Notu (Pragmatik Yaklaşım):**
 > Mevcut MDM Controller'ları `/api/{resource}` (v1 ön eki olmadan) kullanmaktadır.

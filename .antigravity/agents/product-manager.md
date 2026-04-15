@@ -76,7 +76,7 @@ Impacted UI: [Razor View / DataTable / Offcanvas]
 [Gherkin formatında listele]
 
 ## Yetki & Güvenlik
-Permission Key: [Örn: Modules.LegalEntities.View]
+Permission Key: [Örn: Modules.SampleModule.View]
 Tenant Isolation Type: [GUID-based Mandatory]
 
 ## Performans Hedefi

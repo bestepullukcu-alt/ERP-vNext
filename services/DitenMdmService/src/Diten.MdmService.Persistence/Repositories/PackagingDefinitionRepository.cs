@@ -17,47 +17,13 @@ public sealed class PackagingDefinitionRepository : RepositoryBase<PackagingDefi
         Collection.Indexes.CreateOne(new CreateIndexModel<PackagingDefinition>(indexKeys, new CreateIndexOptions { Unique = true }));
     }
 
-    public async Task<PackagingDefinition> CreateAsync(PackagingDefinition entity, CancellationToken cancellationToken = default)
+    // Override GetAllAsync to apply default sort by Code
+    public override async Task<IReadOnlyList<PackagingDefinition>> GetAllAsync(CancellationToken ct = default)
     {
-        return await InsertAsync(entity, cancellationToken);
+        return await Collection.Find(TenantFilter).SortBy(x => x.Code).ToListAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(PackagingDefinition entity, CancellationToken cancellationToken = default)
-    {
-        var filter = Builders<PackagingDefinition>.Filter.And(
-            TenantFilter,
-            Builders<PackagingDefinition>.Filter.Eq(x => x.Id, entity.Id));
-
-        entity.UpdatedAt = DateTimeOffset.UtcNow;
-        entity.TenantId = TenantContext.TenantId;
-        var result = await Collection.ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
-        return result.ModifiedCount > 0;
-    }
-
-    public async Task<PackagingDefinition?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await FindByIdAsync(id, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<PackagingDefinition>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await Collection.Find(TenantFilter).SortBy(x => x.Code).ToListAsync(cancellationToken);
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var filter = Builders<PackagingDefinition>.Filter.And(
-            TenantFilter,
-            Builders<PackagingDefinition>.Filter.Eq(x => x.Id, id));
-
-        var update = Builders<PackagingDefinition>.Update
-            .Set(x => x.IsDeleted, true)
-            .Set(x => x.DeletedAt, DateTimeOffset.UtcNow);
-
-        await Collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
-    }
-
-    public async Task<int> BulkDeleteAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+    public async Task<int> BulkDeleteAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
     {
         var idList = ids.Distinct().ToList();
         if (idList.Count == 0) return 0;
@@ -70,11 +36,11 @@ public sealed class PackagingDefinitionRepository : RepositoryBase<PackagingDefi
             .Set(x => x.IsDeleted, true)
             .Set(x => x.DeletedAt, DateTimeOffset.UtcNow);
 
-        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: cancellationToken);
+        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
         return (int)result.ModifiedCount;
     }
 
-    public async Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default)
     {
         var filter = Builders<PackagingDefinition>.Filter.And(
             TenantFilter,
@@ -85,6 +51,6 @@ public sealed class PackagingDefinitionRepository : RepositoryBase<PackagingDefi
             filter &= Builders<PackagingDefinition>.Filter.Ne(x => x.Id, excludeId.Value);
         }
 
-        return await Collection.Find(filter).AnyAsync(cancellationToken);
+        return await Collection.Find(filter).AnyAsync(ct);
     }
 }

@@ -1,0 +1,106 @@
+@model Diten.Web.Models.ManagementGovernance.ManagementGovernancePageViewModel
+@{
+    ViewData["Title"] = "Management & Governance";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance.css" />
+}
+
+<partial name="Components/_DomainHeader" model="Model" />
+<partial name="Components/_SavedViewBar" model="Model.Domain.SavedViews" />
+<div class="mt-3">
+    <partial name="Components/_FilterPanel" model="Model" />
+</div>
+
+<div class="row g-3 mt-1">
+    @foreach (var kpi in Model.Domain.Kpis)
+    {
+        <div class="col-12 col-md-6 col-xl-3">
+            <partial name="Components/_KPIStatCard" model="kpi" />
+        </div>
+    }
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-12 col-xl-6">
+        <partial name="Components/_WorkQueueWidget" model="Model.Domain.QueueHighlights" />
+    </div>
+    <div class="col-12 col-xl-6">
+        <partial name="Components/_CadenceWidget" model="Model.GovernanceEvents" />
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-12">
+        <section class="card mg-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="h6 mb-0">Subdomains</h2>
+                <a href="/management-governance/reports" class="small">Open reports</a>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    @foreach (var subdomain in Model.Subdomains)
+                    {
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <partial name="Components/_SubdomainCard" model="subdomain" />
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-12 col-xl-6">
+        <section class="card mg-card h-100">
+            <div class="card-header"><h2 class="h6 mb-0">Cross-Subdomain Risk Alerts</h2></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    @foreach (var signal in Model.Domain.RiskSignals.Take(4))
+                    {
+                        <div class="col-12 col-md-6">
+                            <partial name="Components/_AlertSummaryCard" model="signal" />
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-xl-6">
+        <partial name="Components/_ActivityFeed" model="Model.Domain.RecentActivity" />
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-12 col-xl-6">
+        <section class="card mg-card h-100">
+            <div class="card-header"><h2 class="h6 mb-0">Favorites / Pinned Modules</h2></div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var moduleId in Model.Domain.FavoriteModuleIds)
+                    {
+                        <a class="btn btn-sm btn-outline-primary" href="/management-governance/modules/@moduleId">@moduleId</a>
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-xl-6">
+        <section class="card mg-card h-100">
+            <div class="card-header"><h2 class="h6 mb-0">Quick Actions</h2></div>
+            <div class="card-body d-flex flex-wrap gap-2">
+                <button class="btn btn-primary btn-sm" data-permission="CanApprove" data-mg-action="approve" @(Model.Permissions.CanApprove ? "" : "disabled")>Approve selected</button>
+                <button class="btn btn-outline-secondary btn-sm" data-permission="CanEscalate" data-mg-action="escalate" @(Model.Permissions.CanEscalate ? "" : "disabled")>Escalate risk</button>
+                <a class="btn btn-outline-secondary btn-sm" href="/management-governance/cadence">Open agenda</a>
+                <a class="btn btn-outline-secondary btn-sm" href="/management-governance/search">Search object</a>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/management-governance/mg-data-adapter.js"></script>
+    <script src="~/assets/js/pages/management-governance/mg-page.js"></script>
+}

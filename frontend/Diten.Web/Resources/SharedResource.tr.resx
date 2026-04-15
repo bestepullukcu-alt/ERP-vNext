@@ -271,12 +271,12 @@
   <data name="Platform" xml:space="preserve"><value>Platform</value></data>
   <data name="WorkCenterMenu" xml:space="preserve"><value>Görev Merkezi</value></data>
   <data name="ItemMaster" xml:space="preserve"><value>Kalem Kartı</value></data>
-  <data name="ProductManagement" xml:space="preserve"><value>Ürün Yönetimi</value></data>
-  <data name="CompositionManagement" xml:space="preserve"><value>Kompozisyon Yönetimi</value></data>
+  <data name="CompositionManagement" xml:space="preserve"><value>Bileşim Yönetimi</value></data>
   <data name="CategoryManagement" xml:space="preserve"><value>Kategori Yönetimi</value></data>
   <data name="VariantManagement" xml:space="preserve"><value>Varyant Yönetimi</value></data>
   <data name="Attributes" xml:space="preserve"><value>Özellikler</value></data>
   <data name="Variants" xml:space="preserve"><value>Varyantlar</value></data>
   <data name="ColumnOrder" xml:space="preserve"><value>Sütun Sırası</value></data>
   <data name="SKUManagement" xml:space="preserve"><value>SKU Yönetimi</value></data>
+  <data name="ProductMaster" xml:space="preserve"><value>Ürün Kartı</value></data>
 </root>

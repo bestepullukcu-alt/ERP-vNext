@@ -1,0 +1,226 @@
+@model Diten.Web.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Strategy Alignment Register";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="card mb-3">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+        <strong>Strategy Alignment Register</strong>
+        <div class="ms-auto d-flex gap-2 flex-wrap">
+            <a class="btn btn-sm btn-outline-secondary active" href="/management-governance/enterprise-strategy-business-performance/connections">Register</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/connections/gaps">Gap View</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/connections/lineage">Lineage View</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/connections/graph">Graph View</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/delivery-execution/initiatives">Aligned Initiatives</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/delivery-execution/projects">Aligned Projects</a>
+            <button class="btn btn-sm btn-outline-secondary connection-view-btn active" data-view="register">Table View</button>
+            <button class="btn btn-sm btn-outline-secondary connection-view-btn" data-view="tree">Tree</button>
+            <button class="btn btn-sm btn-outline-secondary connection-view-btn" data-view="graph">Graph</button>
+            <button class="btn btn-sm btn-outline-secondary connection-view-btn" data-view="matrix">Matrix</button>
+            <button class="btn btn-sm btn-outline-secondary connection-view-btn" data-view="coverage">Coverage</button>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    Initiative and Project columns in this register are aligned delivery references. Maintain native Initiative and Project records from Delivery &amp; Execution Management.
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-2"><div class="border rounded p-2"><div class="small text-muted">Total Rows</div><div class="h6 mb-0" id="kpi-total-rows">0</div></div></div>
+    <div class="col-6 col-md-2"><div class="border rounded p-2"><div class="small text-muted">With Project Mapping</div><div class="h6 mb-0" id="kpi-project-mapped">0</div></div></div>
+    <div class="col-6 col-md-2"><div class="border rounded p-2"><div class="small text-muted">Missing Project</div><div class="h6 mb-0" id="kpi-project-missing">0</div></div></div>
+    <div class="col-6 col-md-2"><div class="border rounded p-2"><div class="small text-muted">Missing Initiative Metric</div><div class="h6 mb-0" id="kpi-initiative-metric-missing">0</div></div></div>
+    <div class="col-6 col-md-2"><div class="border rounded p-2"><div class="small text-muted">Missing Target Value</div><div class="h6 mb-0" id="kpi-target-missing">0</div></div></div>
+    <div class="col-6 col-md-2"><div class="border rounded p-2"><div class="small text-muted">Missing Plan-Year Values</div><div class="h6 mb-0" id="kpi-plan-missing">0</div></div></div>
+</div>
+
+<div id="connections-register-view" class="connection-view-host">
+    <div class="card mb-3">
+        <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+            <input id="conn-search" class="form-control form-control-sm w-auto" placeholder="Search" />
+            <input id="conn-filter-goal" class="form-control form-control-sm w-auto" placeholder="Goal" list="conn-filter-goal-list" />
+            <input id="conn-filter-objective" class="form-control form-control-sm w-auto" placeholder="Objective" list="conn-filter-objective-list" />
+            <input id="conn-filter-initiative" class="form-control form-control-sm w-auto" placeholder="Initiative" list="conn-filter-initiative-list" />
+            <input id="conn-filter-project" class="form-control form-control-sm w-auto" placeholder="Project" list="conn-filter-project-list" />
+            <select id="conn-filter-owner" class="form-select form-select-sm w-auto"><option value="">Metric Owner</option></select>
+            <input id="conn-filter-company" class="form-control form-control-sm w-auto" placeholder="Company" list="conn-filter-company-list" />
+            <select id="conn-filter-company-scope-mode" class="form-select form-select-sm w-auto"><option value="">Company Scope Mode</option><option>Derived</option><option>Explicit</option></select>
+            <select id="conn-filter-agg" class="form-select form-select-sm w-auto"><option value="">Aggregation Method</option></select>
+            <input id="conn-filter-baseline-year" class="form-control form-control-sm w-auto" placeholder="Baseline Year" />
+            <input id="conn-filter-target-year" class="form-control form-control-sm w-auto" placeholder="Target Year" />
+            <label class="form-check mb-0 small"><input id="conn-filter-missing-project" class="form-check-input me-1" type="checkbox" />Missing Project</label>
+            <label class="form-check mb-0 small"><input id="conn-filter-missing-target" class="form-check-input me-1" type="checkbox" />Missing Target</label>
+            <label class="form-check mb-0 small"><input id="conn-filter-missing-plan" class="form-check-input me-1" type="checkbox" />Missing Plan Years</label>
+            <label class="form-check mb-0 small"><input id="conn-filter-company-specific-only" class="form-check-input me-1" type="checkbox" />Company-specific only</label>
+            <button id="conn-apply-filters" class="btn btn-sm btn-outline-secondary">Apply</button>
+            <button id="conn-clear-filters" class="btn btn-sm btn-outline-secondary">Clear Filters</button>
+            <button id="conn-columns-btn" class="btn btn-sm btn-outline-secondary">Columns</button>
+            <button id="conn-add-row" class="btn btn-sm btn-primary ms-auto">Add Row</button>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Data Actions</button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3">
+                    <li><button type="button" class="dropdown-item" id="conn-data-import-page">Import current page dataset</button></li>
+                    <li><button type="button" class="dropdown-item" id="conn-data-import-workbook">Import workbook</button></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><button type="button" class="dropdown-item" id="conn-export-csv">Export CSV</button></li>
+                    <li><button type="button" class="dropdown-item" id="conn-export-xlsx">Export Excel</button></li>
+                    <li><button type="button" class="dropdown-item" id="conn-export-workbook">Export all sheets</button></li>
+                </ul>
+            </div>
+            <input id="conn-import-file" type="file" accept=".csv,.xlsx" class="d-none" />
+            <input id="conn-import-workbook-file" type="file" accept=".xlsx" class="d-none" />
+            <button id="conn-toggle-years" class="btn btn-sm btn-outline-secondary">Show Plan Years</button>
+        </div>
+    </div>
+    <div class="card">
+        <div class="table-responsive connection-register-table-wrap">
+            <table class="table table-sm align-middle mb-0" id="connection-register-table">
+                <thead class="table-light sticky-top"><tr id="connection-register-header"></tr></thead>
+                <tbody id="connection-register-body"></tbody>
+            </table>
+        </div>
+        <div class="card-body d-flex justify-content-between align-items-center py-2">
+            <div class="small text-muted" id="connection-register-state">Loading...</div>
+            <div class="d-flex gap-2 align-items-center"><button id="conn-prev-page" class="btn btn-sm btn-outline-secondary">Prev</button><span class="small" id="conn-page-label">Page 1</span><button id="conn-next-page" class="btn btn-sm btn-outline-secondary">Next</button></div>
+        </div>
+    </div>
+</div>
+
+<div id="connections-tree-view" class="connection-view-host d-none"></div>
+<div id="connections-graph-view" class="connection-view-host d-none"></div>
+<div id="connections-matrix-view" class="connection-view-host d-none"></div>
+<div id="connections-coverage-view" class="connection-view-host d-none"></div>
+
+<div class="modal fade es-modal" id="connectionEditorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="connection-modal-title">Add Row</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                @{ ViewData["Id"] = "connection-form-error"; }
+                @await Html.PartialAsync("Components/Forms/_ValidationSummary")
+                <div class="es-form-section-header">
+                    <h6 class="mb-1">Lineage</h6>
+                    <p class="text-muted small mb-0">Build strategy lineage in Goal -> Objective -> Initiative -> Project order.</p>
+                </div>
+                <div class="row g-2 es-form-grid">
+                    <div class="col-12 col-md-6"><label class="form-label es-required" for="connection-goal-id">Goal ID</label><input id="connection-goal-id" class="form-control" list="connection-goal-id-list" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required" for="connection-goal-metric">Goal Metric</label><input id="connection-goal-metric" class="form-control" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="connection-goal-metric-type">Goal Metric Type</label><select id="connection-goal-metric-type" class="form-select"><option value="">Select</option></select></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required" for="connection-objective">Objective</label><input id="connection-objective" class="form-control" list="connection-objective-list" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="connection-objective-metric">Objective Metric</label><input id="connection-objective-metric" class="form-control" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="connection-objective-metric-type">Objective Metric Type</label><select id="connection-objective-metric-type" class="form-select"><option value="">Select</option></select></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="connection-initiative-id">Initiative ID</label><input id="connection-initiative-id" class="form-control" list="connection-initiative-id-list" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="connection-initiative-metric">Initiative Metric</label><input id="connection-initiative-metric" class="form-control" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="connection-initiative-metric-type">Initiative Metric Type</label><select id="connection-initiative-metric-type" class="form-select"><option value="">Select</option></select></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="connection-project-id">Project ID</label><input id="connection-project-id" class="form-control" list="connection-project-id-list" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="connection-project-metric">Project Metric</label><input id="connection-project-metric" class="form-control" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="connection-project-metric-type">Project Metric Type</label><select id="connection-project-metric-type" class="form-select"><option value="">Select</option></select></div>
+                </div>
+                <div class="es-form-section-header">
+                    <h6 class="mb-1">Metric / Calculation Context</h6>
+                </div>
+                <div class="row g-2 es-form-grid">
+                    <div class="col-12 col-md-6"><label class="form-label" for="connection-metric-owner">Metric Owner</label><select id="connection-metric-owner" class="form-select"><option value="">Select owner</option></select></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required" for="connection-aggregation-method">Aggregation Method</label><select id="connection-aggregation-method" class="form-select"><option value="">Select</option></select></div>
+                </div>
+                <div class="es-form-section-header">
+                    <h6 class="mb-1">Time Anchors</h6>
+                </div>
+                <div class="row g-2 es-form-grid">
+                    <div class="col-12 col-md-3"><label class="form-label es-required" for="connection-baseline-year">Baseline Year</label><input id="connection-baseline-year" class="form-control" placeholder="2027" list="connection-year-list" /></div>
+                    <div class="col-12 col-md-3"><label class="form-label" for="connection-baseline-value">Baseline Value</label><input id="connection-baseline-value" type="number" class="form-control" /></div>
+                    <div class="col-12 col-md-3"><label class="form-label es-required" for="connection-target-year">Target Year</label><input id="connection-target-year" class="form-control" placeholder="2030" list="connection-year-list" /></div>
+                    <div class="col-12 col-md-3"><label class="form-label" for="connection-target-value">Target Value</label><input id="connection-target-value" type="number" class="form-control" /></div>
+                </div>
+                <div class="es-form-section-header">
+                    <h6 class="mb-1">Notes / Governance</h6>
+                </div>
+                <div class="row g-2 es-form-grid">
+                    <div class="col-12"><label class="form-label" for="connection-entry-notes">Entry Notes</label><textarea id="connection-entry-notes" rows="2" class="form-control"></textarea></div>
+                </div>
+                <div class="es-form-section-header">
+                    <h6 class="mb-1">Company Scope</h6>
+                    <p class="text-muted small mb-0">Use explicit company only when linkage or targets differ by company.</p>
+                </div>
+                <div class="row g-2 es-form-grid">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label" for="connection-company-scope-mode">Company Scope Mode</label>
+                        <select id="connection-company-scope-mode" class="form-select">
+                            <option>Derived</option>
+                            <option>Explicit</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <label class="form-label" for="connection-company-id">Company</label>
+                        <input id="connection-company-id" class="form-control" list="connection-company-list" />
+                    </div>
+                </div>
+                <div class="accordion mt-3">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#connection-plan-years-panel">Annual Plan Values (2027-2046)</button>
+                        </h2>
+                        <div id="connection-plan-years-panel" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <div class="row g-2 align-items-end mb-2">
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label" for="connection-plan-method">Planning Method</label>
+                                        <select id="connection-plan-method" class="form-select form-select-sm">
+                                            <option>Manual</option>
+                                            <option>Linear</option>
+                                            <option>CAGR / Compound</option>
+                                            <option>Front-loaded</option>
+                                            <option>Back-loaded</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <button id="connection-generate-plan" type="button" class="btn btn-sm btn-outline-primary w-100">Generate Annual Targets</button>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div id="connection-plan-method-help" class="es-field-help">Manual: enter values directly by year.</div>
+                                    </div>
+                                </div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-12">
+                                        <div id="connection-plan-summary" class="small text-muted">
+                                            First planned year: - | Last planned year: - | Populated years: 0 | Target variance: -
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row g-2" id="connection-plan-years-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input id="connection-id" type="hidden" />
+                <input id="connection-goal-name" type="hidden" />
+                <input id="connection-initiative-name" type="hidden" />
+                <input id="connection-project-name" type="hidden" />
+                <input id="connection-decision-reference" type="hidden" />
+                <input id="connection-evidence-reference" type="hidden" />
+                <input id="connection-version" type="hidden" />
+                <datalist id="connection-goal-id-list"></datalist>
+                <datalist id="connection-objective-list"></datalist>
+                <datalist id="connection-initiative-id-list"></datalist>
+                <datalist id="connection-project-id-list"></datalist>
+                <datalist id="connection-year-list"></datalist>
+                <datalist id="conn-filter-goal-list"></datalist>
+                <datalist id="conn-filter-objective-list"></datalist>
+                <datalist id="conn-filter-initiative-list"></datalist>
+                <datalist id="conn-filter-project-list"></datalist>
+                <datalist id="conn-filter-company-list"></datalist>
+                <datalist id="connection-company-list"></datalist>
+            </div>
+            @{ ViewData["SaveId"] = "connection-save"; ViewData["SaveLabel"] = "Create Row"; }
+            @await Html.PartialAsync("Components/Forms/_StickyModalFooter")
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/connections.js" asp-append-version="true"></script>
+}

@@ -22,7 +22,7 @@ Diten ERP vNext "Siloed Data" mantığıyla çalıştığı için, her sorgu `Te
 
 ### 1. Sorgu ve Sıralama (Sort) Uyumu
 - İndeksler, **Equality -> Sort -> Range (ESR)** kuralına göre tasarlanmalıdır.
-- Örneğin; `LegalEntities` tablosunda aktif kayıtları isme göre sıralamak için:
+- Örneğin; `SampleModule` tablosunda aktif kayıtları isme göre sıralamak için:
   `{ "TenantId": 1, "Status": 1, "Title": 1 }`
 
 ### 2. Tekil (Unique) İndeksler

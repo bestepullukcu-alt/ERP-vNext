@@ -1,0 +1,1182 @@
+@model Diten.Web.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Create Objective";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div id="objective-create-workspace" class="goal-create-workspace">
+    <div class="goal-workspace-shell objective-workspace-shell">
+        <div class="goal-workspace-header sticky-top">
+            <div class="goal-workspace-title-wrap">
+                <h5 class="goal-workspace-title mb-0" id="objective-modal-title">Create Objective</h5>
+                <p class="goal-workspace-subtitle mb-0" id="objective-modal-subtitle">Create a draft strategic objective linked to a parent goal and measurable outcome.</p>
+            </div>
+            <div class="goal-workspace-actions">
+                <a href="/management-governance/enterprise-strategy-business-performance/objectives" class="btn btn-sm btn-outline-secondary">Cancel / Back</a>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="objective-step-back">Back</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="objective-step-next">Next</button>
+                <button type="button" class="btn btn-sm btn-primary d-none" id="objective-save">Create Objective</button>
+            </div>
+        </div>
+
+        <div class="goal-workspace-body">
+            @{
+                ViewData["Id"] = "objective-form-error";
+            }
+            @await Html.PartialAsync("Components/Forms/_ValidationSummary")
+
+            <div id="objective-wizard-steps" class="objective-wizard-nav mb-3" role="tablist" aria-label="Create Objective Steps">
+                <button type="button" class="btn objective-wizard-step-btn active" data-step="1" role="tab" aria-selected="true">1. Identity &amp; Strategy Anchor</button>
+                <button type="button" class="btn objective-wizard-step-btn" data-step="2" role="tab" aria-selected="false">2. Ownership</button>
+                <button type="button" class="btn objective-wizard-step-btn" data-step="3" role="tab" aria-selected="false">3. Planning &amp; Scope</button>
+                <button type="button" class="btn objective-wizard-step-btn" data-step="4" role="tab" aria-selected="false">4. Performance</button>
+            </div>
+
+            <section class="es-goal-section objective-wizard-step-pane" data-step="1">
+                @{
+                    ViewData["Title"] = "Identity & Strategy Anchor";
+                    ViewData["Subtitle"] = "Define the strategic identity and lock the Objective to a Parent Goal before planning work begins.";
+                }
+                @await Html.PartialAsync("Components/Forms/_SectionHeader")
+                <div class="objective-helper-banner mb-3">
+                    <span class="badge bg-label-info">Anchor Rule</span>
+                    <span>Objective must be linked to a Parent Goal before planning begins. Strategy context is inherited from that Goal, and compatible templates load only after the anchor is chosen.</span>
+                </div>
+                <div class="row g-3 es-form-grid">
+                    <div class="col-12">
+                        <label for="objective-parent-goal" class="form-label es-required">Parent Goal</label>
+                        <select id="objective-parent-goal" class="form-select select2" required>
+                            <option value="">Select parent goal</option>
+                        </select>
+                        <div id="objective-parent-goal-help" class="es-field-help mt-1">Select the Parent Goal first so this Objective can inherit strategy period, horizon, theme, scope defaults, and compatible template context.</div>
+                    </div>
+                    <div class="col-12">
+                        <div id="objective-parent-goal-context" class="objective-performance-card initiative-derived-context-card is-empty">
+                            <div class="objective-performance-card-header">
+                                <div>
+                                    <h6 class="objective-performance-card-title mb-1">Derived Strategy Context</h6>
+                                    <p id="objective-parent-goal-context-helper" class="objective-performance-card-copy mb-0">Select Parent Goal first to load inherited Strategy Period, horizon, theme, scope defaults, and available Goal context.</p>
+                                </div>
+                                <span class="es-status-pill is-info">Derived</span>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-12 col-xl-4">
+                                    <label for="objective-parent-context-period" class="form-label">Parent Strategy Period <span class="badge bg-label-info ms-1">Derived</span></label>
+                                    <input id="objective-parent-context-period" class="form-control bg-light" readonly tabindex="-1" value="-" />
+                                </div>
+                                <div class="col-12 col-xl-4">
+                                    <label for="objective-parent-context-horizon" class="form-label">Goal Horizon <span class="badge bg-label-info ms-1">Derived</span></label>
+                                    <input id="objective-parent-context-horizon" class="form-control bg-light" readonly tabindex="-1" value="-" />
+                                </div>
+                                <div class="col-12 col-xl-4">
+                                    <label for="objective-parent-context-type" class="form-label">Goal Theme / Goal Type <span class="badge bg-label-info ms-1">Derived</span></label>
+                                    <input id="objective-parent-context-type" class="form-control bg-light" readonly tabindex="-1" value="-" />
+                                </div>
+                                <div class="col-12 col-xl-8">
+                                    <label for="objective-parent-context-scope" class="form-label">Scope Defaults <span class="badge bg-label-info ms-1">Derived</span></label>
+                                    <input id="objective-parent-context-scope" class="form-control bg-light" readonly tabindex="-1" value="-" />
+                                </div>
+                                <div class="col-12 col-xl-4">
+                                    <label for="objective-parent-context-kpi" class="form-label">KPI / Governance Defaults <span class="badge bg-label-info ms-1">Derived</span></label>
+                                    <input id="objective-parent-context-kpi" class="form-control bg-light" readonly tabindex="-1" value="-" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div id="objective-creation-mode" class="goal-source-panel">
+                            <div class="goal-source-controls">
+                                <div class="goal-source-control initiative-source-control-select">
+                                    <label for="objective-creation-mode-select" class="form-label mb-1">Creation Mode</label>
+                                    <select id="objective-creation-mode-select" class="form-select form-select-sm">
+                                        <option value="Blank">Blank</option>
+                                        <option value="Template">From Objective Template</option>
+                                        <option value="GoalTemplate">From Goal + Objective Template</option>
+                                    </select>
+                                </div>
+                                <div class="goal-source-control initiative-source-control-action">
+                                    <label class="form-label d-block mb-1">&nbsp;</label>
+                                    <button type="button" id="objective-browse-source" class="btn btn-sm btn-outline-primary w-100">Browse template...</button>
+                                </div>
+                                <div class="goal-source-control initiative-source-control-action">
+                                    <label class="form-label d-block mb-1">&nbsp;</label>
+                                    <button type="button" id="objective-clear-source" class="btn btn-sm btn-outline-secondary w-100">Clear template</button>
+                                </div>
+                            </div>
+                            <div id="objective-creation-mode-help" class="es-field-help mt-2 d-none">Blank starts without template defaults, but the Objective still must be anchored to a Parent Goal.</div>
+                            <div id="objective-browse-source-help" class="es-field-help mt-2">Select Parent Goal first so the system can derive strategy period, horizon, and compatible Objective templates.</div>
+                            <div id="objective-source-summary" class="goal-source-summary-card is-empty mt-2">
+                                <div class="goal-source-summary-name">Blank Objective create</div>
+                                <div class="goal-source-summary-note">Blank starts without template defaults, but the Objective still must be anchored to a Parent Goal before progression or save.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="objective-id" class="form-label">Objective ID / Code</label>
+                        <input id="objective-id" class="form-control bg-light" readonly autocomplete="off" placeholder="Assigned on first save" />
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="objective-status-readonly" class="form-label">Objective Code State</label>
+                        <input id="objective-status-readonly" class="form-control bg-light" value="Draft" readonly disabled tabindex="-1" />
+                        <input id="objective-status" type="hidden" value="Draft" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="objective-name" class="form-label es-required">Objective Name</label>
+                        <input id="objective-name" class="form-control" required />
+                        <div class="es-field-help mt-1">Use a strategic objective name that teams can align to and report against.</div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="objective-type" class="form-label es-required">Objective Type</label>
+                        <select id="objective-type" class="form-select select2" required>
+                            <option value="">Select type</option>
+                        </select>
+                        <div id="objective-type-help" class="es-field-help mt-1">Objective must be anchored to a Parent Goal first so compatible Objective Type values can be derived.</div>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <label for="objective-statement" class="form-label es-required">Objective Statement</label>
+                        <textarea id="objective-statement" class="form-control" rows="3" required placeholder="Describe the measurable strategic outcome this objective should deliver."></textarea>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="objective-priority" class="form-label es-required">Priority</label>
+                        <select id="objective-priority" class="form-select select2" required>
+                            <option value="">Select priority</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <label for="objective-strategic-theme" class="form-label es-required">Strategic Theme / Pillar * <span id="objective-strategic-theme-badge" class="badge bg-label-info ms-1">Inherited</span></label>
+                        <select id="objective-strategic-theme" class="form-select select2">
+                            <option value="">Select strategic theme</option>
+                        </select>
+                        <div id="objective-strategic-theme-help" class="es-field-help mt-1">Strategic Theme / Pillar defaults from Parent Goal and can only be overridden deliberately.</div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="objective-inline-toggle">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="objective-theme-override" />
+                                <label class="form-check-label" for="objective-theme-override">Override inherited theme</label>
+                            </div>
+                            <div class="es-field-help">Use only when the objective intentionally diverges from the parent goal pillar.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="es-goal-section objective-wizard-step-pane d-none" data-step="2">
+                @{
+                    ViewData["Title"] = "Ownership";
+                    ViewData["Subtitle"] = "Set governance-first ownership using company / org context, accountable position, and current incumbent.";
+                }
+                @await Html.PartialAsync("Components/Forms/_SectionHeader")
+                <div class="objective-helper-banner mb-3">
+                    <span class="badge bg-label-primary">Post-Save Governance</span>
+                    <span>Executive sponsor, co-owners, approvals, review ownership, and versioning are managed after save.</span>
+                </div>
+                <div class="row g-3 es-form-grid">
+                    <div class="col-12 col-md-6">
+                        <label for="objective-owner-company" class="form-label es-required">Owner Company / Org</label>
+                        <select id="objective-owner-company" class="form-select select2" required>
+                            <option value="">Select owner company / org</option>
+                        </select>
+                        <div id="objective-owner-company-help" class="es-field-help">Company / org defines the accountability context for this objective.</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="objective-owner-position" class="form-label es-required">Owner Position</label>
+                        <select id="objective-owner-position" class="form-select select2" required disabled>
+                            <option value="">Select owner company / org first</option>
+                        </select>
+                        <div id="objective-owner-position-help" class="es-field-help">Owner Position defines the accountable governance seat.</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="objective-current-owner-person-display" class="form-label">Current Owner Person</label>
+                        <input id="objective-current-owner-person-display" class="form-control bg-light" readonly tabindex="-1" placeholder="Auto-filled from selected position" />
+                        <input id="objective-current-owner-person" type="hidden" />
+                        <div id="objective-current-owner-person-help" class="es-field-help">Current Owner Person is resolved automatically from the active incumbent.</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="objective-accountability-summary" class="form-label">Accountability Summary</label>
+                        <input id="objective-accountability-summary" class="form-control bg-light" readonly tabindex="-1" value="-" />
+                    </div>
+                </div>
+            </section>
+
+            <section class="es-goal-section objective-wizard-step-pane d-none" data-step="3">
+                @{
+                    ViewData["Title"] = "Planning & Scope";
+                    ViewData["Subtitle"] = "Use inherited strategy period and planning horizon, then narrow scope only when needed.";
+                }
+                @await Html.PartialAsync("Components/Forms/_SectionHeader")
+                <div class="objective-helper-banner mb-3">
+                    <span class="badge bg-label-info">Inherited Horizon</span>
+                    <span>Start Date and End Date default to the Parent Goal horizon. You may narrow inside that range, but not extend beyond it.</span>
+                </div>
+                <div class="row g-3 es-form-grid">
+                    <div class="col-12">
+                        <label for="objective-planning-cycle" class="form-label">Strategy Period <span class="badge bg-label-info ms-1">Inherited</span></label>
+                        <select id="objective-planning-cycle" class="form-select select2" required disabled>
+                            <option value="">Select parent goal first</option>
+                        </select>
+                        <div class="objective-inherited-context mt-2">
+                            <div id="objective-planning-context-helper" class="es-field-help mb-1">Strategy Period is inherited from Parent Goal.</div>
+                            <div id="objective-allowed-horizon-helper" class="es-field-help mb-0">Allowed horizon: select Parent Goal first.</div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="objective-horizon-start-date" class="form-label es-required">Start Date</label>
+                        <input id="objective-horizon-start-date" type="date" class="form-control" required min="1900-01-01" max="2100-12-31" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="objective-horizon-end-date" class="form-label es-required">End Date</label>
+                        <input id="objective-horizon-end-date" type="date" class="form-control" required min="1900-01-01" max="2100-12-31" />
+                    </div>
+                    <div class="col-12">
+                        <div class="objective-scope-toggle">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="objective-inherit-company-scope" />
+                                <label class="form-check-label" for="objective-inherit-company-scope">Unlock inherited scope</label>
+                            </div>
+                            <span id="objective-scope-inherited-badge" class="badge bg-label-info">Inherited / Locked</span>
+                        </div>
+                        <div class="es-field-help">Scope fields remain inherited and locked until you explicitly unlock them.</div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="objective-primary-company" class="form-label">Primary Company</label>
+                        <select id="objective-primary-company" class="form-select select2">
+                            <option value="">Select primary company</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <label for="objective-applicable-companies" class="form-label">Applicable Companies</label>
+                        <select id="objective-applicable-companies" class="form-select d-none" multiple></select>
+                        <div id="objective-applicable-companies-picker" class="es-company-multi-select" data-placeholder="Search and select applicable companies...">
+                            <button type="button"
+                                    id="objective-applicable-companies-toggle"
+                                    class="form-select es-company-multi-select-toggle"
+                                    aria-haspopup="listbox"
+                                    aria-expanded="false"
+                                    aria-controls="objective-applicable-companies-panel">
+                                <span id="objective-applicable-companies-display" class="es-company-multi-select-display">Search and select applicable companies...</span>
+                            </button>
+                            <div id="objective-applicable-companies-panel" class="es-company-multi-select-panel d-none" role="dialog" aria-label="Applicable Companies">
+                                <div class="es-company-multi-select-toolbar">
+                                    <button type="button" id="objective-applicable-companies-select-all" class="btn btn-sm btn-outline-secondary">Select all</button>
+                                    <button type="button" id="objective-applicable-companies-clear-all" class="btn btn-sm btn-outline-secondary">Clear all</button>
+                                </div>
+                                <div class="es-company-multi-select-search-wrap">
+                                    <input id="objective-applicable-companies-search"
+                                           class="form-control form-control-sm es-company-multi-select-search"
+                                           type="text"
+                                           placeholder="Search companies..."
+                                           autocomplete="off" />
+                                </div>
+                                <div id="objective-applicable-companies-options"
+                                     class="es-company-multi-select-options"
+                                     role="listbox"
+                                     aria-multiselectable="true"
+                                     tabindex="0"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="objective-business-unit" class="form-label">Business Unit / Function</label>
+                        <select id="objective-business-unit" class="form-select select2">
+                            <option value="">Select business unit</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="objective-region" class="form-label">Region / Geography</label>
+                        <select id="objective-region" class="form-select select2">
+                            <option value="">Select region</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="objective-entity-scope-summary" class="form-label">Entity Scope Summary</label>
+                        <input id="objective-entity-scope-summary" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="objective-helper-banner objective-helper-banner-muted mt-3">
+                    <span class="badge bg-label-primary">Next Step</span>
+                    <span>Set Target Plan Granularity and enter target rows in Step 4: Performance.</span>
+                </div>
+            </section>
+
+            <section class="es-goal-section objective-wizard-step-pane d-none" data-step="4">
+                @{
+                    ViewData["Title"] = "Performance";
+                    ViewData["Subtitle"] = "Define KPI structure, the objective target plan by period, and planning readiness inside the current wizard.";
+                }
+                @await Html.PartialAsync("Components/Forms/_SectionHeader")
+                <div class="objective-performance-stack">
+                    <section class="objective-performance-card">
+                        <div class="objective-performance-card-header">
+                            <div>
+                                <h6 class="objective-performance-card-title mb-1">KPI Definition</h6>
+                                <p class="objective-performance-card-copy mb-0">Keep the KPI setup aligned to the Goal lineage and use it as the accountable basis for target planning.</p>
+                            </div>
+                        </div>
+                        <div class="objective-helper-banner mb-3" id="objective-parent-metric-summary">
+                            <span class="badge bg-label-primary">Goal Lineage</span>
+                            <span>Select a parent goal and KPI to review inherited performance context.</span>
+                        </div>
+                        <div id="objective-parent-goal-kpi-context-panel" class="objective-helper-banner objective-helper-banner-muted mb-3">
+                            <span class="badge bg-label-info">Inherited</span>
+                            <span>Parent Goal KPI context is shown here as read-only reference while Objective KPI fields remain locally editable.</span>
+                        </div>
+                        <div class="row g-3 es-form-grid mb-3">
+                            <div class="col-12 col-xl-7">
+                                <div class="objective-helper-banner objective-helper-banner-muted h-100 align-items-start">
+                                    <span class="badge bg-label-primary">Parent Goal KPI Context</span>
+                                    <div id="objective-parent-goal-kpi-context-fields" class="w-100 mt-2">Select a Parent Goal to load Goal KPI context.</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-xl-5">
+                                <div class="objective-helper-banner objective-helper-banner-muted h-100 align-items-start">
+                                    <span class="badge bg-label-warning">Goal vs Objective</span>
+                                    <div id="objective-kpi-alignment-context" class="w-100 mt-2">Goal and Objective KPI alignment details appear here after a Parent Goal and Objective KPI are selected.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3 es-form-grid">
+                            <div class="col-12 col-md-6">
+                                <label for="objective-primary-kpi" class="form-label es-required">Primary KPI / Metric <span class="badge bg-label-warning ms-1">Objective Local</span></label>
+                                <select id="objective-primary-kpi" class="form-select select2" required>
+                                    <option value="">Select primary KPI / metric</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="objective-kpi-uom" class="form-label">Unit of Measure <span class="badge bg-label-success ms-1">Derived</span></label>
+                                <select id="objective-kpi-uom" class="form-select select2">
+                                    <option value="">Select unit</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="objective-direction" class="form-label">Direction of Good Performance <span class="badge bg-label-success ms-1">Derived</span></label>
+                                <select id="objective-direction" class="form-select select2">
+                                    <option value="">Select direction</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="objective-performance-card">
+                        <div class="objective-performance-card-header">
+                            <div>
+                                <h6 class="objective-performance-card-title mb-1">Objective Target Plan</h6>
+                                <p class="objective-performance-card-copy mb-0">Generate defined-period target rows from the inherited Strategy Period and keep the accountable target commitment inside this wizard.</p>
+                            </div>
+                            <span id="objective-target-plan-status-chip" class="es-status-pill is-info">Plan: Not generated</span>
+                        </div>
+                        <div class="objective-helper-banner objective-helper-banner-muted mb-3">
+                            <span class="badge bg-label-warning">Planning Layer</span>
+                            <span>Objective target rows auto-generate after first save once KPI and Strategy Period exist. Initiative and project alignment is managed later in Strategy Alignment Register.</span>
+                        </div>
+                        <div id="objective-parent-goal-target-context-panel" class="objective-helper-banner objective-helper-banner-muted mb-3">
+                            <span class="badge bg-label-primary">Parent Goal Target Context</span>
+                            <span>Goal target rows are shown as read-only reference only. Objective target rows remain the editable commitment layer.</span>
+                        </div>
+                        <div class="row g-3 es-form-grid mb-3">
+                            <div class="col-12 col-md-4">
+                                <label for="objective-target-plan-strategy-period" class="form-label">Strategy Period <span class="badge bg-label-info ms-1">Inherited</span></label>
+                                <input id="objective-target-plan-strategy-period" class="form-control bg-light" readonly tabindex="-1" />
+                                <div class="es-field-help">Defines the allowed planning horizon for Objective targets.</div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="objective-target-plan-granularity" class="form-label es-required">Target Plan Granularity <span class="badge bg-label-warning ms-1">Objective Local</span></label>
+                                <select id="objective-target-plan-granularity" class="form-select select2">
+                                    <option value="Yearly">Yearly</option>
+                                    <option value="Quarterly">Quarterly</option>
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="TotalStrategyPeriod">Total Strategy Period</option>
+                                </select>
+                                <div class="es-field-help">Defines how target commitments are phased within the selected Strategy Period.</div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="objective-reporting-frequency" class="form-label">Reporting Frequency <span class="badge bg-label-success ms-1">Derived / Local</span></label>
+                                <select id="objective-reporting-frequency" class="form-select select2">
+                                    <option value="">Select frequency</option>
+                                </select>
+                                <div class="es-field-help">Defines how progress is measured/reviewed. Does not generate planning rows.</div>
+                            </div>
+                        </div>
+                        <div class="row g-3 es-form-grid mb-3">
+                            <div class="col-12 col-xl-6">
+                                <div class="objective-helper-banner objective-helper-banner-muted h-100 align-items-start">
+                                    <span class="badge bg-label-primary">Goal Target Reference</span>
+                                    <div id="objective-parent-goal-target-context-fields" class="w-100 mt-2">Select a Parent Goal to review Goal target cadence, horizon, and target summary.</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-xl-6">
+                                <div class="objective-helper-banner objective-helper-banner-muted h-100 align-items-start">
+                                    <span class="badge bg-label-warning">Alignment Comparison</span>
+                                    <div id="objective-target-plan-comparison" class="w-100 mt-2">Goal and Objective KPI/target comparisons appear here to help users plan safely inside the Goal horizon.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="objective-target-plan-governance-warning" class="objective-helper-banner objective-helper-banner-muted mb-3 d-none">
+                            <span class="badge bg-label-warning">Governance Warning</span>
+                            <span id="objective-target-plan-governance-warning-text">Reporting cadence is less frequent than target cadence. Monitoring discipline may be weak.</span>
+                        </div>
+                        <div class="table-responsive objective-target-plan-table-wrap mb-3">
+                            <table class="table table-sm align-middle objective-target-plan-table">
+                                <thead>
+                                    <tr>
+                                        <th>Goal Period</th>
+                                        <th>Goal Period Start</th>
+                                        <th>Goal Period End</th>
+                                        <th>Goal Target Value</th>
+                                        <th>Goal Actual Value</th>
+                                        <th>Goal Forecast Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="objective-goal-target-reference-body">
+                                    <tr>
+                                        <td colspan="6" class="text-muted">Parent Goal target rows will appear here as read-only reference when available.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <input type="hidden" id="objective-target-plan-anchor" />
+                        <div id="objective-target-plan-context" class="es-field-help mb-2">Select Parent Goal, Strategy Period, horizon dates, and KPI to generate the target plan.</div>
+                        <div class="objective-target-plan-toolbar mb-3">
+                            <button type="button" id="objective-generate-target-plan" class="btn btn-sm btn-outline-primary">Generate Target Plan</button>
+                            <button type="button" id="objective-regenerate-target-plan" class="btn btn-sm btn-outline-secondary">Regenerate</button>
+                            <button type="button" id="objective-target-plan-fill-flat" class="btn btn-sm btn-outline-secondary">Fill flat</button>
+                            <button type="button" id="objective-target-plan-copy-down" class="btn btn-sm btn-outline-secondary">Copy down</button>
+                            <button type="button" id="objective-target-plan-interpolate" class="btn btn-sm btn-outline-secondary">Interpolate</button>
+                            <button type="button" id="objective-target-plan-clear-values" class="btn btn-sm btn-outline-secondary">Clear values</button>
+                        </div>
+                        <div id="objective-target-plan-empty" class="objective-target-plan-empty">
+                            Generate target rows to define the accountable objective plan by period.
+                        </div>
+                        <div class="table-responsive objective-target-plan-table-wrap">
+                            <table class="table table-sm align-middle objective-target-plan-table">
+                                <thead>
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Period Start</th>
+                                        <th>Period End</th>
+                                        <th>Target Value *</th>
+                                        <th>Actual Value</th>
+                                        <th>Forecast Value</th>
+                                        <th>Threshold Min</th>
+                                        <th>Threshold Max</th>
+                                        <th>Commentary</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="objective-target-plan-body"></tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class="objective-performance-card">
+                        <div class="objective-performance-card-header">
+                            <div>
+                                <h6 class="objective-performance-card-title mb-1">Readiness / Validation</h6>
+                                <p class="objective-performance-card-copy mb-0">Track whether this objective is only saved as a draft or actually ready for accountable target planning and downstream alignment.</p>
+                            </div>
+                        </div>
+                        <div class="objective-readiness-facts">
+                            <span id="objective-readiness-draft-chip" class="goal-readiness-chip">Draft readiness: Blocked</span>
+                            <span id="objective-readiness-publish-chip" class="goal-readiness-chip">Publish readiness: Blocked</span>
+                            <span id="objective-readiness-plan-chip" class="goal-readiness-chip">Target plan rows: 0</span>
+                            <span id="objective-readiness-targets-chip" class="goal-readiness-chip">Rows missing target values: 0</span>
+                        </div>
+                        <aside id="objective-readiness-panel" class="es-workspace-readiness" aria-live="polite">
+                            <div class="es-readiness-header">
+                                <div>
+                                    <strong id="objective-readiness-indicator" class="es-status-pill is-blocked">Planning Readiness: Blocked</strong>
+                                    <div id="objective-readiness-text" class="es-readiness-text">Complete KPI setup and the objective target plan to make this objective planning-ready.</div>
+                                </div>
+                            </div>
+                            <div class="es-readiness-columns objective-readiness-columns">
+                                <div>
+                                    <div class="es-readiness-subtitle">Missing required items</div>
+                                    <ul id="objective-readiness-missing" class="mb-0"></ul>
+                                </div>
+                                <div>
+                                    <div class="es-readiness-subtitle">Blocking issues</div>
+                                    <ul id="objective-readiness-blockers" class="mb-0"></ul>
+                                </div>
+                                <div>
+                                    <div class="es-readiness-subtitle">Warnings</div>
+                                    <ul id="objective-readiness-warnings" class="mb-0"></ul>
+                                </div>
+                            </div>
+                            <div class="es-readiness-legend">
+                                <span class="es-field-tag tag-required">Required</span>
+                                <span class="es-field-tag tag-derived">Derived</span>
+                                <span class="es-field-tag tag-optional">Optional</span>
+                                <span class="es-field-tag tag-system">Alignment later</span>
+                            </div>
+                        </aside>
+                    </section>
+                </div>
+            </section>
+
+            <datalist id="objective-company-list"></datalist>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade es-modal" id="objectiveSourcePickerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable objective-template-picker-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Choose Objective Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="objective-template-picker-context" class="objective-template-picker-context mb-3">
+                    <div class="objective-template-picker-context-header">
+                        <div>
+                            <div class="objective-template-picker-context-kicker">Strategy Template Context</div>
+                            <h6 class="objective-template-picker-context-title mb-1">Choose a template for the new objective.</h6>
+                            <p class="objective-template-picker-context-copy mb-0">Review the current Parent Goal anchor below. Objective Template compatibility stays driven by Parent Goal context while the popup follows the same Goal picker layout.</p>
+                        </div>
+                        <div class="objective-template-picker-context-badges">
+                            <span class="badge bg-label-info">Parent Goal driven</span>
+                            <span class="badge bg-label-primary">Compatibility matched</span>
+                        </div>
+                    </div>
+                    <div class="objective-template-picker-context-grid">
+                        <div class="objective-template-picker-context-item is-anchor">
+                            <div class="objective-template-picker-context-label">Parent Goal</div>
+                            <div id="objective-template-picker-current-goal" class="objective-template-picker-context-value">Select Parent Goal first</div>
+                        </div>
+                        <div class="objective-template-picker-context-item">
+                            <div class="objective-template-picker-context-label">Parent Goal Template</div>
+                            <div id="objective-template-picker-current-goal-template" class="objective-template-picker-context-value">-</div>
+                        </div>
+                        <div class="objective-template-picker-context-item">
+                            <div class="objective-template-picker-context-label">Parent Goal Type</div>
+                            <div id="objective-template-picker-current-type" class="objective-template-picker-context-value">-</div>
+                        </div>
+                        <div class="objective-template-picker-context-item">
+                            <div class="objective-template-picker-context-label">Entity Scope</div>
+                            <div id="objective-template-picker-current-scope" class="objective-template-picker-context-value">-</div>
+                        </div>
+                        <div class="objective-template-picker-context-item">
+                            <div class="objective-template-picker-context-label">Selected Template</div>
+                            <div id="objective-template-picker-current-template" class="objective-template-picker-context-value">None selected</div>
+                        </div>
+                    </div>
+                    <div id="objective-template-picker-context-warning" class="alert alert-warning d-none mt-3 mb-0" role="alert"></div>
+                    <input id="objective-source-picker-parent-goal-name" type="hidden" />
+                    <input id="objective-source-picker-parent-goal-template" type="hidden" />
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-12 col-xl-6">
+                        <input id="objective-source-picker-search" class="form-control form-control-sm" placeholder="Search by template ID, name, or statement..." />
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <select id="objective-source-picker-type" class="form-select form-select-sm">
+                            <option value="">All types</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <select id="objective-source-picker-entity-scope" class="form-select form-select-sm">
+                            <option value="">All entity scopes</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="objective-source-picker-helper" class="es-field-help mb-2">Select Parent Goal first to load compatible Objective templates.</div>
+                <div class="table-responsive objective-template-picker-table-wrap">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Template ID</th>
+                                <th>Parent Goal Template</th>
+                                <th>Name</th>
+                                <th>Statement</th>
+                                <th>Type</th>
+                                <th>Owner</th>
+                                <th>Priority</th>
+                                <th>Entity Scope</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="objective-source-picker-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #objective-create-workspace {
+        padding-bottom: 1.25rem;
+    }
+
+    #objective-create-workspace .goal-workspace-shell {
+        border: 1px solid rgba(176, 189, 230, 0.28);
+        border-radius: .8rem;
+        background: linear-gradient(180deg, rgba(38, 45, 73, .94) 0%, rgba(35, 42, 68, .94) 100%);
+        overflow: hidden;
+    }
+
+    #objective-create-workspace .goal-workspace-header {
+        top: .5rem;
+        z-index: 8;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .8rem;
+        padding: .85rem 1rem;
+        border-bottom: 1px solid rgba(176, 189, 230, 0.22);
+        backdrop-filter: blur(10px);
+        background: rgba(26, 33, 57, .82);
+    }
+
+    #objective-create-workspace .goal-workspace-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: .01em;
+    }
+
+    #objective-create-workspace .goal-workspace-subtitle {
+        font-size: .82rem;
+        color: #9eabcf;
+    }
+
+    #objective-create-workspace .goal-workspace-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+        justify-content: flex-end;
+    }
+
+    #objective-create-workspace .goal-workspace-body {
+        padding: .95rem;
+    }
+
+    #objective-create-workspace .objective-wizard-nav {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: .5rem;
+    }
+
+    #objective-create-workspace .goal-source-panel {
+        border: 1px solid rgba(176, 189, 230, 0.28);
+        border-radius: .75rem;
+        padding: .85rem;
+        background: rgba(22, 30, 52, .72);
+    }
+
+    #objective-create-workspace .goal-source-controls {
+        display: grid;
+        gap: .6rem;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, .9fr) minmax(0, .9fr);
+        margin-bottom: .75rem;
+    }
+
+    #objective-create-workspace .goal-source-control {
+        min-width: 0;
+        display: flex;
+        align-items: stretch;
+    }
+
+    #objective-create-workspace .initiative-source-control-select .form-select,
+    #objective-create-workspace .initiative-source-control-action .btn {
+        min-height: 2.6rem;
+    }
+
+    #objective-create-workspace .initiative-source-control-action .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #objective-create-workspace .goal-source-summary-card {
+        border: 1px dashed rgba(176, 189, 230, .34);
+        border-radius: .75rem;
+        padding: .9rem 1rem;
+        background: rgba(176, 189, 230, .08);
+        color: #d5e1ff;
+    }
+
+    #objective-create-workspace .goal-source-summary-card.is-empty {
+        background: rgba(176, 189, 230, .05);
+    }
+
+    #objective-create-workspace .goal-source-summary-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .4rem;
+        margin-bottom: .45rem;
+    }
+
+    #objective-create-workspace .goal-source-summary-name {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: .2rem;
+    }
+
+    #objective-create-workspace .goal-source-summary-note {
+        color: #afbddf;
+        font-size: .84rem;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-dialog {
+        width: min(96vw, 1800px);
+        max-width: min(96vw, 1800px);
+        height: calc(100vh - 1.5rem);
+        margin: .75rem auto;
+    }
+
+    #objectiveSourcePickerModal .modal-content {
+        height: 100%;
+    }
+
+    #objectiveSourcePickerModal .modal-body {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-table-wrap {
+        flex: 1 1 auto;
+        max-height: none;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-context {
+        border: 1px solid rgba(104, 120, 168, .18);
+        border-radius: .9rem;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, .18) 0%, rgba(104, 120, 168, .05) 100%),
+            rgba(104, 120, 168, .06);
+        padding: .9rem 1rem;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-context-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-bottom: .8rem;
+        margin-bottom: .85rem;
+        border-bottom: 1px solid rgba(104, 120, 168, .16);
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-context-kicker {
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #afbddf;
+        margin-bottom: .2rem;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-context-title {
+        color: #edf2ff;
+        font-weight: 700;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-context-copy {
+        color: #afbddf;
+        max-width: 62rem;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-context-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .4rem;
+        justify-content: flex-end;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-context-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: .75rem;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-context-item {
+        min-width: 0;
+        border: 1px solid rgba(104, 120, 168, .14);
+        border-radius: .85rem;
+        background: rgba(255, 255, 255, .38);
+        padding: .8rem .85rem;
+        min-height: 6rem;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-context-item.is-anchor {
+        background: linear-gradient(135deg, rgba(88, 99, 255, .11), rgba(104, 120, 168, .06));
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-context-label {
+        font-size: .76rem;
+        font-weight: 700;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        color: #afbddf;
+        margin-bottom: .2rem;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-context-value {
+        color: #edf2ff;
+        font-weight: 600;
+        word-break: break-word;
+        line-height: 1.4;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-row {
+        cursor: pointer;
+    }
+
+    #objectiveSourcePickerModal .objective-template-picker-row:hover,
+    #objectiveSourcePickerModal .objective-template-picker-row:focus-visible {
+        background: rgba(88, 99, 255, .06);
+        outline: none;
+    }
+
+    #objective-create-workspace .objective-derived-context-card {
+        border: 1px solid rgba(176, 189, 230, .24);
+        border-radius: .75rem;
+        padding: .9rem 1rem 1rem;
+        background: rgba(21, 28, 49, .55);
+    }
+
+    #objective-create-workspace .objective-derived-context-card.is-empty {
+        background: rgba(21, 28, 49, .38);
+    }
+
+    #objective-create-workspace .objective-derived-context-header {
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        margin-bottom: .35rem;
+    }
+
+    #objective-create-workspace .objective-wizard-step-btn {
+        border: 1px solid rgba(176, 189, 230, .28);
+        border-radius: .6rem;
+        color: #c9d5f5;
+        text-align: left;
+        font-weight: 700;
+        background: rgba(176, 189, 230, .08);
+        padding: .72rem .8rem;
+        min-height: 4rem;
+    }
+
+    #objective-create-workspace .objective-wizard-step-btn.active {
+        border-color: rgba(var(--bs-primary-rgb), .55);
+        color: #edf2ff;
+        background: rgba(var(--bs-primary-rgb), .18);
+        box-shadow: inset 0 0 0 1px rgba(var(--bs-primary-rgb), .16);
+    }
+
+    #objective-create-workspace .es-goal-section {
+        border: 1px solid rgba(176, 189, 230, 0.28);
+        border-radius: .65rem;
+        background: rgba(39, 46, 73, .9);
+        padding: .9rem;
+        margin-bottom: .75rem;
+        min-height: 24rem;
+    }
+
+    #objective-create-workspace .es-form-section-header {
+        margin-bottom: .85rem;
+    }
+
+    #objective-create-workspace .objective-helper-banner {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        align-items: center;
+        border: 1px solid rgba(176, 189, 230, .24);
+        border-radius: .65rem;
+        padding: .72rem .85rem;
+        background: rgba(176, 189, 230, .09);
+        color: #d7e2ff;
+    }
+
+    #objective-create-workspace .objective-helper-banner-muted {
+        background: rgba(158, 171, 207, .08);
+    }
+
+    #objective-create-workspace .objective-performance-stack {
+        display: flex;
+        flex-direction: column;
+        gap: .9rem;
+    }
+
+    #objective-create-workspace .objective-performance-card {
+        border: 1px solid rgba(176, 189, 230, .18);
+        border-radius: .75rem;
+        padding: .95rem;
+        background: rgba(21, 28, 49, .55);
+    }
+
+    #objective-create-workspace .objective-performance-card-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: .8rem;
+    }
+
+    #objective-create-workspace .objective-performance-card-title {
+        font-size: .98rem;
+        font-weight: 700;
+        color: #edf2ff;
+    }
+
+    #objective-create-workspace .objective-performance-card-copy {
+        color: #aebcde;
+        font-size: .84rem;
+        max-width: 60rem;
+    }
+
+    #objective-create-workspace .objective-target-plan-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    #objective-create-workspace .objective-target-plan-empty {
+        border: 1px dashed rgba(176, 189, 230, .28);
+        border-radius: .65rem;
+        padding: .9rem 1rem;
+        color: #aebcde;
+        background: rgba(176, 189, 230, .04);
+        margin-bottom: .75rem;
+    }
+
+    #objective-create-workspace .objective-target-plan-table-wrap {
+        border: 1px solid rgba(176, 189, 230, .16);
+        border-radius: .65rem;
+        overflow: hidden;
+        background: rgba(16, 22, 40, .4);
+    }
+
+    #objective-create-workspace .objective-target-plan-table {
+        margin-bottom: 0;
+        min-width: 78rem;
+    }
+
+    #objective-create-workspace .objective-target-plan-table thead th {
+        white-space: nowrap;
+        font-size: .78rem;
+        letter-spacing: .02em;
+        text-transform: uppercase;
+        color: #aebcde;
+        background: rgba(176, 189, 230, .08);
+    }
+
+    #objective-create-workspace .objective-target-plan-period {
+        font-weight: 700;
+        color: #edf2ff;
+    }
+
+    #objective-create-workspace .objective-target-plan-subtext {
+        display: block;
+        margin-top: .18rem;
+        font-size: .73rem;
+        color: #92a2c7;
+    }
+
+    #objective-create-workspace .objective-target-plan-table .form-control {
+        min-width: 8rem;
+    }
+
+    #objective-create-workspace .objective-target-plan-table textarea.form-control {
+        min-width: 13rem;
+        min-height: 2.6rem;
+        resize: vertical;
+    }
+
+    #objective-create-workspace .objective-readiness-facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+        margin-bottom: .75rem;
+    }
+
+    #objective-create-workspace .goal-readiness-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        border-radius: 999px;
+        border: 1px solid rgba(176, 189, 230, .24);
+        background: rgba(176, 189, 230, .08);
+        color: #d9e5ff;
+        font-size: .76rem;
+        font-weight: 600;
+        padding: .3rem .65rem;
+    }
+
+    #objective-create-workspace .objective-readiness-columns {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    #objective-create-workspace .objective-inline-toggle {
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+        justify-content: center;
+        min-height: 100%;
+    }
+
+    #objective-create-workspace .objective-inherited-context {
+        border: 1px dashed rgba(176, 189, 230, .34);
+        border-radius: .6rem;
+        padding: .65rem .75rem;
+        background: rgba(176, 189, 230, .06);
+    }
+
+    #objective-create-workspace .objective-scope-toggle {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .6rem;
+    }
+
+    #objective-create-workspace .es-inherited-scope .form-label {
+        opacity: .86;
+    }
+
+    #objective-create-workspace .es-inherited-scope .form-control,
+    #objective-create-workspace .es-inherited-scope .form-select,
+    #objective-create-workspace .es-inherited-scope .select2-selection {
+        background: rgba(255, 255, 255, .06) !important;
+    }
+
+    @@media (max-width: 991.98px) {
+        #objectiveSourcePickerModal .objective-template-picker-context-header {
+            flex-direction: column;
+        }
+
+        #objectiveSourcePickerModal .objective-template-picker-context-badges {
+            justify-content: flex-start;
+        }
+
+        #objectiveSourcePickerModal .objective-template-picker-context-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        #objective-create-workspace .goal-workspace-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        #objective-create-workspace .goal-workspace-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        #objectiveSourcePickerModal .objective-template-picker-context-grid {
+            grid-template-columns: 1fr;
+        }
+
+        #objective-create-workspace .goal-source-controls {
+            grid-template-columns: 1fr;
+        }
+
+        #objective-create-workspace .objective-wizard-nav {
+            grid-template-columns: 1fr;
+        }
+
+        #objective-create-workspace .es-goal-section {
+            min-height: 0;
+        }
+
+        #objective-create-workspace .objective-readiness-columns {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    #objective-create-workspace .es-company-multi-select { position: relative; }
+
+    #objective-create-workspace .es-company-multi-select-toggle {
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-align: left;
+        width: 100%;
+        position: relative;
+        padding-right: 2.3rem;
+    }
+
+    #objective-create-workspace .es-company-multi-select-toggle::after {
+        content: "";
+        border-left: .33rem solid transparent;
+        border-right: .33rem solid transparent;
+        border-top: .42rem solid currentColor;
+        position: absolute;
+        right: .86rem;
+        top: 50%;
+        transform: translateY(-46%);
+        opacity: .75;
+    }
+
+    #objective-create-workspace .es-company-multi-select-toggle.is-open::after {
+        transform: translateY(-46%) rotate(180deg);
+    }
+
+    #objective-create-workspace .es-company-multi-select-display {
+        display: block;
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #objective-create-workspace .es-company-multi-select-panel {
+        position: absolute;
+        inset: calc(100% + .3rem) 0 auto 0;
+        z-index: 30;
+        border: 1px solid rgba(176, 189, 230, 0.34);
+        border-radius: .6rem;
+        background: #1c2542;
+        box-shadow: 0 12px 32px rgba(7, 11, 20, .44);
+        padding: .6rem;
+    }
+
+    #objective-create-workspace .es-company-multi-select-toolbar {
+        display: flex;
+        gap: .4rem;
+        justify-content: space-between;
+        margin-bottom: .45rem;
+    }
+
+    #objective-create-workspace .es-company-multi-select-options {
+        max-height: 240px;
+        overflow: auto;
+        border: 1px solid rgba(176, 189, 230, 0.22);
+        border-radius: .5rem;
+        padding: .22rem;
+        background: rgba(23, 31, 53, 0.82);
+    }
+
+    #objective-create-workspace .es-company-multi-select-option {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: #d5dff8;
+        display: flex;
+        align-items: center;
+        gap: .48rem;
+        border-radius: .44rem;
+        padding: .42rem .48rem;
+        text-align: left;
+    }
+
+    #objective-create-workspace .es-company-multi-select-option:hover,
+    #objective-create-workspace .es-company-multi-select-option.is-active {
+        background: rgba(90, 112, 255, .24);
+    }
+
+    #objective-create-workspace .es-company-multi-select-empty {
+        padding: .64rem .52rem;
+        color: #9eabcf;
+        font-size: .84rem;
+    }
+</style>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/objectives.js" asp-append-version="true"></script>
+}

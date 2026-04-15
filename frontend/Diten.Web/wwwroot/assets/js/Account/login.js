@@ -66,7 +66,7 @@ const LoginPage = (function () {
 
             // Redirect to returnUrl or home
             const returnUrl = new URLSearchParams(window.location.search).get('returnUrl');
-            window.location.href = returnUrl || '/Products';
+            window.location.href = returnUrl || '/Skus';
 
         } catch (error) {
             showError(error.message);

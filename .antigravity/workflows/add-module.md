@@ -34,9 +34,9 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - API Controller'ı oluştur ve Ocelot Gateway rotasını ekle.
    - **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 9 dil `.resx` senkronizasyonunu tamamla.
    - Sadece projede desteklenen dillerde (9 dil) `.resx` dosyalarını oluştur.
-   - **⚠️ RESX DOSYA ADI KURALI (KRİTİK):** `.resx` dosya adı, Razor view'da kullanılan localization marker class adıyla **birebir eşleşmelidir**. Eğer marker class `CountriesIndex` ise dosya adı `CountriesIndex.{lang}.resx` olmalıdır. `Index.{lang}.resx` KULLANILMAZ. Yol: `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
-     - Örnek: Class = `LegalEntitiesIndex` → `LegalEntitiesIndex.en.resx`, `LegalEntitiesIndex.tr.resx`, ...
-     - Örnek: Class = `CountriesIndex` → `CountriesIndex.en.resx`, `CountriesIndex.tr.resx`, ...
+   - **⚠️ RESX DOSYA ADI KURALI (KRİTİK):** `.resx` dosya adı, Razor view'da kullanılan localization marker class adıyla **birebir eşleşmelidir**. Eğer marker class `SampleModuleIndex` ise dosya adı `SampleModuleIndex.{lang}.resx` olmalıdır. `Index.{lang}.resx` KULLANILMAZ. Yol: `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
+     - Örnek: Class = `SampleModuleIndex` → `SampleModuleIndex.en.resx`, `SampleModuleIndex.tr.resx`, ...
+     - Örnek: Class = `SampleModuleIndex` → `SampleModuleIndex.en.resx`, `SampleModuleIndex.tr.resx`, ...
    - **Kritik:** Ortak kelimeleri (`Kaydet`, `Sil` vb.) `SharedResource`'tan al, yazma. Sayfaya özel olan başlıkları ve tablo kolon anahtarlarını ekle.
    - `.resx` dosyalarında `PageDescription` key'i her modül için tanımlanmalıdır. Alt başlıklar hardcoded yazılmaz.
 
@@ -52,8 +52,8 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 4. **Phase 4: Arayüz (frontend-ui-ux)**
    - **[KRİTİK]:** `.antigravity/rules/frontend-datatable-template.md` dosyasını referans al.
    - **⚠️ `Areas/` KULLANILMAZ:** View dosyaları her zaman `Views/{AreaName}/{ModuleName}/` altına konur. `Areas/{AreaName}/Views/` yapısı ASP.NET Areas routing'dir ve projede KULLANILMAZ.
-     - ✅ `Views/MDM/Countries/Index.cshtml`
-     - ❌ `Areas/MDM/Views/Countries/Index.cshtml`
+     - ✅ `Views/MDM/SampleModule/Index.cshtml`
+     - ❌ `Areas/MDM/Views/SampleModule/Index.cshtml`
    - `Views/{AreaName}/{ModuleName}/Index.cshtml` sayfasını oluştururken SADECE bu şablonu kopyala.
    - **Localization marker class** oluştur: `Views/{AreaName}/{ModuleName}/{ModuleName}Index.cs`
      - Class adı = `{ModuleName}Index`
@@ -70,6 +70,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - `Views/{AreaName}/{ModuleName}/Create.cshtml` → `add-page.md §B Form Sayfası` şablonunu kullan.
    - `Views/{AreaName}/{ModuleName}/Details.cshtml` → `add-page.md §C Details Sayfası` şablonunu kullan.
    - Edit sayfası ayrı sayfa olabilir (`Edit.cshtml`) veya Details içinde edit modu olabilir — modülün karmaşıklığına göre karar ver.
+   - **UI Surface Boundary (ZORUNLU):** Index sayfasında create/edit formu offcanvas/modal içinde çalıştırılmaz. Index'teki "Add New" aksiyonu route tabanlı `/{ModuleName}/Create` sayfasına gitmek zorundadır.
    - **⚠️ Rebuild Guard:** Mevcut bir modül yeniden yapılırken Create/Edit/Details sayfaları silinirse **aynı çalışmada** yeniden yapılmak ZORUNDADIR. "Sadece Index'i düzelt" yorumu bu sayfaları silmeye izin vermez.
 
 4.5. **Phase 4.5: Browser Smoke Test (ORKESTRATÖR — ZORUNLU)**

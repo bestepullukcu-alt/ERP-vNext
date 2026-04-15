@@ -1,0 +1,57 @@
+@model Diten.Web.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Strategy Library Catalog";
+}
+
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+<div class="card mb-3">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+        <input id="library-catalog-search" class="form-control form-control-sm w-auto" style="min-width:280px;" placeholder="Search templates..." />
+        <select id="library-catalog-type" class="form-select form-select-sm w-auto">
+            <option value="">All Types</option>
+            <option value="Goal">Goal</option>
+            <option value="Objective">Objective</option>
+            <option value="Initiative">Initiative</option>
+            <option value="Project">Project</option>
+        </select>
+        <select id="library-catalog-status" class="form-select form-select-sm w-auto">
+            <option value="">All Statuses</option>
+            <option value="Draft">Draft</option>
+            <option value="In Review">In Review</option>
+            <option value="Approved">Approved</option>
+            <option value="Published">Published</option>
+            <option value="Retired">Retired</option>
+        </select>
+        <button id="library-catalog-apply" class="btn btn-sm btn-outline-secondary">Apply</button>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/library/governance">Open Governance</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/library/projects">Projects Library</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/library/import">Open Import Workbench</a>
+        <a class="btn btn-sm btn-primary ms-auto" href="/management-governance/enterprise-strategy-business-performance/library/instantiate">Instantiate to Live</a>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle" id="library-catalog-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Version</th>
+                        <th>Owner</th>
+                        <th>Scope</th>
+                        <th>Usage</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-library-catalog.js" asp-append-version="true"></script>
+}

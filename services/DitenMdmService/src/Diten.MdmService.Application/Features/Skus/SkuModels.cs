@@ -5,7 +5,7 @@ namespace Diten.MdmService.Application.Features.Skus;
 public abstract class SkuUpsertRequestBase
 {
     public string Code { get; set; } = string.Empty;
-    public Guid ProductId { get; set; }
+    public Guid ItemId { get; set; }
     public Guid CompositionId { get; set; }
     public int CompositionVersion { get; set; }
     public int CompositionRevision { get; set; }
@@ -20,9 +20,9 @@ public class SkuListItemDto
     public Guid Id { get; set; }
     public string Code { get; set; } = string.Empty;
     
-    public Guid ProductId { get; set; }
-    public string ProductCode { get; set; } = string.Empty;
-    public string ProductName { get; set; } = string.Empty;
+    public Guid ItemId { get; set; }
+    public string ItemCode { get; set; } = string.Empty;
+    public string ItemName { get; set; } = string.Empty;
 
     public Guid CompositionId { get; set; }
     public string CompositionCode { get; set; } = string.Empty;
@@ -49,8 +49,8 @@ internal static class SkuMapping
 {
     public static SkuListItemDto ToListDto(
         Sku entity,
-        string productCode,
-        string productName,
+        string itemCode,
+        string itemName,
         string compositionCode,
         string compositionName,
         string lifecycleStateCode,
@@ -60,9 +60,9 @@ internal static class SkuMapping
         {
             Id = entity.Id,
             Code = entity.Code,
-            ProductId = entity.ProductId,
-            ProductCode = productCode,
-            ProductName = productName,
+            ItemId = entity.ItemId,
+            ItemCode = itemCode,
+            ItemName = itemName,
             CompositionId = entity.CompositionId,
             CompositionCode = compositionCode,
             CompositionName = compositionName,
@@ -77,22 +77,22 @@ internal static class SkuMapping
 
     public static SkuDetailDto ToDetailDto(
         Sku entity,
-        string productCode,
-        string productName,
+        string itemCode,
+        string itemName,
         string compositionCode,
         string compositionName,
         string lifecycleStateCode,
         string lifecycleStateName)
     {
-        var listDto = ToListDto(entity, productCode, productName, compositionCode, compositionName, lifecycleStateCode, lifecycleStateName);
+        var listDto = ToListDto(entity, itemCode, itemName, compositionCode, compositionName, lifecycleStateCode, lifecycleStateName);
 
         return new SkuDetailDto
         {
             Id = listDto.Id,
             Code = listDto.Code,
-            ProductId = listDto.ProductId,
-            ProductCode = listDto.ProductCode,
-            ProductName = listDto.ProductName,
+            ItemId = listDto.ItemId,
+            ItemCode = listDto.ItemCode,
+            ItemName = listDto.ItemName,
             CompositionId = listDto.CompositionId,
             CompositionCode = listDto.CompositionCode,
             CompositionName = listDto.CompositionName,
@@ -104,8 +104,8 @@ internal static class SkuMapping
             LifecycleState = listDto.LifecycleState,
             PackagingForm = entity.Packaging.Form,
             PackagingQuantity = entity.Packaging.Quantity,
-            CompositionVersion = entity.CompositionVersion.Version,
-            CompositionRevision = entity.CompositionVersion.Revision
+            CompositionVersion = entity.CompositionVersion.VersionNo,
+            CompositionRevision = 0
         };
     }
 }

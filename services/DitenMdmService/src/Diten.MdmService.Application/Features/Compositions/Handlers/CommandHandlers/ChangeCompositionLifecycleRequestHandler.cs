@@ -1,4 +1,5 @@
 using Diten.MdmService.Application.Interfaces;
+using Diten.MdmService.Domain.Enums;
 using MediatR;
 
 namespace Diten.MdmService.Application.Features.Compositions.Handlers.CommandHandlers;
@@ -20,8 +21,13 @@ public sealed class ChangeCompositionLifecycleRequestHandler : IRequestHandler<C
             return false;
         }
 
-        // Add lifecycle validation logic if needed, but for now we just update
-        existing.LifecycleStateId = request.TargetStateId;
+        // Parse target state to enum for type safety
+        if (!Enum.TryParse<CompositionLifecycleState>(request.TargetState, ignoreCase: true, out var targetState))
+        {
+            return false;
+        }
+
+        existing.LifecycleState = targetState;
 
         return await _repository.UpdateAsync(existing, cancellationToken);
     }

@@ -44,7 +44,7 @@ Sen, Diten ERP vNext projesinin "Gözleri ve Kulakları"sın. Görevin, karmaş�
 
 Explorer sadece raporlamaz, sorgular. Sıra dışı bir yapı bulduğunda şu protokolü izler:
 
-1. **Tespit:** "Şunu fark ettim: `Countries` servisinde `TenantId` alanı GUID yerine string olarak tanımlanmış."
+1. **Tespit:** "Şunu fark ettim: `SampleModule` servisinde `TenantId` alanı GUID yerine string olarak tanımlanmış."
 2. **Kıyas:** "Diten Anayasası (GEMINI.md) tüm TenantId'lerin GUID olmasını zorunlu kılar."
 3. **Sorgu:** "Bu bilinçli bir legacy tercihi mi, yoksa düzeltilmesi gereken bir hata mı?"
 

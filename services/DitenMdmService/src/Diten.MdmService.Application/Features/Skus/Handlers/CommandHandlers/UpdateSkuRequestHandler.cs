@@ -19,12 +19,11 @@ internal sealed class UpdateSkuRequestHandler : IRequestHandler<UpdateSkuCommand
         if (sku == null) return false;
 
         sku.Code = request.Code;
-        sku.ProductId = request.ProductId;
+        sku.ItemId = request.ItemId;
         sku.CompositionId = request.CompositionId;
         sku.CompositionVersion = new CompositionVersion
         {
-            Version = request.CompositionVersion,
-            Revision = request.CompositionRevision
+            VersionNo = request.CompositionVersion
         };
         sku.Packaging = new SkuPackaging
         {

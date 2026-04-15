@@ -17,51 +17,16 @@ public sealed class ItemCategoryRepository : RepositoryBase<ItemCategory>, IItem
         Collection.Indexes.CreateOne(new CreateIndexModel<ItemCategory>(indexKeys, new CreateIndexOptions { Unique = true }));
     }
 
-    public async Task<ItemCategory> CreateAsync(ItemCategory entity, CancellationToken cancellationToken = default)
+    // Override GetAllAsync to apply default sort by Name
+    public override async Task<IReadOnlyList<ItemCategory>> GetAllAsync(CancellationToken ct = default)
     {
-        return await InsertAsync(entity, cancellationToken);
+        return await Collection.Find(TenantFilter).SortBy(x => x.Name).ToListAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(ItemCategory entity, CancellationToken cancellationToken = default)
-    {
-        var filter = Builders<ItemCategory>.Filter.And(
-            TenantFilter,
-            Builders<ItemCategory>.Filter.Eq(x => x.Id, entity.Id));
-
-        entity.UpdatedAt = DateTimeOffset.UtcNow;
-        entity.TenantId = TenantContext.TenantId;
-        var result = await Collection.ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
-        return result.ModifiedCount > 0;
-    }
-
-    public async Task<ItemCategory?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await FindByIdAsync(id, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<ItemCategory>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await Collection.Find(TenantFilter).SortBy(x => x.Name).ToListAsync(cancellationToken);
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var update = Builders<ItemCategory>.Update
-            .Set(x => x.IsDeleted, true)
-            .Set(x => x.DeletedAt, DateTimeOffset.UtcNow);
-        await Collection.UpdateOneAsync(
-            Builders<ItemCategory>.Filter.And(TenantFilter, Builders<ItemCategory>.Filter.Eq(x => x.Id, id)),
-            update,
-            cancellationToken: cancellationToken);
-    }
-
-    public async Task<int> BulkDeleteAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+    public async Task<int> BulkDeleteAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
     {
         var idList = ids.Distinct().ToList();
-        if (idList.Count == 0)
-        {
-            return 0;
-        }
+        if (idList.Count == 0) return 0;
 
         var filter = Builders<ItemCategory>.Filter.And(
             TenantFilter,
@@ -71,11 +36,11 @@ public sealed class ItemCategoryRepository : RepositoryBase<ItemCategory>, IItem
             .Set(x => x.IsDeleted, true)
             .Set(x => x.DeletedAt, DateTimeOffset.UtcNow);
 
-        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: cancellationToken);
+        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
         return (int)result.ModifiedCount;
     }
 
-    public async Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default)
     {
         var filter = Builders<ItemCategory>.Filter.And(
             TenantFilter,
@@ -86,26 +51,18 @@ public sealed class ItemCategoryRepository : RepositoryBase<ItemCategory>, IItem
             filter &= Builders<ItemCategory>.Filter.Ne(x => x.Id, excludeId.Value);
         }
 
-        return await Collection.Find(filter).AnyAsync(cancellationToken);
+        return await Collection.Find(filter).AnyAsync(ct);
     }
 
-    public async Task<bool> WouldCreateCycleAsync(Guid categoryId, Guid? parentCategoryId, CancellationToken cancellationToken = default)
+    public async Task<bool> WouldCreateCycleAsync(Guid categoryId, Guid? parentCategoryId, CancellationToken ct = default)
     {
-        if (!parentCategoryId.HasValue)
-        {
-            return false;
-        }
+        if (!parentCategoryId.HasValue) return false;
 
         var currentParentId = parentCategoryId;
-
         while (currentParentId.HasValue)
         {
-            if (currentParentId.Value == categoryId)
-            {
-                return true;
-            }
-
-            var parent = await GetByIdAsync(currentParentId.Value, cancellationToken);
+            if (currentParentId.Value == categoryId) return true;
+            var parent = await GetByIdAsync(currentParentId.Value, ct);
             currentParentId = parent?.ParentCategoryId;
         }
 

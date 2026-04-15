@@ -1,4 +1,5 @@
 using Diten.MdmService.Application.Interfaces;
+using Diten.MdmService.Domain.Enums;
 using MediatR;
 
 namespace Diten.MdmService.Application.Features.Compositions.Handlers.CommandHandlers;
@@ -24,8 +25,8 @@ public sealed class DeleteCompositionRequestHandler : IRequestHandler<DeleteComp
             return false;
         }
 
-        var draftState = await _lookupRepository.GetLifecycleStateByCodeAsync("DRAFT", cancellationToken);
-        if (draftState != null && existing.LifecycleStateId != draftState.Id)
+        // Use enum instead of magic string — see code-style.md § Magic String Yasağı
+        if (existing.LifecycleState != CompositionLifecycleState.Draft)
         {
             throw new Exception("Only DRAFT formulations can be deleted.");
         }

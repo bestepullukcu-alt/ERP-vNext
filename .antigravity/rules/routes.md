@@ -29,7 +29,7 @@ Bilinen her modül için **explicit** (açık) Upstream/Downstream çifti ekleni
 }
 ```
 
-**Gerçek örnek (Countries modülü):**
+**Gerçek örnek (SampleModule modülü):**
 ```json
 {
   "DownstreamPathTemplate": "/api/countries",

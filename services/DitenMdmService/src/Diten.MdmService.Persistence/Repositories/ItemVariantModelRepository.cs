@@ -23,51 +23,16 @@ public sealed class ItemVariantModelRepository : RepositoryBase<ItemVariantModel
         Collection.Indexes.CreateOne(new CreateIndexModel<ItemVariantModel>(indexKeys, new CreateIndexOptions { Unique = true }));
     }
 
-    public async Task<ItemVariantModel> CreateAsync(ItemVariantModel entity, CancellationToken cancellationToken = default)
+    // Override GetAllAsync to apply default sort by Name
+    public override async Task<IReadOnlyList<ItemVariantModel>> GetAllAsync(CancellationToken ct = default)
     {
-        return await InsertAsync(entity, cancellationToken);
+        return await Collection.Find(TenantFilter).SortBy(x => x.Name).ToListAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(ItemVariantModel entity, CancellationToken cancellationToken = default)
-    {
-        var filter = Builders<ItemVariantModel>.Filter.And(
-            TenantFilter,
-            Builders<ItemVariantModel>.Filter.Eq(x => x.Id, entity.Id));
-
-        entity.UpdatedAt = DateTimeOffset.UtcNow;
-        entity.TenantId = TenantContext.TenantId;
-        var result = await Collection.ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
-        return result.ModifiedCount > 0;
-    }
-
-    public async Task<ItemVariantModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await FindByIdAsync(id, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<ItemVariantModel>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await Collection.Find(TenantFilter).SortBy(x => x.Name).ToListAsync(cancellationToken);
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var update = Builders<ItemVariantModel>.Update
-            .Set(x => x.IsDeleted, true)
-            .Set(x => x.DeletedAt, DateTimeOffset.UtcNow);
-        await Collection.UpdateOneAsync(
-            Builders<ItemVariantModel>.Filter.And(TenantFilter, Builders<ItemVariantModel>.Filter.Eq(x => x.Id, id)),
-            update,
-            cancellationToken: cancellationToken);
-    }
-
-    public async Task<int> BulkDeleteAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+    public async Task<int> BulkDeleteAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
     {
         var idList = ids.Distinct().ToList();
-        if (idList.Count == 0)
-        {
-            return 0;
-        }
+        if (idList.Count == 0) return 0;
 
         var filter = Builders<ItemVariantModel>.Filter.And(
             TenantFilter,
@@ -77,11 +42,11 @@ public sealed class ItemVariantModelRepository : RepositoryBase<ItemVariantModel
             .Set(x => x.IsDeleted, true)
             .Set(x => x.DeletedAt, DateTimeOffset.UtcNow);
 
-        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: cancellationToken);
+        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
         return (int)result.ModifiedCount;
     }
 
-    public async Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default)
     {
         var filter = Builders<ItemVariantModel>.Filter.And(
             TenantFilter,
@@ -92,14 +57,14 @@ public sealed class ItemVariantModelRepository : RepositoryBase<ItemVariantModel
             filter &= Builders<ItemVariantModel>.Filter.Ne(x => x.Id, excludeId.Value);
         }
 
-        return await Collection.Find(filter).AnyAsync(cancellationToken);
+        return await Collection.Find(filter).AnyAsync(ct);
     }
 
     public async Task ReplaceTemplatesAsync(
         Guid variantModelId,
         IEnumerable<AttributeDefinition> definitions,
         IEnumerable<AttributeTemplate> templates,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct = default)
     {
         var definitionList = definitions.ToList();
         foreach (var definition in definitionList)
@@ -111,19 +76,16 @@ public sealed class ItemVariantModelRepository : RepositoryBase<ItemVariantModel
                 Builders<AttributeDefinition>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
                 Builders<AttributeDefinition>.Filter.Eq(x => x.Code, definition.Code));
 
-            await _attributeDefinitions.ReplaceOneAsync(filter, definition, new ReplaceOptions { IsUpsert = true }, cancellationToken);
+            await _attributeDefinitions.ReplaceOneAsync(filter, definition, new ReplaceOptions { IsUpsert = true }, ct);
         }
 
         var existingTemplateFilter = Builders<AttributeTemplate>.Filter.And(
             TenantFilterFor<AttributeTemplate>(),
             Builders<AttributeTemplate>.Filter.Eq(x => x.VariantModelId, variantModelId));
-        await _attributeTemplates.DeleteManyAsync(existingTemplateFilter, cancellationToken);
+        await _attributeTemplates.DeleteManyAsync(existingTemplateFilter, ct);
 
         var templateList = templates.ToList();
-        if (templateList.Count == 0)
-        {
-            return;
-        }
+        if (templateList.Count == 0) return;
 
         foreach (var template in templateList)
         {
@@ -132,34 +94,31 @@ public sealed class ItemVariantModelRepository : RepositoryBase<ItemVariantModel
             template.VariantModelId = variantModelId;
         }
 
-        await _attributeTemplates.InsertManyAsync(templateList, cancellationToken: cancellationToken);
+        await _attributeTemplates.InsertManyAsync(templateList, cancellationToken: ct);
     }
 
-    public async Task<IReadOnlyList<AttributeTemplate>> GetTemplatesAsync(Guid variantModelId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<AttributeTemplate>> GetTemplatesAsync(Guid variantModelId, CancellationToken ct = default)
     {
         var filter = Builders<AttributeTemplate>.Filter.And(
             TenantFilterFor<AttributeTemplate>(),
             Builders<AttributeTemplate>.Filter.Eq(x => x.VariantModelId, variantModelId));
-        return await _attributeTemplates.Find(filter).SortBy(x => x.SortOrder).ToListAsync(cancellationToken);
+        return await _attributeTemplates.Find(filter).SortBy(x => x.SortOrder).ToListAsync(ct);
     }
 
-    public async Task<IReadOnlyList<AttributeDefinition>> GetAttributeDefinitionsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<AttributeDefinition>> GetAttributeDefinitionsAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
     {
         var idList = ids.Distinct().ToList();
-        if (idList.Count == 0)
-        {
-            return [];
-        }
+        if (idList.Count == 0) return [];
 
         var filter = Builders<AttributeDefinition>.Filter.And(
             TenantFilterFor<AttributeDefinition>(),
             Builders<AttributeDefinition>.Filter.In(x => x.Id, idList));
-        return await _attributeDefinitions.Find(filter).ToListAsync(cancellationToken);
+        return await _attributeDefinitions.Find(filter).ToListAsync(ct);
     }
 
-    public async Task<IReadOnlyList<AttributeDefinition>> GetAllAttributeDefinitionsAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<AttributeDefinition>> GetAllAttributeDefinitionsAsync(CancellationToken ct = default)
     {
-        return await _attributeDefinitions.Find(TenantFilterFor<AttributeDefinition>()).SortBy(x => x.Name).ToListAsync(cancellationToken);
+        return await _attributeDefinitions.Find(TenantFilterFor<AttributeDefinition>()).SortBy(x => x.Name).ToListAsync(ct);
     }
 
     private FilterDefinition<TEntity> TenantFilterFor<TEntity>() where TEntity : EntityBase

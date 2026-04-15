@@ -18,12 +18,11 @@ internal sealed class CreateSkuRequestHandler : IRequestHandler<CreateSkuCommand
         var sku = new Sku
         {
             Code = request.Code,
-            ProductId = request.ProductId,
+            ItemId = request.ItemId,
             CompositionId = request.CompositionId,
             CompositionVersion = new CompositionVersion
             {
-                Version = request.CompositionVersion,
-                Revision = request.CompositionRevision
+                VersionNo = request.CompositionVersion
             },
             Packaging = new SkuPackaging
             {

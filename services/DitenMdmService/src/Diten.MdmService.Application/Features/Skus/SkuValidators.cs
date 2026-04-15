@@ -1,35 +1,28 @@
 using FluentValidation;
 using Diten.MdmService.Application.Interfaces;
+using Diten.MdmService.Domain.Entities;
 
 namespace Diten.MdmService.Application.Features.Skus;
 
-public class SkuUpsertRequestValidator : AbstractValidator<SkuUpsertRequestBase>
+internal sealed class SkuUpsertRequestValidator<TRequest> : AbstractValidator<TRequest>
+    where TRequest : SkuUpsertRequestBase
 {
-    private readonly ISkuRepository _skuRepository;
-    private readonly IProductRepository _productRepository;
-    private readonly ICompositionRepository _compositionRepository;
-
     public SkuUpsertRequestValidator(
-        ISkuRepository skuRepository,
-        IProductRepository productRepository,
+        IItemRepository itemRepository,
         ICompositionRepository compositionRepository)
     {
-        _skuRepository = skuRepository;
-        _productRepository = productRepository;
-        _compositionRepository = compositionRepository;
-
         RuleFor(x => x.Code)
             .NotEmpty().WithMessage("SKU Code is required")
             .MaximumLength(50).WithMessage("SKU Code cannot exceed 50 characters");
 
-        RuleFor(x => x.ProductId)
-            .NotEmpty().WithMessage("Product is required")
-            .MustAsync(async (productId, ct) => await _productRepository.GetByIdAsync(productId, ct) != null)
-            .WithMessage("Invalid Product selected");
+        RuleFor(x => x.ItemId)
+            .NotEmpty().WithMessage("Item is required")
+            .MustAsync(async (itemId, ct) => await itemRepository.GetByIdAsync(itemId, ct) != null)
+            .WithMessage("Invalid Item selected");
 
         RuleFor(x => x.CompositionId)
             .NotEmpty().WithMessage("Composition is required")
-            .MustAsync(async (compositionId, ct) => await _compositionRepository.GetByIdAsync(compositionId, ct) != null)
+            .MustAsync(async (compositionId, ct) => await compositionRepository.GetByIdAsync(compositionId, ct) != null)
             .WithMessage("Invalid Composition selected");
 
         RuleFor(x => x.PackagingForm)
@@ -43,31 +36,34 @@ public class SkuUpsertRequestValidator : AbstractValidator<SkuUpsertRequestBase>
     }
 }
 
-public class CreateSkuRequestValidator : SkuUpsertRequestValidator
+public sealed class CreateSkuRequestValidator : AbstractValidator<CreateSkuCommand>
 {
     public CreateSkuRequestValidator(
         ISkuRepository skuRepository,
-        IProductRepository productRepository,
-        ICompositionRepository compositionRepository) 
-        : base(skuRepository, productRepository, compositionRepository)
+        IItemRepository itemRepository,
+        ICompositionRepository compositionRepository)
     {
+        Include(new SkuUpsertRequestValidator<CreateSkuCommand>(itemRepository, compositionRepository));
+
         RuleFor(x => x.Code)
             .MustAsync(async (code, ct) => !await skuRepository.ExistsByCodeAsync(code, null, ct))
             .WithMessage("SKU Code already exists in this tenant");
     }
 }
 
-public class UpdateSkuRequestValidator : SkuUpsertRequestValidator
+public sealed class UpdateSkuRequestValidator : AbstractValidator<UpdateSkuCommand>
 {
     public UpdateSkuRequestValidator(
         ISkuRepository skuRepository,
-        IProductRepository productRepository,
-        ICompositionRepository compositionRepository,
-        Guid skuId) 
-        : base(skuRepository, productRepository, compositionRepository)
+        IItemRepository itemRepository,
+        ICompositionRepository compositionRepository)
     {
+        RuleFor(x => x.Id).NotEmpty();
+
+        Include(new SkuUpsertRequestValidator<UpdateSkuCommand>(itemRepository, compositionRepository));
+
         RuleFor(x => x.Code)
-            .MustAsync(async (code, ct) => !await skuRepository.ExistsByCodeAsync(code, skuId, ct))
+            .MustAsync(async (request, code, ct) => !await skuRepository.ExistsByCodeAsync(code, request.Id, ct))
             .WithMessage("SKU Code already exists in this tenant");
     }
 }

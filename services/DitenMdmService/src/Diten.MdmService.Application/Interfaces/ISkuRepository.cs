@@ -6,13 +6,9 @@ namespace Diten.MdmService.Application.Interfaces;
 /// Repository for SKU (Stock Keeping Unit) operations.
 /// All queries automatically filter by TenantId and IsDeleted=false.
 /// </summary>
-public interface ISkuRepository
+public interface ISkuRepository : IRepository<Sku>
 {
-    Task<Sku> CreateAsync(Sku entity, CancellationToken cancellationToken = default);
-    Task<bool> UpdateAsync(Sku entity, CancellationToken cancellationToken = default);
-    Task<Sku?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<Sku>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<int> BulkDeleteAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
-    Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken cancellationToken = default);
+    // SKU-specific methods only — standard CRUD inherited from IRepository<Sku>
+    Task<int> BulkDeleteAsync(IEnumerable<Guid> ids, CancellationToken ct = default);
+    Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default);
 }

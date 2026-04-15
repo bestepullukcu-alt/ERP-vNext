@@ -6,12 +6,8 @@ namespace Diten.MdmService.Application.Interfaces;
 /// Repository for composition (formulation) operations.
 /// All queries automatically filter by TenantId and IsDeleted=false.
 /// </summary>
-public interface ICompositionRepository
+public interface ICompositionRepository : IRepository<Composition>
 {
-    Task<Composition> CreateAsync(Composition entity, CancellationToken cancellationToken = default);
-    Task<bool> UpdateAsync(Composition entity, CancellationToken cancellationToken = default);
-    Task<Composition?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<Composition>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<bool> ExistsByCodeAsync(string formulationCode, Guid? excludeId = null, CancellationToken cancellationToken = default);
+    // Composition-specific methods only — standard CRUD inherited from IRepository<Composition>
+    Task<bool> ExistsByCodeAsync(string formulationCode, Guid? excludeId = null, CancellationToken ct = default);
 }

@@ -19,13 +19,13 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart **Create/Edit** form sa
 ## Create/Edit.cshtml Şablonu
 
 ```cshtml
-@model Diten.Web.Models.{{ModelName}}ViewModel
 @using Diten.Web.Views.{{AreaName}}.{{ModuleName}}
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<{{ModuleName}}Index> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
-    var isEditMode = Model != null && Model.Id.HasValue;
+    // Edit modunda sayfa ID parametresini URL'den veya ViewBag'den alır
+    var isEditMode = ViewBag.Id != null; 
     ViewData["Title"] = isEditMode ? Localizer["EditTitle"].Value : Localizer["CreateTitle"].Value;
     Layout = "_LayoutBackbone";
 }
@@ -57,9 +57,9 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart **Create/Edit** form sa
 
 <div class="row">
     <div class="col-12">
-        <form asp-action="@(isEditMode ? \"Edit\" : \"Create\")" method="post" id="form{{ModuleName}}" novalidate>
+        <form id="form{{ModuleName}}" novalidate>
             @Html.AntiForgeryToken()
-            <input type="hidden" asp-for="Id" />
+            @if(isEditMode) { <input type="hidden" id="recordId" value="@ViewBag.Id" /> }
 
             <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-6 d-flex align-items-center" role="alert">
                 <i class="bx bx-error-alt me-2"></i>

@@ -1,0 +1,31 @@
+@model Diten.Web.Models.ManagementGovernance.ManagementGovernancePageViewModel
+@{
+    ViewData["Title"] = "Management & Governance Subdomains";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance.css" />
+}
+
+<partial name="Components/_DomainHeader" model="Model" />
+
+<section class="card mg-card">
+    <div class="card-header">
+        <h2 class="h6 mb-0">Subdomain Navigation</h2>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            @foreach (var subdomain in Model.Subdomains)
+            {
+                <div class="col-12 col-md-6 col-xl-4">
+                    <partial name="Components/_SubdomainCard" model="subdomain" />
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/assets/js/pages/management-governance/mg-data-adapter.js"></script>
+    <script src="~/assets/js/pages/management-governance/mg-page.js"></script>
+}

@@ -1,0 +1,24 @@
+@model Diten.Web.Models.ManagementGovernance.ModuleSummary
+
+<article class="card mg-card mg-module-card h-100">
+    <div class="card-body d-flex flex-column gap-2">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+            <h3 class="h6 mb-0">@Model.Name</h3>
+            <span class="badge @(Model.Implemented ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary")">
+                @(Model.Implemented ? "Implemented" : "Placeholder")
+            </span>
+        </div>
+        <p class="text-muted small mb-0">@Model.Description</p>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <partial name="Components/_StatusBadge" model="Model.Status" />
+            <partial name="Components/_HealthBadge" model="Model.RiskLevel" />
+        </div>
+        <div class="small"><span class="text-muted">Owner:</span> @Model.Owner</div>
+        <div class="small"><span class="text-muted">Pending:</span> @Model.PendingItemsCount</div>
+        <div class="mt-auto d-flex flex-wrap gap-2">
+            <a href="@Model.Route" class="btn btn-sm btn-primary">Open module</a>
+            <a href="/management-governance/work-queue?module=@Model.Id" class="btn btn-sm btn-outline-secondary">Queue</a>
+            <a href="/management-governance/search?q=@Uri.EscapeDataString(Model.Name)" class="btn btn-sm btn-outline-secondary">Find</a>
+        </div>
+    </div>
+</article>

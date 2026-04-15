@@ -19,48 +19,26 @@ public sealed class CompositionVersionRepository : RepositoryBase<CompositionVer
         Collection.Indexes.CreateOne(new CreateIndexModel<CompositionVersion>(indexKeys, new CreateIndexOptions { Unique = true }));
     }
 
-    public async Task<CompositionVersion> CreateAsync(CompositionVersion entity, CancellationToken cancellationToken = default)
-    {
-        return await InsertAsync(entity, cancellationToken);
-    }
-
-    public async Task<bool> UpdateAsync(CompositionVersion entity, CancellationToken cancellationToken = default)
-    {
-        var filter = Builders<CompositionVersion>.Filter.And(
-            TenantFilter,
-            Builders<CompositionVersion>.Filter.Eq(x => x.Id, entity.Id));
-
-        entity.UpdatedAt = DateTimeOffset.UtcNow;
-        entity.TenantId = TenantContext.TenantId;
-        var result = await Collection.ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
-        return result.ModifiedCount > 0;
-    }
-
-    public async Task<CompositionVersion?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await FindByIdAsync(id, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<CompositionVersion>> GetByCompositionIdAsync(Guid compositionId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<CompositionVersion>> GetByCompositionIdAsync(Guid compositionId, CancellationToken ct = default)
     {
         var filter = Builders<CompositionVersion>.Filter.And(
             TenantFilter,
             Builders<CompositionVersion>.Filter.Eq(x => x.CompositionId, compositionId));
 
-        return await Collection.Find(filter).SortByDescending(x => x.VersionNo).ToListAsync(cancellationToken);
+        return await Collection.Find(filter).SortByDescending(x => x.VersionNo).ToListAsync(ct);
     }
 
-    public async Task<CompositionVersion?> GetCurrentVersionAsync(Guid compositionId, CancellationToken cancellationToken = default)
+    public async Task<CompositionVersion?> GetCurrentVersionAsync(Guid compositionId, CancellationToken ct = default)
     {
         var filter = Builders<CompositionVersion>.Filter.And(
             TenantFilter,
             Builders<CompositionVersion>.Filter.Eq(x => x.CompositionId, compositionId),
             Builders<CompositionVersion>.Filter.Eq(x => x.IsCurrent, true));
 
-        return await Collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
+        return await Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<int> GetNextVersionNoAsync(Guid compositionId, CancellationToken cancellationToken = default)
+    public async Task<int> GetNextVersionNoAsync(Guid compositionId, CancellationToken ct = default)
     {
         var filter = Builders<CompositionVersion>.Filter.And(
             TenantFilter,
@@ -69,12 +47,12 @@ public sealed class CompositionVersionRepository : RepositoryBase<CompositionVer
         var lastVersion = await Collection.Find(filter)
             .SortByDescending(x => x.VersionNo)
             .Project(x => x.VersionNo)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(ct);
 
         return lastVersion + 1;
     }
 
-    public async Task<bool> MarkOtherVersionsAsSupersededAsync(Guid compositionId, Guid activeVersionId, CancellationToken cancellationToken = default)
+    public async Task<bool> MarkOtherVersionsAsSupersededAsync(Guid compositionId, Guid activeVersionId, CancellationToken ct = default)
     {
         var filter = Builders<CompositionVersion>.Filter.And(
             TenantFilter,
@@ -87,7 +65,7 @@ public sealed class CompositionVersionRepository : RepositoryBase<CompositionVer
             .Set(x => x.IsCurrent, false)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow);
 
-        await Collection.UpdateManyAsync(filter, update, cancellationToken: cancellationToken);
+        await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
         return true;
     }
 }

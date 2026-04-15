@@ -37,6 +37,17 @@ Her mikroservis aşağıdaki 5 temel projeden oluşmalıdır:
 
 ---
 
+## 📁 Dosya ve Sınıf Organizasyonu (Action-Based Separation)
+
+Kodun okunabilirliğini ve bakımını kolaylaştırmak için CQRS yapıları **Grup Dosyaları** (örn: `ProductCommands.cs`) içinde tutulamaz:
+
+1. **Her Command için ayrı dosya:** `CreateProductCommand.cs`, `UpdateProductCommand.cs`.
+2. **Her Query için ayrı dosya:** `GetProductsQuery.cs`, `GetProductByIdQuery.cs`.
+3. **Her Handler için ayrı dosya:** `CreateProductRequestHandler.cs`, `DeleteProductRequestHandler.cs`.
+4. **Kural:** Bir dosya içinde birden fazla public sınıf (Request veya Handler) bulunması **KESİNLİKLE YASAKTIR**.
+
+---
+
 ## 🍃 Persistence (MongoDB) Standartları
 
 - **Driver İzolasyonu:** `MongoDB.Driver` ve `MongoDB.Bson` kütüphaneleri sadece `Persistence` projesinde referanslanmalıdır. **Domain katmanında (`using MongoDB.Bson;` dahil) MongoDB import YASAKTIR.** İstisna: `BsonRepresentation` attribute zorunluysa yalnızca o attribute import edilebilir.
@@ -48,9 +59,12 @@ Her mikroservis aşağıdaki 5 temel projeden oluşmalıdır:
 ## 🚨 Genel Uygulama Kuralları
 
 1. **Asenkron Yapı:** Tüm Girdi/Çıktı (I/O) işlemleri `async` olmalı ve `CancellationToken` mutlaka en alt katmana kadar iletilmelidir.
-2. **Hata Yönetimi:** Tüm hatalar (Business veya System) `ProblemDetails` formatında, merkezi bir `GlobalExceptionHandler` üzerinden dönülmelidir.
+2. **Hata Yönetimi:** İş mantığı hataları (kayıt yok, duplicate, yetki) `Response<T>.Fail()` ile döndürülür. Beklenmedik system hataları `ExceptionHandlingBehavior` pipeline katmanı tarafından yakalanır ve `500` olarak sarılır. `throw Exception` sadece kritik infrastructure hatalarında kullanılabilir. Bkz: `response-envelope.md`.
 3. **DTO Kullanımı:** Katmanlar arası veri taşıma için her zaman DTO'lar (Data Transfer Objects) kullanılmalıdır; Entity'ler asla API yanıtı olarak dönülmemelidir.
 4. **Interface Standartı:** Bağımlılıklar (DI) her zaman Interface'ler üzerinden yönetilmelidir.
+5. **Pipeline Behaviors (4 Zorunlu):** Her mikroserviste `ValidationBehavior`, `LoggingBehavior`, `ExceptionHandlingBehavior`, `PerformanceBehavior` sırasıyla kayıtlı olmalıdır. Bkz: `pipeline-behaviors.md`.
+6. **Handler Tasarımı:** Handler'lar tek bir aggregate üzerinde çalışır. Email, dış servis çağrısı, alt entity upsert ayrı servis/command'a aittir. Bkz: `handler-design.md`.
+7. **Kod Stili:** Tüm yorumlar ve log mesajları İngilizce. PascalCase property, `_camelCase` private field. Bkz: `code-style.md`.
 
 ---
 
@@ -84,9 +98,9 @@ Controller endpoint'lerinde kullanılan `[HasPermission]` attribute'u için stan
 ```
 
 **Örnekler:**
-- `[HasPermission("Modules.Countries.Read")]`
-- `[HasPermission("Modules.Countries.Create")]`
-- `[HasPermission("Modules.LegalEntities.Delete")]`
+- `[HasPermission("Modules.SampleModule.Read")]`
+- `[HasPermission("Modules.SampleModule.Create")]`
+- `[HasPermission("Modules.SampleModule.Delete")]`
 
 **Actions:** `Read`, `Create`, `Update`, `Delete`, `BulkDelete`
 
@@ -113,18 +127,32 @@ Eğer bir endpoint henüz RBAC'a bağlanmadıysa `[Authorize]` ile koruma altın
 
 ---
 
+## 🏷️ Domain Enum Zorunluluğu
+
+Lookup collection'larında (`LifecycleState`, `ItemType`, `TrackingPolicy` vb.) saklanan `Code` değerleri iş mantığında (handler, helper, validator) kullanılıyorsa, bu kodlar **Domain katmanında enum olarak da tanımlanmalıdır.**
+
+```csharp
+// Domain/Enums/ProductEnums.cs
+public enum ProductLifecycleStateCode
+{
+    Draft = 1,
+    Active = 2,
+    Blocked = 3,
+    Obsolete = 4
+}
+```
+
+> **Kural:** Handler veya helper içinde `"DRAFT"`, `"ACTIVE"` gibi string literal ile durum kontrolü **YASAKTIR**.
+> Lookup entity'nin `Code` alanı ile Domain enum arasında mapping yapılır.
+> Bkz: `code-style.md § Magic String Yasağı`
+
+---
+
 ## 🔒 Interface Seviyesinde Zorunluluklar
 
 ### Multi-Tenancy ve Soft-Delete Garantisi
 
-1. **Repository Interface Sözleşmesi:** Her Repository interface'i, TenantId ve Soft-Delete filtrelerinin uygulandığını XML comment ile BELİRTMELİDİR:
-   ```csharp
-   /// <summary>
-   /// Repository for {Entity} operations.
-   /// All queries automatically filter by TenantId and IsDeleted=false.
-   /// </summary>
-   public interface I{Entity}Repository
-   ```
+1. **Generic Repository Sözleşmesi:** Tüm veri erişim işlemleri `IRepository<T>` üzerinden yürütülür. TenantId ve Soft-Delete filtreleri `GenericRepository<T>` seviyesinde garanti edilir.
 
 2. **Implementasyon Garantisi:** Repository implementasyonu `RepositoryBase<TEntity>` sınıfından miras almalı ve `TenantFilter` kullanmak ZORUNDADIR.
 
@@ -144,3 +172,10 @@ Eğer bir endpoint henüz RBAC'a bağlanmadıysa `[Authorize]` ile koruma altın
 - [ ] `DeleteAsync` içinde hem `IsDeleted = true` hem `DeletedAt = UtcNow` set ediliyor mu?
 - [ ] `[HasPermission("Modules.{Module}.{Action}")]` veya en az `[Authorize]` koruması var mı?
 - [ ] Entity-base-template.md okundu mu? (Zorunlu/Opsiyonel alanlar doğru uygulandı mı?)
+- [ ] `Response<T>` envelope kullanılıyor mu? (`response-envelope.md`)
+- [ ] Tüm controller'lar `CustomBaseController`'dan miras alıyor mu?
+- [ ] 4 pipeline behavior kayıtlı mı ve sırası doğru mu? (`pipeline-behaviors.md`)
+- [ ] Handler'lar tek sorumluluk ilkesine uyuyor mu? (`handler-design.md`)
+- [ ] Tüm yorumlar ve log mesajları İngilizce mi? (`code-style.md`)
+- [ ] Lookup kodları (lifecycle, status) Domain enum olarak tanımlı mı? (string literal yasak)
+- [ ] Specific repository YASAKLANMIŞTIR. Doğrudan `IRepository<T>` kullanılıyor mu? (`repository-standard.md`)

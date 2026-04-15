@@ -1,4 +1,6 @@
+using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Interfaces;
+using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Persistence.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,12 +35,11 @@ public static class DependencyInjection
         services.AddScoped<IItemCategoryRepository, ItemCategoryRepository>();
         services.AddScoped<IItemVariantModelRepository, ItemVariantModelRepository>();
         services.AddScoped<IItemRepository, ItemRepository>();
-        services.AddScoped<IProductRepository, ProductRepository>();
-        services.AddScoped<IProductLifecycleHistoryRepository, ProductLifecycleHistoryRepository>();
         services.AddScoped<ICompositionRepository, CompositionRepository>();
         services.AddScoped<ICompositionVersionRepository, CompositionVersionRepository>();
         services.AddScoped<ISkuRepository, SkuRepository>();
         services.AddScoped<IPackagingDefinitionRepository, PackagingDefinitionRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
 
         return services;
     }

@@ -10,6 +10,13 @@
             <div class="nav-align-top">
                 <ul class="nav nav-pills d-inline-flex flex-wrap gap-2" role="tablist">
                     <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <a class="nav-link small border shadow-none wc-tab-compact @(controller == "Products" ? "active" : "")" href="/Products">
+                            <span class="d-inline-flex align-items-center">
+                                <i class="bx bx-box me-1 wc-tab-icon"></i>@SharedLocalizer["ProductMaster"]
+                            </span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
                         <a class="nav-link small border shadow-none wc-tab-compact @(controller == "Items" ? "active" : "")" href="/Items">
                             <span class="d-inline-flex align-items-center">
                                 <i class="bx bx-package me-1 wc-tab-icon"></i>@SharedLocalizer["ItemMaster"]

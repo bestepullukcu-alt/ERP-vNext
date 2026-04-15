@@ -16,7 +16,7 @@ Desteklenen Diller: `az, en, es, ka, kk, ru, tr, uk, uz`
 > - Aynı key için bazı dillerde cümle düzeni/harf yapısı farklı bırakılmaz; teslim öncesi kontrol zorunludur.
 
 **Dosya Yolu Standardı:** `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
-*(Örn: `Resources/Views/MDM/Countries/CountriesIndex.en.resx`, `Resources/Views/MDM/LegalEntities/LegalEntitiesIndex.tr.resx` vb.)*
+*(Örn: `Resources/Views/MDM/SampleModule/SampleModuleIndex.en.resx`, `Resources/Views/MDM/SampleModule/SampleModuleIndex.tr.resx` vb.)*
 **Kritik Kural:** Kaynak dosyası, Razor view'daki `IHtmlLocalizer<T>` sınıf adıyla birebir eşleşmelidir. Marker class convention: `{ModuleName}Index` (bkz: `frontend-datatable-template.md`). `Index.{lang}.resx` adı KULLANILMAZ.
 
 ## 2. Zorunlu Anahtarlar (Keys)
@@ -35,7 +35,7 @@ Birden fazla sayfada kullanılan genel ifadeler ASLA View (sayfa) dil dosyaları
 
 **B. View-Specific Resource (Sayfaya Özel Metinler):**
 SADECE o sayfaya ve modüle ait olan, başka sayfalarda kullanılmayacak metinler `Resources/Views/{AreaName}/{ModuleName}.{lang}.resx` dosyalarına eklenmelidir.
-*Örnekler:* Sayfa başlığı (`CountriesTitle`), Sayfa açıklaması (`CountriesDescription`), Modüle özel tablo sütun isimleri (`IsoCode`, `TaxNumber`), Modüle özel mesajlar (`CountryAddedSuccessfully`).
+*Örnekler:* Sayfa başlığı (`SampleModuleTitle`), Sayfa açıklaması (`SampleModuleDescription`), Modüle özel tablo sütun isimleri (`IsoCode`, `TaxNumber`), Modüle özel mesajlar (`CountryAddedSuccessfully`).
 
 ---
 

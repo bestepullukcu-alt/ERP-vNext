@@ -12,6 +12,7 @@ public abstract class CompositionUpsertRequestBase
     public Guid StrengthUnitId { get; set; }
     public decimal TechnicalFillAmount { get; set; }
     public Guid? TechnicalFillUnitId { get; set; }
+    public Guid LifecycleStateId { get; set; }
     public List<CompositionComponentDto> Components { get; set; } = [];
 }
 

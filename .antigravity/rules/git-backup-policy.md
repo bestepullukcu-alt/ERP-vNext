@@ -63,7 +63,7 @@ Ajan (Antigravity), bir yedekleme talebi aldığında veya kritik bir sürece gi
 ## 🚨 Ne Zaman Yedek Alınmalı?
 
 - **Önemli Refactor Öncesi:** Bir servisin çekirdek mantığı (örn: CQRS Handler yapısı) değişmeden hemen önce.
-- **UI "Altın Referans" Güncellemeleri:** `LegalEntities` gibi projenin standartlarını belirleyen sayfalarda yapılan büyük değişikliklerden sonra.
+- **UI "Altın Referans" Güncellemeleri:** `SampleModule` gibi projenin standartlarını belirleyen sayfalarda yapılan büyük değişikliklerden sonra.
 - **Hata Ayıklama (Debugging) Öncesi:** Karmaşık bir hatayı çözmek için kodun birçok noktasında geçici değişiklikler yapılmadan önce.
 - **Kullanıcı Talebi:** Kullanıcı "Şu anki halini yedekle" veya "git yedeği al" dediğinde.
 

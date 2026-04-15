@@ -1,4 +1,6 @@
 using Diten.Web;
+using Diten.Web.Services.EnterpriseStrategy;
+using Diten.Web.Services.ManagementGovernance;
 using Diten.Web.Services.WorkCenter;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Localization;
@@ -33,8 +35,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<ITaskDetailService, TaskDetailService>();
+builder.Services.AddScoped<IManagementGovernanceFrontendAdapter, MockManagementGovernanceFrontendAdapter>();
+builder.Services.AddScoped<IEnterpriseStrategyFrontendAdapter, MockEnterpriseStrategyFrontendAdapter>();
 
 var app = builder.Build();
+
+Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "Data", "uploads"));
 
 var supportedCultures = new[] { "az", "en", "tr", "es", "ru", "uz", "uk", "ka", "kk" };
 var localizationOptions = new RequestLocalizationOptions()
@@ -98,7 +104,7 @@ app.UseEndpoints(endpoints =>
 {
     endpoints.MapGet("/", async context =>
     {
-        context.Response.Redirect("/Products");
+        context.Response.Redirect("/Skus");
     });
 });
 
@@ -106,6 +112,6 @@ app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Products}/{action=Index}/{id?}");
+    pattern: "{controller=Skus}/{action=Index}/{id?}");
 
 app.Run();
