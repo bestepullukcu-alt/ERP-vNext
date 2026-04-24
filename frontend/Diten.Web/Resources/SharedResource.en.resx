@@ -266,6 +266,9 @@
   <data name="Login.Loading" xml_space="preserve">
     <value>Signing in...</value>
   </data>
+  <data name="Login.Subtitle" xml_space="preserve">
+    <value>Please sign-in to your account</value>
+  </data>
   <data name="Sandbox" xml:space="preserve"><value>Sandbox</value></data>
   <data name="SaveView" xml:space="preserve"><value>Save View</value></data>
   <data name="Platform" xml:space="preserve"><value>Platform</value></data>

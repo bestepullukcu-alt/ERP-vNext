@@ -175,29 +175,15 @@ function loadMenuOnce(response) {
 
 
 async function getMenuAndLoad() {
-
-    const token = localStorage.getItem("token");
-    if (!token) {
+    const user = window.CurrentUser;
+    if (!user) {
         window.location.href = "/account/login";
         return;
-    }
-
-    let decodedToken;
-    try {
-        decodedToken = decodeJWT(token);
-    } catch (err) {
-        console.warn("Token decode edilemedi, menü yüklenemiyor:", err);
-        return;
-    }
-    const roleClaimKey = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
-    let roleIds = decodedToken[roleClaimKey];
-    if (typeof roleIds === "string") {
-        roleIds = [roleIds]; // Tek bir rol varsa array'e çevir
     }
     const postData = {
         tenantId: "", // Gerekirse doldur
         applicationId: "", // Gerekirse doldur
-        roleIds: roleIds
+        roleIds: Array.isArray(user.roles) ? user.roles : []
     };
 
     try {
@@ -303,23 +289,20 @@ function highlightActiveSubmenu() {
 
 
 
-function decodeJWT(token) {
-
-    const base64Url = token.split('.')[1];  // Token'ın ikinci kısmı payload'dır
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');  // Base64 formatını düzelt
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-}
-
 function getClaimFromToken(claimKey) {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
+    const user = window.CurrentUser || null;
+    if (!user) return null;
 
-
-    const decoded = decodeJWT(token);
-    return decoded ? decoded[claimKey] : null;
+    switch (claimKey) {
+        case "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name":
+            return [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || null;
+        case "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier":
+            return user.id || null;
+        case "http://schemas.microsoft.com/ws/2008/06/identity/claims/role":
+            return user.roles || [];
+        default:
+            return null;
+    }
 }
 
 function getUserName() {
@@ -327,13 +310,8 @@ function getUserName() {
 }
 
 function getUserId() {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-
-    const decoded = decodeJWT(token);
-    return decoded
-        ? decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]
-        : null;
+    const user = window.CurrentUser || {};
+    return user.id || null;
 }
 function getUserRoleId() {
     return getClaimFromToken("http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
@@ -683,7 +661,6 @@ window.populateSelect = async function (selectId, options = {}) {
         disableSelect(false);
     }
 };
-
 
 
 

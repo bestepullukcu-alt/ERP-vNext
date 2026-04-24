@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <data name="ItemsTitle" xml:space="preserve"><value>البند الاساسي</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة البيانات الرئيسية للعنصر والتصنيف والسمات والمتغيرات من هذه الشاشة.</value></data>
+  <data name="AddNewItems" xml:space="preserve"><value>إضافة عنصر جديد</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>تحریر</value></data>
+  <data name="QuickView" xml:space="preserve"><value>نظرة سريعة</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="ItemType" xml:space="preserve"><value>نوع العنصر</value></data>
+  <data name="Category" xml:space="preserve"><value>الفئة</value></data>
+  <data name="BaseUom" xml:space="preserve"><value>وحدة القياس الأساسية</value></data>
+  <data name="TrackingPolicy" xml:space="preserve"><value>سياسة التتبع</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>حالة دورة الحياة</value></data>
+  <data name="ShortDescription" xml:space="preserve"><value>الوصف المختصر</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>معلومات عامة</value></data>
+  <data name="IdentityAndClassification" xml:space="preserve"><value>الهوية والتصنيف</value></data>
+  <data name="OperationalFlags" xml:space="preserve"><value>الأعلام التشغيلية</value></data>
+  <data name="TraceabilityAndAssignments" xml:space="preserve"><value>التتبع والتكليفات</value></data>
+  <data name="VariantModel" xml:space="preserve"><value>نموذج متغير</value></data>
+  <data name="Stockable" xml:space="preserve"><value>يمكن تخزينه</value></data>
+  <data name="Purchasable" xml:space="preserve"><value>يمكن شراءه, قابل للشراء, من الممكن شراءه, يمكن الاستحواذ عليه عن طريق المبادلة بالمال</value></data>
+  <data name="Sellable" xml:space="preserve"><value>قابلة للبيع</value></data>
+  <data name="ServiceItem" xml:space="preserve"><value>عنصر الخدمة</value></data>
+  <data name="AddVariant" xml:space="preserve"><value>أضف متغير</value></data>
+  <data name="VariantModelHint" xml:space="preserve"><value>حدد نموذجًا متغيرًا لإدارة سمات العنصر ومجموعات المتغيرات.</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>الصفحة الرئيسية</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>MDM </value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل العنصر</value></data>
+  <data name="NoAttributesAssigned" xml:space="preserve"><value>لم يتم تعيين سمات حتى الآن.</value></data>
+  <data name="NoVariantsAssigned" xml:space="preserve"><value>لم يتم تعيين متغيرات حتى الآن.</value></data>
+  <data name="Value" xml:space="preserve"><value>القيمة</value></data>
+  <data name="NoAttributeTemplateSelected" xml:space="preserve"><value>لم يتم تحديد قالب سمة حتى الآن.</value></data>
+  <data name="NoVariantAxisDefined" xml:space="preserve"><value>لم يتم تحديد محور متغير لهذا النموذج.</value></data>
+  <data name="NoVariantsDefined" xml:space="preserve"><value>لا توجد متغيرات محددة حتى الآن.</value></data>
+  <data name="Remove" xml:space="preserve"><value>ازالة</value></data>
+  <data name="Variant" xml:space="preserve"><value>العامل المتغير</value></data>
+</root>

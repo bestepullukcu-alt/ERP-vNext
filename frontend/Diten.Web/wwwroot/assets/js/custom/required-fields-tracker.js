@@ -82,7 +82,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 const $el = $(el);
                 if ($el.hasClass('select2-hidden-accessible')) {
                     const val = $el.val();
-                    isFilled = val && val !== "";
+                    isFilled = Array.isArray(val)
+                        ? val.length > 0
+                        : (val !== null && String(val).trim() !== "");
                 } else {
                     isFilled = el.value.trim() !== "";
                 }
@@ -177,7 +179,7 @@ document.addEventListener("DOMContentLoaded", function () {
         observer.observe(el, { attributes: true, attributeFilter: ["class"] });
 
         if (el.tagName === "SELECT" && $(el).hasClass('select2-hidden-accessible')) {
-            $(el).on('select2:select select2:unselect', function () {
+            $(el).on('select2:select select2:unselect select2:clear change.select2', function () {
                 updateProgress();
             });
         }

@@ -250,12 +250,12 @@
   <data name="Login.Error" xml:space="preserve"><value>Correo electrónico o contraseña no válidos</value></data>
   <data name="Login.Loading" xml:space="preserve"><value>Iniciando sesión...</value></data>
   <data name="SaveView" xml:space="preserve"><value>Guardar Vista</value></data>
-  <data name="Platform" xml:space="preserve"><value>Platform</value></data>
-  <data name="WorkCenterMenu" xml:space="preserve"><value>Work Center</value></data>
+  <data name="Platform" xml:space="preserve"><value>Plataforma</value></data>
+  <data name="WorkCenterMenu" xml:space="preserve"><value>Centro de trabajo</value></data>
   <data name="ItemMaster" xml:space="preserve"><value>Maestro de Artículos</value></data>
   <data name="Attributes" xml:space="preserve"><value>Atributos</value></data>
   <data name="Variants" xml:space="preserve"><value>Variantes</value></data>
   <data name="ColumnOrder" xml:space="preserve"><value>Orden de Columnas</value></data>
   <data name="SKUManagement" xml:space="preserve"><value>Gestión de SKU</value></data>
   <data name="ProductMaster" xml:space="preserve"><value>Maestro de Productos</value></data>
-</root>
+<data name="CategoryManagement" xml:space="preserve"><value>Gestion de categorias</value></data><data name="CompositionManagement" xml:space="preserve"><value>Gestion de composiciones</value></data><data name="VariantManagement" xml:space="preserve"><value>Gestion de variantes</value></data></root>

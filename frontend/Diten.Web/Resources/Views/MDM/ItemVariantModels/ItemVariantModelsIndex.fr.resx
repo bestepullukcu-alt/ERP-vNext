@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <data name="ItemVariantModelsTitle" xml:space="preserve"><value>gestion des variantes IDN</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gérez les modèles de variantes réutilisables et les axes d'attributs à partir de cet écran.</value></data>
+  <data name="AddNewItemVariantModels" xml:space="preserve"><value>Ajouter un nouveau modèle de variante</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Modifier</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Type d’article</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="VariantAttributes" xml:space="preserve"><value>Attributs des variantes</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu</value></data>
+  <data name="AddAttribute" xml:space="preserve"><value>Ajouter un attribut</value></data>
+  <data name="NoAttributesDefined" xml:space="preserve"><value>Aucun attribut défini</value></data>
+  <data name="Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Required" xml:space="preserve"><value>RI Q</value></data>
+  <data name="VariantAxis" xml:space="preserve"><value>Axe des variantes</value></data>
+  <data name="Remove" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="TextDataType" xml:space="preserve"><value>Texte</value></data>
+</root>

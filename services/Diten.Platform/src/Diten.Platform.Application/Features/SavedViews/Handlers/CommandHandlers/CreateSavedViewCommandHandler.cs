@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Application.Features.SavedViews.Commands;
 using Diten.Platform.Application.Models;
 using Diten.Platform.Domain.Entities;

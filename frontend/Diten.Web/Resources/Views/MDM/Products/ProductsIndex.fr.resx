@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ProductsTitle" xml:space="preserve"><value>Produit maître</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gérer les enregistrements, le type, le cycle de vie et les capacités opérationnelles des produits.</value></data>
+  <data name="AddNewProduct" xml:space="preserve"><value>Ajouter un nouveau produit</value></data>
+  <data name="EditProduct" xml:space="preserve"><value>Modifier le produit</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="ShortName" xml:space="preserve"><value>Nom court</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="ProductType" xml:space="preserve"><value>Type de Produit</value></data>
+  <data name="Category" xml:space="preserve"><value>Catégorie</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>État du dernier Cycle de Vie</value></data>
+  <data name="Capabilities" xml:space="preserve"><value>Capacités</value></data>
+  <data name="IsSaleable" xml:space="preserve"><value>salelable</value></data>
+  <data name="IsPurchasable" xml:space="preserve"><value>Achetable</value></data>
+  <data name="IsManufacturable" xml:space="preserve"><value>En cours</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Généralités</value></data>
+  <data name="ProductTypeFinished" xml:space="preserve"><value>Produit fini</value></data>
+  <data name="ProductTypeSemiFinished" xml:space="preserve"><value>demi-produit</value></data>
+  <data name="ProductTypeService" xml:space="preserve"><value>Service</value></data>
+  <data name="ProductTypeTechnology" xml:space="preserve"><value>Technologie</value></data>
+  <data name="ProductTypeUnknown" xml:space="preserve"><value>Inconnu</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>Accueil</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>Données de Référence</value></data>
+</root>

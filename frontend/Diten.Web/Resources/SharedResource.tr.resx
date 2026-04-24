@@ -266,9 +266,12 @@
   <data name="Login.Loading" xml_space="preserve">
     <value>Giriş yapılıyor...</value>
   </data>
+  <data name="Login.Subtitle" xml_space="preserve">
+    <value>E-posta ve şifrenizle giriş yapın</value>
+  </data>
   <data name="Sandbox" xml:space="preserve"><value>Sandbox</value></data>
   <data name="SaveView" xml:space="preserve"><value>Görünümü Kaydet</value></data>
-  <data name="Platform" xml:space="preserve"><value>Platform</value></data>
+  <data name="Platform" xml:space="preserve"><value>Platform Altyapisi</value></data>
   <data name="WorkCenterMenu" xml:space="preserve"><value>Görev Merkezi</value></data>
   <data name="ItemMaster" xml:space="preserve"><value>Kalem Kartı</value></data>
   <data name="CompositionManagement" xml:space="preserve"><value>Bileşim Yönetimi</value></data>

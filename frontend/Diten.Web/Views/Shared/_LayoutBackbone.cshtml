@@ -1,5 +1,26 @@
+@using System.Security.Claims
+@using System.Text.Json
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var currentUser = User?.Identity?.IsAuthenticated == true
+        ? new
+        {
+            id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value,
+            email = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value,
+            firstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? string.Empty,
+            lastName = User.FindFirst(ClaimTypes.Surname)?.Value ?? string.Empty,
+            roles = User.FindAll(ClaimTypes.Role)
+                .Select(claim => claim.Value)
+                .Concat(User.FindAll("role").Select(claim => claim.Value))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            tenantId = User.FindFirst("tenant_id")?.Value ?? User.FindFirst("tenantId")?.Value,
+            actorType = User.FindFirst("actor_type")?.Value
+        }
+        : null;
+    var currentUserJson = JsonSerializer.Serialize(currentUser);
+}
 <!DOCTYPE html>
 
 <html lang="en" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr" data-skin="default"
@@ -57,10 +78,12 @@
         window.ApiBaseUrl = window.location.protocol + "//" + window.location.hostname + ":5000";
         window.API = {
             mdm: window.ApiBaseUrl,
+            deven: window.ApiBaseUrl,
             auth: window.ApiBaseUrl,
             platform: window.ApiBaseUrl
         };
         window.CurrentLanguage = "@System.Threading.Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName";
+        window.CurrentUser = @Html.Raw(currentUserJson);
     </script>
     <script src="~/assets/js/config.js" asp-append-version="true"></script>
 
@@ -92,13 +115,7 @@
         window.L10n.RequiredProgressText = window.L10n.RequiredProgressText.replace("{{0}}", "{0}").replace("{{1}}", "{1}");
         window.L10n.ValidationErrorsText = window.L10n.ValidationErrorsText.replace("{{0}}", "{0}");
 
-        // Token Validation
-        (function checkAuth() {
-            const hasToken = document.cookie.split(';').some((item) => item.trim().startsWith('access_token='));
-            if (!hasToken && !window.location.pathname.startsWith('/account/')) {
-                window.location.href = "/account/login?returnUrl=" + encodeURIComponent(window.location.pathname);
-            }
-        })();
+        // ShellAccessFilter enforces auth redirects server-side.
     </script>
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -124,38 +141,15 @@
                 <div class="menu-inner-shadow"></div>
 
                 <ul class="menu-inner py-1">
-                    <!-- MDM -->
+                    <!-- Dev Enablement -->
                     <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">@SharedLocalizer["MDM"]</span>
+                        <span class="menu-header-text">Dev Enablement</span>
                     </li>
                     <li
-                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Compositions" ? "active" : "")">
-                        <a href="/Compositions" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-vial"></i>
-                            <div>@SharedLocalizer["CompositionManagement"]</div>
-                        </a>
-                    </li>
-                    <li
-                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Skus" ? "active" : "")">
-                        <a href="/Skus" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-barcode-reader"></i>
-                            <div>@SharedLocalizer["SKUManagement"]</div>
-                        </a>
-                    </li>
-                    <li
-                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Products" ? "active" : "")">
-                        <a href="/Products" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-box"></i>
-                            <div>@SharedLocalizer["ProductMaster"]</div>
-                        </a>
-                    </li>
-                    <li
-                        class="menu-item @((ViewContext.RouteData.Values["controller"]?.ToString() == "Items"
-                            || ViewContext.RouteData.Values["controller"]?.ToString() == "ItemCategories"
-                            || ViewContext.RouteData.Values["controller"]?.ToString() == "ItemVariantModels") ? "active" : "")">
-                        <a href="/Items" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-package"></i>
-                            <div>@SharedLocalizer["ItemMaster"]</div>
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "GoldenReferenceItem" ? "active" : "")">
+                        <a href="/GoldenReferenceItem" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-star"></i>
+                            <div>Golden Reference Item</div>
                         </a>
                     </li>
 
@@ -167,6 +161,45 @@
                         <a href="/WorkCenter" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
                             <div>@SharedLocalizer["WorkCenterMenu"]</div>
+                        </a>
+                    </li>
+
+                    <!-- Platform Administration -->
+                    <li
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Tenants" ? "active" : "")">
+                        <a href="/Platform/Tenants" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-buildings"></i>
+                            <div>Tenant Management</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Platform/Tenants" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-layer"></i>
+                            <div>Plans and Quotas</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Platform/Tenants" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-world"></i>
+                            <div>Domain Management</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Platform/Tenants" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-toggle-left"></i>
+                            <div>Feature Flags and Config</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Platform/Tenants" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-line-chart"></i>
+                            <div>Usage Monitoring</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Platform/Tenants" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
+                            <div>Platform Audit</div>
                         </a>
                     </li>
                 </ul>
@@ -211,23 +244,33 @@
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end wc-lang-menu">
                                     <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=en"
-                                            data-language="en"><span class="fi fi-gb fis rounded-circle wc-lang-flag"></span><span>English</span></a></li>
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=tr"
-                                            data-language="tr"><span class="fi fi-tr fis rounded-circle wc-lang-flag"></span><span>Türkçe</span></a></li>
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=az"
-                                            data-language="az"><span class="fi fi-az fis rounded-circle wc-lang-flag"></span><span>Azərbaycanca</span></a></li>
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=uz"
-                                            data-language="uz"><span class="fi fi-uz fis rounded-circle wc-lang-flag"></span><span>O'zbekcha</span></a></li>
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=kk"
-                                            data-language="kk"><span class="fi fi-kz fis rounded-circle wc-lang-flag"></span><span>Қазақша</span></a></li>
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=ru"
-                                            data-language="ru"><span class="fi fi-ru fis rounded-circle wc-lang-flag"></span><span>Русский</span></a></li>
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=uk"
-                                            data-language="uk"><span class="fi fi-ua fis rounded-circle wc-lang-flag"></span><span>Українська</span></a></li>
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=ka"
-                                            data-language="ka"><span class="fi fi-ge fis rounded-circle wc-lang-flag"></span><span>ქართული</span></a></li>
+                                            data-language="en"><span
+                                                class="fi fi-gb fis rounded-circle wc-lang-flag"></span><span>English</span></a>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=fr"
+                                            data-language="fr"><span
+                                                class="fi fi-fr fis rounded-circle wc-lang-flag"></span><span>Français</span></a>
+                                    </li>
                                     <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=es"
-                                            data-language="es"><span class="fi fi-es fis rounded-circle wc-lang-flag"></span><span>Español</span></a></li>
+                                            data-language="es"><span
+                                                class="fi fi-es fis rounded-circle wc-lang-flag"></span><span>Español</span></a>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=zh"
+                                            data-language="zh"><span
+                                                class="fi fi-cn fis rounded-circle wc-lang-flag"></span><span>中文</span></a>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=ar"
+                                            data-language="ar"><span
+                                                class="fi fi-sa fis rounded-circle wc-lang-flag"></span><span>العربية</span></a>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=ru"
+                                            data-language="ru"><span
+                                                class="fi fi-ru fis rounded-circle wc-lang-flag"></span><span>Русский</span></a>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=tr"
+                                            data-language="tr"><span
+                                                class="fi fi-tr fis rounded-circle wc-lang-flag"></span><span>Türkçe</span></a>
+                                    </li>
                                 </ul>
                             </li>
 
@@ -508,7 +551,7 @@
     <script>
         // Set User Display Info
         (function initDisplay() {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const user = window.CurrentUser || {};
             if (user && user.firstName) {
                 document.getElementById('navbar-user-name').textContent = user.firstName + ' ' + user.lastName;
                 document.getElementById('navbar-user-role').textContent = (user.roles && user.roles.length > 0) ? user.roles[0] : 'User';

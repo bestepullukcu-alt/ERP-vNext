@@ -59,6 +59,32 @@ Her iyi promptta asagidakiler bulunmali:
 - Build/test/browser beklentisi net mi
 - Dokumantasyon gerekiyorsa acikca istendi mi
 
+## Module Pack Referansli Prompt Kurali
+
+Yeni modul veya buyuk feature promptlarinda asagidaki baglam birlikte verilmelidir:
+
+1. `AGENTS.md`
+2. `execution/domains/{domain}/domain-config.md`
+3. `execution/domains/{domain}/module-packs/{ID}.md`
+4. Uygun workflow (`.antigravity/workflows/add-module.md`)
+
+Ornek:
+
+```text
+@[.antigravity/agents/orchestrator.md]
+
+MDM-001-currency-management module pack'ine gore implementasyon yap.
+Zorunlu okuma sirasi:
+1) AGENTS.md
+2) execution/domains/master-data-management/domain-config.md
+3) execution/domains/master-data-management/module-packs/MDM-001-currency-management.md
+4) .antigravity/workflows/add-module.md
+
+Kabul kriteri: module pack'teki checkbox'larin tamamini karsila.
+```
+
+Bu yaklasimla tek talimat kaynagi korunur ve modul kapsam kaymasi engellenir.
+
 ## Anti-Pattern'ler
 
 ### 1. Muğlak referans modulu
@@ -817,10 +843,10 @@ SampleModule modulunu tamamen temizle. Yeniden yazilacak.
 
 Silinecekler:
 BACKEND:
-- services/DitenMdmService/src/.../Features/SampleModule/ (tum klasor)
-- services/DitenMdmService/src/Diten.MdmService.Persistence/Repositories/CountryRepository.cs
-- services/DitenMdmService/src/Diten.MdmService.Api/Controllers/SampleModuleController.cs
-- services/DitenMdmService/src/Diten.MdmService.Domain/Entities/Country.cs
+- services/Diten.MdmService/src/.../Features/SampleModule/ (tum klasor)
+- services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/CountryRepository.cs
+- services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/SampleModuleController.cs
+- services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/Country.cs
 
 FRONTEND:
 - frontend/Diten.Web/Controllers/SampleModuleController.cs

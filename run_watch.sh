@@ -22,16 +22,16 @@ echo "========================================="
 echo ""
 
 # Terminate processes on our target ports
-lsof -ti :5000,5001,5050,5056,5057 | xargs kill -9 2>/dev/null || true
+lsof -ti :5000,5001,5056,5057,5058 | xargs kill -9 2>/dev/null || true
 killall -9 dotnet 2>/dev/null || true
 
 # Watch mode commands
 # Note: dotnet watch run --project <path>
-prefix_logs "[AUTH    ]" "dotnet watch run --non-interactive --project services/DitenAuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj --urls http://0.0.0.0:5056" &
+prefix_logs "[AUTH    ]" "dotnet watch run --non-interactive --project services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj --urls http://0.0.0.0:5056" &
 sleep 2 # Auth service needs more startup time for seeding
-prefix_logs "[BACKEND ]" "dotnet watch run --non-interactive --project services/DitenMdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj --urls http://0.0.0.0:5050" &
+prefix_logs "[DEVEN   ]" "dotnet watch run --non-interactive --project services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api/Diten.DevEnablementService.Api.csproj --urls http://0.0.0.0:5058" &
 prefix_logs "[PLATFORM]" "dotnet watch run --non-interactive --project services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj --urls http://0.0.0.0:5057" &
-prefix_logs "[GATEWAY ]" "dotnet watch run --non-interactive --project gateway/DitenApiGateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000" &
+prefix_logs "[GATEWAY ]" "dotnet watch run --non-interactive --project gateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000" &
 prefix_logs "[FRONTEND]" "dotnet watch run --non-interactive --project frontend/Diten.Web/Diten.Web.csproj --urls http://0.0.0.0:5001" &
 
 wait

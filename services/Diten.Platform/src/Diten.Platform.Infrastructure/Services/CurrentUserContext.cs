@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Common.Tenancy;
 using Microsoft.AspNetCore.Http;
 
 namespace Diten.Platform.Infrastructure.Services;

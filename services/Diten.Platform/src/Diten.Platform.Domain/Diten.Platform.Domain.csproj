@@ -10,4 +10,8 @@
     <PackageReference Include="MongoDB.Driver" Version="2.27.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Diten.Platform.Common\src\Diten.Platform.Common\Diten.Platform.Common.csproj" />
+  </ItemGroup>
+
 </Project>

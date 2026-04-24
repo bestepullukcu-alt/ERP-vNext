@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Infrastructure.Persistence;
 using MongoDB.Driver;
 

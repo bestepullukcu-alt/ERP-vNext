@@ -3,16 +3,17 @@
 Diten ERP vNext projesinde "Hardcoded" (elle yazılmış) metin kullanmak KESİNLİKLE YASAKTIR. Yeni bir modül veya sayfa eklendiğinde View dosyası oluşturulmadan ÖNCE aşağıdaki yerelleştirme adımları ZORUNLU olarak uygulanacaktır:
 
 ## 1. Dil Dosyalarının Eksiksiz Oluşturulması
-Resmi desteklenen 9 dilin TAMAMI için `.resx` dosyaları oluşturulmalıdır. Sadece Türkçe (`tr`) oluşturup bırakmak kural ihlalidir.
-Desteklenen Diller: `az, en, es, ka, kk, ru, tr, uk, uz`
+Resmi desteklenen 7 dilin TAMAMI için `.resx` dosyaları oluşturulmalıdır. Sadece Türkçe (`tr`) oluşturup bırakmak kural ihlalidir.
+Desteklenen Diller: `en, fr, es, zh, ar, ru, tr`
+> ✅ **Kod Notu:** İş tarafında geçen `SP` kısaltması teknikte daima `es` olarak uygulanır.
 
-> ⛔ **Placeholder YASAK:** Non-English (`az/es/ru/uk/ka/kk/uz/tr`) `.resx` dosyalarında değerlerin İngilizce (en) ile aynı bırakılması kabul edilmez.
-> - Örn: `SaveView` → `es/ru/uk/...` dosyalarında `Save View` olarak bırakmak kural ihlalidir.
+> ⛔ **Placeholder YASAK:** Non-English (`fr/es/zh/ar/ru/tr`) `.resx` dosyalarında değerlerin İngilizce (en) ile aynı bırakılması kabul edilmez.
+> - Örn: `SaveView` anahtarının non-English dosyalarda İngilizce bırakılması kural ihlalidir.
 > - Çeviri belirsizse, geliştirme durdurulur ve kullanıcıdan doğru kurumsal metin istenir.
 
 > ✅ **Casing Standardı (Tutarlılık):** UI aksiyon butonları için kullanılan SharedResource key'lerinde (örn: `SaveView`) değerler **tutarlı bir casing** ile yazılmalıdır.
 > - Varsayılan: **Title Case** (kelimelerin ilk harfi büyük) — `Save View`, `Görünümü Kaydet`, `Guardar Vista`, `Сохранить Вид` vb.
-> - Casing olmayan alfabelerde (örn: Gürcüce `ka`) bu kontrol uygulanmaz.
+> - Casing olmayan alfabelerde (örn: `zh`, `ar`) bu kontrol uygulanmaz.
 > - Aynı key için bazı dillerde cümle düzeni/harf yapısı farklı bırakılmaz; teslim öncesi kontrol zorunludur.
 
 **Dosya Yolu Standardı:** `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
@@ -48,4 +49,4 @@ DataTable liste sayfalarında toolbar ve filter UI için kullanılan temel kelim
 
 **Kritik kural (fallback yasak):**
 - Toolbar/action metinlerinde “hardcoded fallback” (`|| 'Export'`) yaklaşımı **yasaktır**.
-- Eksik L10n key varsa teslim durur; key 9 dilde tamamlanmadan feature bitmiş sayılmaz.
+- Eksik L10n key varsa teslim durur; key 7 dilde tamamlanmadan feature bitmiş sayılmaz.

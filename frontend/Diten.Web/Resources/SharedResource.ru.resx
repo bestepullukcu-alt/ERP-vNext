@@ -250,12 +250,12 @@
   <data name="Login.Error" xml:space="preserve"><value>Неверная эл. почта или пароль</value></data>
   <data name="Login.Loading" xml:space="preserve"><value>Вход...</value></data>
   <data name="SaveView" xml:space="preserve"><value>Сохранить Вид</value></data>
-  <data name="Platform" xml:space="preserve"><value>Platform</value></data>
-  <data name="WorkCenterMenu" xml:space="preserve"><value>Work Center</value></data>
+  <data name="Platform" xml:space="preserve"><value>Платформа</value></data>
+  <data name="WorkCenterMenu" xml:space="preserve"><value>Рабочий центр</value></data>
   <data name="ItemMaster" xml:space="preserve"><value>Справочник номенклатуры</value></data>
   <data name="Attributes" xml:space="preserve"><value>Атрибуты</value></data>
   <data name="Variants" xml:space="preserve"><value>Варианты</value></data>
   <data name="ColumnOrder" xml:space="preserve"><value>Порядок столбцов</value></data>
   <data name="SKUManagement" xml:space="preserve"><value>Управление SKU</value></data>
   <data name="ProductMaster" xml:space="preserve"><value>Справочник продуктов</value></data>
-</root>
+<data name="CategoryManagement" xml:space="preserve"><value>Управление категориями</value></data><data name="CompositionManagement" xml:space="preserve"><value>Управление составами</value></data><data name="VariantManagement" xml:space="preserve"><value>Управление вариантами</value></data></root>

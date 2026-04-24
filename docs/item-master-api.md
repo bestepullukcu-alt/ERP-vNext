@@ -87,4 +87,4 @@ Permission set isimleri hazirlanmistir:
 - `Modules.ItemCategories.*`
 - `Modules.ItemVariantModels.*`
 
-Konstantlar [ItemPermissions.cs](/Users/alitufanoglu/Desktop/ERP-vNext/services/DitenMdmService/src/Diten.MdmService.Application/Authorization/ItemPermissions.cs) dosyasinda bulunur. Mevcut repoda MDM servisine permission enforcement henuz bagli olmadigi icin bu surumde surface hazirdir, runtime enforcement sonraki auth entegrasyon adimina birakilmistir.
+Konstantlar [ItemPermissions.cs](/Users/alitufanoglu/Desktop/ERP-vNext/services/Diten.MdmService/src/Diten.MdmService.Application/Authorization/ItemPermissions.cs) dosyasinda bulunur. Mevcut repoda MDM servisine permission enforcement henuz bagli olmadigi icin bu surumde surface hazirdir, runtime enforcement sonraki auth entegrasyon adimina birakilmistir.

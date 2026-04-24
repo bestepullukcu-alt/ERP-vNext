@@ -1,34 +1,200 @@
-using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Diten.Web.Services.Auth;
 
-namespace Diten.Web.Controllers
+namespace Diten.Web.Controllers;
+
+[AllowAnonymous]
+public class AccountController : Controller
 {
-    [AllowAnonymous]
-    public class AccountController : Controller
+    private readonly IAuthGateway _authGateway;
+    private readonly IAuthCookieService _authCookieService;
+
+    public AccountController(IAuthGateway authGateway, IAuthCookieService authCookieService)
     {
-        [HttpGet("/account/login")]
-        public IActionResult Login(string returnUrl = null)
+        _authGateway = authGateway;
+        _authCookieService = authCookieService;
+    }
+
+    [HttpGet("/account/login")]
+    public IActionResult Login(string? returnUrl = null)
+    {
+        if (HasValidActor("tenant_user"))
         {
-            if (User.Identity?.IsAuthenticated == true || HasValidToken())
-                return Redirect(returnUrl ?? "/Skus");
-            
-            ViewBag.ReturnUrl = returnUrl;
-            return View();
+            return Redirect(returnUrl ?? "/WorkCenter");
         }
 
-        [HttpGet("/account/logout")]
-        public IActionResult Logout()
+        ViewBag.AuthMode = "tenant";
+        ViewBag.PostLoginDefault = "/WorkCenter";
+        ViewBag.ReturnUrl = returnUrl;
+        return View();
+    }
+
+    [HttpPost("/account/login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
+    {
+        if (!ModelState.IsValid || request.TenantId == Guid.Empty)
         {
-            // Clear cookies
-            Response.Cookies.Delete("access_token");
-            Response.Cookies.Delete("refresh_token");
-            
-            return RedirectToAction("Login");
+            return BadRequest(new { detail = "Tenant login requires a valid tenant identifier." });
         }
 
-        private bool HasValidToken()
+        var result = await _authGateway.LoginTenantAsync(request.Email, request.Password, request.TenantId, ct);
+        if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
-            return Request.Cookies.ContainsKey("access_token");
+            return Unauthorized(new { detail = result.ErrorMessage ?? "Login failed." });
+        }
+
+        _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
+
+        return Ok(new LoginBridgeResponse(
+            ResolveReturnUrl(request.ReturnUrl, "/WorkCenter"),
+            result.User));
+    }
+
+    [HttpGet("/platform/login")]
+    public IActionResult PlatformLogin(string? returnUrl = null)
+    {
+        if (HasValidActor("platform_admin", "partner_admin"))
+        {
+            return Redirect(returnUrl ?? "/Platform/Tenants");
+        }
+
+        ViewBag.AuthMode = "platform";
+        ViewBag.PostLoginDefault = "/Platform/Tenants";
+        ViewBag.ReturnUrl = returnUrl;
+        return View("Login");
+    }
+
+    [HttpPost("/platform/login")]
+    public async Task<IActionResult> PlatformLogin([FromBody] PlatformLoginRequest request, CancellationToken ct)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new { detail = "Platform login request is invalid." });
+        }
+
+        var result = await _authGateway.LoginPlatformAsync(request.Email, request.Password, ct);
+        if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
+        {
+            return Unauthorized(new { detail = result.ErrorMessage ?? "Platform login failed." });
+        }
+
+        _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
+
+        return Ok(new LoginBridgeResponse(
+            ResolveReturnUrl(request.ReturnUrl, "/Platform/Tenants"),
+            result.User));
+    }
+
+    [HttpPost("/account/refresh")]
+    public async Task<IActionResult> Refresh(CancellationToken ct)
+    {
+        if (!TryGetCookie("access_token", out var accessToken) || !TryGetCookie("refresh_token", out var refreshToken))
+        {
+            _authCookieService.ClearTokens(Response);
+            return Unauthorized(new { detail = "Authentication cookies are missing." });
+        }
+
+        var tenantId = TryReadTenantId(accessToken);
+        var result = await _authGateway.RefreshAsync(accessToken, refreshToken, tenantId, ct);
+        if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
+        {
+            _authCookieService.ClearTokens(Response);
+            return Unauthorized(new { detail = result.ErrorMessage ?? "Refresh failed." });
+        }
+
+        _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
+        return Ok(new { success = true, user = result.User });
+    }
+
+    [HttpPost("/account/logout")]
+    public async Task<IActionResult> Logout(CancellationToken ct)
+    {
+        if (TryGetCookie("access_token", out var accessToken) && TryGetCookie("refresh_token", out var refreshToken))
+        {
+            var tenantId = TryReadTenantId(accessToken);
+            try
+            {
+                await _authGateway.LogoutAsync(accessToken, refreshToken, tenantId, ct);
+            }
+            catch
+            {
+                // We still clear cookies to terminate the session locally.
+            }
+        }
+
+        _authCookieService.ClearTokens(Response);
+
+        var isAjaxRequest = string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+        var expectsJson = Request.Headers.Accept.Any(a => a?.Contains("application/json", StringComparison.OrdinalIgnoreCase) == true);
+        if (isAjaxRequest || expectsJson)
+        {
+            return Ok(new { success = true, redirectUrl = "/account/login" });
+        }
+
+        return RedirectToAction(nameof(Login));
+    }
+
+    [HttpGet("/account/logout")]
+    public async Task<IActionResult> LogoutGet(CancellationToken ct)
+    {
+        await Logout(ct);
+        return RedirectToAction(nameof(Login));
+    }
+
+    private bool HasValidActor(params string[] allowedActors)
+    {
+        var actorType = User.FindFirst("actor_type")?.Value?.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(actorType))
+        {
+            return false;
+        }
+
+        return allowedActors.Any(a => string.Equals(a, actorType, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private bool TryGetCookie(string cookieName, out string value)
+    {
+        value = Request.Cookies[cookieName] ?? string.Empty;
+        return !string.IsNullOrWhiteSpace(value);
+    }
+
+    private static Guid? TryReadTenantId(string accessToken)
+    {
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            if (!handler.CanReadToken(accessToken))
+            {
+                return null;
+            }
+
+            var token = handler.ReadJwtToken(accessToken);
+            var claimValue = token.Claims.FirstOrDefault(c =>
+                string.Equals(c.Type, "tenant_id", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(c.Type, "tenantId", StringComparison.OrdinalIgnoreCase))?.Value;
+
+            return Guid.TryParse(claimValue, out var tenantId) ? tenantId : null;
+        }
+        catch
+        {
+            return null;
         }
     }
+
+    private static string ResolveReturnUrl(string? returnUrl, string defaultPath)
+    {
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Uri.IsWellFormedUriString(returnUrl, UriKind.Relative))
+        {
+            return returnUrl;
+        }
+
+        return defaultPath;
+    }
+
+    public sealed record LoginRequest(string Email, string Password, Guid TenantId, string? ReturnUrl);
+    public sealed record PlatformLoginRequest(string Email, string Password, string? ReturnUrl);
+    public sealed record LoginBridgeResponse(string RedirectUrl, AuthBridgeUser? User);
 }

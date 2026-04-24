@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Diten.Platform.Application\Diten.Platform.Application.csproj" />
     <ProjectReference Include="..\Diten.Platform.Domain\Diten.Platform.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Platform.Common\src\Diten.Platform.Common\Diten.Platform.Common.csproj" />
   </ItemGroup>
 
 </Project>

@@ -45,13 +45,13 @@ lsof -ti :5000,5001,5050,5056,5057 | xargs kill -9 2>/dev/null || true
 Projeyi tam fonksiyonel çalıştırmak için servisleri aşağıdaki sırayla başlatın:
 
 ### 1. TAB 1: Auth Service (Port: 5056)
-- **Dizin:** services/DitenAuthService/src/Diten.AuthService.Api
+- **Dizin:** services/Diten.AuthService/src/Diten.AuthService.Api
 - **Komut:** dotnet run (Development)
 - **Neden:** Diğer tüm servislerin yetki kontrolü (JWT validation) yapabilmesi için kimlik servisinin ayakta olması gerekir.
 - **Seed Kullanıcı (MongoDB açık olmalı):** `admin@diten.com` / `Admin123!`
 
 ### 2. TAB 2: MDM Service (Port: 5050)
-- **Dizin:** services/DitenMdmService/src/Diten.MdmService.Api
+- **Dizin:** services/Diten.MdmService/src/Diten.MdmService.Api
 - **Komut:** dotnet run (Development)
 - **Kontrol:** MongoDB bağlantısının başarılı olduğunu loglardan doğrulayın.
 
@@ -61,7 +61,7 @@ Projeyi tam fonksiyonel çalıştırmak için servisleri aşağıdaki sırayla b
 - **Neden:** Save View / personalization gibi ortak platform yetenekleri bu servis üzerinden sağlanır.
 
 ### 4. TAB 4: API Gateway (Port: 5000)
-- **Dizin:** gateway/DitenApiGateway/Diten.ApiGateway
+- **Dizin:** gateway/Diten.ApiGateway
 - **Komut:** dotnet run (Development)
 - **Önemli:** Auth, MDM ve Platform servisleri hazır olmadan Gateway'i başlatmayın.
 
@@ -79,7 +79,7 @@ Projeyi tam fonksiyonel çalıştırmak için servisleri aşağıdaki sırayla b
 ## 🛠️ Önemli Geliştirme Notları
 
 ### 🌍 Dil Dosyaları (.resx) Hatırlatması
-UI tarafındaki metinlerin (Örn: SampleModule ekranları) 9 dilde doğru görünmesi için, .resx dosyalarında yapılan her değişiklikten sonra tüm çözümü yeniden derlemeniz gerekir:
+UI tarafındaki metinlerin (Örn: SampleModule ekranları) 7 dilde doğru görünmesi için, .resx dosyalarında yapılan her değişiklikten sonra tüm çözümü yeniden derlemeniz gerekir:
 - dotnet build veya run_all.sh betiğini kullanın.
 
 ### 🆔 Sabit Test Verisi

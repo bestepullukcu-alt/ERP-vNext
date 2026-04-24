@@ -79,7 +79,7 @@ Gateway explicit base ve `{everything}` rotalari `GET`, `POST`, `PUT`, `PATCH`, 
 
 ## Permissions
 
-Permission sabitleri [ProductPermissions.cs](/Users/alitufanoglu/Desktop/ERP-vNext/services/DitenMdmService/src/Diten.MdmService.Application/Authorization/ProductPermissions.cs) dosyasinda tanimlidir:
+Permission sabitleri [ProductPermissions.cs](/Users/alitufanoglu/Desktop/ERP-vNext/services/Diten.MdmService/src/Diten.MdmService.Application/Authorization/ProductPermissions.cs) dosyasinda tanimlidir:
 
 - `Modules.Products.Read`
 - `Modules.Products.Create`

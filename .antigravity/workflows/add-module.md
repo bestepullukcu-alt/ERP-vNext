@@ -8,6 +8,15 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 
 ## 🎭 Görev Dağılımı (Orkestra)
 
+0. **Phase 0: Domain + Module Pack Hazırlık Kapısı (ORKESTRATOR)**
+   - `AGENTS.md` dosyasını oku ve repo-level guardrail'leri uygula.
+   - İlgili domain'i tespit et ve `execution/domains/{domain}/domain-config.md` dosyasını oku.
+   - Hedef modül için module pack var mı kontrol et: `execution/domains/{domain}/module-packs/{ID}.md`
+   - Module pack yoksa kod yazmadan önce module pack oluşturulmasını zorunlu tut.
+   - Yetki hiyerarşisini uygula:
+     - `Module Pack > Domain Config > AGENTS.md > .antigravity/`
+   - Çakışma varsa kullanıcı onayı al; onaysız fazlara geçme.
+
 1. **Phase 1: Analiz (business-analyst)**
    - Modülün alanlarını (fields), IFRS/KVKK gereksinimlerini belirle.
    - UI ve tablolarda kullanılacak anahtar kelimeleri (Keys) çıkar.
@@ -32,8 +41,8 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 3. **Phase 3: İş Mantığı & Yerelleştirme (backend-architect & l10n-agent)**
    - `/add-endpoint-cqrs` akışını başlat (Request, Command, Handler, Validator).
    - API Controller'ı oluştur ve Ocelot Gateway rotasını ekle.
-   - **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 9 dil `.resx` senkronizasyonunu tamamla.
-   - Sadece projede desteklenen dillerde (9 dil) `.resx` dosyalarını oluştur.
+   - **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 7 dil `.resx` senkronizasyonunu tamamla.
+   - Sadece projede desteklenen dillerde (7 dil) `.resx` dosyalarını oluştur.
    - **⚠️ RESX DOSYA ADI KURALI (KRİTİK):** `.resx` dosya adı, Razor view'da kullanılan localization marker class adıyla **birebir eşleşmelidir**. Eğer marker class `SampleModuleIndex` ise dosya adı `SampleModuleIndex.{lang}.resx` olmalıdır. `Index.{lang}.resx` KULLANILMAZ. Yol: `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
      - Örnek: Class = `SampleModuleIndex` → `SampleModuleIndex.en.resx`, `SampleModuleIndex.tr.resx`, ...
      - Örnek: Class = `SampleModuleIndex` → `SampleModuleIndex.en.resx`, `SampleModuleIndex.tr.resx`, ...

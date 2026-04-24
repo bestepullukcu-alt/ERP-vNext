@@ -1,0 +1,282 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Save" xml:space="preserve">
+    <value>Kaydet</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>İptal</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Başlık</value>
+  </data>
+  <data name="TaxNumber" xml:space="preserve">
+    <value>Vergi Numarası</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Başarılı</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Hata</value>
+  </data>
+  <data name="RecordCreated" xml:space="preserve">
+    <value>Kayıt başarıyla oluşturuldu.</value>
+  </data>
+  <data name="RecordDeleted" xml:space="preserve">
+    <value>Kayıt başarıyla silindi.</value>
+  </data>
+  <data name="RecordSaved" xml:space="preserve">
+    <value>Değişiklikler başarıyla kaydedildi.</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>İşlem sırasında bir hata oluştu.</value>
+  </data>
+  <data name="AreYouSure" xml:space="preserve">
+    <value>Emin misiniz?</value>
+  </data>
+  <data name="DeleteConfirmationTitle" xml:space="preserve">
+    <value>Emin misiniz?</value>
+  </data>
+  <data name="DeleteConfirmationSubText" xml:space="preserve">
+    <value>Bu işlem geri alınamaz!</value>
+  </data>
+  <data name="DeleteConfirmationYesBtn" xml:space="preserve">
+    <value>Evet, Sil</value>
+  </data>
+  <data name="ConfirmAction" xml:space="preserve">
+    <value>Devam etmek istediğinize emin misiniz?</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Erişim reddedildi.</value>
+  </data>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>Lütfen zorunlu alanları doldurun.</value>
+  </data>
+  <data name="SearchFilter" xml:space="preserve">
+    <value>Ara ve Filtrele</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Aktif</value>
+  </data>
+  <data name="Passive" xml:space="preserve">
+    <value>Pasif</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Bilinmiyor</value>
+  </data>
+  <data name="ViewDetails" xml:space="preserve">
+    <value>Detayları Gör</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Ara..</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Dışa Aktar</value>
+  </data>
+  <data name="Print" xml:space="preserve">
+    <value>Yazdır</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>İçe Aktar</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filtrele</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>Sıfırla</value>
+  </data>
+  <data name="ComingSoon" xml:space="preserve">
+    <value>Bu özellik yakında eklenecektir.</value>
+  </data>
+  <data name="MDM" xml:space="preserve">
+    <value>MDM</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>Kaydediliyor...</value>
+  </data>
+  <data name="FailedToLoadData" xml:space="preserve">
+    <value>Veri yüklenemedi. Lütfen daha sonra tekrar deneyin.</value>
+  </data>
+  <data name="GatewayError" xml:space="preserve">
+    <value>Sunucu ile iletişim sırasında bir hata oluştu.</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Aydınlık</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>Karanlık</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Yönetici</value>
+  </data>
+  <data name="MyProfile" xml:space="preserve">
+    <value>Profilim</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Ayarlar</value>
+  </data>
+  <data name="LogOut" xml:space="preserve">
+    <value>Çıkış Yap</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Uygula</value>
+  </data>
+  <data name="PDF" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Kopyala</value>
+  </data>
+  <data name="DtNoRecords" xml:space="preserve">
+    <value>Eşleşen kayıt bulunamadı</value>
+  </data>
+  <data name="DtInfo" xml:space="preserve">
+    <value>_TOTAL_ kayıttan _START_ - _END_ arasındaki kayıtlar gösteriliyor</value>
+  </data>
+  <data name="DtInfoEmpty" xml:space="preserve">
+    <value>0 kayıttan 0 - 0 arasındaki kayıtlar gösteriliyor</value>
+  </data>
+  <data name="DtInfoFiltered" xml:space="preserve">
+    <value>(_MAX_ kayıt içerisinden filtrelendi)</value>
+  </data>
+  <data name="DtZeroRecords" xml:space="preserve">
+    <value>Eşleşen kayıt bulunamadı</value>
+  </data>
+  <data name="DtEmptyTable" xml:space="preserve">
+    <value>Tabloda veri bulunmuyor</value>
+  </data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümünü Göster</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütun Görünürlüğü</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu Sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili {0} kaydı silmek istediğinize emin misiniz?</value></data>
+  <data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} kayıt başarıyla silindi</value></data>
+  <data name="ClearSelection" xml:space="preserve"><value>Seçimi Temizle</value></data>
+  <data name="SelectedCount" xml:space="preserve"><value>kayıt seçildi</value></data>
+  <data name="RequiredProgress" xml:space="preserve"><value>Zorunlu Alan: {{0}} / {{1}}</value></data>
+  <data name="Update" xml:space="preserve"><value>Güncelle</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Kayıt başarıyla güncellendi.</value></data>
+  <data name="InvalidEmail" xml:space="preserve"><value>Geçersiz e-posta adresi</value></data>
+  <data name="InvalidUrl" xml:space="preserve"><value>Geçersiz URL formatı</value></data>
+  <data name="InvalidPhone" xml:space="preserve"><value>Geçersiz telefon numarası</value></data>
+  <data name="NumericOnly" xml:space="preserve"><value>Sadece rakam girilebilir</value></data>
+  <data name="FieldRequired" xml:space="preserve"><value>Bu alan zorunludur</value></data>
+  <data name="InvalidFiscalYear" xml:space="preserve"><value>Geçersiz format (Örn: 01-01)</value></data>
+  <data name="ValidationErrors" xml:space="preserve"><value>Hata: {0}</value></data>
+  <data name="RequiredStatus" xml:space="preserve"><value>Zorunlu: {0} / {1}</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Seçiniz...</value></data>
+  <data name="Overview" xml:space="preserve"><value>Genel Bakış</value></data>
+  <data name="SubRecords" xml:space="preserve"><value>Alt Kayıtlar</value></data>
+  <data name="Details" xml:space="preserve"><value>Detaylar</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye Dön</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Kaydı Düzenle</value></data>
+  <data name="NoRecordsFound" xml:space="preserve"><value>Henüz alt kayıt bulunmuyor.</value></data>
+  <data name="About" xml:space="preserve"><value>Hakkında</value></data>
+  <data name="Address" xml:space="preserve"><value>Adres</value></data>
+  <data name="EmailAddress" xml:space="preserve"><value>E-posta Adresi</value></data>
+  <data name="PhoneNumber" xml:space="preserve"><value>Telefon Numarası</value></data>
+  <data name="Website" xml:space="preserve"><value>Web Sitesi</value></data>
+  <data name="Sector" xml:space="preserve"><value>Sektör</value></data>
+  <data name="ContactPerson" xml:space="preserve"><value>İletişim Kişisi</value></data>
+  <data name="PrimaryCurrency" xml:space="preserve"><value>Ana Para Birimi</value></data>
+  <data name="DefaultTimeZone" xml:space="preserve"><value>Varsayılan Saat Dilimi</value></data>
+  <data name="BasicInfo" xml:space="preserve"><value>Temel Bilgiler</value></data>
+  <data name="Login.Title" xml_space="preserve">
+    <value>Giriş Yap</value>
+  </data>
+  <data name="Login.Email" xml_space="preserve">
+    <value>E-posta</value>
+  </data>
+  <data name="Login.Password" xml_space="preserve">
+    <value>Şifre</value>
+  </data>
+  <data name="Login.RememberMe" xml_space="preserve">
+    <value>Beni Hatırla</value>
+  </data>
+  <data name="Login.Submit" xml_space="preserve">
+    <value>Giriş Yap</value>
+  </data>
+  <data name="Login.ErrorTitle" xml_space="preserve">
+    <value>Hata</value>
+  </data>
+  <data name="Login.ErrorRequired" xml_space="preserve">
+    <value>E-posta ve şifre zorunludur</value>
+  </data>
+  <data name="Login.Error" xml_space="preserve">
+    <value>Geçersiz e-posta veya şifre</value>
+  </data>
+  <data name="Login.Loading" xml_space="preserve">
+    <value>Giriş yapılıyor...</value>
+  </data>
+  <data name="Sandbox" xml:space="preserve"><value>Sandbox</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü Kaydet</value></data>
+  <data name="Platform" xml:space="preserve"><value>المنصة</value></data>
+  <data name="WorkCenterMenu" xml:space="preserve"><value>مركز العمل</value></data>
+  <data name="ItemMaster" xml:space="preserve"><value>Kalem Kartı</value></data>
+  <data name="CompositionManagement" xml:space="preserve"><value>إدارة التركيبات</value></data>
+  <data name="CategoryManagement" xml:space="preserve"><value>إدارة الفئات</value></data>
+  <data name="VariantManagement" xml:space="preserve"><value>إدارة المتغيرات</value></data>
+  <data name="Attributes" xml:space="preserve"><value>Özellikler</value></data>
+  <data name="Variants" xml:space="preserve"><value>Varyantlar</value></data>
+  <data name="ColumnOrder" xml:space="preserve"><value>Sütun Sırası</value></data>
+  <data name="SKUManagement" xml:space="preserve"><value>SKU Yönetimi</value></data>
+  <data name="ProductMaster" xml:space="preserve"><value>Ürün Kartı</value></data>
+</root>

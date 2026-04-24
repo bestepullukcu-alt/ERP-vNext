@@ -74,7 +74,7 @@ API bağlantılarında hardcoded port veya domain kullanımından kaçınılmal�
 - `_LayoutBackbone.cshtml` içindeki tüm metinler `@SharedLocalizer["Key"]` ile dile bağlanır.
 
 ### L10N-002: Universal Coverage (8 Languages)
-- Yeni eklenen her Key, sistemdeki **tüm 9 dil dosyasına** (`az, en, tr, ru, es, ka, kk, uk, uz`) eksiksiz eklenmelidir.
+- Yeni eklenen her Key, sistemdeki **tüm 7 dil dosyasına** (`en, fr, es, zh, ar, ru, tr`) eksiksiz eklenmelidir.
 - Diğer dillerde metnin "Key" ismiyle görünmesi kabul edilemez.
 
 ---

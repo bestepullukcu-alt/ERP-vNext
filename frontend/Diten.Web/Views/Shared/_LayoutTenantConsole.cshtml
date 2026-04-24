@@ -1,0 +1,388 @@
+@using System.Security.Claims
+@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var activePlatformMenu = (ViewData["PlatformTenantNav"]?.ToString() ?? "tenant-management").ToLowerInvariant();
+    var currentUser = User?.Identity?.IsAuthenticated == true
+        ? new
+        {
+            id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value,
+            email = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value,
+            firstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? string.Empty,
+            lastName = User.FindFirst(ClaimTypes.Surname)?.Value ?? string.Empty,
+            roles = User.FindAll(ClaimTypes.Role)
+                .Select(claim => claim.Value)
+                .Concat(User.FindAll("role").Select(claim => claim.Value))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            tenantId = User.FindFirst("tenant_id")?.Value ?? User.FindFirst("tenantId")?.Value,
+            actorType = User.FindFirst("actor_type")?.Value
+        }
+        : null;
+    var currentUserJson = JsonSerializer.Serialize(currentUser);
+}
+<!DOCTYPE html>
+
+<html lang="en" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr" data-skin="default"
+    data-assets-path="/assets/" data-template="vertical-menu-template" data-bs-theme="light" data-semidark-menu="false">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <title>@ViewData["Title"] - Di10</title>
+
+    <link rel="icon" type="image/x-icon" href="~/assets/img/favicon/favicon.ico" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+        rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/assets/vendor/fonts/iconify-icons.css" />
+    <link rel="stylesheet" href="~/assets/vendor/fonts/fontawesome.css" />
+    <link rel="stylesheet" href="~/assets/vendor/fonts/flag-icons.css" />
+
+    <link rel="stylesheet" href="~/assets/vendor/css/core.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/assets/css/demo.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/typeahead-js/typeahead.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/notyf/notyf.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/sweetalert2/sweetalert2.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/animate-css/animate.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/pickr/pickr-themes.css" />
+
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/datatables-colreorder-bs5/colReorder.dataTables.min.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/select2/select2.css" />
+
+    <link rel="stylesheet" href="~/assets/css/backbone-custom.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <script src="~/assets/vendor/js/helpers.js"></script>
+    <script src="~/assets/vendor/libs/pickr/pickr.js"></script>
+    <script src="~/assets/vendor/js/template-customizer.js"></script>
+    <script>
+        window.ApiBaseUrl = window.location.protocol + "//" + window.location.hostname + ":5000";
+        window.API = {
+            mdm: window.ApiBaseUrl,
+            deven: window.ApiBaseUrl,
+            auth: window.ApiBaseUrl,
+            platform: window.ApiBaseUrl
+        };
+        window.CurrentLanguage = "@System.Threading.Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName";
+        window.CurrentUser = @Html.Raw(currentUserJson);
+    </script>
+    <script src="~/assets/js/config.js" asp-append-version="true"></script>
+
+    <script>
+        window.L10n = {
+            RequiredProgressText: "@SharedLocalizer["RequiredStatus"].Value",
+            ValidationErrorsText: "@SharedLocalizer["ValidationErrors"].Value",
+            LoginErrorTitle: "@SharedLocalizer["Login.ErrorTitle"].Value",
+            LoginErrorRequired: "@SharedLocalizer["Login.ErrorRequired"].Value",
+            LoginSubmit: "@SharedLocalizer["Login.Submit"].Value"
+        };
+
+        window.L10n.RequiredProgressText = window.L10n.RequiredProgressText.replace("{{0}}", "{0}").replace("{{1}}", "{1}");
+        window.L10n.ValidationErrorsText = window.L10n.ValidationErrorsText.replace("{{0}}", "{0}");
+
+        // ShellAccessFilter enforces auth redirects server-side.
+    </script>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+                <div class="app-brand demo">
+                    <a asp-controller="Tenants" asp-action="Index" class="app-brand-link">
+                        <span class="app-brand-logo demo">
+                            <i class="bx bx-buildings text-primary fs-2"></i>
+                        </span>
+                        <span class="app-brand-text demo menu-text fw-bold ms-2">Di10</span>
+                    </a>
+                    <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
+                        <i class="icon-base bx bx-chevron-left"></i>
+                    </a>
+                </div>
+
+                <div class="menu-inner-shadow"></div>
+
+                <ul class="menu-inner py-1">
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Platform Administration</span>
+                    </li>
+                    <li class="menu-item @(activePlatformMenu == "tenant-management" ? "active" : "")">
+                        <a asp-controller="Tenants" asp-action="Index" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-buildings"></i>
+                            <div>Tenant Management</div>
+                        </a>
+                    </li>
+                    <li class="menu-item @(activePlatformMenu == "plans-and-quotas" ? "active" : "")">
+                        <span class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-layer"></i>
+                            <div>Plans and Quotas</div>
+                        </span>
+                    </li>
+                    <li class="menu-item @(activePlatformMenu == "domain-management" ? "active" : "")">
+                        <span class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-world"></i>
+                            <div>Domain Management</div>
+                        </span>
+                    </li>
+                    <li class="menu-item @(activePlatformMenu == "feature-flags-and-config" ? "active" : "")">
+                        <span class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-toggle-left"></i>
+                            <div>Feature Flags and Config</div>
+                        </span>
+                    </li>
+                    <li class="menu-item @(activePlatformMenu == "usage-monitoring" ? "active" : "")">
+                        <span class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-line-chart"></i>
+                            <div>Usage Monitoring</div>
+                        </span>
+                    </li>
+                    <li class="menu-item @(activePlatformMenu == "platform-audit" ? "active" : "")">
+                        <span class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
+                            <div>Platform Audit</div>
+                        </span>
+                    </li>
+                </ul>
+            </aside>
+
+            <div class="menu-mobile-toggler d-xl-none rounded-1">
+                <a href="javascript:void(0);"
+                    class="layout-menu-toggle menu-link text-large text-bg-secondary p-2 rounded-1">
+                    <i class="icon-base bx bx-menu"></i>
+                    <i class="icon-base bx bx-chevron-right"></i>
+                </a>
+            </div>
+
+            <div class="layout-page">
+                <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
+                    id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
+                            <i class="icon-base bx bx-menu icon-md"></i>
+                        </a>
+                    </div>
+
+                    <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
+                        <div class="navbar-nav align-items-center">
+                            <div class="nav-item navbar-search-wrapper mb-0">
+                                <a class="nav-item nav-link search-toggler px-0" href="javascript:void(0);">
+                                    <span class="d-inline-block text-body-secondary fw-normal" id="autocomplete"></span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+                            <li class="nav-item dropdown-language dropdown me-2 me-xl-0">
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);"
+                                    data-bs-toggle="dropdown">
+                                    <i class="icon-base bx bx-globe icon-md"></i>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end wc-lang-menu">
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=en"
+                                            data-language="en"><span
+                                                class="fi fi-gb fis rounded-circle wc-lang-flag"></span><span>English</span></a>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=fr"
+                                            data-language="fr"><span
+                                                class="fi fi-fr fis rounded-circle wc-lang-flag"></span><span>Français</span></a>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=es"
+                                            data-language="es"><span
+                                                class="fi fi-es fis rounded-circle wc-lang-flag"></span><span>Español</span></a>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=zh"
+                                            data-language="zh"><span
+                                                class="fi fi-cn fis rounded-circle wc-lang-flag"></span><span>中文</span></a>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=ar"
+                                            data-language="ar"><span
+                                                class="fi fi-sa fis rounded-circle wc-lang-flag"></span><span>العربية</span></a>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=ru"
+                                            data-language="ru"><span
+                                                class="fi fi-ru fis rounded-circle wc-lang-flag"></span><span>Русский</span></a>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=tr"
+                                            data-language="tr"><span
+                                                class="fi fi-tr fis rounded-circle wc-lang-flag"></span><span>Türkçe</span></a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li class="nav-item dropdown me-2 me-xl-0">
+                                <a class="nav-link dropdown-toggle hide-arrow" id="nav-theme" href="javascript:void(0);"
+                                    data-bs-toggle="dropdown">
+                                    <i class="icon-base bx bx-sun icon-md theme-icon-active"></i>
+                                    <span class="d-none ms-2" id="nav-theme-text">Toggle theme</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
+                                    <li>
+                                        <button type="button" class="dropdown-item d-flex align-items-center active"
+                                            data-bs-theme-value="light">
+                                            <i class="icon-base bx bx-sun icon-md me-3" data-icon="sun"></i>@SharedLocalizer["Light"]
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item d-flex align-items-center"
+                                            data-bs-theme-value="dark">
+                                            <i class="icon-base bx bx-moon icon-md me-3" data-icon="moon"></i>@SharedLocalizer["Dark"]
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item d-flex align-items-center"
+                                            data-bs-theme-value="system">
+                                            <i class="icon-base bx bx-desktop icon-md me-3" data-icon="desktop"></i>System
+                                        </button>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            @Html.Partial("_Application")
+
+                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                                <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);"
+                                    data-bs-toggle="dropdown">
+                                    <div class="avatar avatar-online">
+                                        <img src="~/assets/img/avatars/1.png" class="rounded-circle" />
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar avatar-online">
+                                                        <img src="~/assets/img/avatars/1.png"
+                                                            class="w-px-40 h-auto rounded-circle" />
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-0" id="navbar-user-name">User</h6>
+                                                    <small class="text-body-secondary" id="navbar-user-role">Role</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li><div class="dropdown-divider my-1"></div></li>
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);">
+                                            <i class="bx bx-user icon-md me-3"></i><span>@SharedLocalizer["MyProfile"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);">
+                                            <i class="bx bx-cog icon-md me-3"></i><span>@SharedLocalizer["Settings"]</span>
+                                        </a>
+                                    </li>
+                                    <li><div class="dropdown-divider my-1"></div></li>
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center" href="/account/logout">
+                                            <i class="bx bx-power-off icon-md me-3"></i><span>@SharedLocalizer["LogOut"]</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        @RenderBody()
+                    </div>
+
+                    <footer class="content-footer footer bg-footer-theme">
+                        <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                            <div class="mb-2 mb-md-0">
+                                © 2026 | <span class="fw-medium">Di10 ERP</span>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <script src="~/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="~/assets/vendor/libs/popper/popper.js"></script>
+    <script src="~/assets/vendor/js/bootstrap.js"></script>
+    <script src="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="~/assets/vendor/js/menu.js"></script>
+    <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+    <script src="~/assets/vendor/libs/select2/select2.js"></script>
+    <script src="~/assets/vendor/libs/notyf/notyf.js"></script>
+
+    <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="~/assets/vendor/libs/datatables-buttons/buttons.colVis.js"></script>
+    <script src="~/assets/vendor/libs/datatables-colreorder-bs5/dataTables.colReorder.min.js"></script>
+    <script src="~/assets/js/dt-defaults.js" asp-append-version="true"></script>
+    <script src="~/assets/js/personalization-client.js" asp-append-version="true"></script>
+
+    <script src="~/assets/js/main.js"></script>
+    <script src="~/assets/js/custom/required-fields-tracker.js" asp-append-version="true"></script>
+
+    <script>
+        (function initDisplay() {
+            const user = window.CurrentUser || {};
+            if (user && user.firstName) {
+                document.getElementById('navbar-user-name').textContent = user.firstName + ' ' + user.lastName;
+                document.getElementById('navbar-user-role').textContent = (user.roles && user.roles.length > 0) ? user.roles[0] : 'User';
+            }
+        })();
+
+        document.querySelectorAll('.dropdown-language .dropdown-item').forEach(item => {
+            item.addEventListener('click', function () {
+                var lang = this.getAttribute('data-language');
+                if (lang) {
+                    document.cookie = ".AspNetCore.Culture=c=" + lang + "|uic=" + lang + ";path=/;max-age=31536000";
+                }
+            });
+        });
+
+        window.RequiredProgressText = window.L10n.RequiredProgressText;
+        window.ValidationErrorsText = window.L10n.ValidationErrorsText;
+    </script>
+
+    <script>
+        if (typeof window.showConfirm === 'undefined') {
+            window.showConfirm = function (key, callback) {
+                if (confirm('Are you sure?')) callback?.();
+            };
+        }
+    </script>
+    <partial name="/Views/Shared/_GlobalConfirmation.cshtml" />
+    <partial name="/Views/Shared/_GlobalNotification.cshtml" />
+
+    <script>
+        (function handleTempDataToasts() {
+            const successMsg = @Json.Serialize(TempData["SuccessMessage"]?.ToString());
+            const errorMsg = @Json.Serialize(TempData["ErrorMessage"]?.ToString());
+
+            if (successMsg && window.showToast) {
+                window.showToast(successMsg, 'success');
+            }
+            if (errorMsg && window.showToast) {
+                window.showToast(errorMsg, 'error');
+            }
+        })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

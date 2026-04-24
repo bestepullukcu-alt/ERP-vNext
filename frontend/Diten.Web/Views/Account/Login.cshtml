@@ -3,6 +3,8 @@
 @{
     Layout = null;
     ViewData["Title"] = SharedLocalizer["Login.Title"];
+    var authMode = (ViewBag.AuthMode as string ?? "tenant").ToLowerInvariant();
+    var defaultRedirect = (ViewBag.PostLoginDefault as string) ?? "/WorkCenter";
 }
 
 <!DOCTYPE html>
@@ -41,6 +43,8 @@
 
     <script>
         window.ApiBaseUrl = window.location.protocol + "//" + window.location.hostname + ":5000";
+        window.AuthMode = "@authMode";
+        window.PostLoginDefault = "@defaultRedirect";
         window.L10n = {
             LoginErrorTitle: "@SharedLocalizer["Login.ErrorTitle"]",
             LoginErrorRequired: "@SharedLocalizer["Login.ErrorRequired"]",
@@ -66,7 +70,7 @@
                         </div>
                         <!-- /Logo -->
                         <h4 class="mb-2">@SharedLocalizer["Login.Title"] 👋</h4>
-                        <p class="mb-4">E-posta ve şifrenizle giriş yapın.</p>
+                        <p class="mb-4">@SharedLocalizer["Login.Subtitle"]</p>
 
                         <form id="loginForm" class="mb-3">
                             <div class="mb-3">

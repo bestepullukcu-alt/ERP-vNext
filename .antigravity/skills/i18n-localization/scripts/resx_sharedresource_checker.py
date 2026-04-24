@@ -4,7 +4,7 @@ SharedResource RESX Checker (Diten ERP vNext)
 --------------------------------------------
 
 Validates that:
-  1) SharedResource.{lang}.resx exists for all 8 supported languages
+  1) SharedResource.{lang}.resx exists for all 7 supported languages
   2) All keys in SharedResource.en.resx exist in every other language
   3) Non-English values are not left as English placeholders (same as en), unless explicitly allowed
 
@@ -24,7 +24,7 @@ from typing import Dict, Iterable, List, Set, Tuple
 import xml.etree.ElementTree as ET
 
 
-SUPPORTED_LANGS: Tuple[str, ...] = ("en", "tr", "es", "ru", "uk", "ka", "kk", "uz")
+SUPPORTED_LANGS: Tuple[str, ...] = ("en", "fr", "es", "zh", "ar", "ru", "tr")
 
 # Values that are acceptable to remain identical across languages.
 # Keep this list small and intentional.
@@ -51,9 +51,10 @@ TITLE_CASE_KEYS: Set[str] = {
     "SaveView",
 }
 
-# Languages/scripts where case rules are not applicable (e.g., Georgian Mkhedruli).
+# Languages/scripts where case rules are not applicable.
 NO_CASE_LANGS: Set[str] = {
-    "ka",
+    "zh",
+    "ar",
 }
 
 
@@ -187,7 +188,7 @@ def main() -> int:
         print("\n".join(errors))
         return 1
 
-    print("[OK] SharedResource RESX check: PASSED (8 languages, no English placeholders)")
+    print("[OK] SharedResource RESX check: PASSED (7 languages, no English placeholders)")
     return 0
 
 

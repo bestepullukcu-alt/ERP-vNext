@@ -1,0 +1,66 @@
+@model Diten.Web.Models.GoldenReferenceItem.GoldenReferenceItemEditViewModel
+@using Diten.Web.Views.DevEnablement.GoldenReferenceItem
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GoldenReferenceItemIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<form asp-action="@(Model.Id.HasValue ? "Edit" : "Create")" asp-route-id="@Model.Id" id="formGoldenReferenceItem" method="post" novalidate>
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-6">
+        <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-sm mb-6">
+                <div class="card-header border-bottom py-4">
+                    <h6 class="card-title mb-0">@Localizer["GeneralInformation"]</h6>
+                </div>
+                <div class="card-body py-5">
+                    <div class="row g-4">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Code" class="form-label fw-medium">@Localizer["Code"]</label>
+                            <input asp-for="Code" class="form-control" maxlength="64" placeholder="e.g. GRI-001" />
+                            <span asp-validation-for="Code" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"]</label>
+                            <input asp-for="Name" class="form-control" maxlength="200" placeholder="e.g. Main Reference" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="ReferenceType" class="form-label fw-medium">@Localizer["ReferenceType"]</label>
+                            <select asp-for="ReferenceType" class="form-select select2">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                <option value="Standard">Standard</option>
+                                <option value="Custom">Custom</option>
+                                <option value="Pro">Pro</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Priority" class="form-label fw-medium">@Localizer["Priority"]</label>
+                            <input asp-for="Priority" type="number" class="form-control" min="1" max="10" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter details about this reference item..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header border-bottom py-4">
+                    <h6 class="card-title mb-0">Settings</h6>
+                </div>
+                <div class="card-body py-5">
+                    <div class="form-check form-switch mb-0">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                        <label asp-for="IsActive" class="form-check-label ms-2">@SharedLocalizer["Status"] (@(Model.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Passive"]))</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

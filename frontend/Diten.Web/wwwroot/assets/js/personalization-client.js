@@ -4,31 +4,23 @@ window.personalizationClient = (function () {
     const apiBaseUrl = window.ApiBaseUrl || '';
     const authRefreshSignal = 'auth-refresh-in-progress';
 
-    const getCookie = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) {
-            return parts.pop().split(';').shift();
-        }
-
-        return null;
-    };
-
     const getTenantId = () => {
-        try {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            return user.tenantId || '00000000-0000-0000-0000-000000000001';
-        } catch (error) {
-            return '00000000-0000-0000-0000-000000000001';
+        const isPlatformContext = window.location.hostname.toLowerCase().startsWith('admin.')
+            || window.location.pathname.toLowerCase().startsWith('/platform/');
+        if (isPlatformContext) {
+            return null;
         }
+
+        const user = window.CurrentUser || {};
+        return user.tenantId || '00000000-0000-0000-0000-000000000001';
     };
 
     const getHeaders = (includeJsonContentType) => {
-        const token = getCookie('access_token');
-        const headers = {
-            'X-Tenant-Id': getTenantId(),
-            'Authorization': token ? `Bearer ${token}` : ''
-        };
+        const headers = {};
+        const tenantId = getTenantId();
+        if (tenantId) {
+            headers['X-Tenant-Id'] = tenantId;
+        }
 
         if (includeJsonContentType) {
             headers['Content-Type'] = 'application/json';
@@ -39,7 +31,10 @@ window.personalizationClient = (function () {
 
     const redirectToLogin = () => {
         const returnUrl = encodeURIComponent(`${window.location.pathname}${window.location.search}`);
-        window.location.href = `/account/login?returnUrl=${returnUrl}`;
+        const isAdminHost = window.location.hostname.toLowerCase().startsWith('admin.');
+        const isPlatformRoute = window.location.pathname.toLowerCase().startsWith('/platform/');
+        const loginPath = (isAdminHost || isPlatformRoute) ? '/platform/login' : '/account/login';
+        window.location.href = `${loginPath}?returnUrl=${returnUrl}`;
     };
 
     const handleUnauthorized = () => {
@@ -92,6 +87,7 @@ window.personalizationClient = (function () {
     const getViews = async (moduleKey, pageKey) => {
         const response = await fetch(buildViewsUrl(moduleKey, pageKey), {
             method: 'GET',
+            credentials: 'include',
             headers: getHeaders(false)
         });
 
@@ -101,6 +97,7 @@ window.personalizationClient = (function () {
     const saveView = async (payload) => {
         const response = await fetch(`${apiBaseUrl}/api/personalization/views`, {
             method: 'POST',
+            credentials: 'include',
             headers: getHeaders(true),
             body: JSON.stringify(payload)
         });
@@ -111,6 +108,7 @@ window.personalizationClient = (function () {
     const updateView = async (id, payload) => {
         const response = await fetch(`${apiBaseUrl}/api/personalization/views/${id}`, {
             method: 'PUT',
+            credentials: 'include',
             headers: getHeaders(true),
             body: JSON.stringify(payload)
         });
@@ -121,6 +119,7 @@ window.personalizationClient = (function () {
     const deleteView = async (id) => {
         const response = await fetch(`${apiBaseUrl}/api/personalization/views/${id}`, {
             method: 'DELETE',
+            credentials: 'include',
             headers: getHeaders(false)
         });
 
@@ -131,8 +130,14 @@ window.personalizationClient = (function () {
         return await updateView(id, { isDefault: true });
     };
 
+    const getDefaultView = async (moduleKey, pageKey) => {
+        const views = await getViews(moduleKey, pageKey);
+        return views?.find(v => v.isDefault) || null;
+    };
+
     return {
         getViews: getViews,
+        getDefaultView: getDefaultView,
         saveView: saveView,
         updateView: updateView,
         deleteView: deleteView,

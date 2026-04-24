@@ -1,6 +1,6 @@
 using Diten.Platform.Application;
-using Diten.Platform.API.Extensions;
 using Diten.Platform.Infrastructure;
+using Diten.Platform.Common.Tenancy;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);

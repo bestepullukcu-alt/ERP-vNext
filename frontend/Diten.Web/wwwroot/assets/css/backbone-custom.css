@@ -382,16 +382,110 @@ body > .select2-container--open {
         flex-wrap: nowrap !important;
     }
 
-    /* Remove excessive vertical spacing from DT defaults */
-    div.dt-container div.dt-length,
-    div.dt-container div.dt-search {
-        margin-block: 0 !important;
+}
+
+@media screen and (min-width: 768px) and (max-width: 991.98px) {
+    div.dt-container>.row:first-child {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        column-gap: 0.75rem !important;
     }
+
+    .dt-layout-end .dt-buttons-primary .add-new {
+        min-block-size: calc(2.2505001rem + calc(var(--bs-border-width) * 2)) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+}
+
+@media screen and (min-width: 576px) and (max-width: 767.98px) {
+    div.dt-container>.row:first-child {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        column-gap: 0.75rem !important;
+    }
+
+    .dt-layout-end .dt-buttons-primary .add-new {
+        min-block-size: calc(2.2505001rem + calc(var(--bs-border-width) * 2)) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    .dt-layout-end .dt-buttons-actions {
+        border-radius: 0 !important;
+    }
+
+    .dt-layout-end .dt-buttons-actions .dt-filter-btn {
+        border-radius: 0.375rem !important;
+        border-top-left-radius: 0.375rem !important;
+        border-bottom-left-radius: 0.375rem !important;
+        border-top-right-radius: 0.375rem !important;
+        border-bottom-right-radius: 0.375rem !important;
+        border: 0 !important;
+        border-left: 0 !important;
+        margin-left: 0 !important;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .dt-layout-end .dt-buttons-actions .dt-colvis-btn {
+        border-radius: 0.375rem 0 0 0.375rem !important;
+        border-top-left-radius: 0.375rem !important;
+        border-bottom-left-radius: 0.375rem !important;
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        border-left: 0 !important;
+        margin-left: 0 !important;
+    }
+
+    .dt-layout-end .dt-buttons-actions .dt-filter-btn {
+        border-radius: 0 !important;
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+        border-top-right-radius: 0.375rem !important;
+        border-bottom-right-radius: 0.375rem !important;
+        border-left: 1px solid rgba(0, 0, 0, 0.1) !important;
+        margin-left: 0 !important;
+    }
+
+    .dt-layout-end .dt-buttons-actions:has(> .dt-save-filter-btn:not(.d-none)) .dt-filter-btn {
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+    }
+
+    .dt-layout-end .dt-buttons-actions .dt-save-filter-btn:not(.d-none) {
+        border-radius: 0 0.375rem 0.375rem 0 !important;
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+        border-left: 1px solid rgba(0, 0, 0, 0.1) !important;
+        margin-left: 0 !important;
+    }
+}
+
+/* Remove excessive vertical spacing from DT defaults */
+div.dt-container div.dt-length,
+div.dt-container div.dt-search {
+    margin-block: 0 !important;
+}
+
+div.dt-container div.dt-length label,
+div.dt-container div.dt-search label {
+    margin: 0 !important;
+    line-height: 1 !important;
+}
+
+div.dt-container div.dt-length select,
+div.dt-container div.dt-search input {
+    margin: 0 !important;
 }
 
 /* MOD-0031: Inline Filter Host — spacing + Select2 styling */
 #inlineFilterHost {
-    margin-top: .25rem;
+    margin-top: 0;
 }
 
 #inlineFilterHost .dt-filter-bar {
@@ -1259,14 +1353,14 @@ body > .select2-container--open {
     pointer-events: none;
 }
 
-@media (max-width: 991.98px) {
-    .dt-layout-end {
-        row-gap: .5rem;
-        column-gap: .75rem;
-    }
-}
-
 @media (max-width: 575.98px) {
+    div.dt-container>.row:first-child {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+
     .dt-layout-end .dt-search {
         flex: 1 1 100%;
         order: 1;
@@ -1284,6 +1378,13 @@ body > .select2-container--open {
     }
 
     .dt-layout-end .dt-buttons-primary .add-new {
+        min-block-size: calc(2.2505001rem + calc(var(--bs-border-width) * 2)) !important;
+        inline-size: calc(2.2505001rem + calc(var(--bs-border-width) * 2)) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
         white-space: nowrap;
     }
 }

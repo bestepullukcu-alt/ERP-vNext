@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ProductsTitle" xml:space="preserve"><value>基础产品</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理产品记录、类型、生命周期和运营能力。</value></data>
+  <data name="AddNewProduct" xml:space="preserve"><value>添加新产品</value></data>
+  <data name="EditProduct" xml:space="preserve"><value>编辑产品 </value></data>
+  <data name="Actions" xml:space="preserve"><value>行动</value></data>
+  <data name="Code" xml:space="preserve"><value>代码</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="ShortName" xml:space="preserve"><value>产品简称</value></data>
+  <data name="Description" xml:space="preserve"><value>概述</value></data>
+  <data name="ProductType" xml:space="preserve"><value>产品类型</value></data>
+  <data name="Category" xml:space="preserve"><value>分类</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>生命周期状态</value></data>
+  <data name="Capabilities" xml:space="preserve"><value>功能</value></data>
+  <data name="IsSaleable" xml:space="preserve"><value>可以销售</value></data>
+  <data name="IsPurchasable" xml:space="preserve"><value>可采购</value></data>
+  <data name="IsManufacturable" xml:space="preserve"><value>可制造</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>通用信息</value></data>
+  <data name="ProductTypeFinished" xml:space="preserve"><value>成品</value></data>
+  <data name="ProductTypeSemiFinished" xml:space="preserve"><value>半成品</value></data>
+  <data name="ProductTypeService" xml:space="preserve"><value>服务.</value></data>
+  <data name="ProductTypeTechnology" xml:space="preserve"><value>技术</value></data>
+  <data name="ProductTypeUnknown" xml:space="preserve"><value>未知</value></data>
+  <data name="BreadcrumbHome" xml:space="preserve"><value>主页</value></data>
+  <data name="BreadcrumbMDM" xml:space="preserve"><value>主数据</value></data>
+</root>

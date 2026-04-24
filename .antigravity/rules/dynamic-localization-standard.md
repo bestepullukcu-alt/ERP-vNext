@@ -1,5 +1,5 @@
 ---
-description: "MOD-0013 Dynamic Localization Standard — UI metinlerinin 9 dilde senkronize olmasını garanti eder"
+description: "MOD-0013 Dynamic Localization Standard — UI metinlerinin 7 dilde senkronize olmasını garanti eder"
 ---
 
 # Dynamic-Localization-Standard (MOD-0013)
@@ -15,7 +15,7 @@ description: "MOD-0013 Dynamic Localization Standard — UI metinlerinin 9 dilde
 Yeni bir anahtar eklemeden önce tüm dil dosyalarını keşfet:
 find frontend/Diten.Web/Resources -name "SharedResource.*.resx" -type f
 
-Kural: Yeni anahtar keşfedilen TÜM dosyalara (az, en, tr, es, ru, uk, ka, kk, uz) aynı anda eklenmelidir.
+Kural: Yeni anahtar keşfedilen TÜM dosyalara (en, fr, es, zh, ar, ru, tr) aynı anda eklenmelidir.
 
 ### 3. Gerçek Çeviri Disiplini
 - İngilizce metni diğer dosyalara yer tutucu olarak kopyalamayın.
@@ -71,7 +71,7 @@ const label = window.L10n?.MyNewKey;
 
 `Index.cshtml` içinde onlarca satır `window.L10n.MyKey = ...` assignment bloğu yazmak standart değildir. Yeni veya revize edilen sayfalarda bu pattern kullanılmaz.
 
-> **KRİTİK:** Her zaman `@Json.Serialize(...)` kullanın. `@Html.Raw(...)` kullanmayın; Uzbekçe (`o'zbekcha`) gibi dillerdeki tek tırnaklar JS stringini bozar ve sayfayı patlatır.
+> **KRİTİK:** Her zaman `@Json.Serialize(...)` kullanın. `@Html.Raw(...)` kullanmayın; tek tırnak veya özel karakter içeren diller JS stringini bozabilir.
 
 ---
 
@@ -95,13 +95,12 @@ const label = window.L10n?.MyNewKey;
 | Kod | Dil |
 |---|---|
 | en | English (Default) |
-| tr | Türkçe |
+| fr | Français |
 | es | Español |
+| zh | 中文 |
+| ar | العربية |
 | ru | Русский |
-| uk | Українська |
-| ka | ქართული |
-| kk | Қазақша |
-| uz | O'zbek |
+| tr | Türkçe |
 
 ---
 

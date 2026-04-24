@@ -13,7 +13,8 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
 - **Frontend**: ASP.NET Core MVC (Diten.Web), Sneat Bootstrap 5.3.3
 - **Kimlik & Yetki**: Custom Auth Service (JWT + BCrypt + Dynamic RBAC)
 - **Tenancy**: Tek Veritabanı, Çoklu Kiracı (TenantId Filtreli - Guid)
-- **Localization**: 9 Dil (AZ, TR, EN, RU, ES, KA, KK, UK, UZ) - Resx + JS Bridge (`_IndexL10n.cshtml` JSON payload + `index.l10n.js` -> `window.L10n`)
+- **Platform**: Platform Core Service (Port: 5057)
+- **Localization**: 7 Dil (EN, FR, ES, ZH, AR, RU, TR) - Resx + JS Bridge (`_IndexL10n.cshtml` JSON payload + `index.l10n.js` -> `window.L10n`)
 
 ---
 
@@ -26,6 +27,14 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
     │   ├── workflows/           # Otomasyon Akışları (/komutlar)
     │   ├── rules/               # Sistem Anayasası (Kurallar)
     │   └── scripts/             # Doğrulama ve Otomasyon Scriptleri
+    ├── execution/               # Domain + Module execution katmani
+    │   ├── README.md            # Kullanim rehberi
+    │   ├── scripts/
+    │   │   └── generate-dashboard.py   # Module pack dashboard ureticisi
+    │   └── domains/
+    │       ├── master-data-management/
+    │       ├── platform-shared-services/
+    │       └── enterprise-strategy-business-performance/
     ├── frontend/
     │   └── Diten.Web/           # MVC Projesi (Port: 5001)
     │       ├── Controllers/
@@ -45,7 +54,7 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
     │       │   ├── js/dt-defaults.js          # Merkezi DataTable config
     │       │   ├── js/Account/                # Login JS modülleri
     │       │   └── js/MDM/                    # Modül bazlı JS dosyaları
-    │       └── Resources/                     # 9 Dil Resx Dosyaları
+    │       └── Resources/                     # 7 Dil Resx Dosyaları
     ├── gateway/
     │   └── DitenApiGateway/     # Ocelot Gateway (Port: 5000)
     │       ├── ocelot.json      # Route tanımları (MDM + Auth)
@@ -65,6 +74,25 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
                 ├── Diten.AuthService.Domain/       # User, Role, Permission, RefreshToken
                 ├── Diten.AuthService.Persistence/  # MongoDB repos, Seed Data, Indexes
                 └── Diten.AuthService.Infrastructure/ # JWT, BCrypt, HasPermission, TenantMiddleware
+
+---
+
+## 🧭 Execution Katmani ve Yetki Modeli
+
+`execution/` klasoru domain ve module bazli calisma baglamini tasir:
+- `domain-config.md`: domain sinirlari ve runtime kararlar
+- `module-packs/*.md`: tek modulun kimligi, scope'u, acceptance criteria'si
+
+Yetki hiyerarsisi:
+
+```text
+Module Pack > Domain Config > AGENTS.md > .antigravity/
+```
+
+Notlar:
+- `batches/` katmani bu repoda kullanilmaz.
+- `snapshots/` katmani bu repoda kullanilmaz.
+- Orkestrasyon asamasi `.antigravity/workflows/add-module.md` uzerinden ilerler.
 
 ---
 
@@ -109,7 +137,7 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
 | 3 | **frontend-ui-ux** | Razor View, Sneat PRO, DataTables v2, Statik Şablonlar |
 | 4 | **security-agent** | Zero Trust, JWT, RBAC, HasPermission, Tenant Shield |
 | 5 | **data-agent** | MongoDB Index, Collection tasarımı, Idempotent Seed Data |
-| 6 | **l10n-agent** | 9 dil .resx senkronizasyonu, `window.L10n` bridge (partial + loader JS) |
+| 6 | **l10n-agent** | 7 dil .resx senkronizasyonu, `window.L10n` bridge (partial + loader JS) |
 | 7 | **testing-agent** | xUnit, Moq, FluentAssertions, Tenant isolation testleri |
 | 8 | **integration-agent** | Ocelot Gateway routing, JWT pass-through, servis iletişimi |
 | 9 | **debugger** | Katmanlı izolasyon (FE→GW→Auth→Service→DB), 4 fazlı araştırma |
@@ -187,7 +215,7 @@ Ajanların uyması gereken zorunlu dosyalar (`.antigravity/rules/`):
 
 ### Frontend & UI
 - **frontend-standards.md**: Sneat UI, DataTable v2, CSS/JS kuralları (MOD-0013/22/23/24)
-- **dynamic-localization-standard.md**: 9 dil Resx senkronizasyonu, L10n bridge
+- **dynamic-localization-standard.md**: 7 dil Resx senkronizasyonu, L10n bridge
 - **views-organization.md**: Modül bazlı View hiyerarşisi, Dual-Layout yönetimi
 - **details-page-rules.md**: Detay sayfası UI standardı (Offcanvas vs Full Page)
 

@@ -43,7 +43,7 @@ Her işlem (Ekleme, Güncelleme, Pasife Alma) numaralandırılmış adımlarla a
 ---
 
 ## 🌍 Çoklu Dil (L10n) Uyumu
-- Kılavuzlar, sistemin desteklediği 9 dilde (AZ, EN, TR, ES, RU, UZ, UK, KA, KK) üretilebilir olmalıdır.
+- Kılavuzlar, sistemin desteklediği 7 dilde (EN, FR, ES, ZH, AR, RU, TR) üretilebilir olmalıdır.
 - **Kural:** Kılavuzdaki ekran terimleri, sistemdeki `.resx` dosyalarındaki karşılıklarıyla %100 aynı olmalıdır.
 
 ---
@@ -65,7 +65,7 @@ Ajan, kullanıcının `Products` sayfasındaki gibi iki farklı detay görünüm
 ## ✅ Kalite Kontrol Listesi
 - [ ] Teknik olmayan bir personel bu dokümanla işlemi tamamlayabilir mi?
 - [ ] Terimler `Products` (Altın Referans — `frontend/Diten.Web/Views/MDM/Products/`) terminolojisiyle uyumlu mu?
-- [ ] 9 dil desteği için terminoloji tutarlı mı?
+- [ ] 7 dil desteği için terminoloji tutarlı mı?
 - [ ] Adımlar mantıksal bir sıra izliyor mu?
 
 > "Diten ERP vNext Kullanıcı Kılavuzu Standardı -- Teknoloji ile kullanıcıyı birleştiren köprü."

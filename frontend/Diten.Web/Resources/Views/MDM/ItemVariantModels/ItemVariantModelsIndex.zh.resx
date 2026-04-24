@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <data name="ItemVariantModelsTitle" xml:space="preserve"><value>变量管理</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>从此屏幕管理可重用的变体模板和属性轴。</value></data>
+  <data name="AddNewItemVariantModels" xml:space="preserve"><value>添加新变体模型</value></data>
+  <data name="Actions" xml:space="preserve"><value>行动</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>修改</value></data>
+  <data name="Code" xml:space="preserve"><value>代码</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="ItemType" xml:space="preserve"><value>项目类型</value></data>
+  <data name="Description" xml:space="preserve"><value>概述</value></data>
+  <data name="VariantAttributes" xml:space="preserve"><value>变量属性</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="AddAttribute" xml:space="preserve"><value>添加属性</value></data>
+  <data name="NoAttributesDefined" xml:space="preserve"><value>未定义属性</value></data>
+  <data name="Type" xml:space="preserve"><value>类型</value></data>
+  <data name="Required" xml:space="preserve"><value>必填</value></data>
+  <data name="VariantAxis" xml:space="preserve"><value>变体坐标轴</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="TextDataType" xml:space="preserve"><value>翻译文本</value></data>
+</root>

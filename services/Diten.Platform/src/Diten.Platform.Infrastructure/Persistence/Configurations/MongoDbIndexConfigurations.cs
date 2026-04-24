@@ -8,6 +8,7 @@ public static class MongoDbIndexConfigurations
     public static async Task EnsureIndexesAsync(IMongoDatabase database)
     {
         var collection = database.GetCollection<SavedView>("saved_views");
+        var tenantCollection = database.GetCollection<Tenant>("tenants");
 
         await collection.Indexes.CreateManyAsync(new[]
         {
@@ -34,6 +35,22 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.PageKey)
                     .Ascending(x => x.ViewName)
                     .Ascending(x => x.Status))
+        });
+
+        await tenantCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<Tenant>(
+                Builders<Tenant>.IndexKeys.Ascending(x => x.Code),
+                new CreateIndexOptions { Unique = true, Name = "ux_tenants_code" }),
+            new CreateIndexModel<Tenant>(
+                Builders<Tenant>.IndexKeys.Ascending(x => x.Domain),
+                new CreateIndexOptions { Unique = true, Name = "ux_tenants_domain" }),
+            new CreateIndexModel<Tenant>(
+                Builders<Tenant>.IndexKeys
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.Region)
+                    .Descending(x => x.CreatedAt),
+                new CreateIndexOptions { Name = "ix_tenants_status_region_createdat" })
         });
     }
 }

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Diten.DevEnablementService.Api</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MediatR" Version="12.3.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference
+            Include="..\Diten.DevEnablementService.Application\Diten.DevEnablementService.Application.csproj" />
+        <ProjectReference
+            Include="..\Diten.DevEnablementService.Infrastructure\Diten.DevEnablementService.Infrastructure.csproj" />
+        <ProjectReference
+            Include="..\Diten.DevEnablementService.Persistence\Diten.DevEnablementService.Persistence.csproj" />
+    </ItemGroup>
+
+</Project>

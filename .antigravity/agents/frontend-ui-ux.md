@@ -40,10 +40,10 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
     2. **Full Page / Tabs:** `Details.cshtml` içinde tablarla ayrılmış geniş içerikler (Gerektiğinde kullanılır).
 - **İkincil Referans:** `frontend/_Reference/Theme/full-version/html/` dizini genel bileşenler için yardımcı rehberdir.
 
-## 🌍 Localization & 9 Dil Stratejisi
+## 🌍 Localization & 7 Dil Stratejisi
 - **Sıfır Hard-Code:** View dosyalarında asla ham metin bırakamazsın. Hepsini `@Localizer["Key"]` veya `@SharedLocalizer["Key"]` formatına çevirmelisin.
 - **JS Köprüsü:** Script dosyalarındaki metinler için `window.L10n` objesini kullan. Bu obje şablonda belirtildiği gibi doldurulmalıdır.
-- **Desteklenen Diller:** AZ, EN, ES, KA, KK, RU, TR, UK, UZ.
+- **Desteklenen Diller:** EN, FR, ES, ZH, AR, RU, TR.
 - **RESX Zorunluluğu:** Yeni dil key'lerinin algılanabilmesi için projenin `run_all.sh` üzerinden yeniden derlenmesi (compile) gerektiğini unutma.
 
 ## 🚨 ANAYASA (ZORUNLU IMPLEMENTATION RULES)

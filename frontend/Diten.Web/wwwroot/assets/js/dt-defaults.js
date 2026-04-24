@@ -8,77 +8,47 @@ window.DtDefaults = (function () {
     var L = function () { return window.L10n || {}; };
     var _authRefreshInFlight = null;
 
-    function getCookie(name) {
-        var value = '; ' + document.cookie;
-        var parts = value.split('; ' + name + '=');
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return null;
-    }
-
-    function setCookie(name, value, expiryOrDays) {
-        var expires = '';
-        if (typeof expiryOrDays === 'string') {
-            expires = 'expires=' + new Date(expiryOrDays).toUTCString();
-        } else if (typeof expiryOrDays === 'number') {
-            var date = new Date();
-            date.setTime(date.getTime() + (expiryOrDays * 24 * 60 * 60 * 1000));
-            expires = 'expires=' + date.toUTCString();
-        }
-        document.cookie = name + '=' + value + ';' + expires + ';path=/;SameSite=Strict';
-    }
-
-    function clearCookie(name) {
-        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Strict';
+    function isPlatformContext() {
+        var host = window.location.hostname.toLowerCase();
+        var path = window.location.pathname.toLowerCase();
+        return host.startsWith('admin.') || path.startsWith('/platform/');
     }
 
     function getTenantId() {
-        try {
-            var user = JSON.parse(localStorage.getItem('user') || '{}');
-            return user.tenantId || '00000000-0000-0000-0000-000000000001';
-        } catch (e) {
-            return '00000000-0000-0000-0000-000000000001';
+        if (isPlatformContext()) {
+            return null;
         }
+
+        var user = window.CurrentUser || {};
+        return user.tenantId || '00000000-0000-0000-0000-000000000001';
     }
 
     function redirectToLogin() {
-        try {
-            clearCookie('access_token');
-            clearCookie('refresh_token');
-        } catch (e) { }
         var returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-        window.location.href = '/account/login?returnUrl=' + returnUrl;
+        var isAdminHost = window.location.hostname.toLowerCase().startsWith('admin.');
+        var isPlatformRoute = window.location.pathname.toLowerCase().startsWith('/platform/');
+        var loginPath = (isAdminHost || isPlatformRoute) ? '/platform/login' : '/account/login';
+        window.location.href = loginPath + '?returnUrl=' + returnUrl;
     }
 
     function refreshTokenAndReload() {
         if (_authRefreshInFlight) return _authRefreshInFlight;
 
-        var apiBaseUrl = window.ApiBaseUrl || '';
-        var accessToken = getCookie('access_token');
-        var refreshToken = getCookie('refresh_token');
-
-        if (!apiBaseUrl || !accessToken || !refreshToken) {
-            redirectToLogin();
-            return null;
-        }
-
-        _authRefreshInFlight = fetch(apiBaseUrl + '/api/auth/refresh-token', {
+        _authRefreshInFlight = fetch('/account/refresh', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
-                'Content-Type': 'application/json',
-                'X-Tenant-Id': getTenantId()
-            },
-            body: JSON.stringify({ accessToken: accessToken, refreshToken: refreshToken })
+                'Content-Type': 'application/json'
+            }
         })
             .then(function (res) {
                 if (!res.ok) throw new Error('refresh-failed');
                 return res.json();
             })
             .then(function (data) {
-                // Auth service currently returns `expiresAt` as refresh-token expiry.
-                // Keep access_token cookie long-lived so we can refresh seamlessly when the JWT itself expires.
-                setCookie('access_token', data.accessToken, data.expiresAt);
-                setCookie('refresh_token', data.refreshToken, data.expiresAt);
-                try { localStorage.setItem('user', JSON.stringify(data.user || {})); } catch (e) { }
+                if (data && data.user) {
+                    window.CurrentUser = data.user;
+                }
                 window.location.reload();
             })
             .catch(function () {
@@ -123,7 +93,7 @@ window.DtDefaults = (function () {
         var l = L();
         return {
             topStart: {
-                rowClass: 'row px-3 my-0 justify-content-between',
+                rowClass: 'row py-3 my-0 justify-content-between',
                 features: [
                     {
                         pageLength: {
@@ -195,8 +165,6 @@ window.DtDefaults = (function () {
         $('.dt-buttons .btn').removeClass('btn-secondary').addClass('shadow-none');
         $('.dt-search .form-control').removeClass('form-control-sm').addClass('shadow-none');
         $('.dt-length .form-select').removeClass('form-select-sm').addClass('ms-0');
-        $('.dt-length').addClass('mb-md-6 mb-0');
-        $('.dt-search').addClass('mb-md-6 mb-2');
         $('.dt-layout-end').removeClass('justify-content-between').addClass('d-flex gap-md-4 justify-content-md-between justify-content-center gap-4 flex-wrap mt-0');
         $('.dt-layout-start').addClass('mt-0');
 
@@ -223,18 +191,38 @@ window.DtDefaults = (function () {
                 $(this).contents().unwrap();
             });
 
-            $container.addClass('mb-md-0 mb-6');
             $container.removeClass('d-flex gap-1 gap-2 gap-3 gap-4'); // Remove any JS-injected gaps
 
             var $allBtns = $container.children('button.btn');
             var $visibleBtns = $allBtns.filter(':visible').filter(function () {
-                return !this.classList.contains('d-none') && !this.hidden;
+                return !this.hidden;
             });
 
             // Mark groups for responsive/layout styling (e.g., keep primary action controlled)
             var hasAddNew = $container.find('.add-new').length > 0;
             $container.toggleClass('dt-buttons-primary', hasAddNew);
             $container.toggleClass('dt-buttons-actions', !hasAddNew);
+
+            if ($container.hasClass('dt-buttons-actions')) {
+                if ($visibleBtns.length > 1) {
+                    $container.addClass('btn-group');
+                } else {
+                    $container.removeClass('btn-group');
+                }
+
+                $allBtns.each(function () {
+                    this.style.removeProperty('border-radius');
+                    this.style.removeProperty('border-top-left-radius');
+                    this.style.removeProperty('border-bottom-left-radius');
+                    this.style.removeProperty('border-top-right-radius');
+                    this.style.removeProperty('border-bottom-right-radius');
+                    this.style.removeProperty('border-left');
+                    this.style.setProperty('margin-left', '0', 'important');
+                    this.style.setProperty('position', 'relative', 'important');
+                });
+
+                return;
+            }
 
             // Reset all buttons first (including hidden ones), so stale radii won't remain.
             $allBtns.each(function () {
@@ -312,6 +300,7 @@ window.DtDefaults = (function () {
         // Centralized Ajax error handler (helps diagnose DataTables "Ajax error" tn/7 quickly)
         // Note: DataTables treats `ajax: { ... }` as an $.ajax config object.
         if (merged.ajax && typeof merged.ajax === 'object') {
+            merged.ajax.xhrFields = $.extend(true, {}, merged.ajax.xhrFields, { withCredentials: true });
             merged.ajax.error = merged.ajax.error || function (xhr, textStatus, errorThrown) {
                 try { $('#skeleton-loader').fadeOut(200); } catch (e) { }
 
@@ -324,6 +313,11 @@ window.DtDefaults = (function () {
 
                 if (status === 401) {
                     refreshTokenAndReload();
+                    return;
+                }
+
+                if (status === 403) {
+                    redirectToLogin();
                     return;
                 }
 
@@ -366,8 +360,6 @@ window.DtDefaults = (function () {
         return merged;
     }
 
-    var defaultExportColumns = [2, 3, 4, 5, 6, 7, 8];
-
     /**
      * Ortak export ayarları (HTML temizleme ve kolon seçimi).
      */
@@ -404,6 +396,64 @@ window.DtDefaults = (function () {
         return $.extend(true, {}, commonExportOptionsBase, { columns: columns });
     }
 
+    function customizePrintWindow(win, titleText) {
+        var doc = win.document;
+        var safeTitle = titleText || document.title || 'Report';
+        var printedAt = new Date().toLocaleString();
+        var rootStyles = window.getComputedStyle(document.documentElement);
+        var primaryColor = (rootStyles.getPropertyValue('--bs-primary') || '').trim() || '#696cff';
+        var primaryRgb = (rootStyles.getPropertyValue('--bs-primary-rgb') || '').trim() || '105, 108, 255';
+        var moduleName = safeTitle.split(' - ')[0].trim() || safeTitle;
+
+        doc.title = safeTitle;
+
+        var style = doc.createElement('style');
+        style.type = 'text/css';
+        style.textContent = [
+            '@page { size: auto; margin: 16mm; }',
+            'html, body { background: #f4f6f8 !important; color: #17202a !important; font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important; }',
+            'body { margin: 0 !important; padding: 24px !important; }',
+            '.print-shell { max-width: 1100px; margin: 0 auto; background: #ffffff; border: 1px solid #e9edf3; border-radius: 16px; padding: 22px 28px; box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08); }',
+            '.print-header { display: block; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e9edf3; }',
+            '.print-kicker { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: ' + primaryColor + '; margin-bottom: 6px; }',
+            '.print-title { margin: 0; font-size: 28px; line-height: 1.15; font-weight: 700; color: #111827; }',
+            '.print-meta { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid #e9edf3; font-size: 13px; color: #6b7280; }',
+            'table { width: 100% !important; border-collapse: collapse !important; margin: 0 !important; }',
+            'thead th { background: #f8fafc !important; color: #334155 !important; font-size: 12px !important; font-weight: 700 !important; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #dbe3ee !important; padding: 12px 14px !important; }',
+            'tbody td { padding: 12px 14px !important; border-bottom: 1px solid #e9edf3 !important; color: #17202a !important; vertical-align: middle !important; }',
+            'tbody tr:nth-child(even) td { background: #fcfdfd !important; }',
+            '.dt-print-view h1 { display: none !important; }',
+            '.dt-print-view table.dataTable thead th, .dt-print-view table.dataTable tbody td { box-shadow: none !important; }',
+            '.dt-print-view table.dataTable tbody tr.selected td { background: #fff7ed !important; }',
+            '@media print { html, body { background: #fff !important; } body { padding: 0 !important; } .print-shell { max-width: none; border: 0; border-radius: 0; box-shadow: none; padding: 0; } .print-header { margin-bottom: 12px; } }'
+        ].join('\n');
+
+        doc.head.appendChild(style);
+
+        var body = doc.body;
+        var table = body.querySelector('table');
+        var shell = doc.createElement('div');
+        shell.className = 'print-shell';
+
+        var header = doc.createElement('div');
+        header.className = 'print-header';
+        header.innerHTML =
+            '<div>' +
+            '  <div class="print-kicker">' + moduleName + '</div>' +
+            '  <h1 class="print-title">' + safeTitle + '</h1>' +
+            '  <p class="print-meta">Generated ' + printedAt + '</p>' +
+            '</div>';
+
+        shell.appendChild(header);
+
+        if (table) {
+            shell.appendChild(table);
+        }
+
+        body.innerHTML = '';
+        body.appendChild(shell);
+    }
+
     /**
      * Standard export buttons + optional extras.
      */
@@ -411,7 +461,16 @@ window.DtDefaults = (function () {
         var l = L();
         options = options || {};
 
-        var exportColumns = Array.isArray(options.exportColumns) ? options.exportColumns : defaultExportColumns;
+        // MOD-0021: Dynamically determine exportable columns if not provided
+        var exportColumns = Array.isArray(options.exportColumns) ? options.exportColumns : [];
+        if (exportColumns.length === 0) {
+            // Default: Columns 2 to N-1 (skips control/checkbox and actions)
+            $('.dataTable thead th').each(function(idx) {
+               if (idx > 1) exportColumns.push(idx);
+            });
+            if (exportColumns.length > 0) exportColumns.pop(); // Remove last (actions)
+        }
+        
         var colvisColumns = Array.isArray(options.colvisColumns) ? options.colvisColumns : exportColumns;
         var showAllColumns = Array.isArray(options.showAllColumns) ? options.showAllColumns : colvisColumns;
 
@@ -420,9 +479,19 @@ window.DtDefaults = (function () {
         var exportBtn = {
             extend: 'collection',
             className: 'btn btn-label-secondary dropdown-toggle dt-export-collection-btn',
-            text: '<span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-export icon-sm"></i> <span class="d-none d-sm-inline-block">' + (l.Export || 'Export') + '</span></span>',
+            text: '<span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-cog icon-sm"></i> <span class="d-none d-sm-inline-block">' + (l.Action || 'Action') + '</span></span>',
             buttons: [
-                { extend: 'print', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-printer me-2"></i>' + (l.Print || 'Print') + '</span>', className: 'dropdown-item', exportOptions: exportOptions },
+                {
+                    extend: 'print',
+                    text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-printer me-2"></i>' + (l.Print || 'Print') + '</span>',
+                    className: 'dropdown-item',
+                    exportOptions: exportOptions,
+                    title: document.title || 'Report',
+                    autoPrint: false,
+                    customize: function (win) {
+                        customizePrintWindow(win, document.title || 'Report');
+                    }
+                },
                 { extend: 'csv', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-file me-2"></i>CSV</span>', className: 'dropdown-item', exportOptions: exportOptions },
                 { extend: 'excel', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-export me-2"></i>Excel</span>', className: 'dropdown-item', exportOptions: exportOptions },
                 { extend: 'pdf', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-pdf me-2"></i>' + (l.PDF || 'PDF') + '</span>', className: 'dropdown-item', exportOptions: exportOptions },
@@ -430,10 +499,21 @@ window.DtDefaults = (function () {
             ]
         };
 
+        if (extraButtons && extraButtons.importBtn) {
+            var importAction = extraButtons.importBtn.action;
+            var importTitle = (extraButtons.importBtn.attr && extraButtons.importBtn.attr.title) || l.Import || 'Import';
+            exportBtn.buttons.push({ text: '<hr class="my-0">', className: 'dropdown-item p-0 pe-none bg-transparent border-0', action: function() {} });
+            exportBtn.buttons.push({
+                text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-import me-2"></i>' + importTitle + '</span>',
+                className: 'dropdown-item',
+                action: importAction || function() {}
+            });
+        }
+
         var colvisBtn = {
             extend: 'colvis',
             text: '<i class="icon-base bx bx-show icon-sm"></i>',
-            className: 'btn btn-icon btn-label-secondary dt-colvis-btn position-relative',
+            className: 'btn btn-icon btn-label-secondary dt-colvis-btn position-relative d-none d-md-inline-flex',
             attr: {
                 title: l.ColumnVisibility || 'Column Visibility',
                 'data-bs-toggle': 'tooltip',
@@ -451,7 +531,6 @@ window.DtDefaults = (function () {
         };
 
         var group1 = [exportBtn];
-        if (extraButtons && extraButtons.importBtn) group1.push(extraButtons.importBtn);
 
         var group2 = [colvisBtn];
         if (extraButtons && extraButtons.filterBtn) group2.push(extraButtons.filterBtn);

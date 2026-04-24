@@ -21,7 +21,7 @@ Her yeni sürüm, modül veya kritik hata düzeltmesi (hotfix) yayına alınmada
 
 
 ## 🌍 3. Yerelleştirme ve UI (L10n & Frontend)
-- [ ] **9 Dil Senkronizasyonu:** Yeni eklenen tüm Key'ler 9 dildeki (`.az, .en, .tr, .ru, .es, .ka, .kk, .uk, .uz`) `.resx` dosyalarına eklendi mi?
+- [ ] **7 Dil Senkronizasyonu:** Yeni eklenen tüm Key'ler 7 dildeki (`.en, .fr, .es, .zh, .ar, .ru, .tr`) `.resx` dosyalarına eklendi mi?
 - [ ] **L10n Bridge:** JavaScript tarafındaki metinler `window.L10n` üzerinden mi okunuyor?
 - [ ] **Skeleton Loader:** Liste ve detay sayfalarında yükleme animasyonu (UX) çalışıyor mu?
 - [ ] **Sneat 2.x:** DataTable yerleşimleri yeni `layout` API'sine uygun mu?
@@ -53,7 +53,7 @@ Her sürüm sonunda aşağıdaki özet rapor hazırlanmalıdır:
 |---|---|---|
 | Derleme & Sağlık | | |
 | Güvenlik | | |
-| Yerelleştirme (9 Dil) | | |
+| Yerelleştirme (7 Dil) | | |
 | Veritabanı (Index) | | |
 
 **Final Karar:** [YAYINLANABİLİR / ERTELENDİ]
