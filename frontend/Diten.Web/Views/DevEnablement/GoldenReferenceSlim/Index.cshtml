@@ -1,0 +1,55 @@
+@using Diten.Web.Views.DevEnablement.GoldenReferenceSlim
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GoldenReferenceSlimIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["GoldenReferenceSlimTitle"].Value;
+    Layout = "_LayoutBackbone";
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel
+            {
+                Key = "delete",
+                Text = SharedLocalizer["BulkDelete"].Value,
+                Icon = "bx bx-trash",
+                ButtonClass = "btn btn-label-danger",
+                ConfirmKey = "BulkDeleteConfirm",
+                Endpoint = "/api/golden-reference-slim/bulk",
+                Method = "DELETE"
+            }
+        ]
+    };
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/DevEnablement/GoldenReferenceSlim/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["GoldenReferenceSlimTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* ② Bulk Action Bar *@
+<partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+
+@* ③ DataTable Card *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-goldenreferenceslim" data-dt-standard="v2"> *@
+<partial name="~/Views/DevEnablement/GoldenReferenceSlim/_DataTable.cshtml" />
+
+@* ④ Offcanvas panels *@
+@* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
+<partial name="~/Views/DevEnablement/GoldenReferenceSlim/_DetailsQuickView.cshtml" />
+<partial name="~/Views/DevEnablement/GoldenReferenceSlim/_CreateEditOffcanvas.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/DevEnablement/GoldenReferenceSlim/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DevEnablement/GoldenReferenceSlim/index.js" asp-append-version="true"></script>
+}

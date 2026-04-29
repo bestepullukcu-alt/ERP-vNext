@@ -8,6 +8,8 @@ Bu workflow, legacy DataTable liste sayfalarını **DataTable v2 standardına** 
 
 > Not: v2 standardına geçen sayfalarda `<table ... data-dt-standard=\"v2\" id=\"...\">` zorunludur ve Quality Gate (quality-gate-datatable.md) eksiksiz uygulanır.
 
+> Golden variant: Migration sonunda module pack'te `golden_reference` net olmalıdır. `8 ve altı` create/edit form alanı Slim (`_CreateEditOffcanvas.cshtml`), `8'den fazla` alan Compact (`Create/Edit/Details/_Form`) kullanır.
+
 ---
 
 ## ✅ Migration Checklist
@@ -60,4 +62,4 @@ Bu workflow, legacy DataTable liste sayfalarını **DataTable v2 standardına** 
 - [ ] `python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py .` PASS.
 
 ### 7) Statik Guard
-- [ ] `python3 .antigravity/scripts/verify_datatable_page.py . --area <Area> --module <Module>` PASS (v2 marker varsa v2 guard’ları da PASS).
+- [ ] `python3 .antigravity/scripts/verify_datatable_page.py . --area <Area> --module <Module> --reference slim|compact` PASS (v2 marker varsa v2 guard’ları da PASS).

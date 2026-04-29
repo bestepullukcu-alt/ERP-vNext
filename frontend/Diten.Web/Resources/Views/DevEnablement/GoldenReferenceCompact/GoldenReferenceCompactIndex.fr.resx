@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="GoldenReferenceCompactTitle" xml:space="preserve"><value>Référence Dorée Compact</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Page de liste de référence (création/modification en offcanvas) pour les modules comportant jusqu'à 8 champs.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Ajouter Un Élément</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Modifier L'Élément</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Ajouter Un Élément</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier L'Élément</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>ex. GRS-001</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>ex. Référence Principale</value></data>
+  <data name="ReferenceTypeStandard" xml:space="preserve"><value>Standard</value></data>
+  <data name="ReferenceTypeCustom" xml:space="preserve"><value>Personnalisé</value></data>
+  <data name="ReferenceTypePro" xml:space="preserve"><value>Pro</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu Rapide</value></data>
+  <data name="Actions" xml:space="preserve"><value>Opérations</value></data>
+  <data name="Code" xml:space="preserve"><value>Code Référence</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Informations Générales</value></data>
+  <data name="ReferenceType" xml:space="preserve"><value>Type De Référence</value></data>
+  <data name="Priority" xml:space="preserve"><value>Priorité</value></data>
+  <data name="Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="Description" xml:space="preserve"><value>Descriptif</value></data>
+  <data name="SystemInformation" xml:space="preserve"><value>Informations Système</value></data>
+  <data name="LevelPrefix" xml:space="preserve"><value>Niveau</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>Non Disponible</value></data>
+  <data name="IdLabel" xml:space="preserve"><value>Identifiant</value></data>
+  <data name="FormPageDescription" xml:space="preserve"><value>Manage the full reference record across identity, ownership, lifecycle, and notes.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
+  <data name="OwnershipSection" xml:space="preserve"><value>Ownership</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notes</value></data>
+  <data name="Category" xml:space="preserve"><value>Category</value></data>
+  <data name="GroupKey" xml:space="preserve"><value>Group Key</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
+  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Effective Date</value></data>
+  <data name="ExpirationDate" xml:space="preserve"><value>Expiration Date</value></data>
+</root>

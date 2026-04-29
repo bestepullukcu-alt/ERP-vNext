@@ -6,6 +6,8 @@ description: "NET-001 — Diten ERP vNext Gateway Routing, Path Naming ve Header
 
 Bu doküman, tüm mikroservislerin Gateway (Ocelot) arkasındaki adresleme mantığını ve HTTP header kullanım standartlarını belirler.
 
+Port seçimi `AGENTS.md` port şeması ve ilgili domain config'e göre yapılır. Hardcoded MDM `5050` varsayımı yeni modüller için geçerli değildir. Örnekler: Auth `5056`, Platform `5057`, DevEnablement `5058`.
+
 ## 🎯 Amaç
 - Servisler arası iletişimde tek tip adresleme sağlamak.
 - Case-sensitivity (Büyük/Küçük harf) kaynaklı 404 hatalarını engellemek.
@@ -15,7 +17,7 @@ Bu doküman, tüm mikroservislerin Gateway (Ocelot) arkasındaki adresleme mant�
 
 ## 🛣️ Ocelot Gateway Rota Stratejisi
 
-MDM servisi için iki tür rota mevcuttur ve ikisi **aynı anda** `ocelot.json` içinde yaşar:
+Servisler için iki tür rota mevcuttur ve ikisi **aynı anda** `ocelot.json` içinde yaşayabilir:
 
 ### Strateji A — Explicit Modül Rotaları (Öncelikli)
 Bilinen her modül için **explicit** (açık) Upstream/Downstream çifti eklenir. Bu rotalar Ocelot'ta **önce** eşleşir.
@@ -23,29 +25,29 @@ Bilinen her modül için **explicit** (açık) Upstream/Downstream çifti ekleni
 ```json
 {
   "DownstreamPathTemplate": "/api/v1/{resource}",
-  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": "{servicePort}" }],
   "UpstreamPathTemplate": "/api/{resource}",
   "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 }
 ```
 
-**Gerçek örnek (SampleModule modülü):**
+**Örnek (resource modülü):**
 ```json
 {
   "DownstreamPathTemplate": "/api/countries",
-  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": "{servicePort}" }],
   "UpstreamPathTemplate": "/api/countries",
   "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 },
 {
   "DownstreamPathTemplate": "/api/countries/{everything}",
-  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": "{servicePort}" }],
   "UpstreamPathTemplate": "/api/countries/{everything}",
   "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 }
 ```
 
-> **Not:** Mevcut projedeki MDM Controller route'ları `/api/{resource}` formatındadır (v1 ön eki olmadan). Bu gerçek baz alınmaktadır. Yeni modüller de bu formatla eklenir.
+> **Not:** Mevcut projedeki controller route'ları genelde `/api/{resource}` formatındadır (v1 ön eki olmadan). Yeni modüller bu formatla eklenir.
 >
 > **CORS Notu (KRİTİK):** Frontend, `Authorization` ve `X-Tenant-Id` gibi custom header'lar gönderdiğinde browser otomatik olarak **preflight `OPTIONS`** isteği atar. Bu yüzden `UpstreamHttpMethod` listesinde **`OPTIONS` mutlaka bulunmalıdır**, aksi halde DataTables gibi bileşenler “Ajax error (tn/7)” gösterebilir.
 
@@ -55,7 +57,7 @@ Explicit tanımlanmamış istekler için fallback. `ocelot.json`'da **en sona** 
 ```json
 {
   "DownstreamPathTemplate": "/{everything}",
-  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": "{servicePort}" }],
   "UpstreamPathTemplate": "/services/mdm/{everything}",
   "UpstreamHttpMethod": ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
 }
@@ -96,7 +98,7 @@ Tüm isteklerde aşağıdaki header'ların varlığı ve formatı denetlenmelidi
 Bir servis `201 Created` döndüğünde, yanıtın `Location` header'ı kullanıcının erişebileceği **Gateway adresini** göstermelidir.
 
 - **Kural:** Her mikroservis kendi `appsettings.json` dosyasında bir `PublicBaseUrl` tanımına sahip olmalıdır.
-- **MDM örneği:** `PublicBaseUrl = http://localhost:5000`
+- **Örnek:** `PublicBaseUrl = http://localhost:5000`
 
 ---
 
@@ -106,7 +108,7 @@ Yeni modül eklendiğinde `integration-agent` şu adımları takip eder:
 1. `ocelot.json`'a **explicit** iki rota ekle: `/{resource}` ve `/{resource}/{everything}`
 2. `UpstreamHttpMethod`'da `PATCH` ve **`OPTIONS`** dahil tüm metodları listele (CORS preflight için `OPTIONS` zorunludur)
 3. Explicit rotalar, catch-all rotadan (`/services/mdm/{everything}`) **ÖNCE** gelecek şekilde sırala
-4. Port: MDM → `5050`, Auth → `5056` (değişmez, `ports.md` referans aldır)
+4. Portu domain'e göre seç: Auth → `5056`, Platform → `5057`, DevEnablement → `5058` (`ports.md` / `AGENTS.md` referans alınır)
 
 ---
 

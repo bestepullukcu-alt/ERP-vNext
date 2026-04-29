@@ -8,31 +8,37 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 
 ## 🎭 Görev Dağılımı (Orkestra)
 
-0. **Phase 0: Domain + Module Pack Hazırlık Kapısı (ORKESTRATOR)**
+0. **Phase 0: Onaylı Module Pack Kapısı (ORKESTRATOR)**
    - `AGENTS.md` dosyasını oku ve repo-level guardrail'leri uygula.
    - İlgili domain'i tespit et ve `execution/domains/{domain}/domain-config.md` dosyasını oku.
    - Hedef modül için module pack var mı kontrol et: `execution/domains/{domain}/module-packs/{ID}.md`
-   - Module pack yoksa kod yazmadan önce module pack oluşturulmasını zorunlu tut.
+   - Module pack yoksa kod yazma; kullanıcıya önce `/prepare-module-pack` veya `module-pack-author` ile module pack hazırlatmasını söyle.
+   - Module pack status `draft` ise kod yazma; kullanıcı incelemesi ve `approved` veya `ready-for-dev` status beklenir.
+   - DataTable modülü ise module pack içinde `form_field_count` ve `golden_reference: slim|compact` kararını kontrol et.
    - Yetki hiyerarşisini uygula:
      - `Module Pack > Domain Config > AGENTS.md > .antigravity/`
    - Çakışma varsa kullanıcı onayı al; onaysız fazlara geçme.
 
 1. **Phase 1: Analiz (business-analyst)**
-   - Modülün alanlarını (fields), IFRS/KVKK gereksinimlerini belirle.
+   - Onaylı module pack'teki alanları, IFRS/KVKK gereksinimlerini ve acceptance criteria'yı doğrula.
    - UI ve tablolarda kullanılacak anahtar kelimeleri (Keys) çıkar.
+   - DataTable modülünde create/edit form alan sayısı değişirse geliştirmeye başlama; module pack güncellemesi için kullanıcıya geri dön.
 
 1.5. **Phase 1.5: Mimari Doğrulama (ORKESTRATOR)**
    - **KRİTİK ADIM:** Kod yazmadan ÖNCE, üretilecek kodun taslağını kural dosyalarıyla kıyasla.
-   - **Mimari Onay Zorunluluğu:** Ajan, aşağıdaki kontrol listesini doldurup KULLANICIDAN ONAY ALMADAN kod yazamaz:
-     ```
-     □ PRD'deki TÜM alanlar Entity'ye eklendi mi?
-     □ Alan isimleri global ERP standartlarına uygun mu? (PlateCode → Code)
-     □ Repository interface'inde TenantId/Soft-Delete garantisi var mı?
-     □ EntityBase'ten miras alınıyor mu? (TenantId, IsDeleted)
-     □ CQRS yapısı (Command, Query, Handler, Validator) planlandı mı?
-     ```
-   - **Onay Formatı:** "Faz 1.5 Mimari Doğrulama tamamlandı. Onayınızı bekliyorum."
-   - Kullanıcı onaylamazsa → Phase 1'e dön, düzelt.
+   - **Mimari Onay Zorunluluğu:** Orchestrator, aşağıdaki kontrol listesini her maddenin yanına `Plan: ...` cevabı koyarak DOLDURUR ve sonucu Orchestration Report'un "Mimari Onay (Phase 1.5)" satırına yapıştırır. Doldurulmuş tabloyu görmeden kullanıcı bu fazı onaylayamaz.
+
+     | # | Kontrol | Cevap formatı |
+     |---|---------|----------------|
+     | 1 | Module pack'teki TÜM alanlar Entity'ye eklendi mi? | Evet/Hayır + alan listesi |
+     | 2 | Alan isimleri global ERP standartlarına uygun mu? (örn `PlateCode → Code`) | Evet/Hayır + sapma listesi |
+     | 3 | Repository TenantId/Soft-Delete garantisi var mı? | Evet/Hayır + repo dosya yolu |
+     | 4 | `BaseEntity`'ten miras alınıyor mu? (TenantId, IsDeleted, audit) | Evet/Hayır + entity dosya yolu |
+     | 5 | CQRS yapısı (Command, Query, Handler, Validator — her biri ayrı dosya) planlandı mı? | Evet/Hayır + planlanan dosya listesi |
+     | 6 | DataTable ise `golden_reference` kararı doğru mu? (≤8 slim, >8 compact) | Slim/Compact + form alan sayısı |
+
+   - **Onay Mekaniği:** Orchestrator, doldurulmuş tabloyu kullanıcıya `AskUserQuestion` ile (ya da CLI'da düz mesaj olarak) sunar ve "Onaylıyor musunuz?" sorusuyla bekler. **Kullanıcıdan açık `evet/onay/approved` cevabı alınmadan Phase 2'ye geçilemez.**
+   - **Sapma Halinde:** Tek bir madde "Hayır" ise Phase 1'e dön, module pack ya da plan üzerinde düzelt; tabloyu yeniden doldur.
 
 2. **Phase 2: Veri Mimarisi (data-agent & backend-architect)**
    - MongoDB koleksiyonunu tasarla (`ITenantDocument` tabanlı).
@@ -43,52 +49,77 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - API Controller'ı oluştur ve Ocelot Gateway rotasını ekle.
    - **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 7 dil `.resx` senkronizasyonunu tamamla.
    - Sadece projede desteklenen dillerde (7 dil) `.resx` dosyalarını oluştur.
-   - **⚠️ RESX DOSYA ADI KURALI (KRİTİK):** `.resx` dosya adı, Razor view'da kullanılan localization marker class adıyla **birebir eşleşmelidir**. Eğer marker class `SampleModuleIndex` ise dosya adı `SampleModuleIndex.{lang}.resx` olmalıdır. `Index.{lang}.resx` KULLANILMAZ. Yol: `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
-     - Örnek: Class = `SampleModuleIndex` → `SampleModuleIndex.en.resx`, `SampleModuleIndex.tr.resx`, ...
-     - Örnek: Class = `SampleModuleIndex` → `SampleModuleIndex.en.resx`, `SampleModuleIndex.tr.resx`, ...
+   - **⚠️ RESX DOSYA ADI KURALI (KRİTİK):** `.resx` dosya adı, Razor view'da kullanılan localization marker class adıyla **birebir eşleşmelidir**. Eğer marker class `GoldenReferenceSlimIndex` ise dosya adı `GoldenReferenceSlimIndex.{lang}.resx` olmalıdır. `Index.{lang}.resx` KULLANILMAZ. Yol: `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
+     - Örnek: Class = `GoldenReferenceSlimIndex` → `GoldenReferenceSlimIndex.en.resx`, `GoldenReferenceSlimIndex.tr.resx`, ...
    - **Kritik:** Ortak kelimeleri (`Kaydet`, `Sil` vb.) `SharedResource`'tan al, yazma. Sayfaya özel olan başlıkları ve tablo kolon anahtarlarını ekle.
    - `.resx` dosyalarında `PageDescription` key'i her modül için tanımlanmalıdır. Alt başlıklar hardcoded yazılmaz.
 
 3.5. **Phase 3.5: Gateway Doğrulama (integration-agent)**
    - **[KRİTİK]:** `.antigravity/rules/routes.md` dosyasını oku.
+   - Portu hardcoded seçme; `AGENTS.md` port şeması ve domain-config'e göre hedef servisi belirle. DevEnablement için port `5058`, Platform için `5057`, Auth için `5056` kullanılır.
    - `ocelot.json`'a yeni modül için **iki explicit rota** ekle:
-     - `UpstreamPathTemplate: "/api/{resource}"` → `DownstreamPathTemplate: "/api/{resource}"`  (Port: 5050)
-     - `UpstreamPathTemplate: "/api/{resource}/{everything}"` → `DownstreamPathTemplate: "/api/{resource}/{everything}"` (Port: 5050)
-   - Her iki rotaya da `UpstreamHttpMethod`: `["GET", "POST", "PUT", "PATCH", "DELETE"]` ekle.
-   - Yeni rotaları catch-all rotasından (`/services/mdm/{everything}`) **ÖNCE** konumlandır.
+     - `UpstreamPathTemplate: "/api/{resource}"` → `DownstreamPathTemplate: "/api/{resource}"`
+     - `UpstreamPathTemplate: "/api/{resource}/{everything}"` → `DownstreamPathTemplate: "/api/{resource}/{everything}"`
+   - Her iki rotaya da `UpstreamHttpMethod`: `["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"]` ekle.
+   - Yeni rotaları ilgili catch-all rotalarından **ÖNCE** konumlandır.
    - Gateway rotası eklenmeden "İşlem tamam" denilmez.
 
 4. **Phase 4: Arayüz (frontend-ui-ux)**
    - **[KRİTİK]:** `.antigravity/rules/frontend-datatable-template.md` dosyasını referans al.
+   - Module pack'teki `golden_reference` kararını uygula:
+     - `slim`: `8 ve altı` form alanı, Index içinde `_CreateEditOffcanvas.cshtml` ile create/edit.
+     - `compact`: `8'den fazla` form alanı, ayrı `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml`.
    - **⚠️ `Areas/` KULLANILMAZ:** View dosyaları her zaman `Views/{AreaName}/{ModuleName}/` altına konur. `Areas/{AreaName}/Views/` yapısı ASP.NET Areas routing'dir ve projede KULLANILMAZ.
-     - ✅ `Views/MDM/SampleModule/Index.cshtml`
-     - ❌ `Areas/MDM/Views/SampleModule/Index.cshtml`
+     - ✅ `Views/DevEnablement/GoldenReferenceSlim/Index.cshtml`
+     - ❌ `Areas/DevEnablement/Views/GoldenReferenceSlim/Index.cshtml`
    - `Views/{AreaName}/{ModuleName}/Index.cshtml` sayfasını oluştururken SADECE bu şablonu kopyala.
    - **Localization marker class** oluştur: `Views/{AreaName}/{ModuleName}/{ModuleName}Index.cs`
      - Class adı = `{ModuleName}Index`
      - **Namespace = `Diten.Web.Views.{AreaName}.{ModuleName}`** (❌ `Diten.Web.Areas.{AreaName}.Views.{ModuleName}` DEĞİL)
      - Bu adın `.resx` dosya adlarıyla birebir eşleşmesi ZORUNLUDUR.
    - `Views/{AreaName}/{ModuleName}/_Filter.cshtml` partial view'ını oluştur.
+   - `Views/{AreaName}/{ModuleName}/_DataTable.cshtml` partial view'ını oluştur; DataTable v2 marker, skeleton loader, checkbox ve action kolonları burada tutulur.
+   - `Views/{AreaName}/{ModuleName}/_IndexL10n.cshtml` partial view'ını oluştur; JSON payload üretir.
    - `wwwroot/assets/js/{AreaName}/{ModuleName}/index.js` dosyasını `DtDefaults.create()` ve Module Pattern (IIFE) ile oluştur. Bakınız: `.antigravity/rules/frontend-js-standard.md`
    - **[ZORUNLU]** `colReorder: { columns: ':gt(1):not(:last-child)' }` DataTable config'e eklenmelidir (standart kolon yapısı için varsayılan; bkz. `frontend-js-standard.md §11`). `column-reorder.dt`/`columns-reordered.dt` event'leri dirty-state hesabına bağlanmalıdır.
    - `_LayoutBackbone` içine menü linkini ekle ve aktif state için `ViewContext.RouteData` dinamik kontrolü yap.
-   - **Edit link formatı:** `/{ModuleName}/Edit/{id}` (Area prefix OLMADAN). ❌ `/{AreaName}/{ModuleName}/Edit/{id}` YANLIŞTIR.
+   - **Controller route + link formatı (BİRBİRİNE BAĞLI):**
+     - `frontend/Diten.Web/Controllers/{ModuleName}Controller.cs` üzerine sınıf düzeyinde **standart**: `[Route("[controller]")]` veya literal `[Route("{ModuleName}")]` (örn `[Route("GoldenReferenceCompact")]`). **Area prefix yazma** (örn `[Route("DevEnablement/[controller]")]` YASAK).
+     - Bu standart altında menü/link formatı **otomatik olarak** `/{ModuleName}/Edit/{id}`, `/{ModuleName}/Create`, `/{ModuleName}/Details/{id}` olur.
+     - ❌ Yanlış: `/{AreaName}/{ModuleName}/Edit/{id}` — Controller route'unda area prefix olmadığı için 404 döner.
+     - Frontend agent menü/link üretmeden önce `{ModuleName}Controller.cs` `[Route(...)]` attribute'unu okumalı ve link formatını oradan türetmelidir.
 
-4a. **Phase 4a: CRUD Alt Sayfaları (ZORUNLU)**
-   - **Bu adım atlanamaz.** Index (liste) sayfası yapıldıktan sonra aşağıdaki CRUD sayfaları da oluşturulmalıdır:
-   - `Views/{AreaName}/{ModuleName}/Create.cshtml` → `add-page.md §B Form Sayfası` şablonunu kullan.
-   - `Views/{AreaName}/{ModuleName}/Details.cshtml` → `add-page.md §C Details Sayfası` şablonunu kullan.
-   - Edit sayfası ayrı sayfa olabilir (`Edit.cshtml`) veya Details içinde edit modu olabilir — modülün karmaşıklığına göre karar ver.
-   - **UI Surface Boundary (ZORUNLU):** Index sayfasında create/edit formu offcanvas/modal içinde çalıştırılmaz. Index'teki "Add New" aksiyonu route tabanlı `/{ModuleName}/Create` sayfasına gitmek zorundadır.
-   - **⚠️ Rebuild Guard:** Mevcut bir modül yeniden yapılırken Create/Edit/Details sayfaları silinirse **aynı çalışmada** yeniden yapılmak ZORUNDADIR. "Sadece Index'i düzelt" yorumu bu sayfaları silmeye izin vermez.
+4a. **Phase 4a: CRUD Surface (Golden Reference'a Göre ZORUNLU)**
+   - **Slim (`golden_reference: slim`):**
+     - `Views/{AreaName}/{ModuleName}/_CreateEditOffcanvas.cshtml` zorunludur.
+     - Create/Edit form alanları bu partial içinde olur.
+     - Index içinde create/edit offcanvas kullanılır.
+   - **Compact (`golden_reference: compact`):**
+     - `Views/{AreaName}/{ModuleName}/Create.cshtml` → `add-page.md §B Form Sayfası`
+     - `Views/{AreaName}/{ModuleName}/Edit.cshtml` → `add-page.md §B Form Sayfası`
+     - `Views/{AreaName}/{ModuleName}/Details.cshtml` → `add-page.md §C Details Sayfası`
+     - `Views/{AreaName}/{ModuleName}/_Form.cshtml` ortak form partial'ı
+     - Index içinde create/edit offcanvas YASAKTIR.
+   - **⚠️ Rebuild Guard:** Mevcut bir modül yeniden yapılırken Slim/Compact surface parçaları silinirse aynı çalışmada geri yapılmak ZORUNDADIR.
 
-4.5. **Phase 4.5: Browser Smoke Test (ORKESTRATÖR — ZORUNLU)**
-   - **Bu adım atlanamaz.** Sayfa teslim edilmeden önce agent browser'da sayfayı açarak aşağıdaki kontrolleri yapar:
+4.5. **Phase 4.5: Runtime Smoke Test (ORKESTRATÖR — ZORUNLU)**
+   - **Bu adım atlanamaz.** Sayfa teslim edilmeden önce orchestrator, aşağıdaki üç kanaldan **birini** seçip kontrolleri yürütür ve raporun "Runtime Smoke Test (Phase 4.5)" satırına seçilen kanalı + sonucu yazar:
+
+     | Kanal | Kullanım | Çıktı |
+     |---|---|---|
+     | **A — MCP Browser** (varsa) | Orchestrator MCP tabanlı browser tool'una sahipse sayfayı yükler, console hatalarını ve toolbar render'ını doğrular. | Ekran görüntüsü + console log özeti |
+     | **B — Playwright Script** | `frontend/Diten.Web/tests/smoke/{module}.spec.ts` altında smoke testi çalıştırır (yoksa testing-agent oluşturur). | Test pass/fail çıktısı |
+     | **C — Kullanıcı Doğrulaması** | Otomasyon yoksa orchestrator, aşağıdaki checklist'i kullanıcıya yönlendirir ve onay cevabını bekler. | Kullanıcının evet/hayır + not yanıtı |
+
+   - **Her üç kanalda ortak checklist:**
      - [ ] Sayfa yükleniyor mu? (Login redirect olmadan)
-     - [ ] DataTable toolbar render ediliyor mu? (Search, Export, Add New butonları)
-     - [ ] Localization key'leri çözümleniyor mu? (Raw key görünmüyor mu?)
+     - [ ] DataTable toolbar render ediliyor mu? (Search, Export, Add New, Filter, Save View)
+     - [ ] Localization key'leri çözümleniyor mu? (Raw key görünmüyor)
      - [ ] Console'da JS hatası yok mu?
      - [ ] Tablo boşsa "No records" mesajı düzgün gösteriliyor mu?
+     - [ ] Slim ise create/edit offcanvas açılıp kapanıyor mu? Compact ise `Create`/`Edit`/`Details` sayfaları yükleniyor mu?
+     - [ ] Bulk delete onayı + silme akışı çalışıyor mu?
+   - **Kanal A/B otomasyon başarısız ya da kullanılamıyorsa Kanal C zorunludur — orchestrator, browser kontrolünü uydurarak "yapıldı" diyemez.**
    - Herhangi bir madde başarısızsa → Phase 4'e geri dön ve düzelt.
 
 5. **Phase 5: Kalite & Güvenlik (testing-agent & security-agent & code-quality-agent)**
@@ -104,6 +135,6 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 
 ## ⚖️ Altın Kurallar
 - **Sıfır İnisiyatif Kuralı:** Ajan, standart Liste/CRUD (DataTable) sayfaları için arayüz uyduramaz, kesinlikle Master Template'i kullanmak zorundadır.
-- Modül mutlaka `MDM/` (veya ilgili Area) klasörü altında olmalıdır.
+- Modül mutlaka module pack'te belirtilen `Views/{AreaName}/{ModuleName}` klasörü altında olmalıdır.
 - Soft Delete ve TenantId filtrelemesi asla atlanamaz.
-- Details/Edit sayfaları `add-page.md §B/§C` şablonları ile yapılır; Sneat PRO standartlarına ve 3'lü kart düzenine sadık kalınır. Bu sayfalar opsiyonel değil, modülün zorunlu parçalarıdır.
+- Details/Edit sayfaları Compact modüllerde zorunludur; Slim modüllerde create/edit offcanvas zorunludur.

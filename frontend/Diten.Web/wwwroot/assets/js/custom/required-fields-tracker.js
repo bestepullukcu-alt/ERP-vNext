@@ -57,10 +57,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             wrapper.innerHTML = `
                 <span id="${trackerId}" class="badge bg-label-danger fs-6 px-3 py-2 d-flex align-items-center" style="opacity: 0.9; transition: all 0.3s ease; cursor: default;">
-                    <div class="required-part me-2 border-end pe-2 d-flex align-items-center" style="border-color: rgba(0,0,0,0.1) !important;">
+                    <div class="required-part d-flex align-items-center">
                         <i class="bx bx-check-shield me-1 lh-1"></i> <span class="required-text">0 / 0</span>
                     </div>
-                    <div class="error-part d-none d-flex align-items-center">
+                    <div class="error-part d-none d-flex align-items-center ms-2 ps-2 border-start" style="border-color: rgba(0,0,0,0.1) !important;">
                         <i class="bx bx-error-circle me-1 lh-1"></i> <span class="error-text">0</span>
                     </div>
                 </span>

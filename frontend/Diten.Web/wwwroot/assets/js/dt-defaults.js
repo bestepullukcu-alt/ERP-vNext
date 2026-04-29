@@ -7,6 +7,9 @@
 window.DtDefaults = (function () {
     var L = function () { return window.L10n || {}; };
     var _authRefreshInFlight = null;
+    var _buttonRadiusResizeBound = false;
+    var _buttonRadiusResizeTimer = null;
+    var _responsiveModalTitleBound = false;
 
     function isPlatformContext() {
         var host = window.location.hostname.toLowerCase();
@@ -64,9 +67,30 @@ window.DtDefaults = (function () {
     /**
      * Ortak Responsive Renderer (Modal içi tablo oluşturucu).
      */
+    function shouldSkipResponsiveColumn(api, col) {
+        if (!col || col.title === '') return true;
+
+        var settings = api.settings()[0];
+        var column = settings && settings.aoColumns ? settings.aoColumns[col.columnIndex] : null;
+        var columnName = String(column?.sName || '').toLowerCase();
+        var columnClass = String(column?.sClass || '').toLowerCase();
+        var title = String(col.title || '').toLowerCase();
+        var data = String(col.data || '').toLowerCase();
+
+        return columnName === 'control' ||
+            columnName === 'checkbox' ||
+            columnName === 'action' ||
+            columnClass.includes('control') ||
+            columnClass.includes('dt-checkboxes-cell') ||
+            title.includes('<input') ||
+            data.includes('dt-checkboxes') ||
+            data.includes('type="checkbox"') ||
+            data.includes("type='checkbox'");
+    }
+
     function responsiveRenderer(api, rowIdx, columns) {
         var data = $.map(columns, function (col, i) {
-            return col.title !== '' // titlesız kolonları (checkbox vb) sakla
+            return !shouldSkipResponsiveColumn(api, col)
                 ? '<tr data-dt-row="' +
                 col.rowIndex +
                 '" data-dt-column="' +
@@ -86,6 +110,44 @@ window.DtDefaults = (function () {
         return data ? $('<table class="table"/><tbody/>').append(data) : false;
     }
 
+    function normalizeResponsiveModalTitle(modalEl) {
+        var modal = modalEl && modalEl.classList && modalEl.classList.contains('dtr-bs-modal')
+            ? modalEl
+            : document.querySelector('.modal.dtr-bs-modal');
+
+        if (!modal) return;
+
+        modal.querySelectorAll('h4.modal-title').forEach(function (title) {
+            var replacement = document.createElement('h5');
+
+            Array.prototype.forEach.call(title.attributes, function (attr) {
+                replacement.setAttribute(attr.name, attr.value);
+            });
+
+            while (title.firstChild) {
+                replacement.appendChild(title.firstChild);
+            }
+
+            title.replaceWith(replacement);
+        });
+    }
+
+    function bindResponsiveModalTitleFix() {
+        if (_responsiveModalTitleBound) return;
+        _responsiveModalTitleBound = true;
+
+        document.addEventListener('show.bs.modal', function (event) {
+            if (!event.target || !event.target.classList.contains('dtr-bs-modal')) return;
+            normalizeResponsiveModalTitle(event.target);
+            window.setTimeout(function () { normalizeResponsiveModalTitle(event.target); }, 0);
+        }, true);
+
+        document.addEventListener('shown.bs.modal', function (event) {
+            if (!event.target || !event.target.classList.contains('dtr-bs-modal')) return;
+            normalizeResponsiveModalTitle(event.target);
+        }, true);
+    }
+
     /**
      * Sneat 2.x Layout API — orijinal 'app-user-list.js' ile %100 uyumlu.
      */
@@ -93,7 +155,7 @@ window.DtDefaults = (function () {
         var l = L();
         return {
             topStart: {
-                rowClass: 'row py-3 my-0 justify-content-between',
+                rowClass: 'row my-0 justify-content-between',
                 features: [
                     {
                         pageLength: {
@@ -114,7 +176,7 @@ window.DtDefaults = (function () {
                 ]
             },
             bottomStart: {
-                rowClass: 'row px-3 justify-content-between',
+                rowClass: 'row justify-content-between',
                 features: ['info']
             },
             bottomEnd: {
@@ -148,8 +210,7 @@ window.DtDefaults = (function () {
             details: {
                 display: DataTable.Responsive.display.modal({
                     header: function (row) {
-                        var data = row.data();
-                        return 'Details of ' + (data.title || data.name || '');
+                        return L().Details || 'Details';
                     }
                 }),
                 type: 'column',
@@ -169,6 +230,7 @@ window.DtDefaults = (function () {
         $('.dt-layout-start').addClass('mt-0');
 
         refreshButtonGroupRadii();
+        bindButtonRadiusResizeRefresh();
 
         // Ensure dot z-index is protected
         $('.dt-colvis-btn').css('z-index', '4');
@@ -176,6 +238,27 @@ window.DtDefaults = (function () {
         $('.dt-layout-table').removeClass('row mt-2');
         $('.dt-layout-full').removeClass('col-md col-12');
         $('table.dataTable').addClass('table-hover');
+    }
+
+    function bindButtonRadiusResizeRefresh() {
+        if (_buttonRadiusResizeBound) return;
+        _buttonRadiusResizeBound = true;
+
+        var scheduleRefresh = function () {
+            window.clearTimeout(_buttonRadiusResizeTimer);
+            _buttonRadiusResizeTimer = window.setTimeout(refreshButtonGroupRadii, 120);
+        };
+
+        window.addEventListener('resize', scheduleRefresh);
+
+        if (window.matchMedia) {
+            var mdQuery = window.matchMedia('(min-width: 768px)');
+            if (mdQuery.addEventListener) {
+                mdQuery.addEventListener('change', scheduleRefresh);
+            } else if (mdQuery.addListener) {
+                mdQuery.addListener(scheduleRefresh);
+            }
+        }
     }
 
     /**
@@ -221,6 +304,34 @@ window.DtDefaults = (function () {
                     this.style.setProperty('position', 'relative', 'important');
                 });
 
+                if ($visibleBtns.length > 1) {
+                    var isDarkActions = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                    var actionBorderColor = isDarkActions ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
+
+                    $visibleBtns.each(function (index) {
+                        this.style.setProperty('border-radius', '0', 'important');
+
+                        if (index === 0) {
+                            this.style.setProperty('border-top-left-radius', '0.375rem', 'important');
+                            this.style.setProperty('border-bottom-left-radius', '0.375rem', 'important');
+                        } else {
+                            this.style.setProperty('border-top-left-radius', '0', 'important');
+                            this.style.setProperty('border-bottom-left-radius', '0', 'important');
+                            this.style.setProperty('border-left', '1px solid ' + actionBorderColor, 'important');
+                        }
+
+                        if (index === $visibleBtns.length - 1) {
+                            this.style.setProperty('border-top-right-radius', '0.375rem', 'important');
+                            this.style.setProperty('border-bottom-right-radius', '0.375rem', 'important');
+                        } else {
+                            this.style.setProperty('border-top-right-radius', '0', 'important');
+                            this.style.setProperty('border-bottom-right-radius', '0', 'important');
+                        }
+                    });
+                } else if ($visibleBtns.length === 1) {
+                    $visibleBtns[0].style.setProperty('border-radius', '0.375rem', 'important');
+                }
+
                 return;
             }
 
@@ -261,6 +372,13 @@ window.DtDefaults = (function () {
                     // Single visible button should keep rounded corners
                     $visibleBtns[0].style.setProperty('border-radius', '0.375rem', 'important');
                 }
+            }
+
+            if (window.matchMedia('(min-width: 768px)').matches) {
+                $container.find('.dt-filter-btn:visible').each(function () {
+                    this.style.setProperty('border-top-left-radius', '0', 'important');
+                    this.style.setProperty('border-bottom-left-radius', '0', 'important');
+                });
             }
         });
     }
@@ -613,6 +731,8 @@ window.DtDefaults = (function () {
             }
         }
     }
+
+    bindResponsiveModalTitleFix();
 
     return {
         create: create,

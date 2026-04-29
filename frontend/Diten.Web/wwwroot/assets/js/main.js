@@ -113,46 +113,65 @@ document.addEventListener('DOMContentLoaded', function () {
   window.Helpers.initSpeechToText();
 
   // Theme Switcher and Template Customizer Synchronization
-  let storedStyle =
-    localStorage.getItem('templateCustomizer-' + templateName + '--Theme') ||
-    (window.templateCustomizer?.settings?.defaultStyle ?? document.documentElement.getAttribute('data-bs-theme'));
+  const getThemeStorageKey = () => 'templateCustomizer-' + templateName + '--Theme';
+  const getStoredTheme = () => {
+    try {
+      return localStorage.getItem(getThemeStorageKey()) || window.templateCustomizer?._getSetting?.('Theme') || null;
+    } catch (e) {
+      return window.templateCustomizer?._getSetting?.('Theme') || null;
+    }
+  };
+  const getEffectiveTheme = theme => {
+    if (theme === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return theme || document.documentElement.getAttribute('data-bs-theme') || 'light';
+  };
+  const syncSemiDarkVisibility = theme => {
+    const semiDarkL = document.querySelector('.template-customizer-semiDark');
+    if (!semiDarkL) return;
+    semiDarkL.classList.toggle('d-none', getEffectiveTheme(theme) === 'dark');
+  };
+  const applyTheme = (theme, focus = false) => {
+    const requestedTheme = theme || getStoredTheme() || document.documentElement.getAttribute('data-bs-theme') || 'light';
+    const effectiveTheme = getEffectiveTheme(requestedTheme);
 
-  window.Helpers.switchImage(storedStyle);
-  window.Helpers.setTheme(window.Helpers.getPreferredTheme());
+    window.Helpers.setStoredTheme(templateName, requestedTheme);
+    window.Helpers.setTheme(requestedTheme);
+    window.Helpers.showActiveTheme(requestedTheme, focus);
+    window.Helpers.syncCustomOptions(requestedTheme);
+    window.Helpers.switchImage(effectiveTheme);
+    syncSemiDarkVisibility(requestedTheme);
+
+    if (window.templateCustomizer?.setTheme) {
+      window.templateCustomizer.setTheme(requestedTheme);
+    }
+  };
+  const initThemeSwitcher = () => {
+    applyTheme(getStoredTheme() || window.Helpers.getPreferredTheme());
+
+    document.querySelectorAll('[data-bs-theme-value]').forEach(toggle => {
+      if (toggle.dataset.ditenThemeBound === 'true') return;
+      toggle.dataset.ditenThemeBound = 'true';
+      toggle.addEventListener('click', () => {
+        applyTheme(toggle.getAttribute('data-bs-theme-value'), true);
+      });
+    });
+  };
+
+  initThemeSwitcher();
 
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    const storedTheme = window.Helpers.getStoredTheme();
-    if (storedTheme !== 'light' && storedTheme !== 'dark') {
-      window.Helpers.setTheme(window.Helpers.getPreferredTheme());
+    if (getStoredTheme() === 'system') {
+      applyTheme('system');
     }
   });
 
-  window.addEventListener('DOMContentLoaded', () => {
-    window.Helpers.showActiveTheme(window.Helpers.getPreferredTheme());
-
-    document.querySelectorAll('[data-bs-theme-value]').forEach(toggle => {
-      toggle.addEventListener('click', () => {
-        const theme = toggle.getAttribute('data-bs-theme-value');
-        window.Helpers.setStoredTheme(templateName, theme);
-        window.Helpers.setTheme(theme);
-        window.Helpers.showActiveTheme(theme, true);
-        window.Helpers.syncCustomOptions(theme);
-        let currTheme = theme;
-        if (theme === 'system') {
-          currTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        const semiDarkL = document.querySelector('.template-customizer-semiDark');
-        if (semiDarkL) {
-          if (theme === 'dark') {
-            semiDarkL.classList.add('d-none');
-          } else {
-            semiDarkL.classList.remove('d-none');
-          }
-        }
-        window.Helpers.switchImage(currTheme);
-      });
-    });
-  });
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', initThemeSwitcher, { once: true });
+  } else {
+    initThemeSwitcher();
+  }
 
   // Manage menu expanded/collapsed with templateCustomizer & local storage
   //------------------------------------------------------------------
@@ -186,6 +205,252 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 })();
+
+// Global Search
+// -----------------------------------------------------------------------------
+const SearchConfig = {
+  container: '#autocomplete',
+  placeholder: 'Search [CTRL + K]',
+  classNames: {
+    detachedContainer: 'd-flex flex-column',
+    detachedFormContainer: 'd-flex align-items-center justify-content-between border-bottom',
+    form: 'd-flex align-items-center',
+    input: 'search-control border-none',
+    detachedCancelButton: 'btn-search-close',
+    panel: 'flex-grow content-wrapper overflow-hidden position-relative',
+    panelLayout: 'h-100',
+    clearButton: 'd-none',
+    item: 'd-block'
+  }
+};
+
+let searchData = {};
+
+function loadSearchData() {
+  const searchJson = $('#layout-menu').hasClass('menu-horizontal') ? 'search-horizontal.json' : 'search-vertical.json';
+
+  fetch(assetsPath + 'json/' + searchJson)
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to fetch search data');
+      return response.json();
+    })
+    .then(json => {
+      searchData = json;
+      initializeAutocomplete();
+    })
+    .catch(error => console.error('[Layout] Error loading search JSON:', error));
+}
+
+function initializeAutocomplete() {
+  const searchElement = document.getElementById('autocomplete');
+  if (!searchElement || typeof autocomplete !== 'function') return;
+
+  return autocomplete({
+    ...SearchConfig,
+    openOnFocus: true,
+    onStateChange({ state, setQuery }) {
+      if (state.isOpen) {
+        document.body.style.overflow = 'hidden';
+        document.body.style.paddingRight = 'var(--bs-scrollbar-width)';
+
+        const cancelIcon = document.querySelector('.aa-DetachedCancelButton');
+        if (cancelIcon) {
+          cancelIcon.innerHTML =
+            '<span class="text-body-secondary">[esc]</span> <span class="icon-base icon-md bx bx-x text-heading"></span>';
+        }
+
+        if (!window.autoCompletePS) {
+          const panel = document.querySelector('.aa-Panel');
+          if (panel && typeof PerfectScrollbar !== 'undefined') {
+            window.autoCompletePS = new PerfectScrollbar(panel);
+          }
+        }
+      } else {
+        if (state.status === 'idle' && state.query) {
+          setQuery('');
+        }
+
+        document.body.style.overflow = 'auto';
+        document.body.style.paddingRight = '';
+      }
+    },
+    render(args, root) {
+      const { render, html, children, state } = args;
+
+      if (!state.query) {
+        const initialSuggestions = html`
+          <div class="p-5 p-lg-12">
+            <div class="row g-4">
+              ${Object.entries(searchData.suggestions || {}).map(
+                ([section, items]) => html`
+                  <div class="col-md-6 suggestion-section">
+                    <p class="search-headings mb-2">${section}</p>
+                    <div class="suggestion-items">
+                      ${items.map(
+                        item => html`
+                          <a href="${item.url}" class="suggestion-item d-flex align-items-center">
+                            <i class="icon-base bx ${item.icon} me-2"></i>
+                            <span>${item.name}</span>
+                          </a>
+                        `
+                      )}
+                    </div>
+                  </div>
+                `
+              )}
+            </div>
+          </div>
+        `;
+
+        render(initialSuggestions, root);
+        return;
+      }
+
+      if (!args.sections.length) {
+        render(
+          html`
+            <div class="search-no-results-wrapper">
+              <div class="d-flex justify-content-center align-items-center h-100">
+                <div class="text-center text-heading">
+                  <i class="icon-base bx bx-file text-body-secondary icon-48px mb-4"></i>
+                  <h5>No results found</h5>
+                </div>
+              </div>
+            </div>
+          `,
+          root
+        );
+        return;
+      }
+
+      render(children, root);
+      window.autoCompletePS?.update();
+    },
+    getSources() {
+      const sources = [];
+
+      if (searchData.navigation) {
+        const navigationSources = Object.keys(searchData.navigation)
+          .filter(section => section !== 'files' && section !== 'members')
+          .map(section => ({
+            sourceId: `nav-${section}`,
+            getItems({ query }) {
+              const items = searchData.navigation[section];
+              if (!query) return items;
+              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
+            },
+            getItemUrl({ item }) {
+              return item.url;
+            },
+            templates: {
+              header({ items, html }) {
+                if (items.length === 0) return null;
+                return html`<span class="search-headings">${section}</span>`;
+              },
+              item({ item, html }) {
+                return html`
+                  <a href="${item.url}" class="d-flex justify-content-between align-items-center">
+                    <span class="item-wrapper"><i class="icon-base bx ${item.icon}"></i>${item.name}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M16 13h-6v-3l-5 4l5 4v-3h7a1 1 0 0 0 1-1V5h-2z" />
+                    </svg>
+                  </a>
+                `;
+              }
+            }
+          }));
+        sources.push(...navigationSources);
+
+        if (searchData.navigation.files) {
+          sources.push({
+            sourceId: 'files',
+            getItems({ query }) {
+              const items = searchData.navigation.files;
+              if (!query) return items;
+              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
+            },
+            getItemUrl({ item }) {
+              return item.url;
+            },
+            templates: {
+              header({ items, html }) {
+                if (items.length === 0) return null;
+                return html`<span class="search-headings">Files</span>`;
+              },
+              item({ item, html }) {
+                return html`
+                  <a href="${item.url}" class="d-flex align-items-center position-relative px-4 py-2">
+                    <div class="file-preview me-2">
+                      <img src="${assetsPath}${item.src}" alt="${item.name}" class="rounded" width="42" />
+                    </div>
+                    <div class="flex-grow-1">
+                      <h6 class="mb-0">${item.name}</h6>
+                      <small class="text-body-secondary">${item.subtitle}</small>
+                    </div>
+                    ${item.meta
+                      ? html`
+                          <div class="position-absolute end-0 me-4">
+                            <span class="text-body-secondary small">${item.meta}</span>
+                          </div>
+                        `
+                      : ''}
+                  </a>
+                `;
+              }
+            }
+          });
+        }
+
+        if (searchData.navigation.members) {
+          sources.push({
+            sourceId: 'members',
+            getItems({ query }) {
+              const items = searchData.navigation.members;
+              if (!query) return items;
+              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
+            },
+            getItemUrl({ item }) {
+              return item.url;
+            },
+            templates: {
+              header({ items, html }) {
+                if (items.length === 0) return null;
+                return html`<span class="search-headings">Members</span>`;
+              },
+              item({ item, html }) {
+                return html`
+                  <a href="${item.url}" class="d-flex align-items-center py-2 px-4">
+                    <div class="avatar me-2">
+                      <img src="${assetsPath}${item.src}" alt="${item.name}" class="rounded-circle" width="32" />
+                    </div>
+                    <div class="flex-grow-1">
+                      <h6 class="mb-0">${item.name}</h6>
+                      <small class="text-body-secondary">${item.subtitle}</small>
+                    </div>
+                  </a>
+                `;
+              }
+            }
+          });
+        }
+      }
+
+      return sources;
+    }
+  });
+}
+
+document.addEventListener('keydown', event => {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault();
+    document.querySelector('.aa-DetachedSearchButton')?.click();
+  }
+});
+
+if (document.documentElement.querySelector('#autocomplete')) {
+  loadSearchData();
+}
+
 // Utils
 function isMacOS() {
   return /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);

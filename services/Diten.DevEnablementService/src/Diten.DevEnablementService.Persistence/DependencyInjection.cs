@@ -31,7 +31,8 @@ public static class DependencyInjection
         services.AddSingleton<IMongoClient>(client);
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
 
-        services.AddScoped<IGoldenReferenceItemRepository, GoldenReferenceItemRepository>();
+        services.AddScoped<IGoldenReferenceSlimRepository, GoldenReferenceSlimRepository>();
+        services.AddScoped<IGoldenReferenceCompactRepository, GoldenReferenceCompactRepository>();
         services.AddScoped<IModuleSeedDataInitializer, NoOpModuleSeedDataInitializer>();
 
         return services;
