@@ -393,4 +393,40 @@
   <data name="NotAvailable" xml:space="preserve">
     <value>غير متاح</value>
   </data>
+  <data name="Workspace" xml:space="preserve">
+    <value>مساحة العمل</value>
+  </data>
+  <data name="PlatformAdministration" xml:space="preserve">
+    <value>إدارة المنصة</value>
+  </data>
+  <data name="DeveloperSandbox" xml:space="preserve">
+    <value>بيئة اختبار المطور</value>
+  </data>
+  <data name="GoldenSlim" xml:space="preserve">
+    <value>Golden Slim</value>
+  </data>
+  <data name="GoldenCompact" xml:space="preserve">
+    <value>Golden Compact</value>
+  </data>
+  <data name="ToggleTheme" xml:space="preserve">
+    <value>تبديل المظهر</value>
+  </data>
+  <data name="SystemTheme" xml:space="preserve">
+    <value>النظام</value>
+  </data>
+  <data name="Notification" xml:space="preserve">
+    <value>إشعار</value>
+  </data>
+  <data name="NewNotifications" xml:space="preserve">
+    <value>{0} جديد</value>
+  </data>
+  <data name="MarkAllAsRead" xml:space="preserve">
+    <value>تمييز الكل كمقروء</value>
+  </data>
+  <data name="ViewAllNotifications" xml:space="preserve">
+    <value>عرض كل الإشعارات</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>مستخدم</value>
+  </data>
 </root>

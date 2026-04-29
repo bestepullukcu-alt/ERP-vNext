@@ -14,7 +14,7 @@ public sealed class GoldenReferenceSlimEditViewModel
 
     public string? Description { get; set; }
     public string? ReferenceType { get; set; }
-    public int Priority { get; set; }
+    public int? Priority { get; set; }
     public bool IsActive { get; set; } = true;
 }
 
@@ -25,7 +25,7 @@ public sealed class GoldenReferenceSlimDetailViewModel
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ReferenceType { get; set; }
-    public int Priority { get; set; }
+    public int? Priority { get; set; }
     public bool IsActive { get; set; }
 }
 
@@ -35,7 +35,7 @@ public sealed class GoldenReferenceSlimSavePayload
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ReferenceType { get; set; }
-    public int Priority { get; set; }
+    public int? Priority { get; set; }
     public bool IsActive { get; set; } = true;
 }
 

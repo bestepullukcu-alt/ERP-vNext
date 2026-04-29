@@ -68,6 +68,16 @@ const GoldenReferenceSlimList = (function () {
         return s ? [s] : [];
     };
     const sortNormalizedArray = (v) => normalizeArray(v).slice().sort((a, b) => a.localeCompare(b));
+    const normalizeFilterValue = (value) => Array.isArray(value) ? normalizeArray(value) : normalizeString(value);
+    const emptyFilters = () => ({ status: [], referenceType: [], priority: '' });
+    const normalizeFilters = (filters) => {
+        const source = filters || {};
+        return {
+            status: normalizeArray(source.status),
+            referenceType: normalizeArray(source.referenceType),
+            priority: normalizeString(source.priority)
+        };
+    };
     const hasFilterValue = (v) => Array.isArray(v) ? normalizeArray(v).length > 0 : normalizeString(v).length > 0;
 
     // ─── Filter matching ─────────────────────────────────────────────────────
@@ -134,9 +144,7 @@ const GoldenReferenceSlimList = (function () {
 
     // ─── View state ──────────────────────────────────────────────────────────
     const getCurrentView = (api) => ({
-        status: normalizeArray(appliedFilters.status),
-        referenceType: normalizeArray(appliedFilters.referenceType),
-        priority: normalizeString(appliedFilters.priority),
+        filters: Object.assign({}, appliedFilters),
         search: normalizeString(getSearchVal(api) || api.search()),
         colVis: captureColVis(api),
         columnOrder: captureColOrder(api),
@@ -144,9 +152,10 @@ const GoldenReferenceSlimList = (function () {
     });
 
     const serializeView = (v) => JSON.stringify({
-        status: sortNormalizedArray(v?.status),
-        referenceType: sortNormalizedArray(v?.referenceType),
-        priority: normalizeString(v?.priority),
+        filters: Object.keys(v?.filters || {}).sort().reduce((acc, key) => {
+            acc[key] = normalizeFilterValue(v.filters[key]);
+            return acc;
+        }, {}),
         search: normalizeString(v?.search),
         colVis: normalizeColVis(v?.colVis) || defaultColVis(),
         columnOrder: normalizeColOrder(v?.columnOrder) || Array.from({ length: totalColumnCount }, (_, i) => i),
@@ -156,6 +165,7 @@ const GoldenReferenceSlimList = (function () {
     const getSavedViewId = (sv) => sv?.id || sv?.Id || sv?._id || null;
     const getSavedViewName = (sv) => sv?.viewName || sv?.ViewName || '';
     const isSavedViewDefault = (sv) => sv?.isDefault === true || sv?.IsDefault === true;
+    const unwrapViewResponse = (response) => response?.data || response?.Data || response;
 
     const getSavedViewDef = (sv) => {
         const raw = sv?.viewDefinition ?? sv?.ViewDefinition ?? {};
@@ -166,15 +176,27 @@ const GoldenReferenceSlimList = (function () {
     const mapSavedViewToState = (sv) => {
         const d = getSavedViewDef(sv);
         return {
-            status: normalizeArray(d.status),
-            referenceType: normalizeArray(d.referenceType),
-            priority: normalizeString(d.priority),
+            filters: normalizeFilters(d.filters || d),
             search: normalizeString(d.search),
             colVis: normalizeColVis(d.colVis),
             columnOrder: normalizeColOrder(d.columnOrder),
             order: Array.isArray(d.order) ? d.order : null
         };
     };
+    const normalizeViewState = (view) => ({
+        filters: normalizeFilters(view?.filters || view || emptyFilters()),
+        search: normalizeString(view?.search),
+        colVis: normalizeColVis(view?.colVis) || defaultColVis(),
+        columnOrder: normalizeColOrder(view?.columnOrder) || Array.from({ length: totalColumnCount }, (_, i) => i),
+        order: Array.isArray(view?.order) ? view.order : baseOrder
+    });
+    const getResetBaselineState = () => normalizeViewState({
+        filters: emptyFilters(),
+        search: '',
+        colVis: defaultColVis(),
+        columnOrder: Array.from({ length: totalColumnCount }, (_, i) => i),
+        order: baseOrder
+    });
 
     const setSaveFilterVisible = (visible) => {
         const btn = document.querySelector('.dt-save-filter-btn');
@@ -185,7 +207,8 @@ const GoldenReferenceSlimList = (function () {
 
     const isDirtyComparedToDefault = (api) => {
         const baseline = defaultViewState || {
-            status: [], referenceType: [], priority: '', search: '',
+            filters: emptyFilters(),
+            search: '',
             colVis: defaultColVis(),
             columnOrder: Array.from({ length: totalColumnCount }, (_, i) => i),
             order: baseOrder
@@ -199,7 +222,8 @@ const GoldenReferenceSlimList = (function () {
         if (!personalizationClient?.getViews) return null;
         try {
             const views = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
-            defaultViewRecord = Array.isArray(views) ? (views.find(isSavedViewDefault) || views[0] || null) : null;
+            const items = Array.isArray(views) ? views : (views?.data || views?.Data || []);
+            defaultViewRecord = Array.isArray(items) ? (items.find(isSavedViewDefault) || items[0] || null) : null;
             defaultViewState = defaultViewRecord ? mapSavedViewToState(defaultViewRecord) : null;
             return defaultViewState;
         } catch (error) {
@@ -210,19 +234,25 @@ const GoldenReferenceSlimList = (function () {
     };
 
     const saveDefaultView = async (view) => {
+        if (!personalizationClient?.saveView) return null;
+        const normalizedView = normalizeViewState(view);
         const payload = {
             moduleKey: personalizationContext.moduleKey,
             pageKey: personalizationContext.pageKey,
-            viewName: (getSavedViewName(defaultViewRecord) || L.SaveView || '').trim(),
-            viewDefinition: view,
+            viewName: (getSavedViewName(defaultViewRecord) || L.SaveView || 'Default').trim(),
+            viewDefinition: normalizedView,
             isDefault: true,
             visibility: 'private'
         };
         const existingId = getSavedViewId(defaultViewRecord);
-        defaultViewRecord = existingId
+        const savedResponse = existingId
             ? await personalizationClient.updateView(existingId, payload)
             : await personalizationClient.saveView(payload);
-        defaultViewState = mapSavedViewToState(defaultViewRecord);
+        const savedRecord = unwrapViewResponse(savedResponse);
+        defaultViewRecord = savedRecord && typeof savedRecord === 'object'
+            ? savedRecord
+            : Object.assign({}, defaultViewRecord || {}, payload);
+        defaultViewState = normalizedView;
         return defaultViewState;
     };
 
@@ -233,22 +263,24 @@ const GoldenReferenceSlimList = (function () {
         const toolbarRow = filterBtn?.closest('.dt-layout-row') || filterBtn?.closest('.row') || filterBtn?.closest('.dt-layout-end')?.parentElement;
         if (host && toolbarRow) {
             toolbarRow.insertAdjacentElement('afterend', host);
-            host.classList.add('px-6');
+            host.classList.remove('px-6');
+            host.classList.add('px-3');
         }
     };
 
-    const bindInlineFilterToggle = () => {
+    const toggleInlineFilter = () => {
+        const collapseEl = document.getElementById(filterCollapseId);
+        if (!collapseEl) return;
+        bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).toggle();
+    };
+
+    const bindInlineFilterA11y = () => {
         const btn = document.querySelector('.dt-filter-btn');
         const collapseEl = document.getElementById(filterCollapseId);
         if (!btn || !collapseEl || btn.dataset.bound) return;
         btn.dataset.bound = '1';
         collapseEl.addEventListener('shown.bs.collapse', () => btn.setAttribute('aria-expanded', 'true'));
         collapseEl.addEventListener('hidden.bs.collapse', () => btn.setAttribute('aria-expanded', 'false'));
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const inst = bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false });
-            collapseEl.classList.contains('show') ? inst.hide() : inst.show();
-        });
     };
 
     const registerTableFilters = () => {
@@ -366,27 +398,20 @@ const GoldenReferenceSlimList = (function () {
     const getAppliedFilterCount = () =>
         [appliedFilters.status, appliedFilters.referenceType, appliedFilters.priority].filter(hasFilterValue).length;
 
-    const applySavedTableState = (api, view, opts) => {
-        const s = view || {};
-        const fallbackOrder = Array.isArray(opts?.fallbackOrder) ? opts.fallbackOrder : baseOrder;
-
-        appliedFilters = {
-            status: normalizeArray(s.status),
-            referenceType: normalizeArray(s.referenceType),
-            priority: normalizeString(s.priority)
-        };
-
+    const applySavedTableState = (api, view) => {
+        if (!api || !view) return;
+        const s = normalizeViewState(view);
+        appliedFilters = s.filters;
         syncFilterControls(appliedFilters);
-        api.draw();
-
-        if (typeof s.search === 'string') { api.search(s.search); syncSearchInput(api, s.search); }
-        else if (opts?.clearSearch) { api.search(''); syncSearchInput(api, ''); }
-
-        applyColOrder(api, s.columnOrder || (opts?.resetColumnOrder ? null : null));
-        applyColVis(api, s.colVis || (opts?.resetColumns ? defaultColVis() : null));
-        api.order(Array.isArray(s.order) ? s.order : fallbackOrder);
+        applyColOrder(api, s.columnOrder);
+        applyColVis(api, s.colVis);
+        api.search(s.search);
+        syncSearchInput(api, s.search);
+        api.order(s.order);
+        try { api.columns.adjust(); } catch (e) { }
+        try { api.responsive?.recalc?.(); } catch (e) { }
         api.draw(false);
-        setTimeout(() => window.DtDefaults.updateVisualState(api, getAppliedFilterCount()), 0);
+        window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount());
     };
 
     const loadLookupOptions = async () => {
@@ -433,12 +458,7 @@ const GoldenReferenceSlimList = (function () {
     const setupFilters = async (api) => {
         await loadLookupOptions();
         initSelect2Filters();
-        if (defaultViewState) {
-            applySavedTableState(api, defaultViewState);
-        } else {
-            syncFilterControls(appliedFilters);
-            window.DtDefaults.updateVisualState(api, 0);
-        }
+        applySavedTableState(api, defaultViewState || { filters: appliedFilters });
 
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
             appliedFilters = {
@@ -455,15 +475,7 @@ const GoldenReferenceSlimList = (function () {
 
         document.getElementById('btnFilterReset')?.addEventListener('click', (e) => {
             e.preventDefault();
-            const hasSaved = !!defaultViewState;
-            const isDirty = hasSaved ? isDirtyComparedToDefault(api) : false;
-            if (hasSaved && isDirty) {
-                applySavedTableState(api, defaultViewState, { fallbackOrder: baseOrder, resetColumnOrder: !defaultViewState?.columnOrder });
-            } else {
-                applySavedTableState(api, { status: [], referenceType: [], priority: '', search: '' }, {
-                    fallbackOrder: baseOrder, clearSearch: true, resetColumns: true, resetColumnOrder: true
-                });
-            }
+            applySavedTableState(api, getResetBaselineState());
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
         });
     };
@@ -815,7 +827,8 @@ const GoldenReferenceSlimList = (function () {
             filterBtn: {
                 text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
                 className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
-                attr: { title: L.Filter, 'aria-controls': filterCollapseId, 'aria-expanded': 'false' }
+                attr: { title: L.Filter, 'aria-controls': filterCollapseId, 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },
+                action: () => toggleInlineFilter()
             },
             saveFilterBtn: {
                 text: '<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">' + (L.SaveView || '') + '</span>',
@@ -827,11 +840,11 @@ const GoldenReferenceSlimList = (function () {
                     try {
                         await saveDefaultView(getCurrentView(tableApi));
                         setSaveFilterVisible(false);
-                        window.showToast?.(L.RecordSaved, 'success');
+                        window.showToast?.(L.RecordSaved || L.SaveView || '', 'success');
                     } catch (error) {
                         if (error?.authHandled) return;
-                        console.error(error);
-                        window.showToast?.(L.ErrorOccurred, 'error');
+                        console.error('[GoldenReferenceSlim SaveView] Failed to save default view.', error);
+                        window.showToast?.(L.ErrorOccurred || '', 'error');
                     }
                 }
             }
@@ -920,7 +933,7 @@ const GoldenReferenceSlimList = (function () {
                 ),
                 initComplete: function () {
                     mountInlineFilter();
-                    bindInlineFilterToggle();
+                    bindInlineFilterA11y();
                     void setupFilters(this.api());
                     // Bind Add New button after DT renders it — must NOT use addNewAttr onclick (DT calls it at init)
                     document.querySelector('.add-new')?.addEventListener('click', (e) => {

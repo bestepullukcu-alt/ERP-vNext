@@ -4,7 +4,7 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Localizer["Details"].Value;
-    Layout = "_LayoutBackbone";
+    Layout = "_LayoutPlatformAdmin";
     var tenantId = ViewData["TenantId"]?.ToString() ?? string.Empty;
 }
 

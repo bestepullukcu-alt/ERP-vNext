@@ -393,4 +393,40 @@
   <data name="NotAvailable" xml:space="preserve">
     <value>Mevcut Değil</value>
   </data>
+  <data name="Workspace" xml:space="preserve">
+    <value>Çalışma Alanı</value>
+  </data>
+  <data name="PlatformAdministration" xml:space="preserve">
+    <value>Platform Yönetimi</value>
+  </data>
+  <data name="DeveloperSandbox" xml:space="preserve">
+    <value>Geliştirici Kum Havuzu</value>
+  </data>
+  <data name="GoldenSlim" xml:space="preserve">
+    <value>Golden Slim</value>
+  </data>
+  <data name="GoldenCompact" xml:space="preserve">
+    <value>Golden Compact</value>
+  </data>
+  <data name="ToggleTheme" xml:space="preserve">
+    <value>Temayı Değiştir</value>
+  </data>
+  <data name="SystemTheme" xml:space="preserve">
+    <value>Sistem</value>
+  </data>
+  <data name="Notification" xml:space="preserve">
+    <value>Bildirim</value>
+  </data>
+  <data name="NewNotifications" xml:space="preserve">
+    <value>{0} Yeni</value>
+  </data>
+  <data name="MarkAllAsRead" xml:space="preserve">
+    <value>Tümünü okundu olarak işaretle</value>
+  </data>
+  <data name="ViewAllNotifications" xml:space="preserve">
+    <value>Tüm bildirimleri gör</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>Kullanıcı</value>
+  </data>
 </root>

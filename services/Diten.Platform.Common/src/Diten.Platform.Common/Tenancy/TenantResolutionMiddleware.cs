@@ -34,6 +34,50 @@ public sealed class TenantResolutionMiddleware
         }
 
         var actorType = context.User.FindFirst("actor_type")?.Value;
+        if (IsPersonalizationPath(context.Request.Path))
+        {
+            if (IsPlatformActor(actorType))
+            {
+                if (context.Request.Headers.ContainsKey(TenantHeader))
+                {
+                    await WriteProblemDetails(context, StatusCodes.Status400BadRequest, "Invalid Tenant Header", $"'{TenantHeader}' is not allowed for platform personalization requests.");
+                    return;
+                }
+
+                tenantContext.SetPlatformContext(Guid.Empty);
+                await _next(context);
+                return;
+            }
+
+            var personalizationJwtTenant = ReadJwtTenant(context);
+            var personalizationHeaderTenant = ReadHeaderTenant(context);
+            var personalizationTenant = ResolveTenant(personalizationJwtTenant, personalizationHeaderTenant, context);
+            if (personalizationTenant is null && TryGetDevelopmentBypassTenant(out var personalizationBypassTenant))
+            {
+                personalizationTenant = personalizationBypassTenant;
+                _logger.LogWarning(
+                    "TenantResolution dev bypass applied. Path={Path} TenantId={TenantId}",
+                    context.Request.Path,
+                    personalizationBypassTenant);
+            }
+
+            if (personalizationTenant is null)
+            {
+                await WriteProblemDetails(context, StatusCodes.Status400BadRequest, "Missing Tenant", $"'{TenantHeader}' header or JWT tenant_id claim is required for tenant personalization endpoints.");
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(actorType) && !string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
+            {
+                await WriteProblemDetails(context, StatusCodes.Status403Forbidden, "Forbidden Actor", "Tenant personalization endpoints require tenant_user tokens.");
+                return;
+            }
+
+            tenantContext.SetTenant(personalizationTenant.Value);
+            await _next(context);
+            return;
+        }
+
         if (IsAdminPath(context.Request.Path))
         {
             if (context.Request.Headers.ContainsKey(TenantHeader))
@@ -136,8 +180,12 @@ public sealed class TenantResolutionMiddleware
     private static bool IsAdminPath(PathString path)
     {
         return path.StartsWithSegments("/api/admin", StringComparison.OrdinalIgnoreCase)
-               || path.StartsWithSegments("/api/platform", StringComparison.OrdinalIgnoreCase)
-               || path.StartsWithSegments("/api/personalization", StringComparison.OrdinalIgnoreCase);
+               || path.StartsWithSegments("/api/platform", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsPersonalizationPath(PathString path)
+    {
+        return path.StartsWithSegments("/api/personalization", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsPlatformActor(string? actorType)

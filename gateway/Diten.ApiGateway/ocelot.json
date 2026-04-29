@@ -137,7 +137,7 @@
       "UpstreamScheme": "http"
     },
     {
-      "DownstreamPathTemplate": "/api/platform/catalog",
+      "DownstreamPathTemplate": "/api/platform/module-catalog",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -145,7 +145,7 @@
           "Port": 5057
         }
       ],
-      "UpstreamPathTemplate": "/api/platform/catalog",
+      "UpstreamPathTemplate": "/api/platform/module-catalog",
       "UpstreamHttpMethod": [
         "GET",
         "POST",
@@ -161,7 +161,7 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/api/platform/catalog/{everything}",
+      "DownstreamPathTemplate": "/api/platform/module-catalog/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -169,7 +169,7 @@
           "Port": 5057
         }
       ],
-      "UpstreamPathTemplate": "/api/platform/catalog/{everything}",
+      "UpstreamPathTemplate": "/api/platform/module-catalog/{everything}",
       "UpstreamHttpMethod": [
         "GET",
         "POST",

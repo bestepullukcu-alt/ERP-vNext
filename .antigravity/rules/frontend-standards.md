@@ -36,9 +36,11 @@ Karmaşık ekranların yönetilebilirliğini artırmak için **Partial View** ya
 
 API bağlantılarında hardcoded port veya domain kullanımından kaçınılmalıdır.
 
-*   **Global API Objesi:** Tüm servis bağlantıları için merkezi `window.API` objesi kullanılmalıdır.
-    *   *Kural:* `${API.mdm}/Product/GetList` veya `${API.ppm}/Task/GetList` şeklinde servis bazlı erişim standarttır.
-*   **Gateway Awareness:** Gateway arkasındaki servisler (`mdm`, `ppm`, `crm`, `hr`) bu merkezi obje üzerinden yönetilmelidir. Ajanlar asla doğrudan `localhost:5000` gibi URL'ler yazmamalıdır.
+*   **API Profile Kararı:** Her DataTable modülü `proxy-profile` veya `direct-gateway-profile` ile üretilir.
+    *   *proxy-profile (Platform/admin MVC default):* Browser JS sadece same-origin frontend proxy'ye gider (`/{AreaName}/{ModuleName}/api`). Frontend controller bu isteği server-side `GatewayUrl` üzerinden Gateway `5000` rotasına taşır.
+    *   *direct-gateway-profile:* Sadece browser-safe token stratejisi olan tenant/public shell ekranlarında kullanılır ve merkezi `window.API.{service}` objesine gider.
+*   **HttpOnly Auth Kuralı:** DataTable JS içinde `document.cookie`, `access_token` veya `Authorization: Bearer` üretimi yasaktır. HttpOnly cookie yalnızca MVC controller/proxy tarafından server-side okunur.
+*   **Gateway Awareness:** Browser JS asla mikroservis portlarına (`5056`, `5057`, `5058`) doğrudan gitmez. `proxy-profile` kullanıldığında browser Network kaydında Gateway değil same-origin frontend proxy görünür; Gateway çağrısı server-side yapılır.
 
 ---
 
@@ -71,7 +73,7 @@ API bağlantılarında hardcoded port veya domain kullanımından kaçınılmal�
 ## 🌍 Localization (L10N)
 
 ### L10N-001: Layout L10n Coverage
-- `_LayoutBackbone.cshtml` içindeki tüm metinler `@SharedLocalizer["Key"]` ile dile bağlanır.
+- `_LayoutPlatformAdmin.cshtml` ve `_LayoutTenantShell.cshtml` içindeki tüm metinler `@SharedLocalizer["Key"]` ile dile bağlanır.
 
 ### L10N-002: Universal Coverage (8 Languages)
 - Yeni eklenen her Key, sistemdeki **tüm 7 dil dosyasına** (`en, fr, es, zh, ar, ru, tr`) eksiksiz eklenmelidir.
@@ -95,6 +97,10 @@ Bu kurallar, projedeki görsel tutarlılığı (consistency) korumak için ZORUN
 ### UI-020: Zorunlu Alan İşaretleri (Required Markers)
 - Backend `Validator` sınıfları (`FluentValidation`) içinde `NotEmpty()` veya `NotNull()` olarak tanımlanan tüm alanların UI tarafındaki `<label>` etiketlerine `<span class="text-danger">*</span>` eklenmesi ZORUNLUDUR.
 - Bu marker, label metninin hemen sağında ve bir boşluk bırakılarak yer almalıdır.
+- Required kontratı tek kaynaklı olmalıdır: Backend validator `NotEmpty()`/`NotNull()`, Web ViewModel `[Required]`, Razor `required` attribute'u, label yıldızı ve global required-fields tracker aynı alan listesini göstermelidir.
+- Opsiyonel alanlarda `[Required]`, HTML `required`, label yıldızı veya otomatik `data-val-required` üretecek non-nullable value type kullanılmaz. Opsiyonel numeric/date alanlar Web ViewModel'de nullable olmalıdır (`int?`, `decimal?`, `DateTime?`, vb.).
+- Backend request DTO'su opsiyonel bir alanı nullable tanımlıyorsa Web ViewModel ve save payload da nullable olmalıdır. Örnek: backend `int? SortOrder` ise frontend `SortOrder` da `int?` olmalıdır; boş bırakılırsa API/handler default değeri uygular.
+- Global required-fields tracker sonucu Create ekranı ilk açıldığında açıklanabilir olmalıdır: paydadaki sayı yalnızca gerçek required alan sayısıdır; paydaki başlangıç dolu değerler yalnızca bilinçli default verilen required alanlardan gelebilir.
 
 ### UI-021: Gelişmiş Filtreleme (Multi-Select Mandate)
 - Kategori, Ürün Tipi, Durum, Departman gibi "Sınıflandırma" odaklı filtreler daima **Multi-Select (Select2)** olarak tasarlanmalıdır.
@@ -110,13 +116,30 @@ Bu kurallar, projedeki görsel tutarlılığı (consistency) korumak için ZORUN
 - Eğer bir JavaScript dosyasında (`index.js`, `form.js`) bir Modal id'sine (`#saveViewModal`, `#editModal` vb.) referans veriliyorsa, bu modalın HTML iskeletinin ilgili View dosyasında (veya bir partial içinde) bulunması ZORUNLUDUR.
 - JS trigger'ları, olmayan modal id'lerine bağlanarak sistemin "sessizce hata" (silently failing) vermesine izin verilmez.
 
+### UI-024: Compact Form / Details Bilgi Mimarisi Paritesi
+- `golden_reference: compact` olan modüllerde `Details.cshtml` ve `_Form.cshtml` aynı mantıksal bölüm haritasını kullanmalıdır.
+- Create/Edit ekranları, Details ekranındaki logical section sayısını ve alan sahipliğini korur. Örneğin Details `Identity`, `Description`, `Classification`, `Status` olarak dört bölümden oluşuyorsa `_Form.cshtml` de dört ayrı card/section üretir.
+- Farklı logical bölümleri aynı card içine toplamak, formu Details'tan daha az sayıda ana card ile sunmak veya alanı Details'taki bölümünden farklı bir bölümde göstermek kabul edilmez.
+- Bu kontrol yalnızca dosya varlığı kontrolü değildir; render edilen UI yüzeyi ve Razor section/card yapısı birlikte doğrulanmalıdır.
+
 ---
 
 ## 🛡️ Production Safety
 
 ### PROD-001: Layout & ViewStart Freeze
-- `_Layout.cshtml` ve `_ViewStart.cshtml` değiştirilmez; archive uyumluluğu korunur.
+- `_Layout.cshtml` ve kök `_ViewStart.cshtml` değiştirilmez; archive uyumluluğu korunur.
 - Geliştirmeler `backbone-custom.css` üzerinden yapılır.
+
+### PROD-005: Shell Ayrımı (Platform Admin vs Tenant)
+- Yeni bir modül eklenirken **shell ataması zorunludur**: modül ya **platform admin** ya da **tenant** shell'ine bağlanır, asla ikisine birden değil.
+- Layout seçimi:
+  - **Admin modülleri** → `Layout = "_LayoutPlatformAdmin";` ve view `Views/Platform/{Controller}/` altına konur. Controller route'u `[Route("Platform/[controller]")]` olur. `Views/Platform/_ViewStart.cshtml` zaten admin layout'u atadığı için view'da manuel `Layout = ` opsiyoneldir.
+  - **Tenant modülleri** → `Layout = "_LayoutTenantShell";` ve view kök Views altına konur (`Views/{Controller}/` veya alan altında). Controller route'u `Platform` prefix'i içermez.
+- Sidebar yerleştirme:
+  - Admin modülü → `_LayoutPlatformAdmin.cshtml` içindeki `Platform Administration` listesine `<li class="menu-item">` eklenir.
+  - Tenant modülü → `_LayoutTenantShell.cshtml` içinde uygun `menu-header` (Workspace, Developer Sandbox vb.) altına eklenir.
+- Bir modülün her iki sidebar'da birden görünmesi YASAKTIR. Aynı modülün hem `/Platform/...` hem kök URL'de servis edilmesi YASAKTIR.
+- Legacy `_Layout.cshtml` (812 satır) yalnızca eski tenant modülleri (ESBP, DemandIdeas, InventoryGovernance, DeliveryExecutionManagement, ManagementGovernance, DecompositionTreeBuilder) tarafından kullanılır; bu dosya freeze altındadır ve yeni modül onu kullanamaz.
 
 ### PROD-004: Archive Freeze
 - `Views/Archive/` altındaki dosyalar refactor planı olmadan değiştirilmez.

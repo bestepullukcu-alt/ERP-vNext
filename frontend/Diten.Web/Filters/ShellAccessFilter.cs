@@ -35,11 +35,6 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
             return;
         }
 
-        if (path.StartsWithSegments("/Platform/ModuleCatalog", StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
         EnsureJwtCookiePrincipal(context.HttpContext);
 
         var actorType = context.HttpContext.User.FindFirst("actor_type")?.Value?.Trim().ToLowerInvariant();

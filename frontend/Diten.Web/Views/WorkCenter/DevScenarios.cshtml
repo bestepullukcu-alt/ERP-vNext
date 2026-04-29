@@ -1,6 +1,6 @@
 @{
     ViewData["Title"] = "Task Detail — Dev Scenarios";
-    Layout = "_LayoutBackbone";
+    Layout = "_LayoutTenantShell";
 
     var returnUrl = Url.Action("DevScenarios", "WorkCenter") ?? "/WorkCenter/DevScenarios";
     var encodedReturn = System.Net.WebUtility.UrlEncode(returnUrl);

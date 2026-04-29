@@ -11,12 +11,7 @@ public static class MongoDbIndexConfigurations
         var tenantCollection = database.GetCollection<Tenant>("tenants");
         var tenantDomainCollection = database.GetCollection<TenantDomain>("tenant_domains");
         var tenantLoginSettingsCollection = database.GetCollection<TenantLoginSettings>("tenant_login_settings");
-        var domainLandscapeCollection = database.GetCollection<DomainLandscape>("domain_landscapes");
-        var suitePlatformCollection = database.GetCollection<SuitePlatform>("suite_platforms");
-        var capabilityGroupCollection = database.GetCollection<CapabilityGroup>("capability_groups");
-        var moduleDefinitionCollection = database.GetCollection<ModuleDefinition>("module_definitions");
-        var modulePageDefinitionCollection = database.GetCollection<ModulePageDefinition>("module_page_definitions");
-
+        var moduleCatalogCollection = database.GetCollection<ModuleCatalogItem>("platform_module_catalog");
         await collection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<SavedView>(
@@ -87,63 +82,29 @@ public static class MongoDbIndexConfigurations
                 new CreateIndexOptions { Unique = true, Name = "ux_tenant_login_settings_tenant_ref_id" })
         });
 
-        await domainLandscapeCollection.Indexes.CreateManyAsync(new[]
+        await moduleCatalogCollection.Indexes.CreateManyAsync(new[]
         {
-            new CreateIndexModel<DomainLandscape>(
-                Builders<DomainLandscape>.IndexKeys.Ascending(x => x.Code),
-                new CreateIndexOptions { Unique = true, Name = "ux_domain_landscapes_code" })
-        });
-
-        await suitePlatformCollection.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<SuitePlatform>(
-                Builders<SuitePlatform>.IndexKeys
-                    .Ascending(x => x.DomainLandscapeId)
-                    .Ascending(x => x.Code),
-                new CreateIndexOptions { Unique = true, Name = "ux_suite_platforms_domain_code" })
-        });
-
-        await capabilityGroupCollection.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<CapabilityGroup>(
-                Builders<CapabilityGroup>.IndexKeys
-                    .Ascending(x => x.SuitePlatformId)
-                    .Ascending(x => x.Code),
-                new CreateIndexOptions { Unique = true, Name = "ux_capability_groups_suite_code" })
-        });
-
-        await moduleDefinitionCollection.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<ModuleDefinition>(
-                Builders<ModuleDefinition>.IndexKeys.Ascending(x => x.ModuleId),
-                new CreateIndexOptions { Unique = true, Name = "ux_module_definitions_module_id" }),
-            new CreateIndexModel<ModuleDefinition>(
-                Builders<ModuleDefinition>.IndexKeys.Ascending(x => x.ModuleName),
-                new CreateIndexOptions { Name = "ix_module_definitions_module_name" }),
-            new CreateIndexModel<ModuleDefinition>(
-                Builders<ModuleDefinition>.IndexKeys.Ascending(x => x.DomainLandscapeId),
-                new CreateIndexOptions { Name = "ix_module_definitions_domain_landscape_id" }),
-            new CreateIndexModel<ModuleDefinition>(
-                Builders<ModuleDefinition>.IndexKeys.Ascending(x => x.SuitePlatformId),
-                new CreateIndexOptions { Name = "ix_module_definitions_suite_platform_id" }),
-            new CreateIndexModel<ModuleDefinition>(
-                Builders<ModuleDefinition>.IndexKeys.Ascending(x => x.CapabilityGroupId),
-                new CreateIndexOptions { Name = "ix_module_definitions_capability_group_id" })
-        });
-
-        await modulePageDefinitionCollection.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<ModulePageDefinition>(
-                Builders<ModulePageDefinition>.IndexKeys
-                    .Ascending(x => x.ModuleId)
-                    .Ascending(x => x.PageCode),
-                new CreateIndexOptions { Unique = true, Name = "ux_module_page_definitions_module_page_code" }),
-            new CreateIndexModel<ModulePageDefinition>(
-                Builders<ModulePageDefinition>.IndexKeys.Ascending(x => x.ModuleId),
-                new CreateIndexOptions { Name = "ix_module_page_definitions_module_id" }),
-            new CreateIndexModel<ModulePageDefinition>(
-                Builders<ModulePageDefinition>.IndexKeys.Ascending(x => x.RoutePath),
-                new CreateIndexOptions { Name = "ix_module_page_definitions_route_path" })
+            new CreateIndexModel<ModuleCatalogItem>(
+                Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.ModuleCode),
+                new CreateIndexOptions { Unique = true, Name = "ux_platform_module_catalog_module_code" }),
+            new CreateIndexModel<ModuleCatalogItem>(
+                Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_platform_module_catalog_status" }),
+            new CreateIndexModel<ModuleCatalogItem>(
+                Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.Domain),
+                new CreateIndexOptions { Name = "ix_platform_module_catalog_domain" }),
+            new CreateIndexModel<ModuleCatalogItem>(
+                Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.Service),
+                new CreateIndexOptions { Name = "ix_platform_module_catalog_service" }),
+            new CreateIndexModel<ModuleCatalogItem>(
+                Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.Category),
+                new CreateIndexOptions { Name = "ix_platform_module_catalog_category" }),
+            new CreateIndexModel<ModuleCatalogItem>(
+                Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.IsTenantAssignable),
+                new CreateIndexOptions { Name = "ix_platform_module_catalog_assignable" }),
+            new CreateIndexModel<ModuleCatalogItem>(
+                Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.SortOrder),
+                new CreateIndexOptions { Name = "ix_platform_module_catalog_sort_order" })
         });
     }
 }

@@ -9,6 +9,19 @@
     box-shadow: 0 0.125rem 0.25rem 0 rgba(161, 172, 184, 0.4);
 }
 
+/* MOD-0013: Fix sidebar brand text/badge visibility in collapsed state */
+.layout-menu-collapsed .layout-menu .app-brand .menu-text {
+    display: none !important;
+}
+
+@media (min-width: 1200px) {
+    html.layout-navbar-fixed:not(.layout-menu-collapsed).swal2-shown .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.layout-menu-fixed.layout-navbar-fixed:not(.layout-menu-collapsed).swal2-shown .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.layout-menu-fixed-offcanvas.layout-navbar-fixed:not(.layout-menu-collapsed).swal2-shown .layout-content-navbar:not(.layout-without-menu) .layout-navbar {
+        inset-inline-start: var(--bs-menu-width);
+    }
+}
+
 .menu-backbone .menu-inner-shadow {
     display: none;
 }
@@ -1596,6 +1609,24 @@ div.dt-container div.dt-search input {
 #layout-menu[data-bs-theme="dark"] .menu-item.active>.menu-link {
     background-color: rgba(105, 108, 255, 0.16) !important;
     color: #696cff !important;
+}
+
+/* Backbone navbar app switcher stability */
+.backbone-app-switcher {
+    display: inline-flex;
+    align-items: center;
+}
+
+.backbone-app-switcher>.nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.375rem;
+    height: 2.375rem;
+}
+
+.backbone-app-switcher-menu {
+    min-width: 18rem;
 }
 
 /* MOD-0025: Form Tracker Badge Premium Refresh */

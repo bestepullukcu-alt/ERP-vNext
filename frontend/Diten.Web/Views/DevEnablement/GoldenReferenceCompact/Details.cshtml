@@ -4,7 +4,7 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = SharedLocalizer["Details"].Value;
-    Layout = "_LayoutBackbone";
+    Layout = "_LayoutTenantShell";
 }
 
 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -151,8 +151,8 @@
                         <div>
                             <div class="backbone-preview-label">@Localizer["Priority"]</div>
                             <div class="backbone-preview-value mt-1 d-flex align-items-center gap-2">
-                                <span class="backbone-priority-dot @(Model.Priority >= 70 ? "is-high" : Model.Priority > 0 ? "is-medium" : "")"></span>
-                                <span>@Model.Priority.ToString()</span>
+                                <span class="backbone-priority-dot @(Model.Priority.GetValueOrDefault() >= 70 ? "is-high" : Model.Priority.GetValueOrDefault() > 0 ? "is-medium" : "")"></span>
+                                <span>@(Model.Priority?.ToString() ?? "-")</span>
                             </div>
                         </div>
                     </div>

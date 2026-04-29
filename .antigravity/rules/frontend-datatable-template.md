@@ -17,6 +17,8 @@ Alan sayımı yalnızca kullanıcının formda doldurduğu modül alanlarıdır.
 > - **Toolbar Badge Clipping:** Filter/ColVis badge’leri `top-0 end-0 translate-middle` ile dışarı taşar; bu normaldir. Mobil/tablet’te kesilmemesi için çözüm `backbone-custom.css (MOD-0022)` içindeki **top safe-area padding**’dir. Sayfa bazlı “badge’i içeri taşı” veya “sadece z-index” hack’i YASAKTIR.
 > - **Shared CSS Placement:** Toolbar / inline filter / Select2 chip görünümleri page-level `@section Styles` içinde tekrar edilmez; ortak kurallar `wwwroot/assets/css/backbone-custom.css` içinde tutulur.
 > - **Create/Edit Surface Rule (ZORUNLU):** Module pack'teki `golden_reference` kararı uygulanır. Slim modüllerde create/edit Index içindeki `_CreateEditOffcanvas.cshtml` ile yapılır. Compact modüllerde create/edit ayrı sayfalar (`Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml`) üzerinden yürür ve Index içinde create/edit offcanvas YASAKTIR.
+> - **Compact Form/Details Section Parity (ZORUNLU):** Compact modüllerde `_Form.cshtml` ile `Details.cshtml` aynı mantıksal bölüm haritasını kullanır. Details dört bölüm gösteriyorsa Create/Edit formu da aynı dört bölümü ayrı card/section olarak göstermelidir; alanları iki büyük kartta birleştirmek veya Details'tan farklı bilgi mimarisi üretmek YASAKTIR.
+> - **Required Contract Parity (ZORUNLU):** Formdaki required alan listesi Backend Validator, Web ViewModel, Razor `required`, label yıldızı ve global required-fields tracker arasında birebir aynı olmalıdır. Opsiyonel numeric/date alanlar nullable ViewModel tipi kullanır; non-nullable `int`, `decimal`, `DateTime` gibi tiplerle sahte `data-val-required` üretmek YASAKTIR.
 > - **Delete Endpoint Ownership (ZORUNLU):** Tekil silme ve bulk silme çağrıları yalnızca modülün kendi resource endpoint’ine gider (`/api/{module}` ve `/api/{module}/bulk`). Kardeş modül endpoint’i kullanmak YASAKTIR.
 > - **Bulk Delete Confirmation Parity (ZORUNLU):** Bulk delete için generic/yanlış modal değil, tekil silme ile aynı görsel dilde confirm akışı (`window.showConfirm` standardı) kullanılmalıdır.
 > - **Save View CTA (ZORUNLU):** DataTable toolbar’ında `dt-save-filter-btn` başlangıçta `d-none` olsa bile render edilmek zorundadır; dirty-state olduğunda görünür olmalıdır.
@@ -48,6 +50,19 @@ Compact ek zorunlu dosyalar:
 - `Views/{AreaName}/{ModuleName}/_Form.cshtml`
 
 `_DataTable.cshtml` DataTable v2 marker'ı, skeleton loader'ı, checkbox/action kolonlarını taşır. `_Filter.cshtml` inline filter standardını taşır. `_IndexL10n.cshtml` JSON payload üretir; Index içine uzun `window.L10n.Key = ...` blokları yazılmaz.
+
+### Compact Form/Details Section Contract
+
+Compact modüllerde form alanları önce mantıksal bölüm haritasına ayrılır; aynı harita `_Form.cshtml` ve `Details.cshtml` tarafından paylaşılır. Bölüm başlıkları, kolon yerleşimi ve alan sahipliği birbirinden sapamaz.
+
+Zorunlu uygulama:
+
+- `Create.cshtml` ve `Edit.cshtml` sadece sayfa kabuğu + `_Form.cshtml` partial çağrısı taşır.
+- `_Form.cshtml` sol/sağ kolon düzenini `Details.cshtml` ile aynı bölüm sırasına göre kurar.
+- Her logical bölüm ayrı `card` veya standardize edilmiş section olmalıdır; iki farklı logical bölüm tek kartta birleştirilemez.
+- `Details.cshtml` alanları `Identity`, `Description`, `Classification`, `Status/Lifecycle` gibi dört bölümde gösteriyorsa `_Form.cshtml` de aynı dört bölümü ayrı kart olarak göstermelidir.
+- Required marker ve input tipi ilgili alanın kendi bölümünde kalır; status/select/switch alanları classification kartına karıştırılmaz.
+- Teslimden önce `_Form.cshtml` ve `Details.cshtml` yan yana kontrol edilir: bölüm sayısı, bölüm başlıkları ve alanların bölüm sahipliği eşleşmelidir.
 
 ---
 
@@ -82,6 +97,7 @@ Bu bölüm, **tüm yeni DataTable liste sayfalarında** (data-dt-standard="v2") 
 
 ### UI-019: Delete Confirmation Standard (SweetAlert2)
 Silme işlemleri için her zaman `window.showConfirm` (veya Sneat SweetAlert2 wrapper) kullanılmalıdır.
+Backbone/Sneat desktop layout'ta sol menü açıkken confirm açılması header/navbar kaymasına neden olmamalıdır. Bu problem için module/page içinde global body/html scrollbar override'ı yazılmaz; shared `backbone-custom.css` içinde `html.swal2-shown` + açık sidebar navbar offset standardı korunur.
 
 **Görsel Standartlar:**
 - **Confirm Button:** Her zaman Kırmızı (`btn-danger`) olmalıdır.
@@ -112,7 +128,7 @@ window.showConfirm?.({
   - sorting: **immediate apply** (standart default **single-sort**, multi-sort ancak explicit)
   - columnOrder: **immediate apply** (colReorder aktif sayfalarda header sürükleme — `column-reorder.dt`/`columns-reordered.dt`)
 - Apply: tabloyu günceller + paneli kapatır; Save View görünürlüğü **appliedState’e göre** güncellenir.
-- Reset: savedView varsa ona döner, yoksa baseline’a döner → `isDirty=false` → Save View gizlenir.
+- Reset: savedView'e geri dönmez; her zaman fabrika/default baseline'ı uygular (boş filters/search + default colVis + default columnOrder + default order). Ekran savedView'den farklıysa Save View dirty-state tekrar görünebilir.
 
 ### normalize() Standardı (Mekanik)
 - `null | undefined | ''` → `''`
@@ -156,7 +172,7 @@ window.showConfirm?.({
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Localizer["{{ModuleName}}Title"].Value;
-    Layout = "_LayoutBackbone";
+    Layout = "_LayoutTenantShell"; // or "_LayoutPlatformAdmin" if module belongs to admin shell (PROD-005)
 }
 
 {{!-- ① ZORUNLU: Inline Filter partial'ı. --}}
@@ -273,7 +289,7 @@ Ajanlar, fiziksel bir dosya yerine aşağıdaki kodu "Kusursuz Uygulama" olarak 
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Localizer["CompaniesTitle"].Value;
-    Layout = "_LayoutBackbone";
+    Layout = "_LayoutTenantShell"; // or "_LayoutPlatformAdmin" if module belongs to admin shell (PROD-005)
 }
 
 <partial name="_Filter" />
@@ -462,11 +478,22 @@ Her DataTable sayfasında `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dos
 <div id="inlineFilterHost">
     <div class="collapse" id="inlineFilterCollapse">
         <div class="pt-0 pb-3">
-            <form class="m-0" id="filterForm">
+            <form class="m-0" id="filterForm" data-no-tracker>
                 <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
-                    {{!-- Modüle özgü filtre alanları buraya (Select2, date range, vb.) --}}
-                    <div class="filter-chip filter-company-type"></div>
-                    <div class="filter-chip filter-status"></div>
+                    {{!-- Modüle özgü filtre alanları buraya. Domain/Service/Category/Type/Owner/Status gibi sınırlı değer kümeleri text input değil Select2 chip olmalıdır. --}}
+                    <div class="filter-chip filter-category">
+                        <select id="filterCategory" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Category"]">
+                        </select>
+                    </div>
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                        </select>
+                    </div>
+                    <div class="filter-chip filter-priority">
+                        <select id="filterPriority" class="form-select form-select-sm select2" data-placeholder="@Localizer["Priority"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
 
                     <div class="ms-auto d-flex gap-3">
                         <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
@@ -482,6 +509,12 @@ Her DataTable sayfasında `Views/{{AreaName}}/{{ModuleName}}/_Filter.cshtml` dos
     </div>
 </div>
 ```
+
+**Inline Filter Alan Kuralları**
+- Sınırlı değer kümesi olan filtrelerde (`Domain`, `Service`, `Category`, `Type`, `Owner`, `Status`, vb.) `input type="text"` kullanılmaz; GoldenReference gibi Select2 chip kullanılır.
+- Multi-select alanlarda `multiple="multiple"` + `data-placeholder` zorunludur; görünür label Select2 placeholder'a bırakılmaz, `index.js` içinde `syncMultiSelectSummary` ile `.dt-inline-filter-multi__summary`, count badge, arrow ve clear span üretilir.
+- Single-select filtrelerde boş `value=""` + `@SharedLocalizer["ShowAll"]` option zorunludur.
+- Dinamik seçenekler AJAX ile yüklense bile Select2 init sonrası `syncMultiSelectSummary` çalıştırılır; boş seçenek/label sorunu teslim engelidir.
 
 ---
 

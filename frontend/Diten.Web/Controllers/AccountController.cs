@@ -110,10 +110,9 @@ public class AccountController : Controller
     }
 
     [HttpPost("/account/logout")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Logout(CancellationToken ct)
+    public async Task<IActionResult> Logout([FromQuery] string? returnUrl, CancellationToken ct)
     {
-        var redirectUrl = "/account/login";
+        var redirectUrl = ResolveLogoutFallbackUrl(returnUrl);
 
         if (TryGetCookie("access_token", out var accessToken) && TryGetCookie("refresh_token", out var refreshToken))
         {
@@ -142,11 +141,11 @@ public class AccountController : Controller
     }
 
     [HttpGet("/account/logout")]
-    public IActionResult LogoutGet()
+    public IActionResult LogoutGet([FromQuery] string? returnUrl)
     {
         var redirectUrl = TryGetCookie("access_token", out var accessToken)
             ? ResolveLogoutRedirectUrl(accessToken)
-            : "/account/login";
+            : ResolveLogoutFallbackUrl(returnUrl);
 
         return Redirect(redirectUrl);
     }
@@ -195,6 +194,19 @@ public class AccountController : Controller
     {
         var actorType = TryReadActorType(accessToken);
         return IsPlatformActor(actorType) ? "/platform/login" : "/account/login";
+    }
+
+    private static string ResolveLogoutFallbackUrl(string? returnUrl)
+    {
+        if (!string.IsNullOrWhiteSpace(returnUrl) &&
+            Uri.IsWellFormedUriString(returnUrl, UriKind.Relative) &&
+            (returnUrl.Equals("/platform/login", StringComparison.OrdinalIgnoreCase) ||
+             returnUrl.Equals("/account/login", StringComparison.OrdinalIgnoreCase)))
+        {
+            return returnUrl;
+        }
+
+        return "/account/login";
     }
 
     private static string? TryReadActorType(string accessToken)

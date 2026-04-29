@@ -8,11 +8,12 @@ Bu doküman, MongoDB veritabanı seviyesinde veri izolasyonunu garanti altına a
 
 ## 🛡️ Kritik Zorunluluk: Tenant-First Indexing
 
-Diten ERP vNext "Siloed Data" mantığıyla çalıştığı için, her sorgu `TenantId` (GUID) filtresi ile başlar. Bu nedenle:
+Diten ERP vNext "Siloed Data" mantığıyla çalıştığı için, tenant-owned her sorgu `TenantId` (GUID) filtresi ile başlar. Bu nedenle:
 
-- **KURAL:** Her collection'da mutlaka `TenantId` ile başlayan bir **Compound Index (Bileşik İndeks)** bulunmalıdır.
+- **KURAL:** Her tenant-owned collection'da mutlaka `TenantId` ile başlayan bir **Compound Index (Bileşik İndeks)** bulunmalıdır.
 - **Standart Format:** `{ "TenantId": 1, "Sık_Kullanılan_Alan": 1 }`
 - **Neden:** `TenantId` içermeyen bir indeks, multi-tenant bir sistemde performans felaketine (COLLSCAN) yol açar.
+- **İstisna:** Module pack içinde açıkça onaylanmış Platform global katalogları `GlobalEntity` kullanabilir. Bu collection'larda `TenantId` index'i aranmaz; global unique/query indexleri, `IsDeleted=false` davranışı ve RBAC erişimi doğrulanır.
 
 [Image of a database index structure showing B-Tree organization for multi-tenant data partitioning]
 
@@ -28,6 +29,7 @@ Diten ERP vNext "Siloed Data" mantığıyla çalıştığı için, her sorgu `Te
 ### 2. Tekil (Unique) İndeksler
 - Bir verinin kiracı bazında tekil olması gerekiyorsa (Örn: Vergi Numarası), `unique: true` indeksi mutlaka `TenantId` içermelidir:
   `{ "TenantId": 1, "TaxNumber": 1 }` (Unique: true)
+- Platform global kataloglarında global unique index ancak module pack'te gerekçelendirilmişse kullanılabilir.
 
 ### 3. Case-Insensitive Search (Collation)
 - Arama yapılan alanlarda (Title, Name vb.) indeks tanımlanırken, büyük/küçük harf duyarlılığını ortadan kaldırmak için `Collation` desteği eklenmelidir.

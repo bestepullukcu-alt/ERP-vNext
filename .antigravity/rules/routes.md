@@ -67,7 +67,21 @@ Explicit tanımlanmamış istekler için fallback. `ocelot.json`'da **en sona** 
 
 ## 🔄 Frontend (JS) ↔ Gateway URL Formatı
 
-Frontend `index.js` dosyaları her zaman `window.ApiBaseUrl + '/api/{resource}'` formatını kullanır:
+Frontend DataTable sayfalarında iki API profili vardır:
+
+### Profil 1 — `proxy-profile` (Platform/admin MVC default)
+Browser JS aynı origin'deki frontend proxy'yi çağırır. MVC controller, HttpOnly `access_token` cookie'sini server-side okuyup Gateway'e `Authorization: Bearer` olarak aktarır.
+
+```javascript
+// ✅ Doğru (browser network: frontend 5001)
+const endpoint = '/Platform/ModuleCatalog/api';
+fetch(`${endpoint}?page=1&pageSize=10`, { headers: getAuthHeaders() });
+```
+
+Bu profilde browser JS içinde `document.cookie`, `access_token`, `Authorization: Bearer` veya `window.API.platform + '/api/...'` kullanılmaz.
+
+### Profil 2 — `direct-gateway-profile`
+Sadece browser-safe token/header stratejisi olan tenant/public shell ekranlarında `window.API.{service}` kullanılır:
 
 ```javascript
 // ✅ Doğru
@@ -76,6 +90,8 @@ ajax: { url: apiUrl + '/api/countries' }
 // ❌ Yanlış
 ajax: { url: apiUrl + '/services/mdm/api/v1/countries' }
 ```
+
+Her iki profilde de browser JS mikroservis portlarına (`5056`, `5057`, `5058`) doğrudan gitmez.
 
 ---
 
@@ -87,7 +103,8 @@ Tüm isteklerde aşağıdaki header'ların varlığı ve formatı denetlenmelidi
    - `X-Tenant-Id`: Her zaman bir **GUID** olmalıdır.
    - Örn: `00000000-0000-0000-0000-000000000001`
 2. **Auth Header:**
-   - `Authorization`: `Bearer <JWT_TOKEN>` formatında olmalıdır.
+   - Gateway'e giden servis çağrısında `Authorization`: `Bearer <JWT_TOKEN>` formatında olmalıdır.
+   - HttpOnly cookie kullanan MVC shell modüllerinde bu header browser JS tarafından değil, frontend proxy tarafından server-side eklenir.
 3. **Correlation Header:**
    - `X-Correlation-Id`: İsteklerin servisler arası takibi için (Observability) zorunludur.
 
@@ -118,7 +135,7 @@ Yeni modül eklendiğinde `integration-agent` şu adımları takip eder:
 - [ ] `OPTIONS` HTTP metodu dahil mi? (CORS preflight)
 - [ ] Explicit rotalar catch-all'dan önce mi?
 - [ ] `X-Tenant-Id` header'ı GUID olarak tanımlandı mı?
-- [ ] Frontend JS `apiUrl + '/api/{resource}'` formatını kullanıyor mu?
+- [ ] Frontend JS doğru API profilini kullanıyor mu? Platform/admin için `/{AreaName}/{ModuleName}/api` same-origin proxy; direct-gateway için `window.API.{service} + '/api/{resource}'`.
 - [ ] `/health` endpoint'i tanımlandı mı?
 
 ---

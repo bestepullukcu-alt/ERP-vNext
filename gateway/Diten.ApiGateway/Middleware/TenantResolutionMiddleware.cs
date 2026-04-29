@@ -35,6 +35,9 @@ public sealed class TenantResolutionMiddleware
         var isAdminHost = IsAdminHost(host);
         var isTenantHost = IsTenantHost(host);
         var isAuthLifecyclePath = IsAuthLifecyclePath(context.Request.Path);
+        var jwtTenant = ReadJwtTenant(context.User);
+        var headerTenant = ReadHeaderTenant(context.Request.Headers[TenantHeader]);
+        var subdomainTenant = ReadSubdomainTenant(context.Request.Host.Host);
 
         if (isAdminHost && !IsAdminHostAllowedPath(context.Request.Path))
         {
@@ -45,6 +48,49 @@ public sealed class TenantResolutionMiddleware
         if (isTenantHost && IsAdminPath(context.Request.Path))
         {
             await WriteProblemDetails(context, StatusCodes.Status403Forbidden, "Forbidden Host/Path Combination", "Tenant hosts cannot access platform admin endpoints.");
+            return;
+        }
+
+        if (IsPersonalizationPath(context.Request.Path))
+        {
+            if (IsPlatformActor(actorType))
+            {
+                if (context.Request.Headers.ContainsKey(TenantHeader))
+                {
+                    await WriteProblemDetails(context, StatusCodes.Status400BadRequest, "Invalid Tenant Header", $"'{TenantHeader}' is not allowed for platform personalization requests.");
+                    return;
+                }
+
+                await _next(context);
+                return;
+            }
+
+            var personalizationTenant = Resolve(jwtTenant, headerTenant, subdomainTenant, context);
+            if (personalizationTenant is null && TryGetDevelopmentBypassTenant(out var personalizationBypassTenant))
+            {
+                personalizationTenant = personalizationBypassTenant;
+                _logger.LogWarning(
+                    "TenantResolution dev bypass applied in gateway. Path={Path} TenantId={TenantId}",
+                    context.Request.Path,
+                    personalizationBypassTenant);
+            }
+
+            if (personalizationTenant is null)
+            {
+                await WriteProblemDetails(context, StatusCodes.Status400BadRequest, "Missing Tenant", $"'{TenantHeader}' or JWT tenant_id claim is required for tenant personalization endpoints.");
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(actorType) && !string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
+            {
+                await WriteProblemDetails(context, StatusCodes.Status403Forbidden, "Forbidden Actor", "Tenant personalization endpoints require tenant_user tokens.");
+                return;
+            }
+
+            context.Request.Headers[TenantHeader] = personalizationTenant.Value.ToString();
+            context.Items[TenantHeader] = personalizationTenant.Value;
+
+            await _next(context);
             return;
         }
 
@@ -65,10 +111,6 @@ public sealed class TenantResolutionMiddleware
             await _next(context);
             return;
         }
-
-        var jwtTenant = ReadJwtTenant(context.User);
-        var headerTenant = ReadHeaderTenant(context.Request.Headers[TenantHeader]);
-        var subdomainTenant = ReadSubdomainTenant(context.Request.Host.Host);
 
         var resolvedTenant = Resolve(jwtTenant, headerTenant, subdomainTenant, context);
         if (resolvedTenant is null && TryGetDevelopmentBypassTenant(out var bypassTenant))
@@ -207,13 +249,18 @@ public sealed class TenantResolutionMiddleware
     private static bool IsAdminPath(PathString path)
     {
         return path.StartsWithSegments("/api/admin", StringComparison.OrdinalIgnoreCase)
-               || path.StartsWithSegments("/api/platform", StringComparison.OrdinalIgnoreCase)
-               || path.StartsWithSegments("/api/personalization", StringComparison.OrdinalIgnoreCase);
+               || path.StartsWithSegments("/api/platform", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsPersonalizationPath(PathString path)
+    {
+        return path.StartsWithSegments("/api/personalization", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsAdminHostAllowedPath(PathString path)
     {
         return IsAdminPath(path)
+               || IsPersonalizationPath(path)
                || path.StartsWithSegments("/api/platform-auth", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/auth", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase)
