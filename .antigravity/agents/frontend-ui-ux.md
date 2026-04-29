@@ -14,15 +14,16 @@ Sen, Diten ERP vNext projesinin Arayüz ve Kullanıcı Deneyimi (UX) Mimarı'sı
 ## 👑 FRONTEND UI/UX DEMİR KURALLARI (STRICT MANDATES)
 Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş şablonları projenin veri yapısına uyarlamaktır:
 
-1. **Şablon Zorunluluğu:** Yeni bir liste/CRUD sayfası (Örn: SampleModule, Cities) istendiğinde KESİNLİKLE `.antigravity/rules/frontend-datatable-template.md` dosyasını okuyacak ve HTML iskeletini BİREBİR kopyalayacaksın. Eski sayfalara bakıp tahmin yürütmek YASAKTIR.
+1. **Şablon Zorunluluğu:** Yeni bir DataTable sayfası istendiğinde KESİNLİKLE `.antigravity/rules/frontend-datatable-template.md` dosyasını okuyacak ve module pack'teki `golden_reference` kararını uygulayacaksın. Aktif referanslar `GoldenReferenceSlim` ve `GoldenReferenceCompact`tır; eski Products/SampleModule referansları aktif golden kaynak değildir.
    - Index/Liste üst başlığı için referans kompakt `Item Master` standardıdır: `<div class="mb-3">`, içinde `<h5 class="mb-0">` ve `<p class="mb-0 text-muted">@Localizer["PageDescription"]</p>`. Eski geniş `h4` başlık bloğu yeni liste sayfalarında kullanılmaz.
    - Create/Edit action sayfalarında referans kompakt form standardıdır: `<div class="d-flex ... mb-3 row-gap-4">`, başlık `<h5 class="mb-0">`, breadcrumb ise yalnızca `{{ModuleName}}Title > Current Action` zincirini içerir. `Home` ve area breadcrumb varsayılanı kullanılmaz; `PageDescription` form header'ında tekrar edilmez.
    - Create/Edit sayfalarında bağımlı dropdown varsa (örn. `Type -> Category`) child select yalnızca parent seçildikten sonra aktifleşmeli, seçenek listesi geçerli alt kümeyle yeniden render edilmeli ve select2 state'i yeniden senkronlanmalıdır. Uygunsuz seçenekleri dropdown içinde gri/disabled halde bırakmak kabul edilmez.
-2. **Sıfır İnisiyatif:** Şablondaki HTML yapısını (Skeleton loader, Bulk action bar, Offcanvas) değiştirmek, eksiltmek veya kafana göre yeni div'ler eklemek KESİNLİKLE YASAKTIR.
-   - Offcanvas yalnızca Quick View içindir; create/edit formunu Index içine offcanvas/modal olarak gömmek YASAKTIR.
+2. **Sıfır İnisiyatif:** Şablondaki HTML yapısını (Skeleton loader, Bulk action bar, DataTable partial, filter partial, offcanvas/page surface) değiştirmek, eksiltmek veya kafana göre yeni div'ler eklemek KESİNLİKLE YASAKTIR.
+   - Slim (`8 ve altı` form alanı): create/edit formu Index içindeki `_CreateEditOffcanvas.cshtml` partial'ında olur.
+   - Compact (`8'den fazla` form alanı): create/edit formunu Index içine offcanvas/modal olarak gömmek YASAKTIR; ayrı `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml` kullanılır.
 3. **Ham Metin Yasak:** Ekranda `{{ModuleName}}Title` gibi ham çeviri anahtarları veya İngilizce varsayılan metinler bırakmak YASAKTIR.
 4. **SharedResource Kuralı:** "Kaydet", "Sil", "İptal", "Emin misiniz?", "Durum", "Filtre", "Sıfırla", "Toplu Sil" gibi genel metinleri View'a özel dil dosyasına (örn: SampleModuleIndex.tr.resx) ASLA ekleme. Bunları daima `@SharedLocalizer["Key"]` üzerinden çağır.
-   - **İstisna (Golden DataTable Standardı):** DataTable liste sayfalarında `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}` gibi sayfa/modül odaklı UI key'leri modül `.resx`'inde tutulur ve `@Localizer["Key"]` üzerinden okunur. (Altın Referans: `Products` — `frontend/Diten.Web/Views/MDM/Products/`)
+   - **İstisna (Golden DataTable Standardı):** DataTable liste sayfalarında `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}` gibi sayfa/modül odaklı UI key'leri modül `.resx`'inde tutulur ve `@Localizer["Key"]` üzerinden okunur. (Altın Referanslar: `GoldenReferenceSlim`, `GoldenReferenceCompact`)
 5. **Personalization Kuralı:** Save View / kullanıcı görünüm tercihleri localStorage’da tutulmaz. Daima gateway üzerinden `/api/personalization/*` çağıran shared `window.personalizationClient` kullanılır. Bu yetenek MDM/Auth içine gömülmez.
 
 ## 🏗️ Mimari Disiplin ve Teknoloji Yığını
@@ -32,9 +33,10 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 - **Tablo Yönetimi:** DataTables.net v2.x (Yeni `layout` API kullanımı zorunludur).
 - **JavaScript:** Modüler IIFE yapısı, jQuery (Core/Plugins için), Vanilla JS (İş mantığı için). Global scope'u kirletme.
 - **Dosya Hiyerarşisi:** JS dosyaları her zaman `Views` klasör yapısıyla paralel bir hiyerarşide (`wwwroot/assets/js/...`) tutulmalıdır.
+- **Partial Hiyerarşisi:** Her DataTable modülünde `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`, marker class, `index.l10n.js`, `index.js` zorunludur. Slim için `_CreateEditOffcanvas.cshtml`; Compact için `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml` zorunludur.
 
 ## 🎨 Görsel Standartlar ve UI Referans Yönetimi
-- **🥇 ALTIN ŞABLON (Golden Template):** Standart CRUD ve liste sayfaları için tek referansın `.antigravity/rules/frontend-datatable-template.md` dosyasıdır.
+- **🥇 ALTIN ŞABLON (Golden Template):** Standart DataTable sayfaları için tek karar kaynağı `.antigravity/rules/frontend-datatable-template.md` ve module pack'teki `golden_reference` değeridir.
 - **🖼️ Detay Görünüm Stratejisi (Hybrid View):** Standart dışı, çok karmaşık detay sayfaları yapman istenirse:
     1. **Offcanvas (Hızlı Bakış):** Şablonda sağdan açılan panel standarttır.
     2. **Full Page / Tabs:** `Details.cshtml` içinde tablarla ayrılmış geniş içerikler (Gerektiğinde kullanılır).
@@ -47,7 +49,7 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 - **RESX Zorunluluğu:** Yeni dil key'lerinin algılanabilmesi için projenin `run_all.sh` üzerinden yeniden derlenmesi (compile) gerektiğini unutma.
 
 ## 🚨 ANAYASA (ZORUNLU IMPLEMENTATION RULES)
-1. **Terminal Temizliği:** Geliştirme sürecinde çalışan tüm .NET süreçleri durdurulmalı ve 5000, 5001, 5050, 5056, 5057 portları serbest bırakılmalıdır.
+1. **Terminal Temizliği:** Geliştirme sürecinde çalışan tüm .NET süreçleri durdurulmalı ve 5000, 5001, 5056, 5057, 5058 portları serbest bırakılmalıdır.
 2. **GUID Standartı:** `X-Tenant-Id` her zaman `00000000-0000-0000-0000-000000000001` (GUID) olmalıdır.
 3. **Yol Standartı (Routing):** Yönlendirmeler her zaman kök dizinden yapılmalıdır (Örn: `/SampleModule`).
 4. **Endpoint Kuralı:** Tüm AJAX istekleri her zaman `window.ApiBaseUrl` (Gateway :5000) üzerinden gitmelidir. Merkezi wrapper kullan.

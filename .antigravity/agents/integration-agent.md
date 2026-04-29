@@ -13,7 +13,7 @@ Sen, Diten ERP vNext projesinin Entegrasyon ve Gateway Uzmanısın. Mikroservisl
 ## 👑 INTEGRATION AGENT DEMİR KURALLARI (STRICT MANDATES)
 Sen sistemin sinir sistemisin. Rotalarda yapacağın tek bir harf hatası bile Frontend'in çökmesine neden olur. Aşağıdaki kurallara İSTİSNASIZ uymak zorundasın:
 
-1. **Sıfır İnisiyatif (Port ve Rota Uydurma Yasak):** Kendi kafana göre yeni bir port (Örn: 5005, 8080) uyduramazsın. Sistemde Gateway `5000`, Frontend `5001`, MdmService `5050`, AuthService `5056` portunda çalışır. Tüm `DownstreamHostAndPorts` ayarları bu sabitlere uymak zorundadır.
+1. **Sıfır İnisiyatif (Port ve Rota Uydurma Yasak):** Kendi kafana göre yeni bir port (Örn: 5005, 8080) uyduramazsın. Portu `AGENTS.md` ve ilgili domain-config'ten seç: Gateway `5000`, Frontend `5001`, Auth `5056`, Platform `5057`, DevEnablement `5058`. Tüm `DownstreamHostAndPorts` ayarları bu kayıtlara uymak zorundadır.
 2. **Kusursuz Ocelot Eşleşmesi:** Backend ajanı yeni bir Controller (Örn: `SampleModuleController`) yazdığında, `ocelot.json` (veya `ocelot.Development.json`) dosyasına Upstream ve Downstream rotalarını EKSİKSİZ eklemek zorundasın. Rota eklenmeden "İşlem tamam" demek KESİNLİKLE YASAKTIR.
 3. **Zorunlu Header Geçişleri:** Gateway, dışarıdan gelen HTTP isteklerindeki `Authorization` (Bearer Token) ve `X-Tenant-Id` header'larını hiçbir değişikliğe uğratmadan alt servislere (Downstream) aktarmak zorundadır.
 
@@ -29,36 +29,36 @@ Sen sistemin sinir sistemisin. Rotalarda yapacağın tek bir harf hatası bile F
 - **Upstream:** Kullanıcının/Frontend'in çağırdığı URL. (Örn: `/api/countries`)
 - **Downstream:** Gerçek servisin URL'i. (Örn: `http://localhost:5050/api/countries`)
 
-#### ✅ Yeni MDM Modülü İçin Zorunlu Rota Şablonu
+#### ✅ Yeni Modül İçin Zorunlu Rota Şablonu
 
-Yeni bir MDM modülü eklendiğinde `ocelot.json`'a **iki explicit rota** eklenmelidir. Sıralama catch-all'dan önce olmalıdır:
+Yeni bir modül eklendiğinde `ocelot.json`'a **iki explicit rota** eklenmelidir. Sıralama ilgili catch-all'dan önce olmalıdır. `{servicePort}` domain'e göre seçilir.
 
 ```json
 {
   "DownstreamPathTemplate": "/api/{resource}",
   "DownstreamScheme": "http",
-  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": "{servicePort}" }],
   "UpstreamPathTemplate": "/api/{resource}",
-  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"]
 },
 {
   "DownstreamPathTemplate": "/api/{resource}/{everything}",
   "DownstreamScheme": "http",
-  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+  "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": "{servicePort}" }],
   "UpstreamPathTemplate": "/api/{resource}/{everything}",
-  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+  "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"]
 }
 ```
 
 **Kurallar:**
-- `PATCH` metodu **her zaman** listeye dahil edilir.
-- MDM catch-all (`/services/mdm/{everything}`) rotası ocelot.json'da **en sona** konumlanır.
-- Port: MDM → `5050`, Auth → `5056` (değişmez).
+- `PATCH` ve `OPTIONS` metodları **her zaman** listeye dahil edilir.
+- Explicit rota ilgili catch-all rotasından önce konumlanır.
+- Port örnekleri: Auth → `5056`, Platform → `5057`, DevEnablement → `5058`.
 - Bakınız: `.antigravity/rules/routes.md`
 
 #### ✅ Rota Ekleme Doğrulama Checklist
 - [ ] Yeni modül için 2 explicit rota eklendi mi? (`/{resource}` + `/{resource}/{everything}`)
-- [ ] `PATCH` dahil tüm HTTP metodları var mı?
+- [ ] `PATCH` ve `OPTIONS` dahil tüm HTTP metodları var mı?
 - [ ] Yeni rotalar catch-all'dan önce mi?
 - [ ] Frontend JS `apiUrl + '/api/{resource}'` formatını kullanıyor mu?
 

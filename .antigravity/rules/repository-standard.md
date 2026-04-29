@@ -8,9 +8,16 @@ Bu doküman, Application katmanındaki generic repository interface'ini ve tüm 
 
 ---
 
-## 🏗️ Mimari: Tek Katmanlı Generic Repository Yapısı (YENİ STANDART)
+## 🏗️ Mimari: Repository Yapısı
 
-Diten ERP vNext mimarisinde kod karmaşıklığını azaltmak ve hızı artırmak için **Specific Repository Interface** kullanımı **YASAKLANMIŞTIR**. Tüm handler'lar doğrudan `IRepository<T>` interface'ini kullanır.
+Varsayılan standart generic repository'dir. Yeni modüllerde önce `IRepository<T>` / `GenericRepository<T>` altyapısı tercih edilir.
+
+Golden referanslar ve bazı servis baseline'ları specific repository kullanabilir. Specific repository yalnızca şu şartlarla kabul edilir:
+
+- Tenant filter tüm read/update/delete/bulk delete yollarında zorunlu uygulanır.
+- Soft delete fiziksel silmenin yerine geçer.
+- `TenantId` request/DTO/form payload'dan alınmaz.
+- Standart CRUD tekrarları bilinçli ve module pack'te/onaylı baseline'da gerekçeli olmalıdır.
 
 ```
 Application/Interfaces/
@@ -49,9 +56,10 @@ public interface IRepository<T> where T : EntityBase
 
 ## 📋 Kullanım Kuralı (MANDATORY)
 
-1. **Specific Interface YASAKTIR:** `IProductRepository`, `ISkuRepository` gibi interface'ler oluşturulamaz.
-2. **Generic Injection:** Handler'lar doğrudan `IRepository<Product>` inject etmelidir.
-3. **Ekstra Metod İhtiyacı:** Eğer bir entity için `GetByCodeAsync` gibi bir ihtiyaç varsa, bu metod `IRepository<T>` içine generic bir şekilde (`FindOneAsync` gibi) eklenmeli veya `GenericRepository` üzerinden çözülmelidir.
+1. **Default:** Handler'lar doğrudan `IRepository<Product>` inject etmelidir.
+2. **Specific Repository İstisnası:** Module pack veya servis baseline'ı specific repository'yi açıkça seçiyorsa `I{Module}Repository` kullanılabilir.
+3. **Garanti:** Specific repository kullanan modül, generic repository ile aynı tenant isolation ve soft delete güvenliğini sağlamak zorundadır.
+4. **Ekstra Metod İhtiyacı:** Eğer bir entity için `GetByCodeAsync` gibi bir ihtiyaç varsa, önce generic altyapıya uygun çözüm değerlendirilir; specific repository seçildiyse metod sadece ilgili module interface'inde tutulabilir.
 
 ---
 
@@ -72,7 +80,7 @@ public class GenericRepository<TEntity> : IRepository<TEntity>
 
 ## ✅ Kontrol Listesi
 
-- [x] Specific interface'ler kaldırıldı mı?
-- [x] Handler'larda doğrudan `IRepository<T>` kullanılıyor mu?
-- [x] `RepositoryBase` veya `GenericRepository` tüm ortak metodları (BulkDelete vb.) içeriyor mu?
-- [x] DI kaydı `services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>))` şeklinde mi?
+- [ ] Generic repository veya onaylı specific repository baseline'ı açık mı?
+- [ ] Handler'larda module pack ile uyumlu repository interface'i kullanılıyor mu?
+- [ ] Repository tüm ortak metodları (BulkDelete vb.) tenant-aware ve soft-delete aware uyguluyor mu?
+- [ ] DI kaydı generic veya specific repository seçimine göre net mi?

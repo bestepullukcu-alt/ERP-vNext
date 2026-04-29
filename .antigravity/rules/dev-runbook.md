@@ -35,7 +35,7 @@ brew services start mongodb-community@7.0
 Geliştirmeye başlamadan önce veya büyük bir kod değişikliği sonrası, port çakışmalarını önlemek için şu komutu çalıştırmak anayasa kuralıdır:
 
 # KOMUT BAŞI
-lsof -ti :5000,5001,5050,5056,5057 | xargs kill -9 2>/dev/null || true
+lsof -ti :5000,5001,5056,5057,5058 | xargs kill -9 2>/dev/null || true
 # KOMUT SONU
 
 ---
@@ -50,10 +50,11 @@ Projeyi tam fonksiyonel çalıştırmak için servisleri aşağıdaki sırayla b
 - **Neden:** Diğer tüm servislerin yetki kontrolü (JWT validation) yapabilmesi için kimlik servisinin ayakta olması gerekir.
 - **Seed Kullanıcı (MongoDB açık olmalı):** `admin@diten.com` / `Admin123!`
 
-### 2. TAB 2: MDM Service (Port: 5050)
-- **Dizin:** services/Diten.MdmService/src/Diten.MdmService.Api
+### 2. TAB 2: DevEnablement Service (Port: 5058)
+- **Dizin:** services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api
 - **Komut:** dotnet run (Development)
-- **Kontrol:** MongoDB bağlantısının başarılı olduğunu loglardan doğrulayın.
+- **Kontrol:** MongoDB bağlantısının başarılı olduğunu ve `GoldenReferenceSlim`/`GoldenReferenceCompact` koleksiyonlarının erişilebilir olduğunu loglardan doğrulayın.
+- **Not:** Eski `Diten.MdmService` (port 5050) kaldırılmıştır; yeni canlı golden referans modülleri DevEnablement altındadır.
 
 ### 3. TAB 3: Platform API (Port: 5057)
 - **Dizin:** services/Diten.Platform/src/Diten.Platform.API
@@ -79,7 +80,7 @@ Projeyi tam fonksiyonel çalıştırmak için servisleri aşağıdaki sırayla b
 ## 🛠️ Önemli Geliştirme Notları
 
 ### 🌍 Dil Dosyaları (.resx) Hatırlatması
-UI tarafındaki metinlerin (Örn: SampleModule ekranları) 7 dilde doğru görünmesi için, .resx dosyalarında yapılan her değişiklikten sonra tüm çözümü yeniden derlemeniz gerekir:
+UI tarafındaki metinlerin (Örn: GoldenReferenceSlim / GoldenReferenceCompact ekranları) 7 dilde doğru görünmesi için, .resx dosyalarında yapılan her değişiklikten sonra tüm çözümü yeniden derlemeniz gerekir:
 - dotnet build veya run_all.sh betiğini kullanın.
 
 ### 🆔 Sabit Test Verisi

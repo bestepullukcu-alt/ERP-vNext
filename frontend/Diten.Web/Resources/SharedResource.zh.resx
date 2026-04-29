@@ -58,204 +58,339 @@
       Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Save" xml:space="preserve">
-    <value>Сохранить</value>
+    <value>保存</value>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Отмена</value>
+    <value>取消</value>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Название</value>
+    <value>标题</value>
   </data>
   <data name="TaxNumber" xml:space="preserve">
-    <value>ИНН</value>
+    <value>税号</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="RecordCreated" xml:space="preserve">
+    <value>记录已成功创建。</value>
+  </data>
+  <data name="RecordDeleted" xml:space="preserve">
+    <value>记录已成功删除。</value>
+  </data>
+  <data name="RecordSaved" xml:space="preserve">
+    <value>更改已成功保存。</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>处理请求时发生错误。</value>
+  </data>
+  <data name="AreYouSure" xml:space="preserve">
+    <value>确定吗？</value>
   </data>
   <data name="DeleteConfirmationTitle" xml:space="preserve">
-    <value>Вы уверены?</value>
+    <value>确定吗？</value>
   </data>
   <data name="DeleteConfirmationSubText" xml:space="preserve">
-    <value>Это действие нельзя отменить!</value>
+    <value>此操作无法撤销！</value>
   </data>
   <data name="DeleteConfirmationYesBtn" xml:space="preserve">
-    <value>Да, удалить</value>
+    <value>是，删除</value>
   </data>
   <data name="ConfirmAction" xml:space="preserve">
-    <value>Вы уверены, что хотите продолжить?</value>
+    <value>确定要继续吗？</value>
   </data>
   <data name="AccessDenied" xml:space="preserve">
-    <value>Доступ запрещён.</value>
+    <value>访问被拒绝。</value>
   </data>
   <data name="ValidationFailed" xml:space="preserve">
-    <value>Пожалуйста, заполните обязательные поля.</value>
+    <value>请填写必填字段。</value>
   </data>
   <data name="SearchFilter" xml:space="preserve">
-    <value>Поиск и фильтр</value>
+    <value>搜索和筛选</value>
   </data>
   <data name="Status" xml:space="preserve">
-    <value>Статус</value>
+    <value>状态</value>
   </data>
   <data name="Active" xml:space="preserve">
-    <value>Активный</value>
+    <value>启用</value>
   </data>
   <data name="Passive" xml:space="preserve">
-    <value>Неактивный</value>
+    <value>停用</value>
   </data>
   <data name="Unknown" xml:space="preserve">
-    <value>Неизвестно</value>
+    <value>未知</value>
   </data>
   <data name="ViewDetails" xml:space="preserve">
-    <value>Подробнее</value>
+    <value>查看详情</value>
   </data>
   <data name="Search" xml:space="preserve">
-    <value>Поиск..</value>
+    <value>搜索..</value>
   </data>
   <data name="Export" xml:space="preserve">
-    <value>Экспорт</value>
+    <value>导出</value>
   </data>
   <data name="Print" xml:space="preserve">
-    <value>Печать</value>
+    <value>打印</value>
   </data>
   <data name="Import" xml:space="preserve">
-    <value>Импорт</value>
+    <value>导入</value>
   </data>
   <data name="Filter" xml:space="preserve">
-    <value>Фильтр</value>
+    <value>筛选</value>
   </data>
   <data name="Reset" xml:space="preserve">
-    <value>Сбросить</value>
+    <value>重置</value>
   </data>
   <data name="ComingSoon" xml:space="preserve">
-    <value>Эта функция будет добавлена в ближайшее время.</value>
+    <value>此功能即将推出。</value>
   </data>
   <data name="MDM" xml:space="preserve">
     <value>MDM</value>
   </data>
-  <data name="AreYouSure" xml:space="preserve">
-    <value>Вы уверены?</value>
-  </data>
-  <data name="Error" xml:space="preserve">
-    <value>Ошибка</value>
-  </data>
-  <data name="ErrorOccurred" xml:space="preserve">
-    <value>Произошла ошибка при выполнении операции.</value>
-  </data>
-  <data name="RecordCreated" xml:space="preserve">
-    <value>Запись успешно создана.</value>
-  </data>
-  <data name="RecordDeleted" xml:space="preserve">
-    <value>Запись успешно удалена.</value>
-  </data>
-  <data name="RecordSaved" xml:space="preserve">
-    <value>Изменения успешно сохранены.</value>
-  </data>
-  <data name="Success" xml:space="preserve">
-    <value>Успешно</value>
-  </data>
   <data name="Saving" xml:space="preserve">
-    <value>Сохранение...</value>
+    <value>正在保存...</value>
   </data>
   <data name="FailedToLoadData" xml:space="preserve">
-    <value>Не удалось загрузить данные. Повторите попытку позже.</value>
+    <value>无法加载数据。请稍后重试。</value>
   </data>
   <data name="GatewayError" xml:space="preserve">
-    <value>Произошла ошибка при обращении к серверу.</value>
+    <value>与服务器通信时发生错误。</value>
   </data>
   <data name="Light" xml:space="preserve">
-    <value>Светлая</value>
+    <value>浅色</value>
   </data>
   <data name="Dark" xml:space="preserve">
-    <value>Темная</value>
+    <value>深色</value>
   </data>
   <data name="Admin" xml:space="preserve">
-    <value>Администратор</value>
+    <value>管理员</value>
   </data>
   <data name="MyProfile" xml:space="preserve">
-    <value>Мой профиль</value>
+    <value>我的资料</value>
   </data>
   <data name="Settings" xml:space="preserve">
-    <value>Настройки</value>
+    <value>设置</value>
   </data>
   <data name="LogOut" xml:space="preserve">
-    <value>Выйти</value>
+    <value>退出登录</value>
   </data>
   <data name="Apply" xml:space="preserve">
-    <value>Применить</value>
+    <value>应用</value>
   </data>
   <data name="PDF" xml:space="preserve">
     <value>PDF</value>
   </data>
   <data name="Copy" xml:space="preserve">
-    <value>Копировать</value>
+    <value>复制</value>
   </data>
   <data name="DtNoRecords" xml:space="preserve">
-    <value>Совпадающих записей не найдено</value>
+    <value>未找到匹配记录</value>
   </data>
   <data name="DtInfo" xml:space="preserve">
-    <value>Записи с _START_ до _END_ из _TOTAL_ записей</value>
+    <value>显示第 _START_ 至 _END_ 条，共 _TOTAL_ 条</value>
   </data>
   <data name="DtInfoEmpty" xml:space="preserve">
-    <value>Записи с 0 до 0 из 0 записей</value>
+    <value>显示第 0 至 0 条，共 0 条</value>
   </data>
   <data name="DtInfoFiltered" xml:space="preserve">
-    <value>(отфильтровано из _MAX_ записей)</value>
+    <value>（从 _MAX_ 条记录中过滤）</value>
   </data>
   <data name="DtZeroRecords" xml:space="preserve">
-    <value>Совпадающих записей не найдено</value>
+    <value>未找到匹配记录</value>
   </data>
   <data name="DtEmptyTable" xml:space="preserve">
-    <value>В таблице нет данных</value>
+    <value>表中没有可用数据</value>
   </data>
-  <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
-  <data name="ColumnVisibility" xml:space="preserve"><value>Видимость столбцов</value></data>
-  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
-  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Вы уверены, что хотите удалить {0} выбранных записей?</value></data>
-  <data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} записей успешно удалено</value></data>
-  <data name="ClearSelection" xml:space="preserve"><value>Очистить выбор</value></data>
-  <data name="SelectedCount" xml:space="preserve"><value>записей выбрано</value></data>
-  <data name="RequiredProgress" xml:space="preserve"><value>Обязательно: {{0}} / {{1}}</value></data>
-  <data name="Update" xml:space="preserve"><value>Обновить</value></data>
-  <data name="RecordUpdated" xml:space="preserve"><value>Запись успешно обновлена.</value></data>
-  <data name="InvalidEmail" xml:space="preserve"><value>Неверный адрес электронной почты</value></data>
-  <data name="InvalidUrl" xml:space="preserve"><value>Неверный формат URL</value></data>
-  <data name="InvalidPhone" xml:space="preserve"><value>Неверный номер телефона</value></data>
-  <data name="NumericOnly" xml:space="preserve"><value>Допускаются только цифры</value></data>
-  <data name="FieldRequired" xml:space="preserve"><value>Это поле обязательно к заполнению</value></data>
-  <data name="InvalidFiscalYear" xml:space="preserve"><value>Неверный формат (например, 01-01)</value></data>
-  <data name="ValidationErrors" xml:space="preserve"><value>Ошибки: {0}</value></data>
-  <data name="RequiredStatus" xml:space="preserve"><value>Обязательно: {0} / {1}</value></data>
-  <data name="SelectPlaceholder" xml:space="preserve"><value>Выберите...</value></data>
-  <data name="Overview" xml:space="preserve"><value>Обзор</value></data>
-  <data name="SubRecords" xml:space="preserve"><value>Подзаписи</value></data>
-  <data name="Details" xml:space="preserve"><value>Детали</value></data>
-  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
-  <data name="EditRecord" xml:space="preserve"><value>Редактировать запись</value></data>
-  <data name="About" xml:space="preserve"><value>О программе</value></data>
-  <data name="Address" xml:space="preserve"><value>Адрес</value></data>
-  <data name="EmailAddress" xml:space="preserve"><value>Адрес эл. почты</value></data>
-  <data name="PhoneNumber" xml:space="preserve"><value>Номер телефона</value></data>
-  <data name="Website" xml:space="preserve"><value>Веб-сайт</value></data>
-  <data name="Sector" xml:space="preserve"><value>Сектор</value></data>
-  <data name="ContactPerson" xml:space="preserve"><value>Контактное лицо</value></data>
-  <data name="PrimaryCurrency" xml:space="preserve"><value>Основная валюта</value></data>
-  <data name="DefaultTimeZone" xml:space="preserve"><value>Часовой пояс по умолчанию</value></data>
-  <data name="BasicInfo" xml:space="preserve"><value>Основная информация</value></data>
-  <data name="NoRecordsFound" xml:space="preserve"><value>Подзаписей пока нет.</value></data>
-  <data name="Sandbox" xml:space="preserve"><value>Песочница</value></data>
-  <data name="Login.Title" xml:space="preserve"><value>Вход</value></data>
-  <data name="Login.Email" xml:space="preserve"><value>Эл. почта</value></data>
-  <data name="Login.Password" xml:space="preserve"><value>Пароль</value></data>
-  <data name="Login.RememberMe" xml:space="preserve"><value>Запомнить меня</value></data>
-  <data name="Login.Submit" xml:space="preserve"><value>Войти</value></data>
-  <data name="Login.ErrorTitle" xml:space="preserve"><value>Ошибка</value></data>
-  <data name="Login.ErrorRequired" xml:space="preserve"><value>Требуются эл. почта и пароль</value></data>
-  <data name="Login.Error" xml:space="preserve"><value>Неверная эл. почта или пароль</value></data>
-  <data name="Login.Loading" xml:space="preserve"><value>Вход...</value></data>
-  <data name="SaveView" xml:space="preserve"><value>Сохранить Вид</value></data>
-  <data name="Platform" xml:space="preserve"><value>平台</value></data>
-  <data name="WorkCenterMenu" xml:space="preserve"><value>工作中心</value></data>
-  <data name="ItemMaster" xml:space="preserve"><value>Справочник номенклатуры</value></data>
-  <data name="Attributes" xml:space="preserve"><value>Атрибуты</value></data>
-  <data name="Variants" xml:space="preserve"><value>Варианты</value></data>
-  <data name="ColumnOrder" xml:space="preserve"><value>Порядок столбцов</value></data>
-  <data name="SKUManagement" xml:space="preserve"><value>Управление SKU</value></data>
-  <data name="ProductMaster" xml:space="preserve"><value>Справочник продуктов</value></data>
-<data name="CategoryManagement" xml:space="preserve"><value>类别管理</value></data><data name="CompositionManagement" xml:space="preserve"><value>组合管理</value></data><data name="VariantManagement" xml:space="preserve"><value>变体管理</value></data><data name="LoginSecurity" xml:space="preserve"><value>登录与安全</value></data></root>
+  <data name="ShowAll" xml:space="preserve">
+    <value>显示全部</value>
+  </data>
+  <data name="ColumnVisibility" xml:space="preserve">
+    <value>列可见性</value>
+  </data>
+  <data name="BulkDelete" xml:space="preserve">
+    <value>批量删除</value>
+  </data>
+  <data name="BulkDeleteConfirm" xml:space="preserve">
+    <value>确定要删除选中的 {0} 条记录吗？</value>
+  </data>
+  <data name="BulkDeleteSuccess" xml:space="preserve">
+    <value>已成功删除 {0} 条记录</value>
+  </data>
+  <data name="ClearSelection" xml:space="preserve">
+    <value>清除选择</value>
+  </data>
+  <data name="SelectedCount" xml:space="preserve">
+    <value>条记录已选择</value>
+  </data>
+  <data name="RequiredProgress" xml:space="preserve">
+    <value>必填：{{0}} / {{1}}</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="RecordUpdated" xml:space="preserve">
+    <value>记录已成功更新。</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>电子邮件地址无效</value>
+  </data>
+  <data name="InvalidUrl" xml:space="preserve">
+    <value>URL 格式无效</value>
+  </data>
+  <data name="InvalidPhone" xml:space="preserve">
+    <value>电话号码无效</value>
+  </data>
+  <data name="NumericOnly" xml:space="preserve">
+    <value>只允许输入数字</value>
+  </data>
+  <data name="FieldRequired" xml:space="preserve">
+    <value>此字段为必填项</value>
+  </data>
+  <data name="InvalidFiscalYear" xml:space="preserve">
+    <value>格式无效（例如：01-01）</value>
+  </data>
+  <data name="ValidationErrors" xml:space="preserve">
+    <value>错误：{0}</value>
+  </data>
+  <data name="RequiredStatus" xml:space="preserve">
+    <value>必填：{0} / {1}</value>
+  </data>
+  <data name="SelectPlaceholder" xml:space="preserve">
+    <value>请选择...</value>
+  </data>
+  <data name="Overview" xml:space="preserve">
+    <value>概览</value>
+  </data>
+  <data name="SubRecords" xml:space="preserve">
+    <value>子记录</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>详情</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>返回列表</value>
+  </data>
+  <data name="EditRecord" xml:space="preserve">
+    <value>编辑记录</value>
+  </data>
+  <data name="NoRecordsFound" xml:space="preserve">
+    <value>暂无子记录。</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>地址</value>
+  </data>
+  <data name="EmailAddress" xml:space="preserve">
+    <value>电子邮件地址</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>电话号码</value>
+  </data>
+  <data name="Website" xml:space="preserve">
+    <value>网站</value>
+  </data>
+  <data name="Sector" xml:space="preserve">
+    <value>行业</value>
+  </data>
+  <data name="ContactPerson" xml:space="preserve">
+    <value>联系人</value>
+  </data>
+  <data name="PrimaryCurrency" xml:space="preserve">
+    <value>主要货币</value>
+  </data>
+  <data name="DefaultTimeZone" xml:space="preserve">
+    <value>默认时区</value>
+  </data>
+  <data name="BasicInfo" xml:space="preserve">
+    <value>基本信息</value>
+  </data>
+  <data name="Login.Title" xml:space="preserve">
+    <value>登录</value>
+  </data>
+  <data name="Login.Email" xml:space="preserve">
+    <value>电子邮件</value>
+  </data>
+  <data name="Login.Password" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="Login.RememberMe" xml:space="preserve">
+    <value>记住我</value>
+  </data>
+  <data name="Login.Submit" xml:space="preserve">
+    <value>登录</value>
+  </data>
+  <data name="Login.ErrorTitle" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Login.ErrorRequired" xml:space="preserve">
+    <value>电子邮件和密码为必填项</value>
+  </data>
+  <data name="Login.Error" xml:space="preserve">
+    <value>电子邮件或密码无效</value>
+  </data>
+  <data name="Login.Loading" xml:space="preserve">
+    <value>正在登录...</value>
+  </data>
+  <data name="Login.Subtitle" xml:space="preserve">
+    <value>请登录您的账户</value>
+  </data>
+  <data name="Sandbox" xml:space="preserve">
+    <value>沙盒</value>
+  </data>
+  <data name="SaveView" xml:space="preserve">
+    <value>保存视图</value>
+  </data>
+  <data name="Platform" xml:space="preserve">
+    <value>平台</value>
+  </data>
+  <data name="WorkCenterMenu" xml:space="preserve">
+    <value>工作中心</value>
+  </data>
+  <data name="ItemMaster" xml:space="preserve">
+    <value>物料主数据</value>
+  </data>
+  <data name="CompositionManagement" xml:space="preserve">
+    <value>组合管理</value>
+  </data>
+  <data name="CategoryManagement" xml:space="preserve">
+    <value>类别管理</value>
+  </data>
+  <data name="VariantManagement" xml:space="preserve">
+    <value>变体管理</value>
+  </data>
+  <data name="Attributes" xml:space="preserve">
+    <value>属性</value>
+  </data>
+  <data name="Variants" xml:space="preserve">
+    <value>变体</value>
+  </data>
+  <data name="ColumnOrder" xml:space="preserve">
+    <value>列顺序</value>
+  </data>
+  <data name="SKUManagement" xml:space="preserve">
+    <value>SKU 管理</value>
+  </data>
+  <data name="ProductMaster" xml:space="preserve">
+    <value>产品主数据</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>请输入描述...</value>
+  </data>
+  <data name="LevelPrefix" xml:space="preserve">
+    <value>级别</value>
+  </data>
+  <data name="NotAvailable" xml:space="preserve">
+    <value>不可用</value>
+  </data>
+</root>

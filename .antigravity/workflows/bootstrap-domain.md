@@ -22,6 +22,8 @@ Bu workflow, bir Excel planlama dosyasındaki verileri kullanarak Diten ERP vNex
 - Excel'deki her satır için bir `{DOMAIN}-{NNN}-{slug}.md` dosyası oluşturulur.
 - Her dosyanın başına zorunlu **YAML Frontmatter** eklenir.
 - **Acceptance Criteria (AC):** Excel'de belirtilen sayfa yapıları (Overview, Catalog, Detail) ve fonksiyonel gereksinimler (H1-1, H2-1 vb.) AC maddelerine dönüştürülür.
+- Yeni module pack'ler varsayılan olarak `status: draft` üretilir. Geliştirme için kullanıcı incelemesi sonrası `approved` veya `ready-for-dev` status gerekir.
+- DataTable modüllerinde `form_field_count` ve `golden_reference: slim|compact` kararı yazılır.
 
 ### Faz 3.5: Mühendislik Standartları ve Teknik Arınma (ZORUNLU)
 - **`domain-config.md` Kuralı:** Bu dosya içerisinde MongoDB, Soft Delete, JWT, API Envelope gibi teknik uygulama detaylarının yazılması **KESİNLİKLE YASAKTIR**.
@@ -63,3 +65,14 @@ Eğer bu işlemi dış bir AI'a (ChatGPT/Gemini/Claude) yaptıracaksanız, şu p
 - [ ] YAML frontmatter eksiksiz mi?
 - [ ] SOP hiyerarşisine uyuldu mu?
 - [ ] Dosyalar `execution/domains/` altında doğru yerleştirildi mi?
+
+---
+
+## Çıktı ve `prepare-module-pack` İlişkisi
+
+`bootstrap-domain` workflow'u toplu (bulk) module pack üretir; çıktı **her zaman** `status: draft`'tır. Geliştirmeye geçilmeden önce her pack için iki yoldan biri seçilir:
+
+- **(a) Hızlı yol — yalnız scope onayı:** Pack içeriği Excel'le birebir doğru ve eksiksizse kullanıcı manuel olarak `status: approved`/`ready-for-dev` yapar; orchestrator'a doğrudan teslim edilir.
+- **(b) Rafine yol — `prepare-module-pack`:** İş kuralları, AC, alan listesi veya golden reference kararı detaylandırılması gerekiyorsa pack `prepare-module-pack` workflow'una verilir; `module-pack-author` ajanı pack'i `Module Summary`, `Acceptance Criteria`, `Test Expectations`, `Runtime Constraints` gibi bölümlerle zenginleştirir ve sonra `approved`'a alır.
+
+`bootstrap-domain` ASLA doğrudan `@orchestrator`'a teslim etmez. `@orchestrator` yalnızca `approved`/`ready-for-dev` pack ile geliştirmeyi başlatır (`add-module.md` Phase 0 kapısı).

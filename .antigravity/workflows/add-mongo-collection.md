@@ -26,15 +26,15 @@ Bu akış, veritabanı seviyesinde izolasyonu ve performansı korumak için izle
 
 ## 🚀 3. Uygulama Sıralaması
 
-1. **Domain Katmanı:** `Diten.MDM.Domain` içinde Entity sınıfını ve `IRepository` interface'ini oluştur.
-2. **Persistence Katmanı:** `Diten.MDM.Persistence` içinde repository implementasyonunu (`MongoRepository<T>`) hazırla.
+1. **Domain Katmanı:** Hedef servisin Domain projesinde Entity sınıfını ve repository sözleşmesini oluştur.
+2. **Persistence Katmanı:** Hedef servisin Persistence projesinde repository implementasyonunu hazırla.
 3. **İndeksleme:** `Persistence` katmanındaki `Context` veya `Seed` dosyalarında `CreateIndex` tanımlarını yap.
 4. **Validation:** Verinin koleksiyona girmeden önceki şema doğrulamasını (FluentValidation) hazırla.
 
 ---
 
 ## ✅ Kontrol Listesi
-- [ ] Entity sınıfı `ITenantDocument` uyguluyor mu?
+- [ ] Entity sınıfı servis baseline'ındaki tenant-aware base entity'den türüyor mu?
 - [ ] `TenantId` içeren bir Compound Index tanımlandı mı?
 - [ ] Benzersizlik (Unique) kuralı `TenantId` kapsıyor mu?
 - [ ] Tüm asenkron işlemler `CancellationToken` alıyor mu?

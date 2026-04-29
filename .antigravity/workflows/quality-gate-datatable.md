@@ -4,7 +4,10 @@ description: "QUALITY-GATE-DT — DataTable Sayfası Teslim Öncesi Zorunlu Kont
 
 # /quality-gate-datatable — DataTable Sayfası Kalite Kapısı
 
-Bu workflow, bir DataTable liste sayfası (SampleModule, Cities, Currencies, vb.) tamamlandığında **hem agent hem orkestratör tarafından işaretlenmesi zorunlu** kontrol listesidir.
+Bu workflow, bir DataTable liste sayfası tamamlandığında **hem agent hem orkestratör tarafından işaretlenmesi zorunlu** kontrol listesidir. Module pack'teki `golden_reference` kararına göre uygulanır:
+
+- `slim`: `8 ve altı` form alanı, `_CreateEditOffcanvas.cshtml` ile Index içinde create/edit.
+- `compact`: `8'den fazla` form alanı, ayrı `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml`.
 
 > ⛔ Aşağıdaki listede **tek bir madde bile işaretlenmemişse** sayfa teslim edilemez. İlgili agent geri döner ve sorunu düzeltir.
 
@@ -20,7 +23,7 @@ Bu workflow, bir DataTable liste sayfası (SampleModule, Cities, Currencies, vb.
 - [ ] **Header Checkbox Sync:** `dt-checkboxes-select-all` değişince tüm satır checkbox'ları ve bar güncelleniyor mu? `indeterminate` state var mı?
 - [ ] **Tek Satır Silme:** `window.showConfirm()` wrapper'ı kullanılıyor mu? Direkt `Swal.fire` ile bypass edilmiyor mu?
 - [ ] **Delete Success Lifecycle:** Tek satır silme success akışı `row.remove().draw()` yerine `dt.ajax.reload(..., false)` ile mi tamamlanıyor? Toast tablo yenilendikten sonra mı gösteriliyor?
-- [ ] **Quick View:** Inline `onclick="populateOffcanvas(...)"` yok mu? `.js-quick-view` + event delegation ile offcanvas doluyor mu?
+- [ ] **Quick View:** Module pack quick view istiyorsa inline `onclick="populateOffcanvas(...)"` yok mu? `.js-quick-view` + event delegation ile çalışıyor mu?
 - [ ] **Toast:** Başarı/hata bildirimleri `window.showToast('KeyOrMessage', 'success'|'error'|'warning'|'info')` üzerinden mi geçiyor?
 - [ ] **API URL:** `apiUrl + '/api/{{ModuleNameLower}}'` formatında mı? `/mdm/api/v1/...` formatı yok mu?
 - [ ] **Auth Headers:** `getAuthHeaders()` tüm fetch/ajax çağrılarına ekleniyor mu?
@@ -59,7 +62,7 @@ Bu workflow, bir DataTable liste sayfası (SampleModule, Cities, Currencies, vb.
 - [ ] **L10n Bridge (v2):** Reorder kullanılan sayfalarda `ColumnOrder` key’i de bridge ediliyor mu?
 - [ ] **Layout:** `Layout = "_LayoutBackbone"` kullanılıyor mu?
 - [ ] **Shared CSS Placement:** Reusable toolbar / inline-filter / Select2 stilleri `Index.cshtml @section Styles` içine gömülmemiş mi? Ortak kurallar `backbone-custom.css` içinde mi?
-- [ ] **Index Form Surface Boundary:** Index içinde create/edit amaçlı editor offcanvas yok mu? Offcanvas sadece Quick View için mi kullanılıyor?
+- [ ] **Index Form Surface Boundary:** Slim ise Index içinde `_CreateEditOffcanvas.cshtml` var mı? Compact ise Index içinde create/edit amaçlı editor offcanvas yok mu?
 
 ### C. Localization
 
@@ -119,7 +122,7 @@ Bu workflow, bir DataTable liste sayfası (SampleModule, Cities, Currencies, vb.
 - [ ] **Localization:** Sayfa başlığı, alt başlık ve tablo kolon başlıkları raw key olarak DEĞİL çevrilmiş metin olarak görünüyor mu?
 - [ ] **Console Hatasızlık:** Browser console'da JavaScript hatası yok mu?
 - [ ] **Network Sağlamlığı:** `/api/{{ModuleNameLower}}` çağrısı `200` dönüyor mu? `401/500` yok mu? (`500` ise önce MongoDB 27017 ve backend logları kontrol edilmeden UI teslim edilmez.)
-- [ ] **Quick View:** "Quick View" offcanvas açılıyor ve alanlar doluyor mu?
+- [ ] **Quick View:** Module pack quick view istiyorsa "Quick View" açılıyor ve alanlar doluyor mu?
 - [ ] **Boş Durum:** Tablo boşsa "No records found" veya eşdeğer L10n mesajı düzgün gösteriliyor mu?
 - [ ] **Import Placeholder Toast:** Import/ComingSoon aksiyonu hata gibi görünmeyen `warning` veya `info` toast ile mi gösteriliyor? Yanlışlıkla `error` hissi üretmiyor mu?
 - [ ] **Delete Toast Parity:** Tek satır delete toast'ı create success ve bulk delete success ile aynı görsel/lifecycle parity'de mi? Solda beyaz şerit, ripple artığı veya error hissi yok mu?
@@ -127,7 +130,7 @@ Bu workflow, bir DataTable liste sayfası (SampleModule, Cities, Currencies, vb.
 
 ### H. 🔍 Statik Guard (ZORUNLU / Opsiyonel Ayrımı)
 
-- [ ] **Zorunlu:** `python3 .antigravity/scripts/verify_datatable_page.py . --area {{AreaName}} --module {{ModuleName}}` çalıştırıldı mı?
+- [ ] **Zorunlu:** `python3 .antigravity/scripts/verify_datatable_page.py . --area {{AreaName}} --module {{ModuleName}} --reference slim|compact` çalıştırıldı mı?
 - [ ] **Zorunlu (v2 marker varsa):** table `id` + `data-dt-standard="v2"` ve required `window.L10n` bridge key'leri/payload loader pattern'i script tarafından doğrulandı mı?
 - [ ] **Opsiyonel:** Deeper pattern checks (override bayrakları, multi-sort QA) manuel olarak kontrol edildi mi?
 
@@ -135,10 +138,11 @@ Bu workflow, bir DataTable liste sayfası (SampleModule, Cities, Currencies, vb.
 
 > ⛔ Bu bölüm yalnızca DataTable sayfasını değil, **tam modülü** kapsar. Tek bir madde eksikse modül teslim edilemez.
 
-- [ ] **Create sayfası:** `Views/{AreaName}/{ModuleName}/Create.cshtml` mevcut mu? (`add-page.md §B` şablonuna uyuyor mu?)
-- [ ] **Details sayfası:** `Views/{AreaName}/{ModuleName}/Details.cshtml` mevcut mu? (`add-page.md §C` şablonuna uyuyor mu?)
-- [ ] **Edit sayfası:** Ayrı `Edit.cshtml` veya Details içinde edit modu mevcut mu?
-- [ ] **Create Navigation Pattern:** "Add New" aksiyonu offcanvas form açmak yerine route tabanlı Create sayfasına yönleniyor mu?
+- [ ] **Slim Create/Edit:** `golden_reference: slim` ise `_CreateEditOffcanvas.cshtml` mevcut mu ve Add New offcanvas açıyor mu?
+- [ ] **Compact Create sayfası:** `golden_reference: compact` ise `Views/{AreaName}/{ModuleName}/Create.cshtml` mevcut mu?
+- [ ] **Compact Details sayfası:** `golden_reference: compact` ise `Views/{AreaName}/{ModuleName}/Details.cshtml` mevcut mu?
+- [ ] **Compact Edit sayfası:** `golden_reference: compact` ise `Edit.cshtml` mevcut mu?
+- [ ] **Compact Create Navigation Pattern:** Compact ise "Add New" route tabanlı Create sayfasına yönleniyor mu?
 - [ ] **Rebuild Guard:** Yeniden yapım söz konusuysa silinmiş Create/Edit/Details sayfaları yeni sürümüyle değiştirildi mi?
 - [ ] **API Dokümantasyonu:** `documentation-writer` Swagger/README güncellemesini tamamladı mı?
 - [ ] **Kullanıcı Kılavuzu:** `user-manual-generator` son kullanıcı rehberini hazırladı mı?

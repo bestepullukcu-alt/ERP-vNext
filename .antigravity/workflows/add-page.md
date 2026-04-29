@@ -8,6 +8,10 @@ description: "WORKFLOW-002 — Mevcut Modüle Action Bazlı Sayfa ve UI Bileşen
 
 ### A. DataTable Liste Sayfası (Index)
 - **HTML Şablonu:** `.antigravity/rules/frontend-datatable-template.md` birebir kopyalanır (iskelete dokunulmaz).
+- **Golden Variant:** Module pack'teki `golden_reference` uygulanır.
+  - `slim`: `8 ve altı` form alanı; `_CreateEditOffcanvas.cshtml` ile Index içinde create/edit.
+  - `compact`: `8'den fazla` form alanı; `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml`.
+- **Partial Standardı:** Her DataTable modülünde `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`, marker class, `index.l10n.js`, `index.js` zorunludur.
 - **JS Şablonu:** `.antigravity/rules/frontend-js-standard.md` birebir uygulanır:
   - `new DataTable(el, window.DtDefaults.create({...}))`
   - `window.DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons, options)`
@@ -16,6 +20,7 @@ description: "WORKFLOW-002 — Mevcut Modüle Action Bazlı Sayfa ve UI Bileşen
 
 ### B. Form Sayfası (Create/Edit)
 - **Şablon:** `.antigravity/rules/frontend-form-template.md`
+- **Kapsam:** Bu bölüm Compact (`golden_reference: compact`) modüller için kullanılır. Slim modüllerde create/edit formu `_CreateEditOffcanvas.cshtml` içindedir.
 - **Layout:** `_LayoutBackbone.cshtml` zorunludur.
 - **Validation:** `novalidate` + Bootstrap `invalid-feedback`.
 - **Header/Breadcrumb Standardı:** Üst blok kompakt action-page standardında olmalıdır:
@@ -53,7 +58,7 @@ description: "WORKFLOW-002 — Mevcut Modüle Action Bazlı Sayfa ve UI Bileşen
 - **Feedback:** İşlem sonunda `TempData["SuccessMessage"]` / `TempData["ErrorMessage"]` veya JSON `{ success: true|false, messageKey: "RecordCreated"|... }` döndürerek toast sistemini besle.
 
 ### Step 2: UI & UX (frontend-ui-ux)
-- **Component:** Veri azsa Offcanvas, çoksa tam sayfa tasarımını yap.
+- **Component:** Kararı module pack verir. `slim` ise offcanvas, `compact` ise tam sayfa tasarımını yap.
 - **Modallar:** Onay gerektiren işlemlerde `_GlobalConfirmation` entegrasyonunu kullan.
 
 ---

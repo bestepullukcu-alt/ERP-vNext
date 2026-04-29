@@ -1,6 +1,11 @@
 # GOLDEN RULE: Standard DataTable UI Blueprint
 
-Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları (Örn: SampleModule, Cities, Currencies) için ZORUNLU HTML/Razor şablonudur.
+Bu şablon, Diten ERP vNext projelerindeki tüm standart DataTable modülleri için ZORUNLU HTML/Razor sözleşmesidir. Aktif golden referanslar:
+
+- `GoldenReferenceSlim`: `8 ve altı` create/edit form alanı, Index içinde create/edit offcanvas
+- `GoldenReferenceCompact`: `8'den fazla` create/edit form alanı, ayrı Create/Edit/Details sayfaları
+
+Alan sayımı yalnızca kullanıcının formda doldurduğu modül alanlarıdır. `Id`, `TenantId`, `IsDeleted`, audit/base alanları ve DataTable checkbox/action kolonları sayılmaz.
 
 > ⚠️ **MANDATES:**
 > - HTML iskeletine hiç dokunma. Sadece `{{DeğişkenAdlar}}` kısımlarını doldur.
@@ -11,13 +16,38 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart "Liste/CRUD" sayfaları
 > - **DataTable v2 Standard Marker:** Yeni standartları uygulayan sayfalarda `<table ... data-dt-standard="v2" id="...">` zorunludur.
 > - **Toolbar Badge Clipping:** Filter/ColVis badge’leri `top-0 end-0 translate-middle` ile dışarı taşar; bu normaldir. Mobil/tablet’te kesilmemesi için çözüm `backbone-custom.css (MOD-0022)` içindeki **top safe-area padding**’dir. Sayfa bazlı “badge’i içeri taşı” veya “sadece z-index” hack’i YASAKTIR.
 > - **Shared CSS Placement:** Toolbar / inline filter / Select2 chip görünümleri page-level `@section Styles` içinde tekrar edilmez; ortak kurallar `wwwroot/assets/css/backbone-custom.css` içinde tutulur.
-> - **Create/Edit Surface Rule (ZORUNLU):** Standart CRUD modüllerde kayıt oluşturma ve düzenleme akışları ayrı sayfalar (`Create.cshtml`, `Edit.cshtml`, gerekirse `Details.cshtml`) üzerinden yürür. Index içinde create/edit offcanvas formu açmak YASAKTIR. Offcanvas sadece Quick View amaçlıdır.
+> - **Create/Edit Surface Rule (ZORUNLU):** Module pack'teki `golden_reference` kararı uygulanır. Slim modüllerde create/edit Index içindeki `_CreateEditOffcanvas.cshtml` ile yapılır. Compact modüllerde create/edit ayrı sayfalar (`Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml`) üzerinden yürür ve Index içinde create/edit offcanvas YASAKTIR.
 > - **Delete Endpoint Ownership (ZORUNLU):** Tekil silme ve bulk silme çağrıları yalnızca modülün kendi resource endpoint’ine gider (`/api/{module}` ve `/api/{module}/bulk`). Kardeş modül endpoint’i kullanmak YASAKTIR.
 > - **Bulk Delete Confirmation Parity (ZORUNLU):** Bulk delete için generic/yanlış modal değil, tekil silme ile aynı görsel dilde confirm akışı (`window.showConfirm` standardı) kullanılmalıdır.
 > - **Save View CTA (ZORUNLU):** DataTable toolbar’ında `dt-save-filter-btn` başlangıçta `d-none` olsa bile render edilmek zorundadır; dirty-state olduğunda görünür olmalıdır.
 > - **`{AreaName}` = klasör gruplaması (Örn: `MDM`, `Identity`), ASP.NET Areas routing DEĞİLDİR.**
 >   - ✅ DOĞRU: `Views/MDM/SampleModule/Index.cshtml`
 >   - ❌ YANLIŞ: `Areas/MDM/Views/SampleModule/Index.cshtml`
+
+## Golden Variant Partial Contract
+
+Her DataTable modülünde ortak zorunlu dosyalar:
+
+- `Views/{AreaName}/{ModuleName}/Index.cshtml`
+- `Views/{AreaName}/{ModuleName}/_Filter.cshtml`
+- `Views/{AreaName}/{ModuleName}/_DataTable.cshtml`
+- `Views/{AreaName}/{ModuleName}/_IndexL10n.cshtml`
+- `Views/{AreaName}/{ModuleName}/{ModuleName}Index.cs`
+- `wwwroot/assets/js/{AreaName}/{ModuleName}/index.l10n.js`
+- `wwwroot/assets/js/{AreaName}/{ModuleName}/index.js`
+
+Slim ek zorunlu dosya:
+
+- `Views/{AreaName}/{ModuleName}/_CreateEditOffcanvas.cshtml`
+
+Compact ek zorunlu dosyalar:
+
+- `Views/{AreaName}/{ModuleName}/Create.cshtml`
+- `Views/{AreaName}/{ModuleName}/Edit.cshtml`
+- `Views/{AreaName}/{ModuleName}/Details.cshtml`
+- `Views/{AreaName}/{ModuleName}/_Form.cshtml`
+
+`_DataTable.cshtml` DataTable v2 marker'ı, skeleton loader'ı, checkbox/action kolonlarını taşır. `_Filter.cshtml` inline filter standardını taşır. `_IndexL10n.cshtml` JSON payload üretir; Index içine uzun `window.L10n.Key = ...` blokları yazılmaz.
 
 ---
 

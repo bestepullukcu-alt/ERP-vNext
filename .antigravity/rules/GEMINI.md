@@ -78,8 +78,11 @@ Bir ajan rolünü üstlendiğinde kullanıcıya bildir:
 Yeni bir servis eklendiğinde veya çalıştırıldığında portlar sabittir:
 - **5000**: Gateway (Ocelot)
 - **5001**: Frontend MVC (Diten.Web)
-- **5050**: MDM Service
 - **5056**: Auth Service
+- **5057**: Platform Service
+- **5058**: DevEnablement Service (canlı golden referans modülleri burada)
+
+> AGENTS.md (`§ Port Şeması`) tek doğru kaynaktır; çakışma halinde AGENTS.md geçerlidir. Eski 5050 (MDM) port atamalı kalmamıştır.
 
 ### 4. Dil ve L10n (7 Dil Kuralı)
 - View (`.cshtml`) ve JavaScript (`.js`) içinde statik string (Hardcoded metin) kesinlikle YASAKTIR.

@@ -111,7 +111,7 @@ dotnet test services/Diten.Platform
 
 ### DataTable Kontrat Doğrulama (Frontend)
 ```bash
-python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName}
+python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName} --reference slim|compact
 ```
 
 ---
@@ -131,19 +131,34 @@ Bu kararlar repo genelinde **zorunludur**. Bir modül bunlardan muaf olmak ister
 | Pipeline Behaviors | 4 zorunlu (Validation, Logging, Exception, Performance) | [.antigravity/rules/pipeline-behaviors.md](.antigravity/rules/pipeline-behaviors.md) |
 | Yerelleştirme | 7 dil (en, fr, es, zh, ar, ru, tr) — `.resx` + `window.L10n` bridge | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
 | UI Layout | `_LayoutBackbone.cshtml` (yeni modüller); `_Layout.cshtml` FROZEN | [.antigravity/rules/views-organization.md](.antigravity/rules/views-organization.md) |
-| DataTable | v2 kontratı zorunlu (`data-dt-standard="v2"`) | [.antigravity/rules/frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md) |
+| DataTable | v2 kontratı zorunlu (`data-dt-standard="v2"`) + Golden Slim/Compact seçimi | [.antigravity/rules/frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md) |
+
+### Golden Reference DataTable Kararı
+
+DataTable tabanlı yeni modüllerde resmi referans iki canlı DevEnablement modülüdür:
+
+| Form alan sayısı | Referans | UI surface |
+|---|---|---|
+| `8 ve altı` | `GoldenReferenceSlim` | Index içinde create/edit offcanvas |
+| `8'den fazla` | `GoldenReferenceCompact` | Ayrı `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml` |
+
+Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül alanlarıdır. `Id`, `TenantId`, `IsDeleted`, `CreatedAt`, `UpdatedAt`, audit alanları ve DataTable checkbox/action kolonları sayılmaz.
 
 ---
 
 ## 7. Ajan Seçimi ve Varsayılan Entry Point
 
-Varsayılan entry point: **`@orchestrator`**
+Varsayılan geliştirme entry point'i: **`@orchestrator`**
+
+Module pack hazırlama entry point'i: **`module-pack-author`** veya **`/prepare-module-pack`**
 
 Orchestrator çağrıldığında Aşama 0'da şu dosyaları okur:
 1. `AGENTS.md` (bu dosya)
 2. İlgili `execution/domains/{domain}/domain-config.md`
 3. Varsa `execution/domains/{domain}/module-packs/{ID}.md`
 4. Görev tipine uygun `.antigravity/workflows/*.md`
+
+**Kural:** `@orchestrator` module pack oluşturmaz. Yeni modül geliştirmesi yalnızca mevcut ve kullanıcı tarafından onaylanmış (`approved` veya `ready-for-dev`) module pack üzerinden başlar. Module pack yoksa veya `draft` durumundaysa kod yazılmaz; kullanıcı önce `/prepare-module-pack` veya `module-pack-author` ile module pack hazırlamaya yönlendirilir.
 
 Ajan listesi ve sorumlulukları: [.antigravity/agents/](.antigravity/agents/)
 Prompt yazma rehberi: [.antigravity/PROMPT-GUIDE.md](.antigravity/PROMPT-GUIDE.md)
@@ -152,18 +167,26 @@ Prompt yazma rehberi: [.antigravity/PROMPT-GUIDE.md](.antigravity/PROMPT-GUIDE.m
 
 ## 8. Çalışma Akışı (New Module / New Feature)
 
-Yeni bir modül veya büyük feature geldiğinde:
+Yeni bir modül veya büyük feature geldiğinde iki aşamalı akış zorunludur:
 
-1. **Domain seç** — Hangi domain'e ait? (MDM / PSS / ESBP)
-2. **Module pack oluştur** — `execution/domains/{domain}/module-packs/MOD-XXXX-slug.md`
+### Aşama 1 — Module Pack Hazırlık
+
+1. **Domain seç** — Hangi domain'e ait? (MDM / DEVEN / PSS / ESBP)
+2. **Module pack hazırla** — `execution/domains/{domain}/module-packs/{ID}-slug.md`
    - YAML frontmatter doldur (id, name, domain, status=draft, owner, branch, dates)
-   - Acceptance criteria, repo scope, protected paths yaz
-3. **Branch aç** — `feature/{domain-kısa}/{module-id}-{slug}`
+   - Owned objects, repo scope, protected paths, acceptance criteria ve test expectations yaz
+   - DataTable modülü ise form alan sayısını ve `golden_reference: slim|compact` kararını yaz
+3. **Kullanıcı incelemesi** — `draft` module pack kod üretimi için yeterli değildir.
+4. **Onay** — Kullanıcı onayından sonra status `approved` veya `ready-for-dev` yapılır.
+
+### Aşama 2 — Geliştirme
+
+5. **Branch aç** — `feature/{domain-kısa}/{module-id}-{slug}`
    - Örnek: `feature/mdm/mdm-001-product-management`
-4. **Orchestrator çağır** — Module pack adını ver
-5. **`/add-module` workflow** çalışır — Phase 1 → 6
-6. **Status güncelle** — `draft` → `in-progress` → `review` → `done`
-7. **PR aç, merge et** — Module pack silinmez, `done` olarak kalır
+6. **Orchestrator çağır** — Onaylı module pack adını ver
+7. **`/add-module` workflow** çalışır — Phase 0 → 6
+8. **Status güncelle** — `approved/ready-for-dev` → `in-progress` → `review` → `done`
+9. **PR aç, merge et** — Module pack silinmez, `done` olarak kalır
 
 Fix/refactor işleri için: [.antigravity/rules/GEMINI.md](.antigravity/rules/GEMINI.md) working-agreement akışı uygulanır (önce kod düzeltilir, onay alındıktan sonra `.antigravity` etkisi kontrol edilir).
 
@@ -192,6 +215,8 @@ Yedekleme branch'leri için ayrı kural: [.antigravity/rules/git-backup-policy.m
 
 **Yeni bir modül veya büyük bir feature'ın kodu module pack olmadan yazılamaz.**
 
+**Onay kapısı:** `draft` module pack yalnızca planlama dokümanıdır. Kod üretimi için status `approved` veya `ready-for-dev` olmalıdır.
+
 Module pack minimum içermeli:
 - YAML frontmatter (id, status, owner, branch)
 - Owned objects
@@ -199,6 +224,7 @@ Module pack minimum içermeli:
 - Protected paths (dokunulmayacak klasörler)
 - Acceptance criteria (test edilebilir)
 - Test expectations
+- DataTable modülleri için form alan sayısı ve `golden_reference: slim|compact`
 
 Şablon: [.antigravity/rules/module-pack-standard.md](.antigravity/rules/module-pack-standard.md)
 

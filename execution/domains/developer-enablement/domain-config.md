@@ -4,15 +4,15 @@
 Developer Enablement domain'i, urun modullerinden bagimsiz olarak gelistirme surecinde tekrar kullanilacak referans kitleri, ornek modulleri ve scaffold baseline'larini tanimlar. Bu domain'in amaci, gelecekte yazilacak modullerin ayni kalite, klasor yapisi ve delivery kontrati ile baslamasini saglamaktir.
 
 ## In-Scope Modules
-- `DEV-0000` — Golden Reference Item (8 alanli / dusuk-orta veri yogunluklu baseline)
-- `DEV-0001` — Large Dataset Reference Module (planlandi)
+- `DEV-0000` — Golden Reference Slim (8 ve alti create/edit form alanli DataTable baseline)
+- `DEV-0001` — Golden Reference Compact (8'den fazla create/edit form alanli DataTable baseline)
 - `DEV-0002` — Complex Form and Details Reference Module (planlandi)
 
 ## Out-of-Scope
 - Canli is kabiliyeti ureten business modulleri
 - MDM/PSS/ESBP ownership altindaki gercek domain nesneleri
 - Production menu, navigation ve domain katalog sahipligi
-- `.antigravity` kurallarinin bu asamada degistirilmesi
+- `.antigravity` kurallarinin sahipligi (yalnizca kullanici acik talebiyle guncellenir)
 
 ## Ownership Boundaries
 - Bu domain sadece gelistirme referansi olarak uretilecek artefaktlari sahiplenir.

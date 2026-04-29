@@ -16,6 +16,22 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
 - **Platform**: Platform Core Service (Port: 5057)
 - **Localization**: 7 Dil (EN, FR, ES, ZH, AR, RU, TR) - Resx + JS Bridge (`_IndexL10n.cshtml` JSON payload + `index.l10n.js` -> `window.L10n`)
 
+## 🥇 Golden Reference Standardı
+
+DataTable modülleri için aktif referanslar `developer-enablement` domain'inde bulunan canlı modüllerdir:
+
+| Referans | Kullanım | UI surface |
+|---|---|---|
+| `GoldenReferenceSlim` | `8 ve altı` create/edit form alanı | Index içinde `_CreateEditOffcanvas.cshtml` |
+| `GoldenReferenceCompact` | `8'den fazla` create/edit form alanı | Ayrı `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml` |
+
+Eski `SampleModule`, `Products`, `Diten.MdmService` ve hardcoded `5050` anlatımları aktif golden kaynak değildir; yalnızca tarihsel örnek olarak görülürse module pack ve domain config önceliği uygulanır.
+
+Yeni modül geliştirmesi iki aşamalıdır:
+
+1. `/prepare-module-pack` veya `module-pack-author` ile `status: draft` module pack hazırlanır.
+2. Kullanıcı onayı sonrası status `approved` veya `ready-for-dev` olur ve `@orchestrator` geliştirmeyi başlatır.
+
 ---
 
 ## 🏗️ Klasör Hiyerarşisi (Directory Structure)
@@ -33,45 +49,39 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
     │   │   └── generate-dashboard.py   # Module pack dashboard ureticisi
     │   └── domains/
     │       ├── master-data-management/
+    │       ├── developer-enablement/
     │       ├── platform-shared-services/
     │       └── enterprise-strategy-business-performance/
     ├── frontend/
     │   └── Diten.Web/           # MVC Projesi (Port: 5001)
     │       ├── Controllers/
     │       │   ├── AccountController.cs      # Login/Logout (AuthService entegrasyonu)
-    │       │   ├── SampleModuleController.cs # MDM aktif controller (Örnek)
+    │       │   ├── GoldenReferenceSlimController.cs
+    │       │   ├── GoldenReferenceCompactController.cs
     │       │   └── Archive/                   # Legacy controller'lar (FROZEN)
     │       ├── Views/
     │       │   ├── Shared/
     │       │   │   ├── _Layout.cshtml         # Legacy layout (FROZEN)
-    │       │   │   ├── _LayoutBackbone.cshtml # Modern layout (MDM + Yeni modüller)
+    │       │   │   ├── _LayoutBackbone.cshtml # Modern layout (yeni modüller)
     │       │   │   └── _SkeletonLoader.cshtml # DataTable shimmer efekti
     │       │   ├── Account/                   # Login sayfası (AuthService)
-    │       │   ├── MDM/                       # Aktif modüller (_LayoutBackbone)
+    │       │   ├── DevEnablement/             # Golden reference modülleri
     │       │   └── Archive/                   # Legacy sayfalar (_Layout)
     │       ├── wwwroot/assets/
     │       │   ├── css/backbone-custom.css    # Modern CSS (16px rem baz)
     │       │   ├── js/dt-defaults.js          # Merkezi DataTable config
     │       │   ├── js/Account/                # Login JS modülleri
-    │       │   └── js/MDM/                    # Modül bazlı JS dosyaları
+    │       │   └── js/DevEnablement/          # Golden reference JS dosyaları
     │       └── Resources/                     # 7 Dil Resx Dosyaları
     ├── gateway/
-    │   └── DitenApiGateway/     # Ocelot Gateway (Port: 5000)
-    │       ├── ocelot.json      # Route tanımları (MDM + Auth)
+    │   └── Diten.ApiGateway/    # Ocelot Gateway (Port: 5000)
+    │       ├── ocelot.json      # Route tanımları
     │       └── Program.cs       # JWT Authentication + CORS
     └── services/
-        ├── DitenMdmService/     # Master Data Management (Port: 5050)
-        │   └── src/
-        │       ├── Diten.MdmService.Api/
-        │       ├── Diten.MdmService.Application/
-        │       ├── Diten.MdmService.Domain/
-        │       ├── Diten.MdmService.Persistence/
-        │       └── Diten.MdmService.Infrastructure/
-        └── DitenAuthService/    # Identity & Access Management (Port: 5056)
-            └── src/
-                ├── Diten.AuthService.Api/          # Controllers, Swagger, Health
-                ├── Diten.AuthService.Application/  # CQRS: Auth, Users, Roles, Permissions
-                ├── Diten.AuthService.Domain/       # User, Role, Permission, RefreshToken
+        ├── Diten.AuthService/              # Identity & Access Management (Port: 5056)
+        ├── Diten.Platform/                 # Platform shared services (Port: 5057)
+        ├── Diten.DevEnablementService/     # Golden references (Port: 5058)
+        └── Diten.EnterpriseStrategyService/
                 ├── Diten.AuthService.Persistence/  # MongoDB repos, Seed Data, Indexes
                 └── Diten.AuthService.Infrastructure/ # JWT, BCrypt, HasPermission, TenantMiddleware
 
@@ -211,7 +221,7 @@ Ajanların uyması gereken zorunlu dosyalar (`.antigravity/rules/`):
 ### API & Networking
 - **api-conventions.md**: RESTful naming (/api/v1/), ProblemDetails, HTTP status kodları
 - **routes.md**: Gateway Upstream/Downstream standardı, Header kuralları
-- **ports.md**: Port registry (5000 GW, 5001 FE, 5050 MDM, 5056 Auth)
+- **ports.md**: Port registry (5000 GW, 5001 FE, 5056 Auth, 5057 Platform, 5058 DevEnablement)
 
 ### Frontend & UI
 - **frontend-standards.md**: Sneat UI, DataTable v2, CSS/JS kuralları (MOD-0013/22/23/24)

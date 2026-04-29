@@ -30,7 +30,7 @@
 - `controls/` — gelistirme sureci icin domain-ozel kontroller
 
 ## Initial direction
-Ilk modul `Golden Reference Item` olacaktir. Bu modul tamamlandiginda, gelecekteki moduller icin:
+Ilk modul `Golden Reference Slim` olacaktir. Bu modul tamamlandiginda, gelecekteki moduller icin:
 - kucuk/orta veri yogunluklu referans
 - buyuk veri yogunluklu referans
 - karmasik form/details referansi

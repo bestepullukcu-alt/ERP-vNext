@@ -11,7 +11,7 @@ Zorunlu format:
 ```
 
 Kurallar:
-- `DOMAIN`: `MDM` | `PSS` | `ESBP`
+- `DOMAIN`: `MDM` | `DEV` | `PSS` | `ESBP`
 - `NNN`: 3 haneli sira numarasi (`001`, `002`, ...)
 - `slug`: kucuk harf + tire ayirici (`product-management`)
 
@@ -19,6 +19,7 @@ Ornekler:
 - `MDM-001-product-management.md`
 - `PSS-002-role-permission-matrix.md`
 - `ESBP-001-strategy-core.md`
+- `DEV-0000-golden-reference-slim.md`
 
 ## 2. YAML Frontmatter (Required)
 
@@ -41,7 +42,7 @@ Alan kurallari:
 - `id`: `{DOMAIN}-{NNN}`
 - `name`: insan-okunur modul adi
 - `domain`: domain folder adi ile birebir ayni olmali
-- `status`: `draft | in-progress | review | done | blocked`
+- `status`: `draft | approved | ready-for-dev | in-progress | review | done | blocked`
 - `owner`: sorumlu kisi veya ekip
 - `branch`: `feature/{domain-short}/{id-lower}-{slug}`
 - `started` / `target`: `YYYY-MM-DD`
@@ -60,6 +61,11 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 8. `Test Expectations`
 9. `Implementation Notes`
 10. `Follow-up Items`
+
+DataTable modüllerinde ayrıca şu karar açık yazılmalıdır:
+
+- `form_field_count`: create/edit formunda kullanıcının doldurduğu alan sayısı
+- `golden_reference`: `slim` (`8 ve altı`) veya `compact` (`8'den fazla`)
 
 ## 4. Repo Scope Rules
 
@@ -93,13 +99,15 @@ Module ozelligine gore unit/integration test kapsamı acik yazilmalidir.
 Status akisi:
 
 ```text
-draft -> in-progress -> review -> done
+draft -> approved/ready-for-dev -> in-progress -> review -> done
 ```
 
 Alternatif durum:
 - `blocked` (engellenen is)
 
 Kurallar:
+- `draft` yalnızca kullanıcı incelemesi içindir; orchestrator bu status ile kod yazamaz.
+- Kod üretimi için status `approved` veya `ready-for-dev` olmalıdır.
 - `done` olduktan sonra module pack silinmez
 - Dosya kalici audit belgesi olarak korunur
 - Yeni degisiklikte ayni dosyada `Implementation Notes` guncellenir

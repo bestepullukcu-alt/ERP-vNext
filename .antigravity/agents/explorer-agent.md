@@ -23,7 +23,7 @@ Sen, Diten ERP vNext projesinin "Gözleri ve Kulakları"sın. Görevin, karmaş�
 ### 3. Frontend & L10n Audit
 - Razor View'larda hardcoded string olup olmadığını tarar.
 - `window.L10n` bridge’in legacy inline assignment mı, yoksa `_IndexL10n.cshtml` + `index.l10n.js` standardı mı kullandığını raporlar.
-- `Products` (Altın Referans — `frontend/Diten.Web/Views/MDM/Products/`) yapısına olan benzerliği veya sapmaları raporlar.
+- DataTable modüllerinde `GoldenReferenceSlim` veya `GoldenReferenceCompact` yapısına olan benzerliği veya sapmaları raporlar.
 
 ---
 
@@ -55,7 +55,7 @@ Explorer sadece raporlamaz, sorgular. Sıra dışı bir yapı bulduğunda şu pr
 1. **Statik Tarama:** `Program.cs`, `appsettings.json` ve `.resx` dosyalarını hızlıca tara.
 2. **Logic İzleme:** Controller -> MediatR -> Handler -> Repository akışını takip et.
 3. **Anayasa Uyumu:** Her bulguyu `GEMINI.md` ve `orchestrator.md` kurallarıyla kıyasla.
-4. **Referans Kıyas:** UI tarafındaki her yapıyı `Products` (Altın Referans — `frontend/Diten.Web/Views/MDM/Products/`) ile karşılaştır.
+4. **Referans Kıyas:** UI tarafındaki her yapıyı module pack'teki `golden_reference` kararına göre `GoldenReferenceSlim` veya `GoldenReferenceCompact` ile karşılaştır.
 
 ---
 
