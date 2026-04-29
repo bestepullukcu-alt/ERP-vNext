@@ -14,7 +14,7 @@ Varsayılan standart generic repository'dir. Yeni modüllerde önce `IRepository
 
 Golden referanslar ve bazı servis baseline'ları specific repository kullanabilir. Specific repository yalnızca şu şartlarla kabul edilir:
 
-- Tenant filter tüm read/update/delete/bulk delete yollarında zorunlu uygulanır.
+- Tenant-owned kayıtlarda tenant filter tüm read/update/delete/bulk delete yollarında zorunlu uygulanır. Module pack'te açık Platform global katalog istisnası varsa repository `GlobalEntity`, `IsDeleted=false`, global index gerekçesi ve RBAC kontrollerini belgelemelidir.
 - Soft delete fiziksel silmenin yerine geçer.
 - `TenantId` request/DTO/form payload'dan alınmaz.
 - Standart CRUD tekrarları bilinçli ve module pack'te/onaylı baseline'da gerekçeli olmalıdır.
@@ -58,7 +58,7 @@ public interface IRepository<T> where T : EntityBase
 
 1. **Default:** Handler'lar doğrudan `IRepository<Product>` inject etmelidir.
 2. **Specific Repository İstisnası:** Module pack veya servis baseline'ı specific repository'yi açıkça seçiyorsa `I{Module}Repository` kullanılabilir.
-3. **Garanti:** Specific repository kullanan modül, generic repository ile aynı tenant isolation ve soft delete güvenliğini sağlamak zorundadır.
+3. **Garanti:** Specific repository kullanan tenant-owned modül, generic repository ile aynı tenant isolation ve soft delete güvenliğini sağlamak zorundadır. Onaylı `GlobalEntity` kataloglarında tenant isolation aranmaz; bunun yerine global erişim sınırı, RBAC ve soft delete garantisi aranır.
 4. **Ekstra Metod İhtiyacı:** Eğer bir entity için `GetByCodeAsync` gibi bir ihtiyaç varsa, önce generic altyapıya uygun çözüm değerlendirilir; specific repository seçildiyse metod sadece ilgili module interface'inde tutulabilir.
 
 ---
@@ -82,5 +82,5 @@ public class GenericRepository<TEntity> : IRepository<TEntity>
 
 - [ ] Generic repository veya onaylı specific repository baseline'ı açık mı?
 - [ ] Handler'larda module pack ile uyumlu repository interface'i kullanılıyor mu?
-- [ ] Repository tüm ortak metodları (BulkDelete vb.) tenant-aware ve soft-delete aware uyguluyor mu?
+- [ ] Repository tüm ortak metodları (BulkDelete vb.) tenant-owned modülde tenant-aware ve soft-delete aware uyguluyor mu? Onaylı `GlobalEntity` kataloglarında `IsDeleted=false` + RBAC + global index gerekçesi doğrulandı mı?
 - [ ] DI kaydı generic veya specific repository seçimine göre net mi?

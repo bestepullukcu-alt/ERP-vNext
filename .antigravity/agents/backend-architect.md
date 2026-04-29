@@ -37,8 +37,9 @@ Sen sistemin omurgasısın. Ürettiğin her Entity ve CQRS yapısı şu kurallar
 
 ### 2. Multi-Tenancy (Çoklu Kiracı İzolasyonu) - ZORUNLU
 - Sistem Single DB, Multi-Tenant yapısındadır.
-- **TenantId Kuralı:** Oluşturulan HER YENİ Entity istisnasız `ITenantDocument` interface'inden veya `EntityBase` sınıfından türemeli ve `Guid TenantId` içermek zorundadır. (Sert kodlanmış string '1' vb. kullanılamaz).
-- **Veri Erişimi:** TenantId ASLA dışarıdan (Request Body/DTO) alınmaz. Sunucu tarafında `TenantContext` üzerinden çözülür ve Repository Base otomatik olarak bu filtreyi (`TenantId == currentTenantId`) uygular.
+- **TenantId Kuralı:** Varsayılan olarak her yeni tenant-owned entity `ITenantDocument` interface'inden veya `EntityBase` sınıfından türemeli ve `Guid TenantId` içermek zorundadır. (Sert kodlanmış string '1' vb. kullanılamaz).
+- **GlobalEntity İstisnası:** Yalnızca module pack `Entity Fields` ve `Runtime Constraints` bölümlerinde açıkça tenant-owned olmadığı gerekçelendirilmiş Platform global katalogları `GlobalEntity` kullanabilir. Bu durumda repository `IsDeleted=false`, global unique index gerekçesi ve RBAC kontrollerini korumalıdır.
+- **Veri Erişimi:** TenantId ASLA dışarıdan (Request Body/DTO) alınmaz. Tenant-owned kayıtlarda sunucu tarafında `TenantContext` üzerinden çözülür ve Repository Base otomatik olarak bu filtreyi (`TenantId == currentTenantId`) uygular.
 
 ### 3. Auth, JWT ve RBAC (Rol Bazlı Erişim)
 - Tüm endpoint'ler varsayılan olarak `[Authorize]` koruması altındadır.
@@ -77,7 +78,7 @@ Senden yeni bir özellik/modül istendiğinde şu sırayı izle:
      - Veya module pack/servis baseline'ı tarafından açıkça kullanılan specific repository interface + persistence implementation
      Eksikse → `repository-standard.md` şablonlarını veya module pack'te onaylı specific repository baseline'ını uygula.
      Kontrol listesi (`repository-standard.md` sonundaki checklist) tamamlanmadan Handler yazılamaz.
-3. **Domain:** Entity sınıflarını (`EntityBase` mirasıyla) oluştur. İş modülü ise `CreatedBy`/`UpdatedBy` ekle. (`entity-base-template.md`)
+3. **Domain:** Entity sınıflarını varsayılan olarak `EntityBase` mirasıyla oluştur. Module pack açık Platform global katalog istisnası veriyorsa `GlobalEntity` kullan ve gerekçesini implementation notes/audit içinde koru. İş modülü ise `CreatedBy`/`UpdatedBy` ekle. (`entity-base-template.md`)
 4. **DTOs & Validation:** Request/Response nesnelerini yarat ve FluentValidation kurallarını yaz. Validator olmadan Handler yazılamaz.
 5. **CQRS:** Command/Query modellerini `IRequest<Response<T>>` formatında oluştur.
 6. **Handlers:** İş mantığını `Handlers/CommandHandlers` veya `Handlers/QueryHandlers` altına yaz. `Response<T>.Fail()` / `Response<T>.Success()` kullan. (`handler-design.md`)

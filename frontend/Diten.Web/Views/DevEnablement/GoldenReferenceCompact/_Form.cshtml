@@ -69,10 +69,16 @@
                         <label asp-for="Category" class="form-label fw-medium">@Localizer["Category"]</label>
                         <input asp-for="Category" class="form-control" maxlength="120" />
                     </div>
-                    <div class="col-12">
-                        <label asp-for="Description" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
-                        <textarea asp-for="Description" class="form-control" rows="8" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
-                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@SharedLocalizer["Description"]</h5>
+                </div>
+                <div class="card-body">
+                    <label asp-for="Description" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                    <textarea asp-for="Description" class="form-control" rows="8" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
                 </div>
             </section>
         </div>
@@ -117,7 +123,7 @@
                         <input asp-for="ExpirationDate" type="text" class="form-control flatpickr-date" placeholder="YYYY-MM-DD" />
                     </div>
                     <div class="col-12">
-                        <label asp-for="Priority" class="form-label fw-medium">@Localizer["Priority"] <span class="text-danger">*</span></label>
+                        <label asp-for="Priority" class="form-label fw-medium">@Localizer["Priority"]</label>
                         <input asp-for="Priority" type="number" class="form-control" min="0" max="100" />
                     </div>
                     <div class="col-12">

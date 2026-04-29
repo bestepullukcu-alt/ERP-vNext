@@ -32,17 +32,19 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      |---|---------|----------------|
      | 1 | Module pack'teki TÜM alanlar Entity'ye eklendi mi? | Evet/Hayır + alan listesi |
      | 2 | Alan isimleri global ERP standartlarına uygun mu? (örn `PlateCode → Code`) | Evet/Hayır + sapma listesi |
-     | 3 | Repository TenantId/Soft-Delete garantisi var mı? | Evet/Hayır + repo dosya yolu |
-     | 4 | `BaseEntity`'ten miras alınıyor mu? (TenantId, IsDeleted, audit) | Evet/Hayır + entity dosya yolu |
+     | 3 | Repository izolasyon/Soft-Delete garantisi var mı? Tenant-owned ise TenantId filtresi, module pack'te açık global katalog istisnası varsa `GlobalEntity` + RBAC + `IsDeleted=false` filtresi doğrulandı mı? | Evet/Hayır + repo dosya yolu + izolasyon modeli |
+     | 4 | Entity base type doğru mu? Tenant-owned modülde `BaseEntity`/TenantId; onaylı Platform global katalogda `GlobalEntity`. | Evet/Hayır + entity dosya yolu + gerekçe |
      | 5 | CQRS yapısı (Command, Query, Handler, Validator — her biri ayrı dosya) planlandı mı? | Evet/Hayır + planlanan dosya listesi |
      | 6 | DataTable ise `golden_reference` kararı doğru mu? (≤8 slim, >8 compact) | Slim/Compact + form alan sayısı |
+     | 7 | Compact DataTable ise Create/Edit/Details logical section haritası planlandı mı? | Evet/Hayır + section listesi + `_Form.cshtml`/`Details.cshtml` parite notu |
+     | 8 | Required alan kontratı Backend Validator + Web ViewModel + Razor + tracker için aynı mı? | Evet/Hayır + required alan listesi + opsiyonel nullable alan listesi + ilk açılış progress beklentisi |
 
    - **Onay Mekaniği:** Orchestrator, doldurulmuş tabloyu kullanıcıya `AskUserQuestion` ile (ya da CLI'da düz mesaj olarak) sunar ve "Onaylıyor musunuz?" sorusuyla bekler. **Kullanıcıdan açık `evet/onay/approved` cevabı alınmadan Phase 2'ye geçilemez.**
    - **Sapma Halinde:** Tek bir madde "Hayır" ise Phase 1'e dön, module pack ya da plan üzerinde düzelt; tabloyu yeniden doldur.
 
 2. **Phase 2: Veri Mimarisi (data-agent & backend-architect)**
-   - MongoDB koleksiyonunu tasarla (`ITenantDocument` tabanlı).
-   - Domain Entity ve Repository katmanını oluştur. (Soft Delete ve TenantId ZORUNLUDUR).
+   - MongoDB koleksiyonunu tasarla. Varsayılan model tenant-owned `ITenantDocument`/`BaseEntity` tabanıdır.
+   - Domain Entity ve Repository katmanını oluştur. Tenant-owned veride Soft Delete ve TenantId ZORUNLUDUR. Yalnızca module pack'te açıkça gerekçelendirilmiş Platform global kataloglarında `GlobalEntity` kullanılabilir; bu durumda repository `IsDeleted=false`, global unique index ve RBAC kontrollerini belgelemek zorundadır.
 
 3. **Phase 3: İş Mantığı & Yerelleştirme (backend-architect & l10n-agent)**
    - `/add-endpoint-cqrs` akışını başlat (Request, Command, Handler, Validator).
@@ -57,7 +59,9 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 3.5. **Phase 3.5: Gateway Doğrulama (integration-agent)**
    - **[KRİTİK]:** `.antigravity/rules/routes.md` dosyasını oku.
    - Portu hardcoded seçme; `AGENTS.md` port şeması ve domain-config'e göre hedef servisi belirle. DevEnablement için port `5058`, Platform için `5057`, Auth için `5056` kullanılır.
-   - `ocelot.json`'a yeni modül için **iki explicit rota** ekle:
+   - `ocelot.json` protected path'tir; yalnızca `integration-agent` route ekleyebilir. Orchestrator, backend veya frontend agent bu dosyayı değiştirmez.
+   - Route eksikse bunu **BLOCKER/NOT** olarak Orchestration Report'a yaz; integration-agent phase'i tamamlanmadan modülü "tamamlandı" sayma.
+   - integration-agent, `ocelot.json`'a yeni modül için **iki explicit rota** ekler:
      - `UpstreamPathTemplate: "/api/{resource}"` → `DownstreamPathTemplate: "/api/{resource}"`
      - `UpstreamPathTemplate: "/api/{resource}/{everything}"` → `DownstreamPathTemplate: "/api/{resource}/{everything}"`
    - Her iki rotaya da `UpstreamHttpMethod`: `["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"]` ekle.
@@ -69,6 +73,16 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - Module pack'teki `golden_reference` kararını uygula:
      - `slim`: `8 ve altı` form alanı, Index içinde `_CreateEditOffcanvas.cshtml` ile create/edit.
      - `compact`: `8'den fazla` form alanı, ayrı `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml`.
+   - Required alan kontratını uygulamadan form teslim edilmez:
+     - Backend validator `NotEmpty()`/`NotNull()` alanları UI label yıldızı ve Razor `required` attribute'u ile eşleşmelidir.
+     - Opsiyonel alanlarda label yıldızı, `[Required]`, HTML `required` veya otomatik `data-val-required` üretecek non-nullable value type bulunamaz.
+     - Opsiyonel numeric/date alanlar Web ViewModel ve save payload içinde nullable olmalıdır (`int?`, `decimal?`, `DateTime?`, vb.).
+     - Create ekranı ilk açıldığında required progress değeri raporda açıklanır: payda gerçek required alan sayısı, pay ise yalnızca bilinçli default dolu required alan sayısıdır.
+   - Compact modüllerde `Details.cshtml` ile `_Form.cshtml` için ortak logical section haritası üret:
+     - Aynı section sayısı.
+     - Aynı section başlıkları veya birebir anlam eşdeğeri.
+     - Aynı alanların aynı section altında yer alması.
+     - Details dört card/section ise Create/Edit de dört card/section olmalıdır; section birleştirme yasaktır.
    - **⚠️ `Areas/` KULLANILMAZ:** View dosyaları her zaman `Views/{AreaName}/{ModuleName}/` altına konur. `Areas/{AreaName}/Views/` yapısı ASP.NET Areas routing'dir ve projede KULLANILMAZ.
      - ✅ `Views/DevEnablement/GoldenReferenceSlim/Index.cshtml`
      - ❌ `Areas/DevEnablement/Views/GoldenReferenceSlim/Index.cshtml`
@@ -81,6 +95,11 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - `Views/{AreaName}/{ModuleName}/_DataTable.cshtml` partial view'ını oluştur; DataTable v2 marker, skeleton loader, checkbox ve action kolonları burada tutulur.
    - `Views/{AreaName}/{ModuleName}/_IndexL10n.cshtml` partial view'ını oluştur; JSON payload üretir.
    - `wwwroot/assets/js/{AreaName}/{ModuleName}/index.js` dosyasını `DtDefaults.create()` ve Module Pattern (IIFE) ile oluştur. Bakınız: `.antigravity/rules/frontend-js-standard.md`
+   - **Frontend Proxy Contract (ZORUNLU):**
+     - Platform/admin MVC modüllerinde API profili `proxy-profile`dır. JS endpoint'i `/{AreaName}/{ModuleName}/api` olur; browser JS `window.API.platform`, `window.ApiBaseUrl`, `document.cookie`, `access_token` veya `Authorization: Bearer` kullanmaz.
+     - Frontend controller route'u ve JS endpoint'i birlikte tasarlanır. Controller en az `GET api`, `DELETE api/{id}`, `DELETE api/bulk` proxy action'larını içerir; module pack'te varsa `activate/deactivate` gibi action'lar da eklenir.
+     - Proxy action'ları `Request.Cookies["access_token"]` değerini server-side okuyup Gateway çağrısına `Authorization: Bearer` olarak ekler ve `X-Tenant-Id` header'ını Platform/admin context'te göndermez.
+     - Tenant/public shell modüllerinde `direct-gateway-profile` kullanılacaksa bu karar module pack veya orchestration report'ta açık yazılır ve `window.API.{service}` kullanılır.
    - **[ZORUNLU]** `colReorder: { columns: ':gt(1):not(:last-child)' }` DataTable config'e eklenmelidir (standart kolon yapısı için varsayılan; bkz. `frontend-js-standard.md §11`). `column-reorder.dt`/`columns-reordered.dt` event'leri dirty-state hesabına bağlanmalıdır.
    - `_LayoutBackbone` içine menü linkini ekle ve aktif state için `ViewContext.RouteData` dinamik kontrolü yap.
    - **Controller route + link formatı (BİRBİRİNE BAĞLI):**
@@ -100,6 +119,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      - `Views/{AreaName}/{ModuleName}/Details.cshtml` → `add-page.md §C Details Sayfası`
      - `Views/{AreaName}/{ModuleName}/_Form.cshtml` ortak form partial'ı
      - Index içinde create/edit offcanvas YASAKTIR.
+     - `_Form.cshtml` ve `Details.cshtml` aynı logical section/card haritasını paylaşır. Alanlar daha az sayıda card altında toplanamaz; Create/Edit yüzeyi Details yüzeyiyle bilgi mimarisi olarak eşleşmeden Phase 4a tamamlanmış sayılmaz.
    - **⚠️ Rebuild Guard:** Mevcut bir modül yeniden yapılırken Slim/Compact surface parçaları silinirse aynı çalışmada geri yapılmak ZORUNDADIR.
 
 4.5. **Phase 4.5: Runtime Smoke Test (ORKESTRATÖR — ZORUNLU)**
@@ -136,5 +156,5 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 ## ⚖️ Altın Kurallar
 - **Sıfır İnisiyatif Kuralı:** Ajan, standart Liste/CRUD (DataTable) sayfaları için arayüz uyduramaz, kesinlikle Master Template'i kullanmak zorundadır.
 - Modül mutlaka module pack'te belirtilen `Views/{AreaName}/{ModuleName}` klasörü altında olmalıdır.
-- Soft Delete ve TenantId filtrelemesi asla atlanamaz.
+- Soft Delete asla atlanamaz. Tenant-owned modüllerde TenantId filtrelemesi zorunludur; module pack'te açık Platform global katalog istisnası varsa TenantId yerine `GlobalEntity` gerekçesi, global index ve RBAC kontrolü doğrulanır.
 - Details/Edit sayfaları Compact modüllerde zorunludur; Slim modüllerde create/edit offcanvas zorunludur.

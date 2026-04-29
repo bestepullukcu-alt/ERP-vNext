@@ -1,0 +1,136 @@
+@model Diten.Web.Models.ModuleCatalog.ModuleCatalogEditViewModel
+@using Diten.Web.Views.Platform.ModuleCatalog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ModuleCatalogIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/ModuleCatalog">@Localizer["ModuleCatalogTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/Platform/ModuleCatalog" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="moduleCatalogForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<form id="moduleCatalogForm" asp-controller="ModuleCatalog" asp-action="@action" asp-route-id="@Model.Id" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["IdentitySection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ModuleCode" class="form-label fw-medium">@Localizer["ModuleCode"] <span class="text-danger">*</span></label>
+                        <input asp-for="ModuleCode" class="form-control" maxlength="50" required />
+                        <span asp-validation-for="ModuleCode" class="text-danger small"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ModuleVersion" class="form-label fw-medium">@Localizer["Version"] <span class="text-danger">*</span></label>
+                        <input asp-for="ModuleVersion" class="form-control" maxlength="40" required />
+                        <span asp-validation-for="ModuleVersion" class="text-danger small"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ModuleName" class="form-label fw-medium">@Localizer["ModuleName"] <span class="text-danger">*</span></label>
+                        <input asp-for="ModuleName" class="form-control" maxlength="200" required />
+                        <span asp-validation-for="ModuleName" class="text-danger small"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="DisplayName" class="form-label fw-medium">@Localizer["DisplayName"] <span class="text-danger">*</span></label>
+                        <input asp-for="DisplayName" class="form-control" maxlength="200" required />
+                        <span asp-validation-for="DisplayName" class="text-danger small"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@SharedLocalizer["Description"]</h5>
+                </div>
+                <div class="card-body">
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                        <textarea asp-for="Description" class="form-control" rows="6"></textarea>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["ClassificationSection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <label asp-for="Domain" class="form-label fw-medium">@Localizer["Domain"] <span class="text-danger">*</span></label>
+                        <input asp-for="Domain" class="form-control" maxlength="120" required />
+                        <span asp-validation-for="Domain" class="text-danger small"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Service" class="form-label fw-medium">@Localizer["Service"] <span class="text-danger">*</span></label>
+                        <input asp-for="Service" class="form-control" maxlength="120" required />
+                        <span asp-validation-for="Service" class="text-danger small"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Category" class="form-label fw-medium">@Localizer["Category"]</label>
+                        <input asp-for="Category" class="form-control" maxlength="120" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="SortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>
+                        <input asp-for="SortOrder" type="number" min="0" class="form-control" />
+                        <span asp-validation-for="SortOrder" class="text-danger small"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@SharedLocalizer["Status"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <label asp-for="Status" class="form-label fw-medium">@SharedLocalizer["Status"] <span class="text-danger">*</span></label>
+                        <select asp-for="Status" class="select2 form-select" required>
+                            <option value="Draft">@Localizer["StatusDraft"]</option>
+                            <option value="Active">@Localizer["StatusActive"]</option>
+                            <option value="Inactive">@Localizer["StatusInactive"]</option>
+                            <option value="Deprecated">@Localizer["StatusDeprecated"]</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="IsCoreModule" value="false" />
+                            <input asp-for="IsCoreModule" class="form-check-input" role="switch" value="true" />
+                            <label asp-for="IsCoreModule" class="form-check-label">@Localizer["Core"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="IsTenantAssignable" value="false" />
+                            <input asp-for="IsTenantAssignable" class="form-check-input" role="switch" value="true" />
+                            <label asp-for="IsTenantAssignable" class="form-check-label">@Localizer["Assignable"]</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

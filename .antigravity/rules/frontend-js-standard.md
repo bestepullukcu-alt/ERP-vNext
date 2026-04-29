@@ -22,8 +22,16 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
 3. **`DtDefaults.exportButtons()` ZORUNLU:** Butonlar elle `layout` içinde tanımlanmaz. Her zaman `DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons, options)` kullanılır. `options` ile `exportColumns` / `colvisColumns` override edilebilir.  
    - **Responsive UI guard:** `DtDefaults` içindeki Export (collection) butonu `dt-export-collection-btn` class’ını taşır; `backbone-custom.css` bu class ile Export’u mobil toolbar’da `.btn-icon` yüksekliğiyle hizalar. Bu class kaldırılmaz/değiştirilmez.
 4. **Personalization Client ZORUNLU:** Save View / kullanıcı tercihleri için raw `fetch('/api/personalization/...')` veya localStorage helper yazılmaz. Her zaman shared `window.personalizationClient` kullanılır.
+   - **Dual-mode tenant header:** `/api/personalization/*` Platform servisinde yaşar ama hem platform admin hem tenant account ekranlarından kullanılır. `window.personalizationClient` header davranışı aktöre göre olmalıdır:
+     - `actorType === 'tenant_user'`: `X-Tenant-Id` gönderilir (`window.CurrentUser.tenantId`).
+     - `actorType === 'platform_admin' | 'partner_admin'`: `X-Tenant-Id` gönderilmez.
+     - Account/tenant tarafında `X-Tenant-Id` kaldırmak, platform tarafında ise göndermek hatadır. Gateway/Platform middleware bu path'i çift modlu kabul etmelidir.
    - **401/Auth Refresh Guard:** `window.personalizationClient` içindeki istekler `401 Unauthorized` aldığında merkezi unauthorized akışını kullanmalıdır (`window.DtDefaults.handleUnauthorized()` veya proje eşdeğeri). Expired JWT senaryosu generic `ErrorOccurred` toast'ı ile gizlenmez; kullanıcı refresh/login akışına taşınır.
-5. **AJAX Gateway (SSOT):** Tüm istekler merkezi `window.API` objesi (Örn: `API.mdm`, `API.ppm`) üzerinden yönetilir. Ajanlar asla doğrudan `localhost:5000` gibi hardcoded URL'ler yazmamalıdır.
+5. **AJAX API Profile (SSOT):** DataTable istekleri module pack/domain bağlamına göre iki profilden biriyle yapılır; ajan profil seçimini açık yazmadan `index.js` üretmez.
+   - **`proxy-profile` (Platform/admin MVC default):** Browser JS, same-origin frontend proxy endpoint'ine gider: `/{AreaName}/{ModuleName}/api`. MVC controller bu isteği server-side `GatewayUrl` üzerinden `/api/...` rotasına forward eder ve `access_token` HttpOnly cookie'sini `Authorization: Bearer` header'ına sadece server tarafında çevirir.
+   - **`direct-gateway-profile` (browser-safe token stratejisi olan tenant/public shell):** Browser JS merkezi `window.API.{service}` objesini kullanır. Ajanlar asla doğrudan `localhost:5000` gibi hardcoded URL yazmaz.
+   - **Yasak:** DataTable JS içinde `document.cookie`, `access_token` veya elle `Authorization: Bearer ...` üretimi KESİNLİKLE YASAKTIR. HttpOnly cookie tarayıcı JS'inden okunamaz; bu deneme `403` ve boş DataTable üretir.
+   - **Tenant header:** Platform/admin context'te `X-Tenant-Id` gönderilmez. Tenant console modüllerinde tenant header sadece merkezi shell/helper üzerinden gelir. Personalization Save View için bu merkezi helper `actorType` bazlı çift modlu olmalıdır.
 6. **L10n Bridge:** Metinler JS içinde hardcoded yazılmaz; `window.L10n` objesinden okunur. `window.L10n` payload'ı `_IndexL10n.cshtml` + `index.l10n.js` deseniyle yüklenir; `Index.cshtml` içine uzun assignment bloğu gömülmez.
 7. **Silme:** Tek satır silme ve toplu silme aynı görsel dilde confirm açmalı ve aynı success lifecycle'ını kullanmalıdır.
    - Tek satır silmede `window.showConfirm()` veya onunla aynı görsel standardı üreten ortak helper kullanılabilir.
@@ -32,6 +40,12 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - `false` ile mevcut paging korunur.
    - **Endpoint sahipliği zorunludur:** Tekil ve bulk delete çağrıları yalnızca modülün kendi endpoint'ine yapılır (`/api/{module}` + `/api/{module}/bulk`). Başka modül endpoint'ine silme isteği göndermek YASAKTIR.
    - **Bulk confirm zorunluluğu:** Bulk delete de tekil delete ile aynı confirm standardını (`window.showConfirm`/ortak wrapper) kullanır; farklı modal/component kullanımı YASAKTIR.
+7.1. **Bulk/Row Action Dispatcher (ZORUNLU):** Standart DataTable sayfalarında checkbox selection, bulk action bar ve row action dropdown elle bağlanmaz. Aşağıdaki shared helper'lardan biri kullanılmalıdır:
+   - Tercih edilen yol: `window.DitenDataTable.createCrudTable({ tableEl, bulk: bulkOptions, actions: { onRowAction }, config })`.
+   - Server-side veya özel ajax callback nedeniyle manuel `new DataTable(... window.DtDefaults.create(...))` gerekiyorsa init sonrası mutlaka `window.DitenDataTable.bindBulkSelection(tableEl, dt, bulkOptions)` ve `window.DitenDataTable.bindActionDispatcher({ tableEl, dt, onRowAction })` çağrılır.
+   - Action kolonu `window.DitenDataTable.renderActions(...)` ile üretilir; primary delete + dropdown quickView/edit sırası GoldenReference ile aynı kalır.
+   - Responsive control kolonu `targets: 0, className: 'control', responsivePriority: 2`, checkbox kolonu `targets: 1, className: 'dt-checkboxes-cell cell-fit', responsivePriority: 3`, action kolonu `className: 'cell-fit all ...'` standardını taşır.
+   - `#btnBulkDelete` gibi modüle özel elle event listener bağlamak, shared bulk bar zaten `[data-bulk-action]` kullandığı için yeni modüllerde YASAKTIR.
 8. **Toast:** Başarı/hata bildirimleri her zaman `window.showToast('KeyOrMessage', 'success'|'error'|'warning'|'info')` ile verilir.
    - İstisna: auth refresh/login'e devredilmiş `401` akışında kullanıcıya ek olarak generic hata toast'ı basılmaz.
    - Import gibi henüz uygulanmamış ama hata olmayan aksiyonlar `warning` veya `info` ile gösterilir; hata toast'ı kullanılmaz.
@@ -39,6 +53,12 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - Filter değişimi tek başına (Apply basılmadan) Save View’u göstermemelidir.
    - Uygulama paterni: `appliedFilters` (veya benzeri) state’ini sadece Apply/Reset’te güncelle; `getCurrentView()` filtre değerlerini buradan okusun.
 10. **Save View (v2) — Shared Payload:** Saved View payload’ı minimum olarak `filters + search + colVis + columnOrder + sorting` içermelidir. `pageNumber/pageLength` persist edilmez.
+10.0.0 **Save View (v2) — Valid Payload Name:** `saveDefaultView` payload'ında `viewName` boş gönderilemez. Backend `ViewName.NotEmpty()` doğrular; bu yüzden `getSavedViewName(defaultViewRecord) || L.SaveView || 'Default'` benzeri non-empty fallback zorunludur.
+10.0.1 **Save View (v2) — Reset Baseline:** Inline filter `Reset`, sadece filtre kontrollerini boşaltan bir aksiyon değildir ve saved view'e geri dönme aksiyonu değildir. Reset her zaman fabrika/default tablo state'ini bütün olarak uygular:
+   - Reset state: boş `filters/search`, default `colVis`, default `columnOrder`, default `order`.
+   - Kullanıcı ColVis ile kolon kapatıp Save View yaptıktan sonra Reset'e basarsa kapatılan kolonlar geri açılmalıdır.
+   - Reset sonrası ekran saved view'den farklıysa `dt-save-filter-btn` dirty-state olarak tekrar görünebilir; `setSaveFilterVisible(false)` ile zorla gizlenmez.
+   - Reset handler'ı `applySavedTableState(api, getResetBaselineState())` benzeri tek kaynaklı bir restore fonksiyonu kullanmalıdır; filtreleri manuel temizleyip `ajax.reload()` yapmak YASAKTIR, çünkü ColVis/ColReorder stale kalır.
 10.1 **Save View CTA Render (ZORUNLU):** Toolbar `extraButtons` içinde `saveFilterBtn` tanımı bulunmak zorundadır (`className` içinde `dt-save-filter-btn` + başlangıçta `d-none`). Dirty-state tespitinde buton görünürlüğü `setSaveFilterVisible()` ile yönetilir.
 11. **ColReorder (v2) — Varsayılan Aktif:** Standart kolon yapısına sahip tüm liste sayfalarında (control + checkbox + N veri + action) `colReorder` **varsayılan olarak aktiftir**.
    - `colReorder: { columns: ‘:gt(1):not(:last-child)’ }` DataTable config’e **her zaman** eklenir.
@@ -46,6 +66,12 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - `columnOrder` Save View kapsamına eklenir (`captureColumnOrder` / `applyColumnOrder`).
    - `column-reorder.dt` / `columns-reordered.dt` event’leri dirty-state hesabına **mutlaka** dahil edilir.
 12. **Inline Filter Select2 — Zorunlu Init Paterni:** `#inlineFilterHost` içindeki tüm Select2 filtreler aşağıdaki parametrelerle başlatılır. Eksiği olan implementasyon geçersizdir.
+
+    **Filtre alan tipi kararı (ZORUNLU):**
+    - Domain, Service, Category, Type, Owner, Status gibi enum veya sınırlı değer kümesi olan filtreler text input/search olarak üretilmez.
+    - Bu alanlar `_Filter.cshtml` içinde `filter-chip` + `select.form-select.form-select-sm.select2` olarak render edilir.
+    - Çoklu seçim gereken alanlarda `multiple="multiple"` kullanılır; backend/proxy `a,b,c` gibi çoklu değerleri `IN` filtresi olarak desteklemelidir.
+    - Single-select filtrelerde ilk option boş `value=""` + `@SharedLocalizer["ShowAll"]` olmalıdır.
 
     **Single-select (allowClear destekli):**
     ```javascript
@@ -81,8 +107,9 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
     > 🚫 **`width: '100%'`** — YASAK.  
     > 🚫 **Multi-select'te MOD-0031 CSS kuralının uygulanmaması** — YASAK. Yapılmazsa sayfa scroll eder.  
     > ℹ️ Sneat layout'ta scroll container `window`'dur; `content-wrapper`'ın overflow'u yoktur. Focus tabanlı tüm scroll sorunları `backbone-custom.css` içindeki merkezi MOD-0031 kuralı ile çözülür.
-13. **Inline Filter Select2 Multi-Select Dynamic Summary (ZORUNLU):** Multi-select filtreleri tek satırda tutmak ve özetlemek için aşağıdaki `syncMultiSelectSummary` mantığı uygulanmalıdır:
-    - **Davranış:** 0 seçim varsa placeholder, 1 seçim varsa elemanın adı, 2+ seçim varsa `Placeholder (Sayı)` gösterilir (Örn: "Category (3)").
+13. **Inline Filter Select2 Multi-Select Dynamic Summary (ZORUNLU):** Multi-select filtreleri tek satırda tutmak ve GoldenReference ile aynı label davranışını üretmek için aşağıdaki `syncMultiSelectSummary` mantığı uygulanmalıdır:
+    - **Davranış:** Chip içinde görünür label her zaman `data-placeholder` değeridir (örn. `Category`). Seçim varsa label değişmez; sağ tarafta count badge görünür. Seçim yokken count ve clear gizlenir.
+    - **Title:** `.select2-selection__rendered` `title` attribute'u seçili item metinlerini virgülle birleştirir; seçim yoksa placeholder kullanılır.
     - **DOM Sync (KRİTİK):** Multi-select container'ına (`.select2-selection--multiple`) bir `.select2-selection__arrow` kabı zorunlu olarak enjekte edilmelidir; aksi halde ok (chevron) hiza/yükseklik farkı oluşur.
     - **Clear Button:** Temizleme butonu (x) native `button` değil, `span` (role="button") olarak enjekte edilmelidir.
     - **Radius Fix (KRİTİK):** "Save View" butonu (`.dt-save-filter-btn`) görünürlüğü her değiştiğinde `window.DtDefaults.refreshButtonGroupRadii()` fonksiyonu çağrılmalıdır. Aksi takdirde buton grubunun köşeleri bozulur.
@@ -94,6 +121,7 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - Geçiş/migration döneminde mevcut sayfalar için JS tarafında fallback desteklenebilir; yeni şablon üretiminde bu legacy isimler referans alınmaz.
 14. **Shared CSS Placement:** Toolbar, inline filter, badge stacking ve Select2 dropdown stilleri tekrar kullanılabilir ise `backbone-custom.css` içinde tutulur; `@section Styles` yalnızca gerçekten modüle özgü istisnalar için kullanılır.
 15. **CRUD Surface Boundary (ZORUNLU):** Index script'i Quick View offcanvas yönetebilir; ancak Create/Edit formunu offcanvas içinde çalıştıramaz. Create/Edit akışı route tabanlı ayrı sayfalara gider (`/{ModuleName}/Create`, `/{ModuleName}/Edit/{id}`).
+16. **Add New Navigation (Compact ZORUNLU):** Compact modüllerde `DtDefaults.exportButtons()` Add New butonu route tabanlı Create sayfasına gitmelidir. `addNewAttr` için `{ href: '/{ModuleName}/Create' }` verilir ve `initComplete` içinde `.add-new` click handler'ı `event.preventDefault(); window.location.href = '/{ModuleName}/Create';` ile bağlanır. Inline `onclick` kullanılmaz.
 
 ---
 
@@ -109,7 +137,9 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
 const {{ModuleName}}List = (function () {
     let dt;
     const dtTableEl = document.querySelector('.datatables-{{ModuleNameLower}}');
-    const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
+    // Default for Platform/admin MVC modules. For direct-gateway-profile only, replace
+    // with: const apiUrl = window.API?.{{ServiceKey}};
+    const endpoint = '/{{AreaName}}/{{ModuleName}}/api';
     // ── Save View (personalizationClient) ─────────────────────────────────────
     // Bkz: §Save View — Tam İmplementasyon Şablonu
     const personalizationClient = window.personalizationClient;
@@ -139,29 +169,7 @@ const {{ModuleName}}List = (function () {
         L = L || {};
     };
 
-    const getTenantId = () => {
-        try {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            return user.tenantId || '00000000-0000-0000-0000-000000000001';
-        } catch (e) {
-            return '00000000-0000-0000-0000-000000000001';
-        }
-    };
-
-    const getCookie = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return null;
-    };
-
-    const getAuthHeaders = () => {
-        const token = getCookie('access_token');
-        return {
-            'X-Tenant-Id': getTenantId(),
-            'Authorization': token ? `Bearer ${token}` : ''
-        };
-    };
+    const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
 
     const getStatusMap = () => ({
         true: { title: L.Active, class: 'bg-label-success' },
@@ -216,7 +224,8 @@ const {{ModuleName}}List = (function () {
 
         if (toolbarRow) {
             toolbarRow.insertAdjacentElement('afterend', host);
-            host.classList.add('px-6'); // project standard (do not use mx-*)
+            host.classList.remove('px-6');
+            host.classList.add('px-3'); // project standard (do not use mx-*)
             return;
         }
 
@@ -224,7 +233,8 @@ const {{ModuleName}}List = (function () {
         const dtContainer = dtTableEl.closest('.dt-container') || dtTableEl.closest('.dataTables_wrapper') || dtTableEl.parentElement;
         if (dtContainer) {
             dtContainer.insertAdjacentElement('beforeend', host);
-            host.classList.add('px-6');
+            host.classList.remove('px-6');
+            host.classList.add('px-3');
         }
     };
 
@@ -284,7 +294,7 @@ const {{ModuleName}}List = (function () {
                         syncPendingTableUiState(tableApi);
                         await saveDefaultView(getCurrentView(tableApi));
                         setSaveFilterVisible(false); // Bu fonksiyon içeriden refreshButtonGroupRadii()'yi çağırmalıdır.
-                        window.showToast?.(L.RecordSaved || 'RecordSaved', 'success');
+                        window.showToast?.(L.RecordSaved || L.SaveView || 'RecordSaved', 'success');
                     } catch (error) {
                         if (isAuthHandledError(error)) return;
                         console.error('[{{ModuleName}} SaveView] Failed to save default view', error);
@@ -296,7 +306,7 @@ const {{ModuleName}}List = (function () {
 
         dt = new DataTable(dtTableEl, window.DtDefaults.create({
             ajax: {
-                url: apiUrl + '/api/{{ModuleNameLower}}',
+                url: endpoint,
                 type: 'GET',
                 dataSrc: (json) => json.data || json,
                 headers: getAuthHeaders()
@@ -362,7 +372,7 @@ const {{ModuleName}}List = (function () {
             // DtDefaults.exportButtons: 3 grup (Export, ColVis/Filter, AddNew)
             buttons: window.DtDefaults.exportButtons(
                 L.AddNew{{ModuleName}},
-                { onclick: "window.location.href='/{{ModuleName}}/Create'" },
+                { href: '/{{ModuleName}}/Create' },
                 extraButtons,
                 {
                     exportColumns: {{ExportColumns}},
@@ -373,6 +383,10 @@ const {{ModuleName}}List = (function () {
                 mountInlineFilter();
                 bindInlineFilterToggle();
                 setupFilters(this.api());
+                document.querySelector('.add-new')?.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    window.location.href = '/{{ModuleName}}/Create';
+                });
                 // Save View dirty-detection'ı init restore bittikten sonra arm et
                 setTimeout(() => { saveFilterArmed = true; }, 0);
             },
@@ -598,7 +612,7 @@ const {{ModuleName}}List = (function () {
                 }).then(isConfirmed => {
                     if (!isConfirmed) return;
 
-                    fetch(`${apiUrl}/api/{{ModuleNameLower}}/${data.id}`, {
+                    fetch(`${endpoint}/${data.id}`, {
                         method: 'DELETE',
                         headers: getAuthHeaders()
                     }).then(res => {
@@ -649,7 +663,7 @@ const {{ModuleName}}List = (function () {
                 confirmButtonText: L.BulkDelete
             }).then(isConfirmed => {
                 if (!isConfirmed) return;
-                fetch(`${apiUrl}/api/{{ModuleNameLower}}/bulk`, {
+                fetch(`${endpoint}/bulk`, {
                     method: 'DELETE',
                     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ids })
@@ -946,7 +960,8 @@ let appliedFilters = { companyType: '', status: '' };
 | `layout: { topEnd: { buttons: [...] } }` elle tanımlama | `DtDefaults.exportButtons(text, attr, extras, options)` |
 | `row.remove().draw(); showToast('RecordDeleted', 'success')` | `dt.ajax.reload(() => showToast('RecordDeleted', 'success'), false)` |
 | `toastr.success(...)` / `toastr.error(...)` | `window.showToast('KeyOrMessage', 'success'\|'error'\|'warning'\|'info')` |
-| `url: window.ApiBaseUrl + '/mdm/api/v1/...'` | `url: apiUrl + '/api/{{ModuleNameLower}}'` |
+| `url: window.ApiBaseUrl + '/mdm/api/v1/...'` | Platform/admin: `url: endpoint` where `endpoint = '/{{AreaName}}/{{ModuleName}}/api'`; direct-gateway only: `url: apiUrl + '/api/{{ModuleNameLower}}'` |
+| `document.cookie` / `access_token` / `Authorization: Bearer ...` in DataTable JS | HttpOnly token is read only by MVC proxy; JS uses `getAuthHeaders()` for safe UI headers only |
 | `$.ajax(...)` CRUD | `fetch(...)` ile native async |
 
 ---
@@ -962,7 +977,7 @@ Ajanlar, fiziksel bir dosya yerine aşağıdaki kodu "Kusursuz Modüler JavaScri
 const SampleModuleList = (function () {
     let dt;
     const dtTableEl = document.querySelector('.datatables-sample-module');
-    const apiUrl = window.API?.mdm || 'http://localhost:5000'; // SSOT Pattern: window.API.serviceName
+    const apiUrl = window.API?.mdm; // direct-gateway-profile only; Platform/admin modules use endpoint = '/Area/Module/api'
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'MDM', pageKey: 'SampleModule' };
     
@@ -978,10 +993,7 @@ const SampleModuleList = (function () {
 
     const syncL10n = () => { L = window.L10n || {}; };
 
-    const getAuthHeaders = () => ({
-        'X-Tenant-Id': '00000000-0000-0000-0000-000000000001',
-        'Authorization': `Bearer ${document.cookie.split('; access_token=')?.[1]?.split(';')?.[0] || ''}`
-    });
+    const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
 
     const normalizeString = (v) => typeof v === 'string' ? v.trim() : '';
     
@@ -1061,7 +1073,7 @@ const SampleModuleList = (function () {
                 { data: 'isActive', name: 'isActive' },
                 { data: 'id', name: 'action' }
             ],
-            buttons: window.DtDefaults.exportButtons(L.AddNewSampleModule, { onclick: "location.href='/SampleModule/Create'" }, extraButtons),
+            buttons: window.DtDefaults.exportButtons(L.AddNewSampleModule, { href: '/SampleModule/Create' }, extraButtons),
             initComplete: function() {
                 if (defaultViewState) {
                     const api = this.api();

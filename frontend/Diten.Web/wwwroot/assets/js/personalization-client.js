@@ -5,20 +5,19 @@ window.personalizationClient = (function () {
     const authRefreshSignal = 'auth-refresh-in-progress';
 
     const getTenantId = () => {
-        const isPlatformContext = window.location.hostname.toLowerCase().startsWith('admin.')
-            || window.location.pathname.toLowerCase().startsWith('/platform/');
-        if (isPlatformContext) {
-            return null;
-        }
-
         const user = window.CurrentUser || {};
-        return user.tenantId || '00000000-0000-0000-0000-000000000001';
+        return user.tenantId || null;
+    };
+
+    const shouldSendTenantHeader = () => {
+        const actorType = (window.CurrentUser || {}).actorType || '';
+        return String(actorType).toLowerCase() === 'tenant_user';
     };
 
     const getHeaders = (includeJsonContentType) => {
         const headers = {};
         const tenantId = getTenantId();
-        if (tenantId) {
+        if (shouldSendTenantHeader() && tenantId) {
             headers['X-Tenant-Id'] = tenantId;
         }
 

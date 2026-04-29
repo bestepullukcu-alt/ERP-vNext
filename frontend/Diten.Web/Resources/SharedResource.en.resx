@@ -393,4 +393,19 @@
   <data name="NotAvailable" xml:space="preserve">
     <value>N/A</value>
   </data>
+  <data name="Workspace" xml:space="preserve">
+    <value>Workspace</value>
+  </data>
+  <data name="PlatformAdministration" xml:space="preserve">
+    <value>Platform Administration</value>
+  </data>
+  <data name="DeveloperSandbox" xml:space="preserve">
+    <value>Developer Sandbox</value>
+  </data>
+  <data name="GoldenSlim" xml:space="preserve">
+    <value>Golden Slim</value>
+  </data>
+  <data name="GoldenCompact" xml:space="preserve">
+    <value>Golden Compact</value>
+  </data>
 </root>

@@ -1,0 +1,28 @@
+@model Diten.Web.Models.ModuleCatalog.ModuleCatalogEditViewModel
+@using Diten.Web.Views.Platform.ModuleCatalog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ModuleCatalogIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    ViewData["FormMode"] = "edit";
+    Layout = "_LayoutPlatformAdmin";
+}
+
+<partial name="~/Views/Platform/ModuleCatalog/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var select2Elements = $('.select2');
+            if (select2Elements.length) {
+                select2Elements.each(function () {
+                    var $this = $(this);
+                    $this.wrap('<div class="position-relative"></div>').select2({
+                        dropdownParent: $this.parent()
+                    });
+                });
+            }
+        });
+    </script>
+}

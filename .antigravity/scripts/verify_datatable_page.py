@@ -10,10 +10,14 @@ Static checks to enforce the Golden DataTable contract:
 - window.L10n bridge uses payload partial + loader JS and includes required keys
 - index.js uses DtDefaults + DataTables v2 constructor
 - Quick View is wired via event delegation (.js-quick-view) (no inline onclick)
+- API profile is enforced:
+  - proxy: Platform/admin MVC default, browser JS calls /{Area}/{Module}/api
+  - direct-gateway: browser-safe shells use window.API.{service}
+- DataTable JS never reads HttpOnly cookies or constructs Bearer tokens
 
 Usage:
-  python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceSlim --reference slim
-  python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceCompact --reference compact
+  python3 .antigravity/scripts/verify_datatable_page.py . --area Platform --module ModuleCatalog --reference compact --api-profile proxy
+  python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceSlim --reference slim --api-profile direct-gateway
 """
 
 from __future__ import annotations
@@ -23,7 +27,7 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Pattern, Tuple
+from typing import Dict, List, Optional, Pattern, Tuple
 
 
 @dataclass(frozen=True)
@@ -84,31 +88,245 @@ def check_shared_css_not_embedded(index_path: Path, index_html: str) -> List[Che
 def check_inline_filter_host_alignment(filter_html: str, js_text: str, filter_path: Path, js_path: Path) -> Check:
     """
     Inline filter host alignment rule:
-    - Inline filter host must use px-6 (project standard).
+    - Inline filter host must use px-3 (project standard).
     - Implementation may be either:
-      a) _Filter.cshtml adds class="... px-6 ...", OR
-      b) index.js adds px-6 via host.classList.add('px-6') after mounting.
+      a) _Filter.cshtml adds class="... px-3 ...", OR
+      b) index.js adds px-3 via host.classList.add('px-3') after mounting.
     """
-    host_has_px6 = bool(
+    host_has_px3 = bool(
         re.search(
-            r"<div[^>]*\bid\s*=\s*\"inlineFilterHost\"[^>]*\bclass\s*=\s*\"[^\"]*\bpx-6\b",
+            r"<div[^>]*\bid\s*=\s*\"inlineFilterHost\"[^>]*\bclass\s*=\s*\"[^\"]*\bpx-3\b",
             filter_html,
             re.IGNORECASE,
         )
     )
 
-    js_adds_px6 = ("inlineFilterHost" in js_text) and bool(
-        re.search(r"classList\.add\(\s*[^)]*['\"]px-6['\"]", js_text)
+    js_adds_px3 = ("inlineFilterHost" in js_text) and bool(
+        re.search(r"classList\.add\(\s*[^)]*['\"]px-3['\"]", js_text)
     )
 
-    if host_has_px6 or js_adds_px6:
-        return Check("Inline filter host aligns with px-6", True)
+    if host_has_px3 or js_adds_px3:
+        return Check("Inline filter host aligns with px-3", True)
 
     return Check(
-        "Inline filter host aligns with px-6",
+        "Inline filter host aligns with px-3",
         False,
-        f"Expected px-6 on #inlineFilterHost (either in {filter_path} or added in {js_path}).",
+        f"Expected px-3 on #inlineFilterHost (either in {filter_path} or added in {js_path}).",
     )
+
+
+def extract_section_keys(text: str) -> List[str]:
+    """
+    Extract localized section heading keys from card/section blocks.
+
+    This intentionally checks section/card information architecture rather than
+    field-level markup. Compact Create/Edit and Details must expose the same
+    logical sections in the same order.
+    """
+    section_keys: List[str] = []
+    section_blocks = re.findall(r"<section\b[\s\S]*?</section>", text, re.IGNORECASE)
+    heading_pattern = re.compile(
+        r"<h[1-6][^>]*>[\s\S]*?(SharedLocalizer|Localizer)\[\s*\"([^\"]+)\"\s*\][\s\S]*?</h[1-6]>",
+        re.IGNORECASE,
+    )
+
+    for block in section_blocks:
+        match = heading_pattern.search(block)
+        if not match:
+            continue
+        section_keys.append(f"{match.group(1)}:{match.group(2)}")
+
+    return section_keys
+
+
+def check_compact_form_details_section_parity(form_path: Path, form_text: str, details_path: Path, details_text: str) -> Check:
+    form_sections = extract_section_keys(form_text)
+    details_sections = extract_section_keys(details_text)
+
+    if not form_sections:
+        return Check(
+            "Compact _Form.cshtml exposes logical section/card headings",
+            False,
+            f"No localized section headings found in {form_path}",
+        )
+
+    if not details_sections:
+        return Check(
+            "Compact Details.cshtml exposes logical section/card headings",
+            False,
+            f"No localized section headings found in {details_path}",
+        )
+
+    if form_sections == details_sections:
+        return Check("Compact _Form.cshtml matches Details.cshtml section/card map", True)
+
+    return Check(
+        "Compact _Form.cshtml matches Details.cshtml section/card map",
+        False,
+        "Expected _Form.cshtml and Details.cshtml to use the same localized section headings in the same order. "
+        f"Form: {form_sections}; Details: {details_sections}",
+    )
+
+
+VALUE_TYPES_REQUIRING_NULLABLE_WHEN_OPTIONAL = {
+    "byte",
+    "short",
+    "int",
+    "long",
+    "float",
+    "double",
+    "decimal",
+    "DateOnly",
+    "DateTime",
+    "DateTimeOffset",
+    "TimeOnly",
+    "TimeSpan",
+}
+
+
+def extract_form_model_class(form_text: str) -> Optional[str]:
+    match = re.search(r"@model\s+([A-Za-z0-9_.<>]+)", form_text)
+    if not match:
+        return None
+    return match.group(1).split(".")[-1]
+
+
+def find_model_source(root: Path, class_name: str) -> Tuple[Optional[Path], str]:
+    models_root = root / "frontend" / "Diten.Web" / "Models"
+    if not models_root.exists():
+        return None, ""
+
+    class_pattern = re.compile(rf"\bclass\s+{re.escape(class_name)}\b")
+    for path in models_root.rglob("*.cs"):
+        text = read_text(path)
+        if class_pattern.search(text):
+            return path, text
+
+    return None, ""
+
+
+def parse_model_properties(model_text: str) -> Dict[str, Tuple[str, str]]:
+    properties: Dict[str, Tuple[str, str]] = {}
+    prop_pattern = re.compile(
+        r"(?P<attrs>(?:\s*\[[^\]]+\]\s*)*)\s*public\s+(?P<type>[A-Za-z0-9_?<>.]+)\s+(?P<name>[A-Za-z0-9_]+)\s*\{",
+        re.MULTILINE,
+    )
+
+    for match in prop_pattern.finditer(model_text):
+        properties[match.group("name")] = (match.group("type"), match.group("attrs") or "")
+
+    return properties
+
+
+def is_nullable_type(type_name: str) -> bool:
+    return type_name.endswith("?") or type_name.startswith("Nullable<")
+
+
+def is_value_type_that_requires_nullable_when_optional(type_name: str) -> bool:
+    clean = type_name.replace("?", "")
+    return clean in VALUE_TYPES_REQUIRING_NULLABLE_WHEN_OPTIONAL
+
+
+def label_has_required_marker(form_text: str, field_name: str) -> bool:
+    label_pattern = re.compile(
+        rf"<label\b[^>]*asp-for\s*=\s*\"{re.escape(field_name)}\"[^>]*>[\s\S]*?</label>",
+        re.IGNORECASE,
+    )
+    match = label_pattern.search(form_text)
+    return bool(match and "text-danger" in match.group(0))
+
+
+def extract_bound_field_tags(form_text: str) -> List[Tuple[str, str]]:
+    field_tags: List[Tuple[str, str]] = []
+    tag_pattern = re.compile(r"<(input|select|textarea)\b[^>]*asp-for\s*=\s*\"([A-Za-z0-9_]+)\"[^>]*>", re.IGNORECASE)
+
+    for match in tag_pattern.finditer(form_text):
+        field_tags.append((match.group(2), match.group(0)))
+
+    return field_tags
+
+
+def input_type(tag: str) -> str:
+    match = re.search(r"\btype\s*=\s*\"([^\"]+)\"", tag, re.IGNORECASE)
+    return match.group(1).lower() if match else ""
+
+
+def check_form_required_contract(root: Path, form_path: Path, form_text: str) -> List[Check]:
+    checks: List[Check] = []
+    model_class = extract_form_model_class(form_text)
+    if not model_class:
+        return [
+            Check(
+                "Form declares a strongly typed ViewModel",
+                False,
+                f"Missing @model declaration in {form_path}",
+            )
+        ]
+
+    model_path, model_text = find_model_source(root, model_class)
+    if not model_path:
+        return [
+            Check(
+                "Form ViewModel source file is discoverable",
+                False,
+                f"Could not find class {model_class} under frontend/Diten.Web/Models",
+            )
+        ]
+
+    properties = parse_model_properties(model_text)
+    optional_value_type_violations: List[str] = []
+    required_marker_violations: List[str] = []
+
+    for field_name, tag in extract_bound_field_tags(form_text):
+        if field_name not in properties:
+            continue
+
+        prop_type, attrs = properties[field_name]
+        tag_type = input_type(tag)
+        has_marker = label_has_required_marker(form_text, field_name)
+        has_required_attr = bool(re.search(r"\brequired\b", tag, re.IGNORECASE))
+        has_required_attribute = "[Required" in attrs
+
+        if has_marker and not (has_required_attr or has_required_attribute):
+            required_marker_violations.append(
+                f"{field_name} has label '*' but no HTML required or [Required] on {model_class}.{field_name}"
+            )
+
+        is_optional_numeric_or_date = (
+            not has_marker
+            and tag_type in {"number", "date", "datetime-local", "time", "month"}
+            and is_value_type_that_requires_nullable_when_optional(prop_type)
+            and not is_nullable_type(prop_type)
+        )
+
+        if is_optional_numeric_or_date:
+            optional_value_type_violations.append(
+                f"{field_name} is optional in Razor but {model_class}.{field_name} is non-nullable {prop_type}; use {prop_type}? to avoid generated data-val-required."
+            )
+
+    if optional_value_type_violations:
+        checks.append(
+            Check(
+                "Optional numeric/date fields use nullable ViewModel types",
+                False,
+                "; ".join(optional_value_type_violations) + f" (model: {model_path})",
+            )
+        )
+    else:
+        checks.append(Check("Optional numeric/date fields use nullable ViewModel types", True))
+
+    if required_marker_violations:
+        checks.append(
+            Check(
+                "Required label markers match ViewModel required metadata",
+                False,
+                "; ".join(required_marker_violations) + f" (model: {model_path})",
+            )
+        )
+    else:
+        checks.append(Check("Required label markers match ViewModel required metadata", True))
+
+    return checks
 
 
 def print_report(checks: List[Check]) -> None:
@@ -196,6 +414,12 @@ def main() -> int:
         default=None,
         help="Golden reference variant: slim (<=8 form fields, create/edit offcanvas) or compact (>8 form fields, full pages)",
     )
+    parser.add_argument(
+        "--api-profile",
+        choices=["proxy", "direct-gateway"],
+        default=None,
+        help="API call profile. Defaults to proxy for Platform area, direct-gateway for other areas.",
+    )
 
     args = parser.parse_args()
 
@@ -207,6 +431,7 @@ def main() -> int:
     area = args.area
     module = args.module
     reference = args.reference
+    api_profile = args.api_profile or ("proxy" if area.lower() == "platform" else "direct-gateway")
 
     index_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "Index.cshtml"
     filter_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "_Filter.cshtml"
@@ -303,6 +528,17 @@ def main() -> int:
                 "Compact modules must use full Create/Edit pages, not Index create/edit offcanvas",
             )
         )
+        if form_partial.exists() and details_page.exists():
+            form_text = read_text(form_partial)
+            checks.append(
+                check_compact_form_details_section_parity(
+                    form_partial,
+                    form_text,
+                    details_page,
+                    read_text(details_page),
+                )
+            )
+            checks.extend(check_form_required_contract(root, form_partial, form_text))
     elif reference == "slim":
         slim_offcanvas_text = read_text(create_edit_offcanvas) if create_edit_offcanvas.exists() else ""
         checks.append(
@@ -314,6 +550,8 @@ def main() -> int:
                 "Slim modules must provide create/edit offcanvas",
             )
         )
+        if create_edit_offcanvas.exists():
+            checks.extend(check_form_required_contract(root, create_edit_offcanvas, slim_offcanvas_text))
 
     checks.append(
         check_contains(
@@ -370,7 +608,7 @@ def main() -> int:
             js_text,
             re.compile(r"classList\.add\(\s*['\"]mx-"),
             "index.js does not add mx-* to inlineFilterHost",
-            "Inline filter host should not use mx-*; use px-6 (project standard)",
+            "Inline filter host should not use mx-*; use px-3 (project standard)",
         )
     )
     checks.append(check_inline_filter_host_alignment(filter_html, js_text, filter_cshtml, index_js))
@@ -379,6 +617,8 @@ def main() -> int:
     # - Reset must take effect immediately (no "Reset then Apply" behavior) -> prevent native form reset conflicts.
     # - Save View visibility is based on applied/effective state: filter selections alone must not toggle Save View.
     if is_v2 and re.search(r"\bdt-save-filter-btn\b", js_text):
+        personalization_client = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / "personalization-client.js"
+        personalization_text = read_text(personalization_client)
         checks.append(
             check_contains(
                 index_js,
@@ -410,6 +650,24 @@ def main() -> int:
             check_contains(
                 index_js,
                 js_text,
+                re.compile(r"saveDefaultView[\s\S]*viewName\s*:\s*\([^\n\r]*\|\|\s*L\.SaveView\s*\|\|\s*['\"]Default['\"]", re.IGNORECASE),
+                "Save View payload has non-empty default name",
+                "Expected saveDefaultView payload viewName to fall back to 'Default' when no saved/localized name is available",
+            )
+        )
+        checks.append(
+            check_contains(
+                personalization_client,
+                personalization_text,
+                re.compile(r"actorType[\s\S]*tenant_user[\s\S]*X-Tenant-Id", re.IGNORECASE),
+                "personalizationClient sends tenant header only for tenant users",
+                "Expected shared personalizationClient to send X-Tenant-Id for tenant_user Save View requests while omitting it for platform actors",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
                 re.compile(r"btnFilterReset[\s\S]*addEventListener\(\s*['\"]click['\"][\s\S]*preventDefault\s*\(", re.IGNORECASE),
                 "Reset click prevents native form reset",
                 "Expected Reset handler to call event.preventDefault() to avoid native reset overriding programmatic restore",
@@ -419,9 +677,27 @@ def main() -> int:
             check_contains(
                 index_js,
                 js_text,
-                re.compile(r"btnFilterReset[\s\S]*addEventListener\(\s*['\"]click['\"][\s\S]*setSaveFilterVisible\s*\(", re.IGNORECASE),
-                "Reset click updates Save View visibility",
-                "Expected Reset handler to sync Save View visibility after applying reset",
+                re.compile(r"btnFilterReset[\s\S]*addEventListener\(\s*['\"]click['\"][\s\S]*setSaveFilterVisible\s*\(\s*isDirtyComparedToDefault\s*\(", re.IGNORECASE),
+                "Reset click recalculates Save View dirty visibility",
+                "Expected Reset handler to call setSaveFilterVisible(isDirtyComparedToDefault(api)) after factory reset",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"getResetBaselineState[\s\S]*filters\s*:\s*emptyFilters\s*\([\s\S]*search\s*:\s*['\"]{2}[\s\S]*colVis\s*:\s*defaultColVis\s*\([\s\S]*columnOrder\s*:\s*Array\.from[\s\S]*order\s*:\s*baseOrder", re.IGNORECASE),
+                "Reset baseline is factory table state",
+                "Expected getResetBaselineState() to return empty filters/search + default colVis + default columnOrder + baseOrder, not saved view state",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"btnFilterReset[\s\S]*addEventListener\(\s*['\"]click['\"][\s\S]*applySavedTableState\s*\([^,]+,\s*getResetBaselineState\s*\(\s*\)", re.IGNORECASE),
+                "Reset click restores full factory table state",
+                "Reset must call applySavedTableState(api, getResetBaselineState()) or equivalent; clearing only filters/search leaves ColVis stale",
             )
         )
         checks.append(
@@ -677,6 +953,45 @@ def main() -> int:
             "Missing headers: getAuthHeaders() usage",
         )
     )
+    checks.append(
+        check_not_contains(
+            index_js,
+            js_text,
+            re.compile(r"\bdocument\.cookie\b|\baccess_token\b|Authorization\s*:\s*[`'\"]?Bearer", re.IGNORECASE),
+            "index.js does not read HttpOnly auth cookies or build Bearer tokens",
+            "DataTable JS must not read document.cookie/access_token or construct Authorization: Bearer; use MVC same-origin proxy when cookies are HttpOnly",
+        )
+    )
+    if api_profile == "proxy":
+        expected_proxy_path = f"/{area}/{module}/api"
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(rf"const\s+endpoint\s*=\s*['\"]{re.escape(expected_proxy_path)}['\"]"),
+                f"index.js uses same-origin frontend proxy endpoint ({expected_proxy_path})",
+                f"Proxy profile requires const endpoint = '{expected_proxy_path}'",
+            )
+        )
+        checks.append(
+            check_not_contains(
+                index_js,
+                js_text,
+                re.compile(r"window\.API\?\.\s*platform|window\.API\.platform|window\.ApiBaseUrl\s*(?:\+|\|\|)|localhost:5000|:5000/api/", re.IGNORECASE),
+                "proxy profile avoids direct browser Gateway calls",
+                "Platform/admin DataTable JS must call same-origin frontend proxy, not window.API.platform/window.ApiBaseUrl/:5000 directly",
+            )
+        )
+    else:
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"window\.API\?\.[A-Za-z0-9_]+|window\.API\.[A-Za-z0-9_]+"),
+                "direct-gateway profile uses window.API service base",
+                "Direct Gateway profile requires window.API.{service} as the service base URL",
+            )
+        )
     checks.append(
         check_not_contains(
             index_js,

@@ -3,7 +3,7 @@
 @inject IHtmlLocalizer<WorkCenterIndex> Localizer
 @{
     ViewData["Title"] = Localizer["TaskDetailTitle"].Value;
-    Layout = "_LayoutBackbone";
+    Layout = "_LayoutTenantShell";
 
     var taskId = ViewBag.TaskId as string ?? string.Empty;
     var returnUrl = ViewBag.ReturnUrl as string ?? "/WorkCenter";

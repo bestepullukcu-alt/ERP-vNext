@@ -17,7 +17,24 @@ bool   IsDeleted   // Soft Delete flag (default: false)
 DateTimeOffset? DeletedAt   // Soft Delete timestamp (UTC)
 DateTimeOffset  CreatedAt   // Kayıt oluşturma zamanı (UTC, otomatik)
 DateTimeOffset? UpdatedAt   // Son güncelleme zamanı (UTC, UpdateAsync'te set edilmeli)
+int    Version     // İyimser eşzamanlılık (concurrency) için teknik alan (otomatik)
 ```
+
+> [!CAUTION]
+> **Rezerv İsim Çakışması:** `Version` ismi teknik amaçlı (concurrency) rezerve edilmiştir. Business logic (örneğin semantic versioning) için `Version` ismi KULLANILAMAZ. Bunun yerine `{EntityName}Version` veya `SemanticVersion` tercih edilmelidir. Aksi takdirde MongoDB serialization hataları ve property shadowing problemleri oluşur.
+
+## 🌐 GlobalEntity İstisnası
+
+Varsayılan entity modeli tenant-owned `EntityBase` modelidir. Tenant'a ait olmayan Platform seviyesindeki system-of-record katalogları module pack içinde açıkça gerekçelendirilirse `GlobalEntity` kullanabilir.
+
+Bu istisna için zorunlu kontroller:
+
+- Module pack `Entity Fields` bölümünde base type `GlobalEntity` yazmalıdır.
+- `Runtime Constraints` bölümünde kaydın tenant-owned olmadığı açıklanmalıdır.
+- DTO/request/form payload içinde `TenantId` bulunmamalıdır.
+- Repository normal list/detail sorgularında `IsDeleted=false` uygulamalıdır.
+- Benzersiz index global ise bunun gerekçesi module pack acceptance criteria içinde test edilebilir olmalıdır.
+- Business semantic version alanı gerekiyorsa `Version` değil `{EntityName}Version` veya `SemanticVersion` kullanılmalıdır.
 
 ## 📋 Opsiyonel Audit Alanları
 

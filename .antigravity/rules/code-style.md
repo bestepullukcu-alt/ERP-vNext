@@ -188,6 +188,27 @@ global using Diten.Shared.Core;
 
 ---
 
+---
+
+## 🏗️ Backend & Frontend Tutarlılığı
+
+1. **Property Case:** 
+   - **Backend (C#):** PascalCase (örn: `ModuleVersion`)
+   - **Frontend (JSON/JS):** camelCase (örn: `moduleVersion`)
+   - **Razor:** `@Model.PropertyName` (C# ile aynı case)
+
+2. **Yeniden Adlandırma (Renaming):**
+   Bir property adı değiştiğinde tüm yığın (stack) kontrol edilmelidir:
+   - Domain Entity
+   - Application DTOs & Mappings
+   - Validators
+   - Frontend ViewModels & Controllers
+   - Frontend Razor Views (`asp-for`, `@Model`)
+   - Frontend JavaScript (DataTable `data` fields, API calls)
+
+> [!WARNING]
+> Sadece Backend'de yapılan bir rename, Frontend'de sessizce başarısız olan (silent failure) veya validasyon hatalarına (400 Bad Request) sebep olan kırılmalara yol açar. Her rename sonrası mutlaka **hem Backend hem Frontend** projeleri derlenmelidir.
+
 ## ✅ Kontrol Listesi
 
 - [ ] Kod içi yorumlar ve log mesajları İngilizce mi?

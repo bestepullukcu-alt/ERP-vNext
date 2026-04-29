@@ -23,7 +23,7 @@ public sealed class GoldenReferenceCompactEditViewModel
     public DateTime? EffectiveDate { get; set; }
     [DataType(DataType.Date)]
     public DateTime? ExpirationDate { get; set; }
-    public int Priority { get; set; }
+    public int? Priority { get; set; }
     public bool IsActive { get; set; } = true;
 }
 
@@ -41,7 +41,7 @@ public sealed class GoldenReferenceCompactDetailViewModel
     public string? Version { get; set; }
     public DateTime? EffectiveDate { get; set; }
     public DateTime? ExpirationDate { get; set; }
-    public int Priority { get; set; }
+    public int? Priority { get; set; }
     public bool IsActive { get; set; }
 }
 
@@ -58,7 +58,7 @@ public sealed class GoldenReferenceCompactSavePayload
     public string? Version { get; set; }
     public DateTime? EffectiveDate { get; set; }
     public DateTime? ExpirationDate { get; set; }
-    public int Priority { get; set; }
+    public int? Priority { get; set; }
     public bool IsActive { get; set; } = true;
 }
 

@@ -59,13 +59,31 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 6. `Runtime Constraints`
 7. `Acceptance Criteria`
 8. `Test Expectations`
-9. `Implementation Notes`
-10. `Follow-up Items`
+9. `Owned Objects` (Entities, DTOs, Commands, Queries)
+10. `Entity Fields` (Schema definition)
+11. `Implementation Notes`
+12. `Follow-up Items`
 
 DataTable modüllerinde ayrıca şu karar açık yazılmalıdır:
 
 - `form_field_count`: create/edit formunda kullanıcının doldurduğu alan sayısı
 - `golden_reference`: `slim` (`8 ve altı`) veya `compact` (`8'den fazla`)
+
+Platform global katalog modüllerinde ayrıca şu karar açık yazılmalıdır:
+
+- `Entity Fields` içinde base type `GlobalEntity`
+- `Runtime Constraints` içinde kaydın tenant-owned olmadığı ve neden global olduğu
+- Global unique index kullanılacaksa gerekçesi ve acceptance criteria/test beklentisi
+- DTO/request/form payload içinde `TenantId` bulunmayacağı
+
+## 5. Entity Schema Rules
+
+`Entity Fields` bolumu her alan icin tip, zorunluluk ve kural belirtmelidir.
+
+> [!IMPORTANT]
+> **Naming Rule:** İş mantığına ait versiyon alanları (semantic version vb.) kesinlikle `Version` olarak adlandırılamaz. `Version` ismi teknik altyapı (concurrency) için rezerve edilmiştir. Bkz: `.antigravity/rules/entity-base-template.md`.
+
+Varsayılan base type tenant-owned `EntityBase`/`BaseEntity` modelidir. Yalnızca Platform seviyesinde tekil system-of-record olan ve module pack içinde açık gerekçelendirilen kataloglar `GlobalEntity` kullanabilir.
 
 ## 4. Repo Scope Rules
 

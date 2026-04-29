@@ -68,6 +68,33 @@ var localizationOptions = new RequestLocalizationOptions()
     .SetDefaultCulture("en")
     .AddSupportedCultures(supportedCultures)
     .AddSupportedUICultures(supportedCultures);
+localizationOptions.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(context =>
+{
+    var requestHost = context.Request.Host.Host ?? string.Empty;
+    var isPlatformContext = requestHost.StartsWith("admin.", StringComparison.OrdinalIgnoreCase) ||
+                            context.Request.Path.StartsWithSegments("/platform", StringComparison.OrdinalIgnoreCase);
+    if (!isPlatformContext)
+    {
+        return Task.FromResult<ProviderCultureResult?>(null);
+    }
+
+    var requestedCulture = context.Request.Query["culture"].ToString();
+    if (!string.IsNullOrWhiteSpace(requestedCulture))
+    {
+        var normalizedCulture = platformCultureSet.Contains(requestedCulture) ? requestedCulture : "en";
+        return Task.FromResult<ProviderCultureResult?>(new ProviderCultureResult(normalizedCulture, normalizedCulture));
+    }
+
+    var cultureCookie = context.Request.Cookies[CookieRequestCultureProvider.DefaultCookieName];
+    var cookieCulture = !string.IsNullOrWhiteSpace(cultureCookie)
+        ? CookieRequestCultureProvider.ParseCookieValue(cultureCookie)?.Cultures.FirstOrDefault().Value
+        : null;
+    var resolvedCulture = !string.IsNullOrWhiteSpace(cookieCulture) && platformCultureSet.Contains(cookieCulture)
+        ? cookieCulture
+        : "en";
+
+    return Task.FromResult<ProviderCultureResult?>(new ProviderCultureResult(resolvedCulture, resolvedCulture));
+}));
 
 app.UseRequestLocalization(localizationOptions);
 

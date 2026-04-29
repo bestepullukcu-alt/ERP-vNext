@@ -1,0 +1,37 @@
+@using Diten.Web.Views.Platform.ModuleCatalog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ModuleCatalogIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="p-4" style="display: none;">
+        <div class="shimmer skeleton-row" style="width: 100%; height: 32px; margin-bottom: 2rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-modulecatalog" data-dt-standard="v2" class="datatables-module-catalog table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="d-none"></th>
+                    <th>@Localizer["ModuleCode"]</th>
+                    <th class="all">@Localizer["ModuleName"]</th>
+                    <th>@Localizer["DisplayName"]</th>
+                    <th>@Localizer["Domain"]</th>
+                    <th>@Localizer["Service"]</th>
+                    <th>@Localizer["Category"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["Version"]</th>
+                    <th>@Localizer["Assignable"]</th>
+                    <th>@Localizer["Core"]</th>
+                    <th>@Localizer["SortOrder"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

@@ -9,6 +9,29 @@ document.addEventListener("DOMContentLoaded", function () {
     let requiredElements = [];
     let allTrackedElements = [];
 
+    const cssEscape = (value) => {
+        if (window.CSS && typeof window.CSS.escape === "function") {
+            return window.CSS.escape(value);
+        }
+
+        return String(value).replace(/["\\]/g, "\\$&");
+    };
+
+    const findSubmitButtonForForm = (form) => {
+        if (!form) return null;
+
+        if (form.id) {
+            const escapedId = cssEscape(form.id);
+            const externalSubmit = document.querySelector(
+                `button[type="submit"][form="${escapedId}"], input[type="submit"][form="${escapedId}"]`
+            );
+
+            if (externalSubmit) return externalSubmit;
+        }
+
+        return form.querySelector('button[type="submit"], input[type="submit"], .btn-primary');
+    };
+
     // Initialize tracking for all forms
     forms.forEach(form => {
         const inputs = form.querySelectorAll("input, select, textarea");
@@ -44,12 +67,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (allTrackedElements.length === 0) return;
 
+    const trackerForm = Array.from(forms).find(form =>
+        requiredElements.some(el => el.form === form) ||
+        allTrackedElements.some(el => el.form === form)
+    );
+
     // Create the badge UI
     const trackerId = "global-unified-tracker";
     let badge = document.getElementById(trackerId);
 
     if (!badge) {
-        const submitBtn = document.querySelector('button[type="submit"]') || document.querySelector('.btn-primary');
+        const submitBtn = findSubmitButtonForForm(trackerForm);
         if (submitBtn) {
             const actionContainer = submitBtn.parentNode;
             const wrapper = document.createElement("div");
