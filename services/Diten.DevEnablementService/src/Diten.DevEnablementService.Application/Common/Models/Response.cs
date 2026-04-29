@@ -14,7 +14,7 @@ public sealed class Response<T>
     public static Response<T> Success(T data, int statusCode = 200)
         => new() { Data = data, StatusCode = statusCode, IsSuccessful = true };
 
-    public static Response<T> Success(int statusCode = 200)
+    public static Response<T> SuccessWithoutData(int statusCode = 200)
         => new() { StatusCode = statusCode, IsSuccessful = true };
 
     public static Response<T> Fail(string error, int statusCode = 400)

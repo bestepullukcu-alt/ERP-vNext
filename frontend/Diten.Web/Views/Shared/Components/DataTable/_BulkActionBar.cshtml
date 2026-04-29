@@ -1,0 +1,30 @@
+@model Diten.Web.Models.DataTable.DataTableBulkActionBarViewModel
+
+<div id="@Model.Id" class="card mb-4 d-none animate__animated animate__fadeInDown">
+    <div class="card-body d-flex align-items-center justify-content-between py-3">
+        <div class="d-flex align-items-center gap-2">
+            <i class="@Model.Icon @Model.IconClass icon-md"></i>
+            <span id="@Model.CountId" class="fw-medium text-heading">0</span>
+            <span class="text-muted">@Model.SelectedText</span>
+        </div>
+        <div class="d-flex gap-2">
+            @foreach (var action in Model.Actions.Where(action => action.Visible))
+            {
+                <button type="button"
+                        class="@action.ButtonClass"
+                        data-bulk-action="@action.Key"
+                        data-requires-selection="@action.RequiresSelection.ToString().ToLowerInvariant()"
+                        data-confirm-key="@action.ConfirmKey"
+                        data-endpoint="@action.Endpoint"
+                        data-method="@action.Method">
+                    @if (!string.IsNullOrWhiteSpace(action.Icon))
+                    {
+                        <i class="@action.Icon me-1"></i>
+                    }
+                    @action.Text
+                </button>
+            }
+            <button type="button" id="@Model.ClearSelectionId" class="btn btn-label-secondary">@Model.ClearSelectionText</button>
+        </div>
+    </div>
+</div>

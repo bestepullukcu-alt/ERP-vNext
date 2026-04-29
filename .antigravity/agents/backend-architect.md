@@ -33,6 +33,7 @@ Sen sistemin omurgasısın. Ürettiğin her Entity ve CQRS yapısı şu kurallar
 - Handler sınıflarını ASLA `Commands` veya `Queries` klasörlerinin içine koyma.
 - İlgili modül (Feature) altında mutlaka bir **`Handlers`** klasörü oluşturulmalıdır.
 - Bu klasörün altında `CommandHandlers` ve `QueryHandlers` olmalıdır. Modeller (`Command`/`Query`) ile iş mantığı (`Handler`) fiziksel olarak ayrılmalıdır.
+- Her `Command`, `Query`, `CommandHandler`, `QueryHandler` ve `Validator` ayrı dosyada olmalıdır.
 
 ### 2. Multi-Tenancy (Çoklu Kiracı İzolasyonu) - ZORUNLU
 - Sistem Single DB, Multi-Tenant yapısındadır.
@@ -50,7 +51,8 @@ Sen sistemin omurgasısın. Ürettiğin her Entity ve CQRS yapısı şu kurallar
 - Hatalar her zaman `ProblemDetails` standardı ile dönmelidir.
 
 ### 5. Repository ve MongoDB Disiplini
-- Uygulama (Application) katmanı sadece `IRepository<T>` arayüzünü (interface) bilmelidir.
+- Varsayılan standart generic repository'dir (`IRepository<T>` / `GenericRepository<T>`).
+- Module pack veya servis baseline'ı specific repository pattern'i kullanıyorsa, specific repository yalnızca tenant filter, soft delete ve modüle özgü sorgu garantisini koruduğu sürece kabul edilir. Standart CRUD metodları tekrarlanıyorsa gerekçesi module pack veya implementation notes içinde açık olmalıdır.
 - `MongoDB.Driver` kütüphanesi sadece Persistence katmanında (altyapı) bulunmalıdır.
 - Collection isimleri çoğul olmalıdır.
 
@@ -69,11 +71,11 @@ Sen sistemin omurgasısın. Ürettiğin her Entity ve CQRS yapısı şu kurallar
 Senden yeni bir özellik/modül istendiğinde şu sırayı izle:
 1. **Pipeline Kontrolü:** Serviste `Application/Behaviors/` klasörü ve 4 behavior'ın tamamı mevcut mu? Eksikse önce kur. (`pipeline-behaviors.md`)
 2. **CustomBaseController Kontrolü:** Servis içinde `CustomBaseController` mevcut mu? Eksikse önce kur. (`response-envelope.md`)
-2.5. **Repository Altyapı Kontrolü:** Aşağıdaki iki temel dosya mevcut mu?
+2.5. **Repository Altyapı Kontrolü:** Hedef servisin repository baseline'ı mevcut mu?
      - `Application/Interfaces/IRepository.cs` — generic base interface
      - `Persistence/Repositories/RepositoryBase.cs` — generic base implementation
-     Eksikse → `repository-standard.md` şablonlarını **BİREBİR** kopyalayarak önce oluştur.
-     Altyapı hazır olduktan SONRA modüle özgü `I{Module}Repository` (Application) ve `{Module}Repository` (Persistence) dosyalarını yaz.
+     - Veya module pack/servis baseline'ı tarafından açıkça kullanılan specific repository interface + persistence implementation
+     Eksikse → `repository-standard.md` şablonlarını veya module pack'te onaylı specific repository baseline'ını uygula.
      Kontrol listesi (`repository-standard.md` sonundaki checklist) tamamlanmadan Handler yazılamaz.
 3. **Domain:** Entity sınıflarını (`EntityBase` mirasıyla) oluştur. İş modülü ise `CreatedBy`/`UpdatedBy` ekle. (`entity-base-template.md`)
 4. **DTOs & Validation:** Request/Response nesnelerini yarat ve FluentValidation kurallarını yaz. Validator olmadan Handler yazılamaz.

@@ -69,6 +69,27 @@
   <data name="TaxNumber" xml:space="preserve">
     <value>ИНН</value>
   </data>
+  <data name="Success" xml:space="preserve">
+    <value>Успешно</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Ошибка</value>
+  </data>
+  <data name="RecordCreated" xml:space="preserve">
+    <value>Запись успешно создана.</value>
+  </data>
+  <data name="RecordDeleted" xml:space="preserve">
+    <value>Запись успешно удалена.</value>
+  </data>
+  <data name="RecordSaved" xml:space="preserve">
+    <value>Изменения успешно сохранены.</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>Произошла ошибка при выполнении операции.</value>
+  </data>
+  <data name="AreYouSure" xml:space="preserve">
+    <value>Вы уверены?</value>
+  </data>
   <data name="DeleteConfirmationTitle" xml:space="preserve">
     <value>Вы уверены?</value>
   </data>
@@ -129,27 +150,6 @@
   <data name="MDM" xml:space="preserve">
     <value>MDM</value>
   </data>
-  <data name="AreYouSure" xml:space="preserve">
-    <value>Вы уверены?</value>
-  </data>
-  <data name="Error" xml:space="preserve">
-    <value>Ошибка</value>
-  </data>
-  <data name="ErrorOccurred" xml:space="preserve">
-    <value>Произошла ошибка при выполнении операции.</value>
-  </data>
-  <data name="RecordCreated" xml:space="preserve">
-    <value>Запись успешно создана.</value>
-  </data>
-  <data name="RecordDeleted" xml:space="preserve">
-    <value>Запись успешно удалена.</value>
-  </data>
-  <data name="RecordSaved" xml:space="preserve">
-    <value>Изменения успешно сохранены.</value>
-  </data>
-  <data name="Success" xml:space="preserve">
-    <value>Успешно</value>
-  </data>
   <data name="Saving" xml:space="preserve">
     <value>Сохранение...</value>
   </data>
@@ -204,58 +204,193 @@
   <data name="DtEmptyTable" xml:space="preserve">
     <value>В таблице нет данных</value>
   </data>
-  <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
-  <data name="ColumnVisibility" xml:space="preserve"><value>Видимость столбцов</value></data>
-  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
-  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Вы уверены, что хотите удалить {0} выбранных записей?</value></data>
-  <data name="BulkDeleteSuccess" xml:space="preserve"><value>{0} записей успешно удалено</value></data>
-  <data name="ClearSelection" xml:space="preserve"><value>Очистить выбор</value></data>
-  <data name="SelectedCount" xml:space="preserve"><value>записей выбрано</value></data>
-  <data name="RequiredProgress" xml:space="preserve"><value>Обязательно: {{0}} / {{1}}</value></data>
-  <data name="Update" xml:space="preserve"><value>Обновить</value></data>
-  <data name="RecordUpdated" xml:space="preserve"><value>Запись успешно обновлена.</value></data>
-  <data name="InvalidEmail" xml:space="preserve"><value>Неверный адрес электронной почты</value></data>
-  <data name="InvalidUrl" xml:space="preserve"><value>Неверный формат URL</value></data>
-  <data name="InvalidPhone" xml:space="preserve"><value>Неверный номер телефона</value></data>
-  <data name="NumericOnly" xml:space="preserve"><value>Допускаются только цифры</value></data>
-  <data name="FieldRequired" xml:space="preserve"><value>Это поле обязательно к заполнению</value></data>
-  <data name="InvalidFiscalYear" xml:space="preserve"><value>Неверный формат (например, 01-01)</value></data>
-  <data name="ValidationErrors" xml:space="preserve"><value>Ошибки: {0}</value></data>
-  <data name="RequiredStatus" xml:space="preserve"><value>Обязательно: {0} / {1}</value></data>
-  <data name="SelectPlaceholder" xml:space="preserve"><value>Выберите...</value></data>
-  <data name="Overview" xml:space="preserve"><value>Обзор</value></data>
-  <data name="SubRecords" xml:space="preserve"><value>Подзаписи</value></data>
-  <data name="Details" xml:space="preserve"><value>Детали</value></data>
-  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
-  <data name="EditRecord" xml:space="preserve"><value>Редактировать запись</value></data>
-  <data name="About" xml:space="preserve"><value>О программе</value></data>
-  <data name="Address" xml:space="preserve"><value>Адрес</value></data>
-  <data name="EmailAddress" xml:space="preserve"><value>Адрес эл. почты</value></data>
-  <data name="PhoneNumber" xml:space="preserve"><value>Номер телефона</value></data>
-  <data name="Website" xml:space="preserve"><value>Веб-сайт</value></data>
-  <data name="Sector" xml:space="preserve"><value>Сектор</value></data>
-  <data name="ContactPerson" xml:space="preserve"><value>Контактное лицо</value></data>
-  <data name="PrimaryCurrency" xml:space="preserve"><value>Основная валюта</value></data>
-  <data name="DefaultTimeZone" xml:space="preserve"><value>Часовой пояс по умолчанию</value></data>
-  <data name="BasicInfo" xml:space="preserve"><value>Основная информация</value></data>
-  <data name="NoRecordsFound" xml:space="preserve"><value>Подзаписей пока нет.</value></data>
-  <data name="Sandbox" xml:space="preserve"><value>Песочница</value></data>
-  <data name="Login.Title" xml:space="preserve"><value>Вход</value></data>
-  <data name="Login.Email" xml:space="preserve"><value>Эл. почта</value></data>
-  <data name="Login.Password" xml:space="preserve"><value>Пароль</value></data>
-  <data name="Login.RememberMe" xml:space="preserve"><value>Запомнить меня</value></data>
-  <data name="Login.Submit" xml:space="preserve"><value>Войти</value></data>
-  <data name="Login.ErrorTitle" xml:space="preserve"><value>Ошибка</value></data>
-  <data name="Login.ErrorRequired" xml:space="preserve"><value>Требуются эл. почта и пароль</value></data>
-  <data name="Login.Error" xml:space="preserve"><value>Неверная эл. почта или пароль</value></data>
-  <data name="Login.Loading" xml:space="preserve"><value>Вход...</value></data>
-  <data name="SaveView" xml:space="preserve"><value>Сохранить Вид</value></data>
-  <data name="Platform" xml:space="preserve"><value>Платформа</value></data>
-  <data name="WorkCenterMenu" xml:space="preserve"><value>Рабочий центр</value></data>
-  <data name="ItemMaster" xml:space="preserve"><value>Справочник номенклатуры</value></data>
-  <data name="Attributes" xml:space="preserve"><value>Атрибуты</value></data>
-  <data name="Variants" xml:space="preserve"><value>Варианты</value></data>
-  <data name="ColumnOrder" xml:space="preserve"><value>Порядок столбцов</value></data>
-  <data name="SKUManagement" xml:space="preserve"><value>Управление SKU</value></data>
-  <data name="ProductMaster" xml:space="preserve"><value>Справочник продуктов</value></data>
-<data name="CategoryManagement" xml:space="preserve"><value>Управление категориями</value></data><data name="CompositionManagement" xml:space="preserve"><value>Управление составами</value></data><data name="VariantManagement" xml:space="preserve"><value>Управление вариантами</value></data></root>
+  <data name="ShowAll" xml:space="preserve">
+    <value>Показать все</value>
+  </data>
+  <data name="ColumnVisibility" xml:space="preserve">
+    <value>Видимость столбцов</value>
+  </data>
+  <data name="BulkDelete" xml:space="preserve">
+    <value>Массовое удаление</value>
+  </data>
+  <data name="BulkDeleteConfirm" xml:space="preserve">
+    <value>Вы уверены, что хотите удалить {0} выбранных записей?</value>
+  </data>
+  <data name="BulkDeleteSuccess" xml:space="preserve">
+    <value>{0} записей успешно удалено</value>
+  </data>
+  <data name="ClearSelection" xml:space="preserve">
+    <value>Очистить выбор</value>
+  </data>
+  <data name="SelectedCount" xml:space="preserve">
+    <value>записей выбрано</value>
+  </data>
+  <data name="RequiredProgress" xml:space="preserve">
+    <value>Обязательно: {{0}} / {{1}}</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Обновить</value>
+  </data>
+  <data name="RecordUpdated" xml:space="preserve">
+    <value>Запись успешно обновлена.</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>Неверный адрес электронной почты</value>
+  </data>
+  <data name="InvalidUrl" xml:space="preserve">
+    <value>Неверный формат URL</value>
+  </data>
+  <data name="InvalidPhone" xml:space="preserve">
+    <value>Неверный номер телефона</value>
+  </data>
+  <data name="NumericOnly" xml:space="preserve">
+    <value>Допускаются только цифры</value>
+  </data>
+  <data name="FieldRequired" xml:space="preserve">
+    <value>Это поле обязательно к заполнению</value>
+  </data>
+  <data name="InvalidFiscalYear" xml:space="preserve">
+    <value>Неверный формат (например, 01-01)</value>
+  </data>
+  <data name="ValidationErrors" xml:space="preserve">
+    <value>Ошибки: {0}</value>
+  </data>
+  <data name="RequiredStatus" xml:space="preserve">
+    <value>Обязательно: {0} / {1}</value>
+  </data>
+  <data name="SelectPlaceholder" xml:space="preserve">
+    <value>Выберите...</value>
+  </data>
+  <data name="Overview" xml:space="preserve">
+    <value>Обзор</value>
+  </data>
+  <data name="SubRecords" xml:space="preserve">
+    <value>Подзаписи</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>Детали</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Назад к списку</value>
+  </data>
+  <data name="EditRecord" xml:space="preserve">
+    <value>Редактировать запись</value>
+  </data>
+  <data name="NoRecordsFound" xml:space="preserve">
+    <value>Подзаписей пока нет.</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>О программе</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>Адрес</value>
+  </data>
+  <data name="EmailAddress" xml:space="preserve">
+    <value>Адрес эл. почты</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>Номер телефона</value>
+  </data>
+  <data name="Website" xml:space="preserve">
+    <value>Веб-сайт</value>
+  </data>
+  <data name="Sector" xml:space="preserve">
+    <value>Сектор</value>
+  </data>
+  <data name="ContactPerson" xml:space="preserve">
+    <value>Контактное лицо</value>
+  </data>
+  <data name="PrimaryCurrency" xml:space="preserve">
+    <value>Основная валюта</value>
+  </data>
+  <data name="DefaultTimeZone" xml:space="preserve">
+    <value>Часовой пояс по умолчанию</value>
+  </data>
+  <data name="BasicInfo" xml:space="preserve">
+    <value>Основная информация</value>
+  </data>
+  <data name="Login.Title" xml:space="preserve">
+    <value>Вход</value>
+  </data>
+  <data name="Login.Email" xml:space="preserve">
+    <value>Эл. почта</value>
+  </data>
+  <data name="Login.Password" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="Login.RememberMe" xml:space="preserve">
+    <value>Запомнить меня</value>
+  </data>
+  <data name="Login.Submit" xml:space="preserve">
+    <value>Войти</value>
+  </data>
+  <data name="Login.ErrorTitle" xml:space="preserve">
+    <value>Ошибка</value>
+  </data>
+  <data name="Login.ErrorRequired" xml:space="preserve">
+    <value>Требуются эл. почта и пароль</value>
+  </data>
+  <data name="Login.Error" xml:space="preserve">
+    <value>Неверная эл. почта или пароль</value>
+  </data>
+  <data name="Login.Loading" xml:space="preserve">
+    <value>Вход...</value>
+  </data>
+  <data name="Login.Subtitle" xml:space="preserve">
+    <value>Войдите в свою учетную запись</value>
+  </data>
+  <data name="Sandbox" xml:space="preserve">
+    <value>Песочница</value>
+  </data>
+  <data name="SaveView" xml:space="preserve">
+    <value>Сохранить Вид</value>
+  </data>
+  <data name="Platform" xml:space="preserve">
+    <value>Платформа</value>
+  </data>
+  <data name="WorkCenterMenu" xml:space="preserve">
+    <value>Рабочий центр</value>
+  </data>
+  <data name="ItemMaster" xml:space="preserve">
+    <value>Справочник номенклатуры</value>
+  </data>
+  <data name="CompositionManagement" xml:space="preserve">
+    <value>Управление составами</value>
+  </data>
+  <data name="CategoryManagement" xml:space="preserve">
+    <value>Управление категориями</value>
+  </data>
+  <data name="VariantManagement" xml:space="preserve">
+    <value>Управление вариантами</value>
+  </data>
+  <data name="Attributes" xml:space="preserve">
+    <value>Атрибуты</value>
+  </data>
+  <data name="Variants" xml:space="preserve">
+    <value>Варианты</value>
+  </data>
+  <data name="ColumnOrder" xml:space="preserve">
+    <value>Порядок столбцов</value>
+  </data>
+  <data name="SKUManagement" xml:space="preserve">
+    <value>Управление SKU</value>
+  </data>
+  <data name="ProductMaster" xml:space="preserve">
+    <value>Справочник продуктов</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Описание</value>
+  </data>
+  <data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>Введите описание...</value>
+  </data>
+  <data name="LevelPrefix" xml:space="preserve">
+    <value>Уровень</value>
+  </data>
+  <data name="NotAvailable" xml:space="preserve">
+    <value>Недоступно</value>
+  </data>
+</root>

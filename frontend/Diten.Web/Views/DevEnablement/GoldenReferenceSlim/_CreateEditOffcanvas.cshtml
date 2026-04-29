@@ -1,0 +1,76 @@
+@using Diten.Web.Views.DevEnablement.GoldenReferenceSlim
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GoldenReferenceSlimIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header py-6">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top">
+        @* Server-side validation errors (from gateway) *@
+        <div id="formGoldenReferenceSlimAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formGoldenReferenceSlim" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="slimItemId" name="Id" value="" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="slimCode" class="form-label fw-medium">
+                        @Localizer["Code"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="slimCode" name="Code" class="form-control" maxlength="64" placeholder="@Localizer["CodePlaceholder"]" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="slimName" class="form-label fw-medium">
+                        @Localizer["Name"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="slimName" name="Name" class="form-control" maxlength="200" placeholder="@Localizer["NamePlaceholder"]" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="slimReferenceType" class="form-label fw-medium">@Localizer["ReferenceType"]</label>
+                    <select id="slimReferenceType" name="ReferenceType" class="form-select select2-offcanvas">
+                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                        <option value="Standard">@Localizer["ReferenceTypeStandard"]</option>
+                        <option value="Custom">@Localizer["ReferenceTypeCustom"]</option>
+                        <option value="Pro">@Localizer["ReferenceTypePro"]</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <label for="slimPriority" class="form-label fw-medium">@Localizer["Priority"]</label>
+                    <input type="number" id="slimPriority" name="Priority" class="form-control" min="0" max="100" value="0" />
+                </div>
+
+                <div class="col-12">
+                    <label for="slimDescription" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                    <textarea id="slimDescription" name="Description" class="form-control" rows="4" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input type="hidden" name="IsActive" value="false" />
+                        <input type="checkbox" id="slimIsActive" name="IsActive" class="form-check-input" role="switch" value="true" />
+                        <label for="slimIsActive" class="form-check-label ms-2">@SharedLocalizer["Active"]</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSaveSlim" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>

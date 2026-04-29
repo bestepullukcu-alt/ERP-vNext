@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceSlim --reference slim)",
+      "Bash(python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceCompact --reference compact)"
+    ]
+  }
+}

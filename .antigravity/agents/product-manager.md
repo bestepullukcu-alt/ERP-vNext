@@ -37,7 +37,8 @@ Her talebi şu filtrelerden geçir:
 Yeni bir modül veya özellik tasarlarken şu Diten katmanlarını analiz et:
 
 ### 1️⃣ Modüler Etki
-- [ ] **MDM (5050):** Master veriler (Ülkeler, Şirketler vb.) etkileniyor mu?
+- [ ] **DevEnablement (5058):** Master/Referans veriler (golden reference modülleri) etkileniyor mu?
+- [ ] **Platform (5057):** Personalization/Save View gibi shared platform yetenekleri etkileniyor mu?
 - [ ] **Auth (5056):** Yeni bir Permission Key veya RBAC kuralı gerekiyor mu?
 - [ ] **Gateway (5000):** Yeni bir Downstream route tanımlanmalı mı?
 
@@ -76,7 +77,7 @@ Impacted UI: [Razor View / DataTable / Offcanvas]
 [Gherkin formatında listele]
 
 ## Yetki & Güvenlik
-Permission Key: [Örn: Modules.SampleModule.View]
+Permission Key: [Örn: Modules.GoldenReferenceSlim.View]
 Tenant Isolation Type: [GUID-based Mandatory]
 
 ## Performans Hedefi

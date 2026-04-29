@@ -1,961 +1,731 @@
 # Prompt Guide
 
-Bu dosya, ERP-vNext icin kullanilabilir prompt katalogudur. Amac, gelistirme sirasinda yanlis agent secimi, eksik kapsam, eski UI pattern'leri ve yarim teslimleri azaltmaktir.
+> ⚠️ **Bu dosya prompt kataloğudur — kullanım rehberi değildir.**
+> Yeni başlayanlar için akış anlatımı ve "hangi agent ne zaman" rehberi `docs/agent-usage-guide.md`'dedir. Bu dosya yalnız kopyalanabilir prompt örnekleri ve anti-pattern'leri tutar.
 
-Varsayilan giris noktasi `@[.antigravity/agents/orchestrator.md]` olmalidir. Dogrudan uzman agent cagirilari sadece dar, net ve dusuk-riskli gorevlerde kullanilmalidir.
+Bu dosya, ERP-vNext icin guncel prompt katalogudur. Amac, agent secimini, module pack akisini, Slim/Compact kararini ve dogrulama beklentilerini tek bir yerde netlestirmektir.
+
+> Otorite sirasi: Module Pack > Domain Config > AGENTS.md > `.antigravity/` standartlari.
+
+---
 
 ## Temel Ilkeler
 
-- `@orchestrator` varsayilan giris noktasi. Yeni modul, cok dosyali degisiklik, test+doc+gateway etkisi olan her istekte bunu kullan.
-- "Products gibi olsun" tek basina yeterli degildir. Beklenen davranislari maddeler halinde yaz.
+- Yeni modul veya buyuk feature kodu module pack olmadan yazilmaz.
+- Module pack hazirlama isi `module-pack-author` veya `/prepare-module-pack` ile baslar.
+- `@orchestrator` module pack yazmaz; yalnizca `approved` veya `ready-for-dev` durumundaki module pack uzerinden gelistirme yonetir.
+- `draft` durumundaki module pack kullanici incelemesi icindir; bu durumda kod yazilmaz.
+- DataTable modullerinde golden referans secimi create/edit form alan sayisina gore yapilir.
+- `8 ve alti` kullanici alani: `GoldenReferenceSlim`, create/edit offcanvas.
+- `8'den fazla` kullanici alani: `GoldenReferenceCompact`, full `Create/Edit/Details` sayfalari.
+- Frontend istekleri servis portlarina dogrudan gitmez; her zaman Gateway `5000` uzerinden gider.
 - Prompt; kapsam, degistirilmeyecekler, kabul kriterleri ve dogrulama beklentisi icermelidir.
-- DataTable islerinde ilgili rule ve workflow dosyalarini acikca referans ver.
-- Dokumantasyon ve test isteniyorsa bunu ayrica yaz. Yazilmazsa unutulma riski vardir.
-- Fix islerinde urun kodu ve `.antigravity` guncellemesi ayni promptta birbirine karismamali.
+- Eski `Products`, `SampleModule`, `Diten.MdmService` ve hardcoded `5050` ornekleri aktif referans degildir.
+
+---
 
 ## Ne Zaman Hangi Giris Noktasi
 
 | Ihtiyac | Onerilen giris noktasi | Not |
 |---|---|---|
-| Yeni modul | `@orchestrator` + `/add-module` | En guvenli akis |
-| Mevcut CRUD sayfa duzeltmesi | `@orchestrator` | UI, JS, quality gate birlikte yonetilir |
-| Sadece L10n | `@orchestrator` veya `l10n-agent` | Tek katmanliysa dogrudan agent olur |
-| Sadece RBAC | `@orchestrator` veya `security-agent` | Endpoint sayisi azsa dogrudan agent kullanilabilir |
-| Sadece route/gateway | `@orchestrator` veya `integration-agent` | Ocelot etkisi dar ise dogrudan agent olur |
-| Kod inceleme / audit | `@orchestrator` | Cok katmanli rapor icin daha dogru |
-| Test yazdirma | `@orchestrator` veya `testing-agent` | Sadece test uretilecekse agent yeterli |
-| Dokumantasyon | `@orchestrator` veya `documentation-writer` | Kod etkisi yoksa dogrudan agent uygun |
-| Debug / root cause | `@orchestrator` veya `debugger` | Izolasyon isiysa `debugger` uygundur |
+| Yeni module pack hazirlama | `module-pack-author` veya `/prepare-module-pack` | Kod yazmaz, status `draft` birakir |
+| Onayli module pack ile yeni modul gelistirme | `@orchestrator` + `/add-module` | Pack `approved` veya `ready-for-dev` olmali |
+| Mevcut CRUD/DataTable duzeltmesi | `@orchestrator` | UI, JS, backend, gateway ve test etkisi birlikte yonetilir |
+| Sadece frontend partial/DataTable isi | `frontend-ui-ux` | Dar kapsamliysa dogrudan agent kullanilabilir |
+| Sadece backend CQRS endpoint | `backend-architect` veya `/add-endpoint-cqrs` | Command/query/handler ayrimi korunur |
+| Sadece gateway route | `integration-agent` | Ocelot etkisi dar ise dogrudan agent uygundur |
+| Sadece l10n | `l10n-agent` | `.resx`, `_IndexL10n.cshtml`, `index.l10n.js` kontrol edilir |
+| Test ve kalite kapisi | `testing-agent` | Build, verifier, RESX ve smoke test beklentisi yazilir |
+| Son kullanici dokumani | `user-manual-generator` | Kod etkisi yoksa dogrudan agent uygundur |
+| Audit / review | `@orchestrator` veya ilgili uzman agent | Kod yazma istenmiyorsa acikca belirtilir |
+
+---
 
 ## Prompt Yazma Kurallari
 
-Her iyi promptta asagidakiler bulunmali:
+Her iyi prompt asagidakileri net yazar:
 
 1. Giris noktasi:
+   - `@[.antigravity/agents/module-pack-author.md]`
    - `@[.antigravity/agents/orchestrator.md]`
    - veya dogrudan uzman agent
 2. Gorev tipi:
-   - yeni modul, endpoint, fix, migration, audit, test, release, documentation
+   - module pack, yeni modul, endpoint, fix, migration, audit, test, dokumantasyon
 3. Kapsam:
-   - hangi dosya/katmanlar degisebilir
+   - hangi domain, module pack, servis, frontend area veya gateway yolu degisebilir
 4. Degistirilmeyecekler:
-   - backend, gateway, resources, archive gibi sinirlar
+   - protected path, baska domain, archive, layout, gateway gibi sinirlar
 5. Kabul kriterleri:
-   - beklenen davranislar
+   - test edilebilir, davranis odakli maddeler
 6. Dogrulama:
-   - build, browser smoke, xUnit, quality gate, tenant audit
+   - build, verifier, RESX, xUnit, browser smoke veya audit beklentisi
 7. Ilgili standartlar:
-   - hangi rule/workflow okunacak
-8. Dokumantasyon/test beklentisi:
-   - ozellikle isteniyorsa acik yaz
+   - workflow, rule, golden reference, module pack
 
-## Kisa Kontrol Listesi
+---
 
-- Giris noktasi dogru mu
-- Gorev tipi net mi
-- Davranis maddeleri yazildi mi
-- "Degistirilmeyecekler" bolumu var mi
-- Hangi rule/workflow okunacagi yazildi mi
-- Build/test/browser beklentisi net mi
-- Dokumantasyon gerekiyorsa acikca istendi mi
+## Iki Asamali Yeni Modul Akisi
 
-## Module Pack Referansli Prompt Kurali
+### 1. Module pack hazirlat
 
-Yeni modul veya buyuk feature promptlarinda asagidaki baglam birlikte verilmelidir:
+```text
+@[.antigravity/agents/module-pack-author.md]
 
-1. `AGENTS.md`
-2. `execution/domains/{domain}/domain-config.md`
-3. `execution/domains/{domain}/module-packs/{ID}.md`
-4. Uygun workflow (`.antigravity/workflows/add-module.md`)
+Legal Entity icin module pack hazirla.
+Kod yazma.
 
-Ornek:
+Beklenti:
+- AGENTS.md ve ilgili domain-config.md dosyasini oku.
+- Domain'i belirle.
+- Owned objects, repo scope, protected paths, acceptance criteria ve test expectations yaz.
+- Create/edit form kullanici alan sayisini cikar.
+- Golden referans kararini yaz: GoldenReferenceSlim veya GoldenReferenceCompact.
+- Module pack status degerini draft birak.
+```
+
+Alternatif workflow kullanimi:
+
+```text
+/prepare-module-pack Legal Entity
+Kod yazma. Module pack'i draft olarak hazirla.
+```
+
+### 2. Module pack incelet
+
+```text
+Bu module pack'i kontrol et.
+
+Kontrol edilecekler:
+- Domain secimi dogru mu?
+- Repo scope yeterli ve sinirli mi?
+- Protected paths eksiksiz mi?
+- Acceptance criteria test edilebilir mi?
+- Test expectations build, verifier, RESX ve smoke beklentilerini kapsiyor mu?
+- form_field_count ve golden_reference karari dogru mu?
+
+Kod yazma, sadece eksik veya riskleri raporla.
+```
+
+### 3. Kullanici onayindan sonra gelistirme baslat
 
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-MDM-001-currency-management module pack'ine gore implementasyon yap.
+Legal Entity module pack approved/ready-for-dev durumunda.
+Bu module pack'e gore gelistirmeyi baslat.
+
 Zorunlu okuma sirasi:
 1) AGENTS.md
-2) execution/domains/master-data-management/domain-config.md
-3) execution/domains/master-data-management/module-packs/MDM-001-currency-management.md
+2) execution/domains/{domain}/domain-config.md
+3) execution/domains/{domain}/module-packs/{ID}.md
 4) .antigravity/workflows/add-module.md
 
-Kabul kriteri: module pack'teki checkbox'larin tamamini karsila.
+Kabul kriteri:
+- Module pack'teki acceptance criteria tamamlanacak.
+- Golden referans karari birebir uygulanacak.
+- Build, verifier ve l10n kontrolleri raporlanacak.
 ```
 
-Bu yaklasimla tek talimat kaynagi korunur ve modul kapsam kaymasi engellenir.
-
-## Anti-Pattern'ler
-
-### 1. Muğlak referans modulu
-
-Yanlis:
+### 4. Draft pack ile kod yazma denemesinde beklenen davranis
 
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-SampleModule sayfasini Products gibi yap.
+Bu draft module pack icin gelistirme baslatma.
+Once pack'in eksiklerini raporla ve kullanici onayi gerektigini belirt.
+Kod yazma.
 ```
 
-Dogru:
+---
+
+## Slim / Compact Karar Promptlari
+
+Alan sayimi sadece create/edit formundaki kullanici alanlari icindir.
+
+Sayilanlar:
+- Kullanici tarafindan girilen create/edit form alanlari.
+
+Sayilmayanlar:
+- `Id`
+- `TenantId`
+- `IsDeleted`
+- `CreatedAt`, `UpdatedAt`, `DeletedAt`
+- audit alanlari
+- DataTable checkbox/action kolonlari
+
+### Slim DataTable promptu
+
+```text
+Legal Entity create/edit formunda 7 kullanici alani var.
+GoldenReferenceSlim standardini kullan.
+
+Frontend beklentisi:
+- Index.cshtml
+- _Filter.cshtml
+- _DataTable.cshtml
+- _IndexL10n.cshtml
+- _CreateEditOffcanvas.cshtml
+- LegalEntityIndex.cs
+- index.l10n.js
+- index.js
+
+Create/Edit offcanvas olacak.
+Full Create/Edit/Details sayfalari ekleme.
+```
+
+### Compact DataTable promptu
+
+```text
+Customer Account create/edit formunda 12 kullanici alani var.
+GoldenReferenceCompact standardini kullan.
+
+Frontend beklentisi:
+- Index.cshtml
+- _Filter.cshtml
+- _DataTable.cshtml
+- _IndexL10n.cshtml
+- Create.cshtml
+- Edit.cshtml
+- Details.cshtml
+- _Form.cshtml
+- CustomerAccountIndex.cs
+- index.l10n.js
+- index.js
+
+Index icinde create/edit offcanvas kullanma.
+```
+
+---
+
+## Agent Bazli Prompt Ornekleri
+
+### module-pack-author
+
+```text
+@[.antigravity/agents/module-pack-author.md]
+
+Vendor Profile icin module pack olustur veya mevcutsa guncelle.
+Kod, backend, frontend veya gateway dosyasi degistirme.
+
+Beklenti:
+- Domain'i AGENTS.md ve domain-config.md uzerinden belirle.
+- Alan sayisini cikar.
+- `form_field_count` ve `golden_reference` alanlarini yaz.
+- Repo scope, protected paths, acceptance criteria ve test expectations ekle.
+- Status `draft` olsun.
+```
+
+### orchestrator
 
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-SampleModule sayfasini su davranislarla duzelt:
-- inline filter kullan
-- stateSave:false yap
-- Save View shared personalizationClient ile manuel calissin
-- import placeholder toast warning olsun
-- quality-gate-datatable checklist'i PASS olsun
+execution/domains/{domain}/module-packs/{ID}.md dosyasindaki approved module pack'e gore gelistirme yap.
 
-Degistirilmeyecekler: backend CQRS ve gateway rotalari
+Zorunlu:
+- Module pack yoksa dur ve kullaniciya once `/prepare-module-pack` kullanmasini soyle.
+- Module pack draft ise dur ve onay gerektigini soyle.
+- Module pack approved/ready-for-dev ise gelistirmeyi baslat.
+- Backend, frontend, gateway, l10n ve test islerini ayni module pack'e gore koordine et.
 ```
 
-### 2. Workflow belirtmeden frontend istemek
-
-Yanlis:
+### backend-architect
 
 ```text
-@[.antigravity/agents/orchestrator.md]
+@[.antigravity/agents/backend-architect.md]
 
-Frontend'i guncelle.
+Legal Entity backend CQRS yapisini module pack'e gore uygula.
+
+Zorunlu klasor ayrimi:
+- Commands/
+- Queries/
+- Handlers/CommandHandlers/
+- Handlers/QueryHandlers/
+- Validators/
+
+Kurallar:
+- Her command, query ve handler ayri dosyada olacak.
+- Controller ince kalacak ve MediatR'a gonderecek.
+- Response<T> envelope ve CustomBaseController kullanilacak.
+- TenantId server-side cozulur; DTO veya form payload icinde olmaz.
+- Soft delete zorunludur.
 ```
 
-Dogru:
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Products liste sayfasini duzelt.
-Zorunlu referanslar:
-- .antigravity/rules/frontend-datatable-template.md
-- .antigravity/rules/frontend-js-standard.md
-- .antigravity/workflows/quality-gate-datatable.md
-```
-
-### 3. Save View isteyip state model belirtmemek
-
-Yanlis:
-
-```text
-Save View ekle.
-```
-
-Dogru:
-
-```text
-Save View ekle.
-- stateSave:false olacak
-- shared personalizationClient kullanilacak
-- scope: filters + search + colVis + columnOrder + sorting
-- pageNumber ve pageLength persist edilmeyecek
-```
-
-### 4. Filter isteyip inline/offcanvas ayrimini yazmamak
-
-Yanlis:
-
-```text
-Filter ekle.
-```
-
-Dogru:
-
-```text
-Inline collapsible filter ekle.
-- offcanvas filter yasak
-- #inlineFilterHost ve #inlineFilterCollapse kullan
-- toolbar altina mount et
-```
-
-### 5. Test turunu belirtmemek
-
-Yanlis:
-
-```text
-Test et.
-```
-
-Dogru:
-
-```text
-Su dogrulamalari yap:
-- xUnit testleri yaz
-- browser smoke yap
-- quality-gate-datatable checklist'ini isaretle
-- tenant-audit raporu ver
-```
-
-### 6. Dokumantasyonu unutmak
-
-Yanlis:
-
-```text
-Modulu bitir.
-```
-
-Dogru:
-
-```text
-Modul tamamlandiginda:
-- documentation-writer ile Swagger/README guncelle
-- user-manual-generator ile ekran kilavuzu uret
-```
-
-### 7. Yanlis agent secimi
-
-Yanlis:
+### frontend-ui-ux
 
 ```text
 @[.antigravity/agents/frontend-ui-ux.md]
 
-SampleModule modulune RBAC ekle.
+Legal Entity frontend DataTable yapisini module pack'teki golden_reference kararina gore uygula.
+
+Ortak partial yapisi:
+- Index.cshtml
+- _Filter.cshtml
+- _DataTable.cshtml
+- _IndexL10n.cshtml
+- {ModuleName}Index.cs
+- index.l10n.js
+- index.js
+
+Slim ise:
+- _CreateEditOffcanvas.cshtml ekle.
+- Create/Edit offcanvas kullan.
+
+Compact ise:
+- Create.cshtml, Edit.cshtml, Details.cshtml, _Form.cshtml ekle.
+- Index icinde create/edit offcanvas kullanma.
 ```
 
-Dogru:
-
-```text
-@[.antigravity/agents/security-agent.md]
-
-SampleModule endpoint'lerine HasPermission ekle.
-```
-
-### 8. data-dt-standard attribute'unu atlamak
-
-Yanlis:
-
-```html
-<table class="datatables-countries table border-top">
-```
-
-Dogru:
-
-```html
-<table id="dt-countries" data-dt-standard="v2" class="datatables-countries table border-top">
-```
-
-Neden: `data-dt-standard="v2"` attribute'u olmayan tablolar DtDefaults v2 davranisini (colReorder, Save View entegrasyonu, inline filter mount) tetiklemez. Her yeni DataTable tablosunda bu attribute zorunludur.
-
-### 9. Toast tipini belirtmemek veya yanlis tip kullanmak
-
-Yanlis:
-
-```js
-window.showToast?.(L.ComingSoon, 'info');  // import placeholder icin mavi gosterir
-```
-
-Dogru:
-
-```js
-window.showToast?.(L.ComingSoon, 'warning');  // import/export placeholder icin turuncu
-```
-
-Toast tip standardi:
-
-| Durum | Tip |
-|---|---|
-| Basarili islem (create/update/delete/save) | `'success'` |
-| Import / Export placeholder (Coming Soon) | `'warning'` |
-| Hata | `'error'` |
-| Genel bilgilendirme | `'info'` |
-
-### 10. stateSave'i acik birakmak
-
-Yanlis:
-
-```js
-dt = new DataTable(dtTableEl, window.DtDefaults.create({
-    ajax: { ... }
-    // stateSave belirtilmemis — DtDefaults varsayilani aktif kalir
-}));
-```
-
-Dogru:
-
-```js
-dt = new DataTable(dtTableEl, window.DtDefaults.create({
-    stateSave: false,  // zorunlu: persistence sadece personalizationClient uzerinden
-    ajax: { ... }
-}));
-```
-
-Neden: stateSave acik kalirsa DataTables sayfa degisikliklerini localStorage'a otomatik yazar. Bu durum Save View butonunun hic gozukmemesine, filtre durumunun sayfa yuklenisinde sessizce geri yuklenmesine ve personalizationClient ile cift persistence'a yol acar.
-
-## Ornek Prompt Katalogu
-
-Asagidaki ornekler gelistirme asamasinda dogrudan kullanilabilir. Cogu `@orchestrator` ile baslar. Dogrudan agent kullanilanlarda bu tercih bilincli yapilmistir.
-
-### A. Yeni Gelistirme
-
-#### 1. Yeni MDM modulu ekleme
-
-Kullanim: Sifirdan yeni bir CRUD/DataTable modulu kurmak istediginde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-/add-module Currencies (MDM servisi)
-
-Alan tanimlari:
-- Code: string (zorunlu, ISO 4217)
-- Name: string (zorunlu)
-- Symbol: string (zorunlu)
-- IsActive: bool
-
-Is kurallari:
-- Code tenant bazli benzersiz olmali
-
-UI tipi: DataTable (Liste/CRUD)
-Zorunlu referanslar:
-- .antigravity/workflows/add-module.md
-- .antigravity/rules/frontend-datatable-template.md
-- .antigravity/rules/frontend-js-standard.md
-- .antigravity/workflows/quality-gate-datatable.md
-```
-
-#### 2. Yeni Auth modulu ekleme
-
-Kullanim: Auth servisinde yeni yonetsel modul acarken.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-/add-module Permissions (Auth servisi)
-
-Alan tanimlari:
-- Key: string (zorunlu)
-- Description: string (opsiyonel)
-- Group: string (zorunlu)
-- IsActive: bool
-
-Is kurallari:
-- Key benzersiz olmali
-
-UI tipi: DataTable (Liste/CRUD)
-Auth ve RBAC etkisi var. security-agent ve integration-agent mutlaka dahil olsun.
-```
-
-#### 3. Yeni DataTable liste sayfasi ekleme
-
-Kullanim: Mevcut backend uzerine yeni index/list ekranini eklemek istediginde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Cities modulu icin yeni DataTable index sayfasi olustur.
-
-Zorunlu:
-- .antigravity/rules/frontend-datatable-template.md birebir kullanilsin
-- .antigravity/rules/frontend-js-standard.md kurallarina uyulsun
-- _Filter.cshtml olusturulsun
-- DtDefaults.create() kullanilsin
-
-Degistirilmeyecekler:
-- backend CQRS
-- Mongo koleksiyon tasarimi
-```
-
-#### 4. Yeni Create/Edit form sayfasi ekleme
-
-Kullanim: Liste modulu mevcutken form ekranlarini sonradan eklemek istediginde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Vendors modulu icin Create ve Edit sayfalarini ekle.
-
-Beklenti:
-- _LayoutBackbone kullanilsin
-- validation ve localization tam olsun
-- success/error toast akislari global notification ile uyumlu olsun
-
-Degistirilmeyecekler:
-- list page index.js
-- gateway rotalari
-```
-
-#### 5. Yeni Details sayfasi ekleme
-
-Kullanim: Quick View yanina tam detay sayfasi gerektiginde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Products modulu icin read-only Details sayfasi ekle.
-
-Zorunlu referans:
-- .antigravity/workflows/details-page-rules.md
-
-Beklenti:
-- agir veri icin full page details modeli kullan
-- hardcoded text birakma
-- unauthorized ve not-found akislari net olsun
-```
-
-#### 6. Yeni endpoint CQRS ekleme
-
-Kullanim: Mevcut modulu yeni API davranisiyla genisletmek istediginde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-/add-endpoint-cqrs SampleModule modulune
-
-Yeni endpoint: POST /api/countries/bulk-import
-Is mantigi: JSON body icindeki ulkeleri toplu ekle, duplicate ISO2 olanlari atla ve sonuc raporu don
-Validation:
-- liste bos olamaz
-- her item icin Name ve Iso2Code zorunlu
-- ISO2 uzunlugu 2 olmali
-Auth: [HasPermission("Modules.SampleModule.Create")]
-```
-
-#### 7. Yeni bulk action ekleme
-
-Kullanim: Var olan DataTable'a toplu islem butonu eklerken.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Products liste sayfasina yeni bulk activate aksiyonu ekle.
-
-Beklenti:
-- checkbox secim modeli mevcut pattern ile ayni olsun
-- tekil ve toplu aksiyonlarin toast dili tutarli olsun
-- bulk action bar stale state birakmasin
-
-Degistirilmeyecekler:
-- Save View davranisi
-```
-
-#### 8. Yeni import/export capability ekleme
-
-Kullanim: Liste sayfasina placeholder yerine gercek import eklerken.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-SampleModule modulune gercek Excel import ozelligi ekle.
-
-Beklenti:
-- import placeholder kaldirilsin
-- duplicate ve validation raporu verilsin
-- sonuc toast'lari error/success/warning olarak ayrissin
-- README ve user manual guncellensin
-```
-
-### B. Mevcut Sayfa / Feature Duzeltme
-
-#### 9. DataTable v2 migration
-
-Kullanim: Legacy liste sayfasini yeni standarda tasimak istediginde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-SampleModule liste sayfasini DataTable v2 standardina tasi.
-
-Zorunlu referanslar:
-- .antigravity/workflows/migrate-datatable-v2.md
-- .antigravity/rules/frontend-datatable-template.md
-- .antigravity/rules/frontend-js-standard.md
-- .antigravity/workflows/quality-gate-datatable.md
-
-Kabul kriterleri:
-- offcanvas filter kaldirilsin
-- stateSave:false olsun
-- Save View personalizationClient ile calissin
-- quality gate PASS olsun
-```
-
-#### 10. Save View bozulmasi duzeltme
-
-Kullanim: Save View cikmiyor, calismiyor veya auth refresh akisi bozuksa.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Products Save View akisindaki sorunu duzelt.
-
-Beklenti:
-- Save View gorunurlugu applied state'e gore hesaplansin
-- 401 durumunda shared auth refresh akisi kullanilsin
-- generic ErrorOccurred toast ile maskelenmesin
-
-Degistirilmeyecekler:
-- create/edit backend endpoint'leri
-```
-
-#### 11. Inline filter migration
-
-Kullanim: Offcanvas filter'i inline/collapse modele tasirken.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Customers sayfasindaki filter yapisini inline collapsible modele tasi.
-
-Kabul kriterleri:
-- #inlineFilterHost ve #inlineFilterCollapse kullan
-- toolbar altina mount et
-- Select2 scroll regression olusmasin
-- filter class isimleri semantik olsun
-```
-
-#### 12. Toast lifecycle duzeltme
-
-Kullanim: Create/delete/bulk toast'lari farkli gorunuyorsa.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Orders liste sayfasinda toast lifecycle farkliliklarini duzelt.
-
-Beklenti:
-- single delete ve bulk delete ayni success lifecycle'ini kullansin
-- row.remove().draw() ile lokal hack yapilmasin
-- create success toast baseline'i korunarak parity saglansin
-```
-
-#### 13. Select2 scroll regression duzeltme
-
-Kullanim: Inline filter select acildiginda sayfa scroll/ripple bozuluyorsa.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Products inline filter icindeki Select2 scroll bug'ini duzelt.
-
-Kabul kriterleri:
-- dropdown acildiginda sayfada yatay/dikey scroll cikmasin
-- reusable stil page-level degil backbone-custom.css icinde olsun
-- Save View ve filter apply/reset akisi korunacak
-```
-
-#### 14. Responsive toolbar bug duzeltme
-
-Kullanim: XS/SM breakpoint'te toolbar bozuluyorsa.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-SampleModule toolbar responsive davranisini duzelt.
-
-Beklenti:
-- XS'te export dropdown ikon butonlarla hizali olsun
-- Save View gorunur/gizli iki durumda da group radius bozulmasin
-- desktop davranisi korunacak
-```
-
-#### 15. Localization raw key duzeltme
-
-Kullanim: Ekranda raw key veya hardcoded text gorunuyorsa.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Products modulu localization sorunlarini duzelt.
-
-Beklenti:
-- raw key gorunmeyecek
-- SharedResource ve ViewResource ayrimi korunacak
-- _IndexL10n.cshtml + index.l10n.js bridge standardi uygulanacak
-```
-
-#### 16. Delete flow parity duzeltme
-
-Kullanim: Tekil silme ile bulk silme davranisi farkliysa.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-SampleModule single delete akisini bulk delete ile ayni yasam dongusune tasi.
-
-Beklenti:
-- ortak confirm dili
-- DELETE sonrasi dt.ajax.reload(..., false)
-- reload sonrasi success toast
-- paging korunacak
-```
-
-### C. Guvenlik / Mimari / Entegrasyon
-
-#### 17. RBAC permission ekleme
-
-Kullanim: Endpoint'ler yalnizca `[Authorize]` ile korunuyorsa.
-
-```text
-@[.antigravity/agents/security-agent.md]
-
-SampleModule endpoint'lerine RBAC attribute ekle.
-
-Beklenti:
-- GET -> [HasPermission("Modules.SampleModule.Read")]
-- POST -> [HasPermission("Modules.SampleModule.Create")]
-- PUT -> [HasPermission("Modules.SampleModule.Update")]
-- DELETE -> [HasPermission("Modules.SampleModule.Delete")]
-- BULK DELETE -> [HasPermission("Modules.SampleModule.BulkDelete")]
-```
-
-#### 18. Tenant audit
-
-Kullanim: Multi-tenant izolasyonu kontrol etmek istediginde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-SampleModule modulunu tenant izolasyonu acisindan incele ve rapor ver.
-
-Kontrol et:
-- repository filtreleri
-- API katmani
-- DTO'larda TenantId sizintisi
-- farkli tenant ID ile erisim denemesinde beklenen davranis
-
-Kod yazma, sadece rapor ver.
-```
-
-#### 19. Soft delete audit
-
-Kullanim: Fiziksel silme riski veya soft delete eksigi supheliyse.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-SampleModule modulunu soft delete uyumu acisindan incele.
-
-Kontrol et:
-- DeleteAsync IsDeleted ve DeletedAt set ediyor mu
-- list sorgulari soft-deleted kayitlari disliyor mu
-- bulk delete ayni mantigi kullaniyor mu
-
-Kod yazma, sadece rapor ver.
-```
-
-#### 20. Gateway route ekleme veya duzeltme
-
-Kullanim: Ocelot tarafinda route eksigi veya method eksigi varsa.
+### integration-agent
 
 ```text
 @[.antigravity/agents/integration-agent.md]
 
-SampleModule modulu icin gateway rotalarini kontrol et ve duzelt.
+Legal Entity icin gateway route ekle.
+
+Kurallar:
+- Frontend sadece Gateway 5000 uzerinden cagiracak.
+- Servis portunu AGENTS.md ve domain-config.md uzerinden belirle.
+- Hardcoded eski 5050 referansi kullanma.
+- Ocelot route degisikligini module pack repo scope disina tasirma.
+```
+
+### l10n-agent
+
+```text
+@[.antigravity/agents/l10n-agent.md]
+
+Legal Entity localization yapisini tamamla.
 
 Beklenti:
-- /api/countries
-- /api/countries/{everything}
-- GET, POST, PUT, PATCH, DELETE, OPTIONS tam olsun
-- explicit route catch-all'dan once yer alsin
+- 7 dil `.resx`: en, fr, es, zh, ar, ru, tr.
+- View resource ve shared resource ayrimini koru.
+- Index icinde uzun `window.L10n.Key = ...` bloklari yazma.
+- `_IndexL10n.cshtml` JSON payload uretsin.
+- `index.l10n.js` bridge standardini uygula.
 ```
 
-#### 21. API convention compliance review
-
-Kullanim: Endpoint isimlendirme ve status code standardi denetlemek istediginde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-SampleModule API katmanini .antigravity/rules/api-conventions.md acisindan incele.
-
-Kontrol et:
-- rota isimleri
-- HTTP method secimi
-- status kodlari
-- ProblemDetails kullanimi
-
-Kod yazma, sadece bulgu raporu ver.
-```
-
-#### 22. Architecture compliance review
-
-Kullanim: Modulun katmanli mimariye uyup uymadigini denetlemek icin.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-SampleModule modulunu .antigravity/rules/erp-architecture.md ve .antigravity/ARCHITECTURE.md acisindan incele.
-
-Kontrol et:
-- Api -> Application -> Domain akisina uyum
-- Domain bagimsizligi
-- CQRS klasor yapisi
-- repository ve persistence ayrimi
-- EntityBase kullanimi
-
-Kod yazma, sadece rapor ver.
-```
-
-### D. Test / Dogrulama / Kalite
-
-#### 23. xUnit test yazdirma
-
-Ne zaman dogrudan kullanilir: Sadece test uretilecekse ve urun kodu degismeyecekse.
+### testing-agent
 
 ```text
 @[.antigravity/agents/testing-agent.md]
 
-SampleModule modulu icin xUnit testleri yaz.
-
-Senaryolar:
-- create duplicate iso2 reddedilir
-- delete soft delete yapar
-- tenant izolasyonu korunur
-- bulk delete sadece ayni tenant kayitlarini etkiler
-```
-
-#### 24. Browser smoke + quality gate
-
-Kullanim: DataTable tesliminden once runtime kontrol istendiginde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Products liste sayfasi icin browser smoke ve quality gate calistir.
+Legal Entity module pack icin test ve kalite kontrollerini calistir.
 
 Beklenti:
-- toolbar render
-- localization key'leri cozulmus
-- console error yok
-- quality-gate-datatable checklist'i doldurulsun
+- Backend build
+- Frontend build
+- Gateway build
+- RESX checker
+- DataTable verifier
+- 5001 frontend ve 5000 gateway uzerinden smoke test
 
-Kod yazma, rapor ver.
+Sonucta gecen/kalan kontrolleri kisa raporla.
 ```
 
-#### 25. Release checklist
-
-Kullanim: Canliya yakin son kontrolde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-SampleModule modulu icin release-checklist calistir.
-
-Kontrol et:
-- build
-- guvenlik
-- localization
-- browser smoke
-- dokumantasyon
-
-Kod yazma, sadece cikti raporu ver.
-```
-
-#### 26. Kod inceleme / audit
-
-Kullanim: Genel saglik kontrolu ve risk odakli review istendiginde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-SampleModule modulunu review et.
-
-Odak:
-- bug
-- behavioural regression
-- eksik test
-- kalite kapisi uyumu
-
-Bulgu odakli rapor ver. Kod yazma.
-```
-
-#### 27. Regression odakli review
-
-Kullanim: Daha once bozulmus bir akis tekrar risk altindaysa.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-Products ve SampleModule DataTable akislari icin regression review yap.
-
-Ozellikle kontrol et:
-- Save View
-- inline filter
-- Select2 scroll
-- single delete/bulk delete toast parity
-
-Kod yazma, sadece risk raporu ver.
-```
-
-### E. Dokumantasyon / Urunlestirme
-
-#### 28. Swagger / README guncelleme
-
-Ne zaman dogrudan kullanilir: Kod tamam ve yalniz dokumantasyon ihtiyaci varsa.
-
-```text
-@[.antigravity/agents/documentation-writer.md]
-
-SampleModule modulu tamamlandi. Swagger ve README dokumantasyonunu guncelle.
-
-Dahil et:
-- endpoint ozeti
-- request/response ornekleri
-- auth ve tenant header beklentisi
-- bilinen sinirlar
-```
-
-#### 29. User manual uretme
-
-Ne zaman dogrudan kullanilir: Son kullanici rehberi istendiginde.
+### user-manual-generator
 
 ```text
 @[.antigravity/agents/user-manual-generator.md]
 
-SampleModule modulu icin son kullanici kilavuzu hazirla.
-
-Dahil et:
-- ekran tanitimi
-- filtreleme
-- yeni kayit olusturma
-- guncelleme
-- tekil ve toplu silme
-- sik yapilan hatalar
-```
-
-#### 30. ADR / teknik karar dokumani
-
-Ne zaman dogrudan kullanilir: Onemli mimari karar alinmis ve kayda gecirilecekse.
-
-```text
-@[.antigravity/agents/documentation-writer.md]
-
-Products ve SampleModule DataTable v2 standardi icin ADR yaz.
-
-Karar:
-- offcanvas filter yerine inline collapsible filter
-- stateSave yerine manuel Save View
-- personalizationClient kullanimi
-
-Trade-off, gerekce ve geri donus trigger'larini yaz.
-```
-
-## Ek Ornekler
-
-### 31. Modul temizleme ve yeniden kurma
-
-Kullanim: Hatali modulu temizleyip bastan dogru kurmak istediginde.
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-SampleModule modulunu tamamen temizle. Yeniden yazilacak.
-
-Silinecekler:
-BACKEND:
-- services/Diten.MdmService/src/.../Features/SampleModule/ (tum klasor)
-- services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/CountryRepository.cs
-- services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/SampleModuleController.cs
-- services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/Country.cs
-
-FRONTEND:
-- frontend/Diten.Web/Controllers/SampleModuleController.cs
-- frontend/Diten.Web/Views/MDM/SampleModule/ (tum klasor)
-- frontend/Diten.Web/wwwroot/assets/js/MDM/SampleModule/ (tum klasor)
-- frontend/Diten.Web/Resources/Views/MDM/SampleModule/ (tum klasor)
-
-GATEWAY:
-- ocelot.json icindeki /api/countries ve /api/countries/{everything} rotalari
-
-SIDEBAR:
-- _LayoutBackbone.cshtml icindeki SampleModule menu item'i
-
-Dokunulmayacaklar:
-- SharedResource.*.resx
-- Domain/Interfaces/ICountryRepository.cs
-
-Silme tamamlandiktan sonra kod yazma.
-```
-
-### 32. Sadece root cause debug
-
-Ne zaman dogrudan kullanilir: Once neden analizi istendiginde.
-
-```text
-@[.antigravity/agents/debugger.md]
-
-SampleModule Save View neden calismiyor, root cause analizi yap.
-
-Katmanlar:
-- browser
-- dt-defaults
-- personalization client
-- gateway
-- platform API
-
-Kod yazma. Kanitli neden analizi ver.
-```
-
-## Kopyala-Doldur Sablonlari
-
-### Sablon 1: Yeni modul
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-/add-module {{ModulName}} ({{ServiceName}} servisi)
-
-Alan tanimlari:
-- {{Alan1}}: {{Tip}} (zorunlu)
-- {{Alan2}}: {{Tip}} (opsiyonel)
-
-Is kurallari:
-- {{Kural1}}
-
-UI tipi: {{DataTable/Form/Details}}
-Zorunlu referanslar:
-- {{RuleOrWorkflow1}}
-- {{RuleOrWorkflow2}}
-```
-
-### Sablon 2: Mevcut sayfa duzeltme
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-{{ModulName}} sayfasindaki su sorunlari duzelt:
-1. {{Sorun1}}
-2. {{Sorun2}}
-
-Zorunlu referanslar:
-- {{RuleOrWorkflow1}}
-- {{RuleOrWorkflow2}}
-
-Degistirilmeyecekler:
-- {{Sinir1}}
-
-Kabul kriterleri:
-- {{Beklenti1}}
-- {{Beklenti2}}
-```
-
-### Sablon 3: Audit
-
-```text
-@[.antigravity/agents/orchestrator.md]
-
-{{ModulName}} modulunu su acilardan incele:
-- {{Kontrol1}}
-- {{Kontrol2}}
-- {{Kontrol3}}
-
-Kod yazma, sadece rapor ver.
-```
-
-### Sablon 4: Dogrudan agent
-
-```text
-@[.antigravity/agents/{{AgentName}}.md]
-
-{{Dar ve net gorev}}
+Legal Entity modulu icin son kullanici kilavuzu hazirla.
 
 Beklenti:
-- {{Maddeler}}
+- Listeleme, filtreleme, kolon gorunurlugu ve Save View davranisini acikla.
+- Slim ise create/edit offcanvas akisini anlat.
+- Compact ise Create, Edit ve Details sayfalarini anlat.
+- Teknik implementasyon detayi yazma.
 ```
 
-## Son Notlar
+---
 
-- Varsayilan secim her zaman `@orchestrator` olsun.
-- Dogrudan agent kullanacaksan gorevin dar ve tek eksenli oldugundan emin ol.
-- Prompt ne kadar netse, yanlis pattern uretme riski o kadar dusuk olur.
-- DataTable islerinde `offcanvas`, `stateSave`, `toast lifecycle`, `Save View`, `quality gate` maddelerini acik yazmak iyi pratiktir.
+## Workflow Prompt Ornekleri
+
+### prepare-module-pack
+
+```text
+/prepare-module-pack Legal Entity
+
+Kod yazma.
+Module pack'i draft olarak hazirla.
+Alan sayisini ve GoldenReferenceSlim/GoldenReferenceCompact kararini yaz.
+```
+
+### add-module
+
+```text
+/add-module execution/domains/{domain}/module-packs/{ID}.md
+
+Bu workflow module pack hazirlama workflow'u degildir.
+Sadece approved/ready-for-dev module pack uzerinden gelistirme yap.
+```
+
+### quality-gate-datatable
+
+```text
+/quality-gate-datatable Legal Entity --reference slim
+
+Kontrol:
+- DataTable v2 marker
+- inline filter
+- skeleton loader
+- Save View
+- _CreateEditOffcanvas.cshtml
+```
+
+```text
+/quality-gate-datatable Customer Account --reference compact
+
+Kontrol:
+- DataTable v2 marker
+- inline filter
+- skeleton loader
+- Create.cshtml
+- Edit.cshtml
+- Details.cshtml
+- _Form.cshtml
+- Index icinde create/edit offcanvas olmamasi
+```
+
+### add-endpoint-cqrs
+
+```text
+/add-endpoint-cqrs LegalEntity
+
+Yeni endpoint: POST /api/legal-entities/bulk-activate
+Validation:
+- id listesi bos olamaz
+- her id tenant scope icinde olmali
+
+Beklenti:
+- Command, validator ve handler ayri dosyalarda olsun.
+- Controller sadece MediatR'a gondersin.
+- Response<T> envelope kullanilsin.
+```
+
+### add-mongo-collection
+
+```text
+/add-mongo-collection LegalEntities
+
+Beklenti:
+- TenantId zorunlu.
+- IsDeleted ve DeletedAt soft delete alanlari zorunlu.
+- Tenant scoped unique index ihtiyacini module pack'e gore degerlendir.
+```
+
+### migrate-datatable-v2
+
+```text
+/migrate-datatable-v2 Vendor Profile --reference slim
+
+Beklenti:
+- DataTable v2 marker kullan.
+- Inline filter standardina gec.
+- `_DataTable.cshtml` ve `_Filter.cshtml` partial yapisini uygula.
+- stateSave:false ve personalizationClient Save View akisini koru.
+```
+
+---
+
+## DataTable Frontend Standart Promptu
+
+```text
+Bu DataTable modulunde frontend partial standardini uygula.
+
+Ortak zorunlu dosyalar:
+- Index.cshtml
+- _Filter.cshtml
+- _DataTable.cshtml
+- _IndexL10n.cshtml
+- {ModuleName}Index.cs
+- index.l10n.js
+- index.js
+
+_Filter.cshtml:
+- inline collapsible filter kullanir.
+- offcanvas filter kullanmaz.
+
+_DataTable.cshtml:
+- `data-dt-standard="v2"` marker icerir.
+- skeleton loader icerir.
+- checkbox ve action kolonlarini icerir.
+
+_IndexL10n.cshtml:
+- JSON payload uretir.
+- Index icinde uzun `window.L10n.Key = ...` bloklari yazilmaz.
+```
+
+---
+
+## Backend CQRS Standart Promptu
+
+```text
+Backend CQRS implementasyonunda su yapiyi koru:
+
+- Commands/
+- Queries/
+- Handlers/CommandHandlers/
+- Handlers/QueryHandlers/
+- Validators/
+
+Kurallar:
+- Her command ayri dosyada.
+- Her query ayri dosyada.
+- Her command handler ayri dosyada.
+- Her query handler ayri dosyada.
+- Her validator ayri dosyada.
+- Controller ince kalir.
+- TenantId server-side cozulur.
+- Soft delete uygulanir.
+- Repository karari golden reference ve mevcut servis standardina gore teklesir.
+```
+
+---
+
+## Dogrulama Komutlari
+
+### Golden Reference verifier
+
+```bash
+python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceSlim --reference slim
+```
+
+```bash
+python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceCompact --reference compact
+```
+
+### Module verifier
+
+```bash
+python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName} --reference slim
+```
+
+```bash
+python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName} --reference compact
+```
+
+### Build
+
+```bash
+dotnet build services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api/Diten.DevEnablementService.Api.csproj -c Debug
+dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug
+dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
+```
+
+### RESX
+
+```bash
+python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py .
+```
+
+---
+
+## Anti-Pattern'ler
+
+### Module pack olmadan yeni modul baslatmak
+
+Yanlis:
+
+```text
+@[.antigravity/agents/orchestrator.md]
+
+Legal Entity modulunu sifirdan gelistir.
+```
+
+Dogru:
+
+```text
+@[.antigravity/agents/module-pack-author.md]
+
+Legal Entity icin once module pack hazirla. Kod yazma.
+```
+
+### Draft module pack ile kod yazdirmak
+
+Yanlis:
+
+```text
+@[.antigravity/agents/orchestrator.md]
+
+Draft Legal Entity pack'e gore gelistirmeyi baslat.
+```
+
+Dogru:
+
+```text
+Bu draft module pack'i incele.
+Eksik acceptance criteria, repo scope, protected path veya test expectation var mi raporla.
+Kod yazma.
+```
+
+### Orchestrator'a module pack yazdirmak
+
+Yanlis:
+
+```text
+@[.antigravity/agents/orchestrator.md]
+
+Legal Entity module pack'i olustur ve gelistirmeye basla.
+```
+
+Dogru:
+
+```text
+@[.antigravity/agents/module-pack-author.md]
+
+Legal Entity module pack'i draft olarak hazirla. Kod yazma.
+```
+
+### Golden referansi belirsiz birakmak
+
+Yanlis:
+
+```text
+Legal Entity'i golden reference gibi yap.
+```
+
+Dogru:
+
+```text
+Legal Entity create/edit formunda 7 kullanici alani var.
+GoldenReferenceSlim kullan.
+Create/Edit offcanvas olacak.
+```
+
+### Field count kuralini yanlis saymak
+
+Yanlis:
+
+```text
+Id, TenantId, CreatedAt ve action kolonlari dahil 11 alan var; Compact kullan.
+```
+
+Dogru:
+
+```text
+Create/edit formunda kullanicinin girdigi 7 alan var.
+Id, TenantId, audit alanlari ve action kolonlari sayilmaz.
+GoldenReferenceSlim kullan.
+```
+
+### Frontend'den servis portuna dogrudan gitmek
+
+Yanlis:
+
+```text
+Frontend isteklerini 5058 DevEnablement servisine gonder.
+```
+
+Dogru:
+
+```text
+Frontend istekleri Gateway 5000 uzerinden gidecek.
+Servis portu sadece gateway route icinde kullanilir.
+```
+
+### DataTable v2 marker atlamak
+
+Yanlis:
+
+```html
+<table class="datatables-legal-entities table border-top">
+```
+
+Dogru:
+
+```html
+<table id="dt-legal-entities" data-dt-standard="v2" class="datatables-legal-entities table border-top">
+```
+
+### stateSave'i acik birakmak
+
+Yanlis:
+
+```js
+dt = new DataTable(dtTableEl, window.DtDefaults.create({
+    ajax: { url: listUrl }
+}));
+```
+
+Dogru:
+
+```js
+dt = new DataTable(dtTableEl, window.DtDefaults.create({
+    stateSave: false,
+    ajax: { url: listUrl }
+}));
+```
+
+### L10n bridge'i Index icine gommek
+
+Yanlis:
+
+```cshtml
+<script>
+window.L10n.Save = '@Localizer["Save"]';
+window.L10n.Cancel = '@Localizer["Cancel"]';
+</script>
+```
+
+Dogru:
+
+```text
+_IndexL10n.cshtml JSON payload uretir.
+index.l10n.js bu payload'i JS tarafina tasir.
+```
+
+---
+
+## Legal Entity Ornek Akis
+
+### 1. Hazirlik
+
+```text
+@[.antigravity/agents/module-pack-author.md]
+
+Legal Entity icin module pack hazirla.
+Kod yazma.
+Domain'i belirle, alan sayisini cikar, Slim/Compact kararini yaz ve status draft birak.
+```
+
+### 2. Inceleme
+
+```text
+Legal Entity module pack'i incele.
+Eksik acceptance criteria, repo scope, protected path, test expectation veya golden_reference karari var mi raporla.
+Kod yazma.
+```
+
+### 3. Onay sonrasi gelistirme
+
+```text
+@[.antigravity/agents/orchestrator.md]
+
+Legal Entity module pack approved/ready-for-dev durumunda.
+Bu pack'e gore gelistirmeyi baslat.
+Backend, frontend, gateway, l10n ve test islerini koordine et.
+```
+
+### 4. Dogrulama
+
+```text
+Legal Entity icin build, RESX checker ve DataTable verifier calistir.
+Slim ise `--reference slim`, Compact ise `--reference compact` kullan.
+Sonuclari kisa raporla.
+```
+
+---
+
+## Son Kontrol Listesi
+
+- Module pack yoksa yeni modul kodu yazilmiyor mu?
+- Draft module pack kullanici onayi icin bekliyor mu?
+- Orchestrator yalnizca approved/ready-for-dev pack ile gelistiriyor mu?
+- `form_field_count` ve `golden_reference` yazili mi?
+- Slim icin `_CreateEditOffcanvas.cshtml` var mi?
+- Compact icin `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml` var mi?
+- `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml` standardi korunuyor mu?
+- Backend CQRS command/query/handler ayrimi korunuyor mu?
+- Frontend Gateway 5000 disina cikmiyor mu?
+- Verifier `--reference slim|compact` ile calisiyor mu?

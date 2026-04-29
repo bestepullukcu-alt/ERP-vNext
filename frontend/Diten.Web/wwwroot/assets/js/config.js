@@ -171,7 +171,7 @@ if (typeof TemplateCustomizer !== 'undefined') {  // MOD-0013: 7 Language Suppor
     semiDark_label: 'Semi Sombre',
     layout_header: 'Disposition',
     layout_label: 'Menu (Navigation)',
-    layout_header_label: 'Types d'entete',
+    layout_header_label: "Types d'entete",
     content_label: 'Contenu',
     layout_navbar_label: 'Type de barre de navigation',
     direction_label: 'Direction',
@@ -318,6 +318,14 @@ if (typeof TemplateCustomizer !== 'undefined') {  // MOD-0013: 7 Language Suppor
   };
 
   const currentLang = window.CurrentLanguage || document.cookie.match(/\.AspNetCore\.Culture=c=([a-z]{2})/i)?.[1] || 'tr';
+  const isRtlLanguage = currentLang === 'ar';
+  const currentDirection = isRtlLanguage ? 'rtl' : 'ltr';
+  const layoutName = document.documentElement.getAttribute('data-template') || window.templateName || 'vertical-menu-template';
+
+  document.documentElement.setAttribute('dir', currentDirection);
+  try {
+    localStorage.setItem(`templateCustomizer-${layoutName}--Rtl`, String(isRtlLanguage));
+  } catch (e) { }
 
   // Apply localized titles to radio option buttons (Thematic labels)
   const t = TemplateCustomizer.LANGUAGES[currentLang];
@@ -333,9 +341,10 @@ if (typeof TemplateCustomizer !== 'undefined') {  // MOD-0013: 7 Language Suppor
     applyToArr(TemplateCustomizer.NAVBAR_OPTIONS, { sticky: t.navbar_sticky, static: t.navbar_static, hidden: t.navbar_hidden });
   }
 
-  window.templateCustomizer = new TemplateCustomizer({
+  const customizerOptions = {
     displayCustomizer: true,
     lang: currentLang,
+    defaultTextDir: currentDirection,
     controls: [
       'color',
       'theme',
@@ -347,12 +356,26 @@ if (typeof TemplateCustomizer !== 'undefined') {  // MOD-0013: 7 Language Suppor
       'contentLayout',
       'rtl'
     ]
-  });
+  };
+  const initTemplateCustomizer = () => {
+    if (window.templateCustomizer && document.getElementById('template-customizer')) return;
 
-  // Ensure UI updates with the correct translations immediately
-  if (window.templateCustomizer && typeof window.templateCustomizer.setLang === 'function') {
-    window.templateCustomizer.setLang(currentLang);
+    try {
+      window.templateCustomizer = new TemplateCustomizer(customizerOptions);
+      document.documentElement.setAttribute('dir', currentDirection);
+      if (typeof window.templateCustomizer.setLang === 'function') {
+        window.templateCustomizer.setLang(currentLang);
+      }
+    } catch (error) {
+      console.error('[Layout] Template customizer could not be initialized.', error);
+    }
+  };
+
+  initTemplateCustomizer();
+
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', initTemplateCustomizer, { once: true });
+  } else {
+    initTemplateCustomizer();
   }
 }
-
-

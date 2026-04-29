@@ -72,6 +72,8 @@ Her bir feature (Örn: `SampleModule`) altında şu yapı kurulmalıdır:
   - **`QueryHandlers/`**: Okuma (Get) sınıfları.
 - **`Validators/`**: FluentValidation sınıfları.
 
+Her command, query, handler ve validator ayrı dosyada olmalıdır. Handler sınıfları `Commands/` veya `Queries/` içine konulamaz; sadece `Handlers/CommandHandlers` veya `Handlers/QueryHandlers` altında bulunur.
+
 ### 🔒 Güvenlik ve Tenant
 - **DTO’lar TenantId İçermez:** Kiracı bilgisi her zaman header (`X-Tenant-Id`) üzerinden alınır. DTO içine asla `TenantId` alanı eklenmez.
 - **Repository:** Veriye erişim sadece `tenant enforced` olan repository metodları üzerinden yapılmalıdır.

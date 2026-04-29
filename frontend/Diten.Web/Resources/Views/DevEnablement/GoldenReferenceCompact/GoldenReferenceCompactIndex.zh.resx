@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="GoldenReferenceCompactTitle" xml:space="preserve"><value>黄金参考精简版</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>适用于最多 8 个字段模块的参考列表页（侧边栏创建/编辑）。</value></data>
+  <data name="AddNew" xml:space="preserve"><value>新增项目</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑项目</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新增项目</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑项目</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>例如 GRS-001</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>例如 主要参考</value></data>
+  <data name="ReferenceTypeStandard" xml:space="preserve"><value>标准</value></data>
+  <data name="ReferenceTypeCustom" xml:space="preserve"><value>自定义</value></data>
+  <data name="ReferenceTypePro" xml:space="preserve"><value>专业版</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Code" xml:space="preserve"><value>代码</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>常规信息</value></data>
+  <data name="ReferenceType" xml:space="preserve"><value>参考类型</value></data>
+  <data name="Priority" xml:space="preserve"><value>优先级</value></data>
+  <data name="Status" xml:space="preserve"><value>状态</value></data>
+  <data name="Description" xml:space="preserve"><value>描述</value></data>
+  <data name="SystemInformation" xml:space="preserve"><value>系统信息</value></data>
+  <data name="LevelPrefix" xml:space="preserve"><value>级别</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>不可用</value></data>
+  <data name="IdLabel" xml:space="preserve"><value>标识</value></data>
+  <data name="FormPageDescription" xml:space="preserve"><value>Manage the full reference record across identity, ownership, lifecycle, and notes.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
+  <data name="OwnershipSection" xml:space="preserve"><value>Ownership</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notes</value></data>
+  <data name="Category" xml:space="preserve"><value>Category</value></data>
+  <data name="GroupKey" xml:space="preserve"><value>Group Key</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
+  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Effective Date</value></data>
+  <data name="ExpirationDate" xml:space="preserve"><value>Expiration Date</value></data>
+</root>

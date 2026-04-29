@@ -1,7 +1,7 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/golden-reference-item",
+      "DownstreamPathTemplate": "/api/golden-reference-slim",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -9,7 +9,7 @@
           "Port": 5058
         }
       ],
-      "UpstreamPathTemplate": "/api/golden-reference-item",
+      "UpstreamPathTemplate": "/api/golden-reference-slim",
       "UpstreamHttpMethod": [
         "GET",
         "POST",
@@ -25,7 +25,7 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/api/golden-reference-item/{everything}",
+      "DownstreamPathTemplate": "/api/golden-reference-slim/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -33,7 +33,55 @@
           "Port": 5058
         }
       ],
-      "UpstreamPathTemplate": "/api/golden-reference-item/{everything}",
+      "UpstreamPathTemplate": "/api/golden-reference-slim/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/golden-reference-compact",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5058
+        }
+      ],
+      "UpstreamPathTemplate": "/api/golden-reference-compact",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/golden-reference-compact/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5058
+        }
+      ],
+      "UpstreamPathTemplate": "/api/golden-reference-compact/{everything}",
       "UpstreamHttpMethod": [
         "GET",
         "POST",

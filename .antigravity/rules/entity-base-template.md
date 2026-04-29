@@ -27,8 +27,8 @@ Bu alanlar **EntityBase içinde değildir**. İlgili modülün türüne göre a�
 
 | Modül Türü | `CreatedBy` / `UpdatedBy` | Örnek |
 |------------|--------------------------|-------|
-| **İş Modülü** (kullanıcı aksiyonu içeren) | **ZORUNLU** | Products, SampleModule, Tasks, Orders |
-| **Referans / Seed Veri** (sistem tarafından yönetilen) | **YASAK** | SampleModule, Currencies, LifecycleStates, Categories |
+| **İş Modülü** (kullanıcı aksiyonu içeren) | **ZORUNLU** | Tasks, Orders, Invoices |
+| **Referans / Seed Veri** (sistem tarafından yönetilen) | **YASAK** | Currencies, LifecycleStates, Categories |
 | **Sistem Kaydı** (arka plan işlemi) | **OPSIYONEL** | AuditLog, SystemEvent |
 
 > **Karar sorusu:** "Bu kaydı kim oluşturdu?" sorusu kullanıcıya gösterilecek mi veya iş kuralına girdi mi?

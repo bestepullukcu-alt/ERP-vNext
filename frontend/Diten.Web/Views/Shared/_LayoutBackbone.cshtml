@@ -20,10 +20,12 @@
         }
         : null;
     var currentUserJson = JsonSerializer.Serialize(currentUser);
+    var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
+    var layoutDirection = string.Equals(currentCulture, "ar", StringComparison.OrdinalIgnoreCase) ? "rtl" : "ltr";
 }
 <!DOCTYPE html>
 
-<html lang="en" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr" data-skin="default"
+<html lang="@currentCulture" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="@layoutDirection" data-skin="default"
     data-assets-path="/assets/" data-template="vertical-menu-template" data-bs-theme="light" data-semidark-menu="false">
 
 <head>
@@ -82,27 +84,12 @@
             auth: window.ApiBaseUrl,
             platform: window.ApiBaseUrl
         };
-        window.CurrentLanguage = "@System.Threading.Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName";
+        window.CurrentLanguage = "@currentCulture";
         window.CurrentUser = @Html.Raw(currentUserJson);
     </script>
     <script src="~/assets/js/config.js" asp-append-version="true"></script>
 
     <script>
-
-        // MOD-0014: Sidebar Failsafe - Hide any leftover Sandbox items
-        document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(() => {
-                document.querySelectorAll('.menu-header, .menu-item').forEach(el => {
-                    const text = el.textContent.toLowerCase();
-                    const link = el.querySelector('a')?.getAttribute('href')?.toLowerCase() || "";
-                    if (text.includes('sandbox') || link.includes('themesandbox')) {
-                        el.style.display = 'none';
-                    }
-                });
-            }, 100);
-        });
-
-        // Global Localization for Features
         window.L10n = {
             RequiredProgressText: "@SharedLocalizer["RequiredStatus"].Value",
             ValidationErrorsText: "@SharedLocalizer["ValidationErrors"].Value",
@@ -146,10 +133,17 @@
                         <span class="menu-header-text">Dev Enablement</span>
                     </li>
                     <li
-                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "GoldenReferenceItem" ? "active" : "")">
-                        <a href="/GoldenReferenceItem" class="menu-link">
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "GoldenReferenceSlim" ? "active" : "")">
+                        <a href="/GoldenReferenceSlim" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-star"></i>
-                            <div>Golden Reference Item</div>
+                            <div>Golden Reference Slim</div>
+                        </a>
+                    </li>
+                    <li
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "GoldenReferenceCompact" ? "active" : "")">
+                        <a href="/GoldenReferenceCompact" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-collection"></i>
+                            <div>Golden Reference Compact</div>
                         </a>
                     </li>
 
@@ -530,6 +524,7 @@
     <script src="~/assets/vendor/libs/jquery/jquery.js"></script>
     <script src="~/assets/vendor/libs/popper/popper.js"></script>
     <script src="~/assets/vendor/js/bootstrap.js"></script>
+    <script src="~/assets/vendor/libs/@@algolia/autocomplete-js.js"></script>
     <script src="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
     <script src="~/assets/vendor/js/menu.js"></script>
     <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
@@ -541,6 +536,7 @@
     <script src="~/assets/vendor/libs/datatables-buttons/buttons.colVis.js"></script>
     <script src="~/assets/vendor/libs/datatables-colreorder-bs5/dataTables.colReorder.min.js"></script>
     <script src="~/assets/js/dt-defaults.js" asp-append-version="true"></script>
+    <script src="~/assets/js/diten-datatable.js" asp-append-version="true"></script>
     <script src="~/assets/js/personalization-client.js" asp-append-version="true"></script>
 
     <!-- Main JS -->
@@ -548,57 +544,16 @@
 
     <script src="~/assets/js/custom/required-fields-tracker.js" asp-append-version="true"></script>
 
-    <script>
-        // Set User Display Info
-        (function initDisplay() {
-            const user = window.CurrentUser || {};
-            if (user && user.firstName) {
-                document.getElementById('navbar-user-name').textContent = user.firstName + ' ' + user.lastName;
-                document.getElementById('navbar-user-role').textContent = (user.roles && user.roles.length > 0) ? user.roles[0] : 'User';
-            }
-        })();
-
-        // Language Persistence
-        document.querySelectorAll('.dropdown-language .dropdown-item').forEach(item => {
-            item.addEventListener('click', function () {
-                var lang = this.getAttribute('data-language');
-                if (lang) {
-                    document.cookie = ".AspNetCore.Culture=c=" + lang + "|uic=" + lang + ";path=/;max-age=31536000";
-                }
-            });
-        });
-
-        // MOD-0025: Ensure tracker templates are available globally for required-fields-tracker.js
-        window.RequiredProgressText = window.L10n.RequiredProgressText;
-        window.ValidationErrorsText = window.L10n.ValidationErrorsText;
-    </script>
-
-    <script>
-        // Global Confirmation Fallback for showConfirm
-        if (typeof window.showConfirm === 'undefined') {
-            window.showConfirm = function (key, callback, entityName) {
-                console.log('[Layout] Fallback showConfirm triggered');
-                if (confirm('Are you sure?')) callback?.();
-            };
-        }
-    </script>
     <partial name="/Views/Shared/_GlobalConfirmation.cshtml" />
     <partial name="/Views/Shared/_GlobalNotification.cshtml" />
 
     <script>
-        // Handle TempData Toasts
-        (function handleTempDataToasts() {
-            const successMsg = @Json.Serialize(TempData["SuccessMessage"]?.ToString());
-            const errorMsg = @Json.Serialize(TempData["ErrorMessage"]?.ToString());
-
-            if (successMsg && window.showToast) {
-                window.showToast(successMsg, 'success');
-            }
-            if (errorMsg && window.showToast) {
-                window.showToast(errorMsg, 'error');
-            }
-        })();
+        window.BackboneShellTempData = {
+            successMessage: @Json.Serialize(TempData["SuccessMessage"]?.ToString()),
+            errorMessage: @Json.Serialize(TempData["ErrorMessage"]?.ToString())
+        };
     </script>
+    <script src="~/assets/js/backbone-shell.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

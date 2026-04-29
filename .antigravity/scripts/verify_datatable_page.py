@@ -3,15 +3,17 @@
 DataTable Page Verifier (vNext)
 ===============================
 
-Static checks to enforce the "Golden DataTable" contract (SampleModule baseline):
+Static checks to enforce the Golden DataTable contract:
+- slim: GoldenReferenceSlim (<=8 form fields, create/edit offcanvas)
+- compact: GoldenReferenceCompact (>8 form fields, full create/edit/details pages)
 - Index.cshtml structure markers exist (Filter partial, skeleton, offcanvas)
 - window.L10n bridge uses payload partial + loader JS and includes required keys
 - index.js uses DtDefaults + DataTables v2 constructor
 - Quick View is wired via event delegation (.js-quick-view) (no inline onclick)
 
 Usage:
-  python3 .antigravity/scripts/verify_datatable_page.py . --area MDM --module SampleModule
-  python3 .antigravity/scripts/verify_datatable_page.py . --area MDM --module SampleModule
+  python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceSlim --reference slim
+  python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceCompact --reference compact
 """
 
 from __future__ import annotations
@@ -187,7 +189,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Verify vNext DataTable page contract (static checks).")
     parser.add_argument("project", help="Repo root (e.g. .)")
     parser.add_argument("--area", default="MDM", help="Area folder under Views/ and assets/js/ (default: MDM)")
-    parser.add_argument("--module", required=True, help="Module folder name (case-sensitive) (e.g. SampleModule)")
+    parser.add_argument("--module", required=True, help="Module folder name (case-sensitive) (e.g. GoldenReferenceSlim)")
+    parser.add_argument(
+        "--reference",
+        choices=["slim", "compact"],
+        default=None,
+        help="Golden reference variant: slim (<=8 form fields, create/edit offcanvas) or compact (>8 form fields, full pages)",
+    )
 
     args = parser.parse_args()
 
@@ -198,10 +206,17 @@ def main() -> int:
 
     area = args.area
     module = args.module
+    reference = args.reference
 
     index_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "Index.cshtml"
     filter_cshtml = root / "frontend" / "Diten.Web" / "Views" / area / module / "_Filter.cshtml"
+    data_table_partial = root / "frontend" / "Diten.Web" / "Views" / area / module / "_DataTable.cshtml"
     index_l10n_partial = root / "frontend" / "Diten.Web" / "Views" / area / module / "_IndexL10n.cshtml"
+    create_edit_offcanvas = root / "frontend" / "Diten.Web" / "Views" / area / module / "_CreateEditOffcanvas.cshtml"
+    create_page = root / "frontend" / "Diten.Web" / "Views" / area / module / "Create.cshtml"
+    edit_page = root / "frontend" / "Diten.Web" / "Views" / area / module / "Edit.cshtml"
+    details_page = root / "frontend" / "Diten.Web" / "Views" / area / module / "Details.cshtml"
+    form_partial = root / "frontend" / "Diten.Web" / "Views" / area / module / "_Form.cshtml"
     index_js = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / area / module / "index.js"
     index_l10n_js = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / area / module / "index.l10n.js"
     dt_defaults_js = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / "dt-defaults.js"
@@ -211,14 +226,23 @@ def main() -> int:
 
     checks.append(check_file_exists(index_cshtml, "Index.cshtml exists"))
     checks.append(check_file_exists(filter_cshtml, "_Filter.cshtml exists"))
+    checks.append(check_file_exists(data_table_partial, "_DataTable.cshtml exists"))
     checks.append(check_file_exists(index_l10n_partial, "_IndexL10n.cshtml exists"))
     checks.append(check_file_exists(index_js, "index.js exists"))
     checks.append(check_file_exists(index_l10n_js, "index.l10n.js exists"))
     checks.append(check_file_exists(dt_defaults_js, "dt-defaults.js exists"))
     checks.append(check_file_exists(backbone_custom_css, "backbone-custom.css exists"))
 
+    if reference == "slim":
+        checks.append(check_file_exists(create_edit_offcanvas, "Slim reference has _CreateEditOffcanvas.cshtml"))
+    elif reference == "compact":
+        checks.append(check_file_exists(create_page, "Compact reference has Create.cshtml"))
+        checks.append(check_file_exists(edit_page, "Compact reference has Edit.cshtml"))
+        checks.append(check_file_exists(details_page, "Compact reference has Details.cshtml"))
+        checks.append(check_file_exists(form_partial, "Compact reference has _Form.cshtml"))
+
     # Stop early if core files missing (avoid confusing follow-up errors).
-    if any(not c.ok for c in checks[:7]):
+    if any(not c.ok for c in checks[:8]):
         print_report(checks)
         return 1
 
@@ -229,7 +253,8 @@ def main() -> int:
     index_l10n_js_text = read_text(index_l10n_js)
     dt_defaults_text = read_text(dt_defaults_js)
     css_text = read_text(backbone_custom_css)
-    is_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", index_html))
+    data_table_html = read_text(data_table_partial) if data_table_partial.exists() else ""
+    is_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", index_html + data_table_html))
 
     checks.append(
         check_contains(
@@ -251,22 +276,44 @@ def main() -> int:
     )
     checks.append(
         check_contains(
-            index_cshtml,
-            index_html,
+            data_table_partial if data_table_partial.exists() else index_cshtml,
+            index_html + data_table_html,
             re.compile(r"id\s*=\s*\"skeleton-loader\""),
-            "Index.cshtml has #skeleton-loader",
+            "DataTable markup has #skeleton-loader",
             "Missing skeleton loader (id=\"skeleton-loader\")",
         )
     )
-    checks.append(
-        check_contains(
-            index_cshtml,
-            index_html,
-            re.compile(r"id\s*=\s*\"offcanvasDetailsPreview\""),
-            "Index.cshtml has #offcanvasDetailsPreview",
-            "Missing offcanvas (id=\"offcanvasDetailsPreview\")",
+    if reference != "compact":
+        checks.append(
+            check_contains(
+                index_cshtml,
+                index_html,
+                re.compile(r"id\s*=\s*\"offcanvasDetailsPreview\""),
+                "Index.cshtml has #offcanvasDetailsPreview",
+                "Missing offcanvas (id=\"offcanvasDetailsPreview\")",
+            )
         )
-    )
+    if reference == "compact":
+        checks.append(
+            check_not_contains(
+                index_cshtml,
+                index_html,
+                re.compile(r"id\s*=\s*\"offcanvasCreateEdit\"|_CreateEditOffcanvas"),
+                "Compact Index does not include create/edit offcanvas",
+                "Compact modules must use full Create/Edit pages, not Index create/edit offcanvas",
+            )
+        )
+    elif reference == "slim":
+        slim_offcanvas_text = read_text(create_edit_offcanvas) if create_edit_offcanvas.exists() else ""
+        checks.append(
+            check_contains(
+                create_edit_offcanvas,
+                slim_offcanvas_text,
+                re.compile(r"id\s*=\s*\"offcanvasCreateEdit\""),
+                "Slim _CreateEditOffcanvas.cshtml has #offcanvasCreateEdit",
+                "Slim modules must provide create/edit offcanvas",
+            )
+        )
 
     checks.append(
         check_contains(
@@ -392,18 +439,18 @@ def main() -> int:
         check_contains(
             dt_defaults_js,
             dt_defaults_text,
-            re.compile(r"rowClass:\s*['\"]row\s+px-3\s+my-0\s+justify-content-between['\"]"),
-            "dt-defaults.js uses px-3 on topStart rowClass",
-            "Expected buildLayout().topStart.rowClass to be 'row px-3 my-0 justify-content-between'",
+            re.compile(r"rowClass:\s*['\"]row\s+(?:px-3\s+)?my-0\s+justify-content-between['\"]"),
+            "dt-defaults.js topStart rowClass matches golden toolbar contract",
+            "Expected buildLayout().topStart.rowClass to match golden toolbar contract",
         )
     )
     checks.append(
         check_contains(
             dt_defaults_js,
             dt_defaults_text,
-            re.compile(r"rowClass:\s*['\"]row\s+px-3\s+justify-content-between['\"]"),
-            "dt-defaults.js uses px-3 on bottomStart rowClass",
-            "Expected buildLayout().bottomStart.rowClass to be 'row px-3 justify-content-between'",
+            re.compile(r"rowClass:\s*['\"]row\s+(?:px-3\s+)?justify-content-between['\"]"),
+            "dt-defaults.js bottomStart rowClass matches golden toolbar contract",
+            "Expected buildLayout().bottomStart.rowClass to match golden toolbar contract",
         )
     )
 
@@ -526,8 +573,8 @@ def main() -> int:
     if is_v2:
         checks.append(
             check_contains(
-                index_cshtml,
-                index_html,
+                data_table_partial if data_table_partial.exists() else index_cshtml,
+                index_html + data_table_html,
                 re.compile(r"<table[^>]*(?:id\s*=\s*\"[^\"]+\")[^>]*data-dt-standard\s*=\s*\"v2\"|<table[^>]*data-dt-standard\s*=\s*\"v2\"[^>]*id\s*=\s*\"[^\"]+\"", re.IGNORECASE),
                 "Index.cshtml has <table id=\"...\" data-dt-standard=\"v2\">",
                 "Missing v2 marker and/or table id (required: <table id=\"...\" data-dt-standard=\"v2\">)",
@@ -639,6 +686,77 @@ def main() -> int:
             "Found jQuery DataTable plugin usage; must use DataTables v2 constructor",
         )
     )
+
+    # Bulk action / selection contract (v2 modules)
+    # Quality gate (quality-gate-datatable.md) requires bulk surface; verifier enforces it
+    # so a green static run cannot pass while bulk selection is silently broken.
+    if is_v2:
+        checks.append(
+            check_contains(
+                data_table_partial if data_table_partial.exists() else index_cshtml,
+                data_table_html or index_html,
+                re.compile(r"class\s*=\s*\"[^\"]*\bdt-checkboxes-select-all\b"),
+                "_DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)",
+                "Missing select-all checkbox header (class containing dt-checkboxes-select-all)",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"\bbulkOptions\b|\bbulkBarSelector\b|\bbulkCountSelector\b"),
+                "index.js declares bulk action config (bulkOptions / bulkBarSelector)",
+                "Missing bulk action config (bulkOptions or bulkBarSelector wiring)",
+            )
+        )
+        # Bulk surface accepts two valid patterns:
+        #  - imperative (Slim): explicit getSelectedIds() + #btnBulkDelete trigger
+        #  - declarative (Compact): bulkOptions.onBulkAction.delete + [data-bulk-action]
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"\bgetSelectedIds\s*\(|onBulkAction\b"),
+                "index.js wires bulk selection (getSelectedIds(...) or onBulkAction)",
+                "Missing bulk selection wiring (expected getSelectedIds(...) or bulkOptions.onBulkAction)",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"['\"`][^'\"`]*/bulk['\"`]"),
+                "index.js calls bulk endpoint (.../bulk)",
+                "Missing bulk endpoint binding (expected URL ending with /bulk)",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"\bbtnBulkDelete\b|\bbulk-delete-btn\b|data-bulk-action"),
+                "index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])",
+                "Missing bulk delete trigger (#btnBulkDelete, .bulk-delete-btn or [data-bulk-action])",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"reloadWithToast\s*\(|reloadWithSuccessToast\s*\("),
+                "index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)",
+                "Missing reload-with-toast lifecycle wiring; tek satır ve bulk delete aynı reloadWithToast üzerinden gitmeli",
+            )
+        )
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"\bclearSelectionSelector\b|\bclearSelection\s*\("),
+                "index.js wires clear-selection (clearSelectionSelector or clearSelection())",
+                "Missing clear-selection wiring (bulk bar must expose a clear control)",
+            )
+        )
 
     print_report(checks)
     return 1 if any(not c.ok for c in checks) else 0

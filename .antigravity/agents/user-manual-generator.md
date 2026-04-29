@@ -49,7 +49,7 @@ Her işlem (Ekleme, Güncelleme, Pasife Alma) numaralandırılmış adımlarla a
 ---
 
 ## 💡 Hibrit Detay Görünüm Rehberliği
-Ajan, kullanıcının `Products` sayfasındaki gibi iki farklı detay görünümüyle karşılaşabileceğini açıklamalıdır:
+Ajan, kullanıcının module pack'teki golden karara göre iki farklı detay/giriş görünümüyle karşılaşabileceğini açıklamalıdır:
 - **Hızlı Bakış (Offcanvas):** "Kayıt detaylarını sayfa değiştirmeden hızlıca görmek için satıra tıklayın."
 - **Tam Sayfa Detay:** "Tüm alt ilişkileri ve detaylı bilgileri görmek için 'İncele' ikonuna basın."
 
@@ -64,7 +64,7 @@ Ajan, kullanıcının `Products` sayfasındaki gibi iki farklı detay görünüm
 
 ## ✅ Kalite Kontrol Listesi
 - [ ] Teknik olmayan bir personel bu dokümanla işlemi tamamlayabilir mi?
-- [ ] Terimler `Products` (Altın Referans — `frontend/Diten.Web/Views/MDM/Products/`) terminolojisiyle uyumlu mu?
+- [ ] Terimler `GoldenReferenceSlim` veya `GoldenReferenceCompact` terminolojisiyle uyumlu mu?
 - [ ] 7 dil desteği için terminoloji tutarlı mı?
 - [ ] Adımlar mantıksal bir sıra izliyor mu?
 

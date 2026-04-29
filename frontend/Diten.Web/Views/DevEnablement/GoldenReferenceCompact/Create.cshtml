@@ -1,0 +1,45 @@
+@model Diten.Web.Models.GoldenReferenceCompact.GoldenReferenceCompactEditViewModel
+@using Diten.Web.Views.DevEnablement.GoldenReferenceCompact
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GoldenReferenceCompactIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutBackbone";
+    ViewData["FormMode"] = "create";
+}
+
+<partial name="~/Views/DevEnablement/GoldenReferenceCompact/_Form.cshtml" model="Model" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Flatpickr
+            var flatpickrDate = document.querySelectorAll('.flatpickr-date');
+            if (flatpickrDate) {
+                flatpickrDate.forEach(function (element) {
+                    element.flatpickr({
+                        monthSelectorType: 'static',
+                        dateFormat: "Y-m-d"
+                    });
+                });
+            }
+
+            // Select2
+            var select2Elements = $('.select2');
+            if (select2Elements.length) {
+                select2Elements.each(function () {
+                    var $this = $(this);
+                    $this.wrap('<div class="position-relative"></div>').select2({
+                        dropdownParent: $this.parent()
+                    });
+                });
+            }
+        });
+    </script>
+}
