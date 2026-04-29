@@ -4,21 +4,21 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     var currentUser = User?.Identity?.IsAuthenticated == true
-        ? new
-        {
-            id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value,
-            email = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value,
-            firstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? string.Empty,
-            lastName = User.FindFirst(ClaimTypes.Surname)?.Value ?? string.Empty,
-            roles = User.FindAll(ClaimTypes.Role)
-                .Select(claim => claim.Value)
-                .Concat(User.FindAll("role").Select(claim => claim.Value))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray(),
-            tenantId = User.FindFirst("tenant_id")?.Value ?? User.FindFirst("tenantId")?.Value,
-            actorType = User.FindFirst("actor_type")?.Value
-        }
-        : null;
+    ? new
+    {
+        id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value,
+        email = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value,
+        firstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? string.Empty,
+        lastName = User.FindFirst(ClaimTypes.Surname)?.Value ?? string.Empty,
+        roles = User.FindAll(ClaimTypes.Role)
+    .Select(claim => claim.Value)
+    .Concat(User.FindAll("role").Select(claim => claim.Value))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray(),
+        tenantId = User.FindFirst("tenant_id")?.Value ?? User.FindFirst("tenantId")?.Value,
+        actorType = User.FindFirst("actor_type")?.Value
+    }
+    : null;
     var currentUserJson = JsonSerializer.Serialize(currentUser);
     var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
     var layoutDirection = string.Equals(currentCulture, "ar", StringComparison.OrdinalIgnoreCase) ? "rtl" : "ltr";
@@ -26,9 +26,9 @@
 }
 <!DOCTYPE html>
 
-<html lang="@currentCulture" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="@layoutDirection" data-skin="default"
-    data-assets-path="/assets/" data-template="vertical-menu-template" data-bs-theme="light" data-semidark-menu="false"
-    data-shell="platform-admin">
+<html lang="@currentCulture" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="@layoutDirection"
+    data-skin="default" data-assets-path="/assets/" data-template="vertical-menu-template" data-bs-theme="light"
+    data-semidark-menu="false" data-shell="platform-admin">
 
 <head>
     <meta charset="utf-8" />
@@ -97,7 +97,7 @@
                 var template = "vertical-menu-template";
                 var themeKey = "templateCustomizer-" + template + "--Theme";
                 var layoutKey = "templateCustomizer-" + template + "--LayoutCollapsed";
-                
+
                 var storedTheme = window.localStorage.getItem(themeKey);
                 var isCollapsed = window.localStorage.getItem(layoutKey) === "true";
 
@@ -146,7 +146,8 @@
                             <i class="bx bx-buildings text-primary fs-2"></i>
                         </span>
                         <span class="app-brand-text demo menu-text fw-bold ms-2">Di10</span>
-                        <span class="badge bg-label-primary menu-text ms-2 text-uppercase" style="font-size: 0.625rem;">@SharedLocalizer["Admin"]</span>
+                        <span class="badge bg-label-primary menu-text ms-2 text-uppercase"
+                            style="font-size: 0.625rem;">@SharedLocalizer["Admin"]</span>
                     </a>
                     <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
                         <i class="icon-base bx bx-chevron-left"></i>
@@ -316,8 +317,8 @@
                                                 </div>
                                                 <div class="flex-grow-1">
                                                     <h6 class="mb-0" id="navbar-user-name">User</h6>
-                                                    <small class="text-body-secondary"
-                                                        id="navbar-user-role">Platform Admin</small>
+                                                    <small class="text-body-secondary" id="navbar-user-role">Platform
+                                                        Admin</small>
                                                 </div>
                                             </div>
                                         </a>
@@ -341,11 +342,12 @@
                                         <div class="dropdown-divider my-1"></div>
                                     </li>
                                     <li>
-                                        <form method="post" action="/account/logout?returnUrl=/platform/login" class="m-0">
+                                        <form method="post" action="/account/logout?returnUrl=/platform/login"
+                                            class="m-0">
                                             @Html.AntiForgeryToken()
                                             <button type="submit" class="dropdown-item d-flex align-items-center">
-                                            <i
-                                                class="bx bx-power-off icon-md me-3"></i><span>@SharedLocalizer["LogOut"]</span>
+                                                <i
+                                                    class="bx bx-power-off icon-md me-3"></i><span>@SharedLocalizer["LogOut"]</span>
                                             </button>
                                         </form>
                                     </li>

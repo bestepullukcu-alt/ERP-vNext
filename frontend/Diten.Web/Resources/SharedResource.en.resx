@@ -408,4 +408,25 @@
   <data name="GoldenCompact" xml:space="preserve">
     <value>Golden Compact</value>
   </data>
+  <data name="ToggleTheme" xml:space="preserve">
+    <value>Toggle Theme</value>
+  </data>
+  <data name="SystemTheme" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Notification" xml:space="preserve">
+    <value>Notification</value>
+  </data>
+  <data name="NewNotifications" xml:space="preserve">
+    <value>{0} New</value>
+  </data>
+  <data name="MarkAllAsRead" xml:space="preserve">
+    <value>Mark all as read</value>
+  </data>
+  <data name="ViewAllNotifications" xml:space="preserve">
+    <value>View all notifications</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>User</value>
+  </data>
 </root>

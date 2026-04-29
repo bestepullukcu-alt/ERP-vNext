@@ -4,9 +4,8 @@ window.BackboneShell = (function () {
     function hideSandboxMenuItems() {
         window.setTimeout(function () {
             document.querySelectorAll('.menu-header, .menu-item').forEach(function (el) {
-                var text = (el.textContent || '').toLowerCase();
                 var link = (el.querySelector('a')?.getAttribute('href') || '').toLowerCase();
-                if (text.includes('sandbox') || link.includes('themesandbox')) {
+                if (link.includes('themesandbox')) {
                     el.style.display = 'none';
                 }
             });
@@ -21,7 +20,7 @@ window.BackboneShell = (function () {
         if (!user.firstName || !nameEl || !roleEl) return;
 
         nameEl.textContent = [user.firstName, user.lastName].filter(Boolean).join(' ');
-        roleEl.textContent = Array.isArray(user.roles) && user.roles.length > 0 ? user.roles[0] : 'User';
+        roleEl.textContent = Array.isArray(user.roles) && user.roles.length > 0 ? user.roles[0] : (window.L10n?.User || 'User');
     }
 
     function bindLanguagePersistence() {
@@ -44,7 +43,7 @@ window.BackboneShell = (function () {
         if (typeof window.showConfirm !== 'undefined') return;
 
         window.showConfirm = function (_key, callback) {
-            if (window.confirm('Are you sure?')) {
+            if (window.confirm(window.L10n?.AreYouSure || 'Are you sure?')) {
                 callback?.();
             }
         };

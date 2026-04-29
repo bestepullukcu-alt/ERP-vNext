@@ -393,4 +393,40 @@
   <data name="NotAvailable" xml:space="preserve">
     <value>不可用</value>
   </data>
+  <data name="Workspace" xml:space="preserve">
+    <value>工作区</value>
+  </data>
+  <data name="PlatformAdministration" xml:space="preserve">
+    <value>平台管理</value>
+  </data>
+  <data name="DeveloperSandbox" xml:space="preserve">
+    <value>开发者沙盒</value>
+  </data>
+  <data name="GoldenSlim" xml:space="preserve">
+    <value>Golden Slim</value>
+  </data>
+  <data name="GoldenCompact" xml:space="preserve">
+    <value>Golden Compact</value>
+  </data>
+  <data name="ToggleTheme" xml:space="preserve">
+    <value>切换主题</value>
+  </data>
+  <data name="SystemTheme" xml:space="preserve">
+    <value>系统</value>
+  </data>
+  <data name="Notification" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="NewNotifications" xml:space="preserve">
+    <value>{0} 个新通知</value>
+  </data>
+  <data name="MarkAllAsRead" xml:space="preserve">
+    <value>全部标记为已读</value>
+  </data>
+  <data name="ViewAllNotifications" xml:space="preserve">
+    <value>查看所有通知</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>用户</value>
+  </data>
 </root>

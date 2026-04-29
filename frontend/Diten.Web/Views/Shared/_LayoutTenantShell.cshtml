@@ -122,7 +122,9 @@
             ValidationErrorsText: "@SharedLocalizer["ValidationErrors"].Value",
             LoginErrorTitle: "@SharedLocalizer["Login.ErrorTitle"].Value",
             LoginErrorRequired: "@SharedLocalizer["Login.ErrorRequired"].Value",
-            LoginSubmit: "@SharedLocalizer["Login.Submit"].Value"
+            LoginSubmit: "@SharedLocalizer["Login.Submit"].Value",
+            User: "@SharedLocalizer["User"].Value",
+            AreYouSure: "@SharedLocalizer["AreYouSure"].Value"
         };
 
         // Template normalization
@@ -263,7 +265,7 @@
                                 <a class="nav-link dropdown-toggle hide-arrow" id="nav-theme" href="javascript:void(0);"
                                     data-bs-toggle="dropdown">
                                     <i class="icon-base bx bx-sun icon-md theme-icon-active"></i>
-                                    <span class="d-none ms-2" id="nav-theme-text">Toggle theme</span>
+                                    <span class="d-none ms-2" id="nav-theme-text">@SharedLocalizer["ToggleTheme"]</span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
                                     <li>
@@ -284,7 +286,7 @@
                                         <button type="button" class="dropdown-item d-flex align-items-center"
                                             data-bs-theme-value="system">
                                             <i class="icon-base bx bx-desktop icon-md me-3"
-                                                data-icon="desktop"></i>System
+                                                data-icon="desktop"></i>@SharedLocalizer["SystemTheme"]
                                         </button>
                                     </li>
                                 </ul>
@@ -307,12 +309,12 @@
                                 <ul class="dropdown-menu dropdown-menu-end p-0">
                                     <li class="dropdown-menu-header border-bottom">
                                         <div class="dropdown-header d-flex align-items-center py-3">
-                                            <h6 class="mb-0 me-auto">Notification</h6>
+                                            <h6 class="mb-0 me-auto">@SharedLocalizer["Notification"]</h6>
                                             <div class="d-flex align-items-center h6 mb-0">
-                                                <span class="badge bg-label-primary me-2">8 New</span>
+                                                <span class="badge bg-label-primary me-2">@string.Format(SharedLocalizer["NewNotifications"].Value, 8)</span>
                                                 <a href="javascript:void(0)" class="dropdown-notifications-all p-2"
                                                     data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    title="Mark all as read"><i
+                                                    title="@SharedLocalizer["MarkAllAsRead"]"><i
                                                         class="icon-base bx bx-envelope-open text-heading"></i></a>
                                             </div>
                                         </div>
@@ -425,7 +427,7 @@
                                     <li class="border-top">
                                         <div class="d-grid p-4">
                                             <a class="btn btn-primary btn-sm d-flex" href="javascript:void(0);">
-                                                <small class="align-middle">View all notifications</small>
+                                                <small class="align-middle">@SharedLocalizer["ViewAllNotifications"]</small>
                                             </a>
                                         </div>
                                     </li>

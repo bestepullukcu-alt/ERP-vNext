@@ -393,4 +393,40 @@
   <data name="NotAvailable" xml:space="preserve">
     <value>Недоступно</value>
   </data>
+  <data name="Workspace" xml:space="preserve">
+    <value>Рабочая область</value>
+  </data>
+  <data name="PlatformAdministration" xml:space="preserve">
+    <value>Администрирование платформы</value>
+  </data>
+  <data name="DeveloperSandbox" xml:space="preserve">
+    <value>Песочница разработчика</value>
+  </data>
+  <data name="GoldenSlim" xml:space="preserve">
+    <value>Golden Slim</value>
+  </data>
+  <data name="GoldenCompact" xml:space="preserve">
+    <value>Golden Compact</value>
+  </data>
+  <data name="ToggleTheme" xml:space="preserve">
+    <value>Переключить тему</value>
+  </data>
+  <data name="SystemTheme" xml:space="preserve">
+    <value>Система</value>
+  </data>
+  <data name="Notification" xml:space="preserve">
+    <value>Уведомление</value>
+  </data>
+  <data name="NewNotifications" xml:space="preserve">
+    <value>{0} новых</value>
+  </data>
+  <data name="MarkAllAsRead" xml:space="preserve">
+    <value>Отметить все как прочитанные</value>
+  </data>
+  <data name="ViewAllNotifications" xml:space="preserve">
+    <value>Посмотреть все уведомления</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>Пользователь</value>
+  </data>
 </root>
