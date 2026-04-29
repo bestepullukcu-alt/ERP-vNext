@@ -1,0 +1,360 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PageTitle">
+    <value>全局模块目录</value>
+  </data>
+  <data name="PageDescription">
+    <value>基于源 Excel 层级的系统级领域、套件、能力组和模块目录。</value>
+  </data>
+  <data name="TotalDomains">
+    <value>领域总数</value>
+  </data>
+  <data name="TotalSuites">
+    <value>套件总数</value>
+  </data>
+  <data name="TotalCapabilityGroups">
+    <value>能力组总数</value>
+  </data>
+  <data name="TotalModules">
+    <value>模块总数</value>
+  </data>
+  <data name="TenantAssignable">
+    <value>可分配给租户</value>
+  </data>
+  <data name="DeprecatedOrRetired">
+    <value>已弃用 / 已退役</value>
+  </data>
+  <data name="Refresh">
+    <value>刷新</value>
+  </data>
+  <data name="ImportCatalog">
+    <value>导入目录</value>
+  </data>
+  <data name="SearchPlaceholder">
+    <value>Search by module ID, name, or support model</value>
+  </data>
+  <data name="Domain">
+    <value>领域 / Landscape</value>
+  </data>
+  <data name="Suite">
+    <value>套件 / 平台</value>
+  </data>
+  <data name="CapabilityGroup">
+    <value>能力组</value>
+  </data>
+  <data name="IsTenantAssignable">
+    <value>是否可分配给租户</value>
+  </data>
+  <data name="IsPlatformCore">
+    <value>是否平台核心</value>
+  </data>
+  <data name="AllOption">
+    <value>全部</value>
+  </data>
+  <data name="AnyOption">
+    <value>任意</value>
+  </data>
+  <data name="Yes">
+    <value>是</value>
+  </data>
+  <data name="No">
+    <value>否</value>
+  </data>
+  <data name="ModuleId">
+    <value>模块 ID</value>
+  </data>
+  <data name="ModuleName">
+    <value>模块名称</value>
+  </data>
+  <data name="SupportModel">
+    <value>支持模式</value>
+  </data>
+  <data name="Actions">
+    <value>操作</value>
+  </data>
+  <data name="EditMetadata">
+    <value>编辑元数据</value>
+  </data>
+  <data name="EditLater">
+    <value>编辑流程不在此阶段范围内</value>
+  </data>
+  <data name="Draft">
+    <value>草稿</value>
+  </data>
+  <data name="ActiveStatus">
+    <value>启用</value>
+  </data>
+  <data name="Deprecated">
+    <value>已弃用</value>
+  </data>
+  <data name="Retired">
+    <value>已退役</value>
+  </data>
+  <data name="GeneralInformation">
+    <value>基本信息</value>
+  </data>
+  <data name="LoadingCatalog">
+    <value>正在加载目录...</value>
+  </data>
+  <data name="EmptyCatalog">
+    <value>目录为空。请先导入源数据。</value>
+  </data>
+  <data name="NoResults">
+    <value>当前筛选条件下没有匹配的模块。</value>
+  </data>
+  <data name="BackendError">
+    <value>后端返回了可理解的错误消息。</value>
+  </data>
+  <data name="PermissionDenied">
+    <value>您无权修改全局目录。相关操作已切换为只读。</value>
+  </data>
+  <data name="ImportSuccess">
+    <value>目录导入成功完成。</value>
+  </data>
+  <data name="PartialImport">
+    <value>目录导入已完成，但存在按行验证错误。</value>
+  </data>
+  <data name="Created">
+    <value>已创建</value>
+  </data>
+  <data name="Updated">
+    <value>已更新</value>
+  </data>
+  <data name="Skipped">
+    <value>已跳过</value>
+  </data>
+  <data name="Failed">
+    <value>失败</value>
+  </data>
+  <data name="RowNumber">
+    <value>行号</value>
+  </data>
+  <data name="ErrorMessage">
+    <value>错误信息</value>
+  </data>
+  <data name="InvalidJson">
+    <value>导入 JSON 无效。请提供数组或包含 rows 属性的对象。</value>
+  </data>
+  <data name="ImportHelp">
+    <value>当前 MVP 输入接受结构化 JSON。可粘贴行数组，或包含 rows 集合的对象。</value>
+  </data>
+  <data name="FutureTenant">
+    <value>租户分配将在 MOD-0009 阶段处理。</value>
+  </data>
+  <data name="FutureCapability">
+    <value>能力与产品映射将在 MOD-0008 中进一步完善。</value>
+  </data>
+  <data name="FutureSor">
+    <value>SoR 所有权映射将在 MOD-0001 中进一步完善。</value>
+  </data>
+  <data name="DeliveryOutcome">
+    <value>交付结果 / 价值</value>
+  </data>
+  <data name="DependencyGate">
+    <value>依赖门槛</value>
+  </data>
+  <data name="Placement">
+    <value>放置位置</value>
+  </data>
+  <data name="CreatedDate">
+    <value>创建时间</value>
+  </data>
+  <data name="ModifiedDate">
+    <value>修改时间</value>
+  </data>
+  <data name="ReadOnly">
+    <value>只读</value>
+  </data>
+  <data name="CreateModule">
+    <value>创建模块</value>
+  </data>
+  <data name="CreateDomain">
+    <value>创建领域</value>
+  </data>
+  <data name="CreateSuite">
+    <value>创建套件</value>
+  </data>
+  <data name="CreateCapabilityGroup">
+    <value>创建能力组</value>
+  </data>
+  <data name="EditModule">
+    <value>编辑模块</value>
+  </data>
+  <data name="SaveChanges">
+    <value>保存更改</value>
+  </data>
+  <data name="Name">
+    <value>名称</value>
+  </data>
+  <data name="Code">
+    <value>代码</value>
+  </data>
+  <data name="Description">
+    <value>描述</value>
+  </data>
+  <data name="IsActive">
+    <value>是否启用</value>
+  </data>
+  <data name="SelectDomain">
+    <value>选择领域</value>
+  </data>
+  <data name="SelectSuite">
+    <value>选择套件</value>
+  </data>
+  <data name="SelectCapabilityGroup">
+    <value>选择能力组</value>
+  </data>
+  <data name="RequiredField">
+    <value>此字段为必填项。</value>
+  </data>
+  <data name="DuplicateModuleId">
+    <value>此 Module ID 已存在。</value>
+  </data>
+  <data name="DuplicateCode">
+    <value>此代码已存在。</value>
+  </data>
+  <data name="InvalidHierarchy">
+    <value>所选层级无效。</value>
+  </data>
+  <data name="ParentNotFound">
+    <value>找不到所选父记录。</value>
+  </data>
+  <data name="ImmutableModuleId">
+    <value>编辑时不能更改 Module ID。</value>
+  </data>
+  <data name="SaveSuccess">
+    <value>目录记录已成功保存。</value>
+  </data>
+  <data name="NetworkError">
+    <value>无法访问目录服务。</value>
+  </data>
+  <data name="IsPlatformCoreHint">
+    <value>平台核心模块通常不可分配给租户。</value>
+  </data>
+  <data name="StatusDraft">
+    <value>草稿</value>
+  </data>
+  <data name="StatusActive">
+    <value>启用</value>
+  </data>
+  <data name="StatusDeprecated">
+    <value>已弃用</value>
+  </data>
+  <data name="StatusRetired">
+    <value>已停用</value>
+  </data>
+  <data name="PageDefinitions">
+    <value>Page Definitions</value>
+  </data>
+  <data name="CreatePage">
+    <value>Create Page</value>
+  </data>
+  <data name="EditPage">
+    <value>Edit Page</value>
+  </data>
+  <data name="PageCode">
+    <value>Page Code</value>
+  </data>
+  <data name="PageName">
+    <value>Page Name</value>
+  </data>
+  <data name="PageType">
+    <value>Page Type</value>
+  </data>
+  <data name="RoutePath">
+    <value>Route Path</value>
+  </data>
+  <data name="RequiredPermissionKey">
+    <value>Required Permission Key</value>
+  </data>
+  <data name="NavigationCandidate">
+    <value>Navigation Candidate</value>
+  </data>
+  <data name="NoPages">
+    <value>No page definitions yet.</value>
+  </data>
+  <data name="DuplicatePageCode">
+    <value>This module already has a page with this Page Code.</value>
+  </data>
+  <data name="InvalidModuleId">
+    <value>The selected module could not be found.</value>
+  </data>
+  <data name="RegistryWorkspace" xml:space="preserve">
+    <value>Registry Workspace</value>
+  </data>
+  <data name="RegistrySubtitle" xml:space="preserve">
+    <value>System-wide module and page definition registry for platform boundaries.</value>
+  </data>
+  <data name="MoreActions" xml:space="preserve">
+    <value>More Actions</value>
+  </data>
+  <data name="HierarchySummary" xml:space="preserve">
+    <value>Hierarchy Summary</value>
+  </data>
+  <data name="HierarchySubtitle" xml:space="preserve">
+    <value>Domain, suite and capability map</value>
+  </data>
+  <data name="NoHierarchyData" xml:space="preserve">
+    <value>No hierarchy metadata is available yet.</value>
+  </data>
+  <data name="PagesCount" xml:space="preserve">
+    <value>Pages</value>
+  </data>
+  <data name="Overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="GovernanceMetadata" xml:space="preserve">
+    <value>Governance Metadata</value>
+  </data>
+  <data name="BoundaryOwnershipTitle" xml:space="preserve">
+    <value>Boundary ownership</value>
+  </data>
+  <data name="BoundaryOwnershipText" xml:space="preserve">
+    <value>MOD-0014 owns module metadata, boundary descriptors and page definition metadata only.</value>
+  </data>
+  <data name="TenantAssignmentBoundaryTitle" xml:space="preserve">
+    <value>Tenant assignment</value>
+  </data>
+  <data name="TenantAssignmentBoundaryText" xml:space="preserve">
+    <value>Tenant entitlement and module assignment are owned by MOD-0009.</value>
+  </data>
+  <data name="NavigationBoundaryTitle" xml:space="preserve">
+    <value>Navigation placement</value>
+  </data>
+  <data name="NavigationBoundaryText" xml:space="preserve">
+    <value>Menu placement, sidebar, topnav and runtime visibility are owned by MOD-0285.</value>
+  </data>
+  <data name="PermissionBoundaryTitle" xml:space="preserve">
+    <value>Permission generation</value>
+  </data>
+  <data name="PermissionBoundaryText" xml:space="preserve">
+    <value>Required permission keys are metadata references; this page does not generate permissions.</value>
+  </data>
+  <data name="PageTypeList" xml:space="preserve">
+    <value>List</value>
+  </data>
+  <data name="PageTypeDetail" xml:space="preserve">
+    <value>Detail</value>
+  </data>
+  <data name="PageTypeCreate" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="PageTypeEdit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PageTypeWizard" xml:space="preserve">
+    <value>Wizard</value>
+  </data>
+  <data name="PageTypeDashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="PageTypeReport" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="PageTypeAdmin" xml:space="preserve">
+    <value>Admin</value>
+  </data>
+  <data name="PageTypeOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+</root>

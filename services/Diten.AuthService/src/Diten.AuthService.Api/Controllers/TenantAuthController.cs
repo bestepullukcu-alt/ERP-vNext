@@ -21,7 +21,7 @@ public sealed class TenantAuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] TenantLoginRequest request, CancellationToken ct)
     {
-        var command = new LoginCommand(request.Email, request.Password);
+        var command = new LoginCommand(request.Email, request.Password, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
         return Ok(result);
     }
@@ -30,8 +30,30 @@ public sealed class TenantAuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
-        var command = new RegisterCommand(request.Email, request.Password, request.FirstName, request.LastName);
+        var command = new RegisterCommand(
+            request.Email,
+            request.Password,
+            request.FirstName,
+            request.LastName,
+            ResolveRequestIp(HttpContext),
+            ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
         return CreatedAtAction(nameof(Login), result);
+    }
+
+    private static string ResolveRequestIp(HttpContext context)
+    {
+        var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(forwardedFor))
+        {
+            return forwardedFor.Split(',')[0].Trim();
+        }
+
+        return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    }
+
+    private static string? ResolveUserAgent(HttpContext context)
+    {
+        return context.Request.Headers.UserAgent.FirstOrDefault();
     }
 }

@@ -1,0 +1,160 @@
+@using Diten.Web.Views.Platform.Tenants
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TenantsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["LoginSecurityTitle"].Value;
+    Layout = "_LayoutBackbone";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/tagify/tagify.css" />
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
+    <div class="d-flex flex-column justify-content-center">
+        <h5 class="mb-0">@Localizer["LoginSecurityTitle"]</h5>
+        <nav aria-label="breadcrumb" class="text-muted">
+            <ol class="breadcrumb mb-0 py-0">
+                <li class="breadcrumb-item position-relative"><a asp-controller="Tenants" asp-action="Index" class="stretched-link">@Localizer["TenantsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["LoginSecurityTitle"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-content-center flex-wrap gap-3">
+        <button type="submit" form="formTenantSecurity" id="btnSaveTenantSecurity" class="btn btn-primary" disabled>@SharedLocalizer["Save"]</button>
+        <a asp-controller="Tenants" asp-action="Index" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+    </div>
+</div>
+
+<div class="alert alert-danger d-none" id="securityErrorSummary"></div>
+
+<div class="row g-4" id="tenantSecurityRoot">
+    <div class="col-12 col-xl-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h6 class="mb-0">@Localizer["TenantSelection"]</h6>
+            </div>
+            <div class="card-body">
+                <label class="form-label" for="securityTenantSelect">@Localizer["Tenant"] <span class="text-danger">*</span></label>
+                <select id="securityTenantSelect" class="form-select">
+                    <option value="">@Localizer["SelectTenant"]</option>
+                </select>
+                <div class="mt-4 border rounded p-3 bg-label-secondary">
+                    <small class="text-muted d-block">@Localizer["SelectedTenant"]</small>
+                    <div id="selectedTenantName" class="fw-medium text-heading">-</div>
+                    <small id="selectedTenantMeta" class="text-muted">-</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-8">
+        <form id="formTenantSecurity" novalidate>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">@Localizer["LoginMethods"]</h6>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="twoFactorEnabled" name="twoFactorEnabled">
+                            <label class="form-check-label" for="twoFactorEnabled">@Localizer["TwoFactorEnabled"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="mfaRequiredSetting" name="mfaRequired">
+                            <label class="form-check-label" for="mfaRequiredSetting">@Localizer["MfaRequired"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emailLoginEnabled" name="emailLoginEnabled">
+                            <label class="form-check-label" for="emailLoginEnabled">@Localizer["EmailLoginEnabled"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="phoneLoginEnabled" name="phoneLoginEnabled">
+                            <label class="form-check-label" for="phoneLoginEnabled">@Localizer["PhoneLoginEnabled"]</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">@Localizer["PasswordPolicy"]</h6>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label" for="passwordMinLength">@Localizer["PasswordMinLength"] <span class="text-danger">*</span></label>
+                        <input type="number" id="passwordMinLength" name="passwordMinLength" class="form-control" min="6" max="128" required>
+                        <div class="invalid-feedback" data-valmsg-for="Request.PasswordMinLength"></div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label" for="passwordExpirationDays">@Localizer["PasswordExpirationDays"]</label>
+                        <input type="number" id="passwordExpirationDays" name="passwordExpirationDays" class="form-control" min="1" max="3650">
+                        <div class="invalid-feedback" data-valmsg-for="Request.PasswordExpirationDays"></div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label" for="loginAuditRetentionDays">@Localizer["LoginAuditRetentionDays"] <span class="text-danger">*</span></label>
+                        <input type="number" id="loginAuditRetentionDays" name="loginAuditRetentionDays" class="form-control" min="1" max="3650" required>
+                        <div class="invalid-feedback" data-valmsg-for="Request.LoginAuditRetentionDays"></div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="passwordRequireUppercase" name="passwordRequireUppercase"><label class="form-check-label" for="passwordRequireUppercase">@Localizer["RequireUppercase"]</label></div></div>
+                    <div class="col-12 col-md-6 col-lg-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="passwordRequireLowercase" name="passwordRequireLowercase"><label class="form-check-label" for="passwordRequireLowercase">@Localizer["RequireLowercase"]</label></div></div>
+                    <div class="col-12 col-md-6 col-lg-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="passwordRequireDigit" name="passwordRequireDigit"><label class="form-check-label" for="passwordRequireDigit">@Localizer["RequireDigit"]</label></div></div>
+                    <div class="col-12 col-md-6 col-lg-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="passwordRequireSpecialChar" name="passwordRequireSpecialChar"><label class="form-check-label" for="passwordRequireSpecialChar">@Localizer["RequireSpecialChar"]</label></div></div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">@Localizer["SessionLockoutPolicy"]</h6>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-3"><label class="form-label" for="sessionTimeoutMinutes">@Localizer["SessionTimeoutMinutes"] <span class="text-danger">*</span></label><input type="number" id="sessionTimeoutMinutes" name="sessionTimeoutMinutes" class="form-control" min="5" max="1440" required><div class="invalid-feedback" data-valmsg-for="Request.SessionTimeoutMinutes"></div></div>
+                    <div class="col-12 col-md-3"><label class="form-label" for="refreshTokenLifetimeDays">@Localizer["RefreshTokenLifetimeDays"] <span class="text-danger">*</span></label><input type="number" id="refreshTokenLifetimeDays" name="refreshTokenLifetimeDays" class="form-control" min="1" max="365" required><div class="invalid-feedback" data-valmsg-for="Request.RefreshTokenLifetimeDays"></div></div>
+                    <div class="col-12 col-md-3"><label class="form-label" for="maxFailedLoginAttempts">@Localizer["MaxFailedLoginAttempts"] <span class="text-danger">*</span></label><input type="number" id="maxFailedLoginAttempts" name="maxFailedLoginAttempts" class="form-control" min="1" max="20" required><div class="invalid-feedback" data-valmsg-for="Request.MaxFailedLoginAttempts"></div></div>
+                    <div class="col-12 col-md-3"><label class="form-label" for="lockoutDurationMinutes">@Localizer["lockoutDurationMinutes"] <span class="text-danger">*</span></label><input type="number" id="lockoutDurationMinutes" name="lockoutDurationMinutes" class="form-control" min="1" max="1440" required><div class="invalid-feedback" data-valmsg-for="Request.lockoutDurationMinutes"></div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">@Localizer["AccessRestrictions"]</h6>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="ipWhitelistEnabled" name="ipWhitelistEnabled">
+                            <label class="form-check-label" for="ipWhitelistEnabled">@Localizer["IpWhitelistEnabled"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label" for="allowedIps">@Localizer["AllowedIps"]</label>
+                        <input id="allowedIps" name="allowedIps" class="form-control" />
+                        <div class="form-text">@Localizer["PressEnterToAddIp"]</div>
+                        <div class="invalid-feedback" data-valmsg-for="Request.AllowedIps"></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label" for="allowedCountries">@Localizer["AllowedCountries"]</label>
+                        <select id="allowedCountries" name="allowedCountries" class="select2 form-select" multiple="multiple">
+                        </select>
+                        <div class="form-text">@Localizer["SelectAllowedCountries"]</div>
+                        <div class="invalid-feedback" data-valmsg-for="Request.AllowedCountries"></div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/vendor/libs/tagify/tagify.js"></script>
+    <script src="~/assets/js/Platform/Tenants/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Tenants/security.js" asp-append-version="true"></script>
+}

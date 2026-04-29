@@ -7,5 +7,7 @@ public sealed record RegisterCommand(
     string Email,
     string Password,
     string FirstName,
-    string LastName
+    string LastName,
+    string RequestIp,
+    string? UserAgent
 ) : IRequest<AuthResponse>;

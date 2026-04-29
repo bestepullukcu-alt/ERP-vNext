@@ -110,7 +110,8 @@ public sealed class TenantResolutionMiddleware
     {
         return path.StartsWithSegments("/api/platform-auth/login", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/tenant-auth/login", StringComparison.OrdinalIgnoreCase)
-               || path.StartsWithSegments("/api/tenant-auth/register", StringComparison.OrdinalIgnoreCase);
+               || path.StartsWithSegments("/api/tenant-auth/register", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/auth/refresh-token", StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task WriteProblemDetails(HttpContext context, int statusCode, string title, string detail)

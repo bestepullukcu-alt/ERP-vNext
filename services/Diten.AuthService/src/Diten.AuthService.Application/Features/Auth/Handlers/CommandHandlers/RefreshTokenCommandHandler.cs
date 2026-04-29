@@ -16,6 +16,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly ITokenService _tokenService;
+    private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<RefreshTokenCommandHandler> _logger;
@@ -26,6 +27,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
         ITokenService tokenService,
+        IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
         ITenantContext tenantContext,
         ILogger<RefreshTokenCommandHandler> logger)
@@ -35,6 +37,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
         _tokenService = tokenService;
+        _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
         _tenantContext = tenantContext;
         _logger = logger;
@@ -47,7 +50,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
 
         if (existingToken.RevokedAt != null)
         {
-            await _refreshTokenRepository.RevokeAllByUserAsync(existingToken.UserId, _tenantContext.TenantId, ct);
+            await _refreshTokenRepository.RevokeAllByUserAsync(existingToken.UserId, existingToken.TenantId, ct);
             throw new UnauthorizedAccessException("Güvenlik ihlali tespit edildi. Lütfen tekrar oturum açın.");
         }
 
@@ -75,18 +78,24 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             throw new UnauthorizedAccessException("Access token actor mismatch.");
         }
 
-        var user = await _userRepository.GetByIdAndTenantAsync(existingToken.UserId, _tenantContext.TenantId, ct);
+        if (_tenantContext.IsResolved && _tenantContext.TenantId != existingToken.TenantId)
+        {
+            throw new UnauthorizedAccessException("Request tenant mismatch.");
+        }
+
+        var user = await _userRepository.GetByIdAndTenantAsync(existingToken.UserId, existingToken.TenantId, ct);
         if (user == null || !user.IsActive)
             throw new UnauthorizedAccessException("Kullanıcı bulunamadı veya pasif durumda.");
 
-        return await GenerateNewTokens(user, existingToken, actorType, ct);
+        return await GenerateNewTokens(user, existingToken, actorType, request, ct);
     }
 
-    private async Task<AuthResponse> GenerateNewTokens(User user, RefreshToken oldToken, string? actorType, CancellationToken ct)
+    private async Task<AuthResponse> GenerateNewTokens(User user, RefreshToken oldToken, string? actorType, RefreshTokenCommand request, CancellationToken ct)
     {
-        var roles = await _userRoleRepository.GetRolesByUserAsync(user.Id, _tenantContext.TenantId, ct);
-        var roleIds = await ResolveRoleIdsAsync(roles, _tenantContext.TenantId, ct);
-        var permissions = await _rolePermissionRepository.GetPermissionsByRolesAsync(roleIds, _tenantContext.TenantId, ct);
+        var tokenTenantId = oldToken.TenantId;
+        var roles = await _userRoleRepository.GetRolesByUserAsync(user.Id, tokenTenantId, ct);
+        var roleIds = await ResolveRoleIdsAsync(roles, tokenTenantId, ct);
+        var permissions = await _rolePermissionRepository.GetPermissionsByRolesAsync(roleIds, tokenTenantId, ct);
 
         var isPlatformActor = IsPlatformActor(actorType);
 
@@ -96,23 +105,27 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
                 user.Email,
                 user.FirstName,
                 user.LastName,
-                user.TenantId,
+                tokenTenantId,
                 actorType ?? "platform_admin",
                 roles,
                 permissions)
             : _tokenService.GenerateAccessToken(user, roles, permissions);
         var newRefreshTokenStr = _tokenService.GenerateRefreshToken();
+        var newRefreshTokenHash = _refreshTokenHasher.Hash(newRefreshTokenStr);
 
-        oldToken.Revoke(newRefreshTokenStr);
+        oldToken.Revoke(newRefreshTokenHash, request.RequestIp, "rotated");
         await _refreshTokenRepository.UpdateAsync(oldToken, ct);
 
         var newRefreshToken = new RefreshToken(
             user.Id,
-            newRefreshTokenStr,
+            newRefreshTokenHash,
             DateTime.UtcNow.AddDays(7),
-            "0.0.0.0",
-            _tenantContext.TenantId,
-            actorType ?? "tenant_user");
+            request.RequestIp,
+            tokenTenantId,
+            actorType ?? "tenant_user",
+            request.UserAgent,
+            oldToken.SessionId,
+            oldToken.DeviceId);
         await _refreshTokenRepository.CreateAsync(newRefreshToken, ct);
 
         return new AuthResponse(

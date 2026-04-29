@@ -5,5 +5,7 @@ namespace Diten.AuthService.Application.Features.Auth.Commands;
 
 public sealed record PlatformLoginCommand(
     string Email,
-    string Password
+    string Password,
+    string RequestIp,
+    string? UserAgent
 ) : IRequest<AuthResponse>;

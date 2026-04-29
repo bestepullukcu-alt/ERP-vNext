@@ -19,6 +19,14 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
         return await Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
+    public async Task<Tenant?> GetBySlugAsync(string slug, CancellationToken ct = default)
+    {
+        var filter = Builders<Tenant>.Filter.And(
+            ExecutionFilter,
+            Builders<Tenant>.Filter.Eq(t => t.Slug, slug));
+        return await Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
     public async Task<Tenant?> GetByDomainAsync(string domain, CancellationToken ct = default)
     {
         var filter = Builders<Tenant>.Filter.And(

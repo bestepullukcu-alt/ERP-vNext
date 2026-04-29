@@ -16,6 +16,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Au
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRoleProvisioningService _roleProvisioningService;
     private readonly ITokenService _tokenService;
+    private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITenantContext _tenantContext;
@@ -27,6 +28,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Au
         IUserRoleRepository userRoleRepository,
         IRoleProvisioningService roleProvisioningService,
         ITokenService tokenService,
+        IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
         IPasswordHasher passwordHasher,
         ITenantContext tenantContext,
@@ -37,6 +39,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Au
         _userRoleRepository = userRoleRepository;
         _roleProvisioningService = roleProvisioningService;
         _tokenService = tokenService;
+        _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
         _passwordHasher = passwordHasher;
         _tenantContext = tenantContext;
@@ -70,14 +73,16 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Au
         var roles = new[] { role.Name };
         var accessToken = _tokenService.GenerateAccessToken(created, roles, Array.Empty<string>());
         var refreshTokenStr = _tokenService.GenerateRefreshToken();
+        var refreshTokenHash = _refreshTokenHasher.Hash(refreshTokenStr);
 
         var refreshToken = new RefreshToken(
             created.Id,
-            refreshTokenStr,
+            refreshTokenHash,
             DateTime.UtcNow.AddDays(7),
-            "0.0.0.0",
+            request.RequestIp,
             _tenantContext.TenantId,
-            "tenant_user");
+            "tenant_user",
+            request.UserAgent);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
         return new AuthResponse(

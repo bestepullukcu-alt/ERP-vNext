@@ -137,6 +137,54 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/platform/catalog",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/catalog",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/platform/catalog/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/catalog/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
       "DownstreamPathTemplate": "/api/admin/tenants",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -183,6 +231,22 @@
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
       }
+    },
+    {
+      "DownstreamPathTemplate": "/api/lookups/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/lookups/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/platform-auth/{everything}",

@@ -1,0 +1,51 @@
+@using Diten.Web.Views.Platform.Tenants
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TenantsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm">
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="Provisioning">@Localizer["StatusProvisioning"]</option>
+                            <option value="Active">@SharedLocalizer["Active"]</option>
+                            <option value="Suspended">@Localizer["StatusSuspended"]</option>
+                            <option value="Deactivated">@Localizer["StatusDeactivated"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-region">
+                        <select id="filterRegion" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Region"]">
+                            <option value="TR">TR</option>
+                            <option value="US">US</option>
+                            <option value="EU">EU</option>
+                            <option value="APAC">APAC</option>
+                            <option value="SA">SA</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-tenant-type">
+                        <select id="filterTenantType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["TenantType"]">
+                            <option value="Internal">@Localizer["TenantTypeInternal"]</option>
+                            <option value="Trial">@Localizer["TenantTypeTrial"]</option>
+                            <option value="Paid">@Localizer["TenantTypePaid"]</option>
+                            <option value="Partner">@Localizer["TenantTypePartner"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

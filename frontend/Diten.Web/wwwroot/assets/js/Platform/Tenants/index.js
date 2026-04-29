@@ -1,28 +1,30 @@
 /**
- * Platform / Tenant Registry
+ * Tenant Core DataTables Page Script
+ * Diten ERP vNext - Platform/Tenants
  */
 'use strict';
 
-const TenantRegistryPage = (function () {
-    const dtTableEl = document.querySelector('.datatables-tenants');
-    const apiUrl = window.ApiBaseUrl || 'http://localhost:5000';
+const TenantsList = (function () {
     let dt;
+    let saveFilterArmed = false;
+    let defaultViewRecord = null;
+    let defaultViewState = null;
+    let appliedFilters = { status: [], region: [], tenantType: [] };
+    let L = window.L10n || {};
 
-    const showError = (message) => {
-        if (window.showToast) {
-            window.showToast(message, 'error');
-            return;
-        }
-        alert(message);
-    };
+    const dtTableEl = document.querySelector('.datatables-tenants');
+    const apiUrl = window.API?.platform || window.ApiBaseUrl || 'http://localhost:5000';
+    const personalizationClient = window.personalizationClient;
+    const personalizationContext = { moduleKey: 'Platform', pageKey: 'Tenants' };
+    const saveViewColumnIndexes = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const totalColumnCount = 12;
+    const baseOrder = [[10, 'desc']];
+    const filterCollapseId = 'inlineFilterCollapse';
 
-    const showSuccess = (message) => {
-        if (window.showToast) {
-            window.showToast(message, 'success');
-            return;
-        }
-        alert(message);
-    };
+    const syncL10n = () => { L = window.L10n || {}; };
+    const isAuthHandledError = (error) => error?.authHandled === true || error?.code === 'auth-refresh-in-progress';
+
+    const getAuthHeaders = () => ({});
 
     const escapeHtml = (value) => {
         if (value === null || value === undefined) return '';
@@ -34,19 +36,13 @@ const TenantRegistryPage = (function () {
             .replace(/'/g, '&#39;');
     };
 
+    const normalizeString = (value) => typeof value === 'string' ? value.trim() : '';
+    const normalizeArray = (value) => Array.isArray(value) ? value.map(String).filter(Boolean).sort() : [];
+    const unwrap = (payload) => payload?.data ?? payload ?? null;
+
     const formatDate = (value) => {
         if (!value) return '-';
-        try {
-            return new Date(value).toLocaleString();
-        } catch (e) {
-            return value;
-        }
-    };
-
-    const unwrap = (payload) => {
-        if (!payload) return null;
-        if (Object.prototype.hasOwnProperty.call(payload, 'data')) return payload.data;
-        return payload;
+        try { return new Date(value).toLocaleString(); } catch (error) { return value; }
     };
 
     const statusBadge = (status) => {
@@ -56,18 +52,7 @@ const TenantRegistryPage = (function () {
             Suspended: 'bg-label-warning',
             Deactivated: 'bg-label-danger'
         };
-        const css = map[status] || 'bg-label-secondary';
-        return `<span class="badge ${css}">${escapeHtml(status || 'Unknown')}</span>`;
-    };
-
-    const envBadge = (environment) => {
-        const map = {
-            Production: 'bg-label-success',
-            Staging: 'bg-label-warning',
-            Development: 'bg-label-info'
-        };
-        const css = map[environment] || 'bg-label-secondary';
-        return `<span class="badge ${css}">${escapeHtml(environment || '-')}</span>`;
+        return `<span class="badge ${map[status] || 'bg-label-secondary'}">${escapeHtml(status || L.Unknown || '-')}</span>`;
     };
 
     const updateKpis = (stats) => {
@@ -80,110 +65,438 @@ const TenantRegistryPage = (function () {
 
     const loadStats = async () => {
         try {
-            const response = await fetch(apiUrl + '/api/admin/tenants/stats', {
-                credentials: 'include'
+            const response = await fetch(`${apiUrl}/api/admin/tenants/stats`, {
+                credentials: 'include',
+                headers: getAuthHeaders()
             });
             if (!response.ok) return;
-            const json = await response.json();
-            updateKpis(unwrap(json));
-        } catch (e) {
-            // no-op: list load still works
+            updateKpis(unwrap(await response.json()));
+        } catch (error) {
+            // KPI cards are secondary; table load errors are handled separately.
         }
-    };
-
-    const populateDetails = (data) => {
-        if (!data) return;
-
-        const safe = (v) => (v === null || v === undefined || v === '' ? '-' : String(v));
-
-        document.getElementById('oc-tenant-title').innerText = safe(data.displayName || data.name);
-        document.getElementById('oc-tenant-subtitle').innerText = `${safe(data.code)} / ${safe(data.provisioningStatus)}`;
-        document.getElementById('oc-tenant-status').outerHTML = statusBadge(data.status).replace('<span', '<span id="oc-tenant-status"');
-        document.getElementById('oc-tenant-environment').outerHTML = envBadge(data.environment).replace('<span', '<span id="oc-tenant-environment"');
-
-        document.getElementById('oc-tenant-id').innerText = safe(data.id);
-        document.getElementById('oc-tenant-code').innerText = safe(data.code);
-        document.getElementById('oc-tenant-slug').innerText = safe(data.provisioningStatus);
-        document.getElementById('oc-tenant-display-name').innerText = safe(data.displayName || data.name);
-        document.getElementById('oc-tenant-domain').innerText = safe(data.domain);
-        document.getElementById('oc-tenant-region').innerText = safe(data.region);
-        document.getElementById('oc-tenant-tier').innerText = safe(data.tier);
-        document.getElementById('oc-tenant-created').innerText = formatDate(data.createdAt);
-        document.getElementById('oc-tenant-created-by').innerText = safe(data.createdBy);
     };
 
     const loadTenantDetail = async (id) => {
-        const response = await fetch(apiUrl + '/api/admin/tenants/' + encodeURIComponent(id), {
-            credentials: 'include'
+        const response = await fetch(`${apiUrl}/api/admin/tenants/${encodeURIComponent(id)}`, {
+            credentials: 'include',
+            headers: getAuthHeaders()
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || ('HTTP ' + response.status));
+        if (response.status === 401 || response.status === 403) {
+            window.DtDefaults?.handleUnauthorized?.();
+            const authError = new Error('auth-refresh-in-progress');
+            authError.authHandled = true;
+            throw authError;
         }
 
-        const json = await response.json();
-        return unwrap(json);
-    };
-
-    const changeLifecycle = async (tenantId, action) => {
-        const response = await fetch(`${apiUrl}/api/admin/tenants/${encodeURIComponent(tenantId)}/${action}`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({})
-        });
-
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || ('HTTP ' + response.status));
+            throw new Error(await response.text());
         }
 
         return unwrap(await response.json());
     };
 
-    const initDataTable = () => {
+    const changeLifecycle = async (tenantId, action, reason) => {
+        const response = await fetch(`${apiUrl}/api/admin/tenants/${encodeURIComponent(tenantId)}/${action}`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: reason || '' })
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            window.DtDefaults?.handleUnauthorized?.();
+            const authError = new Error('auth-refresh-in-progress');
+            authError.authHandled = true;
+            throw authError;
+        }
+
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
+        return unwrap(await response.json());
+    };
+
+    const getSelectedIds = () =>
+        Array.from(dtTableEl.querySelectorAll('tbody .dt-checkboxes:checked')).map((checkbox) => checkbox.value);
+
+    const clearSelection = () => {
+        dtTableEl.querySelectorAll('tbody .dt-checkboxes').forEach((checkbox) => {
+            checkbox.checked = false;
+            checkbox.closest('tr')?.classList.remove('selected');
+        });
+
+        const header = dtTableEl.querySelector('.dt-checkboxes-select-all');
+        if (header) {
+            header.checked = false;
+            header.indeterminate = false;
+        }
+
+        updateBulkBar();
+    };
+
+    const updateBulkBar = () => {
+        const selectedIds = getSelectedIds();
+        const bulkBar = document.getElementById('bulkActionBar');
+        const countEl = document.getElementById('bulkSelectedCount');
+        if (countEl) countEl.innerText = String(selectedIds.length);
+        bulkBar?.classList.toggle('d-none', selectedIds.length === 0);
+
+        const checkboxes = Array.from(dtTableEl.querySelectorAll('tbody .dt-checkboxes'));
+        const header = dtTableEl.querySelector('.dt-checkboxes-select-all');
+        if (header) {
+            header.checked = checkboxes.length > 0 && selectedIds.length === checkboxes.length;
+            header.indeterminate = selectedIds.length > 0 && selectedIds.length < checkboxes.length;
+        }
+    };
+
+    const createDefaultColumnVisibility = () =>
+        saveViewColumnIndexes.reduce((acc, index) => {
+            acc[index] = true;
+            return acc;
+        }, {});
+
+    const normalizeColumnVisibility = (colVis) => {
+        if (!colVis) return null;
+        const normalized = {};
+        if (Array.isArray(colVis)) {
+            saveViewColumnIndexes.forEach((index, position) => {
+                if (typeof colVis[index] === 'boolean') normalized[index] = colVis[index];
+                else if (typeof colVis[position] === 'boolean') normalized[index] = colVis[position];
+            });
+        } else if (typeof colVis === 'object') {
+            saveViewColumnIndexes.forEach((index) => {
+                if (typeof colVis[index] === 'boolean') normalized[index] = colVis[index];
+            });
+        }
+
+        return Object.keys(normalized).length ? normalized : null;
+    };
+
+    const captureColumnVisibility = (api) => {
+        const colVis = {};
+        saveViewColumnIndexes.forEach((index) => {
+            try { colVis[index] = !!api.column(index).visible(); } catch (error) { }
+        });
+        return colVis;
+    };
+
+    const applyColumnVisibility = (api, colVis) => {
+        const normalized = normalizeColumnVisibility(colVis);
+        if (!normalized) return;
+        saveViewColumnIndexes.forEach((index) => {
+            if (typeof normalized[index] === 'boolean') {
+                try { api.column(index).visible(normalized[index], false); } catch (error) { }
+            }
+        });
+    };
+
+    const normalizeColumnOrder = (order) => {
+        if (!Array.isArray(order) || order.length !== totalColumnCount) return null;
+        const normalized = order.map(Number).filter((index) => Number.isInteger(index) && index >= 0 && index < totalColumnCount);
+        return normalized.length === totalColumnCount && new Set(normalized).size === totalColumnCount ? normalized : null;
+    };
+
+    const captureColumnOrder = (api) => {
+        try { return normalizeColumnOrder(api?.colReorder?.order?.()); } catch (error) { return null; }
+    };
+
+    const applyColumnOrder = (api, order) => {
+        const normalized = normalizeColumnOrder(order);
+        if (!normalized || typeof api?.colReorder?.order !== 'function') return;
+        try { api.colReorder.order(normalized, true); } catch (error) { }
+    };
+
+    const getSearchInputValue = (api) => {
+        try { return normalizeString(api.table().container()?.querySelector('.dt-search input')?.value || ''); }
+        catch (error) { return ''; }
+    };
+
+    const syncSearchInput = (api, value) => {
+        try {
+            const input = api.table().container()?.querySelector('.dt-search input');
+            if (input) input.value = value || '';
+        } catch (error) { }
+    };
+
+    const getSavedViewDefinition = (savedView) => {
+        const raw = savedView?.viewDefinition ?? savedView?.ViewDefinition ?? savedView?.viewDefinitionJson ?? savedView?.ViewDefinitionJson ?? {};
+        if (raw && typeof raw === 'object') return raw;
+        if (typeof raw === 'string') {
+            try { return JSON.parse(raw) || {}; } catch (error) { return {}; }
+        }
+        return {};
+    };
+
+    const mapSavedViewToState = (savedView) => {
+        const definition = getSavedViewDefinition(savedView);
+        return {
+            status: normalizeArray(definition.status),
+            region: normalizeArray(definition.region),
+            tenantType: normalizeArray(definition.tenantType),
+            search: normalizeString(definition.search),
+            colVis: normalizeColumnVisibility(definition.colVis),
+            columnOrder: normalizeColumnOrder(definition.columnOrder),
+            order: Array.isArray(definition.order) ? definition.order : null
+        };
+    };
+
+    const getCurrentView = (api) => ({
+        status: normalizeArray(appliedFilters.status),
+        region: normalizeArray(appliedFilters.region),
+        tenantType: normalizeArray(appliedFilters.tenantType),
+        search: getSearchInputValue(api),
+        colVis: captureColumnVisibility(api),
+        columnOrder: captureColumnOrder(api),
+        order: typeof api.order === 'function' ? api.order() : baseOrder
+    });
+
+    const serializeView = (view) => JSON.stringify({
+        status: normalizeArray(view?.status),
+        region: normalizeArray(view?.region),
+        tenantType: normalizeArray(view?.tenantType),
+        search: normalizeString(view?.search),
+        colVis: normalizeColumnVisibility(view?.colVis) || createDefaultColumnVisibility(),
+        columnOrder: normalizeColumnOrder(view?.columnOrder) || Array.from({ length: totalColumnCount }, (_, index) => index),
+        order: Array.isArray(view?.order) ? view.order : baseOrder
+    });
+
+    const loadDefaultView = async () => {
+        if (!personalizationClient?.getViews) return;
+        try {
+            const views = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
+            const items = Array.isArray(views) ? views : (views?.data || []);
+            defaultViewRecord = items.find((view) => view.isDefault || view.IsDefault) || null;
+            defaultViewState = defaultViewRecord ? mapSavedViewToState(defaultViewRecord) : null;
+        } catch (error) {
+            if (!isAuthHandledError(error)) {
+                console.warn('[Tenants] Default view could not be loaded.', error);
+            }
+        }
+    };
+
+    const saveDefaultView = async (view) => {
+        if (!personalizationClient?.saveView) return null;
+        const payload = {
+            moduleKey: personalizationContext.moduleKey,
+            pageKey: personalizationContext.pageKey,
+            viewName: 'Default',
+            isDefault: true,
+            viewDefinition: view
+        };
+
+        if (defaultViewRecord) {
+            const id = defaultViewRecord.id || defaultViewRecord.Id;
+            defaultViewRecord = await personalizationClient.updateView(id, Object.assign({}, defaultViewRecord, payload));
+        } else {
+            defaultViewRecord = await personalizationClient.saveView(payload);
+        }
+
+        defaultViewState = view;
+        return defaultViewRecord;
+    };
+
+    const setSaveFilterVisible = (visible) => {
+        const button = document.querySelector('.dt-save-filter-btn');
+        if (!button) return;
+        button.classList.toggle('d-none', !visible);
+        window.DtDefaults?.refreshButtonGroupRadii?.();
+    };
+
+    const isDirtyComparedToDefault = (api) => {
+        const baseline = defaultViewState || {
+            status: [],
+            region: [],
+            tenantType: [],
+            search: '',
+            colVis: createDefaultColumnVisibility(),
+            columnOrder: Array.from({ length: totalColumnCount }, (_, index) => index),
+            order: baseOrder
+        };
+
+        return serializeView(getCurrentView(api)) !== serializeView(baseline);
+    };
+
+    const applyFilterValues = (api, filters) => {
+        const statusRegex = normalizeArray(filters.status).join('|');
+        const regionRegex = normalizeArray(filters.region).join('|');
+        const tenantTypeRegex = normalizeArray(filters.tenantType).join('|');
+
+        api.column('status:name').search(statusRegex, true, false);
+        api.column('region:name').search(regionRegex, true, false);
+        api.column('tenantType:name').search(tenantTypeRegex, true, false);
+    };
+
+    const syncFilterControls = (filters) => {
+        $('#filterStatus').val(normalizeArray(filters.status)).trigger('change');
+        $('#filterRegion').val(normalizeArray(filters.region)).trigger('change');
+        $('#filterTenantType').val(normalizeArray(filters.tenantType)).trigger('change');
+    };
+
+    const getStagedFilters = () => ({
+        status: $('#filterStatus').val() || [],
+        region: $('#filterRegion').val() || [],
+        tenantType: $('#filterTenantType').val() || []
+    });
+
+    const getAppliedFilterCount = () =>
+        normalizeArray(appliedFilters.status).length +
+        normalizeArray(appliedFilters.region).length +
+        normalizeArray(appliedFilters.tenantType).length;
+
+    const applySavedTableState = (api, state, options) => {
+        if (!api || !state) return;
+        appliedFilters = {
+            status: normalizeArray(state.status),
+            region: normalizeArray(state.region),
+            tenantType: normalizeArray(state.tenantType)
+        };
+        syncFilterControls(appliedFilters);
+        applyFilterValues(api, appliedFilters);
+
+        api.search(typeof state.search === 'string' ? state.search : '');
+        syncSearchInput(api, state.search || '');
+        applyColumnOrder(api, state.columnOrder || (options?.resetColumnOrder ? Array.from({ length: totalColumnCount }, (_, index) => index) : null));
+        applyColumnVisibility(api, state.colVis || (options?.resetColumns ? createDefaultColumnVisibility() : null));
+        api.order(Array.isArray(state.order) ? state.order : baseOrder);
+        api.draw(false);
+    };
+
+    const mountInlineFilter = () => {
+        const host = document.getElementById('inlineFilterHost');
+        if (!host) return;
+        const filterBtn = document.querySelector('.dt-filter-btn');
+        const toolbarRow = filterBtn?.closest('.dt-layout-row') || filterBtn?.closest('.row') || filterBtn?.closest('.dt-layout-end')?.parentElement;
+        if (toolbarRow) {
+            toolbarRow.insertAdjacentElement('afterend', host);
+            host.classList.add('px-6');
+        }
+    };
+
+    const bindInlineFilterToggle = () => {
+        const button = document.querySelector('.dt-filter-btn');
+        const collapseEl = document.getElementById(filterCollapseId);
+        if (!button || !collapseEl || button.dataset.inlineFilterBound) return;
+        button.dataset.inlineFilterBound = '1';
+        collapseEl.addEventListener('shown.bs.collapse', () => button.setAttribute('aria-expanded', 'true'));
+        collapseEl.addEventListener('hidden.bs.collapse', () => button.setAttribute('aria-expanded', 'false'));
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            const instance = bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false });
+            if (collapseEl.classList.contains('show')) instance.hide(); else instance.show();
+        });
+    };
+
+    const initSelect2Filters = () => {
+        $('#inlineFilterHost select.select2').each(function () {
+            const $select = $(this);
+            $select.select2({
+                dropdownParent: $(document.body),
+                dropdownCssClass: 'dt-inline-filter-dropdown',
+                minimumResultsForSearch: Infinity,
+                selectionCssClass: 'form-select form-select-sm',
+                width: 'element',
+                closeOnSelect: false
+            });
+        });
+    };
+
+    const populateOffcanvas = (data) => {
+        if (!data) return;
+        document.getElementById('oc-title').innerText = data.displayName || data.name || '-';
+        document.getElementById('oc-subtitle').innerText = `${data.code || '-'} / ${data.slug || '-'}`;
+        document.getElementById('oc-status').outerHTML = statusBadge(data.status).replace('<span', '<span id="oc-status"');
+        document.getElementById('oc-provisioning').innerText = data.provisioningStatus || '-';
+        document.getElementById('oc-btn-details').href = `/Platform/Tenants/Details/${encodeURIComponent(data.id)}`;
+
+        const rows = [
+            [L.Details || 'Details', data.id],
+            [L.Domain || 'Domain', data.domain],
+            [L.TenantType || 'Tenant Type', data.tenantType],
+            [L.Country || 'Country', data.country],
+            [L.DefaultLanguage || 'Default Language', data.defaultLanguage],
+            [L.DefaultTimezone || 'Default Timezone', data.defaultTimezone],
+            [L.DefaultCurrency || 'Default Currency', data.defaultCurrency],
+            [L.Created || 'Created', formatDate(data.createdAt)]
+        ];
+
+        document.getElementById('oc-details-list').innerHTML = rows.map(([label, value]) =>
+            `<dt class="col-5 fw-medium text-heading mb-2">${escapeHtml(label)}</dt><dd class="col-7 mb-2 text-break">${escapeHtml(value || '-')}</dd>`
+        ).join('');
+    };
+
+    const reloadTableAndToastSuccess = (message) => {
+        clearSelection();
+        dt.ajax.reload(() => {
+            loadStats();
+            window.showToast?.(message, 'success');
+        }, false);
+    };
+
+    const initDataTable = async () => {
         if (!dtTableEl) return;
+        syncL10n();
+        await loadDefaultView();
+
+        const extraButtons = {
+            filterBtn: {
+                text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
+                className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
+                attr: {
+                    title: L.Filter,
+                    'aria-label': L.Filter,
+                    'aria-controls': filterCollapseId,
+                    'aria-expanded': 'false',
+                    'data-bs-toggle': 'tooltip'
+                }
+            },
+            saveFilterBtn: {
+                text: `<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">${escapeHtml(L.SaveView || '')}</span>`,
+                className: 'btn btn-label-primary d-none dt-save-filter-btn',
+                attr: { title: L.SaveView, 'aria-label': L.SaveView, 'data-bs-toggle': 'tooltip' },
+                action: async function (event, api) {
+                    try {
+                        await saveDefaultView(getCurrentView(api || dt));
+                        setSaveFilterVisible(false);
+                        window.showToast?.(L.RecordSaved || 'RecordSaved', 'success');
+                    } catch (error) {
+                        if (isAuthHandledError(error)) return;
+                        window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
+                    }
+                }
+            }
+        };
 
         dt = new DataTable(dtTableEl, window.DtDefaults.create({
             ajax: {
-                url: apiUrl + '/api/admin/tenants',
+                url: `${apiUrl}/api/admin/tenants`,
                 type: 'GET',
-                xhrFields: { withCredentials: true },
+                headers: getAuthHeaders(),
+                data: function () {
+                    return { page: 1, pageSize: 200, sort: '-createdAt' };
+                },
                 dataSrc: function (json) {
                     const data = unwrap(json) || {};
-                    const rows = Array.isArray(data.items) ? data.items : [];
                     loadStats();
-                    return rows;
-                },
-                error: function (xhr) {
-                    if (xhr.status === 401 || xhr.status === 403) {
-                        window.location.href = '/platform/login?returnUrl=' + encodeURIComponent(window.location.pathname);
-                        return;
-                    }
-
-                    if (xhr.status === 502) {
-                        showError('Gateway or Platform service is unavailable. Please verify ports 5000 and 5057.');
-                        return;
-                    }
-
-                    showError('Tenant registry request failed (HTTP ' + (xhr.status || 0) + ').');
+                    return Array.isArray(data.items) ? data.items : [];
                 }
             },
-            stateSave: true,
-            order: [[8, 'desc']],
+            stateSave: false,
+            colReorder: { columns: ':gt(1):not(:last-child)' },
+            order: baseOrder,
             columns: [
                 { data: 'id', name: 'control' },
                 { data: 'id', name: 'checkbox' },
-                { data: 'id', name: 'identity' },
-                { data: 'code', name: 'code_slug' },
-                { data: 'displayName', name: 'display_name' },
-                { data: 'status', name: 'status' },
+                { data: 'displayName', name: 'displayName' },
+                { data: 'code', name: 'code' },
+                { data: 'domain', name: 'domain' },
+                { data: 'tenantType', name: 'tenantType' },
+                { data: 'country', name: 'country' },
                 { data: 'region', name: 'region' },
-                { data: 'environment', name: 'environment' },
-                { data: 'createdAt', name: 'created_meta' },
+                { data: 'provisioningStatus', name: 'provisioningStatus' },
+                { data: 'status', name: 'status' },
+                { data: 'createdAt', name: 'createdAt' },
                 { data: 'id', name: 'action' }
             ],
             columnDefs: [
@@ -197,216 +510,163 @@ const TenantRegistryPage = (function () {
                 },
                 {
                     targets: 2,
-                    render: function (data, type, full) {
-                        const shortId = (full.id || '').toString().slice(0, 8);
-                        return `<div><span class="fw-medium text-heading">${escapeHtml(shortId)}</span><br/><small class="text-muted">${escapeHtml(full.id)}</small></div>`;
-                    }
+                    render: (data, type, full) => `<div><span class="fw-medium text-heading">${escapeHtml(full.displayName || full.name)}</span><br><small class="text-muted">${escapeHtml(full.id)}</small></div>`
                 },
                 {
                     targets: 3,
-                    render: function (data, type, full) {
-                        return `<div><span class="fw-medium text-primary">${escapeHtml(full.code)}</span><br/><small class="text-muted">${escapeHtml(full.provisioningStatus || '')}</small></div>`;
-                    }
-                },
-                {
-                    targets: 4,
-                    render: function (data, type, full) {
-                        return `<div><span class="fw-medium text-heading">${escapeHtml(full.displayName || full.name)}</span><br/><small class="text-muted">${escapeHtml(full.domain || '-')}</small></div>`;
-                    }
-                },
-                {
-                    targets: 5,
-                    render: function (data) {
-                        return statusBadge(data);
-                    }
+                    render: (data, type, full) => `<div><span class="fw-medium text-primary">${escapeHtml(full.code)}</span><br><small class="text-muted">${escapeHtml(full.slug || '-')}</small></div>`
                 },
                 {
                     targets: 7,
-                    render: function (data) {
-                        return envBadge(data);
-                    }
+                    render: (data, type, full) => `<div><span class="fw-medium">${escapeHtml(full.region || '-')}</span><br><small class="text-muted">${escapeHtml(full.environment || '-')}</small></div>`
                 },
-                {
-                    targets: 8,
-                    render: function (data, type, full) {
-                        const createdBy = escapeHtml(full.createdBy || 'system');
-                        return `<div><span class="fw-medium">${escapeHtml(formatDate(full.createdAt))}</span><br/><small class="text-muted">by ${createdBy}</small></div>`;
-                    }
-                },
+                { targets: 9, render: (data) => statusBadge(data) },
+                { targets: 10, render: (data, type, full) => `<div><span>${escapeHtml(formatDate(data))}</span><br><small class="text-muted">${escapeHtml(full.createdBy || 'system')}</small></div>` },
                 {
                     targets: -1,
-                    title: 'Actions',
                     searchable: false,
                     orderable: false,
                     className: 'cell-fit text-end',
-                    render: function (data, type, full) {
+                    render: (data, type, full) => {
                         const suspendDisabled = full.status === 'Suspended' || full.status === 'Deactivated' ? 'disabled' : '';
                         const reactivateDisabled = full.status === 'Active' || full.status === 'Deactivated' ? 'disabled' : '';
-
                         return `<div class="d-flex align-items-center justify-content-end">
-                            <a href="javascript:void(0);" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded icon-md"></i></a>
+                            <a href="javascript:void(0);" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-label="${escapeHtml(L.Actions || '')}"><i class="bx bx-dots-vertical-rounded icon-md"></i></a>
                             <div class="dropdown-menu dropdown-menu-end m-0">
-                                <a href="javascript:void(0);" class="dropdown-item js-tenant-preview" data-id="${escapeHtml(full.id)}" data-bs-toggle="offcanvas" data-bs-target="#offcanvasTenantDetails">View Snapshot</a>
-                                <a href="javascript:void(0);" class="dropdown-item js-tenant-suspend ${suspendDisabled}" data-id="${escapeHtml(full.id)}">Suspend</a>
-                                <a href="javascript:void(0);" class="dropdown-item js-tenant-reactivate ${reactivateDisabled}" data-id="${escapeHtml(full.id)}">Reactivate</a>
+                                <a href="javascript:void(0);" class="dropdown-item js-quick-view" data-id="${escapeHtml(full.id)}" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetailsPreview">${escapeHtml(L.QuickView || '')}</a>
+                                <a href="/Platform/Tenants/Details/${encodeURIComponent(full.id)}" class="dropdown-item">${escapeHtml(L.ViewDetails || '')}</a>
+                                <a href="javascript:void(0);" class="dropdown-item js-tenant-suspend ${suspendDisabled}" data-id="${escapeHtml(full.id)}" data-name="${escapeHtml(full.displayName || full.name)}">${escapeHtml(L.Suspend || '')}</a>
+                                <a href="javascript:void(0);" class="dropdown-item js-tenant-reactivate ${reactivateDisabled}" data-id="${escapeHtml(full.id)}" data-name="${escapeHtml(full.displayName || full.name)}">${escapeHtml(L.Reactivate || '')}</a>
                             </div>
                         </div>`;
                     }
                 }
             ],
             buttons: window.DtDefaults.exportButtons(
-                'Register Tenant',
-                { id: 'btnOpenCreateTenant' },
-                null,
-                {
-                    exportColumns: [2, 3, 4, 5, 6, 7, 8],
-                    colvisColumns: [2, 3, 4, 5, 6, 7, 8]
+                L.AddNewTenants,
+                { onclick: "location.href='/Platform/Tenants/Create'" },
+                extraButtons,
+                { exportColumns: saveViewColumnIndexes, colvisColumns: saveViewColumnIndexes }
+            ),
+            initComplete: function () {
+                const api = this.api();
+                mountInlineFilter();
+                bindInlineFilterToggle();
+                initSelect2Filters();
+                if (defaultViewState) {
+                    applySavedTableState(api, defaultViewState);
                 }
-            )
+                setTimeout(() => { saveFilterArmed = true; }, 0);
+                window.DtDefaults.updateVisualState(api, getAppliedFilterCount());
+            },
+            drawCallback: function () {
+                updateBulkBar();
+                window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount());
+            }
         }));
-    };
 
-    const openCreatePanel = () => {
-        const panel = document.getElementById('offcanvasAddTenant');
-        if (!panel) return;
-        bootstrap.Offcanvas.getOrCreateInstance(panel).show();
+        dt.on('search.dt order.dt column-visibility.dt column-reorder.dt columns-reordered.dt', () => {
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+        });
     };
 
     const bindEvents = () => {
-        document.addEventListener('click', async function (event) {
-            const createBtn = event.target.closest('#btnOpenCreateTenant');
-            if (createBtn) {
-                event.preventDefault();
-                openCreatePanel();
-                return;
-            }
-
-            const previewBtn = event.target.closest('.js-tenant-preview');
-            if (previewBtn) {
-                const tenantId = previewBtn.getAttribute('data-id');
-                if (!tenantId) return;
+        document.addEventListener('click', async (event) => {
+            const quickView = event.target.closest('.js-quick-view');
+            if (quickView) {
+                const id = quickView.getAttribute('data-id');
                 try {
-                    const detail = await loadTenantDetail(tenantId);
-                    populateDetails(detail);
-                } catch (e) {
-                    showError('Tenant detail load failed.');
+                    populateOffcanvas(await loadTenantDetail(id));
+                } catch (error) {
+                    if (!isAuthHandledError(error)) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
                 }
                 return;
             }
 
-            const suspendBtn = event.target.closest('.js-tenant-suspend:not(.disabled)');
-            if (suspendBtn) {
-                event.preventDefault();
-                const tenantId = suspendBtn.getAttribute('data-id');
-                if (!tenantId) return;
-
-                try {
-                    await changeLifecycle(tenantId, 'suspend');
-                    dt.ajax.reload(null, false);
-                    loadStats();
-                    showSuccess('Tenant suspended.');
-                } catch (e) {
-                    showError('Suspend tenant failed.');
-                }
-                return;
-            }
-
-            const reactivateBtn = event.target.closest('.js-tenant-reactivate:not(.disabled)');
-            if (reactivateBtn) {
-                event.preventDefault();
-                const tenantId = reactivateBtn.getAttribute('data-id');
-                if (!tenantId) return;
-
-                try {
-                    await changeLifecycle(tenantId, 'reactivate');
-                    dt.ajax.reload(null, false);
-                    loadStats();
-                    showSuccess('Tenant reactivated.');
-                } catch (e) {
-                    showError('Reactivate tenant failed.');
-                }
-            }
-        });
-
-        const nameEl = document.getElementById('tenantName');
-        const subdomainEl = document.getElementById('tenantSubdomain');
-        if (nameEl && subdomainEl) {
-            nameEl.addEventListener('input', function () {
-                if (subdomainEl.dataset.touched === '1') return;
-                subdomainEl.value = nameEl.value.trim().toLowerCase().replace(/\s+/g, '-');
-            });
-            subdomainEl.addEventListener('input', function () {
-                subdomainEl.dataset.touched = '1';
-            });
-        }
-
-        const form = document.getElementById('formAddTenant');
-        if (!form) return;
-
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
-
-            const formData = new FormData(form);
-            const payload = {
-                name: (formData.get('name') || '').toString().trim(),
-                domain: (formData.get('domain') || '').toString().trim(),
-                subdomain: (formData.get('subdomain') || '').toString().trim(),
-                displayName: (formData.get('displayName') || '').toString().trim(),
-                tier: (formData.get('tier') || 'Standard').toString(),
-                region: (formData.get('region') || 'US').toString(),
-                environment: (formData.get('environment') || 'Production').toString()
-            };
-
-            try {
-                const response = await fetch(apiUrl + '/api/admin/tenants', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...getAuthHeaders()
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401 || response.status === 403) {
-                        window.location.href = '/platform/login?returnUrl=' + encodeURIComponent(window.location.pathname);
-                        return;
+            const suspend = event.target.closest('.js-tenant-suspend:not(.disabled)');
+            if (suspend) {
+                const id = suspend.getAttribute('data-id');
+                const name = suspend.getAttribute('data-name');
+                window.showConfirm?.('AreYouSure', async (reason) => {
+                    try {
+                        await changeLifecycle(id, 'suspend', reason);
+                        reloadTableAndToastSuccess(L.TenantSuspended || 'Tenant suspended.');
+                    } catch (error) {
+                        if (!isAuthHandledError(error)) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
                     }
-
-                    const errText = await response.text();
-                    throw new Error(errText || ('HTTP ' + response.status));
-                }
-
-                bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasAddTenant'))?.hide();
-                form.reset();
-                if (subdomainEl) {
-                    subdomainEl.dataset.touched = '0';
-                }
-                dt.ajax.reload(null, false);
-                loadStats();
-                showSuccess('Tenant created and provisioning started.');
-            } catch (error) {
-                showError('Create tenant failed: ' + (error.message || 'Unknown error'));
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
+                }, {
+                    entityName: name,
+                    type: 'warning',
+                    confirmButtonText: L.Suspend,
+                    showInput: true,
+                    inputPlaceholder: L.SuspendReason
+                });
+                return;
             }
+
+            const reactivate = event.target.closest('.js-tenant-reactivate:not(.disabled)');
+            if (reactivate) {
+                const id = reactivate.getAttribute('data-id');
+                const name = reactivate.getAttribute('data-name');
+                window.showConfirm?.('AreYouSure', async () => {
+                    try {
+                        await changeLifecycle(id, 'reactivate', '');
+                        reloadTableAndToastSuccess(L.TenantReactivated || 'Tenant reactivated.');
+                    } catch (error) {
+                        if (!isAuthHandledError(error)) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
+                    }
+                }, { entityName: name, type: 'success', confirmButtonText: L.Reactivate });
+            }
+        });
+
+        $(dtTableEl).on('change', '.dt-checkboxes', function () {
+            this.closest('tr')?.classList.toggle('selected', this.checked);
+            updateBulkBar();
+        });
+
+        $(dtTableEl).on('change', '.dt-checkboxes-select-all', function () {
+            const checked = this.checked;
+            dtTableEl.querySelectorAll('tbody .dt-checkboxes').forEach((checkbox) => {
+                checkbox.checked = checked;
+                checkbox.closest('tr')?.classList.toggle('selected', checked);
+            });
+            updateBulkBar();
+        });
+
+        document.getElementById('btnClearSelection')?.addEventListener('click', clearSelection);
+
+        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
+            appliedFilters = getStagedFilters();
+            applyFilterValues(dt, appliedFilters);
+            dt.draw(false);
+            setSaveFilterVisible(isDirtyComparedToDefault(dt));
+            bootstrap.Collapse.getInstance(document.getElementById(filterCollapseId))?.hide();
+        });
+
+        document.getElementById('btnFilterReset')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            appliedFilters = defaultViewState
+                ? {
+                    status: normalizeArray(defaultViewState.status),
+                    region: normalizeArray(defaultViewState.region),
+                    tenantType: normalizeArray(defaultViewState.tenantType)
+                }
+                : { status: [], region: [], tenantType: [] };
+            syncFilterControls(appliedFilters);
+            applyFilterValues(dt, appliedFilters);
+            dt.draw(false);
+            setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
     };
 
-    const init = () => {
-        if (!dtTableEl) return;
-        initDataTable();
-        bindEvents();
-        loadStats();
+    return {
+        init: () => {
+            syncL10n();
+            initDataTable();
+            bindEvents();
+            loadStats();
+        }
     };
-
-    return { init };
 })();
 
-document.addEventListener('DOMContentLoaded', TenantRegistryPage.init);
+document.addEventListener('DOMContentLoaded', () => TenantsList.init());

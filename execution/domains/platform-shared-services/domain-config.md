@@ -4,6 +4,7 @@
 Platform & Shared Services (PSS) domain'i, Diten ERP vNext ekosistemi için kimlik yönetimi, yetkilendirme, iş akışı, denetim izi ve entegrasyon gibi yatay yeteneklerin merkezi yönetimini ve standartlarını tanımlar.
 
 ## In-Scope Modules
+- `MOD-0014-module-boundary-registry` — Module Boundary Registry / Global Platform Catalog Foundation
 - `MOD-0012-secrets-configuration-vault` — Secrets & Configuration Vault
 - `MOD-0018-rbac-abac-authorization` — RBAC / ABAC Authorization
 - `MOD-0021-audit-trail-service` — Audit Trail Service

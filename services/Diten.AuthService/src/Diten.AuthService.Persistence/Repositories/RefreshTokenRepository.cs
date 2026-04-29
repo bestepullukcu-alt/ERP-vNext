@@ -7,15 +7,22 @@ namespace Diten.AuthService.Persistence.Repositories;
 
 public sealed class RefreshTokenRepository : RepositoryBase<RefreshToken>, IRefreshTokenRepository
 {
-    public RefreshTokenRepository(IMongoDatabase database, ITenantContext tenantContext) 
+    private readonly IRefreshTokenHasher _refreshTokenHasher;
+
+    public RefreshTokenRepository(
+        IMongoDatabase database,
+        ITenantContext tenantContext,
+        IRefreshTokenHasher refreshTokenHasher)
         : base(database, tenantContext, "refreshTokens")
     {
+        _refreshTokenHasher = refreshTokenHasher;
     }
 
     public async Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct)
     {
+        var tokenHash = _refreshTokenHasher.Hash(token);
         var filter = Builders<RefreshToken>.Filter.And(
-            Builders<RefreshToken>.Filter.Eq(t => t.Token, token),
+            Builders<RefreshToken>.Filter.Eq(t => t.Token, tokenHash),
             Builders<RefreshToken>.Filter.Eq(t => t.IsDeleted, false)
         );
 
@@ -34,8 +41,11 @@ public sealed class RefreshTokenRepository : RepositoryBase<RefreshToken>, IRefr
 
     public async Task RevokeAsync(string token, CancellationToken ct)
     {
-        var filter = Builders<RefreshToken>.Filter.Eq(t => t.Token, token);
-        var update = Builders<RefreshToken>.Update.Set(t => t.RevokedAt, DateTime.UtcNow);
+        var tokenHash = _refreshTokenHasher.Hash(token);
+        var filter = Builders<RefreshToken>.Filter.Eq(t => t.Token, tokenHash);
+        var update = Builders<RefreshToken>.Update
+            .Set(t => t.RevokedAt, DateTime.UtcNow)
+            .Set(t => t.RevokedReason, "manual_revoke");
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
 

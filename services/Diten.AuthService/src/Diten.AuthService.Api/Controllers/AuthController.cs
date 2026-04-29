@@ -22,7 +22,7 @@ public sealed class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
-        var command = new LoginCommand(request.Email, request.Password);
+        var command = new LoginCommand(request.Email, request.Password, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
         return Ok(result);
     }
@@ -31,7 +31,13 @@ public sealed class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
-        var command = new RegisterCommand(request.Email, request.Password, request.FirstName, request.LastName);
+        var command = new RegisterCommand(
+            request.Email,
+            request.Password,
+            request.FirstName,
+            request.LastName,
+            ResolveRequestIp(HttpContext),
+            ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
         return CreatedAtAction(nameof(Me), result);
     }
@@ -40,7 +46,7 @@ public sealed class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken ct)
     {
-        var command = new RefreshTokenCommand(request.AccessToken, request.RefreshToken);
+        var command = new RefreshTokenCommand(request.AccessToken, request.RefreshToken, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
         return Ok(result);
     }
@@ -49,7 +55,7 @@ public sealed class AuthController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request, CancellationToken ct)
     {
-        var command = new LogoutCommand(request.RefreshToken);
+        var command = new LogoutCommand(request.AccessToken, request.RefreshToken, ResolveRequestIp(HttpContext));
         await _mediator.Send(command, ct);
         return NoContent();
     }
@@ -80,5 +86,21 @@ public sealed class AuthController : ControllerBase
 
         var result = await _mediator.Send(new GetUserByIdQuery(userId), ct);
         return Ok(result);
+    }
+
+    private static string ResolveRequestIp(HttpContext context)
+    {
+        var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(forwardedFor))
+        {
+            return forwardedFor.Split(',')[0].Trim();
+        }
+
+        return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    }
+
+    private static string? ResolveUserAgent(HttpContext context)
+    {
+        return context.Request.Headers.UserAgent.FirstOrDefault();
     }
 }

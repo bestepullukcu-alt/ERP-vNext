@@ -1,0 +1,360 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PageTitle">
+    <value>Catalogue Global des Modules</value>
+  </data>
+  <data name="PageDescription">
+    <value>Catalogue global des domaines, suites, groupes de capacite et modules base sur la hierarchie Excel source.</value>
+  </data>
+  <data name="TotalDomains">
+    <value>Domaines Totaux</value>
+  </data>
+  <data name="TotalSuites">
+    <value>Suites Totales</value>
+  </data>
+  <data name="TotalCapabilityGroups">
+    <value>Groupes de Capacite Totaux</value>
+  </data>
+  <data name="TotalModules">
+    <value>Modules Totaux</value>
+  </data>
+  <data name="TenantAssignable">
+    <value>Attribuable au Tenant</value>
+  </data>
+  <data name="DeprecatedOrRetired">
+    <value>Obsolete / Retire</value>
+  </data>
+  <data name="Refresh">
+    <value>Actualiser</value>
+  </data>
+  <data name="ImportCatalog">
+    <value>Importer le Catalogue</value>
+  </data>
+  <data name="SearchPlaceholder">
+    <value>Search by module ID, name, or support model</value>
+  </data>
+  <data name="Domain">
+    <value>Domaine / Paysage</value>
+  </data>
+  <data name="Suite">
+    <value>Suite / Plateforme</value>
+  </data>
+  <data name="CapabilityGroup">
+    <value>Groupe de Capacite</value>
+  </data>
+  <data name="IsTenantAssignable">
+    <value>Attribuable au Tenant</value>
+  </data>
+  <data name="IsPlatformCore">
+    <value>Coeur de Plateforme</value>
+  </data>
+  <data name="AllOption">
+    <value>Tous</value>
+  </data>
+  <data name="AnyOption">
+    <value>N'importe lequel</value>
+  </data>
+  <data name="Yes">
+    <value>Oui</value>
+  </data>
+  <data name="No">
+    <value>Non</value>
+  </data>
+  <data name="ModuleId">
+    <value>ID Module</value>
+  </data>
+  <data name="ModuleName">
+    <value>Nom du Module</value>
+  </data>
+  <data name="SupportModel">
+    <value>Modele de Support</value>
+  </data>
+  <data name="Actions">
+    <value>Actions</value>
+  </data>
+  <data name="EditMetadata">
+    <value>Modifier les Metadonnees</value>
+  </data>
+  <data name="EditLater">
+    <value>Le flux d'edition n'entre pas dans le perimetre de cette phase</value>
+  </data>
+  <data name="Draft">
+    <value>Brouillon</value>
+  </data>
+  <data name="ActiveStatus">
+    <value>Actif</value>
+  </data>
+  <data name="Deprecated">
+    <value>Obsolete</value>
+  </data>
+  <data name="Retired">
+    <value>Retire</value>
+  </data>
+  <data name="GeneralInformation">
+    <value>Informations Generales</value>
+  </data>
+  <data name="LoadingCatalog">
+    <value>Chargement du catalogue...</value>
+  </data>
+  <data name="EmptyCatalog">
+    <value>Le catalogue est vide. Importez les donnees source pour commencer.</value>
+  </data>
+  <data name="NoResults">
+    <value>Aucun module ne correspond aux filtres actuels.</value>
+  </data>
+  <data name="BackendError">
+    <value>Le backend a renvoye un message d'erreur comprehensible.</value>
+  </data>
+  <data name="PermissionDenied">
+    <value>Vous n'avez pas l'autorisation de modifier le catalogue global. Les actions sont desormais en lecture seule.</value>
+  </data>
+  <data name="ImportSuccess">
+    <value>L'import du catalogue est termine avec succes.</value>
+  </data>
+  <data name="PartialImport">
+    <value>L'import du catalogue est termine avec des erreurs de validation par ligne.</value>
+  </data>
+  <data name="Created">
+    <value>Crees</value>
+  </data>
+  <data name="Updated">
+    <value>Mis a jour</value>
+  </data>
+  <data name="Skipped">
+    <value>Ignores</value>
+  </data>
+  <data name="Failed">
+    <value>En Echec</value>
+  </data>
+  <data name="RowNumber">
+    <value>Ligne</value>
+  </data>
+  <data name="ErrorMessage">
+    <value>Message d'Erreur</value>
+  </data>
+  <data name="InvalidJson">
+    <value>Le JSON d'import est invalide. Fournissez un tableau ou un objet avec la propriete rows.</value>
+  </data>
+  <data name="ImportHelp">
+    <value>L'entree MVP temporaire accepte du JSON structure. Collez un tableau de lignes ou un objet contenant une collection rows.</value>
+  </data>
+  <data name="FutureTenant">
+    <value>L'attribution de tenant sera geree dans MOD-0009.</value>
+  </data>
+  <data name="FutureCapability">
+    <value>Le mapping capability-produit sera detaille dans MOD-0008.</value>
+  </data>
+  <data name="FutureSor">
+    <value>Le mapping de propriete SoR sera detaille dans MOD-0001.</value>
+  </data>
+  <data name="DeliveryOutcome">
+    <value>Resultat / Valeur de Livraison</value>
+  </data>
+  <data name="DependencyGate">
+    <value>Porte de Dependance</value>
+  </data>
+  <data name="Placement">
+    <value>Emplacement</value>
+  </data>
+  <data name="CreatedDate">
+    <value>Date de Creation</value>
+  </data>
+  <data name="ModifiedDate">
+    <value>Date de Modification</value>
+  </data>
+  <data name="ReadOnly">
+    <value>Lecture Seule</value>
+  </data>
+  <data name="CreateModule">
+    <value>Creer un Module</value>
+  </data>
+  <data name="CreateDomain">
+    <value>Creer un Domaine</value>
+  </data>
+  <data name="CreateSuite">
+    <value>Creer une Suite</value>
+  </data>
+  <data name="CreateCapabilityGroup">
+    <value>Creer un Groupe de Capacite</value>
+  </data>
+  <data name="EditModule">
+    <value>Modifier le Module</value>
+  </data>
+  <data name="SaveChanges">
+    <value>Enregistrer les Modifications</value>
+  </data>
+  <data name="Name">
+    <value>Nom</value>
+  </data>
+  <data name="Code">
+    <value>Code</value>
+  </data>
+  <data name="Description">
+    <value>Description</value>
+  </data>
+  <data name="IsActive">
+    <value>Est Actif</value>
+  </data>
+  <data name="SelectDomain">
+    <value>Selectionner un domaine</value>
+  </data>
+  <data name="SelectSuite">
+    <value>Selectionner une suite</value>
+  </data>
+  <data name="SelectCapabilityGroup">
+    <value>Selectionner un groupe de capacite</value>
+  </data>
+  <data name="RequiredField">
+    <value>Ce champ est obligatoire.</value>
+  </data>
+  <data name="DuplicateModuleId">
+    <value>Cet ID module existe deja.</value>
+  </data>
+  <data name="DuplicateCode">
+    <value>Ce code existe deja.</value>
+  </data>
+  <data name="InvalidHierarchy">
+    <value>La hierarchie selectionnee n'est pas valide.</value>
+  </data>
+  <data name="ParentNotFound">
+    <value>L'enregistrement parent selectionne est introuvable.</value>
+  </data>
+  <data name="ImmutableModuleId">
+    <value>L'ID module ne peut pas etre modifie en edition.</value>
+  </data>
+  <data name="SaveSuccess">
+    <value>L'enregistrement du catalogue a ete sauvegarde.</value>
+  </data>
+  <data name="NetworkError">
+    <value>Le service catalogue est inaccessible.</value>
+  </data>
+  <data name="IsPlatformCoreHint">
+    <value>Les modules coeur de plateforme ne sont generalement pas attribuables au tenant.</value>
+  </data>
+  <data name="StatusDraft">
+    <value>Brouillon</value>
+  </data>
+  <data name="StatusActive">
+    <value>Actif</value>
+  </data>
+  <data name="StatusDeprecated">
+    <value>Obsolete</value>
+  </data>
+  <data name="StatusRetired">
+    <value>Retire</value>
+  </data>
+  <data name="PageDefinitions">
+    <value>Page Definitions</value>
+  </data>
+  <data name="CreatePage">
+    <value>Create Page</value>
+  </data>
+  <data name="EditPage">
+    <value>Edit Page</value>
+  </data>
+  <data name="PageCode">
+    <value>Page Code</value>
+  </data>
+  <data name="PageName">
+    <value>Page Name</value>
+  </data>
+  <data name="PageType">
+    <value>Page Type</value>
+  </data>
+  <data name="RoutePath">
+    <value>Route Path</value>
+  </data>
+  <data name="RequiredPermissionKey">
+    <value>Required Permission Key</value>
+  </data>
+  <data name="NavigationCandidate">
+    <value>Navigation Candidate</value>
+  </data>
+  <data name="NoPages">
+    <value>No page definitions yet.</value>
+  </data>
+  <data name="DuplicatePageCode">
+    <value>This module already has a page with this Page Code.</value>
+  </data>
+  <data name="InvalidModuleId">
+    <value>The selected module could not be found.</value>
+  </data>
+  <data name="RegistryWorkspace" xml:space="preserve">
+    <value>Registry Workspace</value>
+  </data>
+  <data name="RegistrySubtitle" xml:space="preserve">
+    <value>System-wide module and page definition registry for platform boundaries.</value>
+  </data>
+  <data name="MoreActions" xml:space="preserve">
+    <value>More Actions</value>
+  </data>
+  <data name="HierarchySummary" xml:space="preserve">
+    <value>Hierarchy Summary</value>
+  </data>
+  <data name="HierarchySubtitle" xml:space="preserve">
+    <value>Domain, suite and capability map</value>
+  </data>
+  <data name="NoHierarchyData" xml:space="preserve">
+    <value>No hierarchy metadata is available yet.</value>
+  </data>
+  <data name="PagesCount" xml:space="preserve">
+    <value>Pages</value>
+  </data>
+  <data name="Overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="GovernanceMetadata" xml:space="preserve">
+    <value>Governance Metadata</value>
+  </data>
+  <data name="BoundaryOwnershipTitle" xml:space="preserve">
+    <value>Boundary ownership</value>
+  </data>
+  <data name="BoundaryOwnershipText" xml:space="preserve">
+    <value>MOD-0014 owns module metadata, boundary descriptors and page definition metadata only.</value>
+  </data>
+  <data name="TenantAssignmentBoundaryTitle" xml:space="preserve">
+    <value>Tenant assignment</value>
+  </data>
+  <data name="TenantAssignmentBoundaryText" xml:space="preserve">
+    <value>Tenant entitlement and module assignment are owned by MOD-0009.</value>
+  </data>
+  <data name="NavigationBoundaryTitle" xml:space="preserve">
+    <value>Navigation placement</value>
+  </data>
+  <data name="NavigationBoundaryText" xml:space="preserve">
+    <value>Menu placement, sidebar, topnav and runtime visibility are owned by MOD-0285.</value>
+  </data>
+  <data name="PermissionBoundaryTitle" xml:space="preserve">
+    <value>Permission generation</value>
+  </data>
+  <data name="PermissionBoundaryText" xml:space="preserve">
+    <value>Required permission keys are metadata references; this page does not generate permissions.</value>
+  </data>
+  <data name="PageTypeList" xml:space="preserve">
+    <value>List</value>
+  </data>
+  <data name="PageTypeDetail" xml:space="preserve">
+    <value>Detail</value>
+  </data>
+  <data name="PageTypeCreate" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="PageTypeEdit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PageTypeWizard" xml:space="preserve">
+    <value>Wizard</value>
+  </data>
+  <data name="PageTypeDashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="PageTypeReport" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="PageTypeAdmin" xml:space="preserve">
+    <value>Admin</value>
+  </data>
+  <data name="PageTypeOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+</root>

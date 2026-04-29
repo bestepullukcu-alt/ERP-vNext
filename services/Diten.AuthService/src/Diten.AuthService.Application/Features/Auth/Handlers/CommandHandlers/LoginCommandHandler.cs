@@ -17,6 +17,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly ITokenService _tokenService;
+    private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IAuthAuditService _authAuditService;
@@ -29,6 +30,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
         ITokenService tokenService,
+        IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
         IPasswordHasher passwordHasher,
         IAuthAuditService authAuditService,
@@ -40,6 +42,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
         _tokenService = tokenService;
+        _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
         _passwordHasher = passwordHasher;
         _authAuditService = authAuditService;
@@ -60,7 +63,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
             throw new UnauthorizedAccessException("Geçersiz e-posta veya şifre.");
         }
 
-        return await HandleLoginSuccess(user, ct);
+        return await HandleLoginSuccess(user, request, ct);
     }
 
     private void CheckLockout(User user)
@@ -75,7 +78,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         await _userRepository.UpdateAsync(user, ct);
     }
 
-    private async Task<AuthResponse> HandleLoginSuccess(User user, CancellationToken ct)
+    private async Task<AuthResponse> HandleLoginSuccess(User user, LoginCommand request, CancellationToken ct)
     {
         user.RecordLoginSuccess();
         await _userRepository.UpdateAsync(user, ct);
@@ -108,14 +111,16 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
 
         var accessToken = _tokenService.GenerateAccessToken(user, roles, permissions);
         var refreshTokenStr = _tokenService.GenerateRefreshToken();
+        var refreshTokenHash = _refreshTokenHasher.Hash(refreshTokenStr);
 
         var refreshToken = new RefreshToken(
             user.Id,
-            refreshTokenStr,
+            refreshTokenHash,
             DateTime.UtcNow.AddDays(7),
-            "0.0.0.0",
+            request.RequestIp,
             _tenantContext.TenantId,
-            TenantActorType);
+            TenantActorType,
+            request.UserAgent);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
         return new AuthResponse(

@@ -5,14 +5,33 @@ namespace Diten.Platform.Domain.Entities;
 public sealed class Tenant : GlobalEntity
 {
     public required string Code { get; init; }
-    public string? Slug { get; set; }
+    public required string Slug { get; set; }
     public required string Name { get; set; }
-    public string? DisplayName { get; set; }
+    public required string DisplayName { get; set; }
     public required string Domain { get; set; }
     public string? Region { get; set; }
     public string? Environment { get; set; }
     public TenantStatus Status { get; set; } = TenantStatus.Provisioning;
     public string? Tier { get; set; } = "Standard";
+    public TenantType TenantType { get; set; } = TenantType.Trial;
+
+    // Legal & Company Info
+    public string? LegalName { get; set; }
+    public string? TaxNumber { get; set; }
+    public string? Country { get; set; }
+    public string? Industry { get; set; }
+
+    // Contact Info
+    public string? ContactPerson { get; set; }
+    public string? ContactEmail { get; set; }
+    public string? ContactPhone { get; set; }
+
+    // Default Locale (tenant profile defaults — TenantSettings holds runtime overrides)
+    public string DefaultTimezone { get; set; } = "UTC";
+    public string DefaultLanguage { get; set; } = "en";
+    public string DefaultCurrency { get; set; } = "USD";
+
+    // Provisioning & Lifecycle
     public string ProvisioningStatus { get; set; } = "Queued";
     public List<TenantProvisioningStep> ProvisioningSteps { get; set; } = [];
     public List<TenantActivityEvent> ActivityTimeline { get; set; } = [];

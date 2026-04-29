@@ -166,6 +166,13 @@
                             <div>Tenant Management</div>
                         </a>
                     </li>
+                    <li
+                        class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "ModuleCatalog" ? "active" : "")">
+                        <a href="/Platform/ModuleCatalog" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-grid-alt"></i>
+                            <div>Global Module Catalog</div>
+                        </a>
+                    </li>
                     <li class="menu-item">
                         <a href="/Platform/Tenants" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-layer"></i>
@@ -188,6 +195,12 @@
                         <a href="/Platform/Tenants" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-line-chart"></i>
                             <div>Usage Monitoring</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Platform/TenantSecurity" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-lock-alt"></i>
+                            <div>@SharedLocalizer["LoginSecurity"]</div>
                         </a>
                     </li>
                     <li class="menu-item">
@@ -488,10 +501,13 @@
                                         <div class="dropdown-divider my-1"></div>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item d-flex align-items-center" href="/account/logout">
+                                        <form method="post" action="/account/logout" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item d-flex align-items-center">
                                             <i
                                                 class="bx bx-power-off icon-md me-3"></i><span>@SharedLocalizer["LogOut"]</span>
-                                        </a>
+                                            </button>
+                                        </form>
                                     </li>
                                 </ul>
                             </li>
