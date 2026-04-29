@@ -110,10 +110,14 @@ public class AccountController : Controller
     }
 
     [HttpPost("/account/logout")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout(CancellationToken ct)
     {
+        var redirectUrl = "/account/login";
+
         if (TryGetCookie("access_token", out var accessToken) && TryGetCookie("refresh_token", out var refreshToken))
         {
+            redirectUrl = ResolveLogoutRedirectUrl(accessToken);
             var tenantId = TryReadTenantId(accessToken);
             try
             {
@@ -131,17 +135,20 @@ public class AccountController : Controller
         var expectsJson = Request.Headers.Accept.Any(a => a?.Contains("application/json", StringComparison.OrdinalIgnoreCase) == true);
         if (isAjaxRequest || expectsJson)
         {
-            return Ok(new { success = true, redirectUrl = "/account/login" });
+            return Ok(new { success = true, redirectUrl });
         }
 
-        return RedirectToAction(nameof(Login));
+        return Redirect(redirectUrl);
     }
 
     [HttpGet("/account/logout")]
-    public async Task<IActionResult> LogoutGet(CancellationToken ct)
+    public IActionResult LogoutGet()
     {
-        await Logout(ct);
-        return RedirectToAction(nameof(Login));
+        var redirectUrl = TryGetCookie("access_token", out var accessToken)
+            ? ResolveLogoutRedirectUrl(accessToken)
+            : "/account/login";
+
+        return Redirect(redirectUrl);
     }
 
     private bool HasValidActor(params string[] allowedActors)
@@ -182,6 +189,39 @@ public class AccountController : Controller
         {
             return null;
         }
+    }
+
+    private static string ResolveLogoutRedirectUrl(string accessToken)
+    {
+        var actorType = TryReadActorType(accessToken);
+        return IsPlatformActor(actorType) ? "/platform/login" : "/account/login";
+    }
+
+    private static string? TryReadActorType(string accessToken)
+    {
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            if (!handler.CanReadToken(accessToken))
+            {
+                return null;
+            }
+
+            return handler.ReadJwtToken(accessToken)
+                .Claims
+                .FirstOrDefault(c => string.Equals(c.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
+                ?.Value;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool IsPlatformActor(string? actorType)
+    {
+        return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
+               || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ResolveReturnUrl(string? returnUrl, string defaultPath)

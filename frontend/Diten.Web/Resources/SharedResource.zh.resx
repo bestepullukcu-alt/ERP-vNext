@@ -258,4 +258,4 @@
   <data name="ColumnOrder" xml:space="preserve"><value>Порядок столбцов</value></data>
   <data name="SKUManagement" xml:space="preserve"><value>Управление SKU</value></data>
   <data name="ProductMaster" xml:space="preserve"><value>Справочник продуктов</value></data>
-<data name="CategoryManagement" xml:space="preserve"><value>类别管理</value></data><data name="CompositionManagement" xml:space="preserve"><value>组合管理</value></data><data name="VariantManagement" xml:space="preserve"><value>变体管理</value></data></root>
+<data name="CategoryManagement" xml:space="preserve"><value>类别管理</value></data><data name="CompositionManagement" xml:space="preserve"><value>组合管理</value></data><data name="VariantManagement" xml:space="preserve"><value>变体管理</value></data><data name="LoginSecurity" xml:space="preserve"><value>登录与安全</value></data></root>

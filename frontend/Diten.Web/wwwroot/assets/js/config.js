@@ -171,7 +171,7 @@ if (typeof TemplateCustomizer !== 'undefined') {  // MOD-0013: 7 Language Suppor
     semiDark_label: 'Semi Sombre',
     layout_header: 'Disposition',
     layout_label: 'Menu (Navigation)',
-    layout_header_label: 'Types d'entete',
+    layout_header_label: 'Types d\'en-t\u00eate',
     content_label: 'Contenu',
     layout_navbar_label: 'Type de barre de navigation',
     direction_label: 'Direction',

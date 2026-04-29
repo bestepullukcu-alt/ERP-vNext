@@ -93,7 +93,7 @@ window.DtDefaults = (function () {
         var l = L();
         return {
             topStart: {
-                rowClass: 'row py-3 my-0 justify-content-between',
+                rowClass: 'row px-3 my-0 justify-content-between',
                 features: [
                     {
                         pageLength: {

@@ -290,9 +290,12 @@
                                     </li>
                                     <li><div class="dropdown-divider my-1"></div></li>
                                     <li>
-                                        <a class="dropdown-item d-flex align-items-center" href="/account/logout">
+                                        <form method="post" action="/account/logout" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item d-flex align-items-center">
                                             <i class="bx bx-power-off icon-md me-3"></i><span>@SharedLocalizer["LogOut"]</span>
-                                        </a>
+                                            </button>
+                                        </form>
                                     </li>
                                 </ul>
                             </li>

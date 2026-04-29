@@ -16,6 +16,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ITokenService _tokenService;
     private readonly ILogger<PlatformLoginCommandHandler> _logger;
@@ -26,6 +27,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
         IPasswordHasher passwordHasher,
+        IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
         ITokenService tokenService,
         ILogger<PlatformLoginCommandHandler> logger)
@@ -35,6 +37,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
         _passwordHasher = passwordHasher;
+        _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
         _tokenService = tokenService;
         _logger = logger;
@@ -85,13 +88,15 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             permissions);
 
         var refreshTokenStr = _tokenService.GenerateRefreshToken();
+        var refreshTokenHash = _refreshTokenHasher.Hash(refreshTokenStr);
         var refreshToken = new Diten.AuthService.Domain.Entities.RefreshToken(
             user.Id,
-            refreshTokenStr,
+            refreshTokenHash,
             DateTime.UtcNow.AddDays(7),
-            "0.0.0.0",
+            request.RequestIp,
             PlatformTenantId,
-            PlatformActorType);
+            PlatformActorType,
+            request.UserAgent);
 
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 

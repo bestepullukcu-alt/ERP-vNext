@@ -5,5 +5,7 @@ namespace Diten.AuthService.Application.Features.Auth.Commands;
 
 public sealed record RefreshTokenCommand(
     string AccessToken,
-    string RefreshToken
+    string RefreshToken,
+    string RequestIp,
+    string? UserAgent
 ) : IRequest<AuthResponse>;

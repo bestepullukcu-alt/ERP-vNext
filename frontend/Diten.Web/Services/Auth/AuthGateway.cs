@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 
 namespace Diten.Web.Services.Auth;
 
@@ -12,10 +13,12 @@ public sealed class AuthGateway : IAuthGateway
     };
 
     private readonly HttpClient _httpClient;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AuthGateway(HttpClient httpClient)
+    public AuthGateway(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
     {
         _httpClient = httpClient;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public Task<AuthBridgeResult> LoginTenantAsync(string email, string password, Guid tenantId, CancellationToken ct = default)
@@ -55,6 +58,7 @@ public sealed class AuthGateway : IAuthGateway
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout");
         request.Content = JsonContent.Create(new { accessToken, refreshToken });
+        AddClientMetadataHeaders(request);
 
         if (tenantId.HasValue)
         {
@@ -85,6 +89,7 @@ public sealed class AuthGateway : IAuthGateway
         {
             Content = JsonContent.Create(payload)
         };
+        AddClientMetadataHeaders(request);
 
         if (tenantId.HasValue)
         {
@@ -144,5 +149,26 @@ public sealed class AuthGateway : IAuthGateway
         }
 
         return content;
+    }
+
+    private void AddClientMetadataHeaders(HttpRequestMessage request)
+    {
+        var context = _httpContextAccessor.HttpContext;
+        if (context is null)
+        {
+            return;
+        }
+
+        var remoteIp = context.Connection.RemoteIpAddress?.ToString();
+        if (!string.IsNullOrWhiteSpace(remoteIp))
+        {
+            request.Headers.TryAddWithoutValidation("X-Forwarded-For", remoteIp);
+        }
+
+        var userAgent = context.Request.Headers.UserAgent.FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(userAgent))
+        {
+            request.Headers.TryAddWithoutValidation("User-Agent", userAgent);
+        }
     }
 }

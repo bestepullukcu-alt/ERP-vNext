@@ -306,7 +306,7 @@ body > .select2-container--open {
 @media screen and (max-width: 991.98px) {
 
     /* ---- Top Row: flex-row with wrap ---- */
-    div.dt-container>.row:first-child {
+    div.dt-container > .row:first-child {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;

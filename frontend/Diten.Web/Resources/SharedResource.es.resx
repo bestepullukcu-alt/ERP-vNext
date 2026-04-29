@@ -258,4 +258,4 @@
   <data name="ColumnOrder" xml:space="preserve"><value>Orden de Columnas</value></data>
   <data name="SKUManagement" xml:space="preserve"><value>Gestión de SKU</value></data>
   <data name="ProductMaster" xml:space="preserve"><value>Maestro de Productos</value></data>
-<data name="CategoryManagement" xml:space="preserve"><value>Gestion de categorias</value></data><data name="CompositionManagement" xml:space="preserve"><value>Gestion de composiciones</value></data><data name="VariantManagement" xml:space="preserve"><value>Gestion de variantes</value></data></root>
+<data name="CategoryManagement" xml:space="preserve"><value>Gestion de categorias</value></data><data name="CompositionManagement" xml:space="preserve"><value>Gestion de composiciones</value></data><data name="VariantManagement" xml:space="preserve"><value>Gestion de variantes</value></data><data name="LoginSecurity" xml:space="preserve"><value>Inicio de Sesión y Seguridad</value></data></root>

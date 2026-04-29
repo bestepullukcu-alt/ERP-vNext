@@ -282,4 +282,5 @@
   <data name="ColumnOrder" xml:space="preserve"><value>Sütun Sırası</value></data>
   <data name="SKUManagement" xml:space="preserve"><value>SKU Yönetimi</value></data>
   <data name="ProductMaster" xml:space="preserve"><value>Ürün Kartı</value></data>
+  <data name="LoginSecurity" xml:space="preserve"><value>Giriş ve Güvenlik</value></data>
 </root>

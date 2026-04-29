@@ -1,0 +1,67 @@
+@using Diten.Web.Views.Platform.ModuleCatalog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ModuleCatalogIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm">
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-domain">
+                        <select id="filterDomain" class="form-select form-select-sm" data-placeholder="@Localizer["Domain"]">
+                            <option value="">@Localizer["AllOption"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-suite">
+                        <select id="filterSuite" class="form-select form-select-sm" data-placeholder="@Localizer["Suite"]">
+                            <option value="">@Localizer["AllOption"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-capability">
+                        <select id="filterCapabilityGroup" class="form-select form-select-sm" data-placeholder="@Localizer["CapabilityGroup"]">
+                            <option value="">@Localizer["AllOption"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="">@Localizer["AnyOption"]</option>
+                            <option value="Draft">@Localizer["Draft"]</option>
+                            <option value="Active">@Localizer["ActiveStatus"]</option>
+                            <option value="Deprecated">@Localizer["Deprecated"]</option>
+                            <option value="Retired">@Localizer["Retired"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-assignable">
+                        <select id="filterIsTenantAssignable" class="form-select form-select-sm" data-placeholder="@Localizer["IsTenantAssignable"]">
+                            <option value="">@Localizer["AnyOption"]</option>
+                            <option value="true">@Localizer["Yes"]</option>
+                            <option value="false">@Localizer["No"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-core">
+                        <select id="filterIsPlatformCore" class="form-select form-select-sm" data-placeholder="@Localizer["IsPlatformCore"]">
+                            <option value="">@Localizer["AnyOption"]</option>
+                            <option value="true">@Localizer["Yes"]</option>
+                            <option value="false">@Localizer["No"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

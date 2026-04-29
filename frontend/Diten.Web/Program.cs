@@ -11,6 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,11 +45,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/account/logout";
     });
 
-var authServiceUrl = builder.Configuration["AuthServiceUrl"] ?? "http://localhost:5056";
+var authServiceUrl = builder.Configuration["GatewayUrl"] ?? "http://localhost:5000";
 builder.Services.AddHttpClient<IAuthGateway, AuthGateway>(client =>
 {
     client.BaseAddress = new Uri(authServiceUrl);
 });
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
 builder.Services.AddSingleton<ITaskDetailService, TaskDetailService>();
 builder.Services.AddScoped<IManagementGovernanceFrontendAdapter, MockManagementGovernanceFrontendAdapter>();
@@ -106,13 +108,55 @@ var validatedTokenParameters = new TokenValidationParameters
 app.Use(async (context, next) =>
 {
     var accessToken = context.Request.Cookies["access_token"];
-    if (!string.IsNullOrEmpty(accessToken))
+    if (!string.IsNullOrEmpty(accessToken) && !ShouldSkipTokenBridgeRefresh(context.Request.Path))
     {
+        var handler = new JwtSecurityTokenHandler();
         try
         {
-            var handler = new JwtSecurityTokenHandler();
             var principal = handler.ValidateToken(accessToken, validatedTokenParameters, out _);
             context.User = principal;
+        }
+        catch (SecurityTokenExpiredException)
+        {
+            var refreshToken = context.Request.Cookies["refresh_token"];
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                context.Response.Cookies.Delete("access_token");
+                context.Response.Cookies.Delete("refresh_token");
+            }
+            else
+            {
+                var authGateway = context.RequestServices.GetRequiredService<IAuthGateway>();
+                var authCookieService = context.RequestServices.GetRequiredService<IAuthCookieService>();
+                var tenantId = TryReadTenantId(accessToken);
+                try
+                {
+                    var refreshResult = await authGateway.RefreshAsync(accessToken, refreshToken, tenantId, context.RequestAborted);
+
+                    if (!refreshResult.Success ||
+                        string.IsNullOrWhiteSpace(refreshResult.AccessToken) ||
+                        string.IsNullOrWhiteSpace(refreshResult.RefreshToken) ||
+                        !refreshResult.ExpiresAt.HasValue)
+                    {
+                        authCookieService.ClearTokens(context.Response);
+                    }
+                    else
+                    {
+                        authCookieService.WriteTokens(
+                            context.Response,
+                            refreshResult.AccessToken,
+                            refreshResult.RefreshToken,
+                            refreshResult.ExpiresAt.Value);
+
+                        var principal = handler.ValidateToken(refreshResult.AccessToken, validatedTokenParameters, out _);
+                        context.User = principal;
+                    }
+                }
+                catch
+                {
+                    authCookieService.ClearTokens(context.Response);
+                }
+            }
         }
         catch
         {
@@ -138,6 +182,29 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
+
+// Keep JWT cookie based platform/tenant identity available after cookie auth runs.
+app.Use(async (context, next) =>
+{
+    var accessToken = context.Request.Cookies["access_token"];
+    if (!string.IsNullOrEmpty(accessToken) && !ShouldSkipTokenBridgeRefresh(context.Request.Path))
+    {
+        var handler = new JwtSecurityTokenHandler();
+        try
+        {
+            var principal = handler.ValidateToken(accessToken, validatedTokenParameters, out _);
+            context.User = principal;
+        }
+        catch
+        {
+            context.Response.Cookies.Delete("access_token");
+            context.Response.Cookies.Delete("refresh_token");
+        }
+    }
+
+    await next();
+});
+
 app.UseAuthorization();
 
 app.UseEndpoints(endpoints =>
@@ -157,3 +224,34 @@ app.MapControllerRoute(
     pattern: "{controller=Skus}/{action=Index}/{id?}");
 
 app.Run();
+
+static Guid? TryReadTenantId(string accessToken)
+{
+    try
+    {
+        var handler = new JwtSecurityTokenHandler();
+        if (!handler.CanReadToken(accessToken))
+        {
+            return null;
+        }
+
+        var token = handler.ReadJwtToken(accessToken);
+        var claimValue = token.Claims.FirstOrDefault(c =>
+            string.Equals(c.Type, "tenant_id", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(c.Type, "tenantId", StringComparison.OrdinalIgnoreCase))?.Value;
+
+        return Guid.TryParse(claimValue, out var tenantId) ? tenantId : null;
+    }
+    catch
+    {
+        return null;
+    }
+}
+
+static bool ShouldSkipTokenBridgeRefresh(PathString path)
+{
+    return path.StartsWithSegments("/account/refresh", StringComparison.OrdinalIgnoreCase)
+           || path.StartsWithSegments("/account/logout", StringComparison.OrdinalIgnoreCase)
+           || path.StartsWithSegments("/account/login", StringComparison.OrdinalIgnoreCase)
+           || path.StartsWithSegments("/platform/login", StringComparison.OrdinalIgnoreCase);
+}

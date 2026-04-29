@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="TenantsTitle" xml:space="preserve"><value>Tenant Yönetimi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Platform tenant kayıtlarını, provisioning durumunu, domainleri, varsayılanları ve yaşam döngüsünü yönetin.</value></data>
+  <data name="TotalTenants" xml:space="preserve"><value>Toplam Tenant</value></data>
+  <data name="TenantIdentity" xml:space="preserve"><value>Tenant Kimliği</value></data>
+  <data name="CodeSlug" xml:space="preserve"><value>Kod / Slug</value></data>
+  <data name="Domain" xml:space="preserve"><value>Domain</value></data>
+  <data name="TenantType" xml:space="preserve"><value>Tenant Tipi</value></data>
+  <data name="Country" xml:space="preserve"><value>Ülke</value></data>
+  <data name="Region" xml:space="preserve"><value>Bölge</value></data>
+  <data name="LocaleDefaults" xml:space="preserve"><value>Yerel Varsayılanlar</value></data>
+  <data name="Provisioning" xml:space="preserve"><value>Provisioning</value></data>
+  <data name="Created" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Genel Bilgiler</value></data>
+  <data name="Details" xml:space="preserve"><value>Detaylar</value></data>
+  <data name="AddNewTenants" xml:space="preserve"><value>Tenant Kaydet</value></data>
+  <data name="CreateTenant" xml:space="preserve"><value>Tenant Oluştur</value></data>
+  <data name="RegistryInformation" xml:space="preserve"><value>Kayıt Bilgileri</value></data>
+  <data name="TenantName" xml:space="preserve"><value>Tenant Adı</value></data>
+  <data name="Slug" xml:space="preserve"><value>Slug</value></data>
+  <data name="InputDomain" xml:space="preserve"><value>Giriş Domaini</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="UseDefaultTrial" xml:space="preserve"><value>Varsayılan Trial kullan</value></data>
+  <data name="TenantTypeInternal" xml:space="preserve"><value>Dahili</value></data>
+  <data name="TenantTypeTrial" xml:space="preserve"><value>Deneme</value></data>
+  <data name="TenantTypePaid" xml:space="preserve"><value>Ücretli</value></data>
+  <data name="TenantTypePartner" xml:space="preserve"><value>Partner</value></data>
+  <data name="Industry" xml:space="preserve"><value>Sektör</value></data>
+  <data name="LegalAndContact" xml:space="preserve"><value>Yasal ve İletişim</value></data>
+  <data name="LegalName" xml:space="preserve"><value>Yasal Unvan</value></data>
+  <data name="TaxNumber" xml:space="preserve"><value>Vergi Numarası</value></data>
+  <data name="ContactPerson" xml:space="preserve"><value>İlgili Kişi</value></data>
+  <data name="ContactEmail" xml:space="preserve"><value>İletişim E-postası</value></data>
+  <data name="ContactPhone" xml:space="preserve"><value>İletişim Telefonu</value></data>
+  <data name="DefaultTimezone" xml:space="preserve"><value>Varsayılan Saat Dilimi</value></data>
+  <data name="DefaultLanguage" xml:space="preserve"><value>Varsayılan Dil</value></data>
+  <data name="DefaultCurrency" xml:space="preserve"><value>Varsayılan Para Birimi</value></data>
+  <data name="UseDefault" xml:space="preserve"><value>Varsayılanı kullan</value></data>
+  <data name="InitialAdmin" xml:space="preserve"><value>İlk Yönetici</value></data>
+  <data name="FirstName" xml:space="preserve"><value>Ad</value></data>
+  <data name="LastName" xml:space="preserve"><value>Soyad</value></data>
+  <data name="AdminEmail" xml:space="preserve"><value>Yönetici E-postası</value></data>
+  <data name="AdminPhone" xml:space="preserve"><value>Yönetici Telefonu</value></data>
+  <data name="MfaRequired" xml:space="preserve"><value>MFA zorunlu</value></data>
+  <data name="EmailVerificationRequired" xml:space="preserve"><value>E-posta doğrulaması zorunlu</value></data>
+  <data name="SendInvitationEmail" xml:space="preserve"><value>Davet e-postası gönder</value></data>
+  <data name="StatusProvisioning" xml:space="preserve"><value>Provisioning</value></data>
+  <data name="StatusSuspended" xml:space="preserve"><value>Askıya Alındı</value></data>
+  <data name="StatusDeactivated" xml:space="preserve"><value>Devre Dışı</value></data>
+  <data name="TenantCreated" xml:space="preserve"><value>Tenant oluşturuldu ve provisioning başlatıldı.</value></data>
+  <data name="TenantSuspended" xml:space="preserve"><value>Tenant askıya alındı.</value></data>
+  <data name="TenantReactivated" xml:space="preserve"><value>Tenant yeniden etkinleştirildi.</value></data>
+  <data name="Suspend" xml:space="preserve"><value>Askıya Al</value></data>
+  <data name="Reactivate" xml:space="preserve"><value>Yeniden Etkinleştir</value></data>
+  <data name="SuspendReason" xml:space="preserve"><value>Neden</value></data>
+  <data name="Overview" xml:space="preserve"><value>Genel Bakış</value></data>
+  <data name="Modules" xml:space="preserve"><value>Modüller</value></data>
+  <data name="Users" xml:space="preserve"><value>Kullanıcılar</value></data>
+  <data name="Settings" xml:space="preserve"><value>Ayarlar</value></data>
+  <data name="ProvisioningSteps" xml:space="preserve"><value>Provisioning Adımları</value></data>
+  <data name="ActivityTimeline" xml:space="preserve"><value>Aktivite Zaman Çizelgesi</value></data>
+  <data name="LoginSecurityTitle" xml:space="preserve"><value>Giriş ve Güvenlik</value></data>
+  <data name="LoginSecurityPageDescription" xml:space="preserve"><value>Tenant giriş yöntemlerini, parola kurallarını, oturum sınırlarını ve erişim kısıtlarını yönetin.</value></data>
+  <data name="ManageLoginSecurity" xml:space="preserve"><value>Giriş ve Güvenliği Yönet</value></data>
+  <data name="Tenant" xml:space="preserve"><value>Tenant</value></data>
+  <data name="TenantSelection" xml:space="preserve"><value>Tenant Seçimi</value></data>
+  <data name="SelectTenant" xml:space="preserve"><value>Tenant Seçin</value></data>
+  <data name="SelectedTenant" xml:space="preserve"><value>Seçili Tenant</value></data>
+  <data name="LoginMethods" xml:space="preserve"><value>Giriş Yöntemleri</value></data>
+  <data name="TwoFactorEnabled" xml:space="preserve"><value>İki faktör etkin</value></data>
+  <data name="EmailLoginEnabled" xml:space="preserve"><value>E-posta ile giriş etkin</value></data>
+  <data name="PhoneLoginEnabled" xml:space="preserve"><value>Telefon ile giriş etkin</value></data>
+  <data name="PasswordPolicy" xml:space="preserve"><value>Parola Politikası</value></data>
+  <data name="PasswordMinLength" xml:space="preserve"><value>Minimum parola uzunluğu</value></data>
+  <data name="PasswordExpirationDays" xml:space="preserve"><value>Parola geçerlilik günü</value></data>
+  <data name="RequireUppercase" xml:space="preserve"><value>Büyük harf zorunlu</value></data>
+  <data name="RequireLowercase" xml:space="preserve"><value>Küçük harf zorunlu</value></data>
+  <data name="RequireDigit" xml:space="preserve"><value>Rakam zorunlu</value></data>
+  <data name="RequireSpecialChar" xml:space="preserve"><value>Özel karakter zorunlu</value></data>
+  <data name="SessionLockoutPolicy" xml:space="preserve"><value>Oturum ve Kilitleme Politikası</value></data>
+  <data name="SessionTimeoutMinutes" xml:space="preserve"><value>Oturum zaman aşımı dakikası</value></data>
+  <data name="RefreshTokenLifetimeDays" xml:space="preserve"><value>Refresh token ömrü günü</value></data>
+  <data name="MaxFailedLoginAttempts" xml:space="preserve"><value>Maksimum hatalı giriş denemesi</value></data>
+  <data name="LockoutDurationMinutes" xml:space="preserve"><value>Kilitleme süresi dakikası</value></data>
+  <data name="AccessRestrictions" xml:space="preserve"><value>Erişim Kısıtları</value></data>
+  <data name="IpWhitelistEnabled" xml:space="preserve"><value>IP izin listesi etkin</value></data>
+  <data name="AllowedIps" xml:space="preserve"><value>İzin Verilen IP'ler</value></data>
+  <data name="AllowedCountries" xml:space="preserve"><value>İzin Verilen Ülkeler</value></data>
+  <data name="LoginAuditRetentionDays" xml:space="preserve"><value>Giriş denetim saklama günü</value></data>
+  <data name="CommaOrLineSeparated" xml:space="preserve"><value>Virgül, noktalı virgül veya satır bazlı değerler kullanın.</value></data>
+  <data name="CountryCodeHelp" xml:space="preserve"><value>ISO ülke kodları kullanın; satır bazlı veya virgülle ayırın.</value></data>
+  <data name="LoginSecuritySaved" xml:space="preserve"><value>Giriş ve güvenlik ayarları kaydedildi.</value></data>
+</root>

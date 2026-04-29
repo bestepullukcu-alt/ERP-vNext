@@ -282,4 +282,5 @@
   <data name="ColumnOrder" xml:space="preserve"><value>Column Order</value></data>
   <data name="SKUManagement" xml:space="preserve"><value>SKU Management</value></data>
   <data name="ProductMaster" xml:space="preserve"><value>Product Master</value></data>
+  <data name="LoginSecurity" xml:space="preserve"><value>Login &amp; Security</value></data>
 </root>

@@ -3,12 +3,15 @@ namespace Diten.Platform.Application.Features.Tenants;
 public sealed record TenantListItemDto(
     Guid Id,
     string Code,
+    string Slug,
     string Name,
     string DisplayName,
     string Domain,
     string Region,
     string Environment,
     string Status,
+    string TenantType,
+    string? Country,
     string ProvisioningStatus,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt,
@@ -52,15 +55,34 @@ public sealed record TenantOverviewMetricsDto(
 public sealed record TenantDetailDto(
     Guid Id,
     string Code,
+    string Slug,
     string Name,
     string DisplayName,
     string Domain,
     string Region,
     string Environment,
     string Status,
+    string TenantType,
     string ProvisioningStatus,
     string Tier,
     string? AppUrl,
+
+    // Legal & Company
+    string? LegalName,
+    string? TaxNumber,
+    string? Country,
+    string? Industry,
+
+    // Contact
+    string? ContactPerson,
+    string? ContactEmail,
+    string? ContactPhone,
+
+    // Locale defaults
+    string DefaultTimezone,
+    string DefaultLanguage,
+    string DefaultCurrency,
+
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt,
     string CreatedBy,
@@ -99,6 +121,49 @@ public sealed record TenantSettingsUpdateRequest(
     string Timezone,
     string Currency,
     string Environment);
+
+public sealed record TenantLoginSettingsDto(
+    Guid TenantId,
+    bool TwoFactorEnabled,
+    bool MfaRequired,
+    bool EmailLoginEnabled,
+    bool PhoneLoginEnabled,
+    int PasswordMinLength,
+    bool PasswordRequireUppercase,
+    bool PasswordRequireLowercase,
+    bool PasswordRequireDigit,
+    bool PasswordRequireSpecialChar,
+    int? PasswordExpirationDays,
+    int SessionTimeoutMinutes,
+    int RefreshTokenLifetimeDays,
+    int MaxFailedLoginAttempts,
+    int LockoutDurationMinutes,
+    bool IpWhitelistEnabled,
+    IReadOnlyList<string> AllowedIps,
+    IReadOnlyList<string> AllowedCountries,
+    int LoginAuditRetentionDays,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt);
+
+public sealed record TenantLoginSettingsUpdateRequest(
+    bool TwoFactorEnabled,
+    bool MfaRequired,
+    bool EmailLoginEnabled,
+    bool PhoneLoginEnabled,
+    int PasswordMinLength,
+    bool PasswordRequireUppercase,
+    bool PasswordRequireLowercase,
+    bool PasswordRequireDigit,
+    bool PasswordRequireSpecialChar,
+    int? PasswordExpirationDays,
+    int SessionTimeoutMinutes,
+    int RefreshTokenLifetimeDays,
+    int MaxFailedLoginAttempts,
+    int LockoutDurationMinutes,
+    bool IpWhitelistEnabled,
+    IReadOnlyList<string>? AllowedIps,
+    IReadOnlyList<string>? AllowedCountries,
+    int LoginAuditRetentionDays);
 
 public sealed record TenantLifecycleResultDto(
     Guid TenantId,

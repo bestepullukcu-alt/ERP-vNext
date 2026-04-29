@@ -21,6 +21,7 @@ public static class DependencyInjection
         });
 
         services.AddValidatorsFromAssembly(assembly);
+        services.AddAutoMapper(_ => { }, assembly);
 
         return services;
     }

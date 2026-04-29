@@ -132,4 +132,28 @@ public sealed class TenantsController : CustomBaseController
 
         return OkResponse(result, "Tenant settings updated.");
     }
+
+    [HttpGet("{id:guid}/login-settings")]
+    public async Task<ActionResult<Response<TenantLoginSettingsDto>>> GetLoginSettings(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetTenantLoginSettingsQuery(id), ct);
+        if (result == null)
+        {
+            return NotFound();
+        }
+
+        return OkResponse(result);
+    }
+
+    [HttpPut("{id:guid}/login-settings")]
+    public async Task<ActionResult<Response<TenantLoginSettingsDto>>> UpdateLoginSettings(Guid id, [FromBody] TenantLoginSettingsUpdateRequest request, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new UpdateTenantLoginSettingsCommand(id, request), ct);
+        if (result == null)
+        {
+            return NotFound();
+        }
+
+        return OkResponse(result, "Tenant login and security settings updated.");
+    }
 }

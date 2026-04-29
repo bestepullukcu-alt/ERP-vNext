@@ -6,6 +6,7 @@ public interface ITenantRegistryRepository
 {
     Task<Tenant?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<Tenant?> GetByCodeAsync(string code, CancellationToken ct = default);
+    Task<Tenant?> GetBySlugAsync(string slug, CancellationToken ct = default);
     Task<Tenant?> GetByDomainAsync(string domain, CancellationToken ct = default);
     Task<IReadOnlyList<Tenant>> GetActiveTenantsAsync(CancellationToken ct = default);
     Task<Tenant> CreateAsync(Tenant tenant, CancellationToken ct = default);

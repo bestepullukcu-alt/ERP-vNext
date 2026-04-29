@@ -1,3 +1,4 @@
+using AutoMapper;
 using Diten.Platform.Application.Features.Tenants;
 using Diten.Platform.Application.Features.Tenants.Queries;
 using Diten.Platform.Domain.Repositories;
@@ -8,10 +9,12 @@ namespace Diten.Platform.Application.Features.Tenants.Handlers;
 public sealed class GetTenantsQueryHandler : IRequestHandler<GetTenantsQuery, PagedResult<TenantListItemDto>>
 {
     private readonly ITenantRegistryRepository _repository;
+    private readonly IMapper _mapper;
 
-    public GetTenantsQueryHandler(ITenantRegistryRepository repository)
+    public GetTenantsQueryHandler(ITenantRegistryRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
     public async Task<PagedResult<TenantListItemDto>> Handle(GetTenantsQuery request, CancellationToken cancellationToken)
@@ -30,27 +33,10 @@ public sealed class GetTenantsQueryHandler : IRequestHandler<GetTenantsQuery, Pa
         var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
         return new PagedResult<TenantListItemDto>(
-            items.Select(MapListItem).ToList(),
+            _mapper.Map<IReadOnlyList<TenantListItemDto>>(items),
             page,
             pageSize,
             totalCount,
             totalPages);
-    }
-
-    private static TenantListItemDto MapListItem(Domain.Entities.Tenant tenant)
-    {
-        return new TenantListItemDto(
-            tenant.Id,
-            tenant.Code,
-            tenant.Name,
-            string.IsNullOrWhiteSpace(tenant.DisplayName) ? tenant.Name : tenant.DisplayName,
-            tenant.Domain,
-            string.IsNullOrWhiteSpace(tenant.Region) ? "US" : tenant.Region,
-            string.IsNullOrWhiteSpace(tenant.Environment) ? "Production" : tenant.Environment,
-            tenant.Status.ToString(),
-            string.IsNullOrWhiteSpace(tenant.ProvisioningStatus) ? "Queued" : tenant.ProvisioningStatus,
-            tenant.CreatedAt,
-            tenant.UpdatedAt,
-            string.IsNullOrWhiteSpace(tenant.CreatedBy) ? "system" : tenant.CreatedBy);
     }
 }

@@ -34,6 +34,7 @@ public sealed class TenantResolutionMiddleware
         var host = context.Request.Host.Host;
         var isAdminHost = IsAdminHost(host);
         var isTenantHost = IsTenantHost(host);
+        var isAuthLifecyclePath = IsAuthLifecyclePath(context.Request.Path);
 
         if (isAdminHost && !IsAdminHostAllowedPath(context.Request.Path))
         {
@@ -55,7 +56,7 @@ public sealed class TenantResolutionMiddleware
                 return;
             }
 
-            if (!IsPublicEndpoint(context.Request.Path) && !IsPlatformActor(actorType))
+            if (!IsPublicEndpoint(context.Request.Path) && !isAuthLifecyclePath && !IsPlatformActor(actorType))
             {
                 await WriteProblemDetails(context, StatusCodes.Status403Forbidden, "Forbidden Actor", "Platform admin or partner admin token is required.");
                 return;
@@ -99,7 +100,10 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        if (!IsPublicEndpoint(context.Request.Path) && !string.IsNullOrWhiteSpace(actorType) && !string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
+        if (!IsPublicEndpoint(context.Request.Path)
+            && !isAuthLifecyclePath
+            && !string.IsNullOrWhiteSpace(actorType)
+            && !string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
         {
             await WriteProblemDetails(context, StatusCodes.Status403Forbidden, "Forbidden Actor", "Tenant endpoints require tenant_user tokens.");
             return;
@@ -180,6 +184,7 @@ public sealed class TenantResolutionMiddleware
     {
         return path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/lookups", StringComparison.OrdinalIgnoreCase)
                || path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase);
     }
 
@@ -188,13 +193,22 @@ public sealed class TenantResolutionMiddleware
         return path.StartsWithSegments("/api/platform-auth/login", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/tenant-auth/login", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/tenant-auth/register", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/auth/refresh-token", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/auth/health", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsAuthLifecyclePath(PathString path)
+    {
+        return path.StartsWithSegments("/api/auth/refresh-token", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/auth/logout", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsAdminPath(PathString path)
     {
-        return path.StartsWithSegments("/api/admin", StringComparison.OrdinalIgnoreCase);
+        return path.StartsWithSegments("/api/admin", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/platform", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/personalization", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsAdminHostAllowedPath(PathString path)

@@ -50,6 +50,7 @@ public static class DependencyInjection
         services.AddScoped<PasswordHasher>(); // concrete class registration
         services.AddScoped<IPasswordHasher>(sp => sp.GetRequiredService<PasswordHasher>());
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IRefreshTokenHasher, RefreshTokenHasher>();
         services.AddScoped<IInternalEventAuthService, InternalEventAuthService>();
         services.AddTransient<TenantPropagationHandler>();
         services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();

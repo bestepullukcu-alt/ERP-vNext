@@ -124,6 +124,7 @@ public sealed class TenantResolutionMiddleware
     {
         return path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/lookups", StringComparison.OrdinalIgnoreCase)
                || path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase);
     }
 
@@ -134,7 +135,9 @@ public sealed class TenantResolutionMiddleware
 
     private static bool IsAdminPath(PathString path)
     {
-        return path.StartsWithSegments("/api/admin", StringComparison.OrdinalIgnoreCase);
+        return path.StartsWithSegments("/api/admin", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/platform", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/personalization", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsPlatformActor(string? actorType)
