@@ -13,6 +13,7 @@ namespace Diten.Platform.Application.Tests;
 public sealed class TenantHandlersTests
 {
     private readonly Mock<ITenantRegistryRepository> _repository;
+    private readonly Mock<ISubscriptionPlanRepository> _subscriptionPlanRepository;
     private readonly Mock<ITenantDomainRepository> _domainRepository;
     private readonly Mock<ITenantLoginSettingsRepository> _loginSettingsRepository;
     private readonly Mock<ITenantDefaultsProvider> _defaults;
@@ -37,6 +38,18 @@ public sealed class TenantHandlersTests
             .ReturnsAsync((TenantDomain?)null);
         _domainRepository.Setup(x => x.CreateAsync(It.IsAny<TenantDomain>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((TenantDomain d, CancellationToken _) => d);
+
+        _subscriptionPlanRepository = new Mock<ISubscriptionPlanRepository>();
+        _subscriptionPlanRepository.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken _) => new SubscriptionPlan
+            {
+                Id = id,
+                Code = "FREE",
+                Name = "Free",
+                IsActive = true,
+                IsTrialPlan = true,
+                TrialDurationDays = 14
+            });
 
         _loginSettingsRepository = new Mock<ITenantLoginSettingsRepository>();
         _loginSettingsRepository.Setup(x => x.GetByTenantRefIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -63,6 +76,7 @@ public sealed class TenantHandlersTests
 
         _handler = new RegisterTenantCommandHandler(
             _repository.Object,
+            _subscriptionPlanRepository.Object,
             _domainRepository.Object,
             _loginSettingsRepository.Object,
             _defaults.Object,
@@ -74,7 +88,7 @@ public sealed class TenantHandlersTests
     public async Task RegisterTenant_ShouldInitializeProvisioningAndActivity()
     {
         var id = await _handler.Handle(
-            new RegisterTenantCommand("Acme", "diten.tech", "acme"),
+            CreateCommand("Acme", "diten.tech", "acme"),
             CancellationToken.None);
 
         Assert.NotEqual(Guid.Empty, id);
@@ -90,7 +104,7 @@ public sealed class TenantHandlersTests
     public async Task RegisterTenant_ShouldCreatePlatformDomain()
     {
         var id = await _handler.Handle(
-            new RegisterTenantCommand("Acme Corp", "diten.tech"),
+            CreateCommand("Acme Corp", "diten.tech"),
             CancellationToken.None);
 
         _domainRepository.Verify(x => x.CreateAsync(It.Is<TenantDomain>(d =>
@@ -106,7 +120,7 @@ public sealed class TenantHandlersTests
     public async Task RegisterTenant_ShouldCreateDefaultLoginSettings()
     {
         var id = await _handler.Handle(
-            new RegisterTenantCommand("Acme Security", "diten.tech", Slug: "acme-security"),
+            CreateCommand("Acme Security", "diten.tech", Slug: "acme-security"),
             CancellationToken.None);
 
         _loginSettingsRepository.Verify(x => x.CreateAsync(It.Is<TenantLoginSettings>(s =>
@@ -122,7 +136,7 @@ public sealed class TenantHandlersTests
     public async Task RegisterTenant_WithSlug_ShouldUsePlatformDomain()
     {
         var id = await _handler.Handle(
-            new RegisterTenantCommand("Acme Corp", "diten.tech", Slug: "acme-corp"),
+            CreateCommand("Acme Corp", "diten.tech", Slug: "acme-corp"),
             CancellationToken.None);
 
         _repository.Verify(x => x.CreateAsync(It.Is<Tenant>(t =>
@@ -138,7 +152,8 @@ public sealed class TenantHandlersTests
             Domain: "diten.tech",
             Slug: "enterprise",
             DisplayName: "Enterprise Corporation",
-            TenantType: TenantType.Paid,
+            TenantType: TenantType.Customer,
+            PlanId: Guid.NewGuid(),
             LegalName: "Enterprise Corp Ltd.",
             TaxNumber: "123456789",
             Country: "TR",
@@ -153,7 +168,13 @@ public sealed class TenantHandlersTests
         var id = await _handler.Handle(command, CancellationToken.None);
 
         _repository.Verify(x => x.CreateAsync(It.Is<Tenant>(t =>
-            t.TenantType == TenantType.Paid &&
+            t.TenantType == TenantType.Customer &&
+            t.PlanId == command.PlanId &&
+            t.PlanCode == "FREE" &&
+            t.PlanName == "Free" &&
+            t.SubscriptionStatus == Diten.Platform.Domain.Enums.TenantSubscriptionStatus.Trialing &&
+            t.TrialStartDateUtc.HasValue &&
+            t.TrialEndDateUtc.HasValue &&
             t.LegalName == "Enterprise Corp Ltd." &&
             t.TaxNumber == "123456789" &&
             t.Country == "TR" &&
@@ -177,7 +198,8 @@ public sealed class TenantHandlersTests
                 LastName: "Doe",
                 Email: "jane@admintest.com",
                 Phone: "+905551234567",
-                MfaRequired: true));
+                MfaRequired: true),
+            PlanId: Guid.NewGuid());
 
         var id = await _handler.Handle(command, CancellationToken.None);
 
@@ -202,6 +224,57 @@ public sealed class TenantHandlersTests
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(new RegisterTenantCommand("Acme", "diten.tech", Slug: "acme"), CancellationToken.None));
     }
+
+    [Fact]
+    public async Task RegisterTenant_WithPaidPlan_ShouldSetActiveSubscriptionWithoutTrialDates()
+    {
+        var paidPlanId = Guid.NewGuid();
+        _subscriptionPlanRepository.Setup(x => x.GetByIdAsync(paidPlanId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SubscriptionPlan
+            {
+                Id = paidPlanId,
+                Code = "STARTER",
+                Name = "Starter",
+                IsActive = true,
+                IsTrialPlan = false
+            });
+
+        await _handler.Handle(CreateCommand("Paid Corp", "diten.tech") with { PlanId = paidPlanId }, CancellationToken.None);
+
+        _repository.Verify(x => x.CreateAsync(It.Is<Tenant>(t =>
+            t.PlanId == paidPlanId &&
+            t.SubscriptionStatus == Diten.Platform.Domain.Enums.TenantSubscriptionStatus.Active &&
+            t.TrialStartDateUtc == null &&
+            t.TrialEndDateUtc == null), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RegisterTenant_WithInactivePlan_ShouldThrow()
+    {
+        var inactivePlanId = Guid.NewGuid();
+        _subscriptionPlanRepository.Setup(x => x.GetByIdAsync(inactivePlanId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SubscriptionPlan
+            {
+                Id = inactivePlanId,
+                Code = "OLD",
+                Name = "Old",
+                IsActive = false
+            });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _handler.Handle(CreateCommand("Inactive Corp", "diten.tech") with { PlanId = inactivePlanId }, CancellationToken.None));
+    }
+
+    private static RegisterTenantCommand CreateCommand(string name, string domain, string? subdomain = null, string? Slug = null) =>
+        new(
+            Name: name,
+            Domain: domain,
+            Subdomain: subdomain,
+            Slug: Slug,
+            DisplayName: name,
+            TenantType: TenantType.Customer,
+            PlanId: Guid.NewGuid(),
+            InitialAdmin: new InitialAdminInfo("Jane", "Doe", $"admin@{name.Replace(" ", string.Empty).ToLowerInvariant()}.com"));
 
     [Fact]
     public async Task SuspendTenant_ShouldRejectDeactivatedTenant()

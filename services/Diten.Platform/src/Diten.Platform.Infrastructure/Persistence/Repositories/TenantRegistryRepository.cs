@@ -129,8 +129,16 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
         var deactivated = await Collection.CountDocumentsAsync(
             Builders<Tenant>.Filter.And(baseFilter, Builders<Tenant>.Filter.Eq(x => x.Status, TenantStatus.Deactivated)),
             cancellationToken: ct);
+        var trial = await Collection.CountDocumentsAsync(
+            Builders<Tenant>.Filter.And(baseFilter, Builders<Tenant>.Filter.Eq(x => x.SubscriptionStatus, Diten.Platform.Domain.Enums.TenantSubscriptionStatus.Trialing)),
+            cancellationToken: ct);
+        var overQuota = await Collection.CountDocumentsAsync(
+            Builders<Tenant>.Filter.And(
+                baseFilter,
+                Builders<Tenant>.Filter.Where(x => x.StorageQuotaGb > 0 && x.StorageUsedGb > x.StorageQuotaGb)),
+            cancellationToken: ct);
 
-        return new TenantRegistryStats(total, active, provisioning, suspended, deactivated);
+        return new TenantRegistryStats(total, active, provisioning, suspended, deactivated, trial, overQuota);
     }
 
     private static SortDefinition<Tenant> BuildSort(string sort)

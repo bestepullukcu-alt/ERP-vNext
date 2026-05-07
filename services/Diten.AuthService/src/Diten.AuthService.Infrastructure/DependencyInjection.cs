@@ -21,6 +21,9 @@ public static class DependencyInjection
         // Settings
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
         services.Configure<InternalEventAuthSettings>(configuration.GetSection("InternalEventAuth"));
+        services.Configure<PlatformServiceOptions>(configuration.GetSection(PlatformServiceOptions.SectionName));
+        services.Configure<MfaOptions>(configuration.GetSection(MfaOptions.SectionName));
+        services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>()
             ?? new JwtSettings();
 
@@ -43,6 +46,7 @@ public static class DependencyInjection
 
         // Authorization (Permission-based)
         services.AddAuthorization();
+        services.AddHttpContextAccessor();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
@@ -52,8 +56,16 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IRefreshTokenHasher, RefreshTokenHasher>();
         services.AddScoped<IInternalEventAuthService, InternalEventAuthService>();
+        services.AddScoped<IMfaChallengeService, MfaChallengeService>();
+        services.AddScoped<IOtpDeliveryService, SmtpOtpDeliveryService>();
         services.AddTransient<TenantPropagationHandler>();
         services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
+        services.AddHttpClient<ITenantLoginSettingsClient, PlatformTenantLoginSettingsClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
+            client.BaseAddress = new Uri(options.BaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
+        });
 
         // Tenant Context Registration
         services.AddScoped<TenantContext>();

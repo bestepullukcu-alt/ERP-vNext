@@ -65,6 +65,7 @@ public sealed class GoldenReferenceCompactSavePayload
 public sealed class GatewayResponse<T>
 {
     public T? Data { get; set; }
+    public bool IsSuccessful { get; set; }
     public int StatusCode { get; set; }
     public List<string> Errors { get; set; } = [];
 }

@@ -110,6 +110,8 @@ public sealed class TenantResolutionMiddleware
     {
         return path.StartsWithSegments("/api/platform-auth/login", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/tenant-auth/login", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/tenant-auth/mfa/verify", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/tenant-auth/mfa/resend", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/tenant-auth/register", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/auth/refresh-token", StringComparison.OrdinalIgnoreCase);
     }

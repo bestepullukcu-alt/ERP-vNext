@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tenants;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tenants.Commands;
@@ -7,7 +8,7 @@ using MediatR;
 
 namespace Diten.Platform.Application.Features.Tenants.Handlers;
 
-public sealed class SuspendTenantCommandHandler : IRequestHandler<SuspendTenantCommand, TenantLifecycleResultDto?>
+public sealed class SuspendTenantCommandHandler : IRequestHandler<SuspendTenantCommand, Response<TenantLifecycleResultDto>>
 {
     private readonly ITenantRegistryRepository _repository;
     private readonly ICurrentUserContext _currentUser;
@@ -18,28 +19,26 @@ public sealed class SuspendTenantCommandHandler : IRequestHandler<SuspendTenantC
         _currentUser = currentUser;
     }
 
-    public async Task<TenantLifecycleResultDto?> Handle(SuspendTenantCommand request, CancellationToken cancellationToken)
+    public async Task<Response<TenantLifecycleResultDto>> Handle(SuspendTenantCommand request, CancellationToken cancellationToken)
     {
         var tenant = await _repository.GetByIdAsync(request.TenantId, cancellationToken);
         if (tenant == null)
         {
-            return null;
+            return Response<TenantLifecycleResultDto>.Fail("Tenant not found.", 404);
         }
 
         if (tenant.Status == TenantStatus.Suspended)
         {
-            throw new InvalidOperationException("Tenant is already suspended.");
+            return Response<TenantLifecycleResultDto>.Fail("Tenant is already suspended.", 400);
         }
 
         if (tenant.Status == TenantStatus.Deactivated)
         {
-            throw new InvalidOperationException("Deactivated tenant cannot be suspended.");
+            return Response<TenantLifecycleResultDto>.Fail("Deactivated tenant cannot be suspended.", 400);
         }
 
         var now = DateTimeOffset.UtcNow;
-        var actor = _currentUser.IsAuthenticated && _currentUser.UserId != Guid.Empty
-            ? _currentUser.UserId.ToString()
-            : "system";
+        var actor = _currentUser.ActorName;
 
         tenant.Status = TenantStatus.Suspended;
         tenant.SuspendedAt = now;
@@ -55,6 +54,6 @@ public sealed class SuspendTenantCommandHandler : IRequestHandler<SuspendTenantC
 
         await _repository.UpdateAsync(tenant, cancellationToken);
 
-        return new TenantLifecycleResultDto(tenant.Id, tenant.Status.ToString(), now, "Tenant suspended.");
+        return Response<TenantLifecycleResultDto>.Success(new TenantLifecycleResultDto(tenant.Id, tenant.Status.ToString(), now, "Tenant suspended."));
     }
 }

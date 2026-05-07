@@ -7,7 +7,7 @@
   <data name="TenantsTitle" xml:space="preserve"><value>Tenant Management</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Manage platform tenant registry records, provisioning state, domains, defaults, and lifecycle.</value></data>
   <data name="TotalTenants" xml:space="preserve"><value>Total Tenants</value></data>
-  <data name="TenantIdentity" xml:space="preserve"><value>Tenant Identity</value></data>
+  <data name="TenantIdentity" xml:space="preserve"><value>Tenant</value></data>
   <data name="CodeSlug" xml:space="preserve"><value>Code / Slug</value></data>
   <data name="Domain" xml:space="preserve"><value>Domain</value></data>
   <data name="TenantType" xml:space="preserve"><value>Tenant Type</value></data>
@@ -16,6 +16,8 @@
   <data name="LocaleDefaults" xml:space="preserve"><value>Locale Defaults</value></data>
   <data name="Provisioning" xml:space="preserve"><value>Provisioning</value></data>
   <data name="Created" xml:space="preserve"><value>Created</value></data>
+  <data name="Storage" xml:space="preserve"><value>Storage</value></data>
+  <data name="OverQuota" xml:space="preserve"><value>Over Quota</value></data>
   <data name="Actions" xml:space="preserve"><value>Actions</value></data>
   <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
@@ -74,9 +76,14 @@
   <data name="SelectTenant" xml:space="preserve"><value>Select Tenant</value></data>
   <data name="SelectedTenant" xml:space="preserve"><value>Selected Tenant</value></data>
   <data name="LoginMethods" xml:space="preserve"><value>Login Methods</value></data>
+  <data name="AuthenticationSettings" xml:space="preserve"><value>Authentication Settings</value></data>
+  <data name="SessionSettings" xml:space="preserve"><value>Session Settings</value></data>
   <data name="TwoFactorEnabled" xml:space="preserve"><value>Two-factor enabled</value></data>
   <data name="EmailLoginEnabled" xml:space="preserve"><value>Email login enabled</value></data>
   <data name="PhoneLoginEnabled" xml:space="preserve"><value>Phone login enabled</value></data>
+  <data name="PhoneLoginFutureSupport" xml:space="preserve"><value>Phone Login setting is stored for future channel support. Phone OTP delivery is disabled until SMS provider configuration is enabled.</value></data>
+  <data name="MfaRequiresEmailLogin" xml:space="preserve"><value>MFA Required needs Two-Factor Authentication and Email Login enabled.</value></data>
+  <data name="AtLeastOneLoginMethod" xml:space="preserve"><value>At least one login method must be enabled.</value></data>
   <data name="PasswordPolicy" xml:space="preserve"><value>Password Policy</value></data>
   <data name="PasswordMinLength" xml:space="preserve"><value>Password min length</value></data>
   <data name="PasswordExpirationDays" xml:space="preserve"><value>Password expiration days</value></data>
@@ -97,4 +104,41 @@
   <data name="CommaOrLineSeparated" xml:space="preserve"><value>Use comma, semicolon, or line-separated values.</value></data>
   <data name="CountryCodeHelp" xml:space="preserve"><value>Use ISO country codes, one per line or separated by commas.</value></data>
   <data name="LoginSecuritySaved" xml:space="preserve"><value>Login and security settings saved.</value></data>
+  <data name="BackToTenants" xml:space="preserve"><value>Back to Tenants</value></data>
+  <data name="CreateTenantSubtitle" xml:space="preserve"><value>Set up a new tenant and provision initial access</value></data>
+  <data name="BasicInformation" xml:space="preserve"><value>Basic Information</value></data>
+  <data name="Subdomain" xml:space="preserve"><value>Subdomain</value></data>
+  <data name="AccessUrlPreview" xml:space="preserve"><value>Access URL Preview</value></data>
+  <data name="BackendCalculatedPreview" xml:space="preserve"><value>Preview only. Backend remains the source of truth.</value></data>
+  <data name="SubscriptionPlan" xml:space="preserve"><value>Subscription Plan</value></data>
+  <data name="LoadingPlans" xml:space="preserve"><value>Loading plans</value></data>
+  <data name="NoActivePlans" xml:space="preserve"><value>No active subscription plan is available.</value></data>
+  <data name="AccessPreview" xml:space="preserve"><value>Subscription / Access Preview</value></data>
+  <data name="SubscriptionStatus" xml:space="preserve"><value>Subscription Status</value></data>
+  <data name="TrialDuration" xml:space="preserve"><value>Trial Duration</value></data>
+  <data name="TrialStartDate" xml:space="preserve"><value>Trial Start Date</value></data>
+  <data name="TrialEndDate" xml:space="preserve"><value>Trial End Date</value></data>
+  <data name="TrialDateBackendCalculated" xml:space="preserve"><value>Trial dates are calculated by the backend during create.</value></data>
+  <data name="TenantTypeCustomer" xml:space="preserve"><value>Customer</value></data>
+  <data name="TenantTypeDemo" xml:space="preserve"><value>Demo</value></data>
+  <data name="SelectCountry" xml:space="preserve"><value>Select country</value></data>
+  <data name="SelectTimezone" xml:space="preserve"><value>Select timezone</value></data>
+  <data name="SelectCurrency" xml:space="preserve"><value>Select currency</value></data>
+  <data name="TenantNameRequired" xml:space="preserve"><value>Tenant name is required.</value></data>
+  <data name="DisplayNameRequired" xml:space="preserve"><value>Display name is required.</value></data>
+  <data name="AdminEmailRequired" xml:space="preserve"><value>Admin email is required.</value></data>
+  <data name="AdminEmailInvalid" xml:space="preserve"><value>Admin email must be valid.</value></data>
+  <data name="SubdomainRequired" xml:space="preserve"><value>Subdomain is required.</value></data>
+  <data name="PlanRequired" xml:space="preserve"><value>Select an active subscription plan.</value></data>
+  <data name="PlanLoadError" xml:space="preserve"><value>Active subscription plans could not be loaded.</value></data>
+  <data name="FreeTrial" xml:space="preserve"><value>Free</value></data>
+  <data name="Default" xml:space="preserve"><value>Default</value></data>
+  <data name="Month" xml:space="preserve"><value>month</value></data>
+  <data name="Year" xml:space="preserve"><value>year</value></data>
+  <data name="Days" xml:space="preserve"><value>days</value></data>
+  <data name="Features" xml:space="preserve"><value>features</value></data>
+  <data name="Quotas" xml:space="preserve"><value>quotas</value></data>
+  <data name="NoFeatureSummary" xml:space="preserve"><value>No feature summary</value></data>
+  <data name="NoTrialPeriod" xml:space="preserve"><value>No trial period</value></data>
+  <data name="CustomPricing" xml:space="preserve"><value>Custom pricing</value></data>
 </root>

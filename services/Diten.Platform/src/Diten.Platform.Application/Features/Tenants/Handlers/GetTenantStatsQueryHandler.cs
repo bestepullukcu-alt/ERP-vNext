@@ -22,6 +22,8 @@ public sealed class GetTenantStatsQueryHandler : IRequestHandler<GetTenantStatsQ
             stats.Active,
             stats.Provisioning,
             stats.Suspended,
-            stats.Deactivated);
+            stats.Deactivated,
+            stats.Trial,
+            stats.OverQuota);
     }
 }

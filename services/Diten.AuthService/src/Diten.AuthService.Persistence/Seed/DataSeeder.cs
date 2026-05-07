@@ -35,24 +35,24 @@ public static class DataSeeder
         var col = database.GetCollection<Permission>("permissions");
         var permissions = new List<Permission>
         {
-            new("auth", "users", "create", "Kullanıcı Oluştur", "Yeni kullanıcı ekleme yetkisi"),
-            new("auth", "users", "read", "Kullanıcı Oku", "Kullanıcı listesi ve detay görme yetkisi"),
-            new("auth", "users", "update", "Kullanıcı Güncelle", "Kullanıcı bilgilerini düzenleme yetkisi"),
-            new("auth", "users", "delete", "Kullanıcı Sil", "Kullanıcıyı silme yetkisi"),
-            new("auth", "users", "assign-role", "Rol Ata", "Kullanıcıya rol atama yetkisi"),
-            
-            new("auth", "roles", "create", "Rol Oluştur", "Yeni rol ekleme yetkisi"),
-            new("auth", "roles", "read", "Rol Oku", "Rol listesi görme yetkisi"),
-            new("auth", "roles", "update", "Rol Güncelle", "Rol düzenleme yetkisi"),
-            new("auth", "roles", "delete", "Rol Sil", "Rol silme yetkisi"),
-            new("auth", "roles", "assign-permission", "Yetki Ata", "Role yetki atama yetkisi"),
+            new("auth", "users", "create", "Create User", "Permission to create a new user"),
+            new("auth", "users", "read", "Read User", "Permission to view user lists and details"),
+            new("auth", "users", "update", "Update User", "Permission to edit user information"),
+            new("auth", "users", "delete", "Delete User", "Permission to delete users"),
+            new("auth", "users", "assign-role", "Assign Role", "Permission to assign roles to users"),
 
-            new("mdm", "legal-entities", "create", "Tüzel Kişi Oluştur", null),
-            new("mdm", "legal-entities", "read", "Tüzel Kişi Oku", null),
-            new("mdm", "legal-entities", "update", "Tüzel Kişi Güncelle", null),
-            new("mdm", "legal-entities", "delete", "Tüzel Kişi Sil", null),
-            new("mdm", "legal-entities", "bulk-delete", "Toplu Sil", null),
-            new("mdm", "legal-entities", "export", "Dışa Aktar", null)
+            new("auth", "roles", "create", "Create Role", "Permission to create a new role"),
+            new("auth", "roles", "read", "Read Role", "Permission to view role lists"),
+            new("auth", "roles", "update", "Update Role", "Permission to edit roles"),
+            new("auth", "roles", "delete", "Delete Role", "Permission to delete roles"),
+            new("auth", "roles", "assign-permission", "Assign Permission", "Permission to assign permissions to roles"),
+
+            new("mdm", "legal-entities", "create", "Create Legal Entity", null),
+            new("mdm", "legal-entities", "read", "Read Legal Entity", null),
+            new("mdm", "legal-entities", "update", "Update Legal Entity", null),
+            new("mdm", "legal-entities", "delete", "Delete Legal Entity", null),
+            new("mdm", "legal-entities", "bulk-delete", "Bulk Delete", null),
+            new("mdm", "legal-entities", "export", "Export", null)
         };
 
         foreach (var p in permissions)
@@ -70,15 +70,15 @@ public static class DataSeeder
         var rpCol = database.GetCollection<RolePermission>("rolePermissions");
 
         // SuperAdmin
-        var superAdmin = await EnsureRole(roleCol, "SuperAdmin", "Süper Yönetici", "Tüm sistem yetkileri");
+        var superAdmin = await EnsureRole(roleCol, "SuperAdmin", "Super Administrator", "All system permissions");
         await AssignAllPermissions(permCol, rpCol, superAdmin.Id);
 
         // Admin
-        var admin = await EnsureRole(roleCol, "Admin", "Yönetici", "Auth ve MDM yönetimi");
+        var admin = await EnsureRole(roleCol, "Admin", "Administrator", "Auth and MDM administration");
         await AssignPermissions(permCol, rpCol, admin.Id, "auth", "mdm");
 
         // Viewer
-        var viewer = await EnsureRole(roleCol, "Viewer", "İzleyici", "Sadece okuma yetkisi");
+        var viewer = await EnsureRole(roleCol, "Viewer", "Viewer", "Read-only permissions");
         await AssignReadPermissions(permCol, rpCol, viewer.Id);
     }
 

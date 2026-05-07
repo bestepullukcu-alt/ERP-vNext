@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Diten.AuthService.Application.Features.Roles.Handlers.QueryHandlers;
 
-public sealed class GetAllRolesQueryHandler : IRequestHandler<GetAllRolesQuery, List<RoleDto>>
+public sealed class GetAllRolesQueryHandler : IRequestHandler<GetAllRolesQuery, Response<List<RoleDto>>>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
@@ -22,7 +22,7 @@ public sealed class GetAllRolesQueryHandler : IRequestHandler<GetAllRolesQuery, 
         _tenantContext = tenantContext;
     }
 
-    public async Task<List<RoleDto>> Handle(GetAllRolesQuery request, CancellationToken ct)
+    public async Task<Response<List<RoleDto>>> Handle(GetAllRolesQuery request, CancellationToken ct)
     {
         var roles = await _roleRepository.GetAllByTenantAsync(_tenantContext.TenantId, ct);
         var dtos = new List<RoleDto>();
@@ -33,6 +33,6 @@ public sealed class GetAllRolesQueryHandler : IRequestHandler<GetAllRolesQuery, 
             dtos.Add(new RoleDto(role.Id, role.Name, role.DisplayName, role.Description, role.IsSystem, perms.Count()));
         }
 
-        return dtos;
+        return Response<List<RoleDto>>.Success(dtos);
     }
 }

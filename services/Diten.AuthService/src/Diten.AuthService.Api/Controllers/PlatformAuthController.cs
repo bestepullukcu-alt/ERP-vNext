@@ -1,3 +1,4 @@
+using Diten.AuthService.Api.Controllers.Common;
 using Diten.AuthService.Api.Models;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using MediatR;
@@ -6,9 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.AuthService.Api.Controllers;
 
-[ApiController]
 [Route("api/platform-auth")]
-public sealed class PlatformAuthController : ControllerBase
+public sealed class PlatformAuthController : CustomBaseController
 {
     private readonly IMediator _mediator;
 
@@ -23,7 +23,7 @@ public sealed class PlatformAuthController : ControllerBase
     {
         var command = new PlatformLoginCommand(request.Email, request.Password, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
-        return Ok(result);
+        return CreateActionResultInstance(result);
     }
 
     private static string ResolveRequestIp(HttpContext context)

@@ -1,0 +1,17 @@
+@model Diten.Web.Controllers.Platform.SubscriptionPlansController.SubscriptionPlanEditViewModel
+@using Diten.Web.Views.Platform.SubscriptionPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SubscriptionPlansIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    ViewData["FormMode"] = "edit";
+    Layout = "_LayoutPlatformAdmin";
+}
+
+<partial name="~/Views/Platform/SubscriptionPlans/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/Platform/SubscriptionPlans/form.js" asp-append-version="true"></script>
+}
+

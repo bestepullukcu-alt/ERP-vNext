@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tenants;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tenants.Commands;
@@ -7,7 +8,7 @@ using MediatR;
 
 namespace Diten.Platform.Application.Features.Tenants.Handlers;
 
-public sealed class ReactivateTenantCommandHandler : IRequestHandler<ReactivateTenantCommand, TenantLifecycleResultDto?>
+public sealed class ReactivateTenantCommandHandler : IRequestHandler<ReactivateTenantCommand, Response<TenantLifecycleResultDto>>
 {
     private readonly ITenantRegistryRepository _repository;
     private readonly ICurrentUserContext _currentUser;
@@ -18,28 +19,26 @@ public sealed class ReactivateTenantCommandHandler : IRequestHandler<ReactivateT
         _currentUser = currentUser;
     }
 
-    public async Task<TenantLifecycleResultDto?> Handle(ReactivateTenantCommand request, CancellationToken cancellationToken)
+    public async Task<Response<TenantLifecycleResultDto>> Handle(ReactivateTenantCommand request, CancellationToken cancellationToken)
     {
         var tenant = await _repository.GetByIdAsync(request.TenantId, cancellationToken);
         if (tenant == null)
         {
-            return null;
+            return Response<TenantLifecycleResultDto>.Fail("Tenant not found.", 404);
         }
 
         if (tenant.Status == TenantStatus.Active)
         {
-            throw new InvalidOperationException("Tenant is already active.");
+            return Response<TenantLifecycleResultDto>.Fail("Tenant is already active.", 400);
         }
 
         if (tenant.Status == TenantStatus.Deactivated)
         {
-            throw new InvalidOperationException("Deactivated tenant cannot be reactivated in MVP.");
+            return Response<TenantLifecycleResultDto>.Fail("Deactivated tenant cannot be reactivated in MVP.", 400);
         }
 
         var now = DateTimeOffset.UtcNow;
-        var actor = _currentUser.IsAuthenticated && _currentUser.UserId != Guid.Empty
-            ? _currentUser.UserId.ToString()
-            : "system";
+        var actor = _currentUser.ActorName;
 
         tenant.Status = TenantStatus.Active;
         tenant.ProvisioningStatus = "Completed";
@@ -67,6 +66,6 @@ public sealed class ReactivateTenantCommandHandler : IRequestHandler<ReactivateT
 
         await _repository.UpdateAsync(tenant, cancellationToken);
 
-        return new TenantLifecycleResultDto(tenant.Id, tenant.Status.ToString(), now, "Tenant reactivated.");
+        return Response<TenantLifecycleResultDto>.Success(new TenantLifecycleResultDto(tenant.Id, tenant.Status.ToString(), now, "Tenant reactivated."));
     }
 }

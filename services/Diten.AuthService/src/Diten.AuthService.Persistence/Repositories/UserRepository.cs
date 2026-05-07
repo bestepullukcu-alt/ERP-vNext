@@ -62,6 +62,17 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         return await ReplaceOneAsync(user, ct);
     }
 
+    public async Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, user.Id),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+
+        await Collection.ReplaceOneAsync(filter, user, cancellationToken: ct);
+        return user;
+    }
+
     public async Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
     {
         var filter = Builders<User>.Filter.And(

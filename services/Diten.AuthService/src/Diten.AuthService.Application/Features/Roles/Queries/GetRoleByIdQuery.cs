@@ -1,6 +1,7 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.DTOs;
 using MediatR;
 
 namespace Diten.AuthService.Application.Features.Roles.Queries;
 
-public sealed record GetRoleByIdQuery(Guid Id) : IRequest<RoleDto>;
+public sealed record GetRoleByIdQuery(Guid Id) : IRequest<Response<RoleDto>>;

@@ -1,0 +1,39 @@
+@using System.Text.Json
+@using Diten.Web.Views.Platform.SubscriptionPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SubscriptionPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        SubscriptionPlansTitle = Localizer["SubscriptionPlansTitle"].Value,
+        CreatePlan = Localizer["CreatePlan"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        Activate = Localizer["Activate"].Value,
+        Deactivate = Localizer["Deactivate"].Value,
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Default = Localizer["Default"].Value,
+        Trial = Localizer["Trial"].Value,
+        Monthly = Localizer["Monthly"].Value,
+        Yearly = Localizer["Yearly"].Value,
+        Currency = Localizer["Currency"].Value,
+        TrialDurationDays = Localizer["TrialDurationDays"].Value,
+        Features = Localizer["Features"].Value,
+        Modules = Localizer["Modules"].Value,
+        Quotas = Localizer["Quotas"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Yes = SharedLocalizer["Yes"].Value,
+        No = SharedLocalizer["No"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        ValidationFailed = SharedLocalizer["ValidationFailed"].Value,
+        GatewayError = SharedLocalizer["GatewayError"].Value,
+        EmptyState = Localizer["EmptyState"].Value
+    };
+}
+<script id="subscription-plans-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>
+

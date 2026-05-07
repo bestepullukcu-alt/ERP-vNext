@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Diten.AuthService.Application.Features.Roles.Handlers.CommandHandlers;
 
-public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermissionCommand, Unit>
+public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermissionCommand, Response<NoContent>>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
@@ -21,13 +21,13 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
         _tenantContext = tenantContext;
     }
 
-    public async Task<Unit> Handle(RevokePermissionCommand request, CancellationToken ct)
+    public async Task<Response<NoContent>> Handle(RevokePermissionCommand request, CancellationToken ct)
     {
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, _tenantContext.TenantId, ct);
         if (role != null && role.IsSystem) 
-            throw new InvalidOperationException("Sistem rollerinden yetki kaldırılamaz.");
+            return Response<NoContent>.Fail("Permissions cannot be removed from system roles.", 403);
 
         await _rolePermissionRepository.RevokeAsync(request.RoleId, request.PermissionId, _tenantContext.TenantId, ct);
-        return Unit.Value;
+        return Response<NoContent>.Success(204);
     }
 }

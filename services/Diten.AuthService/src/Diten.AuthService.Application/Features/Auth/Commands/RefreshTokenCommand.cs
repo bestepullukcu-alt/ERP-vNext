@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.DTOs;
 using MediatR;
 
@@ -8,4 +9,4 @@ public sealed record RefreshTokenCommand(
     string RefreshToken,
     string RequestIp,
     string? UserAgent
-) : IRequest<AuthResponse>;
+) : IRequest<Response<AuthResponse>>;

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 
-public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Unit>
+public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Response<NoContent>>
 {
     private readonly IUserRepository _userRepository;
     private readonly ITenantContext _tenantContext;
@@ -22,10 +22,10 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(DeleteUserCommand request, CancellationToken ct)
+    public async Task<Response<NoContent>> Handle(DeleteUserCommand request, CancellationToken ct)
     {
         await _userRepository.SoftDeleteAsync(request.Id, _tenantContext.TenantId, ct);
-        _logger.LogInformation("Kullanıcı silindi (soft delete). Id={Id}", request.Id);
-        return Unit.Value;
+        _logger.LogInformation("User soft-deleted. Id={Id}", request.Id);
+        return Response<NoContent>.Success(204);
     }
 }

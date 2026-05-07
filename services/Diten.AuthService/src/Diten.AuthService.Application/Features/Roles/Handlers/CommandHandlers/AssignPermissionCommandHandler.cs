@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Diten.AuthService.Application.Features.Roles.Handlers.CommandHandlers;
 
-public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermissionCommand, Unit>
+public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermissionCommand, Response<NoContent>>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly IPermissionRepository _permissionRepository;
@@ -25,15 +25,15 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         _tenantContext = tenantContext;
     }
 
-    public async Task<Unit> Handle(AssignPermissionCommand request, CancellationToken ct)
+    public async Task<Response<NoContent>> Handle(AssignPermissionCommand request, CancellationToken ct)
     {
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, _tenantContext.TenantId, ct);
-        if (role == null) throw new KeyNotFoundException("Rol bulunamadı.");
+        if (role == null) return Response<NoContent>.Fail("Role not found.", 404);
 
         // Permissions are global, so we use ID directly
         // Note: Repository might need module.resource.action check later if needed
         
         await _rolePermissionRepository.AssignAsync(new RolePermission(request.RoleId, request.PermissionId, _tenantContext.TenantId, "System"), ct);
-        return Unit.Value;
+        return Response<NoContent>.Success(204);
     }
 }

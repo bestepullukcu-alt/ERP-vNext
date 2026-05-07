@@ -7,6 +7,7 @@ using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Http;
+using Diten.Platform.Infrastructure.Settings;
 using Diten.Platform.Common.Tenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
@@ -57,10 +58,13 @@ public static class DependencyInjection
         });
         services.AddHttpContextAccessor();
         services.Configure<TenantManagementOptions>(configuration.GetSection(TenantManagementOptions.SectionName));
+        services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
+        services.Configure<AuthServiceOptions>(configuration.GetSection(AuthServiceOptions.SectionName));
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
+        services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
         services.AddTransient<TenantPropagationHandler>();
         services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
 
@@ -92,9 +96,11 @@ public static class DependencyInjection
         services.AddScoped<ITenantLoginSettingsRepository, TenantLoginSettingsRepository>();
         services.AddScoped<IModuleCatalogRepository, ModuleCatalogRepository>();
         services.AddScoped<IModulePageDescriptorRepository, ModulePageDescriptorRepository>();
+        services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
 
         LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
         MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
+        SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
         return services;
     }

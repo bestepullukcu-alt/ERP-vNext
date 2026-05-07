@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 
-public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserDto>
+public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Response<UserDto>>
 {
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
@@ -26,10 +26,10 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         _logger = logger;
     }
 
-    public async Task<UserDto> Handle(UpdateUserCommand request, CancellationToken ct)
+    public async Task<Response<UserDto>> Handle(UpdateUserCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (user == null) throw new KeyNotFoundException("Kullanıcı bulunamadı.");
+        if (user == null) return Response<UserDto>.Fail("User not found.", 404);
 
         user.UpdateProfile(request.FirstName, request.LastName);
         if (request.IsActive) user.Activate(); else user.Deactivate();
@@ -38,6 +38,6 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         
         var roles = await _userRoleRepository.GetRolesByUserAsync(user.Id, _tenantContext.TenantId, ct);
 
-        return new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId);
+        return Response<UserDto>.Success(new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId));
     }
 }

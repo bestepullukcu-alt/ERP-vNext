@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Events;
 using Diten.Platform.Application.Features.Tenants.Commands;
@@ -8,9 +9,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Tenants.Handlers;
 
-public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantCommand, Guid>
+public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantCommand, Response<Guid>>
 {
     private readonly ITenantRegistryRepository _repository;
+    private readonly ISubscriptionPlanRepository _subscriptionPlanRepository;
     private readonly ITenantDomainRepository _domainRepository;
     private readonly ITenantLoginSettingsRepository _loginSettingsRepository;
     private readonly ITenantDefaultsProvider _defaults;
@@ -19,6 +21,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
 
     public RegisterTenantCommandHandler(
         ITenantRegistryRepository repository,
+        ISubscriptionPlanRepository subscriptionPlanRepository,
         ITenantDomainRepository domainRepository,
         ITenantLoginSettingsRepository loginSettingsRepository,
         ITenantDefaultsProvider defaults,
@@ -26,6 +29,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
         ILogger<RegisterTenantCommandHandler> logger)
     {
         _repository = repository;
+        _subscriptionPlanRepository = subscriptionPlanRepository;
         _domainRepository = domainRepository;
         _loginSettingsRepository = loginSettingsRepository;
         _defaults = defaults;
@@ -33,7 +37,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
         _logger = logger;
     }
 
-    public async Task<Guid> Handle(RegisterTenantCommand request, CancellationToken cancellationToken)
+    public async Task<Response<Guid>> Handle(RegisterTenantCommand request, CancellationToken cancellationToken)
     {
         // 1. Build slug
         var slug = string.IsNullOrWhiteSpace(request.Slug)
@@ -44,7 +48,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
         var existingSlug = await _repository.GetBySlugAsync(slug, cancellationToken);
         if (existingSlug != null)
         {
-            throw new InvalidOperationException($"Tenant slug '{slug}' already exists.");
+            return Response<Guid>.Fail($"Tenant slug '{slug}' already exists.", 409);
         }
 
         // 3. Domain normalize & uniqueness check
@@ -52,7 +56,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
         var existingDomain = await _repository.GetByDomainAsync(normalizedDomain, cancellationToken);
         if (existingDomain != null)
         {
-            throw new InvalidOperationException($"Tenant domain '{normalizedDomain}' already exists.");
+            return Response<Guid>.Fail($"Tenant domain '{normalizedDomain}' already exists.", 409);
         }
 
         // 4. Build primary platform subdomain
@@ -64,16 +68,46 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
             var existingPlatformDomain = await _domainRepository.GetByDomainNameAsync(platformDomain, cancellationToken);
             if (existingPlatformDomain != null)
             {
-                throw new InvalidOperationException($"Platform domain '{platformDomain}' already exists.");
+                return Response<Guid>.Fail($"Platform domain '{platformDomain}' already exists.", 409);
             }
         }
 
         // 5. Generate unique code
         var code = await GenerateUniqueCodeAsync(request.Name, cancellationToken);
+        if (code is null)
+        {
+            return Response<Guid>.Fail("Unable to generate unique tenant code.", 500);
+        }
         var now = DateTimeOffset.UtcNow;
-        var actor = _currentUser.IsAuthenticated && _currentUser.UserId != Guid.Empty
-            ? _currentUser.UserId.ToString()
-            : "system";
+        var actor = _currentUser.ActorName;
+        var tier = string.IsNullOrWhiteSpace(request.Tier) ? _defaults.DefaultTier : request.Tier.Trim();
+        var tenantLimits = ResolveTenantLimits(tier);
+        if (!request.PlanId.HasValue || request.PlanId.Value == Guid.Empty)
+        {
+            return Response<Guid>.Fail("PlanId is required.", 400);
+        }
+
+        var selectedPlan = await _subscriptionPlanRepository.GetByIdAsync(request.PlanId.Value, cancellationToken);
+        if (selectedPlan == null)
+        {
+            return Response<Guid>.Fail("Selected subscription plan was not found.", 404);
+        }
+
+        if (!selectedPlan.IsActive)
+        {
+            return Response<Guid>.Fail("Selected subscription plan is not active.", 400);
+        }
+
+        if (selectedPlan.IsTrialPlan && (!selectedPlan.TrialDurationDays.HasValue || selectedPlan.TrialDurationDays.Value <= 0))
+        {
+            return Response<Guid>.Fail("Selected trial plan has an invalid trial duration.", 400);
+        }
+
+        var subscriptionStatus = selectedPlan.IsTrialPlan
+            ? Diten.Platform.Domain.Enums.TenantSubscriptionStatus.Trialing
+            : Diten.Platform.Domain.Enums.TenantSubscriptionStatus.Active;
+        var trialStartDateUtc = selectedPlan.IsTrialPlan ? now : (DateTimeOffset?)null;
+        var trialEndDateUtc = selectedPlan.IsTrialPlan ? now.AddDays(selectedPlan.TrialDurationDays!.Value) : (DateTimeOffset?)null;
 
         // 6. Build tenant entity
         var tenant = new Tenant
@@ -86,8 +120,18 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
             Region = string.IsNullOrWhiteSpace(request.Region) ? _defaults.DefaultRegion : request.Region.Trim().ToUpperInvariant(),
             Environment = string.IsNullOrWhiteSpace(request.Environment) ? _defaults.DefaultEnvironment : request.Environment.Trim(),
             Status = TenantStatus.Provisioning,
-            Tier = string.IsNullOrWhiteSpace(request.Tier) ? _defaults.DefaultTier : request.Tier.Trim(),
-            TenantType = request.TenantType ?? TenantType.Trial,
+            Tier = tier,
+            TenantType = request.TenantType ?? TenantType.Customer,
+            PlanId = selectedPlan.Id,
+            PlanCode = selectedPlan.Code,
+            PlanName = selectedPlan.Name,
+            SubscriptionStatus = subscriptionStatus,
+            TrialStartDateUtc = trialStartDateUtc,
+            TrialEndDateUtc = trialEndDateUtc,
+            ActiveUserCount = 0,
+            UserLimit = tenantLimits.UserLimit,
+            StorageUsedGb = 0,
+            StorageQuotaGb = tenantLimits.StorageQuotaGb,
 
             // Legal & Company
             LegalName = request.LegalName?.Trim(),
@@ -160,6 +204,23 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
                     At = now
                 }
             ],
+            AdminUsers = request.InitialAdmin == null
+                ? []
+                :
+                [
+                    new TenantAdminUser
+                    {
+                        Name = string.IsNullOrWhiteSpace(string.Join(' ', new[] { request.InitialAdmin.FirstName, request.InitialAdmin.LastName }
+                            .Where(part => !string.IsNullOrWhiteSpace(part))).Trim())
+                            ? request.InitialAdmin.Email.Trim().ToLowerInvariant()
+                            : string.Join(' ', new[] { request.InitialAdmin.FirstName, request.InitialAdmin.LastName }
+                                .Where(part => !string.IsNullOrWhiteSpace(part))).Trim(),
+                        Email = request.InitialAdmin.Email.Trim().ToLowerInvariant(),
+                        Status = TenantAdminUserStatus.Invited,
+                        InvitedAt = now,
+                        UpdatedAt = now
+                    }
+                ],
             CreatedBy = actor,
             UpdatedAt = now,
             UpdatedBy = actor
@@ -224,10 +285,10 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
                 code, request.InitialAdmin.Email);
         }
 
-        return tenant.Id;
+        return Response<Guid>.Success(tenant.Id, 201);
     }
 
-    private async Task<string> GenerateUniqueCodeAsync(string name, CancellationToken cancellationToken)
+    private async Task<string?> GenerateUniqueCodeAsync(string name, CancellationToken cancellationToken)
     {
         var stem = BuildCodeStem(name);
 
@@ -242,7 +303,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
             }
         }
 
-        throw new InvalidOperationException("Unable to generate unique tenant code.");
+        return null;
     }
 
     private static string NormalizeDomain(string domain, string? subdomain)
@@ -270,6 +331,18 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
             .ToUpperInvariant();
 
         return string.IsNullOrWhiteSpace(letters) ? "TENANT" : letters.PadRight(6, 'X');
+    }
+
+    private static (int UserLimit, decimal StorageQuotaGb) ResolveTenantLimits(string? tier)
+    {
+        return (tier ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "enterprise" => (500, 500),
+            "premium" => (250, 250),
+            "standard" => (50, 100),
+            "trial" => (10, 10),
+            _ => (50, 100)
+        };
     }
 
     private static string BuildSlug(string value)

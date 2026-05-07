@@ -28,7 +28,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     public async Task<IActionResult> GetItems([FromQuery] ModuleCatalogFilterRequest filter, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModuleCatalogItemsQuery(filter), ct);
-        return CreateActionResult(response);
+        return CreateActionResultInstance(response);
     }
 
     [HttpGet("stats")]
@@ -36,7 +36,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     public async Task<IActionResult> GetStats(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModuleCatalogStatsQuery(), ct);
-        return CreateActionResult(response);
+        return CreateActionResultInstance(response);
     }
 
     [HttpGet("assignable")]
@@ -44,7 +44,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     public async Task<IActionResult> GetAssignable(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetAssignableModuleCatalogItemsQuery(), ct);
-        return CreateActionResult(response);
+        return CreateActionResultInstance(response);
     }
 
     [HttpGet("{id:guid}")]
@@ -52,7 +52,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModuleCatalogItemByIdQuery(id), ct);
-        return CreateActionResult(response);
+        return CreateActionResultInstance(response);
     }
 
     [HttpGet("by-code/{moduleCode}")]
@@ -60,7 +60,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     public async Task<IActionResult> GetByCode(string moduleCode, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModuleCatalogItemByCodeQuery(moduleCode), ct);
-        return CreateActionResult(response);
+        return CreateActionResultInstance(response);
     }
 
     [HttpPost]
@@ -68,7 +68,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     public async Task<IActionResult> Create([FromBody] CreateModuleCatalogItemRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new CreateModuleCatalogItemCommand(request), ct);
-        return CreateActionResult(response);
+        return CreateActionResultInstance(response);
     }
 
     [HttpPut("{id:guid}")]
@@ -76,7 +76,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateModuleCatalogItemRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new UpdateModuleCatalogItemCommand(id, request), ct);
-        return CreateActionResult(response);
+        return CreateActionResultInstance(response);
     }
 
     [HttpPost("{id:guid}/activate")]
@@ -84,7 +84,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     public async Task<IActionResult> Activate(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new ActivateModuleCatalogItemCommand(id), ct);
-        return CreateActionResult(response);
+        return CreateActionResultInstance(response);
     }
 
     [HttpPost("{id:guid}/deactivate")]
@@ -92,7 +92,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeactivateModuleCatalogItemCommand(id), ct);
-        return CreateActionResult(response);
+        return CreateActionResultInstance(response);
     }
 
     [HttpDelete("{id:guid}")]
@@ -100,7 +100,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeleteModuleCatalogItemCommand(id), ct);
-        return CreateActionResult(response);
+        return CreateActionResultInstance(response);
     }
 
     [HttpDelete("bulk")]
@@ -108,31 +108,6 @@ public sealed class ModuleCatalogController : CustomBaseController
     public async Task<IActionResult> BulkDelete([FromBody] IReadOnlyList<Guid> ids, CancellationToken ct)
     {
         var response = await _mediator.Send(new BulkDeleteModuleCatalogItemsCommand(ids), ct);
-        return CreateActionResult(response);
-    }
-
-    private IActionResult CreateActionResult<T>(Response<T> response)
-    {
-        var payload = new
-        {
-            data = response.Data,
-            statusCode = response.StatusCode,
-            isSuccessful = response.IsSuccessful,
-            succeeded = response.IsSuccessful,
-            errors = response.Errors,
-            message = response.IsSuccessful ? "OK" : string.Join(" ", response.Errors)
-        };
-
-        return response.StatusCode switch
-        {
-            200 => Ok(payload),
-            201 => StatusCode(StatusCodes.Status201Created, payload),
-            204 => NoContent(),
-            400 => BadRequest(payload),
-            403 => StatusCode(StatusCodes.Status403Forbidden, payload),
-            404 => NotFound(payload),
-            409 => Conflict(payload),
-            _ => StatusCode(response.StatusCode, payload)
-        };
+        return CreateActionResultInstance(response);
     }
 }

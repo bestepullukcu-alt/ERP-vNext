@@ -11,6 +11,7 @@ public interface ITenantRegistryRepository
     Task<IReadOnlyList<Tenant>> GetActiveTenantsAsync(CancellationToken ct = default);
     Task<Tenant> CreateAsync(Tenant tenant, CancellationToken ct = default);
     Task UpdateAsync(Tenant tenant, CancellationToken ct = default);
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
     Task UpdateStatusAsync(Guid id, TenantStatus status, CancellationToken ct = default);
     Task<IReadOnlyList<Tenant>> GetAllAsync(CancellationToken ct = default);
     Task<(IReadOnlyList<Tenant> Items, long TotalCount)> QueryAsync(TenantListQuery query, CancellationToken ct = default);
@@ -30,4 +31,6 @@ public sealed record TenantRegistryStats(
     long Active,
     long Provisioning,
     long Suspended,
-    long Deactivated);
+    long Deactivated,
+    long Trial,
+    long OverQuota);

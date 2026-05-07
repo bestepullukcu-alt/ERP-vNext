@@ -7,7 +7,7 @@
   <data name="TenantsTitle" xml:space="preserve"><value>Tenant Yönetimi</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Platform tenant kayıtlarını, provisioning durumunu, domainleri, varsayılanları ve yaşam döngüsünü yönetin.</value></data>
   <data name="TotalTenants" xml:space="preserve"><value>Toplam Tenant</value></data>
-  <data name="TenantIdentity" xml:space="preserve"><value>Tenant Kimliği</value></data>
+  <data name="TenantIdentity" xml:space="preserve"><value>Tenant</value></data>
   <data name="CodeSlug" xml:space="preserve"><value>Kod / Slug</value></data>
   <data name="Domain" xml:space="preserve"><value>Domain</value></data>
   <data name="TenantType" xml:space="preserve"><value>Tenant Tipi</value></data>
@@ -16,6 +16,8 @@
   <data name="LocaleDefaults" xml:space="preserve"><value>Yerel Varsayılanlar</value></data>
   <data name="Provisioning" xml:space="preserve"><value>Provisioning</value></data>
   <data name="Created" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="Storage" xml:space="preserve"><value>Depolama</value></data>
+  <data name="OverQuota" xml:space="preserve"><value>Kota Aşımı</value></data>
   <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
   <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>Genel Bilgiler</value></data>
@@ -74,9 +76,14 @@
   <data name="SelectTenant" xml:space="preserve"><value>Tenant Seçin</value></data>
   <data name="SelectedTenant" xml:space="preserve"><value>Seçili Tenant</value></data>
   <data name="LoginMethods" xml:space="preserve"><value>Giriş Yöntemleri</value></data>
+  <data name="AuthenticationSettings" xml:space="preserve"><value>Kimlik Doğrulama Ayarları</value></data>
+  <data name="SessionSettings" xml:space="preserve"><value>Oturum Ayarları</value></data>
   <data name="TwoFactorEnabled" xml:space="preserve"><value>İki faktör etkin</value></data>
   <data name="EmailLoginEnabled" xml:space="preserve"><value>E-posta ile giriş etkin</value></data>
   <data name="PhoneLoginEnabled" xml:space="preserve"><value>Telefon ile giriş etkin</value></data>
+  <data name="PhoneLoginFutureSupport" xml:space="preserve"><value>Telefon ile giriş ayarı gelecekteki kanal desteği için saklanır. SMS sağlayıcı konfigürasyonu etkinleştirilene kadar telefon OTP gönderimi kapalıdır.</value></data>
+  <data name="MfaRequiresEmailLogin" xml:space="preserve"><value>MFA zorunlu olduğunda iki faktör ve e-posta ile giriş etkin olmalıdır.</value></data>
+  <data name="AtLeastOneLoginMethod" xml:space="preserve"><value>En az bir giriş yöntemi etkin olmalıdır.</value></data>
   <data name="PasswordPolicy" xml:space="preserve"><value>Parola Politikası</value></data>
   <data name="PasswordMinLength" xml:space="preserve"><value>Minimum parola uzunluğu</value></data>
   <data name="PasswordExpirationDays" xml:space="preserve"><value>Parola geçerlilik günü</value></data>
@@ -97,4 +104,41 @@
   <data name="CommaOrLineSeparated" xml:space="preserve"><value>Virgül, noktalı virgül veya satır bazlı değerler kullanın.</value></data>
   <data name="CountryCodeHelp" xml:space="preserve"><value>ISO ülke kodları kullanın; satır bazlı veya virgülle ayırın.</value></data>
   <data name="LoginSecuritySaved" xml:space="preserve"><value>Giriş ve güvenlik ayarları kaydedildi.</value></data>
+  <data name="BackToTenants" xml:space="preserve"><value>Tenantlara Dön</value></data>
+  <data name="CreateTenantSubtitle" xml:space="preserve"><value>Yeni tenant kurun ve ilk erişimi provision edin</value></data>
+  <data name="BasicInformation" xml:space="preserve"><value>Temel Bilgiler</value></data>
+  <data name="Subdomain" xml:space="preserve"><value>Alt Domain</value></data>
+  <data name="AccessUrlPreview" xml:space="preserve"><value>Erişim URL Önizlemesi</value></data>
+  <data name="BackendCalculatedPreview" xml:space="preserve"><value>Yalnızca önizlemedir. Kaynak değer backend tarafından belirlenir.</value></data>
+  <data name="SubscriptionPlan" xml:space="preserve"><value>Abonelik Planı</value></data>
+  <data name="LoadingPlans" xml:space="preserve"><value>Planlar yükleniyor</value></data>
+  <data name="NoActivePlans" xml:space="preserve"><value>Aktif abonelik planı bulunamadı.</value></data>
+  <data name="AccessPreview" xml:space="preserve"><value>Abonelik / Erişim Önizlemesi</value></data>
+  <data name="SubscriptionStatus" xml:space="preserve"><value>Abonelik Durumu</value></data>
+  <data name="TrialDuration" xml:space="preserve"><value>Deneme Süresi</value></data>
+  <data name="TrialStartDate" xml:space="preserve"><value>Deneme Başlangıç Tarihi</value></data>
+  <data name="TrialEndDate" xml:space="preserve"><value>Deneme Bitiş Tarihi</value></data>
+  <data name="TrialDateBackendCalculated" xml:space="preserve"><value>Deneme tarihleri oluşturma sırasında backend tarafından hesaplanır.</value></data>
+  <data name="TenantTypeCustomer" xml:space="preserve"><value>Müşteri</value></data>
+  <data name="TenantTypeDemo" xml:space="preserve"><value>Demo</value></data>
+  <data name="SelectCountry" xml:space="preserve"><value>Ülke seçin</value></data>
+  <data name="SelectTimezone" xml:space="preserve"><value>Saat dilimi seçin</value></data>
+  <data name="SelectCurrency" xml:space="preserve"><value>Para birimi seçin</value></data>
+  <data name="TenantNameRequired" xml:space="preserve"><value>Tenant adı zorunludur.</value></data>
+  <data name="DisplayNameRequired" xml:space="preserve"><value>Görünen ad zorunludur.</value></data>
+  <data name="AdminEmailRequired" xml:space="preserve"><value>Yönetici e-postası zorunludur.</value></data>
+  <data name="AdminEmailInvalid" xml:space="preserve"><value>Yönetici e-postası geçerli olmalıdır.</value></data>
+  <data name="SubdomainRequired" xml:space="preserve"><value>Alt domain zorunludur.</value></data>
+  <data name="PlanRequired" xml:space="preserve"><value>Aktif bir abonelik planı seçin.</value></data>
+  <data name="PlanLoadError" xml:space="preserve"><value>Aktif abonelik planları yüklenemedi.</value></data>
+  <data name="FreeTrial" xml:space="preserve"><value>Ücretsiz</value></data>
+  <data name="Default" xml:space="preserve"><value>Varsayılan</value></data>
+  <data name="Month" xml:space="preserve"><value>ay</value></data>
+  <data name="Year" xml:space="preserve"><value>yıl</value></data>
+  <data name="Days" xml:space="preserve"><value>gün</value></data>
+  <data name="Features" xml:space="preserve"><value>özellik</value></data>
+  <data name="Quotas" xml:space="preserve"><value>kota</value></data>
+  <data name="NoFeatureSummary" xml:space="preserve"><value>Özellik özeti yok</value></data>
+  <data name="NoTrialPeriod" xml:space="preserve"><value>Deneme süresi yok</value></data>
+  <data name="CustomPricing" xml:space="preserve"><value>Özel fiyatlandırma</value></data>
 </root>

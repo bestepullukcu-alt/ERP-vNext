@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.DTOs;
 using MediatR;
 
@@ -8,4 +9,4 @@ public sealed record UpdateUserCommand(
     string FirstName,
     string LastName,
     bool IsActive
-) : IRequest<UserDto>;
+) : IRequest<Response<UserDto>>;

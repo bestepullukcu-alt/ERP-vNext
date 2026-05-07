@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 
-public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand, Unit>
+public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand, Response<NoContent>>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly IUserRoleRepository _userRoleRepository;
@@ -25,13 +25,13 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(RevokeRoleCommand request, CancellationToken ct)
+    public async Task<Response<NoContent>> Handle(RevokeRoleCommand request, CancellationToken ct)
     {
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, _tenantContext.TenantId, ct);
         if (role != null && role.IsSystem)
-            throw new InvalidOperationException("Sistem rollerinden kullanıcı kaldırılamaz.");
+            return Response<NoContent>.Fail("Cannot remove users from system roles.", 403);
 
         await _userRoleRepository.RevokeAsync(request.UserId, request.RoleId, _tenantContext.TenantId, ct);
-        return Unit.Value;
+        return Response<NoContent>.Success(204);
     }
 }

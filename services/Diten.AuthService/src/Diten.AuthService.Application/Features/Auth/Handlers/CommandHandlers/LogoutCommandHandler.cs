@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using MediatR;
@@ -6,7 +7,7 @@ using System.Security.Claims;
 
 namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 
-public sealed class LogoutCommandHandler : IRequestHandler<LogoutCommand, Unit>
+public sealed class LogoutCommandHandler : IRequestHandler<LogoutCommand, Response<NoContent>>
 {
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ITokenService _tokenService;
@@ -22,12 +23,12 @@ public sealed class LogoutCommandHandler : IRequestHandler<LogoutCommand, Unit>
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(LogoutCommand request, CancellationToken ct)
+    public async Task<Response<NoContent>> Handle(LogoutCommand request, CancellationToken ct)
     {
         var existingToken = await _refreshTokenRepository.GetByTokenAsync(request.RefreshToken, ct);
         if (existingToken is null)
         {
-            throw new UnauthorizedAccessException("Invalid refresh token.");
+            return Response<NoContent>.Fail("Invalid refresh token.", 401);
         }
 
         var principal = _tokenService.GetPrincipalFromExpiredToken(request.AccessToken);
@@ -38,17 +39,17 @@ public sealed class LogoutCommandHandler : IRequestHandler<LogoutCommand, Unit>
 
         if (!Guid.TryParse(subject, out var accessTokenUserId) || accessTokenUserId != existingToken.UserId)
         {
-            throw new UnauthorizedAccessException("Access token user mismatch.");
+            return Response<NoContent>.Fail("Access token user mismatch.", 401);
         }
 
         if (!Guid.TryParse(tokenTenantId, out var accessTokenTenantId) || accessTokenTenantId != existingToken.TenantId)
         {
-            throw new UnauthorizedAccessException("Access token tenant mismatch.");
+            return Response<NoContent>.Fail("Access token tenant mismatch.", 401);
         }
 
         if (!string.Equals(existingToken.ActorType, actorType, StringComparison.OrdinalIgnoreCase))
         {
-            throw new UnauthorizedAccessException("Access token actor mismatch.");
+            return Response<NoContent>.Fail("Access token actor mismatch.", 401);
         }
 
         if (existingToken.RevokedAt is null)
@@ -58,10 +59,10 @@ public sealed class LogoutCommandHandler : IRequestHandler<LogoutCommand, Unit>
         }
 
         _logger.LogInformation(
-            "Kullanıcı çıkış yaptı. UserId={UserId} TenantId={TenantId} ActorType={ActorType}",
+            "User logged out. UserId={UserId} TenantId={TenantId} ActorType={ActorType}",
             existingToken.UserId,
             existingToken.TenantId,
             existingToken.ActorType);
-        return Unit.Value;
+        return Response<NoContent>.Success(204);
     }
 }

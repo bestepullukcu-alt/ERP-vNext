@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.DTOs;
 using MediatR;
 
@@ -7,4 +8,4 @@ public sealed record UpdateRoleCommand(
     Guid Id,
     string DisplayName,
     string? Description
-) : IRequest<RoleDto>;
+) : IRequest<Response<RoleDto>>;
