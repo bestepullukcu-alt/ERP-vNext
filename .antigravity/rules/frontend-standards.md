@@ -122,6 +122,12 @@ Bu kurallar, projedeki görsel tutarlılığı (consistency) korumak için ZORUN
 - Farklı logical bölümleri aynı card içine toplamak, formu Details'tan daha az sayıda ana card ile sunmak veya alanı Details'taki bölümünden farklı bir bölümde göstermek kabul edilmez.
 - Bu kontrol yalnızca dosya varlığı kontrolü değildir; render edilen UI yüzeyi ve Razor section/card yapısı birlikte doğrulanmalıdır.
 
+### UI-025: Details Surface Styling
+- Full-page Details ekranlarında read-only section yüzeyi `card backbone-preview-section` class'larını birlikte kullanmalıdır.
+- Border/radius/background değerleri hardcoded yazılmaz; `var(--bs-card-border-radius)`, `var(--bs-card-bg)` ve mevcut Bootstrap/Sneat token'ları kullanılır.
+- Details section border'ı kaldırılacaksa yalnız sayfa wrapper'ı altında scoped CSS ile kaldırılır. Layout, shell veya global `.card` selector'ına border/radius override eklenmez.
+- Bordered layout/card varyantı gerekiyorsa CSS ile elle çoğaltılmaz; Sneat settings/layout seçeneği kullanılmalıdır.
+
 ---
 
 ## 🛡️ Production Safety

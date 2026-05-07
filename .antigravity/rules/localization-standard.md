@@ -3,8 +3,12 @@
 Diten ERP vNext projesinde "Hardcoded" (elle yazılmış) metin kullanmak KESİNLİKLE YASAKTIR. Yeni bir modül veya sayfa eklendiğinde View dosyası oluşturulmadan ÖNCE aşağıdaki yerelleştirme adımları ZORUNLU olarak uygulanacaktır:
 
 ## 1. Dil Dosyalarının Eksiksiz Oluşturulması
-Resmi desteklenen 7 dilin TAMAMI için `.resx` dosyaları oluşturulmalıdır. Sadece Türkçe (`tr`) oluşturup bırakmak kural ihlalidir.
-Desteklenen Diller: `en, fr, es, zh, ar, ru, tr`
+Projeye eklenecek modülün "Platform (Admin)" mi yoksa "Tenant" mi olduğuna göre desteklenen dil sayısı değişmektedir:
+
+- **Platform Modülleri (Admin):** Sadece 2 dil (`en`, `tr`) zorunludur.
+- **Tenant Modülleri:** Resmi desteklenen 7 dilin (`en`, `fr`, `es`, `zh`, `ar`, `ru`, `tr`) TAMAMI için `.resx` dosyaları oluşturulmalıdır.
+
+Sadece Türkçe (`tr`) oluşturup bırakmak kural ihlalidir.
 > ✅ **Kod Notu:** İş tarafında geçen `SP` kısaltması teknikte daima `es` olarak uygulanır.
 
 > ⛔ **Placeholder YASAK:** Non-English (`fr/es/zh/ar/ru/tr`) `.resx` dosyalarında değerlerin İngilizce (en) ile aynı bırakılması kabul edilmez.
@@ -49,4 +53,4 @@ DataTable liste sayfalarında toolbar ve filter UI için kullanılan temel kelim
 
 **Kritik kural (fallback yasak):**
 - Toolbar/action metinlerinde “hardcoded fallback” (`|| 'Export'`) yaklaşımı **yasaktır**.
-- Eksik L10n key varsa teslim durur; key 7 dilde tamamlanmadan feature bitmiş sayılmaz.
+- Eksik L10n key varsa teslim durur; key modül türüne göre tüm zorunlu dillere (Platform için 2 dil, Tenant için 7 dil) eklenmeden feature bitmiş sayılmaz.

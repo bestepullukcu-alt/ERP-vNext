@@ -21,7 +21,7 @@ description: "WORKFLOW-002 — Mevcut Modüle Action Bazlı Sayfa ve UI Bileşen
 ### B. Form Sayfası (Create/Edit)
 - **Şablon:** `.antigravity/rules/frontend-form-template.md`
 - **Kapsam:** Bu bölüm Compact (`golden_reference: compact`) modüller için kullanılır. Slim modüllerde create/edit formu `_CreateEditOffcanvas.cshtml` içindedir.
-- **Layout:** `_LayoutBackbone.cshtml` zorunludur.
+- **Layout:** Shell tipine göre admin modüllerinde `_LayoutPlatformAdmin.cshtml`, tenant modüllerinde `_LayoutTenantShell.cshtml` zorunludur.
 - **Validation:** `novalidate` + Bootstrap `invalid-feedback`.
 - **Header/Breadcrumb Standardı:** Üst blok kompakt action-page standardında olmalıdır:
   - wrapper: `d-flex ... mb-3 row-gap-4`
@@ -70,7 +70,7 @@ description: "WORKFLOW-002 — Mevcut Modüle Action Bazlı Sayfa ve UI Bileşen
 - [ ] **QuickView Check:** `.js-quick-view` + event delegation var mı? Inline `onclick` yok mu?
 - [ ] **Confirm Check:** Tekil silme `window.showConfirm` üzerinden mi?
 - [ ] **Toast Check:** Bildirimler `window.showToast` üzerinden mi?
-- [ ] **L10n Check:** Hardcoded string yok mu? `window.L10n` bridge dolu mu (7 dil)?
+- [ ] **L10n Check:** Hardcoded string yok mu? `window.L10n` bridge dolu mu (Platform: 2 dil, Tenant: 7 dil)?
 - [ ] **CSRF Check:** Formlarda `@Html.AntiForgeryToken()` var mı?
 - [ ] **Dependent Select Check:** Parent/child select varsa child alan parent seçimi sonrası aktifleşiyor, sadece geçerli seçenekleri gösteriyor ve eski uygunsuz değerleri temizliyor mu?
 

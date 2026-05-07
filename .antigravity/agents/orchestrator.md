@@ -37,6 +37,7 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
     - **[RULE]** Compact modüllerde DataTable "Add New" butonu yalnızca attr vermekle bırakılmaz: `DtDefaults.exportButtons(..., { href: '/{ModuleName}/Create' }, ...)` kullanılır ve `initComplete` içinde `.add-new` click handler'ı route'a yönlendirir. Inline `onclick` YASAKTIR.
     - **[RULE]** Backend Validator'daki zorunlu alanlara UI label'larında kırmızı yıldız (`*`) eklenmelidir.
     - **[RULE]** Required kontratı Backend Validator, Web ViewModel, Razor `required` attribute'u, label yıldızı ve global required-fields tracker arasında birebir aynı olmalıdır. Opsiyonel numeric/date alanlar Web ViewModel'de nullable (`int?`, `decimal?`, `DateTime?`) yapılır; non-nullable value type kullanılıp tracker'da sahte required üretmek YASAKTIR.
+    - **[RULE]** Layout shell tipi açık seçilmelidir. Platform/admin modülleri `Views/Platform/{ModuleName}/` altında olmalı ve `_LayoutPlatformAdmin.cshtml` kullanmalıdır. Tenant modülleri `Views/{ModuleName}/` veya tenant domain klasörü altında olmalı ve `_LayoutTenantShell.cshtml` kullanmalıdır. Yeni modüllerde `_Layout.cshtml` veya eski `_LayoutBackbone.cshtml` kullanımı YASAKTIR.
     - **[RULE]** API profili açık seçilmelidir. Platform/admin MVC modüllerde `proxy-profile` zorunludur: JS `/{AreaName}/{ModuleName}/api` same-origin proxy'ye gider; HttpOnly token'ı MVC proxy server-side okuyup Gateway'e aktarır. Browser JS'in `document.cookie`, `access_token` veya `Authorization: Bearer` üretmesi KESİNLİKLE YASAKTIR. Tenant/public shell'de açık gerekçeyle `direct-gateway-profile` kullanılacaksa `window.API.{service}` SSOT objesi kullanılır. Gateway rotası eksikse `ocelot.json` frontend/backend/orchestrator tarafından değiştirilmez; integration-agent blocker notu düşülür."
     - **MVC/Razor Structure:** "Controller katmanı 'thin' tutulmalı ve `[Route]` (Attribute Routing) kullanmalıdır. Görünüm (View) karmaşık ise mutlaka `_` prefixli Partial View'lara bölünmeli, partial içinde script/style barındırılmamalıdır."
     - **Auth Refresh Guard:** "`personalizationClient` `401 Unauthorized` aldığında shared unauthorized/refresh akışını (`DtDefaults` veya eşdeğer merkezi auth helper) kullanmalı. Expired JWT durumu generic `ErrorOccurred` toast'ı ile maskelenmez; kullanıcı refresh/login akışına yönlendirilir."
@@ -44,7 +45,7 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
     - **Inline Filter (ZORUNLU):** "Offcanvas filter YASAK. `_Filter.cshtml` içinde `#inlineFilterHost` + `#inlineFilterCollapse` olmalı; `index.js` içinde `_Filter` toolbar altına mount edilmeli ve host hizası **px-3** ile korunmalı (mx-* YASAK). Reusable toolbar / inline-filter / Select2 stilleri sayfa içine gömülmez; `backbone-custom.css` içinde tutulur. Teslim öncesi `python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName} --reference slim|compact` çalıştır."
     - **[RULE]** `_Filter.cshtml` içindeki filtre formu create/edit formu değildir ve global required-fields tracker kapsamına girmemelidir. `#filterForm` her zaman `data-no-tracker` taşımalıdır; filtre içinde "Required 0/0" veya zorunlu badge görünmesi hatadır.
     - **Kalite Kapısı:** Teslimden önce `.antigravity/workflows/quality-gate-datatable.md` checklist'ini eksiksiz işaretle.
-4. **L10n (Dil) Denetimi:** `l10n-agent` çalıştığında, 7 dilin (`en, fr, es, zh, ar, ru, tr`) tamamının `.resx` dosyalarının eksiksiz dolduğundan emin olmadan ASLA UI (Arayüz) fazına geçmeyeceksin. "Kaydet", "Sil" gibi ortak kelimeleri View dosyasına ekletmeyecek, daima `SharedLocalizer` kullandıracaksın.
+4. **L10n (Dil) Denetimi:** `l10n-agent` çalıştığında, modül türüne göre gerekli dillerin (Platform: `en, tr`, Tenant: `en, fr, es, zh, ar, ru, tr`) tamamının `.resx` dosyalarının eksiksiz dolduğundan emin olmadan ASLA UI (Arayüz) fazına geçmeyeceksin. "Kaydet", "Sil" gibi ortak kelimeleri View dosyasına ekletmeyecek, daima `SharedLocalizer` kullandıracaksın.
 5. **Sıfır Halüsinasyon:** Ajanların kod uydurması, varsayılan İngilizce metinler bırakması veya onaylanmamış bir UI bileşeni eklemesi KESİNLİKLE YASAKTIR.
 6. **Rebuild Guard (ZORUNLU):** Mevcut bir modül yeniden yapılırken (refactor, rebuild, fix) Slim/Compact surface kararı korunur. Compact modülde silinen Create/Edit/Details sayfaları aynı çalışmada geri yapılır; Slim modülde `_CreateEditOffcanvas.cshtml` silinirse aynı çalışmada geri yapılır.
 7. **Artifact Retention (Eserlerin Korunması - ZORUNLU):** Planlama (Plan.md), gereksinim (PRD), module pack ve denetim raporları (/docs/audits/*) görev tamamlandıktan sonra KESİNLİKLE SİLİNMEZ.
@@ -54,7 +55,7 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
 ## 🔴 AŞAMA 0: BAĞLAM KONTROLÜ VE SOKRATİK KAPI (ZORUNLU)
 
 **Herhangi bir uzman ajanı çağırmadan veya kod yazmadan ÖNCE:**
-1. Talebin ERP vNext mimarisine (CQRS, MongoDB, Sneat, Auth, 7 Dil) etkisini düşün.
+1. Talebin ERP vNext mimarisine (CQRS, MongoDB, Sneat, Auth, Çoklu Dil [Platform:2 / Tenant:7]) etkisini düşün.
 2. Talebin bir domain'e ait olup olmadığını belirle (`master-data-management`, `developer-enablement`, `platform-shared-services`, `enterprise-strategy-business-performance`).
 3. Repo kontratını oku: `AGENTS.md`.
 4. Domain tespit edildi ise ilgili `execution/domains/{domain}/domain-config.md` dosyasını oku.
@@ -84,7 +85,7 @@ Aşağıdaki 18 ajanı görev dağıtımı için kullanacaksın. Her ajan SADECE
 - `frontend-ui-ux`: Razor Views, DataTables v2, JS modülleri (Daima `.antigravity/rules` içindeki statik şablonları BİREBİR kopyalar, projedeki yaşayan kodları referans almaz).
 - `security-agent`: JWT, RBAC Policy, `[HasPermission]`, Tenant Filter
 - `data-agent`: MongoDB Index, Collection tasarımı, Seed Data
-- **`l10n-agent`**: `.resx` dosyaları (7 dil), `window.L10n` köprüsü (partial + JSON payload + loader JS standardı, camelCase to PascalCase dönüşümü dahil)
+- **`l10n-agent`**: `.resx` dosyaları (Platform: 2 dil, Tenant: 7 dil), `window.L10n` köprüsü (partial + JSON payload + loader JS standardı, camelCase to PascalCase dönüşümü dahil)
 - `integration-agent`: Ocelot Gateway konfigürasyonu, mikroservis iletişimi, `ocelot.json` rota yönetimi
 - `testing-agent`: xUnit, Moq, Integration Test yazımı
 - `devops-agent`: Dockerfile, CI/CD, deployment senaryoları

@@ -95,6 +95,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantDomainRepository, TenantDomainRepository>();
         services.AddScoped<ITenantLoginSettingsRepository, TenantLoginSettingsRepository>();
         services.AddScoped<IModuleCatalogRepository, ModuleCatalogRepository>();
+        services.AddScoped<IModulePageDescriptorRepository, ModulePageDescriptorRepository>();
         services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
 
         LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();

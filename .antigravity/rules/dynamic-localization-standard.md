@@ -1,5 +1,5 @@
 ---
-description: "MOD-0013 Dynamic Localization Standard — UI metinlerinin 7 dilde senkronize olmasını garanti eder"
+description: "MOD-0013 Dynamic Localization Standard — UI metinlerinin modül tipine göre (Platform için 2 dil, Tenant için 7 dil) senkronize olmasını garanti eder"
 ---
 
 # Dynamic-Localization-Standard (MOD-0013)
@@ -15,7 +15,7 @@ description: "MOD-0013 Dynamic Localization Standard — UI metinlerinin 7 dilde
 Yeni bir anahtar eklemeden önce tüm dil dosyalarını keşfet:
 find frontend/Diten.Web/Resources -name "SharedResource.*.resx" -type f
 
-Kural: Yeni anahtar keşfedilen TÜM dosyalara (en, fr, es, zh, ar, ru, tr) aynı anda eklenmelidir.
+Kural: Yeni anahtar, eklendiği modülün tipine göre (Platform için en/tr; Tenant için en/fr/es/zh/ar/ru/tr) o bağlamda geçerli olan TÜM dosyalara aynı anda eklenmelidir.
 
 ### 3. Gerçek Çeviri Disiplini
 - İngilizce metni diğer dosyalara yer tutucu olarak kopyalamayın.
@@ -91,6 +91,12 @@ const label = window.L10n?.MyNewKey;
 ---
 
 ## 📂 Desteklenen Diller
+
+**Platform Modülleri (Admin):**
+Yalnızca `en` ve `tr` dilleri desteklenmektedir.
+
+**Tenant Modülleri:**
+Tüm 7 dil desteklenmektedir.
 
 | Kod | Dil |
 |---|---|

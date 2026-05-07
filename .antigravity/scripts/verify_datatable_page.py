@@ -490,13 +490,23 @@ def main() -> int:
             "Missing filter partial include",
         )
     )
+    expected_layout = "_LayoutPlatformAdmin" if area.lower() == "platform" else "_LayoutTenantShell"
     checks.append(
         check_contains(
             index_cshtml,
             index_html,
+            re.compile(rf"Layout\s*=\s*\"{expected_layout}\"\s*;"),
+            f"Index.cshtml uses {expected_layout}",
+            f"Missing Layout = \"{expected_layout}\";",
+        )
+    )
+    checks.append(
+        check_not_contains(
+            index_cshtml,
+            index_html,
             re.compile(r"Layout\s*=\s*\"_LayoutBackbone\"\s*;"),
-            "Index.cshtml uses _LayoutBackbone",
-            "Missing Layout = \"_LayoutBackbone\";",
+            "Index.cshtml does NOT use legacy _LayoutBackbone",
+            "Found legacy Layout = \"_LayoutBackbone\";",
         )
     )
     checks.append(

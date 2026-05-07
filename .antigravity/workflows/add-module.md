@@ -49,8 +49,8 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 3. **Phase 3: İş Mantığı & Yerelleştirme (backend-architect & l10n-agent)**
    - `/add-endpoint-cqrs` akışını başlat (Request, Command, Handler, Validator).
    - API Controller'ı oluştur ve Ocelot Gateway rotasını ekle.
-   - **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre 7 dil `.resx` senkronizasyonunu tamamla.
-   - Sadece projede desteklenen dillerde (7 dil) `.resx` dosyalarını oluştur.
+   - **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre modül tipine uygun (Platform: 2 dil, Tenant: 7 dil) `.resx` senkronizasyonunu tamamla.
+   - Sadece projede desteklenen dillerde `.resx` dosyalarını oluştur.
    - **⚠️ RESX DOSYA ADI KURALI (KRİTİK):** `.resx` dosya adı, Razor view'da kullanılan localization marker class adıyla **birebir eşleşmelidir**. Eğer marker class `GoldenReferenceSlimIndex` ise dosya adı `GoldenReferenceSlimIndex.{lang}.resx` olmalıdır. `Index.{lang}.resx` KULLANILMAZ. Yol: `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
      - Örnek: Class = `GoldenReferenceSlimIndex` → `GoldenReferenceSlimIndex.en.resx`, `GoldenReferenceSlimIndex.tr.resx`, ...
    - **Kritik:** Ortak kelimeleri (`Kaydet`, `Sil` vb.) `SharedResource`'tan al, yazma. Sayfaya özel olan başlıkları ve tablo kolon anahtarlarını ekle.
@@ -101,7 +101,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      - Proxy action'ları `Request.Cookies["access_token"]` değerini server-side okuyup Gateway çağrısına `Authorization: Bearer` olarak ekler ve `X-Tenant-Id` header'ını Platform/admin context'te göndermez.
      - Tenant/public shell modüllerinde `direct-gateway-profile` kullanılacaksa bu karar module pack veya orchestration report'ta açık yazılır ve `window.API.{service}` kullanılır.
    - **[ZORUNLU]** `colReorder: { columns: ':gt(1):not(:last-child)' }` DataTable config'e eklenmelidir (standart kolon yapısı için varsayılan; bkz. `frontend-js-standard.md §11`). `column-reorder.dt`/`columns-reordered.dt` event'leri dirty-state hesabına bağlanmalıdır.
-   - `_LayoutBackbone` içine menü linkini ekle ve aktif state için `ViewContext.RouteData` dinamik kontrolü yap.
+   - Shell tipine göre `_LayoutPlatformAdmin` veya `_LayoutTenantShell` içine menü linkini ekle ve aktif state için `ViewContext.RouteData` dinamik kontrolü yap.
    - **Controller route + link formatı (BİRBİRİNE BAĞLI):**
      - `frontend/Diten.Web/Controllers/{ModuleName}Controller.cs` üzerine sınıf düzeyinde **standart**: `[Route("[controller]")]` veya literal `[Route("{ModuleName}")]` (örn `[Route("GoldenReferenceCompact")]`). **Area prefix yazma** (örn `[Route("DevEnablement/[controller]")]` YASAK).
      - Bu standart altında menü/link formatı **otomatik olarak** `/{ModuleName}/Edit/{id}`, `/{ModuleName}/Create`, `/{ModuleName}/Details/{id}` olur.

@@ -80,7 +80,7 @@ Projeyi tam fonksiyonel çalıştırmak için servisleri aşağıdaki sırayla b
 ## 🛠️ Önemli Geliştirme Notları
 
 ### 🌍 Dil Dosyaları (.resx) Hatırlatması
-UI tarafındaki metinlerin (Örn: GoldenReferenceSlim / GoldenReferenceCompact ekranları) 7 dilde doğru görünmesi için, .resx dosyalarında yapılan her değişiklikten sonra tüm çözümü yeniden derlemeniz gerekir:
+UI tarafındaki metinlerin modül tipine göre geçerli dillerde (Platform: `en, tr`, Tenant: `en, fr, es, zh, ar, ru, tr`) doğru görünmesi için, .resx dosyalarında yapılan her değişiklikten sonra tüm çözümü yeniden derlemeniz gerekir:
 - dotnet build veya run_all.sh betiğini kullanın.
 
 ### 🆔 Sabit Test Verisi

@@ -169,6 +169,54 @@ public sealed class ModuleCatalogController : Controller
         return ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/module-catalog/{id}/deactivate");
     }
 
+    [HttpGet("api/{moduleCode}/pages")]
+    public Task<IActionResult> ModulePagesProxy(string moduleCode)
+    {
+        return ProxyGatewayAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/platform/module-catalog/pages/by-module/{Uri.EscapeDataString(moduleCode)}");
+    }
+
+    [HttpGet("api/pages/{id:guid}")]
+    public Task<IActionResult> ModulePageDetailsProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/module-catalog/pages/{id}");
+    }
+
+    [HttpPost("api/{moduleCode}/pages")]
+    public async Task<IActionResult> CreateModulePageProxy(string moduleCode)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/module-catalog/pages", body);
+    }
+
+    [HttpPut("api/pages/{id:guid}")]
+    public async Task<IActionResult> UpdateModulePageProxy(Guid id)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Put, $"{_gatewayUrl}/api/platform/module-catalog/pages/{id}", body);
+    }
+
+    [HttpPost("api/pages/{id:guid}/activate")]
+    public Task<IActionResult> ActivateModulePageProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/module-catalog/pages/{id}/activate");
+    }
+
+    [HttpPost("api/pages/{id:guid}/deactivate")]
+    public Task<IActionResult> DeactivateModulePageProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/module-catalog/pages/{id}/deactivate");
+    }
+
+    [HttpDelete("api/pages/{id:guid}")]
+    public Task<IActionResult> DeleteModulePageProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/platform/module-catalog/pages/{id}");
+    }
+
     private async Task<ModuleCatalogDetailViewModel?> LoadApiModelAsync(Guid id)
     {
         AddAuthHeader();

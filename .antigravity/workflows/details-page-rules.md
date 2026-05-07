@@ -12,12 +12,12 @@ Bir kaydın "Salt Okunur Detaylarını" oluştururken veya düzenlerken, aşağ�
 ### Model A: Offcanvas "Hızlı Bakış" (Hafif Veriler İçin)
 - **Kullanım:** 5-10 kısa özellik, karmaşık sekme (tab) içermeyen yapılar.
 - **Tetikleme:** Liste/Index sayfasındaki DataTable satırından tıklanır.
-- **Diten Şartı:** İçerik AJAX ile yüklenmeli ve `window.L10n` bridge yapısı ile yerelleştirilmelidir (7 dil desteği).
+- **Diten Şartı:** İçerik AJAX ile yüklenmeli ve `window.L10n` bridge yapısı ile yerelleştirilmelidir (Platform modülleri: 2 dil, Tenant modülleri: 7 dil).
 
 ### Model B: İzole Tam Detay Sayfası (Ağır Veriler İçin)
 - **Kullanım:** İlişkili tablolar, çok sayıda sekme veya finansal/iletişim gibi blok grupları.
 - **Tetikleme:** `/{Controller}/Details/{id}` rotasına gidilerek açılır.
-- **Diten Şartı:** Mutlaka `Layout = "_LayoutBackbone";` kullanılmalı ve asenkron veri için Skeleton Loader eklenmelidir.
+- **Diten Şartı:** Shell tipine göre admin modüllerinde `Layout = "_LayoutPlatformAdmin";`, tenant modüllerinde `Layout = "_LayoutTenantShell";` kullanılmalı ve asenkron veri için Skeleton Loader eklenmelidir.
 
 ---
 
@@ -47,6 +47,23 @@ Bir kaydın "Salt Okunur Detaylarını" oluştururken veya düzenlerken, aşağ�
 - **Diten Standart Şablonu:**
   - `<dt class="col-12 fw-medium text-heading mb-1">@SharedLocalizer["Label"]</dt>`
   - `<dd class="col-12 mb-4">@Model.Value</dd>`
+
+## KURAL #6: Details Surface Görünümü
+- Read-only details bölümleri `card backbone-preview-section` class'larını birlikte kullanmalıdır.
+- Details surface, liste/card radius'u ile aynı token'dan beslenmelidir; hardcoded radius veya renk kullanılmaz.
+- Border kaldırılacaksa bu yalnız ilgili Details sayfasının wrapper class'ı altında scoped yapılır: `border: 0; border-radius: var(--bs-card-border-radius); background: var(--bs-card-bg);`.
+- Layout veya tüm `.card` elemanlarına yayılan global border/radius override yazılmaz; bordered layout ihtiyacı Sneat settings üzerinden yönetilir.
+
+## KURAL #7: Details İçinde Tab / Navbar Standardı
+- Details sayfasında birden fazla içerik grubu tab ile ayrılacaksa düz Bootstrap `nav-tabs` kullanılmaz.
+- Zorunlu referans WorkCenter tab bar'dır: `Views/WorkCenter/WorkCenterTabs.cshtml`.
+- Tab bar dış yüzeyi `card mb-4`, içi `card-header p-3` ve `nav-align-top` olmalıdır.
+- Tab listesi `nav nav-pills d-inline-flex gap-2 flex-wrap` olmalıdır.
+- Her tab butonu `nav-link small border shadow-none wc-tab-compact` sınıflarını taşımalıdır.
+- Tab butonlarında `bx` ikon + `wc-tab-icon` kullanılmalıdır. Desktop'ta ikon+metin, mobilde sadece ikon gösterilmelidir:
+  - Desktop metni: `<span class="d-none d-sm-inline-flex align-items-center">...`
+  - Mobil ikon: `<i class="bx ... d-sm-none wc-tab-icon"></i>`
+- Details tabları yalnız içerik gruplarını ayırır; sidebar/menu placement, navigation tree, drag-drop veya publish/rollback navigation davranışı üretmez.
 
 ---
 Diten ERP vNext Salt Okunur Standartları - VIEW-002
