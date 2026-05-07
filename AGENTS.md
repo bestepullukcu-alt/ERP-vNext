@@ -76,7 +76,7 @@ Ajanlar aşağıdaki yollara **asla** dokunmaz (kullanıcı açıkça talep etme
 | `.antigravity/**` | Global engineering system — değişiklik önce kullanıcı onayı ister ([working-agreement](.antigravity/rules/GEMINI.md)) |
 | `frontend/Diten.Web/Controllers/Archive/**` | Legacy kontrolcüler (FROZEN) |
 | `frontend/Diten.Web/Views/Archive/**` | Legacy sayfalar (FROZEN) |
-| `frontend/Diten.Web/Views/Shared/_Layout.cshtml` | Archive için FROZEN layout. Yeni modüller `_LayoutBackbone.cshtml` kullanır |
+| `frontend/Diten.Web/Views/Shared/_Layout.cshtml` | Archive için FROZEN layout. Yeni modüller shell tipine göre `_LayoutPlatformAdmin.cshtml` veya `_LayoutTenantShell.cshtml` kullanır |
 | `gateway/Diten.ApiGateway/.../ocelot.json` | Sadece `integration-agent` modifiye eder (rota ekleme kuralı: [.antigravity/rules/routes.md](.antigravity/rules/routes.md)) |
 | Diğer domain'lerin `services/` klasörleri | Bir module pack yalnızca kendi domain'inin servisine dokunabilir |
 
@@ -130,7 +130,7 @@ Bu kararlar repo genelinde **zorunludur**. Bir modül bunlardan muaf olmak ister
 | API Yanıt | `Response<T>` envelope + `CustomBaseController` | [.antigravity/rules/response-envelope.md](.antigravity/rules/response-envelope.md) |
 | Pipeline Behaviors | 4 zorunlu (Validation, Logging, Exception, Performance) | [.antigravity/rules/pipeline-behaviors.md](.antigravity/rules/pipeline-behaviors.md) |
 | Yerelleştirme | 7 dil (en, fr, es, zh, ar, ru, tr) — `.resx` + `window.L10n` bridge | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
-| UI Layout | `_LayoutBackbone.cshtml` (yeni modüller); `_Layout.cshtml` FROZEN | [.antigravity/rules/views-organization.md](.antigravity/rules/views-organization.md) |
+| UI Layout | Admin modülleri `_LayoutPlatformAdmin.cshtml`; tenant modülleri `_LayoutTenantShell.cshtml`; `_Layout.cshtml` FROZEN | [.antigravity/rules/views-organization.md](.antigravity/rules/views-organization.md) |
 | DataTable | v2 kontratı zorunlu (`data-dt-standard="v2"`) + Golden Slim/Compact seçimi | [.antigravity/rules/frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md) |
 
 ### Golden Reference DataTable Kararı

@@ -26,7 +26,7 @@ Phase 2 delivers tenant-level login and security settings management for Platfor
 - `frontend/Diten.Web/Views/Platform/Tenants/**`
 - `frontend/Diten.Web/wwwroot/assets/js/Platform/Tenants/**`
 - `frontend/Diten.Web/Resources/Views/Platform/Tenants/**`
-- `frontend/Diten.Web/Views/Shared/_LayoutBackbone.cshtml`
+- `frontend/Diten.Web/Views/Shared/_LayoutPlatformAdmin.cshtml`
 
 ## Protected Paths
 - `.antigravity/**`

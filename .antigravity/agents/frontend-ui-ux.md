@@ -40,13 +40,13 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 - **🥇 ALTIN ŞABLON (Golden Template):** Standart DataTable sayfaları için tek karar kaynağı `.antigravity/rules/frontend-datatable-template.md` ve module pack'teki `golden_reference` değeridir.
 - **🖼️ Detay Görünüm Stratejisi (Hybrid View):** Standart dışı, çok karmaşık detay sayfaları yapman istenirse:
     1. **Offcanvas (Hızlı Bakış):** Şablonda sağdan açılan panel standarttır.
-    2. **Full Page / Tabs:** `Details.cshtml` içinde tablarla ayrılmış geniş içerikler (Gerektiğinde kullanılır).
+    2. **Full Page / Tabs:** `Details.cshtml` içinde tablarla ayrılmış geniş içerikler gerektiğinde kullanılır. Details tabları düz `nav-tabs` ile yapılmaz; WorkCenter referansındaki card-header `nav-pills` navbar standardı uygulanır (`card mb-4` + `card-header p-3` + `nav nav-pills d-inline-flex gap-2 flex-wrap` + `wc-tab-compact` + ikonlu responsive tab butonları).
 - **İkincil Referans:** `frontend/_Reference/Theme/full-version/html/` dizini genel bileşenler için yardımcı rehberdir.
 
-## 🌍 Localization & 7 Dil Stratejisi
+## 🌍 Localization & Dil Stratejisi
 - **Sıfır Hard-Code:** View dosyalarında asla ham metin bırakamazsın. Hepsini `@Localizer["Key"]` veya `@SharedLocalizer["Key"]` formatına çevirmelisin.
 - **JS Köprüsü:** Script dosyalarındaki metinler için `window.L10n` objesini kullan. Bu obje şablonda belirtildiği gibi doldurulmalıdır.
-- **Desteklenen Diller:** EN, FR, ES, ZH, AR, RU, TR.
+- **Desteklenen Diller:** Modül tipine göre (Platform için sadece `EN, TR`, Tenant için `EN, FR, ES, ZH, AR, RU, TR`).
 - **RESX Zorunluluğu:** Yeni dil key'lerinin algılanabilmesi için projenin `run_all.sh` üzerinden yeniden derlenmesi (compile) gerektiğini unutma.
 
 ## 🚨 ANAYASA (ZORUNLU IMPLEMENTATION RULES)
@@ -87,7 +87,8 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 23. **Save View CTA Standardı:** Toolbar'da `dt-save-filter-btn` render edilmeden teslim yapılamaz. Buton başlangıçta gizli olabilir; dirty-state oluştuğunda görünürlük mutlaka çalışmalıdır.
 24. **Inline Filter Select2 Contractı:** Inline filter Select2 kurulumunda `dropdownParent: $(document.body)`, `dropdownCssClass: 'dt-inline-filter-dropdown'`, `width: 'element'` zorunludur. `dropdownParent: $select.parent()` ve `width:'100%'` kullanımı yasaktır.
 25. **Inline Filter Field Type:** Domain, Service, Category, Type, Owner, Status gibi sınırlı değer kümesi olan filtreler text search input olarak tasarlanmaz. GoldenReference gibi `filter-chip` içinde Select2 kullanılır; çoklu seçim gerekiyorsa `multiple="multiple"` ve `syncMultiSelectSummary` ile label/count/clear davranışı zorunludur. Single select filtrelerde boş `ShowAll` option korunur.
+26. **Details Tab/Navbar Standardı:** Details sayfasında tab gerekiyorsa WorkCenter tab bar görsel dili zorunludur. `nav-tabs`, underline tab, card dışı çıplak tab listesi veya büyük marketing-style tab başlıkları kullanılmaz. Her tab butonu küçük, border'lı, ikonlu ve responsive olmalıdır; mobilde metin gizlenir, ikon kalır.
 
 ## 📐 Layout & View Architecture Rule
-- **Layout Sadakati:** Tüm View'lar, `Views/Shared/_LayoutBackbone.cshtml` dosyasını kullanmalıdır. Eski `_Layout.cshtml` sadece Archive/ ve Identity/ altındaki dondurulmuş (frozen) sayfalar için ayrılmıştır.
+- **Layout Sadakati:** Shell tipi module pack/domain kararından açık seçilmelidir. Platform/admin modülleri `Views/Platform/{ModuleName}/` altında `_LayoutPlatformAdmin.cshtml` kullanır. Tenant modülleri `Views/{ModuleName}/` veya tenant domain klasörü altında `_LayoutTenantShell.cshtml` kullanır. Eski `_Layout.cshtml` ve `_LayoutBackbone.cshtml` KESİNLİKLE KULLANILMAZ.
 - **Section Yönetimi:** Sayfaya özel JS için `@section Scripts` kullanılır. `@section Styles` yalnızca gerçekten tek sayfaya özgü stiller için kullanılabilir; tekrar kullanılabilir toolbar/filter/DataTable stilleri `backbone-custom.css` içine alınmalıdır.

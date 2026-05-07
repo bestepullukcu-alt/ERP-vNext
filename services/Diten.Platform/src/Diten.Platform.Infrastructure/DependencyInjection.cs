@@ -91,6 +91,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantDomainRepository, TenantDomainRepository>();
         services.AddScoped<ITenantLoginSettingsRepository, TenantLoginSettingsRepository>();
         services.AddScoped<IModuleCatalogRepository, ModuleCatalogRepository>();
+        services.AddScoped<IModulePageDescriptorRepository, ModulePageDescriptorRepository>();
 
         LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
         MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();

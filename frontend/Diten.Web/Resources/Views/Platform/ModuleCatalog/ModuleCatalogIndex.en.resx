@@ -33,4 +33,44 @@
   <data name="ActiveModules" xml:space="preserve"><value>Active Modules</value></data>
   <data name="BetaModules" xml:space="preserve"><value>Beta Modules</value></data>
   <data name="PreviewModules" xml:space="preserve"><value>Preview Modules</value></data>
+  <data name="HelpTextCoreModule" xml:space="preserve"><value>System-level module. Cannot be deleted.</value></data>
+  <data name="HelpTextTenantAssignable" xml:space="preserve"><value>Can be assigned to tenants in future assignment flows.</value></data>
+  <data name="InvalidVersionFormat" xml:space="preserve"><value>Version must be in 1.0.0 format.</value></data>
+  <data name="InvalidModuleCode" xml:space="preserve"><value>Must be at least 3 characters.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>This field is required.</value></data>
+  <data name="CoreModuleCannotBeDeleted" xml:space="preserve"><value>Core module cannot be deleted.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>Final Code</value></data>
+  <data name="GeneralTab" xml:space="preserve"><value>General</value></data>
+  <data name="PagesTab" xml:space="preserve"><value>Pages</value></data>
+  <data name="AssignmentsTab" xml:space="preserve"><value>Assignments</value></data>
+  <data name="PermissionsTab" xml:space="preserve"><value>Permissions</value></data>
+  <data name="PagesTitle" xml:space="preserve"><value>Module Pages</value></data>
+  <data name="PagesDescription" xml:space="preserve"><value>Manage page, screen and route descriptors owned by this module.</value></data>
+  <data name="AssignmentsPlaceholder" xml:space="preserve"><value>Assignments will be managed by a separate approved module pack.</value></data>
+  <data name="PermissionsPlaceholder" xml:space="preserve"><value>Permission registry details will be managed by a separate approved module pack.</value></data>
+  <data name="AddPage" xml:space="preserve"><value>Add Page</value></data>
+  <data name="EditPage" xml:space="preserve"><value>Edit Page</value></data>
+  <data name="PageCode" xml:space="preserve"><value>Page Code</value></data>
+  <data name="RoutePath" xml:space="preserve"><value>Route Path</value></data>
+  <data name="RequiredPermission" xml:space="preserve"><value>Required Permission</value></data>
+  <data name="PageType" xml:space="preserve"><value>Page Type</value></data>
+  <data name="PageTypeList" xml:space="preserve"><value>List</value></data>
+  <data name="PageTypeDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="PageTypeCreate" xml:space="preserve"><value>Create</value></data>
+  <data name="PageTypeEdit" xml:space="preserve"><value>Edit</value></data>
+  <data name="PageTypeReport" xml:space="preserve"><value>Report</value></data>
+  <data name="PageTypeWizard" xml:space="preserve"><value>Wizard</value></data>
+  <data name="PageTypeDashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="PageTypeCustom" xml:space="preserve"><value>Custom</value></data>
+  <data name="InvalidPageCodeGenerated" xml:space="preserve"><value>Page code could not be generated.</value></data>
+  <data name="InvalidRoutePath" xml:space="preserve"><value>Route must follow /PPM/Projects format.</value></data>
+  <data name="InvalidRouteFormat" xml:space="preserve"><value>Route must follow /PPM/Projects format.</value></data>
+  <data name="InvalidPermissionFormat" xml:space="preserve"><value>Permission key must follow ppm.projects.view format.</value></data>
+  <data name="RoutePathHelpText" xml:space="preserve"><value>Example: /PPM/Projects</value></data>
+  <data name="PermissionHelpText" xml:space="preserve"><value>Usage example: ppm.projects.view</value></data>
+  <data name="ModulePagesSearchPlaceholder" xml:space="preserve"><value>Search page code or route</value></data>
+  <data name="ModulePagesDtInfo" xml:space="preserve"><value>Showing _START_–_END_ / _TOTAL_ records</value></data>
+  <data name="ModulePagesDtInfoEmpty" xml:space="preserve"><value>Showing 0 / 0 records</value></data>
+  <data name="ModulePagesDtInfoFiltered" xml:space="preserve"><value></value></data>
+  <data name="PageSaved" xml:space="preserve"><value>Page descriptor saved.</value></data>
 </root>

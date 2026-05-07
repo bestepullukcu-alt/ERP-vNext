@@ -44,7 +44,7 @@ Ajan tetiklendi → Frontmatter içindeki `skills:` alanını kontrol et → İl
 3. **`frontend-ui-ux`**: Razor View, Sneat PRO, DataTables v2 Layout API.
 4. **`security-agent`**: JWT, RBAC, Permission, Tenant Isolation.
 5. **`data-agent`**: MongoDB Index, Collection tasarımı, Seed Data.
-6. **`l10n-agent`**: 7 dil yönetimi, `.resx` senkronizasyonu, `window.L10n`.
+6. **`l10n-agent`**: Platform (2 dil) / Tenant (7 dil) yönetimi, `.resx` senkronizasyonu, `window.L10n`.
 7. **`testing-agent`**: xUnit, Moq, Integration testleri.
 8. **`integration-agent`**: Ocelot Gateway routing, mikroservis iletişimi.
 9. **`devops-agent`**: Docker, CI/CD, deployment, `run_all.sh`.
@@ -84,10 +84,10 @@ Yeni bir servis eklendiğinde veya çalıştırıldığında portlar sabittir:
 
 > AGENTS.md (`§ Port Şeması`) tek doğru kaynaktır; çakışma halinde AGENTS.md geçerlidir. Eski 5050 (MDM) port atamalı kalmamıştır.
 
-### 4. Dil ve L10n (7 Dil Kuralı)
+### 4. Dil ve L10n Kontrolü
 - View (`.cshtml`) ve JavaScript (`.js`) içinde statik string (Hardcoded metin) kesinlikle YASAKTIR.
 - Tekrarlanan genel kelimeler `SharedResource` üzerinden, sayfaya özel metinler ise sayfa bazlı `.resx` üzerinden yönetilmelidir.
-- JS tarafı için `window.L10n` köprüsü kullanılmalıdır. Çeviriler 7 dile (en, fr, es, zh, ar, ru, tr) senkronize edilmek zorundadır.
+- JS tarafı için `window.L10n` köprüsü kullanılmalıdır. Çeviriler modül tipine göre senkronize edilmek zorundadır (Platform modülleri: `en, tr` / Tenant modülleri: `en, fr, es, zh, ar, ru, tr`).
 
 ### 5. Frontend & UI Standartları (Sneat PRO)
 - Tema: Bootstrap 5.3.3 tabanlı Sneat PRO.
@@ -114,7 +114,7 @@ Yeni bir servis eklendiğinde veya çalıştırıldığında portlar sabittir:
 Kullanıcı "son kontrolleri yap" veya "testleri çalıştır" dediğinde kod yazmayı bırak ve şu adımları izle:
 1. `run_all.sh` üzerinden projenin temiz bir şekilde build edilip edilmediğini sor.
 2. xUnit testlerinin (.NET) çalıştırılıp çalıştırılmadığını kontrol et.
-3. 7 Dil `.resx` dosyalarının eksiksiz (Key senkronizasyonu) olduğunu doğrula.
+3. Tüm `.resx` dosyalarının eksiksiz (Key senkronizasyonu) olduğunu doğrula (Platform için 2, Tenant için 7 dil).
 4. (Varsa) `.antigravity/scripts/` altındaki python doğrulama scriptlerini (security_scan vb.) çalıştır.
 
 ---

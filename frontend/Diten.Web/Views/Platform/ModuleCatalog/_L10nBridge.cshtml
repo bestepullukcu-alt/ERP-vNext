@@ -1,0 +1,11 @@
+@inject Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Localization overrides for DataTable
+}
+<script>
+    window.L10n = window.L10n || {};
+    window.L10n.DataTableShowing = "@SharedLocalizer["Showing"]";
+    window.L10n.Activate = "@SharedLocalizer["Activate"]";
+    window.L10n.Deactivate = "@SharedLocalizer["Deactivate"]";
+    window.L10n.Unknown = "@SharedLocalizer["Unknown"]";
+</script>

@@ -21,14 +21,14 @@
     </div>
     <div class="d-flex align-items-center gap-2">
         <a href="/Platform/ModuleCatalog" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
-        <button type="submit" form="moduleCatalogForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+        <button type="submit" id="btnSaveModule" form="moduleCatalogForm" class="btn btn-primary" disabled>@SharedLocalizer["Save"]</button>
     </div>
 </div>
 
 <form id="moduleCatalogForm" asp-controller="ModuleCatalog" asp-action="@action" asp-route-id="@Model.Id" method="post" class="needs-validation" novalidate>
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger validation-summary" role="alert"></div>
 
     <div class="row g-4">
         <div class="col-12 col-lg-8 d-flex flex-column gap-4">
@@ -39,23 +39,26 @@
                 <div class="card-body row g-3">
                     <div class="col-12 col-md-6">
                         <label asp-for="ModuleCode" class="form-label fw-medium">@Localizer["ModuleCode"] <span class="text-danger">*</span></label>
-                        <input asp-for="ModuleCode" class="form-control" maxlength="50" required />
-                        <span asp-validation-for="ModuleCode" class="text-danger small"></span>
+                        <input asp-for="ModuleCode" class="form-control" minlength="3" maxlength="50" placeholder="e.g. PROJECT-MANAGEMENT" required />
+                        <div id="moduleCodePreview" class="form-text mt-1 text-muted d-none">
+                            @Localizer["FinalCodePreview"]: <span class="fw-bold text-primary"></span>
+                        </div>
+                        <div class="invalid-feedback">@Localizer["InvalidModuleCode"]</div>
                     </div>
                     <div class="col-12 col-md-6">
                         <label asp-for="ModuleVersion" class="form-label fw-medium">@Localizer["Version"] <span class="text-danger">*</span></label>
-                        <input asp-for="ModuleVersion" class="form-control" maxlength="40" required />
-                        <span asp-validation-for="ModuleVersion" class="text-danger small"></span>
+                        <input asp-for="ModuleVersion" class="form-control" placeholder="e.g. 1.0.0" pattern="^\d+\.\d+\.\d+$" required />
+                        <div class="invalid-feedback">@Localizer["InvalidVersionFormat"]</div>
                     </div>
                     <div class="col-12 col-md-6">
                         <label asp-for="ModuleName" class="form-label fw-medium">@Localizer["ModuleName"] <span class="text-danger">*</span></label>
                         <input asp-for="ModuleName" class="form-control" maxlength="200" required />
-                        <span asp-validation-for="ModuleName" class="text-danger small"></span>
+                        <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                     </div>
                     <div class="col-12 col-md-6">
                         <label asp-for="DisplayName" class="form-label fw-medium">@Localizer["DisplayName"] <span class="text-danger">*</span></label>
                         <input asp-for="DisplayName" class="form-control" maxlength="200" required />
-                        <span asp-validation-for="DisplayName" class="text-danger small"></span>
+                        <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                     </div>
                 </div>
             </section>
@@ -67,7 +70,7 @@
                 <div class="card-body">
                     <div class="col-12">
                         <label asp-for="Description" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
-                        <textarea asp-for="Description" class="form-control" rows="6"></textarea>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
                     </div>
                 </div>
             </section>
@@ -81,21 +84,44 @@
                 <div class="card-body row g-3">
                     <div class="col-12">
                         <label asp-for="Domain" class="form-label fw-medium">@Localizer["Domain"] <span class="text-danger">*</span></label>
-                        <input asp-for="Domain" class="form-control" maxlength="120" required />
-                        <span asp-validation-for="Domain" class="text-danger small"></span>
+                        <select asp-for="Domain" class="select2 form-select" required>
+                            <option value="">@SharedLocalizer["Select"]</option>
+                            <option value="Platform Shared Services">Platform Shared Services</option>
+                            <option value="PPM Management">PPM Management</option>
+                            <option value="Master Data Management">Master Data Management</option>
+                            <option value="Quality Management">Quality Management</option>
+                            <option value="Research Management">Research Management</option>
+                            <option value="Document Management">Document Management</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Sales">Sales</option>
+                            <option value="Inventory">Inventory</option>
+                            <option value="Production">Production</option>
+                            <option value="HR">HR</option>
+                        </select>
+                        <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                     </div>
                     <div class="col-12">
                         <label asp-for="Service" class="form-label fw-medium">@Localizer["Service"] <span class="text-danger">*</span></label>
-                        <input asp-for="Service" class="form-control" maxlength="120" required />
-                        <span asp-validation-for="Service" class="text-danger small"></span>
+                        <select asp-for="Service" class="select2 form-select" required>
+                            <option value="">@SharedLocalizer["Select"]</option>
+                            <option value="Diten.Platform">Diten.Platform</option>
+                            <option value="Diten.AuthService">Diten.AuthService</option>
+                            <option value="Diten.Platform.Common">Diten.Platform.Common</option>
+                            <option value="Diten.PpmService">Diten.PpmService</option>
+                            <option value="Diten.MdmService">Diten.MdmService</option>
+                            <option value="Diten.QualityService">Diten.QualityService</option>
+                            <option value="Diten.ResearchService">Diten.ResearchService</option>
+                            <option value="Diten.DocumentService">Diten.DocumentService</option>
+                        </select>
+                        <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                     </div>
                     <div class="col-12">
                         <label asp-for="Category" class="form-label fw-medium">@Localizer["Category"]</label>
-                        <input asp-for="Category" class="form-control" maxlength="120" />
+                        <input asp-for="Category" class="form-control" maxlength="120" placeholder="e.g. Work Management" />
                     </div>
                     <div class="col-12">
                         <label asp-for="SortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>
-                        <input asp-for="SortOrder" type="number" min="0" class="form-control" />
+                        <input asp-for="SortOrder" type="number" min="0" class="form-control" value="@(Model.SortOrder ?? 0)" />
                         <span asp-validation-for="SortOrder" class="text-danger small"></span>
                     </div>
                 </div>
@@ -116,14 +142,14 @@
                         </select>
                     </div>
                     <div class="col-12">
-                        <div class="form-check form-switch">
+                        <div class="form-check form-switch" data-bs-toggle="tooltip" data-bs-placement="top" title="@Localizer["HelpTextCoreModule"]">
                             <input type="hidden" name="IsCoreModule" value="false" />
                             <input asp-for="IsCoreModule" class="form-check-input" role="switch" value="true" />
                             <label asp-for="IsCoreModule" class="form-check-label">@Localizer["Core"]</label>
                         </div>
                     </div>
                     <div class="col-12">
-                        <div class="form-check form-switch">
+                        <div class="form-check form-switch" data-bs-toggle="tooltip" data-bs-placement="top" title="@Localizer["HelpTextTenantAssignable"]">
                             <input type="hidden" name="IsTenantAssignable" value="false" />
                             <input asp-for="IsTenantAssignable" class="form-check-input" role="switch" value="true" />
                             <label asp-for="IsTenantAssignable" class="form-check-label">@Localizer["Assignable"]</label>

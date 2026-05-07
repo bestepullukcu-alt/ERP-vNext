@@ -1,3 +1,89 @@
+html[data-shell="platform-admin"] .platform-admin-brand .app-brand-link {
+  justify-content: center;
+  min-width: 0;
+  width: 100%;
+}
+
+html[data-shell="platform-admin"] .platform-admin-brand {
+  height: 88px;
+  position: relative;
+}
+
+html[data-shell="platform-admin"] .platform-admin-brand-icon {
+  flex: 0 0 2rem;
+  height: 2rem;
+  width: 2rem;
+}
+
+html[data-shell="platform-admin"] .platform-brand-icon {
+  display: block;
+  height: 2rem;
+  object-fit: contain;
+  width: 2rem;
+}
+
+html[data-shell="platform-admin"] .platform-admin-brand-logo {
+  align-items: center;
+  display: flex;
+  flex: 0 1 auto;
+  margin-left: 0 !important;
+  min-width: 0;
+}
+
+html[data-shell="platform-admin"] .platform-brand-logo {
+  display: block;
+  height: 4.5rem;
+  max-width: 12.5rem;
+  object-fit: contain;
+  object-position: center;
+  width: auto;
+}
+
+html[data-shell="platform-admin"] .platform-admin-shell-badge {
+  flex: 0 0 auto;
+  font-size: 0.625rem;
+  margin-left: 1rem;
+  padding: 0.25rem 0.5rem;
+}
+
+html[data-shell="platform-admin"][data-bs-theme="dark"] .platform-brand-logo-light,
+html[data-shell="platform-admin"][data-bs-theme="dark"] .platform-brand-icon-light,
+html[data-shell="platform-admin"]:not([data-bs-theme="dark"]) .platform-brand-logo-dark,
+html[data-shell="platform-admin"]:not([data-bs-theme="dark"]) .platform-brand-icon-dark {
+  display: none;
+}
+
+html[data-shell="platform-admin"]:not(.layout-menu-collapsed) .platform-admin-brand-icon,
+html[data-shell="platform-admin"].layout-menu-collapsed.layout-menu-hover .platform-admin-brand-icon {
+  display: none;
+}
+
+html[data-shell="platform-admin"].layout-menu-collapsed:not(.layout-menu-hover) .platform-admin-brand-logo {
+  display: none;
+}
+
+.module-catalog-details .backbone-preview-section,
+.golden-reference-compact-details .backbone-preview-section,
+#offcanvasDetailsPreview .backbone-preview-section {
+  background: var(--bs-card-bg) !important;
+  border: 0;
+  border-radius: var(--bs-card-border-radius);
+}
+
+#offcanvasDetailsPreview .backbone-preview-section.card {
+  box-shadow: none;
+}
+
+#offcanvasDetailsPreview .backbone-preview-status.card {
+  flex-direction: row;
+}
+
+@media (max-width: 767.98px) {
+  html[data-shell="platform-admin"] .platform-admin-shell-badge {
+    display: none;
+  }
+}
+
 @media (max-width: 767.98px) {
   .dt-buttons .dt-save-filter-btn {
     width: 2.375rem;
@@ -62,4 +148,13 @@
     max-width: 100vw !important;
     width: 100vw !important;
   }
+}
+
+/* Validation Summary Styling */
+.alert.validation-summary ul {
+  margin-bottom: 0;
+}
+
+.alert.validation-summary {
+  border: 1px solid rgba(255, 77, 73, 0.4);
 }

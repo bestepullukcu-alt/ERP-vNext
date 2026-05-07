@@ -43,7 +43,7 @@ Her işlem (Ekleme, Güncelleme, Pasife Alma) numaralandırılmış adımlarla a
 ---
 
 ## 🌍 Çoklu Dil (L10n) Uyumu
-- Kılavuzlar, sistemin desteklediği 7 dilde (EN, FR, ES, ZH, AR, RU, TR) üretilebilir olmalıdır.
+- Kılavuzlar, sistemin desteklediği dillere (Platform modülleri: EN, TR; Tenant modülleri: EN, FR, ES, ZH, AR, RU, TR) göre üretilebilir olmalıdır.
 - **Kural:** Kılavuzdaki ekran terimleri, sistemdeki `.resx` dosyalarındaki karşılıklarıyla %100 aynı olmalıdır.
 
 ---
@@ -65,7 +65,7 @@ Ajan, kullanıcının module pack'teki golden karara göre iki farklı detay/gir
 ## ✅ Kalite Kontrol Listesi
 - [ ] Teknik olmayan bir personel bu dokümanla işlemi tamamlayabilir mi?
 - [ ] Terimler `GoldenReferenceSlim` veya `GoldenReferenceCompact` terminolojisiyle uyumlu mu?
-- [ ] 7 dil desteği için terminoloji tutarlı mı?
+- [ ] Çoklu dil desteği (Platform: 2 dil, Tenant: 7 dil) için terminoloji tutarlı mı?
 - [ ] Adımlar mantıksal bir sıra izliyor mu?
 
 > "Diten ERP vNext Kullanıcı Kılavuzu Standardı -- Teknoloji ile kullanıcıyı birleştiren köprü."

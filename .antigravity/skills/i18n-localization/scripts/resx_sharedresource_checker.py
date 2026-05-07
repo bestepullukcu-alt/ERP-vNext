@@ -16,6 +16,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from dataclasses import dataclass
@@ -24,7 +25,8 @@ from typing import Dict, Iterable, List, Set, Tuple
 import xml.etree.ElementTree as ET
 
 
-SUPPORTED_LANGS: Tuple[str, ...] = ("en", "fr", "es", "zh", "ar", "ru", "tr")
+SUPPORTED_LANGS_TENANT: Tuple[str, ...] = ("en", "fr", "es", "zh", "ar", "ru", "tr")
+SUPPORTED_LANGS_PLATFORM: Tuple[str, ...] = ("en", "tr")
 
 # Values that are acceptable to remain identical across languages.
 # Keep this list small and intentional.
@@ -35,6 +37,8 @@ ALLOWED_EN_EQUAL_KEYS: Set[str] = {
     "Error",
     "Login.ErrorTitle",
     "Sector",
+    "GoldenSlim",
+    "GoldenCompact",
 }
 
 # If a non-English value matches these patterns, we won't fail it as "English placeholder".
@@ -119,8 +123,20 @@ def _is_title_case_like(value: str) -> bool:
 
 
 def main() -> int:
-    project_root = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
+    parser = argparse.ArgumentParser(description="SharedResource RESX Checker")
+    parser.add_argument("project_path", nargs="?", default=".")
+    parser.add_argument(
+        "--context", 
+        choices=["platform", "tenant"], 
+        default="tenant", 
+        help="Context for language checks (platform: 2 langs, tenant: 7 langs)"
+    )
+    args = parser.parse_args()
+
+    project_root = Path(args.project_path).resolve()
     resources_dir = project_root / "frontend" / "Diten.Web" / "Resources"
+
+    supported_langs = SUPPORTED_LANGS_PLATFORM if args.context == "platform" else SUPPORTED_LANGS_TENANT
 
     base_path = resources_dir / "SharedResource.en.resx"
     if not base_path.exists():
@@ -129,7 +145,7 @@ def main() -> int:
 
     docs: Dict[str, ResxDoc] = {}
     missing_files: List[str] = []
-    for lang in SUPPORTED_LANGS:
+    for lang in supported_langs:
         p = resources_dir / f"SharedResource.{lang}.resx"
         if not p.exists():
             missing_files.append(str(p))
@@ -137,13 +153,13 @@ def main() -> int:
         docs[lang] = parse_resx(p)
 
     if missing_files:
-        print("[X] Missing SharedResource RESX files:")
+        print(f"[X] Missing SharedResource RESX files for {args.context} context:")
         for p in missing_files:
             print(f"  - {p}")
         return 1
 
     en = docs["en"].entries
-    non_en_langs = [l for l in SUPPORTED_LANGS if l != "en"]
+    non_en_langs = [l for l in supported_langs if l != "en"]
 
     errors: List[str] = []
 
@@ -188,7 +204,8 @@ def main() -> int:
         print("\n".join(errors))
         return 1
 
-    print("[OK] SharedResource RESX check: PASSED (7 languages, no English placeholders)")
+    lang_count = len(supported_langs)
+    print(f"[OK] SharedResource RESX check: PASSED ({lang_count} languages for {args.context} context, no English placeholders)")
     return 0
 
 

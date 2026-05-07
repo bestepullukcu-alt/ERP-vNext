@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ModuleCatalogTitle" xml:space="preserve"><value>Catalogue des modules</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gérer les enregistrements du catalogue des modules ERP de la plateforme et l'éligibilité à l'affectation des locataires.</value></data>
+  <data name="AddNewModuleCatalog" xml:space="preserve"><value>Ajouter un module</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Créer un module</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier le module</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Détails du module</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identité</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Classification</value></data>
+  <data name="ModuleCode" xml:space="preserve"><value>Code du module</value></data>
+  <data name="ModuleName" xml:space="preserve"><value>Nom du module</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Nom d'affichage</value></data>
+  <data name="Domain" xml:space="preserve"><value>Domaine</value></data>
+  <data name="Service" xml:space="preserve"><value>Service</value></data>
+  <data name="Category" xml:space="preserve"><value>Catégorie</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Assignable" xml:space="preserve"><value>Assignable au locataire</value></data>
+  <data name="Core" xml:space="preserve"><value>Module de base</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Ordre de tri</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Edit" xml:space="preserve"><value>Modifier</value></data>
+  <data name="Deleted" xml:space="preserve"><value>Supprimé</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <data name="Activate" xml:space="preserve"><value>Activer</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Désactiver</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Actif</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Obsolète</value></data>
+  <data name="TotalModules" xml:space="preserve"><value>Total des modules</value></data>
+  <data name="ActiveModules" xml:space="preserve"><value>Modules actifs</value></data>
+  <data name="BetaModules" xml:space="preserve"><value>Modules bêta</value></data>
+  <data name="PreviewModules" xml:space="preserve"><value>Modules d'aperçu</value></data>
+  <data name="HelpTextCoreModule" xml:space="preserve"><value>Module de niveau système. Ne peut pas être supprimé.</value></data>
+  <data name="HelpTextTenantAssignable" xml:space="preserve"><value>Peut être affecté à des locataires dans les flux d'affectation futurs.</value></data>
+  <data name="InvalidVersionFormat" xml:space="preserve"><value>La version doit être au format 1.0.0.</value></data>
+  <data name="InvalidModuleCode" xml:space="preserve"><value>Doit comporter au moins 3 caractères.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Ce champ est obligatoire.</value></data>
+  <data name="CoreModuleCannotBeDeleted" xml:space="preserve"><value>Le module central ne peut pas être supprimé.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>Code final</value></data>
+  <data name="GeneralTab" xml:space="preserve"><value>General</value></data>
+  <data name="PagesTab" xml:space="preserve"><value>Pages</value></data>
+  <data name="AssignmentsTab" xml:space="preserve"><value>Assignments</value></data>
+  <data name="PermissionsTab" xml:space="preserve"><value>Permissions</value></data>
+  <data name="PagesTitle" xml:space="preserve"><value>Module Pages</value></data>
+  <data name="PagesDescription" xml:space="preserve"><value>Manage page, screen and route descriptors owned by this module.</value></data>
+  <data name="AssignmentsPlaceholder" xml:space="preserve"><value>Assignments will be managed by a separate approved module pack.</value></data>
+  <data name="PermissionsPlaceholder" xml:space="preserve"><value>Permission registry details will be managed by a separate approved module pack.</value></data>
+  <data name="AddPage" xml:space="preserve"><value>Add Page</value></data>
+  <data name="EditPage" xml:space="preserve"><value>Edit Page</value></data>
+  <data name="PageCode" xml:space="preserve"><value>Page Code</value></data>
+  <data name="RoutePath" xml:space="preserve"><value>Route Path</value></data>
+  <data name="RequiredPermission" xml:space="preserve"><value>Required Permission</value></data>
+  <data name="PageType" xml:space="preserve"><value>Page Type</value></data>
+  <data name="PageTypeList" xml:space="preserve"><value>List</value></data>
+  <data name="PageTypeDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="PageTypeCreate" xml:space="preserve"><value>Create</value></data>
+  <data name="PageTypeEdit" xml:space="preserve"><value>Edit</value></data>
+  <data name="PageTypeReport" xml:space="preserve"><value>Report</value></data>
+  <data name="PageTypeWizard" xml:space="preserve"><value>Wizard</value></data>
+  <data name="PageTypeDashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="PageTypeCustom" xml:space="preserve"><value>Custom</value></data>
+  <data name="InvalidPageCodeGenerated" xml:space="preserve"><value>Le code de page n’a pas pu être généré.</value></data>
+  <data name="InvalidRoutePath" xml:space="preserve"><value>La route doit respecter le format /PPM/Projects.</value></data>
+  <data name="InvalidRouteFormat" xml:space="preserve"><value>La route doit respecter le format /PPM/Projects.</value></data>
+  <data name="InvalidPermissionFormat" xml:space="preserve"><value>La clé de permission doit respecter le format ppm.projects.view.</value></data>
+  <data name="RoutePathHelpText" xml:space="preserve"><value>Exemple : /PPM/Projects</value></data>
+  <data name="PermissionHelpText" xml:space="preserve"><value>Exemple d’utilisation : ppm.projects.view</value></data>
+  <data name="ModulePagesSearchPlaceholder" xml:space="preserve"><value>Rechercher un code de page ou une route</value></data>
+  <data name="ModulePagesDtInfo" xml:space="preserve"><value>Affichage de _START_–_END_ / _TOTAL_ enregistrements</value></data>
+  <data name="ModulePagesDtInfoEmpty" xml:space="preserve"><value>Affichage de 0 / 0 enregistrement</value></data>
+  <data name="ModulePagesDtInfoFiltered" xml:space="preserve"><value></value></data>
+  <data name="PageSaved" xml:space="preserve"><value>Page descriptor saved.</value></data>
+</root>

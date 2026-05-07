@@ -58,7 +58,7 @@ Bu workflow, legacy DataTable liste sayfalarını **DataTable v2 standardına** 
 - [ ] `Index.cshtml @section Scripts` yükleme sırası: `<partial name="_IndexL10n" />` → `index.l10n.js` → `index.js`.
 - [ ] `_IndexL10n.cshtml` minimum key seti tamam: `AreYouSure`, `ConfirmAction`, `DeleteConfirmationYesBtn`, `BulkDelete`, `BulkDeleteConfirm`, `BulkDeleteSuccess`, `ClearSelection`, `SelectedCount`, `Cancel`, `SaveView`, `ColumnVisibility`, `Filter`, `Apply`, `Reset`, `ShowAll`, `Search`, `Export`, `Import`, `Status`.
 - [ ] Toolbar vocabulary SharedResource üzerinden geliyor (`Search/Export/Import/Filter/Apply/Reset/ShowAll/SaveView/ColumnVisibility/...`).
-- [ ] 7 dil tam; placeholder yok; hardcoded fallback yok.
+- [ ] L10n anahtarları tam (Platform: 2 dil, Tenant: 7 dil); placeholder yok; hardcoded fallback yok.
 - [ ] `python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py .` PASS.
 
 ### 7) Statik Guard
