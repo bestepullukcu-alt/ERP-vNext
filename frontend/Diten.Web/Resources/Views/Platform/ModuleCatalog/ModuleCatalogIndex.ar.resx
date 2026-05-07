@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ModuleCatalogTitle" xml:space="preserve"><value>كتالوج الوحدات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة سجلات كتالوج وحدات ERP للمنصة وأهلية تعيين المستأجر.</value></data>
+  <data name="AddNewModuleCatalog" xml:space="preserve"><value>إضافة وحدة</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إنشاء وحدة</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل الوحدة</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>تفاصيل الوحدة</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>التصنيف</value></data>
+  <data name="ModuleCode" xml:space="preserve"><value>كود الوحدة</value></data>
+  <data name="ModuleName" xml:space="preserve"><value>اسم الوحدة</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>اسم العرض</value></data>
+  <data name="Domain" xml:space="preserve"><value>المجال</value></data>
+  <data name="Service" xml:space="preserve"><value>الخدمة</value></data>
+  <data name="Category" xml:space="preserve"><value>الفئة</value></data>
+  <data name="Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="Assignable" xml:space="preserve"><value>قابل للتعيين للمستأجر</value></data>
+  <data name="Core" xml:space="preserve"><value>الوحدة الأساسية</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>ترتيب الفرز</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Deleted" xml:space="preserve"><value>تم الحذف</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="Activate" xml:space="preserve"><value>تنشيط</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>إلغاء التنشيط</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>مهمل</value></data>
+  <data name="TotalModules" xml:space="preserve"><value>إجمالي الوحدات</value></data>
+  <data name="ActiveModules" xml:space="preserve"><value>الوحدات النشطة</value></data>
+  <data name="BetaModules" xml:space="preserve"><value>الوحدات التجريبية</value></data>
+  <data name="PreviewModules" xml:space="preserve"><value>وحدات المعاينة</value></data>
+  <data name="HelpTextCoreModule" xml:space="preserve"><value>وحدة على مستوى النظام. لا يمكن حذفها.</value></data>
+  <data name="HelpTextTenantAssignable" xml:space="preserve"><value>يمكن تعيينها للمستأجرين في تدفقات التعيين المستقبلية.</value></data>
+  <data name="InvalidVersionFormat" xml:space="preserve"><value>يجب أن يكون الإصدار بتنسيق 1.0.0.</value></data>
+  <data name="InvalidModuleCode" xml:space="preserve"><value>يجب أن يتكون من 3 أحرف على الأقل.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>هذا الحقل مطلوب.</value></data>
+  <data name="CoreModuleCannotBeDeleted" xml:space="preserve"><value>لا يمكن حذف الوحدة الأساسية.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>الرمز النهائي</value></data>
+  <data name="GeneralTab" xml:space="preserve"><value>General</value></data>
+  <data name="PagesTab" xml:space="preserve"><value>Pages</value></data>
+  <data name="AssignmentsTab" xml:space="preserve"><value>Assignments</value></data>
+  <data name="PermissionsTab" xml:space="preserve"><value>Permissions</value></data>
+  <data name="PagesTitle" xml:space="preserve"><value>Module Pages</value></data>
+  <data name="PagesDescription" xml:space="preserve"><value>Manage page, screen and route descriptors owned by this module.</value></data>
+  <data name="AssignmentsPlaceholder" xml:space="preserve"><value>Assignments will be managed by a separate approved module pack.</value></data>
+  <data name="PermissionsPlaceholder" xml:space="preserve"><value>Permission registry details will be managed by a separate approved module pack.</value></data>
+  <data name="AddPage" xml:space="preserve"><value>Add Page</value></data>
+  <data name="EditPage" xml:space="preserve"><value>Edit Page</value></data>
+  <data name="PageCode" xml:space="preserve"><value>Page Code</value></data>
+  <data name="RoutePath" xml:space="preserve"><value>Route Path</value></data>
+  <data name="RequiredPermission" xml:space="preserve"><value>Required Permission</value></data>
+  <data name="PageType" xml:space="preserve"><value>Page Type</value></data>
+  <data name="PageTypeList" xml:space="preserve"><value>List</value></data>
+  <data name="PageTypeDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="PageTypeCreate" xml:space="preserve"><value>Create</value></data>
+  <data name="PageTypeEdit" xml:space="preserve"><value>Edit</value></data>
+  <data name="PageTypeReport" xml:space="preserve"><value>Report</value></data>
+  <data name="PageTypeWizard" xml:space="preserve"><value>Wizard</value></data>
+  <data name="PageTypeDashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="PageTypeCustom" xml:space="preserve"><value>Custom</value></data>
+  <data name="InvalidPageCodeGenerated" xml:space="preserve"><value>تعذر إنشاء رمز الصفحة تلقائيًا.</value></data>
+  <data name="InvalidRoutePath" xml:space="preserve"><value>يجب أن يكون المسار بتنسيق /PPM/Projects.</value></data>
+  <data name="InvalidRouteFormat" xml:space="preserve"><value>يجب أن يكون المسار بتنسيق /PPM/Projects.</value></data>
+  <data name="InvalidPermissionFormat" xml:space="preserve"><value>يجب أن يكون مفتاح الصلاحية بتنسيق ppm.projects.view.</value></data>
+  <data name="RoutePathHelpText" xml:space="preserve"><value>مثال: /PPM/Projects</value></data>
+  <data name="PermissionHelpText" xml:space="preserve"><value>مثال استخدام: ppm.projects.view</value></data>
+  <data name="ModulePagesSearchPlaceholder" xml:space="preserve"><value>ابحث برمز الصفحة أو المسار</value></data>
+  <data name="ModulePagesDtInfo" xml:space="preserve"><value>عرض _START_–_END_ / _TOTAL_ سجل</value></data>
+  <data name="ModulePagesDtInfoEmpty" xml:space="preserve"><value>عرض 0 / 0 سجل</value></data>
+  <data name="ModulePagesDtInfoFiltered" xml:space="preserve"><value></value></data>
+  <data name="PageSaved" xml:space="preserve"><value>Page descriptor saved.</value></data>
+</root>

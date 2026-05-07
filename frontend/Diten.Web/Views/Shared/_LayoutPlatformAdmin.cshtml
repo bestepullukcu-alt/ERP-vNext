@@ -38,7 +38,8 @@
     <title>@ViewData["Title"] - Di10 Admin</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="~/assets/img/favicon/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="~/assets/img/branding/favicon-32.png"
+        asp-append-version="true" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -140,14 +141,24 @@
 
             <!-- Menu (Sidebar) -->
             <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                <div class="app-brand demo">
+                <div class="app-brand demo platform-admin-brand">
                     <a href="/Platform/Tenants" class="app-brand-link">
-                        <span class="app-brand-logo demo">
-                            <i class="bx bx-buildings text-primary fs-2"></i>
+                        <span class="app-brand-logo demo platform-admin-brand-icon">
+                            <img class="platform-brand-icon platform-brand-icon-light"
+                                src="~/assets/img/branding/platform-icon-light.png" alt="Diten icon"
+                                asp-append-version="true" />
+                            <img class="platform-brand-icon platform-brand-icon-dark"
+                                src="~/assets/img/branding/platform-icon-dark.png" alt="Diten icon"
+                                asp-append-version="true" />
                         </span>
-                        <span class="app-brand-text demo menu-text fw-bold ms-2">Di10</span>
-                        <span class="badge bg-label-primary menu-text ms-2 text-uppercase"
-                            style="font-size: 0.625rem;">@SharedLocalizer["Admin"]</span>
+                        <span class="platform-admin-brand-logo ms-2">
+                            <img class="platform-brand-logo platform-brand-logo-light"
+                                src="~/assets/img/branding/platform-logo-light.png" alt="Di10 Enterprise Solutions"
+                                asp-append-version="true" />
+                            <img class="platform-brand-logo platform-brand-logo-dark"
+                                src="~/assets/img/branding/platform-logo-dark.png" alt="Di10 Enterprise Solutions"
+                                asp-append-version="true" />
+                        </span>
                     </a>
                     <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
                         <i class="icon-base bx bx-chevron-left"></i>
@@ -174,40 +185,10 @@
                         </a>
                     </li>
                     <li class="menu-item">
-                        <span class="menu-link disabled" title="Coming soon">
-                            <i class="menu-icon tf-icons bx bx-layer"></i>
-                            <div>Plans and Quotas</div>
-                        </span>
-                    </li>
-                    <li class="menu-item">
-                        <span class="menu-link disabled" title="Coming soon">
-                            <i class="menu-icon tf-icons bx bx-world"></i>
-                            <div>Domain Management</div>
-                        </span>
-                    </li>
-                    <li class="menu-item">
-                        <span class="menu-link disabled" title="Coming soon">
-                            <i class="menu-icon tf-icons bx bx-toggle-left"></i>
-                            <div>Feature Flags and Config</div>
-                        </span>
-                    </li>
-                    <li class="menu-item">
-                        <span class="menu-link disabled" title="Coming soon">
-                            <i class="menu-icon tf-icons bx bx-line-chart"></i>
-                            <div>Usage Monitoring</div>
-                        </span>
-                    </li>
-                    <li class="menu-item">
                         <a href="/Platform/TenantSecurity" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-lock-alt"></i>
                             <div>@SharedLocalizer["LoginSecurity"]</div>
                         </a>
-                    </li>
-                    <li class="menu-item">
-                        <span class="menu-link disabled" title="Coming soon">
-                            <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
-                            <div>Platform Audit</div>
-                        </span>
                     </li>
                 </ul>
             </aside>
@@ -239,12 +220,13 @@
                                     <span class="d-inline-block text-body-secondary fw-normal" id="autocomplete"></span>
                                 </a>
                             </div>
+                            <span class="badge bg-label-primary text-uppercase platform-admin-shell-badge">@SharedLocalizer["Admin"]</span>
                         </div>
                         <!-- /Search -->
 
-                        <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+                        <ul class="navbar-nav flex-row align-items-center ms-md-auto gap-2">
                             <!-- Language -->
-                            <li class="nav-item dropdown-language dropdown me-2 me-xl-0">
+                            <li class="nav-item dropdown-language dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);"
                                     data-bs-toggle="dropdown">
                                     <i class="icon-base bx bx-globe icon-md"></i>
@@ -262,7 +244,7 @@
                             </li>
 
                             <!-- Style Switcher -->
-                            <li class="nav-item dropdown me-2 me-xl-0">
+                            <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" id="nav-theme" href="javascript:void(0);"
                                     data-bs-toggle="dropdown">
                                     <i class="icon-base bx bx-sun icon-md theme-icon-active"></i>
@@ -293,9 +275,7 @@
                                 </ul>
                             </li>
 
-                            <!-- Quick links  -->
-                            <partial name="_Application" />
-                            <!-- Quick links -->
+
 
                             <!-- User -->
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">

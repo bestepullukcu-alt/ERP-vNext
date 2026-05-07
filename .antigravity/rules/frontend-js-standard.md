@@ -47,6 +47,7 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
    - Responsive control kolonu `targets: 0, className: 'control', responsivePriority: 2`, checkbox kolonu `targets: 1, className: 'dt-checkboxes-cell cell-fit', responsivePriority: 3`, action kolonu `className: 'cell-fit all ...'` standardını taşır.
    - `#btnBulkDelete` gibi modüle özel elle event listener bağlamak, shared bulk bar zaten `[data-bulk-action]` kullandığı için yeni modüllerde YASAKTIR.
 8. **Toast:** Başarı/hata bildirimleri her zaman `window.showToast('KeyOrMessage', 'success'|'error'|'warning'|'info')` ile verilir.
+   - **Parametre sırası kontratı:** İlk parametre mesaj/localization key, ikinci parametre tiptir. `window.showToast('error', message)`, `window.showToast('success', message)` gibi ters sıra kullanımı YASAKTIR; Notyf/Notiflix tipi bozulup boş veya hatalı görünümlü toast üretir.
    - İstisna: auth refresh/login'e devredilmiş `401` akışında kullanıcıya ek olarak generic hata toast'ı basılmaz.
    - Import gibi henüz uygulanmamış ama hata olmayan aksiyonlar `warning` veya `info` ile gösterilir; hata toast'ı kullanılmaz.
 9. **Save View (v2) — Applied State:** Save View görünürlüğü ve kaydedilen state, staged UI seçimlerine göre değil **applied/effective** tablo state’ine göre hesaplanmalıdır:

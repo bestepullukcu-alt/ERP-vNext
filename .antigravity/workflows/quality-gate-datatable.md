@@ -78,15 +78,15 @@ Bu workflow, bir DataTable liste sayfası tamamlandığında **hem agent hem ork
 - [ ] **L10n Bridge (v2):** `window.L10n` minimum key set’i tamam mı? (`Search, Export, Import, Filter, Apply, Reset, ShowAll, SaveView, ColumnVisibility, Status` dahil)
 - [ ] **L10n Delivery Pattern:** `Index.cshtml` içinde uzun `window.L10n.Key = ...` bloğu yok mu? `_IndexL10n.cshtml` payload partial'ı ve `index.l10n.js` loader scripti kullanılıyor mu?
 - [ ] **L10n Bridge (v2):** Reorder kullanılan sayfalarda `ColumnOrder` key’i de bridge ediliyor mu?
-- [ ] **Layout:** `Layout = "_LayoutBackbone"` kullanılıyor mu?
+- [ ] **Layout:** Admin modüllerinde `Layout = "_LayoutPlatformAdmin"`, tenant modüllerinde `Layout = "_LayoutTenantShell"` kullanılıyor mu?
 - [ ] **Shared CSS Placement:** Reusable toolbar / inline-filter / Select2 stilleri `Index.cshtml @section Styles` içine gömülmemiş mi? Ortak kurallar `backbone-custom.css` içinde mi?
 - [ ] **Index Form Surface Boundary:** Slim ise Index içinde `_CreateEditOffcanvas.cshtml` var mı? Compact ise Index içinde create/edit amaçlı editor offcanvas yok mu?
 
 ### C. Localization
 
-- [ ] **7 Dil:** Modüle özgü tüm yeni key'ler (`en, fr, es, zh, ar, ru, tr`) dosyalarına eklenmiş mi?
+- [ ] **L10n Dil Kontrolü:** Modüle özgü tüm yeni key'ler, modül türüne göre belirlenen dillere (Platform için: `en, tr`, Tenant için: `en, fr, es, zh, ar, ru, tr`) dosyalarına eklenmiş mi?
 - [ ] **SharedResource:** Genel UI key'leri (`Active`, `Passive`, `Status`, `Filter`, `Reset`, `Apply`, `BulkDelete`, `AreYouSure`, `Cancel`, ...) sadece `SharedLocalizer` üzerinden mi geliyor?
-- [ ] **SaveView Key:** `SharedResource.*.resx` içinde `SaveView` key'i 7 dilde mevcut mu? `window.L10n.SaveView` bridge ediliyor mu?
+- [ ] **SaveView Key:** `SharedResource.*.resx` içinde `SaveView` key'i tüm geçerli dillerde mevcut mu? `window.L10n.SaveView` bridge ediliyor mu?
 - [ ] **Vocabulary:** `Search/Export/Import/Filter/Apply/Reset/ShowAll/ColumnVisibility` gibi toolbar metinleri SharedResource üzerinden mi geliyor?
 - [ ] **No Fallback:** Toolbar/action metinlerinde hardcoded fallback (`|| 'Export'`) yok mu? (Eksik key teslimi bloklar.)
 - [ ] **RESX Placeholder Check:** `python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py .` çalıştırıldı mı? (Non-English dosyalarda English placeholder bırakmak teslimi bloklar.)
@@ -127,7 +127,7 @@ Bu workflow, bir DataTable liste sayfası tamamlandığında **hem agent hem ork
 
 ### D. Routing & Sidebar
 
-- [ ] **Sidebar:** `_LayoutBackbone.cshtml` içine aktif sayfa vurgulama ile menu item eklenmiş mi?
+- [ ] **Sidebar:** Admin modülünde `_LayoutPlatformAdmin.cshtml`, tenant modülünde `_LayoutTenantShell.cshtml` içine aktif sayfa vurgulama ile menu item eklenmiş mi?
 - [ ] **Controller Route:** Frontend controller `/{{ModuleName}}` (MDM area'sı olmadan kök) ile erişilebilir mi?
 - [ ] **Ocelot:** `ocelot.json` içinde `/api/{{ModuleNameLower}}` ve `/api/{{ModuleNameLower}}/{everything}` rotaları doğru servise yönlendirilmiş mi?
 

@@ -158,5 +158,15 @@ public sealed class ModuleCatalogRulesTests
                 .ToList();
             return Task.FromResult(items);
         }
+
+        public Task<IReadOnlyDictionary<ModuleCatalogStatus, long>> GetStatsAsync(CancellationToken ct = default)
+        {
+            IReadOnlyDictionary<ModuleCatalogStatus, long> stats = _items
+                .Where(x => !x.IsDeleted)
+                .GroupBy(x => x.Status)
+                .ToDictionary(x => x.Key, x => (long)x.Count());
+
+            return Task.FromResult(stats);
+        }
     }
 }

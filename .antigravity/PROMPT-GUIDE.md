@@ -298,7 +298,7 @@ Kurallar:
 Legal Entity localization yapisini tamamla.
 
 Beklenti:
-- 7 dil `.resx`: en, fr, es, zh, ar, ru, tr.
+- Çoklu dil (Platform: 2 dil, Tenant: 7 dil) `.resx`.
 - View resource ve shared resource ayrimini koru.
 - Index icinde uzun `window.L10n.Key = ...` bloklari yazma.
 - `_IndexL10n.cshtml` JSON payload uretsin.

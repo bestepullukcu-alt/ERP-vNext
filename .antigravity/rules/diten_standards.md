@@ -21,5 +21,5 @@ Kullanıcıdan **'ONAY' (APPROVED)** alınmadan tek bir satır kod yazılması k
 - Tüm yeni liste sayfaları `Item Master` ile aynı header hiyerarşisini, DataTable omurgasını ve genel görsel ritmi takip etmelidir.
 
 ## 4. Sidebar (Sol Menü) Kuralı
-- Yeni sayfa eklerken `_LayoutBackbone.cshtml` dosyasındaki menü öğesi dinamik (`ViewBag.ActiveMenu` kontrollü) olmalıdır.
+- Yeni sayfa eklerken shell tipine göre `_LayoutPlatformAdmin.cshtml` veya `_LayoutTenantShell.cshtml` dosyasındaki menü öğesi dinamik (`ViewBag.ActiveMenu` kontrollü) olmalıdır.
 - İlgili Controller'ın `Index` metoduna `ViewBag.ActiveMenu` değeri atanmalıdır.

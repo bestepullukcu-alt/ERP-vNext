@@ -83,3 +83,35 @@ public sealed class GatewayResponse<T>
     public string? Message { get; set; }
     public List<string> Errors { get; set; } = [];
 }
+
+public sealed class ModulePageDescriptorViewModel
+{
+    public Guid Id { get; set; }
+    public Guid TenantId { get; set; }
+    public string ModuleCode { get; set; } = string.Empty;
+    public string PageCode { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public string RoutePath { get; set; } = string.Empty;
+    public string? RequiredPermission { get; set; }
+    public string PageType { get; set; } = "List";
+    public string Status { get; set; } = "Draft";
+    public int SortOrder { get; set; }
+    public string? Description { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public string CreatedBy { get; set; } = string.Empty;
+    public DateTimeOffset? ModifiedAt { get; set; }
+    public string? ModifiedBy { get; set; }
+}
+
+public sealed class ModulePageDescriptorSavePayload
+{
+    public string ModuleCode { get; set; } = string.Empty;
+    public string PageCode { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public string RoutePath { get; set; } = string.Empty;
+    public string? RequiredPermission { get; set; }
+    public string PageType { get; set; } = "List";
+    public string Status { get; set; } = "Draft";
+    public int? SortOrder { get; set; }
+    public string? Description { get; set; }
+}

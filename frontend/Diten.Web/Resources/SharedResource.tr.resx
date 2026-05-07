@@ -429,4 +429,13 @@
   <data name="User" xml:space="preserve">
     <value>Kullanıcı</value>
   </data>
+  <data name="Activate" xml:space="preserve">
+    <value>Aktif Et</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>Pasif Et</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Bilinmiyor</value>
+  </data>
 </root>

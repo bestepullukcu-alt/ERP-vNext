@@ -14,7 +14,7 @@ ERP-vNext; çok kiracılı (multi-tenant), mikro hizmet tabanlı bir kurumsal ka
 - **Kimlik & Yetki**: Custom Auth Service (JWT + BCrypt + Dynamic RBAC)
 - **Tenancy**: Tek Veritabanı, Çoklu Kiracı (TenantId Filtreli - Guid)
 - **Platform**: Platform Core Service (Port: 5057)
-- **Localization**: 7 Dil (EN, FR, ES, ZH, AR, RU, TR) - Resx + JS Bridge (`_IndexL10n.cshtml` JSON payload + `index.l10n.js` -> `window.L10n`)
+- **Localization**: Platform için 2 Dil (EN, TR), Tenant için 7 Dil (EN, FR, ES, ZH, AR, RU, TR) - Resx + JS Bridge (`_IndexL10n.cshtml` JSON payload + `index.l10n.js` -> `window.L10n`)
 
 ## 🥇 Golden Reference Standardı
 
@@ -62,7 +62,8 @@ Yeni modül geliştirmesi iki aşamalıdır:
     │       ├── Views/
     │       │   ├── Shared/
     │       │   │   ├── _Layout.cshtml         # Legacy layout (FROZEN)
-    │       │   │   ├── _LayoutBackbone.cshtml # Modern layout (yeni modüller)
+    │       │   │   ├── _LayoutPlatformAdmin.cshtml # Platform/admin shell layout
+    │       │   │   ├── _LayoutTenantShell.cshtml   # Tenant shell layout
     │       │   │   └── _SkeletonLoader.cshtml # DataTable shimmer efekti
     │       │   ├── Account/                   # Login sayfası (AuthService)
     │       │   ├── DevEnablement/             # Golden reference modülleri
@@ -106,12 +107,13 @@ Notlar:
 
 ---
 
-## 🔀 Çift Layout Mimarisi (Dual-Layout)
+## 🔀 Shell-Aware Layout Mimarisi
 
 | Layout | Dosya | Kullanıcılar | Durum |
 |---|---|---|---|
 | **Legacy** | `_Layout.cshtml` | Archive/ | 🔴 FROZEN — Dokunulmaz |
-| **Modern** | `_LayoutBackbone.cshtml` | MDM/, Account/, Yeni Modüller | ✅ Aktif (Layout = "_LayoutBackbone") |
+| **Platform Admin** | `_LayoutPlatformAdmin.cshtml` | Platform/admin modülleri, `Views/Platform/*` | ✅ Aktif |
+| **Tenant Shell** | `_LayoutTenantShell.cshtml` | Tenant modülleri, `Views/{ModuleName}/*` veya tenant domain klasörleri | ✅ Aktif |
 
 ---
 
@@ -147,7 +149,7 @@ Notlar:
 | 3 | **frontend-ui-ux** | Razor View, Sneat PRO, DataTables v2, Statik Şablonlar |
 | 4 | **security-agent** | Zero Trust, JWT, RBAC, HasPermission, Tenant Shield |
 | 5 | **data-agent** | MongoDB Index, Collection tasarımı, Idempotent Seed Data |
-| 6 | **l10n-agent** | 7 dil .resx senkronizasyonu, `window.L10n` bridge (partial + loader JS) |
+| 6 | **l10n-agent** | Platform/Tenant ayrımına göre (2/7 dil) .resx senkronizasyonu, `window.L10n` bridge |
 | 7 | **testing-agent** | xUnit, Moq, FluentAssertions, Tenant isolation testleri |
 | 8 | **integration-agent** | Ocelot Gateway routing, JWT pass-through, servis iletişimi |
 | 9 | **debugger** | Katmanlı izolasyon (FE→GW→Auth→Service→DB), 4 fazlı araştırma |
@@ -197,7 +199,7 @@ Notlar:
 ## 📂 CQRS, Tenant & Güvenlik Kesin Kuralları
 
 - **Handler Ayrımı**: Handler sınıfları **ASLA** `Commands` veya `Queries` içinde olmayacaktır. Modül altında `Handlers/CommandHandlers` ve `Handlers/QueryHandlers` olarak ayrılmalıdır.
-- **Layout Kuralı**: Tüm yeni MDM ve iş modülü sayfaları `_LayoutBackbone.cshtml` kullanmalıdır. `_Layout.cshtml` sadece Archive içindir.
+- **Layout Kuralı**: Admin modülleri `_LayoutPlatformAdmin.cshtml`, tenant modülleri `_LayoutTenantShell.cshtml` kullanmalıdır. `_Layout.cshtml` sadece Archive içindir.
 - **Tenant Güvenliği**:
   - `X-Tenant-Id` header kullanımı zorunludur (GUID formatında: `00000000-0000-0000-0000-000000000001`).
   - DTO'lar `TenantId` alanı içeremez; TenantId sunucu tarafında middleware ile çözülür.
@@ -225,7 +227,7 @@ Ajanların uyması gereken zorunlu dosyalar (`.antigravity/rules/`):
 
 ### Frontend & UI
 - **frontend-standards.md**: Sneat UI, DataTable v2, CSS/JS kuralları (MOD-0013/22/23/24)
-- **dynamic-localization-standard.md**: 7 dil Resx senkronizasyonu, L10n bridge
+- **dynamic-localization-standard.md**: Platform(2) / Tenant(7) dil Resx senkronizasyonu, L10n bridge
 - **views-organization.md**: Modül bazlı View hiyerarşisi, Dual-Layout yönetimi
 - **details-page-rules.md**: Detay sayfası UI standardı (Offcanvas vs Full Page)
 

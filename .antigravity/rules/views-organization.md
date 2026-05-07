@@ -29,14 +29,16 @@ Projeyi modüler ve ölçeklenebilir tutmak için Views klasörü altında rastg
 
 ---
 
-## 🖼️ 2. Layout ve ViewStart Yönetimi (Dual-Layout)
+## 🖼️ 2. Layout ve ViewStart Yönetimi (Shell-Aware Layout)
 
-Sistemde iki farklı dünya (Eski Archive ve Yeni vNext) aynı anda yaşamaktadır.
+Sistemde eski Archive layout'u ve iki aktif vNext shell'i aynı anda yaşamaktadır.
 
 - Archive Sayfaları: _Layout.cshtml kullanır ve dokunulmazdır (Frozen).
-- Yeni Modern Sayfalar: Mutlaka _LayoutBackbone.cshtml kullanmalıdır.
-- Uygulama: _ViewStart.cshtml dosyasının varsayılan ayarı değiştirilmez. Yeni oluşturulan her modern Razor sayfasının en üstüne şu blok eklenmelidir:
-  @{ Layout = "_LayoutBackbone"; }
+- Platform/admin modülleri: `Views/Platform/{Controller}/` altında olmalı ve `_LayoutPlatformAdmin.cshtml` kullanmalıdır.
+- Tenant modülleri: `Views/{Controller}/` veya tenant domain klasörü altında olmalı ve `_LayoutTenantShell.cshtml` kullanmalıdır.
+- Uygulama: `_ViewStart.cshtml` dosyasının varsayılan ayarı değiştirilmez. Yeni oluşturulan her Razor sayfasında shell tipine göre layout açıkça seçilir:
+  - Admin: `@{ Layout = "_LayoutPlatformAdmin"; }`
+  - Tenant: `@{ Layout = "_LayoutTenantShell"; }`
 
 ---
 
@@ -59,7 +61,7 @@ Kullanıcının veri yüklenirken boş bir ekran görmesini engellemek için Ske
 
 ## ✅ Kontrol Listesi
 - [ ] Sayfa doğru modül klasörü (MDM, Identity vb.) altında mı?
-- [ ] Razor bloğunda Layout = "_LayoutBackbone" tanımlandı mı?
+- [ ] Razor bloğunda shell tipine göre `Layout = "_LayoutPlatformAdmin"` veya `Layout = "_LayoutTenantShell"` tanımlandı mı?
 - [ ] _ViewStart dosyasına dokunulmadı mı?
 - [ ] Liste sayfasında #skeleton-loader yapısı kuruldu mu?
 - [ ] Sayfa özelinde skeleton show/hide hack'i olmadan DtDefaults ile kapanıyor mu?

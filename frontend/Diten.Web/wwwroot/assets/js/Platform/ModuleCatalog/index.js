@@ -9,11 +9,17 @@ const ModuleCatalogList = (function () {
     const endpoint = '/Platform/ModuleCatalog/api';
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'Platform', pageKey: 'ModuleCatalog' };
-    const saveViewColumnIndexes = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-    const totalColumnCount = 14;
-    const baseOrder = [[12, 'asc']];
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    const totalColumnCount = 13;
+    const baseOrder = [[1, 'asc']];
     let saveFilterArmed = false;
     let appliedFilters = { domain: [], service: [], category: [], status: [], isTenantAssignable: '', isCoreModule: '' };
+
+    const validDomains = [
+        'Platform Shared Services', 'PPM Management', 'Master Data Management', 
+        'Quality Management', 'Research Management', 'Document Management', 
+        'Finance', 'Sales', 'Inventory', 'Production', 'HR'
+    ];
 
     const syncL10n = () => { L = window.L10n || {}; };
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -56,10 +62,14 @@ const ModuleCatalogList = (function () {
         }
         return Object.keys(normalized).length ? normalized : null;
     };
-    const defaultColVis = () => saveViewColumnIndexes.reduce((acc, columnIndex) => {
-        acc[columnIndex] = true;
-        return acc;
-    }, {});
+    const defaultColVis = () => {
+        const result = {};
+        saveViewColumnIndexes.forEach((columnIndex) => {
+            const visibleIndexes = [1, 2, 3, 4, 5, 6];
+            result[columnIndex] = visibleIndexes.includes(columnIndex);
+        });
+        return result;
+    };
     const captureColVis = (api) => {
         const result = {};
         saveViewColumnIndexes.forEach((columnIndex) => {
@@ -221,10 +231,21 @@ const ModuleCatalogList = (function () {
         return `<span class="badge ${item[0]}">${escapeHtml(item[1] || status)}</span>`;
     };
 
-    const boolBadge = (value) =>
-        value
-            ? `<span class="badge bg-label-success">${escapeHtml(L.Yes || '')}</span>`
-            : `<span class="badge bg-label-secondary">${escapeHtml(L.No || '')}</span>`;
+    const boolBadge = (value, isCore = false) => {
+        if (isCore && value) {
+            return `<i class="bx bx-lock-alt text-warning fs-4" title="${escapeHtml(L.Core || 'Core')}"></i>`;
+        }
+        return value
+            ? `<i class="bx bx-check text-success fs-4"></i>`
+            : `<i class="bx bx-x text-danger fs-4"></i>`;
+    };
+
+    const domainBadge = (domain) => {
+        const isValid = validDomains.includes(domain);
+        return isValid 
+            ? escapeHtml(domain) 
+            : `<span class="text-muted italic">${escapeHtml(L.Unknown || 'Unknown')}</span>`;
+    };
 
     const reloadWithSuccessToast = (messageKey, interpolationValue) => {
         window.DitenDataTable?.reloadWithToast?.(dt, dtTableEl, messageKey, interpolationValue);
@@ -262,10 +283,35 @@ const ModuleCatalogList = (function () {
         edit: ({ id }) => {
             if (id) window.location.href = `/Platform/ModuleCatalog/Edit/${encodeURIComponent(id)}`;
         },
+        activate: async ({ id, row }) => {
+            try {
+                const response = await fetch(`${endpoint}/${encodeURIComponent(id)}/activate`, { method: 'POST', headers: getAuthHeaders() });
+                if (!response.ok) throw new Error('Activation failed.');
+                reloadWithSuccessToast('RecordUpdated', row?.displayName || row?.moduleCode || '');
+            } catch (error) {
+                console.error(error);
+                window.showToast?.(L.ErrorOccurred || '', 'error');
+            }
+        },
+        deactivate: async ({ id, row }) => {
+            try {
+                const response = await fetch(`${endpoint}/${encodeURIComponent(id)}/deactivate`, { method: 'POST', headers: getAuthHeaders() });
+                if (!response.ok) throw new Error('Deactivation failed.');
+                reloadWithSuccessToast('RecordUpdated', row?.displayName || row?.moduleCode || '');
+            } catch (error) {
+                console.error(error);
+                window.showToast?.(L.ErrorOccurred || '', 'error');
+            }
+        },
         delete: ({ row, id }) => {
             const rowId = id || row?.id || row?.Id;
             if (!rowId) return;
             const entityName = row?.displayName || row?.moduleCode || row?.ModuleCode || '';
+            const isCore = row?.isCoreModule || row?.IsCoreModule;
+            if (isCore) {
+                window.showToast?.(L.CoreModuleCannotBeDeleted || 'Core module cannot be deleted.', 'warning');
+                return;
+            }
             window.showConfirm?.(L.AreYouSure, async () => {
                 try {
                     const response = await fetch(`${endpoint}/${encodeURIComponent(rowId)}`, { method: 'DELETE', headers: getAuthHeaders() });
@@ -300,15 +346,17 @@ const ModuleCatalogList = (function () {
     };
 
     const initDataTable = async () => {
-        if (!dtTableEl || !window.DtDefaults) return;
+        if (!dtTableEl || !window.DtDefaults) {
+            console.error('[ModuleCatalog] DataTable element or DtDefaults not found.');
+            return;
+        }
+        
         const savedState = await loadDefaultView();
         if (savedState?.filters) {
             appliedFilters = normalizeFilters(Object.assign({}, appliedFilters, savedState.filters));
         }
 
         const addNewAttr = { href: '/Platform/ModuleCatalog/Create' };
-        // DitenDataTable wraps the DataTables v2 constructor in the golden reference:
-        // new DataTable(...)
         const saveFilterBtn = {
             text: `<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">${escapeHtml(L.SaveView || '')}</span>`,
             className: 'btn btn-label-primary dt-save-filter-btn d-none',
@@ -334,7 +382,7 @@ const ModuleCatalogList = (function () {
             action: () => toggleInlineFilter()
         };
 
-        dt = new DataTable(dtTableEl, window.DtDefaults.create({
+        const dtConfig = window.DtDefaults.create({
             processing: true,
             serverSide: true,
             stateSave: false,
@@ -359,25 +407,17 @@ const ModuleCatalogList = (function () {
             },
             columns: [
                 { data: 'id', name: 'control' },
-                {
-                    data: 'id',
-                    name: 'selectionPlaceholder',
-                    orderable: false,
-                    searchable: false,
-                    visible: false,
-                    render: () => ''
-                },
                 { data: 'moduleCode', name: 'moduleCode', render: (data) => `<code>${escapeHtml(data)}</code>` },
                 { data: 'moduleName', name: 'moduleName', render: escapeHtml },
-                { data: 'displayName', name: 'displayName', render: escapeHtml },
-                { data: 'domain', name: 'domain', render: escapeHtml },
-                { data: 'service', name: 'service', render: escapeHtml },
-                { data: 'category', name: 'category', render: (data) => escapeHtml(data || '-') },
                 { data: 'status', name: 'status', render: statusBadge },
-                { data: 'moduleVersion', name: 'moduleVersion', render: escapeHtml },
-                { data: 'isTenantAssignable', name: 'isTenantAssignable', render: boolBadge },
-                { data: 'isCoreModule', name: 'isCoreModule', render: boolBadge },
-                { data: 'sortOrder', name: 'sortOrder', render: (data) => escapeHtml(data ?? 0) },
+                { data: 'domain', name: 'domain', render: domainBadge },
+                { data: 'isTenantAssignable', name: 'isTenantAssignable', render: (data) => boolBadge(data) },
+                { data: 'isCoreModule', name: 'isCoreModule', render: (data) => boolBadge(data, true) },
+                { data: 'displayName', name: 'displayName', visible: false, render: escapeHtml },
+                { data: 'service', name: 'service', visible: false, render: escapeHtml },
+                { data: 'category', name: 'category', visible: false, render: (data) => escapeHtml(data || '-') },
+                { data: 'moduleVersion', name: 'moduleVersion', visible: false, render: escapeHtml },
+                { data: 'sortOrder', name: 'sortOrder', visible: false, render: (data) => escapeHtml(data ?? 0) },
                 {
                     data: null,
                     name: 'action',
@@ -386,34 +426,61 @@ const ModuleCatalogList = (function () {
                     className: 'text-end',
                     render: (data, type, row) => {
                         const id = row.id || row.Id;
+                        const status = row.status || row.Status;
+                        const isCore = row.isCoreModule || row.IsCoreModule;
                         const rowJson = JSON.stringify(row);
-                        return window.DitenDataTable.renderActions([
-                            {
-                                key: 'delete',
-                                className: 'text-danger me-1',
-                                icon: 'bx bx-trash',
-                                attrs: { 'data-id': id, 'data-json': rowJson }
-                            },
+                        
+                        const actions = [
                             {
                                 key: 'quickView',
                                 className: 'js-quick-view',
-                                text: L.QuickView || L.Details || '',
+                                text: L.Details || 'Details',
+                                icon: 'bx bx-show',
                                 attrs: { 'data-id': id, 'data-json': rowJson }
                             },
                             {
                                 key: 'edit',
                                 className: 'js-edit-item',
-                                text: L.Edit || '',
+                                text: L.Edit || 'Edit',
                                 attrs: { 'data-id': id, 'data-json': rowJson }
                             }
-                        ]);
+                        ];
+
+                        if (status === 'Draft' || status === 'Inactive') {
+                            actions.push({
+                                key: 'activate',
+                                className: 'text-success',
+                                text: L.Activate || 'Activate',
+                                attrs: { 'data-id': id, 'data-json': rowJson }
+                            });
+                        } else if (status === 'Active') {
+                            actions.push({
+                                key: 'deactivate',
+                                className: 'text-warning',
+                                text: L.Deactivate || 'Deactivate',
+                                attrs: { 'data-id': id, 'data-json': rowJson }
+                            });
+                        }
+
+                        actions.push({
+                            key: 'delete',
+                            className: isCore ? 'text-muted' : 'text-danger',
+                            text: L.Delete || 'Delete',
+                            attrs: { 
+                                'data-id': id, 
+                                'data-json': rowJson,
+                                'title': isCore ? (L.CoreModuleCannotBeDeleted || 'Core module cannot be deleted.') : '',
+                                'style': isCore ? 'pointer-events: none; opacity: 0.5;' : ''
+                            }
+                        });
+
+                        return window.DitenDataTable ? window.DitenDataTable.renderActions(actions) : '';
                     }
                 }
             ],
             columnDefs: [
                 { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
-                { targets: 1, visible: false, orderable: false, searchable: false, className: 'd-none' },
-                { targets: 3, responsivePriority: 1 },
+                { targets: 2, responsivePriority: 1 },
                 { targets: -1, title: L.Actions, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3' }
             ],
             buttons: window.DtDefaults.exportButtons(L.AddNewModuleCatalog || '', addNewAttr, { filterBtn, saveFilterBtn }, {
@@ -445,7 +512,14 @@ const ModuleCatalogList = (function () {
                 window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount());
                 loadStats();
             }
-        }));
+        });
+
+        if (window.L10n?.Showing) {
+            dtConfig.language = dtConfig.language || {};
+            dtConfig.language.info = `${window.L10n.Showing} _START_ - _END_ / _TOTAL_`;
+        }
+
+        dt = new DataTable(dtTableEl, dtConfig);
 
         $(dtTableEl).on('column-reorder.dt columns-reordered.dt search.dt order.dt column-visibility.dt', () => {
             window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
@@ -586,8 +660,6 @@ const ModuleCatalogList = (function () {
     };
 
     const bindFilters = () => {
-        // Select2 filters use the shared small-control contract when enabled:
-        // selectionCssClass: 'form-select form-select-sm'
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
             appliedFilters = {
                 domain: normalizeArray($('#filterDomain').val() || []),
@@ -613,8 +685,6 @@ const ModuleCatalogList = (function () {
     const getAppliedFilterCount = () => Object.values(appliedFilters).filter((value) => Array.isArray(value) ? value.length > 0 : value !== '').length;
 
     const bindActions = () => {
-        // Quick View delegation is handled by DitenDataTable, equivalent to closest('.js-quick-view').
-        // Row actions are delegated by DitenDataTable after DataTable initialization.
     };
 
     const init = async () => {

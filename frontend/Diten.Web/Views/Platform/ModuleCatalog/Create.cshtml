@@ -12,17 +12,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var select2Elements = $('.select2');
-            if (select2Elements.length) {
-                select2Elements.each(function () {
-                    var $this = $(this);
-                    $this.wrap('<div class="position-relative"></div>').select2({
-                        dropdownParent: $this.parent()
-                    });
-                });
-            }
-        });
-    </script>
+    <script src="~/assets/js/Platform/ModuleCatalog/module-catalog-form.js" asp-append-version="true"></script>
 }

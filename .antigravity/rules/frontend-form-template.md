@@ -3,7 +3,7 @@
 Bu şablon, Diten ERP vNext projelerindeki tüm standart **Create/Edit** form sayfaları için (Razor + Sneat PRO) zorunlu iskelettir.
 
 > ⚠️ **MANDATES**
-> - `Layout = "_LayoutBackbone";` zorunludur.
+> - Shell tipine göre `Layout = "_LayoutPlatformAdmin";` veya `Layout = "_LayoutTenantShell";` zorunludur.
 > - Form sayfalarında `row g-6` boşluğu standarttır.
 > - `col-lg-10 mx-auto` kullanılmaz. Kartlar `col-12` içinde tam genişlikte olmalıdır.
 > - Görünen tüm metinler `@Localizer[...]` veya `@SharedLocalizer[...]` üzerinden gelmelidir.
@@ -27,7 +27,7 @@ Bu şablon, Diten ERP vNext projelerindeki tüm standart **Create/Edit** form sa
     // Edit modunda sayfa ID parametresini URL'den veya ViewBag'den alır
     var isEditMode = ViewBag.Id != null; 
     ViewData["Title"] = isEditMode ? Localizer["EditTitle"].Value : Localizer["CreateTitle"].Value;
-    Layout = "_LayoutBackbone";
+    Layout = "_LayoutTenantShell"; // or "_LayoutPlatformAdmin" if module belongs to admin shell
 }
 
 @section Styles {

@@ -79,12 +79,16 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!badge) {
         const submitBtn = findSubmitButtonForForm(trackerForm);
         if (submitBtn) {
-            const actionContainer = submitBtn.parentNode;
+            const targetSelector = trackerForm?.dataset?.requiredTrackerTarget;
+            const targetContainer = targetSelector ? document.querySelector(targetSelector) : null;
+            const actionContainer = targetContainer || submitBtn.parentNode;
             const wrapper = document.createElement("div");
-            wrapper.className = "d-flex align-items-center me-4";
+            wrapper.className = trackerForm?.dataset?.requiredTrackerWrapperClass || "d-flex align-items-center me-4";
+
+            const badgeClass = trackerForm?.dataset?.requiredTrackerBadgeClass || "badge bg-label-danger fs-6 px-3 py-2 d-flex align-items-center";
 
             wrapper.innerHTML = `
-                <span id="${trackerId}" class="badge bg-label-danger fs-6 px-3 py-2 d-flex align-items-center" style="opacity: 0.9; transition: all 0.3s ease; cursor: default;">
+                <span id="${trackerId}" class="${badgeClass}" style="opacity: 0.9; transition: all 0.3s ease; cursor: default;">
                     <div class="required-part d-flex align-items-center">
                         <i class="bx bx-check-shield me-1 lh-1"></i> <span class="required-text">0 / 0</span>
                     </div>

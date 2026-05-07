@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ModuleCatalogTitle" xml:space="preserve"><value>模块目录</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理平台 ERP 模块目录记录和租户分配资格。</value></data>
+  <data name="AddNewModuleCatalog" xml:space="preserve"><value>添加模块</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>创建模块</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑模块</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>模块详情</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>身份</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>分类</value></data>
+  <data name="ModuleCode" xml:space="preserve"><value>模块代码</value></data>
+  <data name="ModuleName" xml:space="preserve"><value>模块名称</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>显示名称</value></data>
+  <data name="Domain" xml:space="preserve"><value>领域</value></data>
+  <data name="Service" xml:space="preserve"><value>服务</value></data>
+  <data name="Category" xml:space="preserve"><value>类别</value></data>
+  <data name="Version" xml:space="preserve"><value>版本</value></data>
+  <data name="Assignable" xml:space="preserve"><value>可分配给租户</value></data>
+  <data name="Core" xml:space="preserve"><value>核心模块</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>排序</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="Deleted" xml:space="preserve"><value>已删除</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="Activate" xml:space="preserve"><value>激活</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>停用</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>活动</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>非活动</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>已弃用</value></data>
+  <data name="TotalModules" xml:space="preserve"><value>总模块数</value></data>
+  <data name="ActiveModules" xml:space="preserve"><value>活动模块</value></data>
+  <data name="BetaModules" xml:space="preserve"><value>Beta 模块</value></data>
+  <data name="PreviewModules" xml:space="preserve"><value>预览模块</value></data>
+  <data name="HelpTextCoreModule" xml:space="preserve"><value>系统级模块。无法删除。</value></data>
+  <data name="HelpTextTenantAssignable" xml:space="preserve"><value>可以在未来的分配流程中分配给租户。</value></data>
+  <data name="InvalidVersionFormat" xml:space="preserve"><value>版本必须采用 1.0.0 格式。</value></data>
+  <data name="InvalidModuleCode" xml:space="preserve"><value>必须至少 3 个字符。</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>此字段是必填的。</value></data>
+  <data name="CoreModuleCannotBeDeleted" xml:space="preserve"><value>核心模块无法删除。</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>最终代码</value></data>
+  <data name="GeneralTab" xml:space="preserve"><value>General</value></data>
+  <data name="PagesTab" xml:space="preserve"><value>Pages</value></data>
+  <data name="AssignmentsTab" xml:space="preserve"><value>Assignments</value></data>
+  <data name="PermissionsTab" xml:space="preserve"><value>Permissions</value></data>
+  <data name="PagesTitle" xml:space="preserve"><value>Module Pages</value></data>
+  <data name="PagesDescription" xml:space="preserve"><value>Manage page, screen and route descriptors owned by this module.</value></data>
+  <data name="AssignmentsPlaceholder" xml:space="preserve"><value>Assignments will be managed by a separate approved module pack.</value></data>
+  <data name="PermissionsPlaceholder" xml:space="preserve"><value>Permission registry details will be managed by a separate approved module pack.</value></data>
+  <data name="AddPage" xml:space="preserve"><value>Add Page</value></data>
+  <data name="EditPage" xml:space="preserve"><value>Edit Page</value></data>
+  <data name="PageCode" xml:space="preserve"><value>Page Code</value></data>
+  <data name="RoutePath" xml:space="preserve"><value>Route Path</value></data>
+  <data name="RequiredPermission" xml:space="preserve"><value>Required Permission</value></data>
+  <data name="PageType" xml:space="preserve"><value>Page Type</value></data>
+  <data name="PageTypeList" xml:space="preserve"><value>List</value></data>
+  <data name="PageTypeDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="PageTypeCreate" xml:space="preserve"><value>Create</value></data>
+  <data name="PageTypeEdit" xml:space="preserve"><value>Edit</value></data>
+  <data name="PageTypeReport" xml:space="preserve"><value>Report</value></data>
+  <data name="PageTypeWizard" xml:space="preserve"><value>Wizard</value></data>
+  <data name="PageTypeDashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="PageTypeCustom" xml:space="preserve"><value>Custom</value></data>
+  <data name="InvalidPageCodeGenerated" xml:space="preserve"><value>无法自动生成页面代码。</value></data>
+  <data name="InvalidRoutePath" xml:space="preserve"><value>路由必须符合 /PPM/Projects 格式。</value></data>
+  <data name="InvalidRouteFormat" xml:space="preserve"><value>路由必须符合 /PPM/Projects 格式。</value></data>
+  <data name="InvalidPermissionFormat" xml:space="preserve"><value>权限键必须符合 ppm.projects.view 格式。</value></data>
+  <data name="RoutePathHelpText" xml:space="preserve"><value>示例：/PPM/Projects</value></data>
+  <data name="PermissionHelpText" xml:space="preserve"><value>用法示例：ppm.projects.view</value></data>
+  <data name="ModulePagesSearchPlaceholder" xml:space="preserve"><value>搜索页面代码或路由</value></data>
+  <data name="ModulePagesDtInfo" xml:space="preserve"><value>正在显示 _START_–_END_ / _TOTAL_ 条记录</value></data>
+  <data name="ModulePagesDtInfoEmpty" xml:space="preserve"><value>正在显示 0 / 0 条记录</value></data>
+  <data name="ModulePagesDtInfoFiltered" xml:space="preserve"><value></value></data>
+  <data name="PageSaved" xml:space="preserve"><value>Page descriptor saved.</value></data>
+</root>

@@ -234,21 +234,18 @@ app.Use(async (context, next) =>
 
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
+app.MapGet("/", (HttpContext context) =>
 {
-    endpoints.MapGet("/", async context =>
-    {
-        var host = context.Request.Host.Host;
-        var isAdminHost = host.StartsWith("admin.", StringComparison.OrdinalIgnoreCase);
-        context.Response.Redirect(isAdminHost ? "/Platform/Tenants" : "/Skus");
-    });
+    var host = context.Request.Host.Host;
+    var isAdminHost = host.StartsWith("admin.", StringComparison.OrdinalIgnoreCase);
+    return Results.Redirect(isAdminHost ? "/Platform/Tenants" : "/WorkCenter");
 });
 
 app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Skus}/{action=Index}/{id?}");
+    pattern: "{controller=WorkCenter}/{action=Index}/{id?}");
 
 app.Run();
 
