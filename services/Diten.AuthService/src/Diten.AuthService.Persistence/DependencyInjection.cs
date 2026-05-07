@@ -55,6 +55,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantUserMembershipRepository, TenantUserMembershipRepository>();
         services.AddScoped<IIntegrationEventInboxRepository, IntegrationEventInboxRepository>();
         services.AddScoped<IAuthAuditService, AuthAuditService>();
+        services.AddScoped<IMfaChallengeRepository, MfaChallengeRepository>();
 
         // Ensure Indexes and Seed Data
         // Note: In a production environment, this might be handled by an initialization service or migration tool.

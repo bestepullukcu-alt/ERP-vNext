@@ -15,21 +15,21 @@ public sealed class TenantValidatorsTests
     [Fact]
     public void RegisterTenantValidator_ShouldFail_WhenNameOrDomainMissing()
     {
-        var result = _validator.Validate(new RegisterTenantCommand("", ""));
+        var result = _validator.Validate(ValidCommand() with { Name = "", Domain = "" });
         Assert.False(result.IsValid);
     }
 
     [Fact]
     public void RegisterTenantValidator_ShouldPass_WithMinimalValidInput()
     {
-        var result = _validator.Validate(new RegisterTenantCommand("Acme Corp", "diten.tech"));
+        var result = _validator.Validate(ValidCommand());
         Assert.True(result.IsValid);
     }
 
     [Fact]
     public void RegisterTenantValidator_ShouldFail_WhenSlugHasUpperCase()
     {
-        var result = _validator.Validate(new RegisterTenantCommand("Acme", "diten.tech", Slug: "AcMe"));
+        var result = _validator.Validate(ValidCommand() with { Slug = "AcMe" });
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == "Slug");
     }
@@ -37,21 +37,21 @@ public sealed class TenantValidatorsTests
     [Fact]
     public void RegisterTenantValidator_ShouldFail_WhenSlugHasSpaces()
     {
-        var result = _validator.Validate(new RegisterTenantCommand("Acme", "diten.tech", Slug: "acme corp"));
+        var result = _validator.Validate(ValidCommand() with { Slug = "acme corp" });
         Assert.False(result.IsValid);
     }
 
     [Fact]
     public void RegisterTenantValidator_ShouldPass_WithValidSlug()
     {
-        var result = _validator.Validate(new RegisterTenantCommand("Acme", "diten.tech", Slug: "acme-corp"));
+        var result = _validator.Validate(ValidCommand() with { Slug = "acme-corp" });
         Assert.True(result.IsValid);
     }
 
     [Fact]
     public void RegisterTenantValidator_ShouldFail_WhenContactEmailInvalid()
     {
-        var result = _validator.Validate(new RegisterTenantCommand("Acme", "diten.tech", ContactEmail: "not-an-email"));
+        var result = _validator.Validate(ValidCommand() with { ContactEmail = "not-an-email" });
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == "ContactEmail");
     }
@@ -59,7 +59,7 @@ public sealed class TenantValidatorsTests
     [Fact]
     public void RegisterTenantValidator_ShouldFail_WhenCountryCodeInvalid()
     {
-        var result = _validator.Validate(new RegisterTenantCommand("Acme", "diten.tech", Country: "XXXX"));
+        var result = _validator.Validate(ValidCommand() with { Country = "XXXX" });
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == "Country");
     }
@@ -67,34 +67,39 @@ public sealed class TenantValidatorsTests
     [Fact]
     public void RegisterTenantValidator_ShouldFail_WhenCurrencyCodeInvalid()
     {
-        var result = _validator.Validate(new RegisterTenantCommand("Acme", "diten.tech", DefaultCurrency: "usd"));
+        var result = _validator.Validate(ValidCommand() with { DefaultCurrency = "usd" });
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == "DefaultCurrency");
     }
 
     [Fact]
-    public void RegisterTenantValidator_ShouldFail_WhenInitialAdminEmailMissing()
+    public void RegisterTenantValidator_ShouldFail_WhenInitialAdminMissing()
     {
-        var command = new RegisterTenantCommand("Acme", "diten.tech",
-            InitialAdmin: new InitialAdminInfo("Jane", "Doe", ""));
+        var result = _validator.Validate(ValidCommand() with { InitialAdmin = null });
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "InitialAdmin");
+    }
+
+    [Fact]
+    public void RegisterTenantValidator_ShouldFail_WhenInitialAdminProvidedWithoutEmail()
+    {
+        var command = ValidCommand() with { InitialAdmin = new InitialAdminInfo("Jane", "Doe", "") };
         var result = _validator.Validate(command);
         Assert.False(result.IsValid);
     }
 
     [Fact]
-    public void RegisterTenantValidator_ShouldFail_WhenInitialAdminFirstNameMissing()
+    public void RegisterTenantValidator_ShouldPass_WhenInitialAdminFirstNameMissing()
     {
-        var command = new RegisterTenantCommand("Acme", "diten.tech",
-            InitialAdmin: new InitialAdminInfo("", "Doe", "jane@acme.com"));
+        var command = ValidCommand() with { InitialAdmin = new InitialAdminInfo("", "Doe", "jane@acme.com") };
         var result = _validator.Validate(command);
-        Assert.False(result.IsValid);
+        Assert.True(result.IsValid);
     }
 
     [Fact]
     public void RegisterTenantValidator_ShouldPass_WithCompleteInitialAdmin()
     {
-        var command = new RegisterTenantCommand("Acme", "diten.tech",
-            InitialAdmin: new InitialAdminInfo("Jane", "Doe", "jane@acme.com", "+905551234567"));
+        var command = ValidCommand() with { InitialAdmin = new InitialAdminInfo("Jane", "Doe", "jane@acme.com", "+905551234567") };
         var result = _validator.Validate(command);
         Assert.True(result.IsValid);
     }
@@ -107,7 +112,8 @@ public sealed class TenantValidatorsTests
             Domain: "diten.tech",
             Slug: "enterprise",
             DisplayName: "Enterprise Corporation",
-            TenantType: TenantType.Paid,
+            TenantType: TenantType.Customer,
+            PlanId: Guid.NewGuid(),
             LegalName: "Enterprise Corp Ltd.",
             TaxNumber: "123456789",
             Country: "TR",
@@ -121,6 +127,24 @@ public sealed class TenantValidatorsTests
             InitialAdmin: new InitialAdminInfo("Jane", "Doe", "jane@enterprise.com"));
         var result = _validator.Validate(command);
         Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public void RegisterTenantValidator_ShouldFail_WhenPlanIdMissing()
+    {
+        var result = _validator.Validate(ValidCommand() with { PlanId = null });
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "PlanId");
+    }
+
+    [Fact]
+    public void RegisterTenantValidator_ShouldFail_WhenTenantTypeIsTrialOrPaid()
+    {
+        var trialResult = _validator.Validate(ValidCommand() with { TenantType = TenantType.Trial });
+        var paidResult = _validator.Validate(ValidCommand() with { TenantType = TenantType.Paid });
+
+        Assert.False(trialResult.IsValid);
+        Assert.False(paidResult.IsValid);
     }
 
     [Fact]
@@ -204,4 +228,14 @@ public sealed class TenantValidatorsTests
 
     private static TenantLoginSettingsUpdateRequest CreateValidUpdateReq() =>
         new(true, true, true, false, 8, true, true, true, true, 90, 60, 7, 5, 15, false, ["127.0.0.1"], ["TR"], 90);
+
+    private static RegisterTenantCommand ValidCommand() =>
+        new(
+            Name: "Acme Corp",
+            Domain: "diten.tech",
+            Slug: "acme-corp",
+            DisplayName: "Acme Corp",
+            TenantType: TenantType.Customer,
+            PlanId: Guid.NewGuid(),
+            InitialAdmin: new InitialAdminInfo("Jane", "Doe", "jane@acme.com"));
 }

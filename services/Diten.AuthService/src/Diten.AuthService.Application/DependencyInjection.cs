@@ -16,13 +16,17 @@ public static class DependencyInjection
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(assembly);
-            cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
+            cfg.AddOpenBehavior(typeof(ExceptionHandlingBehavior<,>));
+            cfg.AddOpenBehavior(typeof(PerformanceBehavior<,>));
         });
 
         services.AddValidatorsFromAssembly(assembly);
         services.AddScoped<IRoleProvisioningService, RoleProvisioningService>();
+        services.AddScoped<IPasswordPolicyService, PasswordPolicyService>();
 
         return services;
     }
 }
+

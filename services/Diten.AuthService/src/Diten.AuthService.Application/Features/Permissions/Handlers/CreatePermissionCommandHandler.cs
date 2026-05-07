@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Permissions.Commands;
@@ -6,7 +7,7 @@ using MediatR;
 
 namespace Diten.AuthService.Application.Features.Permissions.Handlers;
 
-public sealed class CreatePermissionCommandHandler : IRequestHandler<CreatePermissionCommand, PermissionDto>
+public sealed class CreatePermissionCommandHandler : IRequestHandler<CreatePermissionCommand, Response<PermissionDto>>
 {
     private readonly IPermissionRepository _permissionRepository;
 
@@ -15,15 +16,15 @@ public sealed class CreatePermissionCommandHandler : IRequestHandler<CreatePermi
         _permissionRepository = permissionRepository;
     }
 
-    public async Task<PermissionDto> Handle(CreatePermissionCommand request, CancellationToken ct)
+    public async Task<Response<PermissionDto>> Handle(CreatePermissionCommand request, CancellationToken ct)
     {
         var key = $"{request.Module}.{request.Resource}.{request.Action}".ToLower();
         var existing = await _permissionRepository.GetByKeyAsync(key, ct);
-        if (existing != null) throw new InvalidOperationException("Yetki anahtarı zaten tanımlı.");
+        if (existing != null) return Response<PermissionDto>.Fail("Permission key is already defined.", 409);
 
         var permission = new Permission(request.Module, request.Resource, request.Action, request.DisplayName, request.Description);
         var created = await _permissionRepository.CreateAsync(permission, ct);
 
-        return new PermissionDto(created.Id, created.Module, created.Resource, created.Action, created.Key, created.DisplayName, created.Description);
+        return Response<PermissionDto>.Success(new PermissionDto(created.Id, created.Module, created.Resource, created.Action, created.Key, created.DisplayName, created.Description), 201);
     }
 }

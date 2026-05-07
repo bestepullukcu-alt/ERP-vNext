@@ -1,0 +1,37 @@
+┌────────────.
+|\          / \    version 3.14.0+8daeea3c300c70cca89caabc287347577c786587
+| \        /   \   https://github.com/rnwood/smtp4dev
+|  smtp4dev    /  .NET 9.0.10
+|             /
+└────────────'
+
+[INF] smtp4dev version 3.14.0+8daeea3c300c70cca89caabc287347577c786587
+[INF] https://github.com/rnwood/smtp4dev
+[INF] .NET Core runtime version: .NET 9.0.10
+
+ > For help use argument --help
+
+[INF] Install location: C:\Users\user\Desktop\ERP-vNext
+[INF] DataDir: C:\Users\user\AppData\Roaming\smtp4dev
+[INF] Default settings file: C:\Users\user\.dotnet\tools\.store\rnwood.smtp4dev\3.14.0\rnwood.smtp4dev\3.14.0\tools\net8.0\any\appsettings.json
+[INF] User settings file: C:\Users\user\AppData\Roaming\smtp4dev\appsettings.json
+[INF] Using SQLite database. Location: C:\Users\user\AppData\Roaming\smtp4dev\database.db, FileExists: true
+[INF] TLS mode: "None" Pop3TlsMode: "None"
+[INF] SMTP Server is listening on port 2525 (::) with TLS mode ("None").
+[INF] Keeping last 100 messages per mailbox and 100 sessions.
+[INF] IMAP server disabled - no port configured
+[INF] POP3 server disabled - no port configured
+[INF] Now listening on: http://localhost:3000
+[INF] Deleting message. MessageId: "ebc779c4-3eeb-4cf6-9dd9-549e47c0ce9a"
+[INF] Deleting message. MessageId: "11d9628b-d97e-4482-8c5a-d5b7336b06f9"
+[INF] Deleting message. MessageId: "7c789a65-2366-4b85-93ba-7a6f46260822"
+[INF] SMTP session started. ClientAddress: ::1
+[INF] SMTP message received. ClientAddress: ::1, From: no-reply@yourcompany.com, To: bestepullukcu@gmail.com, SecureConnection: false, DeclaredSize: null
+[INF] Processing received message for mailbox 'Default' for recipients '["bestepullukcu@gmail.com"]'
+[INF] Message processing completed. MessageId: "4e0243b2-2570-4e29-aea3-0b0beda2f92d", Mailbox: Default, ImapUid: 5
+[INF] SMTP session completed. ClientAddress: ::1, MessageCount: 1, Duration: 350.7036ms
+[INF] SMTP session started. ClientAddress: ::1
+[INF] SMTP message received. ClientAddress: ::1, From: no-reply@yourcompany.com, To: bestepullukcu@gmail.com, SecureConnection: false, DeclaredSize: null
+[INF] Processing received message for mailbox 'Default' for recipients '["bestepullukcu@gmail.com"]'
+[INF] Message processing completed. MessageId: "1505238b-457d-4aba-8857-3276082e0e0e", Mailbox: Default, ImapUid: 6
+[INF] SMTP session completed. ClientAddress: ::1, MessageCount: 1, Duration: 53.9331ms

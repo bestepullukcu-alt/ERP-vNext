@@ -12,6 +12,7 @@ public static class MongoDbIndexConfigurations
         var tenantDomainCollection = database.GetCollection<TenantDomain>("tenant_domains");
         var tenantLoginSettingsCollection = database.GetCollection<TenantLoginSettings>("tenant_login_settings");
         var moduleCatalogCollection = database.GetCollection<ModuleCatalogItem>("platform_module_catalog");
+        var subscriptionPlanCollection = database.GetCollection<SubscriptionPlan>("platform_subscription_plans");
         await collection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<SavedView>(
@@ -55,7 +56,16 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.Status)
                     .Ascending(x => x.Region)
                     .Descending(x => x.CreatedAt),
-                new CreateIndexOptions { Name = "ix_tenants_status_region_createdat" })
+                new CreateIndexOptions { Name = "ix_tenants_status_region_createdat" }),
+            new CreateIndexModel<Tenant>(
+                Builders<Tenant>.IndexKeys.Ascending(x => x.PlanId),
+                new CreateIndexOptions { Name = "ix_tenants_plan_id" }),
+            new CreateIndexModel<Tenant>(
+                Builders<Tenant>.IndexKeys.Ascending(x => x.SubscriptionStatus),
+                new CreateIndexOptions { Name = "ix_tenants_subscription_status" }),
+            new CreateIndexModel<Tenant>(
+                Builders<Tenant>.IndexKeys.Ascending(x => x.TrialEndDateUtc),
+                new CreateIndexOptions { Name = "ix_tenants_trial_end_date_utc" })
         });
 
         await tenantDomainCollection.Indexes.CreateManyAsync(new[]
@@ -105,6 +115,28 @@ public static class MongoDbIndexConfigurations
             new CreateIndexModel<ModuleCatalogItem>(
                 Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.SortOrder),
                 new CreateIndexOptions { Name = "ix_platform_module_catalog_sort_order" })
+        });
+
+        await subscriptionPlanCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<SubscriptionPlan>(
+                Builders<SubscriptionPlan>.IndexKeys.Ascending(x => x.Code),
+                new CreateIndexOptions { Unique = true, Name = "ux_platform_subscription_plans_code" }),
+            new CreateIndexModel<SubscriptionPlan>(
+                Builders<SubscriptionPlan>.IndexKeys.Ascending(x => x.IsActive),
+                new CreateIndexOptions { Name = "ix_platform_subscription_plans_is_active" }),
+            new CreateIndexModel<SubscriptionPlan>(
+                Builders<SubscriptionPlan>.IndexKeys.Ascending(x => x.IsTrialPlan),
+                new CreateIndexOptions { Name = "ix_platform_subscription_plans_is_trial_plan" }),
+            new CreateIndexModel<SubscriptionPlan>(
+                Builders<SubscriptionPlan>.IndexKeys.Ascending(x => x.SortOrder),
+                new CreateIndexOptions { Name = "ix_platform_subscription_plans_sort_order" }),
+            new CreateIndexModel<SubscriptionPlan>(
+                Builders<SubscriptionPlan>.IndexKeys.Ascending(x => x.IsDefault),
+                new CreateIndexOptions { Name = "ix_platform_subscription_plans_is_default" }),
+            new CreateIndexModel<SubscriptionPlan>(
+                Builders<SubscriptionPlan>.IndexKeys.Ascending(x => x.IsDefault).Ascending(x => x.IsActive),
+                new CreateIndexOptions { Name = "ix_platform_subscription_plans_is_default_is_active" })
         });
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 
-public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand, Unit>
+public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand, Response<NoContent>>
 {
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
@@ -29,18 +29,18 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(AssignRoleCommand request, CancellationToken ct)
+    public async Task<Response<NoContent>> Handle(AssignRoleCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.UserId, _tenantContext.TenantId, ct);
-        if (user == null) throw new KeyNotFoundException("Kullanıcı bulunamadı.");
+        if (user == null) return Response<NoContent>.Fail("User not found.", 404);
 
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, _tenantContext.TenantId, ct);
-        if (role == null) throw new KeyNotFoundException("Rol bulunamadı.");
+        if (role == null) return Response<NoContent>.Fail("Role not found.", 404);
 
         if (await _userRoleRepository.ExistsAsync(request.UserId, request.RoleId, _tenantContext.TenantId, ct))
-            return Unit.Value;
+            return Response<NoContent>.Success(204);
 
         await _userRoleRepository.AssignAsync(new UserRole(request.UserId, request.RoleId, _tenantContext.TenantId, "System"), ct);
-        return Unit.Value;
+        return Response<NoContent>.Success(204);
     }
 }

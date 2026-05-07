@@ -79,7 +79,6 @@ public sealed class GatewayResponse<T>
 {
     public T? Data { get; set; }
     public bool IsSuccessful { get; set; }
-    public bool Succeeded { get; set; }
-    public string? Message { get; set; }
+    public int StatusCode { get; set; }
     public List<string> Errors { get; set; } = [];
 }

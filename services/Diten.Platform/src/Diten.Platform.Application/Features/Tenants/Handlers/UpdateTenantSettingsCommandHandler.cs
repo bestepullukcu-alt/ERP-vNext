@@ -26,9 +26,7 @@ public sealed class UpdateTenantSettingsCommandHandler : IRequestHandler<UpdateT
         }
 
         var now = DateTimeOffset.UtcNow;
-        var actor = _currentUser.IsAuthenticated && _currentUser.UserId != Guid.Empty
-            ? _currentUser.UserId.ToString()
-            : "system";
+        var actor = _currentUser.ActorName;
 
         tenant.Settings.Language = request.Request.Language.Trim();
         tenant.Settings.Timezone = request.Request.Timezone.Trim();

@@ -41,6 +41,18 @@ public class AccountController : Controller
         }
 
         var result = await _authGateway.LoginTenantAsync(request.Email, request.Password, request.TenantId, ct);
+        if (result.RequiresMfa && !string.IsNullOrWhiteSpace(result.ChallengeId))
+        {
+            return Ok(new LoginBridgeResponse(
+                string.Empty,
+                null,
+                true,
+                result.ChallengeId,
+                result.MaskedDestination,
+                result.Channel,
+                result.MfaExpiresAt));
+        }
+
         if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
             return Unauthorized(new { detail = result.ErrorMessage ?? "Login failed." });
@@ -51,6 +63,50 @@ public class AccountController : Controller
         return Ok(new LoginBridgeResponse(
             ResolveReturnUrl(request.ReturnUrl, "/WorkCenter"),
             result.User));
+    }
+
+    [HttpPost("/account/login/mfa")]
+    public async Task<IActionResult> VerifyMfa([FromBody] MfaLoginRequest request, CancellationToken ct)
+    {
+        if (!ModelState.IsValid || string.IsNullOrWhiteSpace(request.ChallengeId) || string.IsNullOrWhiteSpace(request.Code))
+        {
+            return BadRequest(new { detail = "Verification code is required." });
+        }
+
+        var result = await _authGateway.VerifyTenantMfaAsync(request.ChallengeId, request.Code, ct);
+        if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
+        {
+            return Unauthorized(new { detail = result.ErrorMessage ?? "Verification failed." });
+        }
+
+        _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
+        return Ok(new LoginBridgeResponse(
+            ResolveReturnUrl(request.ReturnUrl, "/WorkCenter"),
+            result.User));
+    }
+
+    [HttpPost("/account/login/mfa/resend")]
+    public async Task<IActionResult> ResendMfa([FromBody] MfaResendRequest request, CancellationToken ct)
+    {
+        if (!ModelState.IsValid || string.IsNullOrWhiteSpace(request.ChallengeId))
+        {
+            return BadRequest(new { detail = "Verification challenge is required." });
+        }
+
+        var result = await _authGateway.ResendTenantMfaAsync(request.ChallengeId, ct);
+        if (!result.Success || string.IsNullOrWhiteSpace(result.ChallengeId))
+        {
+            return Unauthorized(new { detail = result.ErrorMessage ?? "Verification code could not be resent." });
+        }
+
+        return Ok(new LoginBridgeResponse(
+            string.Empty,
+            null,
+            true,
+            result.ChallengeId,
+            result.MaskedDestination,
+            result.Channel,
+            result.MfaExpiresAt));
     }
 
     [HttpGet("/platform/login")]
@@ -247,6 +303,15 @@ public class AccountController : Controller
     }
 
     public sealed record LoginRequest(string Email, string Password, Guid TenantId, string? ReturnUrl);
+    public sealed record MfaLoginRequest(string ChallengeId, string Code, string? ReturnUrl);
+    public sealed record MfaResendRequest(string ChallengeId);
     public sealed record PlatformLoginRequest(string Email, string Password, string? ReturnUrl);
-    public sealed record LoginBridgeResponse(string RedirectUrl, AuthBridgeUser? User);
+    public sealed record LoginBridgeResponse(
+        string RedirectUrl,
+        AuthBridgeUser? User,
+        bool RequiresMfa = false,
+        string? ChallengeId = null,
+        string? MaskedDestination = null,
+        string? Channel = null,
+        DateTime? MfaExpiresAt = null);
 }

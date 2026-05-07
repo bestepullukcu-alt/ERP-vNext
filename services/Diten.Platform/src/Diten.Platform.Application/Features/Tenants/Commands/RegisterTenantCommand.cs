@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Common;
 using Diten.Platform.Domain.Entities;
 using MediatR;
 
@@ -13,6 +14,7 @@ public sealed record RegisterTenantCommand(
     string? Region = null,
     string? Environment = null,
     TenantType? TenantType = null,
+    Guid? PlanId = null,
 
     // Legal & Company
     string? LegalName = null,
@@ -31,4 +33,4 @@ public sealed record RegisterTenantCommand(
     string? DefaultCurrency = null,
 
     // Initial Admin (invitation-based onboarding placeholder)
-    InitialAdminInfo? InitialAdmin = null) : IRequest<Guid>;
+    InitialAdminInfo? InitialAdmin = null) : IRequest<Response<Guid>>;

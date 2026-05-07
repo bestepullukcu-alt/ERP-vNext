@@ -9,13 +9,14 @@ using System.Security.Claims;
 
 namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 
-public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, AuthResponse>
+public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Response<AuthResponse>>
 {
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly ITokenService _tokenService;
+    private readonly ITenantLoginSettingsClient _tenantLoginSettingsClient;
     private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ITenantContext _tenantContext;
@@ -27,6 +28,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
         ITokenService tokenService,
+        ITenantLoginSettingsClient tenantLoginSettingsClient,
         IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
         ITenantContext tenantContext,
@@ -37,25 +39,26 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
         _tokenService = tokenService;
+        _tenantLoginSettingsClient = tenantLoginSettingsClient;
         _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
         _tenantContext = tenantContext;
         _logger = logger;
     }
 
-    public async Task<AuthResponse> Handle(RefreshTokenCommand request, CancellationToken ct)
+    public async Task<Response<AuthResponse>> Handle(RefreshTokenCommand request, CancellationToken ct)
     {
         var existingToken = await _refreshTokenRepository.GetByTokenAsync(request.RefreshToken, ct);
-        if (existingToken == null) throw new UnauthorizedAccessException("Geçersiz yenileme belirteci.");
+        if (existingToken == null) return Response<AuthResponse>.Fail("Invalid refresh token.", 401);
 
         if (existingToken.RevokedAt != null)
         {
             await _refreshTokenRepository.RevokeAllByUserAsync(existingToken.UserId, existingToken.TenantId, ct);
-            throw new UnauthorizedAccessException("Güvenlik ihlali tespit edildi. Lütfen tekrar oturum açın.");
+            return Response<AuthResponse>.Fail("Security violation detected. Please sign in again.", 401);
         }
 
         if (existingToken.IsExpired)
-            throw new UnauthorizedAccessException("Yenileme belirtecinin süresi dolmuş.");
+            return Response<AuthResponse>.Fail("Refresh token has expired.", 401);
 
         var principal = _tokenService.GetPrincipalFromExpiredToken(request.AccessToken);
         var actorType = principal.FindFirst("actor_type")?.Value;
@@ -65,29 +68,29 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
 
         if (!Guid.TryParse(subject, out var accessTokenUserId) || accessTokenUserId != existingToken.UserId)
         {
-            throw new UnauthorizedAccessException("Access token user mismatch.");
+            return Response<AuthResponse>.Fail("Access token user mismatch.", 401);
         }
 
         if (!Guid.TryParse(tokenTenantId, out var accessTokenTenantId) || accessTokenTenantId != existingToken.TenantId)
         {
-            throw new UnauthorizedAccessException("Access token tenant mismatch.");
+            return Response<AuthResponse>.Fail("Access token tenant mismatch.", 401);
         }
 
         if (!string.Equals(existingToken.ActorType, actorType, StringComparison.OrdinalIgnoreCase))
         {
-            throw new UnauthorizedAccessException("Access token actor mismatch.");
+            return Response<AuthResponse>.Fail("Access token actor mismatch.", 401);
         }
 
         if (_tenantContext.IsResolved && _tenantContext.TenantId != existingToken.TenantId)
         {
-            throw new UnauthorizedAccessException("Request tenant mismatch.");
+            return Response<AuthResponse>.Fail("Request tenant mismatch.", 401);
         }
 
         var user = await _userRepository.GetByIdAndTenantAsync(existingToken.UserId, existingToken.TenantId, ct);
         if (user == null || !user.IsActive)
-            throw new UnauthorizedAccessException("Kullanıcı bulunamadı veya pasif durumda.");
+            return Response<AuthResponse>.Fail("User was not found or is inactive.", 401);
 
-        return await GenerateNewTokens(user, existingToken, actorType, request, ct);
+        return Response<AuthResponse>.Success(await GenerateNewTokens(user, existingToken, actorType, request, ct));
     }
 
     private async Task<AuthResponse> GenerateNewTokens(User user, RefreshToken oldToken, string? actorType, RefreshTokenCommand request, CancellationToken ct)
@@ -99,6 +102,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
 
         var isPlatformActor = IsPlatformActor(actorType);
 
+        var tenantSettings = isPlatformActor ? null : await _tenantLoginSettingsClient.GetAsync(tokenTenantId, ct);
         var accessToken = isPlatformActor
             ? _tokenService.GeneratePlatformAccessToken(
                 user.Id,
@@ -109,7 +113,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
                 actorType ?? "platform_admin",
                 roles,
                 permissions)
-            : _tokenService.GenerateAccessToken(user, roles, permissions);
+            : _tokenService.GenerateAccessToken(user, roles, permissions, tenantSettings!.SessionTimeoutMinutes);
         var newRefreshTokenStr = _tokenService.GenerateRefreshToken();
         var newRefreshTokenHash = _refreshTokenHasher.Hash(newRefreshTokenStr);
 
@@ -119,7 +123,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         var newRefreshToken = new RefreshToken(
             user.Id,
             newRefreshTokenHash,
-            DateTime.UtcNow.AddDays(7),
+            DateTime.UtcNow.AddDays(isPlatformActor ? 7 : tenantSettings!.RefreshTokenLifetimeDays),
             request.RequestIp,
             tokenTenantId,
             actorType ?? "tenant_user",

@@ -12,11 +12,11 @@ target: 2026-05-15
 # PSS-004 — Tenant Login Security Settings
 
 ## Module Summary
-Phase 2 delivers tenant-level login and security settings management for Platform administration. The Platform service stores settings, creates defaults during tenant registration, and exposes an admin CRUD contract consumed by a dedicated Platform UI page.
+Phase 2 delivers tenant-level login and security settings management for Platform administration and AuthService tenant-login enforcement. The Platform service stores settings, creates defaults during tenant registration, exposes admin CRUD contracts, and exposes a narrow internal read contract consumed only by AuthService.
 
 ## Ownership and Boundaries
-- In-scope: Platform tenant login/security settings CRUD and Platform Admin UI.
-- Out-of-scope: AuthService enforcement, real MFA/OTP/SSO/OIDC/SAML/device trust/adaptive MFA.
+- In-scope: Platform tenant login/security settings CRUD, Tenant Details Login & Security UI, AuthService tenant login enforcement, fail-closed settings reads, lockout/session settings, and Email OTP MFA.
+- Out-of-scope: SSO/OIDC/SAML/device trust/adaptive MFA, active phone login route, and SMS provider delivery.
 - Gateway route changes are out-of-scope; existing admin tenant catch-all route is assumed.
 
 ## Repo Scope
@@ -27,6 +27,7 @@ Phase 2 delivers tenant-level login and security settings management for Platfor
 - `frontend/Diten.Web/wwwroot/assets/js/Platform/Tenants/**`
 - `frontend/Diten.Web/Resources/Views/Platform/Tenants/**`
 - `frontend/Diten.Web/Views/Shared/_LayoutBackbone.cshtml`
+- `services/Diten.AuthService/**`
 
 ## Protected Paths
 - `.antigravity/**`
@@ -43,7 +44,9 @@ Phase 2 delivers tenant-level login and security settings management for Platfor
 ## Runtime Constraints
 - Store settings as platform-level `GlobalEntity` records linked by `TenantRefId`.
 - Preserve `PlatformActor` authorization and `Response<T>` envelope.
-- Do not call AuthService from this phase.
+- AuthService reads Platform settings through `GET /api/internal/tenants/{tenantId}/login-settings` with internal API key authentication.
+- AuthService must fail tenant login closed when settings cannot be read; Platform admin login must not use tenant login settings.
+- Phone Login is stored for future channel support. Phone OTP delivery is disabled until SMS provider configuration is enabled.
 
 ## Acceptance Criteria
 - [ ] Tenant registration creates default login/security settings.
@@ -51,16 +54,26 @@ Phase 2 delivers tenant-level login and security settings management for Platfor
 - [ ] `PUT /api/admin/tenants/{id}/login-settings` validates, normalizes, persists, and records tenant activity.
 - [ ] MongoDB has a unique `TenantRefId` index for `tenant_login_settings`.
 - [ ] Platform Admin has a dedicated `/Platform/TenantSecurity` page.
-- [ ] Tenant Detail links to the dedicated Login & Security page.
-- [ ] UI localization keys exist for en, fr, es, zh, ar, ru, tr.
+- [ ] Tenant Detail `Access > Login & Security` contains an editable settings form.
+- [ ] UI localization keys exist for the supported Platform UI languages: en and tr.
+- [ ] Internal settings endpoint returns exact default settings when a record is missing.
+- [ ] AuthService tenant login fails closed when settings cannot be read.
+- [ ] AuthService lockout/session/refresh lifetime uses tenant settings for tenant users only.
+- [ ] MFA Required cannot be saved unless Two-Factor Authentication and Email Login are enabled.
+- [ ] Email OTP challenge creates no access token, refresh token, auth cookie, or open session before successful verification.
+- [ ] OTP and raw challenge identifiers are never stored or logged in plaintext.
 
 ## Test Expectations
 - Unit tests cover create defaults, GET default creation, PUT update, and validator ranges.
+- Unit tests cover internal settings auth, fail-closed login, tenant lockout settings, OTP challenge/verify safety, and Platform login isolation.
 - Frontend JavaScript passes `node --check`.
-- Platform application tests and Platform API build pass.
+- Platform application tests, AuthService build, and Platform API build pass.
 
 ## Implementation Notes
-- Settings are CRUD-only in this phase; AuthService enforcement is intentionally deferred.
+- Default settings: EmailLoginEnabled=true, PhoneLoginEnabled=false, TwoFactorEnabled=false, MfaRequired=false, PasswordMinLength=10, PasswordExpirationDays=null, PasswordRequireUppercase=true, PasswordRequireSpecialChar=true, SessionTimeoutMinutes=60, MaxFailedLoginAttempts=5, LockoutDurationMinutes=15, RefreshTokenLifetimeDays=14.
+- Phone Login helper text must explain that the setting is stored for future channel support and Phone OTP delivery is disabled until SMS provider configuration is enabled.
+- Verify receives only raw challengeId and code. AuthService hashes challengeId for lookup and uses stored TenantId/UserId context.
 
 ## Follow-up Items
-- Add AuthService read/enforcement contract in a later security enforcement phase.
+- Add reset password flow using the shared tenant password policy validator.
+- Enable Phone OTP delivery when SMS provider configuration is available.

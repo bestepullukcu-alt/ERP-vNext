@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SubscriptionPlansTitle" xml:space="preserve">
+    <value>Abonelik Planlari</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Abonelik planlarini ve fiyatlandirma katmanlarini yonetin</value>
+  </data>
+  <data name="CreatePlan" xml:space="preserve">
+    <value>Plan Olustur</value>
+  </data>
+  <data name="TotalPlans" xml:space="preserve">
+    <value>Toplam Plan</value>
+  </data>
+  <data name="ActivePlans" xml:space="preserve">
+    <value>Aktif Planlar</value>
+  </data>
+  <data name="TrialPlans" xml:space="preserve">
+    <value>Deneme Planlari</value>
+  </data>
+  <data name="PaidPlans" xml:space="preserve">
+    <value>Ucretli Planlar</value>
+  </data>
+  <data name="EmptyState" xml:space="preserve">
+    <value>Abonelik plani bulunamadi.</value>
+  </data>
+  <data name="Activate" xml:space="preserve">
+    <value>Aktif Et</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>Pasif Et</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>Varsayilan</value>
+  </data>
+  <data name="Trial" xml:space="preserve">
+    <value>Deneme</value>
+  </data>
+  <data name="Monthly" xml:space="preserve">
+    <value>Aylik</value>
+  </data>
+  <data name="Yearly" xml:space="preserve">
+    <value>Yillik</value>
+  </data>
+  <data name="Currency" xml:space="preserve">
+    <value>Para Birimi</value>
+  </data>
+  <data name="TrialDurationDays" xml:space="preserve">
+    <value>Deneme Suresi (Gun)</value>
+  </data>
+  <data name="Features" xml:space="preserve">
+    <value>Dahil Ozellikler</value>
+  </data>
+  <data name="Modules" xml:space="preserve">
+    <value>Dahil Moduller</value>
+  </data>
+  <data name="Quotas" xml:space="preserve">
+    <value>Varsayilan Kotalar</value>
+  </data>
+  <data name="FormTitleCreate" xml:space="preserve">
+    <value>Abonelik Plani Olustur</value>
+  </data>
+  <data name="FormTitleEdit" xml:space="preserve">
+    <value>Abonelik Plani Duzenle</value>
+  </data>
+  <data name="FormDescription" xml:space="preserve">
+    <value>Fiyatlandirma, deneme kurallari ve dahil ozellikleri tanimlayin.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Listeye Don</value>
+  </data>
+  <data name="Code" xml:space="preserve">
+    <value>Kod</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Ad</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Aciklama</value>
+  </data>
+  <data name="IsActive" xml:space="preserve">
+    <value>Aktif</value>
+  </data>
+  <data name="IsDefault" xml:space="preserve">
+    <value>Varsayilan</value>
+  </data>
+  <data name="SortOrder" xml:space="preserve">
+    <value>Siralama</value>
+  </data>
+  <data name="PriceMonthly" xml:space="preserve">
+    <value>Aylik Fiyat</value>
+  </data>
+  <data name="PriceYearly" xml:space="preserve">
+    <value>Yillik Fiyat</value>
+  </data>
+  <data name="IsTrialPlan" xml:space="preserve">
+    <value>Deneme Plani</value>
+  </data>
+  <data name="IncludedFeatures" xml:space="preserve">
+    <value>Dahil Ozellikler</value>
+  </data>
+  <data name="IncludedModuleKeys" xml:space="preserve">
+    <value>Dahil Modul Anahtarlari</value>
+  </data>
+  <data name="DefaultQuotasJson" xml:space="preserve">
+    <value>Varsayilan Kotalar (JSON)</value>
+  </data>
+  <data name="DefaultQuotasHelp" xml:space="preserve">
+    <value>Kota anahtarlari ve sayisal degerler iceren bir JSON nesnesi girin.</value>
+  </data>
+  <data name="CommaOrLineSeparated" xml:space="preserve">
+    <value>Virgul veya satir ayracli</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Kaydet</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Iptal</value>
+  </data>
+  <data name="IdentitySection" xml:space="preserve">
+    <value>Kimlik</value>
+  </data>
+  <data name="EntitlementsSection" xml:space="preserve">
+    <value>Yetkiler</value>
+  </data>
+  <data name="QuotasSection" xml:space="preserve">
+    <value>Kotalar</value>
+  </data>
+  <data name="PricingSection" xml:space="preserve">
+    <value>Fiyatlandirma</value>
+  </data>
+  <data name="StatusAndRulesSection" xml:space="preserve">
+    <value>Durum &amp; Kurallar</value>
+  </data>
+</root>
+

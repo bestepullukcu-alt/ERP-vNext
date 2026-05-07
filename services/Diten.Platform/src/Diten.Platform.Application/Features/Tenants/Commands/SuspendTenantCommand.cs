@@ -1,6 +1,7 @@
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tenants;
 using MediatR;
 
 namespace Diten.Platform.Application.Features.Tenants.Commands;
 
-public sealed record SuspendTenantCommand(Guid TenantId, string? Reason = null) : IRequest<TenantLifecycleResultDto?>;
+public sealed record SuspendTenantCommand(Guid TenantId, string? Reason = null) : IRequest<Response<TenantLifecycleResultDto>>;

@@ -19,4 +19,10 @@ public sealed class AuthAuditService : IAuthAuditService
         var entry = new AuthAuditLog("auth.login.empty_roles", userId, tenantId, metadata);
         await _collection.InsertOneAsync(entry, cancellationToken: ct);
     }
+
+    public async Task WriteAsync(string eventName, Guid? userId, Guid tenantId, string metadata, CancellationToken ct = default)
+    {
+        var entry = new AuthAuditLog(eventName, userId ?? Guid.Empty, tenantId, metadata);
+        await _collection.InsertOneAsync(entry, cancellationToken: ct);
+    }
 }

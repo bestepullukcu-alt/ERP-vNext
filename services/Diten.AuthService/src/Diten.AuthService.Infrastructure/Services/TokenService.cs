@@ -21,6 +21,11 @@ public sealed class TokenService : ITokenService
 
     public string GenerateAccessToken(User user, IEnumerable<string> roles, IEnumerable<string> permissions)
     {
+        return GenerateAccessToken(user, roles, permissions, _jwtSettings.AccessTokenExpirationMinutes);
+    }
+
+    public string GenerateAccessToken(User user, IEnumerable<string> roles, IEnumerable<string> permissions, int expiresInMinutes)
+    {
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
@@ -48,7 +53,7 @@ public sealed class TokenService : ITokenService
             issuer: _jwtSettings.Issuer,
             audience: _jwtSettings.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
+            expires: DateTime.UtcNow.AddMinutes(expiresInMinutes),
             signingCredentials: creds
         );
 
@@ -64,6 +69,20 @@ public sealed class TokenService : ITokenService
         string actorType,
         IEnumerable<string> roles,
         IEnumerable<string> permissions)
+    {
+        return GeneratePlatformAccessToken(userId, email, firstName, lastName, tenantId, actorType, roles, permissions, _jwtSettings.AccessTokenExpirationMinutes);
+    }
+
+    public string GeneratePlatformAccessToken(
+        Guid userId,
+        string email,
+        string? firstName,
+        string? lastName,
+        Guid tenantId,
+        string actorType,
+        IEnumerable<string> roles,
+        IEnumerable<string> permissions,
+        int expiresInMinutes)
     {
         var claims = new List<Claim>
         {
@@ -100,7 +119,7 @@ public sealed class TokenService : ITokenService
             issuer: _jwtSettings.Issuer,
             audience: _jwtSettings.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
+            expires: DateTime.UtcNow.AddMinutes(expiresInMinutes),
             signingCredentials: creds
         );
 

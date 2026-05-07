@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SubscriptionPlansTitle" xml:space="preserve">
+    <value>Subscription Plans</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Manage subscription plans and pricing tiers</value>
+  </data>
+  <data name="CreatePlan" xml:space="preserve">
+    <value>Create Plan</value>
+  </data>
+  <data name="TotalPlans" xml:space="preserve">
+    <value>Total Plans</value>
+  </data>
+  <data name="ActivePlans" xml:space="preserve">
+    <value>Active Plans</value>
+  </data>
+  <data name="TrialPlans" xml:space="preserve">
+    <value>Trial Plans</value>
+  </data>
+  <data name="PaidPlans" xml:space="preserve">
+    <value>Paid Plans</value>
+  </data>
+  <data name="EmptyState" xml:space="preserve">
+    <value>No subscription plans found.</value>
+  </data>
+  <data name="Activate" xml:space="preserve">
+    <value>Activate</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>Deactivate</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="Trial" xml:space="preserve">
+    <value>Trial</value>
+  </data>
+  <data name="Monthly" xml:space="preserve">
+    <value>Monthly</value>
+  </data>
+  <data name="Yearly" xml:space="preserve">
+    <value>Yearly</value>
+  </data>
+  <data name="Currency" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="TrialDurationDays" xml:space="preserve">
+    <value>Trial Duration (Days)</value>
+  </data>
+  <data name="Features" xml:space="preserve">
+    <value>Included Features</value>
+  </data>
+  <data name="Modules" xml:space="preserve">
+    <value>Included Modules</value>
+  </data>
+  <data name="Quotas" xml:space="preserve">
+    <value>Default Quotas</value>
+  </data>
+  <data name="FormTitleCreate" xml:space="preserve">
+    <value>Create Subscription Plan</value>
+  </data>
+  <data name="FormTitleEdit" xml:space="preserve">
+    <value>Edit Subscription Plan</value>
+  </data>
+  <data name="FormDescription" xml:space="preserve">
+    <value>Define pricing, trial rules, and included features.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Back to list</value>
+  </data>
+  <data name="Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="IsActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="IsDefault" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="SortOrder" xml:space="preserve">
+    <value>Sort Order</value>
+  </data>
+  <data name="PriceMonthly" xml:space="preserve">
+    <value>Monthly Price</value>
+  </data>
+  <data name="PriceYearly" xml:space="preserve">
+    <value>Yearly Price</value>
+  </data>
+  <data name="IsTrialPlan" xml:space="preserve">
+    <value>Trial Plan</value>
+  </data>
+  <data name="IncludedFeatures" xml:space="preserve">
+    <value>Included Features</value>
+  </data>
+  <data name="IncludedModuleKeys" xml:space="preserve">
+    <value>Included Module Keys</value>
+  </data>
+  <data name="DefaultQuotasJson" xml:space="preserve">
+    <value>Default Quotas (JSON)</value>
+  </data>
+  <data name="DefaultQuotasHelp" xml:space="preserve">
+    <value>Provide a JSON object with quota keys and numeric values.</value>
+  </data>
+  <data name="CommaOrLineSeparated" xml:space="preserve">
+    <value>Comma or line separated</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="IdentitySection" xml:space="preserve">
+    <value>Identity</value>
+  </data>
+  <data name="EntitlementsSection" xml:space="preserve">
+    <value>Entitlements</value>
+  </data>
+  <data name="QuotasSection" xml:space="preserve">
+    <value>Quotas</value>
+  </data>
+  <data name="PricingSection" xml:space="preserve">
+    <value>Pricing</value>
+  </data>
+  <data name="StatusAndRulesSection" xml:space="preserve">
+    <value>Status &amp; Rules</value>
+  </data>
+</root>
+

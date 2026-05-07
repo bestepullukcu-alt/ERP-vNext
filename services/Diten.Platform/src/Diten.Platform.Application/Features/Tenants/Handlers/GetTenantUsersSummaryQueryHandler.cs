@@ -22,11 +22,17 @@ public sealed class GetTenantUsersSummaryQueryHandler : IRequestHandler<GetTenan
             return null;
         }
 
+        var changed = TenantAdminUserSupport.EnsureInitialAdminUser(tenant);
+        if (changed)
+        {
+            await _repository.UpdateAsync(tenant, cancellationToken);
+        }
+
         return new TenantUsersSummaryDto(
             tenant.Id,
-            0,
-            0,
-            0,
+            tenant.AdminUsers.Count,
+            tenant.AdminUsers.Count(user => user.Status == Domain.Entities.TenantAdminUserStatus.Active),
+            tenant.AdminUsers.Count(user => user.Status == Domain.Entities.TenantAdminUserStatus.PendingInvitation),
             "AdminApprovalRequired");
     }
 }

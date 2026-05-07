@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Diten.AuthService.Application.Features.Users.Handlers.QueryHandlers;
 
-public sealed class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto>
+public sealed class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Response<UserDto>>
 {
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
@@ -22,13 +22,13 @@ public sealed class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, 
         _tenantContext = tenantContext;
     }
 
-    public async Task<UserDto> Handle(GetUserByIdQuery request, CancellationToken ct)
+    public async Task<Response<UserDto>> Handle(GetUserByIdQuery request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (user == null) throw new KeyNotFoundException("Kullanıcı bulunamadı.");
+        if (user == null) return Response<UserDto>.Fail("User not found.", 404);
 
         var roles = await _userRoleRepository.GetRolesByUserAsync(user.Id, _tenantContext.TenantId, ct);
 
-        return new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId);
+        return Response<UserDto>.Success(new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId));
     }
 }

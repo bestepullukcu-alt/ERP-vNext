@@ -1,4 +1,6 @@
+using Diten.AuthService.Api.Controllers.Common;
 using Diten.AuthService.Api.Models;
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Queries;
 using Diten.AuthService.Infrastructure.Authorization;
@@ -8,10 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.AuthService.Api.Controllers;
 
-[ApiController]
 [Route("api/users")]
 [Authorize]
-public sealed class UsersController : ControllerBase
+public sealed class UsersController : CustomBaseController
 {
     private readonly IMediator _mediator;
 
@@ -33,7 +34,7 @@ public sealed class UsersController : ControllerBase
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var result = await _mediator.Send(new GetUserByIdQuery(id), ct);
-        return Ok(result);
+        return CreateActionResultInstance(result);
     }
 
     [HttpPost]
@@ -42,7 +43,7 @@ public sealed class UsersController : ControllerBase
     {
         var command = new CreateUserCommand(request.Email, request.Password, request.FirstName, request.LastName);
         var result = await _mediator.Send(command, ct);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        return CreateActionResultInstance(result);
     }
 
     [HttpPut("{id:guid}")]
@@ -51,30 +52,30 @@ public sealed class UsersController : ControllerBase
     {
         var command = new UpdateUserCommand(id, request.FirstName, request.LastName, request.IsActive);
         var result = await _mediator.Send(command, ct);
-        return Ok(result);
+        return CreateActionResultInstance(result);
     }
 
     [HttpDelete("{id:guid}")]
     [HasPermission("auth.users.delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
-        await _mediator.Send(new DeleteUserCommand(id), ct);
-        return NoContent();
+        var result = await _mediator.Send(new DeleteUserCommand(id), ct);
+        return CreateActionResultInstance(result);
     }
 
     [HttpPost("{id:guid}/roles")]
     [HasPermission("auth.users.assign-role")]
     public async Task<IActionResult> AssignRole(Guid id, [FromBody] AssignRoleRequest request, CancellationToken ct)
     {
-        await _mediator.Send(new AssignRoleCommand(id, request.RoleId), ct);
-        return NoContent();
+        var result = await _mediator.Send(new AssignRoleCommand(id, request.RoleId), ct);
+        return CreateActionResultInstance(result);
     }
 
     [HttpDelete("{id:guid}/roles/{roleId:guid}")]
     [HasPermission("auth.users.assign-role")]
     public async Task<IActionResult> RevokeRole(Guid id, Guid roleId, CancellationToken ct)
     {
-        await _mediator.Send(new RevokeRoleCommand(id, roleId), ct);
-        return NoContent();
+        var result = await _mediator.Send(new RevokeRoleCommand(id, roleId), ct);
+        return CreateActionResultInstance(result);
     }
 }

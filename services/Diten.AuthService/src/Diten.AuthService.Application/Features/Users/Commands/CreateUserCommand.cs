@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.DTOs;
 using MediatR;
 
@@ -8,4 +9,4 @@ public sealed record CreateUserCommand(
     string Password,
     string FirstName,
     string LastName
-) : IRequest<UserDto>;
+) : IRequest<Response<UserDto>>;

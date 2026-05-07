@@ -2,6 +2,8 @@ namespace Diten.AuthService.Api.Models;
 
 public sealed record LoginRequest(string Email, string Password);
 public sealed record TenantLoginRequest(string Email, string Password);
+public sealed record VerifyMfaRequest(string ChallengeId, string Code);
+public sealed record ResendMfaRequest(string ChallengeId);
 public sealed record PlatformLoginRequest(string Email, string Password);
 public sealed record RegisterRequest(string Email, string Password, string FirstName, string LastName);
 public sealed record RefreshTokenRequest(string AccessToken, string RefreshToken);

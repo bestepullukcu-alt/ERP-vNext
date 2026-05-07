@@ -13,7 +13,6 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Şifre boş bırakılamaz.")
-            .MinimumLength(8).WithMessage("Şifre en az 8 karakter olmalıdır.")
             .MaximumLength(128).WithMessage("Şifre en fazla 128 karakter olabilir.");
 
         RuleFor(x => x.FirstName)

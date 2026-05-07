@@ -1,4 +1,6 @@
+using Diten.AuthService.Api.Controllers.Common;
 using Diten.AuthService.Api.Models;
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Application.Features.Users.Queries;
 using MediatR;
@@ -7,9 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.AuthService.Api.Controllers;
 
-[ApiController]
 [Route("api/auth")]
-public sealed class AuthController : ControllerBase
+public sealed class AuthController : CustomBaseController
 {
     private readonly IMediator _mediator;
 
@@ -24,7 +25,7 @@ public sealed class AuthController : ControllerBase
     {
         var command = new LoginCommand(request.Email, request.Password, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
-        return Ok(result);
+        return CreateActionResultInstance(result);
     }
 
     [HttpPost("register")]
@@ -39,7 +40,7 @@ public sealed class AuthController : ControllerBase
             ResolveRequestIp(HttpContext),
             ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
-        return CreatedAtAction(nameof(Me), result);
+        return CreateActionResultInstance(result);
     }
 
     [HttpPost("refresh-token")]
@@ -48,7 +49,7 @@ public sealed class AuthController : ControllerBase
     {
         var command = new RefreshTokenCommand(request.AccessToken, request.RefreshToken, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
-        return Ok(result);
+        return CreateActionResultInstance(result);
     }
 
     [HttpPost("logout")]
@@ -56,8 +57,8 @@ public sealed class AuthController : ControllerBase
     public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request, CancellationToken ct)
     {
         var command = new LogoutCommand(request.AccessToken, request.RefreshToken, ResolveRequestIp(HttpContext));
-        await _mediator.Send(command, ct);
-        return NoContent();
+        var result = await _mediator.Send(command, ct);
+        return CreateActionResultInstance(result);
     }
 
     [HttpPost("change-password")]
@@ -67,11 +68,11 @@ public sealed class AuthController : ControllerBase
         var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
                            ?? User.FindFirst("sub")?.Value;
         
-        if (string.IsNullOrEmpty(userIdString)) return Unauthorized();
+        if (string.IsNullOrEmpty(userIdString)) return CreateActionResultInstance(Response<NoContent>.Fail("Unauthorized.", 401));
 
         var command = new ChangePasswordCommand(userIdString, request.CurrentPassword, request.NewPassword);
-        await _mediator.Send(command, ct);
-        return NoContent();
+        var result = await _mediator.Send(command, ct);
+        return CreateActionResultInstance(result);
     }
 
     [HttpGet("me")]
@@ -82,10 +83,10 @@ public sealed class AuthController : ControllerBase
                            ?? User.FindFirst("sub")?.Value;
         
         if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId)) 
-            return Unauthorized();
+            return CreateActionResultInstance(Response<object>.Fail("Unauthorized.", 401));
 
         var result = await _mediator.Send(new GetUserByIdQuery(userId), ct);
-        return Ok(result);
+        return CreateActionResultInstance(result);
     }
 
     private static string ResolveRequestIp(HttpContext context)

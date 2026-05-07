@@ -30,6 +30,21 @@ public sealed class RegisterTenantCommandValidator : AbstractValidator<RegisterT
             .When(x => !string.IsNullOrWhiteSpace(x.Slug));
 
         RuleFor(x => x.DisplayName)
+            .NotEmpty()
+            .MaximumLength(200);
+
+        RuleFor(x => x.PlanId)
+            .NotEmpty()
+            .WithMessage("PlanId is required.");
+
+        RuleFor(x => x.TenantType)
+            .NotNull()
+            .WithMessage("TenantType is required.")
+            .IsInEnum()
+            .Must(type => type != TenantType.Trial && type != TenantType.Paid)
+            .WithMessage("TenantType must be Customer, Demo, or Internal.");
+
+        RuleFor(x => x.DisplayName)
             .MaximumLength(200)
             .When(x => !string.IsNullOrWhiteSpace(x.DisplayName));
 
@@ -50,10 +65,6 @@ public sealed class RegisterTenantCommandValidator : AbstractValidator<RegisterT
         RuleFor(x => x.Industry)
             .MaximumLength(100)
             .When(x => !string.IsNullOrWhiteSpace(x.Industry));
-
-        RuleFor(x => x.TenantType)
-            .IsInEnum()
-            .When(x => x.TenantType.HasValue);
 
         RuleFor(x => x.ContactPerson)
             .MaximumLength(120)
@@ -86,17 +97,19 @@ public sealed class RegisterTenantCommandValidator : AbstractValidator<RegisterT
             .WithMessage("DefaultCurrency must be a 3 letter ISO currency code (e.g. 'USD', 'EUR', 'TRY').")
             .When(x => !string.IsNullOrWhiteSpace(x.DefaultCurrency));
 
+        RuleFor(x => x.InitialAdmin)
+            .NotNull()
+            .WithMessage("InitialAdmin.Email is required.");
+
         When(x => x.InitialAdmin != null, () =>
         {
             RuleFor(x => x.InitialAdmin!.FirstName)
-                .NotEmpty()
-                .WithMessage("InitialAdmin.FirstName is required.")
-                .MaximumLength(80);
+                .MaximumLength(80)
+                .When(x => !string.IsNullOrWhiteSpace(x.InitialAdmin!.FirstName));
 
             RuleFor(x => x.InitialAdmin!.LastName)
-                .NotEmpty()
-                .WithMessage("InitialAdmin.LastName is required.")
-                .MaximumLength(80);
+                .MaximumLength(80)
+                .When(x => !string.IsNullOrWhiteSpace(x.InitialAdmin!.LastName));
 
             RuleFor(x => x.InitialAdmin!.Email)
                 .NotEmpty()

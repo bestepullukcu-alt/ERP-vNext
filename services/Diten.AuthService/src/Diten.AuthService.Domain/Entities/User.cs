@@ -47,10 +47,15 @@ public sealed class User : EntityBase
 
     public void RecordLoginFailure()
     {
+        RecordLoginFailure(5, 15);
+    }
+
+    public void RecordLoginFailure(int maxFailedAttempts, int lockoutDurationMinutes)
+    {
         FailedLoginAttempts++;
-        if (FailedLoginAttempts >= 5)
+        if (FailedLoginAttempts >= maxFailedAttempts)
         {
-            LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+            LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
         }
     }
 

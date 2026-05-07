@@ -1,0 +1,171 @@
+@model Diten.Web.Controllers.Platform.SubscriptionPlansController.SubscriptionPlanEditViewModel
+@using Diten.Web.Views.Platform.SubscriptionPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.AspNetCore.Mvc.Rendering
+@inject IHtmlLocalizer<SubscriptionPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = Model.Id.HasValue && Model.Id != Guid.Empty;
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+    var currencyOptions = ViewData["CurrencyOptions"] as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="SubscriptionPlans" asp-action="Index">@Localizer["SubscriptionPlansTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="SubscriptionPlans" asp-action="Index" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="subscriptionPlanForm" class="btn btn-primary">
+            <i class="bx bx-save me-1"></i>@SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+<form id="subscriptionPlanForm" asp-controller="SubscriptionPlans" asp-action="@action" asp-route-id="@Model.Id" method="post"
+    class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["IdentitySection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-4">
+                        <label asp-for="Code" class="form-label fw-medium">@Localizer["Code"] <span class="text-danger">*</span></label>
+                        <input asp-for="Code" class="form-control" maxlength="64" placeholder="FREE, STARTER..." required />
+                        <span asp-validation-for="Code" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" maxlength="200" required />
+                        <span asp-validation-for="Name" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                        <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small mt-1"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["EntitlementsSection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="IncludedFeaturesText" class="form-label fw-medium">@Localizer["IncludedFeatures"]</label>
+                        <textarea asp-for="IncludedFeaturesText" class="form-control" rows="6" placeholder="@Localizer["CommaOrLineSeparated"]"></textarea>
+                        <span asp-validation-for="IncludedFeaturesText" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="IncludedModuleKeysText" class="form-label fw-medium">@Localizer["IncludedModuleKeys"]</label>
+                        <textarea asp-for="IncludedModuleKeysText" class="form-control" rows="6" placeholder="@Localizer["CommaOrLineSeparated"]"></textarea>
+                        <span asp-validation-for="IncludedModuleKeysText" class="text-danger small mt-1"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["QuotasSection"]</h5>
+                </div>
+                <div class="card-body">
+                    <label asp-for="DefaultQuotasJson" class="form-label fw-medium">@Localizer["DefaultQuotasJson"]</label>
+                    <textarea asp-for="DefaultQuotasJson" class="form-control" rows="4" placeholder='{"users": 50, "storageGb": 500}'></textarea>
+                    <div class="form-text mt-2">@Localizer["DefaultQuotasHelp"]</div>
+                    <span asp-validation-for="DefaultQuotasJson" class="text-danger small mt-1"></span>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["PricingSection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <label asp-for="PriceMonthly" class="form-label fw-medium">@Localizer["PriceMonthly"]</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="PriceMonthly" class="form-control" type="number" step="0.01" min="0" />
+                        </div>
+                        <span asp-validation-for="PriceMonthly" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="PriceYearly" class="form-label fw-medium">@Localizer["PriceYearly"]</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="PriceYearly" class="form-control" type="number" step="0.01" min="0" />
+                        </div>
+                        <span asp-validation-for="PriceYearly" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Currency" class="form-label fw-medium">@Localizer["Currency"]</label>
+                        <select asp-for="Currency" asp-items="currencyOptions" class="form-select">
+                            <option value=""></option>
+                        </select>
+                        <span asp-validation-for="Currency" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="SortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>
+                        <input asp-for="SortOrder" class="form-control" type="number" min="0" />
+                        <span asp-validation-for="SortOrder" class="text-danger small mt-1"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["StatusAndRulesSection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" role="switch" value="true" />
+                            <label asp-for="IsActive" class="form-check-label fw-medium">@Localizer["IsActive"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsDefault" class="form-check-input" role="switch" value="true" />
+                            <label asp-for="IsDefault" class="form-check-label fw-medium">@Localizer["IsDefault"]</label>
+                        </div>
+                    </div>
+                    <hr class="my-1" />
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input id="is-trial-plan" asp-for="IsTrialPlan" class="form-check-input" role="switch" value="true" />
+                            <label asp-for="IsTrialPlan" class="form-check-label fw-medium">@Localizer["IsTrialPlan"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="TrialDurationDays" class="form-label fw-medium">@Localizer["TrialDurationDays"]</label>
+                        <input id="trial-duration-days" asp-for="TrialDurationDays" class="form-control" type="number" min="1" />
+                        <span asp-validation-for="TrialDurationDays" class="text-danger small mt-1"></span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

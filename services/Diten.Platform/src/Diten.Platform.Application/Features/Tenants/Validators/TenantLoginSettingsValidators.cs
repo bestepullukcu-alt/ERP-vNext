@@ -17,7 +17,7 @@ public sealed class UpdateTenantLoginSettingsCommandValidator : AbstractValidato
     public UpdateTenantLoginSettingsCommandValidator()
     {
         RuleFor(x => x.TenantId).NotEmpty();
-        RuleFor(x => x.Request.PasswordMinLength).InclusiveBetween(6, 128);
+        RuleFor(x => x.Request.PasswordMinLength).InclusiveBetween(8, 128);
         RuleFor(x => x.Request.PasswordExpirationDays)
             .InclusiveBetween(1, 3650)
             .When(x => x.Request.PasswordExpirationDays.HasValue);
@@ -32,23 +32,29 @@ public sealed class UpdateTenantLoginSettingsCommandValidator : AbstractValidato
             .Must((x, mfaRequired) => !mfaRequired || x.Request.TwoFactorEnabled)
             .WithMessage("Two Factor Authentication must be enabled when MFA is required.");
 
-        // Rule 2 — At least one login method must be enabled
+        // Rule 2 — MFA Required requires a currently deliverable MFA channel.
+        // MVP deliverable channel is Email OTP. Phone Login is stored for future channel support only.
+        RuleFor(x => x.Request.MfaRequired)
+            .Must((x, mfaRequired) => !mfaRequired || x.Request.EmailLoginEnabled)
+            .WithMessage("Email Login must be enabled when MFA is required. Phone OTP delivery is disabled until SMS provider configuration is enabled.");
+
+        // Rule 3 — At least one login method must be enabled
         RuleFor(x => x.Request.EmailLoginEnabled)
             .Must((x, emailEnabled) => emailEnabled || x.Request.PhoneLoginEnabled)
             .WithMessage("At least one login method must be enabled.");
 
-        // Rule 3 — IP whitelist enabled requires allowed IPs
+        // Rule 4 — IP whitelist enabled requires allowed IPs
         RuleFor(x => x.Request.AllowedIps)
             .NotEmpty()
             .When(x => x.Request.IpWhitelistEnabled)
             .WithMessage("At least one allowed IP address is required when IP whitelist is enabled.");
 
-        // Rule 4 — AllowedIps must contain valid IP addresses
+        // Rule 5 — AllowedIps must contain valid IP addresses
         RuleForEach(x => x.Request.AllowedIps)
             .Must(BeAValidIpAddress)
             .WithMessage("Invalid IP address: {PropertyValue}");
 
-        // Rule 5 — AllowedCountries must be ISO alpha-2
+        // Rule 6 — AllowedCountries must be ISO alpha-2
         RuleForEach(x => x.Request.AllowedCountries)
             .Matches("^[A-Z]{2}$")
             .WithMessage("Invalid country code: {PropertyValue}. Use ISO alpha-2 format.");

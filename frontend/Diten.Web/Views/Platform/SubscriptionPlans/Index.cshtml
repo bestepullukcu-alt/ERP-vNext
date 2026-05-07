@@ -1,0 +1,76 @@
+@using Diten.Web.Views.Platform.SubscriptionPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SubscriptionPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["SubscriptionPlansTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
+    <div class="d-flex flex-column justify-content-center">
+        <h5 class="mb-0">@Localizer["SubscriptionPlansTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <div class="d-flex align-content-center flex-wrap gap-4">
+        <a class="btn btn-primary" asp-controller="SubscriptionPlans" asp-action="Create">
+            <i class="bx bx-plus me-1"></i>@Localizer["CreatePlan"]
+        </a>
+    </div>
+</div>
+
+<div id="sp-error" class="alert alert-danger d-none" role="alert"></div>
+
+<div class="row g-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card h-100 shadow-none border">
+            <div class="card-body">
+                <small class="text-muted d-block">@Localizer["TotalPlans"]</small>
+                <h5 id="kpi-total" class="mb-0">0</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100 shadow-none border">
+            <div class="card-body">
+                <small class="text-muted d-block">@Localizer["ActivePlans"]</small>
+                <h5 id="kpi-active" class="mb-0 text-success">0</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100 shadow-none border">
+            <div class="card-body">
+                <small class="text-muted d-block">@Localizer["TrialPlans"]</small>
+                <h5 id="kpi-trial" class="mb-0 text-info">0</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100 shadow-none border">
+            <div class="card-body">
+                <small class="text-muted d-block">@Localizer["PaidPlans"]</small>
+                <h5 id="kpi-paid" class="mb-0 text-warning">0</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="sp-loading" class="d-flex align-items-center gap-2 text-muted mb-3">
+    <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+    <span>@SharedLocalizer["Loading"]</span>
+</div>
+
+<div id="sp-empty" class="card d-none">
+    <div class="card-body text-center text-muted">
+        @Localizer["EmptyState"]
+    </div>
+</div>
+
+<div id="sp-grid" class="row g-4"></div>
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/SubscriptionPlans/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/SubscriptionPlans/index.js" asp-append-version="true"></script>
+}

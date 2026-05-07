@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Diten.AuthService.Application.Features.Roles.Handlers.QueryHandlers;
 
-public sealed class GetRoleByIdQueryHandler : IRequestHandler<GetRoleByIdQuery, RoleDto>
+public sealed class GetRoleByIdQueryHandler : IRequestHandler<GetRoleByIdQuery, Response<RoleDto>>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
@@ -22,13 +22,13 @@ public sealed class GetRoleByIdQueryHandler : IRequestHandler<GetRoleByIdQuery, 
         _tenantContext = tenantContext;
     }
 
-    public async Task<RoleDto> Handle(GetRoleByIdQuery request, CancellationToken ct)
+    public async Task<Response<RoleDto>> Handle(GetRoleByIdQuery request, CancellationToken ct)
     {
         var role = await _roleRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (role == null) throw new KeyNotFoundException("Rol bulunamadı.");
+        if (role == null) return Response<RoleDto>.Fail("Role not found.", 404);
 
         var perms = await _rolePermissionRepository.GetPermissionsByRoleAsync(role.Id, _tenantContext.TenantId, ct);
 
-        return new RoleDto(role.Id, role.Name, role.DisplayName, role.Description, role.IsSystem, perms.Count());
+        return Response<RoleDto>.Success(new RoleDto(role.Id, role.Name, role.DisplayName, role.Description, role.IsSystem, perms.Count()));
     }
 }

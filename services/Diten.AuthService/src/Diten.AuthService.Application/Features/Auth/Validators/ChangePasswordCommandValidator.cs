@@ -12,7 +12,6 @@ public sealed class ChangePasswordCommandValidator : AbstractValidator<ChangePas
 
         RuleFor(x => x.NewPassword)
             .NotEmpty().WithMessage("Yeni şifre boş bırakılamaz.")
-            .MinimumLength(8).WithMessage("Şifre en az 8 karakter olmalıdır.")
             .MaximumLength(128).WithMessage("Şifre en fazla 128 karakter olabilir.");
     }
 }

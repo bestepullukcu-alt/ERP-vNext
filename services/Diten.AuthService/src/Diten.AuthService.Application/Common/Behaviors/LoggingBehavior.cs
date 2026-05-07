@@ -21,21 +21,22 @@ public sealed class LoggingBehavior<TRequest, TResponse>
         CancellationToken cancellationToken)
     {
         var requestName = typeof(TRequest).Name;
-        _logger.LogInformation("Başlatılıyor: {RequestName}, Timestamp: {Timestamp}", requestName, DateTime.UtcNow);
+        _logger.LogInformation("Handling {RequestName}, Timestamp: {Timestamp}", requestName, DateTime.UtcNow);
 
         var stopwatch = Stopwatch.StartNew();
         try
         {
             var response = await next();
             stopwatch.Stop();
-            _logger.LogInformation("Tamamlandı: {RequestName}, Süre: {ElapsedMs}ms", requestName, stopwatch.ElapsedMilliseconds);
+            _logger.LogInformation("Handled {RequestName} in {ElapsedMs}ms", requestName, stopwatch.ElapsedMilliseconds);
             return response;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogError(ex, "Hata Oluştu: {RequestName}, Süre: {ElapsedMs}ms", requestName, stopwatch.ElapsedMilliseconds);
+            _logger.LogError(ex, "Unhandled exception for {RequestName} after {ElapsedMs}ms", requestName, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
 }
+

@@ -1,0 +1,35 @@
+@using Diten.Web.Views.Platform.Tenants
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TenantsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="p-4" style="display: none;">
+        <div class="shimmer skeleton-row" style="width: 100%; height: 32px; margin-bottom: 2rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-tenants" data-dt-standard="v2" class="datatables-tenants table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
+                    <th>@Localizer["Tenant"]</th>
+                    <th>@Localizer["CodeSlug"]</th>
+                    <th>@Localizer["Domain"]</th>
+                    <th>@Localizer["TenantType"]</th>
+                    <th>@Localizer["Country"]</th>
+                    <th>@Localizer["Region"]</th>
+                    <th>@Localizer["Provisioning"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["Storage"]</th>
+                    <th class="cell-fit text-end">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

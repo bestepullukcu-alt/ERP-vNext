@@ -43,6 +43,28 @@ public sealed class AuthGateway : IAuthGateway
             ct: ct);
     }
 
+    public Task<AuthBridgeResult> VerifyTenantMfaAsync(string challengeId, string code, CancellationToken ct = default)
+    {
+        return SendAuthRequestAsync(
+            "/api/tenant-auth/mfa/verify",
+            new { challengeId, code },
+            tenantId: null,
+            includeBearer: false,
+            accessToken: null,
+            ct: ct);
+    }
+
+    public Task<AuthBridgeResult> ResendTenantMfaAsync(string challengeId, CancellationToken ct = default)
+    {
+        return SendAuthRequestAsync(
+            "/api/tenant-auth/mfa/resend",
+            new { challengeId },
+            tenantId: null,
+            includeBearer: false,
+            accessToken: null,
+            ct: ct);
+    }
+
     public Task<AuthBridgeResult> RefreshAsync(string accessToken, string refreshToken, Guid? tenantId, CancellationToken ct = default)
     {
         return SendAuthRequestAsync(
@@ -113,13 +135,27 @@ public sealed class AuthGateway : IAuthGateway
                 await TryReadErrorAsync(response, ct));
         }
 
-        var authResponse = await response.Content.ReadFromJsonAsync<AuthBridgeResult>(JsonOptions, ct);
+        var authResponse = await ReadAuthBridgeResultAsync(response, ct);
         if (authResponse is null)
         {
             return new AuthBridgeResult(false, null, null, null, null, "Authentication response could not be parsed.");
         }
 
         return authResponse with { Success = true };
+    }
+
+    private static async Task<AuthBridgeResult?> ReadAuthBridgeResultAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        using var stream = await response.Content.ReadAsStreamAsync(ct);
+        using var document = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+
+        var root = document.RootElement;
+        if (root.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Object)
+        {
+            return data.Deserialize<AuthBridgeResult>(JsonOptions);
+        }
+
+        return root.Deserialize<AuthBridgeResult>(JsonOptions);
     }
 
     private static async Task<string?> TryReadErrorAsync(HttpResponseMessage response, CancellationToken ct)
@@ -141,6 +177,21 @@ public sealed class AuthGateway : IAuthGateway
             if (document.RootElement.TryGetProperty("title", out var title) && title.ValueKind == JsonValueKind.String)
             {
                 return title.GetString();
+            }
+
+            if (document.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array)
+            {
+                var messages = errors
+                    .EnumerateArray()
+                    .Where(e => e.ValueKind == JsonValueKind.String)
+                    .Select(e => e.GetString())
+                    .Where(e => !string.IsNullOrWhiteSpace(e))
+                    .ToArray();
+
+                if (messages.Length > 0)
+                {
+                    return string.Join(" ", messages);
+                }
             }
         }
         catch
@@ -170,5 +221,10 @@ public sealed class AuthGateway : IAuthGateway
         {
             request.Headers.TryAddWithoutValidation("User-Agent", userAgent);
         }
+
+        var correlationId = context.Request.Headers["X-Correlation-Id"].FirstOrDefault();
+        request.Headers.TryAddWithoutValidation(
+            "X-Correlation-Id",
+            string.IsNullOrWhiteSpace(correlationId) ? context.TraceIdentifier : correlationId);
     }
 }

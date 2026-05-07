@@ -6,7 +6,12 @@ public sealed record AuthBridgeResult(
     string? RefreshToken,
     DateTime? ExpiresAt,
     AuthBridgeUser? User,
-    string? ErrorMessage);
+    string? ErrorMessage,
+    bool RequiresMfa = false,
+    string? ChallengeId = null,
+    string? MaskedDestination = null,
+    string? Channel = null,
+    DateTime? MfaExpiresAt = null);
 
 public sealed record AuthBridgeUser(
     Guid Id,

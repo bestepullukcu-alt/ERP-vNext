@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.DTOs;
 using MediatR;
 
@@ -9,4 +10,4 @@ public sealed record CreatePermissionCommand(
     string Action,
     string DisplayName,
     string? Description
-) : IRequest<PermissionDto>;
+) : IRequest<Response<PermissionDto>>;

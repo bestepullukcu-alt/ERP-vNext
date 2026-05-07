@@ -99,8 +99,6 @@ public sealed class UpdateTenantLoginSettingsCommandHandler : IRequestHandler<Up
 
     private string GetActor()
     {
-        return _currentUser.IsAuthenticated && _currentUser.UserId != Guid.Empty
-            ? _currentUser.UserId.ToString()
-            : "system";
+        return _currentUser.ActorName;
     }
 }

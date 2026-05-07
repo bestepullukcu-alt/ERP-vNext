@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Diten.AuthService.Application.Features.Roles.Handlers.CommandHandlers;
 
-public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, Unit>
+public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, Response<NoContent>>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly ITenantContext _tenantContext;
@@ -22,14 +22,14 @@ public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(DeleteRoleCommand request, CancellationToken ct)
+    public async Task<Response<NoContent>> Handle(DeleteRoleCommand request, CancellationToken ct)
     {
         var role = await _roleRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (role == null) throw new KeyNotFoundException("Rol bulunamadı.");
+        if (role == null) return Response<NoContent>.Fail("Role not found.", 404);
 
-        if (role.IsSystem) throw new InvalidOperationException("Sistem rolleri silinemez.");
+        if (role.IsSystem) return Response<NoContent>.Fail("System roles cannot be deleted.", 403);
 
         await _roleRepository.DeleteAsync(request.Id, _tenantContext.TenantId, ct);
-        return Unit.Value;
+        return Response<NoContent>.Success(204);
     }
 }

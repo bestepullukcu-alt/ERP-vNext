@@ -12,7 +12,7 @@ public sealed class TenantLoginSettings : GlobalEntity
     public bool EmailLoginEnabled { get; set; } = true;
     public bool PhoneLoginEnabled { get; set; } = false;
 
-    public int PasswordMinLength { get; set; } = 8;
+    public int PasswordMinLength { get; set; } = 10;
     public bool PasswordRequireUppercase { get; set; } = true;
     public bool PasswordRequireLowercase { get; set; } = true;
     public bool PasswordRequireDigit { get; set; } = true;
@@ -20,7 +20,7 @@ public sealed class TenantLoginSettings : GlobalEntity
     public int? PasswordExpirationDays { get; set; }
 
     public int SessionTimeoutMinutes { get; set; } = 60;
-    public int RefreshTokenLifetimeDays { get; set; } = 7;
+    public int RefreshTokenLifetimeDays { get; set; } = 14;
 
     public int MaxFailedLoginAttempts { get; set; } = 5;
     public int LockoutDurationMinutes { get; set; } = 15;

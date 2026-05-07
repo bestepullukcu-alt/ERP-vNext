@@ -11,8 +11,21 @@ public sealed record TenantListItemDto(
     string Environment,
     string Status,
     string TenantType,
+    string Plan,
+    Guid? PlanId,
+    string? PlanCode,
+    string? PlanName,
+    string SubscriptionStatus,
+    DateTimeOffset? TrialStartDateUtc,
+    DateTimeOffset? TrialEndDateUtc,
     string? Country,
     string ProvisioningStatus,
+    int ActiveUserCount,
+    int UserLimit,
+    decimal StorageUsedGb,
+    decimal StorageQuotaGb,
+    decimal StorageUsagePercent,
+    bool IsOverQuota,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt,
     string CreatedBy);
@@ -29,7 +42,9 @@ public sealed record TenantRegistryStatsDto(
     long Active,
     long Provisioning,
     long Suspended,
-    long Deactivated);
+    long Deactivated,
+    long Trial,
+    long OverQuota);
 
 public sealed record TenantProvisioningStepDto(
     string Key,
@@ -65,7 +80,15 @@ public sealed record TenantDetailDto(
     string TenantType,
     string ProvisioningStatus,
     string Tier,
+    Guid? PlanId,
+    string? PlanCode,
+    string? PlanName,
+    string SubscriptionStatus,
+    DateTimeOffset? TrialStartDateUtc,
+    DateTimeOffset? TrialEndDateUtc,
     string? AppUrl,
+    string? LogoDataUrl,
+    string? FaviconDataUrl,
 
     // Legal & Company
     string? LegalName,
@@ -108,6 +131,18 @@ public sealed record TenantUsersSummaryDto(
     int PendingInvitations,
     string InvitationPolicy);
 
+public sealed record TenantAdminUserDto(
+    Guid Id,
+    string Name,
+    string Email,
+    string Status,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? InvitedAt);
+
+public sealed record TenantAdminUserUpsertRequest(
+    string Name,
+    string Email);
+
 public sealed record TenantSettingsDto(
     Guid TenantId,
     string Region,
@@ -121,6 +156,22 @@ public sealed record TenantSettingsUpdateRequest(
     string Timezone,
     string Currency,
     string Environment);
+
+public sealed record TenantUpdateRequest(
+    string Name,
+    string DisplayName,
+    string Domain,
+    string? Subdomain,
+    string? Slug,
+    string? Country,
+    string? DefaultTimezone,
+    string? DefaultLanguage,
+    string? DefaultCurrency,
+    Diten.Platform.Domain.Entities.TenantType? TenantType);
+
+public sealed record TenantBrandingUpdateRequest(
+    string? LogoDataUrl,
+    string? FaviconDataUrl);
 
 public sealed record TenantLoginSettingsDto(
     Guid TenantId,

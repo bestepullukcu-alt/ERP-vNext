@@ -13,18 +13,19 @@ const TenantsList = (function () {
     let L = window.L10n || {};
 
     const dtTableEl = document.querySelector('.datatables-tenants');
-    const apiUrl = window.API?.platform || window.ApiBaseUrl || 'http://localhost:5000';
+    const endpoint = '/Platform/Tenants/api';
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'Platform', pageKey: 'Tenants' };
     const saveViewColumnIndexes = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const defaultVisibleColumnIndexes = [2, 3, 4, 9, 10];
     const totalColumnCount = 12;
-    const baseOrder = [[10, 'desc']];
+    const baseOrder = [[2, 'asc']];
     const filterCollapseId = 'inlineFilterCollapse';
 
     const syncL10n = () => { L = window.L10n || {}; };
     const isAuthHandledError = (error) => error?.authHandled === true || error?.code === 'auth-refresh-in-progress';
 
-    const getAuthHeaders = () => ({});
+    const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
 
     const escapeHtml = (value) => {
         if (value === null || value === undefined) return '';
@@ -40,9 +41,75 @@ const TenantsList = (function () {
     const normalizeArray = (value) => Array.isArray(value) ? value.map(String).filter(Boolean).sort() : [];
     const unwrap = (payload) => payload?.data ?? payload ?? null;
 
-    const formatDate = (value) => {
-        if (!value) return '-';
-        try { return new Date(value).toLocaleString(); } catch (error) { return value; }
+    const firstValue = (source, keys) => {
+        for (const key of keys) {
+            const value = source?.[key];
+            if (value !== undefined && value !== null && value !== '') return value;
+        }
+        return null;
+    };
+
+    const formatBytes = (value) => {
+        const bytes = Number(value);
+        if (!Number.isFinite(bytes) || bytes < 0) return null;
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let size = bytes;
+        let unitIndex = 0;
+        while (size >= 1024 && unitIndex < units.length - 1) {
+            size /= 1024;
+            unitIndex += 1;
+        }
+        return `${size >= 10 || unitIndex === 0 ? size.toFixed(0) : size.toFixed(1)} ${units[unitIndex]}`;
+    };
+
+    const formatStorage = (tenant) => {
+        const usedGb = firstValue(tenant, ['storageUsedGb', 'storageUsedGB']);
+        const quotaGb = firstValue(tenant, ['storageQuotaGb', 'storageQuotaGB']);
+        const usedBytes = firstValue(tenant, ['storageUsedBytes', 'usedStorageBytes', 'storageBytesUsed']);
+        const quotaBytes = firstValue(tenant, ['storageQuotaBytes', 'storageLimitBytes', 'quotaBytes']);
+        const percent = firstValue(tenant, ['storageUsagePercent', 'storagePercent', 'quotaUsagePercent']);
+        const usedNumber = Number(usedGb);
+        const quotaNumber = Number(quotaGb);
+        const calculatedPercent = Number.isFinite(Number(percent))
+            ? Number(percent)
+            : (Number.isFinite(usedNumber) && Number.isFinite(quotaNumber) && quotaNumber > 0 ? (usedNumber / quotaNumber) * 100 : 0);
+        const safePercent = Math.max(0, Math.min(100, calculatedPercent));
+        const usedText = Number.isFinite(usedNumber)
+            ? `${usedNumber.toFixed(1)} GB`
+            : (formatBytes(usedBytes) || firstValue(tenant, ['storageUsed', 'usedStorage', 'storageUsedText']));
+        const quotaText = Number.isFinite(quotaNumber)
+            ? `${quotaNumber.toFixed(0)} GB`
+            : (formatBytes(quotaBytes) || firstValue(tenant, ['storageQuota', 'storageLimit', 'storageQuotaText']));
+
+        if (!usedText && !quotaText && !Number.isFinite(calculatedPercent)) return '<span class="text-muted">-</span>';
+
+        return `<div class="tenant-storage-cell">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-medium">${escapeHtml(usedText || '0 GB')}</span>
+                <span class="text-muted">/</span>
+                <span>${escapeHtml(quotaText || '-')}</span>
+                <small class="text-muted ms-auto">${escapeHtml(`${safePercent.toFixed(0)}%`)}</small>
+            </div>
+            <div class="progress" style="height: 6px; min-width: 140px;">
+                <div class="progress-bar ${calculatedPercent > 100 ? 'bg-danger' : 'bg-primary'}" role="progressbar" style="width: ${safePercent}%;" aria-valuenow="${safePercent.toFixed(0)}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>`;
+    };
+
+    const statValue = (source, keys) => {
+        for (const key of keys) {
+            if (Object.prototype.hasOwnProperty.call(source || {}, key)) return source[key] ?? 0;
+        }
+        return null;
+    };
+
+    const updateKpisFromItems = (items) => {
+        if (!Array.isArray(items)) return;
+        document.getElementById('kpi-total').innerText = String(items.length);
+        document.getElementById('kpi-active').innerText = String(items.filter((item) => item.status === 'Active').length);
+        document.getElementById('kpi-trial').innerText = String(items.filter((item) => item.tenantType === 'Trial' || item.tenantType === 2).length);
+        document.getElementById('kpi-suspended').innerText = String(items.filter((item) => item.status === 'Suspended').length);
+        document.getElementById('kpi-over-quota').innerText = String(items.filter((item) => item.isOverQuota || item.overQuota || item.storageOverQuota).length);
     };
 
     const statusBadge = (status) => {
@@ -55,17 +122,31 @@ const TenantsList = (function () {
         return `<span class="badge ${map[status] || 'bg-label-secondary'}">${escapeHtml(status || L.Unknown || '-')}</span>`;
     };
 
+    const tenantTypeBadge = (tenantType) => {
+        const map = {
+            Customer: 'bg-label-primary',
+            Demo: 'bg-label-info',
+            Internal: 'bg-label-dark',
+            Trial: 'bg-label-warning',
+            Paid: 'bg-label-success'
+        };
+        return `<span class="badge ${map[tenantType] || 'bg-label-secondary'}">${escapeHtml(tenantType || L.Unknown || '-')}</span>`;
+    };
+
     const updateKpis = (stats) => {
         if (!stats) return;
         document.getElementById('kpi-total').innerText = String(stats.total || 0);
         document.getElementById('kpi-active').innerText = String(stats.active || 0);
-        document.getElementById('kpi-provisioning').innerText = String(stats.provisioning || 0);
+        const trial = statValue(stats, ['trial', 'trialTenants']);
+        if (trial !== null) document.getElementById('kpi-trial').innerText = String(trial);
         document.getElementById('kpi-suspended').innerText = String(stats.suspended || 0);
+        const overQuota = statValue(stats, ['overQuota', 'overQuotaTenants']);
+        if (overQuota !== null) document.getElementById('kpi-over-quota').innerText = String(overQuota);
     };
 
     const loadStats = async () => {
         try {
-            const response = await fetch(`${apiUrl}/api/admin/tenants/stats`, {
+            const response = await fetch(`${endpoint}/stats`, {
                 credentials: 'include',
                 headers: getAuthHeaders()
             });
@@ -76,28 +157,8 @@ const TenantsList = (function () {
         }
     };
 
-    const loadTenantDetail = async (id) => {
-        const response = await fetch(`${apiUrl}/api/admin/tenants/${encodeURIComponent(id)}`, {
-            credentials: 'include',
-            headers: getAuthHeaders()
-        });
-
-        if (response.status === 401 || response.status === 403) {
-            window.DtDefaults?.handleUnauthorized?.();
-            const authError = new Error('auth-refresh-in-progress');
-            authError.authHandled = true;
-            throw authError;
-        }
-
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-
-        return unwrap(await response.json());
-    };
-
     const changeLifecycle = async (tenantId, action, reason) => {
-        const response = await fetch(`${apiUrl}/api/admin/tenants/${encodeURIComponent(tenantId)}/${action}`, {
+        const response = await fetch(`${endpoint}/${encodeURIComponent(tenantId)}/${action}`, {
             method: 'POST',
             credentials: 'include',
             headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
@@ -118,23 +179,33 @@ const TenantsList = (function () {
         return unwrap(await response.json());
     };
 
-    const getSelectedIds = () =>
-        Array.from(dtTableEl.querySelectorAll('tbody .dt-checkboxes:checked')).map((checkbox) => checkbox.value);
-
-    const clearSelection = () => {
-        dtTableEl.querySelectorAll('tbody .dt-checkboxes').forEach((checkbox) => {
-            checkbox.checked = false;
-            checkbox.closest('tr')?.classList.remove('selected');
-        });
-
-        const header = dtTableEl.querySelector('.dt-checkboxes-select-all');
-        if (header) {
-            header.checked = false;
-            header.indeterminate = false;
+    const bulkOptions = {
+        bulkBarSelector: '#bulkActionBar',
+        bulkCountSelector: '#bulkSelectedCount',
+        clearSelectionSelector: '#btnClearSelection',
+        bulkActionSelector: '[data-bulk-action]',
+        onBulkAction: {
+            delete: ({ ids }) => {
+                window.showConfirm?.(L.BulkDeleteConfirm || L.AreYouSure || '', async () => {
+                    try {
+                        const response = await fetch(`${endpoint}/bulk`, {
+                            method: 'DELETE',
+                            credentials: 'include',
+                            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ ids })
+                        });
+                        if (!response.ok) throw new Error('Bulk delete failed.');
+                        reloadWithSuccessToast('BulkDeleteSuccess');
+                    } catch (error) {
+                        if (!isAuthHandledError(error)) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
+                    }
+                }, { type: 'danger', confirmButtonText: L.BulkDelete });
+            }
         }
-
-        updateBulkBar();
     };
+
+    const getSelectedIds = () => window.DitenDataTable?.getSelectedIds?.(dtTableEl, bulkOptions.checkboxSelector) || [];
+    const clearSelection = () => window.DitenDataTable?.clearSelection?.(dtTableEl, bulkOptions);
 
     const updateBulkBar = () => {
         const selectedIds = getSelectedIds();
@@ -151,11 +222,13 @@ const TenantsList = (function () {
         }
     };
 
-    const createDefaultColumnVisibility = () =>
+    const defaultColVis = () =>
         saveViewColumnIndexes.reduce((acc, index) => {
-            acc[index] = true;
+            acc[index] = defaultVisibleColumnIndexes.includes(index);
             return acc;
         }, {});
+
+    const emptyFilters = () => ({ status: [], region: [], tenantType: [] });
 
     const normalizeColumnVisibility = (colVis) => {
         if (!colVis) return null;
@@ -257,7 +330,7 @@ const TenantsList = (function () {
         region: normalizeArray(view?.region),
         tenantType: normalizeArray(view?.tenantType),
         search: normalizeString(view?.search),
-        colVis: normalizeColumnVisibility(view?.colVis) || createDefaultColumnVisibility(),
+        colVis: normalizeColumnVisibility(view?.colVis) || defaultColVis(),
         columnOrder: normalizeColumnOrder(view?.columnOrder) || Array.from({ length: totalColumnCount }, (_, index) => index),
         order: Array.isArray(view?.order) ? view.order : baseOrder
     });
@@ -281,7 +354,7 @@ const TenantsList = (function () {
         const payload = {
             moduleKey: personalizationContext.moduleKey,
             pageKey: personalizationContext.pageKey,
-            viewName: 'Default',
+            viewName: (defaultViewRecord?.viewName || defaultViewRecord?.ViewName || L.SaveView || 'Default').trim(),
             isDefault: true,
             viewDefinition: view
         };
@@ -306,11 +379,9 @@ const TenantsList = (function () {
 
     const isDirtyComparedToDefault = (api) => {
         const baseline = defaultViewState || {
-            status: [],
-            region: [],
-            tenantType: [],
+            filters: emptyFilters(),
             search: '',
-            colVis: createDefaultColumnVisibility(),
+            colVis: defaultColVis(),
             columnOrder: Array.from({ length: totalColumnCount }, (_, index) => index),
             order: baseOrder
         };
@@ -358,10 +429,21 @@ const TenantsList = (function () {
         api.search(typeof state.search === 'string' ? state.search : '');
         syncSearchInput(api, state.search || '');
         applyColumnOrder(api, state.columnOrder || (options?.resetColumnOrder ? Array.from({ length: totalColumnCount }, (_, index) => index) : null));
-        applyColumnVisibility(api, state.colVis || (options?.resetColumns ? createDefaultColumnVisibility() : null));
+        applyColumnVisibility(api, state.colVis || (options?.resetColumns ? defaultColVis() : null));
         api.order(Array.isArray(state.order) ? state.order : baseOrder);
         api.draw(false);
     };
+
+    const getResetBaselineState = () => ({
+        status: [],
+        region: [],
+        tenantType: [],
+        filters: emptyFilters(),
+        search: '',
+        colVis: defaultColVis(),
+        columnOrder: Array.from({ length: totalColumnCount }, (_, index) => index),
+        order: baseOrder
+    });
 
     const mountInlineFilter = () => {
         const host = document.getElementById('inlineFilterHost');
@@ -370,7 +452,8 @@ const TenantsList = (function () {
         const toolbarRow = filterBtn?.closest('.dt-layout-row') || filterBtn?.closest('.row') || filterBtn?.closest('.dt-layout-end')?.parentElement;
         if (toolbarRow) {
             toolbarRow.insertAdjacentElement('afterend', host);
-            host.classList.add('px-6');
+            host.classList.remove('px-6');
+            host.classList.add('px-3');
         }
     };
 
@@ -391,47 +474,93 @@ const TenantsList = (function () {
     const initSelect2Filters = () => {
         $('#inlineFilterHost select.select2').each(function () {
             const $select = $(this);
+            if ($select.hasClass('select2-hidden-accessible')) $select.select2('destroy');
+            const isMultiple = $select.prop('multiple');
             $select.select2({
                 dropdownParent: $(document.body),
                 dropdownCssClass: 'dt-inline-filter-dropdown',
+                containerCssClass: isMultiple ? 'dt-inline-filter-multi' : undefined,
                 minimumResultsForSearch: Infinity,
                 selectionCssClass: 'form-select form-select-sm',
                 width: 'element',
-                closeOnSelect: false
+                placeholder: $select.data('placeholder') || '',
+                closeOnSelect: !isMultiple,
+                allowClear: !isMultiple
             });
+            if (isMultiple) {
+                $select.off('change.select2-summary').on('change.select2-summary', function () { syncMultiSelectSummary($select); });
+                requestAnimationFrame(() => syncMultiSelectSummary($select));
+            }
         });
     };
 
-    const populateOffcanvas = (data) => {
-        if (!data) return;
-        document.getElementById('oc-title').innerText = data.displayName || data.name || '-';
-        document.getElementById('oc-subtitle').innerText = `${data.code || '-'} / ${data.slug || '-'}`;
-        document.getElementById('oc-status').outerHTML = statusBadge(data.status).replace('<span', '<span id="oc-status"');
-        document.getElementById('oc-provisioning').innerText = data.provisioningStatus || '-';
-        document.getElementById('oc-btn-details').href = `/Platform/Tenants/Details/${encodeURIComponent(data.id)}`;
+    const syncMultiSelectSummary = ($select) => {
+        const $container = $select.next('.select2-container');
+        const $rendered = $container.find('.select2-selection__rendered');
+        const $selection = $container.find('.select2-selection--multiple');
+        if (!$container.length || !$rendered.length || !$selection.length) return;
 
-        const rows = [
-            [L.Details || 'Details', data.id],
-            [L.Domain || 'Domain', data.domain],
-            [L.TenantType || 'Tenant Type', data.tenantType],
-            [L.Country || 'Country', data.country],
-            [L.DefaultLanguage || 'Default Language', data.defaultLanguage],
-            [L.DefaultTimezone || 'Default Timezone', data.defaultTimezone],
-            [L.DefaultCurrency || 'Default Currency', data.defaultCurrency],
-            [L.Created || 'Created', formatDate(data.createdAt)]
-        ];
+        let $summary = $selection.find('.dt-inline-filter-multi__summary');
+        let $actions = $selection.find('.dt-inline-filter-multi__actions');
+        let $count = $selection.find('.dt-inline-filter-multi__count');
+        let $arrow = $selection.find('.select2-selection__arrow');
 
-        document.getElementById('oc-details-list').innerHTML = rows.map(([label, value]) =>
-            `<dt class="col-5 fw-medium text-heading mb-2">${escapeHtml(label)}</dt><dd class="col-7 mb-2 text-break">${escapeHtml(value || '-')}</dd>`
-        ).join('');
+        if (!$summary.length) $summary = $('<span class="dt-inline-filter-multi__summary"></span>').prependTo($selection);
+        if (!$actions.length) $actions = $('<span class="dt-inline-filter-multi__actions"></span>').appendTo($selection);
+        if (!$count.length) $count = $('<span class="dt-inline-filter-multi__count badge rounded-pill bg-label-primary d-none"></span>').appendTo($actions);
+        if (!$arrow.length) $arrow = $('<span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span>').appendTo($selection);
+
+        const placeholder = normalizeString($select.data('placeholder')) || '';
+        const selectedValues = normalizeArray($select.val());
+        const selectedTexts = ($select.select2('data') || []).map((item) => normalizeString(item.text)).filter(Boolean);
+
+        $summary.text(placeholder);
+        $rendered.attr('title', selectedTexts.join(', ') || placeholder);
+        $container.toggleClass('dt-inline-filter-multi--has-value', selectedValues.length > 0);
+        $count.toggleClass('d-none', selectedValues.length === 0).text(String(selectedValues.length));
+        $actions.find('.dt-multi-clear-btn').remove();
+
+        if (selectedValues.length > 0) {
+            const $clearBtn = $('<span class="dt-multi-clear-btn" role="button" aria-label="' + (L.Reset || '') + '" title="' + (L.Reset || '') + '">&times;</span>');
+            $clearBtn.on('mousedown', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                $select.val(null).trigger('change');
+            });
+            $actions.append($clearBtn);
+        }
     };
 
-    const reloadTableAndToastSuccess = (message) => {
-        clearSelection();
-        dt.ajax.reload(() => {
-            loadStats();
-            window.showToast?.(message, 'success');
-        }, false);
+    const reloadWithSuccessToast = (messageKey, interpolationValue) => {
+        window.DitenDataTable?.reloadWithToast?.(dt, dtTableEl, messageKey, interpolationValue, bulkOptions);
+        loadStats();
+    };
+
+    const rowActionHandlers = {
+        delete: ({ row, id }) => {
+            const rowId = id || row?.id;
+            if (!rowId) return;
+            const entityName = row?.displayName || row?.name || '';
+            window.showConfirm?.(L.AreYouSure || '', async () => {
+                try {
+                    const response = await fetch(`${endpoint}/${encodeURIComponent(rowId)}`, {
+                        method: 'DELETE',
+                        credentials: 'include',
+                        headers: getAuthHeaders()
+                    });
+                    if (!response.ok) throw new Error('Delete failed.');
+                    reloadWithSuccessToast('RecordDeleted', entityName);
+                } catch (error) {
+                    if (!isAuthHandledError(error)) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
+                }
+            }, { entityName, type: 'danger', confirmButtonText: L.Delete });
+        },
+        edit: ({ id }) => {
+            if (id) window.location.href = `/Platform/Tenants/Edit/${encodeURIComponent(id)}`;
+        },
+        details: ({ id }) => {
+            if (id) window.location.href = `/Platform/Tenants/Details/${encodeURIComponent(id)}`;
+        }
     };
 
     const initDataTable = async () => {
@@ -470,7 +599,7 @@ const TenantsList = (function () {
 
         dt = new DataTable(dtTableEl, window.DtDefaults.create({
             ajax: {
-                url: `${apiUrl}/api/admin/tenants`,
+                url: endpoint,
                 type: 'GET',
                 headers: getAuthHeaders(),
                 data: function () {
@@ -478,8 +607,10 @@ const TenantsList = (function () {
                 },
                 dataSrc: function (json) {
                     const data = unwrap(json) || {};
+                    const items = Array.isArray(data.items) ? data.items : [];
+                    updateKpisFromItems(items);
                     loadStats();
-                    return Array.isArray(data.items) ? data.items : [];
+                    return items;
                 }
             },
             stateSave: false,
@@ -496,7 +627,7 @@ const TenantsList = (function () {
                 { data: 'region', name: 'region' },
                 { data: 'provisioningStatus', name: 'provisioningStatus' },
                 { data: 'status', name: 'status' },
-                { data: 'createdAt', name: 'createdAt' },
+                { data: null, name: 'storage' },
                 { data: 'id', name: 'action' }
             ],
             columnDefs: [
@@ -510,7 +641,7 @@ const TenantsList = (function () {
                 },
                 {
                     targets: 2,
-                    render: (data, type, full) => `<div><span class="fw-medium text-heading">${escapeHtml(full.displayName || full.name)}</span><br><small class="text-muted">${escapeHtml(full.id)}</small></div>`
+                    render: (data, type, full) => `<span class="fw-medium text-heading">${escapeHtml(full.displayName || full.name || '-')}</span>`
                 },
                 {
                     targets: 3,
@@ -520,8 +651,10 @@ const TenantsList = (function () {
                     targets: 7,
                     render: (data, type, full) => `<div><span class="fw-medium">${escapeHtml(full.region || '-')}</span><br><small class="text-muted">${escapeHtml(full.environment || '-')}</small></div>`
                 },
+                { targets: 5, render: (data) => tenantTypeBadge(data) },
+                { targets: [5, 6, 7, 8], visible: false },
                 { targets: 9, render: (data) => statusBadge(data) },
-                { targets: 10, render: (data, type, full) => `<div><span>${escapeHtml(formatDate(data))}</span><br><small class="text-muted">${escapeHtml(full.createdBy || 'system')}</small></div>` },
+                { targets: 10, render: (data, type, full) => formatStorage(full) },
                 {
                     targets: -1,
                     searchable: false,
@@ -530,23 +663,47 @@ const TenantsList = (function () {
                     render: (data, type, full) => {
                         const suspendDisabled = full.status === 'Suspended' || full.status === 'Deactivated' ? 'disabled' : '';
                         const reactivateDisabled = full.status === 'Active' || full.status === 'Deactivated' ? 'disabled' : '';
-                        return `<div class="d-flex align-items-center justify-content-end">
-                            <a href="javascript:void(0);" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-label="${escapeHtml(L.Actions || '')}"><i class="bx bx-dots-vertical-rounded icon-md"></i></a>
-                            <div class="dropdown-menu dropdown-menu-end m-0">
-                                <a href="javascript:void(0);" class="dropdown-item js-quick-view" data-id="${escapeHtml(full.id)}" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetailsPreview">${escapeHtml(L.QuickView || '')}</a>
-                                <a href="/Platform/Tenants/Details/${encodeURIComponent(full.id)}" class="dropdown-item">${escapeHtml(L.ViewDetails || '')}</a>
-                                <a href="javascript:void(0);" class="dropdown-item js-tenant-suspend ${suspendDisabled}" data-id="${escapeHtml(full.id)}" data-name="${escapeHtml(full.displayName || full.name)}">${escapeHtml(L.Suspend || '')}</a>
-                                <a href="javascript:void(0);" class="dropdown-item js-tenant-reactivate ${reactivateDisabled}" data-id="${escapeHtml(full.id)}" data-name="${escapeHtml(full.displayName || full.name)}">${escapeHtml(L.Reactivate || '')}</a>
-                            </div>
-                        </div>`;
+                        const rowJson = JSON.stringify(full);
+                        return window.DitenDataTable.renderActions([
+                            {
+                                key: 'delete',
+                                className: 'text-danger me-1',
+                                icon: 'bx bx-trash',
+                                attrs: { 'data-id': full.id, 'data-json': rowJson }
+                            },
+                            {
+                                key: 'edit',
+                                icon: 'bx bx-edit',
+                                text: L.Edit || '',
+                                attrs: { 'data-id': full.id, 'data-json': rowJson }
+                            },
+                            {
+                                key: 'details',
+                                icon: 'bx bx-show',
+                                text: L.ViewDetails || '',
+                                attrs: { 'data-id': full.id, 'data-json': rowJson }
+                            },
+                            {
+                                key: 'suspend',
+                                className: `js-tenant-suspend ${suspendDisabled}`,
+                                text: L.Suspend || '',
+                                attrs: { 'data-id': full.id, 'data-name': full.displayName || full.name }
+                            },
+                            {
+                                key: 'reactivate',
+                                className: `js-tenant-reactivate ${reactivateDisabled}`,
+                                text: L.Reactivate || '',
+                                attrs: { 'data-id': full.id, 'data-name': full.displayName || full.name }
+                            }
+                        ]);
                     }
                 }
             ],
             buttons: window.DtDefaults.exportButtons(
                 L.AddNewTenants,
-                { onclick: "location.href='/Platform/Tenants/Create'" },
+                { href: '/Platform/Tenants/Create' },
                 extraButtons,
-                { exportColumns: saveViewColumnIndexes, colvisColumns: saveViewColumnIndexes }
+                { exportColumns: defaultVisibleColumnIndexes, colvisColumns: saveViewColumnIndexes }
             ),
             initComplete: function () {
                 const api = this.api();
@@ -558,6 +715,15 @@ const TenantsList = (function () {
                 }
                 setTimeout(() => { saveFilterArmed = true; }, 0);
                 window.DtDefaults.updateVisualState(api, getAppliedFilterCount());
+                document.querySelector('.add-new')?.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    window.location.href = '/Platform/Tenants/Create';
+                });
+                window.DitenDataTable?.bindActionDispatcher?.({
+                    tableEl: dtTableEl,
+                    dt,
+                    onRowAction: rowActionHandlers
+                });
             },
             drawCallback: function () {
                 updateBulkBar();
@@ -572,17 +738,6 @@ const TenantsList = (function () {
 
     const bindEvents = () => {
         document.addEventListener('click', async (event) => {
-            const quickView = event.target.closest('.js-quick-view');
-            if (quickView) {
-                const id = quickView.getAttribute('data-id');
-                try {
-                    populateOffcanvas(await loadTenantDetail(id));
-                } catch (error) {
-                    if (!isAuthHandledError(error)) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
-                }
-                return;
-            }
-
             const suspend = event.target.closest('.js-tenant-suspend:not(.disabled)');
             if (suspend) {
                 const id = suspend.getAttribute('data-id');
@@ -590,7 +745,7 @@ const TenantsList = (function () {
                 window.showConfirm?.('AreYouSure', async (reason) => {
                     try {
                         await changeLifecycle(id, 'suspend', reason);
-                        reloadTableAndToastSuccess(L.TenantSuspended || 'Tenant suspended.');
+                        reloadWithSuccessToast('TenantSuspended');
                     } catch (error) {
                         if (!isAuthHandledError(error)) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
                     }
@@ -611,7 +766,7 @@ const TenantsList = (function () {
                 window.showConfirm?.('AreYouSure', async () => {
                     try {
                         await changeLifecycle(id, 'reactivate', '');
-                        reloadTableAndToastSuccess(L.TenantReactivated || 'Tenant reactivated.');
+                        reloadWithSuccessToast('TenantReactivated');
                     } catch (error) {
                         if (!isAuthHandledError(error)) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
                     }
@@ -619,21 +774,7 @@ const TenantsList = (function () {
             }
         });
 
-        $(dtTableEl).on('change', '.dt-checkboxes', function () {
-            this.closest('tr')?.classList.toggle('selected', this.checked);
-            updateBulkBar();
-        });
-
-        $(dtTableEl).on('change', '.dt-checkboxes-select-all', function () {
-            const checked = this.checked;
-            dtTableEl.querySelectorAll('tbody .dt-checkboxes').forEach((checkbox) => {
-                checkbox.checked = checked;
-                checkbox.closest('tr')?.classList.toggle('selected', checked);
-            });
-            updateBulkBar();
-        });
-
-        document.getElementById('btnClearSelection')?.addEventListener('click', clearSelection);
+        window.DitenDataTable?.bindBulkSelection?.(dtTableEl, dt, bulkOptions);
 
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
             appliedFilters = getStagedFilters();
@@ -645,16 +786,7 @@ const TenantsList = (function () {
 
         document.getElementById('btnFilterReset')?.addEventListener('click', (event) => {
             event.preventDefault();
-            appliedFilters = defaultViewState
-                ? {
-                    status: normalizeArray(defaultViewState.status),
-                    region: normalizeArray(defaultViewState.region),
-                    tenantType: normalizeArray(defaultViewState.tenantType)
-                }
-                : { status: [], region: [], tenantType: [] };
-            syncFilterControls(appliedFilters);
-            applyFilterValues(dt, appliedFilters);
-            dt.draw(false);
+            applySavedTableState(dt, getResetBaselineState());
             setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
     };

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Diten.AuthService.Application.Features.Roles.Handlers.CommandHandlers;
 
-public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, RoleDto>
+public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, Response<RoleDto>>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly ITenantContext _tenantContext;
@@ -24,14 +24,14 @@ public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand
         _logger = logger;
     }
 
-    public async Task<RoleDto> Handle(CreateRoleCommand request, CancellationToken ct)
+    public async Task<Response<RoleDto>> Handle(CreateRoleCommand request, CancellationToken ct)
     {
         var existing = await _roleRepository.GetByNameAndTenantAsync(request.Name, _tenantContext.TenantId, ct);
-        if (existing != null) throw new InvalidOperationException("Rol adı zaten kullanımda.");
+        if (existing != null) return Response<RoleDto>.Fail("Role name is already in use.", 409);
 
         var role = new Role(request.Name, request.DisplayName, request.Description, _tenantContext.TenantId);
         var created = await _roleRepository.CreateAsync(role, ct);
 
-        return new RoleDto(created.Id, created.Name, created.DisplayName, created.Description, created.IsSystem, 0);
+        return Response<RoleDto>.Success(new RoleDto(created.Id, created.Name, created.DisplayName, created.Description, created.IsSystem, 0), 201);
     }
 }

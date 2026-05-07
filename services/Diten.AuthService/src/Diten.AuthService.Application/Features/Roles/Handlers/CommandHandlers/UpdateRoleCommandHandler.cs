@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Diten.AuthService.Application.Features.Roles.Handlers.CommandHandlers;
 
-public sealed class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, RoleDto>
+public sealed class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, Response<RoleDto>>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
@@ -22,16 +22,16 @@ public sealed class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand
         _tenantContext = tenantContext;
     }
 
-    public async Task<RoleDto> Handle(UpdateRoleCommand request, CancellationToken ct)
+    public async Task<Response<RoleDto>> Handle(UpdateRoleCommand request, CancellationToken ct)
     {
         var role = await _roleRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (role == null) throw new KeyNotFoundException("Rol bulunamadı.");
+        if (role == null) return Response<RoleDto>.Fail("Role not found.", 404);
 
         role.Update(request.DisplayName, request.Description);
         var updated = await _roleRepository.UpdateAsync(role, ct);
 
         var permissions = await _rolePermissionRepository.GetPermissionsByRoleAsync(role.Id, _tenantContext.TenantId, ct);
 
-        return new RoleDto(updated.Id, updated.Name, updated.DisplayName, updated.Description, updated.IsSystem, permissions.Count());
+        return Response<RoleDto>.Success(new RoleDto(updated.Id, updated.Name, updated.DisplayName, updated.Description, updated.IsSystem, permissions.Count()));
     }
 }

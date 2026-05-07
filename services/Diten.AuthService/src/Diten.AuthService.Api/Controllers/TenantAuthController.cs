@@ -1,3 +1,4 @@
+using Diten.AuthService.Api.Controllers.Common;
 using Diten.AuthService.Api.Models;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using MediatR;
@@ -6,9 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.AuthService.Api.Controllers;
 
-[ApiController]
 [Route("api/tenant-auth")]
-public sealed class TenantAuthController : ControllerBase
+public sealed class TenantAuthController : CustomBaseController
 {
     private readonly IMediator _mediator;
 
@@ -23,7 +23,25 @@ public sealed class TenantAuthController : ControllerBase
     {
         var command = new LoginCommand(request.Email, request.Password, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
-        return Ok(result);
+        return CreateActionResultInstance(result);
+    }
+
+    [HttpPost("mfa/verify")]
+    [AllowAnonymous]
+    public async Task<IActionResult> VerifyMfa([FromBody] VerifyMfaRequest request, CancellationToken ct)
+    {
+        var command = new VerifyMfaCommand(request.ChallengeId, request.Code, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
+        var result = await _mediator.Send(command, ct);
+        return CreateActionResultInstance(result);
+    }
+
+    [HttpPost("mfa/resend")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResendMfa([FromBody] ResendMfaRequest request, CancellationToken ct)
+    {
+        var command = new ResendMfaCommand(request.ChallengeId, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
+        var result = await _mediator.Send(command, ct);
+        return CreateActionResultInstance(result);
     }
 
     [HttpPost("register")]
@@ -38,7 +56,7 @@ public sealed class TenantAuthController : ControllerBase
             ResolveRequestIp(HttpContext),
             ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
-        return CreatedAtAction(nameof(Login), result);
+        return CreateActionResultInstance(result);
     }
 
     private static string ResolveRequestIp(HttpContext context)

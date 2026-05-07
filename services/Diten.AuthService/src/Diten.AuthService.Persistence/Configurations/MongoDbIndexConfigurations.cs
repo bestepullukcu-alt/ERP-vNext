@@ -84,5 +84,16 @@ public static class MongoDbIndexConfigurations
             new CreateIndexModel<AuthAuditLog>(
                 Builders<AuthAuditLog>.IndexKeys.Ascending(x => x.EventName).Ascending(x => x.OccurredAt))
         });
+
+        var mfaCol = database.GetCollection<MfaChallenge>("mfaChallenges");
+        await mfaCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<MfaChallenge>(
+                Builders<MfaChallenge>.IndexKeys.Ascending(x => x.ChallengeIdHash),
+                new CreateIndexOptions { Unique = true, Name = "ux_mfa_challenge_hash" }),
+            new CreateIndexModel<MfaChallenge>(
+                Builders<MfaChallenge>.IndexKeys.Ascending(x => x.ExpiresAtUtc),
+                new CreateIndexOptions { ExpireAfter = TimeSpan.FromHours(1), Name = "ttl_mfa_challenge_expiry" })
+        });
     }
 }

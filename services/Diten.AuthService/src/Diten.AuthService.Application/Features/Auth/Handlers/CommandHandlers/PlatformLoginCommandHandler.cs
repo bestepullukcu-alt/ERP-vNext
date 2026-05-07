@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 
-public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginCommand, AuthResponse>
+public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginCommand, Response<AuthResponse>>
 {
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     private const string PlatformActorType = "platform_admin";
@@ -43,17 +44,17 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         _logger = logger;
     }
 
-    public async Task<AuthResponse> Handle(PlatformLoginCommand request, CancellationToken ct)
+    public async Task<Response<AuthResponse>> Handle(PlatformLoginCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByEmailAndTenantAsync(request.Email, PlatformTenantId, ct);
         if (user is null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
         {
-            throw new UnauthorizedAccessException("Invalid credentials.");
+            return Response<AuthResponse>.Fail("Invalid credentials.", 401);
         }
 
         if (!user.IsActive)
         {
-            throw new UnauthorizedAccessException("User is inactive.");
+            return Response<AuthResponse>.Fail("User is inactive.", 401);
         }
 
         var roles = (await _userRoleRepository.GetRolesByUserAsync(user.Id, PlatformTenantId, ct))
@@ -68,7 +69,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         if (!isPlatformAdmin)
         {
             _logger.LogWarning("Platform login denied. UserId={UserId} Email={Email}", user.Id, user.Email);
-            throw new UnauthorizedAccessException("Platform admin privileges are required.");
+            return Response<AuthResponse>.Fail("Platform admin privileges are required.", 403);
         }
 
         var roleIds = await ResolveRoleIdsAsync(roles, PlatformTenantId, ct);
@@ -100,11 +101,11 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
 
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
-        return new AuthResponse(
+        return Response<AuthResponse>.Success(new AuthResponse(
             accessToken,
             refreshTokenStr,
             refreshToken.ExpiresAt,
-            new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, null));
+            new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, null)));
     }
 
     private async Task<List<Guid>> ResolveRoleIdsAsync(IEnumerable<string> roleNames, Guid tenantId, CancellationToken ct)
