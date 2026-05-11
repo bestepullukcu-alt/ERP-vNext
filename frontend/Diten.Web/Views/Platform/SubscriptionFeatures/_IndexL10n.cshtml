@@ -1,0 +1,64 @@
+@using System.Text.Json
+@using Diten.Web.Views.Platform.SubscriptionFeatures
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SubscriptionFeaturesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        SubscriptionFeaturesTitle = Localizer["SubscriptionFeaturesTitle"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        CreateFeature = Localizer["CreateFeature"].Value,
+        EditFeature = Localizer["EditFeature"].Value,
+        CreateCategory = Localizer["CreateCategory"].Value,
+        FeatureCode = Localizer["FeatureCode"].Value,
+        FeatureSlug = Localizer["FeatureSlug"].Value,
+        DisplayName = Localizer["DisplayName"].Value,
+        Description = Localizer["Description"].Value,
+        Category = Localizer["Category"].Value,
+        AllCategories = Localizer["AllCategories"].Value,
+        Status = Localizer["Status"].Value,
+        AllStatuses = Localizer["AllStatuses"].Value,
+        Draft = Localizer["Draft"].Value,
+        Active = SharedLocalizer["Active"].Value,
+        Inactive = SharedLocalizer["Passive"].Value,
+        Deprecated = Localizer["Deprecated"].Value,
+        Archived = Localizer["Archived"].Value,
+        IsCoreFeature = Localizer["IsCoreFeature"].Value,
+        SortOrder = Localizer["SortOrder"].Value,
+        OptionalFeatureFlagKey = Localizer["OptionalFeatureFlagKey"].Value,
+        AvailableInPlans = Localizer["AvailableInPlans"].Value,
+        Included = Localizer["Included"].Value,
+        AddOn = Localizer["AddOn"].Value,
+        NotAvailable = Localizer["NotAvailable"].Value,
+        Preview = Localizer["Preview"].Value,
+        IncludedPlans = Localizer["IncludedPlans"].Value,
+        NoPlans = Localizer["NoPlans"].Value,
+        EmptyState = Localizer["EmptyState"].Value,
+        NoResultsState = Localizer["NoResultsState"].Value,
+        RequiredField = Localizer["RequiredField"].Value,
+        CategoryRequiredForActive = Localizer["CategoryRequiredForActive"].Value,
+        ArchivedFeatureCannotBeMapped = Localizer["ArchivedFeatureCannotBeMapped"].Value,
+        DataChangedReloadRequired = Localizer["DataChangedReloadRequired"].Value,
+        Archive = Localizer["Archive"].Value,
+        Deactivate = Localizer["Deactivate"].Value,
+        CannotMapArchivedTooltip = Localizer["CannotMapArchivedTooltip"].Value,
+        CannotArchiveTooltip = Localizer["CannotArchiveTooltip"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        ValidationFailed = SharedLocalizer["ValidationFailed"].Value,
+        GatewayError = SharedLocalizer["GatewayError"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        PermissionDenied = Localizer["PermissionDenied"].Value,
+        CategoryCode = Localizer["CategoryCode"].Value
+    };
+}
+<script id="subscription-features-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

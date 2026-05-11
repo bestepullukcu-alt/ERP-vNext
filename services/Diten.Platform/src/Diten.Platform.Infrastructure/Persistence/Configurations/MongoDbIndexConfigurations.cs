@@ -1,4 +1,7 @@
 using Diten.Platform.Domain.Entities;
+using Diten.Platform.Domain.Features.SubscriptionFeatures;
+using Diten.Platform.Domain.Repositories;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Configurations;
@@ -13,7 +16,14 @@ public static class MongoDbIndexConfigurations
         var tenantLoginSettingsCollection = database.GetCollection<TenantLoginSettings>("tenant_login_settings");
         var moduleCatalogCollection = database.GetCollection<ModuleCatalogItem>("platform_module_catalog");
         var modulePageDescriptorCollection = database.GetCollection<ModulePageDescriptor>("platform_module_page_descriptors");
+        var modulePageActionDescriptorCollection = database.GetCollection<ModulePageActionDescriptor>("platform_module_page_action_descriptors");
         var subscriptionPlanCollection = database.GetCollection<SubscriptionPlan>("platform_subscription_plans");
+        var tenantSubscriptionCollection = database.GetCollection<TenantSubscription>("tenant_subscriptions");
+        var tenantModuleEntitlementCollection = database.GetCollection<TenantModuleEntitlement>("tenant_module_entitlements");
+        var featureDefinitionCollection = database.GetCollection<FeatureDefinition>("platform_subscription_features");
+        var featureCategoryCollection = database.GetCollection<FeatureCategory>("platform_feature_categories");
+        var planFeatureMappingCollection = database.GetCollection<PlanFeatureMapping>("platform_plan_feature_mappings");
+        var moduleCatalogDocuments = database.GetCollection<BsonDocument>("platform_module_catalog");
         await collection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<SavedView>(
@@ -108,15 +118,16 @@ public static class MongoDbIndexConfigurations
                 Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.Service),
                 new CreateIndexOptions { Name = "ix_platform_module_catalog_service" }),
             new CreateIndexModel<ModuleCatalogItem>(
-                Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.Category),
-                new CreateIndexOptions { Name = "ix_platform_module_catalog_category" }),
-            new CreateIndexModel<ModuleCatalogItem>(
                 Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.IsTenantAssignable),
                 new CreateIndexOptions { Name = "ix_platform_module_catalog_assignable" }),
             new CreateIndexModel<ModuleCatalogItem>(
                 Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.SortOrder),
                 new CreateIndexOptions { Name = "ix_platform_module_catalog_sort_order" })
         });
+        await DropIndexIfExistsAsync(moduleCatalogCollection.Indexes, "ix_platform_module_catalog_category");
+        await moduleCatalogDocuments.UpdateManyAsync(
+            Builders<BsonDocument>.Filter.Exists("Category"),
+            Builders<BsonDocument>.Update.Unset("Category"));
 
         await modulePageDescriptorCollection.Indexes.CreateManyAsync(new[]
         {
@@ -150,6 +161,27 @@ public static class MongoDbIndexConfigurations
                 new CreateIndexOptions { Name = "ix_platform_module_pages_tenant_page_type" })
         });
 
+        await modulePageActionDescriptorCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ModulePageActionDescriptor>(
+                Builders<ModulePageActionDescriptor>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.PageDescriptorId)
+                    .Ascending(x => x.ActionCode),
+                new CreateIndexOptions { Unique = true, Name = "ux_platform_module_page_actions_tenant_page_action" }),
+            new CreateIndexModel<ModulePageActionDescriptor>(
+                Builders<ModulePageActionDescriptor>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ModuleCode)
+                    .Ascending(x => x.PageCode),
+                new CreateIndexOptions { Name = "ix_platform_module_page_actions_tenant_module_page" }),
+            new CreateIndexModel<ModulePageActionDescriptor>(
+                Builders<ModulePageActionDescriptor>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.PermissionKey),
+                new CreateIndexOptions { Name = "ix_platform_module_page_actions_tenant_permission" })
+        });
+
         await subscriptionPlanCollection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<SubscriptionPlan>(
@@ -169,7 +201,125 @@ public static class MongoDbIndexConfigurations
                 new CreateIndexOptions { Name = "ix_platform_subscription_plans_is_default" }),
             new CreateIndexModel<SubscriptionPlan>(
                 Builders<SubscriptionPlan>.IndexKeys.Ascending(x => x.IsDefault).Ascending(x => x.IsActive),
-                new CreateIndexOptions { Name = "ix_platform_subscription_plans_is_default_is_active" })
+                new CreateIndexOptions { Name = "ix_platform_subscription_plans_is_default_is_active" }),
+            new CreateIndexModel<SubscriptionPlan>(
+                Builders<SubscriptionPlan>.IndexKeys.Ascending(x => x.IncludedModuleKeys),
+                new CreateIndexOptions { Name = "ix_platform_subscription_plans_included_module_keys" })
         });
+
+        await tenantSubscriptionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TenantSubscription>(
+                Builders<TenantSubscription>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_tenant_subscriptions_tenant_status" }),
+            new CreateIndexModel<TenantSubscription>(
+                Builders<TenantSubscription>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.PlanId),
+                new CreateIndexOptions { Name = "ix_tenant_subscriptions_tenant_plan" }),
+            new CreateIndexModel<TenantSubscription>(
+                Builders<TenantSubscription>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status),
+                new CreateIndexOptions<TenantSubscription>
+                {
+                    Unique = true,
+                    Name = "ux_tenant_subscriptions_one_current",
+                    PartialFilterExpression = Builders<TenantSubscription>.Filter.And(
+                        Builders<TenantSubscription>.Filter.Eq(x => x.IsDeleted, false),
+                        Builders<TenantSubscription>.Filter.In(x => x.Status, TenantSubscriptionStatuses.Current))
+                })
+        });
+
+        await tenantModuleEntitlementCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TenantModuleEntitlement>(
+                Builders<TenantModuleEntitlement>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ModuleCode),
+                new CreateIndexOptions { Name = "ix_tenant_module_entitlements_tenant_module" }),
+            new CreateIndexModel<TenantModuleEntitlement>(
+                Builders<TenantModuleEntitlement>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ModuleCode)
+                    .Ascending(x => x.Source),
+                new CreateIndexOptions<TenantModuleEntitlement>
+                {
+                    Unique = true,
+                    Name = "ux_tenant_module_entitlements_active_source",
+                    PartialFilterExpression = Builders<TenantModuleEntitlement>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<TenantModuleEntitlement>(
+                Builders<TenantModuleEntitlement>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Source),
+                new CreateIndexOptions { Name = "ix_tenant_module_entitlements_tenant_source" }),
+            new CreateIndexModel<TenantModuleEntitlement>(
+                Builders<TenantModuleEntitlement>.IndexKeys.Ascending(x => x.ExpiryDateUtc),
+                new CreateIndexOptions { Name = "ix_tenant_module_entitlements_expiry" })
+        });
+
+        await featureDefinitionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<FeatureDefinition>(
+                Builders<FeatureDefinition>.IndexKeys.Ascending(x => x.FeatureCode),
+                new CreateIndexOptions { Unique = true, Name = "ux_platform_subscription_features_code" }),
+            new CreateIndexModel<FeatureDefinition>(
+                Builders<FeatureDefinition>.IndexKeys.Ascending(x => x.FeatureSlug),
+                new CreateIndexOptions { Unique = true, Name = "ux_platform_subscription_features_slug" }),
+            new CreateIndexModel<FeatureDefinition>(
+                Builders<FeatureDefinition>.IndexKeys.Ascending(x => x.CategoryId),
+                new CreateIndexOptions { Name = "ix_platform_subscription_features_category_id" }),
+            new CreateIndexModel<FeatureDefinition>(
+                Builders<FeatureDefinition>.IndexKeys.Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_platform_subscription_features_status" }),
+            new CreateIndexModel<FeatureDefinition>(
+                Builders<FeatureDefinition>.IndexKeys.Ascending(x => x.SortOrder),
+                new CreateIndexOptions { Name = "ix_platform_subscription_features_sort_order" })
+        });
+
+        await featureCategoryCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<FeatureCategory>(
+                Builders<FeatureCategory>.IndexKeys.Ascending(x => x.CategoryCode),
+                new CreateIndexOptions { Unique = true, Name = "ux_platform_feature_categories_code" }),
+            new CreateIndexModel<FeatureCategory>(
+                Builders<FeatureCategory>.IndexKeys.Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_platform_feature_categories_status" }),
+            new CreateIndexModel<FeatureCategory>(
+                Builders<FeatureCategory>.IndexKeys.Ascending(x => x.SortOrder),
+                new CreateIndexOptions { Name = "ix_platform_feature_categories_sort_order" })
+        });
+
+        await planFeatureMappingCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<PlanFeatureMapping>(
+                Builders<PlanFeatureMapping>.IndexKeys
+                    .Ascending(x => x.SubscriptionPlanId)
+                    .Ascending(x => x.FeatureDefinitionId),
+                new CreateIndexOptions { Unique = true, Name = "ux_platform_plan_feature_mappings_plan_feature" }),
+            new CreateIndexModel<PlanFeatureMapping>(
+                Builders<PlanFeatureMapping>.IndexKeys.Ascending(x => x.SubscriptionPlanId),
+                new CreateIndexOptions { Name = "ix_platform_plan_feature_mappings_plan_id" }),
+            new CreateIndexModel<PlanFeatureMapping>(
+                Builders<PlanFeatureMapping>.IndexKeys.Ascending(x => x.FeatureDefinitionId),
+                new CreateIndexOptions { Name = "ix_platform_plan_feature_mappings_feature_id" }),
+            new CreateIndexModel<PlanFeatureMapping>(
+                Builders<PlanFeatureMapping>.IndexKeys.Ascending(x => x.AvailabilityStatus),
+                new CreateIndexOptions { Name = "ix_platform_plan_feature_mappings_availability_status" })
+        });
+    }
+
+    private static async Task DropIndexIfExistsAsync<TDocument>(IMongoIndexManager<TDocument> indexes, string indexName)
+    {
+        try
+        {
+            await indexes.DropOneAsync(indexName);
+        }
+        catch (MongoCommandException ex) when (ex.CodeName is "IndexNotFound" or "NamespaceNotFound")
+        {
+        }
     }
 }

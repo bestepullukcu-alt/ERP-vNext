@@ -7,7 +7,8 @@ public sealed class ModuleCatalogEditViewModel
     public Guid? Id { get; set; }
 
     [Required]
-    [StringLength(50, MinimumLength = 3)]
+    [StringLength(80, MinimumLength = 2)]
+    [RegularExpression(@"^[A-Z0-9]+(-[A-Z0-9]+)*$")]
     public string ModuleCode { get; set; } = string.Empty;
 
     [Required]
@@ -23,8 +24,6 @@ public sealed class ModuleCatalogEditViewModel
 
     [Required]
     public string Service { get; set; } = string.Empty;
-
-    public string? Category { get; set; }
 
     [Required]
     public string Status { get; set; } = "Draft";
@@ -49,7 +48,6 @@ public sealed class ModuleCatalogDetailViewModel
     public string? Description { get; set; }
     public string Domain { get; set; } = string.Empty;
     public string Service { get; set; } = string.Empty;
-    public string? Category { get; set; }
     public string Status { get; set; } = string.Empty;
     public string ModuleVersion { get; set; } = string.Empty;
     public bool IsCoreModule { get; set; }
@@ -67,7 +65,6 @@ public sealed class ModuleCatalogSavePayload
     public string? Description { get; set; }
     public string Domain { get; set; } = string.Empty;
     public string Service { get; set; } = string.Empty;
-    public string? Category { get; set; }
     public string Status { get; set; } = "Draft";
     public string ModuleVersion { get; set; } = "1.0.0";
     public bool IsCoreModule { get; set; }
@@ -92,6 +89,8 @@ public sealed class ModulePageDescriptorViewModel
     public string DisplayName { get; set; } = string.Empty;
     public string RoutePath { get; set; } = string.Empty;
     public string? RequiredPermission { get; set; }
+    public string? ParentPageCode { get; set; }
+    public bool IsNavigationVisible { get; set; } = true;
     public string PageType { get; set; } = "List";
     public string Status { get; set; } = "Draft";
     public int SortOrder { get; set; }
@@ -109,8 +108,28 @@ public sealed class ModulePageDescriptorSavePayload
     public string DisplayName { get; set; } = string.Empty;
     public string RoutePath { get; set; } = string.Empty;
     public string? RequiredPermission { get; set; }
+    public string? ParentPageCode { get; set; }
+    public bool? IsNavigationVisible { get; set; }
     public string PageType { get; set; } = "List";
     public string Status { get; set; } = "Draft";
     public int? SortOrder { get; set; }
+    public string? Description { get; set; }
+}
+
+public sealed class ModulePageActionDescriptorViewModel
+{
+    public Guid Id { get; set; }
+    public Guid PageDescriptorId { get; set; }
+    public string ModuleCode { get; set; } = string.Empty;
+    public string PageCode { get; set; } = string.Empty;
+    public string ActionCode { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public string PermissionKey { get; set; } = string.Empty;
+    public string ActionType { get; set; } = "Toolbar";
+    public int SortOrder { get; set; }
+    public bool IsDangerous { get; set; }
+    public bool IsToolbarAction { get; set; }
+    public bool IsRowAction { get; set; }
+    public string Status { get; set; } = "Draft";
     public string? Description { get; set; }
 }

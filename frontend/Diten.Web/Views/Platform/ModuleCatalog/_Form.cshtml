@@ -39,7 +39,15 @@
                 <div class="card-body row g-3">
                     <div class="col-12 col-md-6">
                         <label asp-for="ModuleCode" class="form-label fw-medium">@Localizer["ModuleCode"] <span class="text-danger">*</span></label>
-                        <input asp-for="ModuleCode" class="form-control" minlength="3" maxlength="50" placeholder="e.g. PROJECT-MANAGEMENT" required />
+                        <input asp-for="ModuleCode"
+                               class="form-control"
+                               minlength="2"
+                               maxlength="80"
+                               pattern="^[A-Z0-9]+(-[A-Z0-9]+)*$"
+                               placeholder="e.g. PROJECT-MANAGEMENT"
+                               required
+                               readonly="@isEdit"
+                               data-is-edit="@isEdit.ToString().ToLowerInvariant()" />
                         <div id="moduleCodePreview" class="form-text mt-1 text-muted d-none">
                             @Localizer["FinalCodePreview"]: <span class="fw-bold text-primary"></span>
                         </div>
@@ -84,40 +92,25 @@
                 <div class="card-body row g-3">
                     <div class="col-12">
                         <label asp-for="Domain" class="form-label fw-medium">@Localizer["Domain"] <span class="text-danger">*</span></label>
-                        <select asp-for="Domain" class="select2 form-select" required>
+                        <select asp-for="Domain"
+                                class="select2 form-select"
+                                required
+                                data-lookup-url="/Platform/ModuleCatalog/api/lookups/module-catalog/domains"
+                                data-selected-value="@Model.Domain">
                             <option value="">@SharedLocalizer["Select"]</option>
-                            <option value="Platform Shared Services">Platform Shared Services</option>
-                            <option value="PPM Management">PPM Management</option>
-                            <option value="Master Data Management">Master Data Management</option>
-                            <option value="Quality Management">Quality Management</option>
-                            <option value="Research Management">Research Management</option>
-                            <option value="Document Management">Document Management</option>
-                            <option value="Finance">Finance</option>
-                            <option value="Sales">Sales</option>
-                            <option value="Inventory">Inventory</option>
-                            <option value="Production">Production</option>
-                            <option value="HR">HR</option>
                         </select>
                         <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                     </div>
                     <div class="col-12">
                         <label asp-for="Service" class="form-label fw-medium">@Localizer["Service"] <span class="text-danger">*</span></label>
-                        <select asp-for="Service" class="select2 form-select" required>
+                        <select asp-for="Service"
+                                class="select2 form-select"
+                                required
+                                data-lookup-url="/Platform/ModuleCatalog/api/lookups/module-catalog/services"
+                                data-selected-value="@Model.Service">
                             <option value="">@SharedLocalizer["Select"]</option>
-                            <option value="Diten.Platform">Diten.Platform</option>
-                            <option value="Diten.AuthService">Diten.AuthService</option>
-                            <option value="Diten.Platform.Common">Diten.Platform.Common</option>
-                            <option value="Diten.PpmService">Diten.PpmService</option>
-                            <option value="Diten.MdmService">Diten.MdmService</option>
-                            <option value="Diten.QualityService">Diten.QualityService</option>
-                            <option value="Diten.ResearchService">Diten.ResearchService</option>
-                            <option value="Diten.DocumentService">Diten.DocumentService</option>
                         </select>
                         <div class="invalid-feedback">@Localizer["RequiredField"]</div>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="Category" class="form-label fw-medium">@Localizer["Category"]</label>
-                        <input asp-for="Category" class="form-control" maxlength="120" placeholder="e.g. Work Management" />
                     </div>
                     <div class="col-12">
                         <label asp-for="SortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>

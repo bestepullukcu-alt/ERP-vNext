@@ -2,9 +2,12 @@ namespace Diten.Platform.Domain.Enums;
 
 public enum TenantSubscriptionStatus
 {
-    Trialing = 0,
-    TrialExpired = 1,
+    PendingProvisioning = 0,
+    Trialing = 1,
     Active = 2,
-    Suspended = 3,
-    Cancelled = 4
+    PastDue = 3,
+    Cancelled = 4,
+    Expired = 5,
+    Suspended = 6,
+    TrialExpired = 7
 }

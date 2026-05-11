@@ -11,7 +11,6 @@ public sealed class ModuleCatalogItem : GlobalEntity
     public string? Description { get; set; }
     public string Domain { get; set; } = string.Empty;
     public string Service { get; set; } = string.Empty;
-    public string? Category { get; set; }
     public ModuleCatalogStatus Status { get; set; } = ModuleCatalogStatus.Draft;
     public string ModuleVersion { get; set; } = "1.0.0";
     public bool IsCoreModule { get; set; }

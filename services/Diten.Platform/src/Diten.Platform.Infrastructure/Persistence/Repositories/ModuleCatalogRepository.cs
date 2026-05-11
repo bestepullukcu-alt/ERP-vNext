@@ -61,8 +61,7 @@ public sealed class ModuleCatalogRepository : GlobalRepository<ModuleCatalogItem
                 Builders<ModuleCatalogItem>.Filter.Regex(x => x.ModuleName, regex),
                 Builders<ModuleCatalogItem>.Filter.Regex(x => x.DisplayName, regex),
                 Builders<ModuleCatalogItem>.Filter.Regex(x => x.Domain, regex),
-                Builders<ModuleCatalogItem>.Filter.Regex(x => x.Service, regex),
-                Builders<ModuleCatalogItem>.Filter.Regex(x => x.Category, regex)));
+                Builders<ModuleCatalogItem>.Filter.Regex(x => x.Service, regex)));
         }
 
         var domains = SplitValues(query.Domain);
@@ -75,12 +74,6 @@ public sealed class ModuleCatalogRepository : GlobalRepository<ModuleCatalogItem
         if (services.Count > 0)
         {
             filters.Add(Builders<ModuleCatalogItem>.Filter.In(x => x.Service, services));
-        }
-
-        var categories = SplitValues(query.Category);
-        if (categories.Count > 0)
-        {
-            filters.Add(Builders<ModuleCatalogItem>.Filter.In(x => x.Category, categories));
         }
 
         if (query.Statuses is { Count: > 0 })
@@ -147,7 +140,6 @@ public sealed class ModuleCatalogRepository : GlobalRepository<ModuleCatalogItem
             "displayname" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.DisplayName) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.DisplayName),
             "domain" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.Domain) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.Domain),
             "service" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.Service) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.Service),
-            "category" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.Category) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.Category),
             "status" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.Status) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.Status),
             "version" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.Version) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.Version),
             "createdat" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.CreatedAt) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.CreatedAt),

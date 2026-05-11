@@ -130,6 +130,27 @@ public sealed class ModuleCatalogController : Controller
         return View("~/Views/Platform/ModuleCatalog/Details.cshtml", detail);
     }
 
+    [HttpGet("PageDetails/{id:guid}")]
+    public async Task<IActionResult> PageDetails(Guid id)
+    {
+        AddAuthHeader();
+        var response = await _httpClient.GetAsync($"{_gatewayUrl}/api/platform/module-catalog/pages/{id}");
+        if (!response.IsSuccessStatusCode)
+        {
+            TempData["ErrorMessage"] = _sharedLocalizer["GatewayError"].Value;
+            return RedirectToAction(nameof(Index));
+        }
+
+        var payload = await response.Content.ReadFromJsonAsync<GatewayResponse<ModulePageDescriptorViewModel>>(_jsonOptions);
+        if (payload?.Data is null)
+        {
+            TempData["ErrorMessage"] = _sharedLocalizer["GatewayError"].Value;
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View("~/Views/Platform/ModuleCatalog/PageDetails.cshtml", payload.Data);
+    }
+
     [HttpGet("api")]
     public Task<IActionResult> ListProxy()
     {
@@ -141,6 +162,50 @@ public sealed class ModuleCatalogController : Controller
     public Task<IActionResult> StatsProxy()
     {
         return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/module-catalog/stats");
+    }
+
+    [HttpGet("api/lookups/module-catalog/{lookupName}")]
+    public Task<IActionResult> ModuleCatalogLookupProxy(string lookupName)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/lookups/module-catalog/{Uri.EscapeDataString(lookupName)}");
+    }
+
+    [HttpGet("api/subscription-plans/by-module/{moduleCode}")]
+    public Task<IActionResult> SubscriptionPlansByModuleProxy(string moduleCode)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/subscription-plans/by-module/{Uri.EscapeDataString(moduleCode)}");
+    }
+
+    [HttpGet("api/{moduleCode}/assignments/overview")]
+    public Task<IActionResult> ModuleAssignmentOverviewProxy(string moduleCode)
+    {
+        return ProxyGatewayAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/platform/module-catalog/{Uri.EscapeDataString(moduleCode)}/assignments/overview");
+    }
+
+    [HttpGet("api/{moduleCode}/assignments/plans")]
+    public Task<IActionResult> ModuleAssignmentPlansProxy(string moduleCode)
+    {
+        return ProxyGatewayAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/platform/module-catalog/{Uri.EscapeDataString(moduleCode)}/assignments/plans{Request.QueryString}");
+    }
+
+    [HttpGet("api/{moduleCode}/assignments/tenants")]
+    public Task<IActionResult> ModuleAssignmentTenantsProxy(string moduleCode)
+    {
+        return ProxyGatewayAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/platform/module-catalog/{Uri.EscapeDataString(moduleCode)}/assignments/tenants{Request.QueryString}");
+    }
+
+    [HttpGet("api/{moduleCode}/assignments/tenants/{tenantCode}")]
+    public Task<IActionResult> ModuleAssignmentTenantDetailProxy(string moduleCode, string tenantCode)
+    {
+        return ProxyGatewayAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/platform/module-catalog/{Uri.EscapeDataString(moduleCode)}/assignments/tenants/{Uri.EscapeDataString(tenantCode)}");
     }
 
     [HttpDelete("api/{id:guid}")]
@@ -215,6 +280,40 @@ public sealed class ModuleCatalogController : Controller
     public Task<IActionResult> DeleteModulePageProxy(Guid id)
     {
         return ProxyGatewayAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/platform/module-catalog/pages/{id}");
+    }
+
+    [HttpGet("api/pages/{pageId:guid}/actions")]
+    public Task<IActionResult> ModulePageActionsProxy(Guid pageId)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/module-catalog/pages/{pageId}/actions");
+    }
+
+    [HttpGet("api/page-actions/{id:guid}")]
+    public Task<IActionResult> ModulePageActionDetailsProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/module-catalog/pages/actions/{id}");
+    }
+
+    [HttpPost("api/pages/{pageId:guid}/actions")]
+    public async Task<IActionResult> CreateModulePageActionProxy(Guid pageId)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/module-catalog/pages/{pageId}/actions", body);
+    }
+
+    [HttpPut("api/page-actions/{id:guid}")]
+    public async Task<IActionResult> UpdateModulePageActionProxy(Guid id)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Put, $"{_gatewayUrl}/api/platform/module-catalog/pages/actions/{id}", body);
+    }
+
+    [HttpDelete("api/page-actions/{id:guid}")]
+    public Task<IActionResult> DeleteModulePageActionProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/platform/module-catalog/pages/actions/{id}");
     }
 
     private async Task<ModuleCatalogDetailViewModel?> LoadApiModelAsync(Guid id)
@@ -298,7 +397,6 @@ public sealed class ModuleCatalogController : Controller
         Description = model.Description,
         Domain = model.Domain,
         Service = model.Service,
-        Category = model.Category,
         Status = model.Status,
         ModuleVersion = model.ModuleVersion,
         IsCoreModule = model.IsCoreModule,
@@ -314,7 +412,6 @@ public sealed class ModuleCatalogController : Controller
         Description = model.Description,
         Domain = model.Domain,
         Service = model.Service,
-        Category = model.Category,
         Status = model.Status,
         ModuleVersion = model.ModuleVersion,
         IsCoreModule = model.IsCoreModule,

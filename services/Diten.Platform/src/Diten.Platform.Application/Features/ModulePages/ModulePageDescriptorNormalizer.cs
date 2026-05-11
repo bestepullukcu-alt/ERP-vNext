@@ -47,6 +47,12 @@ public static partial class ModulePageDescriptorNormalizer
     public static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
+    public static string? NormalizeOptionalPageCode(string? value)
+    {
+        var normalized = NormalizePageCode(value);
+        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
+    }
+
     public static string? NormalizeOptionalPermission(string? value)
     {
         var normalized = NormalizePermission(value);

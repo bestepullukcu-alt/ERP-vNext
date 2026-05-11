@@ -64,6 +64,18 @@ public sealed class SubscriptionPlansController : Controller
             var response = await _httpClient.PostAsJsonAsync($"{_gatewayUrl}/api/platform/subscription-plans", ToPayload(model), _jsonOptions);
             if (response.IsSuccessStatusCode)
             {
+                var created = await response.Content.ReadFromJsonAsync<GatewayResponse<Guid>>(_jsonOptions);
+                var planId = created?.Data ?? Guid.Empty;
+                if (planId != Guid.Empty && model.IsActive)
+                {
+                    var entitlementResult = await SaveEntitlementsAsync(planId, model.EntitlementMappingsJson);
+                    if (!entitlementResult.Succeeded)
+                    {
+                        TempData["ErrorMessage"] = string.Join(" ", entitlementResult.Errors);
+                        return RedirectToAction(nameof(Edit), new { id = planId });
+                    }
+                }
+
                 TempData["SuccessMessage"] = _sharedLocalizer["RecordCreated"].Value;
                 return RedirectToAction(nameof(Index));
             }
@@ -118,6 +130,16 @@ public sealed class SubscriptionPlansController : Controller
             var response = await _httpClient.PutAsJsonAsync($"{_gatewayUrl}/api/platform/subscription-plans/{id}", ToPayload(model), _jsonOptions);
             if (response.IsSuccessStatusCode)
             {
+                var entitlementResult = model.IsActive
+                    ? await SaveEntitlementsAsync(id, model.EntitlementMappingsJson)
+                    : EntitlementSaveResult.Success();
+                if (!entitlementResult.Succeeded)
+                {
+                    AddGatewayErrorsToModelState(entitlementResult.Errors);
+                    await LoadCurrencyOptionsAsync(model.Currency);
+                    return View("~/Views/Platform/SubscriptionPlans/Edit.cshtml", model);
+                }
+
                 TempData["SuccessMessage"] = _sharedLocalizer["RecordUpdated"].Value;
                 return RedirectToAction(nameof(Index));
             }
@@ -151,6 +173,36 @@ public sealed class SubscriptionPlansController : Controller
     public Task<IActionResult> DetailProxy(Guid id)
     {
         return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/subscription-plans/{id}");
+    }
+
+    [HttpGet("api/{id:guid}/features")]
+    public Task<IActionResult> PlanFeaturesProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/subscription-plans/{id}/features");
+    }
+
+    [HttpPut("api/{id:guid}/features")]
+    public Task<IActionResult> UpdatePlanFeaturesProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Put, $"{_gatewayUrl}/api/platform/subscription-plans/{id}/features", readBody: true);
+    }
+
+    [HttpGet("api/features/catalog")]
+    public Task<IActionResult> FeatureCatalogProxy()
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/subscription-features{Request.QueryString}");
+    }
+
+    [HttpGet("api/features/categories")]
+    public Task<IActionResult> FeatureCategoriesProxy()
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/feature-categories{Request.QueryString}");
+    }
+
+    [HttpGet("api/module-catalog")]
+    public Task<IActionResult> ModuleCatalogProxy()
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/module-catalog{Request.QueryString}");
     }
 
     [HttpPost("api/{id:guid}/activate")]
@@ -224,10 +276,16 @@ public sealed class SubscriptionPlansController : Controller
         ];
     }
 
-    private async Task<IActionResult> ProxyGatewayAsync(HttpMethod method, string targetUrl, string? jsonBody = null)
+    private async Task<IActionResult> ProxyGatewayAsync(HttpMethod method, string targetUrl, string? jsonBody = null, bool readBody = false)
     {
         AddAuthHeader();
         using var request = new HttpRequestMessage(method, targetUrl);
+        if (readBody)
+        {
+            using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+            jsonBody = await reader.ReadToEndAsync();
+        }
+
         if (jsonBody is not null)
         {
             request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
@@ -256,6 +314,54 @@ public sealed class SubscriptionPlansController : Controller
         if (_httpClient.DefaultRequestHeaders.Contains("X-Tenant-Id"))
         {
             _httpClient.DefaultRequestHeaders.Remove("X-Tenant-Id");
+        }
+    }
+
+    private async Task<EntitlementSaveResult> SaveEntitlementsAsync(Guid planId, string? mappingsJson)
+    {
+        if (string.IsNullOrWhiteSpace(mappingsJson))
+        {
+            return EntitlementSaveResult.Success();
+        }
+
+        PlanFeatureMappingsPayload? payload;
+        try
+        {
+            var mappings = JsonSerializer.Deserialize<List<PlanFeatureMappingPayload>>(mappingsJson, _jsonOptions);
+            payload = new PlanFeatureMappingsPayload
+            {
+                Mappings = mappings?
+                    .Where(x => x.FeatureDefinitionId != Guid.Empty)
+                    .GroupBy(x => x.FeatureDefinitionId)
+                    .Select(x => x.Last())
+                    .ToList() ?? []
+            };
+        }
+        catch
+        {
+            return EntitlementSaveResult.Failure([_sharedLocalizer["ValidationFailed"].Value]);
+        }
+
+        if (payload.Mappings.Count == 0)
+        {
+            return EntitlementSaveResult.Success();
+        }
+
+        try
+        {
+            AddAuthHeader();
+            var response = await _httpClient.PutAsJsonAsync($"{_gatewayUrl}/api/platform/subscription-plans/{planId}/features", payload, _jsonOptions);
+            if (response.IsSuccessStatusCode)
+            {
+                return EntitlementSaveResult.Success();
+            }
+
+            return EntitlementSaveResult.Failure(await ExtractGatewayErrorsAsync(response));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "SubscriptionPlans entitlement save failed for {SubscriptionPlanId}.", planId);
+            return EntitlementSaveResult.Failure([_sharedLocalizer["GatewayError"].Value]);
         }
     }
 
@@ -390,6 +496,7 @@ public sealed class SubscriptionPlansController : Controller
         public string? DefaultQuotasJson { get; set; }
         public string? IncludedFeaturesText { get; set; }
         public string? IncludedModuleKeysText { get; set; }
+        public string? EntitlementMappingsJson { get; set; }
     }
 
     private sealed class SubscriptionPlanSavePayload
@@ -408,6 +515,26 @@ public sealed class SubscriptionPlansController : Controller
         public IReadOnlyDictionary<string, decimal>? DefaultQuotas { get; init; }
         public IReadOnlyList<string> IncludedFeatures { get; init; } = [];
         public IReadOnlyList<string> IncludedModuleKeys { get; init; } = [];
+    }
+
+    private sealed class PlanFeatureMappingsPayload
+    {
+        public IReadOnlyList<PlanFeatureMappingPayload> Mappings { get; init; } = [];
+    }
+
+    private sealed class PlanFeatureMappingPayload
+    {
+        public Guid FeatureDefinitionId { get; init; }
+        public string AvailabilityStatus { get; init; } = "NotAvailable";
+        public DateTimeOffset? EffectiveFromUtc { get; init; }
+        public DateTimeOffset? EffectiveToUtc { get; init; }
+        public byte[]? RowVersion { get; init; }
+    }
+
+    private sealed record EntitlementSaveResult(bool Succeeded, IReadOnlyList<string> Errors)
+    {
+        public static EntitlementSaveResult Success() => new(true, []);
+        public static EntitlementSaveResult Failure(IReadOnlyList<string> errors) => new(false, errors.Count == 0 ? [] : errors);
     }
 
     private sealed class SubscriptionPlanDetailApiModel

@@ -12,6 +12,7 @@ public interface ISubscriptionPlanRepository
     Task UpdateAsync(SubscriptionPlan plan, CancellationToken ct = default);
     Task<(IReadOnlyList<SubscriptionPlan> Items, long TotalCount)> QueryAsync(SubscriptionPlansQuery query, CancellationToken ct = default);
     Task<IReadOnlyList<SubscriptionPlan>> GetActiveAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<SubscriptionPlan>> GetByIncludedModuleKeyAsync(string moduleKey, CancellationToken ct = default);
     Task<SubscriptionPlanSummary> GetSummaryAsync(CancellationToken ct = default);
 }
 

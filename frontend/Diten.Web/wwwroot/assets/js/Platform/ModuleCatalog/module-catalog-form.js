@@ -7,16 +7,22 @@ const ModuleCatalogForm = (function () {
     const form = document.getElementById('moduleCatalogForm');
     const btnSave = document.getElementById('btnSaveModule');
     const inputModuleCode = document.getElementById('ModuleCode');
+    const inputModuleName = document.getElementById('ModuleName');
+    const inputDisplayName = document.getElementById('DisplayName');
     const previewModuleCode = document.getElementById('moduleCodePreview');
     const previewSpan = previewModuleCode?.querySelector('span');
     const L = window.L10n || {};
+    const isEdit = inputModuleCode?.dataset?.isEdit === 'true';
+    let moduleCodeManuallyEdited = Boolean(inputModuleCode?.value);
 
     const normalizeCode = (value) => {
         return (value || '')
             .toUpperCase()
-            .replace(/\s+/g, '-')
-            .replace(/[^A-Z0-9-]/g, '')
-            .replace(/-+/g, '-');
+            .replace(/[^A-Z0-9]+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '')
+            .slice(0, 80)
+            .replace(/-$/g, '');
     };
 
     const updatePreview = () => {
@@ -82,6 +88,80 @@ const ModuleCatalogForm = (function () {
         }
     };
 
+    const syncGeneratedModuleCode = () => {
+        if (!inputModuleCode || isEdit || moduleCodeManuallyEdited) return;
+
+        const source = inputDisplayName?.value || inputModuleName?.value || '';
+        const normalized = normalizeCode(source);
+        if (inputModuleCode.value !== normalized) {
+            inputModuleCode.value = normalized;
+        }
+
+        updatePreview();
+        handleValidation(inputModuleCode);
+        toggleSaveButton();
+    };
+
+    const unwrapLookupRows = (payload) => {
+        if (Array.isArray(payload)) return payload;
+        if (Array.isArray(payload?.data)) return payload.data;
+        if (Array.isArray(payload?.Data)) return payload.Data;
+        return [];
+    };
+
+    const normalizeLookupOption = (item) => {
+        const value = item?.value ?? item?.Value ?? item?.code ?? item?.Code ?? item?.id ?? item?.Id ?? '';
+        const text = item?.name ?? item?.Name ?? item?.text ?? item?.Text ?? value;
+        return {
+            value: String(value || ''),
+            text: String(text || value || '')
+        };
+    };
+
+    const populateLookupSelect = async (select) => {
+        const lookupUrl = select?.dataset?.lookupUrl;
+        if (!select || !lookupUrl) return;
+
+        const selectedValue = select.dataset.selectedValue || select.value || '';
+        try {
+            const response = await fetch(lookupUrl);
+            if (!response.ok) throw new Error(`Lookup request failed: ${response.status}`);
+
+            const payload = await response.json();
+            const rows = unwrapLookupRows(payload)
+                .map(normalizeLookupOption)
+                .filter(option => option.value && option.text);
+
+            const placeholder = select.querySelector('option[value=""]')?.textContent || '';
+            select.innerHTML = '';
+            select.appendChild(new Option(placeholder, ''));
+            rows.forEach(option => {
+                select.appendChild(new Option(option.text, option.value, false, option.value === selectedValue));
+            });
+
+            if (selectedValue && !rows.some(option => option.value === selectedValue)) {
+                select.appendChild(new Option(selectedValue, selectedValue, true, true));
+            }
+
+            if (typeof jQuery !== 'undefined') {
+                jQuery(select).trigger('change.select2');
+            }
+        } catch (error) {
+            console.error('[ModuleCatalogForm] Lookup load failed.', error);
+            if (selectedValue && !select.querySelector(`option[value="${CSS.escape(selectedValue)}"]`)) {
+                select.appendChild(new Option(selectedValue, selectedValue, true, true));
+            }
+            window.showToast?.(L.ErrorOccurred || 'Error occurred.', 'error');
+        } finally {
+            toggleSaveButton();
+        }
+    };
+
+    const loadLookupOptions = async () => {
+        const lookupSelects = form?.querySelectorAll('select[data-lookup-url]') || [];
+        await Promise.all(Array.from(lookupSelects).map(populateLookupSelect));
+    };
+
     const initTooltips = () => {
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -92,6 +172,7 @@ const ModuleCatalogForm = (function () {
     const bindEvents = () => {
         if (inputModuleCode) {
             inputModuleCode.addEventListener('input', function () {
+                moduleCodeManuallyEdited = true;
                 const normalized = normalizeCode(this.value);
                 if (this.value !== normalized) {
                     this.value = normalized;
@@ -103,6 +184,9 @@ const ModuleCatalogForm = (function () {
             // Initial preview if editing
             updatePreview();
         }
+
+        inputDisplayName?.addEventListener('input', syncGeneratedModuleCode);
+        inputModuleName?.addEventListener('input', syncGeneratedModuleCode);
 
         if (form) {
             // Monitor all inputs for validation state
@@ -149,6 +233,7 @@ const ModuleCatalogForm = (function () {
         initSelect2();
         initTooltips();
         bindEvents();
+        loadLookupOptions();
     };
 
     return { init };

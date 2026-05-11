@@ -141,4 +141,58 @@
   <data name="NoFeatureSummary" xml:space="preserve"><value>Özellik özeti yok</value></data>
   <data name="NoTrialPeriod" xml:space="preserve"><value>Deneme süresi yok</value></data>
   <data name="CustomPricing" xml:space="preserve"><value>Özel fiyatlandırma</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="PlanSubscription" xml:space="preserve"><value>Plan / Abonelik</value></data>
+  <data name="NoActiveSubscriptionFound" xml:space="preserve"><value>Aktif abonelik bulunamadı</value></data>
+  <data name="NoActiveSubscriptionDescription" xml:space="preserve"><value>Bu tenant'ın ticari erişimini yönetmek için plan atayın veya deneme başlatın.</value></data>
+  <data name="AssignPlan" xml:space="preserve"><value>Plan Ata</value></data>
+  <data name="CurrentSubscription" xml:space="preserve"><value>Geçerli Abonelik</value></data>
+  <data name="CurrentPlan" xml:space="preserve"><value>Geçerli Plan</value></data>
+  <data name="CancelAtPeriodEnd" xml:space="preserve"><value>Dönem Sonunda İptal</value></data>
+  <data name="CurrentPeriodStart" xml:space="preserve"><value>Geçerli Dönem Başlangıcı</value></data>
+  <data name="CurrentPeriodEnd" xml:space="preserve"><value>Geçerli Dönem Bitişi</value></data>
+  <data name="SubscriptionHistory" xml:space="preserve"><value>Abonelik Geçmişi</value></data>
+  <data name="Plan" xml:space="preserve"><value>Plan</value></data>
+  <data name="PeriodStart" xml:space="preserve"><value>Dönem Başlangıcı</value></data>
+  <data name="PeriodEnd" xml:space="preserve"><value>Dönem Bitişi</value></data>
+  <data name="ChangedAt" xml:space="preserve"><value>Değişiklik Tarihi</value></data>
+  <data name="ChangedBy" xml:space="preserve"><value>Değiştiren</value></data>
+  <data name="Reason" xml:space="preserve"><value>Neden</value></data>
+  <data name="StartTrial" xml:space="preserve"><value>Deneme Başlat</value></data>
+  <data name="SelectPlan" xml:space="preserve"><value>Plan seçin</value></data>
+  <data name="Activate" xml:space="preserve"><value>Aktifleştir</value></data>
+  <data name="Renew" xml:space="preserve"><value>Yenile</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Neden zorunludur.</value></data>
+  <data name="CurrentPeriodEndRequired" xml:space="preserve"><value>Geçerli dönem bitiş tarihi zorunludur.</value></data>
+  <data name="SubscriptionHistorySubtitle" xml:space="preserve"><value>Abonelik süreci boyunca gerçekleşen durum değişiklikleri, yenilemeler ve iptal geçmişi.</value></data>
+  <data name="ModuleEntitlements" xml:space="preserve"><value>Modül Yetkileri</value></data>
+  <data name="ModuleEntitlementsDescription" xml:space="preserve"><value>Plan yansımalarını, eklentileri, denemeleri ve kiracıya özel override kurallarını yönetin.</value></data>
+  <data name="AddModuleEntitlement" xml:space="preserve"><value>Modül Yetkisi Ekle</value></data>
+  <data name="ModuleEntitlementFormDescription" xml:space="preserve"><value>Kiracıya özel modül erişim kuralı oluşturun.</value></data>
+  <data name="Module" xml:space="preserve"><value>Modül</value></data>
+  <data name="ModuleRequired" xml:space="preserve"><value>Modül zorunludur.</value></data>
+  <data name="ModuleCode" xml:space="preserve"><value>Modül Kodu</value></data>
+  <data name="ModuleName" xml:space="preserve"><value>Modül Adı</value></data>
+  <data name="Source" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="SourcePlan" xml:space="preserve"><value>Plan</value></data>
+  <data name="SourceManualOverride" xml:space="preserve"><value>Manuel Override</value></data>
+  <data name="SourceAddon" xml:space="preserve"><value>Eklenti</value></data>
+  <data name="SourceTrial" xml:space="preserve"><value>Deneme</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Sistem</value></data>
+  <data name="Enabled" xml:space="preserve"><value>Etkin</value></data>
+  <data name="Enable" xml:space="preserve"><value>Etkinleştir</value></data>
+  <data name="Disable" xml:space="preserve"><value>Devre Dışı Bırak</value></data>
+  <data name="ExpiryDate" xml:space="preserve"><value>Bitiş Tarihi</value></data>
+  <data name="EditExpiry" xml:space="preserve"><value>Bitişi Düzenle</value></data>
+  <data name="EffectiveAccess" xml:space="preserve"><value>Geçerli Erişim</value></data>
+  <data name="AccessActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="AccessNoAccess" xml:space="preserve"><value>Erişim Yok</value></data>
+  <data name="AccessExpired" xml:space="preserve"><value>Süresi Doldu</value></data>
+  <data name="AccessBlockedByOverride" xml:space="preserve"><value>Override ile Engellendi</value></data>
+  <data name="AccessEnabledByOverride" xml:space="preserve"><value>Override ile Etkin</value></data>
+  <data name="AccessSystemLocked" xml:space="preserve"><value>Sistem Kilitli</value></data>
+  <data name="LastUpdated" xml:space="preserve"><value>Son Güncelleme</value></data>
+  <data name="RemoveManualOverride" xml:space="preserve"><value>Manuel Override'ı Kaldır</value></data>
+  <data name="ManualOverrideReason" xml:space="preserve"><value>Manuel override</value></data>
 </root>

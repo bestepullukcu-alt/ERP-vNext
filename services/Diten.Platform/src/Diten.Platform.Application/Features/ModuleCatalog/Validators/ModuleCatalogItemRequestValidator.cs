@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Diten.Platform.Domain.Enums;
 using FluentValidation;
 
@@ -21,8 +22,13 @@ public abstract class ModuleCatalogItemRequestValidator<T> : AbstractValidator<T
             .Must(code =>
             {
                 var normalized = ModuleCatalogCodeNormalizer.Normalize(code);
-                return normalized.Length is >= 3 and <= 50;
-            }).WithMessage("ModuleCode must be between 3 and 50 characters after canonical normalization.");
+                return normalized.Length is >= 2 and <= 80;
+            }).WithMessage("ModuleCode must be between 2 and 80 characters after canonical normalization.")
+            .Must(code =>
+            {
+                var normalized = ModuleCatalogCodeNormalizer.Normalize(code);
+                return Regex.IsMatch(normalized, @"^[A-Z0-9]+(-[A-Z0-9]+)*$");
+            }).WithMessage("ModuleCode must be uppercase, dash-separated, and use only A-Z, 0-9, and single dashes.");
 
         RuleFor(x => moduleName(x))
             .NotEmpty().WithMessage("ModuleName is required.")

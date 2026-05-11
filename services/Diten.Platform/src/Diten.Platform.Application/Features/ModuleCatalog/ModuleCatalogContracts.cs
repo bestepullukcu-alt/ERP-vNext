@@ -10,7 +10,6 @@ public sealed record ModuleCatalogItemDto(
     string? Description,
     string Domain,
     string Service,
-    string? Category,
     string Status,
     string ModuleVersion,
     bool IsCoreModule,
@@ -26,7 +25,6 @@ public sealed record ModuleCatalogListItemDto(
     string DisplayName,
     string Domain,
     string Service,
-    string? Category,
     string Status,
     string ModuleVersion,
     bool IsCoreModule,
@@ -42,7 +40,6 @@ public sealed record CreateModuleCatalogItemRequest(
     string? Description,
     string Domain,
     string Service,
-    string? Category,
     string Status,
     string ModuleVersion,
     bool IsCoreModule,
@@ -56,7 +53,6 @@ public sealed record UpdateModuleCatalogItemRequest(
     string? Description,
     string Domain,
     string Service,
-    string? Category,
     string Status,
     string ModuleVersion,
     bool IsCoreModule,
@@ -67,7 +63,6 @@ public sealed record ModuleCatalogFilterRequest(
     string? Search,
     string? Domain,
     string? Service,
-    string? Category,
     string? Status,
     bool? IsCoreModule,
     bool? IsTenantAssignable,
@@ -79,11 +74,11 @@ public static class ModuleCatalogMapper
 {
     public static ModuleCatalogItemDto ToDto(Diten.Platform.Domain.Entities.ModuleCatalogItem item) =>
         new(item.Id, item.ModuleCode, item.ModuleName, item.DisplayName, item.Description, item.Domain, item.Service,
-            item.Category, item.Status.ToString(), item.ModuleVersion, item.IsCoreModule, item.IsTenantAssignable,
+            item.Status.ToString(), item.ModuleVersion, item.IsCoreModule, item.IsTenantAssignable,
             item.SortOrder, item.CreatedAt, item.UpdatedAt);
 
     public static ModuleCatalogListItemDto ToListDto(Diten.Platform.Domain.Entities.ModuleCatalogItem item) =>
-        new(item.Id, item.ModuleCode, item.ModuleName, item.DisplayName, item.Domain, item.Service, item.Category,
+        new(item.Id, item.ModuleCode, item.ModuleName, item.DisplayName, item.Domain, item.Service,
             item.Status.ToString(), item.ModuleVersion, item.IsCoreModule, item.IsTenantAssignable, item.SortOrder,
             item.CreatedAt, item.UpdatedAt);
 

@@ -429,4 +429,7 @@
   <data name="User" xml:space="preserve">
     <value>مستخدم</value>
   </data>
+  <data name="SubscriptionPlans" xml:space="preserve">
+    <value>خطط الاشتراك</value>
+  </data>
 </root>

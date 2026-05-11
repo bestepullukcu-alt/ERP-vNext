@@ -4,6 +4,9 @@ using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.SubscriptionPlans;
 using Diten.Platform.Application.Features.SubscriptionPlans.Commands;
 using Diten.Platform.Application.Features.SubscriptionPlans.Queries;
+using Diten.Platform.Application.Features.SubscriptionFeatures;
+using Diten.Platform.Application.Features.SubscriptionFeatures.Commands;
+using Diten.Platform.Application.Features.SubscriptionFeatures.Queries;
 using Diten.Platform.Application.Features.Tenants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -36,6 +39,14 @@ public sealed class SubscriptionPlansController : CustomBaseController
     public async Task<IActionResult> GetActivePlans(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetActiveSubscriptionPlansQuery(), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("by-module/{moduleKey}")]
+    [HasPermission("Platform.SubscriptionPlans.Read")]
+    public async Task<IActionResult> GetByIncludedModuleKey(string moduleKey, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetSubscriptionPlansByModuleKeyQuery(moduleKey), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -84,6 +95,22 @@ public sealed class SubscriptionPlansController : CustomBaseController
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeactivateSubscriptionPlanCommand(id), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("{id:guid}/features")]
+    [HasPermission("Platform.SubscriptionFeatures.Read")]
+    public async Task<IActionResult> GetFeatures(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetPlanFeatureMappingsQuery(id), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPut("{id:guid}/features")]
+    [HasPermission("Platform.SubscriptionFeatures.ManageMappings")]
+    public async Task<IActionResult> UpdateFeatures(Guid id, [FromBody] UpdatePlanFeatureMappingsRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new UpdatePlanFeatureMappingsCommand(id, request), ct);
         return CreateActionResultInstance(response);
     }
 }

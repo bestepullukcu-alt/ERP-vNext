@@ -13,7 +13,6 @@
   <data name="DisplayName" xml:space="preserve"><value>显示名称</value></data>
   <data name="Domain" xml:space="preserve"><value>领域</value></data>
   <data name="Service" xml:space="preserve"><value>服务</value></data>
-  <data name="Category" xml:space="preserve"><value>类别</value></data>
   <data name="Version" xml:space="preserve"><value>版本</value></data>
   <data name="Assignable" xml:space="preserve"><value>可分配给租户</value></data>
   <data name="Core" xml:space="preserve"><value>核心模块</value></data>
@@ -36,7 +35,7 @@
   <data name="HelpTextCoreModule" xml:space="preserve"><value>系统级模块。无法删除。</value></data>
   <data name="HelpTextTenantAssignable" xml:space="preserve"><value>可以在未来的分配流程中分配给租户。</value></data>
   <data name="InvalidVersionFormat" xml:space="preserve"><value>版本必须采用 1.0.0 格式。</value></data>
-  <data name="InvalidModuleCode" xml:space="preserve"><value>必须至少 3 个字符。</value></data>
+  <data name="InvalidModuleCode" xml:space="preserve"><value>请使用 2-80 个字符：大写字母、数字和单个连字符。</value></data>
   <data name="RequiredField" xml:space="preserve"><value>此字段是必填的。</value></data>
   <data name="CoreModuleCannotBeDeleted" xml:space="preserve"><value>核心模块无法删除。</value></data>
   <data name="FinalCodePreview" xml:space="preserve"><value>最终代码</value></data>
@@ -73,4 +72,80 @@
   <data name="ModulePagesDtInfoEmpty" xml:space="preserve"><value>正在显示 0 / 0 条记录</value></data>
   <data name="ModulePagesDtInfoFiltered" xml:space="preserve"><value></value></data>
   <data name="PageSaved" xml:space="preserve"><value>Page descriptor saved.</value></data>
+  <data name="Navigation" xml:space="preserve"><value>Navigation</value></data>
+  <data name="ParentPageCode" xml:space="preserve"><value>Parent Page Code</value></data>
+  <data name="NavigationVisible" xml:space="preserve"><value>Visible in navigation</value></data>
+  <data name="PageDetailsTitle" xml:space="preserve"><value>Page Details</value></data>
+  <data name="ActionsTab" xml:space="preserve"><value>Actions</value></data>
+  <data name="ActionsDescription" xml:space="preserve"><value>Manage page action permissions.</value></data>
+  <data name="AddAction" xml:space="preserve"><value>Add Action</value></data>
+  <data name="ActionCode" xml:space="preserve"><value>Action Code</value></data>
+  <data name="PermissionKey" xml:space="preserve"><value>Permission Key</value></data>
+  <data name="ActionType" xml:space="preserve"><value>Action Type</value></data>
+  <data name="ToolbarAction" xml:space="preserve"><value>Toolbar action</value></data>
+  <data name="RowAction" xml:space="preserve"><value>Row action</value></data>
+  <data name="DangerousAction" xml:space="preserve"><value>Dangerous action</value></data>
+  <data name="SubscriptionAssignmentsTitle" xml:space="preserve"><value>Plan Entitlements</value></data>
+  <data name="SubscriptionAssignmentsDescription" xml:space="preserve"><value>Plans that include this module through subscription entitlements.</value></data>
+  <data name="NoSubscriptionAssignments" xml:space="preserve"><value>This module is not included in any subscription plan.</value></data>
+  <data name="PlanCode" xml:space="preserve"><value>Plan Code</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Plan Name</value></data>
+  <data name="Default" xml:space="preserve"><value>Default</value></data>
+  <data name="Trial" xml:space="preserve"><value>Trial</value></data>
+  <data name="AssignmentsErrorState" xml:space="preserve"><value>Assignment data could not be loaded.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="AssignmentPlansCount" xml:space="preserve"><value>Included in Plans</value></data>
+  <data name="AssignmentTenantsCount" xml:space="preserve"><value>Tenant Assignments</value></data>
+  <data name="AssignmentEnabledTenantsCount" xml:space="preserve"><value>Enabled Tenants</value></data>
+  <data name="AssignmentManualOverrideCount" xml:space="preserve"><value>Manual Overrides</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>All statuses</value></data>
+  <data name="EntitlementIncluded" xml:space="preserve"><value>Included</value></data>
+  <data name="PlanStatus" xml:space="preserve"><value>Plan Status</value></data>
+  <data name="EntitlementStatus" xml:space="preserve"><value>Entitlement Status</value></data>
+  <data name="IncludedByDefault" xml:space="preserve"><value>Included by Default</value></data>
+  <data name="EffectiveDates" xml:space="preserve"><value>Effective Dates</value></data>
+  <data name="LastUpdated" xml:space="preserve"><value>Last Updated</value></data>
+  <data name="TenantAssignmentsTitle" xml:space="preserve"><value>Tenant Assignments</value></data>
+  <data name="TenantAssignmentsDescription" xml:space="preserve"><value>Tenants that currently have this module assigned.</value></data>
+  <data name="TenantAssignmentsDegraded" xml:space="preserve"><value>Tenant assignment data is temporarily unavailable.</value></data>
+  <data name="NoTenantAssignments" xml:space="preserve"><value>This module is not assigned to any tenant.</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>Source</value></data>
+  <data name="AssignmentStatus" xml:space="preserve"><value>Assignment Status</value></data>
+  <data name="AllSources" xml:space="preserve"><value>All sources</value></data>
+  <data name="AssignmentSourcePlan" xml:space="preserve"><value>Plan</value></data>
+  <data name="AssignmentSourceManual" xml:space="preserve"><value>Manual</value></data>
+  <data name="AssignmentSourceTrial" xml:space="preserve"><value>Trial</value></data>
+  <data name="AssignmentSourceOverride" xml:space="preserve"><value>Override</value></data>
+  <data name="AssignmentSourceSystem" xml:space="preserve"><value>System</value></data>
+  <data name="AssignmentStatusEnabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="AssignmentStatusDisabled" xml:space="preserve"><value>Disabled</value></data>
+  <data name="AssignmentStatusSuspended" xml:space="preserve"><value>Suspended</value></data>
+  <data name="AssignmentStatusPending" xml:space="preserve"><value>Pending</value></data>
+  <data name="AssignmentStatusExpired" xml:space="preserve"><value>Expired</value></data>
+  <data name="TenantName" xml:space="preserve"><value>Tenant Name</value></data>
+  <data name="TenantCode" xml:space="preserve"><value>Tenant Code</value></data>
+  <data name="TenantStatus" xml:space="preserve"><value>Tenant Status</value></data>
+  <data name="SourcePlan" xml:space="preserve"><value>Source Plan</value></data>
+  <data name="AssignedBy" xml:space="preserve"><value>Assigned By</value></data>
+  <data name="PlanUnitSingular" xml:space="preserve"><value>plan</value></data>
+  <data name="PlanUnitPlural" xml:space="preserve"><value>plans</value></data>
+  <data name="AssignedTenantUnitSingular" xml:space="preserve"><value>assigned tenant</value></data>
+  <data name="AssignedTenantUnitPlural" xml:space="preserve"><value>assigned tenants</value></data>
+  <data name="EnabledTenantUnitSingular" xml:space="preserve"><value>enabled tenant</value></data>
+  <data name="EnabledTenantUnitPlural" xml:space="preserve"><value>enabled tenants</value></data>
+  <data name="OverrideUnitSingular" xml:space="preserve"><value>override</value></data>
+  <data name="OverrideUnitPlural" xml:space="preserve"><value>overrides</value></data>
+  <data name="DataUnavailable" xml:space="preserve"><value>Data unavailable</value></data>
+  <data name="PlanEntitlementTenantReach" xml:space="preserve"><value>{0} tenants will receive this module</value></data>
+  <data name="PlanEntitlementActiveDescription" xml:space="preserve"><value>Subscription plan entitlement grants this module</value></data>
+  <data name="PlanEntitlementInactiveDescription" xml:space="preserve"><value>Module is included but currently inactive</value></data>
+  <data name="PlanEntitlementSource" xml:space="preserve"><value>Subscription Plan</value></data>
+  <data name="IncludedSince" xml:space="preserve"><value>Included since</value></data>
+  <data name="FromSubscriptionPlans" xml:space="preserve"><value>From Subscription Plans</value></data>
+  <data name="ManualOverrides" xml:space="preserve"><value>Manual Overrides</value></data>
+  <data name="BlockedSuspended" xml:space="preserve"><value>Blocked / Suspended</value></data>
+  <data name="ManualAssignment" xml:space="preserve"><value>Manual Assignment</value></data>
+  <data name="ManualDisabled" xml:space="preserve"><value>Manual Disabled</value></data>
+  <data name="TenantSuspended" xml:space="preserve"><value>Tenant Suspended</value></data>
+  <data name="DegradedCount" xml:space="preserve"><value>Unavailable</value></data>
 </root>

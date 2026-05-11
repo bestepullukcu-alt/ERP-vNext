@@ -20,7 +20,6 @@ public sealed record ModuleCatalogQuery(
     string? Search,
     string? Domain,
     string? Service,
-    string? Category,
     IReadOnlyCollection<ModuleCatalogStatus>? Statuses,
     bool? IsCoreModule,
     bool? IsTenantAssignable,

@@ -32,7 +32,6 @@ public sealed class CreateModuleCatalogItemCommandHandler : IRequestHandler<Crea
             Description = string.IsNullOrWhiteSpace(request.Request.Description) ? null : request.Request.Description.Trim(),
             Domain = request.Request.Domain.Trim(),
             Service = request.Request.Service.Trim(),
-            Category = string.IsNullOrWhiteSpace(request.Request.Category) ? null : request.Request.Category.Trim(),
             Status = Enum.Parse<ModuleCatalogStatus>(request.Request.Status, ignoreCase: false),
             ModuleVersion = request.Request.ModuleVersion.Trim(),
             IsCoreModule = request.Request.IsCoreModule,

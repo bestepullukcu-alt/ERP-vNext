@@ -58,7 +58,10 @@
             plan.isTrialPlan ? badge(l10n.Trial || 'Trial', 'bg-label-info') : ''
         ].filter(Boolean).join('');
 
-        const features = Array.isArray(plan.includedFeatures) ? plan.includedFeatures.slice(0, 5) : [];
+        const entitlementFeatures = Array.isArray(plan.entitlementFeatures) ? plan.entitlementFeatures.slice(0, 5) : [];
+        const features = entitlementFeatures.length
+            ? entitlementFeatures
+            : (Array.isArray(plan.includedFeatures) ? plan.includedFeatures.slice(0, 5) : []);
         const modules = Array.isArray(plan.includedModuleKeys) ? plan.includedModuleKeys.slice(0, 3).map((x) => `${l10n.Modules || 'Modules'}: ${x}`) : [];
         const quotas = plan.defaultQuotas ? Object.keys(plan.defaultQuotas).slice(0, 3).map((k) => `${k}: ${plan.defaultQuotas[k]}`) : [];
         const featureItems = features.concat(modules, quotas).slice(0, 7);
@@ -162,7 +165,30 @@
         const json = await res.json();
         const data = json.data || json.Data || json;
         const items = data.items || data.Items || [];
-        return items;
+        const plansWithEntitlements = await Promise.all(items.map(async (plan) => {
+            const planId = plan.id || plan.Id;
+            if (!planId) return plan;
+
+            try {
+                const featureRes = await fetch(`/Platform/SubscriptionPlans/api/${planId}/features`, { credentials: 'same-origin' });
+                if (!featureRes.ok) return plan;
+
+                const featureJson = await featureRes.json();
+                const mappings = featureJson.data || featureJson.Data || [];
+                const entitlementFeatures = Array.isArray(mappings)
+                    ? mappings
+                        .filter((mapping) => (mapping.availabilityStatus || mapping.AvailabilityStatus) === 'Included')
+                        .map((mapping) => mapping.featureDisplayName || mapping.FeatureDisplayName || mapping.featureCode || mapping.FeatureCode)
+                        .filter(Boolean)
+                    : [];
+
+                return Object.assign({}, plan, { entitlementFeatures });
+            } catch {
+                return plan;
+            }
+        }));
+
+        return plansWithEntitlements;
     };
 
     const togglePlan = async (id, action) => {

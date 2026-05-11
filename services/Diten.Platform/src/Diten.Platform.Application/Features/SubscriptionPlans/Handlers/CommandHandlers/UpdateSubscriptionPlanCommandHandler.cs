@@ -53,7 +53,7 @@ public sealed class UpdateSubscriptionPlanCommandHandler : IRequestHandler<Updat
         plan.TrialDurationDays = request.Request.IsTrialPlan ? request.Request.TrialDurationDays : null;
         plan.DefaultQuotas = request.Request.DefaultQuotas is null ? null : new Dictionary<string, decimal>(request.Request.DefaultQuotas, StringComparer.OrdinalIgnoreCase);
         plan.IncludedFeatures = request.Request.IncludedFeatures?.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? [];
-        plan.IncludedModuleKeys = request.Request.IncludedModuleKeys?.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? [];
+        plan.IncludedModuleKeys = request.Request.IncludedModuleKeys?.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim().ToUpperInvariant()).Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? [];
 
         await _repository.UpdateAsync(plan, ct);
         _logger.LogInformation("AUDIT SubscriptionPlanUpdated PlanId={PlanId} Code={Code}", plan.Id, plan.Code);

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="SubscriptionFeaturesTitle" xml:space="preserve"><value>Abonelik Ozellikleri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>SaaS ozellik katalogunu ve plan uygunlugunu yonetin.</value></data>
+  <data name="CreateFeature" xml:space="preserve"><value>Ozellik Olustur</value></data>
+  <data name="EditFeature" xml:space="preserve"><value>Ozellik Duzenle</value></data>
+  <data name="CreateCategory" xml:space="preserve"><value>Kategori Olustur</value></data>
+  <data name="FeatureCode" xml:space="preserve"><value>Ozellik Kodu</value></data>
+  <data name="FeatureSlug" xml:space="preserve"><value>Ozellik Slug</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Gorunen Ad</value></data>
+  <data name="Description" xml:space="preserve"><value>Aciklama</value></data>
+  <data name="Category" xml:space="preserve"><value>Kategori</value></data>
+  <data name="AllCategories" xml:space="preserve"><value>Tum Kategoriler</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>Tum Durumlar</value></data>
+  <data name="Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>Kullanimdan Kalkan</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arsivli</value></data>
+  <data name="IsCoreFeature" xml:space="preserve"><value>Cekirdek Ozellik</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Siralama</value></data>
+  <data name="OptionalFeatureFlagKey" xml:space="preserve"><value>Feature Flag Anahtari</value></data>
+  <data name="AvailableInPlans" xml:space="preserve"><value>Planlarda Kullanilabilirlik</value></data>
+  <data name="Included" xml:space="preserve"><value>Dahil</value></data>
+  <data name="AddOn" xml:space="preserve"><value>Eklenti</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>Uygun Degil</value></data>
+  <data name="Preview" xml:space="preserve"><value>On Izleme</value></data>
+  <data name="IncludedPlans" xml:space="preserve"><value>Dahil Planlar</value></data>
+  <data name="NoPlans" xml:space="preserve"><value>Aktif plan bulunamadi.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Henuz abonelik ozelligi olusturulmadi.</value></data>
+  <data name="NoResultsState" xml:space="preserve"><value>Gecerli filtrelerle eslesen ozellik yok.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
+  <data name="CategoryRequiredForActive" xml:space="preserve"><value>Durum Active iken kategori zorunludur.</value></data>
+  <data name="ArchivedFeatureCannotBeMapped" xml:space="preserve"><value>Arsivli ozellik yeni plana baglanamaz.</value></data>
+  <data name="DataChangedReloadRequired" xml:space="preserve"><value>Duzenleme sirasinda veri degisti. Yeniden yukleme gerekir.</value></data>
+  <data name="Archive" xml:space="preserve"><value>Arsivle</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Pasif Et</value></data>
+  <data name="CannotMapArchivedTooltip" xml:space="preserve"><value>Arsivli ozelliklere yeni plan eslemesi yapilamaz.</value></data>
+  <data name="CannotArchiveTooltip" xml:space="preserve"><value>Bu ozellik zaten arsivli.</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>Bu islem icin yetkiniz yok.</value></data>
+  <data name="CategoryCode" xml:space="preserve"><value>Kategori Kodu</value></data>
+</root>

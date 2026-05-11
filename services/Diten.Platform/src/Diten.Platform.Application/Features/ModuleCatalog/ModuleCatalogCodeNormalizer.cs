@@ -12,11 +12,15 @@ public static partial class ModuleCatalogCodeNormalizer
         }
 
         var normalized = moduleCode.Trim().ToUpperInvariant();
+        normalized = InvalidCharacterRegex().Replace(normalized, "-");
         normalized = SeparatorRegex().Replace(normalized, "-");
         normalized = normalized.Trim('-');
         return normalized;
     }
 
-    [GeneratedRegex(@"[\s_\\-]+", RegexOptions.Compiled)]
+    [GeneratedRegex(@"[^A-Z0-9]+", RegexOptions.Compiled)]
+    private static partial Regex InvalidCharacterRegex();
+
+    [GeneratedRegex(@"-+", RegexOptions.Compiled)]
     private static partial Regex SeparatorRegex();
 }
