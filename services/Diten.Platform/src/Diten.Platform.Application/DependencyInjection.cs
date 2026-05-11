@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Contracts.Behaviors;
+using Diten.Platform.Application.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,7 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(assembly);
         services.AddAutoMapper(_ => { }, assembly);
+        services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
 
         return services;
     }

@@ -113,6 +113,23 @@ public sealed class SubscriptionPlanRepository : GlobalRepository<SubscriptionPl
             .ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<SubscriptionPlan>> GetByIncludedModuleKeyAsync(string moduleKey, CancellationToken ct = default)
+    {
+        var normalized = (moduleKey ?? string.Empty).Trim().ToUpperInvariant();
+        if (normalized.Length == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<SubscriptionPlan>.Filter.And(
+            ExecutionFilter,
+            Builders<SubscriptionPlan>.Filter.AnyEq(x => x.IncludedModuleKeys, normalized));
+
+        return await Collection.Find(filter)
+            .Sort(Builders<SubscriptionPlan>.Sort.Ascending(x => x.SortOrder).Ascending(x => x.Code))
+            .ToListAsync(ct);
+    }
+
     public async Task<SubscriptionPlanSummary> GetSummaryAsync(CancellationToken ct = default)
     {
         var total = await Collection.CountDocumentsAsync(ExecutionFilter, cancellationToken: ct);

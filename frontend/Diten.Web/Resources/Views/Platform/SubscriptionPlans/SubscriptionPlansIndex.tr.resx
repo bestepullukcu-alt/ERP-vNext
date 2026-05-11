@@ -144,5 +144,59 @@
   <data name="StatusAndRulesSection" xml:space="preserve">
     <value>Durum &amp; Kurallar</value>
   </data>
+  <data name="FeatureSearchPlaceholder" xml:space="preserve">
+    <value>Ozellik adi, kodu veya slug ile ara</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Kategori</value>
+  </data>
+  <data name="AllCategories" xml:space="preserve">
+    <value>Tum kategoriler</value>
+  </data>
+  <data name="Availability" xml:space="preserve">
+    <value>Kullanilabilirlik</value>
+  </data>
+  <data name="AllFeatures" xml:space="preserve">
+    <value>Tum ozellikler</value>
+  </data>
+  <data name="Included" xml:space="preserve">
+    <value>Dahil</value>
+  </data>
+  <data name="AddOn" xml:space="preserve">
+    <value>Ek paket</value>
+  </data>
+  <data name="Preview" xml:space="preserve">
+    <value>On izleme</value>
+  </data>
+  <data name="NotAvailable" xml:space="preserve">
+    <value>Kullanilamaz</value>
+  </data>
+  <data name="NoFeaturesAvailable" xml:space="preserve">
+    <value>Aktif abonelik ozelligi bulunamadi.</value>
+  </data>
+  <data name="NoModulesAvailable" xml:space="preserve">
+    <value>Module catalog kaydi bulunamadi.</value>
+  </data>
+  <data name="SelectModulesPlaceholder" xml:space="preserve">
+    <value>Modul kodu, ad, domain veya servis ara</value>
+  </data>
+  <data name="AllModules" xml:space="preserve">
+    <value>Tum moduller</value>
+  </data>
+  <data name="StatusDraft" xml:space="preserve">
+    <value>Taslak</value>
+  </data>
+  <data name="StatusActive" xml:space="preserve">
+    <value>Aktif</value>
+  </data>
+  <data name="StatusInactive" xml:space="preserve">
+    <value>Pasif</value>
+  </data>
+  <data name="StatusDeprecated" xml:space="preserve">
+    <value>Kullanim disi</value>
+  </data>
+  <data name="Archived" xml:space="preserve">
+    <value>Arsivlendi</value>
+  </data>
 </root>
 

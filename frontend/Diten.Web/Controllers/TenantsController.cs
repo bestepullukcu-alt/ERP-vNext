@@ -168,6 +168,92 @@ public sealed class TenantsController : Controller
         return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/subscription-plans/active");
     }
 
+    [HttpGet("api/{id:guid}/commercial/subscription")]
+    public Task<IActionResult> CommercialSubscriptionProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/tenants/{id}/commercial/subscription");
+    }
+
+    [HttpGet("api/{id:guid}/commercial/subscription/history")]
+    public Task<IActionResult> CommercialSubscriptionHistoryProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/tenants/{id}/commercial/subscription/history");
+    }
+
+    [HttpGet("api/{id:guid}/commercial/module-entitlements")]
+    public Task<IActionResult> ModuleEntitlementsProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/tenants/{id}/commercial/module-entitlements");
+    }
+
+    [HttpGet("api/{id:guid}/commercial/module-entitlements/available-modules")]
+    public Task<IActionResult> AvailableModuleEntitlementsProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/tenants/{id}/commercial/module-entitlements/available-modules");
+    }
+
+    [HttpPost("api/{id:guid}/commercial/module-entitlements")]
+    public async Task<IActionResult> AddModuleEntitlementProxy(Guid id)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/tenants/{id}/commercial/module-entitlements", body);
+    }
+
+    [HttpPost("api/{id:guid}/commercial/module-entitlements/{entitlementId:guid}/enable")]
+    public async Task<IActionResult> EnableModuleEntitlementProxy(Guid id, Guid entitlementId)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/tenants/{id}/commercial/module-entitlements/{entitlementId}/enable", body);
+    }
+
+    [HttpPost("api/{id:guid}/commercial/module-entitlements/disable")]
+    public async Task<IActionResult> DisableModuleEntitlementProxy(Guid id)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/tenants/{id}/commercial/module-entitlements/disable", body);
+    }
+
+    [HttpPatch("api/{id:guid}/commercial/module-entitlements/{entitlementId:guid}/expiry")]
+    public async Task<IActionResult> UpdateModuleEntitlementExpiryProxy(Guid id, Guid entitlementId)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Patch, $"{_gatewayUrl}/api/platform/tenants/{id}/commercial/module-entitlements/{entitlementId}/expiry", body);
+    }
+
+    [HttpDelete("api/{id:guid}/commercial/module-entitlements/{entitlementId:guid}/manual-override")]
+    public async Task<IActionResult> RemoveModuleEntitlementOverrideProxy(Guid id, Guid entitlementId)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/platform/tenants/{id}/commercial/module-entitlements/{entitlementId}/manual-override", body);
+    }
+
+    [HttpPost("api/{id:guid}/commercial/subscription")]
+    public async Task<IActionResult> AssignCommercialSubscriptionProxy(Guid id)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/tenants/{id}/commercial/subscription", body);
+    }
+
+    [HttpPost("api/{id:guid}/commercial/subscription/{subscriptionId:guid}/{actionName}")]
+    public async Task<IActionResult> CommercialSubscriptionActionProxy(Guid id, Guid subscriptionId, string actionName)
+    {
+        var allowed = new[] { "activate", "cancel", "renew", "suspend", "reactivate" };
+        if (!allowed.Contains(actionName, StringComparer.OrdinalIgnoreCase))
+        {
+            return NotFound();
+        }
+
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/tenants/{id}/commercial/subscription/{subscriptionId}/{actionName}", body);
+    }
+
     [HttpGet("api/lookups/{**everything}")]
     public Task<IActionResult> LookupsProxy(string everything)
     {

@@ -18,9 +18,11 @@ const ModuleCatalogPages = (function () {
         displayName: document.getElementById('modulePageDisplayName'),
         routePath: document.getElementById('modulePageRoutePath'),
         requiredPermission: document.getElementById('modulePageRequiredPermission'),
+        parentPageCode: document.getElementById('modulePageParentPageCode'),
         pageType: document.getElementById('modulePagePageType'),
         status: document.getElementById('modulePageStatus'),
         sortOrder: document.getElementById('modulePageSortOrder'),
+        isNavigationVisible: document.getElementById('modulePageIsNavigationVisible'),
         description: document.getElementById('modulePageDescription')
     };
     const preview = document.querySelector('#modulePageCodePreview code');
@@ -30,6 +32,7 @@ const ModuleCatalogPages = (function () {
     let offcanvas;
     let isTableInitialized = false;
     let hasAttemptedSubmit = false;
+    let requiredPermissionManuallyEdited = false;
 
     const normalizePageCode = (value) => (value || '')
         .toUpperCase()
@@ -73,7 +76,7 @@ const ModuleCatalogPages = (function () {
         const raw = (rawValue || '').trim();
         return raw.startsWith('/')
             && !/\s/.test(raw)
-            && /^\/[A-Z][A-Za-z0-9-]*\/[A-Z][A-Za-z0-9-]*$/.test(routePath);
+            && /^\/[A-Z][A-Za-z0-9-]*(?:\/(?:[A-Z][A-Za-z0-9-]*|\{[A-Za-z0-9_]+\}|:[A-Za-z0-9_]+))+$/.test(routePath);
     };
 
     const isValidPageCode = (pageCode) => pageCode.length >= 3
@@ -165,6 +168,9 @@ const ModuleCatalogPages = (function () {
         fields.status.value = 'Draft';
         fields.pageType.value = 'List';
         fields.sortOrder.value = '0';
+        fields.parentPageCode.value = '';
+        fields.isNavigationVisible.checked = true;
+        requiredPermissionManuallyEdited = false;
         hasAttemptedSubmit = false;
         Object.values(fields).forEach((field) => field?.setCustomValidity?.(''));
         form?.classList.remove('was-validated');
@@ -200,7 +206,7 @@ const ModuleCatalogPages = (function () {
     };
 
     const updatePermission = () => {
-        if (!fields.requiredPermission) return;
+        if (!fields.requiredPermission || requiredPermissionManuallyEdited) return;
         const permission = generatePermission();
         fields.requiredPermission.value = permission;
         setGeneratedFieldState(fields.requiredPermission, isValidPermission(permission));
@@ -217,9 +223,11 @@ const ModuleCatalogPages = (function () {
         displayName: fields.displayName.value.trim(),
         routePath: normalizeRoutePath(fields.routePath.value),
         requiredPermission: normalizePermission(fields.requiredPermission.value) || null,
+        parentPageCode: normalizePageCode(fields.parentPageCode.value) || null,
         pageType: fields.pageType.value,
         status: fields.status.value,
         sortOrder: Number.parseInt(fields.sortOrder.value || '0', 10),
+        isNavigationVisible: fields.isNavigationVisible.checked,
         description: fields.description.value.trim() || null
     });
 
@@ -254,6 +262,10 @@ const ModuleCatalogPages = (function () {
         fields.pageType.value = data.pageType || data.PageType || 'List';
         fields.status.value = data.status || data.Status || 'Draft';
         fields.sortOrder.value = data.sortOrder ?? data.SortOrder ?? 0;
+        fields.parentPageCode.value = data.parentPageCode || data.ParentPageCode || '';
+        fields.isNavigationVisible.checked = (data.isNavigationVisible ?? data.IsNavigationVisible ?? true) === true;
+        fields.requiredPermission.value = data.requiredPermission || data.RequiredPermission || '';
+        requiredPermissionManuallyEdited = Boolean(fields.requiredPermission.value);
         fields.description.value = data.description || data.Description || '';
         syncGeneratedFields();
         offcanvasTitle.textContent = L.EditPage || 'Edit Page';
@@ -468,6 +480,7 @@ const ModuleCatalogPages = (function () {
                 { data: 'pageType', render: pageTypeBadge },
                 { data: 'status', render: statusBadge },
                 { data: 'sortOrder', className: 'text-end', defaultContent: '0' },
+                { data: 'isNavigationVisible', className: 'text-center', render: (data) => data ? '<i class="bx bx-check text-success fs-4"></i>' : '<i class="bx bx-x text-danger fs-4"></i>' },
                 {
                     data: null,
                     orderable: false,
@@ -477,6 +490,11 @@ const ModuleCatalogPages = (function () {
                         const id = row.id || row.Id;
                         const status = row.status || row.Status;
                         const actions = [
+                            {
+                                className: 'btn-page-view',
+                                text: L.Details || 'Details',
+                                attrs: { 'data-id': id, 'aria-label': L.Details || '' }
+                            },
                             {
                                 className: 'btn-page-edit',
                                 text: L.Edit || '',
@@ -546,6 +564,9 @@ const ModuleCatalogPages = (function () {
         $(tableEl).on('click', '.btn-page-edit', function () {
             openEdit(this.dataset.id);
         });
+        $(tableEl).on('click', '.btn-page-view', function () {
+            if (this.dataset.id) window.location.href = `/Platform/ModuleCatalog/PageDetails/${encodeURIComponent(this.dataset.id)}`;
+        });
         $(tableEl).on('click', '.btn-page-activate', function () {
             setActive(this, true);
         });
@@ -570,6 +591,14 @@ const ModuleCatalogPages = (function () {
             updatePermission();
         });
         fields.pageType?.addEventListener('change', updatePermission);
+        fields.requiredPermission?.addEventListener('input', () => {
+            requiredPermissionManuallyEdited = true;
+            fields.requiredPermission.setCustomValidity('');
+        });
+        fields.requiredPermission?.addEventListener('blur', () => {
+            fields.requiredPermission.value = normalizePermission(fields.requiredPermission.value);
+            setGeneratedFieldState(fields.requiredPermission, isValidPermission(fields.requiredPermission.value));
+        });
         form?.addEventListener('submit', save);
     };
 

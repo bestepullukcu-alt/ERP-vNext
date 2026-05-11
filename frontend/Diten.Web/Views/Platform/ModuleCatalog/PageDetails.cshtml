@@ -1,0 +1,189 @@
+@model Diten.Web.Models.ModuleCatalog.ModulePageDescriptorViewModel
+@using Diten.Web.Views.Platform.ModuleCatalog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ModuleCatalogIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["PageDetailsTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+}
+
+<div class="module-page-details">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@Localizer["PageDetailsTitle"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/Platform/ModuleCatalog">@Localizer["ModuleCatalogTitle"]</a></li>
+                    <li class="breadcrumb-item"><a href="javascript:history.back()">@Localizer["PagesTab"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Model.DisplayName</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="javascript:history.back()" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header p-3">
+            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#page-general-tab" type="button" role="tab">
+                        <i class="bx bx-info-circle me-1 wc-tab-icon"></i>@Localizer["GeneralTab"]
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#page-permission-tab" type="button" role="tab">
+                        <i class="bx bx-lock-alt me-1 wc-tab-icon"></i>@Localizer["PermissionsTab"]
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#page-actions-tab" type="button" role="tab">
+                        <i class="bx bx-bolt-circle me-1 wc-tab-icon"></i>@Localizer["ActionsTab"]
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="tab-content p-0 bg-transparent shadow-none">
+        <div class="tab-pane fade show active" id="page-general-tab" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-12 col-lg-8">
+                    <section class="card backbone-preview-section p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                        <div class="row g-4">
+                            <div class="col-12 col-md-6"><div class="backbone-preview-label">@Localizer["PageCode"]</div><div class="backbone-preview-value mt-1"><code>@Model.PageCode</code></div></div>
+                            <div class="col-12 col-md-6"><div class="backbone-preview-label">@Localizer["ModuleCode"]</div><div class="backbone-preview-value mt-1"><code>@Model.ModuleCode</code></div></div>
+                            <div class="col-12"><div class="backbone-preview-label">@Localizer["DisplayName"]</div><div class="backbone-preview-value mt-1">@Model.DisplayName</div></div>
+                            <div class="col-12"><div class="backbone-preview-label">@Localizer["RoutePath"]</div><div class="backbone-preview-value mt-1"><code>@Model.RoutePath</code></div></div>
+                        </div>
+                    </section>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <section class="card backbone-preview-section p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+                        <div class="row g-4">
+                            <div class="col-12"><div class="backbone-preview-label">@Localizer["PageType"]</div><div class="backbone-preview-value mt-1">@Model.PageType</div></div>
+                            <div class="col-12"><div class="backbone-preview-label">@SharedLocalizer["Status"]</div><div class="backbone-preview-value mt-1">@Model.Status</div></div>
+                            <div class="col-12"><div class="backbone-preview-label">@Localizer["ParentPageCode"]</div><div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.ParentPageCode) ? "-" : Model.ParentPageCode)</div></div>
+                            <div class="col-12"><div class="backbone-preview-label">@Localizer["NavigationVisible"]</div><div class="backbone-preview-value mt-1">@(Model.IsNavigationVisible ? Localizer["Yes"] : Localizer["No"])</div></div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="page-permission-tab" role="tabpanel">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["PermissionsTab"]</h6>
+                <div class="backbone-preview-label">@Localizer["RequiredPermission"]</div>
+                <div class="backbone-preview-value mt-1"><code>@(string.IsNullOrWhiteSpace(Model.RequiredPermission) ? "-" : Model.RequiredPermission)</code></div>
+            </section>
+        </div>
+
+        <div class="tab-pane fade" id="page-actions-tab" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center gap-3 p-3">
+                    <div>
+                        <h6 class="mb-0">@Localizer["ActionsTab"]</h6>
+                        <small class="text-muted">@Localizer["ActionsDescription"]</small>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="btnAddPageAction">
+                        <i class="bx bx-plus me-1"></i>@Localizer["AddAction"]
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table border-top"
+                           id="dt-module-page-actions"
+                           data-page-id="@Model.Id"
+                           data-module-code="@Model.ModuleCode"
+                           data-page-code="@Model.PageCode">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["ActionCode"]</th>
+                                <th>@Localizer["DisplayName"]</th>
+                                <th>@Localizer["PermissionKey"]</th>
+                                <th>@Localizer["ActionType"]</th>
+                                <th>@SharedLocalizer["Status"]</th>
+                                <th class="text-end">@Localizer["SortOrder"]</th>
+                                <th class="text-end">@Localizer["Actions"]</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="pageActionOffcanvas">
+    <div class="offcanvas-header py-6">
+        <h5 class="offcanvas-title" id="pageActionOffcanvasTitle">@Localizer["AddAction"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top">
+        <form id="pageActionForm" novalidate>
+            <input type="hidden" id="pageActionId" />
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="pageActionCode">@Localizer["ActionCode"] <span class="text-danger">*</span></label>
+                    <input class="form-control" id="pageActionCode" required maxlength="80" autocomplete="off" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="pageActionDisplayName">@Localizer["DisplayName"] <span class="text-danger">*</span></label>
+                    <input class="form-control" id="pageActionDisplayName" required maxlength="200" autocomplete="off" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="pageActionPermissionKey">@Localizer["PermissionKey"] <span class="text-danger">*</span></label>
+                    <input class="form-control" id="pageActionPermissionKey" required maxlength="200" autocomplete="off" placeholder="crm.client.delete" readonly />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="pageActionType">@Localizer["ActionType"] <span class="text-danger">*</span></label>
+                    <select class="form-select" id="pageActionType" required>
+                        <option value="View">View</option>
+                        <option value="Toolbar">Toolbar</option>
+                        <option value="RowAction">RowAction</option>
+                        <option value="FormAction">FormAction</option>
+                        <option value="BulkAction">BulkAction</option>
+                        <option value="System">System</option>
+                        <option value="Custom">Custom</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="pageActionStatus">@SharedLocalizer["Status"] <span class="text-danger">*</span></label>
+                    <select class="form-select" id="pageActionStatus" required>
+                        <option value="Draft">@Localizer["StatusDraft"]</option>
+                        <option value="Active">@Localizer["StatusActive"]</option>
+                        <option value="Inactive">@Localizer["StatusInactive"]</option>
+                        <option value="Deprecated">@Localizer["StatusDeprecated"]</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="pageActionSortOrder">@Localizer["SortOrder"]</label>
+                    <input class="form-control" id="pageActionSortOrder" type="number" min="0" value="0" />
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="pageActionIsToolbarAction" /><label class="form-check-label" for="pageActionIsToolbarAction">@Localizer["ToolbarAction"]</label></div>
+                    <div class="form-check form-switch mt-2"><input class="form-check-input" type="checkbox" id="pageActionIsRowAction" /><label class="form-check-label" for="pageActionIsRowAction">@Localizer["RowAction"]</label></div>
+                    <div class="form-check form-switch mt-2"><input class="form-check-input" type="checkbox" id="pageActionIsDangerous" /><label class="form-check-label" for="pageActionIsDangerous">@Localizer["DangerousAction"]</label></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="pageActionDescription">@SharedLocalizer["Description"]</label>
+                    <textarea class="form-control" id="pageActionDescription" rows="3"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="submit" form="pageActionForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<partial name="~/Views/Platform/ModuleCatalog/_IndexL10n.cshtml" />
+
+@section Scripts {
+    <script src="~/assets/js/Platform/ModuleCatalog/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ModuleCatalog/page-details.js" asp-append-version="true"></script>
+}

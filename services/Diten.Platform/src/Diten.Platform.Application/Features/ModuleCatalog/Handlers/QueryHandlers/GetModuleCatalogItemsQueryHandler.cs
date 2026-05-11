@@ -27,7 +27,6 @@ public sealed class GetModuleCatalogItemsQueryHandler
             request.Filter.Search,
             request.Filter.Domain,
             request.Filter.Service,
-            request.Filter.Category,
             statuses.Length > 0 ? statuses : null,
             request.Filter.IsCoreModule,
             request.Filter.IsTenantAssignable,

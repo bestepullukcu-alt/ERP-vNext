@@ -300,7 +300,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="tabCommercial"><div id="modulesSummary"></div></div>
+                    <div class="tab-pane fade" id="tabCommercial">
+                        <partial name="Commercial/_PlanSubscriptionTab" />
+                    </div>
                     <div class="tab-pane fade" id="tabSystemMonitoring">
                         <div class="row g-4">
                             <div class="col-12">
@@ -318,6 +320,61 @@
                         </div>
                     </div>
         </div>
+    </div>
+</div>
+
+<div class="modal fade" id="subscriptionActionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" id="subscriptionActionForm" novalidate>
+            <div class="modal-header">
+                <h5 class="modal-title" id="subscriptionActionTitle">@Localizer["AssignPlan"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="subscriptionActionType" />
+                <div id="subscriptionPlanFields" class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="subscriptionPlanSelect">@Localizer["Plan"] <span class="text-danger">*</span></label>
+                        <select class="form-select" id="subscriptionPlanSelect" required></select>
+                        <div class="invalid-feedback">@Localizer["PlanRequired"]</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="subscriptionIsTrial">
+                            <label class="form-check-label" for="subscriptionIsTrial">@Localizer["StartTrial"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label" for="subscriptionTrialEnd">@Localizer["TrialEndDate"]</label>
+                        <input type="date" class="form-control" id="subscriptionTrialEnd">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label" for="subscriptionPeriodEnd">@Localizer["CurrentPeriodEnd"] <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="subscriptionPeriodEnd">
+                    </div>
+                </div>
+                <div id="subscriptionReasonField" class="d-none">
+                    <label class="form-label" for="subscriptionReason">@Localizer["Reason"] <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="subscriptionReason" rows="3" maxlength="500"></textarea>
+                    <div class="invalid-feedback">@Localizer["ReasonRequired"]</div>
+                    <div class="form-check mt-3 d-none" id="subscriptionCancelAtPeriodEndWrap">
+                        <input class="form-check-input" type="checkbox" id="subscriptionCancelAtPeriodEnd">
+                        <label class="form-check-label" for="subscriptionCancelAtPeriodEnd">@Localizer["CancelAtPeriodEnd"]</label>
+                    </div>
+                </div>
+                <div id="subscriptionPeriodField" class="d-none">
+                    <label class="form-label" for="subscriptionActionPeriodEnd">@Localizer["CurrentPeriodEnd"] <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="subscriptionActionPeriodEnd">
+                    <div class="invalid-feedback">@Localizer["CurrentPeriodEndRequired"]</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="submit" class="btn btn-primary" id="btnSubmitSubscriptionAction">
+                    <i class="icon-base bx bx-save me-1"></i>@SharedLocalizer["Save"]
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 

@@ -438,4 +438,16 @@
   <data name="Unknown" xml:space="preserve">
     <value>Bilinmiyor</value>
   </data>
+  <data name="SubscriptionFeatures" xml:space="preserve">
+    <value>Abonelik Ozellikleri</value>
+  </data>
+  <data name="SubscriptionPlans" xml:space="preserve">
+    <value>Abonelik Planlari</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Yukleniyor...</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Kapat</value>
+  </data>
 </root>

@@ -35,18 +35,21 @@ public sealed class UpdateModuleCatalogItemCommandHandler : IRequestHandler<Upda
         }
 
         var canonicalCode = ModuleCatalogCodeNormalizer.Normalize(request.Request.ModuleCode);
+        if (!string.Equals(canonicalCode, item.ModuleCode, StringComparison.Ordinal))
+        {
+            return Response<NoContent>.Fail("ModuleCode cannot be changed after creation.", 400);
+        }
+
         if (await _repository.ExistsByCodeAsync(canonicalCode, item.Id, ct))
         {
             return Response<NoContent>.Fail("ModuleCode already exists.", 409);
         }
 
-        item.ModuleCode = canonicalCode;
         item.ModuleName = request.Request.ModuleName.Trim();
         item.DisplayName = request.Request.DisplayName.Trim();
         item.Description = string.IsNullOrWhiteSpace(request.Request.Description) ? null : request.Request.Description.Trim();
         item.Domain = request.Request.Domain.Trim();
         item.Service = request.Request.Service.Trim();
-        item.Category = string.IsNullOrWhiteSpace(request.Request.Category) ? null : request.Request.Category.Trim();
         item.Status = nextStatus;
         item.ModuleVersion = request.Request.ModuleVersion.Trim();
         item.IsCoreModule = request.Request.IsCoreModule;
@@ -71,13 +74,9 @@ public sealed class UpdateModuleCatalogItemCommandHandler : IRequestHandler<Upda
             && request.Request.ModuleName.Trim() == item.ModuleName
             && request.Request.Domain.Trim() == item.Domain
             && request.Request.Service.Trim() == item.Service
-            && NormalizeNullable(request.Request.Category) == NormalizeNullable(item.Category)
             && request.Request.Status == item.Status.ToString()
             && request.Request.ModuleVersion.Trim() == item.ModuleVersion
             && request.Request.IsCoreModule == item.IsCoreModule
             && request.Request.IsTenantAssignable == item.IsTenantAssignable;
     }
-
-    private static string? NormalizeNullable(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

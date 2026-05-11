@@ -10,6 +10,7 @@ public abstract class ModulePageDescriptorRequestValidator<T> : AbstractValidato
         Func<T, string?> displayName,
         Func<T, string?> routePath,
         Func<T, string?> requiredPermission,
+        Func<T, string?> parentPageCode,
         Func<T, string?> pageType,
         Func<T, string?> status,
         Func<T, int?> sortOrder)
@@ -44,6 +45,16 @@ public abstract class ModulePageDescriptorRequestValidator<T> : AbstractValidato
             .Must(value => IsCanonicalPermission(value))
             .When(x => !string.IsNullOrWhiteSpace(requiredPermission(x)))
             .WithMessage("İzin anahtarı ppm.projects.view formatında olmalıdır.");
+
+        RuleFor(x => parentPageCode(x))
+            .Must(value =>
+            {
+                if (string.IsNullOrWhiteSpace(value)) return true;
+                var normalized = ModulePageDescriptorNormalizer.NormalizePageCode(value);
+                return normalized.Length is >= 3 and <= 100
+                    && normalized.Any(char.IsAsciiLetter)
+                    && normalized.All(ch => char.IsAsciiLetterOrDigit(ch) || ch == '_');
+            }).WithMessage("Üst sayfa kodu geçerli formatta olmalıdır.");
 
         RuleFor(x => pageType(x))
             .Cascade(CascadeMode.Stop)
@@ -85,7 +96,10 @@ public abstract class ModulePageDescriptorRequestValidator<T> : AbstractValidato
         var route = ModulePageDescriptorNormalizer.NormalizeRoutePath(rawRoute);
         var parts = route.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-        return parts.Length == 2
-            && parts.All(part => part.Length > 0 && part.All(ch => char.IsAsciiLetterOrDigit(ch) || ch == '-') && char.IsAsciiLetterUpper(part[0]));
+        return parts.Length >= 2
+            && parts.All(part =>
+                part.Length > 0
+                && part.All(ch => char.IsAsciiLetterOrDigit(ch) || ch is '-' or '{' or '}' or ':' or '_')
+                && (char.IsAsciiLetterUpper(part[0]) || part[0] is '{' or ':'));
     }
 }

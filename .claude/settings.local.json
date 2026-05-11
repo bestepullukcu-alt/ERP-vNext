@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(xargs wc *)",
+      "Bash(grep -r \"appsettings\" /c/Users/user/Desktop/ERP-vNext/services/Diten.Platform/src -name \"*.json\")",
+      "Bash(grep -r \"MongoDB\" /c/Users/user/Desktop/ERP-vNext/services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories -name \"*.cs\")"
+    ]
+  }
+}

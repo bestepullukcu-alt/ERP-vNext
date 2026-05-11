@@ -11,6 +11,7 @@ public sealed class CreateModulePageDescriptorCommandValidator : ModulePageDescr
             x => x.Request.DisplayName,
             x => x.Request.RoutePath,
             x => x.Request.RequiredPermission,
+            x => x.Request.ParentPageCode,
             x => x.Request.PageType,
             x => x.Request.Status,
             x => x.Request.SortOrder)

@@ -144,5 +144,59 @@
   <data name="StatusAndRulesSection" xml:space="preserve">
     <value>Status &amp; Rules</value>
   </data>
+  <data name="FeatureSearchPlaceholder" xml:space="preserve">
+    <value>Search features by name, code, or slug</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="AllCategories" xml:space="preserve">
+    <value>All categories</value>
+  </data>
+  <data name="Availability" xml:space="preserve">
+    <value>Availability</value>
+  </data>
+  <data name="AllFeatures" xml:space="preserve">
+    <value>All features</value>
+  </data>
+  <data name="Included" xml:space="preserve">
+    <value>Included</value>
+  </data>
+  <data name="AddOn" xml:space="preserve">
+    <value>Add-on</value>
+  </data>
+  <data name="Preview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="NotAvailable" xml:space="preserve">
+    <value>Not available</value>
+  </data>
+  <data name="NoFeaturesAvailable" xml:space="preserve">
+    <value>No active subscription features found.</value>
+  </data>
+  <data name="NoModulesAvailable" xml:space="preserve">
+    <value>No module catalog records found.</value>
+  </data>
+  <data name="SelectModulesPlaceholder" xml:space="preserve">
+    <value>Search modules by code, name, domain, or service</value>
+  </data>
+  <data name="AllModules" xml:space="preserve">
+    <value>All modules</value>
+  </data>
+  <data name="StatusDraft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="StatusActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="StatusInactive" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+  <data name="StatusDeprecated" xml:space="preserve">
+    <value>Deprecated</value>
+  </data>
+  <data name="Archived" xml:space="preserve">
+    <value>Archived</value>
+  </data>
 </root>
 

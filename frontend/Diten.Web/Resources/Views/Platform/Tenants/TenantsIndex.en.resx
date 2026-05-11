@@ -141,4 +141,58 @@
   <data name="NoFeatureSummary" xml:space="preserve"><value>No feature summary</value></data>
   <data name="NoTrialPeriod" xml:space="preserve"><value>No trial period</value></data>
   <data name="CustomPricing" xml:space="preserve"><value>Custom pricing</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="PlanSubscription" xml:space="preserve"><value>Plan / Subscription</value></data>
+  <data name="NoActiveSubscriptionFound" xml:space="preserve"><value>No active subscription found</value></data>
+  <data name="NoActiveSubscriptionDescription" xml:space="preserve"><value>Assign a plan or start a trial to manage this tenant's commercial access.</value></data>
+  <data name="AssignPlan" xml:space="preserve"><value>Assign Plan</value></data>
+  <data name="CurrentSubscription" xml:space="preserve"><value>Current Subscription</value></data>
+  <data name="CurrentPlan" xml:space="preserve"><value>Current Plan</value></data>
+  <data name="CancelAtPeriodEnd" xml:space="preserve"><value>Cancel At Period End</value></data>
+  <data name="CurrentPeriodStart" xml:space="preserve"><value>Current Period Start</value></data>
+  <data name="CurrentPeriodEnd" xml:space="preserve"><value>Current Period End</value></data>
+  <data name="SubscriptionHistory" xml:space="preserve"><value>Subscription History</value></data>
+  <data name="Plan" xml:space="preserve"><value>Plan</value></data>
+  <data name="PeriodStart" xml:space="preserve"><value>Period Start</value></data>
+  <data name="PeriodEnd" xml:space="preserve"><value>Period End</value></data>
+  <data name="ChangedAt" xml:space="preserve"><value>Changed At</value></data>
+  <data name="ChangedBy" xml:space="preserve"><value>Changed By</value></data>
+  <data name="Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="StartTrial" xml:space="preserve"><value>Start Trial</value></data>
+  <data name="SelectPlan" xml:space="preserve"><value>Select plan</value></data>
+  <data name="Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Renew" xml:space="preserve"><value>Renew</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Reason is required.</value></data>
+  <data name="CurrentPeriodEndRequired" xml:space="preserve"><value>Current period end date is required.</value></data>
+  <data name="SubscriptionHistorySubtitle" xml:space="preserve"><value>Status changes, renewals, and cancellation history throughout the subscription process.</value></data>
+  <data name="ModuleEntitlements" xml:space="preserve"><value>Module Entitlements</value></data>
+  <data name="ModuleEntitlementsDescription" xml:space="preserve"><value>Manage plan projections, add-ons, trials, and tenant-specific overrides.</value></data>
+  <data name="AddModuleEntitlement" xml:space="preserve"><value>Add Module Entitlement</value></data>
+  <data name="ModuleEntitlementFormDescription" xml:space="preserve"><value>Create a tenant-specific module access rule.</value></data>
+  <data name="Module" xml:space="preserve"><value>Module</value></data>
+  <data name="ModuleRequired" xml:space="preserve"><value>Module is required.</value></data>
+  <data name="ModuleCode" xml:space="preserve"><value>Module Code</value></data>
+  <data name="ModuleName" xml:space="preserve"><value>Module Name</value></data>
+  <data name="Source" xml:space="preserve"><value>Source</value></data>
+  <data name="SourcePlan" xml:space="preserve"><value>Plan</value></data>
+  <data name="SourceManualOverride" xml:space="preserve"><value>Manual Override</value></data>
+  <data name="SourceAddon" xml:space="preserve"><value>Add-on</value></data>
+  <data name="SourceTrial" xml:space="preserve"><value>Trial</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>System</value></data>
+  <data name="Enabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="Enable" xml:space="preserve"><value>Enable</value></data>
+  <data name="Disable" xml:space="preserve"><value>Disable</value></data>
+  <data name="ExpiryDate" xml:space="preserve"><value>Expiry Date</value></data>
+  <data name="EditExpiry" xml:space="preserve"><value>Edit Expiry</value></data>
+  <data name="EffectiveAccess" xml:space="preserve"><value>Effective Access</value></data>
+  <data name="AccessActive" xml:space="preserve"><value>Active</value></data>
+  <data name="AccessNoAccess" xml:space="preserve"><value>No Access</value></data>
+  <data name="AccessExpired" xml:space="preserve"><value>Expired</value></data>
+  <data name="AccessBlockedByOverride" xml:space="preserve"><value>Blocked by Override</value></data>
+  <data name="AccessEnabledByOverride" xml:space="preserve"><value>Enabled by Override</value></data>
+  <data name="AccessSystemLocked" xml:space="preserve"><value>System Locked</value></data>
+  <data name="LastUpdated" xml:space="preserve"><value>Last Updated</value></data>
+  <data name="RemoveManualOverride" xml:space="preserve"><value>Remove Manual Override</value></data>
+  <data name="ManualOverrideReason" xml:space="preserve"><value>Manual override</value></data>
 </root>

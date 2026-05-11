@@ -40,6 +40,8 @@ public sealed class UpdateModulePageDescriptorCommandHandler : IRequestHandler<U
         descriptor.DisplayName = request.Request.DisplayName.Trim();
         descriptor.RoutePath = routePath;
         descriptor.RequiredPermission = ModulePageDescriptorNormalizer.NormalizeOptionalPermission(request.Request.RequiredPermission);
+        descriptor.ParentPageCode = ModulePageDescriptorNormalizer.NormalizeOptionalPageCode(request.Request.ParentPageCode);
+        descriptor.IsNavigationVisible = request.Request.IsNavigationVisible ?? true;
         descriptor.PageType = Enum.Parse<ModulePageType>(request.Request.PageType, ignoreCase: false);
         descriptor.Status = Enum.Parse<ModulePageStatus>(request.Request.Status, ignoreCase: false);
         descriptor.SortOrder = request.Request.SortOrder ?? 0;

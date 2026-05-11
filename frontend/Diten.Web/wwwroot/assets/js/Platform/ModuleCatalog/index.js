@@ -9,11 +9,11 @@ const ModuleCatalogList = (function () {
     const endpoint = '/Platform/ModuleCatalog/api';
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'Platform', pageKey: 'ModuleCatalog' };
-    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-    const totalColumnCount = 13;
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const totalColumnCount = 12;
     const baseOrder = [[1, 'asc']];
     let saveFilterArmed = false;
-    let appliedFilters = { domain: [], service: [], category: [], status: [], isTenantAssignable: '', isCoreModule: '' };
+    let appliedFilters = { domain: [], service: [], status: [], isTenantAssignable: '', isCoreModule: '' };
 
     const validDomains = [
         'Platform Shared Services', 'PPM Management', 'Master Data Management', 
@@ -30,13 +30,12 @@ const ModuleCatalogList = (function () {
         return [...new Set(raw.map(normalizeString).filter(Boolean))].sort((a, b) => a.localeCompare(b));
     };
     const normalizeFilterValue = (value) => Array.isArray(value) ? normalizeArray(value) : normalizeString(value);
-    const emptyFilters = () => ({ domain: [], service: [], category: [], status: [], isTenantAssignable: '', isCoreModule: '' });
+    const emptyFilters = () => ({ domain: [], service: [], status: [], isTenantAssignable: '', isCoreModule: '' });
     const normalizeFilters = (filters) => {
         const source = filters || {};
         return {
             domain: normalizeArray(source.domain),
             service: normalizeArray(source.service),
-            category: normalizeArray(source.category),
             status: normalizeArray(source.status),
             isTenantAssignable: normalizeString(source.isTenantAssignable),
             isCoreModule: normalizeString(source.isCoreModule)
@@ -415,7 +414,6 @@ const ModuleCatalogList = (function () {
                 { data: 'isCoreModule', name: 'isCoreModule', render: (data) => boolBadge(data, true) },
                 { data: 'displayName', name: 'displayName', visible: false, render: escapeHtml },
                 { data: 'service', name: 'service', visible: false, render: escapeHtml },
-                { data: 'category', name: 'category', visible: false, render: (data) => escapeHtml(data || '-') },
                 { data: 'moduleVersion', name: 'moduleVersion', visible: false, render: escapeHtml },
                 { data: 'sortOrder', name: 'sortOrder', visible: false, render: (data) => escapeHtml(data ?? 0) },
                 {
@@ -568,8 +566,7 @@ const ModuleCatalogList = (function () {
     const loadLookupOptions = async () => {
         const domainSelect = document.getElementById('filterDomain');
         const serviceSelect = document.getElementById('filterService');
-        const categorySelect = document.getElementById('filterCategory');
-        if (!domainSelect || !serviceSelect || !categorySelect) return;
+        if (!domainSelect || !serviceSelect) return;
         const response = await fetch(`${endpoint}?page=1&pageSize=200&sort=domain`, { headers: getAuthHeaders() });
         if (!response.ok) return;
         const payload = await response.json();
@@ -577,7 +574,6 @@ const ModuleCatalogList = (function () {
         const items = result.items || result.Items || [];
         appendLookupOptions(domainSelect, items.map((item) => item.domain || item.Domain));
         appendLookupOptions(serviceSelect, items.map((item) => item.service || item.Service));
-        appendLookupOptions(categorySelect, items.map((item) => item.category || item.Category));
     };
 
     const syncMultiSelectSummary = ($select) => {
@@ -646,7 +642,6 @@ const ModuleCatalogList = (function () {
         const values = normalizeFilters(filters);
         $('#filterDomain').val(values.domain).trigger('change');
         $('#filterService').val(values.service).trigger('change');
-        $('#filterCategory').val(values.category).trigger('change');
         $('#filterStatus').val(values.status).trigger('change');
         [
             ['filterAssignable', 'isTenantAssignable'],
@@ -664,7 +659,6 @@ const ModuleCatalogList = (function () {
             appliedFilters = {
                 domain: normalizeArray($('#filterDomain').val() || []),
                 service: normalizeArray($('#filterService').val() || []),
-                category: normalizeArray($('#filterCategory').val() || []),
                 status: normalizeArray($('#filterStatus').val() || []),
                 isTenantAssignable: document.getElementById('filterAssignable')?.value || '',
                 isCoreModule: document.getElementById('filterCore')?.value || ''

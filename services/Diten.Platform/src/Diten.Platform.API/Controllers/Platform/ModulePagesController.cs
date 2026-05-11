@@ -87,6 +87,46 @@ public sealed class ModulePagesController : CustomBaseController
         return CreateActionResult(response);
     }
 
+    [HttpGet("{pageId:guid}/actions")]
+    [HasPermission("Modules.ModuleCatalog.Read")]
+    public async Task<IActionResult> GetActions(Guid pageId, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetModulePageActionsByPageQuery(pageId), ct);
+        return CreateActionResult(response);
+    }
+
+    [HttpGet("actions/{id:guid}")]
+    [HasPermission("Modules.ModuleCatalog.Read")]
+    public async Task<IActionResult> GetActionById(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetModulePageActionByIdQuery(id), ct);
+        return CreateActionResult(response);
+    }
+
+    [HttpPost("{pageId:guid}/actions")]
+    [HasPermission("Modules.ModuleCatalog.Update")]
+    public async Task<IActionResult> CreateAction(Guid pageId, [FromBody] CreateModulePageActionDescriptorRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new CreateModulePageActionDescriptorCommand(pageId, request), ct);
+        return CreateActionResult(response);
+    }
+
+    [HttpPut("actions/{id:guid}")]
+    [HasPermission("Modules.ModuleCatalog.Update")]
+    public async Task<IActionResult> UpdateAction(Guid id, [FromBody] UpdateModulePageActionDescriptorRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new UpdateModulePageActionDescriptorCommand(id, request), ct);
+        return CreateActionResult(response);
+    }
+
+    [HttpDelete("actions/{id:guid}")]
+    [HasPermission("Modules.ModuleCatalog.Update")]
+    public async Task<IActionResult> DeleteAction(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new DeleteModulePageActionDescriptorCommand(id), ct);
+        return CreateActionResult(response);
+    }
+
     private IActionResult CreateActionResult<T>(Response<T> response)
     {
         var payload = new

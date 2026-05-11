@@ -16,7 +16,6 @@ The form contains the 12 approved fields:
 - Description
 - Domain
 - Service
-- Category
 - Status
 - Version
 - Is Core Module
@@ -24,6 +23,7 @@ The form contains the 12 approved fields:
 - Sort Order
 
 `ModuleCode` is saved in canonical uppercase dash-separated format. Use semantic versions such as `1.0.0`.
+On create, Module Code is generated from Display Name or Module Name. You can override it before saving. After the module is created, Module Code becomes read-only.
 
 ## Details
 

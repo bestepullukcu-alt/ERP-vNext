@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="SubscriptionFeaturesTitle" xml:space="preserve"><value>Subscription Features</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage the SaaS feature catalog and plan availability.</value></data>
+  <data name="CreateFeature" xml:space="preserve"><value>Create Feature</value></data>
+  <data name="EditFeature" xml:space="preserve"><value>Edit Feature</value></data>
+  <data name="CreateCategory" xml:space="preserve"><value>Create Category</value></data>
+  <data name="FeatureCode" xml:space="preserve"><value>Feature Code</value></data>
+  <data name="FeatureSlug" xml:space="preserve"><value>Feature Slug</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Category" xml:space="preserve"><value>Category</value></data>
+  <data name="AllCategories" xml:space="preserve"><value>All Categories</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>All Statuses</value></data>
+  <data name="Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>Deprecated</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="IsCoreFeature" xml:space="preserve"><value>Core Feature</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Sort Order</value></data>
+  <data name="OptionalFeatureFlagKey" xml:space="preserve"><value>Feature Flag Key</value></data>
+  <data name="AvailableInPlans" xml:space="preserve"><value>Available in Plans</value></data>
+  <data name="Included" xml:space="preserve"><value>Included</value></data>
+  <data name="AddOn" xml:space="preserve"><value>Add-on</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>Not Available</value></data>
+  <data name="Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="IncludedPlans" xml:space="preserve"><value>Included Plans</value></data>
+  <data name="NoPlans" xml:space="preserve"><value>No active plans found.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No subscription features have been created yet.</value></data>
+  <data name="NoResultsState" xml:space="preserve"><value>No features match the current filters.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>This field is required.</value></data>
+  <data name="CategoryRequiredForActive" xml:space="preserve"><value>Category is required when status is Active.</value></data>
+  <data name="ArchivedFeatureCannotBeMapped" xml:space="preserve"><value>Archived feature cannot be mapped to a plan.</value></data>
+  <data name="DataChangedReloadRequired" xml:space="preserve"><value>Data changed while you were editing. Reload is required.</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archive</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="CannotMapArchivedTooltip" xml:space="preserve"><value>Archived features cannot receive new plan mappings.</value></data>
+  <data name="CannotArchiveTooltip" xml:space="preserve"><value>This feature is already archived.</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>You do not have permission to perform this action.</value></data>
+  <data name="CategoryCode" xml:space="preserve"><value>Category Code</value></data>
+</root>

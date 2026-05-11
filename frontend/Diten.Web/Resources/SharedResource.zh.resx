@@ -429,4 +429,7 @@
   <data name="User" xml:space="preserve">
     <value>用户</value>
   </data>
+  <data name="SubscriptionPlans" xml:space="preserve">
+    <value>订阅计划</value>
+  </data>
 </root>

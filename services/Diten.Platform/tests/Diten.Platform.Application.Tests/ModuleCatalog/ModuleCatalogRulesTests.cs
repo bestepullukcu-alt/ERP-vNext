@@ -15,9 +15,34 @@ public sealed class ModuleCatalogRulesTests
     [InlineData(" module__catalog ", "MODULE-CATALOG")]
     [InlineData("-module-_-catalog-", "MODULE-CATALOG")]
     [InlineData("module   catalog", "MODULE-CATALOG")]
+    [InlineData("module @ catalog!", "MODULE-CATALOG")]
     public void Normalize_module_code_returns_canonical_code(string input, string expected)
     {
         Assert.Equal(expected, ModuleCatalogCodeNormalizer.Normalize(input));
+    }
+
+    [Theory]
+    [InlineData("AB", true)]
+    [InlineData("A", false)]
+    public void Create_validator_enforces_module_code_min_length(string moduleCode, bool expectedValid)
+    {
+        var validator = new CreateModuleCatalogItemCommandValidator();
+        var command = ValidCreateCommand(moduleCode);
+
+        var result = validator.Validate(command);
+
+        Assert.Equal(expectedValid, result.IsValid);
+    }
+
+    [Fact]
+    public void Create_validator_rejects_module_code_longer_than_80_after_normalization()
+    {
+        var validator = new CreateModuleCatalogItemCommandValidator();
+        var command = ValidCreateCommand(new string('A', 81));
+
+        var result = validator.Validate(command);
+
+        Assert.False(result.IsValid);
     }
 
     [Theory]
@@ -35,7 +60,6 @@ public sealed class ModuleCatalogRulesTests
             null,
             "Platform",
             "Diten.Platform",
-            null,
             status,
             version,
             false,
@@ -61,7 +85,6 @@ public sealed class ModuleCatalogRulesTests
             null,
             "Platform",
             "Diten.Platform",
-            null,
             "Draft",
             "1.0.0",
             false,
@@ -92,6 +115,38 @@ public sealed class ModuleCatalogRulesTests
         Assert.False(response.IsSuccessful);
         Assert.Equal(400, response.StatusCode);
         Assert.False(item.IsDeleted);
+    }
+
+    [Fact]
+    public async Task Update_handler_rejects_module_code_change_after_creation()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var item = await repository.CreateAsync(new ModuleCatalogItem
+        {
+            ModuleCode = "ORIGINAL-CODE",
+            ModuleName = "Original",
+            DisplayName = "Original",
+            Domain = "Platform",
+            Service = "Diten.Platform"
+        });
+        var handler = new UpdateModuleCatalogItemCommandHandler(repository);
+
+        var response = await handler.Handle(new UpdateModuleCatalogItemCommand(item.Id, new UpdateModuleCatalogItemRequest(
+            "CHANGED-CODE",
+            "Original",
+            "Original",
+            null,
+            "Platform",
+            "Diten.Platform",
+            "Draft",
+            "1.0.0",
+            false,
+            true,
+            0)), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(400, response.StatusCode);
+        Assert.Equal("ORIGINAL-CODE", item.ModuleCode);
     }
 
     [Fact]
@@ -169,4 +224,18 @@ public sealed class ModuleCatalogRulesTests
             return Task.FromResult(stats);
         }
     }
+
+    private static CreateModuleCatalogItemCommand ValidCreateCommand(string moduleCode) =>
+        new(new CreateModuleCatalogItemRequest(
+            moduleCode,
+            "Module",
+            "Module",
+            null,
+            "Platform",
+            "Diten.Platform",
+            "Draft",
+            "1.0.0",
+            false,
+            true,
+            0));
 }

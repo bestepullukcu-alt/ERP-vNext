@@ -45,6 +45,8 @@ public sealed class CreateModulePageDescriptorCommandHandler : IRequestHandler<C
             DisplayName = request.Request.DisplayName.Trim(),
             RoutePath = routePath,
             RequiredPermission = ModulePageDescriptorNormalizer.NormalizeOptionalPermission(request.Request.RequiredPermission),
+            ParentPageCode = ModulePageDescriptorNormalizer.NormalizeOptionalPageCode(request.Request.ParentPageCode),
+            IsNavigationVisible = request.Request.IsNavigationVisible ?? true,
             PageType = Enum.Parse<ModulePageType>(request.Request.PageType, ignoreCase: false),
             Status = Enum.Parse<ModulePageStatus>(request.Request.Status, ignoreCase: false),
             SortOrder = request.Request.SortOrder ?? 0,

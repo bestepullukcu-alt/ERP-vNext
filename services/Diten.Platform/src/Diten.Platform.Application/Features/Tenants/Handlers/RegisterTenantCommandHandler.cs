@@ -2,6 +2,7 @@ using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Events;
 using Diten.Platform.Application.Features.Tenants.Commands;
+using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -13,6 +14,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
 {
     private readonly ITenantRegistryRepository _repository;
     private readonly ISubscriptionPlanRepository _subscriptionPlanRepository;
+    private readonly ITenantSubscriptionRepository _tenantSubscriptionRepository;
     private readonly ITenantDomainRepository _domainRepository;
     private readonly ITenantLoginSettingsRepository _loginSettingsRepository;
     private readonly ITenantDefaultsProvider _defaults;
@@ -22,6 +24,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
     public RegisterTenantCommandHandler(
         ITenantRegistryRepository repository,
         ISubscriptionPlanRepository subscriptionPlanRepository,
+        ITenantSubscriptionRepository tenantSubscriptionRepository,
         ITenantDomainRepository domainRepository,
         ITenantLoginSettingsRepository loginSettingsRepository,
         ITenantDefaultsProvider defaults,
@@ -30,6 +33,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
     {
         _repository = repository;
         _subscriptionPlanRepository = subscriptionPlanRepository;
+        _tenantSubscriptionRepository = tenantSubscriptionRepository;
         _domainRepository = domainRepository;
         _loginSettingsRepository = loginSettingsRepository;
         _defaults = defaults;
@@ -62,14 +66,11 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
         // 4. Build primary platform subdomain
         var platformDomain = $"{slug}.ditenteknoloji.com";
 
-        // Check platform domain uniqueness (may differ from normalizedDomain)
-        if (!string.Equals(platformDomain, normalizedDomain, StringComparison.OrdinalIgnoreCase))
+        // Check platform domain uniqueness against TenantDomain records as well.
+        var existingPlatformDomain = await _domainRepository.GetByDomainNameAsync(platformDomain, cancellationToken);
+        if (existingPlatformDomain != null)
         {
-            var existingPlatformDomain = await _domainRepository.GetByDomainNameAsync(platformDomain, cancellationToken);
-            if (existingPlatformDomain != null)
-            {
-                return Response<Guid>.Fail($"Platform domain '{platformDomain}' already exists.", 409);
-            }
+            return Response<Guid>.Fail($"Platform domain '{platformDomain}' already exists.", 409);
         }
 
         // 5. Generate unique code
@@ -108,6 +109,8 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
             : Diten.Platform.Domain.Enums.TenantSubscriptionStatus.Active;
         var trialStartDateUtc = selectedPlan.IsTrialPlan ? now : (DateTimeOffset?)null;
         var trialEndDateUtc = selectedPlan.IsTrialPlan ? now.AddDays(selectedPlan.TrialDurationDays!.Value) : (DateTimeOffset?)null;
+        var currentPeriodStartUtc = selectedPlan.IsTrialPlan ? (DateTimeOffset?)null : now;
+        var currentPeriodEndUtc = selectedPlan.IsTrialPlan ? (DateTimeOffset?)null : now.AddMonths(1);
 
         // 6. Build tenant entity
         var tenant = new Tenant
@@ -249,6 +252,25 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
 
         var loginSettings = TenantLoginSettingsMapper.CreateDefault(tenant.Id, actor, now);
         await _loginSettingsRepository.CreateAsync(loginSettings, cancellationToken);
+
+        var subscriptionResult = await TenantSubscriptionCommandSupport.CreateAsync(
+            tenant.Id,
+            selectedPlan.Id,
+            selectedPlan.IsTrialPlan,
+            trialEndDateUtc,
+            currentPeriodStartUtc,
+            currentPeriodEndUtc,
+            "tenant-registration",
+            _repository,
+            _subscriptionPlanRepository,
+            _tenantSubscriptionRepository,
+            _currentUser,
+            cancellationToken);
+
+        if (!subscriptionResult.IsSuccessful)
+        {
+            return Response<Guid>.Fail(subscriptionResult.Errors, subscriptionResult.StatusCode);
+        }
 
         _logger.LogInformation(
             "Tenant '{TenantCode}' registered with slug '{Slug}' and primary domain '{Domain}'",

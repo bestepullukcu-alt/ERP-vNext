@@ -1,3 +1,6 @@
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
+using Diten.Platform.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +11,18 @@ namespace Diten.Platform.API.Controllers;
 [AllowAnonymous]
 public sealed class LookupsController : ControllerBase
 {
+    [HttpGet("module-catalog/domains")]
+    public IActionResult GetModuleCatalogDomains()
+    {
+        return Ok(ToLookupOptions<ModuleCatalogDomain>());
+    }
+
+    [HttpGet("module-catalog/services")]
+    public IActionResult GetModuleCatalogServices()
+    {
+        return Ok(ToLookupOptions<ModuleCatalogService>());
+    }
+
     [HttpGet("countries")]
     public IActionResult GetCountries()
     {
@@ -71,4 +86,24 @@ public sealed class LookupsController : ControllerBase
 
         return Ok(timezones);
     }
+
+    private static IEnumerable<LookupOption> ToLookupOptions<TEnum>()
+        where TEnum : struct, Enum
+    {
+        return Enum.GetValues<TEnum>()
+            .Select(value =>
+            {
+                var name = value.ToString();
+                var displayName = typeof(TEnum)
+                    .GetMember(name)
+                    .First()
+                    .GetCustomAttribute<DisplayAttribute>()?
+                    .GetName() ?? name;
+
+                return new LookupOption(name, displayName, displayName);
+            })
+            .OrderBy(x => x.Name);
+    }
+
+    private sealed record LookupOption(string Code, string Name, string Value);
 }

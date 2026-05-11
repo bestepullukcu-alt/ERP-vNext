@@ -43,7 +43,7 @@ Bu module pack kalici execution sozlesmesidir. Kod gelistirmesi yalnizca frontma
   - `ModuleCatalogItem` standalone aggregate.
   - Mongo collection: `platform_module_catalog`.
   - Unique index: `ModuleCode`.
-  - Query indexes: `Status`, `Domain`, `Service`, `Category`, `IsTenantAssignable`, `SortOrder`.
+  - Query indexes: `Status`, `Domain`, `Service`, `IsTenantAssignable`, `SortOrder`.
 - Application Commands:
   - `CreateModuleCatalogItemCommand`
   - `UpdateModuleCatalogItemCommand`
@@ -90,13 +90,12 @@ Bu module pack kalici execution sozlesmesidir. Kod gelistirmesi yalnizca frontma
 | Field | Type | Rules |
 |---|---|---|
 | Base | `GlobalEntity` | Platform-level catalog kaydi; tenant-owned degildir. |
-| ModuleCode | `string` | Required, unique, normalized. Min length: 3. Max length: 50. |
+| ModuleCode | `string` | Required, unique, normalized. Min length: 2. Max length: 80. Immutable after create. |
 | ModuleName | `string` | Required. |
 | DisplayName | `string` | Required. |
 | Description | `string?` | Optional metadata. |
 | Domain | `string` | Required. |
 | Service | `string` | Required. |
-| Category | `string?` | Optional. |
 | Status | `enum` | Required. Strict values only: `Draft`, `Active`, `Inactive`, `Deprecated`. |
 | ModuleVersion | `string` | Required semantic version using `major.minor.patch`; `Version` is reserved for technical concurrency fields. |
 | IsCoreModule | `bool` | Core platform module flag. |
@@ -155,7 +154,6 @@ Bu module pack kalici execution sozlesmesidir. Kod gelistirmesi yalnizca frontma
   - Description
   - Domain
   - Service
-  - Category
   - Status
   - ModuleVersion
   - IsCoreModule
@@ -169,9 +167,14 @@ Bu module pack kalici execution sozlesmesidir. Kod gelistirmesi yalnizca frontma
 - Consecutive separators normalize to a single dash (`-`), for example `MODULE--CATALOG`, `MODULE__CATALOG`, and `MODULE-_-CATALOG` persist as `MODULE-CATALOG`.
 - Leading/trailing separators are removed, for example `-MODULE-CATALOG-` and `_MODULE_CATALOG_` persist as `MODULE-CATALOG`.
 - Final persisted `ModuleCode` canonical format is uppercase, trimmed, dash-separated only, has no consecutive separators, and has no leading/trailing separator.
-- After canonical normalization, `ModuleCode` length must be minimum 3 and maximum 50 characters.
-- `ModuleCode` shorter than 3 characters after canonical normalization is rejected.
-- `ModuleCode` longer than 50 characters after canonical normalization is rejected.
+- After canonical normalization, `ModuleCode` length must be minimum 2 and maximum 80 characters.
+- `ModuleCode` shorter than 2 characters after canonical normalization is rejected.
+- `ModuleCode` longer than 80 characters after canonical normalization is rejected.
+- `ModuleCode` must match `^[A-Z0-9]+(-[A-Z0-9]+)*$` after normalization.
+- `ModuleCode` cannot start or end with `-` after normalization.
+- `ModuleCode` cannot contain double dash `--` after normalization.
+- Create UI auto-generates `ModuleCode` from `DisplayName`, falling back to `ModuleName`, while allowing manual override before save.
+- After create, `ModuleCode` is locked/read-only and update requests that change it are rejected.
 - `ModuleCode` uniqueness is enforced by a unique Mongo index.
 - Duplicate `ModuleCode` create/update requests are rejected before persistence when possible and by index protection at persistence level.
 - Future note: if global uniqueness becomes too restrictive, `Domain + ModuleCode` composite uniqueness may be evaluated in a later phase.
@@ -221,13 +224,14 @@ Bu module pack kalici execution sozlesmesidir. Kod gelistirmesi yalnizca frontma
 
 ## Acceptance Criteria
 - [ ] Platform API exposes list/detail/create/update/activate/deactivate/soft-delete endpoints for Module Catalog under the required `/api/platform/module-catalog` Gateway base path.
-- [ ] List endpoint supports `search`, `domain`, `service`, `category`, `status`, `isCoreModule`, `isTenantAssignable`, `page`, `pageSize`, and `sort` filters.
+- [ ] List endpoint supports `search`, `domain`, `service`, `status`, `isCoreModule`, `isTenantAssignable`, `page`, `pageSize`, and `sort` filters.
 - [ ] `ModuleCatalogItem` persists as `GlobalEntity` with the explicit entity fields listed in this pack.
 - [ ] `ModuleCode` is trimmed, stored uppercase, normalizes whitespace to dash, remains unique, and cannot produce duplicate records.
 - [ ] `ModuleCode` consecutive separators normalize to a single dash.
 - [ ] `ModuleCode` leading/trailing separators are removed.
 - [ ] Persisted `ModuleCode` final format is uppercase dash-separated canonical format.
-- [ ] Create/update is rejected when canonical normalized `ModuleCode` is outside the 3-50 character range.
+- [ ] Create is rejected when canonical normalized `ModuleCode` is outside the 2-80 character range.
+- [ ] Update rejects any attempt to change `ModuleCode` after creation.
 - [ ] Create/update validation enforces required fields, allowed status values, `ModuleVersion` semantic format, boolean flags, and non-negative `SortOrder`.
 - [ ] Status accepts only strict enum values: `Draft`, `Active`, `Inactive`, `Deprecated`.
 - [ ] Invalid status strings and mixed-case/lowercase variants are rejected instead of normalized.
@@ -244,6 +248,7 @@ Bu module pack kalici execution sozlesmesidir. Kod gelistirmesi yalnizca frontma
 - [ ] Assignable endpoint returns only `Status=Active`, `IsTenantAssignable=true`, `IsDeleted=false` records.
 - [ ] Core modules can be marked with `IsCoreModule=true`; MVP does not auto-assign them to tenants.
 - [ ] Frontend Module Catalog uses DataTable v2 with GoldenReferenceCompact structure: Index plus separate Create/Edit/Details pages and shared `_Form.cshtml`.
+- [ ] UI create form auto-generates `ModuleCode` from `DisplayName` or `ModuleName`, allows manual override before save, and edit form renders `ModuleCode` read-only.
 - [ ] UI create/edit form contains exactly the 12 listed user fields and does not expose `TenantId`, audit fields, `IsDeleted`, `CreatedAt` or `UpdatedAt`.
 - [ ] UI actions call the Gateway-backed frontend proxy only; no direct 5057 service calls exist.
 - [ ] Localization resources exist for `en`, `fr`, `es`, `zh`, `ar`, `ru`, and `tr`, including table columns, filters, validation messages, statuses and action labels.
@@ -284,7 +289,6 @@ Bu module pack kalici execution sozlesmesidir. Kod gelistirmesi yalnizca frontma
 - Phase 2 will reevaluate whether this aggregate should merge with MOD-0014, reference MOD-0014 records, or be refactored into a shared model.
 - This pack must not rewrite MOD-0014.
 - Status values are strict and localized in UI labels only; persisted/API values remain exactly `Draft`, `Active`, `Inactive`, `Deprecated`.
-- Suggested categories should be controlled values only if a shared reference data source exists; otherwise category remains a validated string in MVP.
 - Future feature/plan/quota relation should be represented as design-ready references only, not enforced behavior.
 
 ## Follow-up Items
@@ -296,5 +300,4 @@ Bu module pack kalici execution sozlesmesidir. Kod gelistirmesi yalnizca frontma
 
 ## Open Questions
 - Should `Domain` and `Service` be free text in MVP, enum-backed values, or sourced from MOD-0014 hierarchy records?
-- Should `Category` be a controlled reference list in Platform, or remain a string until reference data catalog decisions are finalized?
 - Should core modules have additional lifecycle restrictions beyond delete blocking, for example preventing deactivation while assigned in future tenant packs?
