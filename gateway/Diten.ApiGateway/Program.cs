@@ -1,52 +1,21 @@
 using Diten.ApiGateway.Middleware;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Diten.ApiGateway.Authentication;
+using Diten.BuildingBlocks.Security.Secrets;
+using Microsoft.AspNetCore.Authentication;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+builder.Services.AddSecretsProvider(builder.Configuration, builder.Environment, options => options.ServiceName = "ApiGateway");
+builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environment, "ApiGateway", [
+    new("JwtSettings:Secret", "ApiGateway", SecretRequirementKind.JwtCurrent),
+    new("JwtSettings:PreviousSecrets", "ApiGateway", SecretRequirementKind.JwtPreviousCollection, Required: false)
+]);
 
-// JWT Authentication
-var jwtSecret = builder.Configuration["JwtSettings:Secret"];
-var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
-var jwtAudience = builder.Configuration["JwtSettings:Audience"];
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer("Bearer", options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIssuer,
-            ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret!)),
-            ClockSkew = TimeSpan.Zero
-        };
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                if (!string.IsNullOrWhiteSpace(context.Token))
-                {
-                    return Task.CompletedTask;
-                }
-
-                if (context.Request.Cookies.TryGetValue("access_token", out var cookieToken) &&
-                    !string.IsNullOrWhiteSpace(cookieToken))
-                {
-                    context.Token = cookieToken;
-                }
-
-                return Task.CompletedTask;
-            }
-        };
-    });
+builder.Services.AddAuthentication("Bearer")
+    .AddScheme<AuthenticationSchemeOptions, GatewayJwtAuthenticationHandler>("Bearer", _ => { });
 
 builder.Services.AddOcelot();
 

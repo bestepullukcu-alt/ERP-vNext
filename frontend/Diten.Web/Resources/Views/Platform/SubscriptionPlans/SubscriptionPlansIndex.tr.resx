@@ -118,7 +118,19 @@
     <value>Varsayilan Kotalar (JSON)</value>
   </data>
   <data name="DefaultQuotasHelp" xml:space="preserve">
-    <value>Kota anahtarlari ve sayisal degerler iceren bir JSON nesnesi girin.</value>
+    <value>Bu degerler standart kota anahtarlariyla SubscriptionPlan.DefaultQuotas alanina kaydedilir.</value>
+  </data>
+  <data name="UsersMax" xml:space="preserve">
+    <value>Maksimum Kullanici</value>
+  </data>
+  <data name="StorageGbMax" xml:space="preserve">
+    <value>Depolama Limiti (GB)</value>
+  </data>
+  <data name="ApiCallsPerMonth" xml:space="preserve">
+    <value>Aylik API Cagrilari</value>
+  </data>
+  <data name="ModulesMax" xml:space="preserve">
+    <value>Maksimum Modul</value>
   </data>
   <data name="CommaOrLineSeparated" xml:space="preserve">
     <value>Virgul veya satir ayracli</value>

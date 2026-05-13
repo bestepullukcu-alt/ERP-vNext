@@ -1,4 +1,6 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Quotas;
+using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -10,11 +12,16 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
 {
     private readonly ITenantModuleEntitlementRepository _repository;
     private readonly IModuleCatalogRepository _moduleRepository;
+    private readonly IQuotaService _quotaService;
 
-    public DisableTenantModuleEntitlementCommandHandler(ITenantModuleEntitlementRepository repository, IModuleCatalogRepository moduleRepository)
+    public DisableTenantModuleEntitlementCommandHandler(
+        ITenantModuleEntitlementRepository repository,
+        IModuleCatalogRepository moduleRepository,
+        IQuotaService quotaService)
     {
         _repository = repository;
         _moduleRepository = moduleRepository;
+        _quotaService = quotaService;
     }
 
     public async Task<Response<NoContent>> Handle(DisableTenantModuleEntitlementCommand request, CancellationToken ct)
@@ -41,18 +48,36 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
                     return Response<NoContent>.Fail("Entitlement was not found.", 404);
                 }
 
+                var wasEnabled = entitlement.IsEnabled;
                 entitlement.IsEnabled = false;
                 entitlement.Reason = request.Request.Reason;
                 await _repository.UpdateAsync(entitlement, request.Request.RowVersion, ct);
+                if (wasEnabled)
+                {
+                    var release = await ReleaseModuleQuotaAsync(request.TenantId, entitlement.Id, moduleCode, request.Request.Reason, ct);
+                    if (!release.IsSuccessful)
+                    {
+                        return Response<NoContent>.Fail(release.Errors, release.StatusCode);
+                    }
+                }
                 return Response<NoContent>.Success(204);
             }
 
             var existingOverride = await _repository.GetActiveBySourceAsync(request.TenantId, moduleCode, EntitlementSource.ManualOverride, null, ct);
             if (existingOverride is not null)
             {
+                var wasEnabled = existingOverride.IsEnabled;
                 existingOverride.IsEnabled = false;
                 existingOverride.Reason = request.Request.Reason;
                 await _repository.UpdateAsync(existingOverride, request.Request.RowVersion, ct);
+                if (wasEnabled)
+                {
+                    var release = await ReleaseModuleQuotaAsync(request.TenantId, existingOverride.Id, moduleCode, request.Request.Reason, ct);
+                    if (!release.IsSuccessful)
+                    {
+                        return Response<NoContent>.Fail(release.Errors, release.StatusCode);
+                    }
+                }
                 return Response<NoContent>.Success(204);
             }
 
@@ -64,4 +89,16 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
             return TenantModuleEntitlementCommandSupport.ConcurrencyFailure();
         }
     }
+
+    private Task<Response<QuotaMutationDto>> ReleaseModuleQuotaAsync(Guid tenantId, Guid entitlementId, string moduleCode, string? reason, CancellationToken ct) =>
+        _quotaService.ReleaseAsync(new ReleaseQuotaRequest(
+            tenantId,
+            QuotaKeys.ModulesMax,
+            1,
+            "ModuleEntitlement",
+            $"module-entitlement-disable:{entitlementId}",
+            moduleCode,
+            reason ?? "Tenant module entitlement disabled.",
+            null,
+            Guid.NewGuid().ToString()), ct);
 }

@@ -1,4 +1,6 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Quotas;
+using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
@@ -10,11 +12,16 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
 {
     private readonly ITenantModuleEntitlementRepository _repository;
     private readonly IModuleCatalogRepository _moduleRepository;
+    private readonly IQuotaService _quotaService;
 
-    public AddTenantModuleEntitlementCommandHandler(ITenantModuleEntitlementRepository repository, IModuleCatalogRepository moduleRepository)
+    public AddTenantModuleEntitlementCommandHandler(
+        ITenantModuleEntitlementRepository repository,
+        IModuleCatalogRepository moduleRepository,
+        IQuotaService quotaService)
     {
         _repository = repository;
         _moduleRepository = moduleRepository;
+        _quotaService = quotaService;
     }
 
     public async Task<Response<Guid>> Handle(AddTenantModuleEntitlementCommand request, CancellationToken ct)
@@ -47,6 +54,25 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
             ExpiryDateUtc = request.Request.ExpiryDateUtc,
             Reason = request.Request.Reason
         };
+
+        if (entitlement.IsEnabled)
+        {
+            var consume = await _quotaService.TryConsumeAsync(new TryConsumeQuotaRequest(
+                request.TenantId,
+                QuotaKeys.ModulesMax,
+                1,
+                "ModuleEntitlement",
+                $"module-entitlement-add:{request.TenantId}:{moduleCode}:{request.Request.Source}",
+                moduleCode,
+                request.Request.Reason ?? "Tenant module entitlement added.",
+                null,
+                Guid.NewGuid().ToString()), ct);
+
+            if (!consume.IsSuccessful)
+            {
+                return Response<Guid>.Fail(consume.Errors, consume.StatusCode);
+            }
+        }
 
         await _repository.CreateAsync(entitlement, ct);
         return Response<Guid>.Success(entitlement.Id, 201);

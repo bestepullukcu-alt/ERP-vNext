@@ -1,0 +1,63 @@
+@using System.Text.Json
+@using Diten.Web.Views.Platform.InterfaceRegistry
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InterfaceRegistryIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        InterfaceRegistryTitle = Localizer["InterfaceRegistryTitle"].Value,
+        BackToCatalog = Localizer["BackToCatalog"].Value,
+        GatewayError = SharedLocalizer["GatewayError"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Version = Localizer["Version"].Value,
+        PermissionDenied = Localizer["PermissionDeniedState"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        EmptyCatalogState = Localizer["EmptyCatalogState"].Value,
+        EmptyBatchState = Localizer["EmptyBatchState"].Value,
+        SelectInterfaceState = Localizer["SelectInterfaceState"].Value,
+        SelectBatchState = Localizer["SelectBatchState"].Value,
+        Confirm = Localizer["Confirm"].Value,
+        Reject = Localizer["Reject"].Value,
+        View = SharedLocalizer["Details"].Value,
+        ReasonRequired = Localizer["ReasonRequired"].Value,
+        Saved = Localizer["Saved"].Value,
+        ReviewedBy = Localizer["ReviewedBy"].Value,
+        Owner = Localizer["Owner"].Value,
+        Service = Localizer["Service"].Value,
+        ConfirmedAt = Localizer["ConfirmedAt"].Value,
+        Confirmed = Localizer["Confirmed"].Value,
+        Rejected = Localizer["Rejected"].Value,
+        PendingReview = Localizer["PendingReview"].Value,
+        Deprecated = Localizer["Deprecated"].Value,
+        New = Localizer["New"].Value,
+        Changed = Localizer["Changed"].Value,
+        Missing = Localizer["Missing"].Value,
+        Unchanged = Localizer["Unchanged"].Value,
+        Endpoints = Localizer["Endpoints"].Value,
+        Consumers = Localizer["Consumers"].Value,
+        NoConsumers = Localizer["NoConsumers"].Value,
+        NoEndpoints = Localizer["NoEndpoints"].Value,
+        CompatibilityNotes = Localizer["CompatibilityNotes"].Value,
+        PartialFailure = Localizer["PartialFailure"].Value,
+        Active = Localizer["Active"].Value,
+        Discovered = Localizer["Discovered"].Value,
+        PartiallyConfirmed = Localizer["PartiallyConfirmed"].Value,
+        MissingInSource = Localizer["MissingInSource"].Value,
+        Retired = Localizer["Retired"].Value,
+        Failed = Localizer["Failed"].Value,
+        Stability = Localizer["Stability"].Value,
+        Visibility = Localizer["Visibility"].Value,
+        Experimental = Localizer["Experimental"].Value,
+        Stable = Localizer["Stable"].Value,
+        Internal = Localizer["Internal"].Value,
+        Platform = Localizer["Platform"].Value,
+        Tenant = Localizer["Tenant"].Value,
+        Public = Localizer["Public"].Value,
+        Overview = Localizer["Overview"].Value
+    };
+}
+<script id="interface-registry-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

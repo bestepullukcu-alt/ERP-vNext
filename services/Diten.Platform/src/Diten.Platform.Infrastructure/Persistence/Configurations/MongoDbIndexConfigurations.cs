@@ -1,4 +1,5 @@
 using Diten.Platform.Domain.Entities;
+using Diten.Platform.Domain.Entities.InterfaceRegistry;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
 using MongoDB.Bson;
@@ -20,9 +21,15 @@ public static class MongoDbIndexConfigurations
         var subscriptionPlanCollection = database.GetCollection<SubscriptionPlan>("platform_subscription_plans");
         var tenantSubscriptionCollection = database.GetCollection<TenantSubscription>("tenant_subscriptions");
         var tenantModuleEntitlementCollection = database.GetCollection<TenantModuleEntitlement>("tenant_module_entitlements");
+        var quotaUsageCollection = database.GetCollection<QuotaUsage>("quota_usages");
+        var quotaEventCollection = database.GetCollection<QuotaEvent>("quota_events");
         var featureDefinitionCollection = database.GetCollection<FeatureDefinition>("platform_subscription_features");
         var featureCategoryCollection = database.GetCollection<FeatureCategory>("platform_feature_categories");
         var planFeatureMappingCollection = database.GetCollection<PlanFeatureMapping>("platform_plan_feature_mappings");
+        var interfaceDefinitionCollection = database.GetCollection<InterfaceDefinition>("platform_interface_definitions");
+        var interfaceDiscoveryBatchCollection = database.GetCollection<InterfaceDiscoveryBatch>("platform_interface_discovery_batches");
+        var interfaceDiscoveryDiffCollection = database.GetCollection<InterfaceDiscoveryDiffItem>("platform_interface_discovery_diff_items");
+        var interfaceActiveSnapshotCollection = database.GetCollection<InterfaceActiveSnapshot>("platform_interface_active_snapshots");
         var moduleCatalogDocuments = database.GetCollection<BsonDocument>("platform_module_catalog");
         await collection.Indexes.CreateManyAsync(new[]
         {
@@ -261,6 +268,44 @@ public static class MongoDbIndexConfigurations
                 new CreateIndexOptions { Name = "ix_tenant_module_entitlements_expiry" })
         });
 
+        await quotaUsageCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<QuotaUsage>(
+                Builders<QuotaUsage>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.QuotaKey),
+                new CreateIndexOptions<QuotaUsage>
+                {
+                    Unique = true,
+                    Name = "ux_quota_usages_tenant_quota_key",
+                    PartialFilterExpression = Builders<QuotaUsage>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<QuotaUsage>(
+                Builders<QuotaUsage>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.PeriodEnd),
+                new CreateIndexOptions { Name = "ix_quota_usages_tenant_period_end" })
+        });
+
+        await quotaEventCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<QuotaEvent>(
+                Builders<QuotaEvent>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.QuotaKey)
+                    .Ascending(x => x.OccurredAtUtc),
+                new CreateIndexOptions { Name = "ix_quota_events_tenant_quota_occurred" }),
+            new CreateIndexModel<QuotaEvent>(
+                Builders<QuotaEvent>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.QuotaKey)
+                    .Ascending(x => x.Source)
+                    .Ascending(x => x.OperationId)
+                    .Ascending(x => x.SourceReference)
+                    .Ascending(x => x.IsRejected),
+                new CreateIndexOptions { Name = "ix_quota_events_idempotency" })
+        });
+
         await featureDefinitionCollection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<FeatureDefinition>(
@@ -309,6 +354,75 @@ public static class MongoDbIndexConfigurations
             new CreateIndexModel<PlanFeatureMapping>(
                 Builders<PlanFeatureMapping>.IndexKeys.Ascending(x => x.AvailabilityStatus),
                 new CreateIndexOptions { Name = "ix_platform_plan_feature_mappings_availability_status" })
+        });
+
+        await interfaceDefinitionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<InterfaceDefinition>(
+                Builders<InterfaceDefinition>.IndexKeys
+                    .Ascending(x => x.InterfaceCode)
+                    .Ascending(x => x.InterfaceVersion),
+                new CreateIndexOptions<InterfaceDefinition>
+                {
+                    Unique = true,
+                    Name = "ux_platform_interface_definitions_code_version",
+                    PartialFilterExpression = Builders<InterfaceDefinition>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<InterfaceDefinition>(
+                Builders<InterfaceDefinition>.IndexKeys.Ascending(x => x.OwnerModuleCode),
+                new CreateIndexOptions { Name = "ix_platform_interface_definitions_owner_module" })
+        });
+
+        await interfaceDiscoveryBatchCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<InterfaceDiscoveryBatch>(
+                Builders<InterfaceDiscoveryBatch>.IndexKeys
+                    .Ascending(x => x.SourceService)
+                    .Ascending(x => x.SourceModuleCode)
+                    .Ascending(x => x.ManifestHash),
+                new CreateIndexOptions<InterfaceDiscoveryBatch>
+                {
+                    Unique = true,
+                    Name = "ux_platform_interface_batches_manifest_hash",
+                    PartialFilterExpression = Builders<InterfaceDiscoveryBatch>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<InterfaceDiscoveryBatch>(
+                Builders<InterfaceDiscoveryBatch>.IndexKeys.Descending(x => x.ImportedAtUtc),
+                new CreateIndexOptions { Name = "ix_platform_interface_batches_imported_at" })
+        });
+
+        await interfaceDiscoveryDiffCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<InterfaceDiscoveryDiffItem>(
+                Builders<InterfaceDiscoveryDiffItem>.IndexKeys
+                    .Ascending(x => x.BatchId)
+                    .Ascending(x => x.InterfaceCode)
+                    .Ascending(x => x.EndpointKey),
+                new CreateIndexOptions<InterfaceDiscoveryDiffItem>
+                {
+                    Unique = true,
+                    Name = "ux_platform_interface_diffs_batch_interface_endpoint",
+                    PartialFilterExpression = Builders<InterfaceDiscoveryDiffItem>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<InterfaceDiscoveryDiffItem>(
+                Builders<InterfaceDiscoveryDiffItem>.IndexKeys
+                    .Ascending(x => x.BatchId)
+                    .Ascending(x => x.ChangeType),
+                new CreateIndexOptions { Name = "ix_platform_interface_diffs_batch_change_type" })
+        });
+
+        await interfaceActiveSnapshotCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<InterfaceActiveSnapshot>(
+                Builders<InterfaceActiveSnapshot>.IndexKeys
+                    .Ascending(x => x.InterfaceCode)
+                    .Ascending(x => x.InterfaceVersion),
+                new CreateIndexOptions<InterfaceActiveSnapshot>
+                {
+                    Unique = true,
+                    Name = "ux_platform_interface_active_snapshots_code_version",
+                    PartialFilterExpression = Builders<InterfaceActiveSnapshot>.Filter.Eq(x => x.IsDeleted, false)
+                })
         });
     }
 

@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions.Commands;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -13,17 +14,20 @@ public sealed class ActivateTenantSubscriptionCommandHandler : IRequestHandler<A
     private readonly ITenantRegistryRepository _tenantRepository;
     private readonly ISubscriptionPlanRepository _planRepository;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IQuotaService _quotaService;
 
     public ActivateTenantSubscriptionCommandHandler(
         ITenantSubscriptionRepository subscriptionRepository,
         ITenantRegistryRepository tenantRepository,
         ISubscriptionPlanRepository planRepository,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        IQuotaService quotaService)
     {
         _subscriptionRepository = subscriptionRepository;
         _tenantRepository = tenantRepository;
         _planRepository = planRepository;
         _currentUser = currentUser;
+        _quotaService = quotaService;
     }
 
     public async Task<Response<NoContent>> Handle(ActivateTenantSubscriptionCommand request, CancellationToken ct)
@@ -61,6 +65,22 @@ public sealed class ActivateTenantSubscriptionCommandHandler : IRequestHandler<A
             return Response<NoContent>.Fail("Tenant subscription was modified by another process.", 409);
         }
 
-        return await TenantSubscriptionCommandSupport.UpdateTenantSnapshotAsync(subscription, _tenantRepository, _planRepository, _currentUser, ct);
+        var snapshotResponse = await TenantSubscriptionCommandSupport.UpdateTenantSnapshotAsync(subscription, _tenantRepository, _planRepository, _currentUser, ct);
+        if (!snapshotResponse.IsSuccessful)
+        {
+            return snapshotResponse;
+        }
+
+        var quotaResponse = await _quotaService.InitializeTenantQuotasAsync(
+            request.TenantId,
+            "SubscriptionActivation",
+            "Tenant subscription activated; quota usage initialized.",
+            _currentUser.ActorName,
+            Guid.NewGuid().ToString(),
+            ct);
+
+        return quotaResponse.IsSuccessful
+            ? snapshotResponse
+            : Response<NoContent>.Fail(quotaResponse.Errors, quotaResponse.StatusCode);
     }
 }

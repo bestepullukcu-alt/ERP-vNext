@@ -115,30 +115,21 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
 
     public async Task<TenantRegistryStats> GetStatsAsync(CancellationToken ct = default)
     {
-        var baseFilter = ExecutionFilter;
-        var total = await Collection.CountDocumentsAsync(baseFilter, cancellationToken: ct);
-        var active = await Collection.CountDocumentsAsync(
-            Builders<Tenant>.Filter.And(baseFilter, Builders<Tenant>.Filter.Eq(x => x.Status, TenantStatus.Active)),
-            cancellationToken: ct);
-        var provisioning = await Collection.CountDocumentsAsync(
-            Builders<Tenant>.Filter.And(baseFilter, Builders<Tenant>.Filter.Eq(x => x.Status, TenantStatus.Provisioning)),
-            cancellationToken: ct);
-        var suspended = await Collection.CountDocumentsAsync(
-            Builders<Tenant>.Filter.And(baseFilter, Builders<Tenant>.Filter.Eq(x => x.Status, TenantStatus.Suspended)),
-            cancellationToken: ct);
-        var deactivated = await Collection.CountDocumentsAsync(
-            Builders<Tenant>.Filter.And(baseFilter, Builders<Tenant>.Filter.Eq(x => x.Status, TenantStatus.Deactivated)),
-            cancellationToken: ct);
-        var trial = await Collection.CountDocumentsAsync(
-            Builders<Tenant>.Filter.And(baseFilter, Builders<Tenant>.Filter.Eq(x => x.SubscriptionStatus, Diten.Platform.Domain.Enums.TenantSubscriptionStatus.Trialing)),
-            cancellationToken: ct);
-        var overQuota = await Collection.CountDocumentsAsync(
-            Builders<Tenant>.Filter.And(
-                baseFilter,
-                Builders<Tenant>.Filter.Where(x => x.StorageQuotaGb > 0 && x.StorageUsedGb > x.StorageQuotaGb)),
-            cancellationToken: ct);
+        var stats = await Collection.Aggregate()
+            .Match(ExecutionFilter)
+            .Group(
+                _ => 1,
+                group => new TenantRegistryStats(
+                    group.Count(),
+                    group.Sum(x => x.Status == TenantStatus.Active ? 1 : 0),
+                    group.Sum(x => x.Status == TenantStatus.Provisioning ? 1 : 0),
+                    group.Sum(x => x.Status == TenantStatus.Suspended ? 1 : 0),
+                    group.Sum(x => x.Status == TenantStatus.Deactivated ? 1 : 0),
+                    group.Sum(x => x.SubscriptionStatus == Diten.Platform.Domain.Enums.TenantSubscriptionStatus.Trialing ? 1 : 0),
+                    group.Sum(x => x.StorageQuotaGb > 0 && x.StorageUsedGb > x.StorageQuotaGb ? 1 : 0)))
+            .FirstOrDefaultAsync(ct);
 
-        return new TenantRegistryStats(total, active, provisioning, suspended, deactivated, trial, overQuota);
+        return stats ?? new TenantRegistryStats(0, 0, 0, 0, 0, 0, 0);
     }
 
     private static SortDefinition<Tenant> BuildSort(string sort)

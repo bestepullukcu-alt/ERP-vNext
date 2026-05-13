@@ -170,12 +170,7 @@ public sealed class TenantsController : CustomBaseController
     public async Task<IActionResult> InviteAdminUser(Guid id, Guid adminUserId, CancellationToken ct)
     {
         var result = await _mediator.Send(new InviteTenantAdminUserCommand(id, adminUserId), ct);
-        if (result == null)
-        {
-            return CreateActionResultInstance(Response<TenantAdminUserDto>.Fail("Tenant admin user not found.", 404));
-        }
-
-        return CreateActionResultInstance(Response<TenantAdminUserDto>.Success(result));
+        return CreateActionResultInstance(result);
     }
 
     [HttpGet("{id:guid}/settings")]

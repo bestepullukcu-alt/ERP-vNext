@@ -1,4 +1,5 @@
 using Diten.Web;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Web.Filters;
 using Diten.Web.Services.Auth;
 using Diten.Web.Services.EnterpriseStrategy;
@@ -55,6 +56,12 @@ builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
 builder.Services.AddSingleton<ITaskDetailService, TaskDetailService>();
 builder.Services.AddScoped<IManagementGovernanceFrontendAdapter, MockManagementGovernanceFrontendAdapter>();
 builder.Services.AddScoped<IEnterpriseStrategyFrontendAdapter, MockEnterpriseStrategyFrontendAdapter>();
+builder.Services.AddSecretsProvider(builder.Configuration, builder.Environment, options => options.ServiceName = "Diten.Web");
+builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environment, "Diten.Web", [
+    new("JwtSettings:Secret", "Diten.Web", SecretRequirementKind.JwtCurrent),
+    new("JwtSettings:PreviousSecrets", "Diten.Web", SecretRequirementKind.JwtPreviousCollection, Required: false),
+    new("ConnectionStrings:MongoDb", "Diten.Web", SecretRequirementKind.ConnectionString, Required: false)
+]);
 
 var app = builder.Build();
 
@@ -119,6 +126,7 @@ app.Use(async (context, next) =>
 var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? string.Empty;
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? string.Empty;
 var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? string.Empty;
+var jwtRotationResolver = new JwtSecretRotationResolver(builder.Configuration);
 var validatedTokenParameters = new TokenValidationParameters
 {
     ValidateIssuer = true,
@@ -127,7 +135,7 @@ var validatedTokenParameters = new TokenValidationParameters
     ValidateIssuerSigningKey = true,
     ValidIssuer = jwtIssuer,
     ValidAudience = jwtAudience,
-    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+    IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
     ClockSkew = TimeSpan.Zero
 };
 

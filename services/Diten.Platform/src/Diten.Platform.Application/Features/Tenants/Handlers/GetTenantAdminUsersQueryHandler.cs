@@ -24,6 +24,7 @@ public sealed class GetTenantAdminUsersQueryHandler : IRequestHandler<GetTenantA
         var changed = TenantAdminUserSupport.EnsureInitialAdminUser(tenant);
         if (changed)
         {
+            tenant.ActiveUserCount = TenantAdminUserSupport.CountUsersQuotaUsage(tenant);
             await _repository.UpdateAsync(tenant, cancellationToken);
         }
 

@@ -796,7 +796,6 @@ const TenantsList = (function () {
             syncL10n();
             initDataTable();
             bindEvents();
-            loadStats();
         }
     };
 })();

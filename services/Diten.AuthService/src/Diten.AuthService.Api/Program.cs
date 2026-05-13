@@ -13,8 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ── MediatR / Application / Infrastructure / Persistence ───────────────────────
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddPersistence(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
+builder.Services.AddPersistence(builder.Configuration, builder.Environment);
 
 // ── JWT / Auth ─────────────────────────────────────────────────────────────
 // (Konfigürasyon Infrastructure/DependencyInjection.cs içinde yapılmıştır)

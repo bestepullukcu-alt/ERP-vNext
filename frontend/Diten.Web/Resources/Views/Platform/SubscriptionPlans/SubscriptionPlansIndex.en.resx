@@ -118,7 +118,19 @@
     <value>Default Quotas (JSON)</value>
   </data>
   <data name="DefaultQuotasHelp" xml:space="preserve">
-    <value>Provide a JSON object with quota keys and numeric values.</value>
+    <value>These values are saved to SubscriptionPlan.DefaultQuotas using the standard quota keys.</value>
+  </data>
+  <data name="UsersMax" xml:space="preserve">
+    <value>Maximum Users</value>
+  </data>
+  <data name="StorageGbMax" xml:space="preserve">
+    <value>Storage Limit (GB)</value>
+  </data>
+  <data name="ApiCallsPerMonth" xml:space="preserve">
+    <value>API Calls Per Month</value>
+  </data>
+  <data name="ModulesMax" xml:space="preserve">
+    <value>Maximum Modules</value>
   </data>
   <data name="CommaOrLineSeparated" xml:space="preserve">
     <value>Comma or line separated</value>

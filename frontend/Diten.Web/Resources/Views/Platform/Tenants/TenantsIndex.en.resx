@@ -195,4 +195,21 @@
   <data name="LastUpdated" xml:space="preserve"><value>Last Updated</value></data>
   <data name="RemoveManualOverride" xml:space="preserve"><value>Remove Manual Override</value></data>
   <data name="ManualOverrideReason" xml:space="preserve"><value>Manual override</value></data>
+  <data name="tenant.commercial.quota.title" xml:space="preserve"><value>Tenant Quota Governance</value></data>
+  <data name="tenant.commercial.quota.description" xml:space="preserve"><value>Plan-backed limits and current tenant usage.</value></data>
+  <data name="tenant.commercial.quota.users" xml:space="preserve"><value>Users</value></data>
+  <data name="tenant.commercial.quota.storage" xml:space="preserve"><value>Storage</value></data>
+  <data name="tenant.commercial.quota.apiCallsThisMonth" xml:space="preserve"><value>API Calls This Month</value></data>
+  <data name="tenant.commercial.quota.enabledModules" xml:space="preserve"><value>Enabled Modules</value></data>
+  <data name="tenant.commercial.quota.status.healthy" xml:space="preserve"><value>Healthy</value></data>
+  <data name="tenant.commercial.quota.status.warning" xml:space="preserve"><value>Warning</value></data>
+  <data name="tenant.commercial.quota.status.atLimit" xml:space="preserve"><value>At limit</value></data>
+  <data name="tenant.commercial.quota.status.overLimit" xml:space="preserve"><value>Over limit</value></data>
+  <data name="tenant.commercial.quota.status.configurationMissing" xml:space="preserve"><value>Configuration missing</value></data>
+  <data name="tenant.commercial.quota.status.subscriptionInactive" xml:space="preserve"><value>Subscription inactive</value></data>
+  <data name="tenant.commercial.quota.empty" xml:space="preserve"><value>No quota data is available for this tenant.</value></data>
+  <data name="tenant.commercial.quota.error" xml:space="preserve"><value>Quota status could not be loaded.</value></data>
+  <data name="tenant.commercial.quota.unauthorized" xml:space="preserve"><value>You do not have permission to view tenant quota governance.</value></data>
+  <data name="tenant.commercial.quota.loading" xml:space="preserve"><value>Loading quota status...</value></data>
+  <data name="tenant.commercial.quota.apiCallsMvpNote" xml:space="preserve"><value>API call usage is shown for governance. Live gateway enforcement is outside this MVP.</value></data>
 </root>

@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Diten.Platform.Domain\Diten.Platform.Domain.csproj" />
     <ProjectReference Include="..\..\..\Diten.Platform.Common\src\Diten.Platform.Common\Diten.Platform.Common.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.InterfaceRegistry.Abstractions\Diten.BuildingBlocks.InterfaceRegistry.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

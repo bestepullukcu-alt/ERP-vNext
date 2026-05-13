@@ -25,7 +25,7 @@ public sealed class UpdateTenantAdminUserCommandHandler : IRequestHandler<Update
             return Response<TenantAdminUserDto>.Fail("Tenant not found.", 404);
         }
 
-        TenantAdminUserSupport.EnsureInitialAdminUser(tenant);
+        var initialAdminAdded = TenantAdminUserSupport.EnsureInitialAdminUser(tenant);
         var user = tenant.AdminUsers.FirstOrDefault(item => item.Id == request.AdminUserId);
         if (user == null)
         {
@@ -46,6 +46,10 @@ public sealed class UpdateTenantAdminUserCommandHandler : IRequestHandler<Update
         user.Name = TenantAdminUserSupport.NormalizeName(request.Request.Name, email);
         user.Email = email;
         user.UpdatedAt = now;
+        if (initialAdminAdded)
+        {
+            tenant.ActiveUserCount = TenantAdminUserSupport.CountUsersQuotaUsage(tenant);
+        }
 
         TenantAdminUserSupport.AddActivity(tenant, "tenant.admin_user.updated", $"Admin user '{email}' updated.", _currentUser.ActorName, now);
         await _repository.UpdateAsync(tenant, cancellationToken);

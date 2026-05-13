@@ -1,4 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Diten.ApiGateway.Middleware;
 
@@ -30,12 +32,14 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        var actorType = ReadActorType(context.User);
+        await EnsureAuthenticatedUserAsync(context);
+
+        var actorType = ReadActorType(context.User) ?? ReadClaimFromRequestToken(context, "actor_type");
         var host = context.Request.Host.Host;
         var isAdminHost = IsAdminHost(host);
         var isTenantHost = IsTenantHost(host);
         var isAuthLifecyclePath = IsAuthLifecyclePath(context.Request.Path);
-        var jwtTenant = ReadJwtTenant(context.User);
+        var jwtTenant = ReadJwtTenant(context.User) ?? ReadJwtTenantFromRequestToken(context);
         var headerTenant = ReadHeaderTenant(context.Request.Headers[TenantHeader]);
         var subdomainTenant = ReadSubdomainTenant(context.Request.Host.Host);
 
@@ -192,13 +196,75 @@ public sealed class TenantResolutionMiddleware
 
     private static Guid? ReadJwtTenant(ClaimsPrincipal user)
     {
-        var raw = user.FindFirst("tenant_id")?.Value;
+        var raw = FindClaimValue(user, "tenant_id");
         return Guid.TryParse(raw, out var parsed) ? parsed : null;
     }
 
     private static string? ReadActorType(ClaimsPrincipal user)
     {
-        return user.FindFirst("actor_type")?.Value;
+        return FindClaimValue(user, "actor_type");
+    }
+
+    private static Guid? ReadJwtTenantFromRequestToken(HttpContext context)
+    {
+        var raw = ReadClaimFromRequestToken(context, "tenant_id");
+        return Guid.TryParse(raw, out var parsed) ? parsed : null;
+    }
+
+    private static async Task EnsureAuthenticatedUserAsync(HttpContext context)
+    {
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            return;
+        }
+
+        var result = await context.AuthenticateAsync("Bearer");
+        if (result.Succeeded && result.Principal is not null)
+        {
+            context.User = result.Principal;
+        }
+    }
+
+    private static string? FindClaimValue(ClaimsPrincipal user, string claimType)
+    {
+        return user.Claims
+            .FirstOrDefault(claim => string.Equals(claim.Type, claimType, StringComparison.OrdinalIgnoreCase))
+            ?.Value;
+    }
+
+    private static string? ReadClaimFromRequestToken(HttpContext context, string claimType)
+    {
+        var token = ReadBearerToken(context);
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return null;
+        }
+
+        try
+        {
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            return jwt.Claims
+                .FirstOrDefault(claim => string.Equals(claim.Type, claimType, StringComparison.OrdinalIgnoreCase))
+                ?.Value;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string? ReadBearerToken(HttpContext context)
+    {
+        var authorization = context.Request.Headers.Authorization.FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(authorization) &&
+            authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            return authorization["Bearer ".Length..].Trim();
+        }
+
+        return context.Request.Cookies.TryGetValue("access_token", out var cookieToken)
+            ? cookieToken
+            : null;
     }
 
     private static Guid? ReadHeaderTenant(string? headerValue)
