@@ -4,7 +4,7 @@
 
 | Decision area | Final choice | Implication |
 |---|---|---|
-| API Gateway (MOD-0032) | Deferred / not implemented in current MVP | No gateway runtime, policy engine, or provider-console clone may be built without re-scoping. |
+| API Gateway (MOD-0032) | Ocelot runtime in production at `gateway/Diten.ApiGateway` (port 5000); MOD-0032 hardening backlog (rate limiting, quota, policy engine, consumer model) is deferred | All frontend traffic must traverse the Gateway (AGENTS.md §3). Do not bypass to service ports. Hardening additions are MOD-0032/MOD-0033 scope. |
 | Event Bus (MOD-0035) | Native lightweight internal mode via MediatR | Internal event dispatch is in-process only; do not model broker/DLQ behavior into current MVP. |
 | Observability (MOD-0041 / MOD-0042) | Native lightweight mode via `ILogger` + correlation context | Keep logging/health hooks lightweight; external observability stacks are future-state. |
 | Integration Monitoring (MOD-0037) | Deferred / not implemented in current MVP | No failed-message replay console or reconciliation workbench in current MVP. |

@@ -9,5 +9,6 @@ public sealed record AuthResponse(
     string? ChallengeId = null,
     string? MaskedDestination = null,
     string? Channel = null,
-    DateTime? MfaExpiresAt = null
+    DateTime? MfaExpiresAt = null,
+    bool RequiresPasswordChange = false
 );

@@ -20,6 +20,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
     private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ITokenService _tokenService;
+    private readonly IPlatformAdministratorStatusClient _platformAdministratorStatusClient;
     private readonly ILogger<PlatformLoginCommandHandler> _logger;
 
     public PlatformLoginCommandHandler(
@@ -31,6 +32,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
         ITokenService tokenService,
+        IPlatformAdministratorStatusClient platformAdministratorStatusClient,
         ILogger<PlatformLoginCommandHandler> logger)
     {
         _userRepository = userRepository;
@@ -41,12 +43,17 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
         _tokenService = tokenService;
+        _platformAdministratorStatusClient = platformAdministratorStatusClient;
         _logger = logger;
     }
 
     public async Task<Response<AuthResponse>> Handle(PlatformLoginCommand request, CancellationToken ct)
     {
-        var user = await _userRepository.GetByEmailAndTenantAsync(request.Email, PlatformTenantId, ct);
+        var loginIdentifier = request.Email.Trim().ToLowerInvariant();
+        var user = loginIdentifier.Contains('@', StringComparison.Ordinal)
+            ? await _userRepository.GetByEmailAndTenantAsync(loginIdentifier, PlatformTenantId, ct)
+            : await _userRepository.GetByUserNameAndTenantAsync(loginIdentifier, PlatformTenantId, ct);
+
         if (user is null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
         {
             return Response<AuthResponse>.Fail("Invalid credentials.", 401);
@@ -57,6 +64,19 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             return Response<AuthResponse>.Fail("User is inactive.", 401);
         }
 
+        if (!await _platformAdministratorStatusClient.IsActiveAsync(user.Email, ct))
+        {
+            _logger.LogWarning("Platform login denied by platform administrator status. UserId={UserId} Email={Email}", user.Id, user.Email);
+            return Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401);
+        }
+
+        if (user.MustChangePassword &&
+            user.TemporaryPasswordExpiresAt.HasValue &&
+            user.TemporaryPasswordExpiresAt.Value <= DateTime.UtcNow)
+        {
+            return Response<AuthResponse>.Fail("Temporary password has expired. Please reset your password.", 401);
+        }
+
         var roles = (await _userRoleRepository.GetRolesByUserAsync(user.Id, PlatformTenantId, ct))
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -64,7 +84,10 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
 
         var isPlatformAdmin = roles.Any(r =>
             string.Equals(r, "SuperAdmin", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(r, "Admin", StringComparison.OrdinalIgnoreCase));
+            string.Equals(r, "Admin", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(r, "BillingAdmin", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(r, "SupportAdmin", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(r, "ReadOnly", StringComparison.OrdinalIgnoreCase));
 
         if (!isPlatformAdmin)
         {
@@ -78,34 +101,41 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
+        var actorType = string.IsNullOrWhiteSpace(user.PlatformActorType) ? PlatformActorType : user.PlatformActorType!;
         var accessToken = _tokenService.GeneratePlatformAccessToken(
             user.Id,
             user.Email,
             user.FirstName,
             user.LastName,
             PlatformTenantId,
-            PlatformActorType,
+            actorType,
             roles,
-            permissions);
+            permissions,
+            15,
+            user.MustChangePassword);
 
         var refreshTokenStr = _tokenService.GenerateRefreshToken();
         var refreshTokenHash = _refreshTokenHasher.Hash(refreshTokenStr);
         var refreshToken = new Diten.AuthService.Domain.Entities.RefreshToken(
             user.Id,
             refreshTokenHash,
-            DateTime.UtcNow.AddDays(7),
+            DateTime.UtcNow.AddDays(request.RememberMe ? 30 : 7),
             request.RequestIp,
             PlatformTenantId,
-            PlatformActorType,
+            actorType,
             request.UserAgent);
 
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
+        user.RecordLoginSuccess();
+        await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
+        await _platformAdministratorStatusClient.MarkLoginAcceptedAsync(user.Email, ct);
 
         return Response<AuthResponse>.Success(new AuthResponse(
             accessToken,
             refreshTokenStr,
             refreshToken.ExpiresAt,
-            new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, null)));
+            new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, null),
+            RequiresPasswordChange: user.MustChangePassword));
     }
 
     private async Task<List<Guid>> ResolveRoleIdsAsync(IEnumerable<string> roleNames, Guid tenantId, CancellationToken ct)

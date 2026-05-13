@@ -56,11 +56,18 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IRefreshTokenHasher, RefreshTokenHasher>();
         services.AddScoped<IInternalEventAuthService, InternalEventAuthService>();
+        services.AddScoped<IPlatformAuthEmailService, PlatformAuthEmailService>();
         services.AddScoped<IMfaChallengeService, MfaChallengeService>();
         services.AddScoped<IOtpDeliveryService, SmtpOtpDeliveryService>();
         services.AddTransient<TenantPropagationHandler>();
         services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
         services.AddHttpClient<ITenantLoginSettingsClient, PlatformTenantLoginSettingsClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
+            client.BaseAddress = new Uri(options.BaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
+        });
+        services.AddHttpClient<IPlatformAdministratorStatusClient, PlatformAdministratorStatusClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);

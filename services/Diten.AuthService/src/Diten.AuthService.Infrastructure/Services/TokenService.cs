@@ -84,12 +84,28 @@ public sealed class TokenService : ITokenService
         IEnumerable<string> permissions,
         int expiresInMinutes)
     {
+        return GeneratePlatformAccessToken(userId, email, firstName, lastName, tenantId, actorType, roles, permissions, expiresInMinutes, false);
+    }
+
+    public string GeneratePlatformAccessToken(
+        Guid userId,
+        string email,
+        string? firstName,
+        string? lastName,
+        Guid tenantId,
+        string actorType,
+        IEnumerable<string> roles,
+        IEnumerable<string> permissions,
+        int expiresInMinutes,
+        bool requiresPasswordChange)
+    {
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new(JwtRegisteredClaimNames.Email, email),
             new("actor_type", actorType),
-            new("tenant_id", tenantId.ToString())
+            new("tenant_id", tenantId.ToString()),
+            new("pwd_change_required", requiresPasswordChange ? "true" : "false")
         };
 
         if (!string.IsNullOrWhiteSpace(firstName))

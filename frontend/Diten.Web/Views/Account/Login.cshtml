@@ -48,6 +48,7 @@
         window.L10n = {
             LoginErrorTitle: "@SharedLocalizer["Login.ErrorTitle"]",
             LoginErrorRequired: "@SharedLocalizer["Login.ErrorRequired"]",
+            LoginError: "@SharedLocalizer["Login.Error"]",
             LoginSubmit: "@SharedLocalizer["Login.Submit"]",
             LoginLoading: "@SharedLocalizer["Login.Loading"]",
             MfaRequired: "Verification code is required.",
@@ -70,36 +71,43 @@
                 <div class="card">
                     <div class="card-body">
                         <!-- Logo -->
-                        <div class="app-brand justify-content-center">
-                            <a href="/" class="app-brand-link gap-2">
-                                <span class="app-brand-text demo text-body fw-bolder">Di10</span>
+                        <div class="app-brand justify-content-center" style="height: 60px !important; min-height: 60px !important; margin-bottom: 25px;">
+                            <a href="/" class="app-brand-link gap-2" style="height: 60px !important;">
+                                <span class="app-brand-logo demo">
+                                    <img src="~/assets/img/branding/platform-logo-light.png" alt="Di10 Enterprise Solutions" style="height:60px;width:auto;" />
+                                </span>
                             </a>
                         </div>
                         <!-- /Logo -->
                         <h4 class="mb-2">@SharedLocalizer["Login.Title"] 👋</h4>
                         <p class="mb-4">@SharedLocalizer["Login.Subtitle"]</p>
 
-                        <form id="loginForm" class="mb-3">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">@SharedLocalizer["Login.Email"]</label>
-                                <input type="text" class="form-control" id="email" name="email" placeholder="email@example.com" autofocus />
+                        <form id="loginForm" class="mb-6">
+                            <div class="mb-6">
+                                <label for="email" class="form-label">@SharedLocalizer[authMode == "platform" ? "Login.EmailOrUsername" : "Login.Email"]</label>
+                                <input type="text" class="form-control" id="email" name="email" placeholder="@(authMode == "platform" ? "username or email@example.com" : "email@example.com")" autofocus />
                             </div>
-                            <div class="mb-3 form-password-toggle">
+                            <div class="mb-6">
                                 <div class="d-flex justify-content-between">
                                     <label class="form-label" for="password">@SharedLocalizer["Login.Password"]</label>
                                 </div>
-                                <div class="input-group input-group-merge">
+                                <div class="input-group input-group-merge form-password-toggle">
                                     <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
                                     <span class="input-group-text cursor-pointer" id="togglePassword"><i class="bx bx-hide"></i></span>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="remember-me" />
-                                    <label class="form-check-label" for="remember-me"> @SharedLocalizer["Login.RememberMe"] </label>
+                            <div class="mb-6">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" type="checkbox" id="remember-me" />
+                                        <label class="form-check-label" for="remember-me"> @SharedLocalizer["Login.RememberMe"] </label>
+                                    </div>
+                                    <a href="@(authMode == "platform" ? "/platform/forgot-password" : "#")">
+                                        <span>@SharedLocalizer["Login.ForgotPassword"]</span>
+                                    </a>
                                 </div>
                             </div>
-                            <div class="mb-3">
+                            <div class="mb-6">
                                 <button class="btn btn-primary d-grid w-100" type="submit">@SharedLocalizer["Login.Submit"]</button>
                             </div>
                         </form>

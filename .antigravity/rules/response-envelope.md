@@ -98,20 +98,25 @@ public sealed class ProductsController : ControllerBase { ... }
 
 ## ⚡ Handler Dönüş Tipi Kuralı
 
-Handler'ların MediatR request tipi `IRequest<Response<T>>` formatında olmalıdır:
+Handler'ların MediatR request tipi `IRequest<Response<T>>` formatında olmalıdır.
+
+> **Naming standardı (Golden Reference):**
+> - Command record'u: `{Verb}{Module}Command` suffix
+> - Query record'u: `Get{Module}{Qualifier}Query` suffix
+> - Handler class'ı: `{Verb}{Module}Handler` (Command/Query suffix **YOK**)
 
 ```csharp
 // Create command — yeni kaydın ID'sini döndürür
-public sealed record CreateProductRequest : IRequest<Response<Guid>>;
+public sealed record CreateProductCommand : IRequest<Response<Guid>>;
 
 // Update / Delete / Patch command — veri döndürmez, NoContent kullanılır
-public sealed record UpdateProductRequest : IRequest<Response<NoContent>>;
-public sealed record DeleteProductRequest(Guid Id) : IRequest<Response<NoContent>>;
-public sealed record ChangeProductLifecycleRequest : IRequest<Response<NoContent>>;
+public sealed record UpdateProductCommand : IRequest<Response<NoContent>>;
+public sealed record DeleteProductCommand(Guid Id) : IRequest<Response<NoContent>>;
+public sealed record ChangeProductLifecycleCommand : IRequest<Response<NoContent>>;
 
 // Query — DTO döndürür
 public sealed record GetProductByIdQuery(Guid Id) : IRequest<Response<ProductDetailDto>>;
-public sealed record GetAllProductsQuery : IRequest<Response<IReadOnlyList<ProductListItemDto>>>;
+public sealed record GetProductListQuery : IRequest<Response<IReadOnlyList<ProductListItemDto>>>;
 ```
 
 > **Kural:** Update / Delete / Patch komutları **asla** `Response<bool>` döndürmez. `bool` dönüş tipi anlamsızdır — başarı durumu HTTP status kodu ile (`204 NoContent`) ifade edilir.
@@ -119,11 +124,11 @@ public sealed record GetAllProductsQuery : IRequest<Response<IReadOnlyList<Produ
 ### Handler içinde kullanım
 
 ```csharp
-public sealed class CreateProductRequestHandler
-    : IRequestHandler<CreateProductRequest, Response<Guid>>
+public sealed class CreateProductHandler
+    : IRequestHandler<CreateProductCommand, Response<Guid>>
 {
     public async Task<Response<Guid>> Handle(
-        CreateProductRequest request, CancellationToken ct)
+        CreateProductCommand request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -146,7 +151,7 @@ public sealed class CreateProductRequestHandler
 [HttpPost]
 [HasPermission(ProductPermissions.Products.Create)]
 public async Task<IActionResult> Create(
-    [FromBody] CreateProductRequest request, CancellationToken ct)
+    [FromBody] CreateProductCommand request, CancellationToken ct)
 {
     var response = await _mediator.Send(request, ct);
     return CreateActionResultInstance(response);
@@ -203,8 +208,8 @@ return null;
 return false;
 
 // ❌ Write command'larda Response<bool>
-public sealed class UpdateProductRequest : IRequest<Response<bool>>  // YANLIŞ
-public sealed class DeleteProductRequest : IRequest<Response<bool>>  // YANLIŞ
+public sealed class UpdateProductCommand : IRequest<Response<bool>>  // YANLIŞ
+public sealed class DeleteProductCommand : IRequest<Response<bool>>  // YANLIŞ
 
 // ❌ İş mantığı hatası için exception fırlatmak (handler veya helper'da)
 throw new KeyNotFoundException("Product not found.");    // 404 yerine 500 döner

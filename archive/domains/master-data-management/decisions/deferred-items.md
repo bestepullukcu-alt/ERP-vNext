@@ -2,4 +2,4 @@
 
 - Excel kaynağında `notes` alanı `TBD` olan modüller, ilgili module pack çalışmasında netleştirilecek.
 - Wave sıralaması sırasında öncelik çakışmaları çıkarsa ayrı karar kaydı açılacak.
-- Domain controls altında modül tiplerine göre ek doğrulama checklist'leri sonradan genişletilecek.
+- Modül tiplerine göre ek doğrulama checklist'leri ihtiyaç doğdukça module pack'in `Acceptance Criteria` ve `Test Expectations` bölümlerine yazılır.

@@ -23,6 +23,21 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         return await Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
+    public async Task<User?> GetByUserNameAndTenantAsync(string normalizedUserName, Guid tenantId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(normalizedUserName))
+        {
+            return null;
+        }
+
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.NormalizedUserName, normalizedUserName.Trim().ToLowerInvariant()),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+
+        return await Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
     public async Task<User?> GetByIdAndTenantAsync(Guid id, Guid tenantId, CancellationToken ct)
     {
         var filter = Builders<User>.Filter.And(

@@ -103,6 +103,7 @@ Module Pack > Domain Config > AGENTS.md > .antigravity/
 Notlar:
 - `batches/` katmani bu repoda kullanilmaz.
 - `snapshots/` katmani bu repoda kullanilmaz.
+- `controls/` ve `decisions/` katmanlari kullanilmaz; tarihsel icerikler `archive/domains/` altinda. Engineering standartlari `.antigravity/rules/`'de, scope kararlari `docs/platform/master-plan.md`'dedir.
 - Orkestrasyon asamasi `.antigravity/workflows/add-module.md` uzerinden ilerler.
 
 ---

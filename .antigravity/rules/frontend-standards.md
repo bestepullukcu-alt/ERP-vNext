@@ -128,6 +128,12 @@ Bu kurallar, projedeki görsel tutarlılığı (consistency) korumak için ZORUN
 - Details section border'ı kaldırılacaksa yalnız sayfa wrapper'ı altında scoped CSS ile kaldırılır. Layout, shell veya global `.card` selector'ına border/radius override eklenmez.
 - Bordered layout/card varyantı gerekiyorsa CSS ile elle çoğaltılmaz; Sneat settings/layout seçeneği kullanılmalıdır.
 
+### UI-026: KPI Kartı (KPI Cards) Tasarım Standartları
+- **Padding (İç Boşluk)**: KPI kartlarındaki iç boşluklar varsayılan 24px yerine daima **16px** olmalıdır. Bunun için özel CSS yazılmamalı, doğrudan Bootstrap'in yerleşik **`p-3`** (`card-body p-3`) sınıfı kullanılmalıdır.
+- **Responsive Kolon Yapısı (Responsive Column Layout)**: Mobil ekranlarda metinlerin sıkışmasını, üst üste binmesini engellemek ve okunabilirliği en üst düzeyde tutmak için KPI kartları mobilde tam genişlik kaplayacak şekilde sıralanmalıdır.
+  - *Kural*: KPI kartlarının sarmalayıcı kolon sınıfları daima **`col-12 col-sm-6 col-xl-3`** (veya modül tasarımına göre masaüstü için `col-lg-3`) şeklinde tanımlanmalıdır.
+  - Mobilde `col-6` veya `col-3` gibi sıkışık yerleşimler kesinlikle kullanılmamalıdır.
+
 ---
 
 ## 🛡️ Production Safety

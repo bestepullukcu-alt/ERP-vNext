@@ -7,7 +7,7 @@ List the explicit items deferred from the current MVP baseline so they are not s
 
 | Module | Current MVP status | Deferred scope |
 |---|---|---|
-| MOD-0032 API Gateway | Deferred | No runtime gateway, route/policy engine, credential console, or provider-console clone. |
+| MOD-0032 API Gateway | Ocelot runtime in production; hardening deferred | Ocelot at `gateway/Diten.ApiGateway` is live (port 5000). Hardening features (rate limiting, policy engine, credential console, quota enforcement) are the deferred scope of MOD-0032/MOD-0033. |
 | MOD-0037 Integration Monitoring & Reconciliation | Deferred | No integration-ops workbench, replay queue, or reconciliation console. |
 | MOD-0042 Alerting & Incident Runbooks | Deferred as dedicated surface | No alerting subsystem or runbook operations console in current MVP. |
 | MOD-0035 Event Bus | Thin internal seam only | No external broker, DLQ, replay, or provider-console behavior. |

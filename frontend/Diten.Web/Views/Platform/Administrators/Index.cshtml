@@ -1,0 +1,130 @@
+@using Diten.Web.Views.Platform.Administrators
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AdministratorsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["AdministratorsTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel
+            {
+                Key = "delete",
+                Text = SharedLocalizer["BulkDelete"].Value,
+                Icon = "bx bx-trash",
+                ButtonClass = "btn btn-label-danger",
+                ConfirmKey = "BulkDeleteConfirm",
+                Endpoint = "/Platform/Administrators/api/bulk",
+                Method = "DELETE"
+            }
+        ]
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Platform/Administrators/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["AdministratorsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-user-check"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["TotalAdministrators"]</small>
+                    <h5 id="kpi-total" class="mb-0">0</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-success"><i class="bx bx-check-shield"></i></span></div>
+                <div>
+                    <small class="text-muted">@SharedLocalizer["Active"]</small>
+                    <h5 id="kpi-active" class="mb-0">0</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-pause-circle"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["Suspended"]</small>
+                    <h5 id="kpi-suspended" class="mb-0">0</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-envelope"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["PendingInvitation"]</small>
+                    <h5 id="kpi-pending" class="mb-0">0</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+<partial name="~/Views/Platform/Administrators/_DataTable.cshtml" />
+@* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
+<partial name="~/Views/Platform/Administrators/_DetailsQuickView.cshtml" />
+<partial name="~/Views/Platform/Administrators/_CreateEditOffcanvas.cshtml" />
+
+<!-- Suspend Modal -->
+<div class="modal fade" id="suspendModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom py-4">
+                <h5 class="modal-title d-flex align-items-center mb-0 lh-1">
+                    <i class="bx bx-block text-danger me-2 fs-5 lh-1"></i>
+                    <span class="lh-1">@Localizer["SuspendModalTitle"]</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="suspendForm" class="needs-validation" novalidate data-no-tracker>
+                <div class="modal-body">
+                    <p class="text-muted mb-4">
+                        @Localizer["SuspendModalWarning"]
+                    </p>
+                    <input type="hidden" id="suspendAdminId" />
+                    <div class="mb-3">
+                        <label for="suspendReason" class="form-label text-heading fw-medium">@Localizer["SuspendModalReasonLabel"]</label>
+                        <textarea id="suspendReason" class="form-control" placeholder="@Localizer["SuspendModalReasonPlaceholder"]" rows="3" required></textarea>
+                        <div class="invalid-feedback">@Localizer["SuspendModalReasonRequired"]</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="submit" class="btn btn-danger" id="btnConfirmSuspend">
+                        <span class="spinner-border spinner-border-sm me-1 d-none" role="status" aria-hidden="true"></span>
+                        @Localizer["SuspendModalConfirmButton"]
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Platform/Administrators/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/Administrators/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Administrators/index.js" asp-append-version="true"></script>
+}

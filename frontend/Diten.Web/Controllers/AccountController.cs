@@ -40,7 +40,7 @@ public class AccountController : Controller
             return BadRequest(new { detail = "Tenant login requires a valid tenant identifier." });
         }
 
-        var result = await _authGateway.LoginTenantAsync(request.Email, request.Password, request.TenantId, ct);
+        var result = await _authGateway.LoginTenantAsync(request.Email, request.Password, request.TenantId, request.RememberMe, ct);
         if (result.RequiresMfa && !string.IsNullOrWhiteSpace(result.ChallengeId))
         {
             return Ok(new LoginBridgeResponse(
@@ -131,7 +131,7 @@ public class AccountController : Controller
             return BadRequest(new { detail = "Platform login request is invalid." });
         }
 
-        var result = await _authGateway.LoginPlatformAsync(request.Email, request.Password, ct);
+        var result = await _authGateway.LoginPlatformAsync(request.Email, request.Password, request.RememberMe, ct);
         if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
             return Unauthorized(new { detail = result.ErrorMessage ?? "Platform login failed." });
@@ -140,8 +140,83 @@ public class AccountController : Controller
         _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
 
         return Ok(new LoginBridgeResponse(
-            ResolveReturnUrl(request.ReturnUrl, "/Platform/Tenants"),
-            result.User));
+            result.RequiresPasswordChange ? "/platform/change-password" : ResolveReturnUrl(request.ReturnUrl, "/Platform/Tenants"),
+            result.User,
+            RequiresPasswordChange: result.RequiresPasswordChange));
+    }
+
+    [HttpGet("/platform/forgot-password")]
+    public IActionResult PlatformForgotPassword()
+    {
+        ViewBag.AuthMode = "platform";
+        return View("ForgotPassword");
+    }
+
+    [HttpPost("/platform/forgot-password")]
+    public async Task<IActionResult> PlatformForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email))
+        {
+            return BadRequest(new { detail = "Email is required." });
+        }
+
+        await _authGateway.ForgotPlatformPasswordAsync(request.Email, ct);
+        return Ok(new { success = true });
+    }
+
+    [HttpGet("/platform/reset-password")]
+    public IActionResult PlatformResetPassword([FromQuery] string? email, [FromQuery] string? token)
+    {
+        ViewBag.AuthMode = "platform";
+        ViewBag.Email = email ?? string.Empty;
+        ViewBag.Token = token ?? string.Empty;
+        ViewBag.IsForcedChange = false;
+        return View("ResetPassword");
+    }
+
+    [HttpPost("/platform/reset-password")]
+    public async Task<IActionResult> PlatformResetPassword([FromBody] ResetPasswordRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Token) ||
+            string.IsNullOrWhiteSpace(request.NewPassword) ||
+            !string.Equals(request.NewPassword, request.ConfirmPassword, StringComparison.Ordinal))
+        {
+            return BadRequest(new { detail = "Password reset request is invalid." });
+        }
+
+        var success = await _authGateway.ResetPlatformPasswordAsync(request.Email, request.Token, request.NewPassword, ct);
+        return success ? Ok(new { success = true, redirectUrl = "/platform/login" }) : BadRequest(new { detail = "Password reset token is invalid or expired." });
+    }
+
+    [HttpGet("/platform/change-password")]
+    public IActionResult PlatformChangePassword()
+    {
+        ViewBag.AuthMode = "platform";
+        ViewBag.Email = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)?.Value ?? string.Empty;
+        ViewBag.Token = string.Empty;
+        ViewBag.IsForcedChange = true;
+        return View("ResetPassword");
+    }
+
+    [HttpPost("/platform/change-password")]
+    public async Task<IActionResult> PlatformChangePassword([FromBody] ForcedChangePasswordRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword) ||
+            string.IsNullOrWhiteSpace(request.NewPassword) ||
+            !string.Equals(request.NewPassword, request.ConfirmPassword, StringComparison.Ordinal))
+        {
+            return BadRequest(new { detail = "Password change request is invalid." });
+        }
+
+        var result = await _authGateway.ChangePlatformPasswordAsync(request.CurrentPassword, request.NewPassword, request.RememberMe, ct);
+        if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
+        {
+            return Unauthorized(new { detail = result.ErrorMessage ?? "Password change failed." });
+        }
+
+        _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
+        return Ok(new { success = true, redirectUrl = "/Platform/Tenants" });
     }
 
     [HttpPost("/account/refresh")]
@@ -302,10 +377,13 @@ public class AccountController : Controller
         return defaultPath;
     }
 
-    public sealed record LoginRequest(string Email, string Password, Guid TenantId, string? ReturnUrl);
+    public sealed record LoginRequest(string Email, string Password, Guid TenantId, string? ReturnUrl, bool RememberMe = false);
     public sealed record MfaLoginRequest(string ChallengeId, string Code, string? ReturnUrl);
     public sealed record MfaResendRequest(string ChallengeId);
-    public sealed record PlatformLoginRequest(string Email, string Password, string? ReturnUrl);
+    public sealed record PlatformLoginRequest(string Email, string Password, string? ReturnUrl, bool RememberMe = false);
+    public sealed record ForgotPasswordRequest(string Email);
+    public sealed record ResetPasswordRequest(string Email, string Token, string NewPassword, string ConfirmPassword);
+    public sealed record ForcedChangePasswordRequest(string CurrentPassword, string NewPassword, string ConfirmPassword, bool RememberMe = false);
     public sealed record LoginBridgeResponse(
         string RedirectUrl,
         AuthBridgeUser? User,
@@ -313,5 +391,6 @@ public class AccountController : Controller
         string? ChallengeId = null,
         string? MaskedDestination = null,
         string? Channel = null,
-        DateTime? MfaExpiresAt = null);
+        DateTime? MfaExpiresAt = null,
+        bool RequiresPasswordChange = false);
 }

@@ -8,6 +8,11 @@ Bu doküman, handler sınıflarının ne yapıp yapamayacağını, sorumluluk s�
 
 ---
 
+> **Naming standardı:** Handler isimlerinde `Command` / `Query` / `Request` suffix **YOKTUR**.
+> Sadece `{Verb}{Module}Handler` formatı kullanılır (Golden Reference: `CreateGoldenReferenceSlimHandler`).
+> Request tipi `Command` / `Query` suffix'li record olarak Application'da tanımlıdır.
+> Folder: `Handlers/CommandHandlers/` ve `Handlers/QueryHandlers/` ayrı klasörlerde tutulur.
+
 ## 🎯 Temel Kural: Tek Sorumluluk
 
 Bir handler şunu yapar:
@@ -54,13 +59,13 @@ public interface ICurrentUserContext
 ### Handler'da Kullanım (Create)
 
 ```csharp
-public sealed class CreateProductRequestHandler
-    : IRequestHandler<CreateProductRequest, Response<Guid>>
+public sealed class CreateProductHandler
+    : IRequestHandler<CreateProductCommand, Response<Guid>>
 {
     private readonly IProductRepository _repository;
     private readonly ICurrentUserContext _currentUser;
 
-    public CreateProductRequestHandler(
+    public CreateProductHandler(
         IProductRepository repository,
         ICurrentUserContext currentUser)
     {
@@ -69,7 +74,7 @@ public sealed class CreateProductRequestHandler
     }
 
     public async Task<Response<Guid>> Handle(
-        CreateProductRequest request, CancellationToken ct)
+        CreateProductCommand request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -93,7 +98,7 @@ public sealed class CreateProductRequestHandler
 
 ```csharp
 public async Task<Response<NoContent>> Handle(
-    UpdateProductRequest request, CancellationToken ct)
+    UpdateProductCommand request, CancellationToken ct)
 {
     ArgumentNullException.ThrowIfNull(request);
 
@@ -123,7 +128,7 @@ public async Task<Response<NoContent>> Handle(
 
 ```csharp
 // ❌ Çok fazla sorumluluk — bu handler reddedilir
-public async Task<Response<Guid>> Handle(CreateTaskRequest request, CancellationToken ct)
+public async Task<Response<Guid>> Handle(CreateTaskCommand request, CancellationToken ct)
 {
     ArgumentNullException.ThrowIfNull(request);
 
@@ -149,8 +154,8 @@ public async Task<Response<Guid>> Handle(CreateTaskRequest request, Cancellation
 ```
 
 **Bu handler 4 ayrı sorumluluğu taşıyor. Şöyle bölünmeli:**
-- `CreateTaskRequestHandler` → sadece task entity'yi oluşturur
-- `CreateSubTasksRequestHandler` → alt görevleri oluşturur (ayrı command)
+- `CreateTaskHandler` → sadece task entity'yi oluşturur
+- `CreateSubTasksHandler` → alt görevleri oluşturur (ayrı command)
 - `INotificationService.NotifyTaskCreatedAsync()` → email notification
 - `IUserServiceClient.GetByIdAsync()` → kullanıcı bilgisi
 
@@ -185,14 +190,14 @@ public sealed class UserServiceClient : IUserServiceClient
 Handler sadece interface'i kullanır, implementasyonu bilmez:
 
 ```csharp
-public sealed class AssignTaskRequestHandler
-    : IRequestHandler<AssignTaskRequest, Response<NoContent>>
+public sealed class AssignTaskHandler
+    : IRequestHandler<AssignTaskCommand, Response<NoContent>>
 {
     private readonly ITaskRepository _repository;
     private readonly IUserServiceClient _userClient; // ✅ Interface kullanıyor
 
     public async Task<Response<NoContent>> Handle(
-        AssignTaskRequest request, CancellationToken ct)
+        AssignTaskCommand request, CancellationToken ct)
     {
         var user = await _userClient.GetByIdAsync(request.AssigneeId, ct);
         if (user is null)
