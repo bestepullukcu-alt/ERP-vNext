@@ -23,9 +23,9 @@ Master Data Management domain'i; kurum genelinde ortak kullanılan referans ve a
 ## Domain-Specific Belgeler
 
 - [domain-config.md](domain-config.md)
-- [decisions/](decisions/)
-- [controls/](controls/)
 - [module-packs/](module-packs/)
+
+> Tarihsel `controls/` ve `decisions/` katmanları `archive/domains/master-data-management/` altına taşınmıştır; otorite `AGENTS.md` + `.antigravity/rules/` + `docs/platform/master-plan.md`.
 
 ## Yeni Modül Eklerken
 

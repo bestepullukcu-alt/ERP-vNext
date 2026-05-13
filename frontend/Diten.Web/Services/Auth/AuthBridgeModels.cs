@@ -11,7 +11,8 @@ public sealed record AuthBridgeResult(
     string? ChallengeId = null,
     string? MaskedDestination = null,
     string? Channel = null,
-    DateTime? MfaExpiresAt = null);
+    DateTime? MfaExpiresAt = null,
+    bool RequiresPasswordChange = false);
 
 public sealed record AuthBridgeUser(
     Guid Id,

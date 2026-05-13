@@ -1,0 +1,56 @@
+@using Diten.Web.Views.Platform.Administrators
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AdministratorsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="Active">@SharedLocalizer["Active"]</option>
+                            <option value="Suspended">@Localizer["Suspended"]</option>
+                            <option value="Disabled">@Localizer["Disabled"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-actor-type">
+                        <select id="filterActorType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ActorType"]">
+                            <option value="PlatformAdmin">@Localizer["PlatformAdmin"]</option>
+                            <option value="PartnerAdmin">@Localizer["PartnerAdmin"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-role">
+                        <select id="filterRole" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Roles"]">
+                            <option value="SuperAdmin">@Localizer["RoleSuperAdmin"]</option>
+                            <option value="BillingAdmin">@Localizer["RoleBillingAdmin"]</option>
+                            <option value="SupportAdmin">@Localizer["RoleSupportAdmin"]</option>
+                            <option value="ReadOnly">@Localizer["RoleReadOnly"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-invitation-status">
+                        <select id="filterInvitationStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["InvitationStatus"]">
+                            <option value="PendingInvitation">@Localizer["PendingInvitation"]</option>
+                            <option value="Invited">@Localizer["Invited"]</option>
+                            <option value="Accepted">@Localizer["Accepted"]</option>
+                            <option value="Expired">@Localizer["Expired"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

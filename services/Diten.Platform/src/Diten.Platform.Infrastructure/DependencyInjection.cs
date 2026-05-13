@@ -80,6 +80,8 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
+        services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
+        services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
         services.AddTransient<TenantPropagationHandler>();
         services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
 
@@ -113,6 +115,7 @@ public static class DependencyInjection
         services.AddScoped<IModuleCatalogRepository, ModuleCatalogRepository>();
         services.AddScoped<IModulePageDescriptorRepository, ModulePageDescriptorRepository>();
         services.AddScoped<IModulePageActionDescriptorRepository, ModulePageActionDescriptorRepository>();
+        services.AddScoped<IPlatformAdministratorRepository, PlatformAdministratorRepository>();
         services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
         services.AddScoped<ITenantSubscriptionRepository, TenantSubscriptionRepository>();
         services.AddScoped<ITenantModuleEntitlementRepository, TenantModuleEntitlementRepository>();
@@ -126,6 +129,8 @@ public static class DependencyInjection
         LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
         MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
         SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
         return services;
     }

@@ -242,6 +242,17 @@ app.Use(async (context, next) =>
 
 app.UseAuthorization();
 
+app.Use(async (context, next) =>
+{
+    if (RequiresPlatformPasswordChange(context) && !IsPasswordChangeAllowedPath(context.Request.Path))
+    {
+        context.Response.Redirect("/platform/change-password");
+        return;
+    }
+
+    await next();
+});
+
 app.MapGet("/", (HttpContext context) =>
 {
     var host = context.Request.Host.Host;
@@ -285,5 +296,26 @@ static bool ShouldSkipTokenBridgeRefresh(PathString path)
     return path.StartsWithSegments("/account/refresh", StringComparison.OrdinalIgnoreCase)
            || path.StartsWithSegments("/account/logout", StringComparison.OrdinalIgnoreCase)
            || path.StartsWithSegments("/account/login", StringComparison.OrdinalIgnoreCase)
-           || path.StartsWithSegments("/platform/login", StringComparison.OrdinalIgnoreCase);
+           || path.StartsWithSegments("/platform/login", StringComparison.OrdinalIgnoreCase)
+           || path.StartsWithSegments("/platform/forgot-password", StringComparison.OrdinalIgnoreCase)
+           || path.StartsWithSegments("/platform/reset-password", StringComparison.OrdinalIgnoreCase);
+}
+
+static bool RequiresPlatformPasswordChange(HttpContext context)
+{
+    var actorType = context.User.FindFirst("actor_type")?.Value;
+    var requiresChange = context.User.FindFirst("pwd_change_required")?.Value;
+    return (string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase)) &&
+           string.Equals(requiresChange, "true", StringComparison.OrdinalIgnoreCase);
+}
+
+static bool IsPasswordChangeAllowedPath(PathString path)
+{
+    return path.StartsWithSegments("/platform/change-password", StringComparison.OrdinalIgnoreCase)
+           || path.StartsWithSegments("/platform/login", StringComparison.OrdinalIgnoreCase)
+           || path.StartsWithSegments("/platform/forgot-password", StringComparison.OrdinalIgnoreCase)
+           || path.StartsWithSegments("/platform/reset-password", StringComparison.OrdinalIgnoreCase)
+           || path.StartsWithSegments("/account/logout", StringComparison.OrdinalIgnoreCase)
+           || path.StartsWithSegments("/assets", StringComparison.OrdinalIgnoreCase);
 }

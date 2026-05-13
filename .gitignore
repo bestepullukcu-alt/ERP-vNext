@@ -14,4 +14,9 @@ wwwroot/lib/
 services.log
 .git-backups/
 tmp/
+.tmp/
+.artifacts/
+.build/
+.dotnet/
+scratch/
 execution/DASHBOARD.md

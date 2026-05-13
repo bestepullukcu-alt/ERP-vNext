@@ -395,6 +395,12 @@ public sealed class TenantsController : Controller
         }
 
         var response = await _httpClient.SendAsync(request);
+        if (ProxyAuthFailure.IsAuthFailure(response.StatusCode))
+        {
+            ProxyAuthFailure.ClearAuthCookies(Response);
+            return StatusCode((int)response.StatusCode, ProxyAuthFailure.PlatformLoginPayload());
+        }
+
         var content = await response.Content.ReadAsStringAsync();
         var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/json";
         return new ContentResult

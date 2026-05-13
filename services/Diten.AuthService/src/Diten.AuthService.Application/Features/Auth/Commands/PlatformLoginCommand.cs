@@ -8,5 +8,6 @@ public sealed record PlatformLoginCommand(
     string Email,
     string Password,
     string RequestIp,
-    string? UserAgent
+    string? UserAgent,
+    bool RememberMe = false
 ) : IRequest<Response<AuthResponse>>;

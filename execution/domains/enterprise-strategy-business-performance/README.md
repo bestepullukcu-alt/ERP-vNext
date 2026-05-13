@@ -23,9 +23,9 @@ Enterprise Strategy & Business Performance domain'i, kurumsal stratejik hedefler
 ## Domain-Specific Belgeler
 
 - [domain-config.md](domain-config.md)
-- [decisions/](decisions/)
-- [controls/](controls/)
 - [module-packs/](module-packs/)
+
+> Tarihsel `controls/` ve `decisions/` katmanları `archive/domains/enterprise-strategy-business-performance/` altına taşınmıştır; otorite `AGENTS.md` + `.antigravity/rules/`.
 
 ## Yeni Modül Eklerken
 

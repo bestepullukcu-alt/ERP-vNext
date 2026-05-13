@@ -1,7 +1,16 @@
 # EntityBase Reference Template (Diten ERP vNext)
 
-Bu dosya, Diten ERP vNext'teki tüm MongoDB entity'lerinin miras aldığı `EntityBase` sınıfının referans belgesidir.
+Bu dosya, Diten ERP vNext'teki tüm MongoDB entity'lerinin miras aldığı base sınıfın referans belgesidir.
 Yeni bir entity yazan ajan, bu belgede hangi alanların otomatik olarak miras alındığını görerek **aynı alanları entity'ye tekrar eklemez**.
+
+> **Sınıf adı servis bazlı değişir, kontrat aynıdır:**
+> - `Diten.MdmService`, `Diten.DevEnablementService`, `Diten.AuthService` → sınıf adı **`EntityBase`**
+> - `Diten.Platform` → sınıf adı **`BaseEntity`** (eşdeğer kontrat) + Platform-scope kataloglar için **`GlobalEntity : BaseEntity`**
+>
+> Module pack frontmatter'ında `entity_base` alanı somut sınıf adını yazar:
+> - `entity_base: EntityBase` (varsayılan tenant-owned)
+> - `entity_base: BaseEntity` (Platform service tenant-aware kayıt)
+> - `entity_base: GlobalEntity` (Platform service cross-tenant katalog, gerekçeli)
 
 ---
 

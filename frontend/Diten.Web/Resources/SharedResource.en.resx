@@ -315,6 +315,9 @@
   <data name="Login.Email" xml:space="preserve">
     <value>Email</value>
   </data>
+  <data name="Login.EmailOrUsername" xml:space="preserve">
+    <value>Email or username</value>
+  </data>
   <data name="Login.Password" xml:space="preserve">
     <value>Password</value>
   </data>
@@ -435,14 +438,14 @@
   <data name="Deactivate" xml:space="preserve">
     <value>Deactivate</value>
   </data>
-  <data name="Unknown" xml:space="preserve">
-    <value>Unknown</value>
-  </data>
   <data name="SubscriptionFeatures" xml:space="preserve">
     <value>Subscription Features</value>
   </data>
   <data name="SubscriptionPlans" xml:space="preserve">
     <value>Subscription Plans</value>
+  </data>
+  <data name="PlatformAdministrators" xml:space="preserve">
+    <value>Platform Administrators</value>
   </data>
   <data name="Loading" xml:space="preserve">
     <value>Loading...</value>
@@ -450,4 +453,30 @@
   <data name="Close" xml:space="preserve">
     <value>Close</value>
   </data>
+  <data name="Login.ForgotPassword" xml:space="preserve"><value>Forgot Password?</value></data>
+  <data name="Login.EmailRequired" xml:space="preserve"><value>Email is required.</value></data>
+  <data name="ForgotPassword.Title" xml:space="preserve"><value>Forgot Password?</value></data>
+  <data name="ForgotPassword.Subtitle" xml:space="preserve"><value>Enter your email and we will send reset instructions.</value></data>
+  <data name="ForgotPassword.Submit" xml:space="preserve"><value>Send reset link</value></data>
+  <data name="ForgotPassword.SentTitle" xml:space="preserve"><value>Check your email</value></data>
+  <data name="ForgotPassword.SentMessage" xml:space="preserve"><value>If the email exists, reset instructions have been sent.</value></data>
+  <data name="ResetPassword.Title" xml:space="preserve"><value>Reset Password</value></data>
+  <data name="ResetPassword.Subtitle" xml:space="preserve"><value>Your new password must be different from previously used passwords.</value></data>
+  <data name="ChangePassword.Title" xml:space="preserve"><value>Change Password</value></data>
+  <data name="ChangePassword.Subtitle" xml:space="preserve"><value>You must change your temporary password before continuing.</value></data>
+  <data name="CurrentPassword" xml:space="preserve"><value>Current Password</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>New Password</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Confirm Password</value></data>
+  <data name="SetNewPassword" xml:space="preserve"><value>Set new password</value></data>
+  <data name="BackToLogin" xml:space="preserve"><value>Back to login</value></data>
+  <data name="ResetPassword.Required" xml:space="preserve"><value>All password fields are required.</value></data>
+  <data name="ResetPassword.Mismatch" xml:space="preserve"><value>Passwords do not match.</value></data>
+  <data name="ResetPassword.SuccessTitle" xml:space="preserve"><value>Password updated</value></data>
+  <data name="ResetPassword.SuccessMessage" xml:space="preserve"><value>Your password has been updated.</value></data>
+  <data name="AdminSelfActionDenied" xml:space="preserve"><value>You cannot delete or suspend your own administrator account.</value></data>
+  <data name="AdminSelfRoleDowngradeDenied" xml:space="preserve"><value>You cannot remove your own administrative role.</value></data>
+  <data name="AdminLastSuperAdminDenied" xml:space="preserve"><value>At least one active Super Admin must remain in the system.</value></data>
+  <data name="AdminSeedDeleteDenied" xml:space="preserve"><value>The system seed administrator cannot be deleted.</value></data>
+  <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>The system seed administrator cannot be suspended.</value></data>
+  <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Administrator was created, but the invitation email could not be sent. Check SMTP settings and use Resend Invitation.</value></data>
 </root>

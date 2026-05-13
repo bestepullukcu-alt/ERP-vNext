@@ -184,6 +184,12 @@
                             <div>Module Catalog</div>
                         </a>
                     </li>
+                    <li class="menu-item @(activeController == "Administrators" ? "active" : "")">
+                        <a href="/Platform/Administrators" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-user-check"></i>
+                            <div>@SharedLocalizer["PlatformAdministrators"]</div>
+                        </a>
+                    </li>
                     <li class="menu-item @(activeController == "InterfaceRegistry" ? "active" : "")">
                         <a href="/Platform/InterfaceRegistry" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-git-branch"></i>

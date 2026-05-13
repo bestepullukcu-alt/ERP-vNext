@@ -32,9 +32,17 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        await EnsureAuthenticatedUserAsync(context);
+        // /api/platform-auth/* (login, change-password/forced, forgot-password, reset-password)
+        // is the platform identity surface. AuthService enforces its own authorization.
+        // The tenant-resolution middleware must not gate it on tenant_user actor types.
+        // See master-plan §1.3 (platform/admin paths bypass tenant resolution).
+        if (IsPlatformAuthPath(context.Request.Path))
+        {
+            await _next(context);
+            return;
+        }
 
-        var actorType = ReadActorType(context.User) ?? ReadClaimFromRequestToken(context, "actor_type");
+        var actorType = ReadActorType(context.User);
         var host = context.Request.Host.Host;
         var isAdminHost = IsAdminHost(host);
         var isTenantHost = IsTenantHost(host);
@@ -316,6 +324,11 @@ public sealed class TenantResolutionMiddleware
     {
         return path.StartsWithSegments("/api/admin", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/platform", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsPlatformAuthPath(PathString path)
+    {
+        return path.StartsWithSegments("/api/platform-auth", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsPersonalizationPath(PathString path)

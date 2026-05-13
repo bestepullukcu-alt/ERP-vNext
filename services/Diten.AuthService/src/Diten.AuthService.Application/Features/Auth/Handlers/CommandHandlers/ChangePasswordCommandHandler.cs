@@ -48,6 +48,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
         await _passwordPolicyService.ValidateTenantPasswordAsync(_tenantContext.TenantId, user.Id, request.NewPassword, "change_password", ct);
         var newHashedPassword = _passwordHasher.Hash(request.NewPassword);
         user.UpdatePassword(newHashedPassword);
+        user.ClearPasswordChangeRequirement();
 
         await _userRepository.UpdateAsync(user, ct);
         await _refreshTokenRepository.RevokeAllByUserAsync(userId, _tenantContext.TenantId, ct);

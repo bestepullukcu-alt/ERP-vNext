@@ -16,7 +16,7 @@ Bu workflow, bir Excel planlama dosyasındaki verileri kullanarak Diten ERP vNex
 ### Faz 2: Domain Yapılandırması
 - İlgili `execution/domains/{domain-name}/` klasörü oluşturulur.
 - **`domain-config.md`:** Excel'deki kapsam (in-scope) modülleri temel alınarak oluşturulur.
-- **`decisions/`:** `runtime-decisions.md` ve `ownership-decisions.md` iskeletleri SOP standartlarına göre kurulur.
+- `controls/`, `decisions/`, `batches/`, `snapshots/` katmanları **kurulmaz**. Engineering kuralları `.antigravity/rules/`, scope/MVP kararları `docs/platform/master-plan.md` üzerinden taşınır.
 
 ### Faz 3: Modül Paketi Üretimi (Bulk Creation)
 - Excel'deki her satır için bir `{DOMAIN}-{NNN}-{slug}.md` dosyası oluşturulur.

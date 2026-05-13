@@ -132,6 +132,7 @@ Bu kararlar repo genelinde **zorunludur**. Bir modül bunlardan muaf olmak ister
 | Yerelleştirme | 7 dil (en, fr, es, zh, ar, ru, tr) — `.resx` + `window.L10n` bridge | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
 | UI Layout | Admin modülleri `_LayoutPlatformAdmin.cshtml`; tenant modülleri `_LayoutTenantShell.cshtml`; `_Layout.cshtml` FROZEN | [.antigravity/rules/views-organization.md](.antigravity/rules/views-organization.md) |
 | DataTable | v2 kontratı zorunlu (`data-dt-standard="v2"`) + Golden Slim/Compact seçimi | [.antigravity/rules/frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md) |
+| Modaller & Uyarılar | Premium SweetAlert2 Standardı (MOD-0013) zorunlu | [.antigravity/rules/premium-modal-standard.md](.antigravity/rules/premium-modal-standard.md) |
 
 ### Golden Reference DataTable Kararı
 
@@ -165,28 +166,33 @@ Prompt yazma rehberi: [.antigravity/PROMPT-GUIDE.md](.antigravity/PROMPT-GUIDE.m
 
 ---
 
-## 8. Çalışma Akışı (New Module / New Feature)
+## 8. Çalışma Akışı (Domain / Module Oluşturma)
 
-Yeni bir modül veya büyük feature geldiğinde iki aşamalı akış zorunludur:
+İki ana yol var. Detaylı walkthrough: [docs/agent-usage-guide.md](docs/agent-usage-guide.md).
 
-### Aşama 1 — Module Pack Hazırlık
+### Yol A — Sıfırdan yeni domain (nadir)
 
-1. **Domain seç** — Hangi domain'e ait? (MDM / DEVEN / PSS / ESBP)
-2. **Module pack hazırla** — `execution/domains/{domain}/module-packs/{ID}-slug.md`
-   - YAML frontmatter doldur (id, name, domain, status=draft, owner, branch, dates)
-   - Owned objects, repo scope, protected paths, acceptance criteria ve test expectations yaz
-   - DataTable modülü ise form alan sayısını ve `golden_reference: slim|compact` kararını yaz
-3. **Kullanıcı incelemesi** — `draft` module pack kod üretimi için yeterli değildir.
-4. **Onay** — Kullanıcı onayından sonra status `approved` veya `ready-for-dev` yapılır.
+1. `execution/domains/{name}/` klasörü kur: `README.md` + `domain-config.md` + `module-packs/`
+2. `domain-config.md`'de **sadece domain'e özel kararlar** yaz (in-scope modüller, repo scope, protected paths, ownership boundaries, runtime decisions). Engineering kuralları için `.antigravity/rules/`'a link ver — **içeriği tekrarlama**.
+3. AGENTS.md §2 (klasör yapısı) + §9 (branch kodu) güncelle. Platform/Admin domain'i ise [docs/platform/master-plan.md](docs/platform/master-plan.md) §2'ye ekle.
+4. İlk modülü Yol B ile yaz.
 
-### Aşama 2 — Geliştirme
+> Şablon: [execution/domains/platform-shared-services/](execution/domains/platform-shared-services/) (README + domain-config kanonik örnek).
 
-5. **Branch aç** — `feature/{domain-kısa}/{module-id}-{slug}`
-   - Örnek: `feature/mdm/mdm-001-product-management`
-6. **Orchestrator çağır** — Onaylı module pack adını ver
-7. **`/add-module` workflow** çalışır — Phase 0 → 6
-8. **Status güncelle** — `approved/ready-for-dev` → `in-progress` → `review` → `done`
-9. **PR aç, merge et** — Module pack silinmez, `done` olarak kalır
+### Yol B — Mevcut domain'de yeni modül (her gün)
+
+**Aşama 1 — Module Pack Hazırlık:**
+1. `/prepare-module-pack` çağır (modül adı + domain + servis + shell + form alan sayısı + iş kuralları)
+2. `module-pack-author` ajanı `execution/domains/{domain}/module-packs/{ID}-{slug}.md` dosyasını `status: draft` ile üretir
+3. Kullanıcı incelemesi → `status: approved` veya `ready-for-dev`
+
+**Aşama 2 — Geliştirme:**
+4. Branch aç: `feature/{domain-kısa}/{module-id}-{slug}` (örn: `feature/pss/pss-001-platform-administrators`)
+5. `@orchestrator {pack-yolu}` → `/add-module` workflow'u Phase 0 → 6 çalışır
+6. Test + `status: in-progress → review → done`
+7. PR aç, merge et. Module pack silinmez, `done` olarak kalır.
+
+> `@orchestrator` module pack oluşturmaz. Pack yoksa veya `draft` ise kullanıcıyı `/prepare-module-pack`'e yönlendirir.
 
 Fix/refactor işleri için: [.antigravity/rules/GEMINI.md](.antigravity/rules/GEMINI.md) working-agreement akışı uygulanır (önce kod düzeltilir, onay alındıktan sonra `.antigravity` etkisi kontrol edilir).
 
@@ -238,7 +244,7 @@ Module pack minimum içermeli:
 | **Domain** | `execution/domains/{name}/` — bir iş alanı (MDM, PSS, ESBP) |
 | **Module Pack** | `execution/domains/{d}/module-packs/{ID}.md` — tek bir modülün kimlik + AC dosyası |
 | **Domain Config** | `execution/domains/{d}/domain-config.md` — domain sınırları ve kararlar |
-| **Controls** | `execution/domains/{d}/controls/` — domain'e özel ek kontroller (opsiyonel) |
+| **Master Plan** | `docs/platform/master-plan.md` — Platform/Admin modül envanteri, MVP scope, cross-cutting standartlar |
 | **Workflow** | `.antigravity/workflows/*.md` — yeniden kullanılabilir tarif (ör. `/add-module`) |
 
 ---
@@ -249,6 +255,7 @@ Bu repo, [Layered Agent + Domain Package Model SOP v2.1](docs/sop/upstream/) tem
 
 - `batches/` katmanı **kullanılmaz** (`.antigravity/workflows/add-module.md` zaten phase orchestration sağlar)
 - `snapshots/` katmanı **kullanılmaz** (git history + `docs/audits/` bu işi yapar)
+- `controls/` ve `decisions/` katmanları **kullanılmaz** (engineering standartları `.antigravity/rules/`'de, scope/MVP kararları `docs/platform/master-plan.md`'de — tarihsel klasörler `archive/domains/` altına taşındı)
 - Module ID formatı `MOD-xxxx-slug` (örn: `MOD-0018-rbac-abac-authorization`) — hem teknik standartlar hem de tüm modül kimlikleri için birincil formattır
 - Klasör yapısı `services/` + `frontend/` + `gateway/` (SOP'taki `src/Backend/` + `src/Frontend/` yerine)
 

@@ -23,7 +23,22 @@ public sealed class ExceptionBehavior<TRequest, TResponse> : IPipelineBehavior<T
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception for request {RequestType}", typeof(TRequest).Name);
-            var response = TryCreateFailureResponse("An unexpected error occurred.", 500);
+            
+            var errorMessage = "An unexpected error occurred.";
+            var statusCode = 500;
+
+            if (ex is InvalidOperationException)
+            {
+                errorMessage = ex.Message;
+                statusCode = 400;
+            }
+            else if (ex is FluentValidation.ValidationException valEx)
+            {
+                errorMessage = valEx.Errors.FirstOrDefault()?.ErrorMessage ?? valEx.Message;
+                statusCode = 400;
+            }
+
+            var response = TryCreateFailureResponse(errorMessage, statusCode);
             if (response is not null)
             {
                 return response;
