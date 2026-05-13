@@ -339,6 +339,12 @@ public sealed class ModuleCatalogController : Controller
         }
 
         var response = await _httpClient.SendAsync(request);
+        if (Diten.Web.Controllers.ProxyAuthFailure.IsAuthFailure(response.StatusCode))
+        {
+            Diten.Web.Controllers.ProxyAuthFailure.ClearAuthCookies(Response);
+            return StatusCode((int)response.StatusCode, Diten.Web.Controllers.ProxyAuthFailure.PlatformLoginPayload());
+        }
+
         var content = await response.Content.ReadAsStringAsync();
         var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/json";
         return new ContentResult

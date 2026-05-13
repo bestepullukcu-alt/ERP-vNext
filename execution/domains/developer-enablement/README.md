@@ -26,8 +26,8 @@
 ## Domain package contents
 - `domain-config.md` — domain sinirlari ve repo kapsami
 - `module-packs/` — her referans modul icin ayri execution dosyasi
-- `decisions/` — naming, tasima ve referans stratejisi kararlari
-- `controls/` — gelistirme sureci icin domain-ozel kontroller
+
+> Tarihsel `controls/` ve `decisions/` katmanlari (Golden Reference Slim transition control dahil) `archive/domains/developer-enablement/` altina tasinmistir; otorite `AGENTS.md` + `.antigravity/rules/`.
 
 ## Initial direction
 Ilk modul `Golden Reference Slim` olacaktir. Bu modul tamamlandiginda, gelecekteki moduller icin:

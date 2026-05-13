@@ -89,15 +89,32 @@ public static class DataSeeder
         var urCol = database.GetCollection<UserRole>("userRoles");
 
         var email = "admin@diten.com";
+        var staticAdminId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var users = await userCol.Find(u => u.Email == email).ToListAsync();
         var user = users.FirstOrDefault(u => u.TenantId == DefaultTenantId);
         
+        if (user != null && user.Id != staticAdminId)
+        {
+            await userCol.DeleteOneAsync(u => u.Id == user.Id);
+            await urCol.DeleteManyAsync(ur => ur.UserId == user.Id);
+            user = null;
+        }
+
         if (user == null)
         {
             var passwordHash = "$2a$12$F1MdLL6aHDzrwl/790xPVuiSNW8xJM5/.5E8A/6M3DwAYYenixKwC"; 
-            user = new User(email, passwordHash, "Diten", "Admin", DefaultTenantId);
+            user = new User(email, passwordHash, "Diten", "Admin", DefaultTenantId)
+            {
+                Id = staticAdminId
+            };
+            user.SetUserName("admin");
             await userCol.InsertOneAsync(user);
-            Console.WriteLine("Created admin user.");
+            Console.WriteLine("Created admin user with static Guid.");
+        }
+        else if (string.IsNullOrWhiteSpace(user.NormalizedUserName))
+        {
+            user.SetUserName("admin");
+            await userCol.ReplaceOneAsync(u => u.Id == user.Id, user);
         }
 
         var roles = await roleCol.Find(r => r.Name == "SuperAdmin").ToListAsync();

@@ -17,6 +17,7 @@ public static class MongoDbIndexConfigurations
         var moduleCatalogCollection = database.GetCollection<ModuleCatalogItem>("platform_module_catalog");
         var modulePageDescriptorCollection = database.GetCollection<ModulePageDescriptor>("platform_module_page_descriptors");
         var modulePageActionDescriptorCollection = database.GetCollection<ModulePageActionDescriptor>("platform_module_page_action_descriptors");
+        var platformAdministratorCollection = database.GetCollection<PlatformAdministrator>("platform_administrators");
         var subscriptionPlanCollection = database.GetCollection<SubscriptionPlan>("platform_subscription_plans");
         var tenantSubscriptionCollection = database.GetCollection<TenantSubscription>("tenant_subscriptions");
         var tenantModuleEntitlementCollection = database.GetCollection<TenantModuleEntitlement>("tenant_module_entitlements");
@@ -180,6 +181,37 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.TenantId)
                     .Ascending(x => x.PermissionKey),
                 new CreateIndexOptions { Name = "ix_platform_module_page_actions_tenant_permission" })
+        });
+
+        await platformAdministratorCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<PlatformAdministrator>(
+                Builders<PlatformAdministrator>.IndexKeys.Ascending(x => x.NormalizedEmail),
+                new CreateIndexOptions<PlatformAdministrator>
+                {
+                    Unique = true,
+                    Name = "ux_platform_administrators_normalized_email",
+                    PartialFilterExpression = Builders<PlatformAdministrator>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<PlatformAdministrator>(
+                Builders<PlatformAdministrator>.IndexKeys.Ascending(x => x.NormalizedUserName),
+                new CreateIndexOptions<PlatformAdministrator>
+                {
+                    Unique = true,
+                    Name = "ux_platform_administrators_normalized_username",
+                    PartialFilterExpression = Builders<PlatformAdministrator>.Filter.And(
+                        Builders<PlatformAdministrator>.Filter.Eq(x => x.IsDeleted, false),
+                        Builders<PlatformAdministrator>.Filter.Exists(x => x.NormalizedUserName, true),
+                        Builders<PlatformAdministrator>.Filter.Gt(x => x.NormalizedUserName, string.Empty))
+                }),
+            new CreateIndexModel<PlatformAdministrator>(
+                Builders<PlatformAdministrator>.IndexKeys
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.ActorType),
+                new CreateIndexOptions { Name = "ix_platform_administrators_status_actor_type" }),
+            new CreateIndexModel<PlatformAdministrator>(
+                Builders<PlatformAdministrator>.IndexKeys.Ascending(x => x.PartnerId),
+                new CreateIndexOptions { Name = "ix_platform_administrators_partner_id" })
         });
 
         await subscriptionPlanCollection.Indexes.CreateManyAsync(new[]

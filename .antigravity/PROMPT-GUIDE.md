@@ -236,15 +236,23 @@ Zorunlu:
 
 Legal Entity backend CQRS yapisini module pack'e gore uygula.
 
-Zorunlu klasor ayrimi:
+Zorunlu klasor ayrimi (Golden Reference birebir):
 - Commands/
 - Queries/
 - Handlers/CommandHandlers/
 - Handlers/QueryHandlers/
 - Validators/
+- {Module}Models.cs              (TEK dosyada tum DTO/ViewModel'ler)
+
+Naming (Golden Reference):
+- Command: {Verb}{Module}Command (sealed record)
+- Query:   Get{Module}{Qualifier}Query (sealed record)
+- Handler: {Verb}{Module}Handler (sealed class, Command/Query suffix YOK)
+- Validator: {Verb}{Module}Validator (Command suffix YOK)
 
 Kurallar:
 - Her command, query ve handler ayri dosyada olacak.
+- Bir dosyada birden fazla public class/record YASAK.
 - Controller ince kalacak ve MediatR'a gonderecek.
 - Response<T> envelope ve CustomBaseController kullanilacak.
 - TenantId server-side cozulur; DTO veya form payload icinde olmaz.
@@ -461,24 +469,30 @@ _IndexL10n.cshtml:
 ## Backend CQRS Standart Promptu
 
 ```text
-Backend CQRS implementasyonunda su yapiyi koru:
+Backend CQRS implementasyonunda Golden Reference birebir yapi:
 
+Folder:
 - Commands/
 - Queries/
 - Handlers/CommandHandlers/
 - Handlers/QueryHandlers/
 - Validators/
+- {Module}Models.cs              (TEK dosyada tum DTO/ViewModel)
+
+Naming (Golden Reference):
+- Command:   {Verb}{Module}Command         (sealed record)
+- Query:     Get{Module}{Qualifier}Query   (sealed record)
+- Handler:   {Verb}{Module}Handler         (sealed class, Command/Query/Request SUFFIX YOK)
+- Validator: {Verb}{Module}Validator       (Command SUFFIX YOK)
 
 Kurallar:
-- Her command ayri dosyada.
-- Her query ayri dosyada.
-- Her command handler ayri dosyada.
-- Her query handler ayri dosyada.
-- Her validator ayri dosyada.
+- Her command, query, handler ve validator ayri dosyada.
+- Bir dosyada birden fazla public class/record YASAK.
 - Controller ince kalir.
 - TenantId server-side cozulur.
 - Soft delete uygulanir.
 - Repository karari golden reference ve mevcut servis standardina gore teklesir.
+- Referans kod: services/Diten.DevEnablementService/.../Features/GoldenReferenceSlim/
 ```
 
 ---

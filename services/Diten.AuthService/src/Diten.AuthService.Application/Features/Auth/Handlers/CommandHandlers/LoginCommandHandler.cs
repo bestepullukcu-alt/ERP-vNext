@@ -165,7 +165,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         var accessToken = _tokenService.GenerateAccessToken(user, roles, permissions, settings.SessionTimeoutMinutes);
         var refreshTokenStr = _tokenService.GenerateRefreshToken();
         var refreshTokenHash = _refreshTokenHasher.Hash(refreshTokenStr);
-        var refreshExpiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenLifetimeDays);
+        var refreshExpiresAt = DateTime.UtcNow.AddDays(request.RememberMe ? 30 : settings.RefreshTokenLifetimeDays);
 
         var refreshToken = new RefreshToken(
             user.Id,

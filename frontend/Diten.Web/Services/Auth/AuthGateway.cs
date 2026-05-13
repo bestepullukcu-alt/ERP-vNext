@@ -21,26 +21,60 @@ public sealed class AuthGateway : IAuthGateway
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public Task<AuthBridgeResult> LoginTenantAsync(string email, string password, Guid tenantId, CancellationToken ct = default)
+    public Task<AuthBridgeResult> LoginTenantAsync(string email, string password, Guid tenantId, bool rememberMe = false, CancellationToken ct = default)
     {
         return SendAuthRequestAsync(
             "/api/tenant-auth/login",
-            new { email, password },
+            new { email, password, rememberMe },
             tenantId,
             includeBearer: false,
             accessToken: null,
             ct: ct);
     }
 
-    public Task<AuthBridgeResult> LoginPlatformAsync(string email, string password, CancellationToken ct = default)
+    public Task<AuthBridgeResult> LoginPlatformAsync(string email, string password, bool rememberMe = false, CancellationToken ct = default)
     {
         return SendAuthRequestAsync(
             "/api/platform-auth/login",
-            new { email, password },
+            new { email, password, rememberMe },
             tenantId: null,
             includeBearer: false,
             accessToken: null,
             ct: ct);
+    }
+
+    public Task<AuthBridgeResult> ChangePlatformPasswordAsync(string currentPassword, string newPassword, bool rememberMe = false, CancellationToken ct = default)
+    {
+        var accessToken = _httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
+        return SendAuthRequestAsync(
+            "/api/platform-auth/change-password/forced",
+            new { currentPassword, newPassword, rememberMe },
+            tenantId: null,
+            includeBearer: true,
+            accessToken: accessToken,
+            ct: ct);
+    }
+
+    public async Task<bool> ForgotPlatformPasswordAsync(string email, CancellationToken ct = default)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/platform-auth/forgot-password")
+        {
+            Content = JsonContent.Create(new { email })
+        };
+        AddClientMetadataHeaders(request);
+        var response = await _httpClient.SendAsync(request, ct);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> ResetPlatformPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/platform-auth/reset-password")
+        {
+            Content = JsonContent.Create(new { email, token, newPassword })
+        };
+        AddClientMetadataHeaders(request);
+        var response = await _httpClient.SendAsync(request, ct);
+        return response.IsSuccessStatusCode;
     }
 
     public Task<AuthBridgeResult> VerifyTenantMfaAsync(string challengeId, string code, CancellationToken ct = default)

@@ -14,14 +14,6 @@
     display: none !important;
 }
 
-@media (min-width: 1200px) {
-    html.layout-navbar-fixed:not(.layout-menu-collapsed).swal2-shown .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
-    html.layout-menu-fixed.layout-navbar-fixed:not(.layout-menu-collapsed).swal2-shown .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
-    html.layout-menu-fixed-offcanvas.layout-navbar-fixed:not(.layout-menu-collapsed).swal2-shown .layout-content-navbar:not(.layout-without-menu) .layout-navbar {
-        inset-inline-start: var(--bs-menu-width);
-    }
-}
-
 .menu-backbone .menu-inner-shadow {
     display: none;
 }
@@ -54,6 +46,77 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 [data-bs-theme=dark] .swal-icon-circle {
     background: rgba(255, 76, 81, 0.15);
     border-color: rgba(255, 76, 81, 0.3);
+}
+
+/* ================================================
+   SweetAlert + Bootstrap Modal Sidebar Stability (Orchestrator Rule)
+   Sneat core.css (~L26852+) shifts .layout-navbar by
+   --bs-scrollbar-width while html.swal2-shown OR body.modal-open
+   is active, producing a visible navbar/header jump on Backbone
+   shells when the sidebar is open. We neutralize the shift here
+   instead of patching SweetAlert/Bootstrap scrollbar handling globally.
+   Scope: html.swal2-shown + body.modal-open on Sneat fixed-navbar shells only.
+   ================================================ */
+@media (min-width: 1200px) {
+    /* Sidebar OPEN (not collapsed) — keep navbar pinned to --bs-menu-width */
+    html.swal2-shown.layout-navbar-fixed:not(.layout-menu-collapsed) .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.swal2-shown.layout-menu-fixed.layout-navbar-fixed:not(.layout-menu-collapsed) .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.swal2-shown.layout-menu-fixed-offcanvas.layout-navbar-fixed:not(.layout-menu-collapsed) .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.layout-navbar-fixed:not(.layout-menu-collapsed) body.modal-open .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.layout-menu-fixed.layout-navbar-fixed:not(.layout-menu-collapsed) body.modal-open .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.layout-menu-fixed-offcanvas.layout-navbar-fixed:not(.layout-menu-collapsed) body.modal-open .layout-content-navbar:not(.layout-without-menu) .layout-navbar {
+        inset-inline-start: var(--bs-menu-width);
+    }
+
+    html.swal2-shown.layout-navbar-fixed:not(.layout-menu-collapsed):dir(rtl) .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.swal2-shown.layout-menu-fixed.layout-navbar-fixed:not(.layout-menu-collapsed):dir(rtl) .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.swal2-shown.layout-menu-fixed-offcanvas.layout-navbar-fixed:not(.layout-menu-collapsed):dir(rtl) .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.layout-navbar-fixed:not(.layout-menu-collapsed):dir(rtl) body.modal-open .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.layout-menu-fixed.layout-navbar-fixed:not(.layout-menu-collapsed):dir(rtl) body.modal-open .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.layout-menu-fixed-offcanvas.layout-navbar-fixed:not(.layout-menu-collapsed):dir(rtl) body.modal-open .layout-content-navbar:not(.layout-without-menu) .layout-navbar {
+        inset-inline-start: var(--bs-menu-width);
+    }
+
+    /* Sidebar COLLAPSED — keep navbar pinned to --bs-menu-collapsed-width */
+    html.swal2-shown.layout-navbar-fixed.layout-menu-collapsed:not(.layout-menu-offcanvas, .layout-menu-fixed-offcanvas) .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.swal2-shown.layout-menu-fixed.layout-navbar-fixed.layout-menu-collapsed .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.layout-navbar-fixed.layout-menu-collapsed:not(.layout-menu-offcanvas, .layout-menu-fixed-offcanvas) body.modal-open .layout-content-navbar:not(.layout-without-menu) .layout-navbar,
+    html.layout-menu-fixed.layout-navbar-fixed.layout-menu-collapsed body.modal-open .layout-content-navbar:not(.layout-without-menu) .layout-navbar {
+        inset-inline-start: var(--bs-menu-collapsed-width);
+        inline-size: calc(100% - 1.625rem * 2 - var(--bs-menu-collapsed-width));
+    }
+
+    /* Horizontal layout — restore full inline-size */
+    html.swal2-shown.layout-menu-fixed .layout-horizontal .layout-navbar,
+    html.swal2-shown.layout-menu-fixed .layout-horizontal .layout-menu-horizontal,
+    html.layout-menu-fixed body.modal-open .layout-horizontal .layout-navbar,
+    html.layout-menu-fixed body.modal-open .layout-horizontal .layout-menu-horizontal {
+        inline-size: 100%;
+    }
+}
+
+/* ================================================
+   Lifecycle confirm modals (suspend/reactivate/etc.)
+   Sneat (core.css:14295+ / :14333) ships .modal .btn-close with:
+     - transform: translate(23px, -25px)  -> pushes button outside modal
+     - hover transform: translate(20px, -20px)  -> hover animation
+     - position: absolute inside .modal-header
+   That floating-outside design doesn't fit our confirm modals; we want
+   the close button to sit vertically centered inline with the title.
+   Background, border-radius and box-shadow from Sneat are kept on purpose.
+   ================================================ */
+.modal#suspendModal .modal-header .btn-close,
+.modal#suspendModal .modal-header .btn-close:hover,
+.modal#suspendModal .modal-header .btn-close:focus,
+.modal#suspendModal .modal-header .btn-close:active {
+    position: static !important;
+    inset-block-start: auto !important;
+    inset-inline-end: auto !important;
+    transform: none !important;
+    transition: none !important;
+    margin-block: 0;
+    margin-inline-start: auto;
+    margin-inline-end: 0;
 }
 
 /* Notyf Toast */
@@ -487,7 +550,7 @@ body>.select2-container--open {
 @media screen and (max-width: 991.98px) {
 
     /* ---- Top Row: flex-row with wrap ---- */
-    div.dt-container > .row:first-child {
+    div.dt-container>.row:first-child {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;

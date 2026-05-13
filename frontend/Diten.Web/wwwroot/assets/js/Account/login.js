@@ -26,12 +26,6 @@ const LoginPage = (function () {
         if (resendBtn) {
             resendBtn.addEventListener('click', handleMfaResend);
         }
-
-        // password toggle
-        const toggleBtn = document.getElementById('togglePassword');
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', togglePasswordVisibility);
-        }
     }
 
     async function handleLogin(e) {
@@ -39,6 +33,7 @@ const LoginPage = (function () {
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
+        const rememberMe = document.getElementById('remember-me')?.checked === true;
 
         if (!email || !password) {
             showError(window.L10n?.LoginErrorRequired || 'Email ve şifre zorunludur.');
@@ -63,6 +58,7 @@ const LoginPage = (function () {
                 body: JSON.stringify({
                     email,
                     password,
+                    rememberMe,
                     tenantId: config.authMode === 'platform' ? null : resolveTenantIdForLogin(),
                     returnUrl: new URLSearchParams(window.location.search).get('ReturnUrl')
                         || new URLSearchParams(window.location.search).get('returnUrl')
@@ -71,7 +67,11 @@ const LoginPage = (function () {
 
             if (!response.ok) {
                 const problem = await response.json();
-                throw new Error(problem.detail || problem.title || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+                let errMsg = problem.detail || problem.title || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
+                if (errMsg === 'Invalid credentials.') {
+                    errMsg = window.L10n?.LoginError || 'Geçersiz e-posta veya şifre';
+                }
+                throw new Error(errMsg);
             }
 
             const data = await response.json();
@@ -198,25 +198,26 @@ const LoginPage = (function () {
     function showError(message) {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
-                icon: 'error',
                 title: window.L10n?.LoginErrorTitle || 'Hata',
-                text: message,
-                confirmButtonText: 'Tamam'
+                html: `<div class="mb-1 text-muted">${message}</div>`,
+                iconHtml: '<div class="swal-icon-circle bg-label-danger border-danger border-opacity-25" style="display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 76, 81, 0.12); border: 2px solid rgba(255, 76, 81, 0.25); margin: 0 auto !important;"><i class="bx bx-error-circle text-danger" style="font-size: 2.5rem; color: #ff4c51;"></i></div>',
+                confirmButtonText: 'Tamam',
+                width: '400px',
+                padding: '2.5rem 1.5rem 2rem',
+                customClass: {
+                    popup: 'rounded-4 shadow-lg',
+                    title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
+                    htmlContainer: 'mb-1 d-block w-100 text-center',
+                    actions: 'd-flex justify-content-center mt-4 w-100',
+                    confirmButton: 'btn btn-primary waves-effect waves-light px-5',
+                    icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'
+                },
+                buttonsStyling: false,
+                scrollbarPadding: false,
+                heightAuto: false
             });
         } else {
             alert(message);
-        }
-    }
-
-    function togglePasswordVisibility() {
-        const input = document.getElementById('password');
-        const icon = this.querySelector('i');
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.replace('bx-hide', 'bx-show');
-        } else {
-            input.type = 'password';
-            icon.classList.replace('bx-show', 'bx-hide');
         }
     }
 

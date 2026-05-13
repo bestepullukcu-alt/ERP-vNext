@@ -172,7 +172,11 @@ window.showConfirm?.({
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Localizer["{{ModuleName}}Title"].Value;
-    Layout = "_LayoutTenantShell"; // or "_LayoutPlatformAdmin" if module belongs to admin shell (PROD-005)
+    // Layout module pack `shell` frontmatter alanından türetilir (module-pack-standard.md Bölüm 2):
+    //   shell: platform-admin  →  Layout = "_LayoutPlatformAdmin"
+    //   shell: tenant          →  Layout = "_LayoutTenantShell"
+    // AÇIKÇA yazılır; _ViewStart varsayılanı değiştirilmez.
+    Layout = "{{LayoutName}}"; // ZORUNLU — pack'in `shell` alanına göre doldurulur
 }
 
 {{!-- ① ZORUNLU: Inline Filter partial'ı. --}}
@@ -289,7 +293,11 @@ Ajanlar, fiziksel bir dosya yerine aşağıdaki kodu "Kusursuz Uygulama" olarak 
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Localizer["CompaniesTitle"].Value;
-    Layout = "_LayoutTenantShell"; // or "_LayoutPlatformAdmin" if module belongs to admin shell (PROD-005)
+    // Layout module pack `shell` frontmatter alanından türetilir (module-pack-standard.md Bölüm 2):
+    //   shell: platform-admin  →  Layout = "_LayoutPlatformAdmin"
+    //   shell: tenant          →  Layout = "_LayoutTenantShell"
+    // AÇIKÇA yazılır; _ViewStart varsayılanı değiştirilmez.
+    Layout = "{{LayoutName}}"; // ZORUNLU — pack'in `shell` alanına göre doldurulur
 }
 
 <partial name="_Filter" />

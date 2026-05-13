@@ -20,6 +20,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
     private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly IPlatformAdministratorStatusClient _platformAdministratorStatusClient;
     private readonly ILogger<RefreshTokenCommandHandler> _logger;
 
     public RefreshTokenCommandHandler(
@@ -32,6 +33,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
         ITenantContext tenantContext,
+        IPlatformAdministratorStatusClient platformAdministratorStatusClient,
         ILogger<RefreshTokenCommandHandler> logger)
     {
         _userRepository = userRepository;
@@ -43,6 +45,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
         _tenantContext = tenantContext;
+        _platformAdministratorStatusClient = platformAdministratorStatusClient;
         _logger = logger;
     }
 
@@ -90,6 +93,22 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         if (user == null || !user.IsActive)
             return Response<AuthResponse>.Fail("User was not found or is inactive.", 401);
 
+        var isPlatformActor = IsPlatformActor(actorType);
+        if (isPlatformActor && !await _platformAdministratorStatusClient.IsActiveAsync(user.Email, ct))
+        {
+            await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, existingToken.TenantId, ct);
+            _logger.LogWarning(
+                "Platform refresh denied by platform administrator status. UserId={UserId} Email={Email}",
+                user.Id,
+                user.Email);
+            return Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401);
+        }
+
+        if (isPlatformActor)
+        {
+            await _platformAdministratorStatusClient.MarkLoginAcceptedAsync(user.Email, ct);
+        }
+
         return Response<AuthResponse>.Success(await GenerateNewTokens(user, existingToken, actorType, request, ct));
     }
 
@@ -112,7 +131,9 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
                 tokenTenantId,
                 actorType ?? "platform_admin",
                 roles,
-                permissions)
+                permissions,
+                15,
+                user.MustChangePassword)
             : _tokenService.GenerateAccessToken(user, roles, permissions, tenantSettings!.SessionTimeoutMinutes);
         var newRefreshTokenStr = _tokenService.GenerateRefreshToken();
         var newRefreshTokenHash = _refreshTokenHasher.Hash(newRefreshTokenStr);
@@ -123,7 +144,9 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         var newRefreshToken = new RefreshToken(
             user.Id,
             newRefreshTokenHash,
-            DateTime.UtcNow.AddDays(isPlatformActor ? 7 : tenantSettings!.RefreshTokenLifetimeDays),
+            DateTime.UtcNow.AddDays(isPlatformActor
+                ? Math.Max(1, (oldToken.ExpiresAt - DateTime.UtcNow).TotalDays)
+                : tenantSettings!.RefreshTokenLifetimeDays),
             request.RequestIp,
             tokenTenantId,
             actorType ?? "tenant_user",
@@ -143,7 +166,8 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
                 user.LastName,
                 user.IsActive,
                 roles,
-                isPlatformActor ? null : user.TenantId)
+                isPlatformActor ? null : user.TenantId),
+            RequiresPasswordChange: isPlatformActor && user.MustChangePassword
         );
     }
 

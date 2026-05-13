@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="AdministratorsTitle" xml:space="preserve"><value>Platform Administrators</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage platform and partner administrators, role scope, invitations and lifecycle status.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Invite Administrator</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Invite Administrator</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Administrator</value></data>
+  <data name="Email" xml:space="preserve"><value>Email</value></data>
+  <data name="EmailPlaceholder" xml:space="preserve"><value>admin@example.com</value></data>
+  <data name="UserName" xml:space="preserve"><value>User Name</value></data>
+  <data name="UserNamePlaceholder" xml:space="preserve"><value>admin.user</value></data>
+  <data name="UserNameHelp" xml:space="preserve"><value>The administrator can sign in with this username or email address.</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>Administrator name</value></data>
+  <data name="ActorType" xml:space="preserve"><value>Actor Type</value></data>
+  <data name="PlatformAdmin" xml:space="preserve"><value>Platform Admin</value></data>
+  <data name="PartnerAdmin" xml:space="preserve"><value>Partner Admin</value></data>
+  <data name="PartnerId" xml:space="preserve"><value>Partner ID</value></data>
+  <data name="PartnerIdPlaceholder" xml:space="preserve"><value>Partner GUID</value></data>
+  <data name="AllowedTenantIds" xml:space="preserve"><value>Allowed Tenant IDs</value></data>
+  <data name="AllowedTenantIdsPlaceholder" xml:space="preserve"><value>One tenant GUID per line</value></data>
+  <data name="AllowedTenantIdsHelp" xml:space="preserve"><value>Partner admins require at least one explicit tenant scope.</value></data>
+  <data name="Roles" xml:space="preserve"><value>Roles</value></data>
+  <data name="RoleSuperAdmin" xml:space="preserve"><value>Super Admin</value></data>
+  <data name="RoleBillingAdmin" xml:space="preserve"><value>Billing Admin</value></data>
+  <data name="RoleSupportAdmin" xml:space="preserve"><value>Support Admin</value></data>
+  <data name="RoleReadOnly" xml:space="preserve"><value>Read Only</value></data>
+  <data name="InvitationStatus" xml:space="preserve"><value>Invitation</value></data>
+  <data name="PendingInvitation" xml:space="preserve"><value>Pending Invitation</value></data>
+  <data name="Invited" xml:space="preserve"><value>Invited</value></data>
+  <data name="Accepted" xml:space="preserve"><value>Accepted</value></data>
+  <data name="Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Suspended" xml:space="preserve"><value>Suspended</value></data>
+  <data name="Disabled" xml:space="preserve"><value>Disabled</value></data>
+  <data name="TotalAdministrators" xml:space="preserve"><value>Total Administrators</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
+  <data name="ScopeAndAudit" xml:space="preserve"><value>Scope and Audit</value></data>
+  <data name="AuditPreview" xml:space="preserve"><value>Audit Preview</value></data>
+  <data name="Suspend" xml:space="preserve"><value>Suspend</value></data>
+  <data name="Reactivate" xml:space="preserve"><value>Reactivate</value></data>
+  <data name="ResendInvite" xml:space="preserve"><value>Resend Invite</value></data>
+  <data name="ReasonPrompt" xml:space="preserve"><value>Enter a reason for suspension.</value></data>
+  <data name="PartnerScopeRequired" xml:space="preserve"><value>Partner admins require Partner ID and at least one allowed tenant ID.</value></data>
+  <data name="SuspendModalTitle" xml:space="preserve"><value>Suspend Administrator</value></data>
+  <data name="SuspendModalWarning" xml:space="preserve"><value>Are you sure you want to suspend this administrator? Please enter the reason below.</value></data>
+  <data name="SuspendModalReasonLabel" xml:space="preserve"><value>Suspension Reason</value></data>
+  <data name="SuspendModalReasonPlaceholder" xml:space="preserve"><value>Enter the reason for suspension (e.g. policy violation)...</value></data>
+  <data name="SuspendModalReasonRequired" xml:space="preserve"><value>Suspension reason is required.</value></data>
+  <data name="SuspendModalConfirmButton" xml:space="preserve"><value>Suspend Account</value></data>
+  <data name="Recommended" xml:space="preserve"><value>Recommended</value></data>
+  <data name="PasswordManagement" xml:space="preserve"><value>Account setup</value></data>
+  <data name="ResendInvitation" xml:space="preserve"><value>Send Setup Link</value></data>
+  <data name="ResendInvitationHelp" xml:space="preserve"><value>Send a one-time setup link so the administrator can set a password.</value></data>
+  <data name="EmailUnlockTooltip" xml:space="preserve"><value>Unlock email address field for editing</value></data>
+  <data name="ResendInviteSuccess" xml:space="preserve"><value>Setup link has been sent successfully.</value></data>
+  <data name="ProtectedAccount" xml:space="preserve"><value>Protected account: you cannot perform this action on your own record or the system seed administrator.</value></data>
+</root>

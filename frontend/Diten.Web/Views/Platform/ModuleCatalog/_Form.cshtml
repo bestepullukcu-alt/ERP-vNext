@@ -10,14 +10,17 @@
 }
 
 <div class="d-flex align-items-center justify-content-between mb-3">
-    <div>
-        <h5 class="mb-0">@title</h5>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="/Platform/ModuleCatalog">@Localizer["ModuleCatalogTitle"]</a></li>
-                <li class="breadcrumb-item active text-primary">@title</li>
-            </ol>
-        </nav>
+    <div class="d-flex align-items-center gap-2">
+        <div>
+            <h5 class="mb-0">@title</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/Platform/ModuleCatalog">@Localizer["ModuleCatalogTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@title</li>
+                </ol>
+            </nav>
+        </div>
+        <div id="moduleCatalogRequiredTrackerHost"></div>
     </div>
     <div class="d-flex align-items-center gap-2">
         <a href="/Platform/ModuleCatalog" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
@@ -25,7 +28,16 @@
     </div>
 </div>
 
-<form id="moduleCatalogForm" asp-controller="ModuleCatalog" asp-action="@action" asp-route-id="@Model.Id" method="post" class="needs-validation" novalidate>
+<form id="moduleCatalogForm"
+      asp-controller="ModuleCatalog"
+      asp-action="@action"
+      asp-route-id="@Model.Id"
+      method="post"
+      class="needs-validation"
+      data-required-tracker-target="#moduleCatalogRequiredTrackerHost"
+      data-required-tracker-wrapper-class="d-flex align-items-center"
+      data-required-tracker-badge-class="badge bg-label-danger px-2 py-1 d-inline-flex align-items-center"
+      novalidate>
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
     <div asp-validation-summary="ModelOnly" class="alert alert-danger validation-summary" role="alert"></div>

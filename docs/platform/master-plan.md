@@ -102,23 +102,26 @@ Bir modül bittiğinde:
 **Bağımlılık Akışı:** `Api → Application → Domain` (Domain hiçbir şeyi referans alamaz)
 **MongoDB import yasağı:** `MongoDB.Driver` ve `MongoDB.Bson` SADECE Persistence'da. Domain'de yasak (istisna: `BsonRepresentation` attribute).
 
-**Dosya Şablonu (Action-Based Separation):**
+**Dosya Şablonu (Golden Reference Slim/Compact birebir — bkz `.antigravity/rules/module-pack-standard.md`):**
 ```
 services/Diten.Platform/src/
 ├── Diten.Platform.Api/Controllers/Platform/{Module}Controller.cs
 ├── Diten.Platform.Application/Features/{Module}/
-│   ├── Requests/Create{Entity}Request.cs           ← Her Request ayrı dosya
-│   ├── Requests/Update{Entity}Request.cs
-│   ├── Requests/Delete{Entity}Request.cs
-│   ├── Requests/Get{Entity}sRequest.cs
-│   ├── Requests/Get{Entity}ByIdRequest.cs
-│   ├── Handlers/Create{Entity}RequestHandler.cs    ← Her Handler ayrı dosya
-│   ├── Handlers/Update{Entity}RequestHandler.cs
-│   ├── Handlers/Delete{Entity}RequestHandler.cs
-│   ├── Handlers/Get{Entity}sRequestHandler.cs
-│   ├── Handlers/Get{Entity}ByIdRequestHandler.cs
-│   ├── Validators/Create{Entity}RequestValidator.cs
-│   └── Validators/Update{Entity}RequestValidator.cs
+│   ├── Commands/Create{Entity}Command.cs               ← sealed record, her command ayrı dosya
+│   ├── Commands/Update{Entity}Command.cs
+│   ├── Commands/Delete{Entity}Command.cs
+│   ├── Commands/BulkDelete{Entity}Command.cs
+│   ├── Queries/Get{Entity}ListQuery.cs                 ← sealed record, her query ayrı dosya
+│   ├── Queries/Get{Entity}ByIdQuery.cs
+│   ├── Handlers/CommandHandlers/Create{Entity}Handler.cs   ← class, suffix YOK
+│   ├── Handlers/CommandHandlers/Update{Entity}Handler.cs
+│   ├── Handlers/CommandHandlers/Delete{Entity}Handler.cs
+│   ├── Handlers/CommandHandlers/BulkDelete{Entity}Handler.cs
+│   ├── Handlers/QueryHandlers/Get{Entity}ListHandler.cs
+│   ├── Handlers/QueryHandlers/Get{Entity}ByIdHandler.cs
+│   ├── Validators/Create{Entity}Validator.cs           ← Command suffix YOK
+│   ├── Validators/Update{Entity}Validator.cs
+│   └── {Entity}Models.cs                               ← TEK dosyada tüm DTO/ViewModel'ler
 ├── Diten.Platform.Domain/
 │   ├── Entities/{Entity}.cs                        ← EntityBase'den miras
 │   ├── Enums/{Entity}Enums.cs                      ← Lookup code'lar için
@@ -140,7 +143,19 @@ frontend/Diten.Web/
 └── wwwroot/assets/js/Platform/{Module}/*.js
 ```
 
-**Kural:** Bir dosyada birden fazla public class **YASAK** (Request veya Handler grup dosyası yok).
+**Kural:** Bir dosyada birden fazla public class **YASAK** (Command, Query, Handler veya DTO grup dosyası yok — istisna `{Entity}Models.cs` DTO dosyası, Golden Reference pattern).
+
+**Naming kuralları (Golden Reference birebir):**
+- Command record: `{Verb}{Entity}Command` (ör. `CreateTenantCommand`)
+- Query record: `Get{Entity}{Qualifier}Query` (ör. `GetTenantByIdQuery`)
+- Handler class: `{Verb}{Entity}Handler` (**Command / Query / Request suffix YOK**, ör. `CreateTenantHandler`)
+- Validator class: `{Verb}{Entity}Validator` (**Command suffix YOK**, ör. `CreateTenantValidator`)
+- Referans canlı kod: `services/Diten.DevEnablementService/.../Features/GoldenReferenceSlim/`
+
+**EntityBase sınıf adı (servis bazlı):**
+- `Diten.MdmService`, `Diten.DevEnablementService`, `Diten.AuthService` → `EntityBase`
+- `Diten.Platform` tenant-aware kayıt → `BaseEntity` (eşdeğer kontrat)
+- `Diten.Platform` cross-tenant katalog → `GlobalEntity : BaseEntity` (gerekçeli)
 
 ---
 
@@ -159,7 +174,7 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 | **PSS-004** | Tenant Login & Security | — | — | 🟡 | 75 |
 | **—** | Lookups / Reference Data | — | — | 🟡 | 70 |
 | **NEW-001** | Secrets Management | W1-* | 🔴 Blocker | 🔴 | 0 |
-| **NEW-002** | Platform Administrators Mgmt | W1-* | 🟠 High | 🔴 | 0 |
+| **NEW-002** | Platform Administrators Mgmt | W1-* | 🟠 High | 🟠 | 85 |
 | **MOD-0009** | Tenant Registry Lifecycle Events | W1-A | 🔴 Blocker | 🟡 | 60 |
 | **MOD-0008** | Module Catalog Assignable Expose | W1-B | 🔴 Blocker | 🟡 | 80 |
 | **MOD-0018** | RBAC / Entitlement Enforcement | W1-B | 🔴 Blocker | 🔴 | 10 |
@@ -405,7 +420,7 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 ### NEW-001 — Secrets Management
 **Wave:** W1-* (BLOCKER, sıfırıncı)
 **Priority:** 🔴 Blocker
-**Status:** 🔴 Missing (0%)
+**Status:** 🟠 In Progress (85%)
 **Owner role:** DevOps / Security
 
 **Purpose:**
@@ -458,8 +473,9 @@ ISecretsProvider
 "Kim platform admin?" sorusunun cevabı yok. Şu an sadece tenant başına admin kullanıcı var; platform-level admin'lerin CRUD'u eksik. Multi-partner senaryosunda kritik.
 
 **Domain entities:**
+> Not: Platform admin kaydı **cross-tenant**'tır (TenantId taşımaz). Bu yüzden `GlobalEntity` kullanılır, `EntityBase` değil.
 ```
-PlatformAdministrator : EntityBase
+PlatformAdministrator : GlobalEntity
 {
   Email           : string (unique, normalized)
   DisplayName     : string
@@ -1421,10 +1437,10 @@ Referanslar: `.antigravity/rules/handler-design.md`, `.antigravity/rules/erp-arc
 - **Entity:** PascalCase, singular (`SubscriptionPlan`, not `SubscriptionPlans`)
 - **Field:** PascalCase, global isimler (`Code`, NOT `PlateCode`/`CityCode`)
 - **Collection (MongoDB):** snake_case, plural (`platform_subscription_plans`)
-- **Request (Command):** `{Verb}{Entity}Request` → `CreateSubscriptionPlanRequest`, `UpdateTenantRequest`, `DeleteFeatureRequest`
-- **Request (Query):** `Get{Entity}sRequest`, `Get{Entity}ByIdRequest` → `GetTenantsRequest`, `GetTenantByIdRequest`
-- **Handler:** `{RequestName}Handler` → `CreateSubscriptionPlanRequestHandler`
-- **Validator:** `{RequestName}Validator` → `CreateSubscriptionPlanRequestValidator`
+- **Command (record):** `{Verb}{Entity}Command` → `CreateSubscriptionPlanCommand`, `UpdateTenantCommand`, `DeleteFeatureCommand`
+- **Query (record):** `Get{Entity}{Qualifier}Query` → `GetTenantListQuery`, `GetTenantByIdQuery`
+- **Handler (class, suffix YOK):** `{Verb}{Entity}Handler` → `CreateSubscriptionPlanHandler`, `GetTenantByIdHandler`
+- **Validator (class, suffix YOK):** `{Verb}{Entity}Validator` → `CreateSubscriptionPlanValidator`
 - **Controller route:** `/api/platform/{kebab-case-resource}` → `/api/platform/subscription-plans`
 - **Frontend route:** `/Platform/{PascalCase}` → `/Platform/SubscriptionPlans`
 - **Permission:** `Modules.{ModuleName}.{Action}` veya `Platform.{Resource}.{Action}` → `Platform.SubscriptionPlans.Create`
@@ -1434,14 +1450,26 @@ Referanslar: `.antigravity/rules/handler-design.md`, `.antigravity/rules/erp-arc
 - **Module code:** Uppercase short (`HR`, `MDM`, `CRM`)
 - **Private field:** `_camelCase` (`_repository`, `_currentUser`)
 
-### 7.2 Action-Based File Separation (ZORUNLU)
-- **Her Request için ayrı dosya.** Grup dosyası (`ProductCommands.cs`) **YASAK.**
-- **Her Handler için ayrı dosya.** `CreateProductRequestHandler.cs`, `UpdateProductRequestHandler.cs` ayrı.
+### 7.2 Action-Based File Separation (ZORUNLU — Golden Reference birebir)
+- **Her Command için ayrı dosya.** Grup dosyası (`ProductCommands.cs`) **YASAK.**
+- **Her Query için ayrı dosya.**
+- **Her Handler için ayrı dosya.** `CreateProductHandler.cs`, `UpdateProductHandler.cs` ayrı (Command/Query suffix YOK).
+- **Her Validator için ayrı dosya.** `CreateProductValidator.cs` (Command suffix YOK).
 - **Bir dosyada birden fazla public class YASAK.**
-- DTO'lar ayrı klasörde: `Application/Features/{Module}/Dtos/`
+- **Folder yapısı:** `Commands/`, `Queries/`, `Handlers/CommandHandlers/`, `Handlers/QueryHandlers/`, `Validators/`
+- **DTO'lar TEK dosyada:** `Application/Features/{Module}/{Module}Models.cs` (Golden Reference pattern).
+- **Referans canlı kod:** `services/Diten.DevEnablementService/.../Features/GoldenReferenceSlim/`
 
 ### 7.3 EntityBase Zorunlu Alanlar
-Tüm entity'ler `EntityBase`'den miras almalı:
+
+> **Sınıf adı servis bazlı değişir, kontrat aynıdır:**
+> - `Diten.MdmService`, `Diten.DevEnablementService`, `Diten.AuthService` → sınıf adı **`EntityBase`**
+> - `Diten.Platform` tenant-aware kayıt → sınıf adı **`BaseEntity`** (eşdeğer)
+> - `Diten.Platform` cross-tenant katalog → **`GlobalEntity : BaseEntity`** (gerekçeli, ör. `Tenant`, `SubscriptionPlan`, `PlatformAdministrator`)
+>
+> Module pack frontmatter `entity_base` alanı somut sınıf adını yazar.
+
+Tüm entity'ler base sınıftan miras almalı:
 ```csharp
 public sealed class SubscriptionPlan : EntityBase
 {
@@ -1665,6 +1693,139 @@ Her modül için minimum:
 - [ ] FluentValidation'da olan kontrol handler'da tekrarlanmıyor mu?
 - [ ] String literal status check yok mu? (Domain enum kullan)
 - [ ] Async metodlarda CancellationToken propagate ediliyor mu?
+- [ ] **Admin Safety Guardrails (§7.21):** Komut admin actor'leri (PlatformAdmin/PartnerAdmin/Role/Permission) etkiliyorsa self-action ve last-admin koruması var mı?
+- [ ] **Bulk-action filtresi:** BulkDelete/BulkSuspend handler'ında current user ID hedeften ayıklanıyor mu?
+- [ ] **Failure Path:** Self-action ve last-admin reddi için 409/422 testleri var mı?
+
+---
+
+### 7.21 Admin Safety Guardrails (Yeni — Zorunlu Cross-Cutting)
+
+**Amaç:** Platform yönetim modüllerinde sistemi kilitleyecek veya yönetim erişimini kazara koparacak "actor self-protection" hatalarını engelle. Bu kural NEW-002, MOD-0018, MOD-0021 ve admin actor'leri etkileyen tüm gelecekteki modüller için **zorunludur**.
+
+#### Korunması gereken 6 invariant
+
+| # | Kural | Reddetme nedeni (UI/API mesajı) | HTTP |
+|---|---|---|---|
+| 1 | **Self-action koruması.** Giriş yapan kullanıcı kendini delete/suspend/disable/cancel/demote edemez. | `"You cannot perform this action on your own account."` | 409 |
+| 2 | **Last SuperAdmin koruması.** Sistemde en az **1 adet `status=Active` + `Roles` içinde `"SuperAdmin"`** bulunan PlatformAdmin daima bulunmalıdır. Bu invariant'ı bozacak delete / suspend / role-remove işlemi reddedilir. | `"At least one active Super Admin must remain in the system."` | 409 |
+| 3 | **Role self-downgrade.** Kullanıcı kendi `SuperAdmin` / yönetim rollerini kendi kendine kaldıramaz. | `"You cannot remove your own administrative role."` | 409 |
+| 4 | **Bulk-action filtresi.** BulkDelete/BulkSuspend/BulkDisable komutlarında current user ID hedef listeden **otomatik ayıklanır**; sonuç payload'ı `SkippedSelfIds[]` içerir. Hata değil, atlama. | Sessiz atlama + response içinde `skipped: [self]` | 200 |
+| 5 | **Permission self-revoke koruması.** Kullanıcı kendi `Platform.Administrators.*` veya `Platform.Permissions.*` permission'larını kaldıramaz. | `"You cannot revoke your own administrative permissions."` | 409 |
+| 6 | **PartnerAdmin scope self-removal.** PartnerAdmin kendi `AllowedTenantIds` listesinden erişimini sağlayan tenant'ı çıkaramaz. | `"You cannot remove yourself from a tenant you currently operate."` | 409 |
+
+> **HTTP kod kararı:** Master-plan §7.7 örnekleri 404/409/400 kullanır, 422 projede mevcut değil. Tüm guard rejection'ları **409** olarak normalleştirilmiştir. Frontend ayrım için `Response<T>.Errors[0]` mesajını gösterir; programatik ayrım gerekirse ileride envelope'a `errorCode` field'ı eklenir (şimdilik kapsam dışı).
+
+#### Son admin tanımı + bootstrap
+
+- **"Son" hesaplaması:** `IPlatformAdministratorRepository.CountActiveSuperAdminsAsync(CancellationToken)` → `Status == Active && Roles.Contains("SuperAdmin") && !IsDeleted` üzerinden. Sonuç `<= 1` ise hedef admin bu kişi olduğunda kural 2 tetiklenir.
+- **Bootstrap (cold start):** Sistemde hiç PlatformAdmin yoksa ilk admin **seed/runbook** ile NEW-001 vault'tan provision edilir. UI üzerinden ilk admin invite edilemez (NEW-002 implementation notes'a yazılacak).
+- **PartnerAdmin için bu kural geçerli DEĞİL** — aşağı bak.
+
+#### PartnerAdmin "son admin" durumu (kural 2 muafiyeti)
+
+PartnerAdmin'lerin sonuncusu silindiğinde **backend reddetmez**. Gerekçe: bir partner'ın son `PartnerAdmin`'i kaybolursa partner kendi tenant'larını yönetemez ama bu durum **PlatformAdmin tarafından yeni invite ile geri alınabilir** (recoverable). Son `SuperAdmin` kaybı ise non-recoverable (sistem kilitlenir) — asimetrik risk, asimetrik koruma.
+
+**Frontend davranışı (sadece UI defense):**
+- PartnerAdmin silme/suspend butonuna basıldığında, eğer bu silme partner'ın son aktif PartnerAdmin'ini götürecekse SweetAlert confirm modal'ı gösterilir: `"This is the last administrator for {PartnerName}. They will not be able to self-manage their tenants. Continue?"`
+- Confirm sonrası backend normal akışla işlem yapar; backend tarafında ek kural çalıştırılmaz.
+
+#### Implementation contract
+
+Tek bir reusable servis, `Diten.Platform.Common`'da:
+
+```csharp
+// services/Diten.Platform.Common/Security/IActorSafetyGuard.cs
+public interface IActorSafetyGuard
+{
+    // Tekil eylem koruması — 1, 3, 5, 6 kurallarını çalıştırır
+    Task<Response<NoContent>?> EnsureNotSelfAsync(
+        Guid targetActorId,
+        AdminSafetyAction action,
+        CancellationToken ct);
+
+    // Last-admin koruması — kural 2
+    Task<Response<NoContent>?> EnsureNotLastActiveSuperAdminAsync(
+        Guid targetActorId,
+        AdminSafetyAction action,
+        CancellationToken ct);
+
+    // Bulk-action filtresi — kural 4
+    Task<BulkSafetyResult> FilterSelfFromBulkAsync(
+        IReadOnlyCollection<Guid> targetActorIds,
+        CancellationToken ct);
+}
+
+public enum AdminSafetyAction
+{
+    Delete, Suspend, Disable, Cancel,
+    RemoveRole, RevokePermission, RemoveTenantScope
+}
+
+public sealed record BulkSafetyResult(
+    IReadOnlyCollection<Guid> EffectiveTargets,
+    IReadOnlyCollection<Guid> SkippedSelfIds);
+```
+
+**Handler kullanım kuralı:**
+- Guard çağrısı **Authorization sonrası, business validation öncesi** yapılır.
+- `EnsureNotSelfAsync` / `EnsureNotLastActiveSuperAdminAsync` `null` dönerse devam, dolu `Response<NoContent>.Fail(...)` dönerse handler doğrudan onu return eder.
+- `FilterSelfFromBulkAsync` çağrısı `EffectiveTargets` boşsa handler `Response<BulkResult>.Success(skipped=[self], affected=0)` döner — hata değil.
+
+**`ICurrentUserContext` zorunlu** — guard internal olarak inject eder; handler ek inject yapmaz.
+
+#### Hangi komutlara uygulanır
+
+`AdminSafetyAction`'a karşılık gelen komutlar (gelecekte modül eklendikçe büyür):
+
+| Modül | Komut | Tetiklenen kural(lar) |
+|---|---|---|
+| NEW-002 PlatformAdministrators | `DeletePlatformAdministratorCommand` | 1, 2 |
+| NEW-002 | `SuspendPlatformAdministratorCommand` | 1, 2 |
+| NEW-002 | `BulkDeletePlatformAdministratorCommand` | 4 |
+| NEW-002 | `BulkSuspendPlatformAdministratorCommand` | 4 |
+| NEW-002 | `AssignRolesPlatformAdministratorCommand` | 3 |
+| NEW-002 | `UpdateAllowedTenantsCommand` | 6 |
+| MOD-0018 RBAC | `RevokePermissionCommand` | 5 |
+| MOD-0018 | `RemoveUserFromRoleCommand` | 3 |
+
+> Tenant-side iş modüllerinde (HR, Finance) bu kural geçerli **değildir**; sadece **admin actor**'leri (PlatformAdmin/PartnerAdmin/Role/Permission) etkileyen komutlarda zorunludur.
+
+#### Module pack acceptance criteria şablonu
+
+Admin actor etkileyen her module pack `Acceptance Criteria` bölümüne **birebir** şunları kopyalar:
+
+```markdown
+- [ ] Self-action reddi: current user kendi {entity}'sini delete/suspend edemez (409 + i18n mesaj)
+- [ ] Last SuperAdmin reddi: sistem en az 1 active SuperAdmin kalacak şekilde delete/suspend/role-remove engellenir (409)
+- [ ] Bulk filtresi: bulk komut payload'ı self ID içerse bile sessizce ayıklanır, response.skipped içerir (200)
+- [ ] Role self-downgrade reddi: kullanıcı kendi yönetim rolünü kaldıramaz (409)
+- [ ] Permission self-revoke reddi: kullanıcı kendi admin permission'ını kaldıramaz (409) — (uygunsa)
+- [ ] PartnerAdmin scope self-removal reddi: kendi tenant erişimini kaldıramaz (409) — (uygunsa)
+- [ ] §7.21 guard'ları `IActorSafetyGuard` üzerinden çağrılıyor — handler içinde manuel `if (id == currentUser.UserId)` YASAK
+- [ ] PartnerAdmin son-admin senaryosu: backend rejection YOK, sadece UI confirm modal (uygunsa)
+```
+
+#### Test şablonu
+
+Her admin komutu için minimum integration test seti:
+
+```
+1. happy path     — başka bir kullanıcıya uygulandığında 200/204
+2. self-action    — current user kendine uyguladığında 409 + mesaj kontrolü
+3. last-superadmin — tek aktif SuperAdmin'e delete/suspend/role-remove uygulandığında 409 + mesaj kontrolü
+4. bulk-self      — bulk payload current user ID içerdiğinde response.skippedSelfIds[] döner, 200
+5. partner-last   — PartnerAdmin için (uygunsa): son PartnerAdmin silindiğinde 200 (backend reddetmez)
+```
+
+#### Frontend kontrolü (defense-in-depth)
+
+Backend zaten reddediyor; UI bunu görünür hâle getirmeli:
+- DataTable row action'larda current user row'unda Delete/Suspend disable
+- Bulk select'te current user row'u check edilemez (disable + tooltip)
+- Backend 422/409 dönerse Notyf ile sunucudan gelen mesaj gösterilir (UI tahmin etmez)
+
+> Frontend kontrolü tek başına yeterli **değildir**; backend guard birincil zorunluluktur.
 
 ---
 
@@ -1775,7 +1936,7 @@ Bu tabloyu modül bittiğinde güncelle. Bölüm 2'deki özet tablo bunun kısal
 | ID | Modül | Status | % | Sorumluluk | Hedef Tarih | Tamamlanma Notu |
 |---|---|---|---|---|---|---|
 | NEW-001 | Secrets Management | 🔴 | 0 | DevOps | — | — |
-| NEW-002 | Platform Administrators Mgmt | 🔴 | 0 | Platform UI | — | — |
+| NEW-002 | Platform Administrators Mgmt | 🟠 | 85 | Platform UI | 2026-05-20 | Backend/frontend implemented; Gateway route and runtime smoke remain. |
 | MOD-0009 | Tenant Registry Events | 🟡 | 60 | Tenant | — | — |
 | MOD-0008 | Module Catalog Assignable | 🟡 | 80 | Catalog | — | — |
 | MOD-0018 | RBAC Enforcement | 🔴 | 10 | Auth | — | — |

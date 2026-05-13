@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="AdministratorsTitle" xml:space="preserve"><value>Platform Yoneticileri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Platform ve is ortagi yoneticilerini, rol kapsamini, davetleri ve durum surecini yonetin.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Islemler</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Yonetici Davet Et</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yonetici Davet Et</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Yoneticiyi Duzenle</value></data>
+  <data name="Email" xml:space="preserve"><value>E-posta</value></data>
+  <data name="EmailPlaceholder" xml:space="preserve"><value>admin@example.com</value></data>
+  <data name="UserName" xml:space="preserve"><value>Kullanici Adi</value></data>
+  <data name="UserNamePlaceholder" xml:space="preserve"><value>admin.user</value></data>
+  <data name="UserNameHelp" xml:space="preserve"><value>Yonetici bu kullanici adi veya e-posta adresi ile giris yapabilir.</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Gorunen Ad</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>Yonetici adi</value></data>
+  <data name="ActorType" xml:space="preserve"><value>Aktor Tipi</value></data>
+  <data name="PlatformAdmin" xml:space="preserve"><value>Platform Yoneticisi</value></data>
+  <data name="PartnerAdmin" xml:space="preserve"><value>Is Ortagi Yoneticisi</value></data>
+  <data name="PartnerId" xml:space="preserve"><value>Is Ortagi ID</value></data>
+  <data name="PartnerIdPlaceholder" xml:space="preserve"><value>Is ortagi GUID</value></data>
+  <data name="AllowedTenantIds" xml:space="preserve"><value>Izinli Tenant ID'leri</value></data>
+  <data name="AllowedTenantIdsPlaceholder" xml:space="preserve"><value>Her satira bir tenant GUID</value></data>
+  <data name="AllowedTenantIdsHelp" xml:space="preserve"><value>Is ortagi yoneticileri icin en az bir acik tenant kapsami gerekir.</value></data>
+  <data name="Roles" xml:space="preserve"><value>Roller</value></data>
+  <data name="RoleSuperAdmin" xml:space="preserve"><value>Super Admin</value></data>
+  <data name="RoleBillingAdmin" xml:space="preserve"><value>Faturalama Yoneticisi</value></data>
+  <data name="RoleSupportAdmin" xml:space="preserve"><value>Destek Yoneticisi</value></data>
+  <data name="RoleReadOnly" xml:space="preserve"><value>Salt Okuma</value></data>
+  <data name="InvitationStatus" xml:space="preserve"><value>Davet</value></data>
+  <data name="PendingInvitation" xml:space="preserve"><value>Davet Bekliyor</value></data>
+  <data name="Invited" xml:space="preserve"><value>Davet Edildi</value></data>
+  <data name="Accepted" xml:space="preserve"><value>Kabul Edildi</value></data>
+  <data name="Expired" xml:space="preserve"><value>Suresi Doldu</value></data>
+  <data name="Suspended" xml:space="preserve"><value>Askida</value></data>
+  <data name="Disabled" xml:space="preserve"><value>Devre Disi</value></data>
+  <data name="TotalAdministrators" xml:space="preserve"><value>Toplam Yonetici</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hizli Gorunum</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Genel Bilgiler</value></data>
+  <data name="ScopeAndAudit" xml:space="preserve"><value>Kapsam ve Denetim</value></data>
+  <data name="AuditPreview" xml:space="preserve"><value>Denetim Onizlemesi</value></data>
+  <data name="Suspend" xml:space="preserve"><value>Askıya Al</value></data>
+  <data name="Reactivate" xml:space="preserve"><value>Yeniden Aktif Et</value></data>
+  <data name="ResendInvite" xml:space="preserve"><value>Daveti Yeniden Gonder</value></data>
+  <data name="ReasonPrompt" xml:space="preserve"><value>Askıya alma nedeni girin.</value></data>
+  <data name="PartnerScopeRequired" xml:space="preserve"><value>Is ortagi yoneticileri icin Is Ortagi ID and en az bir izinli tenant ID gerekir.</value></data>
+  <data name="SuspendModalTitle" xml:space="preserve"><value>Yöneticiyi Askıya Al</value></data>
+  <data name="SuspendModalWarning" xml:space="preserve"><value>Bu yöneticiyi askıya almak istediğinizden emin misiniz? Lütfen aşağıya askıya alma nedenini girin.</value></data>
+  <data name="SuspendModalReasonLabel" xml:space="preserve"><value>Askıya Alma Nedeni</value></data>
+  <data name="SuspendModalReasonPlaceholder" xml:space="preserve"><value>Askıya alma nedenini girin (örn. kural ihlali)...</value></data>
+  <data name="SuspendModalReasonRequired" xml:space="preserve"><value>Askıya alma nedeni zorunludur.</value></data>
+  <data name="SuspendModalConfirmButton" xml:space="preserve"><value>Hesabı Askıya Al</value></data>
+  <data name="Recommended" xml:space="preserve"><value>Önerilen</value></data>
+  <data name="PasswordManagement" xml:space="preserve"><value>Hesap kurulumu</value></data>
+  <data name="ResendInvitation" xml:space="preserve"><value>Kurulum Baglantisi Gonder</value></data>
+  <data name="ResendInvitationHelp" xml:space="preserve"><value>Yoneticinin parola belirlemesi icin tek kullanimlik kurulum baglantisi gonderin.</value></data>
+  <data name="EmailUnlockTooltip" xml:space="preserve"><value>E-posta alanının kilidini düzenlemek için açın</value></data>
+  <data name="ResendInviteSuccess" xml:space="preserve"><value>Kurulum baglantisi basariyla gonderildi.</value></data>
+  <data name="ProtectedAccount" xml:space="preserve"><value>Korumalı hesap: kendi kaydınız veya sistem seed yöneticisi üzerinde bu işlemi yapamazsınız.</value></data>
+</root>

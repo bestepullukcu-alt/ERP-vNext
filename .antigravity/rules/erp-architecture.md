@@ -39,12 +39,32 @@ Her mikroservis aşağıdaki 5 temel projeden oluşmalıdır:
 
 ## 📁 Dosya ve Sınıf Organizasyonu (Action-Based Separation)
 
+> **Tek gerçek standart:** Golden Reference Slim/Compact kodu.
+> - Backend: `services/Diten.DevEnablementService/src/Diten.DevEnablementService.Application/Features/GoldenReferenceSlim/`
+> - Pack-of-record: `execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md`
+
 Kodun okunabilirliğini ve bakımını kolaylaştırmak için CQRS yapıları **Grup Dosyaları** (örn: `ProductCommands.cs`) içinde tutulamaz:
 
-1. **Her Command için ayrı dosya:** `CreateProductCommand.cs`, `UpdateProductCommand.cs`.
-2. **Her Query için ayrı dosya:** `GetProductsQuery.cs`, `GetProductByIdQuery.cs`.
-3. **Her Handler için ayrı dosya:** `CreateProductRequestHandler.cs`, `DeleteProductRequestHandler.cs`.
-4. **Kural:** Bir dosya içinde birden fazla public sınıf (Request veya Handler) bulunması **KESİNLİKLE YASAKTIR**.
+1. **Her Command için ayrı dosya:** `CreateProductCommand.cs`, `UpdateProductCommand.cs` (sealed record, `IRequest<Response<T>>`).
+2. **Her Query için ayrı dosya:** `GetProductListQuery.cs`, `GetProductByIdQuery.cs` (sealed record).
+3. **Her Handler için ayrı dosya:** `CreateProductHandler.cs`, `DeleteProductHandler.cs` (sealed class, **Command/Query/Request suffix YOK**).
+4. **Her Validator için ayrı dosya:** `CreateProductValidator.cs` (**Command suffix YOK**).
+5. **Folder yapısı (Golden Reference birebir):**
+   ```
+   Features/{Module}/
+   ├── Commands/                            ← her command ayrı dosya
+   ├── Queries/                             ← her query ayrı dosya
+   ├── Handlers/CommandHandlers/            ← AYRI klasör (zorunlu)
+   ├── Handlers/QueryHandlers/              ← AYRI klasör (zorunlu)
+   ├── Validators/                          ← her validator ayrı dosya
+   └── {Module}Models.cs                    ← TEK dosyada tüm DTO/ViewModel'ler
+   ```
+6. **Kural:** Bir dosya içinde birden fazla public sınıf **KESİNLİKLE YASAKTIR**.
+
+**Yasaklar:**
+- ❌ Handler isminde `*CommandHandler.cs` / `*QueryHandler.cs` / `*RequestHandler.cs` suffix
+- ❌ `Handlers/` tek klasörü (CommandHandlers/QueryHandlers ayrımı olmadan)
+- ❌ `Features/{Module}/Requests/Commands/` gibi ekstra alt katman
 
 ---
 
@@ -89,22 +109,30 @@ Her entity `EntityBase`'ten miras almalıdır. `EntityBase`, aşağıdaki alanla
 
 ---
 
-## � RBAC Permission Key Formatı
+## 🔐 RBAC Permission Key Formatı
 
-Controller endpoint'lerinde kullanılan `[HasPermission]` attribute'u için standart format:
+Controller endpoint'lerinde kullanılan `[HasPermission]` attribute'u için iki format servis bazlı kabul edilir:
 
-```
-[HasPermission("Modules.{ModuleName}.{Action}")]
-```
+| Servis | Format | Örnek |
+|---|---|---|
+| `Diten.Platform` (Platform admin shell) | `Platform.{Resource}.{Action}` | `Platform.Administrators.Read` |
+| `Diten.MdmService`, `Diten.DevEnablementService`, `Diten.AuthService` (Tenant shell) | `Modules.{ModuleName}.{Action}` | `Modules.SampleModule.Read` |
+
+**Karar kuralı:** Controller hangi servisin API katmanındaysa o format kullanılır. Module pack'te `service` ve `shell` alanları bu kararı tetikler.
 
 **Örnekler:**
-- `[HasPermission("Modules.SampleModule.Read")]`
-- `[HasPermission("Modules.SampleModule.Create")]`
-- `[HasPermission("Modules.SampleModule.Delete")]`
+- Platform admin: `[HasPermission("Platform.Tenants.Create")]`, `[HasPermission("Platform.SubscriptionPlans.Update")]`
+- Tenant: `[HasPermission("Modules.SampleModule.Read")]`, `[HasPermission("Modules.Products.Delete")]`
 
-**Actions:** `Read`, `Create`, `Update`, `Delete`, `BulkDelete`
+**Actions:** `Read`, `Create`, `Update`, `Delete`, `BulkDelete` (+ modül-spesifik aksiyonlar: `Suspend`, `Archive`, `AssignRoles`, vb.)
+
+**Policy:**
+- Platform admin controller'ları: `[Authorize(Policy = "PlatformActor")]`
+- Tenant controller'ları: `[Authorize]`
 
 Eğer bir endpoint henüz RBAC'a bağlanmadıysa `[Authorize]` ile koruma altında tutulur. `[AllowAnonymous]` sadece Public health check endpoint'leri için kabul edilir.
+
+`actor_type=platform_admin` claim'i tüm permission kontrollerini otomatik geçer (bkz: `API/Security/HasPermissionAttribute.cs`).
 
 ---
 

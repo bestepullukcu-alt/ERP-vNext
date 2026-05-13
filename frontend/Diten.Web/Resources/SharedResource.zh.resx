@@ -432,4 +432,24 @@
   <data name="SubscriptionPlans" xml:space="preserve">
     <value>订阅计划</value>
   </data>
+  <data name="Login.ForgotPassword" xml:space="preserve"><value>Forgot Password?</value></data>
+  <data name="Login.EmailRequired" xml:space="preserve"><value>Email is required.</value></data>
+  <data name="ForgotPassword.Title" xml:space="preserve"><value>Forgot Password?</value></data>
+  <data name="ForgotPassword.Subtitle" xml:space="preserve"><value>Enter your email and we will send reset instructions.</value></data>
+  <data name="ForgotPassword.Submit" xml:space="preserve"><value>Send reset link</value></data>
+  <data name="ForgotPassword.SentTitle" xml:space="preserve"><value>Check your email</value></data>
+  <data name="ForgotPassword.SentMessage" xml:space="preserve"><value>If the email exists, reset instructions have been sent.</value></data>
+  <data name="ResetPassword.Title" xml:space="preserve"><value>Reset Password</value></data>
+  <data name="ResetPassword.Subtitle" xml:space="preserve"><value>Your new password must be different from previously used passwords.</value></data>
+  <data name="ChangePassword.Title" xml:space="preserve"><value>Change Password</value></data>
+  <data name="ChangePassword.Subtitle" xml:space="preserve"><value>You must change your temporary password before continuing.</value></data>
+  <data name="CurrentPassword" xml:space="preserve"><value>Current Password</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>New Password</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Confirm Password</value></data>
+  <data name="SetNewPassword" xml:space="preserve"><value>Set new password</value></data>
+  <data name="BackToLogin" xml:space="preserve"><value>Back to login</value></data>
+  <data name="ResetPassword.Required" xml:space="preserve"><value>All password fields are required.</value></data>
+  <data name="ResetPassword.Mismatch" xml:space="preserve"><value>Passwords do not match.</value></data>
+  <data name="ResetPassword.SuccessTitle" xml:space="preserve"><value>Password updated</value></data>
+  <data name="ResetPassword.SuccessMessage" xml:space="preserve"><value>Your password has been updated.</value></data>
 </root>

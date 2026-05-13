@@ -35,14 +35,11 @@ Her domain altinda:
 {domain}/
 ├── README.md
 ├── domain-config.md
-├── decisions/
-│   ├── runtime-decisions.md
-│   ├── ownership-decisions.md
-│   └── deferred-items.md
-├── controls/
 └── module-packs/
     └── {DOMAIN}-{NNN}-{slug}.md
 ```
+
+> Tarihsel `controls/`, `decisions/` ve `batches/` katmanlari `archive/domains/` altina tasinmistir. Engineering kurallari `.antigravity/rules/`, MVP scope ve modul envanteri `docs/platform/master-plan.md` uzerinden yurutulur.
 
 ## Yetki Hiyerarsisi
 
@@ -76,10 +73,12 @@ Ornekler:
 Bu katman ileriye donuk calisir. Mevcut eski modullere geriye donuk module pack yazilmaz.
 Bu tarihten sonraki yeni moduller veya major feature'lar module pack ile acilir.
 
-## Batch / Snapshot Kullanilmiyor
+## Kullanilmayan Katmanlar
 
 - `batches/`: YOK. `/add-module` workflow'u phase orchestration saglar.
 - `snapshots/`: YOK. Git history + `docs/audits/` yeterlidir.
+- `controls/`: YOK. Engineering standartlari `.antigravity/rules/`'dedir; arsivlendi.
+- `decisions/`: YOK. Scope/MVP kararlari `docs/platform/master-plan.md`'dedir; arsivlendi.
 
 ## Kullanim Rehberi
 

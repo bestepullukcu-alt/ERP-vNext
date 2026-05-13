@@ -315,6 +315,9 @@
   <data name="Login.Email" xml:space="preserve">
     <value>E-posta</value>
   </data>
+  <data name="Login.EmailOrUsername" xml:space="preserve">
+    <value>E-posta veya kullanıcı adı</value>
+  </data>
   <data name="Login.Password" xml:space="preserve">
     <value>Şifre</value>
   </data>
@@ -435,14 +438,14 @@
   <data name="Deactivate" xml:space="preserve">
     <value>Pasif Et</value>
   </data>
-  <data name="Unknown" xml:space="preserve">
-    <value>Bilinmiyor</value>
-  </data>
   <data name="SubscriptionFeatures" xml:space="preserve">
     <value>Abonelik Ozellikleri</value>
   </data>
   <data name="SubscriptionPlans" xml:space="preserve">
     <value>Abonelik Planlari</value>
+  </data>
+  <data name="PlatformAdministrators" xml:space="preserve">
+    <value>Platform Yoneticileri</value>
   </data>
   <data name="Loading" xml:space="preserve">
     <value>Yukleniyor...</value>
@@ -450,4 +453,30 @@
   <data name="Close" xml:space="preserve">
     <value>Kapat</value>
   </data>
+  <data name="Login.ForgotPassword" xml:space="preserve"><value>Parolami Unuttum?</value></data>
+  <data name="Login.EmailRequired" xml:space="preserve"><value>E-posta zorunludur.</value></data>
+  <data name="ForgotPassword.Title" xml:space="preserve"><value>Parolami Unuttum?</value></data>
+  <data name="ForgotPassword.Subtitle" xml:space="preserve"><value>E-postanizi girin, sifirlama talimatlarini gonderelim.</value></data>
+  <data name="ForgotPassword.Submit" xml:space="preserve"><value>Sifirlama baglantisi gonder</value></data>
+  <data name="ForgotPassword.SentTitle" xml:space="preserve"><value>E-postanizi kontrol edin</value></data>
+  <data name="ForgotPassword.SentMessage" xml:space="preserve"><value>E-posta kayitliysa sifirlama talimatlari gonderildi.</value></data>
+  <data name="ResetPassword.Title" xml:space="preserve"><value>Parola Sifirla</value></data>
+  <data name="ResetPassword.Subtitle" xml:space="preserve"><value>Yeni parolaniz daha once kullandiklarinizdan farkli olmalidir.</value></data>
+  <data name="ChangePassword.Title" xml:space="preserve"><value>Parola Degistir</value></data>
+  <data name="ChangePassword.Subtitle" xml:space="preserve"><value>Devam etmeden once gecici parolanizi degistirmelisiniz.</value></data>
+  <data name="CurrentPassword" xml:space="preserve"><value>Mevcut Parola</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>Yeni Parola</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Parolayi Onayla</value></data>
+  <data name="SetNewPassword" xml:space="preserve"><value>Yeni parolayi ayarla</value></data>
+  <data name="BackToLogin" xml:space="preserve"><value>Girise don</value></data>
+  <data name="ResetPassword.Required" xml:space="preserve"><value>Tum parola alanlari zorunludur.</value></data>
+  <data name="ResetPassword.Mismatch" xml:space="preserve"><value>Parolalar eslesmiyor.</value></data>
+  <data name="ResetPassword.SuccessTitle" xml:space="preserve"><value>Parola guncellendi</value></data>
+  <data name="ResetPassword.SuccessMessage" xml:space="preserve"><value>Parolaniz guncellendi.</value></data>
+  <data name="AdminSelfActionDenied" xml:space="preserve"><value>Kendi yonetici hesabınızı silemez veya askıya alamazsınız.</value></data>
+  <data name="AdminSelfRoleDowngradeDenied" xml:space="preserve"><value>Kendi yonetici rolunuzu kaldıramazsınız.</value></data>
+  <data name="AdminLastSuperAdminDenied" xml:space="preserve"><value>Sistemde en az bir aktif Super Admin kalmalıdır.</value></data>
+  <data name="AdminSeedDeleteDenied" xml:space="preserve"><value>Sistem seed yoneticisi silinemez.</value></data>
+  <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>Sistem seed yoneticisi askıya alınamaz.</value></data>
+  <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Yonetici olusturuldu ancak davet e-postasi gonderilemedi. SMTP ayarlarini kontrol edip Daveti Yeniden Gonder islemini kullanin.</value></data>
 </root>

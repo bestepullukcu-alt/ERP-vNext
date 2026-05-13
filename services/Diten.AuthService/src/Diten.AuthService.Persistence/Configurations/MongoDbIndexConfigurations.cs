@@ -12,6 +12,17 @@ public static class MongoDbIndexConfigurations
         await usersCol.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.Email).Ascending(u => u.TenantId), new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<User>(
+                Builders<User>.IndexKeys.Ascending(u => u.TenantId).Ascending(u => u.NormalizedUserName),
+                new CreateIndexOptions<User>
+                {
+                    Unique = true,
+                    Name = "ux_users_tenant_normalized_username",
+                    PartialFilterExpression = Builders<User>.Filter.And(
+                        Builders<User>.Filter.Eq(u => u.IsDeleted, false),
+                        Builders<User>.Filter.Exists(u => u.NormalizedUserName, true),
+                        Builders<User>.Filter.Gt(u => u.NormalizedUserName, string.Empty))
+                }),
             new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.TenantId)),
             new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.IsActive).Ascending(u => u.TenantId))
         });

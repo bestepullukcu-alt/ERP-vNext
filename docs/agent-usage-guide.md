@@ -1,18 +1,169 @@
 # ERP-vNext Agent Kullanım Rehberi
 
-Bu rehber yeni modül geliştirme akışını iki güvenli aşamaya ayırır: önce module pack hazırlanır, sonra orchestrator onaylı pack üzerinden geliştirme yapar.
+Bu rehber iki temel akışı detaylandırır: **Yol A — Sıfırdan yeni domain açma** (nadir) ve **Yol B — Mevcut domain'de yeni modül yazma** (her gün). Module pack güvenli aşamalar üzerinden yürütülür: önce sözleşme, sonra geliştirme.
 
-## Yeni Modül Akışı
+> **Otorite hiyerarşisi (her iki yolda da geçerli):** Module Pack → Domain Config → AGENTS.md → `.antigravity/rules/` → `docs/platform/master-plan.md`
 
-1. Kullanıcı modül fikrini verir.
-2. `module-pack-author` veya `/prepare-module-pack` çalışır.
-3. Module pack `execution/domains/{domain}/module-packs/` altında `status: draft` olarak hazırlanır.
-4. Kullanıcı module pack'i inceler, alanları/scope'u/acceptance criteria'yı düzeltir.
-5. Onay sonrası status `approved` veya `ready-for-dev` yapılır.
-6. Kullanıcı `@orchestrator {module-pack}` çağırır.
-7. Orchestrator backend, frontend, gateway, l10n, test ve dokümantasyon ajanlarını aynı module pack'e göre yönetir.
+---
 
-`@orchestrator` module pack oluşturmaz. Module pack yoksa veya `draft` ise geliştirme başlatmaz.
+## Yol A — Sıfırdan Yeni Domain Açma
+
+Yılda 1-2 kez. Örnek: yeni "CRM" domain'i.
+
+### A1. Domain klasörünü kur
+
+```
+execution/domains/{domain-name}/
+├── README.md             ← domain ne, kapsam, kapsam dışı, otorite hiyerarşisi, "yeni modül" kısa adımları
+├── domain-config.md      ← in-scope modüller, repo scope, protected paths, ownership boundaries, runtime decisions
+└── module-packs/         ← (başlangıçta boş)
+```
+
+> **Şablon olarak referans:** [execution/domains/platform-shared-services/README.md](../execution/domains/platform-shared-services/README.md) ve [domain-config.md](../execution/domains/platform-shared-services/domain-config.md) bu yapının kanonik örneğidir.
+
+### A2. domain-config.md'de yazılması GEREKEN
+
+- **Purpose:** Tek paragrafla domain ne sahipleniyor.
+- **In-Scope Modules:** Modül kimlikleri (status için master-plan'a yönlendir, burada tekrarlama).
+- **Out-of-Scope:** Hangi domain'lere yönlendirildiği netçe.
+- **Domain-Level Repo Scope:** Bu domain'in dokunabileceği yollar (`services/`, `frontend/`, `gateway/`).
+- **Protected Paths:** Bu domain'in **dokunamayacağı** yollar (diğer domain servisleri, archive, FROZEN dosyalar).
+- **Ownership Boundaries:** Modüller arası kritik sahiplik kuralları (örn. "MOD-0023 Approvals ile MOD-0024 Tasks birleşemez").
+- **Runtime Decisions:** Yalnızca **domain'e özel** olanlar; engineering kurallarına link ver, içeriği tekrarlama.
+
+### A3. domain-config.md'de yazılMAması GEREKEN
+
+`.antigravity/rules/`'da olan hiçbir şeyin tekrarı:
+- ❌ MongoDB + Repository pattern detayı (→ `mongo-indexing.md`)
+- ❌ Response envelope formatı (→ `response-envelope.md`)
+- ❌ Soft delete, EntityBase alanları (→ `entity-base-template.md`)
+- ❌ Layered architecture, CQRS klasör isimleri (→ `erp-architecture.md`)
+- ❌ JWT/permission format detayı (→ `security-jwt.md`)
+
+Engineering kuralları tekrarlanırsa kaçak otorite oluşur ve bayatlar.
+
+### A4. AGENTS.md'ye domain'i tanıt
+
+- §2 (klasör yapısı) ve §9 (branch adlandırma) → yeni domain ve kısa kodu (`crm` gibi) eklenir.
+- Platform/Admin domain'i ise → [docs/platform/master-plan.md](platform/master-plan.md) §2 envanter tablosuna eklenir.
+
+### A5. İlk modülü Yol B ile yaz
+
+Domain çerçevesi hazır; modül üretimi standart akışa girer.
+
+---
+
+## Yol B — Mevcut Domain'de Yeni Modül
+
+Senin günlük akışın. Örnek: PSS domain'inde "Platform Administrators Management".
+
+### B1. `/prepare-module-pack` çağır
+
+Vereceğin bilgiler:
+- Modül adı + tek cümlelik amaç
+- Domain (MDM / PSS / DEVEN / ESBP)
+- Servis (`Diten.Platform`, `Diten.AuthService`, `Diten.MdmService`, `Diten.DevEnablementService`)
+- Shell tipi (`platform-admin` / `tenant` / `none`)
+- Create/edit formundaki kullanıcı alan sayısı + isimleri (Slim/Compact kararı için)
+- DataTable kullanılacak mı
+- Bilinen iş kuralları + bağımlılıklar
+- Entity base kararı (`EntityBase`/`BaseEntity`/`GlobalEntity` + gerekçe)
+
+Ne olur:
+- `module-pack-author` ajanı [AGENTS.md](../AGENTS.md), [domain-config.md](../execution/domains/), [docs/platform/master-plan.md](platform/master-plan.md), [.antigravity/rules/](../.antigravity/rules/), Golden Reference Slim/Compact dosyalarını okur.
+- Form alan sayısına göre `golden_reference: slim` (≤8) veya `compact` (>8) kararı verilir.
+- `execution/domains/{domain}/module-packs/{ID}-{slug}.md` dosyası `status: draft` ile üretilir.
+
+### B2. Module pack'i incele
+
+Pack 20 zorunlu bölüm içermeli ([.antigravity/rules/module-pack-standard.md](../.antigravity/rules/module-pack-standard.md)):
+
+| # | Bölüm | Kritik içerik |
+|---|---|---|
+| Frontmatter | Kimlik | id, name, domain, service, shell, golden_reference, entity_base, status, owner, branch, form_field_count |
+| 1-8 | Tanım | Module Summary, Ownership, Owned Objects, Entity Fields, Repo Scope, Protected Paths, Dependencies, Runtime Constraints |
+| 9 | Layout & Shell Contract | Razor `Layout = "_LayoutPlatformAdmin"` AÇIKÇA |
+| 10 | Backend File Convention | Golden Reference birebir folder/naming |
+| 11 | Frontend File Contract | Slim/Compact dosya seti tam |
+| 12 | Validation Rules | Her field için tablo |
+| 13 | Failure Path | Duplicate, missing, unauthorized, concurrency (en az 4 senaryo) |
+| 14 | Authorization Convention | Permission listesi + policy + actor type |
+| 15 | Gateway Routing | Gerekli mi, `integration-agent` task'ı |
+| 16 | Acceptance Criteria | Test edilebilir maddeler |
+| 17 | Test Expectations | Build / verifier / RESX / smoke |
+| 18 | Ready-for-dev Checklist | Tüm madde işaretli olmalı |
+| 19 | Implementation Notes | Domain'e özel ipuçları |
+| 20 | Follow-up Items | Bilinen sonraki adımlar |
+
+### B3. Onayla
+
+Yanlışları düzelttirdikten sonra frontmatter:
+```yaml
+status: approved   # veya ready-for-dev
+```
+
+`@orchestrator` `draft` paketlerle kod yazmaz.
+
+### B4. Branch aç
+
+```bash
+git checkout -b feature/{domain-kısa}/{module-id}-{slug}
+# örnek: feature/pss/pss-001-platform-administrators
+```
+
+`domain-kısa`: `mdm` | `pss` | `deven` | `esbp`
+
+### B5. Orchestrator çağır
+
+```
+@orchestrator execution/domains/{domain}/module-packs/{ID}-{slug}.md
+```
+
+`/add-module` workflow'u Phase 0 → 6 çalışır:
+- Phase 0: pack + bağımlılık kontrolü
+- Phase 1-3: backend (Domain → Persistence → Application → API)
+- Phase 4: frontend (Controller → Views → JS → L10n)
+- Phase 5: gateway route (gerekiyorsa, `integration-agent`)
+- Phase 6: build + verifier + RESX + smoke test
+
+### B6. Test + status güncelle
+
+- Browser'da gerçek feature'ı test et (golden path + edge cases)
+- `status: in-progress` → `review` → `done`
+
+### B7. PR
+
+```bash
+gh pr create --title "..." --body "..."
+```
+
+Module pack silinmez, `done` olarak repository'de kalır (tarihsel kayıt).
+
+---
+
+## Akış Görseli
+
+```
+YOL A (yeni domain — yılda 1-2)         YOL B (yeni modül — her gün)
+─────────────────────────────────       ─────────────────────────────────
+A1. Domain klasörü kur                  B1. /prepare-module-pack
+    (README + domain-config +               (alan sayısı + iş kuralları)
+     module-packs/)                          ↓
+     ↓                                  B2. Module pack incele
+A2. domain-config.md yaz                    (20 bölüm + frontmatter)
+    (sadece domain'e özel kararlar)         ↓
+     ↓                                  B3. status: approved
+A3. Engineering kurallarını            B4. Branch aç
+    tekrarlama —                            (feature/{d}/{id}-{slug})
+    .antigravity'ye link ver                ↓
+     ↓                                  B5. @orchestrator {pack}
+A4. AGENTS.md §2 + §9'a                     (/add-module Phase 0→6)
+    yeni domain'i tanıt                     ↓
+     ↓                                  B6. Test + status: done
+A5. İlk modül → Yol B'ye geç          B7. PR
+```
+
+> **Standalone `@orchestrator` kuralı:** Module pack oluşturmaz. Pack yoksa veya `draft` ise kullanıcıyı `/prepare-module-pack`'e yönlendirir.
 
 ## Hangi Agent Ne Zaman Kullanılır?
 
