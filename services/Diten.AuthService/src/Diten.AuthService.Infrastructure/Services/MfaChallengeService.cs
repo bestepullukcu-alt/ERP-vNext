@@ -19,7 +19,6 @@ public sealed class MfaChallengeService : IMfaChallengeService
     private readonly IAuthAuditService _authAuditService;
     private readonly ITenantContext _tenantContext;
     private readonly MfaOptions _options;
-    private readonly JwtSettings _jwtSettings;
 
     public MfaChallengeService(
         IMfaChallengeRepository repository,
@@ -27,8 +26,7 @@ public sealed class MfaChallengeService : IMfaChallengeService
         IUserRepository userRepository,
         IAuthAuditService authAuditService,
         ITenantContext tenantContext,
-        IOptions<MfaOptions> options,
-        IOptions<JwtSettings> jwtSettings)
+        IOptions<MfaOptions> options)
     {
         _repository = repository;
         _deliveryService = deliveryService;
@@ -36,7 +34,6 @@ public sealed class MfaChallengeService : IMfaChallengeService
         _authAuditService = authAuditService;
         _tenantContext = tenantContext;
         _options = options.Value;
-        _jwtSettings = jwtSettings.Value;
     }
 
     public async Task<MfaChallengeCreated> CreateEmailChallengeAsync(User user, string requestIp, string? userAgent, CancellationToken ct)
@@ -120,7 +117,12 @@ public sealed class MfaChallengeService : IMfaChallengeService
 
     private string ComputeHash(string value)
     {
-        var secret = string.IsNullOrWhiteSpace(_options.HashSecret) ? _jwtSettings.Secret : _options.HashSecret;
+        if (string.IsNullOrWhiteSpace(_options.HashSecret))
+        {
+            throw new InvalidOperationException("Mfa:HashSecret configuration is required when MFA challenges are used.");
+        }
+
+        var secret = _options.HashSecret;
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
         return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
     }

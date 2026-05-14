@@ -165,11 +165,15 @@ const TenantsList = (function () {
             body: JSON.stringify({ reason: reason || '' })
         });
 
-        if (response.status === 401 || response.status === 403) {
+        if (response.status === 401) {
             window.DtDefaults?.handleUnauthorized?.();
             const authError = new Error('auth-refresh-in-progress');
             authError.authHandled = true;
             throw authError;
+        }
+
+        if (response.status === 403) {
+            throw new Error(L.PermissionDenied || 'Permission denied.');
         }
 
         if (!response.ok) {
@@ -796,7 +800,6 @@ const TenantsList = (function () {
             syncL10n();
             initDataTable();
             bindEvents();
-            loadStats();
         }
     };
 })();

@@ -49,6 +49,58 @@
     const badge = (text, cls) => `<span class="badge ${cls} me-1">${text}</span>`;
     const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    const formatNumber = (value, maximumFractionDigits = 0) => {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return safe(value);
+        return new Intl.NumberFormat(undefined, { maximumFractionDigits }).format(number);
+    };
+
+    const getQuotaValue = (quotas, key) => {
+        if (!quotas) return null;
+        if (Object.prototype.hasOwnProperty.call(quotas, key)) return quotas[key];
+        const match = Object.keys(quotas).find((item) => item.toLowerCase() === key.toLowerCase());
+        return match ? quotas[match] : null;
+    };
+
+    const quotaItems = (plan, l10n) => {
+        const quotas = plan.defaultQuotas || plan.DefaultQuotas || {};
+        const items = [
+            {
+                key: 'users.max',
+                label: l10n.UsersMax || 'Maximum Users',
+                value: getQuotaValue(quotas, 'users.max'),
+                suffix: ''
+            },
+            {
+                key: 'storage.gb.max',
+                label: l10n.StorageGbMax || 'Storage Limit',
+                value: getQuotaValue(quotas, 'storage.gb.max'),
+                suffix: ' GB',
+                fractionDigits: 2
+            },
+            {
+                key: 'api.calls.per.month',
+                label: l10n.ApiCallsPerMonth || 'API Calls / Month',
+                value: getQuotaValue(quotas, 'api.calls.per.month'),
+                suffix: ''
+            },
+            {
+                key: 'modules.max',
+                label: l10n.ModulesMax || 'Maximum Modules',
+                value: getQuotaValue(quotas, 'modules.max'),
+                suffix: ''
+            }
+        ];
+
+        return items
+            .filter((item) => item.value !== null && item.value !== undefined && item.value !== '')
+            .map((item) => ({
+                label: item.label,
+                text: `${formatNumber(item.value, item.fractionDigits || 0)}${item.suffix}`,
+                key: item.key
+            }));
+    };
+
     const renderPlanCard = (plan) => {
         const l10n = window.L10n || {};
         const isActive = !!plan.isActive;
@@ -63,8 +115,8 @@
             ? entitlementFeatures
             : (Array.isArray(plan.includedFeatures) ? plan.includedFeatures.slice(0, 5) : []);
         const modules = Array.isArray(plan.includedModuleKeys) ? plan.includedModuleKeys.slice(0, 3).map((x) => `${l10n.Modules || 'Modules'}: ${x}`) : [];
-        const quotas = plan.defaultQuotas ? Object.keys(plan.defaultQuotas).slice(0, 3).map((k) => `${k}: ${plan.defaultQuotas[k]}`) : [];
-        const featureItems = features.concat(modules, quotas).slice(0, 7);
+        const quotas = quotaItems(plan, l10n);
+        const featureItems = features.concat(modules).slice(0, 5);
         const monthlyLabel = safe(l10n.Monthly || 'month').toLowerCase();
         const yearlyLabel = safe(l10n.Yearly || 'year').toLowerCase();
 
@@ -109,6 +161,21 @@
                         ${featureItems.length
                             ? `<ul class="list-unstyled mb-0">${featureItems.map((x) => `<li class="d-flex align-items-start gap-2 mb-2"><i class="bx bx-check text-success mt-1"></i><span>${safe(x)}</span></li>`).join('')}</ul>`
                             : '<div class="text-muted small">-</div>'}
+                        ${quotas.length
+                            ? `<div class="mt-4">
+                                   <small class="text-muted d-block mb-2">${l10n.Quotas || 'Default Quotas'}</small>
+                                   <ul class="list-unstyled mb-0">
+                                       ${quotas.map((quota) => `
+                                           <li class="d-flex align-items-start gap-2 mb-2">
+                                               <i class="bx bx-check text-success mt-1"></i>
+                                               <span>
+                                                   <span>${safe(quota.label)}</span>
+                                                   <span class="text-muted">: ${safe(quota.text)}</span>
+                                               </span>
+                                           </li>`).join('')}
+                                   </ul>
+                               </div>`
+                            : ''}
                     </div>
                 </div>
             </div>

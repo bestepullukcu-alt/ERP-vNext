@@ -16,6 +16,8 @@
     <ItemGroup>
         <ProjectReference
             Include="..\Diten.DevEnablementService.Application\Diten.DevEnablementService.Application.csproj" />
+        <ProjectReference
+            Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
     </ItemGroup>
 
 </Project>

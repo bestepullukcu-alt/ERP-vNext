@@ -26,7 +26,7 @@ public sealed class CreateTenantAdminUserCommandHandler : IRequestHandler<Create
             return Response<TenantAdminUserDto>.Fail("Tenant not found.", 404);
         }
 
-        TenantAdminUserSupport.EnsureInitialAdminUser(tenant);
+        var initialAdminAdded = TenantAdminUserSupport.EnsureInitialAdminUser(tenant);
         if (!TenantAdminUserSupport.TryNormalizeEmail(request.Request.Email, out var email))
         {
             return Response<TenantAdminUserDto>.Fail("Admin user email must be valid.", 400);
@@ -47,6 +47,11 @@ public sealed class CreateTenantAdminUserCommandHandler : IRequestHandler<Create
         };
 
         tenant.AdminUsers.Add(user);
+        if (initialAdminAdded)
+        {
+            tenant.ActiveUserCount = TenantAdminUserSupport.CountUsersQuotaUsage(tenant);
+        }
+
         TenantAdminUserSupport.AddActivity(tenant, "tenant.admin_user.added", $"Admin user '{email}' added.", _currentUser.ActorName, now);
         await _repository.UpdateAsync(tenant, cancellationToken);
 

@@ -1,5 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Diten.Web.Models.PlatformAdministrators;
@@ -50,19 +52,27 @@ public sealed class AdministratorsController : Controller
     [HttpGet("get/{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        AddAuthHeader();
+        if (!TryCreateAuthenticatedRequest(HttpMethod.Get, $"{_gatewayUrl}/api/platform/administrators/{id}", out var request))
+        {
+            Diten.Web.Controllers.ProxyAuthFailure.ClearAuthCookies(Response);
+            return StatusCode(StatusCodes.Status401Unauthorized, Diten.Web.Controllers.ProxyAuthFailure.PlatformLoginPayload());
+        }
+
         try
         {
-            var response = await _httpClient.GetAsync($"{_gatewayUrl}/api/platform/administrators/{id}");
-            if (!response.IsSuccessStatusCode)
+            using (request)
             {
-                return Json(new { success = false });
-            }
+                using var response = await _httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return Json(new { success = false });
+                }
 
-            var payload = await response.Content.ReadFromJsonAsync<GatewayResponse<PlatformAdministratorDetailViewModel>>(_jsonOptions);
-            return payload?.Data is null
-                ? Json(new { success = false })
-                : Json(new { success = true, data = payload.Data });
+                var payload = await response.Content.ReadFromJsonAsync<GatewayResponse<PlatformAdministratorDetailViewModel>>(_jsonOptions);
+                return payload?.Data is null
+                    ? Json(new { success = false })
+                    : Json(new { success = true, data = payload.Data });
+            }
         }
         catch (Exception ex)
         {
@@ -133,10 +143,14 @@ public sealed class AdministratorsController : Controller
     [HttpPost("api/{id:guid}/reset-password")]
     public async Task<IActionResult> ResetPasswordProxy(Guid id, [FromForm] string email)
     {
-        AddAuthHeader();
         try
         {
-            var response = await _httpClient.PostAsJsonAsync($"{_gatewayUrl}/api/platform-auth/forgot-password", new { email }, _jsonOptions);
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_gatewayUrl}/api/platform-auth/forgot-password")
+            {
+                Content = JsonContent.Create(new { email }, options: _jsonOptions)
+            };
+            AddAuthHeader(request);
+            using var response = await _httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 return Json(new { success = true });
@@ -161,32 +175,43 @@ public sealed class AdministratorsController : Controller
             });
         }
 
-        AddAuthHeader();
         try
         {
             var payload = ToPayload(model);
-            var response = id.HasValue
-                ? await _httpClient.PutAsJsonAsync($"{_gatewayUrl}/api/platform/administrators/{id}", payload, _jsonOptions)
-                : await _httpClient.PostAsJsonAsync($"{_gatewayUrl}/api/platform/administrators", payload, _jsonOptions);
-
-            if (response.IsSuccessStatusCode)
+            var method = id.HasValue ? HttpMethod.Put : HttpMethod.Post;
+            var targetUrl = id.HasValue
+                ? $"{_gatewayUrl}/api/platform/administrators/{id}"
+                : $"{_gatewayUrl}/api/platform/administrators";
+            if (!TryCreateAuthenticatedRequest(method, targetUrl, out var request))
             {
-                PlatformAdministratorInviteResultViewModel? inviteResult = null;
-                if (!id.HasValue)
-                {
-                    var invitePayload = await response.Content.ReadFromJsonAsync<GatewayResponse<PlatformAdministratorInviteResultViewModel>>(_jsonOptions);
-                    inviteResult = invitePayload?.Data;
-                }
-
-                return Json(new
-                {
-                    success = true,
-                    devSetupUrl = inviteResult?.SetupUrl,
-                    emailSent = inviteResult?.EmailSent
-                });
+                Diten.Web.Controllers.ProxyAuthFailure.ClearAuthCookies(Response);
+                return StatusCode(StatusCodes.Status401Unauthorized, Diten.Web.Controllers.ProxyAuthFailure.PlatformLoginPayload());
             }
 
-            return Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+            using (request)
+            {
+                request.Content = JsonContent.Create(payload, options: _jsonOptions);
+                using var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    PlatformAdministratorInviteResultViewModel? inviteResult = null;
+                    if (!id.HasValue)
+                    {
+                        var invitePayload = await response.Content.ReadFromJsonAsync<GatewayResponse<PlatformAdministratorInviteResultViewModel>>(_jsonOptions);
+                        inviteResult = invitePayload?.Data;
+                    }
+
+                    return Json(new
+                    {
+                        success = true,
+                        devSetupUrl = inviteResult?.SetupUrl,
+                        emailSent = inviteResult?.EmailSent
+                    });
+                }
+
+                return Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+            }
         }
         catch (Exception ex)
         {
@@ -197,43 +222,94 @@ public sealed class AdministratorsController : Controller
 
     private async Task<IActionResult> ProxyGatewayAsync(HttpMethod method, string targetUrl, string? jsonBody = null)
     {
-        AddAuthHeader();
-        using var request = new HttpRequestMessage(method, targetUrl);
-        if (jsonBody is not null)
-        {
-            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-        }
-
-        var response = await _httpClient.SendAsync(request);
-        if (Diten.Web.Controllers.ProxyAuthFailure.IsAuthFailure(response.StatusCode))
+        if (!TryCreateAuthenticatedRequest(method, targetUrl, out var request))
         {
             Diten.Web.Controllers.ProxyAuthFailure.ClearAuthCookies(Response);
-            return StatusCode((int)response.StatusCode, Diten.Web.Controllers.ProxyAuthFailure.PlatformLoginPayload());
+            return StatusCode(StatusCodes.Status401Unauthorized, Diten.Web.Controllers.ProxyAuthFailure.PlatformLoginPayload());
         }
 
-        var content = await response.Content.ReadAsStringAsync();
-        var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/json";
-        return new ContentResult
+        using (request)
         {
-            Content = content,
-            ContentType = contentType,
-            StatusCode = (int)response.StatusCode
-        };
+            if (jsonBody is not null)
+            {
+                request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            }
+
+            using var response = await _httpClient.SendAsync(request);
+            if (Diten.Web.Controllers.ProxyAuthFailure.IsAuthFailure(response.StatusCode))
+            {
+                Diten.Web.Controllers.ProxyAuthFailure.ClearAuthCookies(Response);
+                return StatusCode((int)response.StatusCode, Diten.Web.Controllers.ProxyAuthFailure.PlatformLoginPayload());
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/json";
+            return new ContentResult
+            {
+                Content = content,
+                ContentType = contentType,
+                StatusCode = (int)response.StatusCode
+            };
+        }
     }
 
-    private void AddAuthHeader()
+    private bool TryCreateAuthenticatedRequest(HttpMethod method, string targetUrl, out HttpRequestMessage request)
     {
-        _httpClient.DefaultRequestHeaders.Authorization = null;
-        var token = Request.Cookies["access_token"];
-        if (!string.IsNullOrWhiteSpace(token))
+        request = new HttpRequestMessage(method, targetUrl);
+        if (TryGetPlatformAccessToken(out var token))
         {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            return true;
         }
 
-        if (_httpClient.DefaultRequestHeaders.Contains("X-Tenant-Id"))
+        request.Dispose();
+        request = null!;
+        return false;
+    }
+
+    private void AddAuthHeader(HttpRequestMessage request)
+    {
+        if (TryGetPlatformAccessToken(out var token))
         {
-            _httpClient.DefaultRequestHeaders.Remove("X-Tenant-Id");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
+    }
+
+    private bool TryGetPlatformAccessToken(out string token)
+    {
+        token = Request.Cookies["access_token"] ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        try
+        {
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            var actorType = FindClaim(jwt.Claims, "actor_type");
+            return jwt.ValidTo > DateTime.UtcNow &&
+                   (string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            token = string.Empty;
+            return false;
+        }
+    }
+
+    private static string? FindClaim(IEnumerable<Claim> claims, params string[] claimTypes)
+    {
+        foreach (var claimType in claimTypes)
+        {
+            var value = claims.FirstOrDefault(claim => string.Equals(claim.Type, claimType, StringComparison.OrdinalIgnoreCase))?.Value;
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return null;
     }
 
     private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)

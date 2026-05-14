@@ -1,4 +1,5 @@
 using System.Text;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence;
@@ -12,6 +13,7 @@ using Diten.Platform.Common.Tenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -23,18 +25,23 @@ namespace Diten.Platform.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
+        services.AddSecretsProvider(configuration, environment, options => options.ServiceName = "Platform");
+        services.ValidateRequiredSecrets(configuration, environment, "Platform", BuildSecretRequirements(configuration));
+
         var jwtSecret = configuration["JwtSettings:Secret"]
             ?? throw new InvalidOperationException("Configuration error: 'JwtSettings:Secret' is missing in appsettings.json.");
         var jwtIssuer = configuration["JwtSettings:Issuer"]
             ?? throw new InvalidOperationException("Configuration error: 'JwtSettings:Issuer' is missing in appsettings.json.");
         var jwtAudience = configuration["JwtSettings:Audience"]
             ?? throw new InvalidOperationException("Configuration error: 'JwtSettings:Audience' is missing in appsettings.json.");
+        var jwtRotationResolver = new JwtSecretRotationResolver(configuration);
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -43,7 +50,7 @@ public static class DependencyInjection
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = jwtIssuer,
                     ValidAudience = jwtAudience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+                    IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
                     ClockSkew = TimeSpan.Zero
                 };
             });
@@ -53,7 +60,15 @@ public static class DependencyInjection
             options.AddPolicy("PlatformActor", policy =>
             {
                 policy.RequireAuthenticatedUser();
-                policy.RequireClaim("actor_type", "platform_admin", "partner_admin");
+                policy.RequireAssertion(context =>
+                {
+                    var actorType = context.User.Claims
+                        .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
+                        ?.Value;
+
+                    return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
+                           || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
+                });
             });
         });
         services.AddHttpContextAccessor();
@@ -71,6 +86,7 @@ public static class DependencyInjection
         services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
 
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
 
         var connectionString = configuration["MongoDbSettings:ConnectionString"]
             ?? throw new InvalidOperationException("Configuration error: 'MongoDbSettings:ConnectionString' is missing in appsettings.json.");
@@ -103,6 +119,9 @@ public static class DependencyInjection
         services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
         services.AddScoped<ITenantSubscriptionRepository, TenantSubscriptionRepository>();
         services.AddScoped<ITenantModuleEntitlementRepository, TenantModuleEntitlementRepository>();
+        services.AddScoped<IQuotaUsageRepository, QuotaUsageRepository>();
+        services.AddScoped<IQuotaEventRepository, QuotaEventRepository>();
+        services.AddScoped<IInterfaceRegistryRepository, InterfaceRegistryRepository>();
         services.AddScoped<IFeatureDefinitionRepository, FeatureDefinitionRepository>();
         services.AddScoped<IFeatureCategoryRepository, FeatureCategoryRepository>();
         services.AddScoped<IPlanFeatureMappingRepository, PlanFeatureMappingRepository>();
@@ -114,5 +133,19 @@ public static class DependencyInjection
         TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
         return services;
+    }
+
+    private static IReadOnlyList<RequiredSecretDefinition> BuildSecretRequirements(IConfiguration configuration)
+    {
+        var smtpEnabled = configuration.GetValue<bool>("Smtp:Enabled");
+
+        return
+        [
+            new("JwtSettings:Secret", "Platform", SecretRequirementKind.JwtCurrent),
+            new("JwtSettings:PreviousSecrets", "Platform", SecretRequirementKind.JwtPreviousCollection, Required: false),
+            new("MongoDbSettings:ConnectionString", "Platform", SecretRequirementKind.ConnectionString),
+            new("AuthService:InternalApiKey", "Platform", SecretRequirementKind.InternalApiKey),
+            new("Smtp:Password", "Platform", MinimumLength: 8, Required: smtpEnabled, IsEnabled: () => smtpEnabled)
+        ];
     }
 }

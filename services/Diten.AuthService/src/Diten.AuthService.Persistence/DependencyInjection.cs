@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Persistence.Configurations;
 using Diten.AuthService.Persistence.Repositories;
@@ -5,6 +6,7 @@ using Diten.AuthService.Persistence.Seed;
 using Diten.AuthService.Persistence.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
@@ -14,8 +16,12 @@ namespace Diten.AuthService.Persistence;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
+        services.ValidateRequiredSecrets(configuration, environment, "AuthService.Persistence", [
+            new("MongoDbSettings:ConnectionString", "AuthService.Persistence", SecretRequirementKind.ConnectionString)
+        ]);
+
         // MongoDB Serializers
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 

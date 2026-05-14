@@ -26,6 +26,7 @@ const TenantDetails = (function () {
     let moduleEntitlementsDt;
     let availableModules = [];
     let moduleEntitlementAppliedFilters = { source: [], access: [] };
+    let quotaGovernanceLoaded = false;
 
     const syncL10n = () => { L = window.L10n || {}; };
     const getAuthHeaders = () => ({});
@@ -157,11 +158,15 @@ const TenantDetails = (function () {
 
         const contentType = response.headers.get('content-type') || '';
         const redirectedToLogin = response.redirected && /\/(account|platform)\/login/i.test(response.url || '');
-        if (response.status === 401 || response.status === 403 || redirectedToLogin) {
+        if (response.status === 401 || redirectedToLogin) {
             window.DtDefaults?.handleUnauthorized?.();
             const authError = new Error('auth-refresh-in-progress');
             authError.authHandled = true;
             throw authError;
+        }
+
+        if (response.status === 403) {
+            throw new Error(L.PermissionDenied || 'Permission denied.');
         }
 
         if (!response.ok) throw new Error(await response.text());
@@ -389,6 +394,181 @@ const TenantDetails = (function () {
     const renderCommercialState = (state) => {
         document.getElementById('commercialSubscriptionEmpty')?.classList.toggle('d-none', state !== 'empty');
         document.getElementById('commercialSubscriptionContent')?.classList.toggle('d-none', state !== 'content');
+    };
+
+    const quotaLabel = (key, fallback) => ({
+        'users.max': L.TenantCommercialQuotaUsers || 'Users',
+        'storage.gb.max': L.TenantCommercialQuotaStorage || 'Storage',
+        'api.calls.per.month': L.TenantCommercialQuotaApiCallsThisMonth || 'API Calls This Month',
+        'modules.max': L.TenantCommercialQuotaEnabledModules || 'Enabled Modules'
+    }[String(key || '').toLowerCase()] || fallback || L.Quotas || 'Quota');
+
+    const quotaStatusLabel = (status) => ({
+        healthy: L.TenantCommercialQuotaStatusHealthy || 'Healthy',
+        warning: L.TenantCommercialQuotaStatusWarning || 'Warning',
+        atLimit: L.TenantCommercialQuotaStatusAtLimit || 'At limit',
+        overLimit: L.TenantCommercialQuotaStatusOverLimit || 'Over limit',
+        configurationMissing: L.TenantCommercialQuotaStatusConfigurationMissing || 'Configuration missing',
+        subscriptionInactive: L.TenantCommercialQuotaStatusSubscriptionInactive || 'Subscription inactive'
+    }[status] || L.TenantCommercialQuotaStatusHealthy || 'Healthy');
+
+    const quotaStatusBadgeClass = (status) => ({
+        healthy: 'bg-label-success',
+        warning: 'bg-label-warning',
+        atLimit: 'bg-label-danger',
+        overLimit: 'bg-label-danger',
+        configurationMissing: 'bg-label-secondary',
+        subscriptionInactive: 'bg-label-warning'
+    }[status] || 'bg-label-secondary');
+
+    const quotaProgressClass = (status) => ({
+        healthy: 'bg-success',
+        warning: 'bg-warning',
+        atLimit: 'bg-danger',
+        overLimit: 'bg-danger',
+        configurationMissing: 'bg-secondary',
+        subscriptionInactive: 'bg-warning'
+    }[status] || 'bg-secondary');
+
+    const formatNumber = (value, fractionDigits) => {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return '-';
+        return new Intl.NumberFormat(undefined, {
+            maximumFractionDigits: fractionDigits,
+            minimumFractionDigits: 0
+        }).format(number);
+    };
+
+    const formatQuotaValue = (item, value) => {
+        const key = String(item.quotaKey || item.QuotaKey || '').toLowerCase();
+        if (key === 'storage.gb.max') return `${formatNumber(value, 2)} GB`;
+        return formatNumber(value, 0);
+    };
+
+    const safePercent = (value) => {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return 0;
+        return Math.max(0, Math.min(100, number));
+    };
+
+    const setQuotaState = (state, message) => {
+        const loading = document.getElementById('tenantQuotaLoading');
+        const empty = document.getElementById('tenantQuotaEmpty');
+        const error = document.getElementById('tenantQuotaError');
+        const unauthorized = document.getElementById('tenantQuotaUnauthorized');
+        const rows = document.getElementById('tenantQuotaRows');
+
+        loading?.classList.toggle('d-none', state !== 'loading');
+        empty?.classList.toggle('d-none', state !== 'empty');
+        unauthorized?.classList.toggle('d-none', state !== 'unauthorized');
+        rows?.classList.toggle('d-none', state !== 'ready');
+        if (error) {
+            error.textContent = state === 'error' ? (message || L.TenantCommercialQuotaError || 'Quota status could not be loaded.') : '';
+            error.classList.toggle('d-none', state !== 'error');
+        }
+    };
+
+    const renderQuotaRows = (items) => {
+        const rows = document.getElementById('tenantQuotaRows');
+        if (!rows) return;
+
+        rows.innerHTML = items.map((item) => {
+            const key = item.quotaKey || item.QuotaKey;
+            const status = item.status || item.Status || 'healthy';
+            const currentValue = item.currentValue ?? item.CurrentValue;
+            const limitValue = item.limitValue ?? item.LimitValue;
+            const usagePercent = item.usagePercent ?? item.UsagePercent;
+            const percent = safePercent(usagePercent);
+            const hasLimit = Number(limitValue) > 0;
+            const source = item.overrideSource || item.OverrideSource || item.source || item.Source || '';
+            const periodStart = item.periodStart || item.PeriodStart;
+            const periodEnd = item.periodEnd || item.PeriodEnd;
+            const isPeriodBased = String(key || '').toLowerCase() === 'api.calls.per.month';
+            const statusText = hasLimit ? quotaStatusLabel(status) : quotaStatusLabel('configurationMissing');
+            const normalizedStatus = hasLimit ? status : 'configurationMissing';
+            const periodMarkup = isPeriodBased
+                ? `<div class="small text-muted mt-2">${escapeHtml(L.PeriodStart || 'Period Start')}: ${escapeHtml(formatSubscriptionTableDate(periodStart))} · ${escapeHtml(L.PeriodEnd || 'Period End')}: ${escapeHtml(formatSubscriptionTableDate(periodEnd))}</div>`
+                : '';
+            const noteMarkup = item.apiCallsMvpNote || item.ApiCallsMvpNote
+                ? `<div class="small text-muted mt-2">${escapeHtml(L.TenantCommercialQuotaApiCallsMvpNote || '')}</div>`
+                : '';
+            const sourceMarkup = source
+                ? `<div class="small text-muted mt-2">${escapeHtml(L.Source || 'Source')}: ${escapeHtml(source)}</div>`
+                : '';
+
+            return `<div class="col-12 col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                        <div>
+                            <div class="fw-medium">${escapeHtml(quotaLabel(key, item.displayLabel || item.DisplayLabel))}</div>
+                            <small class="text-muted">${escapeHtml(formatQuotaValue(item, currentValue))} / ${escapeHtml(hasLimit ? formatQuotaValue(item, limitValue) : '-')}</small>
+                        </div>
+                        <span class="badge ${escapeHtml(quotaStatusBadgeClass(normalizedStatus))}">${escapeHtml(statusText)}</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between small text-muted mb-1">
+                        <span>${escapeHtml(formatNumber(usagePercent, 1))}%</span>
+                        <span>${escapeHtml(L.Status || 'Status')}: ${escapeHtml(statusText)}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;" role="progressbar" aria-valuenow="${escapeHtml(percent)}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar ${escapeHtml(quotaProgressClass(normalizedStatus))}" style="width: ${escapeHtml(percent)}%;"></div>
+                    </div>
+                    ${periodMarkup}
+                    ${sourceMarkup}
+                    ${noteMarkup}
+                </div>
+            </div>`;
+        }).join('');
+    };
+
+    const readQuotaPayload = async (response) => {
+        const text = await response.text();
+        if (!text) return null;
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            return null;
+        }
+    };
+
+    const loadTenantQuotaGovernance = async () => {
+        setQuotaState('loading');
+        try {
+            const response = await fetch(`/Platform/Tenants/${encodeURIComponent(tenantId)}/QuotaStatus`, {
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json' }
+            });
+            const payload = await readQuotaPayload(response);
+            const state = payload?.state || payload?.State;
+            const message = payload?.message || payload?.Message;
+            const items = payload?.items || payload?.Items || [];
+            const responseTenantId = String(payload?.tenantId || payload?.TenantId || '').toLowerCase();
+
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403 || state === 'unauthorized') {
+                    setQuotaState('unauthorized');
+                    return;
+                }
+
+                setQuotaState('error', message || L.TenantCommercialQuotaError || 'Quota status could not be loaded.');
+                return;
+            }
+
+            if (responseTenantId && responseTenantId !== String(tenantId || '').toLowerCase()) {
+                setQuotaState('error', L.TenantCommercialQuotaError || 'Quota status could not be loaded.');
+                return;
+            }
+
+            if (!Array.isArray(items) || items.length === 0 || state === 'empty') {
+                setQuotaState('empty');
+                return;
+            }
+
+            renderQuotaRows(items);
+            document.getElementById('tenantQuotaLoadedAt').textContent = formatSubscriptionTableDate(payload.loadedAtUtc || payload.LoadedAtUtc);
+            setQuotaState('ready');
+        } catch (error) {
+            setQuotaState('error', L.TenantCommercialQuotaError || 'Quota status could not be loaded.');
+        }
     };
 
     const normalizeString = (value) => typeof value === 'string' ? value.trim() : '';
@@ -1508,6 +1688,7 @@ const TenantDetails = (function () {
         });
         window.showToast?.('Invitation queued.', 'success');
         await reloadAdminUsers();
+        await loadTenantQuotaGovernance();
     };
 
     const deleteAdminUser = async (id, name) => {
@@ -1518,6 +1699,7 @@ const TenantDetails = (function () {
             });
             window.showToast?.(L.RecordDeleted || 'Record deleted.', 'success');
             await reloadAdminUsers();
+            await loadTenantQuotaGovernance();
         };
 
         if (window.showConfirm) {
@@ -1795,6 +1977,11 @@ const TenantDetails = (function () {
             if (moduleEntitlementsLoaded) return;
             moduleEntitlementsLoaded = true;
             loadModuleEntitlements().catch(() => window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error'));
+        }, { once: true });
+        document.querySelector('[data-bs-target="#tabTenantQuotaGovernance"]')?.addEventListener('shown.bs.tab', () => {
+            if (quotaGovernanceLoaded) return;
+            quotaGovernanceLoaded = true;
+            loadTenantQuotaGovernance();
         }, { once: true });
         document.querySelector('[data-bs-target="#tabSystemMonitoring"]')?.addEventListener('shown.bs.tab', () => loadSettings().catch(() => window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error')), { once: true });
     };

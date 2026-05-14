@@ -126,11 +126,36 @@
                 <div class="card-header">
                     <h5 class="card-title mb-0">@Localizer["QuotasSection"]</h5>
                 </div>
-                <div class="card-body">
-                    <label asp-for="DefaultQuotasJson" class="form-label fw-medium">@Localizer["DefaultQuotasJson"]</label>
-                    <textarea asp-for="DefaultQuotasJson" class="form-control" rows="4" placeholder='{"users": 50, "storageGb": 500}'></textarea>
-                    <div class="form-text mt-2">@Localizer["DefaultQuotasHelp"]</div>
-                    <span asp-validation-for="DefaultQuotasJson" class="text-danger small mt-1"></span>
+                <div class="card-body row g-3">
+                    <input type="hidden" asp-for="DefaultQuotasJson" id="sp-default-quotas-json" />
+                    <div class="col-12 col-md-6">
+                        <label asp-for="UsersMax" class="form-label fw-medium">@Localizer["UsersMax"]</label>
+                        <input asp-for="UsersMax" class="form-control sp-quota-input" type="number" min="0" step="1" data-quota-key="users.max" />
+                        <div class="form-text mt-1">users.max</div>
+                        <span asp-validation-for="UsersMax" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="StorageGbMax" class="form-label fw-medium">@Localizer["StorageGbMax"]</label>
+                        <input asp-for="StorageGbMax" class="form-control sp-quota-input" type="number" min="0" step="0.01" data-quota-key="storage.gb.max" />
+                        <div class="form-text mt-1">storage.gb.max</div>
+                        <span asp-validation-for="StorageGbMax" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ApiCallsPerMonth" class="form-label fw-medium">@Localizer["ApiCallsPerMonth"]</label>
+                        <input asp-for="ApiCallsPerMonth" class="form-control sp-quota-input" type="number" min="0" step="1" data-quota-key="api.calls.per.month" />
+                        <div class="form-text mt-1">api.calls.per.month</div>
+                        <span asp-validation-for="ApiCallsPerMonth" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ModulesMax" class="form-label fw-medium">@Localizer["ModulesMax"]</label>
+                        <input asp-for="ModulesMax" class="form-control sp-quota-input" type="number" min="0" step="1" data-quota-key="modules.max" />
+                        <div class="form-text mt-1">modules.max</div>
+                        <span asp-validation-for="ModulesMax" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-text">@Localizer["DefaultQuotasHelp"]</div>
+                        <span asp-validation-for="DefaultQuotasJson" class="text-danger small mt-1"></span>
+                    </div>
                 </div>
             </section>
         </div>

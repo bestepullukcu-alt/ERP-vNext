@@ -1,0 +1,988 @@
+C:\Users\user\Desktop\ERP-vNext\services\Diten.AuthService\src\Diten.AuthService.Api\Properties\launchSettings.json içindeki başlatma ayarları kullanılıyor...
+Seeding permissions...
+Seeding roles...
+Seeding users...
+Seeding completed successfully.
+dbug: Microsoft.Extensions.Hosting.Internal.Host[1]
+      Hosting starting
+info: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[63]
+      User profile is available. Using 'C:\Users\user\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5056
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\user\Desktop\ERP-vNext\services\Diten.AuthService\src\Diten.AuthService.Api
+dbug: Microsoft.Extensions.Hosting.Internal.Host[2]
+      Hosting started
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5056/swagger/index.html - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5056/swagger/index.html - 200 - text/html;charset=utf-8 191.1245ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5056/_framework/aspnetcore-browser-refresh.js - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5056/_framework/aspnetcore-browser-refresh.js - 200 16481 application/javascript;+charset=utf-8 2.4400ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5056/swagger/v1/swagger.json - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5056/swagger/v1/swagger.json - 200 - application/json;charset=utf-8 218.1953ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - application/json;+charset=utf-8 -
+warn: Diten.AuthService.Infrastructure.Middleware.TenantResolutionMiddleware[0]
+      TenantResolution dev bypass applied in AuthService. Path=/api/platform-auth/login TenantId=00000000-0000-0000-0000-000000000001
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "PlatformAuth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Diten.AuthService.Api.Models.PlatformLoginRequest, System.Threading.CancellationToken) on controller Diten.AuthService.Api.Controllers.PlatformAuthController (Diten.AuthService.Api).
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handling PlatformLoginCommand, Timestamp: 05/13/2026 18:45:47
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 186.6025ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 197.4272ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 84.1673ms - 204
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 84.3512ms - 204
+warn: Diten.AuthService.Application.Common.Behaviors.PerformanceBehavior[0]
+      Long-running request PlatformLoginCommand completed in 1022 ms
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handled PlatformLoginCommand in 1026ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Diten.AuthService.Application.Common.Response`1[[Diten.AuthService.Application.DTOs.AuthResponse, Diten.AuthService.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api) in 1111.5561ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - 200 - application/json;+charset=utf-8 1181.9972ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/auth/logout - application/json;+charset=utf-8 -
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[1]
+      Failed to validate the token.
+      Microsoft.IdentityModel.Tokens.SecurityTokenMalformedException: IDX14100: JWT is not well formed, there are no dots (.).
+The token needs to be in JWS or JWE Compact Serialization Format. (JWS): 'EncodedHeader.EndcodedPayload.EncodedSignature'. (JWE): 'EncodedProtectedHeader.EncodedEncryptedKey.EncodedInitializationVector.EncodedCiphertext.EncodedAuthenticationTag'.
+       ---> System.MissingMethodException: Method not found: 'Byte[] Microsoft.IdentityModel.Tokens.Base64UrlEncoder.UnsafeDecode(System.ReadOnlyMemory`1<Char>)'.
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebToken.ReadToken(String encodedJson)
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebToken..ctor(String jwtEncodedString)
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ReadToken(String token, TokenValidationParameters validationParameters)
+         --- End of inner exception stack trace ---
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[7]
+      Bearer was not authenticated. Failure message: IDX14100: JWT is not well formed, there are no dots (.).
+The token needs to be in JWS or JWE Compact Serialization Format. (JWS): 'EncodedHeader.EndcodedPayload.EncodedSignature'. (JWE): 'EncodedProtectedHeader.EncodedEncryptedKey.EncodedInitializationVector.EncodedCiphertext.EncodedAuthenticationTag'.
+info: Microsoft.AspNetCore.Authorization.DefaultAuthorizationService[2]
+      Authorization failed. These requirements were not met:
+      DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[12]
+      AuthenticationScheme: Bearer was challenged.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/auth/logout - 401 - application/problem+json;+charset=utf-8 41.5511ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - application/json;+charset=utf-8 -
+warn: Diten.AuthService.Infrastructure.Middleware.TenantResolutionMiddleware[0]
+      TenantResolution dev bypass applied in AuthService. Path=/api/platform-auth/login TenantId=00000000-0000-0000-0000-000000000001
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "PlatformAuth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Diten.AuthService.Api.Models.PlatformLoginRequest, System.Threading.CancellationToken) on controller Diten.AuthService.Api.Controllers.PlatformAuthController (Diten.AuthService.Api).
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handling PlatformLoginCommand, Timestamp: 05/13/2026 18:46:45
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 10.8829ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 11.0009ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 6.9313ms - 204
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 7.032ms - 204
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handled PlatformLoginCommand in 335ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Diten.AuthService.Application.Common.Response`1[[Diten.AuthService.Application.DTOs.AuthResponse, Diten.AuthService.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api) in 341.1701ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - 200 - application/json;+charset=utf-8 344.3617ms
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'ITenantLoginSettingsClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'IPlatformAdministratorStatusClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0176ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.019ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0026ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0349ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0025ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0063ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0039ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0044ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0025ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.006ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.131ms - processed: 2 items - remaining: 0 items
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/auth/logout - application/json;+charset=utf-8 -
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[1]
+      Failed to validate the token.
+      Microsoft.IdentityModel.Tokens.SecurityTokenMalformedException: IDX14100: JWT is not well formed, there are no dots (.).
+The token needs to be in JWS or JWE Compact Serialization Format. (JWS): 'EncodedHeader.EndcodedPayload.EncodedSignature'. (JWE): 'EncodedProtectedHeader.EncodedEncryptedKey.EncodedInitializationVector.EncodedCiphertext.EncodedAuthenticationTag'.
+       ---> System.MissingMethodException: Method not found: 'Byte[] Microsoft.IdentityModel.Tokens.Base64UrlEncoder.UnsafeDecode(System.ReadOnlyMemory`1<Char>)'.
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebToken.ReadToken(String encodedJson)
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebToken..ctor(String jwtEncodedString)
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ReadToken(String token, TokenValidationParameters validationParameters)
+         --- End of inner exception stack trace ---
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[7]
+      Bearer was not authenticated. Failure message: IDX14100: JWT is not well formed, there are no dots (.).
+The token needs to be in JWS or JWE Compact Serialization Format. (JWS): 'EncodedHeader.EndcodedPayload.EncodedSignature'. (JWE): 'EncodedProtectedHeader.EncodedEncryptedKey.EncodedInitializationVector.EncodedCiphertext.EncodedAuthenticationTag'.
+info: Microsoft.AspNetCore.Authorization.DefaultAuthorizationService[2]
+      Authorization failed. These requirements were not met:
+      DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[12]
+      AuthenticationScheme: Bearer was challenged.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/auth/logout - 401 - application/problem+json;+charset=utf-8 6.0790ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - application/json;+charset=utf-8 -
+warn: Diten.AuthService.Infrastructure.Middleware.TenantResolutionMiddleware[0]
+      TenantResolution dev bypass applied in AuthService. Path=/api/platform-auth/login TenantId=00000000-0000-0000-0000-000000000001
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "PlatformAuth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Diten.AuthService.Api.Models.PlatformLoginRequest, System.Threading.CancellationToken) on controller Diten.AuthService.Api.Controllers.PlatformAuthController (Diten.AuthService.Api).
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handling PlatformLoginCommand, Timestamp: 05/13/2026 18:51:25
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 13.4858ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 13.6011ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 6.7932ms - 204
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 6.8734ms - 204
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handled PlatformLoginCommand in 362ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Diten.AuthService.Application.Common.Response`1[[Diten.AuthService.Application.DTOs.AuthResponse, Diten.AuthService.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api) in 376.2152ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - 200 - application/json;+charset=utf-8 377.2109ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/auth/logout - application/json;+charset=utf-8 -
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[1]
+      Failed to validate the token.
+      Microsoft.IdentityModel.Tokens.SecurityTokenMalformedException: IDX14100: JWT is not well formed, there are no dots (.).
+The token needs to be in JWS or JWE Compact Serialization Format. (JWS): 'EncodedHeader.EndcodedPayload.EncodedSignature'. (JWE): 'EncodedProtectedHeader.EncodedEncryptedKey.EncodedInitializationVector.EncodedCiphertext.EncodedAuthenticationTag'.
+       ---> System.MissingMethodException: Method not found: 'Byte[] Microsoft.IdentityModel.Tokens.Base64UrlEncoder.UnsafeDecode(System.ReadOnlyMemory`1<Char>)'.
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebToken.ReadToken(String encodedJson)
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebToken..ctor(String jwtEncodedString)
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ReadToken(String token, TokenValidationParameters validationParameters)
+         --- End of inner exception stack trace ---
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[7]
+      Bearer was not authenticated. Failure message: IDX14100: JWT is not well formed, there are no dots (.).
+The token needs to be in JWS or JWE Compact Serialization Format. (JWS): 'EncodedHeader.EndcodedPayload.EncodedSignature'. (JWE): 'EncodedProtectedHeader.EncodedEncryptedKey.EncodedInitializationVector.EncodedCiphertext.EncodedAuthenticationTag'.
+info: Microsoft.AspNetCore.Authorization.DefaultAuthorizationService[2]
+      Authorization failed. These requirements were not met:
+      DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[12]
+      AuthenticationScheme: Bearer was challenged.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/auth/logout - 401 - application/problem+json;+charset=utf-8 3.5561ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - application/json;+charset=utf-8 -
+warn: Diten.AuthService.Infrastructure.Middleware.TenantResolutionMiddleware[0]
+      TenantResolution dev bypass applied in AuthService. Path=/api/platform-auth/login TenantId=00000000-0000-0000-0000-000000000001
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "PlatformAuth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Diten.AuthService.Api.Models.PlatformLoginRequest, System.Threading.CancellationToken) on controller Diten.AuthService.Api.Controllers.PlatformAuthController (Diten.AuthService.Api).
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handling PlatformLoginCommand, Timestamp: 05/13/2026 18:52:41
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 10.3617ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 10.4851ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 6.0455ms - 204
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 6.1614ms - 204
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handled PlatformLoginCommand in 365ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Diten.AuthService.Application.Common.Response`1[[Diten.AuthService.Application.DTOs.AuthResponse, Diten.AuthService.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api) in 367.1289ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - 200 - application/json;+charset=utf-8 368.3199ms
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'ITenantLoginSettingsClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'IPlatformAdministratorStatusClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0045ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0028ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0029ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0029ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.4974ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0031ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.2886ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0023ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0025ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0029ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0047ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0033ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0036ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0026ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0034ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.002ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0032ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0042ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0028ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0052ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0414ms - processed: 2 items - remaining: 0 items
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - application/json;+charset=utf-8 -
+warn: Diten.AuthService.Infrastructure.Middleware.TenantResolutionMiddleware[0]
+      TenantResolution dev bypass applied in AuthService. Path=/api/platform-auth/login TenantId=00000000-0000-0000-0000-000000000001
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "PlatformAuth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Diten.AuthService.Api.Models.PlatformLoginRequest, System.Threading.CancellationToken) on controller Diten.AuthService.Api.Controllers.PlatformAuthController (Diten.AuthService.Api).
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handling PlatformLoginCommand, Timestamp: 05/13/2026 19:00:38
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 14.8126ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 14.929ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 27.1738ms - 204
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 27.2717ms - 204
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handled PlatformLoginCommand in 352ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Diten.AuthService.Application.Common.Response`1[[Diten.AuthService.Application.DTOs.AuthResponse, Diten.AuthService.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api) in 353.9823ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - 200 - application/json;+charset=utf-8 354.9831ms
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'IPlatformAdministratorStatusClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'ITenantLoginSettingsClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0015ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0023ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0031ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0022ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0027ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.002ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 6.4686ms - processed: 2 items - remaining: 0 items
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - application/json;+charset=utf-8 -
+warn: Diten.AuthService.Infrastructure.Middleware.TenantResolutionMiddleware[0]
+      TenantResolution dev bypass applied in AuthService. Path=/api/platform-auth/login TenantId=00000000-0000-0000-0000-000000000001
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "PlatformAuth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Diten.AuthService.Api.Models.PlatformLoginRequest, System.Threading.CancellationToken) on controller Diten.AuthService.Api.Controllers.PlatformAuthController (Diten.AuthService.Api).
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handling PlatformLoginCommand, Timestamp: 05/13/2026 19:15:05
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 18.7004ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 18.8419ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 6.236ms - 204
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 6.3638ms - 204
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handled PlatformLoginCommand in 319ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Diten.AuthService.Application.Common.Response`1[[Diten.AuthService.Application.DTOs.AuthResponse, Diten.AuthService.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api) in 320.592ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - 200 - application/json;+charset=utf-8 322.2676ms
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'IPlatformAdministratorStatusClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'ITenantLoginSettingsClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.3692ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0014ms - processed: 0 items - remaining: 2 items
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - application/json;+charset=utf-8 -
+warn: Diten.AuthService.Infrastructure.Middleware.TenantResolutionMiddleware[0]
+      TenantResolution dev bypass applied in AuthService. Path=/api/platform-auth/login TenantId=00000000-0000-0000-0000-000000000001
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "PlatformAuth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Diten.AuthService.Api.Models.PlatformLoginRequest, System.Threading.CancellationToken) on controller Diten.AuthService.Api.Controllers.PlatformAuthController (Diten.AuthService.Api).
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handling PlatformLoginCommand, Timestamp: 05/13/2026 19:17:34
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 11.7091ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 11.9087ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 5.6277ms - 204
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 5.7662ms - 204
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handled PlatformLoginCommand in 318ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Diten.AuthService.Application.Common.Response`1[[Diten.AuthService.Application.DTOs.AuthResponse, Diten.AuthService.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api) in 320.591ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - 200 - application/json;+charset=utf-8 321.5090ms
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0016ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0202ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0026ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0023ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0027ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0022ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0029ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0019ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.003ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0022ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0024ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0199ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'IPlatformAdministratorStatusClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'ITenantLoginSettingsClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0029ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0044ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0022ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0041ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0027ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0034ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0044ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0027ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0035ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0024ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0036ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0051ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0024ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0034ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0025ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0026ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0348ms - processed: 4 items - remaining: 0 items
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - application/json;+charset=utf-8 -
+warn: Diten.AuthService.Infrastructure.Middleware.TenantResolutionMiddleware[0]
+      TenantResolution dev bypass applied in AuthService. Path=/api/platform-auth/login TenantId=00000000-0000-0000-0000-000000000001
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "PlatformAuth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Diten.AuthService.Api.Models.PlatformLoginRequest, System.Threading.CancellationToken) on controller Diten.AuthService.Api.Controllers.PlatformAuthController (Diten.AuthService.Api).
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handling PlatformLoginCommand, Timestamp: 05/13/2026 19:23:58
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 25.2286ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 25.4464ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 14.1699ms - 204
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 14.3398ms - 204
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handled PlatformLoginCommand in 428ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Diten.AuthService.Application.Common.Response`1[[Diten.AuthService.Application.DTOs.AuthResponse, Diten.AuthService.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api) in 431.425ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - 200 - application/json;+charset=utf-8 433.1623ms
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'IPlatformAdministratorStatusClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'ITenantLoginSettingsClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0012ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0013ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.001ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0016ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0021ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.002ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0015ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0018ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0013ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0017ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0017ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0013ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0013ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0014ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0017ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.004ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.002ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.002ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.002ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0016ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0019ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0025ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0011ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0014ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0243ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0021ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0013ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0021ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0033ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0012ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0012ms - processed: 0 items - remaining: 2 items
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - application/json;+charset=utf-8 -
+warn: Diten.AuthService.Infrastructure.Middleware.TenantResolutionMiddleware[0]
+      TenantResolution dev bypass applied in AuthService. Path=/api/platform-auth/login TenantId=00000000-0000-0000-0000-000000000001
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "PlatformAuth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Diten.AuthService.Api.Models.PlatformLoginRequest, System.Threading.CancellationToken) on controller Diten.AuthService.Api.Controllers.PlatformAuthController (Diten.AuthService.Api).
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handling PlatformLoginCommand, Timestamp: 05/13/2026 19:31:16
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5057/api/internal/platform-administrators/status?email=admin%40diten.com
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 14.0451ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 14.1457ms - 200
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5057/api/internal/platform-administrators/accept-login
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.ClientHandler[101]
+      Received HTTP response headers after 5.2079ms - 204
+info: System.Net.Http.HttpClient.IPlatformAdministratorStatusClient.LogicalHandler[101]
+      End processing HTTP request after 5.2847ms - 204
+info: Diten.AuthService.Application.Common.Behaviors.LoggingBehavior[0]
+      Handled PlatformLoginCommand in 314ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Diten.AuthService.Application.Common.Response`1[[Diten.AuthService.Application.DTOs.AuthResponse, Diten.AuthService.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api) in 315.4529ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.AuthService.Api.Controllers.PlatformAuthController.Login (Diten.AuthService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5056/api/platform-auth/login - 200 - application/json;+charset=utf-8 316.7452ms
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0026ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0053ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0011ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0016ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0011ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0011ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0019ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0019ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0014ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0017ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0025ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0011ms - processed: 0 items - remaining: 2 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'IPlatformAdministratorStatusClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[103]
+      HttpMessageHandler expired after 120000ms for client 'ITenantLoginSettingsClient'
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0025ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0026ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0019ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0014ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0011ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0022ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0025ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0033ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0019ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0043ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0015ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0018ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.001ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.003ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0018ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0016ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0015ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0028ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0013ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0024ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0018ms - processed: 0 items - remaining: 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[100]
+      Starting HttpMessageHandler cleanup cycle with 4 items
+dbug: Microsoft.Extensions.Http.DefaultHttpClientFactory[101]
+      Ending HttpMessageHandler cleanup cycle after 0.0025ms - processed: 0 items - remaining: 4 items

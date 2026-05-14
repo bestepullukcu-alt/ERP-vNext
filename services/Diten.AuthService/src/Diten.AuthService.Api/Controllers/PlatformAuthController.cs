@@ -294,7 +294,7 @@ public sealed class PlatformAuthController : CustomBaseController
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var actorType = string.IsNullOrWhiteSpace(user.PlatformActorType) ? "platform_admin" : user.PlatformActorType!;
+        var actorType = NormalizeActorType(user.PlatformActorType ?? "platform_admin");
         var accessToken = _tokenService.GeneratePlatformAccessToken(
             user.Id,
             user.Email,

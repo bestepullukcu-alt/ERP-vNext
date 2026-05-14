@@ -34,7 +34,9 @@
         moduleEmpty: document.getElementById('sp-modules-empty'),
         moduleSelect: document.getElementById('subscription-plan-module-select'),
         trialToggle: document.getElementById('is-trial-plan'),
-        trialDays: document.getElementById('trial-duration-days')
+        trialDays: document.getElementById('trial-duration-days'),
+        quotasJson: document.getElementById('sp-default-quotas-json'),
+        quotaInputs: Array.from(document.querySelectorAll('.sp-quota-input'))
     };
 
     const safe = (value) => (value === null || value === undefined ? '' : String(value));
@@ -210,6 +212,22 @@
         els.includedModuleKeys.value = Array.from(state.selectedModuleKeys).sort((a, b) => a.localeCompare(b)).join('\n');
     };
 
+    const serializeQuotas = () => {
+        if (!els.quotasJson) return;
+        const quotas = {};
+        els.quotaInputs.forEach((input) => {
+            const key = input.getAttribute('data-quota-key');
+            const raw = safe(input.value).trim();
+            if (!key || raw.length === 0) return;
+            const value = Number(raw);
+            if (Number.isFinite(value) && value >= 0) {
+                quotas[key] = value;
+            }
+        });
+
+        els.quotasJson.value = Object.keys(quotas).length === 0 ? '' : JSON.stringify(quotas);
+    };
+
     const renderModules = () => {
         if (!els.moduleSelect) return;
         const items = state.modules;
@@ -362,6 +380,7 @@
             syncSelectedModulesFromSelect();
             serializeMappings();
             serializeModuleKeys();
+            serializeQuotas();
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -369,6 +388,9 @@
             form.classList.add('was-validated');
         }, false);
     });
+
+    els.quotaInputs.forEach((input) => input.addEventListener('input', serializeQuotas));
+    serializeQuotas();
 
     loadEntitlements();
 })();

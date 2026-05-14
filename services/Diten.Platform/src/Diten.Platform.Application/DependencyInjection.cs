@@ -1,5 +1,7 @@
 using Diten.Platform.Application.Contracts.Behaviors;
 using Diten.Platform.Application.Security;
+using Diten.Platform.Application.Features.InterfaceRegistry.Auditing;
+using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Services;
 using FluentValidation;
 using MediatR;
@@ -24,8 +26,10 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(assembly);
         services.AddAutoMapper(_ => { }, assembly);
+        services.AddSingleton<IInterfaceRegistryAuditSink, NullInterfaceRegistryAuditSink>();
         services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
+        services.AddScoped<IQuotaService, QuotaService>();
 
         return services;
     }

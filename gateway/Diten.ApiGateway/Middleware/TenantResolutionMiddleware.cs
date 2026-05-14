@@ -1,4 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Diten.ApiGateway.Middleware;
 
@@ -40,12 +42,17 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        var actorType = ReadActorType(context.User);
+        // Ensure the authentication handler has run and context.User is populated.
+        // UseAuthentication() should have done this, but when the handler returns NoResult
+        // (e.g. cookie-only token not promoted yet), context.User may be unauthenticated.
+        await EnsureAuthenticatedUserAsync(context);
+
+        var actorType = ReadActorType(context.User) ?? ReadActorTypeFromRequestToken(context);
         var host = context.Request.Host.Host;
         var isAdminHost = IsAdminHost(host);
         var isTenantHost = IsTenantHost(host);
         var isAuthLifecyclePath = IsAuthLifecyclePath(context.Request.Path);
-        var jwtTenant = ReadJwtTenant(context.User);
+        var jwtTenant = ReadJwtTenant(context.User) ?? ReadJwtTenantFromRequestToken(context);
         var headerTenant = ReadHeaderTenant(context.Request.Headers[TenantHeader]);
         var subdomainTenant = ReadSubdomainTenant(context.Request.Host.Host);
 
@@ -63,6 +70,14 @@ public sealed class TenantResolutionMiddleware
 
         if (IsPersonalizationPath(context.Request.Path))
         {
+            if (IsPlatformPersonalizationRequest(context.Request))
+            {
+                context.Request.Headers.Remove(TenantHeader);
+                PromoteAccessTokenCookieToBearer(context.Request);
+                await _next(context);
+                return;
+            }
+
             if (IsPlatformActor(actorType))
             {
                 if (context.Request.Headers.ContainsKey(TenantHeader))
@@ -71,6 +86,7 @@ public sealed class TenantResolutionMiddleware
                     return;
                 }
 
+                PromoteAccessTokenCookieToBearer(context.Request);
                 await _next(context);
                 return;
             }
@@ -99,6 +115,7 @@ public sealed class TenantResolutionMiddleware
 
             context.Request.Headers[TenantHeader] = personalizationTenant.Value.ToString();
             context.Items[TenantHeader] = personalizationTenant.Value;
+            PromoteAccessTokenCookieToBearer(context.Request);
 
             await _next(context);
             return;
@@ -202,13 +219,89 @@ public sealed class TenantResolutionMiddleware
 
     private static Guid? ReadJwtTenant(ClaimsPrincipal user)
     {
-        var raw = user.FindFirst("tenant_id")?.Value;
+        var raw = FindClaimValue(user, "tenant_id");
         return Guid.TryParse(raw, out var parsed) ? parsed : null;
     }
 
     private static string? ReadActorType(ClaimsPrincipal user)
     {
-        return user.FindFirst("actor_type")?.Value;
+        return FindClaimValue(user, "actor_type");
+    }
+
+    private string? ReadActorTypeFromRequestToken(HttpContext context)
+    {
+        var actorType = ReadClaimFromRequestToken(context, "actor_type");
+        if (!string.IsNullOrWhiteSpace(actorType))
+        {
+            _logger.LogWarning(
+                "actor_type resolved from raw token fallback (context.User did not contain the claim). Path={Path} ActorType={ActorType}",
+                context.Request.Path,
+                actorType);
+        }
+
+        return actorType;
+    }
+
+    private static Guid? ReadJwtTenantFromRequestToken(HttpContext context)
+    {
+        var raw = ReadClaimFromRequestToken(context, "tenant_id");
+        return Guid.TryParse(raw, out var parsed) ? parsed : null;
+    }
+
+    private static async Task EnsureAuthenticatedUserAsync(HttpContext context)
+    {
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            return;
+        }
+
+        var result = await context.AuthenticateAsync("Bearer");
+        if (result.Succeeded && result.Principal is not null)
+        {
+            context.User = result.Principal;
+        }
+    }
+
+    private static string? FindClaimValue(ClaimsPrincipal user, string claimType)
+    {
+        return user.Claims
+            .FirstOrDefault(claim => string.Equals(claim.Type, claimType, StringComparison.OrdinalIgnoreCase))
+            ?.Value;
+    }
+
+    private static string? ReadClaimFromRequestToken(HttpContext context, string claimType)
+    {
+        var token = ReadBearerToken(context);
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return null;
+        }
+
+        try
+        {
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            return jwt.Claims
+                .FirstOrDefault(claim => string.Equals(claim.Type, claimType, StringComparison.OrdinalIgnoreCase))
+                ?.Value;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string? ReadBearerToken(HttpContext context)
+    {
+        var authorization = context.Request.Headers.Authorization.FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(authorization) &&
+            authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            return authorization["Bearer ".Length..].Trim();
+        }
+
+        return context.Request.Cookies.TryGetValue("access_token", out var cookieToken)
+            ? cookieToken
+            : null;
     }
 
     private static Guid? ReadHeaderTenant(string? headerValue)
@@ -270,6 +363,26 @@ public sealed class TenantResolutionMiddleware
     private static bool IsPersonalizationPath(PathString path)
     {
         return path.StartsWithSegments("/api/personalization", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsPlatformPersonalizationRequest(HttpRequest request)
+    {
+        var moduleKey = request.Query["moduleKey"].FirstOrDefault();
+        return string.Equals(moduleKey, "Platform", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void PromoteAccessTokenCookieToBearer(HttpRequest request)
+    {
+        if (request.Headers.ContainsKey("Authorization"))
+        {
+            return;
+        }
+
+        if (request.Cookies.TryGetValue("access_token", out var accessToken) &&
+            !string.IsNullOrWhiteSpace(accessToken))
+        {
+            request.Headers.Authorization = $"Bearer {accessToken}";
+        }
     }
 
     private static bool IsAdminHostAllowedPath(PathString path)

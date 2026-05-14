@@ -1,0 +1,16 @@
+dotnet watch 🔥 Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.
+dotnet watch 💡 Press Ctrl+R to restart.
+dotnet watch 🔨 Building C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj ...
+dotnet watch 🔨 Build succeeded: C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj
+dotnet watch ⌚ File updated: .\frontend\Diten.Web\Controllers\TenantsController.cs
+dotnet watch ⚠ [Diten.Web (net8.0)] Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type 'Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlAttributePropertyHelper, Microsoft.AspNetCore.Mvc.ViewFeatures, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60' but neither exists.
+dotnet watch 🔥 [Diten.Web (net8.0)] Hot reload succeeded.
+dotnet watch ⌚ File updated: .\frontend\Diten.Web\Controllers\ProxyAuthFailure.cs
+dotnet watch 🔥 [Diten.Web (net8.0)] Hot reload succeeded.
+dotnet watch ⌚ File updated: .\frontend\Diten.Web\Controllers\Platform\AdministratorsController.cs
+dotnet watch 🔥 Unable to apply changes due to compilation errors.
+dotnet watch ❌ C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Controllers\Platform\AdministratorsController.cs(64,13): error CS1023: Gömülü deyim bir bildirim veya etiketlenmiş deyim olamaz
+dotnet watch ❌ C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Controllers\Platform\AdministratorsController.cs(65,18): error CS0103: 'response' adı geçerli bağlamda yok
+dotnet watch ❌ C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Controllers\Platform\AdministratorsController.cs(70,33): error CS0103: 'response' adı geçerli bağlamda yok
+dotnet watch ⌚ File updated: .\frontend\Diten.Web\Controllers\Platform\AdministratorsController.cs
+dotnet watch 🔥 [Diten.Web (net8.0)] Hot reload succeeded.

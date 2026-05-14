@@ -1,0 +1,168 @@
+@using Diten.Web.Views.Platform.InterfaceRegistry
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InterfaceRegistryIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["InterfaceRegistryTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+}
+
+<partial name="_Filter" />
+
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center mb-3 row-gap-3">
+    <div>
+        <h5 class="mb-0">@Localizer["InterfaceRegistryTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-label-secondary" id="ir-refresh">
+            <i class="bx bx-refresh me-1"></i>@SharedLocalizer["Refresh"]
+        </button>
+    </div>
+</div>
+
+<div id="ir-error" class="alert alert-danger d-none" role="alert"></div>
+<div id="ir-permission" class="alert alert-warning d-none" role="alert">@Localizer["PermissionDeniedState"]</div>
+
+<div id="ir-loading" class="d-flex align-items-center gap-2 text-muted mb-3">
+    <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+    <span>@SharedLocalizer["Loading"]</span>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <small class="text-muted d-block">@Localizer["TotalInterfaces"]</small>
+                <h5 id="kpi-total" class="mb-0">0</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <small class="text-muted d-block">@Localizer["ActiveSnapshots"]</small>
+                <h5 id="kpi-active" class="mb-0 text-success">0</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <small class="text-muted d-block">@Localizer["DiscoveryBatches"]</small>
+                <h5 id="kpi-batches" class="mb-0 text-info">0</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <small class="text-muted d-block">@Localizer["PendingReviews"]</small>
+                <h5 id="kpi-pending" class="mb-0 text-warning">0</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header p-3">
+        <div class="nav-align-top">
+            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button type="button" class="nav-link active small border shadow-none wc-tab-compact" id="ir-catalog-tab" data-bs-toggle="tab" data-bs-target="#ir-catalog-pane" role="tab" aria-controls="ir-catalog-pane" aria-selected="true">
+                        <i class="bx bx-list-ul me-1 wc-tab-icon"></i>@Localizer["CatalogTab"]
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button type="button" class="nav-link small border shadow-none wc-tab-compact" id="ir-batches-tab" data-bs-toggle="tab" data-bs-target="#ir-batches-pane" role="tab" aria-controls="ir-batches-pane" aria-selected="false">
+                        <i class="bx bx-history me-1 wc-tab-icon"></i>@Localizer["DiscoveryBatchesTab"]
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="tab-content p-0 bg-transparent shadow-none">
+    <div class="tab-pane fade show active" id="ir-catalog-pane" role="tabpanel" aria-labelledby="ir-catalog-tab">
+        <div id="ir-empty-catalog" class="card d-none">
+            <div class="card-body text-center text-muted">@Localizer["EmptyCatalogState"]</div>
+        </div>
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card h-100">
+                    <div class="card-datatable table-responsive">
+                        <table id="ir-catalog-table" data-dt-standard="v2" class="datatables-interface-registry-catalog table border-top align-middle">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>@Localizer["InterfaceCode"]</th>
+                                    <th>@Localizer["Version"]</th>
+                                    <th>@SharedLocalizer["Status"]</th>
+                                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="ir-batches-pane" role="tabpanel" aria-labelledby="ir-batches-tab">
+        <div class="row g-4">
+            <div class="col-12 col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">@Localizer["DiscoveryBatches"]</h6>
+                        <span class="badge bg-label-primary" id="ir-batch-count">0</span>
+                    </div>
+                    <div id="ir-empty-batches" class="card-body text-center text-muted d-none">@Localizer["EmptyBatchState"]</div>
+                    <div class="list-group list-group-flush" id="ir-batch-list"></div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-8">
+                <div class="card h-100">
+                    <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                        <div>
+                            <h6 class="mb-0">@Localizer["DiffReview"]</h6>
+                            <small class="text-muted" id="ir-selected-batch">@Localizer["SelectBatchState"]</small>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="ir-empty-diffs" class="p-4 text-center text-muted">@Localizer["SelectBatchState"]</div>
+                        <div class="d-none" id="ir-diff-review-list-wrap">
+                            <div class="border-top" id="ir-diff-body"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ir-reason-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ir-reason-title">@Localizer["RejectReason"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label" for="ir-reason">@Localizer["RejectReason"]</label>
+                <textarea id="ir-reason" class="form-control" rows="4" maxlength="1000"></textarea>
+                <div class="invalid-feedback d-block d-none" id="ir-reason-error">@Localizer["ReasonRequired"]</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="button" class="btn btn-danger" id="ir-reason-submit">@Localizer["Reject"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/InterfaceRegistry/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/InterfaceRegistry/index.js" asp-append-version="true"></script>
+}

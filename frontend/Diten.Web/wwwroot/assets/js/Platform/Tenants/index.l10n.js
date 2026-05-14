@@ -29,6 +29,9 @@
         'Suspend',
         'TenantReactivated',
         'TenantSuspended',
+        'TenantCommercialQuotaTitle',
+        'TenantCommercialQuotaError',
+        'TenantCommercialQuotaUnauthorized',
         'LoginSecurityTitle',
         'LoginSecuritySaved',
         'Unknown',
@@ -39,7 +42,7 @@
 
     const logMissingKeys = (dictionary) => {
         requiredKeys.forEach((key) => {
-            if (!dictionary[key] || dictionary[key] === key) {
+            if (!dictionary[key]) {
                 console.warn(`[L10N WARNING] Missing localization key: ${key}`);
             }
         });

@@ -435,7 +435,9 @@ window.DtDefaults = (function () {
                 }
 
                 if (status === 403) {
-                    redirectToLogin();
+                    if (window.showToast) {
+                        window.showToast('Permission denied.', 'error');
+                    }
                     return;
                 }
 
@@ -649,8 +651,12 @@ window.DtDefaults = (function () {
         };
 
         var group1 = [exportBtn];
+        var group2 = [];
+        
+        if (!options.skipColVis) {
+            group2.push(colvisBtn);
+        }
 
-        var group2 = [colvisBtn];
         if (extraButtons && extraButtons.filterBtn) group2.push(extraButtons.filterBtn);
         if (extraButtons && extraButtons.saveFilterBtn) group2.push(extraButtons.saveFilterBtn);
 

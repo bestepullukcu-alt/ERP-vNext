@@ -18,6 +18,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Diten.AuthService.Domain\Diten.AuthService.Domain.csproj" />
         <ProjectReference Include="..\Diten.AuthService.Application\Diten.AuthService.Application.csproj" />
+        <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
     </ItemGroup>
 
 </Project>

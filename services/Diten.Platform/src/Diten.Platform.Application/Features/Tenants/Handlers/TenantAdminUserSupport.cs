@@ -11,6 +11,12 @@ internal static class TenantAdminUserSupport
     public static TenantAdminUserDto ToDto(TenantAdminUser user) =>
         new(user.Id, user.Name, user.Email, user.Status.ToString(), user.CreatedAt, user.InvitedAt);
 
+    public static bool CountsTowardsUsersQuota(TenantAdminUser user) =>
+        user.Status is TenantAdminUserStatus.Invited or TenantAdminUserStatus.Active;
+
+    public static int CountUsersQuotaUsage(Tenant tenant) =>
+        tenant.AdminUsers.Count(CountsTowardsUsersQuota);
+
     public static string NormalizeEmail(string email)
     {
         var normalized = (email ?? string.Empty).Trim().ToLowerInvariant();

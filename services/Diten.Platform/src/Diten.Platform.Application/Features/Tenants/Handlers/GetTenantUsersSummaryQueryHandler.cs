@@ -25,13 +25,14 @@ public sealed class GetTenantUsersSummaryQueryHandler : IRequestHandler<GetTenan
         var changed = TenantAdminUserSupport.EnsureInitialAdminUser(tenant);
         if (changed)
         {
+            tenant.ActiveUserCount = TenantAdminUserSupport.CountUsersQuotaUsage(tenant);
             await _repository.UpdateAsync(tenant, cancellationToken);
         }
 
         return new TenantUsersSummaryDto(
             tenant.Id,
             tenant.AdminUsers.Count,
-            tenant.AdminUsers.Count(user => user.Status == Domain.Entities.TenantAdminUserStatus.Active),
+            TenantAdminUserSupport.CountUsersQuotaUsage(tenant),
             tenant.AdminUsers.Count(user => user.Status == Domain.Entities.TenantAdminUserStatus.PendingInvitation),
             "AdminApprovalRequired");
     }

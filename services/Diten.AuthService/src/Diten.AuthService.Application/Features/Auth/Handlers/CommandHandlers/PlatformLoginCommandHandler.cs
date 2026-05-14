@@ -101,7 +101,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var actorType = string.IsNullOrWhiteSpace(user.PlatformActorType) ? PlatformActorType : user.PlatformActorType!;
+        var actorType = NormalizePlatformActorType(user.PlatformActorType);
         var accessToken = _tokenService.GeneratePlatformAccessToken(
             user.Id,
             user.Email,
@@ -152,5 +152,13 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         }
 
         return roleIds;
+    }
+
+    private static string NormalizePlatformActorType(string? actorType)
+    {
+        return string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(actorType, "PartnerAdmin", StringComparison.OrdinalIgnoreCase)
+            ? "partner_admin"
+            : PlatformActorType;
     }
 }

@@ -52,7 +52,8 @@ public sealed class SubscriptionPlansController : Controller
             return View("~/Views/Platform/SubscriptionPlans/Create.cshtml", model);
         }
 
-        if (!TryValidateQuotasJson(model.DefaultQuotasJson))
+        SyncDefaultQuotasJson(model);
+        if (!TryValidateQuotas(model))
         {
             await LoadCurrencyOptionsAsync(model.Currency);
             return View("~/Views/Platform/SubscriptionPlans/Create.cshtml", model);
@@ -118,7 +119,8 @@ public sealed class SubscriptionPlansController : Controller
             return View("~/Views/Platform/SubscriptionPlans/Edit.cshtml", model);
         }
 
-        if (!TryValidateQuotasJson(model.DefaultQuotasJson))
+        SyncDefaultQuotasJson(model);
+        if (!TryValidateQuotas(model))
         {
             await LoadCurrencyOptionsAsync(model.Currency);
             return View("~/Views/Platform/SubscriptionPlans/Edit.cshtml", model);
@@ -410,6 +412,10 @@ public sealed class SubscriptionPlansController : Controller
         IsTrialPlan = model.IsTrialPlan,
         TrialDurationDays = model.TrialDurationDays,
         DefaultQuotasJson = model.DefaultQuotasJson,
+        UsersMax = GetQuota(model.DefaultQuotas, QuotaKeys.UsersMax),
+        StorageGbMax = GetQuota(model.DefaultQuotas, QuotaKeys.StorageGbMax),
+        ApiCallsPerMonth = GetQuota(model.DefaultQuotas, QuotaKeys.ApiCallsPerMonth),
+        ModulesMax = GetQuota(model.DefaultQuotas, QuotaKeys.ModulesMax),
         IncludedFeaturesText = model.IncludedFeaturesText,
         IncludedModuleKeysText = model.IncludedModuleKeysText
     };
@@ -450,6 +456,53 @@ public sealed class SubscriptionPlansController : Controller
         }
     }
 
+    private void SyncDefaultQuotasJson(SubscriptionPlanEditViewModel model)
+    {
+        if (model.UsersMax is < 0 || model.StorageGbMax is < 0 || model.ApiCallsPerMonth is < 0 || model.ModulesMax is < 0)
+        {
+            return;
+        }
+
+        var quotas = new Dictionary<string, decimal>();
+        AddQuota(quotas, QuotaKeys.UsersMax, model.UsersMax);
+        AddQuota(quotas, QuotaKeys.StorageGbMax, model.StorageGbMax);
+        AddQuota(quotas, QuotaKeys.ApiCallsPerMonth, model.ApiCallsPerMonth);
+        AddQuota(quotas, QuotaKeys.ModulesMax, model.ModulesMax);
+        model.DefaultQuotasJson = quotas.Count == 0
+            ? null
+            : JsonSerializer.Serialize(quotas, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+    }
+
+    private bool TryValidateQuotas(SubscriptionPlanEditViewModel model)
+    {
+        var valid = true;
+        if (model.UsersMax is < 0)
+        {
+            ModelState.AddModelError(nameof(SubscriptionPlanEditViewModel.UsersMax), _sharedLocalizer["ValidationFailed"].Value);
+            valid = false;
+        }
+
+        if (model.StorageGbMax is < 0)
+        {
+            ModelState.AddModelError(nameof(SubscriptionPlanEditViewModel.StorageGbMax), _sharedLocalizer["ValidationFailed"].Value);
+            valid = false;
+        }
+
+        if (model.ApiCallsPerMonth is < 0)
+        {
+            ModelState.AddModelError(nameof(SubscriptionPlanEditViewModel.ApiCallsPerMonth), _sharedLocalizer["ValidationFailed"].Value);
+            valid = false;
+        }
+
+        if (model.ModulesMax is < 0)
+        {
+            ModelState.AddModelError(nameof(SubscriptionPlanEditViewModel.ModulesMax), _sharedLocalizer["ValidationFailed"].Value);
+            valid = false;
+        }
+
+        return valid && TryValidateQuotasJson(model.DefaultQuotasJson);
+    }
+
     private bool TryValidateQuotasJson(string? json)
     {
         if (string.IsNullOrWhiteSpace(json))
@@ -467,6 +520,24 @@ public sealed class SubscriptionPlansController : Controller
             ModelState.AddModelError(nameof(SubscriptionPlanEditViewModel.DefaultQuotasJson), _sharedLocalizer["ValidationFailed"].Value);
             return false;
         }
+    }
+
+    private static void AddQuota(IDictionary<string, decimal> quotas, string key, decimal? value)
+    {
+        if (value.HasValue)
+        {
+            quotas[key] = value.Value;
+        }
+    }
+
+    private static decimal? GetQuota(IReadOnlyDictionary<string, decimal>? quotas, string key)
+    {
+        if (quotas is null)
+        {
+            return null;
+        }
+
+        return quotas.TryGetValue(key, out var value) ? value : null;
     }
 
     private static IReadOnlyList<string> SplitLines(string? raw)
@@ -500,6 +571,10 @@ public sealed class SubscriptionPlansController : Controller
 
         // Free-form text inputs for MVP; backend treats as structured dictionary/list.
         public string? DefaultQuotasJson { get; set; }
+        public decimal? UsersMax { get; set; }
+        public decimal? StorageGbMax { get; set; }
+        public decimal? ApiCallsPerMonth { get; set; }
+        public decimal? ModulesMax { get; set; }
         public string? IncludedFeaturesText { get; set; }
         public string? IncludedModuleKeysText { get; set; }
         public string? EntitlementMappingsJson { get; set; }
@@ -575,4 +650,12 @@ public sealed class SubscriptionPlansController : Controller
     }
 
     private sealed record CurrencyLookupApiModel(string Code, string Name);
+
+    private static class QuotaKeys
+    {
+        public const string UsersMax = "users.max";
+        public const string StorageGbMax = "storage.gb.max";
+        public const string ApiCallsPerMonth = "api.calls.per.month";
+        public const string ModulesMax = "modules.max";
+    }
 }

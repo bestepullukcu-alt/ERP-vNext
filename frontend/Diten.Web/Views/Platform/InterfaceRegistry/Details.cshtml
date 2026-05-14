@@ -1,0 +1,173 @@
+@using Diten.Web.Views.Platform.InterfaceRegistry
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InterfaceRegistryIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["InterfaceDetail"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    var interfaceCode = ViewData["InterfaceCode"]?.ToString() ?? string.Empty;
+    var interfaceVersion = ViewData["InterfaceVersion"]?.ToString() ?? string.Empty;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["InterfaceDetail"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/InterfaceRegistry">@Localizer["InterfaceRegistryTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["InterfaceDetail"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/Platform/InterfaceRegistry" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+    </div>
+</div>
+
+<div id="ir-detail-error" class="alert alert-danger d-none" role="alert"></div>
+<div id="ir-detail-permission" class="alert alert-warning d-none" role="alert">@Localizer["PermissionDeniedState"]</div>
+
+<div id="ir-detail-loading" class="d-flex align-items-center gap-2 text-muted mb-3">
+    <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+    <span>@SharedLocalizer["Loading"]</span>
+</div>
+
+<div class="row g-4 mt-1" id="ir-detail-root" data-interface-code="@interfaceCode" data-interface-version="@interfaceVersion">
+    <!-- Main Column (Left) -->
+    <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+        <!-- Identity Section -->
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-code-alt"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["InterfaceCode"]</div>
+                            <div id="detailCode" class="backbone-preview-value mt-1 text-primary">@interfaceCode</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-id-card"></i>
+                        <div>
+                            <div class="backbone-preview-label">@SharedLocalizer["DisplayName"]</div>
+                            <div id="detailDisplayName" class="backbone-preview-value mt-1">@Localizer["Loading"]</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-trending-up"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Stability"]</div>
+                            <div id="detailStability" class="mt-1">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-show"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Visibility"]</div>
+                            <div id="detailVisibility" class="mt-1">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endpoints Section -->
+        <section class="card backbone-preview-section p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["Endpoints"]</h6>
+                <span class="badge bg-label-primary rounded-pill" id="endpointCount">0</span>
+            </div>
+            <div id="ir-endpoint-list" class="d-flex flex-column gap-2">
+                <!-- Dynamic Content -->
+                <div class="text-center text-muted p-4">@Localizer["NoEndpoints"]</div>
+            </div>
+        </section>
+
+        <!-- Consumers Section -->
+        <partial name="_ConsumersFilter" />
+        <partial name="_ConsumersDataTable" />
+    </div>
+
+    <!-- Sidebar Column (Right) -->
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+        <!-- Ownership Section -->
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["OwnershipSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-server"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Service"]</div>
+                            <div id="detailService" class="backbone-preview-value mt-1">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-package"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Owner"]</div>
+                            <div id="detailOwner" class="backbone-preview-value mt-1">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-git-branch"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Version"]</div>
+                            <div id="detailVersion" class="backbone-preview-value mt-1">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lifecycle Section -->
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-check-shield"></i>
+                        <div>
+                            <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                            <div id="detailStatus" class="mt-1">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-calendar-check"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ConfirmedAt"]</div>
+                            <div id="detailConfirmedAt" class="backbone-preview-value mt-1">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compatibility Notes Section -->
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["CompatibilityNotes"]</h6>
+            <div id="detailNotes" class="backbone-preview-description text-muted">@Localizer["SelectInterfaceState"]</div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/InterfaceRegistry/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/InterfaceRegistry/details.js" asp-append-version="true"></script>
+}

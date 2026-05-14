@@ -195,4 +195,21 @@
   <data name="LastUpdated" xml:space="preserve"><value>Son Güncelleme</value></data>
   <data name="RemoveManualOverride" xml:space="preserve"><value>Manuel Override'ı Kaldır</value></data>
   <data name="ManualOverrideReason" xml:space="preserve"><value>Manuel override</value></data>
+  <data name="tenant.commercial.quota.title" xml:space="preserve"><value>Tenant Kota Yönetimi</value></data>
+  <data name="tenant.commercial.quota.description" xml:space="preserve"><value>Plana bağlı limitler ve tenant'ın mevcut kullanımı.</value></data>
+  <data name="tenant.commercial.quota.users" xml:space="preserve"><value>Kullanıcılar</value></data>
+  <data name="tenant.commercial.quota.storage" xml:space="preserve"><value>Depolama</value></data>
+  <data name="tenant.commercial.quota.apiCallsThisMonth" xml:space="preserve"><value>Bu Ay API Çağrıları</value></data>
+  <data name="tenant.commercial.quota.enabledModules" xml:space="preserve"><value>Etkin Modüller</value></data>
+  <data name="tenant.commercial.quota.status.healthy" xml:space="preserve"><value>Sağlıklı</value></data>
+  <data name="tenant.commercial.quota.status.warning" xml:space="preserve"><value>Uyarı</value></data>
+  <data name="tenant.commercial.quota.status.atLimit" xml:space="preserve"><value>Limitte</value></data>
+  <data name="tenant.commercial.quota.status.overLimit" xml:space="preserve"><value>Limit üstü</value></data>
+  <data name="tenant.commercial.quota.status.configurationMissing" xml:space="preserve"><value>Yapılandırma eksik</value></data>
+  <data name="tenant.commercial.quota.status.subscriptionInactive" xml:space="preserve"><value>Abonelik pasif</value></data>
+  <data name="tenant.commercial.quota.empty" xml:space="preserve"><value>Bu tenant için kota verisi yok.</value></data>
+  <data name="tenant.commercial.quota.error" xml:space="preserve"><value>Kota durumu yüklenemedi.</value></data>
+  <data name="tenant.commercial.quota.unauthorized" xml:space="preserve"><value>Tenant kota yönetimini görüntüleme yetkiniz yok.</value></data>
+  <data name="tenant.commercial.quota.loading" xml:space="preserve"><value>Kota durumu yükleniyor...</value></data>
+  <data name="tenant.commercial.quota.apiCallsMvpNote" xml:space="preserve"><value>API çağrı kullanımı yönetişim için gösterilir. Canlı gateway enforcement bu MVP kapsamında değildir.</value></data>
 </root>

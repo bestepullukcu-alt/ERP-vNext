@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="InterfaceRegistryTitle" xml:space="preserve"><value>Interface Registry</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review discovered service interfaces and inspect confirmed active snapshots.</value></data>
+  <data name="BackToCatalog" xml:space="preserve"><value>Back to Catalog</value></data>
+  <data name="CatalogTab" xml:space="preserve"><value>Catalog</value></data>
+  <data name="DiscoveryBatchesTab" xml:space="preserve"><value>Discovery Batches</value></data>
+  <data name="ConfirmedInterfaces" xml:space="preserve"><value>Confirmed Interfaces</value></data>
+  <data name="InterfaceCode" xml:space="preserve"><value>Interface Code</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="InterfaceDetail" xml:space="preserve"><value>Interface Detail</value></data>
+  <data name="DiscoveryBatches" xml:space="preserve"><value>Discovery Batches</value></data>
+  <data name="DiffReview" xml:space="preserve"><value>Diff Review</value></data>
+  <data name="ConfirmBatch" xml:space="preserve"><value>Confirm Batch</value></data>
+  <data name="RejectBatch" xml:space="preserve"><value>Reject Batch</value></data>
+  <data name="ChangeType" xml:space="preserve"><value>Change Type</value></data>
+  <data name="ReviewStatus" xml:space="preserve"><value>Review Status</value></data>
+  <data name="ReviewedBy" xml:space="preserve"><value>Reviewed By</value></data>
+  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="Service" xml:space="preserve"><value>Service</value></data>
+  <data name="ConfirmedAt" xml:space="preserve"><value>Confirmed</value></data>
+  <data name="RejectReason" xml:space="preserve"><value>Reject Reason</value></data>
+  <data name="Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Confirm</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Reason is required.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Saved.</value></data>
+  <data name="PermissionDeniedState" xml:space="preserve"><value>You do not have permission to view Interface Registry data.</value></data>
+  <data name="EmptyCatalogState" xml:space="preserve"><value>No confirmed active interface snapshots were found.</value></data>
+  <data name="EmptyBatchState" xml:space="preserve"><value>No discovery batches were found.</value></data>
+  <data name="SelectInterfaceState" xml:space="preserve"><value>Select an interface to inspect its active snapshot.</value></data>
+  <data name="SelectBatchState" xml:space="preserve"><value>Select a discovery batch to review diff items.</value></data>
+  <data name="PendingReview" xml:space="preserve"><value>Pending Review</value></data>
+  <data name="Confirmed" xml:space="preserve"><value>Confirmed</value></data>
+  <data name="Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>Deprecated</value></data>
+  <data name="New" xml:space="preserve"><value>New</value></data>
+  <data name="Changed" xml:space="preserve"><value>Changed</value></data>
+  <data name="Missing" xml:space="preserve"><value>Missing</value></data>
+  <data name="Unchanged" xml:space="preserve"><value>Unchanged</value></data>
+  <data name="Endpoints" xml:space="preserve"><value>Endpoints</value></data>
+  <data name="Consumers" xml:space="preserve"><value>Consumers</value></data>
+  <data name="NoEndpoints" xml:space="preserve"><value>No endpoints found.</value></data>
+  <data name="NoConsumers" xml:space="preserve"><value>No consumers found.</value></data>
+  <data name="CompatibilityNotes" xml:space="preserve"><value>No compatibility notes.</value></data>
+  <data name="PartialFailure" xml:space="preserve"><value>Some data could not be loaded.</value></data>
+  <data name="Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Discovered" xml:space="preserve"><value>Discovered</value></data>
+  <data name="PartiallyConfirmed" xml:space="preserve"><value>Partially Confirmed</value></data>
+  <data name="MissingInSource" xml:space="preserve"><value>Missing in Source</value></data>
+  <data name="Retired" xml:space="preserve"><value>Retired</value></data>
+  <data name="Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Stability" xml:space="preserve"><value>Stability</value></data>
+  <data name="Visibility" xml:space="preserve"><value>Visibility</value></data>
+  <data name="Experimental" xml:space="preserve"><value>Experimental</value></data>
+  <data name="Stable" xml:space="preserve"><value>Stable</value></data>
+  <data name="Internal" xml:space="preserve"><value>Internal</value></data>
+  <data name="Platform" xml:space="preserve"><value>Platform</value></data>
+  <data name="Tenant" xml:space="preserve"><value>Tenant</value></data>
+  <data name="Public" xml:space="preserve"><value>Public</value></data>
+  <data name="Overview" xml:space="preserve"><value>Overview</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity &amp; Classification</value></data>
+  <data name="OwnershipSection" xml:space="preserve"><value>Ownership &amp; Context</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle &amp; Audit</value></data>
+  <data name="TotalInterfaces" xml:space="preserve"><value>Total Interfaces</value></data>
+  <data name="ActiveSnapshots" xml:space="preserve"><value>Active Snapshots</value></data>
+  <data name="PendingReviews" xml:space="preserve"><value>Pending Reviews</value></data>
+</root>

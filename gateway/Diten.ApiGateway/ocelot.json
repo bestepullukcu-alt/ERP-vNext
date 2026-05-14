@@ -18,11 +18,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/golden-reference-slim/{everything}",
@@ -42,11 +38,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/golden-reference-compact",
@@ -66,11 +58,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/golden-reference-compact/{everything}",
@@ -90,11 +78,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/personalization/views",
@@ -194,11 +178,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/platform/module-catalog/{everything}",
@@ -218,11 +198,47 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/platform/interface-registry",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/interface-registry",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/platform/interface-registry/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/interface-registry/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/platform/subscription-plans",
@@ -242,11 +258,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/platform/subscription-plans/{everything}",
@@ -266,11 +278,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/platform/subscription-features",
@@ -290,11 +298,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/platform/subscription-features/{everything}",
@@ -314,11 +318,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/platform/feature-categories",
@@ -338,11 +338,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/platform/feature-categories/{everything}",
@@ -362,11 +358,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/platform/tenants",
@@ -386,11 +378,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/platform/tenants/{everything}",
@@ -410,11 +398,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/admin/tenants",
@@ -434,11 +418,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/admin/tenants/{everything}",
@@ -458,11 +438,7 @@
         "OPTIONS",
         "DELETE"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/lookups/{everything}",
@@ -589,11 +565,7 @@
         "GET",
         "OPTIONS"
       ],
-      "UpstreamScheme": "http",
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
+      "UpstreamScheme": "http"
     },
     {
       "DownstreamPathTemplate": "/api/v1/enterprise-strategy",

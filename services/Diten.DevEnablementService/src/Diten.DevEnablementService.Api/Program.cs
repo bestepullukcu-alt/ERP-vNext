@@ -1,4 +1,5 @@
 using Diten.DevEnablementService.Application;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.DevEnablementService.Infrastructure;
 using Diten.DevEnablementService.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,13 +11,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ── Katman DI ──────────────────────────────────────────────────────────────
 builder.Services.AddApplication();
+builder.Services.AddSecretsProvider(builder.Configuration, builder.Environment, options => options.ServiceName = "DevEnablement");
+builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environment, "DevEnablement", [
+    new("JwtSettings:Secret", "DevEnablement", SecretRequirementKind.JwtCurrent),
+    new("JwtSettings:PreviousSecrets", "DevEnablement", SecretRequirementKind.JwtPreviousCollection, Required: false),
+    new("Mongo:ConnectionString", "DevEnablement", SecretRequirementKind.ConnectionString)
+]);
 builder.Services.AddInfrastructure();
-builder.Services.AddPersistence(builder.Configuration);
+builder.Services.AddPersistence(builder.Configuration, builder.Environment);
 
 // ── JWT ───────────────────────────────────────────────────────────────────
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
 var jwtAudience = builder.Configuration["JwtSettings:Audience"];
+var jwtRotationResolver = new JwtSecretRotationResolver(builder.Configuration);
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -30,7 +38,7 @@ builder.Services
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret!)),
+            IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
             ClockSkew = TimeSpan.Zero
         };
     });

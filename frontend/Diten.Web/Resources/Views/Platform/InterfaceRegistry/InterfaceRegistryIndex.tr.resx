@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="InterfaceRegistryTitle" xml:space="preserve"><value>Interface Registry</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Keşfedilen servis arayüzlerini gözden geçir ve onaylanmış aktif snapshot kayıtlarını incele.</value></data>
+  <data name="BackToCatalog" xml:space="preserve"><value>Kataloğa Dön</value></data>
+  <data name="CatalogTab" xml:space="preserve"><value>Katalog</value></data>
+  <data name="DiscoveryBatchesTab" xml:space="preserve"><value>Keşif Batchleri</value></data>
+  <data name="ConfirmedInterfaces" xml:space="preserve"><value>Onaylı Interface'ler</value></data>
+  <data name="InterfaceCode" xml:space="preserve"><value>Interface Kodu</value></data>
+  <data name="Version" xml:space="preserve"><value>Versiyon</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+  <data name="InterfaceDetail" xml:space="preserve"><value>Interface Detayı</value></data>
+  <data name="DiscoveryBatches" xml:space="preserve"><value>Keşif Batchleri</value></data>
+  <data name="DiffReview" xml:space="preserve"><value>Diff İnceleme</value></data>
+  <data name="ConfirmBatch" xml:space="preserve"><value>Batch Onayla</value></data>
+  <data name="RejectBatch" xml:space="preserve"><value>Batch Reddet</value></data>
+  <data name="ChangeType" xml:space="preserve"><value>Değişiklik Tipi</value></data>
+  <data name="ReviewStatus" xml:space="preserve"><value>İnceleme Durumu</value></data>
+  <data name="ReviewedBy" xml:space="preserve"><value>İnceleyen</value></data>
+  <data name="Owner" xml:space="preserve"><value>Sahip</value></data>
+  <data name="Service" xml:space="preserve"><value>Servis</value></data>
+  <data name="ConfirmedAt" xml:space="preserve"><value>Onay Zamanı</value></data>
+  <data name="RejectReason" xml:space="preserve"><value>Ret Gerekçesi</value></data>
+  <data name="Reject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Onayla</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Gerekçe zorunludur.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Kaydedildi.</value></data>
+  <data name="PermissionDeniedState" xml:space="preserve"><value>Interface Registry verilerini görüntüleme yetkiniz yok.</value></data>
+  <data name="EmptyCatalogState" xml:space="preserve"><value>Onaylanmış aktif interface snapshot kaydı bulunamadı.</value></data>
+  <data name="EmptyBatchState" xml:space="preserve"><value>Keşif batch kaydı bulunamadı.</value></data>
+  <data name="SelectInterfaceState" xml:space="preserve"><value>Aktif snapshot detayını görmek için bir interface seçin.</value></data>
+  <data name="SelectBatchState" xml:space="preserve"><value>Diff item'ları incelemek için bir keşif batch'i seçin.</value></data>
+  <data name="PendingReview" xml:space="preserve"><value>İnceleme Bekliyor</value></data>
+  <data name="Confirmed" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="Rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>Kullanımdan Kaldırılıyor</value></data>
+  <data name="New" xml:space="preserve"><value>Yeni</value></data>
+  <data name="Changed" xml:space="preserve"><value>Değişti</value></data>
+  <data name="Missing" xml:space="preserve"><value>Kaynakta Yok</value></data>
+  <data name="Unchanged" xml:space="preserve"><value>Değişmedi</value></data>
+  <data name="Endpoints" xml:space="preserve"><value>Endpoint'ler</value></data>
+  <data name="Consumers" xml:space="preserve"><value>Tüketiciler</value></data>
+  <data name="NoEndpoints" xml:space="preserve"><value>Endpoint bulunamadı.</value></data>
+  <data name="NoConsumers" xml:space="preserve"><value>Tüketici bulunamadı.</value></data>
+  <data name="CompatibilityNotes" xml:space="preserve"><value>Uyumluluk notu yok.</value></data>
+  <data name="PartialFailure" xml:space="preserve"><value>Bazı veriler yüklenemedi.</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Discovered" xml:space="preserve"><value>Keşfedildi</value></data>
+  <data name="PartiallyConfirmed" xml:space="preserve"><value>Kısmen Onaylandı</value></data>
+  <data name="MissingInSource" xml:space="preserve"><value>Kaynakta Eksik</value></data>
+  <data name="Retired" xml:space="preserve"><value>Emekli</value></data>
+  <data name="Failed" xml:space="preserve"><value>Başarısız</value></data>
+  <data name="Stability" xml:space="preserve"><value>Kararlılık</value></data>
+  <data name="Visibility" xml:space="preserve"><value>Görünürlük</value></data>
+  <data name="Experimental" xml:space="preserve"><value>Deneysel</value></data>
+  <data name="Stable" xml:space="preserve"><value>Kararlı</value></data>
+  <data name="Internal" xml:space="preserve"><value>Dahili</value></data>
+  <data name="Platform" xml:space="preserve"><value>Platform</value></data>
+  <data name="Tenant" xml:space="preserve"><value>Kiracı</value></data>
+  <data name="Public" xml:space="preserve"><value>Genel</value></data>
+  <data name="Overview" xml:space="preserve"><value>Genel Bakış</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik ve Sınıflandırma</value></data>
+  <data name="OwnershipSection" xml:space="preserve"><value>Sahiplik ve Bağlam</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Yaşam Döngüsü ve Denetim</value></data>
+  <data name="TotalInterfaces" xml:space="preserve"><value>Toplam Arayüz</value></data>
+  <data name="ActiveSnapshots" xml:space="preserve"><value>Aktif Snapsholar</value></data>
+  <data name="PendingReviews" xml:space="preserve"><value>Bekleyen İncelemeler</value></data>
+</root>

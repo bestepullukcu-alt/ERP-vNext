@@ -20,6 +20,8 @@
             Include="..\Diten.DevEnablementService.Infrastructure\Diten.DevEnablementService.Infrastructure.csproj" />
         <ProjectReference
             Include="..\Diten.DevEnablementService.Persistence\Diten.DevEnablementService.Persistence.csproj" />
+        <ProjectReference
+            Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
     </ItemGroup>
 
 </Project>

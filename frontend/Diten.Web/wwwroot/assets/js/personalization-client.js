@@ -11,7 +11,9 @@ window.personalizationClient = (function () {
 
     const shouldSendTenantHeader = () => {
         const actorType = (window.CurrentUser || {}).actorType || '';
-        return String(actorType).toLowerCase() === 'tenant_user';
+        const isAdminHost = window.location.hostname.toLowerCase().startsWith('admin.');
+        const isPlatformRoute = window.location.pathname.toLowerCase().startsWith('/platform/');
+        return !isAdminHost && !isPlatformRoute && String(actorType).toLowerCase() === 'tenant_user';
     };
 
     const getHeaders = (includeJsonContentType) => {

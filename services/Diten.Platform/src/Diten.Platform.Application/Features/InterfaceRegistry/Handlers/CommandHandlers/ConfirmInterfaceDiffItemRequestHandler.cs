@@ -1,0 +1,63 @@
+using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.InterfaceRegistry.Auditing;
+using Diten.Platform.Application.Features.InterfaceRegistry.Commands;
+using Diten.Platform.Domain.Entities.InterfaceRegistry;
+using Diten.Platform.Domain.Repositories;
+using MediatR;
+
+namespace Diten.Platform.Application.Features.InterfaceRegistry.Handlers.CommandHandlers;
+
+public sealed class ConfirmInterfaceDiffItemRequestHandler
+    : IRequestHandler<ConfirmInterfaceDiffItemRequest, Response<InterfaceDiscoveryDiffItemDto>>
+{
+    private readonly IInterfaceRegistryRepository _repository;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly IInterfaceRegistryAuditSink _auditSink;
+
+    public ConfirmInterfaceDiffItemRequestHandler(
+        IInterfaceRegistryRepository repository,
+        ICurrentUserContext currentUser,
+        IInterfaceRegistryAuditSink auditSink)
+    {
+        _repository = repository;
+        _currentUser = currentUser;
+        _auditSink = auditSink;
+    }
+
+    public async Task<Response<InterfaceDiscoveryDiffItemDto>> Handle(ConfirmInterfaceDiffItemRequest request, CancellationToken ct)
+    {
+        var diffItem = await _repository.GetDiffItemByIdAsync(request.DiffItemId, ct);
+        if (diffItem is null)
+        {
+            return Response<InterfaceDiscoveryDiffItemDto>.Fail("Diff item not found.", 404);
+        }
+
+        if (diffItem.ReviewStatus == InterfaceRegistryStatuses.Rejected)
+        {
+            return Response<InterfaceDiscoveryDiffItemDto>.Fail("Rejected diff items cannot be confirmed.", 409);
+        }
+
+        if (diffItem.ReviewStatus == InterfaceRegistryStatuses.Confirmed)
+        {
+            return Response<InterfaceDiscoveryDiffItemDto>.Success(InterfaceRegistryMapper.ToDto(diffItem));
+        }
+
+        await InterfaceRegistryReviewSupport.ConfirmAsync(
+            diffItem,
+            _repository,
+            _auditSink,
+            InterfaceRegistryReviewSupport.ResolveActor(_currentUser),
+            DateTimeOffset.UtcNow,
+            ct);
+
+        var batch = await _repository.GetBatchByIdAsync(diffItem.BatchId, ct);
+        if (batch is not null)
+        {
+            var diffItems = await _repository.GetDiffItemsAsync(batch.BatchId, ct);
+            await InterfaceRegistryReviewSupport.UpdateBatchStatusAsync(batch, diffItems, _repository, ct);
+        }
+
+        return Response<InterfaceDiscoveryDiffItemDto>.Success(InterfaceRegistryMapper.ToDto(diffItem));
+    }
+}
