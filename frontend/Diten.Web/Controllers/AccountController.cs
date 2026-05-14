@@ -137,6 +137,7 @@ public class AccountController : Controller
             return Unauthorized(new { detail = result.ErrorMessage ?? "Platform login failed." });
         }
 
+        _authCookieService.ClearTokens(Response);
         _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
 
         return Ok(new LoginBridgeResponse(
@@ -185,8 +186,10 @@ public class AccountController : Controller
             return BadRequest(new { detail = "Password reset request is invalid." });
         }
 
-        var success = await _authGateway.ResetPlatformPasswordAsync(request.Email, request.Token, request.NewPassword, ct);
-        return success ? Ok(new { success = true, redirectUrl = "/platform/login" }) : BadRequest(new { detail = "Password reset token is invalid or expired." });
+        var result = await _authGateway.ResetPlatformPasswordAsync(request.Email, request.Token, request.NewPassword, ct);
+        return result.Success
+            ? Ok(new { success = true, redirectUrl = "/platform/login" })
+            : BadRequest(new { detail = result.ErrorMessage ?? "Password reset token is invalid or expired." });
     }
 
     [HttpGet("/platform/change-password")]
@@ -215,6 +218,7 @@ public class AccountController : Controller
             return Unauthorized(new { detail = result.ErrorMessage ?? "Password change failed." });
         }
 
+        _authCookieService.ClearTokens(Response);
         _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
         return Ok(new { success = true, redirectUrl = "/Platform/Tenants" });
     }

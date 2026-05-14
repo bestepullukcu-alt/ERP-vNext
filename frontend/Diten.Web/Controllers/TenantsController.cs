@@ -387,8 +387,14 @@ public sealed class TenantsController : Controller
 
     private async Task<IActionResult> ProxyGatewayAsync(HttpMethod method, string targetUrl, string? jsonBody = null)
     {
-        AddAuthHeader();
+        if (!TryGetPlatformAccessToken(out var token))
+        {
+            ProxyAuthFailure.ClearAuthCookies(Response);
+            return StatusCode(StatusCodes.Status401Unauthorized, ProxyAuthFailure.PlatformLoginPayload());
+        }
+
         using var request = new HttpRequestMessage(method, targetUrl);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         if (jsonBody is not null)
         {
             request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
@@ -401,6 +407,17 @@ public sealed class TenantsController : Controller
             return StatusCode((int)response.StatusCode, ProxyAuthFailure.PlatformLoginPayload());
         }
 
+        if (ProxyAuthFailure.IsForbidden(response.StatusCode))
+        {
+            var forbiddenContent = await response.Content.ReadAsStringAsync();
+            return new ContentResult
+            {
+                Content = forbiddenContent,
+                ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json",
+                StatusCode = StatusCodes.Status403Forbidden
+            };
+        }
+
         var content = await response.Content.ReadAsStringAsync();
         var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/json";
         return new ContentResult
@@ -411,25 +428,32 @@ public sealed class TenantsController : Controller
         };
     }
 
-    private void AddAuthHeader()
+    private bool TryGetPlatformAccessToken(out string token)
     {
-        _httpClient.DefaultRequestHeaders.Authorization = null;
-        var token = Request.Cookies["access_token"];
-        if (!string.IsNullOrWhiteSpace(token))
+        token = Request.Cookies["access_token"] ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(token))
         {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            return false;
         }
 
-        if (_httpClient.DefaultRequestHeaders.Contains("X-Tenant-Id"))
+        try
         {
-            _httpClient.DefaultRequestHeaders.Remove("X-Tenant-Id");
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            var actorType = FindClaim(jwt.Claims, "actor_type");
+            return jwt.ValidTo > DateTime.UtcNow &&
+                   (string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            token = string.Empty;
+            return false;
         }
     }
 
     private void AddAuthHeader(HttpRequestMessage request)
     {
-        var token = Request.Cookies["access_token"];
-        if (!string.IsNullOrWhiteSpace(token))
+        if (TryGetPlatformAccessToken(out var token))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }

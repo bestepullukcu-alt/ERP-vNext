@@ -53,11 +53,16 @@ public sealed class GatewayJwtAuthenticationHandler : AuthenticationHandler<Auth
                 principal = new ClaimsPrincipal(identity);
             }
 
+            var actorType = principal.Claims
+                .FirstOrDefault(c => string.Equals(c.Type, "actor_type", StringComparison.OrdinalIgnoreCase))?.Value;
+            Logger.LogDebug("Gateway JWT authentication succeeded. ActorType={ActorType}, ClaimsCount={ClaimsCount}",
+                actorType, principal.Claims.Count());
+
             return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name)));
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Gateway JWT authentication failed.");
+            Logger.LogWarning(ex, "Gateway JWT authentication failed. TokenLength={TokenLength}", token?.Length ?? 0);
             return Task.FromResult(AuthenticateResult.Fail("Invalid bearer token."));
         }
     }

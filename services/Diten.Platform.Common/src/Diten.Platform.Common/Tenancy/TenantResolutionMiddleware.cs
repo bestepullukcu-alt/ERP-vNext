@@ -46,6 +46,13 @@ public sealed class TenantResolutionMiddleware
         var actorType = context.User.FindFirst("actor_type")?.Value;
         if (IsPersonalizationPath(context.Request.Path))
         {
+            if (IsPlatformPersonalizationRequest(context.Request))
+            {
+                tenantContext.SetPlatformContext(Guid.Empty);
+                await _next(context);
+                return;
+            }
+
             if (IsPlatformActor(actorType))
             {
                 if (context.Request.Headers.ContainsKey(TenantHeader))
@@ -202,6 +209,12 @@ public sealed class TenantResolutionMiddleware
     private static bool IsPersonalizationPath(PathString path)
     {
         return path.StartsWithSegments("/api/personalization", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsPlatformPersonalizationRequest(HttpRequest request)
+    {
+        var moduleKey = request.Query["moduleKey"].FirstOrDefault();
+        return string.Equals(moduleKey, "Platform", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsPlatformActor(string? actorType)

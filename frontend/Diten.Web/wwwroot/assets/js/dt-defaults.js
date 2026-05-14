@@ -435,7 +435,9 @@ window.DtDefaults = (function () {
                 }
 
                 if (status === 403) {
-                    redirectToLogin();
+                    if (window.showToast) {
+                        window.showToast('Permission denied.', 'error');
+                    }
                     return;
                 }
 

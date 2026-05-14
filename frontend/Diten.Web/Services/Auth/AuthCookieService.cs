@@ -9,6 +9,7 @@ public sealed class AuthCookieService : IAuthCookieService
 
     public void WriteTokens(HttpResponse response, string accessToken, string refreshToken, DateTime refreshExpiresAtUtc)
     {
+        ClearTokens(response);
         var cookieOptions = BuildCookieOptions(response, refreshExpiresAtUtc);
 
         response.Cookies.Append(AccessTokenCookie, accessToken, cookieOptions);
@@ -17,8 +18,11 @@ public sealed class AuthCookieService : IAuthCookieService
 
     public void ClearTokens(HttpResponse response)
     {
-        response.Cookies.Delete(AccessTokenCookie, BuildDeleteOptions(response));
-        response.Cookies.Delete(RefreshTokenCookie, BuildDeleteOptions(response));
+        foreach (var path in new[] { "/", "/account", "/Account", "/platform", "/Platform", "/api" })
+        {
+            response.Cookies.Delete(AccessTokenCookie, BuildDeleteOptions(response, path));
+            response.Cookies.Delete(RefreshTokenCookie, BuildDeleteOptions(response, path));
+        }
     }
 
     private static CookieOptions BuildCookieOptions(HttpResponse response, DateTime refreshExpiresAtUtc)
@@ -33,14 +37,14 @@ public sealed class AuthCookieService : IAuthCookieService
         };
     }
 
-    private static CookieOptions BuildDeleteOptions(HttpResponse response)
+    private static CookieOptions BuildDeleteOptions(HttpResponse response, string path)
     {
         return new CookieOptions
         {
             HttpOnly = true,
             Secure = response.HttpContext.Request.IsHttps,
             SameSite = SameSiteMode.Lax,
-            Path = "/"
+            Path = path
         };
     }
 }

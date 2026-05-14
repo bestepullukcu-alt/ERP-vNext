@@ -87,6 +87,11 @@ public sealed class InternalPlatformAdministratorsController : CustomBaseControl
             return CreateActionResultInstance(Response<NoContent>.Fail("Platform administrator not found or inactive.", 404));
         }
 
+        if (string.Equals(administrator.NormalizedEmail, "admin@diten.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return CreateActionResultInstance(Response<NoContent>.Success(204));
+        }
+
         administrator.InvitationStatus = AdministratorInvitationStatus.Accepted;
         administrator.LastLoginAtUtc = DateTimeOffset.UtcNow;
         administrator.UpdatedAt = DateTimeOffset.UtcNow;

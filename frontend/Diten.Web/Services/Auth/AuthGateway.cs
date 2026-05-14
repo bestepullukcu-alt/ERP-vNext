@@ -66,7 +66,7 @@ public sealed class AuthGateway : IAuthGateway
         return response.IsSuccessStatusCode;
     }
 
-    public async Task<bool> ResetPlatformPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default)
+    public async Task<AuthBridgeResult> ResetPlatformPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/platform-auth/reset-password")
         {
@@ -74,7 +74,9 @@ public sealed class AuthGateway : IAuthGateway
         };
         AddClientMetadataHeaders(request);
         var response = await _httpClient.SendAsync(request, ct);
-        return response.IsSuccessStatusCode;
+        return response.IsSuccessStatusCode
+            ? new AuthBridgeResult(true, null, null, null, null, null)
+            : new AuthBridgeResult(false, null, null, null, null, await TryReadErrorAsync(response, ct));
     }
 
     public Task<AuthBridgeResult> VerifyTenantMfaAsync(string challengeId, string code, CancellationToken ct = default)
@@ -205,12 +207,12 @@ public sealed class AuthGateway : IAuthGateway
             using var document = JsonDocument.Parse(content);
             if (document.RootElement.TryGetProperty("detail", out var detail) && detail.ValueKind == JsonValueKind.String)
             {
-                return detail.GetString();
+                return NormalizeValidationError(detail.GetString());
             }
 
             if (document.RootElement.TryGetProperty("title", out var title) && title.ValueKind == JsonValueKind.String)
             {
-                return title.GetString();
+                return NormalizeValidationError(title.GetString());
             }
 
             if (document.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array)
@@ -224,16 +226,38 @@ public sealed class AuthGateway : IAuthGateway
 
                 if (messages.Length > 0)
                 {
-                    return string.Join(" ", messages);
+                    return NormalizeValidationError(string.Join(" ", messages));
                 }
             }
         }
         catch
         {
-            return content;
+            return NormalizeValidationError(content);
         }
 
-        return content;
+        return NormalizeValidationError(content);
+    }
+
+    private static string? NormalizeValidationError(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return message;
+        }
+
+        var clean = message.Replace("Validation failed:", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("\r", string.Empty)
+            .Replace("\n", " ")
+            .Replace("Severity: Error", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace(" --", " ")
+            .Trim();
+
+        while (clean.Contains("  ", StringComparison.Ordinal))
+        {
+            clean = clean.Replace("  ", " ", StringComparison.Ordinal);
+        }
+
+        return string.IsNullOrWhiteSpace(clean) ? message : clean;
     }
 
     private void AddClientMetadataHeaders(HttpRequestMessage request)

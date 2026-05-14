@@ -364,8 +364,13 @@ const TenantCreate = (function () {
                     body: JSON.stringify(buildPayload())
                 });
 
-                if (response.status === 401 || response.status === 403) {
+                if (response.status === 401) {
                     window.DtDefaults?.handleUnauthorized?.();
+                    return;
+                }
+
+                if (response.status === 403) {
+                    showErrors({ detail: L.PermissionDenied || 'Permission denied.' });
                     return;
                 }
 

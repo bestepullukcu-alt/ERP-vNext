@@ -158,11 +158,15 @@ const TenantDetails = (function () {
 
         const contentType = response.headers.get('content-type') || '';
         const redirectedToLogin = response.redirected && /\/(account|platform)\/login/i.test(response.url || '');
-        if (response.status === 401 || response.status === 403 || redirectedToLogin) {
+        if (response.status === 401 || redirectedToLogin) {
             window.DtDefaults?.handleUnauthorized?.();
             const authError = new Error('auth-refresh-in-progress');
             authError.authHandled = true;
             throw authError;
+        }
+
+        if (response.status === 403) {
+            throw new Error(L.PermissionDenied || 'Permission denied.');
         }
 
         if (!response.ok) throw new Error(await response.text());

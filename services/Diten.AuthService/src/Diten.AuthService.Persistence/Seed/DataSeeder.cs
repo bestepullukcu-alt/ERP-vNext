@@ -108,12 +108,22 @@ public static class DataSeeder
                 Id = staticAdminId
             };
             user.SetUserName("admin");
+            user.SetPlatformActorType("platform_admin");
+            user.Activate();
+            user.ConfirmEmail();
             await userCol.InsertOneAsync(user);
             Console.WriteLine("Created admin user with static Guid.");
         }
-        else if (string.IsNullOrWhiteSpace(user.NormalizedUserName))
+        else
         {
-            user.SetUserName("admin");
+            if (string.IsNullOrWhiteSpace(user.NormalizedUserName))
+            {
+                user.SetUserName("admin");
+            }
+
+            user.SetPlatformActorType("platform_admin");
+            user.Activate();
+            user.ConfirmEmail();
             await userCol.ReplaceOneAsync(u => u.Id == user.Id, user);
         }
 
