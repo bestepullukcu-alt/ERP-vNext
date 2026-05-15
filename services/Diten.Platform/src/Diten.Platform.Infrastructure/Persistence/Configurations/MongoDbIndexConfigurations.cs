@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Entities.InterfaceRegistry;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
@@ -31,7 +32,58 @@ public static class MongoDbIndexConfigurations
         var interfaceDiscoveryBatchCollection = database.GetCollection<InterfaceDiscoveryBatch>("platform_interface_discovery_batches");
         var interfaceDiscoveryDiffCollection = database.GetCollection<InterfaceDiscoveryDiffItem>("platform_interface_discovery_diff_items");
         var interfaceActiveSnapshotCollection = database.GetCollection<InterfaceActiveSnapshot>("platform_interface_active_snapshots");
+        var outboxEventCollection = database.GetCollection<OutboxEvent>("outbox_events");
+        var consumedEventCollection = database.GetCollection<ConsumedEvent>("consumed_events");
+        var jobExecutionLogCollection = database.GetCollection<JobExecutionLog>("job_execution_logs");
         var moduleCatalogDocuments = database.GetCollection<BsonDocument>("platform_module_catalog");
+        await outboxEventCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<OutboxEvent>(
+                Builders<OutboxEvent>.IndexKeys.Ascending(x => x.EventId),
+                new CreateIndexOptions { Unique = true, Name = "ux_outbox_events_event_id" }),
+            new CreateIndexModel<OutboxEvent>(
+                Builders<OutboxEvent>.IndexKeys.Ascending(x => x.EventName),
+                new CreateIndexOptions { Name = "ix_outbox_events_event_name" }),
+            new CreateIndexModel<OutboxEvent>(
+                Builders<OutboxEvent>.IndexKeys.Ascending(x => x.CorrelationId),
+                new CreateIndexOptions { Name = "ix_outbox_events_correlation_id" }),
+            new CreateIndexModel<OutboxEvent>(
+                Builders<OutboxEvent>.IndexKeys
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.NextAttemptAtUtc),
+                new CreateIndexOptions { Name = "ix_outbox_events_status_next_attempt" })
+        });
+
+        await consumedEventCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ConsumedEvent>(
+                Builders<ConsumedEvent>.IndexKeys
+                    .Ascending(x => x.EventId)
+                    .Ascending(x => x.ConsumerName),
+                new CreateIndexOptions { Unique = true, Name = "ux_consumed_events_event_consumer" })
+        });
+
+        await jobExecutionLogCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<JobExecutionLog>(
+                Builders<JobExecutionLog>.IndexKeys
+                    .Ascending(x => x.ServiceName)
+                    .Ascending(x => x.JobName)
+                    .Descending(x => x.StartedAt),
+                new CreateIndexOptions { Name = "ix_job_execution_logs_service_job_started" }),
+            new CreateIndexModel<JobExecutionLog>(
+                Builders<JobExecutionLog>.IndexKeys.Ascending(x => x.CorrelationId),
+                new CreateIndexOptions { Name = "ix_job_execution_logs_correlation_id" }),
+            new CreateIndexModel<JobExecutionLog>(
+                Builders<JobExecutionLog>.IndexKeys
+                    .Ascending(x => x.Status)
+                    .Descending(x => x.StartedAt),
+                new CreateIndexOptions { Name = "ix_job_execution_logs_status_started" }),
+            new CreateIndexModel<JobExecutionLog>(
+                Builders<JobExecutionLog>.IndexKeys.Ascending(x => x.RecurringJobId),
+                new CreateIndexOptions { Name = "ix_job_execution_logs_recurring_job_id" })
+        });
+
         await collection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<SavedView>(

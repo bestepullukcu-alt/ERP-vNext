@@ -35,10 +35,12 @@ public sealed class InvitePlatformAdministratorValidator : AbstractValidator<Inv
             .WithMessage("Roles must contain at least one valid administrator role.");
 
         RuleFor(x => x.Request.PartnerId)
+            .Cascade(CascadeMode.Stop)
             .NotNull()
+            .WithMessage("PartnerId is required for PartnerAdmin.")
             .NotEqual(Guid.Empty)
-            .When(x => IsPartnerAdmin(x.Request.ActorType))
-            .WithMessage("PartnerId is required for PartnerAdmin.");
+            .WithMessage("PartnerId is required for PartnerAdmin.")
+            .When(x => IsPartnerAdmin(x.Request.ActorType));
 
         RuleFor(x => x.Request.AllowedTenantIds)
             .Must(values => values is { Count: > 0 } && values.All(id => id != Guid.Empty))

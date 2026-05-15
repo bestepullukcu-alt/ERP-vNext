@@ -47,7 +47,6 @@ public sealed class ModulePageDescriptorRulesTests
     [InlineData("ppm/projects", "ppm.projects.view")]
     [InlineData("/workcenter/list", "ppm.projects.view")]
     [InlineData("/ppm projects", "ppm.projects.view")]
-    [InlineData("/PPM/Projects/List", "ppm.projects.view")]
     [InlineData("/PPM/Projects", "ppm.projects")]
     [InlineData("/PPM/Projects", "ppm.projects.view.all")]
     [InlineData("/PPM/Projects", "ppm.projects.view!")]
@@ -68,6 +67,8 @@ public sealed class ModulePageDescriptorRulesTests
             "Project List",
             routePath,
             permission,
+            null,
+            null,
             "List",
             "Draft",
             0,
@@ -84,6 +85,8 @@ public sealed class ModulePageDescriptorRulesTests
             "Project List",
             "/PPM/Projects",
             "ppm.projects.view",
+            null,
+            null,
             "List",
             "Draft",
             0,

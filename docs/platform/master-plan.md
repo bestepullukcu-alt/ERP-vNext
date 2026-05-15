@@ -70,8 +70,8 @@ Bir modül bittiğinde:
 | Frontend | ASP.NET Core MVC + Razor SSR |
 | UI | Bootstrap 5 + jQuery + DataTables v2 + Notyf + SweetAlert2 + Select2 |
 | Lokalizasyon | IHtmlLocalizer + .resx (**Platform: 2 dil — en, tr**) |
-| Event Bus (hedef) | TBD — RabbitMQ veya MassTransit (henüz yok) |
-| Job Scheduler (hedef) | TBD — Hangfire / Quartz (henüz yok) |
+| Event Bus (hedef) | MassTransit + RabbitMQ; core foundation implemented, live external/local RabbitMQ validation pending |
+| Job Scheduler (hedef) | Hangfire + MongoDB storage; MOD-0026 scheduler foundation PASS / 90%, business job logic remains with owning modules |
 
 ### 1.2 Mikroservis Sınırları
 - **Diten.Platform** — Platform/Admin domain (tenant, plan, feature, catalog, entitlement)
@@ -178,8 +178,8 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 | **MOD-0009** | Tenant Registry Lifecycle Events | W1-A | 🔴 Blocker | 🟡 | 60 |
 | **MOD-0008** | Module Catalog Assignable Expose | W1-B | 🔴 Blocker | 🟡 | 80 |
 | **MOD-0018** | RBAC / Entitlement Enforcement | W1-B | 🔴 Blocker | 🔴 | 10 |
-| **MOD-0026** | Background Job Scheduler | W1-C | 🔴 Blocker | 🔴 | 0 |
-| **MOD-0035** | Event Bus / Internal Events | W1-C | 🔴 Blocker | 🔴 | 0 |
+| **MOD-0026** | Background Job Scheduler | W1-C | 🔴 Blocker | ✅ | 90 |
+| **MOD-0035** | Event Bus / Internal Events | W1-C | 🔴 Blocker | 🟡 | 70 |
 | **MOD-0027** | Notification / Email Service | W1-D | 🔴 Blocker | 🔴 | 0 |
 | **MOD-0263** | External Messaging Provider | W1-D | 🔴 Blocker | 🔴 | 0 |
 | **MOD-0028** | Document / Evidence Metadata | W2-A | 🟠 High | 🔴 | 0 |
@@ -624,12 +624,12 @@ IEntitlementChecker
 ### MOD-0026 — Background Job Scheduler
 **Wave:** W1-C
 **Priority:** 🔴 Blocker
-**Status:** 🔴 Missing (0%)
+**Status:** ✅ PASS (90%)
 
 **Purpose:**
 Trial expiry, subscription renewal, quota reset, email dispatch, provisioning retry gibi periyodik/asenkron işlemler için generic background job altyapısı.
 
-**Recommendation:** Hangfire (dashboard'lı, MongoDB destekli) veya Quartz.NET.
+**Recommendation:** Hangfire + MongoDB storage. Scheduler foundation tamamlandı; kalan isler descriptor sahibi business modüllerinin gerçek job logic'idir.
 
 **What it should do:**
 - Job registration (fire-and-forget, scheduled, recurring)
@@ -651,13 +651,29 @@ Trial expiry, subscription renewal, quota reset, email dispatch, provisioning re
 | ProvisioningRetryJob | Every 2min | MOD-0009 |
 
 **Acceptance criteria:**
-- [ ] IBackgroundJobClient inject edilebilir
-- [ ] Hangfire dashboard `[Authorize(Policy="PlatformActor")]`
-- [ ] 8 standart job kayıtlı + test edilmiş
-- [ ] Job failure → Audit log + Alert (MOD-0042)
-- [ ] Multi-instance distributed lock
+- [x] Central background job abstraction inject edilebilir
+- [x] Hangfire dashboard PlatformActor authorization ile korunuyor
+- [x] Anonymous ve non-PlatformActor erişim reddediliyor; PlatformActor erişimi kabul ediliyor
+- [x] Mongo-backed Hangfire enqueue çalışıyor
+- [x] `SchedulerSmokeTestJob` success ve controlled failure path'leri `JobExecutionLog` kanıtı üretiyor
+- [x] Failure redaction ve retry metadata doğrulandı
+- [x] 8 standart recurring job descriptor kayıtlı/declared; owning module business logic'i gelene kadar config ile bilinçli disabled
+- [x] BuildingBlocks background job abstraction'ları duplicate package structure oluşturmadan eklendi
+- [x] Custom MVC UI veya public arbitrary trigger endpoint eklenmedi
+- [x] Event Bus boundary korundu
+- [ ] Business module job logic implementations: MOD-0297, MOD-0299, MOD-0033, MOD-0018, MOD-0034, MOD-0021, MOD-0027, MOD-0009
+- [ ] Alert/Audit integration for repeated operational failure belongs to MOD-0021/MOD-0042 follow-up
 
 **Dependencies:** NEW-001 (secrets), MOD-0035 (events for job triggers)
+
+**Completion evidence (2026-05-15):**
+- Live Platform API runtime smoke passed.
+- Hangfire Dashboard authorization passed for PlatformActor and rejected anonymous/non-PlatformActor access.
+- Mongo-backed Hangfire enqueue worked.
+- `SchedulerSmokeTestJob` success/failure paths produced `JobExecutionLog` evidence.
+- Failure redaction and retry metadata verified.
+- 8 standard recurring descriptors are present and intentionally disabled by config until owning modules provide business logic.
+- Foundation scope is complete; remaining work belongs to owning business modules.
 
 ---
 
@@ -669,7 +685,14 @@ Trial expiry, subscription renewal, quota reset, email dispatch, provisioning re
 **Purpose:**
 Tenant lifecycle, subscription change, entitlement change gibi domain event'lerinin servisler arası transport'u.
 
-**Recommendation:** MassTransit + RabbitMQ (production), in-memory bus (dev).
+**Recommendation:** MassTransit + RabbitMQ (production), in-memory bus (dev), external/local RabbitMQ for live validation through configuration/environment variables.
+
+**Current implementation note (2026-05-14):**
+- Core eventing foundation implemented.
+- Custom MongoDB outbox/inbox, event envelope, event name/version validation, contract validation, in-memory transport, MassTransit RabbitMQ publisher, and outbox worker foundation are in place.
+- Docker/Testcontainers is not a project validation path.
+- External RabbitMQ live validation is pending.
+- Do not implement broker-backed tenant lifecycle emission for MOD-0009 until live external/local RabbitMQ validation passes.
 
 **What it should do:**
 - Publish/subscribe pattern
@@ -690,12 +713,14 @@ IEventHandler<T>
 **Event catalog (initial):** Bkz MOD-0009 + ileride MOD-0038 (taxonomy).
 
 **Acceptance criteria:**
-- [ ] Outbox pattern (MongoDB collection: `outbox_events`)
-- [ ] Outbox publisher worker
-- [ ] At-least-once delivery
-- [ ] Idempotency check on consumer side
-- [ ] Dev mode in-memory bus
-- [ ] Production RabbitMQ/Azure Service Bus adapter
+- [x] Outbox pattern (MongoDB collection: `outbox_events`)
+- [x] Outbox publisher worker foundation
+- [x] At-least-once delivery model documented/implemented at foundation level
+- [x] Idempotency check on consumer side
+- [x] Dev mode in-memory bus
+- [x] Production RabbitMQ adapter implemented through MassTransit
+- [ ] Live external/local RabbitMQ publish-consume proof
+- [ ] MOD-0009 tenant lifecycle emission integration
 
 **Anti-patterns to avoid:**
 - ❌ Direct method call inter-service yerine event
@@ -1941,8 +1966,8 @@ Bu tabloyu modül bittiğinde güncelle. Bölüm 2'deki özet tablo bunun kısal
 | MOD-0008 | Module Catalog Assignable | 🟡 | 80 | Catalog | — | — |
 | MOD-0018 | RBAC Enforcement | 🔴 | 10 | Auth | — | — |
 | MOD-0298 | Tenant Module Entitlement Refine | 🟡 | 87 | Entitlement | — | — |
-| MOD-0026 | Background Job Scheduler | 🔴 | 0 | Platform | — | — |
-| MOD-0035 | Event Bus | 🔴 | 0 | Platform | — | — |
+| MOD-0026 | Background Job Scheduler | ✅ | 90 | Platform | 2026-05-15 | Foundation PASS: live Platform API smoke, PlatformActor-protected Hangfire dashboard, Mongo-backed enqueue, smoke job success/failure JobExecutionLog evidence, redaction/retry metadata verified. Business job logic remains with owning modules. |
+| MOD-0035 | Event Bus | 🟡 | 70 | Platform | — | Core foundation implemented; external RabbitMQ live validation pending. Do not start broker-backed MOD-0009 emission until live validation passes. |
 | MOD-0027 | Notification Service | 🔴 | 0 | Notification | — | — |
 | MOD-0263 | Messaging Provider | 🔴 | 0 | Notification | — | — |
 

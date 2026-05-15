@@ -1,7 +1,11 @@
 using System.Text;
+using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Domain.Repositories;
+using Diten.Platform.Infrastructure.Eventing;
+using Diten.Platform.Infrastructure.BackgroundJobs;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Configurations;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
@@ -15,11 +19,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using MassTransit;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using Microsoft.Extensions.Options;
+using Hangfire;
+using Hangfire.Mongo;
+using Hangfire.Mongo.Migration.Strategies;
+using Hangfire.Mongo.Migration.Strategies.Backup;
 
 namespace Diten.Platform.Infrastructure;
 
@@ -75,6 +84,9 @@ public static class DependencyInjection
         services.Configure<TenantManagementOptions>(configuration.GetSection(TenantManagementOptions.SectionName));
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         services.Configure<AuthServiceOptions>(configuration.GetSection(AuthServiceOptions.SectionName));
+        services.Configure<EventBusOptions>(configuration.GetSection(EventBusOptions.SectionName));
+        services.Configure<RabbitMqEventingOptions>(configuration.GetSection(RabbitMqEventingOptions.SectionName));
+        services.Configure<BackgroundJobSchedulerOptions>(configuration.GetSection(BackgroundJobSchedulerOptions.SectionName));
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
@@ -96,7 +108,8 @@ public static class DependencyInjection
         var mongoSettings = new MongoDbSettings
         {
             ConnectionString = connectionString,
-            DatabaseName = databaseName
+            DatabaseName = databaseName,
+            AllowStartupWithoutDatabase = configuration.GetValue<bool>("MongoDbSettings:AllowStartupWithoutDatabase")
         };
 
         services.AddSingleton(mongoSettings);
@@ -125,14 +138,119 @@ public static class DependencyInjection
         services.AddScoped<IFeatureDefinitionRepository, FeatureDefinitionRepository>();
         services.AddScoped<IFeatureCategoryRepository, FeatureCategoryRepository>();
         services.AddScoped<IPlanFeatureMappingRepository, PlanFeatureMappingRepository>();
+        services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
+        services.AddScoped<IOutboxObservabilityReader>(sp => (IOutboxObservabilityReader)sp.GetRequiredService<IOutboxEventRepository>());
+        services.AddScoped<IConsumedEventRepository, ConsumedEventRepository>();
+        services.AddScoped<IJobExecutionLogRepository, JobExecutionLogRepository>();
+        services.AddScoped<OutboxPublisherProcessor>();
+        services.AddScoped<HangfireBackgroundJobExecutor>();
 
-        LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
-        SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        ConfigureHangfire(services, configuration, mongoSettings);
+
+        var eventingOptions = configuration.GetSection(RabbitMqEventingOptions.SectionName).Get<RabbitMqEventingOptions>()
+                              ?? new RabbitMqEventingOptions();
+        if (eventingOptions.UseRabbitMq)
+        {
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<TenantActivatedV1Consumer>();
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host(eventingOptions.Host, eventingOptions.Port, eventingOptions.VirtualHost, h =>
+                    {
+                        h.Username(eventingOptions.Username);
+                        h.Password(eventingOptions.Password);
+                        if (eventingOptions.UseTls)
+                        {
+                            h.UseSsl(s => s.Protocol = System.Security.Authentication.SslProtocols.Tls12);
+                        }
+                    });
+
+                    cfg.UseMessageRetry(r => r.Exponential(
+                        eventingOptions.RetryCount,
+                        TimeSpan.FromSeconds(eventingOptions.InitialRetryDelaySeconds),
+                        TimeSpan.FromSeconds(eventingOptions.MaxRetryDelaySeconds),
+                        TimeSpan.FromSeconds(eventingOptions.InitialRetryDelaySeconds)));
+                    cfg.ConfigureEndpoints(context);
+                });
+            });
+            services.AddScoped<IEventTransportPublisher, MassTransitRabbitMqEventPublisher>();
+        }
+        else
+        {
+            services.AddSingleton<InMemoryEventBus>();
+            services.AddSingleton<IEventTransportPublisher>(sp => sp.GetRequiredService<InMemoryEventBus>());
+        }
+
+        services.AddHostedService<OutboxPublisherWorker>();
+
+        RunMongoStartupInitialization(database, mongoSettings);
 
         return services;
+    }
+
+    private static void RunMongoStartupInitialization(IMongoDatabase database, MongoDbSettings mongoSettings)
+    {
+        try
+        {
+            LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
+            SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        }
+        catch (Exception ex) when (mongoSettings.AllowStartupWithoutDatabase)
+        {
+            Console.Error.WriteLine(
+                $"Platform MongoDB startup initialization failed ({ex.GetType().Name}). Startup continues because MongoDbSettings:AllowStartupWithoutDatabase=true; readiness will report MongoDB status.");
+        }
+    }
+
+    private static void ConfigureHangfire(IServiceCollection services, IConfiguration configuration, MongoDbSettings mongoSettings)
+    {
+        var schedulerOptions = configuration.GetSection(BackgroundJobSchedulerOptions.SectionName)
+            .Get<BackgroundJobSchedulerOptions>() ?? new BackgroundJobSchedulerOptions();
+
+        if (!schedulerOptions.Enabled && !schedulerOptions.DashboardEnabled)
+        {
+            return;
+        }
+
+        var storageDatabaseName = string.IsNullOrWhiteSpace(schedulerOptions.StorageDatabaseName)
+            ? mongoSettings.DatabaseName
+            : schedulerOptions.StorageDatabaseName;
+
+        services.AddHangfire(config =>
+        {
+            config
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseMongoStorage(
+                    mongoSettings.ConnectionString,
+                    storageDatabaseName,
+                    new MongoStorageOptions
+                    {
+                        CheckConnection = true,
+                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
+                        MigrationOptions = new MongoMigrationOptions
+                        {
+                            MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                            BackupStrategy = new CollectionMongoBackupStrategy()
+                        }
+                    });
+        });
+        services.AddSingleton<IBackgroundJobScheduler, HangfireBackgroundJobScheduler>();
+
+        if (schedulerOptions.Enabled)
+        {
+            services.AddHangfireServer(options =>
+            {
+                options.ServerName = $"{Environment.MachineName}.Diten.Platform";
+                options.Queues = new[] { "platform", "default" };
+            });
+            services.AddHostedService<HangfireRecurringJobRegistrationHostedService>();
+        }
     }
 
     private static IReadOnlyList<RequiredSecretDefinition> BuildSecretRequirements(IConfiguration configuration)
