@@ -317,7 +317,7 @@ const TenantSecurity = (function () {
 
     const loadLookups = async () => {
         try {
-            const data = await fetchJson(`${apiUrl}/api/lookups/countries`);
+            const data = await fetchJson('/Platform/Tenants/api/lookups/countries');
             if (!data) return;
             countryList = Array.isArray(data) ? data : [];
             const select = $(form?.elements.allowedCountries);

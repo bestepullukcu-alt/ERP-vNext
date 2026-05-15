@@ -257,6 +257,7 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 - Somut endpoint, UI davranisi, localization ve quality gate adimlari yazilir
 - DataTable modulunde `verify_datatable_page.py` ve `quality-gate-datatable` atiflari zorunludur
 - Layout zorunlulugu test edilebilir madde olarak yer alir (ornek: "Tum `Views/Platform/Administrators/*.cshtml` dosyalarinda `Layout = \"_LayoutPlatformAdmin\"` ACIKCA yazili")
+- Platform/Admin modul lookup kullaniyorsa AC icinde endpoint/proxy path, `LookupOptionDto` response shape, unauthorized davranis ve hardcoded fallback olmamasi test edilebilir yazilir. Yeni Platform lookup key gerekiyorsa bu key PSS lookup scope'u olarak acik onaylanir.
 
 ---
 
@@ -340,6 +341,7 @@ Karar: Gateway degisikligi {gerekli | gereksiz}.
 - [ ] Failure Path to Verify en az 4 senaryo (duplicate, missing, unauthorized, concurrency)
 - [ ] Authorization Convention permission listesi + policy + actor type
 - [ ] Gateway routing karari acik (gerekli/gereksiz + integration-agent task'i)
+- [ ] Platform/Admin modulde Lookup & Reference Data Decision yazili (mevcut `/api/lookups/{key}` kullanimi, yeni Platform lookup key ihtiyaci veya MDM/reference boundary gerekcesi)
 - [ ] Acceptance criteria test edilebilir maddeler
 - [ ] Test expectations build/verifier/RESX/smoke kapsiyor
 ```
@@ -357,6 +359,21 @@ Karar: Gateway degisikligi {gerekli | gereksiz}.
 - Dokunulmayacak alanlari acik yazmali
 - En az `.antigravity/**` ve domain-disi servis yollarini icermeli
 - `gateway/Diten.ApiGateway/**/ocelot.json` integration-agent owned (gerekirse pack'ten cikarilan ayri task)
+- Platform/Admin lookup kararlarinda ERP Account, General Reference, Financial Reference, Territory Reference ve tenant-side ERP reference module path'leri protected/out-of-scope olarak acik yazilir.
+
+---
+
+## 13.1 Platform Lookup & Reference Data Decision
+
+Platform/Admin module pack'leri, select/dropdown/filter/default degeri iceren her yerde lookup kararini yazmalidir:
+
+- Mevcut Platform system lookup ise endpoint listelenir: `/api/lookups/{key}`.
+- Yeni Platform-owned lookup key gerekiyorsa Repo Scope, Acceptance Criteria ve Test Expectations icinde explicit yazilir.
+- Ihtiyac MDM/reference kapsamina giriyorsa PSS lookup'a eklenmez; MDM module pack'e yonlendirilir.
+- Frontend consumer varsa same-origin proxy/Gateway path'i yazilir; browser JS servis portu `5057` kullanmaz.
+- Hardcoded fallback lookup listesi kabul edilmez.
+
+Referans kural: [platform-lookups-reference-data.md](platform-lookups-reference-data.md).
 
 ---
 
@@ -378,6 +395,7 @@ Frontmatter `entity_base` alani dolduruldugunda:
 Minimum beklenti:
 - Tenant isolation kontrolu (tenant-owned modullerde) veya Platform-scope erisim kontrolu (`GlobalEntity` modullerinde)
 - Soft delete davranisi
+- Platform/Admin lookup kullanan modulde lookup endpoint smoke, `LookupOptionDto` shape validation, unauthorized kontrolu ve hardcoded fallback yoklugu
 - Browser smoke test sonucu
 - Build PASS (en az ilgili servis + frontend + gateway)
 - DataTable modulunde verifier PASS

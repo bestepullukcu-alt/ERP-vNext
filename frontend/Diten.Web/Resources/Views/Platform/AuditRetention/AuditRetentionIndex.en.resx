@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AuditRetention.Title" xml:space="preserve"><value>Audit Retention</value></data>
+  <data name="AuditRetention.Subtitle" xml:space="preserve"><value>Manage platform audit retention floors, defaults, ceilings, and hot storage windows.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage platform audit retention floors, defaults, ceilings, and hot storage windows.</value></data>
+  <data name="AuditRetention.Category" xml:space="preserve"><value>Category</value></data>
+  <data name="AuditRetention.SelectCategory" xml:space="preserve"><value>Select Category</value></data>
+  <data name="AuditRetention.PlanTier" xml:space="preserve"><value>Plan Tier</value></data>
+  <data name="AuditRetention.PlanTierPlaceholder" xml:space="preserve"><value>Default</value></data>
+  <data name="AuditRetention.DefaultPlanTierValue" xml:space="preserve"><value>Default</value></data>
+  <data name="AuditRetention.DefaultRetentionDays" xml:space="preserve"><value>Default Retention Days</value></data>
+  <data name="AuditRetention.DefaultRetention" xml:space="preserve"><value>Default Retention</value></data>
+  <data name="AuditRetention.MinimumRetentionDays" xml:space="preserve"><value>Minimum Retention Days</value></data>
+  <data name="AuditRetention.MaximumRetentionDays" xml:space="preserve"><value>Maximum Retention Days</value></data>
+  <data name="AuditRetention.MaxRetention" xml:space="preserve"><value>Max Retention</value></data>
+  <data name="AuditRetention.HotStorageDays" xml:space="preserve"><value>Hot Storage Days</value></data>
+  <data name="AuditRetention.HotStorage" xml:space="preserve"><value>Hot Storage</value></data>
+  <data name="AuditRetention.AllowTenantOverride" xml:space="preserve"><value>Allow Tenant Override</value></data>
+  <data name="AuditRetention.TenantOverride" xml:space="preserve"><value>Tenant Override</value></data>
+  <data name="AuditRetention.FloorError" xml:space="preserve"><value>Default retention cannot be below the floor.</value></data>
+  <data name="AuditRetention.CeilingError" xml:space="preserve"><value>Retention values must stay within the ceiling.</value></data>
+  <data name="AuditRetention.ZeroError" xml:space="preserve"><value>Retention days must be greater than zero.</value></data>
+  <data name="AuditRetention.HotStorageError" xml:space="preserve"><value>Hot storage days cannot exceed default retention days.</value></data>
+  <data name="AuditRetention.Required" xml:space="preserve"><value>This field is required.</value></data>
+  <data name="AuditRetention.SaveSuccess" xml:space="preserve"><value>Audit retention policy saved.</value></data>
+  <data name="AuditRetention.SaveError" xml:space="preserve"><value>Audit retention policy could not be saved.</value></data>
+  <data name="AuditRetention.LoadError" xml:space="preserve"><value>Audit retention policies could not be loaded.</value></data>
+  <data name="AuditRetention.LoadRequired" xml:space="preserve"><value>Load an existing retention policy before saving.</value></data>
+  <data name="AuditRetention.ExistingPolicyRequired" xml:space="preserve"><value>Select an existing category and plan tier policy before saving.</value></data>
+  <data name="AuditRetention.LoadedPolicyMismatch" xml:space="preserve"><value>The current category and plan tier no longer match the loaded policy. Reload or select an existing policy before saving.</value></data>
+  <data name="AuditRetention.NoPolicies" xml:space="preserve"><value>No active audit retention policies were found.</value></data>
+  <data name="AuditRetention.LoadedPolicy" xml:space="preserve"><value>Loaded retention policy</value></data>
+  <data name="AuditRetention.PolicyId" xml:space="preserve"><value>Policy ID</value></data>
+  <data name="AuditRetention.PolicyStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="AuditRetention.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="AuditRetention.Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="AuditRetention.Save" xml:space="preserve"><value>Save</value></data>
+  <data name="AuditRetention.Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="AuditRetention.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="AuditRetention.Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="AuditRetention.EditPolicy" xml:space="preserve"><value>Edit Retention Policy</value></data>
+  <data name="AuditRetention.EditPolicyDescription" xml:space="preserve"><value>Update storage windows for the selected existing policy.</value></data>
+  <data name="AuditRetention.Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AuditRetention.Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="AuditRetention.Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="AuditRetention.No" xml:space="preserve"><value>No</value></data>
+  <data name="AuditRetention.DaysShort" xml:space="preserve"><value>days</value></data>
+  <data name="AuditRetention.Unauthorized" xml:space="preserve"><value>You do not have permission to update audit retention.</value></data>
+  <data name="AuditRetention.LoginRequired" xml:space="preserve"><value>Your platform admin session expired. Sign in again to continue.</value></data>
+  <data name="AuditRetention.Forbidden" xml:space="preserve"><value>Your account does not have the required audit retention permission.</value></data>
+  <data name="AuditRetention.Category.Security" xml:space="preserve"><value>Security</value></data>
+  <data name="AuditRetention.Category.IdentityAccess" xml:space="preserve"><value>Identity Access</value></data>
+  <data name="AuditRetention.Category.TenantAdministration" xml:space="preserve"><value>Tenant Administration</value></data>
+  <data name="AuditRetention.Category.PlatformConfiguration" xml:space="preserve"><value>Platform Configuration</value></data>
+  <data name="AuditRetention.Category.ReferenceData" xml:space="preserve"><value>Reference Data</value></data>
+  <data name="AuditRetention.Category.ModuleCatalog" xml:space="preserve"><value>Module Catalog</value></data>
+  <data name="AuditRetention.Category.SubscriptionBilling" xml:space="preserve"><value>Subscription Billing</value></data>
+  <data name="AuditRetention.Category.Quota" xml:space="preserve"><value>Quota</value></data>
+  <data name="AuditRetention.Category.DataExport" xml:space="preserve"><value>Data Export</value></data>
+  <data name="AuditRetention.Category.DataPrivacy" xml:space="preserve"><value>Data Privacy</value></data>
+  <data name="AuditRetention.Category.Integration" xml:space="preserve"><value>Integration</value></data>
+  <data name="AuditRetention.Category.System" xml:space="preserve"><value>System</value></data>
+  <data name="Common.ErrorOccurred" xml:space="preserve"><value>An error occurred.</value></data>
+  <data name="Common.Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Common.Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Column Visibility</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Show All</value></data>
+  <data name="Search" xml:space="preserve"><value>Search...</value></data>
+</root>

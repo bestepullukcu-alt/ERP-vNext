@@ -1,0 +1,33 @@
+@using Diten.Web.Views.Platform.AuditLog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AuditLogIndex> Localizer
+
+<template id="audit-redaction-template">
+    <div class="text-start audit-redaction-content">
+        <p class="mb-3 text-body small">@Localizer["AuditLog.RedactActor.Description"]</p>
+        <div class="mb-3">
+            <label class="form-label mb-1" for="audit-redact-actor-id">@Localizer["AuditLog.RedactActor.ActorId"]</label>
+            <div class="input-group">
+                <input id="audit-redact-actor-id" type="text" class="form-control" autocomplete="off" placeholder="@Localizer["AuditLog.RedactActor.ActorIdPlaceholder"]" />
+                <button id="audit-redact-find-actor" type="button" class="btn btn-label-secondary border border-light-subtle">@Localizer["AuditLog.RedactActor.Find"]</button>
+            </div>
+            <div id="audit-redact-actor-feedback" class="invalid-feedback d-block"></div>
+        </div>
+        <div id="audit-redact-preview" class="d-none d-flex align-items-center gap-3 rounded border p-2 mb-3">
+            <div class="avatar avatar-sm flex-shrink-0">
+                <span class="avatar-initial rounded-circle bg-label-primary text-primary"><i class="icon-base bx bx-user icon-sm"></i></span>
+            </div>
+            <div class="min-w-0 flex-grow-1">
+                <div id="audit-redact-preview-name" class="fw-medium text-heading text-truncate small"></div>
+                <div id="audit-redact-preview-email" class="text-muted text-truncate small"></div>
+            </div>
+            <div class="text-end ms-2">
+                <span id="audit-redact-preview-count" class="badge bg-label-secondary small text-wrap text-end lh-sm"></span>
+            </div>
+        </div>
+        <div class="alert alert-warning d-flex gap-2 p-2 mb-0" role="alert">
+            <i class="icon-base bx bx-info-circle icon-sm mt-1 flex-shrink-0"></i>
+            <div class="small lh-sm">@Localizer["AuditLog.RedactActor.Warning"]</div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,178 @@
+@using Diten.Web.Views.Platform.AuditLog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AuditLogIndex> Localizer
+
+<div class="modal fade" id="auditDetailModal" tabindex="-1" aria-labelledby="auditDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content audit-detail-modal">
+
+            <div class="modal-header align-items-start px-4">
+                <div class="d-flex align-items-start gap-3 flex-grow-1 min-w-0">
+                    <div class="avatar avatar-md flex-shrink-0">
+                        <span class="avatar-initial rounded bg-label-primary" id="audit-detail-outcome-avatar">
+                            <i class="icon-base bx bx-detail fs-4" id="audit-detail-outcome-icon"></i>
+                        </span>
+                    </div>
+                    <div class="min-w-0 flex-grow-1">
+                        <h5 class="modal-title mb-1 text-truncate" id="auditDetailModalLabel">@Localizer["AuditLog.Detail.Title"]</h5>
+                        <div class="d-flex flex-wrap align-items-center gap-3 small text-muted" id="audit-detail-meta">
+                            <span class="d-inline-flex align-items-center gap-1">
+                                <i class="bx bx-time-five" style="font-size: 0.95em;"></i>
+                                <time id="audit-detail-occurred">--</time>
+                            </span>
+                            <span class="d-inline-flex align-items-center gap-1" id="audit-detail-actor-meta">
+                                <i class="bx bx-user" style="font-size: 0.95em;"></i>
+                                <span id="audit-detail-actor-text">--</span>
+                            </span>
+                            <span id="audit-detail-outcome-badge"></span>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["AuditLog.Close"]"></button>
+            </div>
+
+            <div class="modal-body p-0">
+                <div id="audit-detail-loading" class="text-center py-5">
+                    <div class="spinner-border text-primary mb-2" role="status">
+                        <span class="visually-hidden">@Localizer["AuditLog.Loading"]</span>
+                    </div>
+                    <p class="text-muted mb-0">@Localizer["AuditLog.Loading"]</p>
+                </div>
+
+                <div id="audit-detail-content" class="d-none">
+                    <div class="px-4 pt-3 pb-4 d-flex flex-wrap align-items-center gap-2" id="audit-detail-actions">
+                        <button type="button" class="btn btn-sm btn-label-secondary d-inline-flex align-items-center gap-1" id="audit-action-copy-cid">
+                            <i class="icon-base bx bx-copy"></i>
+                            <span>@Localizer["AuditLog.Detail.CopyCorrelationId"]</span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-label-secondary d-inline-flex align-items-center gap-1" id="audit-action-related">
+                            <i class="icon-base bx bx-link-alt"></i>
+                            <span>@Localizer["AuditLog.Detail.RelatedEvents"]</span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-label-warning d-inline-flex align-items-center gap-1 ms-auto" id="audit-action-redact-from-detail">
+                            <i class="icon-base bx bx-shield-quarter"></i>
+                            <span>@Localizer["AuditLog.Detail.RedactFromDetail"]</span>
+                        </button>
+                    </div>
+
+                    <div class="px-4 pb-3">
+                        <div class="border rounded overflow-hidden audit-detail-tabs-wrapper">
+                            <div class="border-bottom p-3">
+                                <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                                        <button class="nav-link active small border shadow-none wc-tab-compact" id="audit-tab-overview-btn" data-bs-toggle="tab" data-bs-target="#audit-tab-overview" type="button" role="tab" aria-selected="true">
+                                            <span class="d-none d-sm-inline-flex align-items-center">
+                                                <i class="bx bx-detail me-1 wc-tab-icon"></i>@Localizer["AuditLog.Detail.Tabs.Overview"]
+                                            </span>
+                                            <i class="bx bx-detail d-sm-none wc-tab-icon"></i>
+                                        </button>
+                                    </li>
+                                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                                        <button class="nav-link small border shadow-none wc-tab-compact" id="audit-tab-changes-btn" data-bs-toggle="tab" data-bs-target="#audit-tab-changes" type="button" role="tab" aria-selected="false">
+                                            <span class="d-none d-sm-inline-flex align-items-center">
+                                                <i class="bx bx-transfer me-1 wc-tab-icon"></i>@Localizer["AuditLog.Detail.Tabs.Changes"]
+                                                <span class="badge bg-label-primary ms-1 d-none" id="audit-changes-count"></span>
+                                            </span>
+                                            <i class="bx bx-transfer d-sm-none wc-tab-icon"></i>
+                                        </button>
+                                    </li>
+                                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                                        <button class="nav-link small border shadow-none wc-tab-compact" id="audit-tab-metadata-btn" data-bs-toggle="tab" data-bs-target="#audit-tab-metadata" type="button" role="tab" aria-selected="false">
+                                            <span class="d-none d-sm-inline-flex align-items-center">
+                                                <i class="bx bx-list-ul me-1 wc-tab-icon"></i>@Localizer["AuditLog.Detail.Tabs.Metadata"]
+                                            </span>
+                                            <i class="bx bx-list-ul d-sm-none wc-tab-icon"></i>
+                                        </button>
+                                    </li>
+                                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                                        <button class="nav-link small border shadow-none wc-tab-compact" id="audit-tab-forensics-btn" data-bs-toggle="tab" data-bs-target="#audit-tab-forensics" type="button" role="tab" aria-selected="false">
+                                            <span class="d-none d-sm-inline-flex align-items-center">
+                                                <i class="bx bx-search-alt me-1 wc-tab-icon"></i>@Localizer["AuditLog.Detail.Tabs.Forensics"]
+                                            </span>
+                                            <i class="bx bx-search-alt d-sm-none wc-tab-icon"></i>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="tab-content p-3 bg-transparent shadow-none">
+
+                        <div class="tab-pane fade show active" id="audit-tab-overview" role="tabpanel">
+                            <div class="row g-2" id="audit-detail-summary"></div>
+                        </div>
+
+                        <div class="tab-pane fade" id="audit-tab-changes" role="tabpanel">
+                            <div class="list-group list-group-flush border rounded overflow-hidden mb-4" id="audit-diff-list"></div>
+                            <div class="row g-4">
+                                <div class="col-12 col-lg-6">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <small class="text-muted fw-bold text-uppercase">@Localizer["AuditLog.Detail.BeforeState"]</small>
+                                        <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-copy-json" data-source="before" aria-label="@Localizer["AuditLog.Detail.Copy"]">
+                                            <i class="icon-base bx bx-copy"></i>
+                                        </button>
+                                    </div>
+                                    <pre class="small mb-0 audit-json-pane audit-log-json-pane font-monospace bg-lighter rounded p-3" id="audit-before-json"></pre>
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <small class="text-muted fw-bold text-uppercase">@Localizer["AuditLog.Detail.AfterState"]</small>
+                                        <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-copy-json" data-source="after" aria-label="@Localizer["AuditLog.Detail.Copy"]">
+                                            <i class="icon-base bx bx-copy"></i>
+                                        </button>
+                                    </div>
+                                    <pre class="small mb-0 audit-json-pane audit-log-json-pane font-monospace bg-lighter rounded p-3" id="audit-after-json"></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="audit-tab-metadata" role="tabpanel">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <small class="text-muted fw-bold text-uppercase">@Localizer["AuditLog.Detail.BusinessMetadata"]</small>
+                                <button type="button" class="btn btn-sm btn-label-secondary d-inline-flex align-items-center gap-1" id="audit-toggle-engineering">
+                                    <i class="icon-base bx bx-code-alt"></i>
+                                    <span id="audit-toggle-engineering-label">@Localizer["AuditLog.Detail.ShowEngineering"]</span>
+                                </button>
+                            </div>
+                            <div class="table-responsive border rounded mb-3">
+                                <table class="table table-sm table-hover mb-0" id="audit-metadata-table">
+                                    <tbody class="font-monospace small"></tbody>
+                                </table>
+                            </div>
+                            <div id="audit-engineering-block" class="d-none">
+                                <small class="text-muted fw-bold text-uppercase d-block mb-2">@Localizer["AuditLog.Detail.EngineeringMetadata"]</small>
+                                <pre class="small mb-0 audit-json-pane audit-log-metadata-json font-monospace bg-label-dark p-3 rounded" id="audit-metadata-json"></pre>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="audit-tab-forensics" role="tabpanel">
+                            <div class="row g-3" id="audit-detail-forensics"></div>
+                            <div class="mt-4 d-none" id="audit-redaction-trace">
+                                <div class="alert alert-warning mb-3">
+                                    <i class="icon-base bx bx-shield me-1"></i>
+                                    <strong>@Localizer["AuditLog.Detail.RedactionTraceTitle"]</strong>
+                                </div>
+                                <div class="row g-3" id="audit-redaction-trace-fields"></div>
+                            </div>
+                            <div class="mt-4">
+                                <button class="btn btn-sm btn-label-secondary d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="collapse" data-bs-target="#audit-raw-json-collapse" aria-expanded="false">
+                                    <i class="icon-base bx bx-code-curly"></i>
+                                    <span>@Localizer["AuditLog.Detail.RawJson"]</span>
+                                </button>
+                                <div class="collapse mt-2" id="audit-raw-json-collapse">
+                                    <pre class="small mb-0 audit-json-pane font-monospace bg-label-dark p-3 rounded" id="audit-raw-json"></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["AuditLog.Close"]</button>
+            </div>
+        </div>
+    </div>
+</div>

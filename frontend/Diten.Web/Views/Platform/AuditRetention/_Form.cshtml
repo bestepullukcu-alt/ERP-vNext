@@ -1,0 +1,83 @@
+@using Diten.Web.Views.Platform.AuditRetention
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AuditRetentionIndex> Localizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="auditRetentionEditor" aria-labelledby="auditRetentionEditorTitle">
+    <div class="offcanvas-header py-6 d-flex align-items-center justify-content-between">
+        <div>
+            <h5 id="auditRetentionEditorTitle" class="offcanvas-title mb-1">@Localizer["AuditRetention.EditPolicy"]</h5>
+            <p class="text-muted mb-0 small">@Localizer["AuditRetention.EditPolicyDescription"]</p>
+        </div>
+        <button type="button" class="btn-close text-reset m-0" data-bs-dismiss="offcanvas" aria-label="@Localizer["AuditRetention.Cancel"]"></button>
+    </div>
+    <form id="auditRetentionForm" class="offcanvas-body border-top" data-no-tracker novalidate>
+        <input id="retentionPolicyId" type="hidden" />
+        <input id="retentionCategory" type="hidden" />
+
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="alert alert-secondary mb-0" role="status" aria-live="polite">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bx bx-shield-quarter text-primary"></i>
+                        <span class="fw-medium" id="loadedPolicySummaryText">@Localizer["AuditRetention.LoadedPolicy"]</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label" for="retentionCategoryDisplay">@Localizer["AuditRetention.Category"]</label>
+                <input id="retentionCategoryDisplay" type="text" class="form-control" readonly />
+                <div class="invalid-feedback" data-validation-for="category"></div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label" for="retentionPlanTier">@Localizer["AuditRetention.PlanTier"]</label>
+                <input id="retentionPlanTier" type="text" class="form-control" readonly maxlength="80" />
+                <div class="invalid-feedback" data-validation-for="planTierCode"></div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label" for="retentionStatus">@Localizer["AuditRetention.PolicyStatus"]</label>
+                <input id="retentionStatus" type="text" class="form-control" readonly />
+            </div>
+
+            <div class="col-12">
+                <label class="form-label" for="minimumRetentionDays">@Localizer["AuditRetention.MinimumRetentionDays"] <span class="text-danger">*</span></label>
+                <input id="minimumRetentionDays" type="number" class="form-control" min="1" step="1" required />
+                <div class="invalid-feedback" data-validation-for="minimumRetentionDays"></div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label" for="defaultRetentionDays">@Localizer["AuditRetention.DefaultRetentionDays"] <span class="text-danger">*</span></label>
+                <input id="defaultRetentionDays" type="number" class="form-control" min="1" step="1" required />
+                <div class="invalid-feedback" data-validation-for="defaultRetentionDays"></div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label" for="maximumRetentionDays">@Localizer["AuditRetention.MaximumRetentionDays"] <span class="text-danger">*</span></label>
+                <input id="maximumRetentionDays" type="number" class="form-control" min="1" step="1" required />
+                <div class="invalid-feedback" data-validation-for="maximumRetentionDays"></div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label" for="hotStorageDays">@Localizer["AuditRetention.HotStorageDays"] <span class="text-danger">*</span></label>
+                <input id="hotStorageDays" type="number" class="form-control" min="1" step="1" required />
+                <div class="invalid-feedback" data-validation-for="hotStorageDays"></div>
+            </div>
+
+            <div class="col-12">
+                <div class="form-check form-switch">
+                    <input id="allowTenantOverride" type="checkbox" class="form-check-input" />
+                    <label class="form-check-label" for="allowTenantOverride">@Localizer["AuditRetention.AllowTenantOverride"]</label>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["AuditRetention.Cancel"]</button>
+        <button type="submit" form="auditRetentionForm" class="btn btn-primary" id="auditRetentionSave" disabled>
+            <span class="spinner-border spinner-border-sm me-2 d-none" id="auditRetentionSaving" aria-hidden="true"></span>
+            @Localizer["AuditRetention.Save"]
+        </button>
+    </div>
+</div>

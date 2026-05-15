@@ -55,5 +55,8 @@
   <data name="ResendInvitationHelp" xml:space="preserve"><value>Send a one-time setup link so the administrator can set a password.</value></data>
   <data name="EmailUnlockTooltip" xml:space="preserve"><value>Unlock email address field for editing</value></data>
   <data name="ResendInviteSuccess" xml:space="preserve"><value>Setup link has been sent successfully.</value></data>
+  <data name="SetupLinkTitle" xml:space="preserve"><value>Setup link</value></data>
+  <data name="SetupLinkIntro" xml:space="preserve"><value>Development setup link:</value></data>
+  <data name="SetupLinkEmailFailedIntro" xml:space="preserve"><value>Email could not be sent. Use this development setup link:</value></data>
   <data name="ProtectedAccount" xml:space="preserve"><value>Protected account: you cannot perform this action on your own record or the system seed administrator.</value></data>
 </root>

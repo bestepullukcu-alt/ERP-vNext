@@ -123,9 +123,11 @@ Bu kurallar, projedeki görsel tutarlılığı (consistency) korumak için ZORUN
 - Bu kontrol yalnızca dosya varlığı kontrolü değildir; render edilen UI yüzeyi ve Razor section/card yapısı birlikte doğrulanmalıdır.
 
 ### UI-025: Details Surface Styling
-- Full-page Details ekranlarında read-only section yüzeyi `card backbone-preview-section` class'larını birlikte kullanmalıdır.
+- Full-page Details/Preview ekranlarında read-only section yüzeyi `card backbone-preview-section` class'larını birlikte kullanmalıdır.
+- Full-page Details/Preview kartları Module Catalog liste kartlarıyla aynı Sneat `.card` shadow davranışını korur; `backbone-preview-section` ekstra `1px` border üretmemelidir.
 - Border/radius/background değerleri hardcoded yazılmaz; `var(--bs-card-border-radius)`, `var(--bs-card-bg)` ve mevcut Bootstrap/Sneat token'ları kullanılır.
-- Details section border'ı kaldırılacaksa yalnız sayfa wrapper'ı altında scoped CSS ile kaldırılır. Layout, shell veya global `.card` selector'ına border/radius override eklenmez.
+- Details/Preview section border'ı kaldırılacaksa yalnız standart page wrapper'ı altında shared CSS ile kaldırılır. Page-level `@section Styles`, layout, shell veya global `.card` selector'ına border/radius/box-shadow override eklenmez.
+- Full-page wrapper class'ı `{module-slug}-details` veya `{module-slug}-preview` formatında olmalı ve shared CSS standardına dahil edilmelidir; örnekler: `module-catalog-details`, `module-page-details`, `golden-reference-compact-details`.
 - Bordered layout/card varyantı gerekiyorsa CSS ile elle çoğaltılmaz; Sneat settings/layout seçeneği kullanılmalıdır.
 
 ### UI-026: KPI Kartı (KPI Cards) Tasarım Standartları

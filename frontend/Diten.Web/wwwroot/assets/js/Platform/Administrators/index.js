@@ -50,6 +50,12 @@ const AdministratorsList = (function () {
     const getAntiForgeryToken = () =>
         document.querySelector('#formAdministrators input[name="__RequestVerificationToken"]')?.value || '';
     const syncL10n = () => { L = window.L10n || {}; };
+    const handleUnauthorized = () => {
+        window.DtDefaults?.handleUnauthorized?.();
+        const authError = new Error('auth-refresh-in-progress');
+        authError.authHandled = true;
+        throw authError;
+    };
 
     const normalizeColOrder = (order) => {
         if (!Array.isArray(order) || order.length !== totalColumnCount) return null;
@@ -266,15 +272,15 @@ const AdministratorsList = (function () {
         if (!setupUrl) return;
 
         const intro = emailSent === false
-            ? 'Email could not be sent. Use this development setup link:'
-            : 'Development setup link:';
+            ? (L.SetupLinkEmailFailedIntro || '')
+            : (L.SetupLinkIntro || '');
 
         if (window.Swal) {
             window.Swal.fire({
                 icon: 'info',
-                title: 'Setup link',
+                title: L.SetupLinkTitle || '',
                 html: `<p class="mb-2">${escapeHtml(intro)}</p><input class="form-control" readonly value="${escapeHtml(setupUrl)}">`,
-                confirmButtonText: L.Ok || 'OK',
+                confirmButtonText: L.Close || '',
                 customClass: { confirmButton: 'btn btn-primary' },
                 buttonsStyling: false
             });
@@ -868,7 +874,10 @@ const AdministratorsList = (function () {
             colReorder: { columns: ':gt(1):not(:last-child)' },
             ajax: function (data, callback) {
                 fetch(`${endpoint}?${buildQuery(data)}`, { headers: getAuthHeaders() })
-                    .then((response) => response.ok ? response.json() : Promise.reject(response))
+                    .then((response) => {
+                        if (response.status === 401) handleUnauthorized();
+                        return response.ok ? response.json() : Promise.reject(response);
+                    })
                     .then((payload) => {
                         const result = payload.data || payload.Data || {};
                         callback({
@@ -877,7 +886,8 @@ const AdministratorsList = (function () {
                             recordsFiltered: result.totalCount || result.TotalCount || 0
                         });
                     })
-                    .catch(() => {
+                    .catch((error) => {
+                        if (error?.authHandled) return;
                         window.showToast?.(L.ErrorOccurred || '', 'error');
                         callback({ data: [], recordsTotal: 0, recordsFiltered: 0 });
                     });

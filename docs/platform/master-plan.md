@@ -165,19 +165,32 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 
 | ID | Modül | Wave | Öncelik | Status | % |
 |---|---|---|---|---|---|
-| **MOD-0043/44/46** | Tenant Management (mevcut) | — | — | 🟡 | 85 |
-| **PSS-006** | Subscription Plan Catalog | — | — | ✅ | 95 |
+| **MOD-0043/44/46** | Tenant Management (toplu kayıt — alt parçalara bölündü, aşağı bakınız) | — | — | 🟡 | 88 |
+| **MOD-0043** | Tenant Architecture Foundation | — | 🟠 High | 🟠 | 80 |
+| **MOD-0044** | Tenant Manager (Backend) | — | 🟠 High | 🟢 | 82 |
+| **MOD-0046** | Tenant Core UI | W3-A | 🟠 High | 🟢 | 80 |
+| **MOD-0046-QG** | Tenant Quota Governance UI | W3-A | 🟡 Medium | 🟡 | 55 |
+| **PSS-006** | Subscription Plan Catalog | — | — | ✅ | 96 |
 | **PSS-007** | Subscription Feature Mgmt | — | — | 🟡 | 90 |
-| **PSS-005** | Module Catalog | — | — | ✅ | 92 |
+| **PSS-005** | Module Catalog | — | — | ✅ | 93 |
 | **MOD-0298** | Tenant Module Entitlement | — | — | 🟡 | 87 |
-| **MOD-0297** | Tenant Subscription Lifecycle | — | — | 🟡 | 80 |
-| **PSS-004** | Tenant Login & Security | — | — | 🟡 | 75 |
-| **—** | Lookups / Reference Data | — | — | 🟡 | 70 |
-| **NEW-001** | Secrets Management | W1-* | 🔴 Blocker | 🔴 | 0 |
-| **NEW-002** | Platform Administrators Mgmt | W1-* | 🟠 High | 🟠 | 85 |
-| **MOD-0009** | Tenant Registry Lifecycle Events | W1-A | 🔴 Blocker | 🟡 | 60 |
+| **MOD-0297** | Tenant Subscription Lifecycle | — | — | 🟡 | 82 |
+| **PSS-004** | Tenant Login & Security | — | — | 🟡 | 86 |
+| **PSS-011** | Lookups / Reference Data | — | — | 🟢 | 93 |
+| **PSS-009** | Platform Admin Profile & Settings | — | 🟡 Medium | 🟠 | 89 |
+| **PSS-008** | Module Details Assignment Inspection | — | 🟡 Medium | 🟡 | 65 |
+| **PSS-010** | Platform Admin Password & MFA Security | — | 🟠 High | 🟡 | 60 |
+| **MOD-0012** | Secrets & Configuration Vault | W1-* | 🔴 Blocker | 🟢 | 85 |
+| **MOD-0014** | Module Boundary Registry | W1-B | 🟠 High | 🔴 | 0 |
+| **MOD-0023** | Workflow Designer (Approvals/SLAs) | W1 | 🟠 High | 🔴 | 0 |
+| **MOD-0024** | Task & Checklist Engine | W1-W2 | 🟠 High | 🔴 | 0 |
+| **MOD-0031** | Evidence Linking Service | W1 | 🟡 Medium | 🔴 | 0 |
+| **MOD-0037** | Integration Monitoring & Reconciliation | W2-W3 | 🟡 Medium | 🔴 | 0 |
+| **NEW-001** | Secrets Management (legacy ID; bkz. MOD-0012) | W1-* | 🔴 Blocker | ⚠️ | — |
+| **NEW-002** | Platform Administrators Mgmt | W1-* | 🟠 High | 🟢 | 95 |
+| **MOD-0009** | Tenant Registry Lifecycle Events | W1-A | 🔴 Blocker | 🟡 | 50 |
 | **MOD-0008** | Module Catalog Assignable Expose | W1-B | 🔴 Blocker | 🟡 | 80 |
-| **MOD-0018** | RBAC / Entitlement Enforcement | W1-B | 🔴 Blocker | 🔴 | 10 |
+| **MOD-0018** | RBAC / Entitlement Enforcement | W1-B | 🔴 Blocker | 🟡 | 20 |
 | **MOD-0026** | Background Job Scheduler | W1-C | 🔴 Blocker | 🔴 | 0 |
 | **MOD-0035** | Event Bus / Internal Events | W1-C | 🔴 Blocker | 🔴 | 0 |
 | **MOD-0027** | Notification / Email Service | W1-D | 🔴 Blocker | 🔴 | 0 |
@@ -185,21 +198,21 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 | **MOD-0028** | Document / Evidence Metadata | W2-A | 🟠 High | 🔴 | 0 |
 | **MOD-0266** | Blob / File Storage Provider | W2-A | 🟠 High | 🔴 | 0 |
 | **MOD-0262** | External Document Provider | W2-A | 🟠 High | 🔴 | 0 |
-| **MOD-0021** | General Audit Trail | W2-B | 🟠 High | 🔴 | 0 |
+| **MOD-0021** | General Audit Trail | W2-B | 🟠 High | 🟢 | 98 |
 | **MOD-0287** | User Notification Preferences | W2-C | 🟠 High | 🔴 | 0 |
 | **MOD-0034** | Webhook Delivery | W2-C | 🟠 High | 🔴 | 0 |
 | **NEW-003** | Notification Template Mgmt UI | W2-D | 🟠 High | 🔴 | 0 |
 | **NEW-004** | Tenant Impersonation Tooling | W2-D | 🟡 Medium | 🔴 | 0 |
-| **MOD-0032** | API Gateway Hardening | W3-A | 🟠 High | 🟡 | 40 |
-| **MOD-0033** | Consumer / Quota Model | W3-A | 🟠 High | 🔴 | 0 |
-| **MOD-0046+** | Tenant Core UI Extensions | W3-A | 🟠 High | 🟡 | 50 |
+| **MOD-0032** | API Gateway Hardening | W3-A | 🟠 High | 🟡 | 65 |
+| **MOD-0033** | Consumer / Quota Model | W3-A | 🟠 High | 🟡 | 78 |
+| **MOD-0046+** | Tenant Core UI Extensions | W3-A | 🟠 High | 🟡 | 60 |
 | **MOD-0299** | SaaS Billing & Invoicing | W3-B | 🟠 High | 🔴 | 0 |
-| **MOD-0041** | Logging / Monitoring | W3-C | 🟡 Medium | 🟡 | 30 |
+| **MOD-0041** | Logging / Monitoring | W3-C | 🟡 Medium | 🟠 | 20 |
 | **MOD-0042** | Alerting / Incident Runbooks | W3-C | 🟡 Medium | 🔴 | 0 |
 | **MOD-0265** | SIEM / Observability Provider | W3-C | 🟡 Medium | 🔴 | 0 |
 | **MOD-0038** | Event Taxonomy / Naming | W3-D | 🟡 Medium | 🔴 | 0 |
 | **MOD-0039** | Schema Compatibility Governance | W3-D | 🟡 Medium | 🔴 | 0 |
-| **MOD-0002** | Interface Registry | W3-E | 🟡 Medium | 🔴 | 0 |
+| **MOD-0002** | Interface Registry | W3-E | 🟡 Medium | 🟢 | 80 |
 | **MOD-0003** | Data Contract Registry | W3-E | 🟡 Medium | 🔴 | 0 |
 
 ---
@@ -208,7 +221,7 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 
 ### 3.1 Tenant Management
 **ID:** MOD-0043 / MOD-0044 / MOD-0046 (foundation/manager/UI)
-**Status:** 🟡 Partial (%85)
+**Status:** 🟡 Partial (%88)
 **Purpose:** Platform admin'in tüm tenant'ları yönetmesi — list, create, branding, security, lifecycle (provision/suspend/cancel).
 
 **What's done:**
@@ -229,6 +242,13 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 - 🔴 Logo storage base64 olarak DB'de — provider seam'i lazım (bkz MOD-0266)
 - 🟡 Lokalizasyon: en + tr var, sapma yok (bu modül uyumlu)
 
+**%100 için kalanlar:**
+- [ ] MOD-0026 ile `TrialExpiryScanJob`, `PastDueAutoSuspendJob` ve `CancelAtPeriodEndJob` üretime alınmalı.
+- [ ] MOD-0035 ile tenant create/suspend/reactivate/cancel event'leri outbox üzerinden yayınlanmalı.
+- [ ] MOD-0021 audit deep-link ve tenant detail audit timeline gerçek veriyle bağlanmalı.
+- [ ] MOD-0266/MOD-0028 sonrası logo/favicon base64 storage'dan document/blob provider'a taşınmalı.
+- [ ] Tenant Index/Create/Details/Security için gateway smoke + browser smoke + DataTable v2 doğrulaması eklenmeli.
+
 **Critical files:**
 - Backend: `services/Diten.Platform/src/Diten.Platform.API/Controllers/Admin/TenantsController.cs`
 - Backend: `services/Diten.Platform/src/Diten.Platform.Domain/Entities/Tenant.cs`
@@ -239,7 +259,7 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 
 ### 3.2 Subscription Plan Catalog
 **ID:** PSS-006
-**Status:** ✅ Done (%95)
+**Status:** ✅ Done (%96)
 **Purpose:** SaaS abonelik planlarının (FREE/STARTER/PRO/ENTERPRISE) tanımı; fiyat, quota, feature, modül kapsamı.
 
 **What's done:**
@@ -250,11 +270,16 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 - ✅ FluentValidation, RowVersion concurrency
 
 **What's missing:**
-- 🟡 Hardcoded fallback currency listesi (`["USD","EUR","TRY","GBP"]`) — kaldırılmalı
+- 🟢 Hardcoded fallback currency listesi (`["USD","EUR","TRY","GBP"]`) — PSS-011 ile kaldırıldı; gateway/HTTP smoke ile kalıcı doğrulanmalı
 - 🔴 Plan upgrade/downgrade workflow (proration, period mid-change)
 - 🔴 Billing entegrasyonu (bkz MOD-0299)
 - 🔴 409 conflict resolution UI yok (RowVersion mismatch'te form re-load)
 - 🟢 Lokalizasyon: en + tr var (uyumlu)
+
+**%100 için kalanlar:**
+- [ ] RowVersion mismatch için kullanıcıya mevcut kayıtla yeniden yükleme/merge seçeneği sunan 409 conflict UI tamamlanmalı.
+- [ ] Plan upgrade/downgrade akışı MOD-0297 + MOD-0299 ile proration ve period-mid-change kurallarıyla bağlanmalı.
+- [ ] WebApplicationFactory integration testleri ve gateway smoke testleri eklenmeli.
 
 **Critical files:**
 - Backend: `services/Diten.Platform/src/Diten.Platform.API/Controllers/Platform/SubscriptionPlansController.cs`
@@ -291,7 +316,7 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 
 ### 3.4 Module Catalog
 **ID:** PSS-005 / MOD-0008
-**Status:** ✅ Done (%92) — projedeki en olgun modül
+**Status:** ✅ Done (%93) — projedeki en olgun modül
 **Purpose:** ERP modüllerinin merkezi katalog kaydı; ModuleCode, Domain, Service, Version, IsCoreModule, IsTenantAssignable.
 
 **What's done:**
@@ -306,6 +331,12 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 - 🔴 Module versioning / migration
 - 🟡 ModulePageDescriptor sahipliği tartışmalı — bu Platform değil tenant deployment metadata'sı olmalı
 - 🔴 Assignable expose contract MOD-0018 için stabilize edilmedi
+
+**%100 için kalanlar:**
+- [ ] Assignable module read contract MOD-0018 ve MOD-0298 tarafından kullanılan stabil bir interface olarak sabitlenmeli.
+- [ ] Module dependency graph, compatibility/version range ve migration metadata alanları tamamlanmalı.
+- [ ] Catalog cache invalidation create/update/deactivate/delete aksiyonlarında test edilmeli.
+- [ ] ModulePageDescriptor ownership kararı netleştirilmeli; Platform'da kalacaksa acceptance criteria güncellenmeli, taşınacaksa migration planı yazılmalı.
 
 **Critical files:**
 - Backend: `services/Diten.Platform/src/Diten.Platform.API/Controllers/Platform/ModuleCatalogController.cs`
@@ -343,7 +374,7 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 
 ### 3.6 Tenant Subscription Lifecycle
 **ID:** MOD-0297
-**Status:** 🟡 Partial (%80)
+**Status:** 🟡 Partial (%82)
 **Purpose:** Tenant subscription durumu (Trialing/Active/PastDue/Cancelled/Expired/Suspended), trial dönemi, period yönetimi.
 
 **What's done:**
@@ -361,6 +392,12 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 - 🔴 Subscription change → billing event emit yok (bkz MOD-0035, MOD-0299)
 - 🔴 Dunning flow yok
 
+**%100 için kalanlar:**
+- [ ] MOD-0026 job scheduler ile trial expiry, renewal, cancel-at-period-end ve PastDue→Suspended job'ları eklenmeli.
+- [ ] MOD-0035 event bus ile subscription change/billing/dunning event'leri yayınlanmalı.
+- [ ] MOD-0299 billing entegrasyonu ile renewal, overdue ve invoice state transition kuralları bağlanmalı.
+- [ ] MOD-0027 notification entegrasyonu ile dunning ve trial-ending mail akışları test edilmeli.
+
 **Critical files:**
 - Backend: `services/Diten.Platform/src/Diten.Platform.Domain/Entities/TenantSubscription.cs`
 - Backend: `services/Diten.Platform/src/Diten.Platform.Application/Features/Tenants/Commercial/Subscriptions/`
@@ -370,20 +407,26 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 
 ### 3.7 Tenant Login & Security Settings
 **ID:** PSS-004
-**Status:** 🟡 Partial (%75)
+**Status:** 🟡 Partial (%86)
 **Purpose:** Platform admin'in tenant başına login politikalarını yönetmesi (2FA/MFA/IP whitelist/session limit/login methods).
 
 **What's done:**
 - ✅ TenantLoginSettings entity (AuthService)
 - ✅ Frontend Security.cshtml + Tagify integration
 - ✅ Login method toggle, MFA, lockout
+- ✅ Password policy override alanları ve AuthService runtime tüketimi mevcut
 
 **What's missing:**
 - 🔴 SSO/SAML/OIDC entegrasyonu
-- 🔴 Password policy override per-tenant
 - 🔴 Audit instrumentation
 - 🔴 IP whitelist runtime enforcement test
 - 🟢 Lokalizasyon: en + tr (uyumlu)
+
+**%100 için kalanlar:**
+- [ ] IP whitelist, country allowlist, MFA ve lockout kuralları için AuthService integration testleri yazılmalı.
+- [ ] SSO/SAML/OIDC sağlayıcı entegrasyonu veya açıkça sonraki faz kapsamına devretme kararı eklenmeli.
+- [ ] Login setting değişiklikleri MOD-0021 ile audit'e düşmeli.
+- [ ] Gateway smoke ve browser smoke testleri Security ekranındaki save/validation akışını doğrulamalı.
 
 **Critical files:**
 - Backend: `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/TenantLoginSettings.cs`
@@ -392,21 +435,149 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 ---
 
 ### 3.8 Lookups / Reference Data
-**Status:** 🟡 Partial (%70)
-**Purpose:** Currency, FeatureCategory, ModuleDomain/Service için lookup endpoint'leri.
+**Status:** 🟢 Done with caveats (%93) — PSS-011 (2026-05-14). Acceptance 14/14 ✅; unit testler yazılı (9 test, [PlatformLookupProviderTests.cs](../../services/Diten.Platform/tests/Diten.Platform.Application.Tests/Lookups/PlatformLookupProviderTests.cs)). Devredilen eksikler §9.4'te: **PSS-011-FU1** (HTTP integration infra), **PSS-011-FU2** (gateway smoke), **PSS-011-FU3** (sibling test compile fixes).
+**Module Pack:** [`execution/domains/platform-shared-services/module-packs/PSS-011-lookups-reference-data.md`](../../execution/domains/platform-shared-services/module-packs/PSS-011-lookups-reference-data.md)
+**Purpose:** Currency, Locale, Timezone, TenantTier, FeatureCategory, ModuleDomain/Service, SubscriptionCycle, Countries için merkezi lookup API'si.
 
 **What's done:**
-- ✅ Currency, FeatureCategory, ModuleDomain endpoint'leri
+- ✅ Tek canonical `LookupOptionDto { code, name, value, group?, sortOrder?, metadata? }` shape
+- ✅ Currency (ISO-4217), Locale (`en`,`tr`), Timezone (IANA, UTC dahil), TenantTier, SubscriptionCycle endpoint'leri
+- ✅ Module-catalog domains/services + FeatureCategory + Countries (provisioning support)
+- ✅ Caching: static lookups 12h TTL, feature-categories 5m + explicit invalidation
+- ✅ Controller `[AllowAnonymous]` blanket kaldırıldı → `Platform.Lookups.Read` / `PlatformActor` policy
+- ✅ Frontend hardcoded `USD/EUR/TRY/GBP` fallback ([SubscriptionPlansController.cs:250-279](../../frontend/Diten.Web/Controllers/Platform/SubscriptionPlansController.cs#L250-L279)) kaldırıldı, controlled empty state
+- ✅ MediatR query/handler yapısı: `Features/Lookups/Queries` + `Handlers`
+- ✅ Unit test coverage: 9 test (canonical shape + no-duplicates, locales `en`/`tr`, timezones UTC, countries Platform-provisioning scope, feature-categories Active source-of-record, unknown key 404, cache hit/miss factory-call=1, cache miss + exception → no partial entry, serialization camelCase + no `tenantId`/`id`)
+- ✅ Feature-category lookup PSS-007 source-of-record bağı doğrulandı (`IFeatureCategoryRepository.GetAllAsync(status: Active)`)
+- ⚠️ Eksik: HTTP-level integration testleri (`WebApplicationFactory`) + gateway smoke (`curl :5000`)
+- ⚠️ Sibling test dosyalarındaki compile hataları nedeniyle test runner şu an çalıştırılamıyor (kapsam dışı issue)
 
-**What's missing:**
-- 🔴 Hardcoded fallback'ler (currency listesi)
-- 🔴 Locale lookup
-- 🔴 Timezone lookup
-- 🔴 Tenant tier lookup
-- 🔴 Caching strategy (her istek MongoDB'ye gidiyor)
+**Consumers (downstream impact):**
+- `SubscriptionPlansController` — currency dropdown
+- `ModuleCatalogController` — domain/service dropdown (proxy)
+- `TenantsController` + `Platform/Tenants/create.js`, `security.js` — country/currency/locale/timezone/tier
+- Tüm Platform/Admin form ekranları — `/api/lookups/*` üzerinden
 
 **Critical files:**
 - Backend: `services/Diten.Platform/src/Diten.Platform.API/Controllers/LookupsController.cs`
+- Application: `services/Diten.Platform/src/Diten.Platform.Application/Features/Lookups/`
+- Gateway route: `gateway/Diten.ApiGateway/ocelot.json` (`/api/lookups/{everything}`)
+
+**%100 için kalanlar:**
+- [ ] `WebApplicationFactory` tabanlı HTTP integration testleri eklenmeli.
+- [ ] Gateway üzerinden `/api/lookups/*` smoke testleri CI veya smoke runner'a bağlanmalı.
+- [ ] Test project sibling compile hataları temizlenip lookup testleri tam runner içinde çalıştırılmalı.
+
+---
+
+### 3.9 Platform Admin Profile & Settings
+**Status:** 🟠 In Progress (%89) — PSS-009 (2026-05-14, implement edildi)
+
+**Kod kanıtı:**
+- Backend: `Features/PlatformAccount/{Queries,Commands,Validators,Handlers}` tamamı oluşturuldu
+- Controller: `[ApiController] [Route("api/platform/account")] [Authorize(Policy="PlatformActor")]` ✅
+- Frontend: `Views/Platform/Account/{Profile,Settings,_AccountL10n}.cshtml` + `AccountIndex.cs`
+- JS: `profile.js`, `settings.js`, `account.l10n.js`
+- Layout: `currentUserInitials` logic ([_LayoutPlatformAdmin.cshtml:43-50](../../frontend/Diten.Web/Views/Shared/_LayoutPlatformAdmin.cshtml#L43-L50)) + dropdown linkleri canlı
+- Hardcoded `avatars/1.png` referansı kaynak kodda kaldırıldı (yalnızca `obj/` build cache'inde)
+- Gateway routes: `/api/platform/account` + `/api/platform/account/{everything}` ([ocelot.json:164-189](../../gateway/Diten.ApiGateway/ocelot.json))
+- RESX: `AccountIndex.{en,tr}.resx`
+- Tests: `PlatformAccountRulesTests.cs` (4 test — pack'in önerdiği 9 senaryonun bir bölümünü kapsar)
+
+**Eksik %11:**
+- ⚠️ Backend unit test coverage kısmi (4/9 senaryo)
+- ⚠️ HTTP-level integration testleri yok (`WebApplicationFactory` infra yok — PSS-011 ile aynı sistemik eksik)
+- ⚠️ Browser smoke otomasyon yok (manuel test gerekli)
+**Module Pack:** [`execution/domains/platform-shared-services/module-packs/PSS-009-platform-admin-profile-settings.md`](../../execution/domains/platform-shared-services/module-packs/PSS-009-platform-admin-profile-settings.md)
+**Purpose:** Şu an authenticated Platform/Admin kullanıcısının self-service profil görüntüleme ve sınırlı self-update yüzeyi (yalnızca `DisplayName`). Header'daki hardcoded avatar görselini deterministic initials ile değiştirir; user dropdown'daki "My Profile" / "Settings" linkleri gerçek sayfalara bağlanır.
+
+**Scope (v1 — bilinçli olarak dar):**
+- ✅ `/Platform/Account/Profile` + `/Platform/Account/Settings` sayfaları
+- ✅ Header initials avatar (hardcoded `assets/img/avatars/1.png` kaldırılır)
+- ✅ User dropdown linkleri canlı route'lara bağlanır
+- ✅ Self-update: yalnızca `DisplayName` (2–200 char)
+- ✅ Backend: `GET/PUT /api/platform/account/me`, `Features/PlatformAccount/`, `PlatformAccountController`
+
+**Out of scope (kasıtlı yasaklar):**
+- 🚫 Avatar upload, storage provider entegrasyonu
+- 🚫 Password change (PSS-010 veya pack revision gerekli)
+- 🚫 MFA / active sessions / security activity (PSS-010 kapsamı)
+- 🚫 Fake activity timeline, social/teams/projects tabs
+- 🚫 Email/username change flow
+- 🚫 PreferredLocale / PreferredTimezone (PSS-011 lookup'larıyla follow-up)
+- 🚫 Başka admin'i düzenleme (NEW-002 ownership)
+- 🚫 Self-delete, account lifecycle removal
+- 🚫 Sidebar nav item (dropdown'dan erişilir)
+
+**Boundary kararları:**
+- `NEW-002 Platform Administrators Management` admin lifecycle/roles/status sahibi olmaya devam eder
+- `Diten.AuthService` password ownership v1 dışında
+- Yalnızca current actor JWT claims'den çözülür; target ID parameter ASLA kabul edilmez
+
+**Dependencies:**
+- `NEW-002` → `PlatformAdministrator` entity'si (DisplayName alanı zaten mevcut)
+- `_LayoutPlatformAdmin.cshtml` (yalnızca avatar/dropdown bölgesi)
+- v1'de PSS-011 lookup bağımlılığı yok, AuthService bağımlılığı yok
+
+**Follow-up Items** (§9.4'e eklendi):
+- PSS-009-FU1: Avatar upload (storage provider sonrası)
+- PSS-009-FU2: Activity timeline (MOD-0021 Audit Trail sonrası)
+- PSS-009-FU3: Password change (PSS-010 ile)
+- PSS-009-FU4: PreferredLocale/Timezone (PSS-011 endpoint'leri ile)
+
+**%100 için kalanlar:**
+- [ ] Backend unit coverage pack'teki 9 senaryoya tamamlanmalı.
+- [ ] Profile/Settings GET/PUT için HTTP integration testleri eklenmeli.
+- [ ] Header initials, dropdown navigation ve yasak UI surface yokluğu için browser smoke otomasyonu yazılmalı.
+- [ ] Avatar/activity/password/preference follow-up'ları ilgili provider veya modüller hazır olunca ayrı acceptance ile tamamlanmalı.
+
+---
+
+### 3.10 Module Details Assignment Inspection
+**ID:** PSS-008
+**Status:** 🟡 Partial (%70)
+**Purpose:** Module Catalog detail ekranında plan ve tenant assignment durumunu inceleme; modülün hangi planlarda/tenant'larda etkin olduğunu operasyonel olarak görebilme.
+
+**What's done:**
+- ✅ Module assignment overview, plan assignments, tenant assignments ve tenant assignment detail query/controller yüzeyleri mevcut.
+- ✅ Module Catalog detail tarafında assignment inspection UI izleri mevcut.
+- ✅ DataTable v2 kullanılan assignment/consumer tablo yüzeyleri mevcut.
+
+**What's missing:**
+- 🔴 Assignment integrity checks henüz MOD-0018 enforcement ile contract seviyesinde bağlanmadı.
+- 🔴 Plan/tenant assignment diff ve drift uyarıları yok.
+- 🔴 Assignment inspection için gateway smoke, browser smoke ve WebApplicationFactory integration testleri eksik.
+
+**%100 için kalanlar:**
+- [ ] PSS-008 module pack acceptance criteria tek tek repo kanıtlarıyla doğrulanmalı.
+- [ ] MOD-0018 ve MOD-0298 ile assignment inspection sonuçları aynı entitlement contract'ını kullanmalı.
+- [ ] Assignment drift/diff state'leri UI'da badge ve filter olarak gösterilmeli.
+- [ ] Module details assignment endpointleri için integration test ve DataTable contract doğrulaması eklenmeli.
+
+---
+
+### 3.11 Platform Admin Password & MFA Security
+**ID:** PSS-010
+**Status:** 🟡 Partial (%45)
+**Purpose:** Platform admin password reset/change, forced password change, MFA ve aktif session güvenliğini Platform/Admin kullanıcıları için tamamlamak.
+
+**What's done:**
+- ✅ Platform login, forced password change, forgot/reset password ve setup-token akışları AuthService tarafında mevcut.
+- ✅ Platform password reset frontend endpointleri ve reset/change password view kullanımı mevcut.
+- ✅ Refresh token/session primitive'leri mevcut; platform actor token claim'leri üretiliyor.
+
+**What's missing:**
+- 🔴 Platform admin MFA challenge/login flow tenant login MFA kadar tamam görünmüyor.
+- 🔴 Active sessions ekranı, session revoke ve trusted device yönetimi yok.
+- 🔴 Password/security activity audit feed'i PSS-009 profile/settings ile bağlanmadı.
+- 🔴 Browser smoke, AuthService integration ve gateway smoke testleri eksik.
+
+**%100 için kalanlar:**
+- [ ] Platform actor için MFA enable/disable, challenge verify/resend ve recovery-code akışı netleştirilmeli.
+- [ ] `/Platform/Account/Security` veya PSS-010'a ait ayrı security ekranı active sessions, revoke, password change ve MFA state göstermeli.
+- [ ] Password reset/change/MFA/session revoke aksiyonları MOD-0021 audit'e düşmeli.
+- [ ] AuthService integration testleri platform-admin-only boundary, token refresh ve forced-change akışlarını kapsamalı.
+- [ ] PSS-009 içindeki password/MFA out-of-scope maddeleri PSS-010 tamamlanınca kapatılmalı.
 
 ---
 
@@ -420,7 +591,7 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 ### NEW-001 — Secrets Management
 **Wave:** W1-* (BLOCKER, sıfırıncı)
 **Priority:** 🔴 Blocker
-**Status:** 🟠 In Progress (85%)
+**Status:** 🟡 Partial (%70) — legacy ID; canonical kayıt MOD-0012 Secrets & Configuration Vault
 **Owner role:** DevOps / Security
 
 **Purpose:**
@@ -461,12 +632,31 @@ ISecretsProvider
 
 **Dependencies:** Yok (her şeyden önce)
 
+**%100 için kalanlar:**
+- [ ] NEW-001 ve MOD-0012 tek canonical ID altında birleştirilmeli; eski ID yalnız legacy alias olarak kalmalı.
+- [ ] Production adapter seçimi netleşmeli: Azure Key Vault, AWS Secrets Manager veya HashiCorp Vault.
+- [ ] JWT/current+previous secret rotation integration testleri yazılmalı.
+- [ ] `appsettings*.json` içindeki development dışı secret fallback'leri fail-fast doğrulamayla kapatılmalı.
+- [ ] SMTP, storage, webhook ve internal API key secret gereksinimleri aynı provider üzerinden okunmalı.
+
 ---
 
 ### NEW-002 — Platform Administrators Management
 **Wave:** W1-*
 **Priority:** 🟠 High
-**Status:** 🔴 Missing (0%)
+**Status:** 🟢 Done with caveats (%95) — kod doğrulaması 2026-05-14.
+
+**Kod kanıtı:**
+- Domain: `PlatformAdministrator` entity, `PlatformAdministratorEnums`, `IPlatformAdministratorRepository`, `PlatformAdministratorSeed` ✅
+- Application Features/PlatformAdministrators: **8 Command** (Invite, Update, AssignRoles, Suspend, Reactivate, Delete, BulkDelete, ResendInvite) + Queries + Validators + Handlers + Models + Parsing + PasswordGenerator ✅
+- API: `AdministratorsController` (public) + `InternalPlatformAdministratorsController` ✅
+- Infrastructure: `PlatformAdministratorProvisioningService`, `PlatformAdministratorInvitationEmailService` + email template ✅
+- Frontend: Slim DataTable shell tam — `Index.cshtml`, `_DataTable`, `_Filter`, `_CreateEditOffcanvas`, `_DetailsQuickView`, `_IndexL10n` + Controller + ViewModels + RESX(en+tr) + JS ✅
+- Gateway: `/api/platform/administrators` + `/api/platform/administrators/{everything}` ([ocelot.json:124-152](../../gateway/Diten.ApiGateway/ocelot.json#L124)) ✅
+
+**Eksik %5:**
+- ⚠️ Audit hookup — admin create/update/suspend → audit log. MOD-0021 artık %98; NEW-002 command'larına `IAuditableCommand` + `IAuditMetadataProvider` retrofit yapılabilir (NEW-002-FU1).
+- ⚠️ Test coverage doğrulanmadı (PSS-009/PSS-011 ile aynı sistemik durum).
 **Owner role:** Platform UI + Auth
 
 **Purpose:**
@@ -527,7 +717,7 @@ PlatformAdministrator : GlobalEntity
 ### MOD-0009 — Tenant Registry Lifecycle Events
 **Wave:** W1-A
 **Priority:** 🔴 Blocker
-**Status:** 🟡 Partial (%60) — Tenant entity var ama event emit yok
+**Status:** 🟡 Partial (%50) — Tenant entity/lifecycle var, event emit ve bus entegrasyonu yok
 
 **Purpose:**
 Tenant lifecycle değişikliklerini (created/activated/suspended/reactivated/cancelled) event olarak yayınla; subscription, provisioning, notification modülleri bu event'leri dinlesin.
@@ -557,6 +747,12 @@ TenantProvisioningFailed    { TenantId, FailedStep, Error }
 
 **Dependencies:** MOD-0035 (Event Bus)
 
+**%100 için kalanlar:**
+- [ ] Tenant lifecycle command'ları `TenantCreated/Activated/Suspended/Reactivated/Cancelled` event'lerini outbox'a yazmalı.
+- [ ] MOD-0035 event bus ve idempotent consumer altyapısı tamamlanmalı.
+- [ ] Subscription, notification, provisioning ve audit tüketicileri contract testleriyle bağlanmalı.
+- [ ] Tenant suspend/reactivate/cancel akışları için gateway smoke + integration test eklenmeli.
+
 ---
 
 ### MOD-0008 — Module Catalog Assignable Expose
@@ -584,10 +780,36 @@ RBAC enforcement (MOD-0018) ve entitlement service (MOD-0298) için "tenant'a at
 
 ---
 
+### MOD-0014 — Module Boundary Registry
+**Wave:** W1-B
+**Priority:** 🟠 High
+**Status:** 🟡 Partial (%20) — module pack mevcut; gerçek runtime/UI yüzeyi sınırlı
+
+**Purpose:**
+Domain, suite, capability ve module boundary kararlarını canonical registry olarak tutmak; yeni modüllerin ownership, dependency ve anti-duplication kontrollerine temel sağlamak.
+
+**What's done:**
+- ✅ Module pack ve kapsam tanımı mevcut.
+- 🟡 Module Catalog/Interface Registry tarafında boundary bilgisini besleyebilecek bazı altyapı izleri var.
+
+**What's missing:**
+- 🔴 Boundary registry entity/API/UI kontratı tamam değil.
+- 🔴 Module pack validation veya CI check ile boundary ownership enforce edilmiyor.
+- 🔴 Interface Registry, Module Catalog ve future Data Contract Registry ile ilişki net değil.
+
+**%100 için kalanlar:**
+- [ ] Domain/Suite/Capability/Module boundary entity ve repository kontratı netleşmeli.
+- [ ] Module pack authoring sırasında boundary registry lookup ve duplicate ownership check kullanılmalı.
+- [ ] Module Catalog ve Interface Registry kayıtları boundary registry ID'leriyle ilişkilendirilmeli.
+- [ ] CI veya validation script'i aynı capability/module ownership çakışmasını yakalamalı.
+- [ ] Platform/Admin UI'da boundary list/detail ve ownership inspection ekranı eklenmeli.
+
+---
+
 ### MOD-0018 — RBAC / Tenant Entitlement Enforcement
 **Wave:** W1-B
 **Priority:** 🔴 Blocker
-**Status:** 🔴 Missing (10% — sadece HasPermission attribute var)
+**Status:** 🟡 Partial (%20 — HasPermission + entitlement read service izleri var; birleşik enforcement yok)
 
 **Purpose:**
 Permission alone yeterli değil; o permission ait olduğu modül **tenant'a açık olmadıkça** authorization fail vermeli.
@@ -618,6 +840,13 @@ IEntitlementChecker
 - [ ] Performance: <5ms p99 (cached)
 
 **Dependencies:** PSS-007 (mevcut), MOD-0298 (mevcut), MOD-0035 (Event Bus), MOD-0021 (Audit)
+
+**%100 için kalanlar:**
+- [ ] `[RequiresModule]`, `[RequiresFeature]` ve birleşik permission+module enforcement attribute'ları eklenmeli.
+- [ ] `IEntitlementChecker` cache, batch check ve deny reason contract'ı ile tamamlanmalı.
+- [ ] Entitlement değişiklikleri MOD-0035 event'leriyle cache invalidate etmeli.
+- [ ] Deny edilen access denemeleri MOD-0021 audit trail'e yazılmalı.
+- [ ] En az 3 tenant-side controller ve 1 platform internal endpoint üzerinde integration test yazılmalı.
 
 ---
 
@@ -914,7 +1143,29 @@ SharePoint, Google Drive, Dropbox gibi external document repository connector'la
 ### MOD-0021 — General Audit Trail
 **Wave:** W2-B
 **Priority:** 🟠 High (compliance varsa → P0)
-**Status:** 🔴 Missing (sadece AuthAuditLog var, generic değil)
+**Status:** 🟢 Done with caveats (%98) — 2026-05-14/15 Phase 1-5B + 5C (H1/H2/H3/H4) implemented; kalanlar partner scope, smoke ve carry-over hardening
+**Module Pack:** [`execution/domains/platform-shared-services/module-packs/MOD-0021-general-audit-trail.md`](../../execution/domains/platform-shared-services/module-packs/MOD-0021-general-audit-trail.md) (ready-for-dev, Tier 2)
+
+**Phase kanıtları:**
+- **Phase 1 — Persistence Foundation ✅**: `AuditEvent` (`BaseEntity`, immutable), `AuditEventRetentionPolicy` (`GlobalEntity`), `TenantAuditPreference` (`BaseEntity`), `AuditOutboxMessage`. Domain enums (`AuditCategory`, `AuditOperation`, `AuditOutcome`, `AuditActorType`, `AuditRedactionStatus`). 3 repository + seed (idempotent) + `AuditTenantIds.PlatformSystemTenantId`. 7 unit test (AuditPersistenceFoundationTests).
+- **Phase 2 — Application Core ✅**: `IAuditService` + `AuditService` (opt-in marker, recursion guard, idempotency key), `SensitiveFieldRedactor` (nested + case-insensitive + 18 rules), `SensitiveFieldRedactionRegistry`, `AuditIdempotencyKeyBuilder` (SHA256), `AuditRecursionGuard` (AsyncLocal), `AuditRetentionPolicyResolver` (Default fallback + clamp), `AuditOutboxRepository` (IAuditOutboxWriter). 11 unit test (AuditApplicationCoreTests). H1 fix uygulandı (`AuditAppendResult.Rejected` default `ShouldBreakBusinessCommand=false`).
+- **Phase 3 — AuditBehavior ✅**: `IAuditableRequest`/`IAuditableCommand`/`IAuditExcludedRequest` markers, `IAuditMetadataProvider`, `AuditRequestMetadata`, `AuditBehaviorOptions` (CriticalCategories + RequireMetadataProvider + auto-exclude narrow list), `AuditBehavior<TRequest,TResponse>` MediatR pipeline. Pipeline sırası: Validation→Logging→Exception→Audit→Performance. 16 unit test (AuditBehaviorTests). H1+H2 fix uygulandı (narrow auto-exclude + RequireMetadataProvider default true).
+- **Phase 4 — Worker/Persistence ✅**: `AuditOutboxWorker : BackgroundService`, `AuditOutboxProcessor` (atomic claim via FindOneAndUpdate, stale-Processing recovery 5min, retry backoff, DeadLetter), `AuditOutboxPayloadMapper` (Bson normalization, controlled mapping exception), `SafeAuditErrorFormatter`, `AuditOutboxWorkerOptions` (BatchSize=25, MaxAttempts=5, ProcessingStaleAfter=5min). C1+H1 fix uygulandı (TenantScope snapshot+restore + Processing stuck recovery). 9 worker test + 6 TenantScope test + 10 ClaimEligibility contract test.
+- **Phase 5A — Backend API ✅**: `PlatformAuditController` `[Authorize(Policy="PlatformAdminOnly")]` (Seçenek A: partner_admin engellendi). 5 endpoint (events list/detail/export/retention PUT/redact-actor). Permissions: `Platform.Audit.Read/Export/Retention.Update/RedactActor`. `IAuditMetaAuditWriter` (recursion guard scoped). Validators (ExportAuditEventsValidator, UpdateAuditRetentionValidator, RedactAuditActorValidator). Gateway routes ([ocelot.json](../../gateway/Diten.ApiGateway/ocelot.json) 5 route) integration-agent tarafından eklendi.
+- **Phase 5B — Frontend UI ⚠️ (%92 fonksiyonel, 4 compliance boşluk)**: `/Platform/AuditLog` DataTable v2 + advanced filter + detail modal + CSV/JSON export. `/Platform/AuditRetention` PUT form. Frontend `PlatformAuditController` same-origin proxy. RESX en+tr (98+37 keys). `_LayoutPlatformAdmin` integration ✅.
+
+**Phase 5C durumu (2026-05-15):**
+- ✅ **H1 DONE**: Retention sayfası mevcut policy'leri GET ile yüklüyor — backend `GET /api/platform/audit/retention` + frontend `AuditRetention/index.js` load flow
+- ✅ **H2 DONE**: Redact-actor UI eklendi — `index.js:505+` modal HTML (Description, Warning, Find Actor, ActorId input, Affected Records preview); `_IndexL10n.cshtml` RedactActor.* localization key'leri (en+tr)
+- ✅ **H3 DONE**: Sidebar navigation entry eklendi — `_LayoutPlatformAdmin.cshtml:236-245` AuditLog + AuditRetention menü item'ları, active-state highlighting
+- ✅ **H4 DONE**: `_DetailsModal.cshtml` ayrı partial'a taşındı (47 satır); Index.cshtml'de inline modal kalmadı
+
+**Kritik files:**
+- Backend: `services/Diten.Platform/src/Diten.Platform.API/Controllers/Platform/PlatformAuditController.cs`
+- Application: `services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/` + `Contracts/Audit/` + `Contracts/Behaviors/AuditBehavior.cs`
+- Infrastructure: `services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/Audit/` + `Persistence/Repositories/Audit*.cs`
+- Frontend: `frontend/Diten.Web/Views/Platform/{AuditLog,AuditRetention}/` + `wwwroot/assets/js/Platform/{AuditLog,AuditRetention}/`
+- Gateway: `gateway/Diten.ApiGateway/ocelot.json` (5 audit route)
 
 **Purpose:**
 Tüm platform-significant operation'lar için generic audit trail. Compliance, forensics, support investigation.
@@ -968,6 +1219,13 @@ AuditEvent : EntityBase
 - ❌ Audit log'u silinebilir yapmak
 
 **Dependencies:** NEW-001 (audit log'a yazılan IP/UA güvenli işlenmeli)
+
+**%100 için kalanlar:**
+- [ ] partner_admin audit scope desteği eklenmeli: per-tenant filter, partner-scoped export ve partner-scoped redaction.
+- [ ] Audit endpointleri için WebApplicationFactory integration testleri ve gateway smoke testleri eklenmeli.
+- [ ] Kritik mevcut command'lara `IAuditableCommand` + `IAuditMetadataProvider` retrofit yapılmalı (NEW-002, tenant lifecycle, entitlement, subscription).
+- [ ] Plan bazlı audit retention policy follow-up'ı ayrı scope olarak tasarlanmalı: policy ownership MOD-0021 Audit Retention'da kalmalı, Subscription Plan Catalog yalnızca plan lookup/SSOT olarak tüketilmeli, Default policy fallback korunmalı ve plan bazlı policy olmayan tenant'ların mevcut davranışı bozulmamalı.
+- [ ] Carry-over hardening listesi kapatılmalı: CSRF token, export streaming, CSV multiline, page-size sınırı, recursion guard depth limit, idempotency drift testleri.
 
 ---
 
@@ -1121,7 +1379,7 @@ Platform admin support için "şu tenant'a benim olarak gir, sorununu gör" öze
 ### MOD-0032 — API Gateway Hardening
 **Wave:** W3-A
 **Priority:** 🟠 High
-**Status:** 🟡 Partial (Ocelot var, hardening yok)
+**Status:** 🟡 Partial (%50) — Ocelot routing, token forward, CORS whitelist başlangıcı ve secret validation var; hardening tamam değil
 
 **Purpose:**
 Gateway-level rate limit, per-tenant policies, CORS hardening, API versioning routing, request/response audit.
@@ -1129,14 +1387,16 @@ Gateway-level rate limit, per-tenant policies, CORS hardening, API versioning ro
 **What's done:**
 - ✅ Ocelot routing
 - ✅ Auth token forward
+- ✅ Gateway JWT secret validation ve local CORS origin whitelist başlangıcı var
 
 **What's missing:**
 - 🔴 Rate limiting (per-tenant, per-endpoint)
-- 🔴 CORS whitelist (currently `AllowAny`)
+- 🟡 CORS whitelist environment-aware hale getirilmeli
 - 🔴 API version routing (`/api/v1/...`)
 - 🔴 Request audit (incoming, outgoing)
 - 🔴 Circuit breaker
 - 🔴 IP allowlist/denylist
+- 🔴 Frontend'in gateway dışı service fallback'leri kaldırılmalı
 
 **Acceptance criteria:**
 - [ ] Per-tenant rate limit (e.g. 1000 req/min)
@@ -1145,12 +1405,18 @@ Gateway-level rate limit, per-tenant policies, CORS hardening, API versioning ro
 - [ ] Request audit middleware
 - [ ] Polly circuit breaker upstream'a
 
+**%100 için kalanlar:**
+- [ ] Frontend proxy'lerinde `PlatformServiceUrl`/direct service-port fallback kaldırılmalı; tüm çağrılar Gateway (5000) üzerinden geçmeli.
+- [ ] Rate limiting, circuit breaker, retry/timeout ve upstream health policy'leri Ocelot/Polly üzerinden test edilmeli.
+- [ ] CORS origin listesi environment config'e taşınmalı; production'da wildcard kullanımı testle engellenmeli.
+- [ ] Gateway smoke runner tüm platform route grupları için 200/401/403/404 beklentilerini doğrulamalı.
+
 ---
 
 ### MOD-0033 — Consumer / Quota Model
 **Wave:** W3-A
 **Priority:** 🟠 High
-**Status:** 🔴 Missing (0%)
+**Status:** 🟡 Partial (%78) — QuotaUsage + QuotaEvent entities, QuotasController + InternalQuotasController, Application Features/Quotas, atomic consume ve reset/recalculate command'ları var. Scheduler, dashboard ve notification pending.
 
 **Purpose:**
 Plan'da tanımlı quota'ların (users, storage, API calls) runtime enforcement.
@@ -1203,19 +1469,26 @@ IQuotaService
 
 **Dependencies:** MOD-0026 (reset jobs), MOD-0027 (alerts), MOD-0021 (audit)
 
+**%100 için kalanlar:**
+- [ ] MOD-0026 ile monthly/periodic quota reset job üretime alınmalı.
+- [ ] Quota breach ve 80% warning notification akışları MOD-0027 ile bağlanmalı.
+- [ ] Tenant detail üzerinde quota dashboard gerçek `QuotaUsage` verisiyle gösterilmeli.
+- [ ] Atomic consume/release/reset akışları için concurrency integration testleri yazılmalı.
+- [ ] Gateway-level API quota enforcement MOD-0032 ile bağlanmalı.
+
 ---
 
 ### MOD-0046+ — Tenant Core UI Extensions
 **Wave:** W3-A
 **Priority:** 🟠 High
-**Status:** 🟡 Partial (50%)
+**Status:** 🟡 Partial (%60)
 
 **Purpose:**
 Platform admin'in tenant detail sayfasındaki eksik tab'ları doldurmak: subscription, entitlement, quota usage, document/logo, audit links.
 
 **What's missing:**
 - 🔴 "System Monitoring" tab gerçek metric ile (last login, active users, storage, API calls)
-- 🔴 Quota usage tab (MOD-0033)
+- 🟡 Quota usage tab (MOD-0033) gerçek dashboard seviyesine taşınmalı
 - 🔴 Audit link tab (MOD-0021 deep-link)
 - 🔴 Document/Logo tab (MOD-0028)
 
@@ -1226,6 +1499,13 @@ Platform admin'in tenant detail sayfasındaki eksik tab'ları doldurmak: subscri
 - [ ] Document management
 
 **Dependencies:** MOD-0021, MOD-0033, MOD-0028
+
+**%100 için kalanlar:**
+- [ ] System Monitoring tab gerçek health, last-login, active-users, storage ve API-call metriklerini göstermeli.
+- [ ] Quota tab MOD-0033 verisiyle grafik/KPI ve warning state içermeli.
+- [ ] Audit tab MOD-0021'e tenant pre-filter deep-link üretmeli.
+- [ ] Document/Logo tab MOD-0028/MOD-0266 ile dosya metadata ve signed URL kullanmalı.
+- [ ] Tenant Details için browser smoke testleri tüm tab'ların boş/loaded/error state'lerini doğrulamalı.
 
 ---
 
@@ -1306,7 +1586,7 @@ BillingCycle : EntityBase (tenant subscription'a bağlı)
 ### MOD-0041 — Logging / Monitoring
 **Wave:** W3-C
 **Priority:** 🟡 Medium
-**Status:** 🟡 Partial (ILogger var, structured değil)
+**Status:** 🟡 Partial (%35 — ILogger ve health baseline var, structured observability yok)
 
 **Purpose:**
 Structured logging, correlation propagation, health checks, metrics, distributed tracing baseline.
@@ -1319,6 +1599,12 @@ Structured logging, correlation propagation, health checks, metrics, distributed
 - [ ] Health check endpoint'leri (`/health`, `/health/ready`, `/health/live`)
 - [ ] Prometheus metrics export
 - [ ] OpenTelemetry tracing (Jaeger/Zipkin)
+
+**%100 için kalanlar:**
+- [ ] Serilog JSON logging ve correlation-id propagation tüm servislerde standardize edilmeli.
+- [ ] `/health/live` ve `/health/ready` ayrımı MongoDB, gateway upstream ve background worker dependency'lerini kapsamalı.
+- [ ] OpenTelemetry traces ve Prometheus metrics endpoint'leri deploy profillerine eklenmeli.
+- [ ] Dashboard/runbook linkleri MOD-0042 ile bağlanmalı.
 
 ---
 
@@ -1400,7 +1686,7 @@ Event/API schema versioning, backward compatibility, breaking change detection.
 ### MOD-0002 — Interface Registry
 **Wave:** W3-E
 **Priority:** 🟡 Medium
-**Status:** 🔴 Missing (0%)
+**Status:** 🟡 Partial (%70) — InterfaceRegistry domain, controller, application features, frontend, import/review/deprecate yüzeyi ve test izleri var. OpenAPI ingestion, ownership ve deprecation policy hardening pending.
 
 **Purpose:**
 API endpoint sahipliği, version, consumer, compatibility metadata kaydı.
@@ -1409,6 +1695,13 @@ API endpoint sahipliği, version, consumer, compatibility metadata kaydı.
 - [ ] API catalog (OpenAPI specs)
 - [ ] Endpoint ownership
 - [ ] Deprecation policy
+
+**%100 için kalanlar:**
+- [ ] OpenAPI ingestion gerçek servis swagger dokümanlarından otomatik discovery batch üretmeli.
+- [ ] Endpoint ownership ve consumer dependency matrisi zorunlu alan olarak enforce edilmeli.
+- [ ] Deprecation policy, review workflow ve audit event'leri MOD-0021 ile bağlanmalı.
+- [ ] Schema compatibility çıktıları MOD-0039 Data Contract Registry ile ilişkilendirilmeli.
+- [ ] Gateway smoke ve UI smoke testleri import/review/deprecate akışlarını doğrulamalı.
 
 ---
 
@@ -1935,11 +2228,13 @@ Bu tabloyu modül bittiğinde güncelle. Bölüm 2'deki özet tablo bunun kısal
 ### 9.1 Wave 1 — Blocker Foundation
 | ID | Modül | Status | % | Sorumluluk | Hedef Tarih | Tamamlanma Notu |
 |---|---|---|---|---|---|---|
-| NEW-001 | Secrets Management | 🔴 | 0 | DevOps | — | — |
-| NEW-002 | Platform Administrators Mgmt | 🟠 | 85 | Platform UI | 2026-05-20 | Backend/frontend implemented; Gateway route and runtime smoke remain. |
-| MOD-0009 | Tenant Registry Events | 🟡 | 60 | Tenant | — | — |
+| NEW-001 | Secrets Management | 🟡 | 70 | DevOps | — | MOD-0012 canonical kayıt; secrets provider/validation var, production vault adapter ve rotation testleri eksik. |
+| MOD-0012 | Secrets & Configuration Vault | 🟡 | 70 | DevOps | — | NEW-001'in canonical ID karşılığı; production vault adapter, rotation ve full secret inventory testleri eksik. |
+| NEW-002 | Platform Administrators Mgmt | 🟢 | 95 | Platform UI | 2026-05-20 | Kod kanıtı doğrulandı (2026-05-14): 8 command + Slim DataTable + InvitationEmailService + Gateway routes. Kalan %5: MOD-0021 audit hookup. |
+| MOD-0009 | Tenant Registry Events | 🟡 | 50 | Tenant | — | Tenant lifecycle var; event emit/outbox/bus yok. |
 | MOD-0008 | Module Catalog Assignable | 🟡 | 80 | Catalog | — | — |
-| MOD-0018 | RBAC Enforcement | 🔴 | 10 | Auth | — | — |
+| MOD-0014 | Module Boundary Registry | 🔴 | 0 | Architecture | — | Sadece module pack `in-progress` (frontmatter); repo'da `*ModuleBoundary*`/`*CapabilityGroup*`/`*ModuleDefinition*` HİÇBİR kod yok. Pack-only. |
+| MOD-0018 | RBAC Enforcement | 🟡 | 20 | Auth | — | HasPermission + entitlement read service izleri var; RequiresModule/RequiresFeature enforcement yok. |
 | MOD-0298 | Tenant Module Entitlement Refine | 🟡 | 87 | Entitlement | — | — |
 | MOD-0026 | Background Job Scheduler | 🔴 | 0 | Platform | — | — |
 | MOD-0035 | Event Bus | 🔴 | 0 | Platform | — | — |
@@ -1951,7 +2246,7 @@ Bu tabloyu modül bittiğinde güncelle. Bölüm 2'deki özet tablo bunun kısal
 |---|---|---|---|---|---|---|
 | MOD-0028 | Document Metadata | 🔴 | 0 | Document | — | — |
 | MOD-0266 | Blob Storage Provider | 🔴 | 0 | Document | — | — |
-| MOD-0021 | General Audit Trail | 🔴 | 0 | Audit | — | — |
+| MOD-0021 | General Audit Trail | 🟢 | 98 | Audit | — | Phase 1-5B + Phase 5C implemented. Kalan %2 = partner scope, smoke/integration ve carry-over hardening. |
 | MOD-0287 | User Notification Prefs | 🔴 | 0 | Notification | — | — |
 | MOD-0034 | Webhook Delivery | 🔴 | 0 | Webhook | — | — |
 | NEW-003 | Notification Template UI | 🔴 | 0 | Platform UI | — | — |
@@ -1960,27 +2255,54 @@ Bu tabloyu modül bittiğinde güncelle. Bölüm 2'deki özet tablo bunun kısal
 ### 9.3 Wave 3 — Production Hardening
 | ID | Modül | Status | % | Sorumluluk | Hedef Tarih | Tamamlanma Notu |
 |---|---|---|---|---|---|---|
-| MOD-0032 | API Gateway Hardening | 🟡 | 40 | Gateway | — | — |
-| MOD-0033 | Consumer/Quota Model | 🔴 | 0 | Quota | — | — |
-| MOD-0046+ | Tenant Core UI Extensions | 🟡 | 50 | Platform UI | — | — |
+| MOD-0032 | API Gateway Hardening | 🟡 | 50 | Gateway | — | Ocelot + auth forwarding + secret validation/CORS başlangıcı var; rate limit/circuit breaker/direct-service fallback cleanup eksik. |
+| MOD-0033 | Consumer/Quota Model | 🟡 | 78 | Quota | — | Backend entities + controllers + atomic consume/reset command'ları var; scheduler/dashboard/notification pending. |
+| MOD-0046+ | Tenant Core UI Extensions | 🟡 | 60 | Platform UI | — | Commercial/quota yüzeyleri var; monitoring, audit deep-link, document tab pending. |
 | MOD-0299 | SaaS Billing & Invoicing | 🔴 | 0 | Billing | — | — |
-| MOD-0041 | Logging / Monitoring | 🟡 | 30 | Ops | — | — |
+| MOD-0041 | Logging / Monitoring | 🟡 | 35 | Ops | — | ILogger/health baseline var; structured JSON logs, metrics ve tracing pending. |
 | MOD-0042 | Alerting / Runbooks | 🔴 | 0 | Ops | — | — |
 | MOD-0265 | SIEM Provider | 🔴 | 0 | Ops | — | — |
 | MOD-0038 | Event Taxonomy | 🔴 | 0 | Architecture | — | — |
 | MOD-0039 | Schema Governance | 🔴 | 0 | Architecture | — | — |
-| MOD-0002 | Interface Registry | 🔴 | 0 | Architecture | — | — |
+| MOD-0002 | Interface Registry | 🟡 | 70 | Architecture | — | Domain + controller + features + frontend/review surface var; OpenAPI ingestion/ownership hardening pending. |
 | MOD-0003 | Data Contract Registry | 🔴 | 0 | Architecture | — | — |
 
 ### 9.4 Mevcut Modül İyileştirme (Lokalizasyon, RowVersion UI, vb.)
 | ID | İyileştirme | Status | % | Notu |
 |---|---|---|---|---|
-| PSS-006 | Currency hardcoded fallback kaldır | 🔴 | 0 | — |
+| PSS-006 | Currency hardcoded fallback kaldır | 🟢 | 100 | PSS-011 ile tamamlandı (SubscriptionPlans `return []`). |
+| PSS-011-FU1 | Platform HTTP integration test infra (`WebApplicationFactory`) | 🔴 | 0 | PSS-011'in %8'i — pack dışı, MOD-0032 ile veya ayrı pack. Tüm Platform modüllerini kapsar. |
+| PSS-011-FU2 | Gateway smoke test runner (`curl :5000/api/lookups/*` CI step) | 🔴 | 0 | PSS-011'in %8'i — MOD-0032 Gateway Hardening kapsamı. |
+| PSS-011-FU3 | Test runner unblock — sibling modül compile hataları (ModuleCatalog, TenantHandlers test dosyaları) | 🔴 | 0 | PSS-011 dışı; test projesinin çalıştırılabilmesi için. |
+| PLATFORM-TEST-1 | Platform ortak browser smoke otomasyonu | 🔴 | 0 | Tenant, ModuleCatalog, SubscriptionPlans, Administrators, AuditLog, Profile/Settings ve InterfaceRegistry için happy-path + forbidden-state kontrolü. |
+| PLATFORM-TEST-2 | DataTable v2 contract doğrulaması tüm Platform tablolarına genişletilsin | 🔴 | 0 | `data-dt-standard="v2"`, bulk selection, actions, localization ve responsive state doğrulanmalı. |
+| NEW-002-FU1 | NEW-002 audit hookup — Invite/Update/Suspend/Reactivate/Delete/AssignRoles command'larına audit log emisyonu | 🔴 | 0 | MOD-0021 General Audit Trail hazır; NEW-002 command'larına `IAuditableCommand` + `IAuditMetadataProvider` retrofit. NEW-002'nin kalan %5'i. |
+| PSS-PLAN-RECON-1 | NEW-001 ↔ MOD-0012 ID birleştirme — master-plan §4 NEW-001 referansları MOD-0012'ye taşı; eski ID legacy olarak kalsın veya retire et | 🔴 | 0 | 9 dosyada cross-reference güncellenmeli. Sırasında master-plan §4 NEW-001 status bloku da MOD-0012 ile birleştirilmeli. |
+| MOD-0021-5C-H1 | Retention sayfası mevcut policy'leri yüklesin | 🟢 | 100 | Backend `GET /api/platform/audit/retention` endpoint + frontend load flow mevcut. Tamamlandı 2026-05-15. |
+| MOD-0021-5C-H2 | Redact-actor UI | 🟢 | 100 | `AuditLog/index.js:505+` modal HTML + `_IndexL10n` RedactActor.* keys. Tamamlandı 2026-05-15. |
+| MOD-0021-5C-H3 | Sidebar navigation entry | 🟢 | 100 | `_LayoutPlatformAdmin.cshtml:236-245` AuditLog + AuditRetention menü item'ları + active-state. Tamamlandı 2026-05-15. |
+| MOD-0021-5C-H4 | `_DetailsModal.cshtml` ayrı partial | 🟢 | 100 | 47 satır partial dosyası; Index.cshtml'den inline modal çıkarıldı. Tamamlandı 2026-05-15. |
+| MOD-0021-FU-Partner | partner_admin audit scope desteği (per-tenant filter, partner-scoped redaction) | 🔴 | 0 | Şu an audit endpoint'leri yalnız platform_admin. Wave 2+ retrofit. |
+| MOD-0021-FU-CarryOver | Phase 1-5A non-blocker carry-overs: registry extensibility, IActorPiiMasker extraction, RedactionStatus accurate calc, CSV multiline, page-size 500→100, login redirect on 401, CSRF token, tenant lookup select2, GUID v6/v7 desteği, verifier intentional-exception kaydı, export streaming, idempotency drift fixes, recursion guard depth limit | 🔴 | 0 | 12+ küçük iyileştirme; Phase 5C sonrası veya 6. yayın sertleştirme. |
+| PSS-PLAN-RECON-2 | MOD-0043/44/46 toplu kaydı (line 168) ayrı pack'lerle çelişiyor — eski kayıt retire edilmeli veya alt-modül endeksi olarak yeniden yazılmalı | 🔴 | 0 | Şu an inventory'de hem toplu hem ayrı kayıtlar görünüyor (kasıtlı geçiş; reconciliation sonrası temizlenecek). |
+| MOD-0043-DRIFT | MOD-0043 pack-audit drift: `status: done` ve audit raporu "DitenAuditService + MDM middleware eklendi" diyor ama `services/Diten.AuditService/` ve `services/Diten.MdmService/` klasörleri repo'da yok | 🔴 | 0 | Pack/audit %100 claim'ediyor; gerçek skor %75. Olası nedenler: (a) klasörler farklı branch'te kaldı, (b) sonradan silindi, (c) AuditService kapsamı MOD-0021'e devredildi ve MDM hâlâ bekliyor. Doğrulama gerekli; sonrasında pack status revize edilmeli veya eksik service'ler restore edilmeli. |
+| PSS-009-T1 | PSS-009 backend test coverage'ı 4/9 → 9/9'a çıkar (anonymous deny, tenant-user deny, email/username tampering reject, role/status/actor-type tampering reject, missing actor 404, stale version 409) | 🔴 | 0 | PSS-009'un %11 eksiğinin bir parçası. Acceptance criteria'da var ama henüz test edilmedi. |
+| PSS-009-T2 | PSS-009 browser smoke otomasyonu (Playwright/Cypress) — header initials, dropdown navigation, profil/settings sayfa yükleme, forbidden DOM (avatar upload, password form, delete card, fake timeline) yokluk kontrolü | 🔴 | 0 | PSS-009'un %11 eksiğinin bir parçası. Şu an manuel test gerektiriyor. |
+| PSS-009-FU1 | Platform admin avatar upload (storage/blob provider + image validation) | 🔴 | 0 | Storage provider standardı sonrası. |
+| PSS-009-FU2 | Platform admin activity timeline (gerçek audit feed) | 🔴 | 0 | MOD-0021 Audit Trail queryable source sağladıktan sonra. |
+| PSS-009-FU3 | Platform admin password change | 🔴 | 0 | PSS-010 veya AuthService PlatformActor password-change kontratı doğrulandıktan sonra. |
+| PSS-009-FU4 | PreferredLocale + PreferredTimezone (profile/settings) | 🔴 | 0 | PSS-011 `/api/lookups/locales` + `/timezones` tüketici olarak; hardcoded array yasak. |
+| PSS-010-FU1 | Platform admin MFA + active sessions ekranı | 🔴 | 0 | PSS-010'un %55 eksiği: MFA enable/disable, recovery, session revoke, trusted device ve audit feed. |
 | PSS-005 | 7 dil over-engineering — sadece en+tr tutulması için ek diller silinebilir mi karar | 🔴 | 0 | Opsiyonel cleanup |
 | MOD-0044 | Tenant logo base64 → MOD-0266 migrate | 🔴 | 0 | MOD-0266 sonrası |
 | MOD-0298 | RefreshProjection tamamla | 🔴 | 0 | MOD-0035 sonrası |
-| Genel | 409 conflict UI flow | 🔴 | 0 | — |
+| MOD-0297-FU1 | Subscription runtime automation | 🔴 | 0 | Trial expiry, renewal, PastDue auto-suspend, cancel-at-period-end job'ları MOD-0026 ile. |
+| MOD-0033-FU1 | Quota dashboard + notification | 🔴 | 0 | Period reset job, 80% warning, breach notification ve tenant detail dashboard. |
+| MOD-0032-FU1 | Frontend direct-service fallback kaldır | 🔴 | 0 | Gateway zorunluluğu için `PlatformServiceUrl` fallback'leri kaldırılmalı. |
+| Genel | 409 conflict UI flow | 🔴 | 0 | RowVersion kullanan formlarda reload/merge kullanıcı akışı. |
 | Genel | API versioning (`/api/v1/...`) | 🔴 | 0 | MOD-0032 ile |
+| Genel | Event/job altyapısı tamamlanmadan %100 verilemez | 🔴 | 0 | MOD-0035 Event Bus + MOD-0026 Background Job Scheduler; tenant/subscription/quota/entitlement otomasyonlarının ortak bağımlılığı. |
+| Genel | Production provider entegrasyonları | 🔴 | 0 | MOD-0027 notification, MOD-0263 messaging, MOD-0266 blob storage, MOD-0299 billing/payment, MOD-0028 document metadata. |
 
 ---
 
@@ -1993,6 +2315,33 @@ Bu tabloyu modül bittiğinde güncelle. Bölüm 2'deki özet tablo bunun kısal
 - **2026-05-11:** `SavedViews` Platform Application'da yanlış konumlanmış — taşıma kararı bekliyor.
 - **2026-05-11:** MOD-0262 (External Document Provider) MVP-priority değil, ERP modülleri başlamadıkça erteleme.
 - **2026-05-11:** MOD-0265 (SIEM) MVP'de skip — SOC2 hedefi geldiğinde aktive.
+- **2026-05-14:** Repo durumu plan ile mutabakat. NEW-002 backend merged (commit d3656fe). MOD-0033 PR #8 merged (entities, controllers, Features/Quotas). MOD-0002 InterfaceRegistry scaffold eklendi. Branch: features/referencedata.
+- **2026-05-14:** NEW-002 reconciliation — kod doğrulaması yapıldı: status 🟠 %85 → 🟢 %95. Master-plan'da "gateway route, invite-email, audit hookup eksik" deniliyordu; gerçekte gateway routes ([ocelot.json:124-152](../../gateway/Diten.ApiGateway/ocelot.json#L124)) **var**, `PlatformAdministratorInvitationEmailService` + email template **var**, 8 command + tam Slim DataTable shell **var**. Yalnızca **MOD-0021 audit hookup** eksik (upstream bağımlılık).
+- **2026-05-14:** PSS-011 Lookups / Reference Data %92 (🟠). Acceptance 14/14 ✅ (MediatR Features/Lookups, `IPlatformLookupCache`, `[Authorize(PlatformActor)]` + `Platform.Lookups.Read`, hardcoded fallback kaldırıldı, PSS-007 feature-category source-of-record bağı doğrulandı). Unit tests 9/9 yazılı. Eksik: HTTP integration + gateway smoke testleri. Canonical `LookupOptionDto`, caching (12h/5m), `[AllowAnonymous]` blanket kaldırma, hardcoded currency fallback temizleme, locale/timezone/tenant-tier/subscription-cycle endpoint'leri. Tüketici: SubscriptionPlans, ModuleCatalog, Tenants ekranları.
+- **2026-05-14:** PSS-009 Platform Admin Profile & Settings %89 (🟠) — implement edildi, pack-only değil. Backend `Features/PlatformAccount/*`, `PlatformAccountController` `[Authorize(PlatformActor)]`, frontend `Views/Platform/Account/{Profile,Settings}` + JS + RESX, layout initials avatar + dropdown linkleri, gateway routes, `avatars/1.png` hardcoded referans kaldırıldı. v1 scope kasıtlı dar tutuldu: avatar upload, password change, MFA, fake timeline, locale/timezone preferences v1 dışı (sırasıyla storage standardı, PSS-010, MOD-0021, PSS-011 follow-up'larına devredildi). Eski daha geniş `PSS-009-platform-admin-profile.md` retired. Eksik %11: backend unit test coverage 4/9 senaryo + HTTP integration + browser smoke otomasyon.
+- **2026-05-15:** MOD-0021 reconciliation (kod kanıtı doğrulaması). Phase 5C 4 maddenin 4'ü implemented: H1 retention GET load ✅, H2 Redact-actor UI ✅ (`index.js:505+` modal), H3 Sidebar nav ✅ (`_LayoutPlatformAdmin.cshtml:236-245`), H4 `_DetailsModal.cshtml` ✅ (47 satır partial). MOD-0021 status `🟠 90 → 🟢 98`.
+- **2026-05-15:** MOD-0021 General Audit Trail Phase 1-5C implemented (🟢 %98). Phase 1 Persistence (entities + repos + seed + 7 test), Phase 2 Application Core (IAuditService + redactor + idempotency + recursion guard + retention resolver + 11 test, H1 fix), Phase 3 AuditBehavior (markers + pipeline + 16 test, H1+H2 fix), Phase 4 Worker (BackgroundService + processor + payload mapper + 25 test, C1+H1 fix), Phase 5A Backend API (PlatformAuditController PlatformAdminOnly + 5 endpoint + validators + meta-audit writer + gateway routes via integration-agent, Seçenek A), Phase 5B/5C Frontend UI (AuditLog DataTable + Retention load/update + Redact Actor + nav + modal partial). Kalan %2 = partner_admin audit scope, integration/smoke testleri ve carry-over hardening.
+- **2026-05-15:** Platform module pack envanteri reconciliation. 9 yeni pack `execution/.../module-packs/` altına eklendi:
+  - **MOD-0012** Secrets & Configuration Vault (review, 50%) — *NEW-001 Secrets Management'ın yeni-ID karşılığı*; iki ID coexist ediyor, NEW-001 legacy olarak işaretlendi (bkz. PSS-PLAN-RECON-1)
+  - **MOD-0014** Module Boundary Registry (in-progress, 40%) — Global Domain/Suite/Capability/Module katalog omurgası
+  - **MOD-0023** Workflow Designer (review, 0%) — Approvals/SLAs/Escalations
+  - **MOD-0024** Task & Checklist Engine (review, 0%) — Generic task primitives
+  - **MOD-0031** Evidence Linking Service (review, 0%) — Object ↔ Document linking
+  - **MOD-0037** Integration Monitoring & Reconciliation (review, 0%, MVP'de deferred)
+  - **PSS-008** Module Details Assignment Inspection (review, 60%)
+  - **PSS-010** Platform Admin Password & MFA Security (draft, 0%) — PSS-009 follow-up'tan bağımsız pack oldu
+- **2026-05-15:** Master-plan yüzdeleri repo kod kanıtına göre revize edildi ve `%100 için kalanlar` checklist'leri eklendi. Öne çıkan revizyonlar: Tenant Management 88, PSS-004 86, PSS-010 45, MOD-0012 70, MOD-0014 20, MOD-0018 20, MOD-0021 98, MOD-0032 50, MOD-0033 78, MOD-0002 70. Ortak kapanış kriterleri: HTTP integration, gateway smoke, browser smoke, DataTable v2 doğrulaması, audit retrofit, event/job altyapısı, production provider entegrasyonları.
+- **2026-05-15:** Üçüncü tur kod-kanıtı doğrulaması (kalan 12 modül için). **6 modülde drift düzeltildi**:
+  - **MOD-0046** Tenant Core UI: %70 → **%80** — Frontend full set (Index/Create/Details/Security + 5 JS dosyası, RESX) master-plan altında değerlendirilmişti
+  - **MOD-0044** Tenant Manager Backend: %75 → **%82** — 10 lifecycle command (BulkDelete, CreateAdmin, DeleteAdmin, Invite, Reactivate, Register, Suspend, Update) tamamı kod kanıtlı
+  - **PSS-010** Platform Admin Security: %45 → **%60** — AuthService'te `MfaChallenge`, `MfaChallengeService`, `PasswordPolicyService`, `IMfaChallengeRepository`, `VerifyMfa`/`ResendMfa` commands mevcut
+  - **MOD-0032** API Gateway: %50 → **%65** — `ocelot.json` 60 downstream route + custom `GatewayJwtAuthenticationHandler` + `TenantResolutionMiddleware`
+  - **PSS-008** Module Details Assignment: %70 → **%65** — backend tam (Handlers + Queries + 117 satır Contracts + Controller) ama frontend ayrı view yok (ModuleCatalog/Details içinde embedded tab)
+  - **MOD-0041** Logging/Monitoring: %35 → **%20** — sadece `Microsoft.Extensions.Logging` (basic), Serilog/OpenTelemetry yok
+  - **Uyumlu (değişmedi)**: PSS-004 (85), PSS-005 (92), PSS-006 (92), PSS-007 (88), MOD-0297 (80), MOD-0298 (87)
+- **2026-05-15:** İkinci tur kod-kanıtı doğrulaması. **MOD-0012**: master-plan %70 → gerçek **%85** (`Diten.BuildingBlocks.Security.Secrets` 10+ dosya `ISecretsProvider`, `JwtSecretRotationResolver`, `SecretRequirementValidator`, `SecretRedactor` + Tests projesi — production-ready). **MOD-0014**: master-plan %20 → gerçek **%0** (`*ModuleBoundary*`/`*CapabilityGroup*`/`*ModuleDefinition*` HİÇ kod yok, pack-only). **MOD-0002**: master-plan %70 → gerçek **%80** (18+ Application DTO/service + Controller 72 satır + Frontend Index/Details/_ConsumersDataTable/_ConsumersFilter/_IndexL10n + RESX en/tr — Compact DataTable shell tam). **MOD-0043**: master-plan %100 → gerçek **%75** (`Diten.AuditService` ve `Diten.MdmService` service klasörleri yok; pack/audit "done" iddiası ile repo state drift'li). Ders: pack `status: done` ≠ kod kanıtı; AC her maddesi için repo'da fiili dosya görmek zorunlu.
+  - **MOD-0046-QG** Tenant Quota Governance UI (approved, 30%) — MOD-0046 ailesinden ayrı UI pack
+  - Tenant Management ailesi (MOD-0043/44/46) artık 3 ayrı pack: **MOD-0043** Foundation (done), **MOD-0044** Manager Backend (in-progress), **MOD-0046** Core UI (in-progress)
 
 ---
 

@@ -1,0 +1,160 @@
+@using Diten.Web.Views.Platform.Account
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AccountIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ProfileTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+}
+
+<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-2 mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["ProfileTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["ProfileDescription"]</p>
+    </div>
+    <a class="btn btn-primary" href="/Platform/Account/Settings">
+        @Localizer["ManageAccount"]
+    </a>
+</div>
+
+<div class="card backbone-preview-section p-4 mb-4" data-platform-account-page="profile">
+    <div class="card-body p-0">
+        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
+            <div class="avatar avatar-xl">
+                <span class="avatar-initial rounded-circle bg-label-primary fw-semibold" data-account-avatar-lg>--</span>
+            </div>
+            <div class="flex-grow-1">
+                <h5 class="mb-1" data-account-field="displayName">@Localizer["Loading"]</h5>
+                <div class="text-muted mb-2" data-account-field="email">--</div>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-label-primary" data-account-field="actorType">--</span>
+                    <span class="badge bg-label-success" data-account-field="status">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 platform-account-profile">
+    <div class="col-12 col-xl-5">
+        <section class="card backbone-preview-section p-4 h-100">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["AccountSummary"]</h6>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-id-card"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["DisplayName"]</div>
+                            <div class="backbone-preview-value mt-1" data-account-field="displayName">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-envelope"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Email"]</div>
+                            <div class="backbone-preview-value mt-1" data-account-field="email">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-user"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["UserName"]</div>
+                            <div class="backbone-preview-value mt-1" data-account-field="userName">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-shield-quarter"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ActorType"]</div>
+                            <div class="backbone-preview-value mt-1" data-account-field="actorType">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-check-shield"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Status"]</div>
+                            <div class="backbone-preview-value mt-1" data-account-field="status">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-xl-7">
+        <section class="card backbone-preview-section p-4 h-100">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["AccessSummary"]</h6>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-lock-alt"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Roles"]</div>
+                            <div class="d-flex flex-wrap gap-2 mt-1" data-account-roles>
+                                <span class="badge bg-label-secondary">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-time-five"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["LastLoginAt"]</div>
+                            <div class="backbone-preview-value mt-1" data-account-field="lastLoginAt">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-envelope-open"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["InvitationStatus"]</div>
+                            <div class="backbone-preview-value mt-1" data-account-field="invitationStatus">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-calendar-plus"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["InvitedAt"]</div>
+                            <div class="backbone-preview-value mt-1" data-account-field="invitedAt">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-calendar"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["CreatedAt"]</div>
+                            <div class="backbone-preview-value mt-1" data-account-field="createdAt">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-refresh"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["UpdatedAt"]</div>
+                            <div class="backbone-preview-value mt-1" data-account-field="updatedAt">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Platform/Account/_AccountL10n.cshtml" />
+    <script src="~/assets/js/Platform/Account/account.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Account/profile.js" asp-append-version="true"></script>
+}

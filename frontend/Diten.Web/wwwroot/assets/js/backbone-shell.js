@@ -17,10 +17,41 @@ window.BackboneShell = (function () {
         var nameEl = document.getElementById('navbar-user-name');
         var roleEl = document.getElementById('navbar-user-role');
 
-        if (!user.firstName || !nameEl || !roleEl) return;
+        if (!nameEl || !roleEl) return;
 
-        nameEl.textContent = [user.firstName, user.lastName].filter(Boolean).join(' ');
-        roleEl.textContent = Array.isArray(user.roles) && user.roles.length > 0 ? user.roles[0] : (window.L10n?.User || 'User');
+        var displayName = user.displayName ||
+            [user.firstName, user.lastName].filter(Boolean).join(' ') ||
+            user.email ||
+            nameEl.textContent;
+        var role = Array.isArray(user.roles) && user.roles.length > 0
+            ? user.roles[0]
+            : (user.actorType || window.L10n?.User || 'User');
+        var initials = user.initials || createInitials(displayName, user.email);
+
+        nameEl.textContent = displayName;
+        roleEl.textContent = humanize(role);
+        document.querySelectorAll('[data-platform-account-avatar]').forEach(function (el) {
+            el.textContent = initials;
+        });
+    }
+
+    function createInitials(displayName, email) {
+        var source = String(displayName || '').trim() ||
+            String(email || '').split('@')[0].replace(/[._-]+/g, ' ');
+        var initials = source
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map(function (part) { return part.charAt(0); })
+            .join('')
+            .toUpperCase();
+        return initials || '?';
+    }
+
+    function humanize(value) {
+        return String(value || '')
+            .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+            .replace(/[_-]+/g, ' ');
     }
 
     function bindLanguagePersistence() {

@@ -399,21 +399,24 @@ const TenantCreate = (function () {
 
     const loadLookups = async () => {
         try {
-            const [countries, currencies, timezones] = await Promise.all([
+            const [countriesPayload, currenciesPayload, timezonesPayload] = await Promise.all([
                 fetch(`${apiBase}/lookups/countries`).then(r => r.json()),
                 fetch(`${apiBase}/lookups/currencies`).then(r => r.json()),
                 fetch(`${apiBase}/lookups/timezones`).then(r => r.json())
             ]);
+            const countries = unwrap(countriesPayload) || [];
+            const currencies = unwrap(currenciesPayload) || [];
+            const timezones = unwrap(timezonesPayload) || [];
 
             const countrySelect = document.getElementById('tenantCountry');
             const currencySelect = document.getElementById('defaultCurrency');
             const timezoneSelect = document.getElementById('defaultTimezone');
 
             countries.forEach(c => countrySelect?.add(new Option(`${c.name} (${c.code})`, c.code)));
-            currencies.forEach(c => currencySelect?.add(new Option(`${c.code} - ${c.name}`, c.code)));
+            currencies.forEach(c => currencySelect?.add(new Option(`${c.code} - ${c.name}`, c.value || c.code)));
             [...timezones]
                 .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' }))
-                .forEach(t => timezoneSelect?.add(new Option(t.name, t.id)));
+                .forEach(t => timezoneSelect?.add(new Option(t.name, t.value || t.code || t.id)));
 
             initTimezoneSelect2();
         } catch (err) {

@@ -121,7 +121,7 @@
                     showCancelButton: true,
                     confirmButtonText: yesBtn,
                     cancelButtonText: noBtn,
-                    width: '400px',
+                    width: options.width || '400px',
                     padding: '2.5rem 1.5rem 2rem',
                     customClass: {
                         popup: 'rounded-4 shadow-lg',
@@ -139,23 +139,41 @@
                 // Add textarea support if requested
                 if (options.showInput) {
                     swalConfig.input = 'textarea';
+                    if (options.inputLabel) {
+                        swalConfig.inputLabel = options.inputLabel;
+                    }
                     swalConfig.inputPlaceholder = options.inputPlaceholder || '';
-                    swalConfig.inputAttributes = {
+                    swalConfig.inputAttributes = Object.assign({
                         'rows': 3,
                         'class': 'form-control mt-3 px-3 py-2 rounded-3 border-light-subtle shadow-none'
-                    };
+                    }, options.inputAttributes || {});
                     swalConfig.preConfirm = (value) => {
                         if (options.inputRequired && !value) {
                             Swal.showValidationMessage(options.inputValidationMessage || 'Value is required');
                             return false;
                         }
+                        if (typeof options.inputValidator === 'function') {
+                            var validationMessage = options.inputValidator(value);
+                            if (validationMessage) {
+                                Swal.showValidationMessage(validationMessage);
+                                return false;
+                            }
+                        }
                         return value;
+                    };
+                }
+
+                if (typeof options.didOpen === 'function') {
+                    swalConfig.didOpen = function (popup) {
+                        options.didOpen(popup, Swal);
                     };
                 }
 
                 Swal.fire(swalConfig).then(function (result) {
                     if (result.isConfirmed && typeof callback === 'function') {
                         callback(result.value); // Pass the input value back
+                    } else if (!result.isConfirmed && typeof options.onCancel === 'function') {
+                        options.onCancel();
                     }
                 });
                 return;

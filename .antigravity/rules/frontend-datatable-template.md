@@ -61,6 +61,8 @@ Zorunlu uygulama:
 - `_Form.cshtml` sol/sağ kolon düzenini `Details.cshtml` ile aynı bölüm sırasına göre kurar.
 - Her logical bölüm ayrı `card` veya standardize edilmiş section olmalıdır; iki farklı logical bölüm tek kartta birleştirilemez.
 - `Details.cshtml` alanları `Identity`, `Description`, `Classification`, `Status/Lifecycle` gibi dört bölümde gösteriyorsa `_Form.cshtml` de aynı dört bölümü ayrı kart olarak göstermelidir.
+- Compact `Details.cshtml` root wrapper'ı `{module-slug}-details` formatında olmalıdır. Örnek: `<div class="{{ModuleNameKebab}}-details">`.
+- Compact Details read-only section kartları `card backbone-preview-section` class'larını birlikte kullanır ve shared CSS standardı üzerinden standart `.card` shadow + no extra preview border davranışını alır. Page-level `box-shadow`, global `.card` override veya view içine özel shadow CSS yazılmaz.
 - Required marker ve input tipi ilgili alanın kendi bölümünde kalır; status/select/switch alanları classification kartına karıştırılmaz.
 - Teslimden önce `_Form.cshtml` ve `Details.cshtml` yan yana kontrol edilir: bölüm sayısı, bölüm başlıkları ve alanların bölüm sahipliği eşleşmelidir.
 

@@ -4,7 +4,7 @@
     const payload = document.getElementById('administrators-l10n');
     const requiredKeys = [
         'Accepted', 'Actions', 'Active', 'AddNew', 'Apply', 'AreYouSure',
-        'BulkDelete', 'BulkDeleteConfirm', 'BulkDeleteSuccess', 'Cancel',
+        'BulkDelete', 'BulkDeleteConfirm', 'BulkDeleteSuccess', 'Cancel', 'Close',
         'ColumnVisibility', 'ComingSoon', 'Delete', 'Details', 'Disabled',
         'DisplayName', 'Edit', 'Email', 'UserName', 'ErrorOccurred', 'Export', 'Expired',
         'Filter', 'FormTitleCreate', 'FormTitleEdit', 'FormValidationError',
@@ -17,7 +17,8 @@
         'Status', 'Suspend', 'Suspended', 'Unknown', 'Update', 'ViewDetails',
         'SuspendModalTitle', 'SuspendModalWarning', 'SuspendModalReasonLabel',
         'SuspendModalReasonPlaceholder', 'SuspendModalReasonRequired', 'SuspendModalConfirmButton',
-        'EmailUnlockTooltip', 'ResendInviteSuccess',
+        'EmailUnlockTooltip', 'ResendInviteSuccess', 'SetupLinkTitle', 'SetupLinkIntro',
+        'SetupLinkEmailFailedIntro',
         'ProtectedAccount', 'AdminSelfActionDenied', 'AdminSelfRoleDowngradeDenied',
         'AdminLastSuperAdminDenied', 'AdminSeedDeleteDenied', 'AdminSeedSuspendDenied'
     ];

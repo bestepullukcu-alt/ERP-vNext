@@ -12,4 +12,10 @@ public interface ITenantContext
 
     void SetTenant(Guid tenantId);
     void SetPlatformContext(Guid targetTenantId);
+
+    /// <summary>
+    /// Resets the context to the unresolved state. Used to restore the previous tenant
+    /// state when no previous tenant was set (see <c>TenantScope</c>).
+    /// </summary>
+    void ClearTenant();
 }
