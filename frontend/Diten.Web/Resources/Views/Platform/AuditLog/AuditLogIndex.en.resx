@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AuditLog.Title" xml:space="preserve"><value>Audit Log</value></data>
+  <data name="AuditLog.Subtitle" xml:space="preserve"><value>Review immutable platform audit events with controlled export and detail inspection.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review immutable platform audit events with controlled export and detail inspection.</value></data>
+  <data name="AuditLog.Filter.DateRange" xml:space="preserve"><value>Date Range</value></data>
+  <data name="AuditLog.Filter.From" xml:space="preserve"><value>Occurred From</value></data>
+  <data name="AuditLog.Filter.To" xml:space="preserve"><value>Occurred To</value></data>
+  <data name="AuditLog.Filter.Actor" xml:space="preserve"><value>Actor</value></data>
+  <data name="AuditLog.Filter.Tenant" xml:space="preserve"><value>Tenant</value></data>
+  <data name="AuditLog.Filter.TenantPlaceholder" xml:space="preserve"><value>Search tenant</value></data>
+  <data name="AuditLog.Filter.Category" xml:space="preserve"><value>Category</value></data>
+  <data name="AuditLog.Filter.AllCategories" xml:space="preserve"><value>All Categories</value></data>
+  <data name="AuditLog.Filter.Operation" xml:space="preserve"><value>Operation</value></data>
+  <data name="AuditLog.Filter.AllOperations" xml:space="preserve"><value>All Operations</value></data>
+  <data name="AuditLog.Filter.EntityType" xml:space="preserve"><value>Entity Type</value></data>
+  <data name="AuditLog.Filter.EntityTypePlaceholder" xml:space="preserve"><value>Entity type</value></data>
+  <data name="AuditLog.Filter.Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="AuditLog.Filter.Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="AuditLog.Table.OccurredAt" xml:space="preserve"><value>Occurred</value></data>
+  <data name="AuditLog.Table.Actor" xml:space="preserve"><value>Actor</value></data>
+  <data name="AuditLog.Table.Tenant" xml:space="preserve"><value>Tenant</value></data>
+  <data name="AuditLog.Table.Category" xml:space="preserve"><value>Category</value></data>
+  <data name="AuditLog.Table.Operation" xml:space="preserve"><value>Operation</value></data>
+  <data name="AuditLog.Table.EntityType" xml:space="preserve"><value>Entity Type</value></data>
+  <data name="AuditLog.Table.EntityId" xml:space="preserve"><value>Entity ID</value></data>
+  <data name="AuditLog.Table.Outcome" xml:space="preserve"><value>Outcome</value></data>
+  <data name="AuditLog.Table.SourceModule" xml:space="preserve"><value>Source Module</value></data>
+  <data name="AuditLog.Table.Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AuditLog.ExportCsv" xml:space="preserve"><value>Export CSV</value></data>
+  <data name="AuditLog.ExportJson" xml:space="preserve"><value>Export JSON</value></data>
+  <data name="AuditLog.Export.MaxRangeError" xml:space="preserve"><value>Export date range cannot exceed 365 days.</value></data>
+  <data name="AuditLog.Export.RequiresDates" xml:space="preserve"><value>Select a From and To date before exporting.</value></data>
+  <data name="AuditLog.Detail.Title" xml:space="preserve"><value>Audit Event Detail</value></data>
+  <data name="AuditLog.Detail.Tabs.Overview" xml:space="preserve"><value>Overview</value></data>
+  <data name="AuditLog.Detail.Tabs.Changes" xml:space="preserve"><value>Changes</value></data>
+  <data name="AuditLog.Detail.Tabs.Metadata" xml:space="preserve"><value>Metadata</value></data>
+  <data name="AuditLog.Detail.Tabs.Forensics" xml:space="preserve"><value>Forensics</value></data>
+  <data name="AuditLog.Detail.OccurredAt" xml:space="preserve"><value>Occurred At (UTC)</value></data>
+  <data name="AuditLog.Detail.WrittenAt" xml:space="preserve"><value>Written At (UTC)</value></data>
+  <data name="AuditLog.Detail.WriteDelay" xml:space="preserve"><value>Write Delay</value></data>
+  <data name="AuditLog.Detail.DelayUnit" xml:space="preserve"><value>ms</value></data>
+  <data name="AuditLog.Detail.IpAddress" xml:space="preserve"><value>IP Address (Masked)</value></data>
+  <data name="AuditLog.Detail.UserAgent" xml:space="preserve"><value>User Agent</value></data>
+  <data name="AuditLog.Detail.EventId" xml:space="preserve"><value>Event ID</value></data>
+  <data name="AuditLog.Detail.SourceService" xml:space="preserve"><value>Source Service</value></data>
+  <data name="AuditLog.Detail.SourceModule" xml:space="preserve"><value>Source Module</value></data>
+  <data name="AuditLog.Detail.EntityId" xml:space="preserve"><value>Entity ID</value></data>
+  <data name="AuditLog.Detail.EntityType" xml:space="preserve"><value>Entity Type</value></data>
+  <data name="AuditLog.Detail.Outcome" xml:space="preserve"><value>Outcome</value></data>
+  <data name="AuditLog.Detail.RedactedAt" xml:space="preserve"><value>Redacted At (UTC)</value></data>
+  <data name="AuditLog.Detail.RedactedBy" xml:space="preserve"><value>Redacted By</value></data>
+  <data name="AuditLog.Detail.RedactionReason" xml:space="preserve"><value>Redaction Reason</value></data>
+  <data name="AuditLog.Detail.RedactionTraceTitle" xml:space="preserve"><value>This event was redacted</value></data>
+  <data name="AuditLog.Detail.RawJson" xml:space="preserve"><value>Raw JSON</value></data>
+  <data name="AuditLog.Detail.CopyCorrelationId" xml:space="preserve"><value>Copy Correlation ID</value></data>
+  <data name="AuditLog.Detail.RelatedEvents" xml:space="preserve"><value>Related Events</value></data>
+  <data name="AuditLog.Detail.RedactFromDetail" xml:space="preserve"><value>Redact Actor PII</value></data>
+  <data name="AuditLog.Detail.ShowEngineering" xml:space="preserve"><value>Show Engineering</value></data>
+  <data name="AuditLog.Detail.HideEngineering" xml:space="preserve"><value>Hide Engineering</value></data>
+  <data name="AuditLog.Detail.BusinessMetadata" xml:space="preserve"><value>Business Metadata</value></data>
+  <data name="AuditLog.Detail.EngineeringMetadata" xml:space="preserve"><value>Engineering Metadata</value></data>
+  <data name="AuditLog.Detail.Copied" xml:space="preserve"><value>Copied</value></data>
+  <data name="AuditLog.Detail.Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="AuditLog.Detail.BeforeState" xml:space="preserve"><value>Before State</value></data>
+  <data name="AuditLog.Detail.AfterState" xml:space="preserve"><value>After State</value></data>
+  <data name="AuditLog.Detail.Metadata" xml:space="preserve"><value>Metadata</value></data>
+  <data name="AuditLog.Detail.Diff" xml:space="preserve"><value>JSON Diff</value></data>
+  <data name="AuditLog.Detail.CorrelationId" xml:space="preserve"><value>Correlation ID</value></data>
+  <data name="AuditLog.Detail.RedactionStatus" xml:space="preserve"><value>Redaction Status</value></data>
+  <data name="AuditLog.Detail.NoChanges" xml:space="preserve"><value>No state differences detected.</value></data>
+  <data name="AuditLog.Detail.Changed" xml:space="preserve"><value>Changed</value></data>
+  <data name="AuditLog.Detail.Added" xml:space="preserve"><value>Added</value></data>
+  <data name="AuditLog.Detail.Removed" xml:space="preserve"><value>Removed</value></data>
+  <data name="AuditLog.Detail.AdvancedMetadata" xml:space="preserve"><value>Advanced Technical Metadata</value></data>
+  <data name="AuditLog.Detail.TechnicalDetails" xml:space="preserve"><value>Technical Details</value></data>
+  <data name="AuditLog.Detail.NoStateChange" xml:space="preserve"><value>No state change captured</value></data>
+  <data name="AuditLog.Detail.Identity" xml:space="preserve"><value>Identity</value></data>
+  <data name="AuditLog.Detail.NoBusinessMetadata" xml:space="preserve"><value>No business metadata</value></data>
+  <data name="AuditLog.Detail.Old" xml:space="preserve"><value>Old</value></data>
+  <data name="AuditLog.Detail.New" xml:space="preserve"><value>New</value></data>
+  <data name="AuditLog.Empty" xml:space="preserve"><value>No audit events match the current filters.</value></data>
+  <data name="AuditLog.Unauthorized" xml:space="preserve"><value>You do not have permission to view audit events.</value></data>
+  <data name="AuditLog.LoginRequired" xml:space="preserve"><value>Your platform admin session expired. Sign in again to continue.</value></data>
+  <data name="AuditLog.Forbidden" xml:space="preserve"><value>Your account does not have the required audit permission.</value></data>
+  <data name="AuditLog.InvalidDateRange" xml:space="preserve"><value>From date must be before To date.</value></data>
+  <data name="AuditLog.InvalidGuid" xml:space="preserve"><value>Use a valid GUID value.</value></data>
+  <data name="AuditLog.Outcome.Succeeded" xml:space="preserve"><value>Succeeded</value></data>
+  <data name="AuditLog.Outcome.Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="AuditLog.Outcome.Denied" xml:space="preserve"><value>Denied</value></data>
+  <data name="AuditLog.Outcome.Skipped" xml:space="preserve"><value>Skipped</value></data>
+  <data name="AuditLog.Outcome.Duplicate" xml:space="preserve"><value>Duplicate</value></data>
+  <data name="AuditLog.Filter.Outcome" xml:space="preserve"><value>Outcome</value></data>
+  <data name="AuditLog.Filter.AllOutcomes" xml:space="preserve"><value>All Outcomes</value></data>
+  <data name="AuditLog.Filter.TenantHelp" xml:space="preserve"><value></value></data>
+  <data name="AuditLog.RedactPii" xml:space="preserve"><value>Mask PII</value></data>
+  <data name="AuditLog.RedactActor" xml:space="preserve"><value>Mask Actor PII</value></data>
+  <data name="AuditLog.RedactActor.Title" xml:space="preserve"><value>Mask Actor PII</value></data>
+  <data name="AuditLog.RedactActor.Description" xml:space="preserve"><value>This action permanently masks personally identifiable information across audit records for the selected actor.</value></data>
+  <data name="AuditLog.RedactActor.Warning" xml:space="preserve"><value>Audit records remain immutable. Only actor personal data will be masked. Do not enter raw PII in the reason.</value></data>
+  <data name="AuditLog.RedactActor.ActorId" xml:space="preserve"><value>Actor ID</value></data>
+  <data name="AuditLog.RedactActor.ActorIdPlaceholder" xml:space="preserve"><value>00000000-0000-0000-0000-000000000000</value></data>
+  <data name="AuditLog.RedactActor.Find" xml:space="preserve"><value>Find Actor</value></data>
+  <data name="AuditLog.RedactActor.NotFound" xml:space="preserve"><value>No audit records were found for this actor.</value></data>
+  <data name="AuditLog.RedactActor.LookupError" xml:space="preserve"><value>Actor lookup could not be completed.</value></data>
+  <data name="AuditLog.RedactActor.LookupRequired" xml:space="preserve"><value>Find and verify an actor before masking PII.</value></data>
+  <data name="AuditLog.RedactActor.Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="AuditLog.RedactActor.ReasonPlaceholder" xml:space="preserve"><value>GDPR request, legal request, account anonymization...</value></data>
+  <data name="AuditLog.RedactActor.ReasonHelp" xml:space="preserve"><value></value></data>
+  <data name="AuditLog.RedactActor.ReasonRequired" xml:space="preserve"><value>Redaction reason is required.</value></data>
+  <data name="AuditLog.RedactActor.ReasonMaxLength" xml:space="preserve"><value>Reason cannot exceed 500 characters.</value></data>
+  <data name="AuditLog.RedactActor.Button" xml:space="preserve"><value>Mask PII</value></data>
+  <data name="AuditLog.RedactActor.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="AuditLog.RedactActor.Tooltip" xml:space="preserve"><value>Mask Actor PII</value></data>
+  <data name="AuditLog.RedactActor.AffectedRecords" xml:space="preserve"><value>Affects {0} audit records</value></data>
+  <data name="AuditLog.RedactActor.SelectRow" xml:space="preserve"><value>Open Redact PII from an audit row to use the selected actor.</value></data>
+  <data name="AuditLog.RedactActor.Success" xml:space="preserve"><value>Actor redaction completed for {0} audit events.</value></data>
+  <data name="AuditLog.DownloadStarted" xml:space="preserve"><value>Export download started.</value></data>
+  <data name="AuditLog.DefaultViewName" xml:space="preserve"><value>Default</value></data>
+  <data name="AuditLog.ViewSaved" xml:space="preserve"><value>View Saved</value></data>
+  <data name="AuditLog.Loading" xml:space="preserve"><value>Loading</value></data>
+  <data name="AuditLog.Close" xml:space="preserve"><value>Close</value></data>
+  <data name="AuditLog.Category.Security" xml:space="preserve"><value>Security</value></data>
+  <data name="AuditLog.Category.IdentityAccess" xml:space="preserve"><value>Identity Access</value></data>
+  <data name="AuditLog.Category.TenantAdministration" xml:space="preserve"><value>Tenant Administration</value></data>
+  <data name="AuditLog.Category.PlatformConfiguration" xml:space="preserve"><value>Platform Configuration</value></data>
+  <data name="AuditLog.Category.ReferenceData" xml:space="preserve"><value>Reference Data</value></data>
+  <data name="AuditLog.Category.ModuleCatalog" xml:space="preserve"><value>Module Catalog</value></data>
+  <data name="AuditLog.Category.SubscriptionBilling" xml:space="preserve"><value>Subscription Billing</value></data>
+  <data name="AuditLog.Category.Quota" xml:space="preserve"><value>Quota</value></data>
+  <data name="AuditLog.Category.DataExport" xml:space="preserve"><value>Data Export</value></data>
+  <data name="AuditLog.Category.DataPrivacy" xml:space="preserve"><value>Data Privacy</value></data>
+  <data name="AuditLog.Category.Integration" xml:space="preserve"><value>Integration</value></data>
+  <data name="AuditLog.Category.System" xml:space="preserve"><value>System</value></data>
+  <data name="AuditLog.Operation.Create" xml:space="preserve"><value>Create</value></data>
+  <data name="AuditLog.Operation.Update" xml:space="preserve"><value>Update</value></data>
+  <data name="AuditLog.Operation.Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="AuditLog.Operation.Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="AuditLog.Operation.Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="AuditLog.Operation.Suspend" xml:space="preserve"><value>Suspend</value></data>
+  <data name="AuditLog.Operation.Reactivate" xml:space="preserve"><value>Reactivate</value></data>
+  <data name="AuditLog.Operation.Assign" xml:space="preserve"><value>Assign</value></data>
+  <data name="AuditLog.Operation.Revoke" xml:space="preserve"><value>Revoke</value></data>
+  <data name="AuditLog.Operation.Export" xml:space="preserve"><value>Export</value></data>
+  <data name="AuditLog.Operation.Redact" xml:space="preserve"><value>Redact</value></data>
+  <data name="AuditLog.Operation.Login" xml:space="preserve"><value>Login</value></data>
+  <data name="AuditLog.Operation.Logout" xml:space="preserve"><value>Logout</value></data>
+  <data name="AuditLog.Operation.PermissionDenied" xml:space="preserve"><value>Permission Denied</value></data>
+  <data name="AuditLog.Operation.Execute" xml:space="preserve"><value>Execute</value></data>
+  <data name="Common.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Common.Passive" xml:space="preserve"><value>Passive</value></data>
+  <data name="Common.Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Common.Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Common.ViewDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="Common.BulkDelete" xml:space="preserve"><value>Bulk Delete</value></data>
+  <data name="Common.BulkDeleteConfirm" xml:space="preserve"><value>Confirm bulk delete</value></data>
+  <data name="Common.AreYouSure" xml:space="preserve"><value>Are you sure?</value></data>
+  <data name="Common.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Common.Continue" xml:space="preserve"><value>Continue</value></data>
+  <data name="Common.Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Common.Print" xml:space="preserve"><value>Print</value></data>
+  <data name="Common.Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Common.Export" xml:space="preserve"><value>Export</value></data>
+  <data name="Common.Import" xml:space="preserve"><value>Import</value></data>
+  <data name="Common.Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="Common.ShowAll" xml:space="preserve"><value>Show All</value></data>
+  <data name="Common.SaveView" xml:space="preserve"><value>Save View</value></data>
+  <data name="Common.ColumnVisibility" xml:space="preserve"><value>Column Visibility</value></data>
+  <data name="Common.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Common.ErrorOccurred" xml:space="preserve"><value>An error occurred.</value></data>
+  <data name="Common.DtInfo" xml:space="preserve"><value>Showing _START_ - _END_ / _TOTAL_</value></data>
+  <data name="Common.DtInfoEmpty" xml:space="preserve"><value>Showing 0 - 0 / 0</value></data>
+  <data name="Common.DtInfoFiltered" xml:space="preserve"><value>filtered from _MAX_ records</value></data>
+</root>

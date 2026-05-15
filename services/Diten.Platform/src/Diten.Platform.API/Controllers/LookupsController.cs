@@ -1,6 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-using System.Reflection;
-using Diten.Platform.Domain.Enums;
+using Diten.Platform.API.Controllers.Common;
+using Diten.Platform.API.Security;
+using Diten.Platform.Application.Features.Lookups.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,102 +9,125 @@ namespace Diten.Platform.API.Controllers;
 
 [ApiController]
 [Route("api/lookups")]
-[AllowAnonymous]
-public sealed class LookupsController : ControllerBase
+[Authorize(Policy = "PlatformActor")]
+public sealed class LookupsController : CustomBaseController
 {
-    [HttpGet("module-catalog/domains")]
-    public IActionResult GetModuleCatalogDomains()
+    private readonly IMediator _mediator;
+
+    public LookupsController(IMediator mediator)
     {
-        return Ok(ToLookupOptions<ModuleCatalogDomain>());
+        _mediator = mediator;
+    }
+
+    [HttpGet("module-catalog/domains")]
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetModuleCatalogDomains(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetLookupOptionsQuery("module-catalog/domains"), ct);
+        return CreateActionResultInstance(response);
     }
 
     [HttpGet("module-catalog/services")]
-    public IActionResult GetModuleCatalogServices()
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetModuleCatalogServices(CancellationToken ct)
     {
-        return Ok(ToLookupOptions<ModuleCatalogService>());
+        var response = await _mediator.Send(new GetLookupOptionsQuery("module-catalog/services"), ct);
+        return CreateActionResultInstance(response);
     }
 
     [HttpGet("countries")]
-    public IActionResult GetCountries()
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetCountries(CancellationToken ct)
     {
-        var countries = new[]
-        {
-            new { Code = "TR", Name = "Turkey" },
-            new { Code = "US", Name = "United States" },
-            new { Code = "GB", Name = "United Kingdom" },
-            new { Code = "DE", Name = "Germany" },
-            new { Code = "FR", Name = "France" },
-            new { Code = "ES", Name = "Spain" },
-            new { Code = "IT", Name = "Italy" },
-            new { Code = "RU", Name = "Russia" },
-            new { Code = "CN", Name = "China" },
-            new { Code = "JP", Name = "Japan" },
-            new { Code = "AE", Name = "United Arab Emirates" },
-            new { Code = "SA", Name = "Saudi Arabia" },
-            new { Code = "NL", Name = "Netherlands" },
-            new { Code = "BE", Name = "Belgium" },
-            new { Code = "CH", Name = "Switzerland" },
-            new { Code = "AT", Name = "Austria" },
-            new { Code = "PL", Name = "Poland" },
-            new { Code = "SE", Name = "Sweden" },
-            new { Code = "NO", Name = "Norway" },
-            new { Code = "DK", Name = "Denmark" },
-        }.OrderBy(x => x.Name);
-
-        return Ok(countries);
+        var response = await _mediator.Send(new GetLookupOptionsQuery("countries"), ct);
+        return CreateActionResultInstance(response);
     }
 
     [HttpGet("currencies")]
-    public IActionResult GetCurrencies()
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetCurrencies(CancellationToken ct)
     {
-        var currencies = new[]
-        {
-            new { Code = "TRY", Name = "Turkish Lira" },
-            new { Code = "USD", Name = "US Dollar" },
-            new { Code = "EUR", Name = "Euro" },
-            new { Code = "GBP", Name = "British Pound" },
-            new { Code = "CNY", Name = "Chinese Yuan" },
-            new { Code = "JPY", Name = "Japanese Yen" },
-            new { Code = "RUB", Name = "Russian Ruble" },
-            new { Code = "AED", Name = "UAE Dirham" },
-            new { Code = "SAR", Name = "Saudi Riyal" },
-            new { Code = "CHF", Name = "Swiss Franc" },
-            new { Code = "SEK", Name = "Swedish Krona" },
-            new { Code = "NOK", Name = "Norwegian Krone" },
-            new { Code = "DKK", Name = "Danish Krone" },
-            new { Code = "PLN", Name = "Polish Zloty" },
-        }.OrderBy(x => x.Name);
+        var response = await _mediator.Send(new GetCurrencyLookupQuery(), ct);
+        return CreateActionResultInstance(response);
+    }
 
-        return Ok(currencies);
+    [HttpGet("locales")]
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetLocales(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetLocaleLookupQuery(), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("languages")]
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetLanguages(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetLocaleLookupQuery(), ct);
+        return CreateActionResultInstance(response);
     }
 
     [HttpGet("timezones")]
-    public IActionResult GetTimezones()
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetTimezones(CancellationToken ct)
     {
-        var timezones = TimeZoneInfo.GetSystemTimeZones()
-            .Select(tz => new { Id = tz.Id, Name = tz.DisplayName })
-            .OrderBy(x => x.Name);
-
-        return Ok(timezones);
+        var response = await _mediator.Send(new GetTimezoneLookupQuery(), ct);
+        return CreateActionResultInstance(response);
     }
 
-    private static IEnumerable<LookupOption> ToLookupOptions<TEnum>()
-        where TEnum : struct, Enum
+    [HttpGet("tenant-tiers")]
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetTenantTiers(CancellationToken ct)
     {
-        return Enum.GetValues<TEnum>()
-            .Select(value =>
-            {
-                var name = value.ToString();
-                var displayName = typeof(TEnum)
-                    .GetMember(name)
-                    .First()
-                    .GetCustomAttribute<DisplayAttribute>()?
-                    .GetName() ?? name;
-
-                return new LookupOption(name, displayName, displayName);
-            })
-            .OrderBy(x => x.Name);
+        var response = await _mediator.Send(new GetTenantTierLookupQuery(), ct);
+        return CreateActionResultInstance(response);
     }
 
-    private sealed record LookupOption(string Code, string Name, string Value);
+    [HttpGet("feature-categories")]
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetFeatureCategories(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetLookupOptionsQuery("feature-categories"), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("subscription-cycles")]
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetSubscriptionCycles(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetLookupOptionsQuery("subscription-cycles"), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("audit/categories")]
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetAuditCategories(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetLookupOptionsQuery("audit/categories"), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("audit/operations")]
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetAuditOperations(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetLookupOptionsQuery("audit/operations"), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("audit/outcomes")]
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetAuditOutcomes(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetLookupOptionsQuery("audit/outcomes"), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("{lookupKey}")]
+    [HasPermission("Platform.Lookups.Read")]
+    public async Task<IActionResult> GetLookupByKey(string lookupKey, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetLookupOptionsQuery(lookupKey), ct);
+        return CreateActionResultInstance(response);
+    }
 }

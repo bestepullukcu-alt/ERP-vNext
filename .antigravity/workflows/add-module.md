@@ -15,6 +15,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - Module pack yoksa kod yazma; kullanıcıya önce `/prepare-module-pack` veya `module-pack-author` ile module pack hazırlatmasını söyle.
    - Module pack status `draft` ise kod yazma; kullanıcı incelemesi ve `approved` veya `ready-for-dev` status beklenir.
    - DataTable modülü ise module pack içinde `form_field_count` ve `golden_reference: slim|compact` kararını kontrol et.
+   - Platform/Admin modülü ise `.antigravity/rules/platform-lookups-reference-data.md` dosyasını oku ve lookup dependency kararını module pack içinde doğrula.
    - Yetki hiyerarşisini uygula:
      - `Module Pack > Domain Config > AGENTS.md > .antigravity/`
    - Çakışma varsa kullanıcı onayı al; onaysız fazlara geçme.
@@ -38,6 +39,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      | 6 | DataTable ise `golden_reference` kararı doğru mu? (≤8 slim, >8 compact) | Slim/Compact + form alan sayısı |
      | 7 | Compact DataTable ise Create/Edit/Details logical section haritası planlandı mı? | Evet/Hayır + section listesi + `_Form.cshtml`/`Details.cshtml` parite notu |
      | 8 | Required alan kontratı Backend Validator + Web ViewModel + Razor + tracker için aynı mı? | Evet/Hayır + required alan listesi + opsiyonel nullable alan listesi + ilk açılış progress beklentisi |
+     | 9 | Platform lookup dependency checked mi? Dropdown/filter/select/default alanları PSS `/api/lookups/{key}` kullanıyor mu, yeni lookup key pack'te açık mı, MDM/reference boundary korunuyor mu? | Evet/Hayır/Yok + endpoint listesi veya gerekçe |
 
    - **Onay Mekaniği:** Orchestrator, doldurulmuş tabloyu kullanıcıya `AskUserQuestion` ile (ya da CLI'da düz mesaj olarak) sunar ve "Onaylıyor musunuz?" sorusuyla bekler. **Kullanıcıdan açık `evet/onay/approved` cevabı alınmadan Phase 2'ye geçilemez.**
    - **Sapma Halinde:** Tek bir madde "Hayır" ise Phase 1'e dön, module pack ya da plan üzerinde düzelt; tabloyu yeniden doldur.

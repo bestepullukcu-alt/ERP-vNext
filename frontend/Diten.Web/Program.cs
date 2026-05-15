@@ -52,6 +52,9 @@ builder.Services.AddHttpClient<IAuthGateway, AuthGateway>(client =>
     client.BaseAddress = new Uri(authServiceUrl);
 });
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<Diten.Web.Services.IPlatformProfileSnapshotProvider, Diten.Web.Services.PlatformProfileSnapshotProvider>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
 builder.Services.AddSingleton<ITaskDetailService, TaskDetailService>();
 builder.Services.AddScoped<IManagementGovernanceFrontendAdapter, MockManagementGovernanceFrontendAdapter>();
@@ -136,7 +139,7 @@ var validatedTokenParameters = new TokenValidationParameters
     ValidIssuer = jwtIssuer,
     ValidAudience = jwtAudience,
     IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
-    ClockSkew = TimeSpan.Zero
+    ClockSkew = TimeSpan.FromSeconds(30)
 };
 
 // MOD-0014: Validated Token-to-User State Bridge

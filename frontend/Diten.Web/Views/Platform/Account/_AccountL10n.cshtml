@@ -1,0 +1,32 @@
+@using System.Text.Json
+@using Diten.Web.Views.Platform.Account
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new Dictionary<string, string>
+    {
+        ["accountTitle"] = Localizer["AccountTitle"].Value,
+        ["actorType"] = Localizer["ActorType"].Value,
+        ["createdAt"] = Localizer["CreatedAt"].Value,
+        ["displayName"] = Localizer["DisplayName"].Value,
+        ["email"] = Localizer["Email"].Value,
+        ["gatewayError"] = SharedLocalizer["GatewayError"].Value,
+        ["invitationStatus"] = Localizer["InvitationStatus"].Value,
+        ["invitedAt"] = Localizer["InvitedAt"].Value,
+        ["lastLoginAt"] = Localizer["LastLoginAt"].Value,
+        ["notAvailable"] = Localizer["NotAvailable"].Value,
+        ["profileSaved"] = Localizer["ProfileSaved"].Value,
+        ["roles"] = Localizer["Roles"].Value,
+        ["save"] = SharedLocalizer["Save"].Value,
+        ["settingsTitle"] = Localizer["SettingsTitle"].Value,
+        ["status"] = SharedLocalizer["Status"].Value,
+        ["unableToLoad"] = Localizer["UnableToLoad"].Value,
+        ["updatedAt"] = Localizer["UpdatedAt"].Value,
+        ["userName"] = Localizer["UserName"].Value
+    };
+}
+
+<script type="application/json" id="account-l10n">
+@Html.Raw(JsonSerializer.Serialize(payload, new JsonSerializerOptions(JsonSerializerDefaults.Web)))
+</script>

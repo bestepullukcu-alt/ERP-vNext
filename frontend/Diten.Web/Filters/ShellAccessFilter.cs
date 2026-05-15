@@ -111,7 +111,7 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
                 ValidIssuer = jwtIssuer,
                 ValidAudience = jwtAudience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.FromSeconds(30)
             }, out _);
 
             context.User = principal;

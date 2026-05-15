@@ -43,6 +43,7 @@ html[data-shell="platform-admin"] .platform-admin-shell-badge {
   flex: 0 0 auto;
   font-size: 0.625rem;
   margin-left: 1rem;
+  margin-right: 0.75rem;
   padding: 0.25rem 0.5rem;
 }
 
@@ -63,7 +64,12 @@ html[data-shell="platform-admin"].layout-menu-collapsed:not(.layout-menu-hover) 
 }
 
 .module-catalog-details .backbone-preview-section,
+.module-page-details .backbone-preview-section,
+.platform-account-profile .backbone-preview-section,
+.backbone-preview-section[data-platform-account-page="profile"],
 .golden-reference-compact-details .backbone-preview-section,
+[class$="-details"] .backbone-preview-section,
+[class$="-preview"] .backbone-preview-section,
 #offcanvasDetailsPreview .backbone-preview-section {
   background: var(--bs-card-bg) !important;
   border: 0;
@@ -80,7 +86,28 @@ html[data-shell="platform-admin"].layout-menu-collapsed:not(.layout-menu-hover) 
 
 @media (max-width: 767.98px) {
   html[data-shell="platform-admin"] .platform-admin-shell-badge {
-    display: none;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    font-size: 0.5625rem;
+    padding: 0.1875rem 0.375rem;
+  }
+
+  /* <768: search + ADMIN sola, ikon grubu sağa */
+  html[data-shell="platform-admin"] #layout-navbar .navbar-nav-right {
+    justify-content: space-between;
+  }
+  html[data-shell="platform-admin"] #layout-navbar .navbar-nav-right > ul.navbar-nav {
+    margin-left: auto;
+    gap: 0.75rem; /* touch-friendly spacing */
+  }
+  html[data-shell="platform-admin"] #layout-navbar .navbar-nav-right > ul.navbar-nav .nav-link {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

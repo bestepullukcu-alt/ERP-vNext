@@ -1,4 +1,8 @@
 using Diten.Platform.Application.Contracts.Behaviors;
+using Diten.Platform.Application.Contracts.Audit;
+using Diten.Platform.Application.Features.Audit;
+using Diten.Platform.Application.Features.Audit.Services;
+using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Security;
 using Diten.Platform.Application.Features.InterfaceRegistry.Auditing;
 using Diten.Platform.Application.Features.Quotas.Services;
@@ -21,6 +25,7 @@ public static class DependencyInjection
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
             cfg.AddOpenBehavior(typeof(ExceptionBehavior<,>));
+            cfg.AddOpenBehavior(typeof(AuditBehavior<,>));
             cfg.AddOpenBehavior(typeof(PerformanceBehavior<,>));
         });
 
@@ -30,6 +35,15 @@ public static class DependencyInjection
         services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();
+        services.AddScoped<IPlatformLookupProvider, PlatformLookupProvider>();
+        services.AddSingleton<AuditBehaviorOptions>();
+        services.AddSingleton<ISensitiveFieldRedactionRegistry, SensitiveFieldRedactionRegistry>();
+        services.AddSingleton<ISensitiveFieldRedactor, SensitiveFieldRedactor>();
+        services.AddSingleton<IAuditIdempotencyKeyBuilder, AuditIdempotencyKeyBuilder>();
+        services.AddSingleton<IAuditRecursionGuard, AuditRecursionGuard>();
+        services.AddScoped<IAuditRetentionPolicyResolver, AuditRetentionPolicyResolver>();
+        services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<IAuditMetaAuditWriter, AuditMetaAuditWriter>();
 
         return services;
     }
