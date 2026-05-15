@@ -6,6 +6,15 @@ Form sayfalarında (Create/Edit) ve Liste sayfalarındaki (Index) filtrelerde Se
 2.  **Execution:** DataTable çizilmeden önce veya `initComplete` içerisinde filtreler beslenmelidir.
 3.  **Dependency:** Filtre select kutuları doldurulmadan kullanıcıya "Apply" izni verilmemelidir (veya boş state handle edilmelidir).
 
+**Platform/Admin Lookup Source (PSS):**
+- Platform/Admin sistem lookup'ları için SSOT `Diten.Platform` üzerindeki `/api/lookups/{key}` endpoint ailesidir. Detay: `.antigravity/rules/platform-lookups-reference-data.md`.
+- Browser JS servis portu `5057` çağırmaz. Platform/admin UI same-origin MVC proxy üzerinden Gateway'e veya doğrudan onaylı Gateway profile'a gider.
+- Lookup response `Response<IReadOnlyList<LookupOptionDto>>` envelope olabilir; JS önce `payload.data || payload.Data || payload` unwrap eder.
+- Option render ederken canonical alanlar kullanılır: label için `name`, submit değeri için `value || code`.
+- Endpoint-specific parser yazıp `{id,name}` veya `{code,name}`-only shape varsaymak YASAKTIR.
+- Hardcoded fallback lookup listesi YASAKTIR. API başarısızsa kontrollü empty/error state gösterilir, sessiz stale liste kullanılmaz.
+- ERP Account, General Reference, Financial Reference, Territory Reference ve tenant business lookup'ları bu Platform lookup standardına eklenmez; MDM/reference kapsamına yönlendirilir.
+
 ## JS-016: L10n Bridge Debugging & Fallback
 `window.L10n` nesnesi oluşturulurken eksik anahtarların tespiti geliştirme aşamasında kritiktir.
 

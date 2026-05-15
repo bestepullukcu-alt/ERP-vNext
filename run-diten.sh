@@ -46,4 +46,4 @@ launch_service "Gateway" "gateway/Diten.ApiGateway" 5000
 launch_service "Web" "frontend/Diten.Web" 5001
 
 echo "✨ Services are launching."
-echo "🔗 Access: http://localhost:5001/LegalEntities?culture=en"
+echo "🔗 Access: http://localhost:5001/platform/login"

@@ -1,28 +1,53 @@
 @using System.Security.Claims
 @using System.Text.Json
+@using Diten.Web.Services
+@using Diten.Web.Views.Platform.AuditLog
+@using Diten.Web.Views.Platform.AuditRetention
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject IHtmlLocalizer<AuditLogIndex> AuditLogLocalizer
+@inject IHtmlLocalizer<AuditRetentionIndex> AuditRetentionLocalizer
+@inject IPlatformProfileSnapshotProvider PlatformProfileSnapshotProvider
 @{
-    var currentUser = User?.Identity?.IsAuthenticated == true
+    var claimsPrincipal = User;
+    var isCurrentUserAuthenticated = claimsPrincipal?.Identity?.IsAuthenticated == true;
+    // Source-of-truth: PlatformAdministrator DB record via /api/platform/account/me (cached 5 min per user).
+    // Falls back to JWT claims if the API is unreachable so the page still renders.
+    var profileSnapshot = isCurrentUserAuthenticated
+        ? await PlatformProfileSnapshotProvider.GetCurrentAsync()
+        : new PlatformProfileSnapshot("User", "U", null, null, null, null, Array.Empty<string>());
+    var currentUserEmail = profileSnapshot.Email;
+    var currentUserFirstName = profileSnapshot.FirstName ?? string.Empty;
+    var currentUserLastName = profileSnapshot.LastName ?? string.Empty;
+    var currentUserRoles = profileSnapshot.Roles.ToArray();
+    var currentUserDisplayName = profileSnapshot.DisplayName;
+    var currentUserInitials = profileSnapshot.Initials;
+    var currentUserPrimaryRole = currentUserRoles.FirstOrDefault();
+    var currentUserRoleLabel = string.IsNullOrWhiteSpace(currentUserPrimaryRole)
+        ? "Platform Admin"
+        : System.Text.RegularExpressions.Regex.Replace(currentUserPrimaryRole, "([a-z0-9])([A-Z])", "$1 $2")
+            .Replace("_", " ")
+            .Replace("-", " ");
+
+    var currentUser = isCurrentUserAuthenticated
     ? new
     {
-        id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value,
-        email = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value,
-        firstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? string.Empty,
-        lastName = User.FindFirst(ClaimTypes.Surname)?.Value ?? string.Empty,
-        roles = User.FindAll(ClaimTypes.Role)
-    .Select(claim => claim.Value)
-    .Concat(User.FindAll("role").Select(claim => claim.Value))
-    .Distinct(StringComparer.OrdinalIgnoreCase)
-    .ToArray(),
-        tenantId = User.FindFirst("tenant_id")?.Value ?? User.FindFirst("tenantId")?.Value,
-        actorType = User.FindFirst("actor_type")?.Value
+        id = claimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? claimsPrincipal?.FindFirst("sub")?.Value,
+        email = currentUserEmail,
+        firstName = currentUserFirstName,
+        lastName = currentUserLastName,
+        displayName = currentUserDisplayName,
+        initials = currentUserInitials,
+        roles = currentUserRoles,
+        tenantId = claimsPrincipal?.FindFirst("tenant_id")?.Value ?? claimsPrincipal?.FindFirst("tenantId")?.Value,
+        actorType = claimsPrincipal?.FindFirst("actor_type")?.Value
     }
     : null;
     var currentUserJson = JsonSerializer.Serialize(currentUser);
     var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
     var layoutDirection = string.Equals(currentCulture, "ar", StringComparison.OrdinalIgnoreCase) ? "rtl" : "ltr";
     var activeController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentPath = Context.Request.Path.Value ?? string.Empty;
 }
 <!DOCTYPE html>
 
@@ -178,24 +203,6 @@
                             <div>Tenant Management</div>
                         </a>
                     </li>
-                    <li class="menu-item @(activeController == "ModuleCatalog" ? "active" : "")">
-                        <a href="/Platform/ModuleCatalog" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-grid-alt"></i>
-                            <div>Module Catalog</div>
-                        </a>
-                    </li>
-                    <li class="menu-item @(activeController == "Administrators" ? "active" : "")">
-                        <a href="/Platform/Administrators" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-user-check"></i>
-                            <div>@SharedLocalizer["PlatformAdministrators"]</div>
-                        </a>
-                    </li>
-                    <li class="menu-item @(activeController == "InterfaceRegistry" ? "active" : "")">
-                        <a href="/Platform/InterfaceRegistry" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-git-branch"></i>
-                            <div>Interface Registry</div>
-                        </a>
-                    </li>
                     <li class="menu-item @(activeController == "SubscriptionPlans" ? "active" : "")">
                         <a href="/Platform/SubscriptionPlans" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-credit-card"></i>
@@ -208,16 +215,40 @@
                             <div>@SharedLocalizer["SubscriptionFeatures"]</div>
                         </a>
                     </li>
-                    <li class="menu-item">
-                        <a href="/Platform/TenantSecurity" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-lock-alt"></i>
-                            <div>@SharedLocalizer["LoginSecurity"]</div>
+                    <li class="menu-item @(activeController == "ModuleCatalog" ? "active" : "")">
+                        <a href="/Platform/ModuleCatalog" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-grid-alt"></i>
+                            <div>Module Catalog</div>
+                        </a>
+                    </li>
+                    <li class="menu-item @(activeController == "InterfaceRegistry" ? "active" : "")">
+                        <a href="/Platform/InterfaceRegistry" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-git-branch"></i>
+                            <div>Interface Registry</div>
+                        </a>
+                    </li>
+                    <li class="menu-item @(activeController == "Administrators" ? "active" : "")">
+                        <a href="/Platform/Administrators" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-user-check"></i>
+                            <div>@SharedLocalizer["PlatformAdministrators"]</div>
+                        </a>
+                    </li>
+                    <li class="menu-item @(currentPath.StartsWith("/Platform/AuditLog", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                        <a href="/Platform/AuditLog" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-history"></i>
+                            <div>@AuditLogLocalizer["AuditLog.Title"]</div>
+                        </a>
+                    </li>
+                    <li class="menu-item @(currentPath.StartsWith("/Platform/AuditRetention", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                        <a href="/Platform/AuditRetention" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
+                            <div>@AuditRetentionLocalizer["AuditRetention.Title"]</div>
                         </a>
                     </li>
                 </ul>
             </aside>
 
-            <div class="menu-mobile-toggler d-xl-none rounded-1">
+            <div class="menu-mobile-toggler d-md-none rounded-1">
                 <a href="javascript:void(0);"
                     class="layout-menu-toggle menu-link text-large text-bg-secondary p-2 rounded-1">
                     <i class="icon-base bx bx-menu"></i>
@@ -228,17 +259,17 @@
             <!-- Layout container -->
             <div class="layout-page">
                 <!-- Navbar -->
-                <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
+                <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-md align-items-center bg-navbar-theme"
                     id="layout-navbar">
-                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
-                        <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
+                    <div class="layout-menu-toggle navbar-nav align-items-md-center me-4 me-md-0 d-md-none">
+                        <a class="nav-item nav-link px-0 me-md-6" href="javascript:void(0)">
                             <i class="icon-base bx bx-menu icon-md"></i>
                         </a>
                     </div>
 
                     <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
                         <!-- Search -->
-                        <div class="navbar-nav align-items-center">
+                        <div class="navbar-nav flex-row align-items-center">
                             <div class="nav-item navbar-search-wrapper mb-0">
                                 <a class="nav-item nav-link search-toggler px-0" href="javascript:void(0);">
                                     <span class="d-inline-block text-body-secondary fw-normal" id="autocomplete"></span>
@@ -256,13 +287,13 @@
                                     <i class="icon-base bx bx-globe icon-md"></i>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end wc-lang-menu">
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=en"
+                                    <li><a class="dropdown-item d-flex align-items-center" href="?culture=en"
                                             data-language="en"><span
-                                                class="fi fi-gb fis rounded-circle wc-lang-flag"></span><span>English</span></a>
+                                                class="fi fi-gb fis rounded-circle wc-lang-flag me-3"></span>English</a>
                                     </li>
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1" href="?culture=tr"
+                                    <li><a class="dropdown-item d-flex align-items-center" href="?culture=tr"
                                             data-language="tr"><span
-                                                class="fi fi-tr fis rounded-circle wc-lang-flag"></span><span>Türkçe</span></a>
+                                                class="fi fi-tr fis rounded-circle wc-lang-flag me-3"></span>Türkçe</a>
                                     </li>
                                 </ul>
                             </li>
@@ -306,23 +337,25 @@
                                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);"
                                     data-bs-toggle="dropdown">
                                     <div class="avatar avatar-online">
-                                        <img src="~/assets/img/avatars/1.png" class="rounded-circle" />
+                                        <span class="avatar-initial rounded-circle bg-label-primary fw-semibold"
+                                            data-platform-account-avatar>@currentUserInitials</span>
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <a class="dropdown-item" href="javascript:void(0);">
+                                        <a class="dropdown-item" href="/Platform/Account/Profile">
                                             <div class="d-flex">
                                                 <div class="flex-shrink-0 me-3">
                                                     <div class="avatar avatar-online">
-                                                        <img src="~/assets/img/avatars/1.png"
-                                                            class="w-px-40 h-auto rounded-circle" />
+                                                        <span
+                                                            class="avatar-initial rounded-circle bg-label-primary fw-semibold"
+                                                            data-platform-account-avatar>@currentUserInitials</span>
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1">
-                                                    <h6 class="mb-0" id="navbar-user-name">User</h6>
-                                                    <small class="text-body-secondary" id="navbar-user-role">Platform
-                                                        Admin</small>
+                                                    <h6 class="mb-0" id="navbar-user-name">@(currentUserDisplayName ?? "User")</h6>
+                                                    <small class="text-body-secondary"
+                                                        id="navbar-user-role">@currentUserRoleLabel</small>
                                                 </div>
                                             </div>
                                         </a>
@@ -331,13 +364,15 @@
                                         <div class="dropdown-divider my-1"></div>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);">
+                                        <a class="dropdown-item d-flex align-items-center"
+                                            href="/Platform/Account/Profile">
                                             <i
                                                 class="bx bx-user icon-md me-3"></i><span>@SharedLocalizer["MyProfile"]</span>
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);">
+                                        <a class="dropdown-item d-flex align-items-center"
+                                            href="/Platform/Account/Settings">
                                             <i
                                                 class="bx bx-cog icon-md me-3"></i><span>@SharedLocalizer["Settings"]</span>
                                         </a>

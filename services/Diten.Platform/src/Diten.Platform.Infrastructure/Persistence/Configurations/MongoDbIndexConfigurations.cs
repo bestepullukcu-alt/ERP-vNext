@@ -1,8 +1,10 @@
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Domain.Entities;
+using Diten.Platform.Domain.Entities.Audit;
 using Diten.Platform.Domain.Entities.InterfaceRegistry;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
+using Diten.Platform.Infrastructure.Persistence.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -32,6 +34,10 @@ public static class MongoDbIndexConfigurations
         var interfaceDiscoveryBatchCollection = database.GetCollection<InterfaceDiscoveryBatch>("platform_interface_discovery_batches");
         var interfaceDiscoveryDiffCollection = database.GetCollection<InterfaceDiscoveryDiffItem>("platform_interface_discovery_diff_items");
         var interfaceActiveSnapshotCollection = database.GetCollection<InterfaceActiveSnapshot>("platform_interface_active_snapshots");
+        var auditEventCollection = database.GetCollection<AuditEvent>(AuditCollectionNames.AuditEvents);
+        var auditRetentionPolicyCollection = database.GetCollection<AuditEventRetentionPolicy>(AuditCollectionNames.AuditEventRetentionPolicies);
+        var tenantAuditPreferenceCollection = database.GetCollection<TenantAuditPreference>(AuditCollectionNames.TenantAuditPreferences);
+        var auditOutboxCollection = database.GetCollection<AuditOutboxMessage>(AuditCollectionNames.AuditOutbox);
         var outboxEventCollection = database.GetCollection<OutboxEvent>("outbox_events");
         var consumedEventCollection = database.GetCollection<ConsumedEvent>("consumed_events");
         var jobExecutionLogCollection = database.GetCollection<JobExecutionLog>("job_execution_logs");
@@ -507,6 +513,97 @@ public static class MongoDbIndexConfigurations
                     Name = "ux_platform_interface_active_snapshots_code_version",
                     PartialFilterExpression = Builders<InterfaceActiveSnapshot>.Filter.Eq(x => x.IsDeleted, false)
                 })
+        });
+
+        await auditEventCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<AuditEvent>(
+                Builders<AuditEvent>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Descending(x => x.OccurredAtUtc),
+                new CreateIndexOptions { Name = "ix_audit_events_tenant_occurred" }),
+            new CreateIndexModel<AuditEvent>(
+                Builders<AuditEvent>.IndexKeys
+                    .Ascending(x => x.TargetTenantId)
+                    .Descending(x => x.OccurredAtUtc),
+                new CreateIndexOptions { Name = "ix_audit_events_target_tenant_occurred" }),
+            new CreateIndexModel<AuditEvent>(
+                Builders<AuditEvent>.IndexKeys
+                    .Ascending(x => x.ActorId)
+                    .Descending(x => x.OccurredAtUtc),
+                new CreateIndexOptions { Name = "ix_audit_events_actor_occurred" }),
+            new CreateIndexModel<AuditEvent>(
+                Builders<AuditEvent>.IndexKeys
+                    .Ascending(x => x.Category)
+                    .Descending(x => x.OccurredAtUtc),
+                new CreateIndexOptions { Name = "ix_audit_events_category_occurred" }),
+            new CreateIndexModel<AuditEvent>(
+                Builders<AuditEvent>.IndexKeys
+                    .Ascending(x => x.EntityType)
+                    .Ascending(x => x.EntityId)
+                    .Descending(x => x.OccurredAtUtc),
+                new CreateIndexOptions { Name = "ix_audit_events_entity_occurred" }),
+            new CreateIndexModel<AuditEvent>(
+                Builders<AuditEvent>.IndexKeys
+                    .Ascending(x => x.Operation)
+                    .Descending(x => x.OccurredAtUtc),
+                new CreateIndexOptions { Name = "ix_audit_events_operation_occurred" }),
+            new CreateIndexModel<AuditEvent>(
+                Builders<AuditEvent>.IndexKeys.Ascending(x => x.CorrelationId),
+                new CreateIndexOptions { Name = "ix_audit_events_correlation_id" })
+        });
+
+        await auditRetentionPolicyCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<AuditEventRetentionPolicy>(
+                Builders<AuditEventRetentionPolicy>.IndexKeys
+                    .Ascending(x => x.Category)
+                    .Ascending(x => x.PlanTierCode),
+                new CreateIndexOptions<AuditEventRetentionPolicy>
+                {
+                    Unique = true,
+                    Name = "ux_audit_retention_policies_category_plan_tier",
+                    PartialFilterExpression = Builders<AuditEventRetentionPolicy>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<AuditEventRetentionPolicy>(
+                Builders<AuditEventRetentionPolicy>.IndexKeys
+                    .Ascending(x => x.IsActive)
+                    .Ascending(x => x.Category),
+                new CreateIndexOptions { Name = "ix_audit_retention_policies_active" })
+        });
+
+        await tenantAuditPreferenceCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TenantAuditPreference>(
+                Builders<TenantAuditPreference>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Category),
+                new CreateIndexOptions<TenantAuditPreference>
+                {
+                    Unique = true,
+                    Name = "ux_tenant_audit_preferences_tenant_category",
+                    PartialFilterExpression = Builders<TenantAuditPreference>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await auditOutboxCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<AuditOutboxMessage>(
+                Builders<AuditOutboxMessage>.IndexKeys.Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions { Unique = true, Name = "ux_audit_outbox_idempotency_key" }),
+            new CreateIndexModel<AuditOutboxMessage>(
+                Builders<AuditOutboxMessage>.IndexKeys.Ascending(x => x.CorrelationId),
+                new CreateIndexOptions { Name = "ix_audit_outbox_correlation_id" }),
+            new CreateIndexModel<AuditOutboxMessage>(
+                Builders<AuditOutboxMessage>.IndexKeys
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.NextAttemptAtUtc),
+                new CreateIndexOptions { Name = "ix_audit_outbox_status_next_attempt" }),
+            new CreateIndexModel<AuditOutboxMessage>(
+                Builders<AuditOutboxMessage>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Descending(x => x.CreatedAtUtc),
+                new CreateIndexOptions { Name = "ix_audit_outbox_tenant_created" })
         });
     }
 

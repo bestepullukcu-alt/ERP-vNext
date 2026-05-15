@@ -252,15 +252,28 @@ public sealed class SubscriptionPlansController : Controller
         try
         {
             AddAuthHeader();
-            var currencies = await _httpClient.GetFromJsonAsync<List<CurrencyLookupApiModel>>(
-                $"{_gatewayUrl}/api/lookups/currencies",
-                _jsonOptions);
+            var response = await _httpClient.GetAsync($"{_gatewayUrl}/api/lookups/currencies");
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Currency lookups returned {StatusCode} for SubscriptionPlans form.", (int)response.StatusCode);
+                return [];
+            }
 
+            var content = await response.Content.ReadAsStringAsync();
+            var currencies = DeserializeCurrencyLookup(content);
             if (currencies is { Count: > 0 })
             {
                 return currencies
                     .Where(x => !string.IsNullOrWhiteSpace(x.Code))
-                    .Select(x => x with { Code = x.Code.Trim().ToUpperInvariant() })
+                    .Select(x =>
+                    {
+                        var code = x.Code.Trim().ToUpperInvariant();
+                        return x with
+                        {
+                            Code = code,
+                            Value = string.IsNullOrWhiteSpace(x.Value) ? code : x.Value.Trim()
+                        };
+                    })
                     .ToList();
             }
         }
@@ -269,13 +282,31 @@ public sealed class SubscriptionPlansController : Controller
             _logger.LogWarning(ex, "Currency lookups could not be loaded for SubscriptionPlans form.");
         }
 
-        return
-        [
-            new("USD", "US Dollar"),
-            new("EUR", "Euro"),
-            new("TRY", "Turkish Lira"),
-            new("GBP", "British Pound")
-        ];
+        return [];
+    }
+
+    private List<CurrencyLookupApiModel> DeserializeCurrencyLookup(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return [];
+        }
+
+        using var document = JsonDocument.Parse(content);
+        if (document.RootElement.ValueKind == JsonValueKind.Array)
+        {
+            return JsonSerializer.Deserialize<List<CurrencyLookupApiModel>>(document.RootElement.GetRawText(), _jsonOptions) ?? [];
+        }
+
+        if (document.RootElement.ValueKind == JsonValueKind.Object
+            && (document.RootElement.TryGetProperty("data", out var data)
+                || document.RootElement.TryGetProperty("Data", out data))
+            && data.ValueKind == JsonValueKind.Array)
+        {
+            return JsonSerializer.Deserialize<List<CurrencyLookupApiModel>>(data.GetRawText(), _jsonOptions) ?? [];
+        }
+
+        return [];
     }
 
     private async Task<IActionResult> ProxyGatewayAsync(HttpMethod method, string targetUrl, string? jsonBody = null, bool readBody = false)
@@ -649,7 +680,7 @@ public sealed class SubscriptionPlansController : Controller
         public int StatusCode { get; init; }
     }
 
-    private sealed record CurrencyLookupApiModel(string Code, string Name);
+    private sealed record CurrencyLookupApiModel(string Code, string Name, string? Value = null);
 
     private static class QuotaKeys
     {

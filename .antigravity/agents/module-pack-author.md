@@ -42,9 +42,19 @@ Module pack yazmadan önce şu dosyalar sırasıyla okunur — sapma kabul edilm
 10. `.antigravity/rules/response-envelope.md` (Response<T> + Command/Query naming)
 11. `.antigravity/rules/entity-base-template.md` (EntityBase / BaseEntity / GlobalEntity ayrımı)
 12. `.antigravity/rules/routes.md` (API route format + Gateway)
-13. `docs/platform/master-plan.md` (modül envanteri, MVP scope, cross-cutting standartlar — özellikle §7)
+13. `.antigravity/rules/platform-lookups-reference-data.md` (Platform/Admin lookup SSOT + MDM/reference boundary)
+14. `docs/platform/master-plan.md` (modül envanteri, MVP scope, cross-cutting standartlar — özellikle §7)
 
 Platform admin shell modülü hazırlıyorsan ek referans: `frontend/Diten.Web/Views/Platform/Tenants/` (canlı Platform Admin örneği).
+
+## Platform Lookup Dependencies
+
+Platform/Admin module pack hazırlanırken lookup kararı açık yazılır:
+- Mevcut PSS lookup endpoint'i tüketilecekse endpoint adı yazılır (`/api/lookups/{key}`).
+- Yeni Platform-owned lookup key gerekiyorsa Repo Scope, Acceptance Criteria ve Test Expectations içinde açıkça test gate yapılır.
+- İhtiyaç ERP Account, General Reference, Financial Reference, Territory Reference veya tenant-specific business lookup ise PSS kapsamına alınmaz; MDM/reference module pack'e yönlendirilir.
+- UI consumer varsa browser JS servis portu `5057` çağırmaz; same-origin MVC proxy veya Gateway kullanır.
+- Hardcoded fallback lookup listeleri kabul edilmez.
 
 ## Golden Reference Şablon Kullanımı
 

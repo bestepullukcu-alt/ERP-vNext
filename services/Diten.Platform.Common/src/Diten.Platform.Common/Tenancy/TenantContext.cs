@@ -34,4 +34,12 @@ public sealed class TenantContext : ITenantContext
         _isPlatformContext = true;
         _targetTenantId = targetTenantId;
     }
+
+    public void ClearTenant()
+    {
+        _tenantId = Guid.Empty;
+        _isResolved = false;
+        _isPlatformContext = false;
+        _targetTenantId = null;
+    }
 }

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AuditRetention.Title" xml:space="preserve"><value>Audit Retention</value></data>
+  <data name="AuditRetention.Subtitle" xml:space="preserve"><value>Platform audit retention taban, varsayilan, tavan ve sicak saklama pencerelerini yonetin.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Platform audit retention taban, varsayilan, tavan ve sicak saklama pencerelerini yonetin.</value></data>
+  <data name="AuditRetention.Category" xml:space="preserve"><value>Kategori</value></data>
+  <data name="AuditRetention.SelectCategory" xml:space="preserve"><value>Kategori Secin</value></data>
+  <data name="AuditRetention.PlanTier" xml:space="preserve"><value>Plan Katmani</value></data>
+  <data name="AuditRetention.PlanTierPlaceholder" xml:space="preserve"><value>Default</value></data>
+  <data name="AuditRetention.DefaultPlanTierValue" xml:space="preserve"><value>Default</value></data>
+  <data name="AuditRetention.DefaultRetentionDays" xml:space="preserve"><value>Varsayilan Retention Gunu</value></data>
+  <data name="AuditRetention.DefaultRetention" xml:space="preserve"><value>Varsayilan Retention</value></data>
+  <data name="AuditRetention.MinimumRetentionDays" xml:space="preserve"><value>Minimum Retention Gunu</value></data>
+  <data name="AuditRetention.MaximumRetentionDays" xml:space="preserve"><value>Maksimum Retention Gunu</value></data>
+  <data name="AuditRetention.MaxRetention" xml:space="preserve"><value>Maksimum Retention</value></data>
+  <data name="AuditRetention.HotStorageDays" xml:space="preserve"><value>Sicak Saklama Gunu</value></data>
+  <data name="AuditRetention.HotStorage" xml:space="preserve"><value>Sicak Saklama</value></data>
+  <data name="AuditRetention.AllowTenantOverride" xml:space="preserve"><value>Tenant Override Izni</value></data>
+  <data name="AuditRetention.TenantOverride" xml:space="preserve"><value>Tenant Override</value></data>
+  <data name="AuditRetention.FloorError" xml:space="preserve"><value>Varsayilan retention tabanin altinda olamaz.</value></data>
+  <data name="AuditRetention.CeilingError" xml:space="preserve"><value>Retention degerleri tavan siniri icinde kalmalidir.</value></data>
+  <data name="AuditRetention.ZeroError" xml:space="preserve"><value>Retention gunu sifirdan buyuk olmalidir.</value></data>
+  <data name="AuditRetention.HotStorageError" xml:space="preserve"><value>Sicak saklama gunu varsayilan retention gununu asamaz.</value></data>
+  <data name="AuditRetention.Required" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
+  <data name="AuditRetention.SaveSuccess" xml:space="preserve"><value>Audit retention policy kaydedildi.</value></data>
+  <data name="AuditRetention.SaveError" xml:space="preserve"><value>Audit retention policy kaydedilemedi.</value></data>
+  <data name="AuditRetention.LoadError" xml:space="preserve"><value>Audit retention policy listesi yuklenemedi.</value></data>
+  <data name="AuditRetention.LoadRequired" xml:space="preserve"><value>Kaydetmeden once mevcut bir retention policy yukleyin.</value></data>
+  <data name="AuditRetention.ExistingPolicyRequired" xml:space="preserve"><value>Kaydetmeden once mevcut bir kategori ve plan tier policy secin.</value></data>
+  <data name="AuditRetention.LoadedPolicyMismatch" xml:space="preserve"><value>Guncel kategori ve plan tier yuklenen policy ile artik eslesmiyor. Kaydetmeden once yeniden yukleyin veya mevcut bir policy secin.</value></data>
+  <data name="AuditRetention.NoPolicies" xml:space="preserve"><value>Aktif audit retention policy bulunamadi.</value></data>
+  <data name="AuditRetention.LoadedPolicy" xml:space="preserve"><value>Yuklenen retention policy</value></data>
+  <data name="AuditRetention.PolicyId" xml:space="preserve"><value>Policy ID</value></data>
+  <data name="AuditRetention.PolicyStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="AuditRetention.Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="AuditRetention.Inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="AuditRetention.Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="AuditRetention.Reset" xml:space="preserve"><value>Sifirla</value></data>
+  <data name="AuditRetention.Cancel" xml:space="preserve"><value>Iptal</value></data>
+  <data name="AuditRetention.Edit" xml:space="preserve"><value>Duzenle</value></data>
+  <data name="AuditRetention.EditPolicy" xml:space="preserve"><value>Retention Policy Duzenle</value></data>
+  <data name="AuditRetention.EditPolicyDescription" xml:space="preserve"><value>Secili mevcut policy icin saklama pencerelerini guncelleyin.</value></data>
+  <data name="AuditRetention.Actions" xml:space="preserve"><value>Islemler</value></data>
+  <data name="AuditRetention.Refresh" xml:space="preserve"><value>Yenile</value></data>
+  <data name="AuditRetention.Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="AuditRetention.No" xml:space="preserve"><value>Hayir</value></data>
+  <data name="AuditRetention.DaysShort" xml:space="preserve"><value>gun</value></data>
+  <data name="AuditRetention.Unauthorized" xml:space="preserve"><value>Audit retention guncelleme yetkiniz yok.</value></data>
+  <data name="AuditRetention.LoginRequired" xml:space="preserve"><value>Platform admin oturumunuz sona erdi. Devam etmek icin yeniden giris yapin.</value></data>
+  <data name="AuditRetention.Forbidden" xml:space="preserve"><value>Hesabiniz gerekli audit retention yetkisine sahip degil.</value></data>
+  <data name="AuditRetention.Category.Security" xml:space="preserve"><value>Guvenlik</value></data>
+  <data name="AuditRetention.Category.IdentityAccess" xml:space="preserve"><value>Kimlik ve Erisim</value></data>
+  <data name="AuditRetention.Category.TenantAdministration" xml:space="preserve"><value>Tenant Yonetimi</value></data>
+  <data name="AuditRetention.Category.PlatformConfiguration" xml:space="preserve"><value>Platform Konfigurasyonu</value></data>
+  <data name="AuditRetention.Category.ReferenceData" xml:space="preserve"><value>Referans Veri</value></data>
+  <data name="AuditRetention.Category.ModuleCatalog" xml:space="preserve"><value>Modul Katalogu</value></data>
+  <data name="AuditRetention.Category.SubscriptionBilling" xml:space="preserve"><value>Abonelik ve Faturalama</value></data>
+  <data name="AuditRetention.Category.Quota" xml:space="preserve"><value>Kota</value></data>
+  <data name="AuditRetention.Category.DataExport" xml:space="preserve"><value>Veri Export</value></data>
+  <data name="AuditRetention.Category.DataPrivacy" xml:space="preserve"><value>Veri Gizliligi</value></data>
+  <data name="AuditRetention.Category.Integration" xml:space="preserve"><value>Entegrasyon</value></data>
+  <data name="AuditRetention.Category.System" xml:space="preserve"><value>Sistem</value></data>
+  <data name="Common.ErrorOccurred" xml:space="preserve"><value>Bir hata olustu.</value></data>
+  <data name="Common.Ok" xml:space="preserve"><value>Tamam</value></data>
+  <data name="Common.Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Kolon Gorunurlugu</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tumunu Goster</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara...</value></data>
+</root>

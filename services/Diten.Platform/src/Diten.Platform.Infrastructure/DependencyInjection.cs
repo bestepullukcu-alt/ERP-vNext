@@ -2,6 +2,8 @@ using System.Text;
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Contracts.Audit;
+using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Eventing;
@@ -11,6 +13,7 @@ using Diten.Platform.Infrastructure.Persistence.Configurations;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
+using Diten.Platform.Infrastructure.Services.Audit;
 using Diten.Platform.Infrastructure.Services.Http;
 using Diten.Platform.Infrastructure.Settings;
 using Diten.Platform.Common.Tenancy;
@@ -60,7 +63,7 @@ public static class DependencyInjection
                     ValidIssuer = jwtIssuer,
                     ValidAudience = jwtAudience,
                     IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
-                    ClockSkew = TimeSpan.Zero
+                    ClockSkew = TimeSpan.FromSeconds(30)
                 };
             });
 
@@ -79,9 +82,27 @@ public static class DependencyInjection
                            || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
                 });
             });
+
+            // Phase 5 baseline policy: audit endpoints accept ONLY platform_admin.
+            // Partner admin audit scope support (per-tenant filter, partner-scoped redaction)
+            // is follow-up; see MOD-0021 Phase 5A review H1/H2.
+            options.AddPolicy("PlatformAdminOnly", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireAssertion(context =>
+                {
+                    var actorType = context.User.Claims
+                        .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
+                        ?.Value;
+
+                    return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase);
+                });
+            });
         });
         services.AddHttpContextAccessor();
+        services.AddMemoryCache();
         services.Configure<TenantManagementOptions>(configuration.GetSection(TenantManagementOptions.SectionName));
+        services.Configure<AuditRetentionSeedOptions>(configuration.GetSection(AuditRetentionSeedOptions.SectionName));
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         services.Configure<AuthServiceOptions>(configuration.GetSection(AuthServiceOptions.SectionName));
         services.Configure<EventBusOptions>(configuration.GetSection(EventBusOptions.SectionName));
@@ -92,6 +113,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
+        services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
         services.AddTransient<TenantPropagationHandler>();
@@ -138,6 +160,29 @@ public static class DependencyInjection
         services.AddScoped<IFeatureDefinitionRepository, FeatureDefinitionRepository>();
         services.AddScoped<IFeatureCategoryRepository, FeatureCategoryRepository>();
         services.AddScoped<IPlanFeatureMappingRepository, PlanFeatureMappingRepository>();
+        services.AddScoped<IAuditEventRepository, AuditEventRepository>();
+        services.AddScoped<IAuditRetentionPolicyRepository, AuditRetentionPolicyRepository>();
+        services.AddScoped<ITenantAuditPreferenceRepository, TenantAuditPreferenceRepository>();
+        services.AddScoped<AuditOutboxRepository>();
+        services.AddScoped<IAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddScoped<IAuditOutboxProcessingRepository>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddSingleton<AuditOutboxWorkerOptions>();
+        services.AddScoped<AuditOutboxPayloadMapper>();
+        services.AddScoped<AuditOutboxProcessor>();
+        services.AddHostedService<AuditOutboxWorker>();
+
+        LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
+        MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
+        var auditRetentionSeedOptions = configuration
+            .GetSection(AuditRetentionSeedOptions.SectionName)
+            .Get<AuditRetentionSeedOptions>()
+            ?? throw new InvalidOperationException($"Configuration error: '{AuditRetentionSeedOptions.SectionName}' is missing in appsettings.json.");
+        AuditRetentionPolicySeed.EnsureSeededAsync(database, auditRetentionSeedOptions).GetAwaiter().GetResult();
+        SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+
+        return services;
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
         services.AddScoped<IOutboxObservabilityReader>(sp => (IOutboxObservabilityReader)sp.GetRequiredService<IOutboxEventRepository>());
         services.AddScoped<IConsumedEventRepository, ConsumedEventRepository>();

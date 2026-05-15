@@ -161,6 +161,7 @@ Bu workflow, bir DataTable liste sayfası tamamlandığında **hem agent hem ork
 - [ ] **Compact Details sayfası:** `golden_reference: compact` ise `Views/{AreaName}/{ModuleName}/Details.cshtml` mevcut mu?
 - [ ] **Compact Edit sayfası:** `golden_reference: compact` ise `Edit.cshtml` mevcut mu?
 - [ ] **Compact Form/Details Section Parity:** `golden_reference: compact` ise `_Form.cshtml` ve `Details.cshtml` aynı logical section/card haritasını kullanıyor mu? Details dört bölümse Create/Edit de dört ayrı card/section mı? Alanlar aynı section altında mı?
+- [ ] **Compact Details Shadow Standard:** `Details.cshtml` root wrapper'ı `{module-slug}-details` formatında mı, `card backbone-preview-section` kartları Module Catalog / GoldenReferenceCompact ile aynı standart `.card` shadow + no extra preview border davranışını alıyor mu, page-level/global `.card` shadow/border override yok mu?
 - [ ] **Compact Create Navigation Pattern:** Compact ise "Add New" route tabanlı Create sayfasına yönleniyor mu?
 - [ ] **Add New Button Binding:** `DtDefaults.exportButtons()` Add New butonu `{ href: '/{ModuleName}/Create' }` attr'ı ve `initComplete` içindeki `.add-new` click handler'ı ile çalışıyor mu? Inline `onclick` yok mu?
 - [ ] **Rebuild Guard:** Yeniden yapım söz konusuysa silinmiş Create/Edit/Details sayfaları yeni sürümüyle değiştirildi mi?

@@ -55,5 +55,8 @@
   <data name="ResendInvitationHelp" xml:space="preserve"><value>Yoneticinin parola belirlemesi icin tek kullanimlik kurulum baglantisi gonderin.</value></data>
   <data name="EmailUnlockTooltip" xml:space="preserve"><value>E-posta alanının kilidini düzenlemek için açın</value></data>
   <data name="ResendInviteSuccess" xml:space="preserve"><value>Kurulum baglantisi basariyla gonderildi.</value></data>
+  <data name="SetupLinkTitle" xml:space="preserve"><value>Kurulum baglantisi</value></data>
+  <data name="SetupLinkIntro" xml:space="preserve"><value>Gelisim ortami kurulum baglantisi:</value></data>
+  <data name="SetupLinkEmailFailedIntro" xml:space="preserve"><value>E-posta gonderilemedi. Bu gelisim ortami kurulum baglantisini kullanin:</value></data>
   <data name="ProtectedAccount" xml:space="preserve"><value>Korumalı hesap: kendi kaydınız veya sistem seed yöneticisi üzerinde bu işlemi yapamazsınız.</value></data>
 </root>
