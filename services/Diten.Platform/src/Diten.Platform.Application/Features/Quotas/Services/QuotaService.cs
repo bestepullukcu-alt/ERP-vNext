@@ -377,19 +377,30 @@ public sealed class QuotaService : IQuotaService
             return entitlements.Count(x => x.IsEnabled);
         }
 
-        var tenant = await _tenantRepository.GetByIdAsync(tenantId, ct);
-        if (tenant is null)
+        if (string.Equals(quotaKey, QuotaKeys.ApiCallsPerMonth, StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
 
         if (string.Equals(quotaKey, QuotaKeys.UsersMax, StringComparison.OrdinalIgnoreCase))
         {
+            var tenant = await _tenantRepository.GetByIdAsync(tenantId, ct);
+            if (tenant is null)
+            {
+                return null;
+            }
+
             return tenant.AdminUsers.Count(user => user.Status is TenantAdminUserStatus.Invited or TenantAdminUserStatus.Active);
         }
 
         if (string.Equals(quotaKey, QuotaKeys.StorageGbMax, StringComparison.OrdinalIgnoreCase))
         {
+            var tenant = await _tenantRepository.GetByIdAsync(tenantId, ct);
+            if (tenant is null)
+            {
+                return null;
+            }
+
             return tenant.StorageUsedGb;
         }
 

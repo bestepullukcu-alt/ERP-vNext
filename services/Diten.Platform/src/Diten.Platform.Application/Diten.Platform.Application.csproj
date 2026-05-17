@@ -15,7 +15,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Diten.Platform.Domain\Diten.Platform.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.BackgroundJobs\Diten.BuildingBlocks.BackgroundJobs.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.Eventing\Diten.BuildingBlocks.Eventing.csproj" />
     <ProjectReference Include="..\..\..\Diten.Platform.Common\src\Diten.Platform.Common\Diten.Platform.Common.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Platform.Contracts\Diten.Platform.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.InterfaceRegistry.Abstractions\Diten.BuildingBlocks.InterfaceRegistry.Abstractions.csproj" />
   </ItemGroup>
 

@@ -1,3 +1,6 @@
+using Diten.BuildingBlocks.Eventing;
+using Diten.BuildingBlocks.BackgroundJobs;
+using Diten.Platform.Application.BackgroundJobs;
 using Diten.Platform.Application.Contracts.Behaviors;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Audit;
@@ -7,6 +10,7 @@ using Diten.Platform.Application.Security;
 using Diten.Platform.Application.Features.InterfaceRegistry.Auditing;
 using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Services;
+using Diten.Platform.Application.Services.Eventing;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +36,9 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
         services.AddAutoMapper(_ => { }, assembly);
         services.AddSingleton<IInterfaceRegistryAuditSink, NullInterfaceRegistryAuditSink>();
+        services.AddSingleton<EventPayloadContractValidator>();
+        services.AddScoped<IEventBus, EventBus>();
+        services.AddScoped<ConsumedEventStore>();
         services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();
@@ -44,6 +51,10 @@ public static class DependencyInjection
         services.AddScoped<IAuditRetentionPolicyResolver, AuditRetentionPolicyResolver>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAuditMetaAuditWriter, AuditMetaAuditWriter>();
+        services.AddScoped<IJobExecutionLogWriter, JobExecutionLogWriter>();
+        services.AddScoped<SchedulerSmokeTestJob>();
+        services.AddScoped<DeferredPlatformJobHandler>();
+        services.AddSingleton<IRecurringJobRegistrar, PlatformRecurringJobRegistrar>();
 
         return services;
     }

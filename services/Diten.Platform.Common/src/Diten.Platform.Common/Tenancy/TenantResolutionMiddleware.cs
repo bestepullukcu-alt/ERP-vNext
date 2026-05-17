@@ -185,6 +185,8 @@ public sealed class TenantResolutionMiddleware
     {
         return path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/metrics", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/hangfire", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/internal", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/lookups", StringComparison.OrdinalIgnoreCase)
                || path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase);
