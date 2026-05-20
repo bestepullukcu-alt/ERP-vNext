@@ -1,4 +1,5 @@
 using Diten.BuildingBlocks.BackgroundJobs;
+using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Microsoft.Extensions.Options;
 
 namespace Diten.Platform.Application.BackgroundJobs;
@@ -23,14 +24,52 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             CreateDeferred("Diten.Platform.MOD-0018.EntitlementCacheRefreshJob", "EntitlementCacheRefreshJob", "MOD-0018", "0 * * * *"),
             CreateDeferred("Diten.Platform.MOD-0034.WebhookRetryJob", "WebhookRetryJob", "MOD-0034", "*/5 * * * *"),
             CreateDeferred("Diten.Platform.MOD-0021.AuditLogArchiveJob", "AuditLogArchiveJob", "MOD-0021", "0 4 * * 0"),
-            CreateDeferred("Diten.Platform.MOD-0027.EmailDispatchJob", "EmailDispatchJob", "MOD-0027", "* * * * *"),
+            CreateEmailDispatchSweepRegistration(),
             CreateDeferred("Diten.Platform.MOD-0009.ProvisioningRetryJob", "ProvisioningRetryJob", "MOD-0009", "*/2 * * * *")
         };
 
         return registrations;
     }
 
-    private RecurringJobRegistration CreateDeferred(string id, string jobName, string owner, string cron)
+    private RecurringJobRegistration CreateEmailDispatchSweepRegistration()
+    {
+        const string id = "Diten.Platform.MOD-0027.EmailDispatchJob";
+        const string jobName = "EmailDispatchSweepJob";
+        const string owner = "MOD-0027";
+        const string cron = "* * * * *";
+
+        var enabled = _options.RegisterStandardJobs
+                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
+                      && configuredEnabled;
+
+        var descriptor = new BackgroundJobDescriptor(
+            Id: id,
+            ServiceName: ServiceName,
+            JobName: jobName,
+            Owner: owner,
+            CronExpression: cron,
+            TimeZoneId: "UTC",
+            IsEnabled: enabled,
+            Queue: "platform",
+            MaxRetryAttempts: _options.DefaultRetryAttempts,
+            TriggerType: BackgroundJobTriggerTypes.Recurring);
+
+        return new RecurringJobRegistration(
+            descriptor,
+            typeof(EmailDispatchSweepJob),
+            typeof(EmailDispatchSweepJobArgs),
+            new EmailDispatchSweepJobArgs(BatchSize: 50, MaxRetryCount: Math.Max(1, _options.DefaultRetryAttempts)),
+            new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string>
+                {
+                    ["owner"] = owner,
+                    ["execution"] = "sweep"
+                }));
+    }
+
+    private RecurringJobRegistration CreateDeferred(string id, string jobName, string owner, string cron, string? reason = null)
     {
         var enabled = _options.RegisterStandardJobs
                       && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
@@ -52,7 +91,7 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             descriptor,
             typeof(DeferredPlatformJobHandler),
             typeof(DeferredPlatformJobArgs),
-            new DeferredPlatformJobArgs(owner, "Real execution belongs to the owning module pack."),
+            new DeferredPlatformJobArgs(owner, reason ?? "Real execution belongs to the owning module pack."),
             new BackgroundJobContext(
                 TriggerType: BackgroundJobTriggerTypes.Recurring,
                 TriggeredBy: "PlatformRecurringJobRegistrar",

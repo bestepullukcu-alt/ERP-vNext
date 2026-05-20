@@ -33,12 +33,15 @@ public sealed class ConsumedEventStore
 
         var started = ConsumedEvent.Started(envelope.Metadata, consumerName);
         var startResult = await _repository.TryStartAsync(started, cancellationToken);
-        if (startResult.IsDuplicate)
+        if (!startResult.ShouldExecuteHandler)
         {
             var duplicateDuration = TimeSpan.Zero;
-            await _repository.MarkSkippedDuplicateAsync(envelope.EventId, consumerName, cancellationToken);
+            var duplicateLogName = startResult.Status == ConsumedEventStartStatus.InFlightDuplicate
+                ? "event.consumer.inflight_duplicate"
+                : "event.consumer.duplicate_skipped";
             _logger.LogInformation(
-                "event.consumer.duplicate_skipped EventId={EventId} EventName={EventName} EventVersion={EventVersion} CorrelationId={CorrelationId} CausationId={CausationId} TenantId={TenantId} Producer={Producer} ConsumerName={ConsumerName} Status={Status} AttemptCount={AttemptCount} OccurredAtUtc={OccurredAtUtc}",
+                "{LogName} EventId={EventId} EventName={EventName} EventVersion={EventVersion} CorrelationId={CorrelationId} CausationId={CausationId} TenantId={TenantId} Producer={Producer} ConsumerName={ConsumerName} Status={Status} AttemptCount={AttemptCount} OccurredAtUtc={OccurredAtUtc}",
+                duplicateLogName,
                 envelope.EventId,
                 envelope.EventName,
                 envelope.EventVersion,
@@ -47,7 +50,7 @@ public sealed class ConsumedEventStore
                 envelope.TenantId,
                 envelope.Producer,
                 consumerName,
-                ConsumedEventStatus.SkippedDuplicate,
+                startResult.Event.Status,
                 startResult.Event.AttemptCount,
                 envelope.OccurredAtUtc);
             await NotifyConsumedAsync(envelope, consumerName, "duplicate", duplicateDuration, cancellationToken);

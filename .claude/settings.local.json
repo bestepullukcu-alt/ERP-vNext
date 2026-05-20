@@ -4,7 +4,15 @@
       "Bash(xargs grep *)",
       "Bash(xargs wc *)",
       "Bash(grep -r \"appsettings\" /c/Users/user/Desktop/ERP-vNext/services/Diten.Platform/src -name \"*.json\")",
-      "Bash(grep -r \"MongoDB\" /c/Users/user/Desktop/ERP-vNext/services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories -name \"*.cs\")"
+      "Bash(grep -r \"MongoDB\" /c/Users/user/Desktop/ERP-vNext/services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories -name \"*.cs\")",
+      "Bash(dotnet package *)",
+      "Bash(tasklist /FI \"PID eq 4088\")",
+      "PowerShell(Get-Process -Id 4088 -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Id 4088 -Force; Start-Sleep -Seconds 2; \\(Get-Process -Id 4088 -ErrorAction SilentlyContinue | Measure-Object\\).Count)",
+      "PowerShell($procs = Get-Process -Name \"Diten.Platform.API\" -ErrorAction SilentlyContinue; if \\($procs\\) { $procs | ForEach-Object { Stop-Process -Id $_.Id -Force }; Start-Sleep -Seconds 2 }; \\(Get-Process -Name \"Diten.Platform.API\" -ErrorAction SilentlyContinue | Measure-Object\\).Count)",
+      "PowerShell($procs = Get-Process -Name \"Diten.Platform.API\" -ErrorAction SilentlyContinue; if \\($procs\\) { $procs | ForEach-Object { Stop-Process -Id $_.Id -Force }; Start-Sleep -Seconds 2 }; \"stopped\")",
+      "PowerShell($procs = Get-Process -Name \"Diten.Platform.API\" -ErrorAction SilentlyContinue; if \\($procs\\) { $procs | ForEach-Object { Stop-Process -Id $_.Id -Force }; Start-Sleep -Seconds 2 }; \"ready\")",
+      "Bash(findstr /i \"0009 lifecycle tenant\")"
     ]
   }
 }

@@ -188,7 +188,7 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 | **MOD-0037** | Integration Monitoring & Reconciliation | W2-W3 | 🟡 Medium | 🔴 | 0 |
 | **NEW-001** | Secrets Management (legacy ID; bkz. MOD-0012) | W1-* | 🔴 Blocker | ⚠️ | — |
 | **NEW-002** | Platform Administrators Mgmt | W1-* | 🟠 High | 🟢 | 95 |
-| **MOD-0009** | Tenant Registry Lifecycle Events | W1-A | 🔴 Blocker | 🟡 | 50 |
+| **MOD-0009** | Tenant Registry Lifecycle Events | W1-A | 🔴 Blocker | 🟢 | 90 |
 | **MOD-0008** | Module Catalog Assignable Expose | W1-B | 🔴 Blocker | 🟡 | 80 |
 | **MOD-0018** | RBAC / Entitlement Enforcement | W1-B | 🔴 Blocker | 🔴 | 10 |
 | **MOD-0026** | Background Job Scheduler | W1-C | 🔴 Blocker | ✅ | 90 |
@@ -717,7 +717,7 @@ PlatformAdministrator : GlobalEntity
 ### MOD-0009 — Tenant Registry Lifecycle Events
 **Wave:** W1-A
 **Priority:** 🔴 Blocker
-**Status:** 🟡 Partial (%50) — Tenant entity/lifecycle var, event emit ve bus entegrasyonu yok
+**Status:** 🟢 Review (%90) — Core lifecycle event flow complete; live RabbitMQ core proof PASS. Recovery/DLQ harness edge cases MOD-0035 hardening'e deferred.
 
 **Purpose:**
 Tenant lifecycle değişikliklerini (created/activated/suspended/reactivated/cancelled) event olarak yayınla; subscription, provisioning, notification modülleri bu event'leri dinlesin.
@@ -739,19 +739,23 @@ TenantProvisioningFailed    { TenantId, FailedStep, Error }
 ```
 
 **Acceptance criteria:**
-- [ ] 7 event tipi tanımlı + handler'larda emit ediliyor
-- [ ] Subscription, notification, audit modülleri bunlara subscribe oluyor
-- [ ] Event'ler audit log'a yazılıyor (correlation id ile)
-- [ ] At-least-once delivery garantisi
-- [ ] Test: tenant suspend → notification email tetiklendiği integration test
+- [x] 7 event tipi tanımlı; core tenant lifecycle handler'ları outbox-backed `IEventBus.PublishAsync(...)` ile emit ediyor. Provisioning producer emit gerçek orchestration handler bulunana kadar deferred.
+- [x] Notification ve audit consumer'ları tenant lifecycle event'lerine subscribe oluyor; subscription/provisioning/entitlement business consumers owning module'lere deferred.
+- [x] Event'ler audit consumer üzerinden correlation id ile audit append ediyor.
+- [x] Core at-least-once/idempotent side effect proof live RabbitMQ üzerinden PASS.
+- [x] Test: tenant lifecycle live RabbitMQ → notification queue → `FakeMessagingProvider` dispatch `Sent` integration proof PASS.
 
 **Dependencies:** MOD-0035 (Event Bus)
 
 **%100 için kalanlar:**
-- [ ] Tenant lifecycle command'ları `TenantCreated/Activated/Suspended/Reactivated/Cancelled` event'lerini outbox'a yazmalı.
-- [ ] MOD-0035 event bus ve idempotent consumer altyapısı tamamlanmalı.
-- [ ] Subscription, notification, provisioning ve audit tüketicileri contract testleriyle bağlanmalı.
-- [ ] Tenant suspend/reactivate/cancel akışları için gateway smoke + integration test eklenmeli.
+- [x] Tenant lifecycle command'ları `TenantCreated/Activated/Suspended/Reactivated/Cancelled` event'lerini outbox'a yazıyor.
+- [x] MOD-0035 outbox-backed event bus + idempotent consumer path core flow için doğrulandı.
+- [x] Notification ve audit tüketicileri contract/live tests ile bağlandı.
+- [ ] MOD-0035 controlled broker-down/outbox-pending/recovery harness.
+- [ ] MOD-0035 audit/notification-specific retry-DLQ failure injection harness.
+- [ ] Optional: duplicate consumed state `SkippedDuplicate` olarak persist edilecekse MOD-0035 behavior decision.
+- [ ] Tenant provisioning producer emit: gerçek provisioning orchestration handler bekleniyor.
+- [ ] Subscription/provisioning/entitlement business consumers: MOD-0297, MOD-0026/MOD-0009 follow-up, MOD-0298.
 
 ---
 
@@ -2256,7 +2260,7 @@ Bu tabloyu modül bittiğinde güncelle. Bölüm 2'deki özet tablo bunun kısal
 | NEW-001 | Secrets Management | 🟡 | 70 | DevOps | — | MOD-0012 canonical kayıt; secrets provider/validation var, production vault adapter ve rotation testleri eksik. |
 | MOD-0012 | Secrets & Configuration Vault | 🟡 | 70 | DevOps | — | NEW-001'in canonical ID karşılığı; production vault adapter, rotation ve full secret inventory testleri eksik. |
 | NEW-002 | Platform Administrators Mgmt | 🟢 | 95 | Platform UI | 2026-05-20 | Kod kanıtı doğrulandı (2026-05-14): 8 command + Slim DataTable + InvitationEmailService + Gateway routes. Kalan %5: MOD-0021 audit hookup. |
-| MOD-0009 | Tenant Registry Events | 🟡 | 50 | Tenant | — | Tenant lifecycle var; event emit/outbox/bus yok. |
+| MOD-0009 | Tenant Registry Events | 🟢 | 90 | Tenant | — | Core lifecycle event flow complete: contracts + outbox-backed emits + audit/notification consumers + live RabbitMQ core proof PASS. Remaining: MOD-0035 recovery/DLQ harness hardening, optional SkippedDuplicate persisted status, provisioning producer emit waits for real orchestration handler. |
 | MOD-0008 | Module Catalog Assignable | 🟡 | 80 | Catalog | — | — |
 | MOD-0014 | Module Boundary Registry | 🔴 | 0 | Architecture | — | Sadece module pack `in-progress` (frontmatter); repo'da `*ModuleBoundary*`/`*CapabilityGroup*`/`*ModuleDefinition*` HİÇBİR kod yok. Pack-only. |
 | MOD-0018 | RBAC Enforcement | 🟡 | 20 | Auth | — | HasPermission + entitlement read service izleri var; RequiresModule/RequiresFeature enforcement yok. |

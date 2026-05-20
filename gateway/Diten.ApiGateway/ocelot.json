@@ -476,6 +476,46 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/platform/notifications",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/notifications",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/platform/notifications/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/notifications/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/platform/tenants",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

@@ -1,0 +1,257 @@
+Using launch settings from C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Properties\launchSettings.json...
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5001
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5000/api/platform-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5000/api/platform-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 1797.7439ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 1810.6689ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/account/me
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/account/me
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 290.5109ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 290.7343ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/admin/tenants?page=1&pageSize=200&sort=-createdAt&_=1779217546600
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/admin/tenants?page=1&pageSize=200&sort=-createdAt&_=1779217546600
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 327.6235ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 327.8157ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/admin/tenants/stats
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/admin/tenants/stats
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 108.4584ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 108.5873ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/lookups/audit/categories
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/lookups/audit/outcomes
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/lookups/audit/operations
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/lookups/audit/categories
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/lookups/audit/outcomes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/lookups/audit/operations
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/export-limits
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/export-limits
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 44.5831ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 44.7828ms - 404
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 74.6334ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 74.8403ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 78.4364ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 78.5941ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 78.7707ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 78.909ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 129.4833ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 129.6375ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.5569ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.6915ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/lookups/audit/categories
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/lookups/audit/categories
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 23.1576ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 23.2806ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/retention
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/retention
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 37.4088ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 37.518ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/retention
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/retention
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 19.0737ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 19.1873ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/export-limits
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/export-limits
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/lookups/audit/outcomes
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/lookups/audit/categories
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/lookups/audit/outcomes
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/lookups/audit/operations
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/lookups/audit/operations
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/lookups/audit/categories
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 13.1231ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 13.3885ms - 404
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 20039.529ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 20040.3998ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 20044.7384ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 20044.9759ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 20047.9454ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 20048.235ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/lookups/audit/operations
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/lookups/audit/categories
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/lookups/audit/operations
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/lookups/audit/categories
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/export-limits
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/export-limits
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/lookups/audit/outcomes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/lookups/audit/outcomes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 28.5533ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 28.7684ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 28.289ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 28.5223ms - 404
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 37.3382ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 37.5131ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 38.8252ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 38.9806ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 48.4951ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 48.6684ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 20.6351ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 20.8342ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events/4d1a6953-e831-4b7b-9b7e-c4592d95890e
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events/4d1a6953-e831-4b7b-9b7e-c4592d95890e
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 59.3478ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 59.4724ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10&correlationId=52c9fe0f-f589-4cd2-aeed-fd39ca684c99
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10&correlationId=52c9fe0f-f589-4cd2-aeed-fd39ca684c99
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 23.7878ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 23.8926ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events/4d1a6953-e831-4b7b-9b7e-c4592d95890e
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events/4d1a6953-e831-4b7b-9b7e-c4592d95890e
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 20.9318ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 21.0482ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 21.4389ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 21.5317ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events/e3998c18-8998-4764-b74a-a70876acdbd2
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events/e3998c18-8998-4764-b74a-a70876acdbd2
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.6213ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.7454ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10&correlationId=17aaf51f-fd97-4d44-90af-ec2f4701d26d
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10&correlationId=17aaf51f-fd97-4d44-90af-ec2f4701d26d
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 24.319ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 24.4273ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events?page=1&pageSize=10
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.6027ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.6967ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/audit/events/4a6c652b-a5df-44cd-b87e-3f2cd658957f
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/audit/events/4a6c652b-a5df-44cd-b87e-3f2cd658957f
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.7589ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.8803ms - 200

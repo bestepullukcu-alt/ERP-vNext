@@ -1,0 +1,4 @@
+dotnet watch 🔥 Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.
+dotnet watch 💡 Press Ctrl+R to restart.
+dotnet watch 🔨 Building C:\Users\user\Desktop\ERP-vNext\services\Diten.EnterpriseStrategyService\src\Diten.EnterpriseStrategy.API\Diten.WebAPI.csproj ...
+dotnet watch 🔨 Build succeeded: C:\Users\user\Desktop\ERP-vNext\services\Diten.EnterpriseStrategyService\src\Diten.EnterpriseStrategy.API\Diten.WebAPI.csproj

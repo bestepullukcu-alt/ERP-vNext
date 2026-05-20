@@ -1,0 +1,6 @@
+dotnet watch 🔥 Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.
+dotnet watch 💡 Press Ctrl+R to restart.
+dotnet watch 🔨 Building C:\Users\user\Desktop\ERP-vNext\gateway\Diten.ApiGateway\Diten.ApiGateway.csproj ...
+dotnet watch 🔨 Build succeeded: C:\Users\user\Desktop\ERP-vNext\gateway\Diten.ApiGateway\Diten.ApiGateway.csproj
+dotnet watch ❌ [Diten.ApiGateway (net8.0)] Exited with error code 1073807364
+dotnet watch ⏳ Waiting for a file to change before restarting ...

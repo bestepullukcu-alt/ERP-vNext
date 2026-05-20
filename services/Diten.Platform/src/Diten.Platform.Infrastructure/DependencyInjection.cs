@@ -4,6 +4,7 @@ using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Lookups.Services;
+using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Eventing;
@@ -15,6 +16,7 @@ using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Audit;
 using Diten.Platform.Infrastructure.Services.Http;
+using Diten.Platform.Infrastructure.Services.Notifications;
 using Diten.Platform.Infrastructure.Settings;
 using Diten.Platform.Common.Tenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -105,6 +107,11 @@ public static class DependencyInjection
         services.Configure<AuditRetentionSeedOptions>(configuration.GetSection(AuditRetentionSeedOptions.SectionName));
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         services.Configure<AuthServiceOptions>(configuration.GetSection(AuthServiceOptions.SectionName));
+        services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
+        services.AddOptions<SmtpProviderOptions>()
+            .Bind(configuration.GetSection(SmtpProviderOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<SmtpProviderOptions>, SmtpProviderOptionsValidator>();
         services.Configure<EventBusOptions>(configuration.GetSection(EventBusOptions.SectionName));
         services.Configure<RabbitMqEventingOptions>(configuration.GetSection(RabbitMqEventingOptions.SectionName));
         services.Configure<BackgroundJobSchedulerOptions>(configuration.GetSection(BackgroundJobSchedulerOptions.SectionName));
@@ -163,6 +170,14 @@ public static class DependencyInjection
         services.AddScoped<IAuditEventRepository, AuditEventRepository>();
         services.AddScoped<IAuditRetentionPolicyRepository, AuditRetentionPolicyRepository>();
         services.AddScoped<ITenantAuditPreferenceRepository, TenantAuditPreferenceRepository>();
+        services.AddScoped<ITenantMessagingSettingsRepository, TenantMessagingSettingsRepository>();
+        services.AddScoped<INotificationTemplateRepository, NotificationTemplateRepository>();
+        services.AddScoped<INotificationDispatchRepository, NotificationDispatchRepository>();
+        services.AddScoped<IMessagingProvider, FakeMessagingProvider>();
+        services.AddScoped<IMessagingProvider, SmtpMessagingProvider>();
+        services.AddSingleton<ISmtpClientFactory, MailKitSmtpClientFactory>();
+        services.AddScoped<SecretReferenceResolver>();
+        services.AddScoped<IMessagingProviderResolver, MessagingProviderResolver>();
         services.AddScoped<AuditOutboxRepository>();
         services.AddScoped<IAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddScoped<IAuditOutboxProcessingRepository>(provider => provider.GetRequiredService<AuditOutboxRepository>());
@@ -181,8 +196,8 @@ public static class DependencyInjection
         SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
-        return services;
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
         services.AddScoped<IOutboxObservabilityReader>(sp => (IOutboxObservabilityReader)sp.GetRequiredService<IOutboxEventRepository>());
         services.AddScoped<IConsumedEventRepository, ConsumedEventRepository>();
@@ -199,6 +214,8 @@ public static class DependencyInjection
             services.AddMassTransit(x =>
             {
                 x.AddConsumer<TenantActivatedV1Consumer>();
+                x.AddConsumer<TenantLifecycleAuditConsumer>();
+                x.AddConsumer<TenantLifecycleNotificationConsumer>();
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host(eventingOptions.Host, eventingOptions.Port, eventingOptions.VirtualHost, h =>
@@ -229,8 +246,6 @@ public static class DependencyInjection
 
         services.AddHostedService<OutboxPublisherWorker>();
 
-        RunMongoStartupInitialization(database, mongoSettings);
-
         return services;
     }
 
@@ -243,6 +258,7 @@ public static class DependencyInjection
             SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         }
         catch (Exception ex) when (mongoSettings.AllowStartupWithoutDatabase)
         {
