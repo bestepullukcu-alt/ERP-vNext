@@ -3,15 +3,15 @@
 @inject IHtmlLocalizer<AdministratorsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas administrators-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
     aria-labelledby="offcanvasDetailsPreviewLabel">
-    <div class="offcanvas-header py-6">
+    <div class="offcanvas-header py-4">
         <div class="d-flex align-items-center min-w-0">
             <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
                 <i class="bx bx-user-check fs-4"></i>
             </div>
             <div class="min-w-0">
-                <h5 id="oc-title" class="offcanvas-title mb-1 text-truncate">-</h5>
+                <h5 id="oc-title" class="offcanvas-title mb-0 text-truncate">-</h5>
                 <small id="oc-subtitle" class="text-muted d-block text-truncate">-</small>
             </div>
         </div>
@@ -19,20 +19,15 @@
             aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
 
-    <div class="offcanvas-body flex-grow-1 p-0 border-top">
-        <div class="p-4 d-flex flex-column gap-4">
-            <section class="card backbone-preview-section backbone-preview-status px-4 py-3 d-flex flex-row align-items-center justify-content-between">
-                <span class="fw-semibold text-heading">@SharedLocalizer["Status"]</span>
-                <span id="oc-status" class="badge bg-label-secondary">-</span>
-            </section>
-
-            <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["GeneralInformation"]</h6>
+    <div class="offcanvas-body flex-grow-1 p-6 border-top">
+        <div class="d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4 administrators-preview-section">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 administrators-preview-section-title">@Localizer["GeneralInformation"]</h6>
                 <div class="row g-4">
                     <div class="col-12">
                         <div class="backbone-preview-field">
                             <i class="bx bx-envelope"></i>
-                            <div>
+                            <div class="min-w-0 flex-grow-1">
                                 <div class="backbone-preview-label">@Localizer["Email"]</div>
                                 <div id="oc-email" class="backbone-preview-value mt-1">-</div>
                             </div>
@@ -41,25 +36,31 @@
                     <div class="col-12">
                         <div class="backbone-preview-field">
                             <i class="bx bx-user"></i>
-                            <div>
+                            <div class="min-w-0 flex-grow-1">
                                 <div class="backbone-preview-label">@Localizer["UserName"]</div>
-                                <div id="oc-username" class="backbone-preview-value mt-1">-</div>
+                                <div id="oc-username" class="backbone-preview-value mt-1" title="-">-</div>
                             </div>
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="backbone-preview-field">
                             <i class="bx bx-id-card"></i>
-                            <div>
+                            <div class="min-w-0 flex-grow-1">
                                 <div class="backbone-preview-label">@Localizer["ActorType"]</div>
                                 <div id="oc-actor-type" class="backbone-preview-value mt-1">-</div>
                             </div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4 administrators-preview-section">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 administrators-preview-section-title">@Localizer["Roles"]</h6>
+                <div class="row g-4">
                     <div class="col-12">
                         <div class="backbone-preview-field">
                             <i class="bx bx-shield-quarter"></i>
-                            <div>
+                            <div class="min-w-0 flex-grow-1">
                                 <div class="backbone-preview-label">@Localizer["Roles"]</div>
                                 <div id="oc-roles" class="backbone-preview-value mt-1">-</div>
                             </div>
@@ -67,8 +68,17 @@
                     </div>
                     <div class="col-12">
                         <div class="backbone-preview-field">
+                            <i class="bx bx-check-shield"></i>
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                                <div id="oc-status" class="backbone-preview-value mt-1">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
                             <i class="bx bx-envelope-open"></i>
-                            <div>
+                            <div class="min-w-0 flex-grow-1">
                                 <div class="backbone-preview-label">@Localizer["InvitationStatus"]</div>
                                 <div id="oc-invitation-status" class="backbone-preview-value mt-1">-</div>
                             </div>
@@ -77,20 +87,35 @@
                 </div>
             </section>
 
-            <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ScopeAndAudit"]</h6>
+            <section class="card backbone-preview-section p-4 administrators-preview-section">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 administrators-preview-section-title">@Localizer["ScopeAndAudit"]</h6>
                 <div class="row g-4">
                     <div class="col-12 js-partner-scope d-none">
-                        <div class="backbone-preview-label">@Localizer["PartnerId"]</div>
-                        <div id="oc-partner-id" class="backbone-preview-value mt-1">-</div>
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-buildings"></i>
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="backbone-preview-label">@Localizer["PartnerId"]</div>
+                                <div id="oc-partner-id" class="backbone-preview-value mt-1">-</div>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-12 js-partner-scope d-none">
-                        <div class="backbone-preview-label">@Localizer["AllowedTenantIds"]</div>
-                        <div id="oc-tenant-scope" class="backbone-preview-description mt-1">-</div>
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-list-check"></i>
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="backbone-preview-label">@Localizer["AllowedTenantIds"]</div>
+                                <div id="oc-tenant-scope" class="backbone-preview-description mt-1 font-monospace">-</div>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-12">
-                        <div class="backbone-preview-label">@Localizer["AuditPreview"]</div>
-                        <div id="oc-audit" class="backbone-preview-description mt-1">-</div>
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-history"></i>
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="backbone-preview-label">@Localizer["AuditPreview"]</div>
+                                <div id="oc-audit" class="backbone-preview-value mt-1">-</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

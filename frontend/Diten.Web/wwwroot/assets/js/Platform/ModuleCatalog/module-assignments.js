@@ -59,7 +59,7 @@ const ModuleCatalogAssignments = (function () {
         if (!detailEl) return;
         const unit = formatUnit(count, singular, plural);
         detailEl.textContent = isUnavailable(value)
-            ? `${L.DataUnavailable || 'Data unavailable'} / ${count} ${unit}`
+            ? `${L.DataUnavailable || ''} / ${count} ${unit}`
             : `${count} ${unit}`;
     };
 
@@ -125,7 +125,7 @@ const ModuleCatalogAssignments = (function () {
             payload = await response.json();
         } catch { }
         if (!response.ok) {
-            const message = payload?.errors?.join(' ') || payload?.Errors?.join(' ') || L.ErrorOccurred || 'Error occurred.';
+            const message = payload?.errors?.join(' ') || payload?.Errors?.join(' ') || L.ErrorOccurred || '';
             throw new Error(message);
         }
         return payload;
@@ -137,26 +137,26 @@ const ModuleCatalogAssignments = (function () {
             els.planCount,
             els.planDetail,
             data.planAssignmentCount ?? data.PlanAssignmentCount,
-            L.PlanUnitSingular || 'plan',
-            L.PlanUnitPlural || 'plans');
+            L.PlanUnitSingular || '',
+            L.PlanUnitPlural || '');
         setSummaryCard(
             els.tenantCount,
             els.tenantDetail,
             data.tenantAssignmentCount ?? data.TenantAssignmentCount,
-            L.AssignedTenantUnitSingular || 'assigned tenant',
-            L.AssignedTenantUnitPlural || 'assigned tenants');
+            L.AssignedTenantUnitSingular || '',
+            L.AssignedTenantUnitPlural || '');
         setSummaryCard(
             els.enabledCount,
             els.enabledDetail,
             data.enabledTenantCount ?? data.EnabledTenantCount,
-            L.EnabledTenantUnitSingular || 'enabled tenant',
-            L.EnabledTenantUnitPlural || 'enabled tenants');
+            L.EnabledTenantUnitSingular || '',
+            L.EnabledTenantUnitPlural || '');
         setSummaryCard(
             els.manualCount,
             els.manualDetail,
             data.manualOverrideCount ?? data.ManualOverrideCount,
-            L.OverrideUnitSingular || 'override',
-            L.OverrideUnitPlural || 'overrides');
+            L.OverrideUnitSingular || '',
+            L.OverrideUnitPlural || '');
     };
 
     const renderPlans = (payload) => {
@@ -168,13 +168,13 @@ const ModuleCatalogAssignments = (function () {
             const planName = row.planName || row.PlanName;
             const planStatus = row.planStatus || row.PlanStatus;
             const isActive = String(planStatus).toLowerCase() === 'active';
-            const displayStatus = isActive ? (L.AssignmentStatusEnabled || 'Enabled') : (L.AssignmentStatusDisabled || 'Disabled');
+            const displayStatus = isActive ? (L.AssignmentStatusEnabled || '') : (L.AssignmentStatusDisabled || '');
             const tenantReach = getNumber(row.tenantCount, row.TenantCount, row.assignedTenantCount, row.AssignedTenantCount);
             const description = tenantReach !== null
-                ? interpolate(L.PlanEntitlementTenantReach || '{0} tenants will receive this module', tenantReach)
+                ? interpolate(L.PlanEntitlementTenantReach || '{0}', tenantReach)
                 : (isActive
-                    ? (L.PlanEntitlementActiveDescription || 'Subscription plan entitlement grants this module')
-                    : (L.PlanEntitlementInactiveDescription || 'Module is included but currently inactive'));
+                    ? (L.PlanEntitlementActiveDescription || '')
+                    : (L.PlanEntitlementInactiveDescription || ''));
             const includedSince = formatDate(row.effectiveFromUtc || row.EffectiveFromUtc || row.lastUpdatedAtUtc || row.LastUpdatedAtUtc);
             return `<article class="list-group-item p-4">
                 <div class="d-flex flex-column flex-md-row align-items-md-start justify-content-between gap-3 mb-3">
@@ -186,34 +186,12 @@ const ModuleCatalogAssignments = (function () {
                 </div>
                 <div class="text-body mb-3">${escapeHtml(description)}</div>
                 <div class="d-flex flex-column flex-md-row gap-2 gap-md-4 small text-body-secondary">
-                    <span><span class="text-heading fw-medium">${escapeHtml(L.AssignmentSource || 'Source')}:</span> ${escapeHtml(L.PlanEntitlementSource || 'Subscription Plan')}</span>
-                    <span><span class="text-heading fw-medium">${escapeHtml(L.IncludedSince || 'Included since')}:</span> ${escapeHtml(includedSince)}</span>
+                    <span><span class="text-heading fw-medium">${escapeHtml(L.AssignmentSource || '')}:</span> ${escapeHtml(L.PlanEntitlementSource || '')}</span>
+                    <span><span class="text-heading fw-medium">${escapeHtml(L.IncludedSince || '')}:</span> ${escapeHtml(includedSince)}</span>
                 </div>
             </article>`;
         }).join('');
     };
-
-    const getTenantGroupKey = (row) => {
-        const tenantStatus = row.tenantStatus || row.TenantStatus;
-        const assignmentStatus = row.assignmentStatus || row.AssignmentStatus;
-        const source = row.assignmentSource || row.AssignmentSource;
-
-        if (['Suspended', 'Disabled', 'Expired'].includes(tenantStatus) || ['Suspended', 'Disabled', 'Expired'].includes(assignmentStatus)) {
-            return 'blocked';
-        }
-
-        if (['Manual', 'Override'].includes(source)) {
-            return 'manual';
-        }
-
-        return 'plans';
-    };
-
-    const tenantGroupTitle = (key) => ({
-        plans: L.FromSubscriptionPlans || 'From Subscription Plans',
-        manual: L.ManualOverrides || 'Manual Overrides',
-        blocked: L.BlockedSuspended || 'Blocked / Suspended'
-    }[key] || key);
 
     const tenantSourceText = (row) => {
         const source = row.assignmentSource || row.AssignmentSource;
@@ -221,40 +199,10 @@ const ModuleCatalogAssignments = (function () {
         const assignmentStatus = row.assignmentStatus || row.AssignmentStatus;
         const tenantStatus = row.tenantStatus || row.TenantStatus;
 
-        if (tenantStatus === 'Suspended') return L.TenantSuspended || 'Tenant Suspended';
-        if (source === 'Manual' && assignmentStatus === 'Disabled') return L.ManualDisabled || 'Manual Disabled';
-        if (source === 'Manual' || source === 'Override') return L.ManualAssignment || 'Manual Assignment';
+        if (tenantStatus === 'Suspended') return L.TenantSuspended || '';
+        if (source === 'Manual' && assignmentStatus === 'Disabled') return L.ManualDisabled || '';
+        if (source === 'Manual' || source === 'Override') return L.ManualAssignment || '';
         return sourcePlan || source || '-';
-    };
-
-    const renderTenantGroup = (key, rows) => {
-        if (!rows.length) return '';
-        return `<section class="p-4 border-top">
-            <div class="fw-semibold text-heading mb-3">${escapeHtml(tenantGroupTitle(key))}</div>
-            <div class="d-grid gap-2">
-                ${rows.map((row) => {
-                    const tenantCode = row.tenantCode || row.TenantCode;
-                    return `<article class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2 py-2">
-                        <div class="min-w-0">
-                            <div class="fw-medium text-heading">${escapeHtml(row.tenantName || row.TenantName)}</div>
-                            <code class="small">${escapeHtml(tenantCode)}</code>
-                        </div>
-                        <div class="text-body-secondary small">${escapeHtml(tenantSourceText(row))}</div>
-                        <div class="d-flex align-items-center gap-2">
-                            ${statusBadge(row.assignmentStatus || row.AssignmentStatus)}
-                            <button type="button"
-                                    class="btn btn-icon btn-sm btn-label-secondary btn-tenant-assignment-detail"
-                                    data-bs-toggle="tooltip"
-                                    title="${escapeHtml(L.Details || 'Details')}"
-                                    aria-label="${escapeHtml(L.Details || 'Details')}"
-                                    data-tenant-code="${escapeHtml(tenantCode)}">
-                                <i class="bx bx-show"></i>
-                            </button>
-                        </div>
-                    </article>`;
-                }).join('')}
-            </div>
-        </section>`;
     };
 
     const renderTenants = (payload) => {
@@ -269,16 +217,37 @@ const ModuleCatalogAssignments = (function () {
             return;
         }
 
-        const groups = rows.reduce((acc, row) => {
-            acc[getTenantGroupKey(row)].push(row);
-            return acc;
-        }, { plans: [], manual: [], blocked: [] });
-
-        els.tenantList.innerHTML = [
-            renderTenantGroup('plans', groups.plans),
-            renderTenantGroup('manual', groups.manual),
-            renderTenantGroup('blocked', groups.blocked)
-        ].join('');
+        els.tenantList.innerHTML = rows.map((row) => {
+            const tenantCode = row.tenantCode || row.TenantCode;
+            const tenantName = row.tenantName || row.TenantName;
+            const assignmentStatus = row.assignmentStatus || row.AssignmentStatus;
+            const source = row.assignmentSource || row.AssignmentSource;
+            const effectiveSince = formatDate(row.effectiveFromUtc || row.EffectiveFromUtc || row.assignedAtUtc || row.AssignedAtUtc || row.lastUpdatedAtUtc || row.LastUpdatedAtUtc);
+            return `<article class="list-group-item p-4">
+                <div class="d-flex flex-column flex-md-row align-items-md-start justify-content-between gap-3 mb-3">
+                    <div>
+                        <div class="fw-semibold text-heading">${escapeHtml(tenantName)}</div>
+                        <code class="small">${escapeHtml(tenantCode)}</code>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        ${statusBadge(assignmentStatus)}
+                        <button type="button"
+                                class="btn btn-icon btn-sm btn-label-secondary btn-tenant-assignment-detail"
+                                data-bs-toggle="tooltip"
+                                title="${escapeHtml(L.Details || '')}"
+                                aria-label="${escapeHtml(L.Details || '')}"
+                                data-tenant-code="${escapeHtml(tenantCode)}">
+                            <i class="bx bx-show"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="text-body mb-3">${escapeHtml(tenantSourceText(row))}</div>
+                <div class="d-flex flex-column flex-md-row gap-2 gap-md-4 small text-body-secondary">
+                    <span><span class="text-heading fw-medium">${escapeHtml(L.AssignmentSource || '')}:</span> ${sourceBadge(source)}</span>
+                    <span><span class="text-heading fw-medium">${escapeHtml(L.IncludedSince || '')}:</span> ${escapeHtml(effectiveSince)}</span>
+                </div>
+            </article>`;
+        }).join('');
     };
 
     const buildPlanQuery = () => {
@@ -319,7 +288,7 @@ const ModuleCatalogAssignments = (function () {
         } catch (error) {
             console.error('[ModuleCatalogAssignments] Load failed.', error);
             setVisible(els.error, true);
-            window.showToast?.(error.message || (L.ErrorOccurred || 'Error occurred.'), 'error');
+            window.showToast?.(error.message || (L.ErrorOccurred || ''), 'error');
         } finally {
             setVisible(els.loading, false);
         }
@@ -330,31 +299,49 @@ const ModuleCatalogAssignments = (function () {
         debounceTimer = window.setTimeout(() => {
             loadPlans().catch((error) => {
                 console.error('[ModuleCatalogAssignments] Plan reload failed.', error);
-                window.showToast?.(error.message || (L.ErrorOccurred || 'Error occurred.'), 'error');
+                window.showToast?.(error.message || (L.ErrorOccurred || ''), 'error');
             });
             loadTenants().catch((error) => {
                 console.error('[ModuleCatalogAssignments] Tenant reload failed.', error);
-                window.showToast?.(error.message || (L.ErrorOccurred || 'Error occurred.'), 'error');
+                window.showToast?.(error.message || (L.ErrorOccurred || ''), 'error');
             });
         }, 250);
     };
 
+    const initSelect2Filters = () => {
+        if (!window.jQuery?.fn?.select2 || !root) return;
+        $(root).find('select.select2').each(function () {
+            const $select = $(this);
+            if ($select.hasClass('select2-hidden-accessible')) $select.select2('destroy');
+            $select.select2({
+                dropdownParent: $(document.body),
+                dropdownCssClass: 'dt-inline-filter-dropdown',
+                selectionCssClass: 'form-select form-select-sm',
+                minimumResultsForSearch: Infinity,
+                width: 'element',
+                placeholder: $select.data('placeholder') || '',
+                allowClear: true
+            });
+        });
+    };
+
     const init = () => {
         if (!root) return;
+        initSelect2Filters();
         document.querySelector('[data-bs-target="#module-assignments-tab"]')?.addEventListener('shown.bs.tab', () => {
             if (loaded) return;
             loaded = true;
             load();
         });
         els.retry?.addEventListener('click', load);
-        [els.planStatus, els.planSearch, els.tenantSource, els.tenantStatus, els.tenantSearch]
+        [els.planSearch, els.tenantSearch]
             .forEach((el) => el?.addEventListener('input', scheduleReload));
         [els.planStatus, els.tenantSource, els.tenantStatus]
             .forEach((el) => el?.addEventListener('change', scheduleReload));
         els.tenantList?.addEventListener('click', (event) => {
             const button = event.target.closest('.btn-tenant-assignment-detail');
             if (!button) return;
-            window.showToast?.(L.TenantAssignmentsDegraded || 'Tenant assignment data is temporarily unavailable.', 'warning');
+            window.showToast?.(L.TenantAssignmentsDegraded || '', 'warning');
         });
     };
 

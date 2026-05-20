@@ -6,7 +6,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content audit-detail-modal">
 
-            <div class="modal-header align-items-start px-4">
+            <div class="modal-header align-items-start px-6">
                 <div class="d-flex align-items-start gap-3 flex-grow-1 min-w-0">
                     <div class="avatar avatar-md flex-shrink-0">
                         <span class="avatar-initial rounded bg-label-primary" id="audit-detail-outcome-avatar">
@@ -40,7 +40,7 @@
                 </div>
 
                 <div id="audit-detail-content" class="d-none">
-                    <div class="px-4 pt-3 pb-4 d-flex flex-wrap align-items-center gap-2" id="audit-detail-actions">
+                    <div class="px-6 pt-4 pb-4 d-flex flex-wrap align-items-center gap-2" id="audit-detail-actions">
                         <button type="button" class="btn btn-sm btn-label-secondary d-inline-flex align-items-center gap-1" id="audit-action-copy-cid">
                             <i class="icon-base bx bx-copy"></i>
                             <span>@Localizer["AuditLog.Detail.CopyCorrelationId"]</span>
@@ -55,7 +55,7 @@
                         </button>
                     </div>
 
-                    <div class="px-4 pb-3">
+                    <div class="px-6 pb-4">
                         <div class="border rounded overflow-hidden audit-detail-tabs-wrapper">
                             <div class="border-bottom p-3">
                                 <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
@@ -98,15 +98,15 @@
                             <div class="tab-content p-3 bg-transparent shadow-none">
 
                         <div class="tab-pane fade show active" id="audit-tab-overview" role="tabpanel">
-                            <div class="row g-2" id="audit-detail-summary"></div>
+                            <div class="row g-3" id="audit-detail-summary"></div>
                         </div>
 
                         <div class="tab-pane fade" id="audit-tab-changes" role="tabpanel">
-                            <div class="list-group list-group-flush border rounded overflow-hidden mb-4" id="audit-diff-list"></div>
+                            <div class="list-group list-group-flush mb-4" id="audit-diff-list"></div>
                             <div class="row g-4">
                                 <div class="col-12 col-lg-6">
                                     <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <small class="text-muted fw-bold text-uppercase">@Localizer["AuditLog.Detail.BeforeState"]</small>
+                                        <div class="backbone-preview-label">@Localizer["AuditLog.Detail.BeforeState"]</div>
                                         <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-copy-json" data-source="before" aria-label="@Localizer["AuditLog.Detail.Copy"]">
                                             <i class="icon-base bx bx-copy"></i>
                                         </button>
@@ -115,7 +115,7 @@
                                 </div>
                                 <div class="col-12 col-lg-6">
                                     <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <small class="text-muted fw-bold text-uppercase">@Localizer["AuditLog.Detail.AfterState"]</small>
+                                        <div class="backbone-preview-label">@Localizer["AuditLog.Detail.AfterState"]</div>
                                         <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-copy-json" data-source="after" aria-label="@Localizer["AuditLog.Detail.Copy"]">
                                             <i class="icon-base bx bx-copy"></i>
                                         </button>

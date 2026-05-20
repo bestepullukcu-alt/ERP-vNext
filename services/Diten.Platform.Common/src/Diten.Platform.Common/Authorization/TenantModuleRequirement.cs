@@ -6,6 +6,8 @@ public sealed class TenantModuleRequirement : IAuthorizationRequirement
 {
     public TenantModuleRequirement(string moduleCode)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(moduleCode);
+
         ModuleCode = moduleCode;
     }
 

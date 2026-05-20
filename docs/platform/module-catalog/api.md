@@ -8,6 +8,7 @@ Base path through Gateway: `/api/platform/module-catalog`
 
 - `GET /api/platform/module-catalog`
   - Filters: `search`, `domain`, `service`, `status`, `isCoreModule`, `isTenantAssignable`, `page`, `pageSize`, `sort`
+- `GET /api/platform/module-catalog/stats`
 - `GET /api/platform/module-catalog/assignable`
   - Returns only `Status=Active`, `IsTenantAssignable=true`, `IsDeleted=false`.
 - `GET /api/platform/module-catalog/{id}`
@@ -18,6 +19,33 @@ Base path through Gateway: `/api/platform/module-catalog`
 - `POST /api/platform/module-catalog/{id}/deactivate`
 - `DELETE /api/platform/module-catalog/{id}`
 - `DELETE /api/platform/module-catalog/bulk`
+
+## Module Page Endpoints
+
+Module page descriptors are exposed by `ModulePagesController` under both canonical page routes and module-catalog compatibility routes:
+
+- `GET /api/platform/module-pages`
+- `GET /api/platform/module-pages/by-module/{moduleCode}`
+- `GET /api/platform/module-pages/{id}`
+- `POST /api/platform/module-pages`
+- `PUT /api/platform/module-pages/{id}`
+- `POST /api/platform/module-pages/{id}/activate`
+- `POST /api/platform/module-pages/{id}/deactivate`
+- `DELETE /api/platform/module-pages/{id}`
+- `GET /api/platform/module-pages/{pageId}/actions`
+- `GET /api/platform/module-pages/actions/{id}`
+- `POST /api/platform/module-pages/{pageId}/actions`
+- `PUT /api/platform/module-pages/actions/{id}`
+- `DELETE /api/platform/module-pages/actions/{id}`
+
+## Assignment Inspection Endpoints
+
+The Module Details Assignments tab uses read-only assignment inspection:
+
+- `GET /api/platform/module-catalog/{moduleCode}/assignments/overview`
+- `GET /api/platform/module-catalog/{moduleCode}/assignments/plans`
+- `GET /api/platform/module-catalog/{moduleCode}/assignments/tenants`
+- `GET /api/platform/module-catalog/{moduleCode}/assignments/tenants/{tenantCode}`
 
 ## Payload Rules
 
@@ -30,4 +58,4 @@ Base path through Gateway: `/api/platform/module-catalog`
 - `SortOrder` defaults to `0` and must be non-negative.
 - `IsCoreModule=true` records cannot be deleted.
 - Deprecated records are read-only except `DisplayName`, `Description`, and `SortOrder`.
-
+- Assignment tenant rows can return a degraded dependency state until a real tenant assignment source of record exists.

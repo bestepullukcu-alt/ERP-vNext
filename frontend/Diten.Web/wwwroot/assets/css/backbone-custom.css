@@ -1,8 +1,49 @@
-/* 
+/*
  * Backbone Custom CSS (MOD-0013)
  * Use this file for modern frontend standards.
  * Base: 16px rem (Sneat Default). Do NOT override html font-size.
  */
+
+/* ================================================================
+   FORM/INPUT BORDER SSOT
+   Single source of truth for the border color of every input-like
+   surface in the project: form-control, form-select, input-group,
+   DataTables search, and Select2 selections (single + multiple).
+
+   Sneat's .form-control / .form-select compute their border from
+   color-mix(--bs-base-color 22%, --bs-paper-bg) — NOT --bs-border-color.
+   The Select2 vendor default is #aaa; our previous scoped overrides
+   used --bs-border-color. Three different colors on the same row.
+   Here we lock everything to Sneat's form-control color so search,
+   filters, and offcanvas form inputs all match.
+
+   To retune borders project-wide, change --diten-input-border only.
+   ================================================================ */
+:root {
+    --diten-input-border: color-mix(in sRGB, var(--bs-base-color) 22%, var(--bs-paper-bg));
+}
+
+/* Rebind --bs-border-color locally on input-like surfaces so every
+   existing rule that resolves border via var(--bs-border-color) on
+   these elements (including #inlineFilterHost / .dt-filter-host
+   scoped chip rules) inherits the canonical SSOT color without any
+   per-rule changes. */
+.form-control,
+.form-select,
+.input-group-text,
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple,
+div.dt-container div.dt-search input {
+    --bs-border-color: var(--diten-input-border);
+    border-color: var(--diten-input-border);
+}
+
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container--default.select2-container--open .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--multiple {
+    border-color: var(--bs-primary);
+}
 
 /* Placeholder for shared backbone styles */
 .navbar-detached.navbar-backbone {
@@ -202,6 +243,22 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     background: #fff;
 }
 
+.administrators-preview-offcanvas .offcanvas-body {
+    background: #fff;
+}
+
+.administrators-preview-offcanvas .administrators-preview-section {
+    background: #fff;
+    border: 1px solid #cfd6e4 !important;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.administrators-preview-section-title {
+    font-size: .8125rem;
+    line-height: 1.25;
+}
+
 .backbone-preview-avatar {
     width: 44px;
     height: 44px;
@@ -211,9 +268,9 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 }
 
 .backbone-preview-section {
-    border: 1px solid #e1e5ec;
-    border-radius: 8px;
-    background: #fff;
+    border: 0;
+    border-radius: var(--bs-card-border-radius);
+    background: var(--bs-card-bg);
 }
 
 .backbone-preview-status {
@@ -246,9 +303,9 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 }
 
 .backbone-preview-description {
-    color: #3d4a5f;
-    font-size: 1rem;
-    line-height: 1.65;
+    color: var(--bs-secondary-color);
+    font-size: .8125rem;
+    line-height: 1.45;
     white-space: pre-line;
 }
 
@@ -284,7 +341,122 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 }
 
 [data-bs-theme=dark] .backbone-preview-section {
-    border-color: #44485e;
+    border-color: transparent;
+}
+
+/* Generic inline filter host — mirrors #inlineFilterHost chip styling
+   so non-DataTable surfaces (e.g. Module Details > Assignments) can reuse
+   the standard filter-chip look without ID collisions. */
+.dt-filter-host .dt-filter-bar {
+    row-gap: .75rem;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip {
+    flex: 1 1 0;
+    min-width: 160px;
+    max-width: none;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .form-control,
+.dt-filter-host .dt-filter-bar .filter-chip .form-select {
+    height: calc(1.85rem + 2px);
+    min-height: calc(1.85rem + 2px);
+    font-size: .785rem;
+    font-weight: 500;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-container {
+    width: 100% !important;
+    min-width: 100%;
+    max-width: 100%;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection {
+    width: 100% !important;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--single,
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--multiple {
+    height: calc(1.85rem + 2px);
+    min-height: calc(1.85rem + 2px);
+    border-radius: var(--bs-border-radius);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    background-color: var(--bs-paper-bg, var(--bs-card-bg, #fff));
+    position: relative;
+    overflow: hidden;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__rendered {
+    height: 100%;
+    line-height: calc(1.85rem);
+    padding-left: .75rem;
+    padding-right: 3.25rem;
+    font-size: .785rem;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__clear {
+    position: absolute;
+    right: 1.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
+    font-size: .95rem;
+    line-height: 1;
+    color: var(--bs-secondary-color);
+    opacity: .5;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__clear:hover {
+    opacity: 1;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__arrow {
+    position: absolute;
+    right: .7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    height: .6rem;
+    width: .6rem;
+    z-index: 5;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__arrow b {
+    display: none;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--single .select2-selection__arrow::after {
+    content: "";
+    display: block;
+    width: .46rem;
+    height: .46rem;
+    border-right: 1.5px solid var(--bs-secondary-color);
+    border-bottom: 1.5px solid var(--bs-secondary-color);
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-container--default.select2-container--open .select2-selection--single,
+.dt-filter-host .dt-filter-bar .filter-chip .select2-container--default .select2-selection--single:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 .15rem rgba(var(--bs-primary-rgb), .14);
+}
+
+@media (max-width: 575.98px) {
+    .dt-filter-host .dt-filter-bar .filter-chip {
+        flex: 0 0 100%;
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+    }
 }
 
 [data-bs-theme=dark] .backbone-preview-value {

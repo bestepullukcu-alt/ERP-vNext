@@ -82,6 +82,17 @@
   <data name="ActionCode" xml:space="preserve"><value>Action Code</value></data>
   <data name="PermissionKey" xml:space="preserve"><value>Permission Key</value></data>
   <data name="ActionType" xml:space="preserve"><value>Action Type</value></data>
+  <data name="ActionTypeView" xml:space="preserve"><value>View</value></data>
+  <data name="ActionTypeToolbar" xml:space="preserve"><value>Toolbar</value></data>
+  <data name="ActionTypeRowAction" xml:space="preserve"><value>Row Action</value></data>
+  <data name="ActionTypeFormAction" xml:space="preserve"><value>Form Action</value></data>
+  <data name="ActionTypeBulkAction" xml:space="preserve"><value>Bulk Action</value></data>
+  <data name="ActionTypeSystem" xml:space="preserve"><value>System</value></data>
+  <data name="ActionTypeCustom" xml:space="preserve"><value>Custom</value></data>
+  <data name="ActionBehavior" xml:space="preserve"><value>Action Behavior</value></data>
+  <data name="EditAction" xml:space="preserve"><value>Edit Action</value></data>
+  <data name="ActionSaved" xml:space="preserve"><value>Action saved.</value></data>
+  <data name="NoPageActions" xml:space="preserve"><value>No page actions have been defined yet.</value></data>
   <data name="ToolbarAction" xml:space="preserve"><value>Toolbar action</value></data>
   <data name="RowAction" xml:space="preserve"><value>Row action</value></data>
   <data name="DangerousAction" xml:space="preserve"><value>Dangerous action</value></data>

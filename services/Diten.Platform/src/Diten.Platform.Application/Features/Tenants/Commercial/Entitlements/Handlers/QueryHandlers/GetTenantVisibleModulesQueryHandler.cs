@@ -1,7 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Queries;
 using Diten.Platform.Application.Services;
-using Diten.Platform.Domain.Repositories;
+using Diten.Platform.Common.Catalog;
 using MediatR;
 
 namespace Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Handlers.QueryHandlers;
@@ -9,18 +9,18 @@ namespace Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Ha
 public sealed class GetTenantVisibleModulesQueryHandler
     : IRequestHandler<GetTenantVisibleModulesQuery, Response<IReadOnlyList<TenantVisibleModuleDto>>>
 {
-    private readonly IModuleCatalogRepository _moduleRepository;
+    private readonly IPlatformCatalogContract _catalogContract;
     private readonly ITenantModuleAccessService _accessService;
 
-    public GetTenantVisibleModulesQueryHandler(IModuleCatalogRepository moduleRepository, ITenantModuleAccessService accessService)
+    public GetTenantVisibleModulesQueryHandler(IPlatformCatalogContract catalogContract, ITenantModuleAccessService accessService)
     {
-        _moduleRepository = moduleRepository;
+        _catalogContract = catalogContract;
         _accessService = accessService;
     }
 
     public async Task<Response<IReadOnlyList<TenantVisibleModuleDto>>> Handle(GetTenantVisibleModulesQuery request, CancellationToken ct)
     {
-        var modules = await _moduleRepository.GetAssignableAsync(ct);
+        var modules = await _catalogContract.GetAssignableModulesAsync(ct);
         var rows = new List<TenantVisibleModuleDto>();
         foreach (var module in modules)
         {

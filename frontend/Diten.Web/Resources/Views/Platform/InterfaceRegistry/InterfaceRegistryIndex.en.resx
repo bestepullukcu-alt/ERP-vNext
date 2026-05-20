@@ -15,12 +15,15 @@
   <data name="Actions" xml:space="preserve"><value>Actions</value></data>
   <data name="InterfaceDetail" xml:space="preserve"><value>Interface Detail</value></data>
   <data name="DiscoveryBatches" xml:space="preserve"><value>Discovery Batches</value></data>
+  <data name="DiscoveryBatchesDescription" xml:space="preserve"><value>Manifest discovery groups waiting for review.</value></data>
   <data name="DiffReview" xml:space="preserve"><value>Diff Review</value></data>
+  <data name="DiffReviewDescription" xml:space="preserve"><value>Review new, changed, missing, and deprecated interface differences in the selected discovery group.</value></data>
   <data name="ConfirmBatch" xml:space="preserve"><value>Confirm Batch</value></data>
   <data name="RejectBatch" xml:space="preserve"><value>Reject Batch</value></data>
   <data name="ChangeType" xml:space="preserve"><value>Change Type</value></data>
   <data name="ReviewStatus" xml:space="preserve"><value>Review Status</value></data>
   <data name="ReviewedBy" xml:space="preserve"><value>Reviewed By</value></data>
+  <data name="Module" xml:space="preserve"><value>Module</value></data>
   <data name="Owner" xml:space="preserve"><value>Owner</value></data>
   <data name="Service" xml:space="preserve"><value>Service</value></data>
   <data name="ConfirmedAt" xml:space="preserve"><value>Confirmed</value></data>
@@ -32,8 +35,13 @@
   <data name="PermissionDeniedState" xml:space="preserve"><value>You do not have permission to view Interface Registry data.</value></data>
   <data name="EmptyCatalogState" xml:space="preserve"><value>No confirmed active interface snapshots were found.</value></data>
   <data name="EmptyBatchState" xml:space="preserve"><value>No discovery batches were found.</value></data>
+  <data name="EmptyBatchTitle" xml:space="preserve"><value>No discovery group yet</value></data>
+  <data name="EmptyBatchDescription" xml:space="preserve"><value>When a service imports a manifest, discovery groups waiting for review are listed here.</value></data>
   <data name="SelectInterfaceState" xml:space="preserve"><value>Select an interface to inspect its active snapshot.</value></data>
   <data name="SelectBatchState" xml:space="preserve"><value>Select a discovery batch to review diff items.</value></data>
+  <data name="EmptyDiffTitle" xml:space="preserve"><value>Select a discovery group</value></data>
+  <data name="EmptyDiffDescription" xml:space="preserve"><value>Choose a group from the list to see diff items and confirm/reject actions here.</value></data>
+  <data name="SelectedDiscoveryGroupLabel" xml:space="preserve"><value>Selected group: {0}</value></data>
   <data name="PendingReview" xml:space="preserve"><value>Pending Review</value></data>
   <data name="Confirmed" xml:space="preserve"><value>Confirmed</value></data>
   <data name="Rejected" xml:space="preserve"><value>Rejected</value></data>
@@ -46,6 +54,8 @@
   <data name="Consumers" xml:space="preserve"><value>Consumers</value></data>
   <data name="NoEndpoints" xml:space="preserve"><value>No endpoints found.</value></data>
   <data name="NoConsumers" xml:space="preserve"><value>No consumers found.</value></data>
+  <data name="Required" xml:space="preserve"><value>Required</value></data>
+  <data name="Optional" xml:space="preserve"><value>Optional</value></data>
   <data name="CompatibilityNotes" xml:space="preserve"><value>No compatibility notes.</value></data>
   <data name="PartialFailure" xml:space="preserve"><value>Some data could not be loaded.</value></data>
   <data name="Active" xml:space="preserve"><value>Active</value></data>

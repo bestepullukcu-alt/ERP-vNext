@@ -1,0 +1,174 @@
+{
+  "navigation": {
+    "Platform Operasyonları": [
+      {
+        "name": "Kiracılar",
+        "icon": "bx-buildings",
+        "url": "/Platform/Tenants",
+        "group": "Platform Operasyonları",
+        "keywords": ["kiracı", "kiracılar", "tenant", "tenantlar", "şirketler", "müşteriler", "kayıt", "yaşam döngüsü"]
+      },
+      {
+        "name": "Kiracı Ekle",
+        "icon": "bx-plus-circle",
+        "url": "/Platform/Tenants/Create",
+        "group": "Platform Operasyonları",
+        "keywords": ["kiracı oluştur", "yeni kiracı", "tenant oluştur", "tenant ekle", "onboarding"]
+      },
+      {
+        "name": "Kiracı Giriş Güvenliği",
+        "icon": "bx-shield-quarter",
+        "url": "/Platform/TenantSecurity",
+        "group": "Platform Operasyonları",
+        "keywords": ["kiracı güvenliği", "tenant güvenliği", "giriş ayarları", "kimlik doğrulama", "login policy"]
+      }
+    ],
+    "Ticari": [
+      {
+        "name": "Abonelik Planları",
+        "icon": "bx-package",
+        "url": "/Platform/SubscriptionPlans",
+        "group": "Ticari",
+        "keywords": ["planlar", "abonelik", "subscription", "fiyatlandırma", "fatura döngüsü", "modüller"]
+      },
+      {
+        "name": "Abonelik Planı Ekle",
+        "icon": "bx-plus-circle",
+        "url": "/Platform/SubscriptionPlans/Create",
+        "group": "Ticari",
+        "keywords": ["plan oluştur", "yeni plan", "abonelik planı", "subscription plan", "ticari"]
+      },
+      {
+        "name": "Abonelik Özellikleri",
+        "icon": "bx-purchase-tag-alt",
+        "url": "/Platform/SubscriptionFeatures",
+        "group": "Ticari",
+        "keywords": ["özellikler", "feature", "feature catalog", "plan eşleştirme", "abonelik özelliği"]
+      }
+    ],
+    "Katalog": [
+      {
+        "name": "Modül Kataloğu",
+        "icon": "bx-grid-alt",
+        "url": "/Platform/ModuleCatalog",
+        "group": "Katalog",
+        "keywords": ["modüller", "modül", "katalog", "sayfalar", "atamalar", "module registry"]
+      },
+      {
+        "name": "Modül Ekle",
+        "icon": "bx-plus-circle",
+        "url": "/Platform/ModuleCatalog/Create",
+        "group": "Katalog",
+        "keywords": ["modül oluştur", "yeni modül", "modül kataloğu", "module catalog", "register module"]
+      },
+      {
+        "name": "Arayüz Kayıt Defteri",
+        "icon": "bx-git-branch",
+        "url": "/Platform/InterfaceRegistry",
+        "group": "Katalog",
+        "keywords": ["arayüz", "arayüzler", "interface", "interface registry", "kayıt defteri", "sözleşmeler", "keşif", "api kataloğu"]
+      }
+    ],
+    "Güvenlik ve Denetim": [
+      {
+        "name": "Platform Yöneticileri",
+        "icon": "bx-user-check",
+        "url": "/Platform/Administrators",
+        "group": "Güvenlik ve Denetim",
+        "keywords": ["yöneticiler", "platform yöneticileri", "platform admins", "partner admins", "roller", "davet"]
+      },
+      {
+        "name": "Denetim Günlüğü",
+        "icon": "bx-search-alt",
+        "url": "/Platform/AuditLog",
+        "group": "Güvenlik ve Denetim",
+        "keywords": ["denetim", "audit", "olaylar", "aktivite", "dışa aktar", "redaction"]
+      },
+      {
+        "name": "Denetim Saklama",
+        "icon": "bx-time-five",
+        "url": "/Platform/AuditRetention",
+        "group": "Güvenlik ve Denetim",
+        "keywords": ["denetim saklama", "audit retention", "saklama politikası", "uyumluluk", "retention"]
+      }
+    ],
+    "Hesap": [
+      {
+        "name": "Profil",
+        "icon": "bx-user-circle",
+        "url": "/Platform/Account/Profile",
+        "group": "Hesap",
+        "keywords": ["profil", "hesap", "benim profilim", "kullanıcı profili"]
+      },
+      {
+        "name": "Ayarlar",
+        "icon": "bx-cog",
+        "url": "/Platform/Account/Settings",
+        "group": "Hesap",
+        "keywords": ["ayarlar", "tercihler", "hesap ayarları", "profil ayarları"]
+      }
+    ]
+  },
+  "suggestions": {
+    "Sık Kullanılanlar": [
+      {
+        "name": "Kiracılar",
+        "icon": "bx-buildings",
+        "url": "/Platform/Tenants",
+        "group": "Sık Kullanılanlar",
+        "keywords": ["kiracı", "tenant", "kayıt", "yaşam döngüsü"]
+      },
+      {
+        "name": "Modül Kataloğu",
+        "icon": "bx-grid-alt",
+        "url": "/Platform/ModuleCatalog",
+        "group": "Sık Kullanılanlar",
+        "keywords": ["modül", "katalog", "atamalar"]
+      },
+      {
+        "name": "Abonelik Planları",
+        "icon": "bx-package",
+        "url": "/Platform/SubscriptionPlans",
+        "group": "Sık Kullanılanlar",
+        "keywords": ["abonelik", "subscription", "planlar", "ticari"]
+      },
+      {
+        "name": "Platform Yöneticileri",
+        "icon": "bx-user-check",
+        "url": "/Platform/Administrators",
+        "group": "Sık Kullanılanlar",
+        "keywords": ["yöneticiler", "adminler", "roller", "davet"]
+      }
+    ],
+    "Denetim ve Hesap": [
+      {
+        "name": "Denetim Günlüğü",
+        "icon": "bx-search-alt",
+        "url": "/Platform/AuditLog",
+        "group": "Denetim ve Hesap",
+        "keywords": ["denetim", "audit", "olaylar", "dışa aktar"]
+      },
+      {
+        "name": "Denetim Saklama",
+        "icon": "bx-time-five",
+        "url": "/Platform/AuditRetention",
+        "group": "Denetim ve Hesap",
+        "keywords": ["saklama", "retention", "uyumluluk", "politika"]
+      },
+      {
+        "name": "Profil",
+        "icon": "bx-user-circle",
+        "url": "/Platform/Account/Profile",
+        "group": "Denetim ve Hesap",
+        "keywords": ["profil", "hesap"]
+      },
+      {
+        "name": "Ayarlar",
+        "icon": "bx-cog",
+        "url": "/Platform/Account/Settings",
+        "group": "Denetim ve Hesap",
+        "keywords": ["ayarlar", "tercihler"]
+      }
+    ]
+  }
+}

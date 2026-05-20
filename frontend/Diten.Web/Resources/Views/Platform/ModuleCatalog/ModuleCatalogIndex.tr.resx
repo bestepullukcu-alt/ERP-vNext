@@ -80,9 +80,20 @@
   <data name="ActionsDescription" xml:space="preserve"><value>Sayfa aksiyon izinlerini yönetin.</value></data>
   <data name="AddAction" xml:space="preserve"><value>Aksiyon Ekle</value></data>
   <data name="ActionCode" xml:space="preserve"><value>Aksiyon Kodu</value></data>
-  <data name="PermissionKey" xml:space="preserve"><value>Permission Key</value></data>
+  <data name="PermissionKey" xml:space="preserve"><value>İzin Anahtarı</value></data>
   <data name="ActionType" xml:space="preserve"><value>Aksiyon Tipi</value></data>
-  <data name="ToolbarAction" xml:space="preserve"><value>Toolbar aksiyonu</value></data>
+  <data name="ActionTypeView" xml:space="preserve"><value>Görüntüleme</value></data>
+  <data name="ActionTypeToolbar" xml:space="preserve"><value>Araç Çubuğu</value></data>
+  <data name="ActionTypeRowAction" xml:space="preserve"><value>Satır Aksiyonu</value></data>
+  <data name="ActionTypeFormAction" xml:space="preserve"><value>Form Aksiyonu</value></data>
+  <data name="ActionTypeBulkAction" xml:space="preserve"><value>Toplu Aksiyon</value></data>
+  <data name="ActionTypeSystem" xml:space="preserve"><value>Sistem</value></data>
+  <data name="ActionTypeCustom" xml:space="preserve"><value>Özel</value></data>
+  <data name="ActionBehavior" xml:space="preserve"><value>Aksiyon Davranışı</value></data>
+  <data name="EditAction" xml:space="preserve"><value>Aksiyon Düzenle</value></data>
+  <data name="ActionSaved" xml:space="preserve"><value>Aksiyon kaydedildi.</value></data>
+  <data name="NoPageActions" xml:space="preserve"><value>Henüz sayfa aksiyonu tanımlanmamış.</value></data>
+  <data name="ToolbarAction" xml:space="preserve"><value>Araç çubuğu aksiyonu</value></data>
   <data name="RowAction" xml:space="preserve"><value>Satır aksiyonu</value></data>
   <data name="DangerousAction" xml:space="preserve"><value>Riskli aksiyon</value></data>
   <data name="SubscriptionAssignmentsTitle" xml:space="preserve"><value>Plan Entitlementları</value></data>

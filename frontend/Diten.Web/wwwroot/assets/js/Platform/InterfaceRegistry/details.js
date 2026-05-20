@@ -1,6 +1,6 @@
 'use strict';
 
-(function () {
+const InterfaceRegistryDetails = (function () {
     const L = () => window.L10n || {};
     const els = {
         root: document.getElementById('ir-detail-root'),
@@ -131,8 +131,12 @@
     const showError = (message, status) => {
         setVisible(els.permission, status === 403);
         if (!els.error || status === 403) return;
-        els.error.textContent = message || L().ErrorOccurred || 'Error';
+        els.error.textContent = message || L().ErrorOccurred || 'ErrorOccurred';
         setVisible(els.error, true);
+    };
+    const isAuthHandledError = (error) => error?.authHandled === true || error?.code === 'auth-refresh-in-progress' || error?.status === 401;
+    const handleUnauthorized = () => {
+        window.DtDefaults?.handleUnauthorized?.();
     };
 
     const personalizationClient = window.personalizationClient;
@@ -169,6 +173,14 @@
         colVis: {},
         columnOrder: api.colReorder?.order() || Array.from({ length: totalColumnCount }, (_, i) => i),
         order: api.order()
+    });
+
+    const getResetBaselineState = () => ({
+        filters: emptyFilters(),
+        search: '',
+        colVis: {},
+        columnOrder: Array.from({ length: totalColumnCount }, (_, i) => i),
+        order: baseOrder
     });
 
     const serializeView = (view) => JSON.stringify({
@@ -232,7 +244,14 @@
                 defaultViewState = typeof def === 'string' ? JSON.parse(def) : def;
                 return defaultViewState;
             }
-        } catch (e) { console.error('[InterfaceRegistryDetails] Load view failed', e); }
+        } catch (e) {
+            if (isAuthHandledError(e)) {
+                handleUnauthorized();
+                return null;
+            }
+
+            console.error('[InterfaceRegistryDetails] Load view failed', e);
+        }
         return null;
     };
 
@@ -255,10 +274,15 @@
             defaultViewRecord = res?.data || res?.Data || res;
             defaultViewState = viewState;
             setSaveFilterVisible(false);
-            window.showToast?.(L().RecordSaved || 'View saved.', 'success');
-        } catch (e) { 
+            window.showToast?.(L().RecordSaved || L().Saved || 'RecordSaved', 'success');
+        } catch (e) {
+            if (isAuthHandledError(e)) {
+                handleUnauthorized();
+                return;
+            }
+
             console.error('[InterfaceRegistryDetails] Save view failed', e);
-            window.showToast?.(L().ErrorOccurred || 'Error', 'error');
+            window.showToast?.(L().ErrorOccurred || 'ErrorOccurred', 'error');
         }
     };
 
@@ -268,8 +292,9 @@
             const $select = $(this);
             $select.select2({
                 minimumResultsForSearch: Infinity,
-                dropdownParent: $('#inlineFilterHost'),
-                width: '100%',
+                dropdownParent: $(document.body),
+                dropdownCssClass: 'dt-inline-filter-dropdown',
+                width: 'element',
                 placeholder: $select.attr('data-placeholder') || '',
                 allowClear: true
             });
@@ -298,7 +323,7 @@
             const filterBtn = {
                 text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
                 className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
-                attr: { title: L().Filter || 'Filter', 'aria-controls': 'consumerFilterCollapse', 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },
+                attr: { title: L().Filter || '', 'aria-controls': 'consumerFilterCollapse', 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },
                 action: () => {
                     const collapseEl = document.getElementById('consumerFilterCollapse');
                     if (!collapseEl) return;
@@ -307,9 +332,9 @@
             };
 
             const saveFilterBtn = {
-                text: `<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">${escapeHtml(L().SaveView || 'Save View')}</span>`,
+                text: `<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">${escapeHtml(L().SaveView || '')}</span>`,
                 className: 'btn btn-label-primary dt-save-filter-btn d-none',
-                attr: { id: 'btnSaveConsumerView', title: L().SaveView || 'Save View', 'data-bs-toggle': 'tooltip' },
+                attr: { id: 'btnSaveConsumerView', title: L().SaveView || '', 'data-bs-toggle': 'tooltip' },
                 action: () => saveDefaultView(dtConsumers)
             };
 
@@ -323,7 +348,9 @@
                     { data: (row) => row.consumedVersionRange || row.ConsumedVersionRange || '-', render: (data) => `<span class="badge bg-label-secondary">${escapeHtml(data)}</span>` },
                     { 
                         data: (row) => (row.required ?? row.Required), 
-                        render: (data) => data ? '<span class="badge bg-label-danger">Required</span>' : '<span class="badge bg-label-secondary">Optional</span>' 
+                        render: (data) => data
+                            ? `<span class="badge bg-label-danger">${escapeHtml(L().Required || '')}</span>`
+                            : `<span class="badge bg-label-secondary">${escapeHtml(L().Optional || '')}</span>`
                     }
                 ],
                 order: savedState?.order || baseOrder,
@@ -348,7 +375,7 @@
 
             dtConsumers = new DataTable(tableEl, window.DtDefaults.create(config));
 
-            $(tableEl).on('column-reorder.dt search.dt order.dt', () => {
+            $(tableEl).on('column-reorder.dt columns-reordered.dt search.dt order.dt', () => {
                 if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dtConsumers));
             });
 
@@ -377,10 +404,8 @@
                 btnReset.addEventListener('click', () => {
                     filterForm.reset();
                     if (window.jQuery?.fn?.select2) $('#inlineFilterHost .select2').val('').trigger('change');
-                    
-                    appliedFilters = emptyFilters();
-                    dtConsumers.columns().search('').draw();
-                    
+
+                    applySavedTableState(dtConsumers, getResetBaselineState());
                     window.DtDefaults.updateVisualState(dtConsumers, 0);
                     if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dtConsumers));
                 });

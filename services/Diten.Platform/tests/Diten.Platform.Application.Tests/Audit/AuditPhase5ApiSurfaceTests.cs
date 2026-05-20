@@ -120,7 +120,7 @@ public sealed class AuditPhase5ApiSurfaceTests
     }
 
     [Fact]
-    public void PlatformAuditController_ShouldExposeOnlyExpectedPermissionMappedEndpoints()
+    public void PlatformAuditController_ShouldUsePlatformAdminOnlyPolicyAndExpectedPermissionMappedEndpoints()
     {
         var controllerType = typeof(PlatformAuditController);
 
