@@ -1,6 +1,6 @@
 'use strict';
 
-(function () {
+const InterfaceRegistryList = (function () {
     const L = () => window.L10n || {};
     const state = {
         snapshots: [],
@@ -56,10 +56,14 @@
     const setVisible = (el, visible) => {
         if (el) el.classList.toggle('d-none', !visible);
     };
+    const isAuthHandledError = (error) => error?.authHandled === true || error?.code === 'auth-refresh-in-progress' || error?.status === 401;
+    const handleUnauthorized = () => {
+        window.DtDefaults?.handleUnauthorized?.();
+    };
     const showError = (message, status) => {
         setVisible(els.permission, status === 403);
         if (!els.error || status === 403) return;
-        els.error.textContent = message || L().ErrorOccurred || 'Error';
+        els.error.textContent = message || L().ErrorOccurred || 'ErrorOccurred';
         setVisible(els.error, true);
     };
     const clearError = () => {
@@ -112,6 +116,7 @@
         const raw = safe(value);
         return raw.length > 12 ? `${raw.slice(0, 8)}...${raw.slice(-4)}` : raw || '-';
     };
+    const formatText = (template, value) => safe(template || '{0}').replace('{0}', safe(value));
     const label = (value) => L()[safe(value)] || safe(value) || '-';
     const statusBadge = (status) => {
         const normalized = lifecycleStatusName(status);
@@ -186,9 +191,17 @@
     const getCurrentView = (api) => ({
         filters: Object.assign({}, appliedFilters),
         search: String(api.table().container().querySelector('.dt-search input')?.value || api.search() || '').trim(),
-        colVis: {}, // Placeholder as colvis is disabled but standard expects it
+        colVis: {},
         columnOrder: api.colReorder?.order() || Array.from({ length: totalColumnCount }, (_, i) => i),
         order: api.order()
+    });
+
+    const getResetBaselineState = () => ({
+        filters: emptyFilters(),
+        search: '',
+        colVis: {},
+        columnOrder: Array.from({ length: totalColumnCount }, (_, i) => i),
+        order: baseOrder
     });
 
     const serializeView = (view) => JSON.stringify({
@@ -249,7 +262,14 @@
                 defaultViewState = typeof def === 'string' ? JSON.parse(def) : def;
                 return defaultViewState;
             }
-        } catch (e) { console.error('[InterfaceRegistry] Load view failed', e); }
+        } catch (e) {
+            if (isAuthHandledError(e)) {
+                handleUnauthorized();
+                return null;
+            }
+
+            console.error('[InterfaceRegistry] Load view failed', e);
+        }
         return null;
     };
 
@@ -272,10 +292,15 @@
             defaultViewRecord = res?.data || res?.Data || res;
             defaultViewState = viewState;
             setSaveFilterVisible(false);
-            window.showToast?.(L().RecordSaved || 'View saved.', 'success');
-        } catch (e) { 
+            window.showToast?.(L().RecordSaved || L().Saved || 'RecordSaved', 'success');
+        } catch (e) {
+            if (isAuthHandledError(e)) {
+                handleUnauthorized();
+                return;
+            }
+
             console.error('[InterfaceRegistry] Save view failed', e);
-            window.showToast?.(L().ErrorOccurred || 'Error', 'error');
+            window.showToast?.(L().ErrorOccurred || 'ErrorOccurred', 'error');
         }
     };
 
@@ -285,8 +310,9 @@
             const $select = $(this);
             $select.select2({
                 minimumResultsForSearch: Infinity,
-                dropdownParent: $('#inlineFilterHost'),
-                width: '100%',
+                dropdownParent: $(document.body),
+                dropdownCssClass: 'dt-inline-filter-dropdown',
+                width: 'element',
                 placeholder: $select.attr('data-placeholder') || '',
                 allowClear: true
             });
@@ -317,14 +343,14 @@
         const filterBtn = {
             text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
             className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
-            attr: { title: L().Filter || 'Filter', 'data-bs-toggle': 'tooltip' },
+            attr: { title: L().Filter || '', 'data-bs-toggle': 'tooltip' },
             action: toggleInlineFilter
         };
 
         const saveFilterBtn = {
-            text: `<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">${escapeHtml(L().SaveView || 'Save View')}</span>`,
+            text: `<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">${escapeHtml(L().SaveView || '')}</span>`,
             className: 'btn btn-label-primary dt-save-filter-btn d-none',
-            attr: { id: 'btnSaveIrView', title: L().SaveView || 'Save View', 'data-bs-toggle': 'tooltip' },
+            attr: { id: 'btnSaveIrView', title: L().SaveView || '', 'data-bs-toggle': 'tooltip' },
             action: () => saveDefaultView(catalogDt)
         };
 
@@ -335,7 +361,7 @@
             stateSave: false,
             pageLength: 10,
             order: savedState?.order || baseOrder,
-            colReorder: true,
+            colReorder: { columns: ':gt(0):not(:last-child)' },
             columns: [
                 {
                     data: null,
@@ -370,7 +396,7 @@
                             {
                                 key: 'quickView',
                                 className: 'js-quick-view',
-                                text: L().View || 'View',
+                                text: L().View || '',
                                 icon: 'bx bx-show',
                                 attrs: { 'data-code': code, 'data-version': version }
                             }
@@ -382,7 +408,7 @@
             ],
             language: {
                 search: '',
-                searchPlaceholder: L().Search || 'Search',
+                searchPlaceholder: L().Search || '',
                 emptyTable: L().EmptyCatalogState || '',
                 zeroRecords: L().EmptyCatalogState || ''
             },
@@ -405,7 +431,7 @@
 
         catalogDt = new DataTable(els.catalogTable, window.DtDefaults?.create ? window.DtDefaults.create(config) : config);
 
-        $(els.catalogTable).on('column-reorder.dt search.dt order.dt', () => {
+        $(els.catalogTable).on('column-reorder.dt columns-reordered.dt search.dt order.dt', () => {
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(catalogDt));
         });
 
@@ -432,10 +458,8 @@
             btnReset.addEventListener('click', () => {
                 filterForm.reset();
                 if (window.jQuery?.fn?.select2) $('.select2').val('').trigger('change');
-                
-                appliedFilters = emptyFilters();
-                catalogDt.columns().search('').draw();
-                
+
+                applySavedTableState(catalogDt, getResetBaselineState());
                 window.DtDefaults.updateVisualState(catalogDt, 0);
                 if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(catalogDt));
             });
@@ -514,7 +538,11 @@
     const renderDiffs = () => {
         const hasBatch = !!state.selectedBatchId;
         const hasDiffs = state.diffs.length > 0;
-        if (els.selectedBatch) els.selectedBatch.textContent = hasBatch ? `Batch ${compactId(state.selectedBatchId)}` : (L().SelectBatchState || '');
+        if (els.selectedBatch) {
+            els.selectedBatch.textContent = hasBatch
+                ? formatText(L().SelectedDiscoveryGroupLabel, compactId(state.selectedBatchId))
+                : '';
+        }
         setVisible(els.emptyDiffs, !hasBatch || !hasDiffs);
         setVisible(els.diffWrap, hasBatch && hasDiffs);
 
@@ -544,15 +572,15 @@
                                 <i class="bx bx-git-compare me-1"></i>${escapeHtml(endpointKey)}
                             </div>
                             <div class="small text-muted mt-2">
-                                ${escapeHtml(L().ReviewedBy || 'Reviewed By')}: ${escapeHtml(reviewedBy)}${reviewedAt ? ` · ${escapeHtml(formatDateTime(reviewedAt))}` : ''}
+                                ${escapeHtml(L().ReviewedBy || '')}: ${escapeHtml(reviewedBy)}${reviewedAt ? ` · ${escapeHtml(formatDateTime(reviewedAt))}` : ''}
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-2 flex-shrink-0">
                             <button type="button" class="btn btn-sm btn-label-success js-confirm-diff" data-id="${escapeHtml(id)}" ${locked ? 'disabled' : ''}>
-                                <i class="bx bx-check me-1"></i>${escapeHtml(L().Confirm || 'Confirm')}
+                                <i class="bx bx-check me-1"></i>${escapeHtml(L().Confirm || '')}
                             </button>
                             <button type="button" class="btn btn-sm btn-label-danger js-reject-diff" data-id="${escapeHtml(id)}" ${locked ? 'disabled' : ''}>
-                                <i class="bx bx-x me-1"></i>${escapeHtml(L().Reject || 'Reject')}
+                                <i class="bx bx-x me-1"></i>${escapeHtml(L().Reject || '')}
                             </button>
                         </div>
                     </div>
@@ -593,7 +621,7 @@
         clearError();
         try {
             await api(url, Object.assign({ method: 'POST' }, options || {}));
-            showToast(L().Saved || 'Saved', 'success');
+            showToast(L().Saved || L().RecordSaved || 'RecordSaved', 'success');
             await loadCatalog();
             await loadBatches();
             if (state.selectedBatchId) await loadDiffs(state.selectedBatchId);

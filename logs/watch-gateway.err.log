@@ -1,9 +1,0 @@
-dotnet watch 🔥 Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.
-dotnet watch 💡 Press Ctrl+R to restart.
-dotnet watch 🔨 Building C:\Users\user\Desktop\ERP-vNext\gateway\Diten.ApiGateway\Diten.ApiGateway.csproj ...
-dotnet watch 🔨 Build succeeded: C:\Users\user\Desktop\ERP-vNext\gateway\Diten.ApiGateway\Diten.ApiGateway.csproj
-dotnet watch ⌚ File updated: .\gateway\Diten.ApiGateway\Middleware\TenantResolutionMiddleware.cs
-dotnet watch ⚠ [Diten.ApiGateway (net8.0)] Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type 'Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlAttributePropertyHelper, Microsoft.AspNetCore.Mvc.ViewFeatures, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60' but neither exists.
-dotnet watch 🔥 [Diten.ApiGateway (net8.0)] Hot reload succeeded.
-dotnet watch ⌚ File updated: .\gateway\Diten.ApiGateway\Authentication\GatewayJwtAuthenticationHandler.cs
-dotnet watch 🔥 [Diten.ApiGateway (net8.0)] Hot reload succeeded.

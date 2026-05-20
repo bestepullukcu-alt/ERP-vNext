@@ -120,12 +120,12 @@ public sealed class AuditPhase5ApiSurfaceTests
     }
 
     [Fact]
-    public void PlatformAuditController_ShouldExposeOnlyExpectedPermissionMappedEndpoints()
+    public void PlatformAuditController_ShouldUsePlatformAdminOnlyPolicyAndExpectedPermissionMappedEndpoints()
     {
         var controllerType = typeof(PlatformAuditController);
 
         Assert.Equal("api/platform/audit", controllerType.GetCustomAttribute<RouteAttribute>()?.Template);
-        Assert.Equal("PlatformActor", controllerType.GetCustomAttribute<AuthorizeAttribute>()?.Policy);
+        Assert.Equal("PlatformAdminOnly", controllerType.GetCustomAttribute<AuthorizeAttribute>()?.Policy);
         Assert.Equal("Platform.Audit.Read", PermissionFor(nameof(PlatformAuditController.GetEvents)));
         Assert.Equal("Platform.Audit.Read", PermissionFor(nameof(PlatformAuditController.GetEventById)));
         Assert.Equal("Platform.Audit.Export", PermissionFor(nameof(PlatformAuditController.Export)));

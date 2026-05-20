@@ -53,7 +53,7 @@ Master-plan'da **NEW-002**, Wave W1-* (cross-cutting blocker), Priority High, St
    Kod yazma. Domain: Platform. form_field_count: 7. golden_reference: GoldenReferenceSlim.
    Status: draft.
    ```
-2. Module pack dosyası: `execution/domains/Platform/module-packs/NEW-002-platform-administrators.md`
+2. Module pack dosyası: `execution/domains/platform-shared-services/module-packs/NEW-002-platform-administrators.md`
 3. Kullanıcı incelemesi → status `ready-for-dev` veya `approved`
 4. Bu fazda **kod yok**, sadece pack onayı.
 
@@ -469,7 +469,7 @@ ls frontend/Diten.Web/Views/Platform/Administrators/
 - `Resources/Views/Shared/SharedResource.{en,tr}.resx` *(modifiye — menu key)*
 
 ### Module Pack
-- `execution/domains/Platform/module-packs/NEW-002-platform-administrators.md` *(yeni, Phase 1)*
+- `execution/domains/platform-shared-services/module-packs/NEW-002-platform-administrators.md` *(yeni, Phase 1)*
 
 ---
 

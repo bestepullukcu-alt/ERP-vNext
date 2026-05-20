@@ -351,6 +351,12 @@
   <data name="Platform" xml:space="preserve">
     <value>Platform</value>
   </data>
+  <data name="InterfaceRegistry" xml:space="preserve">
+    <value>Interface Registry</value>
+  </data>
+  <data name="ModuleCatalog" xml:space="preserve">
+    <value>Module Catalog</value>
+  </data>
   <data name="WorkCenterMenu" xml:space="preserve">
     <value>Work Center</value>
   </data>

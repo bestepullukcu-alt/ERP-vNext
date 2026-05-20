@@ -75,9 +75,11 @@ API bağlantılarında hardcoded port veya domain kullanımından kaçınılmal�
 ### L10N-001: Layout L10n Coverage
 - `_LayoutPlatformAdmin.cshtml` ve `_LayoutTenantShell.cshtml` içindeki tüm metinler `@SharedLocalizer["Key"]` ile dile bağlanır.
 
-### L10N-002: Universal Coverage (8 Languages)
-- Yeni eklenen her Key, sistemdeki **tüm 7 dil dosyasına** (`en, fr, es, zh, ar, ru, tr`) eksiksiz eklenmelidir.
-- Diğer dillerde metnin "Key" ismiyle görünmesi kabul edilemez.
+### L10N-002: Module Type Coverage
+- Yeni eklenen her key, modül türüne göre zorunlu dil setine eksiksiz eklenmelidir.
+- Platform/Admin modülleri için zorunlu dil seti `en, tr`'dir.
+- Tenant modülleri için zorunlu dil seti `en, fr, es, zh, ar, ru, tr`'dir.
+- Zorunlu dillerde metnin "Key" ismiyle görünmesi kabul edilemez.
 
 ---
 
@@ -152,6 +154,7 @@ Bu kurallar, projedeki görsel tutarlılığı (consistency) korumak için ZORUN
 - Sidebar yerleştirme:
   - Admin modülü → `_LayoutPlatformAdmin.cshtml` içindeki `Platform Administration` listesine `<li class="menu-item">` eklenir.
   - Tenant modülü → `_LayoutTenantShell.cshtml` içinde uygun `menu-header` (Workspace, Developer Sandbox vb.) altına eklenir.
+- Platform/Admin UI modüllerinde Ctrl+K global search registry ve `en/tr` search localization standardı zorunludur. Detayların tek kaynağı: `.antigravity/rules/platform-global-search-registry.md`.
 - Bir modülün her iki sidebar'da birden görünmesi YASAKTIR. Aynı modülün hem `/Platform/...` hem kök URL'de servis edilmesi YASAKTIR.
 - Legacy `_Layout.cshtml` (812 satır) yalnızca eski tenant modülleri (ESBP, DemandIdeas, InventoryGovernance, DeliveryExecutionManagement, ManagementGovernance, DecompositionTreeBuilder) tarafından kullanılır; bu dosya freeze altındadır ve yeni modül onu kullanamaz.
 

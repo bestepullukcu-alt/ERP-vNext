@@ -20,3 +20,7 @@ All endpoints require `PlatformActor` authorization. Read endpoints use `platfor
 - `POST /refresh-projection` is a no-op query-time projection refresh hook; it does not persist plan rows.
 
 Plan source is never stored as `TenantModuleEntitlement`; it is computed from the tenant's active subscription plan `IncludedModuleKeys`.
+
+## Related Tenant Details Surface
+
+The Platform Tenant Details Commercial tab calls these endpoints through the same-origin `/Platform/Tenants/api/...` MVC proxy. Browser JavaScript must not call Platform service ports directly or create bearer tokens itself.

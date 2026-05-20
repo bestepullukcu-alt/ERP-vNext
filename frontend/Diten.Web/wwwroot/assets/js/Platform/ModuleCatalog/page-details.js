@@ -8,6 +8,8 @@ const ModulePageDetails = (function () {
     const endpoint = `/Platform/ModuleCatalog/api/pages/${encodeURIComponent(pageId)}/actions`;
     const offcanvasEl = document.getElementById('pageActionOffcanvas');
     const form = document.getElementById('pageActionForm');
+    const offcanvasTitle = document.getElementById('pageActionOffcanvasTitle');
+    const saveButton = document.getElementById('btnSavePageAction');
     const L = window.L10n || {};
     let offcanvas;
     let rows = [];
@@ -60,6 +62,8 @@ const ModulePageDetails = (function () {
         return `<span class="badge ${cls}">${escapeHtml(L[`Status${status}`] || status || '-')}</span>`;
     };
 
+    const actionTypeLabel = (actionType) => L[`ActionType${actionType}`] || actionType || '-';
+
     const permissionActionSegment = () => {
         const actionCode = normalizeActionCode(fields.actionCode?.value);
         if (!actionCode) return '';
@@ -80,24 +84,42 @@ const ModulePageDetails = (function () {
     const render = () => {
         const body = table?.querySelector('tbody');
         if (!body) return;
+        if (!rows.length) {
+            body.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">${escapeHtml(L.NoPageActions || '')}</td></tr>`;
+            return;
+        }
         body.innerHTML = rows.map((row) => {
             const id = row.id || row.Id;
+            const rowJson = JSON.stringify(row);
             return `<tr>
                 <td><code>${escapeHtml(row.actionCode || row.ActionCode)}</code></td>
                 <td>${escapeHtml(row.displayName || row.DisplayName)}</td>
                 <td><code>${escapeHtml(row.permissionKey || row.PermissionKey)}</code></td>
-                <td>${escapeHtml(row.actionType || row.ActionType)}</td>
+                <td>${escapeHtml(actionTypeLabel(row.actionType || row.ActionType))}</td>
                 <td>${statusBadge(row.status || row.Status)}</td>
                 <td class="text-end">${escapeHtml(row.sortOrder ?? row.SortOrder ?? 0)}</td>
-                <td class="text-end">
-                    <div class="dropdown">
-                        <button class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded icon-md"></i></button>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <button class="dropdown-item btn-action-edit" data-id="${escapeHtml(id)}">${escapeHtml(L.Edit || 'Edit')}</button>
-                            <button class="dropdown-item text-danger btn-action-delete" data-id="${escapeHtml(id)}">${escapeHtml(L.Delete || 'Delete')}</button>
-                        </div>
-                    </div>
-                </td>
+                <td class="text-end">${window.DitenDataTable?.renderActions?.([
+                    {
+                        key: 'edit',
+                        buttonClass: 'btn-label-secondary',
+                        text: L.Edit || '',
+                        icon: 'bx bx-edit-alt',
+                        attrs: {
+                            'data-id': id,
+                            'data-json': rowJson,
+                            'aria-label': L.Edit || '',
+                            title: L.Edit || '',
+                            'data-bs-toggle': 'tooltip'
+                        }
+                    },
+                    {
+                        key: 'delete',
+                        className: 'text-danger',
+                        text: L.Delete || '',
+                        icon: 'bx bx-trash',
+                        attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Delete || '' }
+                    }
+                ]) || ''}</td>
             </tr>`;
         }).join('');
     };
@@ -105,7 +127,7 @@ const ModulePageDetails = (function () {
     const load = async () => {
         const response = await fetch(endpoint);
         if (!response.ok) {
-            window.showToast?.(L.ErrorOccurred || 'Error occurred.', 'error');
+            window.showToast?.(L.ErrorOccurred || '', 'error');
             return;
         }
         const payload = await response.json();
@@ -115,6 +137,7 @@ const ModulePageDetails = (function () {
 
     const reset = () => {
         form?.reset();
+        form?.classList.remove('was-validated');
         fields.id.value = '';
         fields.status.value = 'Draft';
         fields.actionType.value = 'Toolbar';
@@ -123,10 +146,12 @@ const ModulePageDetails = (function () {
         fields.isRowAction.checked = false;
         fields.isDangerous.checked = false;
         syncPermissionKey();
+        syncSelect2();
     };
 
     const openCreate = () => {
         reset();
+        if (offcanvasTitle) offcanvasTitle.textContent = L.AddAction || '';
         offcanvas?.show();
     };
 
@@ -145,6 +170,8 @@ const ModulePageDetails = (function () {
         fields.isRowAction.checked = (row.isRowAction ?? row.IsRowAction ?? false) === true;
         fields.description.value = row.description || row.Description || '';
         syncPermissionKey();
+        if (offcanvasTitle) offcanvasTitle.textContent = L.EditAction || L.Edit || '';
+        syncSelect2();
         offcanvas?.show();
     };
 
@@ -170,28 +197,63 @@ const ModulePageDetails = (function () {
             return;
         }
         const id = fields.id.value;
-        const response = await fetch(id ? `/Platform/ModuleCatalog/api/page-actions/${encodeURIComponent(id)}` : endpoint, {
-            method: id ? 'PUT' : 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload())
-        });
-        if (!response.ok) {
-            window.showToast?.(L.ErrorOccurred || 'Error occurred.', 'error');
-            return;
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.dataset.originalText = saveButton.innerHTML;
+            saveButton.innerHTML = `<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>${L.Save || ''}`;
         }
-        offcanvas?.hide();
-        await load();
-        window.showToast?.(L.RecordSaved || 'Saved.', 'success');
+        try {
+            const response = await fetch(id ? `/Platform/ModuleCatalog/api/page-actions/${encodeURIComponent(id)}` : endpoint, {
+                method: id ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload())
+            });
+            if (!response.ok) {
+                window.showToast?.(L.ErrorOccurred || '', 'error');
+                return;
+            }
+            offcanvas?.hide();
+            await load();
+            window.showToast?.(L.ActionSaved || L.RecordSaved || '', 'success');
+        } finally {
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.innerHTML = saveButton.dataset.originalText || (L.Save || '');
+            }
+        }
     };
 
     const remove = async (id) => {
         const response = await fetch(`/Platform/ModuleCatalog/api/page-actions/${encodeURIComponent(id)}`, { method: 'DELETE' });
         if (!response.ok) {
-            window.showToast?.(L.ErrorOccurred || 'Error occurred.', 'error');
+            window.showToast?.(L.ErrorOccurred || '', 'error');
             return;
         }
         await load();
-        window.showToast?.(L.RecordDeleted || 'Deleted.', 'success');
+        window.showToast?.(L.RecordDeleted || '', 'success');
+    };
+
+    const syncSelect2 = () => {
+        if (!window.jQuery?.fn?.select2) return;
+        [fields.actionType, fields.status].forEach((field) => {
+            if (field) $(field).trigger('change.select2');
+        });
+    };
+
+    const initSelect2 = () => {
+        if (!window.jQuery?.fn?.select2 || !form) return;
+        $(form).find('select.select2').each(function () {
+            const $select = $(this);
+            if ($select.hasClass('select2-hidden-accessible')) $select.select2('destroy');
+            $select.select2({
+                dropdownParent: $(document.body),
+                dropdownCssClass: 'dt-inline-filter-dropdown',
+                selectionCssClass: 'form-select',
+                minimumResultsForSearch: Infinity,
+                width: 'element',
+                placeholder: $select.data('placeholder') || ''
+            });
+        });
     };
 
     const bind = () => {
@@ -207,17 +269,22 @@ const ModulePageDetails = (function () {
             syncPermissionKey();
         });
         form?.addEventListener('submit', save);
-        table?.addEventListener('click', (event) => {
-            const edit = event.target.closest('.btn-action-edit');
-            const del = event.target.closest('.btn-action-delete');
-            if (edit) openEdit(edit.dataset.id);
-            if (del) window.showConfirm?.(L.AreYouSure, () => remove(del.dataset.id), { type: 'delete', confirmButtonText: L.Delete });
+        window.DitenDataTable?.bindActionDispatcher?.({
+            tableEl: table,
+            onRowAction: {
+                edit: ({ id }) => openEdit(id),
+                delete: ({ id, row }) => {
+                    const entityName = row?.displayName || row?.DisplayName || row?.actionCode || row?.ActionCode || '';
+                    window.showConfirm?.(L.AreYouSure, () => remove(id), { entityName, type: 'delete', confirmButtonText: L.Delete });
+                }
+            }
         });
     };
 
     const init = () => {
         if (!table || !offcanvasEl) return;
         offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+        initSelect2();
         bind();
         load();
     };

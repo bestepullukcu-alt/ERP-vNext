@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.ModuleAssignments.Queries;
+using Diten.Platform.Common.Catalog;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -9,16 +10,16 @@ namespace Diten.Platform.Application.Features.ModuleAssignments.Handlers.QueryHa
 public sealed class GetModulePlanAssignmentsQueryHandler
     : IRequestHandler<GetModulePlanAssignmentsQuery, Response<ModuleAssignmentPageDto<ModulePlanAssignmentRowDto>>>
 {
-    private readonly IModuleCatalogRepository _moduleRepository;
+    private readonly IPlatformCatalogContract _catalogContract;
     private readonly ISubscriptionPlanRepository _planRepository;
     private readonly ILogger<GetModulePlanAssignmentsQueryHandler> _logger;
 
     public GetModulePlanAssignmentsQueryHandler(
-        IModuleCatalogRepository moduleRepository,
+        IPlatformCatalogContract catalogContract,
         ISubscriptionPlanRepository planRepository,
         ILogger<GetModulePlanAssignmentsQueryHandler> logger)
     {
-        _moduleRepository = moduleRepository;
+        _catalogContract = catalogContract;
         _planRepository = planRepository;
         _logger = logger;
     }
@@ -26,7 +27,7 @@ public sealed class GetModulePlanAssignmentsQueryHandler
     public async Task<Response<ModuleAssignmentPageDto<ModulePlanAssignmentRowDto>>> Handle(GetModulePlanAssignmentsQuery request, CancellationToken ct)
     {
         var startedAt = DateTimeOffset.UtcNow;
-        var module = await ModuleAssignmentQueryHelpers.GetModuleAsync(_moduleRepository, request.ModuleCode, ct);
+        var module = await ModuleAssignmentQueryHelpers.GetModuleAsync(_catalogContract, request.ModuleCode, ct);
         if (module is null)
         {
             return Response<ModuleAssignmentPageDto<ModulePlanAssignmentRowDto>>.Fail("Module catalog item not found.", 404);

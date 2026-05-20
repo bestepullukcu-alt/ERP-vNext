@@ -165,15 +165,15 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 
 | ID | Modül | Wave | Öncelik | Status | % |
 |---|---|---|---|---|---|
-| **MOD-0043/44/46** | Tenant Management (toplu kayıt — alt parçalara bölündü, aşağı bakınız) | — | — | 🟡 | 88 |
+| **MOD-0043/44/46** | Tenant Management (toplu kayıt — alt parçalara bölündü, aşağı bakınız) | — | — | 🟡 | 84 |
 | **MOD-0043** | Tenant Architecture Foundation | — | 🟠 High | 🟠 | 80 |
-| **MOD-0044** | Tenant Manager (Backend) | — | 🟠 High | 🟢 | 82 |
-| **MOD-0046** | Tenant Core UI | W3-A | 🟠 High | 🟢 | 80 |
-| **MOD-0046-QG** | Tenant Quota Governance UI | W3-A | 🟡 Medium | 🟡 | 55 |
+| **MOD-0044** | Tenant Manager (Backend) | — | 🟠 High | 🟢 | 85 |
+| **MOD-0046** | Tenant Core UI | W3-A | 🟠 High | 🟢 | 82 |
+| **MOD-0046-QG** | Tenant Quota Governance UI | W3-A | 🟡 Medium | 🟡 | 60 |
 | **PSS-006** | Subscription Plan Catalog | — | — | ✅ | 96 |
 | **PSS-007** | Subscription Feature Mgmt | — | — | 🟡 | 90 |
 | **PSS-005** | Module Catalog | — | — | ✅ | 93 |
-| **MOD-0298** | Tenant Module Entitlement | — | — | 🟡 | 87 |
+| **MOD-0298** | Tenant Module Entitlement | — | — | 🟡 | 90 |
 | **MOD-0297** | Tenant Subscription Lifecycle | — | — | 🟡 | 82 |
 | **PSS-004** | Tenant Login & Security | — | — | 🟡 | 86 |
 | **PSS-011** | Lookups / Reference Data | — | — | 🟢 | 93 |
@@ -188,11 +188,11 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 | **MOD-0037** | Integration Monitoring & Reconciliation | W2-W3 | 🟡 Medium | 🔴 | 0 |
 | **NEW-001** | Secrets Management (legacy ID; bkz. MOD-0012) | W1-* | 🔴 Blocker | ⚠️ | — |
 | **NEW-002** | Platform Administrators Mgmt | W1-* | 🟠 High | 🟢 | 95 |
-| **MOD-0009** | Tenant Registry Lifecycle Events | W1-A | 🔴 Blocker | 🟡 | 50 |
+| **MOD-0009** | Tenant Registry Lifecycle Events | W1-A | 🔴 Blocker | 🟡 | 55 |
 | **MOD-0008** | Module Catalog Assignable Expose | W1-B | 🔴 Blocker | 🟡 | 80 |
-| **MOD-0018** | RBAC / Entitlement Enforcement | W1-B | 🔴 Blocker | 🔴 | 10 |
+| **MOD-0018** | RBAC / Entitlement Enforcement | W1-B | 🔴 Blocker | 🔴 | 20 |
 | **MOD-0026** | Background Job Scheduler | W1-C | 🔴 Blocker | ✅ | 90 |
-| **MOD-0035** | Event Bus / Internal Events | W1-C | 🔴 Blocker | 🟡 | 70 |
+| **MOD-0035** | Event Bus / Internal Events | W1-C | 🔴 Blocker | 🟡 | 78 |
 | **MOD-0027** | Notification / Email Service | W1-D | 🔴 Blocker | 🔴 | 0 |
 | **MOD-0263** | External Messaging Provider | W1-D | 🔴 Blocker | 🔴 | 0 |
 | **MOD-0028** | Document / Evidence Metadata | W2-A | 🟠 High | 🔴 | 0 |
@@ -207,7 +207,7 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 | **MOD-0033** | Consumer / Quota Model | W3-A | 🟠 High | 🟡 | 78 |
 | **MOD-0046+** | Tenant Core UI Extensions | W3-A | 🟠 High | 🟡 | 60 |
 | **MOD-0299** | SaaS Billing & Invoicing | W3-B | 🟠 High | 🔴 | 0 |
-| **MOD-0041** | Logging / Monitoring | W3-C | 🟡 Medium | 🟠 | 20 |
+| **MOD-0041** | Logging / Monitoring | W3-C | 🟡 Medium | 🟡 | 50 |
 | **MOD-0042** | Alerting / Incident Runbooks | W3-C | 🟡 Medium | 🔴 | 0 |
 | **MOD-0265** | SIEM / Observability Provider | W3-C | 🟡 Medium | 🔴 | 0 |
 | **MOD-0038** | Event Taxonomy / Naming | W3-D | 🟡 Medium | 🔴 | 0 |
@@ -221,25 +221,28 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 
 ### 3.1 Tenant Management
 **ID:** MOD-0043 / MOD-0044 / MOD-0046 (foundation/manager/UI)
-**Status:** 🟡 Partial (%88)
+**Status:** 🟡 Partial (%84 — alt parçalar ağırlıklı ortalaması: MOD-0043 %80, MOD-0044 %85, MOD-0046 %82)
 **Purpose:** Platform admin'in tüm tenant'ları yönetmesi — list, create, branding, security, lifecycle (provision/suspend/cancel).
 
 **What's done:**
 - ✅ Backend CRUD: [services/Diten.Platform/src/Diten.Platform.API/Controllers/Admin/TenantsController.cs](services/Diten.Platform/src/Diten.Platform.API/Controllers/Admin/TenantsController.cs)
 - ✅ Endpoint'ler: GetTenants, GetStats, GetDetail, RegisterTenant, UpdateTenant, UpdateBranding, UpdateLoginSettings, Lifecycle
+- ✅ 14 backend command kod kanıtlı (2026-05-17): BulkDelete, CreateAdminUser, DeleteAdminUser, DeleteTenant, InviteAdminUser, Reactivate, Register, Suspend, UpdateAdminUser, UpdateTenant, UpdateBranding, UpdateLoginSettings, UpdateSettings + helper
+- ✅ Commercial tarafı 14 ek command: Subscriptions (Activate/AssignPlan/Cancel/Create/Expire/Reactivate/Renew/Suspend) + Entitlements (Add/Disable/Enable/RefreshProjection/RemoveManualOverride/UpdateExpiry)
 - ✅ Frontend Index (DataTable v2 + KPI cards), Create, Details (4 tab), Security
 - ✅ Bulk delete, individual suspend/reactivate
 - ✅ Branding (logo+favicon upload)
-- ✅ Commercial tab'ları (subscription + entitlements)
+- ✅ Commercial tab'ları (subscription + entitlements + quota governance partial mevcut)
 - ✅ Lokalizasyon: en, tr
 
 **What's missing:**
-- 🔴 Trial expiry otomasyonu (hosted service — bkz MOD-0026)
+- 🔴 Trial expiry otomasyonu (hosted service — bkz MOD-0026, descriptor disabled)
 - 🔴 Auto-suspend logic (PastDue → Suspended)
 - 🔴 "System Monitoring" tab placeholder — gerçek metric yok
 - 🔴 Audit timeline tab'ı boş (bkz MOD-0021)
 - 🔴 Tenant impersonation (bkz NEW-004)
 - 🔴 Logo storage base64 olarak DB'de — provider seam'i lazım (bkz MOD-0266)
+- 🔴 Lifecycle event yayını yalnız `tenant.activated.v1` için var; create/suspend/reactivate/cancel event'leri henüz outbox'a yazılmıyor (bkz MOD-0009)
 - 🟡 Lokalizasyon: en + tr var, sapma yok (bu modül uyumlu)
 
 **%100 için kalanlar:**
@@ -348,22 +351,23 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 
 ### 3.5 Tenant Module Entitlements
 **ID:** MOD-0298
-**Status:** 🟡 Partial (%87)
+**Status:** 🟡 Partial (%90)
 **Purpose:** Tenant başına modül erişim haklarının yönetimi: plan-projection vs physical override.
 
 **What's done:**
 - ✅ TenantModuleEntitlement entity + EntitlementSource enum (ManualOverride/Addon/Trial/System)
-- ✅ Add/Enable/Disable/UpdateExpiry/RemoveManualOverride command'ları
-- ✅ Effective access evaluator (precedence rules)
+- ✅ 6 command kod kanıtlı: Add/Enable/Disable/UpdateExpiry/RemoveManualOverride/**RefreshProjection** (`RefreshTenantModuleEntitlementProjectionCommand.cs` mevcut)
+- ✅ 4 query: GetAvailableModulesForAssignment, GetModuleEffectiveAccess, GetModuleEntitlements, GetVisibleModules
+- ✅ Effective access evaluator: `TenantModuleEntitlementAccessEvaluator` (precedence rules)
 - ✅ Tenant Details → Commercial → Module Entitlements tab
 - ✅ Add modal (offcanvas)
 
 **What's missing:**
-- 🔴 **`RefreshProjection` endpoint logic yarım** — contract var, implementation incomplete
-- 🔴 Plan değişikliği event-driven invalidation YOK (bkz MOD-0035)
-- 🔴 Cache TTL strategy yok
-- 🔴 Bulk operations
-- 🔴 Audit instrumentation (bkz MOD-0021)
+- 🔴 Plan değişikliği event-driven invalidation YOK (bkz MOD-0035 — `subscription.plan.changed` veya `tenant.subscription.activated` consumer'ı entitlement cache invalidate etmiyor)
+- 🔴 Cache TTL strategy yok (TenantModuleAccessService memory cache)
+- 🔴 Bulk operations (multi-tenant veya multi-module assignment) yok
+- 🔴 Audit instrumentation (bkz MOD-0021 retrofit — `IAuditableCommand` marker eksik)
+- 🔴 `RefreshProjection` command'ı için live integration testi yok
 
 **Critical files:**
 - Backend: `services/Diten.Platform/src/Diten.Platform.API/Controllers/Platform/TenantModuleEntitlementsController.cs`
@@ -535,18 +539,19 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 
 ### 3.10 Module Details Assignment Inspection
 **ID:** PSS-008
-**Status:** 🟡 Partial (%70)
+**Status:** 🟡 Partial (%65)
 **Purpose:** Module Catalog detail ekranında plan ve tenant assignment durumunu inceleme; modülün hangi planlarda/tenant'larda etkin olduğunu operasyonel olarak görebilme.
 
-**What's done:**
-- ✅ Module assignment overview, plan assignments, tenant assignments ve tenant assignment detail query/controller yüzeyleri mevcut.
-- ✅ Module Catalog detail tarafında assignment inspection UI izleri mevcut.
-- ✅ DataTable v2 kullanılan assignment/consumer tablo yüzeyleri mevcut.
+**What's done (kod kanıtı 2026-05-17):**
+- ✅ Backend handler + query yüzeyi tam: 4 query (`GetModuleAssignmentOverviewQuery`, `GetModulePlanAssignmentsQuery`, `GetModuleTenantAssignmentsQuery`, `GetModuleTenantAssignmentDetailQuery`) + Handlers + 117 satır `ModuleAssignmentContracts.cs` + `ModuleAssignmentsController`
+- ✅ Module Catalog detail (`Views/Platform/ModuleCatalog/Details.cshtml`) içinde embedded assignment tab izleri var
+- ✅ DataTable v2 kullanılan assignment/consumer tablo yüzeyleri mevcut
 
 **What's missing:**
-- 🔴 Assignment integrity checks henüz MOD-0018 enforcement ile contract seviyesinde bağlanmadı.
-- 🔴 Plan/tenant assignment diff ve drift uyarıları yok.
-- 🔴 Assignment inspection için gateway smoke, browser smoke ve WebApplicationFactory integration testleri eksik.
+- 🔴 Ayrı bir `/Platform/ModuleAssignments/*` view yok — assignment inspection ModuleCatalog detail içinde embedded; bağımsız bir sayfa beklentisi varsa eklenmeli
+- 🔴 Assignment integrity checks henüz MOD-0018 enforcement ile contract seviyesinde bağlanmadı
+- 🔴 Plan/tenant assignment diff ve drift uyarıları yok
+- 🔴 Assignment inspection için gateway smoke, browser smoke ve WebApplicationFactory integration testleri eksik
 
 **%100 için kalanlar:**
 - [ ] PSS-008 module pack acceptance criteria tek tek repo kanıtlarıyla doğrulanmalı.
@@ -558,13 +563,14 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 
 ### 3.11 Platform Admin Password & MFA Security
 **ID:** PSS-010
-**Status:** 🟡 Partial (%45)
+**Status:** 🟡 Partial (%60)
 **Purpose:** Platform admin password reset/change, forced password change, MFA ve aktif session güvenliğini Platform/Admin kullanıcıları için tamamlamak.
 
-**What's done:**
-- ✅ Platform login, forced password change, forgot/reset password ve setup-token akışları AuthService tarafında mevcut.
-- ✅ Platform password reset frontend endpointleri ve reset/change password view kullanımı mevcut.
-- ✅ Refresh token/session primitive'leri mevcut; platform actor token claim'leri üretiliyor.
+**Kod kanıtı (2026-05-17):**
+- ✅ AuthService Auth commands: `LoginCommand`, `PlatformLoginCommand`, `LogoutCommand`, `RefreshTokenCommand`, `ChangePasswordCommand`, **`VerifyMfaCommand`**, **`ResendMfaCommand`**, `RegisterCommand`
+- ✅ Domain entities: `MfaChallenge`, `RefreshToken`, `PlatformUser`, `AuthAuditLog`
+- ✅ Platform password reset frontend endpointleri ve reset/change password view kullanımı mevcut
+- ✅ Refresh token/session primitive'leri mevcut; platform actor token claim'leri üretiliyor
 
 **What's missing:**
 - 🔴 Platform admin MFA challenge/login flow tenant login MFA kadar tamam görünmüyor.
@@ -591,7 +597,7 @@ Durum kodları: ✅ Done · 🟡 Partial · 🔴 Missing · 🟠 In Progress
 ### NEW-001 — Secrets Management
 **Wave:** W1-* (BLOCKER, sıfırıncı)
 **Priority:** 🔴 Blocker
-**Status:** 🟡 Partial (%70) — legacy ID; canonical kayıt MOD-0012 Secrets & Configuration Vault
+**Status:** ⚠️ Legacy ID — canonical kayıt **MOD-0012 Secrets & Configuration Vault** (%85). NEW-001 referansları PSS-PLAN-RECON-1 ile MOD-0012'ye taşınacak.
 **Owner role:** DevOps / Security
 
 **Purpose:**
@@ -717,7 +723,13 @@ PlatformAdministrator : GlobalEntity
 ### MOD-0009 — Tenant Registry Lifecycle Events
 **Wave:** W1-A
 **Priority:** 🔴 Blocker
-**Status:** 🟡 Partial (%50) — Tenant entity/lifecycle var, event emit ve bus entegrasyonu yok
+**Status:** 🟡 Partial (%55) — Tenant entity/lifecycle + ilk event contract (`TenantActivatedV1`) + consumer (`TenantActivatedV1Consumer`) wired; geriye kalan 6 lifecycle event yok
+
+**Kod kanıtı (2026-05-17):**
+- ✅ Event contract: [services/Diten.Platform.Contracts/Events/TenantActivatedV1.cs](services/Diten.Platform.Contracts/Events/TenantActivatedV1.cs)
+- ✅ Event schema: [events/schemas/tenant.activated/](events/schemas/tenant.activated/)
+- ✅ Consumer: `services/Diten.Platform/src/Diten.Platform.Infrastructure/Eventing/TenantActivatedV1Consumer.cs`
+- 🟡 14 tenant command mevcut ama outbox emit YALNIZ activate (suspend/reactivate/cancel/register/provision-success/provision-failure event emit YOK)
 
 **Purpose:**
 Tenant lifecycle değişikliklerini (created/activated/suspended/reactivated/cancelled) event olarak yayınla; subscription, provisioning, notification modülleri bu event'leri dinlesin.
@@ -783,7 +795,7 @@ RBAC enforcement (MOD-0018) ve entitlement service (MOD-0298) için "tenant'a at
 ### MOD-0014 — Module Boundary Registry
 **Wave:** W1-B
 **Priority:** 🟠 High
-**Status:** 🟡 Partial (%20) — module pack mevcut; gerçek runtime/UI yüzeyi sınırlı
+**Status:** 🔴 Missing (%0) — yalnız module pack `in-progress` (frontmatter). Repo'da `*ModuleBoundary*`/`*CapabilityGroup*`/`*ModuleDefinition*` HİÇBİR kod yok (2026-05-17 doğrulandı). Pack-only.
 
 **Purpose:**
 Domain, suite, capability ve module boundary kararlarını canonical registry olarak tutmak; yeni modüllerin ownership, dependency ve anti-duplication kontrollerine temel sağlamak.
@@ -809,7 +821,15 @@ Domain, suite, capability ve module boundary kararlarını canonical registry ol
 ### MOD-0018 — RBAC / Tenant Entitlement Enforcement
 **Wave:** W1-B
 **Priority:** 🔴 Blocker
-**Status:** 🟡 Partial (%20 — HasPermission + entitlement read service izleri var; birleşik enforcement yok)
+**Status:** 🟡 Partial (%20)
+
+**Kod kanıtı (2026-05-17):**
+- ✅ Authorization scaffold: `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/TenantModuleAuthorizationHandler.cs` + `TenantModuleRequirement.cs`
+- ✅ Effective access query/service: `TenantModuleAccessService` + `ITenantModuleAccessService` + `GetTenantModuleEffectiveAccessQuery`
+- ✅ `HasPermission` attribute zaten mevcut (AuthService Permission claim consumer)
+- 🔴 `[RequiresModule]`, `[RequiresFeature]`, birleşik `RequiresPermission(Module=...)` attribute'ları **yok**
+- 🔴 `IEntitlementChecker` (batch + deny-reason contract) **yok**
+- 🔴 Hiçbir controller'a `[RequiresModule]` uygulanmadı
 
 **Purpose:**
 Permission alone yeterli değil; o permission ait olduğu modül **tenant'a açık olmadıkça** authorization fail vermeli.
@@ -909,7 +929,17 @@ Trial expiry, subscription renewal, quota reset, email dispatch, provisioning re
 ### MOD-0035 — Event Bus / Internal Events
 **Wave:** W1-C
 **Priority:** 🔴 Blocker
-**Status:** 🔴 Missing (0%)
+**Status:** 🟡 Partial (%78)
+
+**Kod kanıtı (2026-05-17):**
+- ✅ Building Blocks: `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/` (EventEnvelope, EventName, EventPayloadContractValidator, IEventBus, IEventHandler, IDomainEvent, IIntegrationEvent, IInternalEvent, EventErrorRedactor)
+- ✅ Infrastructure adapters: `InMemoryEventBus`, `MassTransitRabbitMqEventPublisher`, `OutboxPublisherWorker`, `OutboxPublisherProcessor`, `RabbitMqEventingOptions`, `TenantActivatedV1Consumer`
+- ✅ Outbox altyapısı: `services/Diten.Platform.Common/src/Diten.Platform.Common/Events/Outbox/` (`OutboxMessage`, `OutboxRepository`)
+- ✅ Application layer: `Services/Eventing/EventBus.cs`, `ConsumedEventStore.cs` (idempotency)
+- ✅ Tests: `Diten.Platform.Eventing.Tests` (EventingMvpTests, EventingObservabilityMetricsSmokeTests, **RabbitMqEventingIntegrationTests**)
+- ✅ Observability metrics decorator (`EventTransportPublisherMetricsDecorator`, `EventConsumeMetricsSink`)
+- 🔴 Live external/local RabbitMQ broker validation (broker dışı integration test çalışmaları pending — Testcontainers kapsam dışı kararı)
+- 🔴 MOD-0009 dahil 7 lifecycle event'inden 6'sının outbox emit'i (yalnız `tenant.activated.v1` wired)
 
 **Purpose:**
 Tenant lifecycle, subscription change, entitlement change gibi domain event'lerinin servisler arası transport'u.
@@ -963,7 +993,13 @@ IEventHandler<T>
 ### MOD-0027 — Notification / Email Service
 **Wave:** W1-D
 **Priority:** 🔴 Blocker
-**Status:** 🔴 Missing (0%)
+**Status:** 🔴 Missing (%0) — generic notification servisi yok
+
+**Mevcut ad-hoc parçalar (MOD-0027 oluşunca migrate edilecek):**
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/AdminUserInvitationService.cs`
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/PlatformAdministratorInvitationEmailService.cs`
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/EmailTemplates/` (sabit HTML şablonları)
+- Bu parçalar generic `INotificationService` / `NotificationTemplate` / `NotificationDispatch` modeli yerine her command için ayrı concrete servis kullanıyor — anti-pattern, MOD-0027 ile birleştirilmeli
 
 **Purpose:**
 Platform-issued transactional notification orchestration: invite, OTP, password reset, trial ending/expired, subscription renewal, payment failed.
@@ -1404,24 +1440,26 @@ Platform admin support için "şu tenant'a benim olarak gir, sorununu gör" öze
 ### MOD-0032 — API Gateway Hardening
 **Wave:** W3-A
 **Priority:** 🟠 High
-**Status:** 🟡 Partial (%50) — Ocelot routing, token forward, CORS whitelist başlangıcı ve secret validation var; hardening tamam değil
+**Status:** 🟡 Partial (%65)
+
+**Kod kanıtı (2026-05-17):**
+- ✅ Ocelot routing: [gateway/Diten.ApiGateway/ocelot.json](../../gateway/Diten.ApiGateway/ocelot.json) — **60 downstream route**, 1153 satır
+- ✅ Custom JWT handler: [gateway/Diten.ApiGateway/Authentication/GatewayJwtAuthenticationHandler.cs](../../gateway/Diten.ApiGateway/Authentication/GatewayJwtAuthenticationHandler.cs) (83 satır) — secret validation + actor_type claim
+- ✅ Tenant resolution middleware: [gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs](../../gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs) (464 satır) — X-Tenant-Id / JWT tenant_id / Platform context routing
+- ✅ Correlation propagation: `CorrelationPropagationDelegatingHandler` (MOD-0041 entegrasyonu)
+- ✅ Local CORS origin whitelist başlangıcı
 
 **Purpose:**
 Gateway-level rate limit, per-tenant policies, CORS hardening, API versioning routing, request/response audit.
 
-**What's done:**
-- ✅ Ocelot routing
-- ✅ Auth token forward
-- ✅ Gateway JWT secret validation ve local CORS origin whitelist başlangıcı var
-
 **What's missing:**
-- 🔴 Rate limiting (per-tenant, per-endpoint)
-- 🟡 CORS whitelist environment-aware hale getirilmeli
+- 🔴 Rate limiting (per-tenant, per-endpoint) — ocelot.json'da `RateLimitOptions`/`QoSOptions` blokları yok
+- 🔴 Circuit breaker / Polly upstream policy
+- 🟡 CORS whitelist environment-aware hale getirilmeli (production'da wildcard reddi)
 - 🔴 API version routing (`/api/v1/...`)
 - 🔴 Request audit (incoming, outgoing)
-- 🔴 Circuit breaker
 - 🔴 IP allowlist/denylist
-- 🔴 Frontend'in gateway dışı service fallback'leri kaldırılmalı
+- 🔴 Frontend'in gateway dışı service fallback'leri (`PlatformServiceUrl`/direct service-port) kaldırılmalı
 
 **Acceptance criteria:**
 - [ ] Per-tenant rate limit (e.g. 1000 req/min)
@@ -1611,7 +1649,21 @@ BillingCycle : EntityBase (tenant subscription'a bağlı)
 ### MOD-0041 — Logging / Monitoring
 **Wave:** W3-C
 **Priority:** 🟡 Medium
-**Status:** 🟡 Partial (%35 — ILogger ve health baseline var, structured observability yok)
+**Status:** 🟡 Partial (%50)
+
+**Kod kanıtı (2026-05-17 — master-plan'in %20 iddiası eskiydi):**
+- ✅ Correlation foundation: [services/Diten.Platform/src/Diten.Platform.API/Observability/CorrelationIdMiddleware.cs](../../services/Diten.Platform/src/Diten.Platform.API/Observability/CorrelationIdMiddleware.cs) + `CorrelationContext.cs` + `ICorrelationContext.cs`
+- ✅ Health check'ler: `MongoDbReadinessHealthCheck`, `RabbitMqReadinessHealthCheck`, `HangfireStorageReadinessHealthCheck` + `HealthCheckResponseWriter`
+- ✅ Sensitive data hardening: `SensitiveDataLogEventEnricher` + `SensitiveDataRedactor`
+- ✅ Background-job metric decorator: `BackgroundJobExecutionLogMetricsDecorator` + ServiceCollection extension
+- ✅ Event transport metrics: `EventTransportPublisherMetricsDecorator` + `EventConsumeMetricsSink` + `EventingObservabilityServiceCollectionExtensions`
+- ✅ Outbox pending count metric: `OutboxPendingCountMetricsService`
+- ✅ Observability options & DI extension: `ObservabilityOptions`, `ObservabilityServiceCollectionExtensions`
+- ✅ Grafana dashboard: [observability/grafana/dashboards/mod-0041-platform-observability.json](../../observability/grafana/dashboards/mod-0041-platform-observability.json)
+- 🔴 Serilog JSON sink configuration sözleşmesi tamam değil (basic `Microsoft.Extensions.Logging` hâlâ standart)
+- 🔴 OpenTelemetry traces (Jaeger/Zipkin/OTLP exporter) yok
+- 🔴 Prometheus scrape endpoint canlı deploy'da doğrulanmadı
+- 🔴 Tüm servislere (AuthService, Gateway, frontend proxy) aynı correlation/metric standardı yayılmadı
 
 **Purpose:**
 Structured logging, correlation propagation, health checks, metrics, distributed tracing baseline.
@@ -1619,16 +1671,19 @@ Structured logging, correlation propagation, health checks, metrics, distributed
 **Recommendation:** Serilog + OpenTelemetry + Prometheus + Grafana.
 
 **Acceptance criteria:**
-- [ ] Serilog ile structured JSON log
-- [ ] CorrelationId middleware (request → log → event → audit chain)
-- [ ] Health check endpoint'leri (`/health`, `/health/ready`, `/health/live`)
-- [ ] Prometheus metrics export
-- [ ] OpenTelemetry tracing (Jaeger/Zipkin)
+- [x] CorrelationId middleware (request → log → event → audit chain) — Platform API
+- [x] Health check endpoint'leri (`/health`, `/health/ready`, `/health/live`) — Mongo + RabbitMQ + Hangfire readiness
+- [x] Background job + event transport metric decorator'ları
+- [x] Grafana dashboard JSON
+- [ ] Serilog ile structured JSON log (sink + enrichers production-ready)
+- [ ] Prometheus metrics export endpoint'i canlı doğrulanmış
+- [ ] OpenTelemetry tracing (Jaeger/Zipkin/OTLP exporter)
 
 **%100 için kalanlar:**
-- [ ] Serilog JSON logging ve correlation-id propagation tüm servislerde standardize edilmeli.
-- [ ] `/health/live` ve `/health/ready` ayrımı MongoDB, gateway upstream ve background worker dependency'lerini kapsamalı.
-- [ ] OpenTelemetry traces ve Prometheus metrics endpoint'leri deploy profillerine eklenmeli.
+- [ ] Serilog JSON logging ve correlation-id propagation Gateway + AuthService + frontend proxy'lere de yayılmalı.
+- [ ] OpenTelemetry tracing (OTLP exporter) eklenmeli, Tempo/Jaeger backend seçimi yapılmalı.
+- [ ] Prometheus metrics endpoint'i deploy profilinde canlı scrape ile doğrulanmalı; Grafana dashboard data source bağlantısı bitirilmeli.
+- [ ] `/health/live` ve `/health/ready` ayrımı Gateway upstream policy'leri ile bağlanmalı (MOD-0032).
 - [ ] Dashboard/runbook linkleri MOD-0042 ile bağlanmalı.
 
 ---
@@ -1711,7 +1766,7 @@ Event/API schema versioning, backward compatibility, breaking change detection.
 ### MOD-0002 — Interface Registry
 **Wave:** W3-E
 **Priority:** 🟡 Medium
-**Status:** 🟡 Partial (%70) — InterfaceRegistry domain, controller, application features, frontend, import/review/deprecate yüzeyi ve test izleri var. OpenAPI ingestion, ownership ve deprecation policy hardening pending.
+**Status:** 🟢 Done with caveats (%80) — InterfaceRegistry domain, controller (72 satır), 18+ Application DTO/service, frontend Compact DataTable shell (`Index/Details/_ConsumersDataTable/_ConsumersFilter/_IndexL10n` + RESX en/tr), import/review/deprecate komut + query yüzeyi tamam. BuildingBlocks abstractions (`Diten.BuildingBlocks.InterfaceRegistry.Abstractions`: Attribute, Manifest, ConsumerManifest, Status, Stability, Visibility, ReviewDecision) eklendi. OpenAPI ingestion otomasyonu, ownership zorunluluğu ve deprecation policy hardening pending.
 
 **Purpose:**
 API endpoint sahipliği, version, consumer, compatibility metadata kaydı.
@@ -2253,17 +2308,17 @@ Bu tabloyu modül bittiğinde güncelle. Bölüm 2'deki özet tablo bunun kısal
 ### 9.1 Wave 1 — Blocker Foundation
 | ID | Modül | Status | % | Sorumluluk | Hedef Tarih | Tamamlanma Notu |
 |---|---|---|---|---|---|---|
-| NEW-001 | Secrets Management | 🟡 | 70 | DevOps | — | MOD-0012 canonical kayıt; secrets provider/validation var, production vault adapter ve rotation testleri eksik. |
-| MOD-0012 | Secrets & Configuration Vault | 🟡 | 70 | DevOps | — | NEW-001'in canonical ID karşılığı; production vault adapter, rotation ve full secret inventory testleri eksik. |
+| NEW-001 | Secrets Management | ⚠️ | — | DevOps | — | Legacy ID; canonical kayıt MOD-0012. PSS-PLAN-RECON-1 ile birleştirilecek. |
+| MOD-0012 | Secrets & Configuration Vault | 🟢 | 85 | DevOps | — | `Diten.BuildingBlocks.Security.Secrets` 10+ dosya (`ISecretsProvider`, `JwtSecretRotationResolver`, `SecretRequirementValidator`, `SecretRedactor`, `SecretRedactionOptions`, `ConfigurationSecretsProvider`) + Tests projesi. Production vault adapter (Key Vault/AWS/Vault) ve rotation integration testleri eksik. |
 | NEW-002 | Platform Administrators Mgmt | 🟢 | 95 | Platform UI | 2026-05-20 | Kod kanıtı doğrulandı (2026-05-14): 8 command + Slim DataTable + InvitationEmailService + Gateway routes. Kalan %5: MOD-0021 audit hookup. |
-| MOD-0009 | Tenant Registry Events | 🟡 | 50 | Tenant | — | Tenant lifecycle var; event emit/outbox/bus yok. |
+| MOD-0009 | Tenant Registry Events | 🟡 | 55 | Tenant | — | `TenantActivatedV1` event contract + consumer wired; 6 lifecycle event hâlâ outbox'a yazılmıyor (suspend/reactivate/cancel/register/provision-success/provision-failure). |
 | MOD-0008 | Module Catalog Assignable | 🟡 | 80 | Catalog | — | — |
 | MOD-0014 | Module Boundary Registry | 🔴 | 0 | Architecture | — | Sadece module pack `in-progress` (frontmatter); repo'da `*ModuleBoundary*`/`*CapabilityGroup*`/`*ModuleDefinition*` HİÇBİR kod yok. Pack-only. |
-| MOD-0018 | RBAC Enforcement | 🟡 | 20 | Auth | — | HasPermission + entitlement read service izleri var; RequiresModule/RequiresFeature enforcement yok. |
-| MOD-0298 | Tenant Module Entitlement Refine | 🟡 | 87 | Entitlement | — | — |
+| MOD-0018 | RBAC Enforcement | 🟡 | 20 | Auth | — | `TenantModuleAuthorizationHandler` + `TenantModuleRequirement` + `TenantModuleAccessService` scaffold var; `[RequiresModule]`/`[RequiresFeature]` attribute'ları ve `IEntitlementChecker` contract'ı yok; hiçbir controller'a uygulanmadı. |
+| MOD-0298 | Tenant Module Entitlement Refine | 🟡 | 90 | Entitlement | — | 6 command (RefreshProjection dahil) + 4 query + access evaluator + Commercial tab tam; cache TTL/event-driven invalidation/bulk ops/audit retrofit pending. |
 | MOD-0026 | Background Job Scheduler | ✅ | 90 | Platform | 2026-05-15 | Foundation PASS: live Platform API smoke, PlatformActor-protected Hangfire dashboard, Mongo-backed enqueue, smoke job success/failure JobExecutionLog evidence, redaction/retry metadata verified. Business job logic remains with owning modules. |
-| MOD-0035 | Event Bus | 🟡 | 70 | Platform | — | Core foundation implemented; external RabbitMQ live validation pending. Do not start broker-backed MOD-0009 emission until live validation passes. |
-| MOD-0027 | Notification Service | 🔴 | 0 | Notification | — | — |
+| MOD-0035 | Event Bus | 🟡 | 78 | Platform | — | BuildingBlocks.Eventing + Outbox + MassTransitRabbitMqEventPublisher + InMemoryEventBus + TenantActivatedV1Consumer + ConsumedEventStore + RabbitMqEventingIntegrationTests mevcut; live external RabbitMQ broker validation ve 6 lifecycle event'in outbox emit'i pending. |
+| MOD-0027 | Notification Service | 🔴 | 0 | Notification | — | Generic servis yok; ad-hoc `AdminUserInvitationService` + `PlatformAdministratorInvitationEmailService` parçaları MOD-0027 oluşunca migrate edilmeli. |
 | MOD-0263 | Messaging Provider | 🔴 | 0 | Notification | — | — |
 
 ### 9.2 Wave 2 — High Priority Operations
@@ -2284,12 +2339,12 @@ Bu tabloyu modül bittiğinde güncelle. Bölüm 2'deki özet tablo bunun kısal
 | MOD-0033 | Consumer/Quota Model | 🟡 | 78 | Quota | — | Backend entities + controllers + atomic consume/reset command'ları var; scheduler/dashboard/notification pending. |
 | MOD-0046+ | Tenant Core UI Extensions | 🟡 | 60 | Platform UI | — | Commercial/quota yüzeyleri var; monitoring, audit deep-link, document tab pending. |
 | MOD-0299 | SaaS Billing & Invoicing | 🔴 | 0 | Billing | — | — |
-| MOD-0041 | Logging / Monitoring | 🟡 | 35 | Ops | — | ILogger/health baseline var; structured JSON logs, metrics ve tracing pending. |
+| MOD-0041 | Logging / Monitoring | 🟡 | 50 | Ops | — | Platform.API/Observability/ klasörü: CorrelationIdMiddleware + Mongo/RabbitMq/Hangfire health checks + SensitiveDataRedactor + BackgroundJob/Event metric decorator'ları + OutboxPendingCountMetricsService + Grafana dashboard JSON. Serilog JSON, OpenTelemetry traces, Prometheus scrape pending. |
 | MOD-0042 | Alerting / Runbooks | 🔴 | 0 | Ops | — | — |
 | MOD-0265 | SIEM Provider | 🔴 | 0 | Ops | — | — |
 | MOD-0038 | Event Taxonomy | 🔴 | 0 | Architecture | — | — |
 | MOD-0039 | Schema Governance | 🔴 | 0 | Architecture | — | — |
-| MOD-0002 | Interface Registry | 🟡 | 70 | Architecture | — | Domain + controller + features + frontend/review surface var; OpenAPI ingestion/ownership hardening pending. |
+| MOD-0002 | Interface Registry | 🟢 | 80 | Architecture | — | Domain + controller + 18+ Application service/DTO + Compact DataTable frontend + BuildingBlocks.InterfaceRegistry.Abstractions + import/review/deprecate yüzeyi tam; OpenAPI ingestion otomasyonu/ownership hardening/deprecation policy pending. |
 | MOD-0003 | Data Contract Registry | 🔴 | 0 | Architecture | — | — |
 
 ### 9.4 Mevcut Modül İyileştirme (Lokalizasyon, RowVersion UI, vb.)
@@ -2356,6 +2411,19 @@ Bu tabloyu modül bittiğinde güncelle. Bölüm 2'deki özet tablo bunun kısal
   - **PSS-008** Module Details Assignment Inspection (review, 60%)
   - **PSS-010** Platform Admin Password & MFA Security (draft, 0%) — PSS-009 follow-up'tan bağımsız pack oldu
 - **2026-05-15:** Master-plan yüzdeleri repo kod kanıtına göre revize edildi ve `%100 için kalanlar` checklist'leri eklendi. Öne çıkan revizyonlar: Tenant Management 88, PSS-004 86, PSS-010 45, MOD-0012 70, MOD-0014 20, MOD-0018 20, MOD-0021 98, MOD-0032 50, MOD-0033 78, MOD-0002 70. Ortak kapanış kriterleri: HTTP integration, gateway smoke, browser smoke, DataTable v2 doğrulaması, audit retrofit, event/job altyapısı, production provider entegrasyonları.
+- **2026-05-17:** Dördüncü tur kod-kanıtı doğrulaması (tüm platform tarafı). **9 modülde drift düzeltildi**, master-plan §2 inventory + §3 detail + §9 status tabloları senkronize edildi:
+  - **MOD-0044** Tenant Manager Backend: %82 → **%85** — 14 tenant command (master-plan'in 10 saydığından fazla) + 14 Commercial command (Subscriptions 8 + Entitlements 6) kod kanıtlı
+  - **MOD-0046** Tenant Core UI: %80 → **%82** — Commercial subdirectory tam (`_PlanSubscriptionTab`, `_ModuleEntitlementsTab`, `_AddModuleEntitlementOffcanvas`, `_TenantQuotaGovernanceTab`)
+  - **MOD-0046-QG** Tenant Quota Governance UI: %55 → **%60** — `_TenantQuotaGovernanceTab.cshtml` partial mevcut
+  - **MOD-0298** Tenant Module Entitlement: %87 → **%90** — `RefreshTenantModuleEntitlementProjectionCommand.cs` aslında var (master-plan'in "implementation incomplete" iddiası kod kanıtıyla geçersiz); 6 command + 4 query + access evaluator kod kanıtlı
+  - **MOD-0009** Tenant Registry Lifecycle Events: %50 → **%55** — `Diten.Platform.Contracts/Events/TenantActivatedV1.cs` + `events/schemas/tenant.activated/` + `TenantActivatedV1Consumer` wired (7 event'ten 1'i)
+  - **MOD-0018** RBAC Enforcement: %10 → **%20** — `services/Diten.Platform.Common/src/.../Authorization/TenantModuleAuthorizationHandler.cs` + `TenantModuleRequirement.cs` scaffold var; `[RequiresModule]` attribute hâlâ yok
+  - **MOD-0035** Event Bus: %70 → **%78** — `Diten.BuildingBlocks.Eventing` (10+ dosya), `MassTransitRabbitMqEventPublisher`, `OutboxPublisherWorker/Processor`, `InMemoryEventBus`, `TenantActivatedV1Consumer`, `ConsumedEventStore` + `Diten.Platform.Eventing.Tests` (RabbitMqEventingIntegrationTests dahil); live broker validation pending
+  - **MOD-0041** Logging/Monitoring: %20 → **%50** — Platform.API/Observability/ klasörü 17 dosya (CorrelationIdMiddleware, Mongo/RabbitMq/Hangfire ReadinessHealthCheck, HealthCheckResponseWriter, SensitiveDataLogEventEnricher, SensitiveDataRedactor, BackgroundJobExecutionLogMetricsDecorator, EventTransportPublisherMetricsDecorator, EventConsumeMetricsSink, OutboxPendingCountMetricsService, ObservabilityOptions/Extensions) + Grafana dashboard JSON. **Master-plan'in %20 iddiası eskiydi.** Serilog JSON sink, OpenTelemetry traces, Prometheus scrape endpoint canlı doğrulanması pending.
+  - **MOD-0002** Interface Registry: detail blok %70 → **%80** (status table %70 → %80) — §10 reconciliation'da %80'e revize edilmişti ama detail/status'ta drift kalmıştı
+  - **MOD-0014** Module Boundary Registry: detail blok %20 → **%0** — §10 reconciliation %0'a revize etmişti ama detail'da %20 drift kalmıştı; pack-only
+  - **Uyumlu (değişmedi)**: PSS-004 86, PSS-005 93, PSS-006 96, PSS-007 90, PSS-008 65, PSS-009 89, PSS-010 60, PSS-011 93, MOD-0008 80, MOD-0012 85, MOD-0021 98, MOD-0026 90, MOD-0027 0 (ad-hoc invite servisler MOD-0027 oluşunca migrate edilecek), MOD-0032 65, MOD-0033 78, MOD-0043 80, MOD-0046+ 60, MOD-0297 82, NEW-002 95
+  - **Toplu satırı** (MOD-0043/44/46): %88 → **%84** — alt parça ağırlıklı ortalamasıyla senkronize (80+85+82)/3 ≈ 82, +2 entegrasyon olgunluğu bonusu
 - **2026-05-15:** Üçüncü tur kod-kanıtı doğrulaması (kalan 12 modül için). **6 modülde drift düzeltildi**:
   - **MOD-0046** Tenant Core UI: %70 → **%80** — Frontend full set (Index/Create/Details/Security + 5 JS dosyası, RESX) master-plan altında değerlendirilmişti
   - **MOD-0044** Tenant Manager Backend: %75 → **%82** — 10 lifecycle command (BulkDelete, CreateAdmin, DeleteAdmin, Invite, Reactivate, Register, Suspend, Update) tamamı kod kanıtlı

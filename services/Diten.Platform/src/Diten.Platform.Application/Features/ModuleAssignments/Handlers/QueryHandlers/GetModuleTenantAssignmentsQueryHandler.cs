@@ -1,6 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.ModuleAssignments.Queries;
-using Diten.Platform.Domain.Repositories;
+using Diten.Platform.Common.Catalog;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -9,14 +9,14 @@ namespace Diten.Platform.Application.Features.ModuleAssignments.Handlers.QueryHa
 public sealed class GetModuleTenantAssignmentsQueryHandler
     : IRequestHandler<GetModuleTenantAssignmentsQuery, Response<ModuleAssignmentPageDto<ModuleTenantAssignmentRowDto>>>
 {
-    private readonly IModuleCatalogRepository _moduleRepository;
+    private readonly IPlatformCatalogContract _catalogContract;
     private readonly ILogger<GetModuleTenantAssignmentsQueryHandler> _logger;
 
     public GetModuleTenantAssignmentsQueryHandler(
-        IModuleCatalogRepository moduleRepository,
+        IPlatformCatalogContract catalogContract,
         ILogger<GetModuleTenantAssignmentsQueryHandler> logger)
     {
-        _moduleRepository = moduleRepository;
+        _catalogContract = catalogContract;
         _logger = logger;
     }
 
@@ -33,7 +33,7 @@ public sealed class GetModuleTenantAssignmentsQueryHandler
             return Response<ModuleAssignmentPageDto<ModuleTenantAssignmentRowDto>>.Fail("Invalid assignment status filter.", 400);
         }
 
-        var module = await ModuleAssignmentQueryHelpers.GetModuleAsync(_moduleRepository, request.ModuleCode, ct);
+        var module = await ModuleAssignmentQueryHelpers.GetModuleAsync(_catalogContract, request.ModuleCode, ct);
         if (module is null)
         {
             return Response<ModuleAssignmentPageDto<ModuleTenantAssignmentRowDto>>.Fail("Module catalog item not found.", 404);

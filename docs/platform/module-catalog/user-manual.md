@@ -8,7 +8,7 @@ The list supports search, domain, service, status and tenant-assignable filters.
 
 ## Create And Edit
 
-The form contains the 12 approved fields:
+The form contains the approved catalog fields:
 
 - Module Code
 - Module Name
@@ -27,5 +27,14 @@ On create, Module Code is generated from Display Name or Module Name. You can ov
 
 ## Details
 
-The details page shows catalog identity, classification, status, version and assignment flags. Core modules are protected from delete operations.
+The details page shows catalog identity, classification, status, version, assignment flags, page descriptors, and assignment inspection.
 
+## Pages And Actions
+
+Use page management to document which application pages belong to a module and which actions are available on those pages.
+
+## Assignments
+
+The Assignments tab shows plan assignment data from subscription plans. Tenant assignment information may show a degraded state until a dedicated tenant assignment source is implemented. The screen does not invent tenant assignment rows from subscription plan data.
+
+Core modules are protected from delete operations.

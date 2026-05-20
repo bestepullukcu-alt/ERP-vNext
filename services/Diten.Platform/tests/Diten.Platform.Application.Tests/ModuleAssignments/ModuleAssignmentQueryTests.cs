@@ -1,6 +1,7 @@
 using Diten.Platform.Application.Features.ModuleAssignments;
 using Diten.Platform.Application.Features.ModuleAssignments.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.ModuleAssignments.Queries;
+using Diten.Platform.Common.Catalog;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -126,7 +127,7 @@ public sealed class ModuleAssignmentQueryTests
         CreatedAt = DateTimeOffset.UtcNow
     };
 
-    private sealed class InMemoryModuleCatalogRepository : IModuleCatalogRepository
+    private sealed class InMemoryModuleCatalogRepository : IModuleCatalogRepository, IPlatformCatalogContract
     {
         private readonly List<ModuleCatalogItem> _items = [];
 
@@ -164,6 +165,28 @@ public sealed class ModuleAssignmentQueryTests
         {
             IReadOnlyList<ModuleCatalogItem> items = _items.Where(x => !x.IsDeleted && x.IsTenantAssignable).ToList();
             return Task.FromResult(items);
+        }
+
+        public async Task<IReadOnlyList<AssignableModuleInfo>> GetAssignableModulesAsync(CancellationToken ct)
+        {
+            var items = await GetAssignableAsync(ct);
+            return items
+                .Select(x => new AssignableModuleInfo(
+                    x.Id,
+                    x.ModuleCode,
+                    x.ModuleName,
+                    x.DisplayName,
+                    x.Description,
+                    x.Domain,
+                    x.Service,
+                    x.Status.ToString(),
+                    x.ModuleVersion,
+                    x.IsCoreModule,
+                    x.IsTenantAssignable,
+                    x.SortOrder,
+                    x.CreatedAt,
+                    x.UpdatedAt))
+                .ToList();
         }
 
         public Task<IReadOnlyDictionary<ModuleCatalogStatus, long>> GetStatsAsync(CancellationToken ct = default)

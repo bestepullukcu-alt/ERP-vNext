@@ -6,6 +6,33 @@
 @{
     ViewData["Title"] = Localizer["PageDetailsTitle"].Value;
     Layout = "_LayoutPlatformAdmin";
+    var statusClass = Model.Status switch
+    {
+        "Active" => "bg-label-success",
+        "Inactive" => "bg-label-warning",
+        "Deprecated" => "bg-label-danger",
+        _ => "bg-label-secondary"
+    };
+    var statusText = Model.Status switch
+    {
+        "Draft" => Localizer["StatusDraft"].Value,
+        "Active" => Localizer["StatusActive"].Value,
+        "Inactive" => Localizer["StatusInactive"].Value,
+        "Deprecated" => Localizer["StatusDeprecated"].Value,
+        _ => Model.Status
+    };
+    var pageTypeText = Model.PageType switch
+    {
+        "List" => Localizer["PageTypeList"].Value,
+        "Details" => Localizer["PageTypeDetails"].Value,
+        "Create" => Localizer["PageTypeCreate"].Value,
+        "Edit" => Localizer["PageTypeEdit"].Value,
+        "Report" => Localizer["PageTypeReport"].Value,
+        "Wizard" => Localizer["PageTypeWizard"].Value,
+        "Dashboard" => Localizer["PageTypeDashboard"].Value,
+        "Custom" => Localizer["PageTypeCustom"].Value,
+        _ => Model.PageType
+    };
 }
 
 <div class="module-page-details">
@@ -48,25 +75,111 @@
     <div class="tab-content p-0 bg-transparent shadow-none">
         <div class="tab-pane fade show active" id="page-general-tab" role="tabpanel">
             <div class="row g-4">
-                <div class="col-12 col-lg-8">
+                <div class="col-12 col-lg-8 d-flex flex-column gap-4">
                     <section class="card backbone-preview-section p-4">
                         <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
                         <div class="row g-4">
-                            <div class="col-12 col-md-6"><div class="backbone-preview-label">@Localizer["PageCode"]</div><div class="backbone-preview-value mt-1"><code>@Model.PageCode</code></div></div>
-                            <div class="col-12 col-md-6"><div class="backbone-preview-label">@Localizer["ModuleCode"]</div><div class="backbone-preview-value mt-1"><code>@Model.ModuleCode</code></div></div>
-                            <div class="col-12"><div class="backbone-preview-label">@Localizer["DisplayName"]</div><div class="backbone-preview-value mt-1">@Model.DisplayName</div></div>
-                            <div class="col-12"><div class="backbone-preview-label">@Localizer["RoutePath"]</div><div class="backbone-preview-value mt-1"><code>@Model.RoutePath</code></div></div>
+                            <div class="col-12 col-md-6">
+                                <div class="backbone-preview-field">
+                                    <i class="bx bx-purchase-tag-alt"></i>
+                                    <div>
+                                        <div class="backbone-preview-label">@Localizer["PageCode"]</div>
+                                        <div class="backbone-preview-value mt-1"><code>@Model.PageCode</code></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="backbone-preview-field">
+                                    <i class="bx bx-grid-alt"></i>
+                                    <div>
+                                        <div class="backbone-preview-label">@Localizer["ModuleCode"]</div>
+                                        <div class="backbone-preview-value mt-1"><code>@Model.ModuleCode</code></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="backbone-preview-field">
+                                    <i class="bx bx-file"></i>
+                                    <div>
+                                        <div class="backbone-preview-label">@Localizer["DisplayName"]</div>
+                                        <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.DisplayName) ? "-" : Model.DisplayName)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="backbone-preview-field">
+                                    <i class="bx bx-link-alt"></i>
+                                    <div>
+                                        <div class="backbone-preview-label">@Localizer["RoutePath"]</div>
+                                        <div class="backbone-preview-value mt-1"><code>@Model.RoutePath</code></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
+
+                    <section class="card backbone-preview-section p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3">@SharedLocalizer["Description"]</h6>
+                        <div class="backbone-preview-description">@(string.IsNullOrWhiteSpace(Model.Description) ? "-" : Model.Description)</div>
+                    </section>
                 </div>
-                <div class="col-12 col-lg-4">
+                <div class="col-12 col-lg-4 d-flex flex-column gap-4">
                     <section class="card backbone-preview-section p-4">
                         <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
                         <div class="row g-4">
-                            <div class="col-12"><div class="backbone-preview-label">@Localizer["PageType"]</div><div class="backbone-preview-value mt-1">@Model.PageType</div></div>
-                            <div class="col-12"><div class="backbone-preview-label">@SharedLocalizer["Status"]</div><div class="backbone-preview-value mt-1">@Model.Status</div></div>
-                            <div class="col-12"><div class="backbone-preview-label">@Localizer["ParentPageCode"]</div><div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.ParentPageCode) ? "-" : Model.ParentPageCode)</div></div>
-                            <div class="col-12"><div class="backbone-preview-label">@Localizer["NavigationVisible"]</div><div class="backbone-preview-value mt-1">@(Model.IsNavigationVisible ? Localizer["Yes"] : Localizer["No"])</div></div>
+                            <div class="col-12">
+                                <div class="backbone-preview-field">
+                                    <i class="bx bx-layer"></i>
+                                    <div>
+                                        <div class="backbone-preview-label">@Localizer["PageType"]</div>
+                                        <div class="backbone-preview-value mt-1">@pageTypeText</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="backbone-preview-field">
+                                    <i class="bx bx-sitemap"></i>
+                                    <div>
+                                        <div class="backbone-preview-label">@Localizer["ParentPageCode"]</div>
+                                        <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.ParentPageCode) ? "-" : Model.ParentPageCode)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="backbone-preview-field">
+                                    <i class="bx bx-sort"></i>
+                                    <div>
+                                        <div class="backbone-preview-label">@Localizer["SortOrder"]</div>
+                                        <div class="backbone-preview-value mt-1">@Model.SortOrder</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card backbone-preview-section p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@SharedLocalizer["Status"]</h6>
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="backbone-preview-field">
+                                    <i class="bx bx-check-shield"></i>
+                                    <div>
+                                        <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                                        <div class="mt-1">
+                                            <span class="badge @statusClass">@statusText</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="backbone-preview-field">
+                                    <i class="bx bx-navigation"></i>
+                                    <div>
+                                        <div class="backbone-preview-label">@Localizer["NavigationVisible"]</div>
+                                        <div class="backbone-preview-value mt-1">@(Model.IsNavigationVisible ? Localizer["Yes"] : Localizer["No"])</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -76,8 +189,13 @@
         <div class="tab-pane fade" id="page-permission-tab" role="tabpanel">
             <section class="card backbone-preview-section p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["PermissionsTab"]</h6>
-                <div class="backbone-preview-label">@Localizer["RequiredPermission"]</div>
-                <div class="backbone-preview-value mt-1"><code>@(string.IsNullOrWhiteSpace(Model.RequiredPermission) ? "-" : Model.RequiredPermission)</code></div>
+                <div class="backbone-preview-field">
+                    <i class="bx bx-lock-alt"></i>
+                    <div>
+                        <div class="backbone-preview-label">@Localizer["RequiredPermission"]</div>
+                        <div class="backbone-preview-value mt-1"><code>@(string.IsNullOrWhiteSpace(Model.RequiredPermission) ? "-" : Model.RequiredPermission)</code></div>
+                    </div>
+                </div>
             </section>
         </div>
 
@@ -119,54 +237,69 @@
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="pageActionOffcanvas">
     <div class="offcanvas-header py-6">
-        <h5 class="offcanvas-title" id="pageActionOffcanvasTitle">@Localizer["AddAction"]</h5>
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="offcanvas-title mb-0" id="pageActionOffcanvasTitle">@Localizer["AddAction"]</h5>
+            <div id="pageActionRequiredTrackerHost"></div>
+        </div>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
     <div class="offcanvas-body border-top">
-        <form id="pageActionForm" novalidate>
+        <form id="pageActionForm"
+              data-required-tracker-target="#pageActionRequiredTrackerHost"
+              data-required-tracker-wrapper-class="d-flex align-items-center"
+              data-required-tracker-badge-class="badge bg-label-danger px-2 py-1 d-inline-flex align-items-center"
+              novalidate>
             <input type="hidden" id="pageActionId" />
             <div class="row g-4">
                 <div class="col-12">
                     <label class="form-label fw-medium" for="pageActionCode">@Localizer["ActionCode"] <span class="text-danger">*</span></label>
                     <input class="form-control" id="pageActionCode" required maxlength="80" autocomplete="off" />
+                    <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-medium" for="pageActionDisplayName">@Localizer["DisplayName"] <span class="text-danger">*</span></label>
                     <input class="form-control" id="pageActionDisplayName" required maxlength="200" autocomplete="off" />
+                    <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-medium" for="pageActionPermissionKey">@Localizer["PermissionKey"] <span class="text-danger">*</span></label>
                     <input class="form-control" id="pageActionPermissionKey" required maxlength="200" autocomplete="off" placeholder="crm.client.delete" readonly />
+                    <div class="invalid-feedback">@Localizer["InvalidPermissionFormat"]</div>
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-medium" for="pageActionType">@Localizer["ActionType"] <span class="text-danger">*</span></label>
-                    <select class="form-select" id="pageActionType" required>
-                        <option value="View">View</option>
-                        <option value="Toolbar">Toolbar</option>
-                        <option value="RowAction">RowAction</option>
-                        <option value="FormAction">FormAction</option>
-                        <option value="BulkAction">BulkAction</option>
-                        <option value="System">System</option>
-                        <option value="Custom">Custom</option>
+                    <select class="form-select select2" id="pageActionType" required data-placeholder="@Localizer["ActionType"]">
+                        <option value="View">@Localizer["ActionTypeView"]</option>
+                        <option value="Toolbar">@Localizer["ActionTypeToolbar"]</option>
+                        <option value="RowAction">@Localizer["ActionTypeRowAction"]</option>
+                        <option value="FormAction">@Localizer["ActionTypeFormAction"]</option>
+                        <option value="BulkAction">@Localizer["ActionTypeBulkAction"]</option>
+                        <option value="System">@Localizer["ActionTypeSystem"]</option>
+                        <option value="Custom">@Localizer["ActionTypeCustom"]</option>
                     </select>
+                    <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-medium" for="pageActionStatus">@SharedLocalizer["Status"] <span class="text-danger">*</span></label>
-                    <select class="form-select" id="pageActionStatus" required>
+                    <select class="form-select select2" id="pageActionStatus" required data-placeholder="@SharedLocalizer["Status"]">
                         <option value="Draft">@Localizer["StatusDraft"]</option>
                         <option value="Active">@Localizer["StatusActive"]</option>
                         <option value="Inactive">@Localizer["StatusInactive"]</option>
                         <option value="Deprecated">@Localizer["StatusDeprecated"]</option>
                     </select>
+                    <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-medium" for="pageActionSortOrder">@Localizer["SortOrder"]</label>
                     <input class="form-control" id="pageActionSortOrder" type="number" min="0" value="0" />
                 </div>
                 <div class="col-12">
-                    <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="pageActionIsToolbarAction" /><label class="form-check-label" for="pageActionIsToolbarAction">@Localizer["ToolbarAction"]</label></div>
-                    <div class="form-check form-switch mt-2"><input class="form-check-input" type="checkbox" id="pageActionIsRowAction" /><label class="form-check-label" for="pageActionIsRowAction">@Localizer["RowAction"]</label></div>
-                    <div class="form-check form-switch mt-2"><input class="form-check-input" type="checkbox" id="pageActionIsDangerous" /><label class="form-check-label" for="pageActionIsDangerous">@Localizer["DangerousAction"]</label></div>
+                    <div class="border rounded p-3">
+                        <div class="fw-medium text-heading mb-2">@Localizer["ActionBehavior"]</div>
+                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="pageActionIsToolbarAction" /><label class="form-check-label" for="pageActionIsToolbarAction">@Localizer["ToolbarAction"]</label></div>
+                        <div class="form-check form-switch mt-2"><input class="form-check-input" type="checkbox" id="pageActionIsRowAction" /><label class="form-check-label" for="pageActionIsRowAction">@Localizer["RowAction"]</label></div>
+                        <div class="form-check form-switch mt-2"><input class="form-check-input" type="checkbox" id="pageActionIsDangerous" /><label class="form-check-label" for="pageActionIsDangerous">@Localizer["DangerousAction"]</label></div>
+                    </div>
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-medium" for="pageActionDescription">@SharedLocalizer["Description"]</label>
@@ -175,9 +308,9 @@
             </div>
         </form>
     </div>
-    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
-        <button type="submit" form="pageActionForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+        <button type="submit" form="pageActionForm" class="btn btn-primary" id="btnSavePageAction">@SharedLocalizer["Save"]</button>
     </div>
 </div>
 
