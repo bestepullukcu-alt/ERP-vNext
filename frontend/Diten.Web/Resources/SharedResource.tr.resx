@@ -351,6 +351,12 @@
   <data name="Platform" xml:space="preserve">
     <value>Platform Altyapisi</value>
   </data>
+  <data name="InterfaceRegistry" xml:space="preserve">
+    <value>Arayüz Kayıt Defteri</value>
+  </data>
+  <data name="ModuleCatalog" xml:space="preserve">
+    <value>Modül Kataloğu</value>
+  </data>
   <data name="WorkCenterMenu" xml:space="preserve">
     <value>Görev Merkezi</value>
   </data>

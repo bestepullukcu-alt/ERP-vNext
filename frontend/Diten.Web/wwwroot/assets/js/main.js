@@ -227,18 +227,67 @@ const SearchConfig = {
 let searchData = {};
 
 function loadSearchData() {
-  const searchJson = $('#layout-menu').hasClass('menu-horizontal') ? 'search-horizontal.json' : 'search-vertical.json';
+  const searchJsonNames = getSearchJsonNames();
+  const candidates = Array.isArray(searchJsonNames) ? searchJsonNames : [searchJsonNames];
 
-  fetch(assetsPath + 'json/' + searchJson)
-    .then(response => {
-      if (!response.ok) throw new Error('Failed to fetch search data');
-      return response.json();
-    })
-    .then(json => {
-      searchData = json;
-      initializeAutocomplete();
-    })
-    .catch(error => console.error('[Layout] Error loading search JSON:', error));
+  const loadCandidate = index => {
+    const searchJson = candidates[index];
+
+    fetch(assetsPath + 'json/' + searchJson)
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to fetch search data');
+        return response.json();
+      })
+      .then(json => {
+        searchData = json;
+        initializeAutocomplete();
+      })
+      .catch(error => {
+        if (index + 1 < candidates.length) {
+          loadCandidate(index + 1);
+          return;
+        }
+
+        console.error('[Layout] Error loading search JSON:', error);
+      });
+  };
+
+  loadCandidate(0);
+}
+
+function getSearchJsonNames() {
+  if (document.documentElement.dataset.shell === 'platform-admin') {
+    const culture = (window.CurrentLanguage || document.documentElement.lang || 'en').toLowerCase().split('-')[0];
+    return [`platform-search.${culture}.json`, 'platform-search.json'];
+  }
+
+  return $('#layout-menu').hasClass('menu-horizontal') ? 'search-horizontal.json' : 'search-vertical.json';
+}
+
+function normalizeSearchField(value) {
+  if (Array.isArray(value)) {
+    return value.join(' ');
+  }
+
+  return value || '';
+}
+
+function matchesSearchItem(item, query, section) {
+  if (!query) return true;
+
+  const normalizedQuery = query.toLowerCase();
+  const searchableText = [
+    item.name,
+    item.url,
+    item.group,
+    item.keywords,
+    section
+  ]
+    .map(normalizeSearchField)
+    .join(' ')
+    .toLowerCase();
+
+  return searchableText.includes(normalizedQuery);
 }
 
 function initializeAutocomplete() {
@@ -336,8 +385,7 @@ function initializeAutocomplete() {
             sourceId: `nav-${section}`,
             getItems({ query }) {
               const items = searchData.navigation[section];
-              if (!query) return items;
-              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
+              return items.filter(item => matchesSearchItem(item, query, section));
             },
             getItemUrl({ item }) {
               return item.url;
@@ -366,8 +414,7 @@ function initializeAutocomplete() {
             sourceId: 'files',
             getItems({ query }) {
               const items = searchData.navigation.files;
-              if (!query) return items;
-              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
+              return items.filter(item => matchesSearchItem(item, query, 'files'));
             },
             getItemUrl({ item }) {
               return item.url;
@@ -406,8 +453,7 @@ function initializeAutocomplete() {
             sourceId: 'members',
             getItems({ query }) {
               const items = searchData.navigation.members;
-              if (!query) return items;
-              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
+              return items.filter(item => matchesSearchItem(item, query, 'members'));
             },
             getItemUrl({ item }) {
               return item.url;

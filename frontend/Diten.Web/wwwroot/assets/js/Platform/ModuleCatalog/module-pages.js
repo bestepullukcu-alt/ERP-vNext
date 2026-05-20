@@ -232,7 +232,7 @@ const ModuleCatalogPages = (function () {
     });
 
     const showError = async (response) => {
-        let message = L.ErrorOccurred || 'Error occurred.';
+        let message = L.ErrorOccurred || '';
         try {
             const payload = await response.json();
             message = payload?.errors?.join(' ') || payload?.message || message;
@@ -242,7 +242,7 @@ const ModuleCatalogPages = (function () {
 
     const openCreate = () => {
         resetForm();
-        offcanvasTitle.textContent = L.AddPage || 'Add Page';
+        offcanvasTitle.textContent = L.AddPage || '';
         offcanvas?.show();
     };
 
@@ -268,7 +268,7 @@ const ModuleCatalogPages = (function () {
         requiredPermissionManuallyEdited = Boolean(fields.requiredPermission.value);
         fields.description.value = data.description || data.Description || '';
         syncGeneratedFields();
-        offcanvasTitle.textContent = L.EditPage || 'Edit Page';
+        offcanvasTitle.textContent = L.EditPage || '';
         offcanvas?.show();
     };
 
@@ -293,7 +293,7 @@ const ModuleCatalogPages = (function () {
         if (saveButton) {
             saveButton.disabled = true;
             saveButton.dataset.originalText = saveButton.innerHTML;
-            saveButton.innerHTML = `<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>${L.Save || 'Save'}`;
+            saveButton.innerHTML = `<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>${L.Save || ''}`;
         }
 
         try {
@@ -311,14 +311,14 @@ const ModuleCatalogPages = (function () {
 
             offcanvas?.hide();
             reload();
-            window.showToast?.(L.PageSaved || 'Page saved.', 'success');
+            window.showToast?.(L.PageSaved || '', 'success');
         } catch (error) {
             console.error('[ModuleCatalogPages] Save failed.', error);
-            window.showToast?.(L.ErrorOccurred || 'Error occurred.', 'error');
+            window.showToast?.(L.ErrorOccurred || '', 'error');
         } finally {
             if (saveButton) {
                 saveButton.disabled = false;
-                saveButton.innerHTML = saveButton.dataset.originalText || (L.Save || 'Save');
+                saveButton.innerHTML = saveButton.dataset.originalText || (L.Save || '');
             }
         }
     };
@@ -351,7 +351,7 @@ const ModuleCatalogPages = (function () {
             updateRowStatus(button, active);
         } catch (error) {
             console.error('[ModuleCatalogPages] Status update failed.', error);
-            window.showToast?.(L.ErrorOccurred || 'Error occurred.', 'error');
+            window.showToast?.(L.ErrorOccurred || '', 'error');
         } finally {
             button.disabled = false;
             hideSkeleton();
@@ -370,10 +370,10 @@ const ModuleCatalogPages = (function () {
                     return;
                 }
                 reload();
-                window.showToast?.(L.RecordDeleted || L.Deleted || 'Deleted.', 'success');
+                window.showToast?.(L.RecordDeleted || L.Deleted || '', 'success');
             } catch (error) {
                 console.error('[ModuleCatalogPages] Delete failed.', error);
-                window.showToast?.(L.ErrorOccurred || 'Error occurred.', 'error');
+                window.showToast?.(L.ErrorOccurred || '', 'error');
             }
         }, { entityName, type: 'delete', confirmButtonText: L.Delete });
     };
@@ -386,7 +386,7 @@ const ModuleCatalogPages = (function () {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'btn btn-primary add-new module-page-add-btn';
-        button.innerHTML = `<i class="icon-base bx bx-plus icon-sm me-0 me-sm-2"></i><span class="d-none d-sm-inline-block">${L.AddPage || 'Add Page'}</span>`;
+        button.innerHTML = `<i class="icon-base bx bx-plus icon-sm me-0 me-sm-2"></i><span class="d-none d-sm-inline-block">${L.AddPage || ''}</span>`;
         button.addEventListener('click', (event) => {
             event.preventDefault();
             openCreate();
@@ -400,7 +400,7 @@ const ModuleCatalogPages = (function () {
         if (isTableInitialized || !tableEl) return;
         if (typeof DataTable === 'undefined') {
             hideSkeleton();
-            window.showToast?.(L.ErrorOccurred || 'Error occurred.', 'error');
+            window.showToast?.(L.ErrorOccurred || '', 'error');
             return;
         }
         isTableInitialized = true;
@@ -420,7 +420,7 @@ const ModuleCatalogPages = (function () {
                     const rows = unwrapRows(payload);
                     callback({ data: rows, recordsTotal: rows.length, recordsFiltered: rows.length });
                 } catch {
-                    window.showToast?.(L.ErrorOccurred || 'Error occurred.', 'error');
+                    window.showToast?.(L.ErrorOccurred || '', 'error');
                     hideSkeleton();
                     callback({ data: [], recordsTotal: 0, recordsFiltered: 0 });
                 }
@@ -430,6 +430,7 @@ const ModuleCatalogPages = (function () {
             searching: true,
             ordering: true,
             order: [[5, 'asc']],
+            colReorder: { columns: ':not(:last-child)' },
             layout: {
                 topStart: {
                     rowClass: 'row my-0 justify-content-between',
@@ -489,54 +490,50 @@ const ModuleCatalogPages = (function () {
                     render: (data, type, row) => {
                         const id = row.id || row.Id;
                         const status = row.status || row.Status;
+                        const rowJson = JSON.stringify(row);
                         const actions = [
                             {
-                                className: 'btn-page-view',
-                                text: L.Details || 'Details',
-                                attrs: { 'data-id': id, 'aria-label': L.Details || '' }
+                                key: 'view',
+                                className: 'js-quick-view',
+                                text: L.Details || '',
+                                icon: 'bx bx-show',
+                                attrs: {
+                                    'data-id': id,
+                                    'data-json': rowJson,
+                                    'aria-label': L.Details || ''
+                                }
                             },
                             {
-                                className: 'btn-page-edit',
+                                key: 'edit',
                                 text: L.Edit || '',
-                                attrs: { 'data-id': id, 'aria-label': L.Edit || '' }
+                                attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Edit || '' }
                             }
                         ];
 
                         if (status === 'Active') {
                             actions.push({
-                                className: 'btn-page-deactivate text-warning',
+                                key: 'deactivate',
+                                className: 'text-warning',
                                 text: L.Deactivate || '',
-                                attrs: { 'data-id': id, 'aria-label': L.Deactivate || '' }
+                                attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Deactivate || '' }
                             });
                         } else {
                             actions.push({
-                                className: 'btn-page-activate text-success',
+                                key: 'activate',
+                                className: 'text-success',
                                 text: L.Activate || '',
-                                attrs: { 'data-id': id, 'aria-label': L.Activate || '' }
+                                attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Activate || '' }
                             });
                         }
 
                         actions.push({
-                            className: 'btn-page-delete text-danger',
+                            key: 'delete',
+                            className: 'text-danger',
                             text: L.Delete || '',
-                            attrs: { 'data-id': id, 'aria-label': L.Delete || '' }
+                            attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Delete || '' }
                         });
 
-                        const menuItems = actions.map((action) => {
-                            const attrs = Object.entries(action.attrs || {})
-                                .filter((entry) => entry[1] !== undefined && entry[1] !== null && entry[1] !== false)
-                                .map((entry) => `${entry[0]}="${escapeHtml(entry[1])}"`)
-                                .join(' ');
-
-                            return `<a href="javascript:void(0);" class="dropdown-item ${action.className || ''}" ${attrs}>${escapeHtml(action.text || '')}</a>`;
-                        }).join('');
-
-                        return `<div class="d-flex justify-content-end">
-                            <a href="javascript:;" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-label="${escapeHtml(L.Actions || '')}">
-                                <i class="bx bx-dots-vertical-rounded icon-md"></i>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end m-0">${menuItems}</div>
-                        </div>`;
+                        return window.DitenDataTable?.renderActions?.(actions) || '';
                     }
                 }
             ],
@@ -557,25 +554,24 @@ const ModuleCatalogPages = (function () {
         } catch (error) {
             console.error('[ModuleCatalogPages] DataTable init failed.', error);
             hideSkeleton();
-            window.showToast?.(L.ErrorOccurred || 'Error occurred.', 'error');
+            window.showToast?.(L.ErrorOccurred || '', 'error');
             return;
         }
 
-        $(tableEl).on('click', '.btn-page-edit', function () {
-            openEdit(this.dataset.id);
-        });
-        $(tableEl).on('click', '.btn-page-view', function () {
-            if (this.dataset.id) window.location.href = `/Platform/ModuleCatalog/PageDetails/${encodeURIComponent(this.dataset.id)}`;
-        });
-        $(tableEl).on('click', '.btn-page-activate', function () {
-            setActive(this, true);
-        });
-        $(tableEl).on('click', '.btn-page-deactivate', function () {
-            setActive(this, false);
-        });
-        $(tableEl).on('click', '.btn-page-delete', function () {
-            const row = dt.row($(this).closest('tr')).data();
-            remove(row);
+        window.DitenDataTable?.bindActionDispatcher?.({
+            tableEl,
+            dt,
+            onRowAction: {
+                view: ({ id }) => {
+                    if (id) window.location.href = `/Platform/ModuleCatalog/PageDetails/${encodeURIComponent(id)}`;
+                },
+                edit: ({ id }) => openEdit(id),
+                activate: ({ trigger }) => setActive(trigger, true),
+                deactivate: ({ trigger }) => setActive(trigger, false),
+                delete: ({ row }) => {
+                    if (row) remove(row);
+                }
+            }
         });
     };
 

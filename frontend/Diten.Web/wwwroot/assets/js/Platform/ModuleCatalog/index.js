@@ -7,6 +7,7 @@ const ModuleCatalogList = (function () {
     let L = window.L10n || {};
     const dtTableEl = document.querySelector('.datatables-module-catalog');
     const endpoint = '/Platform/ModuleCatalog/api';
+    const lookupEndpoint = '/Platform/ModuleCatalog/api/lookups/module-catalog';
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'Platform', pageKey: 'ModuleCatalog' };
     const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -14,12 +15,6 @@ const ModuleCatalogList = (function () {
     const baseOrder = [[1, 'asc']];
     let saveFilterArmed = false;
     let appliedFilters = { domain: [], service: [], status: [], isTenantAssignable: '', isCoreModule: '' };
-
-    const validDomains = [
-        'Platform Shared Services', 'PPM Management', 'Master Data Management', 
-        'Quality Management', 'Research Management', 'Document Management', 
-        'Finance', 'Sales', 'Inventory', 'Production', 'HR'
-    ];
 
     const syncL10n = () => { L = window.L10n || {}; };
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -232,7 +227,7 @@ const ModuleCatalogList = (function () {
 
     const boolBadge = (value, isCore = false) => {
         if (isCore && value) {
-            return `<i class="bx bx-lock-alt text-warning fs-4" title="${escapeHtml(L.Core || 'Core')}"></i>`;
+            return `<i class="bx bx-lock-alt text-warning fs-4" title="${escapeHtml(L.Core || '')}"></i>`;
         }
         return value
             ? `<i class="bx bx-check text-success fs-4"></i>`
@@ -240,10 +235,10 @@ const ModuleCatalogList = (function () {
     };
 
     const domainBadge = (domain) => {
-        const isValid = validDomains.includes(domain);
-        return isValid 
-            ? escapeHtml(domain) 
-            : `<span class="text-muted italic">${escapeHtml(L.Unknown || 'Unknown')}</span>`;
+        const value = normalizeString(domain);
+        return value
+            ? escapeHtml(value)
+            : `<span class="text-muted fst-italic">${escapeHtml(L.Unknown || '')}</span>`;
     };
 
     const reloadWithSuccessToast = (messageKey, interpolationValue) => {
@@ -308,7 +303,7 @@ const ModuleCatalogList = (function () {
             const entityName = row?.displayName || row?.moduleCode || row?.ModuleCode || '';
             const isCore = row?.isCoreModule || row?.IsCoreModule;
             if (isCore) {
-                window.showToast?.(L.CoreModuleCannotBeDeleted || 'Core module cannot be deleted.', 'warning');
+                window.showToast?.(L.CoreModuleCannotBeDeleted || '', 'warning');
                 return;
             }
             window.showConfirm?.(L.AreYouSure, async () => {
@@ -432,14 +427,14 @@ const ModuleCatalogList = (function () {
                             {
                                 key: 'quickView',
                                 className: 'js-quick-view',
-                                text: L.Details || 'Details',
+                                text: L.Details || '',
                                 icon: 'bx bx-show',
                                 attrs: { 'data-id': id, 'data-json': rowJson }
                             },
                             {
                                 key: 'edit',
                                 className: 'js-edit-item',
-                                text: L.Edit || 'Edit',
+                                text: L.Edit || '',
                                 attrs: { 'data-id': id, 'data-json': rowJson }
                             }
                         ];
@@ -448,14 +443,14 @@ const ModuleCatalogList = (function () {
                             actions.push({
                                 key: 'activate',
                                 className: 'text-success',
-                                text: L.Activate || 'Activate',
+                                text: L.Activate || '',
                                 attrs: { 'data-id': id, 'data-json': rowJson }
                             });
                         } else if (status === 'Active') {
                             actions.push({
                                 key: 'deactivate',
                                 className: 'text-warning',
-                                text: L.Deactivate || 'Deactivate',
+                                text: L.Deactivate || '',
                                 attrs: { 'data-id': id, 'data-json': rowJson }
                             });
                         }
@@ -463,11 +458,11 @@ const ModuleCatalogList = (function () {
                         actions.push({
                             key: 'delete',
                             className: isCore ? 'text-muted' : 'text-danger',
-                            text: L.Delete || 'Delete',
+                            text: L.Delete || '',
                             attrs: { 
                                 'data-id': id, 
                                 'data-json': rowJson,
-                                'title': isCore ? (L.CoreModuleCannotBeDeleted || 'Core module cannot be deleted.') : '',
+                                'title': isCore ? (L.CoreModuleCannotBeDeleted || '') : '',
                                 'style': isCore ? 'pointer-events: none; opacity: 0.5;' : ''
                             }
                         });
@@ -552,28 +547,58 @@ const ModuleCatalogList = (function () {
         bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).toggle();
     };
 
-    const appendLookupOptions = (select, values) => {
+    const unwrapLookupRows = (payload) => {
+        if (Array.isArray(payload)) return payload;
+        if (Array.isArray(payload?.data)) return payload.data;
+        if (Array.isArray(payload?.Data)) return payload.Data;
+        return [];
+    };
+
+    const normalizeLookupOption = (item) => {
+        if (typeof item === 'string') {
+            return { value: normalizeString(item), text: normalizeString(item) };
+        }
+        const value = item?.value ?? item?.Value ?? item?.code ?? item?.Code ?? item?.id ?? item?.Id ?? '';
+        const text = item?.name ?? item?.Name ?? item?.text ?? item?.Text ?? value;
+        return {
+            value: normalizeString(String(value || '')),
+            text: normalizeString(String(text || value || ''))
+        };
+    };
+
+    const appendLookupOptions = (select, options) => {
         if (!select) return;
         select.innerHTML = '';
-        normalizeArray(values).forEach((value) => {
-            const option = document.createElement('option');
-            option.value = value;
-            option.textContent = value;
-            select.appendChild(option);
-        });
+        const normalized = Array.isArray(options)
+            ? options.map(normalizeLookupOption).filter((option) => option.value)
+            : [];
+        normalized
+            .sort((a, b) => a.text.localeCompare(b.text))
+            .forEach((item) => {
+                const option = document.createElement('option');
+                option.value = item.value;
+                option.textContent = item.text || item.value;
+                select.appendChild(option);
+            });
+    };
+
+    const fetchLookupOptions = async (lookupName) => {
+        const response = await fetch(`${lookupEndpoint}/${encodeURIComponent(lookupName)}`, { headers: getAuthHeaders() });
+        if (!response.ok) return [];
+        const payload = await response.json();
+        return unwrapLookupRows(payload);
     };
 
     const loadLookupOptions = async () => {
         const domainSelect = document.getElementById('filterDomain');
         const serviceSelect = document.getElementById('filterService');
         if (!domainSelect || !serviceSelect) return;
-        const response = await fetch(`${endpoint}?page=1&pageSize=200&sort=domain`, { headers: getAuthHeaders() });
-        if (!response.ok) return;
-        const payload = await response.json();
-        const result = payload.data || payload.Data || {};
-        const items = result.items || result.Items || [];
-        appendLookupOptions(domainSelect, items.map((item) => item.domain || item.Domain));
-        appendLookupOptions(serviceSelect, items.map((item) => item.service || item.Service));
+        const [domains, services] = await Promise.all([
+            fetchLookupOptions('domains'),
+            fetchLookupOptions('services')
+        ]);
+        appendLookupOptions(domainSelect, domains);
+        appendLookupOptions(serviceSelect, services);
     };
 
     const syncMultiSelectSummary = ($select) => {

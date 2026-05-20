@@ -1,6 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Queries;
-using Diten.Platform.Domain.Repositories;
+using Diten.Platform.Common.Catalog;
 using MediatR;
 
 namespace Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Handlers.QueryHandlers;
@@ -8,19 +8,17 @@ namespace Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Ha
 public sealed class GetTenantAvailableModulesForAssignmentQueryHandler
     : IRequestHandler<GetTenantAvailableModulesForAssignmentQuery, Response<IReadOnlyList<TenantAvailableModuleDto>>>
 {
-    private readonly IModuleCatalogRepository _moduleRepository;
+    private readonly IPlatformCatalogContract _catalogContract;
 
-    public GetTenantAvailableModulesForAssignmentQueryHandler(IModuleCatalogRepository moduleRepository)
+    public GetTenantAvailableModulesForAssignmentQueryHandler(IPlatformCatalogContract catalogContract)
     {
-        _moduleRepository = moduleRepository;
+        _catalogContract = catalogContract;
     }
 
     public async Task<Response<IReadOnlyList<TenantAvailableModuleDto>>> Handle(GetTenantAvailableModulesForAssignmentQuery request, CancellationToken ct)
     {
-        var modules = await _moduleRepository.GetAssignableAsync(ct);
+        var modules = await _catalogContract.GetAssignableModulesAsync(ct);
         var rows = modules
-            .OrderBy(x => x.SortOrder)
-            .ThenBy(x => x.ModuleCode)
             .Select(x => new TenantAvailableModuleDto(x.ModuleCode, x.ModuleName, x.DisplayName))
             .ToList();
         return Response<IReadOnlyList<TenantAvailableModuleDto>>.Success(rows);

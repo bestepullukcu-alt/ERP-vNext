@@ -61,9 +61,14 @@ const ModuleCatalogForm = (function () {
         $('.select2').each(function () {
             const $this = $(this);
             const isStatus = $this.attr('id') === 'Status';
+            if ($this.hasClass('select2-hidden-accessible')) $this.select2('destroy');
 
             const options = {
-                dropdownParent: $this.parent()
+                dropdownParent: $(document.body),
+                dropdownCssClass: 'dt-inline-filter-dropdown',
+                selectionCssClass: 'form-select',
+                width: 'element',
+                placeholder: $this.data('placeholder') || ''
             };
 
             if (isStatus) {
@@ -72,7 +77,7 @@ const ModuleCatalogForm = (function () {
                 options.minimumResultsForSearch = Infinity;
             }
 
-            $this.wrap('<div class="position-relative"></div>').select2(options);
+            $this.select2(options);
         });
 
         function formatStatus(state) {
@@ -110,6 +115,9 @@ const ModuleCatalogForm = (function () {
     };
 
     const normalizeLookupOption = (item) => {
+        if (typeof item === 'string') {
+            return { value: item, text: item };
+        }
         const value = item?.value ?? item?.Value ?? item?.code ?? item?.Code ?? item?.id ?? item?.Id ?? '';
         const text = item?.name ?? item?.Name ?? item?.text ?? item?.Text ?? value;
         return {

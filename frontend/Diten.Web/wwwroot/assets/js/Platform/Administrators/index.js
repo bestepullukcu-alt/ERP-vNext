@@ -641,6 +641,7 @@ const AdministratorsList = (function () {
         document.getElementById('oc-subtitle').innerText = data.email || '-';
         document.getElementById('oc-email').innerText = data.email || '-';
         document.getElementById('oc-username').innerText = data.userName || '-';
+        document.getElementById('oc-username').title = data.userName || '-';
         document.getElementById('oc-actor-type').innerText = actorTypeMap()[data.actorType] || data.actorType || '-';
         document.getElementById('oc-roles').innerHTML = renderRoles(data.roles);
         document.getElementById('oc-invitation-status').innerHTML = badge(data.invitationStatus, invitationMap());
@@ -650,8 +651,9 @@ const AdministratorsList = (function () {
         document.querySelectorAll('#offcanvasDetailsPreview .js-partner-scope').forEach((el) => el.classList.toggle('d-none', !isPartnerAdmin));
         document.getElementById('oc-audit').innerText = `${data.createdBy || '-'} / ${data.updatedBy || '-'}`;
         const statusEl = document.getElementById('oc-status');
-        statusEl.className = `badge ${(statusMap()[data.status] || ['bg-label-secondary'])[0]}`;
+        statusEl.className = 'mt-1';
         statusEl.innerText = (statusMap()[data.status] || [null, data.status || '-'])[1] || '-';
+        statusEl.innerHTML = badge(data.status, statusMap());
         document.getElementById('oc-btn-edit').dataset.editId = data.id || '';
     };
 

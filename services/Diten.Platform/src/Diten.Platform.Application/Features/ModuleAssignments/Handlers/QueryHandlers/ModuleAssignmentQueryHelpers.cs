@@ -1,7 +1,7 @@
 using Diten.Platform.Application.Features.ModuleCatalog;
 using Diten.Platform.Application.Features.ModuleCatalog.Queries;
+using Diten.Platform.Common.Catalog;
 using Diten.Platform.Domain.Entities;
-using Diten.Platform.Domain.Repositories;
 
 namespace Diten.Platform.Application.Features.ModuleAssignments.Handlers.QueryHandlers;
 
@@ -12,15 +12,19 @@ internal static class ModuleAssignmentQueryHelpers
     public const string AvailableStatus = "Available";
     public const string PlanEntitlementStatus = "Included";
 
-    public static async Task<ModuleCatalogItem?> GetModuleAsync(
-        IModuleCatalogRepository moduleRepository,
+    public static async Task<AssignableModuleInfo?> GetModuleAsync(
+        IPlatformCatalogContract catalogContract,
         string moduleCode,
         CancellationToken ct)
     {
         var canonicalCode = ModuleCatalogCodeNormalizer.Normalize(moduleCode);
-        return string.IsNullOrWhiteSpace(canonicalCode)
-            ? null
-            : await moduleRepository.GetByCodeAsync(canonicalCode, ct);
+        if (string.IsNullOrWhiteSpace(canonicalCode))
+        {
+            return null;
+        }
+
+        var modules = await catalogContract.GetAssignableModulesAsync(ct);
+        return modules.FirstOrDefault(x => string.Equals(x.ModuleCode, canonicalCode, StringComparison.OrdinalIgnoreCase));
     }
 
     public static ModuleAssignmentDependencyStateDto TenantDependencyUnavailable() =>

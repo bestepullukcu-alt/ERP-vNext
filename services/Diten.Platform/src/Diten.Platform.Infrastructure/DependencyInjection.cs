@@ -5,6 +5,7 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Contracts.Eventing;
+using Diten.Platform.Application.Services;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Eventing;
 using Diten.Platform.Infrastructure.BackgroundJobs;
@@ -16,8 +17,10 @@ using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Audit;
 using Diten.Platform.Infrastructure.Services.Http;
 using Diten.Platform.Infrastructure.Settings;
+using Diten.Platform.Common.Authorization;
 using Diten.Platform.Common.Tenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -99,8 +102,13 @@ public static class DependencyInjection
                 });
             });
         });
+        services.AddSingleton<IAuthorizationPolicyProvider, EntitlementAuthorizationPolicyProvider>();
+        services.AddScoped<IAuthorizationHandler, TenantModuleAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, TenantFeatureAuthorizationHandler>();
+        services.AddScoped<IEntitlementAuditSink, PlatformEntitlementAuditSink>();
         services.AddHttpContextAccessor();
         services.AddMemoryCache();
+        services.Configure<EntitlementCacheOptions>(configuration.GetSection(EntitlementCacheOptions.SectionName));
         services.Configure<TenantManagementOptions>(configuration.GetSection(TenantManagementOptions.SectionName));
         services.Configure<AuditRetentionSeedOptions>(configuration.GetSection(AuditRetentionSeedOptions.SectionName));
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
@@ -112,6 +120,8 @@ public static class DependencyInjection
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
+        services.AddSingleton<EntitlementCacheService>();
+        services.AddScoped<IEntitlementChecker, EntitlementChecker>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
@@ -171,18 +181,6 @@ public static class DependencyInjection
         services.AddScoped<AuditOutboxProcessor>();
         services.AddHostedService<AuditOutboxWorker>();
 
-        LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
-        var auditRetentionSeedOptions = configuration
-            .GetSection(AuditRetentionSeedOptions.SectionName)
-            .Get<AuditRetentionSeedOptions>()
-            ?? throw new InvalidOperationException($"Configuration error: '{AuditRetentionSeedOptions.SectionName}' is missing in appsettings.json.");
-        AuditRetentionPolicySeed.EnsureSeededAsync(database, auditRetentionSeedOptions).GetAwaiter().GetResult();
-        SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-
-        return services;
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
         services.AddScoped<IOutboxObservabilityReader>(sp => (IOutboxObservabilityReader)sp.GetRequiredService<IOutboxEventRepository>());
         services.AddScoped<IConsumedEventRepository, ConsumedEventRepository>();
@@ -228,6 +226,12 @@ public static class DependencyInjection
         }
 
         services.AddHostedService<OutboxPublisherWorker>();
+
+        var auditRetentionSeedOptions = configuration
+            .GetSection(AuditRetentionSeedOptions.SectionName)
+            .Get<AuditRetentionSeedOptions>()
+            ?? throw new InvalidOperationException($"Configuration error: '{AuditRetentionSeedOptions.SectionName}' is missing in appsettings.json.");
+        AuditRetentionPolicySeed.EnsureSeededAsync(database, auditRetentionSeedOptions).GetAwaiter().GetResult();
 
         RunMongoStartupInitialization(database, mongoSettings);
 

@@ -30,7 +30,7 @@ Faz 1 (Sprint 1-8) tenant-aware foundation teslimidir. Kapsam: tenant context ca
 
 ## Repo Scope
 - `execution/domains/platform-shared-services/module-packs/MOD-0043-tenant-architecture-foundation.md`
-- `docs/audits/tenant-architecture-foundation-audit.md`
+- `docs/audits/pss-mod-0043-tenant-architecture-foundation-audit.md`
 - `gateway/Diten.ApiGateway/**`
 - `services/Diten.AuthService/src/**`
 - `services/Diten.Platform/src/**`
@@ -61,7 +61,7 @@ Faz 1 (Sprint 1-8) tenant-aware foundation teslimidir. Kapsam: tenant context ca
 - [x] Event envelope + outbox skeleton tipi kod tabanında ortak sözleşme olarak mevcut.
 - [x] Auth cache contract (key/version/ttl/invalidation event modeli) kodlanmış.
 - [x] Foundation build: Auth, Platform, MDM, Gateway ve Audit projeleri Debug derleniyor.
-- [x] Faz 1 audit raporu `docs/audits/tenant-architecture-foundation-audit.md` altında güncel.
+- [x] Faz 1 audit raporu `docs/audits/pss-mod-0043-tenant-architecture-foundation-audit.md` altında güncel.
 
 ## Test Expectations
 - Tenant mismatch log ve resolution precedence doğrulama

@@ -16,6 +16,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - Module pack status `draft` ise kod yazma; kullanıcı incelemesi ve `approved` veya `ready-for-dev` status beklenir.
    - DataTable modülü ise module pack içinde `form_field_count` ve `golden_reference: slim|compact` kararını kontrol et.
    - Platform/Admin modülü ise `.antigravity/rules/platform-lookups-reference-data.md` dosyasını oku ve lookup dependency kararını module pack içinde doğrula.
+   - Platform/Admin UI modülü ise `.antigravity/rules/platform-global-search-registry.md` dosyasını oku; Ctrl+K registry ve `en/tr` search localization kararını module pack/scope ile doğrula.
    - Yetki hiyerarşisini uygula:
      - `Module Pack > Domain Config > AGENTS.md > .antigravity/`
    - Çakışma varsa kullanıcı onayı al; onaysız fazlara geçme.
@@ -104,6 +105,12 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      - Tenant/public shell modüllerinde `direct-gateway-profile` kullanılacaksa bu karar module pack veya orchestration report'ta açık yazılır ve `window.API.{service}` kullanılır.
    - **[ZORUNLU]** `colReorder: { columns: ':gt(1):not(:last-child)' }` DataTable config'e eklenmelidir (standart kolon yapısı için varsayılan; bkz. `frontend-js-standard.md §11`). `column-reorder.dt`/`columns-reordered.dt` event'leri dirty-state hesabına bağlanmalıdır.
    - Shell tipine göre `_LayoutPlatformAdmin` veya `_LayoutTenantShell` içine menü linkini ekle ve aktif state için `ViewContext.RouteData` dinamik kontrolü yap.
+   - **Platform Global Search Registry + Localization (Platform/Admin için ZORUNLU):**
+     - `shell: platform-admin` veya `/Platform/...` route'u üreten kullanıcıya açık UI modülleri `.antigravity/rules/platform-global-search-registry.md` standardına göre Ctrl+K registry'ye eklenir.
+     - Stable list/index route eklenir; kullanıcıya açık stable create route varsa eklenebilir.
+     - Dynamic `{id}`/GUID isteyen detail/edit route'ları, internal API endpoint'leri, audit/docs/module-pack linkleri ve backend-only altyapılar eklenmez.
+     - Search sonuçları iki dilde teslim edilir: `platform-search.en.json` ve `platform-search.tr.json`. `url`/`icon` çevrilmez; `name`/`group`/`keywords` çevrilir.
+     - Eğer uygulama kodu henüz iki dilli registry dosyalarını yüklemiyorsa bu durum blocker olarak raporlanır; yalnız legacy `platform-search.json` güncellenerek madde tamamlanmış sayılamaz.
    - **Controller route + link formatı (BİRBİRİNE BAĞLI):**
      - `frontend/Diten.Web/Controllers/{ModuleName}Controller.cs` üzerine sınıf düzeyinde **standart**: `[Route("[controller]")]` veya literal `[Route("{ModuleName}")]` (örn `[Route("GoldenReferenceCompact")]`). **Area prefix yazma** (örn `[Route("DevEnablement/[controller]")]` YASAK).
      - Bu standart altında menü/link formatı **otomatik olarak** `/{ModuleName}/Edit/{id}`, `/{ModuleName}/Create`, `/{ModuleName}/Details/{id}` olur.
@@ -141,6 +148,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      - [ ] Tablo boşsa "No records" mesajı düzgün gösteriliyor mu?
      - [ ] Slim ise create/edit offcanvas açılıp kapanıyor mu? Compact ise `Create`/`Edit`/`Details` sayfaları yükleniyor mu?
      - [ ] Bulk delete onayı + silme akışı çalışıyor mu?
+     - [ ] Platform/Admin modülü ise Ctrl+K `en` ve `tr` kültürlerinde açılıyor mu, yeni modül adı/grup/keyword araması sonuç döndürüyor mu ve sonuç doğru `/Platform/...` route'una gidiyor mu?
    - **Kanal A/B otomasyon başarısız ya da kullanılamıyorsa Kanal C zorunludur — orchestrator, browser kontrolünü uydurarak "yapıldı" diyemez.**
    - Herhangi bir madde başarısızsa → Phase 4'e geri dön ve düzelt.
 

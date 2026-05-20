@@ -1298,22 +1298,26 @@
             }
         ];
 
-        host.innerHTML = fields.map((f) => `
+        host.innerHTML = fields.map((f) => {
+            const primaryValue = f.primary || L.Unknown || '--';
+            const primaryTitle = f.isHtml ? '' : ` title="${escapeHtml(primaryValue)}"`;
+            return `
             <div class="col-12 col-md-6">
-                <div class="audit-detail-summary-card border rounded px-3 py-2 h-100">
-                    <div class="d-flex align-items-start gap-2">
-                        <i class="icon-base bx ${f.icon} text-muted audit-detail-summary-icon mt-1"></i>
+                <div class="card backbone-preview-section p-4 h-100 shadow-none">
+                    <div class="backbone-preview-field h-100">
+                        <i class="bx ${f.icon}"></i>
                         <div class="min-w-0 flex-grow-1">
-                            <p class="text-muted text-uppercase fw-medium mb-1 audit-log-kicker">${escapeHtml(f.label || '')}</p>
-                            <div class="mb-0 text-truncate fw-medium audit-detail-summary-primary">
-                                ${f.isHtml ? f.primary : escapeHtml(f.primary || L.Unknown || '')}
+                            <div class="backbone-preview-label">${escapeHtml(f.label || '')}</div>
+                            <div class="backbone-preview-value mt-1 text-truncate"${primaryTitle}>
+                                ${f.isHtml ? primaryValue : escapeHtml(primaryValue)}
                             </div>
-                            ${f.secondary ? `<div class="text-muted text-truncate mt-1 ${f.codeSecondary ? 'font-monospace audit-log-muted-code' : 'audit-detail-summary-secondary'}" title="${escapeHtml(f.secondary)}">${escapeHtml(f.secondary)}</div>` : ''}
+                            ${f.secondary ? `<div class="backbone-preview-description mt-1 text-truncate ${f.codeSecondary ? 'font-monospace small' : ''}" title="${escapeHtml(f.secondary)}">${escapeHtml(f.secondary)}</div>` : ''}
                         </div>
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     function renderForensics(item) {
@@ -1330,40 +1334,48 @@
             {
                 label: L.AuditLogDetailEventId || 'Event ID',
                 value: item.id || item.Id,
+                icon: 'bx-id-card',
                 copyable: true
             },
             {
                 label: L.AuditLogDetailCorrelationId,
                 value: item.correlationId || item.CorrelationId,
+                icon: 'bx-link',
                 copyable: true
             },
             {
                 label: L.AuditLogDetailOccurredAt || 'Occurred At',
                 value: formatDateTime(occurredAt),
+                icon: 'bx-time-five',
                 rawValue: occurredAt
             },
             {
                 label: L.AuditLogDetailWrittenAt || 'Written At',
                 value: formatDateTime(writtenAt),
+                icon: 'bx-save',
                 rawValue: writtenAt
             },
             {
                 label: L.AuditLogDetailWriteDelay || 'Write Delay',
+                icon: 'bx-timer',
                 value: delayMs !== null ? `${delayMs} ${L.AuditLogDetailDelayUnit || 'ms'}` : '--'
             },
             {
                 label: L.AuditLogDetailIpAddress || 'IP Address',
                 value: item.ipAddressMasked || item.IpAddressMasked,
+                icon: 'bx-network-chart',
                 code: true
             },
             {
                 label: L.AuditLogDetailUserAgent || 'User Agent',
                 value: item.userAgent || item.UserAgent,
+                icon: 'bx-window-alt',
                 truncate: true
             },
             {
                 label: L.AuditLogDetailSourceService || 'Source Service',
-                value: item.sourceService || item.SourceService
+                value: item.sourceService || item.SourceService,
+                icon: 'bx-server'
             }
         ];
 
@@ -1375,15 +1387,20 @@
                     ? `<span class="text-truncate d-block" title="${escapeHtml(value)}">${escapeHtml(value)}</span>`
                     : `<span>${escapeHtml(value)}</span>`;
             const copyBtn = f.copyable && f.value
-                ? `<button type="button" class="btn btn-icon btn-sm btn-label-secondary js-copy-value ms-2" data-copy-value="${escapeHtml(f.value)}" aria-label="${escapeHtml(L.AuditLogDetailCopy || 'Copy')}"><i class="icon-base bx bx-copy"></i></button>`
+                ? `<button type="button" class="btn btn-icon btn-sm btn-label-secondary js-copy-value ms-2" data-copy-value="${escapeHtml(f.value)}" aria-label="${escapeHtml(L.AuditLogDetailCopy || 'Copy')}"><span class="icon-base bx bx-copy" aria-hidden="true"></span></button>`
                 : '';
             return `
                 <div class="col-12 col-md-6">
-                    <div class="border rounded p-3 h-100">
-                        <small class="text-muted text-uppercase fw-medium d-block mb-1">${escapeHtml(f.label || '')}</small>
-                        <div class="d-flex align-items-center justify-content-between gap-2">
-                            <div class="min-w-0 flex-grow-1">${display}</div>
-                            ${copyBtn}
+                    <div class="card backbone-preview-section p-4 h-100 shadow-none">
+                        <div class="backbone-preview-field h-100">
+                            <i class="bx ${f.icon || 'bx-info-circle'}"></i>
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="backbone-preview-label">${escapeHtml(f.label || '')}</div>
+                                <div class="d-flex align-items-center justify-content-between gap-2 mt-1">
+                                    <div class="backbone-preview-value min-w-0 flex-grow-1">${display}</div>
+                                    ${copyBtn}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1409,9 +1426,9 @@
         }
 
         const traceFields = [
-            { label: L.AuditLogDetailRedactedAt || 'Redacted At', value: formatDateTime(redactedAt) },
-            { label: L.AuditLogDetailRedactedBy || 'Redacted By', value: redactedBy, code: true },
-            { label: L.AuditLogDetailRedactionReason || 'Reason', value: reason }
+            { label: L.AuditLogDetailRedactedAt || 'Redacted At', value: formatDateTime(redactedAt), icon: 'bx-time-five' },
+            { label: L.AuditLogDetailRedactedBy || 'Redacted By', value: redactedBy, icon: 'bx-user-check', code: true },
+            { label: L.AuditLogDetailRedactionReason || 'Reason', value: reason, icon: 'bx-message-square-detail' }
         ];
 
         fieldsHost.innerHTML = traceFields.map((f) => {
@@ -1420,8 +1437,15 @@
                 : (L.Unknown || '--');
             return `
                 <div class="col-12 col-md-${f.label === (L.AuditLogDetailRedactionReason || 'Reason') ? '12' : '6'}">
-                    <small class="text-muted text-uppercase fw-medium d-block mb-1">${escapeHtml(f.label || '')}</small>
-                    <div>${display}</div>
+                    <div class="card backbone-preview-section p-4 h-100 shadow-none">
+                        <div class="backbone-preview-field h-100">
+                            <i class="bx ${f.icon}"></i>
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="backbone-preview-label">${escapeHtml(f.label || '')}</div>
+                                <div class="backbone-preview-value mt-1">${display}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
         }).join('');
@@ -1605,11 +1629,11 @@
 
         if (changes.length === 0) {
             host.innerHTML = `
-                <div class="p-4 text-center bg-lighter rounded">
-                    <p class="text-muted mb-0 small">
-                        <i class="icon-base bx bx-info-circle me-1"></i>
-                        ${escapeHtml(L.AuditLogNoChanges || '')}
-                    </p>
+                <div class="p-3 bg-lighter rounded">
+                    <div class="backbone-preview-description d-flex align-items-center justify-content-center gap-2 mb-0">
+                        <span class="icon-base bx bx-info-circle flex-shrink-0" aria-hidden="true"></span>
+                        <span>${escapeHtml(L.AuditLogNoChanges || '')}</span>
+                    </div>
                 </div>
             `;
             return;
@@ -1635,7 +1659,7 @@
                             </span>
                         </div>
                         <div class="text-truncate">
-                            <h6 class="mb-1 text-truncate font-monospace audit-log-diff-key">${escapeHtml(key)}</h6>
+                            <h6 class="backbone-preview-value mb-1 text-truncate font-monospace audit-log-diff-key">${escapeHtml(key)}</h6>
                             <span class="badge bg-label-${badgeColor} text-uppercase audit-log-diff-badge">${escapeHtml(label)}</span>
                         </div>
                     </div>
@@ -1643,13 +1667,13 @@
                         <div class="d-flex flex-column align-items-end gap-2">
                             ${beforeHas ? `
                                 <div class="d-flex align-items-center gap-2">
-                                    <small class="text-muted text-uppercase fw-bold audit-log-kicker">${escapeHtml(L.AuditLogDetailOld || '')}</small>
+                                    <span class="backbone-preview-label">${escapeHtml(L.AuditLogDetailOld || '')}</span>
                                     <code class="text-muted small text-decoration-line-through bg-label-secondary px-2 rounded">${escapeHtml(JSON.stringify(beforeFlat[key]))}</code>
                                 </div>
                             ` : ''}
                             ${afterHas ? `
                                 <div class="d-flex align-items-center gap-2">
-                                    <small class="text-primary text-uppercase fw-bold audit-log-kicker">${escapeHtml(L.AuditLogDetailNew || '')}</small>
+                                    <span class="backbone-preview-label">${escapeHtml(L.AuditLogDetailNew || '')}</span>
                                     <code class="text-primary small fw-medium bg-label-primary px-2 rounded">${escapeHtml(JSON.stringify(afterFlat[key]))}</code>
                                 </div>
                             ` : ''}

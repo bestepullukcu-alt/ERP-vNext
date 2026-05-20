@@ -30,35 +30,47 @@
 </div>
 
 <div class="row g-4 mb-4">
-    <div class="col-6 col-lg-3">
+    <div class="col-12 col-sm-6 col-xl-3">
         <div class="card h-100">
-            <div class="card-body">
-                <small class="text-muted d-block">@Localizer["TotalInterfaces"]</small>
-                <h5 id="kpi-total" class="mb-0">0</h5>
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-git-branch"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["TotalInterfaces"]</small>
+                    <h5 id="kpi-total" class="mb-0">0</h5>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="col-12 col-sm-6 col-xl-3">
         <div class="card h-100">
-            <div class="card-body">
-                <small class="text-muted d-block">@Localizer["ActiveSnapshots"]</small>
-                <h5 id="kpi-active" class="mb-0 text-success">0</h5>
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-success"><i class="bx bx-check-shield"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["ActiveSnapshots"]</small>
+                    <h5 id="kpi-active" class="mb-0">0</h5>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="col-12 col-sm-6 col-xl-3">
         <div class="card h-100">
-            <div class="card-body">
-                <small class="text-muted d-block">@Localizer["DiscoveryBatches"]</small>
-                <h5 id="kpi-batches" class="mb-0 text-info">0</h5>
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-history"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["DiscoveryBatches"]</small>
+                    <h5 id="kpi-batches" class="mb-0">0</h5>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="col-12 col-sm-6 col-xl-3">
         <div class="card h-100">
-            <div class="card-body">
-                <small class="text-muted d-block">@Localizer["PendingReviews"]</small>
-                <h5 id="kpi-pending" class="mb-0 text-warning">0</h5>
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-time-five"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["PendingReviews"]</small>
+                    <h5 id="kpi-pending" class="mb-0">0</h5>
+                </div>
             </div>
         </div>
     </div>
@@ -113,11 +125,22 @@
         <div class="row g-4">
             <div class="col-12 col-xl-4">
                 <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">@Localizer["DiscoveryBatches"]</h6>
-                        <span class="badge bg-label-primary" id="ir-batch-count">0</span>
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div class="min-w-0">
+                                <h6 class="mb-0">@Localizer["DiscoveryBatches"]</h6>
+                                <small class="text-muted d-block text-truncate" title="@Localizer["DiscoveryBatchesDescription"]">@Localizer["DiscoveryBatchesDescription"]</small>
+                            </div>
+                            <span class="badge bg-label-primary flex-shrink-0" id="ir-batch-count">0</span>
+                        </div>
                     </div>
-                    <div id="ir-empty-batches" class="card-body text-center text-muted d-none">@Localizer["EmptyBatchState"]</div>
+                    <div id="ir-empty-batches" class="card-body p-4 text-center text-muted d-none">
+                        <div class="avatar mx-auto mb-3">
+                            <span class="avatar-initial rounded bg-label-secondary"><i class="bx bx-history"></i></span>
+                        </div>
+                        <h6 class="mb-2 text-body">@Localizer["EmptyBatchTitle"]</h6>
+                        <p class="mb-0 small lh-base mx-auto" style="max-width: 18rem;">@Localizer["EmptyBatchDescription"]</p>
+                    </div>
                     <div class="list-group list-group-flush" id="ir-batch-list"></div>
                 </div>
             </div>
@@ -126,11 +149,18 @@
                     <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                         <div>
                             <h6 class="mb-0">@Localizer["DiffReview"]</h6>
-                            <small class="text-muted" id="ir-selected-batch">@Localizer["SelectBatchState"]</small>
+                            <small class="text-muted d-block">@Localizer["DiffReviewDescription"]</small>
+                            <small class="text-primary fw-medium d-block mt-1" id="ir-selected-batch"></small>
                         </div>
                     </div>
                     <div class="card-body p-0">
-                        <div id="ir-empty-diffs" class="p-4 text-center text-muted">@Localizer["SelectBatchState"]</div>
+                        <div id="ir-empty-diffs" class="p-4 py-5 text-center text-muted">
+                            <div class="avatar mx-auto mb-3">
+                                <span class="avatar-initial rounded bg-label-secondary"><i class="bx bx-git-compare"></i></span>
+                            </div>
+                            <h6 class="mb-2 text-body">@Localizer["EmptyDiffTitle"]</h6>
+                            <p class="mb-0 small lh-base mx-auto" style="max-width: 36rem;">@Localizer["EmptyDiffDescription"]</p>
+                        </div>
                         <div class="d-none" id="ir-diff-review-list-wrap">
                             <div class="border-top" id="ir-diff-body"></div>
                         </div>

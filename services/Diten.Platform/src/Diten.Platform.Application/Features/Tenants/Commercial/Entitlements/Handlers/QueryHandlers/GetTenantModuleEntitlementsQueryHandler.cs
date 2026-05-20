@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Queries;
+using Diten.Platform.Common.Catalog;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -11,18 +12,18 @@ public sealed class GetTenantModuleEntitlementsQueryHandler
     : IRequestHandler<GetTenantModuleEntitlementsQuery, Response<IReadOnlyList<TenantModuleEntitlementRowDto>>>
 {
     private readonly ITenantModuleEntitlementRepository _entitlementRepository;
-    private readonly IModuleCatalogRepository _moduleRepository;
+    private readonly IPlatformCatalogContract _catalogContract;
     private readonly ITenantSubscriptionRepository _subscriptionRepository;
     private readonly ISubscriptionPlanRepository _planRepository;
 
     public GetTenantModuleEntitlementsQueryHandler(
         ITenantModuleEntitlementRepository entitlementRepository,
-        IModuleCatalogRepository moduleRepository,
+        IPlatformCatalogContract catalogContract,
         ITenantSubscriptionRepository subscriptionRepository,
         ISubscriptionPlanRepository planRepository)
     {
         _entitlementRepository = entitlementRepository;
-        _moduleRepository = moduleRepository;
+        _catalogContract = catalogContract;
         _subscriptionRepository = subscriptionRepository;
         _planRepository = planRepository;
     }
@@ -30,7 +31,7 @@ public sealed class GetTenantModuleEntitlementsQueryHandler
     public async Task<Response<IReadOnlyList<TenantModuleEntitlementRowDto>>> Handle(GetTenantModuleEntitlementsQuery request, CancellationToken ct)
     {
         var physicalRows = await _entitlementRepository.GetByTenantIdAsync(request.TenantId, ct);
-        var modules = await _moduleRepository.GetAssignableAsync(ct);
+        var modules = await _catalogContract.GetAssignableModulesAsync(ct);
         var moduleMap = modules.ToDictionary(x => x.ModuleCode, StringComparer.OrdinalIgnoreCase);
         var planModuleCodes = await GetPlanModuleCodesAsync(request.TenantId, ct);
         var allCodes = planModuleCodes
