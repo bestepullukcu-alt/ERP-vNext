@@ -256,12 +256,6 @@ public static class DependencyInjection
 
         services.AddHostedService<OutboxPublisherWorker>();
 
-        var auditRetentionSeedOptions = configuration
-            .GetSection(AuditRetentionSeedOptions.SectionName)
-            .Get<AuditRetentionSeedOptions>()
-            ?? throw new InvalidOperationException($"Configuration error: '{AuditRetentionSeedOptions.SectionName}' is missing in appsettings.json.");
-        AuditRetentionPolicySeed.EnsureSeededAsync(database, auditRetentionSeedOptions).GetAwaiter().GetResult();
-
         RunMongoStartupInitialization(database, mongoSettings);
 
         return services;
