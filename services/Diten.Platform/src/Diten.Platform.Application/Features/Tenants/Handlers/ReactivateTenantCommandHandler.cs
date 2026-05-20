@@ -1,7 +1,9 @@
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tenants;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tenants.Commands;
+using Diten.Platform.Contracts.Events;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -12,11 +14,16 @@ public sealed class ReactivateTenantCommandHandler : IRequestHandler<ReactivateT
 {
     private readonly ITenantRegistryRepository _repository;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IEventBus _eventBus;
 
-    public ReactivateTenantCommandHandler(ITenantRegistryRepository repository, ICurrentUserContext currentUser)
+    public ReactivateTenantCommandHandler(
+        ITenantRegistryRepository repository,
+        ICurrentUserContext currentUser,
+        IEventBus eventBus)
     {
         _repository = repository;
         _currentUser = currentUser;
+        _eventBus = eventBus;
     }
 
     public async Task<Response<TenantLifecycleResultDto>> Handle(ReactivateTenantCommand request, CancellationToken cancellationToken)
@@ -65,6 +72,18 @@ public sealed class ReactivateTenantCommandHandler : IRequestHandler<ReactivateT
         });
 
         await _repository.UpdateAsync(tenant, cancellationToken);
+        await _eventBus.PublishAsync(
+            new TenantReactivatedV1(
+                tenant.Id,
+                now,
+                _currentUser.UserId == Guid.Empty ? null : _currentUser.UserId),
+            new EventPublishOptions
+            {
+                TenantId = tenant.Id,
+                Producer = "Diten.Platform",
+                OccurredAtUtc = now
+            },
+            cancellationToken);
 
         return Response<TenantLifecycleResultDto>.Success(new TenantLifecycleResultDto(tenant.Id, tenant.Status.ToString(), now, "Tenant reactivated."));
     }

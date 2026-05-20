@@ -31,6 +31,36 @@ public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutbox
             .ToListAsync(cancellationToken);
     }
 
+    public Task<OutboxEvent?> ClaimNextAsync(
+        DateTimeOffset nowUtc,
+        DateTimeOffset stalePublishingCutoffUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var retryReadyFilter = Builders<OutboxEvent>.Filter.And(
+            Builders<OutboxEvent>.Filter.Eq(x => x.Status, OutboxEventStatus.Failed),
+            Builders<OutboxEvent>.Filter.Lte(x => x.NextAttemptAtUtc, nowUtc));
+        var stalePublishingFilter = Builders<OutboxEvent>.Filter.And(
+            Builders<OutboxEvent>.Filter.Eq(x => x.Status, OutboxEventStatus.Publishing),
+            Builders<OutboxEvent>.Filter.Lte(x => x.UpdatedAt, stalePublishingCutoffUtc.UtcDateTime));
+        var filter = Builders<OutboxEvent>.Filter.Or(
+            Builders<OutboxEvent>.Filter.Eq(x => x.Status, OutboxEventStatus.Pending),
+            retryReadyFilter,
+            stalePublishingFilter);
+
+        var update = Builders<OutboxEvent>.Update
+            .Set(x => x.Status, OutboxEventStatus.Publishing)
+            .Set(x => x.UpdatedAt, nowUtc.UtcDateTime);
+
+        var options = new FindOneAndUpdateOptions<OutboxEvent>
+        {
+            IsUpsert = false,
+            ReturnDocument = ReturnDocument.After,
+            Sort = Builders<OutboxEvent>.Sort.Ascending(x => x.CreatedAt)
+        };
+
+        return Collection.FindOneAndUpdateAsync(filter, update, options, cancellationToken);
+    }
+
     public Task<long> GetPendingCountAsync(CancellationToken cancellationToken = default)
     {
         var nowUtc = DateTimeOffset.UtcNow;

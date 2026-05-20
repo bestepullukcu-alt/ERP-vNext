@@ -1,7 +1,9 @@
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tenants;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tenants.Commands;
+using Diten.Platform.Contracts.Events;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -12,11 +14,16 @@ public sealed class SuspendTenantCommandHandler : IRequestHandler<SuspendTenantC
 {
     private readonly ITenantRegistryRepository _repository;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IEventBus _eventBus;
 
-    public SuspendTenantCommandHandler(ITenantRegistryRepository repository, ICurrentUserContext currentUser)
+    public SuspendTenantCommandHandler(
+        ITenantRegistryRepository repository,
+        ICurrentUserContext currentUser,
+        IEventBus eventBus)
     {
         _repository = repository;
         _currentUser = currentUser;
+        _eventBus = eventBus;
     }
 
     public async Task<Response<TenantLifecycleResultDto>> Handle(SuspendTenantCommand request, CancellationToken cancellationToken)
@@ -39,6 +46,9 @@ public sealed class SuspendTenantCommandHandler : IRequestHandler<SuspendTenantC
 
         var now = DateTimeOffset.UtcNow;
         var actor = _currentUser.ActorName;
+        var reason = string.IsNullOrWhiteSpace(request.Reason)
+            ? "Tenant suspended."
+            : request.Reason.Trim();
 
         tenant.Status = TenantStatus.Suspended;
         tenant.SuspendedAt = now;
@@ -47,12 +57,25 @@ public sealed class SuspendTenantCommandHandler : IRequestHandler<SuspendTenantC
         tenant.ActivityTimeline.Add(new TenantActivityEvent
         {
             EventType = "tenant.suspended",
-            Message = string.IsNullOrWhiteSpace(request.Reason) ? "Tenant suspended." : $"Tenant suspended. Reason: {request.Reason.Trim()}",
+            Message = string.IsNullOrWhiteSpace(request.Reason) ? "Tenant suspended." : $"Tenant suspended. Reason: {reason}",
             At = now,
             Actor = actor
         });
 
         await _repository.UpdateAsync(tenant, cancellationToken);
+        await _eventBus.PublishAsync(
+            new TenantSuspendedV1(
+                tenant.Id,
+                now,
+                reason,
+                _currentUser.UserId == Guid.Empty ? null : _currentUser.UserId),
+            new EventPublishOptions
+            {
+                TenantId = tenant.Id,
+                Producer = "Diten.Platform",
+                OccurredAtUtc = now
+            },
+            cancellationToken);
 
         return Response<TenantLifecycleResultDto>.Success(new TenantLifecycleResultDto(tenant.Id, tenant.Status.ToString(), now, "Tenant suspended."));
     }

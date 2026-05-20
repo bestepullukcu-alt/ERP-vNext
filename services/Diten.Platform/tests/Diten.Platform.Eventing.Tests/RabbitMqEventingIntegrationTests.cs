@@ -159,6 +159,123 @@ public sealed class RabbitMqEventingIntegrationTests
         }
     }
 
+    [SkippableFact]
+    public async Task ExternalRabbitMq_ConsumerFailure_RetriesThenMovesMessageToErrorQueue()
+    {
+        Skip.IfNot(
+            IsEnabled(),
+            "External/local RabbitMQ integration test is disabled. Set Eventing__RabbitMq__IntegrationTestsEnabled=true and configure Eventing__RabbitMq__Host/Port/VirtualHost/Username/Password.");
+
+        var rabbitMq = RabbitMqTestSettings.FromEnvironment();
+        var mongo = MongoTestSettings.FromEnvironment();
+
+        var mongoClient = new MongoClient(mongo.ConnectionString);
+        var databaseName = mongo.DatabaseName + "_" + Guid.NewGuid().ToString("N");
+        var database = mongoClient.GetDatabase(databaseName);
+
+        try
+        {
+            await MongoDbIndexConfigurations.EnsureIndexesAsync(database);
+
+            var tenantContext = new TenantContext();
+            tenantContext.SetPlatformContext(Guid.NewGuid());
+
+            var dbContext = new PlatformDbContext(mongoClient, database);
+            var outboxRepository = new OutboxEventRepository(dbContext, tenantContext);
+            var queueName = "tenant-activated-v1-failure-test-" + Guid.NewGuid().ToString("N");
+            var attempts = new TestConsumerAttempts();
+            var errorQueueSignal = new TaskCompletionSource<EventTransportMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            const int retryCount = 5;
+
+            var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
+            {
+                cfg.Host(rabbitMq.Host, rabbitMq.Port, rabbitMq.VirtualHost, h =>
+                {
+                    h.Username(rabbitMq.Username);
+                    h.Password(rabbitMq.Password);
+                    if (rabbitMq.UseTls)
+                    {
+                        h.UseSsl(s => s.Protocol = System.Security.Authentication.SslProtocols.Tls12);
+                    }
+                });
+
+                cfg.ReceiveEndpoint(queueName, endpoint =>
+                {
+                    endpoint.UseMessageRetry(r => r.Immediate(retryCount));
+                    endpoint.Consumer(() => new AlwaysFailingTenantActivatedV1Consumer(attempts));
+                });
+
+                cfg.ReceiveEndpoint(queueName + "_error", endpoint =>
+                {
+                    endpoint.ConfigureConsumeTopology = false;
+                    endpoint.Consumer(() => new ErrorQueueEventTransportMessageConsumer(errorQueueSignal));
+                });
+            });
+
+            try
+            {
+                await bus.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    "External/local RabbitMQ integration test is enabled but the broker connection failed. Check Eventing__RabbitMq__Host, Eventing__RabbitMq__Port, Eventing__RabbitMq__VirtualHost, Eventing__RabbitMq__Username, Eventing__RabbitMq__Password, and Eventing__RabbitMq__UseTls.",
+                    ex);
+            }
+
+            try
+            {
+                var eventBus = new EventBus(
+                    outboxRepository,
+                    new EventPayloadContractValidator(),
+                    Options.Create(new EventBusOptions { Producer = "Diten.Platform.Tests" }),
+                    NullLogger<EventBus>.Instance);
+                var processor = new OutboxPublisherProcessor(
+                    outboxRepository,
+                    new MassTransitRabbitMqEventPublisher(bus),
+                    Options.Create(new RabbitMqEventingOptions
+                    {
+                        RetryCount = 5,
+                        InitialRetryDelaySeconds = 10,
+                        MaxRetryDelaySeconds = 300,
+                        BatchSize = 25,
+                        PublishingStaleAfterSeconds = 300
+                    }),
+                    NullLogger<OutboxPublisherProcessor>.Instance);
+
+                var tenantId = Guid.NewGuid();
+                var envelope = await eventBus.PublishAsync(
+                    new TenantActivatedV1(tenantId, DateTimeOffset.UtcNow, Guid.NewGuid()),
+                    new EventPublishOptions
+                    {
+                        TenantId = tenantId,
+                        CorrelationId = Guid.NewGuid(),
+                        Producer = "Diten.Platform.Tests"
+                    });
+
+                var published = await processor.PublishPendingAsync();
+                Assert.Equal(1, published);
+
+                var errorMessage = await errorQueueSignal.Task.WaitAsync(TimeSpan.FromSeconds(30));
+                Assert.Equal(envelope.EventId, errorMessage.EventId);
+                Assert.Equal(TenantActivatedV1.Name, errorMessage.EventName);
+                Assert.Equal(retryCount + 1, attempts.Count);
+
+                var storedAfterPublish = await outboxRepository.GetByEventIdAsync(envelope.EventId);
+                Assert.NotNull(storedAfterPublish);
+                Assert.Equal(OutboxEventStatus.Published, storedAfterPublish!.Status);
+            }
+            finally
+            {
+                await bus.StopAsync();
+            }
+        }
+        finally
+        {
+            await mongoClient.DropDatabaseAsync(databaseName);
+        }
+    }
+
     private static bool IsEnabled()
     {
         return string.Equals(
@@ -287,6 +404,54 @@ public sealed class RabbitMqEventingIntegrationTests
         public void Increment()
         {
             Count++;
+        }
+    }
+
+    private sealed class AlwaysFailingTenantActivatedV1Consumer : IConsumer<EventTransportMessage>
+    {
+        private readonly TestConsumerAttempts _attempts;
+
+        public AlwaysFailingTenantActivatedV1Consumer(TestConsumerAttempts attempts)
+        {
+            _attempts = attempts;
+        }
+
+        public Task Consume(ConsumeContext<EventTransportMessage> context)
+        {
+            if (string.Equals(context.Message.EventName, TenantActivatedV1.Name, StringComparison.Ordinal))
+            {
+                _attempts.Increment();
+            }
+
+            throw new InvalidOperationException("Intentional RabbitMQ retry/error queue validation failure.");
+        }
+    }
+
+    private sealed class ErrorQueueEventTransportMessageConsumer : IConsumer<EventTransportMessage>
+    {
+        private readonly TaskCompletionSource<EventTransportMessage> _signal;
+
+        public ErrorQueueEventTransportMessageConsumer(TaskCompletionSource<EventTransportMessage> signal)
+        {
+            _signal = signal;
+        }
+
+        public Task Consume(ConsumeContext<EventTransportMessage> context)
+        {
+            _signal.TrySetResult(context.Message);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class TestConsumerAttempts
+    {
+        private int _count;
+
+        public int Count => Volatile.Read(ref _count);
+
+        public void Increment()
+        {
+            Interlocked.Increment(ref _count);
         }
     }
 }

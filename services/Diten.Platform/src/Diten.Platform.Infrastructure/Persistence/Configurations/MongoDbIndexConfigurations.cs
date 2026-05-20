@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Domain.Entities;
+using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Entities.Audit;
 using Diten.Platform.Domain.Entities.InterfaceRegistry;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
@@ -41,6 +42,9 @@ public static class MongoDbIndexConfigurations
         var outboxEventCollection = database.GetCollection<OutboxEvent>("outbox_events");
         var consumedEventCollection = database.GetCollection<ConsumedEvent>("consumed_events");
         var jobExecutionLogCollection = database.GetCollection<JobExecutionLog>("job_execution_logs");
+        var tenantMessagingSettingsCollection = database.GetCollection<TenantMessagingSettings>("notification_tenant_messaging_settings");
+        var notificationTemplateCollection = database.GetCollection<NotificationTemplate>("notification_templates");
+        var notificationDispatchCollection = database.GetCollection<NotificationDispatch>("notification_dispatches");
         var moduleCatalogDocuments = database.GetCollection<BsonDocument>("platform_module_catalog");
         await outboxEventCollection.Indexes.CreateManyAsync(new[]
         {
@@ -88,6 +92,114 @@ public static class MongoDbIndexConfigurations
             new CreateIndexModel<JobExecutionLog>(
                 Builders<JobExecutionLog>.IndexKeys.Ascending(x => x.RecurringJobId),
                 new CreateIndexOptions { Name = "ix_job_execution_logs_recurring_job_id" })
+        });
+
+        await tenantMessagingSettingsCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TenantMessagingSettings>(
+                Builders<TenantMessagingSettings>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ProviderCode)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_notification_settings_tenant_provider_deleted" }),
+            new CreateIndexModel<TenantMessagingSettings>(
+                Builders<TenantMessagingSettings>.IndexKeys
+                    .Ascending(x => x.IsPlatformDefault)
+                    .Ascending(x => x.IsEnabled)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_notification_settings_platform_default_active" }),
+            new CreateIndexModel<TenantMessagingSettings>(
+                Builders<TenantMessagingSettings>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.IsPlatformDefault),
+                new CreateIndexOptions<TenantMessagingSettings>
+                {
+                    Unique = true,
+                    Name = "ux_notification_settings_scope",
+                    PartialFilterExpression = Builders<TenantMessagingSettings>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await notificationTemplateCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<NotificationTemplate>(
+                Builders<NotificationTemplate>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.IsPlatformDefault)
+                    .Ascending(x => x.Locale)
+                    .Ascending(x => x.Channel)
+                    .Ascending(x => x.TemplateKey)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_notification_templates_scope_locale_channel_key_deleted" }),
+            new CreateIndexModel<NotificationTemplate>(
+                Builders<NotificationTemplate>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.IsPlatformDefault)
+                    .Ascending(x => x.Locale)
+                    .Ascending(x => x.Channel)
+                    .Ascending(x => x.TemplateKey),
+                new CreateIndexOptions<NotificationTemplate>
+                {
+                    Unique = true,
+                    Name = "ux_notification_templates_active_scope_locale_channel_key",
+                    PartialFilterExpression = Builders<NotificationTemplate>.Filter.And(
+                        Builders<NotificationTemplate>.Filter.Eq(x => x.IsDeleted, false),
+                        Builders<NotificationTemplate>.Filter.Eq(x => x.Status, Domain.Enums.NotificationTemplateStatus.Active))
+                }),
+            new CreateIndexModel<NotificationTemplate>(
+                Builders<NotificationTemplate>.IndexKeys
+                    .Ascending(x => x.IsPlatformDefault)
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.Locale)
+                    .Ascending(x => x.Channel)
+                    .Ascending(x => x.TemplateKey),
+                new CreateIndexOptions { Name = "ix_notification_templates_default_resolution" })
+        });
+
+        await notificationDispatchCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<NotificationDispatch>(
+                Builders<NotificationDispatch>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_notification_dispatches_tenant_deleted" }),
+            new CreateIndexModel<NotificationDispatch>(
+                Builders<NotificationDispatch>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status)
+                    .Descending(x => x.QueuedAt),
+                new CreateIndexOptions { Name = "ix_notification_dispatches_tenant_status_queued" }),
+            new CreateIndexModel<NotificationDispatch>(
+                Builders<NotificationDispatch>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.TemplateKey),
+                new CreateIndexOptions { Name = "ix_notification_dispatches_tenant_template" }),
+            new CreateIndexModel<NotificationDispatch>(
+                Builders<NotificationDispatch>.IndexKeys.Ascending(x => x.ProviderMessageId),
+                new CreateIndexOptions<NotificationDispatch>
+                {
+                    Name = "ix_notification_dispatches_provider_message_id",
+                    PartialFilterExpression = Builders<NotificationDispatch>.Filter.Exists(x => x.ProviderMessageId, true)
+                }),
+            new CreateIndexModel<NotificationDispatch>(
+                Builders<NotificationDispatch>.IndexKeys.Ascending(x => x.CorrelationId),
+                new CreateIndexOptions<NotificationDispatch>
+                {
+                    Name = "ix_notification_dispatches_correlation_id",
+                    PartialFilterExpression = Builders<NotificationDispatch>.Filter.Exists(x => x.CorrelationId, true)
+                }),
+            new CreateIndexModel<NotificationDispatch>(
+                Builders<NotificationDispatch>.IndexKeys
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.NextRetryAt),
+                new CreateIndexOptions<NotificationDispatch>
+                {
+                    Name = "ix_notification_dispatches_retry_sweep",
+                    PartialFilterExpression = Builders<NotificationDispatch>.Filter.And(
+                        Builders<NotificationDispatch>.Filter.Eq(x => x.IsDeleted, false),
+                        Builders<NotificationDispatch>.Filter.Eq(x => x.Status, Domain.Enums.NotificationDispatchStatus.Failed),
+                        Builders<NotificationDispatch>.Filter.Exists(x => x.NextRetryAt, true))
+                })
         });
 
         await collection.Indexes.CreateManyAsync(new[]

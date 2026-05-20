@@ -1,5 +1,8 @@
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tenants.Commands;
+using Diten.Platform.Contracts.Events;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -9,10 +12,17 @@ namespace Diten.Platform.Application.Features.Tenants.Handlers;
 public sealed class DeleteTenantCommandHandler : IRequestHandler<DeleteTenantCommand, Response<NoContent>>
 {
     private readonly ITenantRegistryRepository _repository;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly IEventBus _eventBus;
 
-    public DeleteTenantCommandHandler(ITenantRegistryRepository repository)
+    public DeleteTenantCommandHandler(
+        ITenantRegistryRepository repository,
+        ICurrentUserContext currentUser,
+        IEventBus eventBus)
     {
         _repository = repository;
+        _currentUser = currentUser;
+        _eventBus = eventBus;
     }
 
     public async Task<Response<NoContent>> Handle(DeleteTenantCommand request, CancellationToken ct)
@@ -29,6 +39,22 @@ public sealed class DeleteTenantCommandHandler : IRequestHandler<DeleteTenantCom
         }
 
         await _repository.DeleteAsync(tenant.Id, ct);
+        var now = DateTimeOffset.UtcNow;
+        await _eventBus.PublishAsync(
+            new TenantCancelledV1(
+                tenant.Id,
+                now,
+                now,
+                null,
+                _currentUser.UserId == Guid.Empty ? null : _currentUser.UserId),
+            new EventPublishOptions
+            {
+                TenantId = tenant.Id,
+                Producer = "Diten.Platform",
+                OccurredAtUtc = now
+            },
+            ct);
+
         return Response<NoContent>.Success(204);
     }
 }

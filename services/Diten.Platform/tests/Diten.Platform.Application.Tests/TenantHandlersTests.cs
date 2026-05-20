@@ -1,7 +1,9 @@
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tenants;
 using Diten.Platform.Application.Features.Tenants.Commands;
 using Diten.Platform.Application.Features.Tenants.Handlers;
+using Diten.Platform.Contracts.Events;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using Microsoft.Extensions.Logging;
@@ -19,6 +21,7 @@ public sealed class TenantHandlersTests
     private readonly Mock<ITenantLoginSettingsRepository> _loginSettingsRepository;
     private readonly Mock<ITenantDefaultsProvider> _defaults;
     private readonly Mock<ICurrentUserContext> _currentUser;
+    private readonly Mock<IEventBus> _eventBus;
     private readonly Mock<ILogger<RegisterTenantCommandHandler>> _logger;
     private readonly RegisterTenantCommandHandler _handler;
 
@@ -86,6 +89,9 @@ public sealed class TenantHandlersTests
         _currentUser.SetupGet(x => x.IsAuthenticated).Returns(false);
         _currentUser.SetupGet(x => x.UserId).Returns(Guid.Empty);
 
+        _eventBus = new Mock<IEventBus>();
+        SetupPublish<TenantCreatedV1>(_eventBus);
+
         _logger = new Mock<ILogger<RegisterTenantCommandHandler>>();
 
         _handler = new RegisterTenantCommandHandler(
@@ -96,6 +102,7 @@ public sealed class TenantHandlersTests
             _loginSettingsRepository.Object,
             _defaults.Object,
             _currentUser.Object,
+            _eventBus.Object,
             _logger.Object);
     }
 
@@ -114,6 +121,28 @@ public sealed class TenantHandlersTests
             t.ProvisioningSteps.Count >= 3 &&
             t.ActivityTimeline.Any(a => a.EventType == "tenant.created") &&
             t.ActivityTimeline.Any(a => a.EventType == "tenant.provisioning.started")), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RegisterTenant_ShouldEmitTenantCreatedEvent()
+    {
+        var command = CreateCommand("Acme Events", "diten.tech", Slug: "acme-events");
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        _eventBus.Verify(x => x.PublishAsync(
+            It.Is<TenantCreatedV1>(e =>
+                e.TenantId == result.Data &&
+                e.PlanId == command.PlanId &&
+                e.TenantDisplayName == "Acme Events" &&
+                e.Locale == "en" &&
+                e.InitialAdminUserId.HasValue),
+            It.Is<EventPublishOptions>(o =>
+                o.TenantId == result.Data &&
+                o.Producer == "Diten.Platform" &&
+                o.OccurredAtUtc.HasValue),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -297,6 +326,28 @@ public sealed class TenantHandlersTests
             PlanId: Guid.NewGuid(),
             InitialAdmin: new InitialAdminInfo("Jane", "Doe", $"admin@{name.Replace(" ", string.Empty).ToLowerInvariant()}.com"));
 
+    private static void SetupPublish<TEvent>(Mock<IEventBus> eventBus)
+        where TEvent : IIntegrationEvent
+    {
+        eventBus
+            .Setup(x => x.PublishAsync(
+                It.IsAny<TEvent>(),
+                It.IsAny<EventPublishOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((TEvent @event, EventPublishOptions options, CancellationToken _) =>
+                new EventEnvelope<TEvent>(
+                    new EventMetadata(
+                        options.EventId ?? Guid.NewGuid(),
+                        @event.EventName,
+                        @event.EventVersion,
+                        options.CorrelationId ?? Guid.NewGuid(),
+                        options.CausationId,
+                        options.TenantId,
+                        string.IsNullOrWhiteSpace(options.Producer) ? "Diten.Platform.Tests" : options.Producer,
+                        options.OccurredAtUtc ?? DateTimeOffset.UtcNow),
+                    @event));
+    }
+
     [Fact]
     public async Task SuspendTenant_ShouldRejectDeactivatedTenant()
     {
@@ -315,12 +366,63 @@ public sealed class TenantHandlersTests
         var user = new Mock<ICurrentUserContext>();
         user.SetupGet(x => x.IsAuthenticated).Returns(false);
 
-        var handler = new SuspendTenantCommandHandler(repository.Object, user.Object);
+        var eventBus = new Mock<IEventBus>();
+        SetupPublish<TenantSuspendedV1>(eventBus);
+
+        var handler = new SuspendTenantCommandHandler(repository.Object, user.Object, eventBus.Object);
 
         var result = await handler.Handle(new SuspendTenantCommand(Guid.NewGuid(), null), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
         Assert.Equal(400, result.StatusCode);
+        eventBus.Verify(x => x.PublishAsync(
+            It.IsAny<TenantSuspendedV1>(),
+            It.IsAny<EventPublishOptions>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SuspendTenant_ShouldEmitTenantSuspendedEvent()
+    {
+        var tenantId = Guid.NewGuid();
+        var actorId = Guid.NewGuid();
+        var tenant = new Tenant
+        {
+            Id = tenantId,
+            Code = "TEN123",
+            Slug = "acme",
+            Name = "Acme",
+            DisplayName = "Acme",
+            Domain = "acme.ditenteknoloji.com",
+            Status = TenantStatus.Active
+        };
+
+        var repository = new Mock<ITenantRegistryRepository>();
+        repository.Setup(x => x.GetByIdAsync(tenantId, It.IsAny<CancellationToken>())).ReturnsAsync(tenant);
+        repository.Setup(x => x.UpdateAsync(It.IsAny<Tenant>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var user = new Mock<ICurrentUserContext>();
+        user.SetupGet(x => x.ActorName).Returns("platform-admin");
+        user.SetupGet(x => x.UserId).Returns(actorId);
+
+        var eventBus = new Mock<IEventBus>();
+        SetupPublish<TenantSuspendedV1>(eventBus);
+
+        var handler = new SuspendTenantCommandHandler(repository.Object, user.Object, eventBus.Object);
+
+        var result = await handler.Handle(new SuspendTenantCommand(tenantId, "billing issue"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        eventBus.Verify(x => x.PublishAsync(
+            It.Is<TenantSuspendedV1>(e =>
+                e.TenantId == tenantId &&
+                e.Reason == "billing issue" &&
+                e.SuspendedBy == actorId),
+            It.Is<EventPublishOptions>(o =>
+                o.TenantId == tenantId &&
+                o.Producer == "Diten.Platform" &&
+                o.OccurredAtUtc.HasValue),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -328,6 +430,7 @@ public sealed class TenantHandlersTests
     {
         var tenant = new Tenant
         {
+            Id = Guid.NewGuid(),
             Code = "TEN123",
             Slug = "acme",
             Name = "Acme",
@@ -353,7 +456,10 @@ public sealed class TenantHandlersTests
         var user = new Mock<ICurrentUserContext>();
         user.SetupGet(x => x.IsAuthenticated).Returns(false);
 
-        var handler = new ReactivateTenantCommandHandler(repository.Object, user.Object);
+        var eventBus = new Mock<IEventBus>();
+        SetupPublish<TenantReactivatedV1>(eventBus);
+
+        var handler = new ReactivateTenantCommandHandler(repository.Object, user.Object, eventBus.Object);
         var result = await handler.Handle(new ReactivateTenantCommand(Guid.NewGuid(), null), CancellationToken.None);
 
         Assert.NotNull(result);
@@ -362,6 +468,53 @@ public sealed class TenantHandlersTests
         Assert.Equal(TenantStatus.Active, tenant.Status);
         Assert.Equal("Completed", tenant.ProvisioningStatus);
         Assert.Equal("Completed", tenant.ProvisioningSteps[0].Status);
+        eventBus.Verify(x => x.PublishAsync(
+            It.Is<TenantReactivatedV1>(e => e.TenantId == tenant.Id),
+            It.Is<EventPublishOptions>(o => o.TenantId == tenant.Id),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteTenant_ShouldEmitTenantCancelledEvent()
+    {
+        var tenantId = Guid.NewGuid();
+        var actorId = Guid.NewGuid();
+        var tenant = new Tenant
+        {
+            Id = tenantId,
+            Code = "TEN123",
+            Slug = "acme",
+            Name = "Acme",
+            DisplayName = "Acme",
+            Domain = "acme.ditenteknoloji.com",
+            Status = TenantStatus.Suspended
+        };
+
+        var repository = new Mock<ITenantRegistryRepository>();
+        repository.Setup(x => x.GetByIdAsync(tenantId, It.IsAny<CancellationToken>())).ReturnsAsync(tenant);
+        repository.Setup(x => x.DeleteAsync(tenantId, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var user = new Mock<ICurrentUserContext>();
+        user.SetupGet(x => x.UserId).Returns(actorId);
+
+        var eventBus = new Mock<IEventBus>();
+        SetupPublish<TenantCancelledV1>(eventBus);
+
+        var handler = new DeleteTenantCommandHandler(repository.Object, user.Object, eventBus.Object);
+
+        var result = await handler.Handle(new DeleteTenantCommand(tenantId), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        eventBus.Verify(x => x.PublishAsync(
+            It.Is<TenantCancelledV1>(e =>
+                e.TenantId == tenantId &&
+                e.EffectiveAtUtc == e.CancelledAtUtc &&
+                e.CancelledBy == actorId),
+            It.Is<EventPublishOptions>(o =>
+                o.TenantId == tenantId &&
+                o.Producer == "Diten.Platform" &&
+                o.OccurredAtUtc.HasValue),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

@@ -50,6 +50,12 @@ public sealed class ConsumedEvent
         ConsumedAtUtc = DateTimeOffset.UtcNow;
     }
 
+    public void MarkRetryStarted()
+    {
+        Status = ConsumedEventStatus.Started;
+        LastError = null;
+    }
+
     public void MarkFailed(string error)
     {
         AttemptCount++;

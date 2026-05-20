@@ -135,7 +135,73 @@ public sealed class EventingMvpTests
 
         var consumedEvent = await consumed.GetAsync(message.EventId, "TenantActivatedV1Consumer");
         Assert.NotNull(consumedEvent);
-        Assert.Equal(ConsumedEventStatus.SkippedDuplicate, consumedEvent!.Status);
+        Assert.Equal(ConsumedEventStatus.Consumed, consumedEvent!.Status);
+    }
+
+    [Fact]
+    public async Task OutboxClaim_OnlyOneWorkerCanClaimTheSameEvent()
+    {
+        var outbox = new InMemoryOutboxEventRepository();
+        var bus = CreateEventBus(outbox);
+
+        await bus.PublishAsync(new TenantActivatedV1(Guid.NewGuid(), DateTimeOffset.UtcNow, null));
+
+        var firstClaim = await outbox.ClaimNextAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMinutes(-5));
+        var secondClaim = await outbox.ClaimNextAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMinutes(-5));
+
+        Assert.NotNull(firstClaim);
+        Assert.Equal(OutboxEventStatus.Publishing, firstClaim!.Status);
+        Assert.Null(secondClaim);
+    }
+
+    [Fact]
+    public async Task OutboxClaim_RespectsRetryTime_AndRecoversStalePublishing()
+    {
+        var outbox = new InMemoryOutboxEventRepository();
+        var bus = CreateEventBus(outbox);
+
+        await bus.PublishAsync(new TenantActivatedV1(Guid.NewGuid(), DateTimeOffset.UtcNow, null));
+        await bus.PublishAsync(new TenantActivatedV1(Guid.NewGuid(), DateTimeOffset.UtcNow, null));
+        var retryLater = outbox.Items[0];
+        var stalePublishing = outbox.Items[1];
+        retryLater.MarkPublishFailed("broker unavailable", DateTimeOffset.UtcNow.AddMinutes(5), maxAttempts: 5);
+        stalePublishing.MarkPublishing(DateTime.UtcNow.AddMinutes(-10));
+
+        var claim = await outbox.ClaimNextAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMinutes(-5));
+        var retryClaim = await outbox.ClaimNextAsync(DateTimeOffset.UtcNow.AddMinutes(6), DateTimeOffset.UtcNow.AddMinutes(-5));
+
+        Assert.NotNull(claim);
+        Assert.Equal(stalePublishing.EventId, claim!.EventId);
+        Assert.NotNull(retryClaim);
+        Assert.Equal(retryLater.EventId, retryClaim!.EventId);
+    }
+
+    [Fact]
+    public async Task PublishFailure_DeadLettersAfterMaxAttempts()
+    {
+        var outbox = new InMemoryOutboxEventRepository();
+        var bus = CreateEventBus(outbox);
+        var processor = CreateProcessor(
+            outbox,
+            new ThrowingTransportPublisher("broker unavailable"),
+            new RabbitMqEventingOptions
+            {
+                RetryCount = 2,
+                InitialRetryDelaySeconds = 0,
+                MaxRetryDelaySeconds = 0,
+                BatchSize = 1,
+                PublishingStaleAfterSeconds = 300
+            });
+
+        await bus.PublishAsync(new TenantActivatedV1(Guid.NewGuid(), DateTimeOffset.UtcNow, null));
+
+        await processor.PublishPendingAsync();
+        await processor.PublishPendingAsync();
+
+        var stored = Assert.Single(outbox.Items);
+        Assert.Equal(OutboxEventStatus.DeadLettered, stored.Status);
+        Assert.Equal(2, stored.AttemptCount);
+        Assert.Null(stored.NextAttemptAtUtc);
     }
 
     [Fact]
@@ -231,6 +297,38 @@ public sealed class EventingMvpTests
         Assert.True(stored.LastError!.Length <= 4000);
     }
 
+    [Fact]
+    public async Task ConsumedFailedEvent_RetryExecutesHandlerAgain()
+    {
+        var consumed = new InMemoryConsumedEventRepository();
+        var consumedStore = new ConsumedEventStore(consumed, NullLogger<ConsumedEventStore>.Instance);
+        var envelope = CreateTenantActivatedEnvelope();
+        var attempts = 0;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => consumedStore.ExecuteOnceAsync(
+            envelope,
+            "TenantActivatedV1Consumer",
+            _ =>
+            {
+                attempts++;
+                throw new InvalidOperationException("first attempt failed");
+            }));
+        var retry = await consumedStore.ExecuteOnceAsync(
+            envelope,
+            "TenantActivatedV1Consumer",
+            _ =>
+            {
+                attempts++;
+                return Task.CompletedTask;
+            });
+
+        Assert.Equal(ConsumedEventExecutionResult.Consumed, retry);
+        Assert.Equal(2, attempts);
+        var consumedEvent = await consumed.GetAsync(envelope.EventId, "TenantActivatedV1Consumer");
+        Assert.NotNull(consumedEvent);
+        Assert.Equal(ConsumedEventStatus.Consumed, consumedEvent!.Status);
+    }
+
     private static EventBus CreateEventBus(IOutboxEventRepository outboxRepository)
     {
         return new EventBus(
@@ -240,17 +338,21 @@ public sealed class EventingMvpTests
             NullLogger<EventBus>.Instance);
     }
 
-    private static OutboxPublisherProcessor CreateProcessor(IOutboxEventRepository outboxRepository, IEventTransportPublisher transport)
+    private static OutboxPublisherProcessor CreateProcessor(
+        IOutboxEventRepository outboxRepository,
+        IEventTransportPublisher transport,
+        RabbitMqEventingOptions? options = null)
     {
         return new OutboxPublisherProcessor(
             outboxRepository,
             transport,
-            Options.Create(new RabbitMqEventingOptions
+            Options.Create(options ?? new RabbitMqEventingOptions
             {
                 RetryCount = 5,
                 InitialRetryDelaySeconds = 10,
                 MaxRetryDelaySeconds = 300,
-                BatchSize = 25
+                BatchSize = 25,
+                PublishingStaleAfterSeconds = 300
             }),
             NullLogger<OutboxPublisherProcessor>.Instance);
     }
@@ -334,6 +436,23 @@ public sealed class EventingMvpTests
             return Task.FromResult(events);
         }
 
+        public Task<OutboxEvent?> ClaimNextAsync(
+            DateTimeOffset nowUtc,
+            DateTimeOffset stalePublishingCutoffUtc,
+            CancellationToken cancellationToken = default)
+        {
+            var item = Items
+                .Where(x => x.Status == OutboxEventStatus.Pending
+                            || x.Status == OutboxEventStatus.Failed && x.NextAttemptAtUtc <= nowUtc
+                            || x.Status == OutboxEventStatus.Publishing
+                            && x.UpdatedAt is not null
+                            && x.UpdatedAt <= stalePublishingCutoffUtc.UtcDateTime)
+                .OrderBy(x => x.CreatedAt)
+                .FirstOrDefault();
+            item?.MarkPublishing();
+            return Task.FromResult(item);
+        }
+
         public Task UpdateAsync(OutboxEvent outboxEvent, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
@@ -360,13 +479,22 @@ public sealed class EventingMvpTests
         public Task<ConsumedEventStartResult> TryStartAsync(ConsumedEvent consumedEvent, CancellationToken cancellationToken = default)
         {
             var key = (consumedEvent.EventId, consumedEvent.ConsumerName);
-            if (_items.TryGetValue(key, out var existing))
+            if (!_items.TryGetValue(key, out var existing))
             {
-                return Task.FromResult(new ConsumedEventStartResult(true, existing));
+                _items[key] = consumedEvent;
+                return Task.FromResult(new ConsumedEventStartResult(ConsumedEventStartStatus.Started, consumedEvent));
             }
 
-            _items[key] = consumedEvent;
-            return Task.FromResult(new ConsumedEventStartResult(false, consumedEvent));
+            if (existing.Status == ConsumedEventStatus.Failed)
+            {
+                existing.MarkRetryStarted();
+                return Task.FromResult(new ConsumedEventStartResult(ConsumedEventStartStatus.Started, existing));
+            }
+
+            var status = existing.Status == ConsumedEventStatus.Consumed || existing.Status == ConsumedEventStatus.SkippedDuplicate
+                ? ConsumedEventStartStatus.ConsumedDuplicate
+                : ConsumedEventStartStatus.InFlightDuplicate;
+            return Task.FromResult(new ConsumedEventStartResult(status, existing));
         }
 
         public Task MarkConsumedAsync(Guid eventId, string consumerName, CancellationToken cancellationToken = default)

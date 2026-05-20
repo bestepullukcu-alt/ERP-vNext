@@ -1,8 +1,9 @@
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
-using Diten.Platform.Application.Contracts.Events;
 using Diten.Platform.Application.Features.Tenants.Commands;
 using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions;
+using Diten.Platform.Contracts.Events;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -19,6 +20,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
     private readonly ITenantLoginSettingsRepository _loginSettingsRepository;
     private readonly ITenantDefaultsProvider _defaults;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IEventBus _eventBus;
     private readonly ILogger<RegisterTenantCommandHandler> _logger;
 
     public RegisterTenantCommandHandler(
@@ -29,6 +31,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
         ITenantLoginSettingsRepository loginSettingsRepository,
         ITenantDefaultsProvider defaults,
         ICurrentUserContext currentUser,
+        IEventBus eventBus,
         ILogger<RegisterTenantCommandHandler> logger)
     {
         _repository = repository;
@@ -38,6 +41,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
         _loginSettingsRepository = loginSettingsRepository;
         _defaults = defaults;
         _currentUser = currentUser;
+        _eventBus = eventBus;
         _logger = logger;
     }
 
@@ -306,6 +310,25 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
                 "Initial admin invitation queued for tenant '{TenantCode}': {Email}",
                 code, request.InitialAdmin.Email);
         }
+
+        var initialAdminUserId = tenant.AdminUsers.FirstOrDefault()?.Id;
+        Guid? actorUserId = _currentUser.UserId == Guid.Empty ? null : _currentUser.UserId;
+        await _eventBus.PublishAsync(
+            new TenantCreatedV1(
+                tenant.Id,
+                now,
+                tenant.PlanId,
+                actorUserId,
+                tenant.DisplayName,
+                tenant.DefaultLanguage,
+                initialAdminUserId),
+            new EventPublishOptions
+            {
+                TenantId = tenant.Id,
+                Producer = "Diten.Platform",
+                OccurredAtUtc = now
+            },
+            cancellationToken);
 
         return Response<Guid>.Success(tenant.Id, 201);
     }

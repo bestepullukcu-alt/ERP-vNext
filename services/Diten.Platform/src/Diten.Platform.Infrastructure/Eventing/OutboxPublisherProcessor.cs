@@ -25,15 +25,20 @@ public sealed class OutboxPublisherProcessor
 
     public async Task<int> PublishPendingAsync(CancellationToken cancellationToken = default)
     {
-        var now = DateTimeOffset.UtcNow;
-        var events = await _outboxRepository.GetPendingAsync(now, _options.BatchSize, cancellationToken);
         var published = 0;
+        var batchSize = Math.Max(1, _options.BatchSize);
 
-        foreach (var outboxEvent in events)
+        for (var i = 0; i < batchSize; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            outboxEvent.MarkPublishing();
-            await _outboxRepository.UpdateAsync(outboxEvent, cancellationToken);
+
+            var now = DateTimeOffset.UtcNow;
+            var staleCutoff = now.AddSeconds(-Math.Max(1, _options.PublishingStaleAfterSeconds));
+            var outboxEvent = await _outboxRepository.ClaimNextAsync(now, staleCutoff, cancellationToken);
+            if (outboxEvent is null)
+            {
+                break;
+            }
 
             try
             {

@@ -751,19 +751,23 @@ TenantProvisioningFailed    { TenantId, FailedStep, Error }
 ```
 
 **Acceptance criteria:**
-- [ ] 7 event tipi tanımlı + handler'larda emit ediliyor
-- [ ] Subscription, notification, audit modülleri bunlara subscribe oluyor
-- [ ] Event'ler audit log'a yazılıyor (correlation id ile)
-- [ ] At-least-once delivery garantisi
-- [ ] Test: tenant suspend → notification email tetiklendiği integration test
+- [x] 7 event tipi tanımlı; core tenant lifecycle handler'ları outbox-backed `IEventBus.PublishAsync(...)` ile emit ediyor. Provisioning producer emit gerçek orchestration handler bulunana kadar deferred.
+- [x] Notification ve audit consumer'ları tenant lifecycle event'lerine subscribe oluyor; subscription/provisioning/entitlement business consumers owning module'lere deferred.
+- [x] Event'ler audit consumer üzerinden correlation id ile audit append ediyor.
+- [x] Core at-least-once/idempotent side effect proof live RabbitMQ üzerinden PASS.
+- [x] Test: tenant lifecycle live RabbitMQ → notification queue → `FakeMessagingProvider` dispatch `Sent` integration proof PASS.
 
 **Dependencies:** MOD-0035 (Event Bus)
 
 **%100 için kalanlar:**
-- [ ] Tenant lifecycle command'ları `TenantCreated/Activated/Suspended/Reactivated/Cancelled` event'lerini outbox'a yazmalı.
-- [ ] MOD-0035 event bus ve idempotent consumer altyapısı tamamlanmalı.
-- [ ] Subscription, notification, provisioning ve audit tüketicileri contract testleriyle bağlanmalı.
-- [ ] Tenant suspend/reactivate/cancel akışları için gateway smoke + integration test eklenmeli.
+- [x] Tenant lifecycle command'ları `TenantCreated/Activated/Suspended/Reactivated/Cancelled` event'lerini outbox'a yazıyor.
+- [x] MOD-0035 outbox-backed event bus + idempotent consumer path core flow için doğrulandı.
+- [x] Notification ve audit tüketicileri contract/live tests ile bağlandı.
+- [ ] MOD-0035 controlled broker-down/outbox-pending/recovery harness.
+- [ ] MOD-0035 audit/notification-specific retry-DLQ failure injection harness.
+- [ ] Optional: duplicate consumed state `SkippedDuplicate` olarak persist edilecekse MOD-0035 behavior decision.
+- [ ] Tenant provisioning producer emit: gerçek provisioning orchestration handler bekleniyor.
+- [ ] Subscription/provisioning/entitlement business consumers: MOD-0297, MOD-0026/MOD-0009 follow-up, MOD-0298.
 
 ---
 

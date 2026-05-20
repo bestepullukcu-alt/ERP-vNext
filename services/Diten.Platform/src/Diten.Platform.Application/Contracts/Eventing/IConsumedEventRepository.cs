@@ -13,4 +13,14 @@ public interface IConsumedEventRepository
     Task<ConsumedEvent?> GetAsync(Guid eventId, string consumerName, CancellationToken cancellationToken = default);
 }
 
-public sealed record ConsumedEventStartResult(bool IsDuplicate, ConsumedEvent Event);
+public sealed record ConsumedEventStartResult(ConsumedEventStartStatus Status, ConsumedEvent Event)
+{
+    public bool ShouldExecuteHandler => Status == ConsumedEventStartStatus.Started;
+}
+
+public enum ConsumedEventStartStatus
+{
+    Started = 0,
+    ConsumedDuplicate = 1,
+    InFlightDuplicate = 2
+}

@@ -70,10 +70,10 @@ public sealed class OutboxEvent
             PayloadJson);
     }
 
-    public void MarkPublishing()
+    public void MarkPublishing(DateTime? updatedAtUtc = null)
     {
         Status = OutboxEventStatus.Publishing;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = updatedAtUtc ?? DateTime.UtcNow;
     }
 
     public void MarkPublished()

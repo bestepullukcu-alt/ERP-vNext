@@ -16,13 +16,24 @@ public sealed class ConsumedEventRepository : RepositoryBase<ConsumedEvent>, ICo
         try
         {
             await Collection.InsertOneAsync(consumedEvent, cancellationToken: cancellationToken);
-            return new ConsumedEventStartResult(false, consumedEvent);
+            return new ConsumedEventStartResult(ConsumedEventStartStatus.Started, consumedEvent);
         }
         catch (MongoWriteException ex) when (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
         {
             var existing = await GetAsync(consumedEvent.EventId, consumedEvent.ConsumerName, cancellationToken)
                            ?? consumedEvent;
-            return new ConsumedEventStartResult(true, existing);
+
+            if (existing.Status == ConsumedEventStatus.Failed)
+            {
+                await MarkRetryStartedAsync(existing.EventId, existing.ConsumerName, cancellationToken);
+                existing.MarkRetryStarted();
+                return new ConsumedEventStartResult(ConsumedEventStartStatus.Started, existing);
+            }
+
+            var status = existing.Status == ConsumedEventStatus.Consumed || existing.Status == ConsumedEventStatus.SkippedDuplicate
+                ? ConsumedEventStartStatus.ConsumedDuplicate
+                : ConsumedEventStartStatus.InFlightDuplicate;
+            return new ConsumedEventStartResult(status, existing);
         }
     }
 
@@ -60,6 +71,15 @@ public sealed class ConsumedEventRepository : RepositoryBase<ConsumedEvent>, ICo
     public Task<ConsumedEvent?> GetAsync(Guid eventId, string consumerName, CancellationToken cancellationToken = default)
     {
         return Collection.Find(BuildFilter(eventId, consumerName)).FirstOrDefaultAsync(cancellationToken)!;
+    }
+
+    private Task MarkRetryStartedAsync(Guid eventId, string consumerName, CancellationToken cancellationToken)
+    {
+        var update = Builders<ConsumedEvent>.Update
+            .Set(x => x.Status, ConsumedEventStatus.Started)
+            .Set(x => x.LastError, null);
+
+        return Collection.UpdateOneAsync(BuildFilter(eventId, consumerName), update, cancellationToken: cancellationToken);
     }
 
     private static FilterDefinition<ConsumedEvent> BuildFilter(Guid eventId, string consumerName)

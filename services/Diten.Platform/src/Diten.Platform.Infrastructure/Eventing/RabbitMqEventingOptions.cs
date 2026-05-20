@@ -18,6 +18,8 @@ public sealed class RabbitMqEventingOptions
 
     public int MaxRetryDelaySeconds { get; set; } = 300;
 
+    public int PublishingStaleAfterSeconds { get; set; } = 300;
+
     public int DeadLetterRetentionDays { get; set; } = 30;
 
     public string Host { get; set; } = "localhost";
