@@ -9,6 +9,7 @@ using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Services;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Eventing;
+using Diten.Platform.Infrastructure.Authorization;
 using Diten.Platform.Infrastructure.BackgroundJobs;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Configurations;
@@ -126,6 +127,7 @@ public static class DependencyInjection
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        services.AddTenantAuthorizationContext();
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
         services.AddSingleton<EntitlementCacheService>();
         services.AddScoped<IEntitlementChecker, EntitlementChecker>();
@@ -223,9 +225,7 @@ public static class DependencyInjection
         {
             services.AddMassTransit(x =>
             {
-                x.AddConsumer<TenantActivatedV1Consumer>();
-                x.AddConsumer<TenantLifecycleAuditConsumer>();
-                x.AddConsumer<TenantLifecycleNotificationConsumer>();
+                AddPlatformEventConsumers(x);
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host(eventingOptions.Host, eventingOptions.Port, eventingOptions.VirtualHost, h =>
@@ -259,6 +259,20 @@ public static class DependencyInjection
         RunMongoStartupInitialization(database, mongoSettings);
 
         return services;
+    }
+
+    public static IServiceCollection AddTenantAuthorizationContext(this IServiceCollection services)
+    {
+        services.AddScoped<ITenantAuthorizationContext, JwtTenantAuthorizationContext>();
+        return services;
+    }
+
+    internal static void AddPlatformEventConsumers(IBusRegistrationConfigurator configurator)
+    {
+        configurator.AddConsumer<TenantActivatedV1Consumer>();
+        configurator.AddConsumer<TenantLifecycleAuditConsumer>();
+        configurator.AddConsumer<TenantLifecycleNotificationConsumer>();
+        configurator.AddConsumer<EntitlementCacheInvalidationConsumer>();
     }
 
     private static void RunMongoStartupInitialization(IMongoDatabase database, MongoDbSettings mongoSettings)

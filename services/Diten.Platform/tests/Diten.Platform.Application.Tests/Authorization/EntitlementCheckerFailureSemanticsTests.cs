@@ -130,6 +130,82 @@ public sealed class EntitlementCheckerFailureSemanticsTests
         Assert.Equal(1, factoryCalls);
     }
 
+    [Fact]
+    public async Task EntitlementCacheService_evicts_module_cache_by_tenant_and_module_code()
+    {
+        var cacheService = CreateCacheService();
+        var factoryCalls = 0;
+
+        await cacheService.GetOrCreateModuleAsync(TenantId, "HR", CreateAllowedModuleFactory("HR", () => factoryCalls++));
+        await cacheService.GetOrCreateModuleAsync(TenantId, "HR", CreateAllowedModuleFactory("HR", () => factoryCalls++));
+
+        cacheService.EvictModule(TenantId, "hr");
+
+        await cacheService.GetOrCreateModuleAsync(TenantId, "HR", CreateAllowedModuleFactory("HR", () => factoryCalls++));
+
+        Assert.Equal(2, factoryCalls);
+    }
+
+    [Fact]
+    public async Task EntitlementCacheService_evicts_feature_cache_by_tenant_and_feature_code()
+    {
+        var cacheService = CreateCacheService();
+        var factoryCalls = 0;
+
+        await cacheService.GetOrCreateFeatureAsync(TenantId, "ADVANCED_REPORTING", CreateAllowedFeatureFactory("ADVANCED_REPORTING", () => factoryCalls++));
+        await cacheService.GetOrCreateFeatureAsync(TenantId, "ADVANCED_REPORTING", CreateAllowedFeatureFactory("ADVANCED_REPORTING", () => factoryCalls++));
+
+        cacheService.EvictFeature(TenantId, "advanced_reporting");
+
+        await cacheService.GetOrCreateFeatureAsync(TenantId, "ADVANCED_REPORTING", CreateAllowedFeatureFactory("ADVANCED_REPORTING", () => factoryCalls++));
+
+        Assert.Equal(2, factoryCalls);
+    }
+
+    [Fact]
+    public async Task EntitlementCacheService_evicts_all_module_and_feature_cache_for_tenant_only()
+    {
+        var otherTenantId = Guid.Parse("99999999-9999-9999-9999-999999999999");
+        var cacheService = CreateCacheService();
+        var tenantModuleCalls = 0;
+        var tenantFeatureCalls = 0;
+        var otherTenantModuleCalls = 0;
+        var otherTenantFeatureCalls = 0;
+
+        await cacheService.GetOrCreateModuleAsync(TenantId, "HR", CreateAllowedModuleFactory("HR", () => tenantModuleCalls++));
+        await cacheService.GetOrCreateFeatureAsync(TenantId, "ADVANCED_REPORTING", CreateAllowedFeatureFactory("ADVANCED_REPORTING", () => tenantFeatureCalls++));
+        await cacheService.GetOrCreateModuleAsync(otherTenantId, "HR", CreateAllowedModuleFactory("HR", () => otherTenantModuleCalls++));
+        await cacheService.GetOrCreateFeatureAsync(otherTenantId, "ADVANCED_REPORTING", CreateAllowedFeatureFactory("ADVANCED_REPORTING", () => otherTenantFeatureCalls++));
+
+        cacheService.EvictTenant(TenantId);
+
+        await cacheService.GetOrCreateModuleAsync(TenantId, "HR", CreateAllowedModuleFactory("HR", () => tenantModuleCalls++));
+        await cacheService.GetOrCreateFeatureAsync(TenantId, "ADVANCED_REPORTING", CreateAllowedFeatureFactory("ADVANCED_REPORTING", () => tenantFeatureCalls++));
+        await cacheService.GetOrCreateModuleAsync(otherTenantId, "HR", CreateAllowedModuleFactory("HR", () => otherTenantModuleCalls++));
+        await cacheService.GetOrCreateFeatureAsync(otherTenantId, "ADVANCED_REPORTING", CreateAllowedFeatureFactory("ADVANCED_REPORTING", () => otherTenantFeatureCalls++));
+
+        Assert.Equal(2, tenantModuleCalls);
+        Assert.Equal(2, tenantFeatureCalls);
+        Assert.Equal(1, otherTenantModuleCalls);
+        Assert.Equal(1, otherTenantFeatureCalls);
+    }
+
+    [Fact]
+    public async Task EntitlementCacheService_keeps_existing_cache_hit_behavior_for_modules_and_features()
+    {
+        var cacheService = CreateCacheService();
+        var moduleFactoryCalls = 0;
+        var featureFactoryCalls = 0;
+
+        await cacheService.GetOrCreateModuleAsync(TenantId, "HR", CreateAllowedModuleFactory("HR", () => moduleFactoryCalls++));
+        await cacheService.GetOrCreateModuleAsync(TenantId, "HR", CreateAllowedModuleFactory("HR", () => moduleFactoryCalls++));
+        await cacheService.GetOrCreateFeatureAsync(TenantId, "ADVANCED_REPORTING", CreateAllowedFeatureFactory("ADVANCED_REPORTING", () => featureFactoryCalls++));
+        await cacheService.GetOrCreateFeatureAsync(TenantId, "ADVANCED_REPORTING", CreateAllowedFeatureFactory("ADVANCED_REPORTING", () => featureFactoryCalls++));
+
+        Assert.Equal(1, moduleFactoryCalls);
+        Assert.Equal(1, featureFactoryCalls);
+    }
+
     private static EntitlementChecker CreateChecker(
         Mock<ITenantModuleAccessService>? moduleAccessService = null,
         Mock<ITenantSubscriptionRepository>? tenantSubscriptionRepository = null,
@@ -176,5 +252,23 @@ public sealed class EntitlementCheckerFailureSemanticsTests
         return new EntitlementCacheService(
             new MemoryCache(new MemoryCacheOptions()),
             Options.Create(new EntitlementCacheOptions { CacheTtlSeconds = 300 }));
+    }
+
+    private static Func<Task<EntitlementCheckResult>> CreateAllowedModuleFactory(string moduleCode, Action beforeReturn)
+    {
+        return () =>
+        {
+            beforeReturn();
+            return Task.FromResult(EntitlementCheckResult.Allowed(EntitlementKind.Module, moduleCode));
+        };
+    }
+
+    private static Func<Task<EntitlementCheckResult>> CreateAllowedFeatureFactory(string featureCode, Action beforeReturn)
+    {
+        return () =>
+        {
+            beforeReturn();
+            return Task.FromResult(EntitlementCheckResult.Allowed(EntitlementKind.Feature, featureCode));
+        };
     }
 }

@@ -102,7 +102,9 @@ public sealed class EntitlementChecker : IEntitlementChecker
                 return EntitlementCheckResult.Allowed(
                     EntitlementKind.Module,
                     detail.ModuleCode,
-                    detail.ExpiryDateUtc);
+                    detail.ExpiryDateUtc,
+                    effectiveScopes: null,
+                    resolvedFrom: MapModuleResolvedFrom(detail.Source));
             }
 
             return EntitlementCheckResult.Denied(
@@ -143,7 +145,12 @@ public sealed class EntitlementChecker : IEntitlementChecker
                 string.Equals(NormalizeFeatureCode(x), featureCode, StringComparison.OrdinalIgnoreCase));
 
             return isIncluded
-                ? EntitlementCheckResult.Allowed(EntitlementKind.Feature, featureCode)
+                ? EntitlementCheckResult.Allowed(
+                    EntitlementKind.Feature,
+                    featureCode,
+                    expiresAtUtc: null,
+                    effectiveScopes: null,
+                    resolvedFrom: EntitlementResolutionSource.Plan)
                 : EntitlementCheckResult.Denied(
                     EntitlementKind.Feature,
                     featureCode,
@@ -165,6 +172,17 @@ public sealed class EntitlementChecker : IEntitlementChecker
             TenantModuleEffectiveAccess.Expired => EntitlementDenyReason.EntitlementExpired,
             TenantModuleEffectiveAccess.BlockedByOverride => EntitlementDenyReason.EntitlementDisabled,
             _ => EntitlementDenyReason.ModuleNotEntitled
+        };
+
+    private static EntitlementResolutionSource MapModuleResolvedFrom(string? source) =>
+        source switch
+        {
+            "System" => EntitlementResolutionSource.Plan,
+            "ManualOverride" => EntitlementResolutionSource.Override,
+            "Addon" => EntitlementResolutionSource.Addon,
+            "Trial" => EntitlementResolutionSource.Trial,
+            "Plan" => EntitlementResolutionSource.Plan,
+            _ => EntitlementResolutionSource.Unknown
         };
 
     private static string NormalizeCode(string? code) =>

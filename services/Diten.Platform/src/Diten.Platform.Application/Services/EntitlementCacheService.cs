@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Diten.Platform.Common.Authorization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -8,6 +9,7 @@ public sealed class EntitlementCacheService
 {
     private readonly IMemoryCache cache;
     private readonly EntitlementCacheOptions options;
+    private readonly ConcurrentDictionary<string, RegisteredCacheKey> registeredKeys = new(StringComparer.Ordinal);
 
     public EntitlementCacheService(
         IMemoryCache cache,
@@ -39,6 +41,27 @@ public sealed class EntitlementCacheService
         return GetOrCreateAsync(BuildFeatureKey(tenantId, featureCode), factory);
     }
 
+    public void EvictModule(Guid tenantId, string moduleCode)
+    {
+        Evict(BuildModuleKey(tenantId, moduleCode));
+    }
+
+    public void EvictFeature(Guid tenantId, string featureCode)
+    {
+        Evict(BuildFeatureKey(tenantId, featureCode));
+    }
+
+    public void EvictTenant(Guid tenantId)
+    {
+        foreach (var pair in registeredKeys)
+        {
+            if (pair.Value.TenantId == tenantId)
+            {
+                Evict(pair.Key);
+            }
+        }
+    }
+
     public static string BuildModuleKey(Guid tenantId, string moduleCode)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleCode);
@@ -65,11 +88,41 @@ public sealed class EntitlementCacheService
         var result = await factory();
         if (result.IsCacheable)
         {
-            cache.Set(cacheKey, result, options.GetCacheTtl());
+            cache.Set(cacheKey, result, CreateEntryOptions(cacheKey));
+            registeredKeys[cacheKey] = RegisteredCacheKey.From(cacheKey);
         }
 
         return result;
     }
 
+    private void Evict(string cacheKey)
+    {
+        registeredKeys.TryRemove(cacheKey, out _);
+        cache.Remove(cacheKey);
+    }
+
+    private MemoryCacheEntryOptions CreateEntryOptions(string cacheKey)
+    {
+        return new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = options.GetCacheTtl()
+        }.RegisterPostEvictionCallback(static (key, _, _, state) =>
+        {
+            if (key is string cacheKey && state is EntitlementCacheService cacheService)
+            {
+                cacheService.registeredKeys.TryRemove(cacheKey, out _);
+            }
+        }, this);
+    }
+
     private static string NormalizeCode(string code) => code.Trim().ToUpperInvariant();
+
+    private sealed record RegisteredCacheKey(Guid TenantId)
+    {
+        public static RegisteredCacheKey From(string cacheKey)
+        {
+            var parts = cacheKey.Split(':');
+            return new RegisteredCacheKey(Guid.Parse(parts[2]));
+        }
+    }
 }

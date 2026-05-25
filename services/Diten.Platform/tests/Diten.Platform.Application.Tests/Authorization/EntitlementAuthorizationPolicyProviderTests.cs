@@ -68,6 +68,7 @@ public sealed class EntitlementAuthorizationPolicyProviderTests
         services.AddScoped<IAuthorizationHandler, TenantModuleAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, TenantFeatureAuthorizationHandler>();
         services.AddSingleton<IEntitlementAuditSink, NullEntitlementAuditSink>();
+        services.AddScoped(_ => Mock.Of<ITenantAuthorizationContext>());
         services.AddSingleton<EntitlementCacheService>();
         services.AddScoped<IEntitlementChecker, EntitlementChecker>();
         services.AddScoped(_ => Mock.Of<ITenantModuleAccessService>());

@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Diten.Platform.API.Controllers.Test;
 using Diten.Platform.Common.Authorization;
+using Diten.Platform.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -165,6 +166,9 @@ public sealed class AuthorizationProbeControllerIntegrationTests
                 services.AddSingleton<IAuthorizationPolicyProvider, EntitlementAuthorizationPolicyProvider>();
                 services.AddScoped<IAuthorizationHandler, TenantModuleAuthorizationHandler>();
                 services.AddScoped<IAuthorizationHandler, TenantFeatureAuthorizationHandler>();
+                services.AddHttpContextAccessor();
+                services.AddScoped<IDataScopeResolver, NoOpDataScopeResolver>();
+                services.AddScoped<ITenantAuthorizationContext, JwtTenantAuthorizationContext>();
                 services.AddSingleton<IEntitlementAuditSink, NullEntitlementAuditSink>();
                 services.AddSingleton(checker.Object);
                 services
