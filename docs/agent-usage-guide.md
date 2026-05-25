@@ -2,7 +2,7 @@
 
 Bu rehber iki temel akışı detaylandırır: **Yol A — Sıfırdan yeni domain açma** (nadir) ve **Yol B — Mevcut domain'de yeni modül yazma** (her gün). Module pack güvenli aşamalar üzerinden yürütülür: önce sözleşme, sonra geliştirme.
 
-> **Otorite hiyerarşisi (her iki yolda da geçerli):** Module Pack → Domain Config → AGENTS.md → `.antigravity/rules/` → `docs/platform/master-plan.md`
+> **Otorite hiyerarşisi (her iki yolda da geçerli):** Module Pack → Domain Config → AGENTS.md → `.antigravity/rules/` → `execution/portfolio/master-development-plan.md`
 
 ---
 
@@ -45,7 +45,7 @@ Engineering kuralları tekrarlanırsa kaçak otorite oluşur ve bayatlar.
 ### A4. AGENTS.md'ye domain'i tanıt
 
 - §2 (klasör yapısı) ve §9 (branch adlandırma) → yeni domain ve kısa kodu (`crm` gibi) eklenir.
-- Platform/Admin domain'i ise → [docs/platform/master-plan.md](platform/master-plan.md) §2 envanter tablosuna eklenir.
+- Platform/Admin domain'i ise → [execution/portfolio/master-development-plan.md](../execution/portfolio/master-development-plan.md) Section 2 envanter tablosuna ve [execution/registries/module-id-registry.md](../execution/registries/module-id-registry.md) içine eklenir.
 
 ### A5. İlk modülü Yol B ile yaz
 
@@ -70,7 +70,7 @@ Vereceğin bilgiler:
 - Entity base kararı (`EntityBase`/`BaseEntity`/`GlobalEntity` + gerekçe)
 
 Ne olur:
-- `module-pack-author` ajanı [AGENTS.md](../AGENTS.md), [domain-config.md](../execution/domains/), [docs/platform/master-plan.md](platform/master-plan.md), [.antigravity/rules/](../.antigravity/rules/), Golden Reference Slim/Compact dosyalarını okur.
+- `module-pack-author` ajanı [AGENTS.md](../AGENTS.md), [domain-config.md](../execution/domains/), [execution/portfolio/master-development-plan.md](../execution/portfolio/master-development-plan.md), [execution/registries/module-id-registry.md](../execution/registries/module-id-registry.md), [.antigravity/rules/](../.antigravity/rules/), Golden Reference Slim/Compact dosyalarını okur.
 - Form alan sayısına göre `golden_reference: slim` (≤8) veya `compact` (>8) kararı verilir.
 - `execution/domains/{domain}/module-packs/{ID}-{slug}.md` dosyası `status: draft` ile üretilir.
 

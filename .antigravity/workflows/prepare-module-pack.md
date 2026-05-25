@@ -29,20 +29,22 @@ Gerekli bilgiler:
 
 1. `AGENTS.md`
 2. `execution/domains/{domain}/domain-config.md`
-3. `docs/platform/master-plan.md` (modül envanteri, MVP scope, cross-cutting standartlar)
-4. `.antigravity/rules/module-pack-standard.md`
-5. **Golden Reference pack'i** (form alan sayısına göre):
+3. `execution/portfolio/master-development-plan.md` (modül envanteri, MVP scope, cross-cutting standartlar)
+4. `execution/registries/module-id-registry.md` (canonical modül ID listesi)
+5. `execution/delivery/platform-delivery-board.md` (blocker ve follow-up kontrolleri)
+6. `.antigravity/rules/module-pack-standard.md`
+7. **Golden Reference pack'i** (form alan sayısına göre):
    - Slim: `execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md`
    - Compact: `execution/domains/developer-enablement/module-packs/DEV-0001-golden-reference-compact.md`
-6. **Gerçek Golden Reference kodu** (birebir şablon):
+8. **Gerçek Golden Reference kodu** (birebir şablon):
    - Backend: `services/Diten.DevEnablementService/.../Features/GoldenReferenceSlim/` (veya `Compact/`)
    - Frontend: `frontend/Diten.Web/Views/DevEnablement/GoldenReferenceSlim/` (veya `Compact/`)
-7. `.antigravity/rules/views-organization.md`
-8. `.antigravity/rules/handler-design.md`
-9. `.antigravity/rules/erp-architecture.md`
-10. `.antigravity/rules/response-envelope.md`
-11. `.antigravity/rules/entity-base-template.md`
-12. `.antigravity/rules/routes.md`
+9. `.antigravity/rules/views-organization.md`
+10. `.antigravity/rules/handler-design.md`
+11. `.antigravity/rules/erp-architecture.md`
+12. `.antigravity/rules/response-envelope.md`
+13. `.antigravity/rules/entity-base-template.md`
+14. `.antigravity/rules/routes.md`
 
 Platform admin shell modülü hazırlanıyorsa ek canlı referans: `frontend/Diten.Web/Views/Platform/Tenants/`.
 
