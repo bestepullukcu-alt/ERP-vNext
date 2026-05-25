@@ -75,7 +75,7 @@ Legal Entity icin module pack hazirla.
 Kod yazma.
 
 Beklenti:
-- AGENTS.md ve ilgili domain-config.md dosyasini oku.
+- AGENTS.md, domain-config.md, execution/portfolio/master-development-plan.md ve execution/registries/module-id-registry.md dosyalarını oku.
 - Domain'i belirle.
 - Owned objects, repo scope, protected paths, acceptance criteria ve test expectations yaz.
 - Create/edit form kullanici alan sayisini cikar.
@@ -116,9 +116,10 @@ Bu module pack'e gore gelistirmeyi baslat.
 
 Zorunlu okuma sirasi:
 1) AGENTS.md
-2) execution/domains/{domain}/domain-config.md
-3) execution/domains/{domain}/module-packs/{ID}.md
-4) .antigravity/workflows/add-module.md
+2) execution/domains/{domain}/module-packs/{ID}.md
+3) execution/delivery/platform-delivery-board.md
+4) gerekiyorsa execution/portfolio/master-development-plan.md
+5) .antigravity/workflows/add-module.md
 
 Kabul kriteri:
 - Module pack'teki acceptance criteria tamamlanacak.
