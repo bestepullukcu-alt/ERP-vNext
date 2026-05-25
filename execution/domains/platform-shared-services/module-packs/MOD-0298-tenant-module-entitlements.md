@@ -1,5 +1,5 @@
 ---
-file_name: tenant-module-entitlements-module-pack.md
+file_name: MOD-0298-tenant-module-entitlements.md
 id: MOD-0298
 name: Tenant Module Entitlements
 domain: platform-shared-services

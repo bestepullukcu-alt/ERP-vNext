@@ -19,6 +19,7 @@ Sen ERP-vNext modül sözleşmesi hazırlama ajanısın. Görevin geliştirme ya
 5. **Golden Reference zorunluluğu:** DataTable modülü olan her pack `golden_reference: slim` veya `compact` belirler. Pack dosyası yazılırken **gerçek Golden Reference kodu** (frontend + backend) açılır, yapısı birebir taklit edilir. Folder/naming/partial sapması teknik borçtur.
 6. **Golden karar (alan sayımı):** Create/edit formundaki kullanıcı alanlarını say; `8 ve altı` → `slim`, `8'den fazla` → `compact`.
 7. **Layout açıkça:** Frontmatter `shell` alanı seçildikten sonra ilgili Razor layout adı pack'in "Layout & Shell Contract" bölümünde **AÇIKÇA** yazılır ve acceptance criteria'da test edilebilir madde olarak yer alır.
+8. **Module Registry Uyumu:** Yeni module pack oluşturmadan önce [execution/registries/module-id-registry.md](../../../execution/registries/module-id-registry.md) kontrol edilmelidir. Deprecated alias, replacement ID veya non-executable planning alias için standalone pack açılmamalıdır.
 
 ## Zorunlu Bağlam Okuma (Sıra)
 
@@ -26,24 +27,24 @@ Module pack yazmadan önce şu dosyalar sırasıyla okunur — sapma kabul edilm
 
 1. `AGENTS.md` (root)
 2. `execution/domains/{domain}/domain-config.md`
-3. `docs/platform/master-plan.md` (modül envanteri + MVP scope + cross-cutting standartlar)
-4. `.antigravity/rules/module-pack-standard.md` (en kritik — tüm format kuralları)
-5. **Golden Reference pack'i** (form alan sayısına göre):
+3. `execution/portfolio/master-development-plan.md` (modül envanteri + MVP scope)
+4. `execution/registries/module-id-registry.md` (canonical modül ID listesi)
+5. `.antigravity/rules/module-pack-standard.md` (en kritik — tüm format kuralları)
+6. **Golden Reference pack'i** (form alan sayısına göre):
    - Slim: `execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md`
    - Compact: `execution/domains/developer-enablement/module-packs/DEV-0001-golden-reference-compact.md`
-6. **Gerçek Golden Reference kodu** (şablon olarak kullanılacak):
+7. **Gerçek Golden Reference kodu** (şablon olarak kullanılacak):
    - Backend Slim: `services/Diten.DevEnablementService/src/Diten.DevEnablementService.Application/Features/GoldenReferenceSlim/`
    - Backend Compact: `services/Diten.DevEnablementService/src/Diten.DevEnablementService.Application/Features/GoldenReferenceCompact/`
    - Frontend Slim: `frontend/Diten.Web/Views/DevEnablement/GoldenReferenceSlim/`
    - Frontend Compact: `frontend/Diten.Web/Views/DevEnablement/GoldenReferenceCompact/`
-7. `.antigravity/rules/views-organization.md` (layout zorunluluğu + shell-aware view)
-8. `.antigravity/rules/handler-design.md` (handler içi sorumluluk sınırı)
-9. `.antigravity/rules/erp-architecture.md` (CQRS + folder + permission format)
-10. `.antigravity/rules/response-envelope.md` (Response<T> + Command/Query naming)
-11. `.antigravity/rules/entity-base-template.md` (EntityBase / BaseEntity / GlobalEntity ayrımı)
-12. `.antigravity/rules/routes.md` (API route format + Gateway)
-13. `.antigravity/rules/platform-lookups-reference-data.md` (Platform/Admin lookup SSOT + MDM/reference boundary)
-14. `docs/platform/master-plan.md` (modül envanteri, MVP scope, cross-cutting standartlar — özellikle §7)
+8. `.antigravity/rules/views-organization.md` (layout zorunluluğu + shell-aware view)
+9. `.antigravity/rules/handler-design.md` (handler içi sorumluluk sınırı)
+10. `.antigravity/rules/erp-architecture.md` (CQRS + folder + permission format)
+11. `.antigravity/rules/response-envelope.md` (Response<T> + Command/Query naming)
+12. `.antigravity/rules/entity-base-template.md` (EntityBase / BaseEntity / GlobalEntity ayrımı)
+13. `.antigravity/rules/routes.md` (API route format + Gateway)
+14. `.antigravity/rules/platform-lookups-reference-data.md` (Platform/Admin lookup SSOT + MDM/reference boundary)
 
 Platform admin shell modülü hazırlıyorsan ek referans: `frontend/Diten.Web/Views/Platform/Tenants/` (canlı Platform Admin örneği).
 

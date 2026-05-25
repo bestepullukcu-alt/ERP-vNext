@@ -21,9 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\gateway\DitenApiGateway\Diten.ApiGateway\Diten.ApiGateway.csproj" />
-    <ProjectReference Include="..\..\..\services\DitenAuthService\src\Diten.AuthService.Infrastructure\Diten.AuthService.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\services\DitenMdmService\src\Diten.MdmService.Infrastructure\Diten.MdmService.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\gateway\Diten.ApiGateway\Diten.ApiGateway.csproj" />
+    <ProjectReference Include="..\..\..\services\Diten.AuthService\src\Diten.AuthService.Infrastructure\Diten.AuthService.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\services\Diten.MdmService\src\Diten.MdmService.Infrastructure\Diten.MdmService.Infrastructure.csproj" Condition="Exists('..\..\..\services\Diten.MdmService\src\Diten.MdmService.Infrastructure\Diten.MdmService.Infrastructure.csproj')" />
     <ProjectReference Include="..\..\..\services\Diten.Platform\src\Diten.Platform.API\Diten.Platform.API.csproj" />
   </ItemGroup>
 

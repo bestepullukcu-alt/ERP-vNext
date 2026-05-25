@@ -174,7 +174,7 @@ Prompt yazma rehberi: [.antigravity/PROMPT-GUIDE.md](.antigravity/PROMPT-GUIDE.m
 
 1. `execution/domains/{name}/` klasörü kur: `README.md` + `domain-config.md` + `module-packs/`
 2. `domain-config.md`'de **sadece domain'e özel kararlar** yaz (in-scope modüller, repo scope, protected paths, ownership boundaries, runtime decisions). Engineering kuralları için `.antigravity/rules/`'a link ver — **içeriği tekrarlama**.
-3. AGENTS.md §2 (klasör yapısı) + §9 (branch kodu) güncelle. Platform/Admin domain'i ise [docs/platform/master-plan.md](docs/platform/master-plan.md) §2'ye ekle.
+3. AGENTS.md §2 (klasör yapısı) + §9 (branch kodu) güncelle. Platform/Admin domain'i ise [execution/portfolio/master-development-plan.md](execution/portfolio/master-development-plan.md) Section 2 (Module Inventory) ve [execution/registries/module-id-registry.md](execution/registries/module-id-registry.md) içine ekle.
 4. İlk modülü Yol B ile yaz.
 
 > Şablon: [execution/domains/platform-shared-services/](execution/domains/platform-shared-services/) (README + domain-config kanonik örnek).
@@ -244,7 +244,9 @@ Module pack minimum içermeli:
 | **Domain** | `execution/domains/{name}/` — bir iş alanı (MDM, PSS, ESBP) |
 | **Module Pack** | `execution/domains/{d}/module-packs/{ID}.md` — tek bir modülün kimlik + AC dosyası |
 | **Domain Config** | `execution/domains/{d}/domain-config.md` — domain sınırları ve kararlar |
-| **Master Plan** | `docs/platform/master-plan.md` — Platform/Admin modül envanteri, MVP scope, cross-cutting standartlar |
+| **Master Development Plan** | `execution/portfolio/master-development-plan.md` — High-level wave planı ve modül envanteri (eski monolith `docs/platform/master-plan.md` yerine) |
+| **Platform Delivery Board** | `execution/delivery/platform-delivery-board.md` — Aktif iş/hardening takibi ve status panosu |
+| **Module ID Registry** | `execution/registries/module-id-registry.md` — Tüm modüllerin canonical ID listesi ve eşleşmeleri |
 | **Workflow** | `.antigravity/workflows/*.md` — yeniden kullanılabilir tarif (ör. `/add-module`) |
 
 ---
@@ -255,7 +257,7 @@ Bu repo, [Layered Agent + Domain Package Model SOP v2.1](docs/sop/upstream/) tem
 
 - `batches/` katmanı **kullanılmaz** (`.antigravity/workflows/add-module.md` zaten phase orchestration sağlar)
 - `snapshots/` katmanı **kullanılmaz** (git history + `docs/audits/` bu işi yapar)
-- `controls/` ve `decisions/` katmanları **kullanılmaz** (engineering standartları `.antigravity/rules/`'de, scope/MVP kararları `docs/platform/master-plan.md`'de — tarihsel klasörler `archive/domains/` altına taşındı)
+- `controls/` ve `decisions/` katmanları **kullanılmaz** (engineering standartları `.antigravity/rules/`'de, scope/MVP kararları `execution/portfolio/master-development-plan.md`'de — tarihsel klasörler `archive/domains/` altına taşındı)
 - Module ID formatı `MOD-xxxx-slug` (örn: `MOD-0018-rbac-abac-authorization`) — hem teknik standartlar hem de tüm modül kimlikleri için birincil formattır
 - Klasör yapısı `services/` + `frontend/` + `gateway/` (SOP'taki `src/Backend/` + `src/Frontend/` yerine)
 
