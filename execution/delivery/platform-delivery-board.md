@@ -2,8 +2,8 @@
 
 ## Metadata
 - **Title**: Platform Delivery Board
-- **Canonical Path**: [platform-delivery-board.md](file:///Users/alitufanoglu/ERP-vNext/execution/delivery/platform-delivery-board.md)
-- **Legacy Source**: [master-plan.md](file:///Users/alitufanoglu/ERP-vNext/docs/platform/master-plan.md)
+- **Canonical Path**: [platform-delivery-board.md](./platform-delivery-board.md)
+- **Legacy Source**: [master-plan.md](../../docs/platform/master-plan.md)
 - **Migration Phase**: IA Phase 3B-2A
 - **Status**: Seeded from active delivery, progress, and gap sections
 - **Usage Warning**: This is an active work coordination board. It is **not** a canonical module registry, not a high-level roadmap, and not a linter rules definition source.
@@ -17,8 +17,8 @@ This document tracks active development items, pending work package candidates, 
 
 ## Authority Boundaries
 For other phases of governance, consult the relevant source of truth:
-* **Canonical Module ID Allocation**: [module-id-registry.md](file:///Users/alitufanoglu/ERP-vNext/execution/registries/module-id-registry.md)
-* **High-Level Roadmap & Wave sequencing**: [master-development-plan.md](file:///Users/alitufanoglu/ERP-vNext/execution/portfolio/master-development-plan.md)
+* **Canonical Module ID Allocation**: [module-id-registry.md](../registries/module-id-registry.md)
+* **High-Level Roadmap & Wave sequencing**: [master-development-plan.md](../portfolio/master-development-plan.md)
 * **Module specifications & design contracts**: `execution/domains/{domain}/module-packs/`
 * **Test results and evidence**: `docs/qa/acceptance-reports/`
 * **Static code style guidelines**: `.antigravity/rules/`
@@ -64,9 +64,9 @@ Below are identified gaps (Section 13) that pose structural risks to subsequent 
 
 | Gap ID | Related Module | Gap | Severity | Source Section | Blocking Dependency | Recommended Resolution | Target Location |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **GAP-13-1** | AuthService / Platform | Identity verification and ownership matrix is missing between services | High | Section 13.1 | None | Define sync mechanism and domain authority model under Section 1.6 | [blueprint-master-plan-reconciliation.md](file:///Users/alitufanoglu/ERP-vNext/execution/portfolio/blueprint-master-plan-reconciliation.md) |
-| **GAP-13-2** | BuildingBlocks | Sibling services face package version drift risk due to missing policy | High | Section 13.2 | None | Define semver guidelines and per-feature owner mapping inside rules | [blueprint-master-plan-reconciliation.md](file:///Users/alitufanoglu/ERP-vNext/execution/portfolio/blueprint-master-plan-reconciliation.md) |
-| **GAP-13-3** | Security / Tenancy | Missing dedicated verification matrix to test X-Tenant-Id header manipulation | Critical | Section 13.3 | None | Enforce TenantResolutionMiddleware scenarios as mandatory checks in module-pack ACs | [work-package-checklist-template.md](file:///Users/alitufanoglu/ERP-vNext/execution/delivery/checklists/work-package-checklist-template.md) |
+| **GAP-13-1** | AuthService / Platform | Identity verification and ownership matrix is missing between services | High | Section 13.1 | None | Define sync mechanism and domain authority model under Section 1.6 | [blueprint-master-plan-reconciliation.md](../portfolio/blueprint-master-plan-reconciliation.md) |
+| **GAP-13-2** | BuildingBlocks | Sibling services face package version drift risk due to missing policy | High | Section 13.2 | None | Define semver guidelines and per-feature owner mapping inside rules | [blueprint-master-plan-reconciliation.md](../portfolio/blueprint-master-plan-reconciliation.md) |
+| **GAP-13-3** | Security / Tenancy | Missing dedicated verification matrix to test X-Tenant-Id header manipulation | Critical | Section 13.3 | None | Enforce TenantResolutionMiddleware scenarios as mandatory checks in module-pack ACs | [work-package-checklist-template.md](./checklists/work-package-checklist-template.md) |
 | **GAP-13-4** | NEW-003 | Notification Template UI is missing while backend commands are completed | Medium | Section 13.4 | MOD-0027 | Develop preview, test send, and versioning interfaces using grid cards | `execution/domains/platform-shared-services/module-packs/NEW-003-notification-template-management-ui.md` |
 | **GAP-13-5** | Auth / Invite | Legacy invite controllers use raw SMTP mailer instead of INotificationService | High | Section 13.5 | MOD-0027-FU1 | Migrate invitation templates to the generic notification dispatcher pathway in Track D | `execution/domains/platform-shared-services/module-packs/MOD-0027-central-tenant-email-notification-service.md` |
 
@@ -93,7 +93,7 @@ The following milestones are officially marked as completed:
 
 ## Not Allowed Content
 The following data classifications are strictly forbidden from this file:
-- Canonical identity allocations (use [module-id-registry.md](file:///Users/alitufanoglu/ERP-vNext/execution/registries/module-id-registry.md)).
-- High-level wave schedules (use [master-development-plan.md](file:///Users/alitufanoglu/ERP-vNext/execution/portfolio/master-development-plan.md)).
+- Canonical identity allocations (use [module-id-registry.md](../registries/module-id-registry.md)).
+- High-level wave schedules (use [master-development-plan.md](../portfolio/master-development-plan.md)).
 - Complete backend schemas, DTOs, or endpoints parameters list (use Module Packs).
 - Static design linter codes (use `.antigravity/rules/`).

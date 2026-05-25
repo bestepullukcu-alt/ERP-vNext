@@ -2,8 +2,8 @@
 
 ## Metadata
 - **Title**: ERP-vNext Master Development Plan
-- **Canonical Path**: [master-development-plan.md](file:///Users/alitufanoglu/ERP-vNext/execution/portfolio/master-development-plan.md)
-- **Legacy Source**: [master-plan.md](file:///Users/alitufanoglu/ERP-vNext/docs/platform/master-plan.md)
+- **Canonical Path**: [master-development-plan.md](./master-development-plan.md)
+- **Legacy Source**: [master-plan.md](../../docs/platform/master-plan.md)
 - **Migration Phase**: IA Phase 3B-1
 - **Status**: Migrated high-level roadmap and inventory only
 - **Usage Warning**: This file is a target representation and not a complete system-wide replacement until AGENTS, workflows, and prompts are officially updated in later phases.
@@ -20,8 +20,8 @@ This document serves as the high-level roadmap and scheduling reference for the 
 - Strategic development planning references.
 
 ### This file is NOT for:
-- Canonical Module ID reservation (use [module-id-registry.md](file:///Users/alitufanoglu/ERP-vNext/execution/registries/module-id-registry.md)).
-- Active daily sprint task and progress tracking (use [platform-delivery-board.md](file:///Users/alitufanoglu/ERP-vNext/execution/delivery/platform-delivery-board.md)).
+- Canonical Module ID reservation (use [module-id-registry.md](../registries/module-id-registry.md)).
+- Active daily sprint task and progress tracking (use [platform-delivery-board.md](../delivery/platform-delivery-board.md)).
 - Verification logs, test reports, or QA evidence (use `docs/qa/`).
 - Release notes or deployment changelogs (use `docs/releases/`).
 - Developer coding standards or architectural linter rules (use `.antigravity/rules/`).
@@ -31,11 +31,11 @@ This document serves as the high-level roadmap and scheduling reference for the 
 
 ## Authority Boundary Mappings
 For all other project phases and roles, consult the following sources of truth:
-* **Canonical Identity & ID Reservation**: [module-id-registry.md](file:///Users/alitufanoglu/ERP-vNext/execution/registries/module-id-registry.md)
-* **Active Work Package & Branch Coordination**: [platform-delivery-board.md](file:///Users/alitufanoglu/ERP-vNext/execution/delivery/platform-delivery-board.md)
+* **Canonical Identity & ID Reservation**: [module-id-registry.md](../registries/module-id-registry.md)
+* **Active Work Package & Branch Coordination**: [platform-delivery-board.md](../delivery/platform-delivery-board.md)
 * **Module Specifications & Design Contracts**: `execution/domains/{domain}/module-packs/`
-* **Static Coding Standards & Rules**: [Rules Directory](file:///Users/alitufanoglu/ERP-vNext/.antigravity/rules/)
-* **Post-Development Reference Documentation**: [Docs Directory](file:///Users/alitufanoglu/ERP-vNext/docs/)
+* **Static Coding Standards & Rules**: [Rules Directory](../../.antigravity/rules/)
+* **Post-Development Reference Documentation**: [Docs Directory](../../docs/)
 
 ---
 
@@ -43,7 +43,7 @@ For all other project phases and roles, consult the following sources of truth:
 Below is the macro status catalog. 
 
 > [!NOTE]
-> The **Legacy Completeness %** column serves as a historical macro reference indicator from the legacy plan. It is **not** an active progress tracker. For daily task status and active branches, refer to [platform-delivery-board.md](file:///Users/alitufanoglu/ERP-vNext/execution/delivery/platform-delivery-board.md).
+> The **Legacy Completeness %** column serves as a historical macro reference indicator from the legacy plan. It is **not** an active progress tracker. For daily task status and active branches, refer to [platform-delivery-board.md](../delivery/platform-delivery-board.md).
 
 | ID | Module Name | Wave | Priority | Lifecycle Status | Legacy Completeness % | Notes |
 |---|---|---|---|---|---|---|

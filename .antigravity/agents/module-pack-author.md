@@ -45,7 +45,6 @@ Module pack yazmadan önce şu dosyalar sırasıyla okunur — sapma kabul edilm
 12. `.antigravity/rules/entity-base-template.md` (EntityBase / BaseEntity / GlobalEntity ayrımı)
 13. `.antigravity/rules/routes.md` (API route format + Gateway)
 14. `.antigravity/rules/platform-lookups-reference-data.md` (Platform/Admin lookup SSOT + MDM/reference boundary)
-15. `execution/portfolio/master-development-plan.md` (modül envanteri, MVP scope, cross-cutting standartlar — özellikle Section 7)
 
 Platform admin shell modülü hazırlıyorsan ek referans: `frontend/Diten.Web/Views/Platform/Tenants/` (canlı Platform Admin örneği).
 
