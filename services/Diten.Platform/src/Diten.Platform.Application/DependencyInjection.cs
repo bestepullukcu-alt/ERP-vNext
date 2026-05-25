@@ -15,6 +15,7 @@ using Diten.Platform.Application.Features.InterfaceRegistry.Auditing;
 using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Services;
 using Diten.Platform.Application.Services.Eventing;
+using Diten.Platform.Common.Authorization;
 using Diten.Platform.Common.Catalog;
 using Diten.Platform.Contracts.Events;
 using FluentValidation;
@@ -46,6 +47,8 @@ public static class DependencyInjection
         services.AddScoped<IEventBus, EventBus>();
         services.AddScoped<ConsumedEventStore>();
         services.AddScoped<IPlatformCatalogContract, PlatformCatalogContract>();
+        services.AddSingleton<ITemporaryAccessProvider, NoOpTemporaryAccessProvider>();
+        services.AddScoped<IDataScopeResolver, NoOpDataScopeResolver>();
         services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();

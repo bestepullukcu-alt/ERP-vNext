@@ -14,9 +14,10 @@ public sealed class TenantFeatureAuthorizationHandlerTests
     public async Task HandleAsync_does_not_succeed_when_user_is_not_authenticated()
     {
         var checker = new Mock<IEntitlementChecker>();
-        var context = CreateContext(new ClaimsPrincipal(new ClaimsIdentity()));
+        var tenantContext = CreateTenantContext(isAuthenticated: false);
+        var context = CreateContext();
 
-        await CreateHandler(checker).HandleAsync(context);
+        await CreateHandler(checker, tenantContext: tenantContext).HandleAsync(context);
 
         Assert.False(context.HasSucceeded);
         checker.Verify(
@@ -29,9 +30,10 @@ public sealed class TenantFeatureAuthorizationHandlerTests
     {
         var checker = new Mock<IEntitlementChecker>();
         var auditSink = new Mock<IEntitlementAuditSink>();
-        var context = CreateContext(CreatePrincipal(("actor_type", "platform_admin")));
+        var tenantContext = CreateTenantContext(actorType: "platform_admin", isPlatformAdmin: true);
+        var context = CreateContext();
 
-        await CreateHandler(checker, auditSink).HandleAsync(context);
+        await CreateHandler(checker, auditSink, tenantContext).HandleAsync(context);
 
         Assert.True(context.HasSucceeded);
         checker.Verify(
@@ -44,9 +46,10 @@ public sealed class TenantFeatureAuthorizationHandlerTests
     public async Task HandleAsync_does_not_succeed_when_actor_type_is_missing()
     {
         var checker = new Mock<IEntitlementChecker>();
-        var context = CreateContext(CreatePrincipal());
+        var tenantContext = CreateTenantContext(actorType: null);
+        var context = CreateContext();
 
-        await CreateHandler(checker).HandleAsync(context);
+        await CreateHandler(checker, tenantContext: tenantContext).HandleAsync(context);
 
         Assert.False(context.HasSucceeded);
         checker.Verify(
@@ -58,9 +61,10 @@ public sealed class TenantFeatureAuthorizationHandlerTests
     public async Task HandleAsync_does_not_succeed_when_tenant_user_has_no_tenant_id()
     {
         var checker = new Mock<IEntitlementChecker>();
-        var context = CreateContext(CreatePrincipal(("actor_type", "tenant_user")));
+        var tenantContext = CreateTenantContext(actorType: "tenant_user", tenantId: Guid.Empty);
+        var context = CreateContext();
 
-        await CreateHandler(checker).HandleAsync(context);
+        await CreateHandler(checker, tenantContext: tenantContext).HandleAsync(context);
 
         Assert.False(context.HasSucceeded);
         checker.Verify(
@@ -72,9 +76,10 @@ public sealed class TenantFeatureAuthorizationHandlerTests
     public async Task HandleAsync_does_not_succeed_when_tenant_id_is_invalid()
     {
         var checker = new Mock<IEntitlementChecker>();
-        var context = CreateContext(CreatePrincipal(("actor_type", "tenant_user"), ("tenant_id", "not-a-guid")));
+        var tenantContext = CreateTenantContext(actorType: "tenant_user", tenantId: Guid.Empty);
+        var context = CreateContext();
 
-        await CreateHandler(checker).HandleAsync(context);
+        await CreateHandler(checker, tenantContext: tenantContext).HandleAsync(context);
 
         Assert.False(context.HasSucceeded);
         checker.Verify(
@@ -90,9 +95,10 @@ public sealed class TenantFeatureAuthorizationHandlerTests
             .Setup(x => x.IsFeatureEnabledAsync(TenantId, "ADVANCED_REPORTING", It.IsAny<CancellationToken>()))
             .ReturnsAsync(EntitlementCheckResult.Allowed(EntitlementKind.Feature, "ADVANCED_REPORTING"));
         var auditSink = new Mock<IEntitlementAuditSink>();
-        var context = CreateContext(CreatePrincipal(("actor_type", "tenant_user"), ("tenant_id", TenantId.ToString())));
+        var tenantContext = CreateTenantContext(actorType: "tenant_user", tenantId: TenantId);
+        var context = CreateContext();
 
-        await CreateHandler(checker, auditSink).HandleAsync(context);
+        await CreateHandler(checker, auditSink, tenantContext).HandleAsync(context);
 
         Assert.True(context.HasSucceeded);
         VerifyAuditNotCalled(auditSink);
@@ -109,9 +115,10 @@ public sealed class TenantFeatureAuthorizationHandlerTests
                 EntitlementKind.Feature,
                 "ADVANCED_REPORTING",
                 EntitlementDenyReason.FeatureNotEnabled));
-        var context = CreateContext(CreatePrincipal(("actor_type", "tenant_user"), ("tenant_id", TenantId.ToString())));
+        var tenantContext = CreateTenantContext(actorType: "tenant_user", tenantId: TenantId);
+        var context = CreateContext();
 
-        await CreateHandler(checker, auditSink).HandleAsync(context);
+        await CreateHandler(checker, auditSink, tenantContext).HandleAsync(context);
 
         Assert.False(context.HasSucceeded);
         Assert.True(context.HasFailed);
@@ -148,9 +155,10 @@ public sealed class TenantFeatureAuthorizationHandlerTests
         auditSink
             .Setup(x => x.LogDeniedAsync(It.IsAny<EntitlementAuditDenyContext>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("audit unavailable"));
-        var context = CreateContext(CreatePrincipal(("actor_type", "tenant_user"), ("tenant_id", TenantId.ToString())));
+        var tenantContext = CreateTenantContext(actorType: "tenant_user", tenantId: TenantId);
+        var context = CreateContext();
 
-        await CreateHandler(checker, auditSink).HandleAsync(context);
+        await CreateHandler(checker, auditSink, tenantContext).HandleAsync(context);
 
         Assert.False(context.HasSucceeded);
         Assert.True(context.HasFailed);
@@ -168,9 +176,10 @@ public sealed class TenantFeatureAuthorizationHandlerTests
         checker
             .Setup(x => x.IsFeatureEnabledAsync(TenantId, "ADVANCED_REPORTING", It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("boom"));
-        var context = CreateContext(CreatePrincipal(("actor_type", "tenant_user"), ("tenant_id", TenantId.ToString())));
+        var tenantContext = CreateTenantContext(actorType: "tenant_user", tenantId: TenantId);
+        var context = CreateContext();
 
-        await CreateHandler(checker).HandleAsync(context);
+        await CreateHandler(checker, tenantContext: tenantContext).HandleAsync(context);
 
         Assert.False(context.HasSucceeded);
         Assert.True(context.HasFailed);
@@ -180,9 +189,10 @@ public sealed class TenantFeatureAuthorizationHandlerTests
     public async Task HandleAsync_fails_closed_for_partner_admin()
     {
         var checker = new Mock<IEntitlementChecker>();
-        var context = CreateContext(CreatePrincipal(("actor_type", "partner_admin"), ("tenant_id", TenantId.ToString())));
+        var tenantContext = CreateTenantContext(actorType: "partner_admin", tenantId: TenantId);
+        var context = CreateContext();
 
-        await CreateHandler(checker).HandleAsync(context);
+        await CreateHandler(checker, tenantContext: tenantContext).HandleAsync(context);
 
         Assert.False(context.HasSucceeded);
         checker.Verify(
@@ -190,17 +200,20 @@ public sealed class TenantFeatureAuthorizationHandlerTests
             Times.Never);
     }
 
-    private static AuthorizationHandlerContext CreateContext(ClaimsPrincipal user)
+    private static AuthorizationHandlerContext CreateContext()
     {
+        var user = new ClaimsPrincipal(new ClaimsIdentity(authenticationType: "Test"));
         return new AuthorizationHandlerContext([new TenantFeatureRequirement("ADVANCED_REPORTING")], user, null);
     }
 
     private static TenantFeatureAuthorizationHandler CreateHandler(
         Mock<IEntitlementChecker> checker,
-        Mock<IEntitlementAuditSink>? auditSink = null)
+        Mock<IEntitlementAuditSink>? auditSink = null,
+        Mock<ITenantAuthorizationContext>? tenantContext = null)
     {
         auditSink ??= new Mock<IEntitlementAuditSink>();
-        return new TenantFeatureAuthorizationHandler(checker.Object, auditSink.Object);
+        tenantContext ??= CreateTenantContext(actorType: "tenant_user", tenantId: TenantId);
+        return new TenantFeatureAuthorizationHandler(checker.Object, auditSink.Object, tenantContext.Object);
     }
 
     private static void VerifyAuditNotCalled(Mock<IEntitlementAuditSink> auditSink)
@@ -210,10 +223,17 @@ public sealed class TenantFeatureAuthorizationHandlerTests
             Times.Never);
     }
 
-    private static ClaimsPrincipal CreatePrincipal(params (string Type, string Value)[] claims)
+    private static Mock<ITenantAuthorizationContext> CreateTenantContext(
+        bool isAuthenticated = true,
+        string? actorType = "tenant_user",
+        Guid? tenantId = null,
+        bool isPlatformAdmin = false)
     {
-        return new ClaimsPrincipal(new ClaimsIdentity(
-            claims.Select(claim => new Claim(claim.Type, claim.Value)),
-            "Test"));
+        var context = new Mock<ITenantAuthorizationContext>();
+        context.SetupGet(x => x.IsAuthenticated).Returns(isAuthenticated);
+        context.SetupGet(x => x.ActorType).Returns(actorType);
+        context.SetupGet(x => x.IsPlatformAdmin).Returns(isPlatformAdmin);
+        context.SetupGet(x => x.TenantId).Returns(tenantId ?? Guid.Empty);
+        return context;
     }
 }
