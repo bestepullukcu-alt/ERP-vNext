@@ -5,6 +5,8 @@ domain: platform-shared-services
 status: in-progress
 owner: codex
 branch: feature/pss/mod-0014-module-boundary-registry
+golden_reference: none
+form_field_count: 0
 started: 2026-04-28
 target: 2026-06-30
 ---

@@ -5,6 +5,8 @@ domain: platform-shared-services
 status: in-progress
 owner: ai-orchestrator
 branch: feature/pss/mod-0044-tenant-manager
+golden_reference: none
+form_field_count: 0
 started: 2026-04-17
 target: 2026-08-15
 ---

@@ -5,6 +5,8 @@ domain: platform-shared-services
 status: in-progress
 owner: codex
 branch: feature/pss/mod-0046-tenant-core-ui
+golden_reference: slim
+form_field_count: 7
 dates:
   started: 2026-04-27
 ---
