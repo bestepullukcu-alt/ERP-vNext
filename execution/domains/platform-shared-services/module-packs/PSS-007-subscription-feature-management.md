@@ -255,8 +255,8 @@ Varsayılan PSS ve CQRS yaklaşımlarına göre:
 
 ## Implementation Audits
 
-- [x] Batch 1 audit: `docs/audits/pss-pss-007-subscription-feature-management-batch1-audit.md`
-- [x] Batch 2 audit: `docs/audits/pss-pss-007-subscription-feature-management-batch2-audit.md`
+- [x] Batch 1 audit: `docs/audits/pss-007-subscription-feature-management-batch1-audit.md`
+- [x] Batch 2 audit: `docs/audits/pss-007-subscription-feature-management-batch2-audit.md`
 
 ## Next Implementation Batch
 
