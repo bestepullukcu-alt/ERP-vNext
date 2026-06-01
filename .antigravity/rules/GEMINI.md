@@ -4,7 +4,7 @@ trigger: always_on
 
 # GEMINI.md - Diten ERP vNext Ana Kural Kitabı (Master Rulebook)
 
-> Bu dosya, Antigravity AI'ın (ve alt ajanların) bu projede nasıl davranacağını belirleyen DEĞİŞMEZ anayasadır. Bu dosyadaki kurallar, tüm yetenek (skill) ve ajan (agent) yönergelerinden üstündür (Öncelik: P0).
+> Bu dosya, `.antigravity/` global engineering katmanı içinde ajan ve yetenek (skill) davranışı için P0 rehberdir. Repo-root `AGENTS.md` yetki hiyerarşisini değiştirmez: Module Pack > Domain Config > AGENTS.md > `.antigravity/` > Archive / dış referans. Çakışmada üst katman kazanır.
 
 ---
 
@@ -15,7 +15,7 @@ trigger: always_on
 ### 1. Modüler Yetenek Yükleme Protokolü (Skill Loading)
 Ajan tetiklendi → Frontmatter içindeki `skills:` alanını kontrol et → İlgili dosyayı oku → Uygula.
 - **Okuma Kuralı:** Skill klasöründeki her şeyi okuma. Sadece kullanıcının talebiyle eşleşen skill dosyalarını oku.
-- **Kural Önceliği:** P0 (GEMINI.md) > P1 (Agent .md) > P2 (Rules.md) > P3 (SKILL.md). Tüm kurallar bağlayıcıdır.
+- **Kural Önceliği (`.antigravity` katmanı içinde):** P0 (GEMINI.md) > P1 (Agent .md) > P2 (Rules.md) > P3 (SKILL.md). Bu sıra yalnız global engineering katmanı içindir; Module Pack, Domain Config ve AGENTS.md daha üst otoritedir.
 
 ---
 
@@ -35,9 +35,9 @@ Ajan tetiklendi → Frontmatter içindeki `skills:` alanını kontrol et → İl
 
 ## 🤖 AKILLI AJAN YÖNLENDİRMESİ (ADIM 2)
 
-**DİKKAT: Diten ERP vNext 10 uzman ajanlı bir yapıya sahiptir. "God Object" (her şeyi tek başına yapan devasa ajan) YASAKTIR. İşleri uygun uzmanlara devret.**
+**DİKKAT: Diten ERP vNext 20 agent dosyalı bir yapıya sahiptir: 1 `orchestrator` + 19 specialist / auxiliary agent. "God Object" (her şeyi tek başına yapan devasa ajan) YASAKTIR. İşleri uygun uzmanlara devret.**
 
-### 🏛️ Diten ERP vNext Ajan Envanteri (13 Uzman)
+### 🏛️ Diten ERP vNext Ajan Envanteri (özet)
 **[Teknik Kadro]**
 1. **`orchestrator`**: Şef. İşi planlar, diğer ajanlara dağıtır.
 2. **`backend-architect`**: .NET 8, CQRS (MediatR), Repository, Domain.
@@ -93,7 +93,7 @@ Yeni bir servis eklendiğinde veya çalıştırıldığında portlar sabittir:
 - Tema: Bootstrap 5.3.3 tabanlı Sneat PRO.
 - Renkler Hardcoded olamaz (`var(--bs-primary)` kullanılmalı).
 - DataTables eklentisi eski `dom` string ile DEĞİL, v2 `layout` API (topStart, bottomEnd vb.) ile oluşturulmalıdır.
-- DataTable filtreleri için Bootstrap Offcanvas (`#offcanvasFilter`) kullanılmalıdır.
+- DataTable filtreleri **inline** olmalıdır: `_Filter.cshtml` içinde `#inlineFilterHost` + `#inlineFilterCollapse` bulunur ve toolbar altına mount edilir. Bootstrap Offcanvas filter (`#offcanvasFilter`) YASAKTIR; Offcanvas yalnızca QuickView/Details preview ve Slim create/edit içindir. Detay: `.antigravity/rules/frontend-datatable-template.md` + `frontend-js-standard.md`.
 
 ---
 

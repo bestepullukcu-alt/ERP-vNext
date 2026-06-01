@@ -60,5 +60,5 @@ Platform & Shared Services (PSS) domain'i, Diten ERP vNext ekosistemi için tena
 ## Domain Bootstrap Notes
 
 - Teknik standartlar [AGENTS.md](../../../AGENTS.md) ve [.antigravity/rules/](../../../.antigravity/rules/) altındaki global dosyalardan devralınır — burada tekrarlanmaz.
-- Modül kimliği: yeni paketler `PSS-NNN-{slug}`, tarihsel kayıtlar `MOD-NNNN-{slug}`. İkisi de korunur.
+- Modül kimliği: yeni ERP product module paketleri registry-controlled `MOD-NNNN-{slug}` formatını kullanır. Tarihsel `PSS-NNN-{slug}` ve diğer legacy kayıtlar migration boyunca korunur; toplu rename yapılmaz.
 - Tarihsel `controls/`, `batches/` ve `decisions/` katmanları [archive/domains/platform-shared-services/](../../../archive/domains/platform-shared-services/) altına taşınmıştır; otorite değildir.

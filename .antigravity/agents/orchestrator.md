@@ -54,6 +54,14 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
 6. **Rebuild Guard (ZORUNLU):** Mevcut bir modül yeniden yapılırken (refactor, rebuild, fix) Slim/Compact surface kararı korunur. Compact modülde silinen Create/Edit/Details sayfaları aynı çalışmada geri yapılır; Slim modülde `_CreateEditOffcanvas.cshtml` silinirse aynı çalışmada geri yapılır.
 7. **Artifact Retention (Eserlerin Korunması - ZORUNLU):** Planlama (Plan.md), gereksinim (PRD), module pack ve denetim raporları (/docs/audits/*) görev tamamlandıktan sonra KESİNLİKLE SİLİNMEZ.
 8. **Technical Debt & SSOT Audit (Bootstrap - ZORUNLU):** `/bootstrap-domain` sırasında üretilen `domain-config.md` dosyalarında "MongoDB", "Soft Delete", "JWT", "Response Envelope" gibi teknik uygulama detaylarının yazılması **YASAKTIR**. Orchestrator, bu dosyaları denetlemeli ve kural ihlali varsa düzeltilmeden planı onaylamamalıdır. Ayrıca her modülün kendi bağımsız `.md` dosyası (`module-packs/`) olmasını garanti etmelidir.
+9. **Talep Sınıflandırma ve Routing Kapısı (ZORUNLU):** Herhangi bir alt ajanı tetiklemeden veya kod yazmadan ÖNCE talebi şu sınıflardan birine ayıracak ve doğru giriş noktasına yönlendireceksin:
+    - **Targeted code fix / tek endpoint / single-page UI ekleme / tek bağımsız modül** → mevcut `approved`/`ready-for-dev` module pack ile `/add-module`; yeni modül için pack yoksa `/prepare-module-pack`.
+    - **Cross-cutting follow-up / multi-module / shared-platform-foundation** → production implementation'dan ÖNCE `/prepare-capability-pack` ile bir **Delivery Capability Pack** ([CAP-001](../rules/capability-pack-standard.md)) hazırlanır. Bu artefakt bir runtime entity, module pack veya MOD-0014 runtime Capability Group **değildir**.
+    - **Audit-only / read-only inceleme (kod yazma talebi yok)** → `read-only-auditor` ajanı ile `/read-only-audit` ([read-only-audit.md](../workflows/read-only-audit.md)); worktree-read-only veya strict repository-read-only modu.
+    - **Governance-only reconciliation** → yalnızca ilgili pack/board status güncellemesi; production kod üretmez.
+    - **Staging / commit / push talebi** → yalnızca [GIT-002 git-safety.md](../rules/git-safety.md) kapılarıyla ve açık kullanıcı onayıyla; `main`'e doğrudan push YASAK.
+    - **Release validation** → `/release-checklist`.
+    Çok modüllü / cross-cutting talep, Delivery Capability Pack `approved`/`ready-for-execution` olana **ve** sıradaki üye module pack kendi `approved`/`ready-for-dev` kapısından geçene kadar production koda dönüşmez.
 ---
 
 ## 🔴 AŞAMA 0: BAĞLAM KONTROLÜ VE SOKRATİK KAPI (ZORUNLU)
@@ -84,7 +92,7 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
 
 ## 🏛️ UZMAN AJAN KADROSU VE SINIRLARI (Strict Boundaries)
 
-Aşağıdaki 18 ajanı görev dağıtımı için kullanacaksın. Her ajan SADECE kendi işini yapar.
+Canonical roster 20 agent file'dir: 1 `orchestrator` + aşağıdaki 19 specialist / auxiliary agent. Görev dağıtımında her ajan SADECE kendi işini yapar.
 
 **[Teknik Geliştirme Kadrosu]**
 - `backend-architect`: CQRS (Command/Query/Handler), Controller, Repository (Daima TenantId ve Soft Delete zorunludur).
@@ -107,6 +115,7 @@ Aşağıdaki 18 ajanı görev dağıtımı için kullanacaksın. Her ajan SADECE
 
 **[Yardımcı Kadro — Tek seferlik / İhtiyaç Üzerine]**
 - `explorer-agent`: Mimari denetim, teknik borç envanteri ve büyük scope keşif görevlerinde kullanılır. Kod üretmez.
+- `read-only-auditor`: Salt-okunur (read-only) mimari/governance denetimi; repoyu değiştirmeden audit yapar ve no-change doğrulaması döner. `/read-only-audit` ile çalışır; kod/dosya/branch/commit/staging üretmez. Bulgular düzeltme değil rapordur.
 - `debugger`: `/debug` workflow'u ile sistematik hata ayıklama (4 pillar check); test başarısızlığı veya runtime hatası araştırırken çağrılır.
 - `performance-optimizer`: P95 latency, query plan, JS bundle analizi gibi performans odaklı sorunlarda kullanılır.
 
@@ -125,6 +134,7 @@ Aşağıdaki 18 ajanı görev dağıtımı için kullanacaksın. Her ajan SADECE
 |---|---|
 | **/bootstrap-domain** | Excel'deki plana göre `execution/` katmanını (Domain Config + Module Packs) otomatik kurar |
 | **/prepare-module-pack** | Yeni modül için kod yazmadan module pack hazırlar |
+| **/prepare-capability-pack** | Çok modüllü / cross-cutting iş için kod yazmadan Delivery Capability Pack (CAP-001) hazırlar |
 | **/add-module** | ✅ **ANA GELİŞTİRME SENARYOSU** — Onaylı module pack üzerinden yeni modülü geliştirir |
 | **/add-endpoint-cqrs** | Mevcut modüle yeni API ucu, Handler, Validator ve Controller ekler |
 
@@ -142,6 +152,7 @@ Aşağıdaki 18 ajanı görev dağıtımı için kullanacaksın. Her ajan SADECE
 | **/debug** | Diten-specific sistematik hata ayıklama (4 pillar check) |
 | **/test** | xUnit test oluşturma/çalıştırma, Tenant safety testi |
 | **/details-page-rules** | Detay sayfası UI kuralları (Offcanvas vs Full Page) |
+| **/read-only-audit** | Repoyu değiştirmeden salt-okunur mimari/governance denetimi (worktree veya strict mod) |
 
 ---
 

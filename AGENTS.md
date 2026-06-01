@@ -28,10 +28,11 @@ ERP-vNext/
 ├── .antigravity/                        Global Engineering System (ajanlar, kurallar, workflow'lar)
 ├── execution/                           Domain ve module execution katmanı
 │   └── domains/
-│       ├── master-data-management/      (MDM — henüz servis yok, domain planlaması mevcut)
-│       ├── developer-enablement/        (DEVEN — Diten.DevEnablementService)
-│       ├── platform-shared-services/    (PSS — Diten.Platform + Diten.AuthService)
-│       └── enterprise-strategy-business-performance/  (ESBP — Diten.EnterpriseStrategyService)
+│       ├── developer-enablement/        (DEVEN — mevcut; Diten.DevEnablementService golden references)
+│       └── platform-shared-services/    (PSS — mevcut; Diten.Platform + Diten.AuthService)
+│       # planned, not scaffolded yet:
+│       # master-data-management          (MDM)
+│       # enterprise-strategy-business-performance (ESBP)
 ├── services/                            .NET 8 mikroservisler
 │   ├── Diten.AuthService/
 │   ├── Diten.DevEnablementService/
@@ -153,6 +154,12 @@ Varsayılan geliştirme entry point'i: **`@orchestrator`**
 
 Module pack hazırlama entry point'i: **`module-pack-author`** veya **`/prepare-module-pack`**
 
+Çok modüllü / cross-cutting iş entry point'i: **`/prepare-capability-pack`** — production'dan önce bir **Delivery Capability Pack** hazırlar ([CAP-001](.antigravity/rules/capability-pack-standard.md)). Tek modül yeterliyse `/prepare-module-pack`'e döner.
+
+Salt-okunur denetim entry point'i: **`/read-only-audit`** ([read-only-audit.md](.antigravity/workflows/read-only-audit.md)) — repoyu değiştirmeden mimari/governance denetimi.
+
+Tüm git operasyonları (branch, staging, commit, push) [GIT-002 git-safety.md](.antigravity/rules/git-safety.md) kapılarına tabidir.
+
 Orchestrator çağrıldığında Aşama 0'da şu dosyaları okur:
 1. `AGENTS.md` (bu dosya)
 2. İlgili `execution/domains/{domain}/domain-config.md`
@@ -204,7 +211,7 @@ Fix/refactor işleri için: [.antigravity/rules/GEMINI.md](.antigravity/rules/GE
 feature/{domain-kısa}/{module-id}-{slug}
 ```
 
-- `domain-kısa`: `mdm` | `pss` | `esbp`
+- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp`
 - `module-id`: `mdm-001`, `pss-002`, vb. (küçük harf)
 - `slug`: 2-4 kelimelik kısa isim
 
@@ -241,13 +248,14 @@ Module pack minimum içermeli:
 | Terim | Anlam |
 |-------|-------|
 | **Global Engineering System** | `.antigravity/` — tüm projeler arası yeniden kullanılabilir katman |
-| **Domain** | `execution/domains/{name}/` — bir iş alanı (MDM, PSS, ESBP) |
+| **Domain** | `execution/domains/{name}/` — bir iş alanı (DEVEN, PSS; MDM/ESBP planlı) |
 | **Module Pack** | `execution/domains/{d}/module-packs/{ID}.md` — tek bir modülün kimlik + AC dosyası |
 | **Domain Config** | `execution/domains/{d}/domain-config.md` — domain sınırları ve kararlar |
 | **Master Development Plan** | `execution/portfolio/master-development-plan.md` — High-level wave planı ve modül envanteri (eski monolith `docs/platform/master-plan.md` yerine) |
 | **Platform Delivery Board** | `execution/delivery/platform-delivery-board.md` — Aktif iş/hardening takibi ve status panosu |
 | **Module ID Registry** | `execution/registries/module-id-registry.md` — Tüm modüllerin canonical ID listesi ve eşleşmeleri |
 | **Workflow** | `.antigravity/workflows/*.md` — yeniden kullanılabilir tarif (ör. `/add-module`) |
+| **Delivery Capability Pack** | `execution/portfolio/delivery-capability-packs/DCP-{NNN}-{slug}.md` — çok modüllü / cross-cutting teslimat için sınır + sıra + sahiplik orkestrasyon sözleşmesi ([CAP-001](.antigravity/rules/capability-pack-standard.md)). Bir runtime entity, module pack veya MOD-0014 runtime Capability Group **değildir**; yalın `Capability` adıyla anılmaz |
 
 ---
 
@@ -258,7 +266,7 @@ Bu repo, [Layered Agent + Domain Package Model SOP v2.1](docs/sop/upstream/) tem
 - `batches/` katmanı **kullanılmaz** (`.antigravity/workflows/add-module.md` zaten phase orchestration sağlar)
 - `snapshots/` katmanı **kullanılmaz** (git history + `docs/audits/` bu işi yapar)
 - `controls/` ve `decisions/` katmanları **kullanılmaz** (engineering standartları `.antigravity/rules/`'de, scope/MVP kararları `execution/portfolio/master-development-plan.md`'de — tarihsel klasörler `archive/domains/` altına taşındı)
-- Module ID formatı `MOD-xxxx-slug` (örn: `MOD-0018-rbac-abac-authorization`) — hem teknik standartlar hem de tüm modül kimlikleri için birincil formattır
+- Module ID registry canonical kaynaktır. Yeni ERP product module formatı `MOD-NNNN-slug`; follow-up formatı `MOD-NNNN-FUxx-slug`; Delivery Capability Pack formatı `DCP-NNN-slug`; Developer Enablement golden reference formatı `DEV-NNNN-slug`. Tarihsel/legacy formatlar migration boyunca geçerli kalır ve registry cleanup backlog'u üzerinden izlenir; toplu rename yapılmaz.
 - Klasör yapısı `services/` + `frontend/` + `gateway/` (SOP'taki `src/Backend/` + `src/Frontend/` yerine)
 
 SOP'tan sapmaların tam listesi, yukarıdaki hiyerarşi ve proje bazlı SOP dosyaları (`docs/sop/upstream/`) üzerinden takip edilir.
