@@ -1,10 +1,11 @@
 ---
-id: MOD-0021
+id: MOD-0021-PLAN
 name: General Audit Trail - All Phases Implementation Plan
 domain: platform-shared-services
 service: Diten.Platform
 shell: platform-admin
 status: implementation-plan
+canonical_id: MOD-0021
 source_pack: execution/domains/platform-shared-services/module-packs/MOD-0021-general-audit-trail.md
 updated: 2026-05-14
 ---

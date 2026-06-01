@@ -1,17 +1,22 @@
 ---
-id: MOD-0046-tenant-quota-governance-ui
+id: MOD-0033-FU01
 name: Tenant Quota Governance UI
+slug: tenant-quota-governance-ui
 domain: platform-shared-services
 status: approved
 owner: module-pack-author
 branch: feature/pss/mod-0033-consumer-quota-model
+parent_module: MOD-0033
+deprecated_aliases:
+  - MOD-0046-QG
+  - MOD-0046-tenant-quota-governance-ui
 started: 2026-05-12
 target: 2026-05-20
 form_field_count: 0
 golden_reference: not_applicable
 ---
 
-# MOD-0046 - Tenant Quota Governance UI
+# MOD-0033-FU01 - Tenant Quota Governance UI
 
 This module pack is structured as six execution documents inside one tracked pack file:
 
@@ -33,7 +38,7 @@ Tenant Quota Governance UI adds a read-only quota usage section to Tenant Manage
 
 The UI consumes the MOD-0033 Consumer / Quota Model read-only quota status contracts and presents tenant quota limits, current usage, period information, warning state, and limit state in user-friendly language.
 
-This pack is a Tenant Core UI extension under the broader MOD-0046+ Tenant Core UI Extensions scope. It does not replace MOD-0033 backend quota enforcement and does not own subscription lifecycle behavior.
+This pack is a MOD-0033 feature slice rendered inside the MOD-0046 Tenant Core UI surface. It does not replace MOD-0033 backend quota enforcement and does not own subscription lifecycle behavior.
 
 ## Purpose
 Platform administrators need to inspect how much of each plan-backed quota a tenant has used without reading technical quota keys or backend payloads directly.
@@ -400,7 +405,7 @@ This module is not a CRUD DataTable module.
 # repo-scope.md
 
 ## Repo Scope
-- `execution/domains/platform-shared-services/module-packs/MOD-0046-tenant-quota-governance-ui.md`
+- `execution/domains/platform-shared-services/module-packs/MOD-0033-FU01-tenant-quota-governance-ui.md`
 - `frontend/Diten.Web/Views/Platform/Tenants/**`
 - `frontend/Diten.Web/wwwroot/assets/js/Platform/Tenants/**`
 - `frontend/Diten.Web/Controllers/Platform/TenantsController.cs` or the existing tenant details proxy/controller file.

@@ -8,8 +8,8 @@ This folder contains operational, API, and user-facing documentation for the Pla
 |---|---|---|---|
 | MOD-0043/0044/0046 Tenant Management | Partial/live | [API](tenant-management/api.md), [User Manual](tenant-management/user-manual.md) | [Foundation Audit](../audits/pss-mod-0043-tenant-architecture-foundation-audit.md), [Verification](../audits/pss-mod-0043-tenant-foundation-verification-2026-04-16.md) |
 | PSS-006 Subscription Plan Catalog | Live | [API](subscription-plans/api.md), [User Manual](subscription-plans/user-manual.md) | Pending |
-| PSS-007 Subscription Feature Management | Partial/live | [API](subscription-features/api.md), [User Manual](subscription-features/user-manual.md) | [Batch 1](../audits/pss-pss-007-subscription-feature-management-batch1-audit.md), [Batch 2](../audits/pss-pss-007-subscription-feature-management-batch2-audit.md) |
-| PSS-005 Module Catalog | Live | [API](module-catalog/api.md), [User Manual](module-catalog/user-manual.md) | [Audit](../audits/pss-pss-005-module-catalog-audit.md) |
+| PSS-007 Subscription Feature Management | Partial/live | [API](subscription-features/api.md), [User Manual](subscription-features/user-manual.md) | [Batch 1](../audits/pss-007-subscription-feature-management-batch1-audit.md), [Batch 2](../audits/pss-007-subscription-feature-management-batch2-audit.md) |
+| PSS-005 Module Catalog | Live | [API](module-catalog/api.md), [User Manual](module-catalog/user-manual.md) | [Audit](../audits/pss-005-module-catalog-audit.md) |
 | MOD-0298 Tenant Module Entitlements | Partial/live | [API](tenant-module-entitlements/api.md), [User Manual](tenant-module-entitlements/user-manual.md) | [Audit](../audits/pss-mod-0298-tenant-module-entitlements-audit.md) |
 | MOD-0297 Tenant Subscription Lifecycle | Partial/live | Covered by [Tenant Management API](tenant-management/api.md) and [Tenant Management User Manual](tenant-management/user-manual.md) | [Audit](../audits/pss-mod-0297-tenant-subscription-management-audit.md) |
 | PSS-004 Tenant Login & Security | Partial/live | [API](tenant-login-security/api.md), [User Manual](tenant-login-security/user-manual.md) | Pending |

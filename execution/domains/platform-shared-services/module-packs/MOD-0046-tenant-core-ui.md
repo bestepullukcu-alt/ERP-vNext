@@ -1,6 +1,7 @@
 ---
-id: MOD-0046-tenant-core-ui
+id: MOD-0046
 name: Tenant Core UI
+slug: tenant-core-ui
 domain: platform-shared-services
 status: in-progress
 owner: codex

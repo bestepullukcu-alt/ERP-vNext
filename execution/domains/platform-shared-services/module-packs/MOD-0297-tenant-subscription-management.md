@@ -1,6 +1,7 @@
 ---
-id: tenant-subscription-management
+id: MOD-0297
 name: Tenant Subscription Management
+slug: tenant-subscription-management
 domain: platform-shared-services
 status: review
 owner: platform-team
