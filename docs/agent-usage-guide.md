@@ -173,6 +173,7 @@ A5. İlk modül → Yol B'ye geç          B7. PR
 | User Story + Gherkin Acceptance Criteria + MVP/MoSCoW kapsamı | `product-owner` (module pack içeriği için) |
 | Tek modül için PRD/BRD + IFRS/KVKK iş kuralı + L10n anahtar listesi | `business-analyst` (module pack içeriği için) |
 | Yeni module pack hazırlama (sözleşme dosyası) | `module-pack-author` veya `/prepare-module-pack` |
+| Çok modüllü / cross-cutting yetenek planı (kod yazmadan, Delivery Capability Pack) | `/prepare-capability-pack` (CAP-001) |
 | Onaylı module pack ile uçtan uca geliştirme | `@orchestrator` / `/add-module` |
 | Backend endpoint/CQRS ekleme | `backend-architect` / `/add-endpoint-cqrs` |
 | Frontend DataTable veya form düzenleme | `frontend-ui-ux` / `/add-page` |
@@ -180,11 +181,14 @@ A5. İlk modül → Yol B'ye geç          B7. PR
 | 7 dil RESX ve JS L10n bridge | `l10n-agent` |
 | Test senaryoları | `testing-agent` |
 | Güvenlik/tenant/RBAC denetimi | `security-agent` |
+| Salt-okunur mimari/governance denetimi (kod yazma yok) | `read-only-auditor` / `/read-only-audit` |
 | Hata analizi | `debugger` |
 | Teknik dokümantasyon | `documentation-writer` |
 | Son kullanıcı kılavuzu | `user-manual-generator` |
 
 > **Planlama kadrosu sırası:** `product-manager` (yalnız stratejik scope), `product-owner` (AC/MVP), `business-analyst` (iş kuralı/L10n) **opsiyonel** ön adımlardır; çıktıları **her zaman** `module-pack-author`'a girdi olur. Sıradan tek modül geliştirmesi için `module-pack-author` doğrudan çağrılabilir.
+
+> **Git güvenliği:** Staging / commit / push yalnızca [GIT-002 git-safety.md](../.antigravity/rules/git-safety.md) kapılarıyla ve açık kullanıcı onayıyla yapılır; `main`'e doğrudan push yoktur.
 
 ## Slim / Compact Seçimi
 

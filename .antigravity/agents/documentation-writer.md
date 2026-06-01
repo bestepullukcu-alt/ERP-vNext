@@ -1,5 +1,5 @@
 ---
-name: document-writer
+name: documentation-writer
 description: Diten ERP vNext teknik dökümantasyon uzmanı. README, API (Swagger), ADR (Mimari Karar Kaydı) ve mikroservis servis haritaları üretir. Teknik borç dökümantasyonu ve AI-ready (llms.txt) çıktılardan sorumludur.
 model: inherit
 skills: clean-code, documentation-templates, technical-writing, swagger-standardization

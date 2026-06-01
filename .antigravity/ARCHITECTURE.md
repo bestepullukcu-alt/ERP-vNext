@@ -38,7 +38,7 @@ Yeni modül geliştirmesi iki aşamalıdır:
 
     ERP-vNext/
     ├── .antigravity/            # Tek Yönetim Merkezi (Merkezi İstihbarat)
-    │   ├── agents/              # Uzman Personalar (16 ajan)
+    │   ├── agents/              # 20 agent file: 1 orchestrator + 19 specialist/auxiliary
     │   ├── skills/              # Teknik Yetenek Modülleri
     │   ├── workflows/           # Otomasyon Akışları (/komutlar)
     │   ├── rules/               # Sistem Anayasası (Kurallar)
@@ -48,10 +48,11 @@ Yeni modül geliştirmesi iki aşamalıdır:
     │   ├── scripts/
     │   │   └── generate-dashboard.py   # Module pack dashboard ureticisi
     │   └── domains/
-    │       ├── master-data-management/
-    │       ├── developer-enablement/
-    │       ├── platform-shared-services/
-    │       └── enterprise-strategy-business-performance/
+    │       ├── developer-enablement/        # Real domain: Golden Reference module pack'leri
+    │       └── platform-shared-services/
+    │       # planned, not scaffolded yet:
+    │       # master-data-management
+    │       # enterprise-strategy-business-performance
     ├── frontend/
     │   └── Diten.Web/           # MVC Projesi (Port: 5001)
     │       ├── Controllers/
@@ -103,8 +104,9 @@ Module Pack > Domain Config > AGENTS.md > .antigravity/
 Notlar:
 - `batches/` katmani bu repoda kullanilmaz.
 - `snapshots/` katmani bu repoda kullanilmaz.
-- `controls/` ve `decisions/` katmanlari kullanilmaz; tarihsel icerikler `archive/domains/` altinda. Engineering standartlari `.antigravity/rules/`'de, scope kararlari `docs/platform/master-plan.md`'dedir.
+- `controls/` ve `decisions/` katmanlari kullanilmaz; tarihsel icerikler `archive/domains/` altinda. Engineering standartlari `.antigravity/rules/`'de, scope kararlari `execution/portfolio/master-development-plan.md`'dedir (eski `docs/platform/master-plan.md` legacy kaynaktir).
 - Orkestrasyon asamasi `.antigravity/workflows/add-module.md` uzerinden ilerler.
+- `.antigravity/scripts/auto_preview.py`, `checklist.py` ve `session_manager.py` legacy / generic-kit utility olarak kalir; ERP deployment-readiness icin authoritative gate degildir.
 
 ---
 
@@ -142,33 +144,30 @@ Notlar:
 
 ## 🤖 Uzman Ajan Kadrosu (Full Orchestra)
 
-### Teknik Geliştirme (10 Ajan)
+Canonical roster: **20 agent file** = 1 `orchestrator` + 19 specialist / auxiliary agent.
+
 | # | Ajan | Sorumluluk |
 |---|---|---|
 | 1 | **orchestrator** | Ana şef — görev dağıtımı ve 5 fazlı iş akışı yönetimi |
 | 2 | **backend-architect** | .NET 8, CQRS (MediatR), Repository, Domain, Controller |
-| 3 | **frontend-ui-ux** | Razor View, Sneat PRO, DataTables v2, Statik Şablonlar |
+| 3 | **frontend-ui-ux** | Razor View, Sneat PRO, DataTables v2, statik şablonlar |
 | 4 | **security-agent** | Zero Trust, JWT, RBAC, HasPermission, Tenant Shield |
-| 5 | **data-agent** | MongoDB Index, Collection tasarımı, Idempotent Seed Data |
-| 6 | **l10n-agent** | Platform/Tenant ayrımına göre (2/7 dil) .resx senkronizasyonu, `window.L10n` bridge |
-| 7 | **testing-agent** | xUnit, Moq, FluentAssertions, Tenant isolation testleri |
+| 5 | **data-agent** | MongoDB index, collection tasarımı, idempotent seed data |
+| 6 | **l10n-agent** | Platform/Tenant ayrımına göre `.resx` senkronizasyonu, `window.L10n` bridge |
+| 7 | **testing-agent** | xUnit, Moq, FluentAssertions, tenant isolation testleri |
 | 8 | **integration-agent** | Ocelot Gateway routing, JWT pass-through, servis iletişimi |
-| 9 | **debugger** | Katmanlı izolasyon (FE→GW→Auth→Service→DB), 4 fazlı araştırma |
-| 10 | **explorer-agent** | Mimari keşif, Sokratik protokol, standart kıyas denetimi |
-
-### Performans & Optimizasyon (1 Ajan)
-| # | Ajan | Sorumluluk |
-|---|---|---|
-| 11 | **performance-optimizer** | CQRS Handler profili, MongoDB explain(), UI render KPI'ları |
-
-### Analiz & Dokümantasyon (5 Ajan)
-| # | Ajan | Sorumluluk |
-|---|---|---|
-| 12 | **business-analyst** | PRD/BRD, IFRS/KVKK uyumluluk, User Story ve iş kuralları |
-| 13 | **product-manager** | Ürün stratejisi, MoSCoW önceliklendirme, sistem etki analizi |
-| 14 | **product-owner** | Backlog yönetimi, Gherkin AC, MVP/scope kontrolü |
-| 15 | **documentation-writer** | API Spec (Swagger), ADR, CHANGELOG, llms.txt |
-| 16 | **user-manual-generator** | Son kullanıcı kılavuzları, ekran rehberleri, onboarding |
+| 9 | **devops-agent** | Docker, CI/CD, local runbook, deployment senaryoları |
+| 10 | **code-quality-agent** | Naming, complexity, linting, refactor hygiene |
+| 11 | **debugger** | Katmanlı izolasyon (FE→GW→Auth→Service→DB), 4 fazlı araştırma |
+| 12 | **performance-optimizer** | CQRS handler profili, MongoDB explain(), UI render KPI'ları |
+| 13 | **explorer-agent** | Mimari keşif, teknik borç envanteri, standart kıyas denetimi |
+| 14 | **module-pack-author** | Kod yazmadan module pack hazırlar veya günceller |
+| 15 | **business-analyst** | PRD/BRD, IFRS/KVKK uyumluluk, User Story ve iş kuralları |
+| 16 | **product-manager** | Ürün stratejisi, MoSCoW önceliklendirme, sistem etki analizi |
+| 17 | **product-owner** | Backlog yönetimi, Gherkin AC, MVP/scope kontrolü |
+| 18 | **documentation-writer** | API Spec (Swagger), ADR, CHANGELOG, llms.txt |
+| 19 | **user-manual-generator** | Son kullanıcı kılavuzları, ekran rehberleri, onboarding |
+| 20 | **read-only-auditor** | Salt-okunur mimari/governance denetimi; değişiklik üretmez |
 
 ---
 
@@ -178,6 +177,7 @@ Notlar:
 | Komut | Açıklama |
 |---|---|
 | **/add-module** | ✅ **ANA SENARYO** — Yeni modülü sıfırdan (Entity → UI) tüm orkestra ile oluşturur |
+| **/prepare-capability-pack** | Çok modüllü / cross-cutting iş için kod yazmadan Delivery Capability Pack (CAP-001) hazırlar |
 | **/add-endpoint-cqrs** | Mevcut modüle yeni API ucu, Handler, Validator ve Controller ekler |
 
 ### Altyapı & Güvenlik
@@ -194,6 +194,7 @@ Notlar:
 | **/debug** | Diten-specific sistematik hata ayıklama (4 pillar check) |
 | **/test** | xUnit test oluşturma/çalıştırma, Tenant safety testi |
 | **/details-page-rules** | Detay sayfası UI kuralları (Offcanvas vs Full Page) |
+| **/read-only-audit** | Repoyu değiştirmeden salt-okunur mimari/governance denetimi (worktree veya strict mod) |
 
 ---
 
@@ -220,6 +221,7 @@ Ajanların uyması gereken zorunlu dosyalar (`.antigravity/rules/`):
 - **security-jwt.md**: JWT standartları, Permission-based erişim, Token Passthrough
 - **multi-tenancy.md**: GUID TenantId, Soft Delete, izolasyon kuralları
 - **configuration-safety.md**: Fail-fast yapılandırma, hardcoded bağlantı yasağı
+- **capability-pack-standard.md**: CAP-001 — çok modüllü / cross-cutting işler için Delivery Capability Pack sözleşmesi (runtime entity veya module pack değildir)
 
 ### API & Networking
 - **api-conventions.md**: RESTful naming (/api/v1/), ProblemDetails, HTTP status kodları
@@ -237,6 +239,7 @@ Ajanların uyması gereken zorunlu dosyalar (`.antigravity/rules/`):
 - **logging-observability.md**: Structured logging, CorrelationId, PII koruması
 - **mongo-indexing.md**: Tenant-First compound index, ESR kuralı
 - **git-backup-policy.md**: Branch naming convention (backup/YYYYMMDD-HHmm_ozet)
+- **git-safety.md**: GIT-002 — branch / kirli-ağaç / staging / commit / push güvenlik kapıları; `main`'e doğrudan push yasağı
 - **Git backup standardı:** Varsayılan güvenli yedek yöntemi `.git-backups/` altında `bundle + working-tree.patch + untracked.tar.gz` artefact üçlüsüdür. Branch/commit tabanlı backup yalnız kullanıcı bunu açıkça istediğinde zorunlu hale gelir.
 - **Frontend CSS standardı:** Reusable DataTable toolbar / inline filter / Select2 stilleri page-level View içine gömülmez; merkezi olarak `frontend/Diten.Web/wwwroot/assets/css/backbone-custom.css` içinde tutulur.
 

@@ -30,6 +30,7 @@ Bu dosya, ERP-vNext icin guncel prompt katalogudur. Amac, agent secimini, module
 |---|---|---|
 | Yeni module pack hazirlama | `module-pack-author` veya `/prepare-module-pack` | Kod yazmaz, status `draft` birakir |
 | Onayli module pack ile yeni modul gelistirme | `@orchestrator` + `/add-module` | Pack `approved` veya `ready-for-dev` olmali |
+| Cok modullu / cross-cutting yetenek hazirlama | `/prepare-capability-pack` | Kod yazmaz; Delivery Capability Pack'i `draft` birakir (CAP-001). Tek modul yeterliyse `/prepare-module-pack`'e doner |
 | Mevcut CRUD/DataTable duzeltmesi | `@orchestrator` | UI, JS, backend, gateway ve test etkisi birlikte yonetilir |
 | Sadece frontend partial/DataTable isi | `frontend-ui-ux` | Dar kapsamliysa dogrudan agent kullanilabilir |
 | Sadece backend CQRS endpoint | `backend-architect` veya `/add-endpoint-cqrs` | Command/query/handler ayrimi korunur |
@@ -37,7 +38,8 @@ Bu dosya, ERP-vNext icin guncel prompt katalogudur. Amac, agent secimini, module
 | Sadece l10n | `l10n-agent` | `.resx`, `_IndexL10n.cshtml`, `index.l10n.js` kontrol edilir |
 | Test ve kalite kapisi | `testing-agent` | Build, verifier, RESX ve smoke test beklentisi yazilir |
 | Son kullanici dokumani | `user-manual-generator` | Kod etkisi yoksa dogrudan agent uygundur |
-| Audit / review | `@orchestrator` veya ilgili uzman agent | Kod yazma istenmiyorsa acikca belirtilir |
+| Genel review / inceleme (edit'e izin verilebilir) | `@orchestrator` veya ilgili uzman agent | Duzenlemeye izin veren genel review normal goreve-ozel rotayi izleyebilir; kod yazma istenmiyorsa acikca belirtilir |
+| Audit-only / no-change review (kod yazma/edit yok) | `/read-only-audit` -> `read-only-auditor` | worktree-read-only veya strict repository-read-only; repoyu degistirmez, baseline'dan sapmaz |
 
 ---
 

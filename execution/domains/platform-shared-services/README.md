@@ -1,7 +1,7 @@
 # Platform & Shared Services (PSS)
 
 **Kısaltma:** `PSS`
-**Module ID prefix:** `PSS-NNN` (yeni paketler) · tarihsel `MOD-NNNN` kayıtları korunur
+**Module ID policy:** yeni ERP product module paketleri `MOD-NNNN`; tarihsel `PSS-NNN` kayıtları registry migration boyunca korunur
 **Ana servisler:** [services/Diten.Platform/](../../../services/Diten.Platform/) (port 5057), [services/Diten.AuthService/](../../../services/Diten.AuthService/) (port 5056)
 
 ## İş Tanımı
@@ -44,8 +44,8 @@ Platform & Shared Services domain'i; tenant yönetimi, subscription, RBAC/ABAC, 
 Tam akış için: [docs/agent-usage-guide.md](../../../docs/agent-usage-guide.md). Kısa hâli:
 
 1. `/prepare-module-pack` çağır (modül adı + alan sayısı + iş kuralları)
-2. Üretilen `PSS-NNN-{slug}.md` pack'ini incele, gerekirse düzelt
+2. Üretilen registry-controlled `{ID}-{slug}.md` pack'ini incele, gerekirse düzelt
 3. `status: approved` yap
-4. Branch aç: `feature/pss/pss-NNN-{slug}`
+4. Branch aç: `feature/pss/{id-lower}-{slug}`
 5. `@orchestrator {pack-yolu}` çağır
 6. Test + `status: done` + PR

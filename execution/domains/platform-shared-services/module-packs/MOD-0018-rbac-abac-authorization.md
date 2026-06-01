@@ -300,12 +300,15 @@ Bu revize MOD-0018 freeze'ini bozmaz; "imza degismez" literal kuralini "yuzey ko
 
 ## 20. Follow-up Items
 
-- MOD-0018-FU1: Cache eviction API + tenant-level key invalidation.
-- MOD-0018-FU2: Entitlement/subscription event contracts.
-- MOD-0018-FU3: Entitlement command handler event publish.
-- MOD-0018-FU4: Subscription lifecycle handler event publish.
-- MOD-0018-FU5: `EntitlementCacheInvalidationConsumer` + MassTransit registration.
-- MOD-0018-FU6: Audit proof hardening and probe smoke.
-- MOD-0018-FU7: First tenant pilot module wiring (`[RequiresModule]` / `[RequiresFeature]`).
-- MOD-0018-FU8: AuthService partner scope claims, separate pack.
-- MOD-0018-FU9: RBAC Admin UI, separate pack.
+Canonical follow-up identity source: `execution/registries/module-id-registry.md`. This parent pack does not create or rename follow-up packs; it only mirrors the registry-controlled chain.
+
+- MOD-0018-FU10: Authorization Decision Contract Extension parent record for FU10a/FU10b.
+- MOD-0018-FU10a: Pure Authorization Decision Contract Extension.
+- MOD-0018-FU10b: EntitlementChecker ResolvedFrom Mapping.
+- MOD-0018-FU11: Temporary Access Pipeline Binding.
+- MOD-0018-FU12: Tenant Authorization Context Foundation.
+- MOD-0018-FU13: Permission Convention + Cache Invalidation Events.
+- MOD-0018-FU14: Effective Access Explain + Allow Audit.
+- MOD-0018-FU15: Real DataScopeResolver; replacement for deprecated `NEW-MOD-0041` alias.
+
+The older FU1-FU9 notes are historical planning shorthand and are superseded for registry-controlled identity by the MOD-0018-FU10..FU15 chain above. No implementation status is changed by this reconciliation note.
