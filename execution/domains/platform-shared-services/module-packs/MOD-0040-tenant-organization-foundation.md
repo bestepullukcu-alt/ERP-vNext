@@ -71,7 +71,8 @@ This pack is a **conceptual planning draft**. v1 is backend-only; there is no UI
 **External dependency (consumed, not owned):**
 
 - the **MDM-owned Legal Entity capability** — the Legal Entity master record lives in MDM
-  (manager plan candidate ID: MOD-0220; canonical repo registration pending confirmation / reservation).
+  (`MOD-0220` reserved for the MDM Legal Entity capability; authoritative Enterprise Blueprint repository
+  migration pending).
 - a **read-only `LegalEntityId` reference / lookup-validation contract** to that capability — see OD-MOD-le-contract (§19).
 
 **Out of scope (explicit exclusions):**
@@ -121,7 +122,8 @@ They are authored at `ready-for-dev`, after the open decisions are resolved.
 
 > **Not designed in this draft.** Field-level schema (types, required/optional, validation rules, MongoDB index
 > needs) is **deferred to `ready-for-dev`**, because it depends on unresolved open decisions: effective-dating
-> depth (OD-6), Manager Chain derivation (OD-4), and the read-only Legal Entity reference contract (OD-MOD-le-contract).
+> depth (OD-6) and Manager Chain derivation (OD-4). The read-only Legal Entity reference contract
+> (OD-MOD-le-contract) is resolved.
 
 Conceptual aggregate boundary (no field types — boundary description only):
 
@@ -167,10 +169,25 @@ Exact folders/files are finalized at `ready-for-dev`; listed here for boundary v
 ## 7. Dependencies
 
 **External MDM Legal Entity dependency:**
-- Legal Entity is owned by the MDM Legal Entity capability (manager plan candidate ID: MOD-0220; canonical repo
-  registration pending confirmation / reservation).
+- Legal Entity is owned by the MDM Legal Entity capability (`MOD-0220` reserved; authoritative Enterprise
+  Blueprint repository migration pending).
 - MOD-0040 consumes only a read-only `LegalEntityId` reference / lookup-validation contract to that capability.
-- The minimal cross-domain contract is **OD-MOD-le-contract** and must be resolved before MOD-0040 `ready-for-dev`.
+- **OD-MOD-le-contract is resolved.** The locked external dependency is MDM MOD-0220 Legal Entity Foundation,
+  using a read-only `LegalEntityId` lookup / validation contract.
+
+Locked validation:
+
+- `LegalEntityId` exists.
+- Legal Entity is in the same tenant.
+- `LegalEntity.Status == ACTIVE`.
+
+Locked return shape:
+
+- `LegalEntityId`
+- legal name
+- display name
+- lifecycle state
+- `referenceable = true`
 
 **Country boundary:**
 - PSS-011 `countries` lookup is Platform provisioning/support only.
@@ -225,7 +242,7 @@ No frontend files in v1 (`shell: none`).
 ## 12. Validation Rules
 
 > **Not designed in this draft.** Field-level FluentValidation rules are **deferred to `ready-for-dev`** (they
-> depend on OD-6 effective-dating depth, OD-4 Manager Chain, and OD-MOD-le-contract).
+> depend on OD-6 effective-dating depth and OD-4 Manager Chain. OD-MOD-le-contract is resolved.)
 
 Conceptual invariants to be enforced at implementation (boundary statements, not validators):
 
@@ -233,8 +250,8 @@ Conceptual invariants to be enforced at implementation (boundary statements, not
 - A Position Assignment must carry an effective-from date (effective-dated, AD-7).
 - Organization Unit parent references must stay within the same tenant and avoid cycles.
 - Archival/soft-delete must preserve history; references to archived entities are handled, not silently broken.
-- `LegalEntityId` references are validated through the MDM Legal Entity read-only lookup / validation contract
-  (OD-MOD-le-contract).
+- `LegalEntityId` references are validated through the resolved MDM Legal Entity read-only lookup / validation
+  contract: exists, same tenant, and `LegalEntity.Status == ACTIVE`.
 
 ## 13. Failure Path to Verify
 
@@ -244,8 +261,8 @@ Conceptual invariants to be enforced at implementation (boundary statements, not
 - **Overlapping / contradictory effective-dated Position Assignments** → resolution rule applied (defined at ready-for-dev under OD-6).
 - **Orphan / cyclic Organization Unit parent** → rejected.
 - **Reference to archived (soft-deleted) entity** → handled per archival semantics, not a hard failure.
-- **Unknown or inaccessible `LegalEntityId`** → rejected by the MDM Legal Entity lookup / validation contract
-  (OD-MOD-le-contract).
+- **Unknown, cross-tenant, inactive, or archived `LegalEntityId`** → rejected by the MDM Legal Entity lookup /
+  validation contract.
 
 ## 14. Authorization Convention
 
@@ -275,10 +292,12 @@ Because this pack is a **draft** (planning-only, authorizes no implementation), 
    validation contract, with duplicate Legal Entity aggregate, persistence, lifecycle, API, and UI excluded.
 4. PSS-011 `countries` is recorded as Platform provisioning/support only, not the Legal Entity business-country
    source; MDM business-country ownership remains a separate follow-up outside MOD-0040.
-5. Open decisions OD-MOD-svc, OD-MOD-shell, OD-MOD-wave, OD-MOD-le-contract, OD-4, OD-6 are recorded and bound to gates (see §18 / §19).
+5. Open decisions OD-MOD-svc, OD-MOD-shell, OD-MOD-wave, OD-4, OD-6 are recorded and bound to gates (see §18 / §19);
+   OD-MOD-le-contract is resolved and locked.
 6. The pack authorizes **no** production implementation and **does not** design persistence, APIs, entities, or tests.
 7. `entity_base: BaseEntity` and `service: Diten.Platform` are consistent with the module-pack standard for tenant-owned `Diten.Platform` records (subject to OD-MOD-svc confirmation).
-8. **`ready-for-dev` is not granted by this draft.** Promotion requires resolving OD-MOD-svc, OD-MOD-shell, OD-MOD-wave, OD-MOD-le-contract, OD-4, and OD-6, and requires DCP-001 to be `approved` (DCP-001 G1).
+8. **`ready-for-dev` is not granted by this draft.** Promotion requires resolving OD-MOD-svc, OD-MOD-shell,
+   OD-MOD-wave, OD-4, and OD-6, and requires DCP-001 to be `approved` (DCP-001 G1).
 
 ## 17. Test Expectations
 
@@ -300,7 +319,7 @@ Concrete unit/integration coverage is specified at `ready-for-dev`.
 - [ ] **OD-MOD-svc** resolved — owning service (`Diten.Platform`) confirmed.
 - [ ] **OD-MOD-shell** resolved — `shell: none` for backend-only v1 confirmed; UI deferred.
 - [ ] **OD-MOD-wave** resolved — MOD-0040 delivery wave assigned.
-- [ ] **OD-MOD-le-contract** resolved — minimal cross-domain read-only `LegalEntityId` lookup / validation contract approved with the MDM Legal Entity capability.
+- [x] **OD-MOD-le-contract** resolved — minimal cross-domain read-only `LegalEntityId` lookup / validation contract approved with the MDM Legal Entity capability.
 - [ ] **OD-4** resolved — Manager Chain derivation depth + on-read vs materialized strategy.
 - [ ] **OD-6** resolved — effective-dating depth (Position Assignment only vs also Org Unit / Position).
 - [ ] Entity schema, indexes, validators, and endpoints designed (authored at the `ready-for-dev` transition).
@@ -331,14 +350,17 @@ Manager Chain), AD-7 (effective-dated Position Assignment mandatory).
 - **OD-MOD-svc:** Confirm `Diten.Platform` as the owning service.
 - **OD-MOD-shell:** Confirm `shell: none` for backend-only v1; UI remains a later follow-up.
 - **OD-MOD-wave:** Assign the MOD-0040 delivery wave. *(Resolve before MOD-0040 `ready-for-dev`.)*
-- **OD-MOD-le-contract:** Define and approve the minimal cross-domain read-only `LegalEntityId` lookup / validation
-  contract with the MDM Legal Entity capability. Resolve before MOD-0040 `ready-for-dev`.
+- **OD-MOD-le-contract:** Resolved. MOD-0040 consumes MDM MOD-0220 Legal Entity Foundation through a read-only
+  `LegalEntityId` lookup / validation contract. Validation requires `LegalEntityId` exists, same tenant, and
+  `LegalEntity.Status == ACTIVE`; return shape is `LegalEntityId`, legal name, display name, lifecycle state, and
+  `referenceable = true`.
 - **OD-4:** Manager Chain derivation depth and computation strategy: on-read vs materialized. *(Aligns with DCP-001 OD-4.)*
 - **OD-6:** Effective-dating depth: Position Assignment only vs Organization Unit and Position dating as well. *(Aligns with DCP-001 OD-6.)*
 
 **Open-decision → gate binding:**
 
-- **OD-MOD-svc, OD-MOD-shell, OD-MOD-wave, OD-MOD-le-contract, OD-4, OD-6 → resolve before MOD-0040 `ready-for-dev`.**
+- **OD-MOD-svc, OD-MOD-shell, OD-MOD-wave, OD-4, OD-6 → resolve before MOD-0040 `ready-for-dev`.**
+- **OD-MOD-le-contract → resolved.**
 
 **Identity.** `MOD-0040` is registry-reserved (`execution/registries/module-id-registry.md`); the registry row
 was updated `Planned / Reserved → draft` in this same milestone. `NEW-MOD-0040` is a deprecated alias for this ID.

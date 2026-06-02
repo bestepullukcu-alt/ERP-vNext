@@ -19,13 +19,16 @@ Placeholder. Detailed reconciliation metrics and mapping tables will be establis
 |---|---|
 | Business capability | Legal Entity Management |
 | Canonical system-of-record | MDM Legal Entity capability |
-| Candidate module ID | `MOD-0220` per manager plan; canonical repo registration pending confirmation |
+| Reserved module ID | `MOD-0220` confirmed |
+| Reservation basis | Explicit user decision after authoritative planning Excel mapping confirmation |
+| Schema review | MOD-0220 minimal backend schema reconciliation reviewed and approved; Legal Entity Foundation is ready-for-dev for the narrow backend-only slice |
+| Remaining reconciliation | Authoritative Enterprise Blueprint repository migration pending as non-blocking follow-up |
 | Owner domain | MDM |
 | Consumer module | `MOD-0040 Tenant Organization Foundation` |
-| Consumer relationship | Read-only `LegalEntityId` reference / lookup validation dependency |
+| Consumer relationship | Read-only `LegalEntityId` reference / lookup validation dependency; MOD-0040 validation contract locked and unchanged |
 | Forbidden duplication | No Legal Entity aggregate, persistence, lifecycle, API or UI under MOD-0040 |
-| Decision gate | Resolve `OD-MOD-le-contract` before MOD-0040 ready-for-dev |
-| Related follow-up | Confirm / reserve canonical MDM module ID; define MDM business-country reference source distinct from PSS-011 |
+| Decision gate | `OD-MOD-le-contract` resolved; MOD-0040 remains draft and requires its own ready-for-dev gate |
+| Related follow-up | Complete authoritative Enterprise Blueprint repository migration; define MDM business-country reference source distinct from PSS-011 |
 
 ## Boundary Notes
 
