@@ -94,6 +94,7 @@ Below is the macro status catalog.
 | **MOD-0265** | SIEM / Observability Provider | W3-C | Medium | planned | 0% | Security events. |
 | **MOD-0038** | Event Taxonomy / Naming | W3-D | Medium | planned | 0% | Naming rules catalog. |
 | **MOD-0039** | Schema Compatibility Governance | W3-D | Medium | planned | 0% | Contracts check registry. |
+| **MOD-0040** | Tenant Organization Foundation | — | High | draft | 0% | Track G-prime org master-data keystone (platform-shared-services). Draft pack; see DCP-001. Depends on MDM Legal Entity read-only LegalEntityId contract; canonical MDM module ID pending confirmation. |
 | **MOD-0002** | Interface Registry | W3-E | Medium | in-progress | 80% | API routes mapping. |
 | **MOD-0003** | Data Contract Registry | W3-E | Medium | planned | 0% | Payload contracts schemas. |
 | **PSS-XCUT-SV** | SavedViews / Personalization | Cross-cutting | Medium | partial | 55% | User grid saving options. |
