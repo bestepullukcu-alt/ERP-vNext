@@ -6,7 +6,7 @@ service: Diten.Platform.Common
 shell: none
 golden_reference: none
 entity_base: GlobalEntity
-status: draft
+status: done
 owner: platform-team
 branch: feature/pss/mod-0018-fu12-tenant-authz-context
 started: 2026-05-21
@@ -16,7 +16,7 @@ form_field_count: 0
 
 # MOD-0018-FU12 — Tenant Authorization Context Foundation
 
-> **Draft note:** Bu pack, FU10a/FU10b uzerine kurulan **runtime context consolidation foundation** isidir. Kod yazimi pack `approved` veya `ready-for-dev` yapilmadan baslamaz. Mevcut authorization karari (`allow/deny`) degismez; handler'larin claim parse ettigi noktalar `ITenantAuthorizationContext` arkasina toplanir.
+> **Historical draft note — superseded by §19 reconciliation entry:** Bu pack, FU10a/FU10b uzerine kurulan **runtime context consolidation foundation** isidir. Kod yazimi pack `approved` veya `ready-for-dev` yapilmadan baslamaz. Mevcut authorization karari (`allow/deny`) degismez; handler'larin claim parse ettigi noktalar `ITenantAuthorizationContext` arkasina toplanir.
 
 > **Golden Reference karari:** Bu is UI/DataTable modulu degildir. `shell: none`, `golden_reference: none`, `form_field_count: 0`. Razor layout, DataTable verifier, RESX ve frontend dosya seti bu pack icin N/A'dir.
 
@@ -377,6 +377,9 @@ Gateway route degisikligi gerekli degildir.
 
 ## 18. Ready-for-dev Checklist
 
+> **Historical authored checklist retained for audit.**
+> Runtime completion is reconciled in §19.
+
 ### Step 0 prerequisites (MUST be done before FU12a code work)
 
 - [ ] Kullanici bu draft pack'i inceleyip scope'u onayladi.
@@ -457,6 +460,42 @@ Audit allow sink (`IEntitlementAuditSink.LogAllowedAsync`) FU14'te eklendiginde,
 - `JwtTenantAuthorizationContext` `IDataScopeResolver.ResolveAsync` calls'unu **constructor'da degil InitializeAsync'te** yapar; sync ctor garantisi.
 - `InitializeAsync()` test cagrisi yapilmadan org alanlari empty/null oldugundan, FU12'yi tuketen ileri pack'ler (MOD-AUTH-001) **handler/middleware tarafinda `await context.InitializeAsync(ct)` cagrisini unutmamali**. Bu kontrat §17 testleri ile kanitlanir; ayrica downstream pack'lerin Implementation Notes'una eklenir.
 
+**Reconciliation note (2026-06-02) — `status: draft → done` (Access Governance Foundation Planning milestone):**
+
+This pack's lifecycle is reconciled to match runtime reality that is **already merged on `main`**. The FU12
+runtime was confirmed by a strict read-only inspection of the current branch; **no runtime or test code was
+modified by this reconciliation**. Evidence:
+
+- **FU12a — context contract + default implementation (merged):**
+  - `ITenantAuthorizationContext` — `Diten.Platform.Common.Authorization` (contract).
+  - `AnonymousTenantAuthorizationContext` — `Diten.Platform.Common.Authorization` (null-object fallback).
+  - `JwtTenantAuthorizationContext` — `Diten.Platform.Infrastructure.Authorization` (HttpContext-bound default impl).
+  - DI registration: `ITenantAuthorizationContext → JwtTenantAuthorizationContext` registered **Scoped**
+    (`services/Diten.Platform/src/Diten.Platform.Infrastructure/DependencyInjection.cs`).
+- **FU12b — handler refactor (merged):**
+  - `TenantModuleAuthorizationHandler` consumes `ITenantAuthorizationContext` (constructor injection).
+  - `TenantFeatureAuthorizationHandler` consumes `ITenantAuthorizationContext` (constructor injection).
+- **FU12 test evidence present:**
+  - `TenantAuthorizationContextHydrationTests`
+  - `TenantAuthorizationContextRegistrationTests`
+  - `TenantAuthorizationContextDataScopeIntegrationTests`
+  - `AnonymousTenantAuthorizationContextTests`
+
+This is **governance reconciliation of merged runtime reality. No new production implementation is introduced.**
+The §1–§18 design sections are preserved as the original authored contract and are intentionally not rewritten;
+the earlier "Draft note" blockquote is superseded by this reconciliation entry. This closes DCP-001 §8 ordered
+step 2 (FU12 governance reconciliation) and DCP-001 acceptance criterion 2. The registry row `MOD-0018-FU12` is
+updated `draft → done` in the same milestone.
+
+**Placeholder reconciliation (2026-06-02).** Two non-canonical placeholder IDs appear in this pack's design
+sections and are clarified here without inventing replacement module IDs:
+
+- `MOD-0018-FU8` — historical placeholder; current partner_admin runtime-scope hardening is tracked as GAP-13-1.
+- `MOD-AUTH-001` — historical placeholder; canonical Tenant User / Tenant Role IDs will be reserved after
+  MOD-0040 shape lock.
+
+The bare `FU8` / `MOD-0018-FU8` and `MOD-AUTH-001` tokens elsewhere in this pack resolve to these clarifications.
+
 ## 20. Follow-up Items
 
 - **MOD-0018-FU12-FU1**: `JwtTenantAuthorizationContext.PermissionKeys` icin server-side resolver tasimasi (JWT'de permission claim listesini buyutmemek icin). FU13 paralel.
@@ -467,4 +506,4 @@ Audit allow sink (`IEntitlementAuditSink.LogAllowedAsync`) FU14'te eklendiginde,
 - **MOD-0018-FU8**: Partner scope claims; `JwtTenantAuthorizationContext`'e `AllowedTenantIds` alani additive ekler.
 - **MOD-AUTH-001 (Track G)**: Tenant Users/Roles CRUD — bu pack'in tukettigi `ITenantAuthorizationContext` SSOT'u.
 - **S2S Actor Foundation** (ileri pack, ID yok): `ServiceTokenTenantAuthorizationContext` impl ve actor_type=service icin signed envelope/HMAC karari.
-- **master-plan.md §12 Track G-prime guncellemesi**: FU12a code PR'i merge sonrasi status `done` olarak isaretlenir; FU12b ve sonraki kalemler in-progress.
+- **master-plan.md §12 Track G-prime guncellemesi**: FU12a + FU12b merged. Lifecycle reconciled to done in the Access Governance Foundation Planning milestone.

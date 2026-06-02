@@ -4,7 +4,7 @@ slug: access-governance
 name: Access Governance
 type: Delivery Capability Pack
 standard: CAP-001
-status: draft
+status: approved
 owner_domain: platform-shared-services
 owner: platform-team
 branch: feature/governance/dcp-001-access-governance
@@ -32,7 +32,7 @@ created: 2026-06-01
 | Slug | access-governance |
 | Name | Access Governance |
 | Type | Delivery Capability Pack (CAP-001) |
-| Status | `draft` |
+| Status | `approved` |
 | Owner domain | platform-shared-services |
 | Authoring branch | `feature/governance/dcp-001-access-governance` |
 | Standard | CAP-001 — `.antigravity/rules/capability-pack-standard.md` |
@@ -64,6 +64,12 @@ permission evaluation, scope resolution, or enforcement.
 
 Current (AS-IS) state, established by audit on `main` @ `83e7544`:
 
+> **Historical AS-IS snapshot from the original audit baseline.**
+> Current lifecycle state is tracked in §20 and the module registry.
+> The bullets below — including "the MOD-0040 module pack is missing" and "FU12 runtime is merged but the
+> FU12 pack is still `draft`" — are preserved as the original audit evidence at `main` @ `83e7544` and are
+> **not** rewritten; see §20 for the reconciled lifecycle state.
+
 - **MOD-0018 permission evaluation is implemented** (module/feature entitlement check, cache, handlers).
 - **Tenant isolation exists** (TenantId-scoped persistence; cross-tenant access fails closed).
 - **Tenant-level cache invalidation exists** (entitlement cache invalidation consumer evicts per tenant).
@@ -87,7 +93,7 @@ This Delivery Capability Pack orchestrates six capabilities:
 | # | Capability | One-line boundary |
 |---|------------|-------------------|
 | A | **Permission Evaluation** | Role-based permission + module/feature entitlement decision (implemented in MOD-0018). |
-| B | **Organization Master Data** | Source of truth for Legal Entity, Org Unit tree, Position, Position Assignment (MOD-0040). |
+| B | **Organization Structure Master Data** | Tenant org structure — Org Unit tree, Position, Position Assignment (MOD-0040). Legal Entity is an **external MDM-owned** reference (read-only `LegalEntityId`), not owned or duplicated here. |
 | C | **Data-Scope Resolution** | Computes effective data scopes for a user; consumes Capability B (MOD-0018-FU15). |
 | D | **Workflow-derived Temporary Access** | Process/workflow events grant time-bound access; never persistent role writes (MOD-0023/0024 emit → MOD-0018-FU11 bind → MOD-0018 consume). |
 | E | **Business-module Data-Scope Enforcement** | Consuming business modules (CRM / Track-H) apply resolved scopes to row-level queries. |
@@ -97,6 +103,11 @@ This Delivery Capability Pack orchestrates six capabilities:
 
 > **Reference only.** These are referenced **by ID**. This authoring task **does NOT create, modify, or
 > reconcile any member module pack.** Each member passes its own `module-pack-standard.md` gate separately.
+
+> **Historical AS-IS snapshot from the original audit baseline.**
+> Current lifecycle state is tracked in §20 and the module registry.
+> The "Pack state (AS-IS)" column below reflects the audit baseline at `main` @ `83e7544` (e.g., FU12 `draft`,
+> MOD-0040 Planned / Reserved); it is preserved as evidence and is **not** rewritten.
 
 | Member | Role in this DCP | Pack state (AS-IS) |
 |--------|------------------|--------------------|
@@ -125,7 +136,7 @@ This Delivery Capability Pack orchestrates six capabilities:
 | Permission assignment | Tenant Role / Tenant User |
 | Policy evaluation | MOD-0018 |
 | Tenant authorization context | MOD-0018-FU12 |
-| Organization master data | MOD-0040 |
+| Organization structure master data | MOD-0040 (Legal Entity is external MDM-owned reference) |
 | Position–role binding | MOD-0040 (binding side) + Tenant Role (role side) |
 | Data-scope calculation | MOD-0018-FU15 |
 | Data-scope enforcement | CRM / consuming business module |
@@ -145,7 +156,9 @@ Capability A  Permission Evaluation (MOD-0018, FU10/FU10a/FU10b)   [implemented]
    │        (runtime merged; pack draft → reconcile first)
    │
 Capability B  MOD-0040  Organization Master Data
-   │   depends on: Country reference data (lookups / PSS-011)
+   │   owns: Org Unit tree, Position, Position Assignment, minimal Manager Chain inputs
+   │   external dependency: MDM Legal Entity read-only LegalEntityId lookup / validation contract
+   │   country boundary: business-country source unresolved; must not default to PSS-011 platform lookup
    │
    └──► Capability C  MOD-0018-FU15  Data-Scope Resolution (replaces NoOp resolver)
             │   depends on: MOD-0040 (B), FU12 context
@@ -204,7 +217,8 @@ Separate security-hardening (parallel, not blocking the main capability spine):
   (MOD-0040) exists, or the resolver has nothing real to resolve against.
 - **MOD-0040 before business-module enforcement.** Capability E must not begin before FU15 returns real scopes.
 - **MOD-0040 shape locked before Tenant User/Tenant Role parallelization.**
-- **Country reference data** (lookups / PSS-011) confirmed available for MOD-0040 v1 (see Open decisions).
+- **MDM Legal Entity read-only `LegalEntityId` contract** defined before MOD-0040 `ready-for-dev`; business-country
+  source remains unresolved and must not default to PSS-011 platform lookup.
 - **Member packs created and gated separately** — this DCP only references them by ID.
 
 ## 10. Architecture decisions
@@ -215,7 +229,7 @@ Separate security-hardening (parallel, not blocking the main capability spine):
 | # | Decision (baseline) | Note |
 |---|---------------------|------|
 | AD-1 | **Position = scope + role binding**, not a standalone permission store. | Permissions live with Tenant Role / Tenant User, not on Position. |
-| AD-2 | **Country and Legal Entity are separate dimensions.** | Country is reference data (string code); Legal Entity is an org master-data entity. |
+| AD-2 | **Country and Legal Entity are separate dimensions.** | Legal Entity is MDM-owned and consumed by MOD-0040 as read-only `LegalEntityId`; the business-country source is unresolved and must not default to PSS-011 platform lookup. |
 | AD-3 | **Manager Chain = minimal derived model in MOD-0040 v1.** | Derived, not a separate authored hierarchy; depth is an open decision. |
 | AD-4 | **Workflow temporary access = process-based baseline**, task-based later. | Grants keyed on process instance in v1. |
 | AD-5 | **Role inheritance = flat roles + composition**, no deep inheritance baseline. | No deep/transitive role trees in v1. |
@@ -232,15 +246,23 @@ Separate security-hardening (parallel, not blocking the main capability spine):
 - Define the **MOD-0040 v1 boundary** as the keystone master-data dependency for Capabilities C and E.
 - Hold the gate criteria, dependency graph, and ownership map for the whole effort.
 
-**MOD-0040 v1 boundary (keystone master-data scope):**
+**MOD-0040 v1 boundary (organization-structure scope):**
 
-- **Required v1:** Legal Entity; Organization Unit tree; Position; Position Assignment; **effective-dated**
-  Position Assignment; Tenant ownership; soft-delete / archival semantics; **minimal derived Manager Chain**.
-- **Dependency:** Country reference data from lookups / PSS-011.
+- **Owned by MOD-0040 (v1):** Organization Unit tree; Position; Position Assignment; **effective-dated**
+  Position Assignment; Tenant ownership (for MOD-0040-owned records); soft-delete / archival semantics
+  (for MOD-0040-owned records); **minimal derived Manager Chain** inputs and contract.
+- **External MDM dependency:** the **Legal Entity master record is owned by the MDM Legal Entity capability**
+  (manager plan candidate ID: MOD-0220; canonical repo registration pending confirmation), **not** by MOD-0040.
+  MOD-0040 consumes only a **read-only `LegalEntityId` reference / lookup-validation contract**.
+- **Forbidden under MOD-0040:** duplicate Legal Entity aggregate; Legal Entity persistence; Legal Entity
+  lifecycle; Legal Entity API; Legal Entity UI.
+- **Country source (unresolved):** the Legal Entity business-country reference **must not default to PSS-011
+  platform lookups** (PSS-011 `countries` is platform provisioning/support only). MDM business-country
+  reference ownership is a separate follow-up outside MOD-0040.
 - **Follow-up (not v1, MOD-0040-owned org-foundation extensions):** Department / Team granularity; Region decision;
   historical restructuring. (Delegation / substitution is **not** an MOD-0040-owned extension — reclassified as a cross-cutting future follow-up; see §19.)
 - **Excluded from MOD-0040:** Territory; permission storage; **permission evaluation** (remains owned by MOD-0018);
-  resolver logic; query enforcement; partner_admin runtime policy; matrix organization.
+  **real `IDataScopeResolver`** (remains MOD-0018-FU15); query enforcement; partner_admin runtime policy; matrix organization.
 
 ## 12. Explicit exclusions
 
@@ -252,7 +274,7 @@ Separate security-hardening (parallel, not blocking the main capability spine):
 - **No field-level restrictions baseline** (later enhancement).
 - **No task-based temporary-access baseline** (process-based first).
 - **No deep role inheritance** (flat + composition baseline).
-- **No MOD-0041 DataScope ownership** (out of this DCP).
+- **MOD-0041 remains observability-only; MOD-0018-FU15 owns the real `IDataScopeResolver`.**
 
 ## 13. Governance drift risks
 
@@ -270,12 +292,12 @@ Separate security-hardening (parallel, not blocking the main capability spine):
 
 1. Are the six capability boundaries (A–F) correct and complete for organization-aware authorization?
 2. Is the ordered delivery sequence correct — in particular **MOD-0040 before FU15 before business-module enforcement**?
-3. Is the **MOD-0040 v1 boundary** the right minimal master-data set (Legal Entity, Org Unit tree, Position, effective-dated Position Assignment, minimal Manager Chain)?
+3. Is the **MOD-0040 v1 boundary** the right minimal organization-structure set (Org Unit tree, Position, effective-dated Position Assignment, minimal Manager Chain inputs)?
 4. Are the reviewable architecture decisions (AD-1…AD-8) acceptable as v1 baselines?
 5. Should **Tenant User** and **Tenant Role** receive reserved module IDs now, or after MOD-0040 shape is locked?
 6. Should **GAP-13-1** (partner_admin runtime scope) and **GAP-13-3** (TenantId mismatch policy) remain in **separate** security-hardening packs?
 7. Is **FU12 reconciliation** correctly sequenced as the first post-approval action?
-8. Is the Country reference-data dependency (lookups / PSS-011) confirmed for MOD-0040 v1?
+8. Is the MDM Legal Entity read-only `LegalEntityId` contract ready to gate MOD-0040, and is the business-country source explicitly kept outside PSS-011 platform lookup?
 
 ## 15. Gate criteria
 
@@ -318,7 +340,7 @@ This Delivery Capability Pack is **complete / reconcilable** when:
 | OD-2 | Tenant Role ID reservation. | Before Tenant Role pack authoring. |
 | OD-3 | Region ownership (which module owns the Region dimension). | Before Region follow-up authoring. |
 | OD-4 | Manager-chain derivation depth. | Before MOD-0040 ready-for-dev. |
-| OD-5 | Country reference-data dependency confirmation (lookups / PSS-011). | Before MOD-0040 implementation. |
+| OD-5 | MDM Legal Entity read-only `LegalEntityId` lookup / validation contract; business-country source remains unresolved and must not default to PSS-011 platform lookup. | Before MOD-0040 ready-for-dev. |
 | OD-6 | Effective-dating depth (how much history MOD-0040 v1 retains). | Before MOD-0040 ready-for-dev. |
 | OD-7 | GAP-13-1 partner_admin signed-scope design. | Before enabling partner runtime access. |
 | OD-8 | GAP-13-3 TenantId mismatch policy. | Recommended before MOD-0040 implementation; required before Tenant IAM release. |
@@ -335,15 +357,78 @@ This Delivery Capability Pack is **complete / reconcilable** when:
 - Deep role inheritance (beyond flat + composition).
 - Matrix organization support.
 - Territory model.
-- MOD-0041 DataScope ownership (explicitly out of this DCP).
 - Module ID format discussion for the `DCP-` prefix (CAP-001 §6 follow-up).
 
 ## 20. Audit and reconciliation notes
 
 > Filled after delivery phases complete; status then moves to `reconciled`.
 
-- **Status:** `draft` — no implementation has occurred; no reconciliation yet.
-- **Seed note 1 — FU12 lifecycle drift (open):** FU12 runtime is merged ahead of its `draft` pack. Reconciliation is sequence step 2 and acceptance criterion 2.
+- **Status:** `approved` — promoted from `under-review` on 2026-06-02 after post-SoR reconciliation human approval. No production implementation has occurred; MOD-0040 remains `draft` / not `ready-for-dev`.
+- **Seed note 1 — FU12 lifecycle drift (reconciled):** FU12 runtime was merged ahead of its `draft` pack (sequence step 2 / acceptance criterion 2). **Reconciled in this milestone** — see the reconciliation log below.
 - **Seed note 2 — evidence basis:** AS-IS audit + TO-BE vs AS-IS gap-synthesis were performed strict-repository-read-only on `main` @ `83e7544`.
 - **Seed note 3 — authoring provenance:** This DCP was authored on branch `feature/governance/dcp-001-access-governance` with **no** changes to production code, test code, CI files, or any member module pack; no member packs were created or reconciled.
-- **Reconciliation log:** _(to be appended per delivery phase)_
+- **Reconciliation log:**
+  - **2026-06-02 — `draft → under-review` (Access Governance Foundation Planning milestone).**
+
+    DCP-001 entered under-review during the consolidated
+    Access Governance Foundation Planning milestone.
+
+    This milestone remains governance-only.
+    No production implementation is authorized.
+
+    Final approved status requires explicit human approval
+    after review of FU12 reconciliation and the MOD-0040 draft pack.
+
+    Bundled in the same milestone (governance-only, no production code): FU12 pack reconciliation
+    (`draft → done`, member-table seed note 1) and the MOD-0040 draft module pack authoring. The
+    §3 / §5 AS-IS descriptions remain as the timestamped `main @ 83e7544` snapshot and are not rewritten;
+    delivery-phase reconciliation entries continue to be appended here.
+
+    Milestone reconciliation reality:
+
+    FU12 lifecycle drift reconciled:
+    MOD-0018-FU12 pack advanced to done to match merged runtime evidence.
+
+    MOD-0040 draft pack authored:
+    execution/domains/platform-shared-services/module-packs/MOD-0040-tenant-organization-foundation.md
+
+    No production implementation occurred.
+    MOD-0040 remains draft and is not ready-for-dev.
+    DCP-001 has since advanced `under-review → approved` — explicit human approval was granted; see the approval entry below.
+
+  - **2026-06-02 — `under-review → approved` (explicit human approval).**
+
+    Explicit human approval was granted after review of the FU12 reconciliation and the MOD-0040 draft pack.
+    DCP-001 lifecycle status advanced `under-review → approved`. The prior `pending explicit human approval`
+    condition is now satisfied and no longer applies.
+
+    Approval-state summary (governance facts unchanged by this transition):
+    - FU12 lifecycle reconciliation complete (`MOD-0018-FU12` → `done`).
+    - MOD-0040 draft pack authored; MOD-0040 remains `draft` / not `ready-for-dev`.
+    - No production implementation has occurred; this DCP remains governance-only.
+
+  - **2026-06-02 — `approved → under-review` (Legal Entity SoR ownership reconciliation).**
+
+    After human approval, new repo-grounded ownership evidence was evaluated. The MOD-0040 Legal Entity
+    ownership claim creates a Source-of-Record collision risk with the existing MDM-domain footprint
+    (`mdm/legal-entities` permission seeds; `/MDM/Legal-Entities` page contract). DCP-001 is reverted to
+    `under-review` for this material boundary revision: Capability B is re-scoped so MOD-0040 owns only the
+    tenant organization structure, and Legal Entity becomes an external MDM-owned read-only `LegalEntityId`
+    reference (MDM Legal Entity capability; manager plan candidate ID: MOD-0220, canonical repo registration
+    pending confirmation).
+
+    The prior `under-review → approved` approval entry above is preserved as historical audit record.
+    No production implementation has occurred; MOD-0040 remains `draft` / not `ready-for-dev`.
+
+  - **2026-06-02 — `under-review → approved` (post-SoR reconciliation human approval).**
+
+    Human approval was granted after the Legal Entity SoR ownership collision was reconciled. MOD-0040 is not
+    the Legal Entity owner; the MDM Legal Entity capability is defined as the external dependency. MOD-0040
+    consumes only a read-only `LegalEntityId` lookup / validation contract.
+
+    PSS-011 `countries` lookup is Platform provisioning/support only and is not the business-country SoR.
+    A Blueprint-Master Plan reconciliation record was added for the Legal Entity Management SoR mapping.
+    The manager-plan candidate ID `MOD-0220` remains pending canonical repo registration confirmation.
+
+    MOD-0040 remains `draft` / not `ready-for-dev`. No production implementation has occurred. DCP-001
+    lifecycle is promoted again to `approved`.
