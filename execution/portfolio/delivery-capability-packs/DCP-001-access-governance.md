@@ -252,7 +252,8 @@ Separate security-hardening (parallel, not blocking the main capability spine):
   Position Assignment; Tenant ownership (for MOD-0040-owned records); soft-delete / archival semantics
   (for MOD-0040-owned records); **minimal derived Manager Chain** inputs and contract.
 - **External MDM dependency:** the **Legal Entity master record is owned by the MDM Legal Entity capability**
-  (manager plan candidate ID: MOD-0220; canonical repo registration pending confirmation), **not** by MOD-0040.
+  (`MOD-0220` reserved for the MDM Legal Entity capability; authoritative Enterprise Blueprint repository
+  migration pending), **not** by MOD-0040.
   MOD-0040 consumes only a **read-only `LegalEntityId` reference / lookup-validation contract**.
 - **Forbidden under MOD-0040:** duplicate Legal Entity aggregate; Legal Entity persistence; Legal Entity
   lifecycle; Legal Entity API; Legal Entity UI.
@@ -414,8 +415,8 @@ This Delivery Capability Pack is **complete / reconcilable** when:
     (`mdm/legal-entities` permission seeds; `/MDM/Legal-Entities` page contract). DCP-001 is reverted to
     `under-review` for this material boundary revision: Capability B is re-scoped so MOD-0040 owns only the
     tenant organization structure, and Legal Entity becomes an external MDM-owned read-only `LegalEntityId`
-    reference (MDM Legal Entity capability; manager plan candidate ID: MOD-0220, canonical repo registration
-    pending confirmation).
+    reference (MDM Legal Entity capability; `MOD-0220` reserved for the MDM Legal Entity capability,
+    authoritative Enterprise Blueprint repository migration pending).
 
     The prior `under-review → approved` approval entry above is preserved as historical audit record.
     No production implementation has occurred; MOD-0040 remains `draft` / not `ready-for-dev`.
@@ -428,7 +429,8 @@ This Delivery Capability Pack is **complete / reconcilable** when:
 
     PSS-011 `countries` lookup is Platform provisioning/support only and is not the business-country SoR.
     A Blueprint-Master Plan reconciliation record was added for the Legal Entity Management SoR mapping.
-    The manager-plan candidate ID `MOD-0220` remains pending canonical repo registration confirmation.
+    `MOD-0220` is now reserved for the MDM Legal Entity capability; authoritative Enterprise Blueprint
+    repository migration remains pending.
 
     MOD-0040 remains `draft` / not `ready-for-dev`. No production implementation has occurred. DCP-001
     lifecycle is promoted again to `approved`.

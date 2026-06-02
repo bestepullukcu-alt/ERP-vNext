@@ -29,9 +29,9 @@ ERP-vNext/
 ├── execution/                           Domain ve module execution katmanı
 │   └── domains/
 │       ├── developer-enablement/        (DEVEN — mevcut; Diten.DevEnablementService golden references)
+│       ├── master-data-management/       (MDM — governance scaffold mevcut; production service yok)
 │       └── platform-shared-services/    (PSS — mevcut; Diten.Platform + Diten.AuthService)
 │       # planned, not scaffolded yet:
-│       # master-data-management          (MDM)
 │       # enterprise-strategy-business-performance (ESBP)
 ├── services/                            .NET 8 mikroservisler
 │   ├── Diten.AuthService/
@@ -39,6 +39,7 @@ ERP-vNext/
 │   ├── Diten.Platform/
 │   ├── Diten.Platform.Common/
 │   └── Diten.EnterpriseStrategyService/
+│   # Diten.MdmService/                   MDM service scaffold henüz oluşturulmadı
 ├── frontend/                            Razor MVC + Sneat PRO + DataTables v2
 │   └── Diten.Web/
 ├── gateway/                             Ocelot API Gateway
@@ -48,6 +49,10 @@ ERP-vNext/
 ```
 
 **ÖNEMLİ:** Bu proje `src/Backend/` veya `src/Frontend/` yapısı **kullanmaz**. Yukarıdaki gerçek yapıya uyulmalıdır.
+
+**MDM notu:** `execution/domains/master-data-management/` governance scaffold olarak mevcuttur. Bu milestone
+`services/Diten.MdmService/` production service scaffold'ı oluşturmaz. MDM service implementation yalnızca ilgili
+module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı verildikten sonra ele alınabilir.
 
 ---
 
