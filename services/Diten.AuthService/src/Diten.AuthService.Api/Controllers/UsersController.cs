@@ -1,12 +1,14 @@
 using Diten.AuthService.Api.Controllers.Common;
 using Diten.AuthService.Api.Models;
 using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Queries;
 using Diten.AuthService.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Diten.AuthService.Api.Controllers;
 
@@ -34,6 +36,20 @@ public sealed class UsersController : CustomBaseController
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var result = await _mediator.Send(new GetUserByIdQuery(id), ct);
+        return CreateActionResultInstance(result);
+    }
+
+    [HttpGet("{userId:guid}/lookup-validation")]
+    [HasPermission("auth.users.lookup-validation")]
+    public async Task<IActionResult> ValidateLookupReference(Guid userId, CancellationToken ct)
+    {
+        if (HasTenantHeaderJwtMismatch(User, Request.Headers))
+        {
+            return CreateActionResultInstance(
+                Response<TenantUserLookupValidationDto>.Fail("Tenant context mismatch.", 400));
+        }
+
+        var result = await _mediator.Send(new ValidateUserReferenceQuery(userId), ct);
         return CreateActionResultInstance(result);
     }
 
@@ -77,5 +93,21 @@ public sealed class UsersController : CustomBaseController
     {
         var result = await _mediator.Send(new RevokeRoleCommand(id, roleId), ct);
         return CreateActionResultInstance(result);
+    }
+
+    public static bool HasTenantHeaderJwtMismatch(ClaimsPrincipal user, IHeaderDictionary headers)
+    {
+        var jwtTenantValue = user.FindFirst("tenant_id")?.Value;
+        if (!Guid.TryParse(jwtTenantValue, out var jwtTenantId))
+        {
+            return false;
+        }
+
+        if (!headers.TryGetValue("X-Tenant-Id", out var headerValue) || string.IsNullOrWhiteSpace(headerValue))
+        {
+            return false;
+        }
+
+        return Guid.TryParse(headerValue, out var headerTenantId) && headerTenantId != jwtTenantId;
     }
 }

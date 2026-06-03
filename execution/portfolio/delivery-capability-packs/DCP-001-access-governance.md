@@ -125,7 +125,7 @@ This Delivery Capability Pack orchestrates six capabilities:
 | MOD-0298-FU1 | Entitlement cache-invalidation consumer | `planned` |
 | MOD-0023 | Approvals / workflow (emits temporary-access events for Capability D) | referenced |
 | MOD-0024 | Tasks (workflow source; never writes approval/grant semantics) | referenced |
-| **Tenant User** | Tenant identity primitive | **ID to reserve** (no reserved ID, no pack) |
+| MOD-0047 | Tenant identity primitive / Tenant User Foundation | `done` for AuthService read-only lookup-validation first slice; broader Tenant IAM remains follow-up |
 | **Tenant Role** | Tenant role primitive | **ID to reserve** (no reserved ID, no pack) |
 
 ## 6. Ownership map
@@ -193,7 +193,7 @@ Separate security-hardening (parallel, not blocking the main capability spine):
 5. **MOD-0040 minimal implementation.**
 6. **FU15 pack and implementation** (real resolver replaces NoOp).
 7. **FU13 implementation** (cache-invalidation convention). The FU13 **pack** may be authored earlier, in parallel with MOD-0040 work (see parallel tracks below); FU13 **implementation** lands here as an ordered delivery step, after the FU13 pack is reviewed. Dependency semantics are unchanged.
-8. **Tenant User pack.**
+8. **MOD-0047 Tenant User pack.**
 9. **Tenant Role pack.**
 10. **Tenant IAM implementation.**
 11. **First business-module row-level scope consumer.**
@@ -337,7 +337,7 @@ This Delivery Capability Pack is **complete / reconcilable** when:
 
 | # | Open decision | Resolve by (latest gate) |
 |---|---------------|--------------------------|
-| OD-1 | Tenant User ID reservation. | Before Tenant User pack authoring. |
+| OD-1 | Tenant User ID reservation. | Resolved as `MOD-0047`; pack promoted to ready-for-dev for AuthService-owned lookup-validation. |
 | OD-2 | Tenant Role ID reservation. | Before Tenant Role pack authoring. |
 | OD-3 | Region ownership (which module owns the Region dimension). | Before Region follow-up authoring. |
 | OD-4 | Manager-chain derivation depth. | Before MOD-0040 ready-for-dev. |
@@ -449,3 +449,27 @@ This Delivery Capability Pack is **complete / reconcilable** when:
     FU15/runtime authorization consumption. Position-role binding is deferred to a separate Tenant Role integration
     slice. MOD-0040 defines endpoint permission keys only; permission evaluation remains owned by MOD-0018. No
     production implementation occurred in this governance promotion.
+
+  - **2026-06-03 — MOD-0047 `draft → ready-for-dev` (Tenant User lookup-validation promotion).**
+
+    MOD-0047 is promoted to ready-for-dev for the AuthService-owned read-only Tenant User lookup-validation
+    contract. The locked contract uses `GET /api/users/{userId:guid}/lookup-validation`, bearer forwarding,
+    `X-Tenant-Id` propagation, `[Authorize]`, and `auth.users.lookup-validation`. Referenceability requires
+    `User.Id` in the current tenant, `IsDeleted == false`, and `IsActive == true`; the response returns only
+    `UserId` and `referenceable = true`. MOD-0040 PositionAssignment `UserId` validation integration remains a
+    separate follow-up and FU15/runtime authorization consumers remain blocked until both pieces are complete.
+
+  - **2026-06-03 — MOD-0047 `ready-for-dev → done` (AuthService lookup-validation first slice).**
+
+    The MOD-0047 locked first slice is implemented and validated as the AuthService-owned read-only Tenant User
+    lookup-validation contract. Evidence: `GET /api/users/{userId:guid}/lookup-validation`, minimal
+    `UserId` + `Referenceable` response, tenant-isolated `GetByIdAndTenantAsync` lookup, explicit
+    `IsActive == true` enforcement, endpoint-specific JWT/header mismatch `400 Bad Request` guard,
+    `auth.users.lookup-validation` permission seed, and AuthService Application.Tests coverage.
+
+    Validation summary: AuthService solution build PASS; AuthService tests PASS (15 passed, 0 failed, 0 skipped);
+    `git diff --check` clean; strict read-only pre-commit scope audit PASS; protected paths clean.
+
+    This does **not** complete DCP-001 overall. MOD-0040 PositionAssignment `UserId` AuthService validation
+    integration remains a separate follow-up, and FU15/runtime authorization consumers remain blocked until the
+    MOD-0040 integration guard is satisfied.

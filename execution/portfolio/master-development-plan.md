@@ -95,6 +95,7 @@ Below is the macro status catalog.
 | **MOD-0038** | Event Taxonomy / Naming | W3-D | Medium | planned | 0% | Naming rules catalog. |
 | **MOD-0039** | Schema Compatibility Governance | W3-D | Medium | planned | 0% | Contracts check registry. |
 | **MOD-0040** | Tenant Organization Foundation | — | High | ready-for-dev | 0% | Track G-prime org master-data keystone (platform-shared-services). Minimal backend-only schema reconciliation promoted; see DCP-001. Depends on MDM Legal Entity read-only LegalEntityId contract. Tenant User validation and Position-role binding are deferred behind explicit guards. |
+| **MOD-0047** | Tenant User Foundation | — | High | done | 100% | Track G Tenant IAM foundation first slice only. AuthService-owned read-only Tenant User lookup-validation contract implemented and validated: locked route, auth model, IsActive referenceability, minimal return shape, fail-closed tenant mismatch policy, permission seed, and 15 passing tests. Broader Tenant User CRUD/lifecycle, frontend, gateway, Tenant Role, and MOD-0040 PositionAssignment UserId validation integration remain follow-ups. |
 | **MOD-0220** | Corporate Secretarial / Entity Management | — | High | ready-for-dev | 0% | MDM Legal Entity Foundation slice. Minimal backend schema reconciliation completed and approved. Implementation not started. Allowed first slice remains `services/Diten.MdmService/**` plus repo-standard service tests. Provides read-only LegalEntityId lookup / validation contract for MOD-0040. Enterprise Blueprint repository migration remains non-blocking follow-up. MDM business-country ownership remains separate follow-up. |
 | **MOD-0002** | Interface Registry | W3-E | Medium | in-progress | 80% | API routes mapping. |
 | **MOD-0003** | Data Contract Registry | W3-E | Medium | planned | 0% | Payload contracts schemas. |
@@ -149,7 +150,7 @@ Development work package sequencing follows a logical dependency track (Track A 
 
 ### Track G — Tenant IAM Baseline
 * **Purpose**: Implement tenant user, roles, permissions CRUD and security screens.
-* **Involved Module IDs**: Tenant Users & Roles Modules
+* **Involved Module IDs**: `MOD-0047`, Tenant Role Module (ID to reserve)
 * **Dependencies / Prerequisites**: Track G-prime MVF threshold must be fully implemented.
 * **Notes**: Configures role-permission scopes and tenant user invitation pipelines.
 
