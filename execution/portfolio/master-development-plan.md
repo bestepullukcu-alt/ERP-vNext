@@ -94,7 +94,7 @@ Below is the macro status catalog.
 | **MOD-0265** | SIEM / Observability Provider | W3-C | Medium | planned | 0% | Security events. |
 | **MOD-0038** | Event Taxonomy / Naming | W3-D | Medium | planned | 0% | Naming rules catalog. |
 | **MOD-0039** | Schema Compatibility Governance | W3-D | Medium | planned | 0% | Contracts check registry. |
-| **MOD-0040** | Tenant Organization Foundation | — | High | draft | 0% | Track G-prime org master-data keystone (platform-shared-services). Draft pack; see DCP-001. Depends on MDM Legal Entity read-only LegalEntityId contract; MOD-0220 reserved for MDM Legal Entity, with authoritative Enterprise Blueprint repository migration pending. |
+| **MOD-0040** | Tenant Organization Foundation | — | High | ready-for-dev | 0% | Track G-prime org master-data keystone (platform-shared-services). Minimal backend-only schema reconciliation promoted; see DCP-001. Depends on MDM Legal Entity read-only LegalEntityId contract. Tenant User validation and Position-role binding are deferred behind explicit guards. |
 | **MOD-0220** | Corporate Secretarial / Entity Management | — | High | ready-for-dev | 0% | MDM Legal Entity Foundation slice. Minimal backend schema reconciliation completed and approved. Implementation not started. Allowed first slice remains `services/Diten.MdmService/**` plus repo-standard service tests. Provides read-only LegalEntityId lookup / validation contract for MOD-0040. Enterprise Blueprint repository migration remains non-blocking follow-up. MDM business-country ownership remains separate follow-up. |
 | **MOD-0002** | Interface Registry | W3-E | Medium | in-progress | 80% | API routes mapping. |
 | **MOD-0003** | Data Contract Registry | W3-E | Medium | planned | 0% | Payload contracts schemas. |
