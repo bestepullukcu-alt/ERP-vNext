@@ -364,7 +364,7 @@ This Delivery Capability Pack is **complete / reconcilable** when:
 
 > Filled after delivery phases complete; status then moves to `reconciled`.
 
-- **Status:** `approved` — promoted from `under-review` on 2026-06-02 after post-SoR reconciliation human approval. No production implementation has occurred; MOD-0040 remains `draft` / not `ready-for-dev`.
+- **Status:** `approved` — promoted from `under-review` on 2026-06-02 after post-SoR reconciliation human approval. No production implementation has occurred; MOD-0040 is `ready-for-dev` for the locked minimal backend-only v1 slice.
 - **Seed note 1 — FU12 lifecycle drift (reconciled):** FU12 runtime was merged ahead of its `draft` pack (sequence step 2 / acceptance criterion 2). **Reconciled in this milestone** — see the reconciliation log below.
 - **Seed note 2 — evidence basis:** AS-IS audit + TO-BE vs AS-IS gap-synthesis were performed strict-repository-read-only on `main` @ `83e7544`.
 - **Seed note 3 — authoring provenance:** This DCP was authored on branch `feature/governance/dcp-001-access-governance` with **no** changes to production code, test code, CI files, or any member module pack; no member packs were created or reconciled.
@@ -434,3 +434,18 @@ This Delivery Capability Pack is **complete / reconcilable** when:
 
     MOD-0040 remains `draft` / not `ready-for-dev`. No production implementation has occurred. DCP-001
     lifecycle is promoted again to `approved`.
+
+  - **2026-06-02 — MOD-0040 `draft → under-review` (ready-for-dev schema reconciliation draft).**
+
+    MOD-0040 governance reconciliation prepared the backend-only v1 schema, endpoint, permission, persistence,
+    failure-path, acceptance, and test-expectation proposal. MOD-0040 remains not `ready-for-dev`; promotion is
+    gated on explicit review approval and closure of the external Tenant User / Tenant Role contract review.
+    No production implementation occurred.
+
+  - **2026-06-03 — MOD-0040 `under-review → ready-for-dev` (minimal backend-only promotion).**
+
+    MOD-0040 is promoted to ready-for-dev for the minimal backend-only v1 slice. Tenant User existence validation
+    is explicitly deferred behind an AuthService-owned read-only validation contract and must be completed before
+    FU15/runtime authorization consumption. Position-role binding is deferred to a separate Tenant Role integration
+    slice. MOD-0040 defines endpoint permission keys only; permission evaluation remains owned by MOD-0018. No
+    production implementation occurred in this governance promotion.

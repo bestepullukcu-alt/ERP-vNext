@@ -3,6 +3,7 @@ using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Entities.Audit;
 using Diten.Platform.Domain.Entities.InterfaceRegistry;
+using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Models;
@@ -45,7 +46,74 @@ public static class MongoDbIndexConfigurations
         var tenantMessagingSettingsCollection = database.GetCollection<TenantMessagingSettings>("notification_tenant_messaging_settings");
         var notificationTemplateCollection = database.GetCollection<NotificationTemplate>("notification_templates");
         var notificationDispatchCollection = database.GetCollection<NotificationDispatch>("notification_dispatches");
+        var organizationUnitCollection = database.GetCollection<OrganizationUnit>("organization_units");
+        var positionCollection = database.GetCollection<Position>("positions");
+        var positionAssignmentCollection = database.GetCollection<PositionAssignment>("position_assignments");
         var moduleCatalogDocuments = database.GetCollection<BsonDocument>("platform_module_catalog");
+
+        await organizationUnitCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<OrganizationUnit>(
+                Builders<OrganizationUnit>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Code),
+                new CreateIndexOptions<OrganizationUnit>
+                {
+                    Unique = true,
+                    Name = "ux_organization_units_tenant_code_active",
+                    PartialFilterExpression = Builders<OrganizationUnit>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<OrganizationUnit>(
+                Builders<OrganizationUnit>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.LegalEntityId)
+                    .Ascending(x => x.ParentOrganizationUnitId)
+                    .Ascending(x => x.IsDeleted)
+                    .Ascending(x => x.IsArchived),
+                new CreateIndexOptions { Name = "ix_organization_units_tree_scope" })
+        });
+
+        await positionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<Position>(
+                Builders<Position>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Code),
+                new CreateIndexOptions<Position>
+                {
+                    Unique = true,
+                    Name = "ux_positions_tenant_code_active",
+                    PartialFilterExpression = Builders<Position>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<Position>(
+                Builders<Position>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.OrganizationUnitId)
+                    .Ascending(x => x.ReportsToPositionId)
+                    .Ascending(x => x.IsDeleted)
+                    .Ascending(x => x.IsArchived),
+                new CreateIndexOptions { Name = "ix_positions_org_reporting_scope" })
+        });
+
+        await positionAssignmentCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<PositionAssignment>(
+                Builders<PositionAssignment>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.PositionId)
+                    .Ascending(x => x.EffectiveFrom)
+                    .Ascending(x => x.EffectiveTo)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_position_assignments_position_interval" }),
+            new CreateIndexModel<PositionAssignment>(
+                Builders<PositionAssignment>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.UserId)
+                    .Ascending(x => x.EffectiveFrom)
+                    .Ascending(x => x.EffectiveTo)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_position_assignments_user_interval" })
+        });
         await outboxEventCollection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<OutboxEvent>(
