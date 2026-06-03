@@ -40,6 +40,7 @@ public static class DataSeeder
             new("auth", "users", "update", "Update User", "Permission to edit user information"),
             new("auth", "users", "delete", "Delete User", "Permission to delete users"),
             new("auth", "users", "assign-role", "Assign Role", "Permission to assign roles to users"),
+            new("auth", "users", "lookup-validation", "Lookup Validation", "Permission to validate tenant user references"),
 
             new("auth", "roles", "create", "Create Role", "Permission to create a new role"),
             new("auth", "roles", "read", "Read Role", "Permission to view role lists"),
