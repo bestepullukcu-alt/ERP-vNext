@@ -1,5 +1,5 @@
 ---
-id: MOD-0043
+id: MOD-0009-FU01
 name: Tenant Architecture Foundation
 domain: platform-shared-services
 status: done
@@ -11,7 +11,9 @@ started: 2026-04-16
 target: 2026-08-06
 ---
 
-# MOD-0043 — Tenant Architecture Foundation
+# MOD-0009-FU01 — Tenant Architecture Foundation
+
+> **Canonicalization (DCP-002):** Canonical ID is now **MOD-0009-FU01**, repositioned as a child/FU of **MOD-0009 Tenant / Environment Management** (Blueprint canonical). Prior repo ID **MOD-0043** is a deprecated alias retained for traceability; repo MOD-0043 had drifted onto a Blueprint ID reserved for an SRE module ("SLO/SLA Monitoring"). Body text below predates canonicalization and may reference MOD-0043; scope and meaning are unchanged. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Module Summary
 Faz 1 (Sprint 1-8) tenant-aware foundation teslimidir. Kapsam: tenant context canonical contract, gateway tenant resolution chain, event envelope + outbox sözleşmesi, auth cache fail-closed davranış standardı, architecture/tenancy gate hazırlığı.
@@ -31,7 +33,7 @@ Faz 1 (Sprint 1-8) tenant-aware foundation teslimidir. Kapsam: tenant context ca
   - Domain feature geliştirme (procurement/inventory functional scope)
 
 ## Repo Scope
-- `execution/domains/platform-shared-services/module-packs/MOD-0043-tenant-architecture-foundation.md`
+- `execution/domains/platform-shared-services/module-packs/MOD-0009-FU01-tenant-architecture-foundation.md`
 - `docs/audits/pss-mod-0043-tenant-architecture-foundation-audit.md`
 - `gateway/Diten.ApiGateway/**`
 - `services/Diten.AuthService/src/**`

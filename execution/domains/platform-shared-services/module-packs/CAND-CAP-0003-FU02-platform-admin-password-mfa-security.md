@@ -1,6 +1,6 @@
 ---
-id: PSS-010
-name: Platform Admin Password & MFA Security Settings
+id: CAND-CAP-0003-FU02
+name: Platform Admin Password & MFA Security
 domain: platform-shared-services
 status: draft
 owner: module-pack-author
@@ -9,7 +9,9 @@ started: 2026-05-13
 target: 2026-05-30
 ---
 
-# PSS-010 — Platform Admin Password & MFA Security Settings
+# CAND-CAP-0003-FU02 — Platform Admin Password & MFA Security
+
+> **Canonicalization (DCP-002):** Governance identity is now **CAND-CAP-0003-FU02**, a child of **CAND-CAP-0003**. Prior repo ID **PSS-010** is a deprecated alias. Temporary candidate; pending EA. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Module Summary
 Wave 2 delivers advanced personal security settings management for Platform Administrators. This enables authenticated administrators to change their password securely and enable or disable Multi-Factor Authentication (MFA) through a strict multi-stage verification flow (including session re-authentication, initial confirmation challenge, and recovery codes generation) aligning with high-security enterprise SaaS standards.

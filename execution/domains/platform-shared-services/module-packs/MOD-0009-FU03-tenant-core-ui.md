@@ -1,5 +1,5 @@
 ---
-id: MOD-0046
+id: MOD-0009-FU03
 name: Tenant Core UI
 slug: tenant-core-ui
 domain: platform-shared-services
@@ -12,10 +12,12 @@ dates:
   started: 2026-04-27
 ---
 
-# MOD-0046: Tenant Core UI
+# MOD-0009-FU03: Tenant Core UI
+
+> **Canonicalization (DCP-002):** Canonical ID is now **MOD-0009-FU03**, a child/FU (UI surface) of **MOD-0009 Tenant / Environment Management** (Blueprint canonical). Prior repo ID **MOD-0046** is a deprecated alias retained for traceability; repo MOD-0046 had drifted onto a Blueprint ID reserved for "Performance & Capacity Management". Body text below predates canonicalization and may reference MOD-0046; scope and meaning are unchanged. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Purpose
-Implement the Platform Tenant Core UI over the existing Tenant Management backend contracts from MOD-0044 and MOD-0045.
+Implement the Platform Tenant Core UI over the existing Tenant Management backend contracts from **MOD-0009-FU02** (Tenant Manager Backend; prior alias MOD-0044). The former **MOD-0045** "Tenant Mgmt Legacy / Gap Reference" is retired as a non-executable legacy reference (see DCP-002).
 
 ## Repo Scope
 - `frontend/Diten.Web/Controllers/TenantsController.cs`

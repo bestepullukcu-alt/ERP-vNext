@@ -1,5 +1,5 @@
 ---
-id: PSS-005
+id: CAND-CAP-0002-FU01
 name: Tenant Module Catalog
 domain: platform-shared-services
 status: review
@@ -11,7 +11,9 @@ form_field_count: 12
 golden_reference: compact
 ---
 
-# PSS-005 — Tenant Module Catalog
+# CAND-CAP-0002-FU01 — Tenant Module Catalog
+
+> **Canonicalization (DCP-002):** Governance identity is now **CAND-CAP-0002-FU01**, a child of **CAND-CAP-0002**. Prior repo ID **PSS-005** is a deprecated alias. (PSS-005 ↔ Blueprint MOD-0008 Product Catalog overlap noted as an EA refinement.) Temporary candidate; pending EA. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Module Summary
 Tenant Module Catalog modulu, Platform Shared Services domain'i icinde ERP modullerinin platform seviyesindeki katalog kayitlarini yonetir. MVP kapsami, hangi ERP modullerinin mevcut oldugunu, aktif/pasif durumunu, tenant'a atanabilir olup olmadigini ve ileride tenant feature, plan ve quota yapilariyla iliskilendirilebilecek temel catalog contract'ini hazirlamaktir.
@@ -103,7 +105,7 @@ Bu module pack kalici execution sozlesmesidir. Kod gelistirmesi yalnizca frontma
 | SortOrder | `int` | Default `0`; must be `>= 0`; negative values are rejected. |
 
 ## Repo Scope
-- `execution/domains/platform-shared-services/module-packs/PSS-005-tenant-module-catalog.md`
+- `execution/domains/platform-shared-services/module-packs/CAND-CAP-0002-FU01-tenant-module-catalog.md`
 - `services/Diten.Platform/src/**`
 - `services/Diten.Platform/tests/**`
 - `services/Diten.Platform.Common/**` only for cross-service DTO/contract definitions required by future tenant feature/plan/quota consumers.

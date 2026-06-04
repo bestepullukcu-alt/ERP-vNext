@@ -1,6 +1,6 @@
 ---
-id: MOD-0040
-name: Tenant Organization Foundation
+id: MOD-0288
+name: Organization, Person & Position Directory
 domain: platform-shared-services
 service: Diten.Platform
 shell: none
@@ -14,7 +14,9 @@ target: ""
 form_field_count: 0
 ---
 
-# MOD-0040 — Tenant Organization Foundation
+# MOD-0288 — Organization, Person & Position Directory
+
+> **Canonicalization (DCP-002):** Canonical ID is now **MOD-0288** and canonical name **Organization, Person & Position Directory** (Blueprint-aligned). Prior repo ID **MOD-0040** (and its earlier alias **NEW-MOD-0040**) and the prior name "Tenant Organization Foundation" are deprecated aliases retained for traceability; repo MOD-0040 had drifted onto a Blueprint ID reserved for "Canonical ID & Correlation Standard". The child follow-up is **MOD-0288-FU01**. Body text below predates canonicalization and references MOD-0040 / the prior name; scope, boundaries, and meaning are unchanged. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 > **Ready-for-dev note:**
 > MOD-0040 is ready-for-dev for the explicitly authorized minimal backend-only v1 slice only.

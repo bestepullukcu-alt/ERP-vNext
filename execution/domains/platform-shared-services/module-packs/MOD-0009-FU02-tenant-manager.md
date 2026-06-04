@@ -1,5 +1,5 @@
 ---
-id: MOD-0044
+id: MOD-0009-FU02
 name: Tenant Manager (Backend-Only)
 domain: platform-shared-services
 status: in-progress
@@ -11,7 +11,9 @@ started: 2026-04-17
 target: 2026-08-15
 ---
 
-# MOD-0044 — Tenant Manager (Backend-Only)
+# MOD-0009-FU02 — Tenant Manager (Backend-Only)
+
+> **Canonicalization (DCP-002):** Canonical ID is now **MOD-0009-FU02**, a child/FU of **MOD-0009 Tenant / Environment Management** (Blueprint canonical). Prior repo ID **MOD-0044** is a deprecated alias retained for traceability; repo MOD-0044 had drifted onto a Blueprint ID reserved for "Backup & Restore". Body text below predates canonicalization and may reference MOD-0044; scope and meaning are unchanged. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Module Summary
 Tenant Manager modulu, Platform tenant registry akisini backend katmaninda fazli MVP olarak genisletir. Referans ekran akisi: Registry -> Create -> Provisioning/Success -> Detail Tabs. Bu modulde UI gelistirme kapsam disidir; frontend add-module akisi ayrica acilacaktir.
@@ -29,14 +31,14 @@ Tenant Manager modulu, Platform tenant registry akisini backend katmaninda fazli
   - Detail tab backend contracts (modules/users/settings)
 - In-scope:
   - `services/Diten.Platform/**`
-  - `execution/domains/platform-shared-services/module-packs/MOD-0044-tenant-manager.md`
+  - `execution/domains/platform-shared-services/module-packs/MOD-0009-FU02-tenant-manager.md`
 - Out-of-scope:
   - Frontend Razor/JS ekran implementasyonu (ayri add-module)
   - Hard delete endpoint
   - `gateway/Diten.ApiGateway/**` (mevcut route varsayimi ile)
 
 ## Repo Scope
-- `execution/domains/platform-shared-services/module-packs/MOD-0044-tenant-manager.md`
+- `execution/domains/platform-shared-services/module-packs/MOD-0009-FU02-tenant-manager.md`
 - `services/Diten.Platform/src/**`
 - `services/Diten.Platform/tests/**` (eklenirse)
 

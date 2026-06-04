@@ -1,6 +1,6 @@
 ---
-file_name: MOD-0298-tenant-module-entitlements.md
-id: MOD-0298
+file_name: CAND-CAP-0002-FU05-tenant-module-entitlements.md
+id: CAND-CAP-0002-FU05
 name: Tenant Module Entitlements
 domain: platform-shared-services
 status: approved
@@ -10,7 +10,9 @@ created_at: 2026-05-11
 golden_reference: slim
 ---
 
-# 1. Module Pack Summary
+# CAND-CAP-0002-FU05 — Tenant Module Entitlements
+
+> **Canonicalization (DCP-002):** Governance identity is now **CAND-CAP-0002-FU05**, a child of **CAND-CAP-0002 (SaaS Subscription, Plan & Entitlement Management)**. Prior repo ID **MOD-0298** is a deprecated alias. Temporary candidate identity pending EA MOD-xxxx; never written into runtime literals. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 Bu module pack, tenant bazlı modül yetkilendirme (Module Entitlement) yönetiminin tasarım, kural ve entegrasyon sınırlarını belirler. Amacı, tenant'ların sistemdeki modüllere (ör: MDM, İK, CRM) erişim haklarını tutmak, plan kaynaklı haklarla manuel eklentileri (override/addon) birleştirerek gerçek zamanlı bir "Effective Access" (Geçerli Erişim) kararı üretmek ve bu kararı arka uç (backend) yetkilendirme altyapısı ile arayüz görünümlerine entegre etmektir. 
 
 # 2. Business Objective

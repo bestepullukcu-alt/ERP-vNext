@@ -13,6 +13,8 @@ created: 2026-06-01
 
 # DCP-001 — Access Governance (Delivery Capability Pack)
 
+> **Canonicalization note (DCP-002, 2026-06):** Module identities referenced throughout this pack were canonicalized after authoring — **MOD-0040 → MOD-0288** (Organization, Person & Position Directory) with child **MOD-0288-FU01** (was MOD-0040-FU01), and tenant cluster **MOD-0043/44/46 → MOD-0009-FU01/FU02/FU03**. The body and dated changelog below are preserved as historical record and use the prior IDs; all prior IDs resolve via deprecated aliases in [module-id-registry.md](../../registries/module-id-registry.md). See [DCP-002](./DCP-002-module-identity-canonicalization.md).
+
 > **Artifact type:** This is a **Delivery Capability Pack** (CAP-001 governance / orchestration contract).
 > It is **NOT** a runtime entity, **NOT** a module pack, **NOT** a MOD-0014 runtime Capability Group,
 > and **NOT** a business-capability-matrix row. It references member modules **by ID only** and never
@@ -121,6 +123,7 @@ This Delivery Capability Pack orchestrates six capabilities:
 | MOD-0018-FU14 | Explain Access (Capability F) | `planned` (pack missing) |
 | MOD-0018-FU15 | Real data-scope resolver (Capability C; replaces NoOp) | `planned` / reserved (depends on MOD-0040) |
 | MOD-0040 | Organization master data (Capability B) | Planned / Reserved (no pack) |
+| MOD-0040-FU01 | Position Assignment UserId AuthService reference validation | `ready-for-dev` (after MOD-0047, before FU15) |
 | MOD-0021 | Audit trail (canonical audit owner; Capability F) | referenced |
 | MOD-0298-FU1 | Entitlement cache-invalidation consumer | `planned` |
 | MOD-0023 | Approvals / workflow (emits temporary-access events for Capability D) | referenced |
@@ -182,7 +185,8 @@ Separate security-hardening (parallel, not blocking the main capability spine):
    GAP-13-3  TenantId mismatch policy
 ```
 
-**Critical path:** A (done) → FU12 reconcile → MOD-0040 (B) → FU15 (C) → business-module enforcement (E).
+**Critical path:** A (done) → FU12 reconcile → MOD-0040 (B) → MOD-0047 lookup contract → MOD-0040-FU01
+PositionAssignment UserId validation → FU15 (C) → business-module enforcement (E).
 
 ## 8. Ordered delivery sequence
 
@@ -191,13 +195,14 @@ Separate security-hardening (parallel, not blocking the main capability spine):
 3. **MOD-0040 draft pack.**
 4. **MOD-0040 ready-for-dev review.**
 5. **MOD-0040 minimal implementation.**
-6. **FU15 pack and implementation** (real resolver replaces NoOp).
-7. **FU13 implementation** (cache-invalidation convention). The FU13 **pack** may be authored earlier, in parallel with MOD-0040 work (see parallel tracks below); FU13 **implementation** lands here as an ordered delivery step, after the FU13 pack is reviewed. Dependency semantics are unchanged.
-8. **MOD-0047 Tenant User pack.**
-9. **Tenant Role pack.**
-10. **Tenant IAM implementation.**
-11. **First business-module row-level scope consumer.**
-12. **FU11 workflow temporary-access pack and implementation.**
+6. **MOD-0047 Tenant User lookup-validation contract.**
+7. **MOD-0040-FU01 PositionAssignment UserId AuthService validation integration.**
+8. **FU15 pack and implementation** (real resolver replaces NoOp).
+9. **FU13 implementation** (cache-invalidation convention). The FU13 **pack** may be authored earlier, in parallel with MOD-0040 work (see parallel tracks below); FU13 **implementation** lands here as an ordered delivery step, after the FU13 pack is reviewed. Dependency semantics are unchanged.
+10. **Tenant Role pack.**
+11. **Tenant IAM implementation.**
+12. **First business-module row-level scope consumer.**
+13. **FU11 workflow temporary-access pack and implementation.**
 13. **FU14 Explain Access pack and implementation.**
 
 **Parallel tracks (allowed once their prerequisites hold):**
@@ -473,3 +478,16 @@ This Delivery Capability Pack is **complete / reconcilable** when:
     This does **not** complete DCP-001 overall. MOD-0040 PositionAssignment `UserId` AuthService validation
     integration remains a separate follow-up, and FU15/runtime authorization consumers remain blocked until the
     MOD-0040 integration guard is satisfied.
+
+  - **2026-06-03 — MOD-0040-FU01 draft pack authored (PositionAssignment UserId validation).**
+
+    MOD-0040-FU01 is reserved as the Platform-side consumer integration follow-up for the MOD-0047 AuthService
+    Tenant User lookup-validation contract. It is intentionally sequenced after MOD-0047 and before MOD-0018-FU15:
+    PositionAssignment `UserId` must not be treated as authoritative by runtime authorization consumers until this
+    fail-closed validation integration is implemented and validated.
+
+  - **2026-06-03 — MOD-0040-FU01 `draft → ready-for-dev` (promotion review passed).**
+
+    Draft pack review and frontmatter reconciliation passed. Scope and dependency review confirmed the narrow
+    Platform-side PositionAssignment `UserId` AuthService lookup-validation integration boundary. FU15/runtime
+    authorization consumers remain blocked until MOD-0040-FU01 implementation is complete and validated.

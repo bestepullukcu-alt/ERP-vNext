@@ -1,5 +1,5 @@
 ---
-id: PSS-009
+id: CAND-CAP-0003-FU01
 name: Platform Admin Profile & Settings
 domain: platform-shared-services
 service: Diten.Platform
@@ -14,7 +14,9 @@ target: 2026-05-28
 form_field_count: 1
 ---
 
-# PSS-009 - Platform Admin Profile & Settings
+# CAND-CAP-0003-FU01 — Platform Admin Profile & Settings
+
+> **Canonicalization (DCP-002):** Governance identity is now **CAND-CAP-0003-FU01**, a child of **CAND-CAP-0003**. Prior repo ID **PSS-009** is a deprecated alias. Any `PSS-009` string in runtime code is a documentation comment only and is left unchanged. Temporary candidate; pending EA. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Module Summary
 This module creates the Platform/Admin self-service account surface for the currently authenticated platform actor. It fixes the hardcoded header user avatar, links the existing user dropdown to real `My Profile` and `Settings` pages, and allows the signed-in Platform/Admin user to view their own account information and safely update only approved self-service fields.
@@ -128,7 +130,7 @@ No v1 fields:
 
 ## Repo Scope
 Allowed implementation paths:
-- `execution/domains/platform-shared-services/module-packs/PSS-009-platform-admin-profile-settings.md`.
+- `execution/domains/platform-shared-services/module-packs/CAND-CAP-0003-FU01-platform-admin-profile-settings.md`.
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAccount/**`.
 - `services/Diten.Platform/src/Diten.Platform.API/Controllers/Platform/PlatformAccountController.cs`.
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/**`.

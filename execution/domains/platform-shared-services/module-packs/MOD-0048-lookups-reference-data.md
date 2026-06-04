@@ -1,6 +1,6 @@
 ---
-id: PSS-011
-name: Lookups / Reference Data
+id: MOD-0048
+name: Reference Data Management
 domain: platform-shared-services
 service: Diten.Platform
 shell: none
@@ -14,7 +14,9 @@ target: 2026-05-28
 form_field_count: 0
 ---
 
-# PSS-011 - Lookups / Reference Data
+# MOD-0048 — Reference Data Management
+
+> **Canonicalization (DCP-002):** Canonical ID is now **MOD-0048 Reference Data Management** (existing Blueprint module). Prior repo ID **PSS-011 (Lookups / Reference Data)** is a deprecated alias. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Module Summary
 This module completes the Platform/Admin lookup and reference-data API surface owned by `Diten.Platform`. It provides stable, cached, system-level lookup endpoints for Platform screens such as Tenant Management, Subscription Plans, Feature Management, and Module Catalog.
@@ -197,7 +199,7 @@ Golden Reference decision: `golden_reference: none`. No DataTable or create/edit
 
 ## Repo Scope
 Allowed documentation scope:
-- `execution/domains/platform-shared-services/module-packs/PSS-011-lookups-reference-data.md`.
+- `execution/domains/platform-shared-services/module-packs/MOD-0048-lookups-reference-data.md`.
 
 Allowed backend scope:
 - `services/Diten.Platform/src/Diten.Platform.API/Controllers/LookupsController.cs`.

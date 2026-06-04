@@ -1,6 +1,6 @@
 ---
-id: PSS-008
-name: Module Details Assignment Inspection
+id: CAND-CAP-0002-FU04
+name: Module Assignment Inspection
 domain: platform-shared-services
 service: Diten.Platform
 status: review
@@ -14,7 +14,9 @@ golden_reference: none
 ui_reference: frontend/Diten.Web/Views/Platform/ModuleCatalog/Details.cshtml
 ---
 
-# PSS-008 - Module Details Assignment Inspection
+# CAND-CAP-0002-FU04 — Module Assignment Inspection
+
+> **Canonicalization (DCP-002):** Governance identity is now **CAND-CAP-0002-FU04**, a child of **CAND-CAP-0002**. Prior repo ID **PSS-008** is a deprecated alias. Temporary candidate; pending EA. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Module Brief
 Module Details Assignment Inspection, Platform Admin'in Module Catalog icindeki bir modulun detay ekraninda modulu hangi Subscription Plan'larin icerdiğini ve hangi tenantlara atanmis oldugunu read-only olarak incelemesini saglar.
@@ -358,7 +360,7 @@ Logs / metrics:
 ## Repo Scope
 Planning-only current change:
 
-- `execution/domains/platform-shared-services/module-packs/PSS-008-module-details-assignment-inspection.md`
+- `execution/domains/platform-shared-services/module-packs/CAND-CAP-0002-FU04-module-assignment-inspection.md`
 
 Later approved implementation scope:
 

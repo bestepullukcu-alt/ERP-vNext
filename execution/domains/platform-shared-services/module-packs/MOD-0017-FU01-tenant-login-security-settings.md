@@ -1,5 +1,5 @@
 ---
-id: PSS-004
+id: MOD-0017-FU01
 name: Tenant Login Security Settings
 domain: platform-shared-services
 status: in-progress
@@ -9,7 +9,9 @@ started: 2026-04-27
 target: 2026-05-15
 ---
 
-# PSS-004 — Tenant Login Security Settings
+# MOD-0017-FU01 — Tenant Login Security Settings
+
+> **Canonicalization (DCP-002):** Canonical ID is now **MOD-0017-FU01**, a follow-up of Blueprint **MOD-0017 SSO / MFA**. Prior repo ID **PSS-004** is a deprecated alias. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Module Summary
 Phase 2 delivers tenant-level login and security settings management for Platform administration and AuthService tenant-login enforcement. The Platform service stores settings, creates defaults during tenant registration, exposes admin CRUD contracts, and exposes a narrow internal read contract consumed only by AuthService.

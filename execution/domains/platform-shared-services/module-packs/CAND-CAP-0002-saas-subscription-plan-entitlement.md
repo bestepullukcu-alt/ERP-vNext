@@ -1,6 +1,6 @@
 ---
-id: MOD-0297
-name: Tenant Subscription Management
+id: CAND-CAP-0002
+name: SaaS Subscription, Plan & Entitlement Management
 slug: tenant-subscription-management
 domain: platform-shared-services
 status: review
@@ -10,7 +10,9 @@ started: 2026-05-11
 target: 2026-05-25
 ---
 
-# Platform Tenant Subscription Foundation
+# CAND-CAP-0002 — SaaS Subscription, Plan & Entitlement Management
+
+> **Canonicalization (DCP-002):** Governance identity is now temporary candidate capability **CAND-CAP-0002 (SaaS Subscription, Plan & Entitlement Management)** — parent of the SaaS subscription/entitlement candidate cluster. Prior repo ID **MOD-0297 (Tenant Subscription Management)** is a deprecated alias. ⚠️ Runtime compatibility: existing Hangfire literals containing `MOD-0297` (TrialExpiryScanJob, SubscriptionRenewalJob) REMAIN UNCHANGED as legacy runtime compatibility literals; `CAND-CAP-0002` is never written into runtime code. Pending EA MOD-xxxx allocation. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## 1. module-brief.md
 
