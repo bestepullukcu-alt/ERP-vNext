@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.TenantOrganization.Commands;
+using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 
@@ -9,11 +10,13 @@ public sealed class UpdatePositionAssignmentCommandHandler : IRequestHandler<Upd
 {
     private readonly IPositionAssignmentRepository _assignments;
     private readonly IPositionRepository _positions;
+    private readonly IUserReferenceValidator _userReferenceValidator;
 
-    public UpdatePositionAssignmentCommandHandler(IPositionAssignmentRepository assignments, IPositionRepository positions)
+    public UpdatePositionAssignmentCommandHandler(IPositionAssignmentRepository assignments, IPositionRepository positions, IUserReferenceValidator userReferenceValidator)
     {
         _assignments = assignments;
         _positions = positions;
+        _userReferenceValidator = userReferenceValidator;
     }
 
     public async Task<Response<NoContent>> Handle(UpdatePositionAssignmentCommand request, CancellationToken ct)
@@ -28,6 +31,12 @@ public sealed class UpdatePositionAssignmentCommandHandler : IRequestHandler<Upd
         if (position == null || position.IsArchived)
         {
             return Response<NoContent>.Fail("Position not found.", 404);
+        }
+
+        var userValidation = await _userReferenceValidator.ValidateAsync(request.Request.UserId, ct);
+        if (!userValidation.IsSuccessful || userValidation.Data?.Referenceable != true)
+        {
+            return Response<NoContent>.Fail("User is not referenceable.", 404);
         }
 
         if (await _assignments.HasOverlapAsync(request.Request.PositionId, request.Request.EffectiveFrom, request.Request.EffectiveTo, request.Id, ct))
