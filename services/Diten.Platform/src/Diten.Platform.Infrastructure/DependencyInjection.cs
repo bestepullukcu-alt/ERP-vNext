@@ -142,6 +142,8 @@ public static class DependencyInjection
         services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
         services.AddHttpClient<ILegalEntityReferenceValidator, MdmLegalEntityReferenceValidator>()
             .AddHttpMessageHandler<TenantPropagationHandler>();
+        services.AddHttpClient<IUserReferenceValidator, Diten.Platform.Infrastructure.Services.Auth.AuthServiceUserReferenceValidator>()
+            .AddHttpMessageHandler<TenantPropagationHandler>();
 
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));

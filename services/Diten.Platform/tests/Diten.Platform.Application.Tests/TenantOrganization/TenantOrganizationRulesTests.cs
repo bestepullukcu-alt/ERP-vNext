@@ -253,7 +253,7 @@ public sealed class TenantOrganizationRulesTests
     public async Task Position_assignment_rejects_missing_position()
     {
         var assignments = new InMemoryPositionAssignmentRepository(TenantId);
-        var handler = new CreatePositionAssignmentCommandHandler(assignments, new InMemoryPositionRepository(TenantId), TenantContext());
+        var handler = new CreatePositionAssignmentCommandHandler(assignments, new InMemoryPositionRepository(TenantId), TenantContext(), new FakeUserReferenceValidator());
 
         var response = await handler.Handle(new CreatePositionAssignmentCommand(new PositionAssignmentRequest(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow, null)), CancellationToken.None);
 
@@ -268,7 +268,7 @@ public sealed class TenantOrganizationRulesTests
         var otherTenantPosition = new Position { TenantId = OtherTenantId, Code = "CEO", Name = "CEO", OrganizationUnitId = Guid.NewGuid() };
         positions.Add(otherTenantPosition);
         var assignments = new InMemoryPositionAssignmentRepository(TenantId);
-        var handler = new CreatePositionAssignmentCommandHandler(assignments, positions, TenantContext());
+        var handler = new CreatePositionAssignmentCommandHandler(assignments, positions, TenantContext(), new FakeUserReferenceValidator());
 
         var response = await handler.Handle(new CreatePositionAssignmentCommand(new PositionAssignmentRequest(otherTenantPosition.Id, Guid.NewGuid(), DateTimeOffset.UtcNow, null)), CancellationToken.None);
 
@@ -292,7 +292,7 @@ public sealed class TenantOrganizationRulesTests
             EffectiveFrom = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
             EffectiveTo = new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero)
         });
-        var handler = new CreatePositionAssignmentCommandHandler(assignments, positions, TenantContext());
+        var handler = new CreatePositionAssignmentCommandHandler(assignments, positions, TenantContext(), new FakeUserReferenceValidator());
 
         var response = await handler.Handle(new CreatePositionAssignmentCommand(new PositionAssignmentRequest(
             position.Id,
@@ -322,7 +322,7 @@ public sealed class TenantOrganizationRulesTests
             UserId = userId,
             EffectiveFrom = DateTimeOffset.UtcNow
         });
-        var handler = new CreatePositionAssignmentCommandHandler(assignments, positions, TenantContext());
+        var handler = new CreatePositionAssignmentCommandHandler(assignments, positions, TenantContext(), new FakeUserReferenceValidator());
 
         var response = await handler.Handle(new CreatePositionAssignmentCommand(new PositionAssignmentRequest(positionB.Id, userId, DateTimeOffset.UtcNow, null)), CancellationToken.None);
 
@@ -477,6 +477,22 @@ public sealed class TenantOrganizationRulesTests
             var response = _referenceable
                 ? Response<LegalEntityReferenceDto>.Success(new LegalEntityReferenceDto(legalEntityId, "Legal", "Legal", "ACTIVE", true))
                 : Response<LegalEntityReferenceDto>.Fail("Legal Entity is not referenceable.", 404);
+
+            return Task.FromResult(response);
+        }
+    }
+
+    private sealed class FakeUserReferenceValidator : IUserReferenceValidator
+    {
+        private readonly bool _referenceable;
+
+        public FakeUserReferenceValidator(bool referenceable = true) => _referenceable = referenceable;
+
+        public Task<Response<UserReferenceDto>> ValidateAsync(Guid userId, CancellationToken ct = default)
+        {
+            var response = _referenceable
+                ? Response<UserReferenceDto>.Success(new UserReferenceDto(userId, true))
+                : Response<UserReferenceDto>.Fail("User is not referenceable.", 404);
 
             return Task.FromResult(response);
         }
