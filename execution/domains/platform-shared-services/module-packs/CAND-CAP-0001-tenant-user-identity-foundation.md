@@ -1,6 +1,6 @@
 ---
-id: MOD-0047
-name: Tenant User Foundation
+id: CAND-CAP-0001
+name: Tenant User / Identity Foundation
 domain: platform-shared-services
 service: Diten.AuthService
 shell: none
@@ -14,7 +14,9 @@ target: ""
 form_field_count: 0
 ---
 
-# MOD-0047 - Tenant User Foundation
+# CAND-CAP-0001 — Tenant User / Identity Foundation
+
+> **Canonicalization (DCP-002):** Governance identity is now the temporary candidate capability **CAND-CAP-0001 (Tenant User / Identity Foundation)**. Prior repo ID **MOD-0047** is a deprecated alias (it squatted Blueprint MOD-0047 = Business Continuity). The enterprise Blueprint has no exact tenant-user identity capability; CAND-CAP-0001 is a temporary documentation/governance identity pending Enterprise Architect MOD-xxxx allocation and is never written into runtime literals. Body below predates canonicalization. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 > **Promotion note:** `draft -> ready-for-dev`
 >
@@ -140,7 +142,7 @@ TenantId is validated server-side through the resolved tenant context and must n
 Governance authoring scope:
 
 ```text
-execution/domains/platform-shared-services/module-packs/MOD-0047-tenant-user-foundation.md
+execution/domains/platform-shared-services/module-packs/CAND-CAP-0001-tenant-user-identity-foundation.md
 execution/registries/module-id-registry.md
 execution/portfolio/master-development-plan.md
 execution/portfolio/delivery-capability-packs/DCP-001-access-governance.md

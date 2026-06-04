@@ -1,6 +1,6 @@
 ---
-id: PSS-007
-name: Platform Subscription Feature Management
+id: CAND-CAP-0002-FU03
+name: Subscription Feature Management
 domain: platform-shared-services
 service: Diten.Platform
 status: review
@@ -13,7 +13,9 @@ datatable: false
 golden_reference: none
 ---
 
-# PSS-007 - Platform Subscription Feature Management
+# CAND-CAP-0002-FU03 — Subscription Feature Management
+
+> **Canonicalization (DCP-002):** Governance identity is now **CAND-CAP-0002-FU03**, a child of **CAND-CAP-0002**. Prior repo ID **PSS-007** is a deprecated alias. Temporary candidate; pending EA. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Module Summary
 Platform Subscription Feature Management modülü, Diten ERP-vNext SaaS platformunda yer alan abonelik planlarına ait özelliklerin (features) kataloglanmasını, kategorilendirilmesini, aktif/pasif durumlarının yönetilmesini ve bu özelliklerin (SubscriptionPlan) abonelik planlarıyla eşleştirilmesini (mapping) sağlar.

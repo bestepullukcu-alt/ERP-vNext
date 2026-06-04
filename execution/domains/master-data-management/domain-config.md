@@ -19,6 +19,8 @@ by Platform Shared Services and tenant business modules.
 
 ## Domain-Level Owned Boundaries
 
+> Canonicalization (DCP-002): references to "MOD-0040" in this domain config are now canonically **MOD-0288** (Organization, Person & Position Directory). They resolve via the registry deprecated alias and are left unchanged below for boundary stability.
+
 - MDM owns the Legal Entity system of record for the Legal Entity Foundation slice.
 - MOD-0040 is not the Legal Entity owner.
 - MOD-0040 consumes Legal Entity only through a read-only `LegalEntityId` lookup / validation contract.

@@ -1,6 +1,6 @@
 ---
-id: PSS-006
-name: Tenant Subscription Plan Catalog
+id: CAND-CAP-0002-FU02
+name: Subscription Plan Catalog
 domain: platform-shared-services
 service: Diten.Platform
 status: approved
@@ -13,7 +13,9 @@ datatable: false
 golden_reference: none
 ---
 
-# PSS-006 - Tenant Subscription Plan Catalog
+# CAND-CAP-0002-FU02 — Subscription Plan Catalog
+
+> **Canonicalization (DCP-002):** Governance identity is now **CAND-CAP-0002-FU02**, a child of **CAND-CAP-0002**. Prior repo ID **PSS-006** is a deprecated alias. Temporary candidate; pending EA. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Purpose
 Tenant Subscription Plan Catalog modulu, Platform Admin tarafindan tenantlara atanabilecek subscription plan kayitlarini yonetir ve Tenant Create akisi icin plan secimi/provisioning sozlesmesini hazirlar.
@@ -123,7 +125,7 @@ PSS-006 owns the plan catalog. It does not fully own Tenant lifecycle, `TenantQu
 
 ## Repository Scope
 - Planning-only current change:
-  - `execution/domains/platform-shared-services/module-packs/PSS-006-tenant-subscription-plan-catalog.md`
+  - `execution/domains/platform-shared-services/module-packs/CAND-CAP-0002-FU02-tenant-subscription-plan-catalog.md`
 - Later approved implementation scope:
   - `services/Diten.Platform/src/Diten.Platform.Domain/**`
   - `services/Diten.Platform/src/Diten.Platform.Application/**`

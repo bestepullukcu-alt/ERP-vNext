@@ -45,23 +45,25 @@ Below is the macro status catalog.
 > [!NOTE]
 > The **Legacy Completeness %** column serves as a historical macro reference indicator from the legacy plan. It is **not** an active progress tracker. For daily task status and active branches, refer to [platform-delivery-board.md](../delivery/platform-delivery-board.md).
 
+> **Canonicalization (DCP-002):** Tenant cluster IDs are canonicalized — `MOD-0043/44/46 → MOD-0009-FU01/FU02/FU03` and `MOD-0040(+FU01) → MOD-0288(+FU01)`. Prior IDs remain deprecated aliases in [module-id-registry.md](../registries/module-id-registry.md). The registry is the canonical source for IDs and Blueprint-aligned names; name-drift rows below may still show prior wording. Unresolved repo-only/EA-reservation items are tracked in [blueprint-master-plan-reconciliation.md](./blueprint-master-plan-reconciliation.md).
+
 | ID | Module Name | Wave | Priority | Lifecycle Status | Legacy Completeness % | Notes |
 |---|---|---|---|---|---|---|
-| **MOD-0043/44/46** | Tenant Management Aggregate Index | — | — | partial | 84% | Reporting row only; not an executable module pack. |
-| **MOD-0043** | Tenant Architecture Foundation | — | High | in-progress | 80% | Foundation layer. |
-| **MOD-0044** | Tenant Manager Backend | — | High | in-progress | 85% | API & handlers. |
-| **MOD-0046** | Tenant Core UI | W3-A | High | in-progress | 82% | Admin UI portal. |
+| **MOD-0009 (FU01/FU02/FU03)** | Tenant Management Aggregate Index | — | — | partial | 84% | Reporting row only; not an executable module pack. |
+| **MOD-0009-FU01** | Tenant Architecture Foundation | — | High | in-progress | 80% | Foundation layer. |
+| **MOD-0009-FU02** | Tenant Manager Backend | — | High | in-progress | 85% | API & handlers. |
+| **MOD-0009-FU03** | Tenant Core UI | W3-A | High | in-progress | 82% | Admin UI portal. |
 | **MOD-0033-FU01** | Tenant Quota Governance UI | W3-A | Medium | partial | 60% | UI slice; owned by MOD-0033. |
-| **PSS-006** | Tenant Subscription Plan Catalog | — | — | approved | 96% | Package catalog. |
-| **PSS-007** | Platform Subscription Feature Management | — | — | partial | 85% | Feature definitions. |
-| **PSS-005** | Tenant Module Catalog | — | — | approved | 93% | Modules list. |
-| **MOD-0298** | Tenant Module Entitlements | — | — | partial | 90% | Commercial access mapping. |
-| **MOD-0297** | Tenant Subscription Lifecycle | — | — | partial | 75% | Automation hookups. |
-| **PSS-004** | Tenant Login & Security Settings | — | — | partial | 86% | MFA and login guards. |
-| **PSS-011** | Lookups / Reference Data | — | — | in-progress | 93% | System dropdowns. |
-| **PSS-009** | Platform Admin Profile & Settings | — | Medium | in-progress | 85% | Profile details. |
-| **PSS-008** | Module Details Assignment Inspection | — | Medium | partial | 65% | Verification screens. |
-| **PSS-010** | Platform Admin Password & MFA Security | — | High | partial | 60% | Auth settings. |
+| **CAND-CAP-0002-FU02** | Tenant Subscription Plan Catalog | — | — | approved | 96% | Package catalog. |
+| **CAND-CAP-0002-FU03** | Platform Subscription Feature Management | — | — | partial | 85% | Feature definitions. |
+| **CAND-CAP-0002-FU01** | Tenant Module Catalog | — | — | approved | 93% | Modules list. |
+| **CAND-CAP-0002-FU05** | Tenant Module Entitlements | — | — | partial | 90% | Commercial access mapping. |
+| **CAND-CAP-0002** | Tenant Subscription Lifecycle | — | — | partial | 75% | Automation hookups. |
+| **MOD-0017-FU01** | Tenant Login & Security Settings | — | — | partial | 86% | MFA and login guards. |
+| **MOD-0048** | Lookups / Reference Data | — | — | in-progress | 93% | System dropdowns. |
+| **CAND-CAP-0003-FU01** | Platform Admin Profile & Settings | — | Medium | in-progress | 85% | Profile details. |
+| **CAND-CAP-0002-FU04** | Module Details Assignment Inspection | — | Medium | partial | 65% | Verification screens. |
+| **CAND-CAP-0003-FU02** | Platform Admin Password & MFA Security | — | High | partial | 60% | Auth settings. |
 | **MOD-0012** | Secrets & Configuration Vault | W1-* | Blocker | in-progress | 85% | Vault settings. |
 | **MOD-0014** | Module Boundary Registry | W1-B | High | planned | 0% | Boundaries checking. |
 | **MOD-0023** | Workflow Designer | W1 | High | planned | 0% | SLA and approvals. |
@@ -69,7 +71,7 @@ Below is the macro status catalog.
 | **MOD-0031** | Evidence Linking Service | W1 | Medium | planned | 0% | Proof links metadata. |
 | **MOD-0037** | Integration Monitoring & Reconciliation | W2-W3 | Medium | planned | 0% | Reconciler. |
 | **NEW-001** | Secrets Management | W1-* | Blocker | deprecated | — | Deprecated alias; use MOD-0012 instead. |
-| **NEW-002** | Platform Administrators Management | W1-* | High | in-progress | 95% | Admins CRUD. |
+| **CAND-CAP-0003** | Platform Administrators Management | W1-* | High | in-progress | 95% | Admins CRUD. |
 | **MOD-0009** | Tenant Registry Lifecycle Events | W1-A | Blocker | partial | 80% | Event emitters. |
 | **MOD-0008** | Module Catalog Assignable Expose | W1-B | Blocker | partial | 80% | catalog mapping. |
 | **MOD-0018** | RBAC / Entitlement Enforcement | W1-B | Blocker | partial | 65% | Security enforcement wiring. |
@@ -83,19 +85,20 @@ Below is the macro status catalog.
 | **MOD-0021** | General Audit Trail | W2-B | High | in-progress | 98% | System logger mapping. |
 | **MOD-0287** | User Notification Preferences | W2-C | High | planned | 0% | Settings CRUD. |
 | **MOD-0034** | Webhook Delivery | W2-C | High | planned | 0% | Outbound HTTP triggers. |
-| **NEW-003** | Notification Template Management UI | W2-D | High | partial | 35% | UI templates editor. |
-| **NEW-004** | Tenant Impersonation Tooling | W2-D | Medium | planned | 0% | Support helper. |
+| **MOD-0027-FU02** | Notification Template Management UI | W2-D | High | partial | 35% | UI templates editor. |
+| **CAND-CAP-0004** | Tenant Impersonation Tooling | W2-D | Medium | planned | 0% | Support helper. |
 | **MOD-0032** | API Gateway Hardening | W3-A | High | partial | 60% | Gateway filters. |
 | **MOD-0033** | Consumer / Quota Model | W3-A | High | partial | 78% | Resource limitation. |
-| **MOD-0046+** | Tenant Core UI Extensions | W3-A | High | partial | 60% | UI extensions. |
-| **MOD-0299** | SaaS Billing & Invoicing | W3-B | High | planned | 0% | Payments gateway. |
+| **MOD-0009-FU03+** | Tenant Core UI Extensions | W3-A | High | partial | 60% | UI extensions. |
+| **CAND-CAP-0005** | SaaS Billing & Invoicing | W3-B | High | planned | 0% | Payments gateway. |
 | **MOD-0041** | Logging / Monitoring | W3-C | Medium | partial | 65% | Observability trace provider. |
 | **MOD-0042** | Alerting / Incident Runbooks | W3-C | Medium | planned | 0% | Operations alerting. |
 | **MOD-0265** | SIEM / Observability Provider | W3-C | Medium | planned | 0% | Security events. |
 | **MOD-0038** | Event Taxonomy / Naming | W3-D | Medium | planned | 0% | Naming rules catalog. |
 | **MOD-0039** | Schema Compatibility Governance | W3-D | Medium | planned | 0% | Contracts check registry. |
-| **MOD-0040** | Tenant Organization Foundation | — | High | ready-for-dev | 0% | Track G-prime org master-data keystone (platform-shared-services). Minimal backend-only schema reconciliation promoted; see DCP-001. Depends on MDM Legal Entity read-only LegalEntityId contract. Tenant User validation and Position-role binding are deferred behind explicit guards. |
-| **MOD-0047** | Tenant User Foundation | — | High | done | 100% | Track G Tenant IAM foundation first slice only. AuthService-owned read-only Tenant User lookup-validation contract implemented and validated: locked route, auth model, IsActive referenceability, minimal return shape, fail-closed tenant mismatch policy, permission seed, and 15 passing tests. Broader Tenant User CRUD/lifecycle, frontend, gateway, Tenant Role, and MOD-0040 PositionAssignment UserId validation integration remain follow-ups. |
+| **MOD-0288** | Organization, Person & Position Directory | — | High | ready-for-dev | 0% | Track G-prime org master-data keystone (platform-shared-services). Minimal backend-only schema reconciliation promoted; see DCP-001. Depends on MDM Legal Entity read-only LegalEntityId contract. Tenant User validation and Position-role binding are deferred behind explicit guards. |
+| **MOD-0288-FU01** | Position Assignment User Reference Validation | — | High | ready-for-dev | 0% | Platform follow-up for PositionAssignment.UserId AuthService lookup-validation consumer integration. MOD-0047 contract dependency complete; Platform consumer integration pending. FU15 remains blocked until completion. |
+| **CAND-CAP-0001** | Tenant User Foundation | — | High | done | 100% | Track G Tenant IAM foundation first slice only. AuthService-owned read-only Tenant User lookup-validation contract implemented and validated: locked route, auth model, IsActive referenceability, minimal return shape, fail-closed tenant mismatch policy, permission seed, and 15 passing tests. Broader Tenant User CRUD/lifecycle, frontend, gateway, Tenant Role, and MOD-0040 PositionAssignment UserId validation integration remain follow-ups. |
 | **MOD-0220** | Corporate Secretarial / Entity Management | — | High | ready-for-dev | 0% | MDM Legal Entity Foundation slice. Minimal backend schema reconciliation completed and approved. Implementation not started. Allowed first slice remains `services/Diten.MdmService/**` plus repo-standard service tests. Provides read-only LegalEntityId lookup / validation contract for MOD-0040. Enterprise Blueprint repository migration remains non-blocking follow-up. MDM business-country ownership remains separate follow-up. |
 | **MOD-0002** | Interface Registry | W3-E | Medium | in-progress | 80% | API routes mapping. |
 | **MOD-0003** | Data Contract Registry | W3-E | Medium | planned | 0% | Payload contracts schemas. |

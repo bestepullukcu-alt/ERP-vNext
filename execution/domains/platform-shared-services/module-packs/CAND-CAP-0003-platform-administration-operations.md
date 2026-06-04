@@ -1,6 +1,6 @@
 ---
-id: NEW-002
-name: Platform Administrators Management
+id: CAND-CAP-0003
+name: Platform Administration & Operations
 domain: platform-shared-services
 service: Diten.Platform
 shell: platform-admin
@@ -14,7 +14,9 @@ target: 2026-05-20
 form_field_count: 7
 ---
 
-# NEW-002 - Platform Administrators Management
+# CAND-CAP-0003 — Platform Administration & Operations
+
+> **Canonicalization (DCP-002):** Governance identity is now temporary candidate capability **CAND-CAP-0003 (Platform Administration & Operations)** — parent of the platform-admin candidate cluster. Prior repo ID **NEW-002 (Platform Administrators Management)** is a deprecated alias. Pending EA MOD-xxxx; never written into runtime literals. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
 ## Module Summary
 Platform Administrators Management answers the platform-level question "who is a platform admin?". It owns CRUD, invite, status, role assignment, tenant-scope metadata, and read surfaces for cross-tenant `PlatformAdmin` actors and scoped `PartnerAdmin` actors.
@@ -149,7 +151,7 @@ DTO/request rules:
 - Detail DTO may expose invite expiry/status but not secrets unsuitable for UI.
 
 ## Repo Scope
-- `execution/domains/platform-shared-services/module-packs/NEW-002-platform-administrators.md`.
+- `execution/domains/platform-shared-services/module-packs/CAND-CAP-0003-platform-administration-operations.md`.
 - `services/Diten.Platform/src/Diten.Platform.Domain/**`.
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators/**`.
 - `services/Diten.Platform/src/Diten.Platform.Infrastructure/**`.
