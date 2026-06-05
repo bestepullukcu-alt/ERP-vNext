@@ -5,7 +5,7 @@ domain: platform-shared-services
 service: Diten.Platform
 owner: platform-shared-services
 entity_base: BaseEntity
-status: ready-for-dev
+status: done
 branch: feature/pss/mod-0040-fu01-position-assignment-user-reference-validation
 shell: none
 golden_reference: none

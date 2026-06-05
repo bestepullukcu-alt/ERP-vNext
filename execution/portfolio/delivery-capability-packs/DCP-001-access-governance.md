@@ -491,3 +491,23 @@ This Delivery Capability Pack is **complete / reconcilable** when:
     Draft pack review and frontmatter reconciliation passed. Scope and dependency review confirmed the narrow
     Platform-side PositionAssignment `UserId` AuthService lookup-validation integration boundary. FU15/runtime
     authorization consumers remain blocked until MOD-0040-FU01 implementation is complete and validated.
+
+  - **2026-06-04 — MOD-0288 + MOD-0288-FU01 `ready-for-dev → done` (runtime-merged governance reconciliation).**
+
+    Lifecycle drift closed: both modules were fully merged in runtime ahead of their governance status. Runtime
+    evidence on `main` @ `b1e6c33`:
+    - **MOD-0288** (Capability B, organization master data) — Organization, Person & Position directory is merged
+      under `services/Diten.Platform`: `OrganizationUnit`, `Position`, and `PositionAssignment` domain entities;
+      `OrganizationUnitsController`, `PositionsController`, `PositionAssignmentsController`; and the corresponding
+      repositories, command/query handlers, and validators.
+    - **MOD-0288-FU01** — PositionAssignment `UserId` AuthService lookup-validation consumer integration is merged
+      via PR #24 / `d816db6`: `IUserReferenceValidator` contract, `AuthServiceUserReferenceValidator` typed
+      HttpClient (bearer forwarding, tenant propagation, fail-closed on non-success/timeout/network/malformed/
+      mismatch/non-referenceable), enforcement before Create/Update PositionAssignment persistence, and DI binding.
+      Validation: `dotnet test services/Diten.Platform` — 510 passed, 0 failed.
+
+    Governance reconciled to match merged runtime: module packs, `module-id-registry.md`, and
+    `master-development-plan.md` advanced to `done` for both IDs. This reconciliation is governance-docs-only — no
+    production code, schema, DTO, or endpoint changes. Legal Entity remains MDM-owned (`MOD-0220`); Tenant User
+    validation is satisfied by the merged MOD-0047 + MOD-0288-FU01 contract chain. Same reconciliation pattern as
+    the prior FU12 lifecycle-drift closure.
