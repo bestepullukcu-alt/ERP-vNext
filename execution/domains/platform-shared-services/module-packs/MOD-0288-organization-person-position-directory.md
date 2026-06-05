@@ -6,7 +6,7 @@ service: Diten.Platform
 shell: none
 golden_reference: none
 entity_base: BaseEntity
-status: ready-for-dev
+status: done
 owner: platform-team
 branch: feature/pss/mod-0040-tenant-organization-foundation
 started: ""
