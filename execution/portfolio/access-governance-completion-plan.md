@@ -2,8 +2,8 @@
 
 > **Authority boundary.** This document is the Access Governance execution-roadmap reference. It does not override Module Pack, Domain Config, AGENTS.md or .antigravity standards. For implementation and scope decisions, the repository authority order remains: Module Pack > Domain Config > AGENTS.md > .antigravity standards > live governance records > archive/external references.
 
-> **Mode:** strict repository-read-only audit + single canonical execution plan. No code, files, branches, commits, or builds were produced. Evidence captured on `main` @ `b1e6c33` (= `origin/main`), working tree clean, single worktree (plus the in-flight `feature/governance/mod-0288-drift-reconciliation` worktree, uncommitted).
-> **Output note:** Recommended repo home is `execution/portfolio/access-governance-completion-plan.md`, **but the file was NOT created** — persisting it is a separate governance-only write step (AG-STEP-000). This is the markdown content only.
+> **Mode:** strict repository-read-only audit + single canonical execution plan. This roadmap was originally produced from a strict repository-read-only audit. It was later persisted and refreshed through governance-only branches. No runtime code, schema, DTO, endpoint, frontend, gateway or build artifact changes are introduced by this roadmap document. Evidence captured on `main` @ `b1e6c33` (= `origin/main`), working tree clean, single worktree (plus the in-flight `feature/governance/mod-0288-drift-reconciliation` worktree, uncommitted).
+> **Output note:** This plan is **persisted in the repository** at `execution/portfolio/access-governance-completion-plan.md` and **merged to `main` via PR #26**. **AG-STEP-000 completed.**
 
 ---
 
@@ -60,7 +60,7 @@ If the live state contradicts the plan (drifted HEAD, unexpected dirty tree, pac
 
 **What is complete (runtime):** Permission evaluation (MOD-0018 `EntitlementChecker`), tenant authorization context (MOD-0018-FU12 `JwtTenantAuthorizationContext`), entitlement audit sink (→ MOD-0021), AuthService RBAC primitives (Role/Permission/UserRole/RolePermission CRUD), Tenant User lookup-validation (CAND-CAP-0001), organization master data (MOD-0288: OrganizationUnit/Position/PositionAssignment + controllers + repositories), fail-closed PositionAssignment.UserId validation (MOD-0288-FU01), **action-aware authorization already real** (distinct `[HasPermission(...Read/Create/Update/Delete/Archive/Export/BulkDelete)]`, 87+ keys), and strong tenant isolation (gateway `TenantResolutionMiddleware` + `X-Tenant-Id`).
 
-**What is missing / not real:** real `IDataScopeResolver` (MOD-0018-FU15) — `NoOpDataScopeResolver` is still the registered default, so the context hydrates **empty** scopes; **Explain Access (FU14)** absent; **cache-invalidation convention (FU13)** partial; **temporary access (FU11)** NoOp; **Tenant Group / Group→Role** absent in code with no Blueprint ID; **permission-key naming inconsistent** (4 styles); `[HasPermission]` **not universal** (Platform-only; AuthService/MDM ungated); **governance drift** — MOD-0288/FU01 runtime merged but packs/registry `ready-for-dev`, and DCP-002 itself `draft`.
+**What is missing / not real:** real `IDataScopeResolver` (MOD-0018-FU15) — `NoOpDataScopeResolver` is still the registered default, so the context hydrates **empty** scopes; **Explain Access (FU14)** absent; **cache-invalidation convention (FU13)** partial; **temporary access (FU11)** NoOp; **Tenant Group / Group→Role** absent in code with no Blueprint ID; **permission-key naming inconsistent** (4 styles); `[HasPermission]` **not universal** (Platform-only; AuthService/MDM ungated); **governance drift (MOD-0288/FU01) is now closed** — packs/registry/master-plan/DCP-001 reconciled to `done` and merged via PR #25; **DCP-002 promotion (`draft → approved`) remains an open backlog item**.
 
 **Critical path (one line):** persist+approve this plan → close MOD-0288 governance drift → lock permission-key convention → ship real DataScopeResolver (FU15) replacing NoOp → define+verify business-module enforcement contract → verify Business-Domain Start Gate → **business-domain backend may start**.
 
@@ -70,7 +70,7 @@ If the live state contradicts the plan (drifted HEAD, unexpected dirty tree, pac
 
 ---
 
-## 2. Live Repository Snapshot
+## 2. Historical Audit Snapshot
 
 | Item | Current State | Evidence | Risk |
 |---|---|---|---|
@@ -87,7 +87,19 @@ If the live state contradicts the plan (drifted HEAD, unexpected dirty tree, pac
 | Governance drift | MOD-0288 + FU01 runtime merged; packs/registry/master-plan `ready-for-dev` | PR #24 / `d816db6` | board misrepresents reality |
 | Concurrent-agent risk | one branch+worktree open; two write-capable AIs must not share a worktree nor edit the same governance file in parallel | this session | medium |
 
-> Snapshot is illustrative of the audit baseline; per the **Live State Refresh Rule**, it is re-read before each AG-STEP.
+> **Historical Audit Snapshot — NOT live repository state.** This table is the original audit baseline (captured at `main` @ `b1e6c33`) and is preserved as historical record. It does **not** reflect the current repository; for live status see **Current Execution State** below, and always apply the **Live State Refresh Rule** before each AG-STEP.
+
+---
+
+## Current Execution State
+
+- AG-STEP-000: completed — plan persisted and merged via PR #26
+- AG-STEP-001: completed — MOD-0288 + MOD-0288-FU01 governance drift closed via PR #25
+- Current main baseline: `d3ab4a4`
+- Next critical step: **AG-STEP-004** — Permission-key convention decision and catalog baseline
+- Parallel-safe candidates:
+  - AG-STEP-002 — DCP-002 `draft → approved`
+  - AG-STEP-003 — MOD-0220 LegalEntityId contract strict read-only verification
 
 ---
 
@@ -124,8 +136,8 @@ If the live state contradicts the plan (drifted HEAD, unexpected dirty tree, pac
 | F-03 | Entitlement audit sink | MOD-0018 → MOD-0021 | runtime real | `PlatformEntitlementAuditSink.cs`; DI 113 | No |
 | F-04 | AuthService RBAC primitives | RBAC = MOD-0018 (no own pack/ID) | runtime real | Role/Permission/UserRole/RolePermission CRUD | **Yes — governance** |
 | F-05 | Tenant User lookup-validation | CAND-CAP-0001 (alias MOD-0047) | `done` | `GET /api/users/{id}/lookup-validation`, 15 tests | No |
-| F-06 | Org/Person/Position directory | MOD-0288 (alias MOD-0040) | runtime real, pack `ready-for-dev` | entities/controllers/repos | **Yes — drift** |
-| F-07 | PositionAssignment.UserId validation | MOD-0288-FU01 | runtime real, pack `ready-for-dev` | PR #24, fail-closed, 510 tests | **Yes — drift** |
+| F-06 | Org/Person/Position directory | MOD-0288 (alias MOD-0040) | `done` | entities/controllers/repos; governance reconciled (PR #25) | No |
+| F-07 | PositionAssignment.UserId validation | MOD-0288-FU01 | `done` | PR #24, fail-closed, 510 tests; governance reconciled (PR #25) | No |
 | F-08 | Action-aware enforcement (Platform) | MOD-0018 | runtime real | distinct `[HasPermission]`, 87+ keys | partial (universalize) |
 | F-09 | Tenant isolation | platform | runtime real | gateway `TenantResolutionMiddleware` | minor (404 vs 403) |
 
@@ -138,8 +150,8 @@ Step format `AG-STEP-NNN`. "Parallel?" references §7. The **Live State Refresh 
 ### PHASE-01 — Plan Persistence, Identity & Reference Closure
 | Plan Step | Capability / Module | Canonical ID | Current State | Pack Needed? | Dependencies | Parallel? | Owner Agent | Repo Scope | Build/Test Gate | Done Criteria | Unlocks |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| **AG-STEP-000** | **Persist and Approve Access Governance Completion Plan** | — (governance) | plan in scratch file only; not in repo | no (this audit) | none | n/a | CONTROL TOWER + user | none now; later a governance-only write to `execution/portfolio/access-governance-completion-plan.md` | none | (a) plan reviewed by user; (b) open-decision list settled; (c) ready to persist via a separate write prompt; (d) subsequent AG-STEPs read this file as the execution-roadmap reference. This plan never overrides Module Pack, Domain Config, AGENTS.md or .antigravity standards. | the whole roadmap |
-| AG-STEP-001 | MOD-0288 + FU01 governance drift closure | MOD-0288, MOD-0288-FU01 | runtime done, pack `ready-for-dev` | no (status edit) | AG-STEP-000 | no (registry/DCP-001/master-plan) | read-only-auditor + module-pack-author | docs (packs, registry, master-plan, DCP-001 §20) | none | all 4 sources `done`; verify gate OK | accurate board |
+| **AG-STEP-000** | **Persist and Approve Access Governance Completion Plan** | — (governance) | **completed** — persisted & merged (PR #26) | no (this audit) | none | n/a | ACCESS GOVERNANCE EXECUTION + user | none now; later a governance-only write to `execution/portfolio/access-governance-completion-plan.md` | none | (a) plan reviewed by user; (b) open-decision list recorded and tracked; (c) ready to persist via a separate write prompt; (d) subsequent AG-STEPs read this file as the execution-roadmap reference. This plan never overrides Module Pack, Domain Config, AGENTS.md or .antigravity standards. | the whole roadmap |
+| AG-STEP-001 | MOD-0288 + FU01 governance drift closure | MOD-0288, MOD-0288-FU01 | **completed** — drift closed (PR #25) | no (status edit) | AG-STEP-000 | no (registry/DCP-001/master-plan) | read-only-auditor + module-pack-author | docs (packs, registry, master-plan, DCP-001 §20) | none | all 4 sources `done`; verify gate OK | accurate board |
 | AG-STEP-002 | DCP-002 promotion `draft → approved` | DCP-002 | `draft` | no | AG-STEP-000 | yes (after 001) | read-only-auditor | DCP-002 only | none | canonicalization authority off draft | trustworthy alias chain |
 | AG-STEP-003 | MDM Legal Entity read-only `LegalEntityId` contract — **verify, do not assume** | MOD-0220 | `ready-for-dev`; contract impl not evident | conditional | MDM domain-config | yes | read-only-auditor | read-only inspection of `Diten.MdmService` | none | **(1)** live repo inspection first; **(2)** if the read-only lookup-validation contract exists → governance reconciliation only; **(3)** if it genuinely does not exist → author a *narrow* MOD-0220 follow-up pack; **(4)** never start implementation on assumption | MOD-0288 LegalEntityId scope |
 
@@ -193,7 +205,7 @@ Step format `AG-STEP-NNN`. "Parallel?" references §7. The **Live State Refresh 
 | Plan Step | Capability / Module | Canonical ID | Current State | Pack Needed? | Dependencies | Parallel? | Owner Agent | Repo Scope | Build/Test Gate | Done Criteria | Unlocks |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | AG-STEP-021 | Business-Domain Start Gate verification | — | — | no (audit) | AG-STEP-000, 001, 004, 009, 013, 006A | — | read-only-auditor | read-only | none | **Business-Domain Start Gate verified** (§8) | business-domain backend start |
-| AG-STEP-022 | **Blueprint-selected business-domain module rollout** | Blueprint-selected at runtime | not started | yes (each) | AG-STEP-021 | yes (separate modules/worktrees) | per-domain bootstrap | per business-domain | full | each module follows §9 contract. *The first business-domain module is not hardcoded in this plan. CONTROL TOWER selects it later using Blueprint priority, dependency readiness, canonical ID verification and approved/ready-for-dev module-pack status.* | business value |
+| AG-STEP-022 | **Blueprint-selected business-domain module rollout** | Blueprint-selected at runtime | not started | yes (each) | AG-STEP-021 | yes (separate modules/worktrees) | per-domain bootstrap | per business-domain | full | each module follows §9 contract. *The first business-domain module is not hardcoded in this plan. the execution chat selects it later using Blueprint priority, dependency readiness, canonical ID verification and approved/ready-for-dev module-pack status.* | business value |
 
 > *Business-domain examples include CRM, HR, Sales, Procurement, Finance, Inventory, Warehouse, Project, Asset and Service modules. The actual next module is selected later from the Blueprint after live dependency, canonical ID and module-pack readiness checks. This plan does not preselect CRM or HR as the mandatory first domain.*
 
@@ -202,9 +214,11 @@ Step format `AG-STEP-NNN`. "Parallel?" references §7. The **Live State Refresh 
 ## 6. Critical Path
 
 ```
-AG-STEP-000 (persist + approve plan)
- -> AG-STEP-001 (MOD-0288/FU01 governance closure)
- -> AG-STEP-004 (lock permission-key convention)
+AG-STEP-000 (persist + approve plan)            — completed (PR #26)
+AG-STEP-001 (MOD-0288/FU01 governance closure)  — completed (PR #25)
+
+Remaining critical path:
+AG-STEP-004 (lock permission-key convention)
  -> AG-STEP-008 (FU15 resolver pack)
  -> AG-STEP-009 (FU15 real resolver, replace NoOp)   [G4]
  -> AG-STEP-013 (business-module enforcement contract)
@@ -320,19 +334,20 @@ Applies to **every business-domain module** (CRM, HR, Sales, Procurement, Financ
 
 ## 11. Execution Operating Model
 
-Run the whole plan **without** spawning a chat per step:
+Run the whole plan as a **single long-lived execution chat**:
 
-- **00 — CONTROL TOWER** (this orchestration chat): holds the plan, routes steps, absorbs handoffs, refreshes live state. Never writes code.
-- **01 — ACCESS GOVERNANCE EXECUTION** (long-lived): executes Lane A steps sequentially in **one** module branch at a time; commits only when a module is fully done (owner policy: never commit to `main`; one branch per module).
-- **02 — PARALLEL ACCESS GOVERNANCE LANE** (only for genuinely independent work): separate worktree + branch, never touching Lane A's open governance files.
+- **01 — ACCESS GOVERNANCE EXECUTION** (single long-lived chat): executes steps sequentially in **one** module branch at a time; commits only when a module is fully done (owner policy: never commit to `main`; one branch per module).
+- **Parallel independent work** (only when genuinely independent): use a **separate worktree + separate branch + separate temporary chat**, never touching the main lane's open governance files.
+- **Live preflight is mandatory before every AG-STEP** (see the Live State Refresh Rule above).
+- **Stage, commit, push, PR and merge happen only with explicit user approval.**
 
-Drive steps in chat 01 with:
+Drive steps with:
 ```
 PLAN STEP START:    AG-STEP-XXX
 PLAN STEP COMPLETE: AG-STEP-XXX
 PLAN STEP BLOCKED:  AG-STEP-XXX
 ```
-Each `START` runs the **Live State Refresh Rule** first. Open a **new** chat only for: a separate worktree/branch lane, a real scope change, an integration audit, or a different capability phase.
+Open a **new** temporary chat only for: a separate worktree/branch lane, a real scope change, an integration audit, or a different capability phase.
 
 ---
 
@@ -351,7 +366,7 @@ Protected paths:     <unrelated services, other packs, DCP-002, control-tower do
 Agent / Workflow:    <read-only-auditor | module-pack-author | backend-architect | …>
 Stop conditions:     <live-state contradiction; canonical gate fail; before any stage/commit/push/PR/merge>
 Completion criteria: <measurable>
-Required handoff:    <§13 format back to CONTROL TOWER>
+Required handoff:    <§13 format back to ACCESS GOVERNANCE EXECUTION>
 ```
 
 ---
@@ -382,7 +397,7 @@ Main sync:
 Deferred follow-ups:
 Blockers:
 Next unlocked steps:
-Final status:  COMPLETED | USER APPROVAL REQUIRED | BLOCKED  — RETURN TO CONTROL TOWER
+Final status:  COMPLETED | USER APPROVAL REQUIRED | BLOCKED  — RETURN TO ACCESS GOVERNANCE EXECUTION
 ```
 
 ---
@@ -438,7 +453,7 @@ Access Governance Completion is reached when:
 
 **Recommended first execution command:**
 ```
-PLAN STEP START: AG-STEP-000
+PLAN STEP START: AG-STEP-004
 ```
 
 **Final verdict:** `ACCESS GOVERNANCE PLAN READY FOR FINAL REVIEW`
@@ -454,6 +469,6 @@ PLAN STEP START: AG-STEP-000
 5. Did not flag that `[HasPermission]` is non-universal → split into 006A (new-module mandatory) and 006B (existing retrofit).
 6. Did not account for DCP-002 being `draft` while treated as canonicalization authority → AG-STEP-002.
 7. Over-weighted data-scope integration risk — the JWT context seam already consumes the resolver; FU15 lights up a wired context (fail-closed test still mandatory).
-8. "Don't create the file" + a large doc → plan lived only in scratch; addressed by AG-STEP-000 (persist via a separate governance write).
+8. "Don't create the file" + a large doc → plan lived only in scratch; addressed by AG-STEP-000 (persist via a separate governance write) — **now completed: persisted to `execution/portfolio/access-governance-completion-plan.md` and merged via PR #26.**
 9. Implied `[HasPermission]` everywhere is already the rule — audit shows frontend does **zero** permission gating; §9 makes frontend visibility UX-only and backend enforcement mandatory.
 10. Preselected CRM/HR as the first domain — generalized to **business-domain**; the first module is Blueprint-selected later (AG-STEP-022) and CRM/HR are examples only.
