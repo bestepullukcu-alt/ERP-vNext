@@ -98,6 +98,7 @@ If the live state contradicts the plan (drifted HEAD, unexpected dirty tree, pac
 - AG-STEP-003: completed — MOD-0220 LegalEntityId read-only contract **verified present both sides** (read-only audit); governance reconciliation only, no follow-up pack needed
 - AG-STEP-004: completed — canonical permission-key standard PKS-001 committed (`.antigravity/rules/permission-key-standard.md`)
 - AG-STEP-008: completed — MOD-0018-FU15 Real DataScopeResolver pack authored, reviewed, revised, promoted `draft → ready-for-dev`
+- AG-STEP-009: **implemented in integration branch** (commit `26d4fe7`) — real `OrgDataScopeResolver`; production DI `IDataScopeResolver → OrgDataScopeResolver`, `NoOpDataScopeResolver` no longer the production default; **G4 integration audit PASSED**; tests **528 passed, 0 failed**; blocker **none**. **Not pushed / no PR / not merged to `main`** (merge-freeze; awaits batch merge)
 - Current main baseline: `d3ab4a4`
 - Next critical step: **AG-STEP-002** — DCP-002 `draft → approved` (and AG-STEP-004B permission-key migration)
 - Parallel-safe candidates:
@@ -178,7 +179,7 @@ Step format `AG-STEP-NNN`. "Parallel?" references §7. The **Live State Refresh 
 | Plan Step | Capability / Module | Canonical ID | Current State | Pack Needed? | Dependencies | Parallel? | Owner Agent | Repo Scope | Build/Test Gate | Done Criteria | Unlocks |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | AG-STEP-008 | FU15 Real DataScopeResolver — pack | MOD-0018-FU15 (alias NEW-MOD-0041) | `planned`/reserved, no pack | yes | AG-STEP-001; MOD-0288 data (exists) | yes (read-only analysis now; pack after 001 merges) | module-pack-author | pack only | none | pack `ready-for-dev`; resolver shape + scope kinds locked | step 009 |
-| AG-STEP-009 | FU15 Real DataScopeResolver — implementation (replace NoOp) | MOD-0018-FU15 | `NoOpDataScopeResolver` is DI default | (impl) | AG-STEP-008; FU12 (done) | no | backend-architect | `Diten.Platform.Common` + Platform DI | **fail-closed integration test mandatory** | real resolver registered; context hydrates real scopes; no-scope ⇒ deny; NoOp removed from prod DI | data-scope enforcement |
+| AG-STEP-009 | FU15 Real DataScopeResolver — implementation (replace NoOp) | MOD-0018-FU15 | **implemented in integration branch** (commit `26d4fe7`; **not pushed / no PR / not merged to `main`**) | (impl) | AG-STEP-008; FU12 (done) | no | backend-architect | `Diten.Platform.Application/Authorization/OrgDataScopeResolver.cs` + Platform DI | **fail-closed integration test mandatory → met** | **DONE (integration branch).** Real `OrgDataScopeResolver` implemented; production DI `IDataScopeResolver → OrgDataScopeResolver` (Scoped); `NoOpDataScopeResolver` retained as test/dev seam, **not the production default**. FU12 hydrates real scopes (once-per-request, memoized, fail-safe). Resolver emits only `OrgUnit` (own + subtree, flat) / `Position` / `ManagerChain` (Position IDs) / `LegalEntity` (live MOD-0220 lookup-validation, fail-closed); invalid/expired/no assignment ⇒ no scope. **G4 integration audit: PASSED.** Tests: **528 passed, 0 failed**. **Blocker: none.** Merge-freeze: awaiting batch merge to `main`. | data-scope enforcement |
 
 ### PHASE-04 — Runtime Hardening, Cache Invalidation & Explain Access
 | Plan Step | Capability / Module | Canonical ID | Current State | Pack Needed? | Dependencies | Parallel? | Owner Agent | Repo Scope | Build/Test Gate | Done Criteria | Unlocks |
@@ -268,8 +269,8 @@ Three thresholds:
 - AG-STEP-000 — plan approval
 - AG-STEP-001 — MOD-0288 / FU01 closure
 - AG-STEP-004 — permission-key convention locked
-- AG-STEP-009 — real DataScopeResolver active
-- `NoOpDataScopeResolver` removed from production DI
+- AG-STEP-009 — real DataScopeResolver active _(met on integration branch `26d4fe7`, G4 PASSED; not yet merged to `main`)_
+- `NoOpDataScopeResolver` removed from production DI _(done on integration branch; demoted to test/dev seam, not the production default)_
 - AG-STEP-013 — business-module enforcement contract
 - mandatory `[HasPermission]` for new business-domain modules (AG-STEP-006A)
 - tenant isolation verified
