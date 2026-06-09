@@ -170,13 +170,16 @@ rule. These constants are not yet `[HasPermission]`-wired, so their migration is
 4. **Forward-only writes.** New seeds, new JWT claims, and new `[HasPermission]` attributes emit the **canonical**
    key only; aliases are read-side compatibility, never newly written.
 
-> **Dual-read requires the global alias-resolution seam (§7 Slice 1B).** Today the per-service
-> `PermissionAuthorizationHandler`s do a **single-value exact match** with no alias map — there is **no reusable
-> alias seam anywhere in the repo**. The `{canonical} ∪ {aliases-of-canonical}` expansion is therefore a
-> **cross-cutting prerequisite** that must land (Slice 1B) **before** any rename slice that relies on dual-read.
-> Faking dual-read in a single controller or handler is **forbidden** (it is the one-off bypass PKS-001 §6.1
-> prohibits). **Slice 1A (D-5) is the one slice that needs no dual-read** — no legacy grant of `Modules.LegalEntity.*`
-> exists, so nothing must be kept alive.
+> **Dual-read requires the Platform-only alias-resolution seam (§7 Slice 1B).** Today the enforcement points do a
+> **single-value exact match** with no alias map — there is **no reusable alias seam anywhere in the repo**. The
+> `{canonical} ∪ {aliases-of-canonical}` expansion is therefore a **prerequisite** that must land (Slice 1B)
+> **before** any rename slice that relies on dual-read. **Scope (locked by read-only audit @ `bf0f82c`):** only
+> `Diten.Platform` enforces legacy aliasable keys — **125 `[HasPermission]` uses of `Platform.*`/`Modules.*`**.
+> AuthService (`auth.*`, already canonical), DevEnablement (zero `[HasPermission]`), and MDM (canonical post-Slice-1A)
+> enforce **no** legacy key, so the seam lives **in Platform only** and the other three services are untouched. Faking
+> dual-read in a single controller or handler is **forbidden** (it is the one-off bypass PKS-001 §6.1 prohibits).
+> **Slice 1A (D-5) is the one slice that needs no dual-read** — no legacy grant of `Modules.LegalEntity.*` exists, so
+> nothing must be kept alive.
 
 ---
 
@@ -253,12 +256,13 @@ a `sed`. A repo-wide `sed` of `Modules.`/`Platform.` is **forbidden**.
 ## 7. Controlled implementation slices
 
 Each slice: **scope · surfaces · test gate · rollback boundary · commit boundary.** The D-5 hotfix is **Slice 1A**;
-the global alias seam is **Slice 1B** and is a **cross-cutting prerequisite for every dual-read rename slice (3–5)**.
+the **Platform-only** alias seam is **Slice 1B** and is a **prerequisite for every dual-read rename slice (3–5)**
+(those renames are all Platform-enforced).
 
 | # | Slice | Scope | Surfaces changed | Test gate | Rollback boundary | Commit boundary |
 |---|---|---|---|---|---|---|
 | **1A** ✅ **DONE** | **D-5 LegalEntity hotfix (attribute-switch-only, NO alias seam)** — completed in integration branch, **runtime commit `64417c2`**; security audit **PASS**; tests **25 passed, 0 failed**; **not pushed / no PR / not merged to `main`** | Close fail-closed break with the smallest safe change | MDM `LegalEntitiesController` 6 attrs `Modules.LegalEntity.* → mdm.legal-entities.{read,create,update,delete}` (match seeded keys); MDM authz tests added; **no alias seam — not needed for D-5** | canonical grant → access; no grant → deny; `platform_admin` bypass unchanged; legacy grant → deny *(legacy-grant→alias test N/A — no such grant exists)* | revert MDM ctrl + tests (1 file + tests) | MDM ctrl + MDM authz tests only |
-| **1B** | **Global alias-resolution seam (cross-cutting; prerequisite for 3–5)** | Build the reusable dual-read seam: alias map (from §1) + handler expansion to `{canonical} ∪ aliases` | shared alias map; the **3 per-service** `PermissionAuthorizationHandler`s (AuthService, DevEnablement, MDM) + Platform attribute path; resolver/dual-read tests; **no controller hacks** | alias-grant ∨ canonical-grant both pass; `platform_admin` bypass + fail-closed preserved; map directional & non-transitive; forward-writes emit canonical only | revert seam + handler edits | alias map + handlers + tests (cross-cutting; own review) |
+| **1B** | **Platform-only alias-resolution seam (prerequisite for 3–5)** | Build the dual-read seam where the legacy keys actually live: alias map (from §1) + `Expand(canonical) = {canonical} ∪ aliases`, consumed by Platform's `HasPermissionAttribute` non-bypass path | **`Diten.Platform` only.** New `Diten.Platform.API/Security/PermissionAliasMap.cs` + `PermissionAliasResolver.cs` (static, pure); modify `HasPermissionAttribute.cs` (`HasPermissionClaim` → expand + intersect); resolver unit + dual-read integration tests. **AuthService / DevEnablement / MDM are NOT touched** (zero legacy keys — see scope note) | alias-grant ∨ canonical-grant both pass; `platform_admin`/`partner_admin` bypass + side-effects unchanged; unknown alias fail-closed; map directional & non-transitive; legacy requirement never used; forward-writes emit canonical only | revert Platform map/resolver + attribute edit | **2 commits** (A: map+resolver+unit tests; B: attribute wiring + integration tests) — Platform-only, own review |
 | **2** ✅ **DONE** | **D-6 validator** — completed in integration branch, **runtime commit `20d9306`**; audit **PASS**; tests **532 passed, 0 failed**; **not pushed / no PR / not merged to `main`** | exactly-3 → ≥3 | **Both** `IsCanonicalPermission` validators (`ModulePageActionDescriptorRequestValidator` **and** `ModulePageDescriptorRequestValidator`) → `parts.Length >= 3` + their tests. **Note:** the plan named one validator, but two carry the rule; both updated for consistency. Uppercase input is normalized to lowercase by `NormalizePermission` and **accepted** (PKS-001 "store lowercase") — **no strict case-rejection added** (out of D-6 scope) | accepts 3 & 4/5-seg canonical; rejects <3 & bad grammar (underscore / illegal char); uppercase normalized-accepted | revert validators + tests | validators + tests only |
 | **3** | **D-1/D-2 Platform.* attrs** *(needs 1B + 2)* | 32 `Platform.*` → `platform.*` | Platform controllers (per resource group: Administrators, Audit, InterfaceRegistry, Lookups, Notifications, SubscriptionFeatures, SubscriptionPlans), seed, Platform authz tests | each canonical enforces; legacy-alias grant passes (via 1B) | per resource-group revert | one commit per resource group |
 | **4** | **D-2 Modules.* org attrs** *(needs 1B)* | 20 remaining `Modules.*` → `platform.*` | Platform org controllers (OrganizationUnit, Position, PositionAssignment, Organization, ModuleCatalog), seed, tests | as Slice 3 | per resource revert | one commit per resource |
@@ -266,11 +270,12 @@ the global alias seam is **Slice 1B** and is a **cross-cutting prerequisite for 
 | **6** | **Standards reconciliation** | docs only (§8) | the 5 standards docs + agent docs | grep: no PascalCase mandate remains; no runtime diff | revert docs | docs-only commit |
 | **7** | **Alias retirement** | remove aliases | alias map (remove rows); confirm zero legacy refs | full suite green; grep: zero legacy keys anywhere | re-add alias rows | retirement commit per namespace |
 
-> **Ordering (locked):** **Slice 1A** ships first and standalone (no dependency). **Slice 1B** (global alias seam)
-> and **Slice 2** (D-6 validator) are the two prerequisites for the rename slices and may proceed in parallel;
-> **Slices 3–5** (the dual-read renames) must not start until **1B** lands. **Slice 6** is docs-only and can run any
-> time. **Slice 7** (retirement) runs last, after every surface is canonical. No rename slice may fake dual-read
-> without 1B.
+> **Ordering (locked):** **Slice 1A** ships first and standalone (no dependency). **Slice 1B** (Platform-only alias
+> seam) and **Slice 2** (D-6 validator) are the two prerequisites for the rename slices and may proceed in parallel;
+> **Slices 3–5** (the dual-read renames, all Platform-enforced) must not start until **1B** lands. **Slice 6** is
+> docs-only and can run any time. **Slice 7** (retirement) runs last, after every surface is canonical. No rename
+> slice may fake dual-read without 1B. **No new shared authorization library is created** — the seam is Platform-owned;
+> if a second service ever gains legacy keys, a shared home is evaluated separately at that point.
 
 ---
 
