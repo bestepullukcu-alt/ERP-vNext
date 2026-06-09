@@ -33,9 +33,12 @@ public sealed class ModulePageDescriptorRulesTests
     }
 
     [Theory]
-    [InlineData("/PPM/Projects", "PPM.Projects.VIEW")]
-    [InlineData("/PPM//Projects/", "ppm.projects..view")]
-    [InlineData("/MDM/Legal-Entities", "mdm.legal-entities.view")]
+    [InlineData("/PPM/Projects", "PPM.Projects.VIEW")]                                  // uppercase input is normalized to lowercase → accepted (PKS-001 "store lowercase")
+    [InlineData("/PPM//Projects/", "ppm.projects..view")]                               // collapsed double-dot → 3 segments
+    [InlineData("/MDM/Legal-Entities", "mdm.legal-entities.view")]                      // canonical module.resource.action
+    [InlineData("/PPM/Projects", "ppm.projects.create")]                                // plain module.resource.action
+    [InlineData("/PPM/Projects", "ppm.projects.view.all")]                              // D-6: 4 segments now valid (was rejected under exactly-3)
+    [InlineData("/PPM/Projects", "platform.tenants.commercial.subscription.activate")]  // D-6: 5 segments now valid
     public void Create_validator_accepts_canonical_route_and_permission(string routePath, string permission)
     {
         var result = Validator().Validate(Command(routePath, permission));
@@ -44,12 +47,13 @@ public sealed class ModulePageDescriptorRulesTests
     }
 
     [Theory]
-    [InlineData("ppm/projects", "ppm.projects.view")]
-    [InlineData("/workcenter/list", "ppm.projects.view")]
-    [InlineData("/ppm projects", "ppm.projects.view")]
-    [InlineData("/PPM/Projects", "ppm.projects")]
-    [InlineData("/PPM/Projects", "ppm.projects.view.all")]
-    [InlineData("/PPM/Projects", "ppm.projects.view!")]
+    [InlineData("ppm/projects", "ppm.projects.view")]      // invalid route
+    [InlineData("/workcenter/list", "ppm.projects.view")]  // invalid route
+    [InlineData("/ppm projects", "ppm.projects.view")]     // invalid route
+    [InlineData("/PPM/Projects", "ppm.projects")]          // 2 segments → still rejected under >= 3
+    [InlineData("/PPM/Projects", "ppm..create")]           // empty/collapsed segment → 2 segments → rejected
+    [InlineData("/PPM/Projects", "ppm.projects.read_all")] // underscore in segment → grammar violation (3 segments)
+    [InlineData("/PPM/Projects", "ppm.projects.view!")]    // illegal character → grammar violation
     public void Create_validator_rejects_invalid_route_or_permission(string routePath, string permission)
     {
         var result = Validator().Validate(Command(routePath, permission));
