@@ -21,9 +21,10 @@ form_field_count: 0
 > read-only repo evidence, and promoted `draft → ready-for-dev`; all design/scope decisions are locked (§4, §18).
 > Authoring + promotion made **no** runtime, seed, migration, test, frontend, gateway, `.antigravity`, registry, or
 > roadmap change. `ready-for-dev` authorizes implementation **planning/handoff** only; production code still passes
-> the orchestrator / add-module gate. Of the §7 dependency gates, **`AG-STEP-003` (MOD-0220 `LegalEntityId`
-> contract) is verified / satisfied** (read-only audit), so `LegalEntity`-scope is governance-ungated;
-> **`MOD-0288-FU01` (Position Assignment `UserId`) remains the open gate**. Runtime behavior stays fail-closed.
+> the orchestrator / add-module gate. **Both §7 external dependency gates are now satisfied:** `AG-STEP-003`
+> (MOD-0220 `LegalEntityId` contract) is verified present, and `MOD-0288-FU01` (Position Assignment `UserId`
+> validation) is merged / `done`. **No external governance gate remains open for FU15.** Runtime behavior stays
+> fail-closed.
 
 > **Identity (DCP-002, proven).** Canonical ID `MOD-0018-FU15`, canonical name **Real DataScopeResolver**, parent
 > **MOD-0018** (RBAC / ABAC Authorization). Verified fail-closed with
@@ -257,14 +258,27 @@ Exact files are finalized at implementation start; listed for boundary visibilit
   permission-key migration target only; FU15 performs no key rename (§14).
 - Ref: `execution/portfolio/access-governance-completion-plan.md` AG-STEP-003 (verified / complete).
 
-**Critical guard inherited from MOD-0288 §7 (Tenant User reference):**
+**Critical guard inherited from MOD-0288 §7 (Tenant User reference) — ✅ SATISFIED (MOD-0288-FU01 done):**
 
-- `PositionAssignment.UserId` is an **external** AuthService Tenant User reference. MOD-0288 §7 states explicitly
-  that **MOD-0018-FU15 must not consume Position Assignment `UserId` as authoritative** until the AuthService-owned
+- `PositionAssignment.UserId` is an **external** AuthService Tenant User reference. MOD-0288 §7 required that
+  **MOD-0018-FU15 must not consume Position Assignment `UserId` as authoritative** until the AuthService-owned
   read-only Tenant User validation contract exists and MOD-0288 Position Assignment integration validation is
-  completed (tracked by MOD-0288-FU01). FU15 honors this: until that contract is confirmed, FU15 resolves scopes
-  for the `userId` it is **given** by the trusted JWT/`ITenantAuthorizationContext` (already authenticated), but
-  does **not** treat the MOD-0288 `UserId` linkage as an independent authority and does not bypass the FU01 gate.
+  completed (tracked by **MOD-0288-FU01**).
+- **Gate status — SATISFIED.** MOD-0288-FU01 runtime is **merged** and its governance status is **`done`** (registry:
+  `MOD-0288-FU01`, runtime merged via PR #24 / `d816db6`, 510 tests pass). Verified on this branch:
+  - **AuthService Tenant User lookup-validation consumer integration exists:** `IUserReferenceValidator` /
+    `AuthServiceUserReferenceValidator` (HTTP `GET api/users/{userId}/lookup-validation`), registered Scoped with
+    `TenantPropagationHandler`, **fail-closed** on non-2xx / ID-mismatch / `Referenceable != true` / network+JSON
+    errors.
+  - **Fail-closed validation before Position Assignment Create/Update:** both
+    `CreatePositionAssignmentCommandHandler` and `UpdatePositionAssignmentCommandHandler` call
+    `_userReferenceValidator.ValidateAsync(UserId)` and reject (`Fail 404 "User is not referenceable."`) before
+    persisting when `!IsSuccessful || Referenceable != true`.
+- **FU15 stance (unchanged, fail-closed):** FU15 resolves scopes for the `userId` it is **given** by the trusted
+  JWT/`ITenantAuthorizationContext` (already authenticated); the MOD-0288 `UserId` linkage is now backed by the
+  validated FU01 integration, so a Position Assignment can only exist for a referenceable Tenant User. FU15 still
+  does not treat `UserId` as an independent authority and adds no new validation — it relies on the FU01-validated
+  data and stays fail-closed (no/expired/invalid assignment → no scope).
 
 **Downstream consumers (depend on FU15; not wired here):**
 
@@ -340,7 +354,7 @@ No frontend files. No DataTable, no Razor partials, no RESX.
 | Fail-closed | opted-in consuming module | Empty scope set → zero rows; resolver throw → empty → zero rows |
 | Opt-in | non-opted modules | Unaffected; no implicit global filter |
 | LegalEntity gate | `LegalEntity` scope | AG-STEP-003 verified (§7) → emission enabled; non-referenceable Legal Entity → no scope (fail-closed) |
-| Tenant User gate | Position Assignment `UserId` | Not treated as independent authority until MOD-0288-FU01 / AuthService contract confirmed |
+| Tenant User gate (satisfied) | Position Assignment `UserId` | MOD-0288-FU01 done — `UserId` backed by fail-closed AuthService validation at Create/Update; FU15 relies on validated data, adds no new validation, stays fail-closed |
 | DI lifetime | resolver registration | Scoped (Singleton forbidden) |
 | FU12 compatibility | `ResolveAsync` call | One call per request, memoized by FU12; behavior preserved |
 
@@ -356,8 +370,9 @@ No frontend files. No DataTable, no Razor partials, no RESX.
 - **Legal Entity not referenceable** (archived / soft-deleted / cross-tenant / `Referenceable != true`) → the
   MOD-0220 lookup-validation fails closed → `LegalEntity` scope **not** emitted (no assumption-based scope).
   (AG-STEP-003 verified the contract; this is the remaining *runtime* fail-closed path.)
-- **MOD-0288 `UserId` linkage unverified (MOD-0288-FU01 open)** → resolver uses the authenticated `userId` from the
-  trusted context; does not elevate the MOD-0288 `UserId` to an independent authority.
+- **MOD-0288 `UserId` linkage (MOD-0288-FU01 done)** → Position Assignment `UserId` is validated fail-closed at
+  Create/Update against the AuthService Tenant User contract; resolver uses the authenticated `userId` from the
+  trusted context and does not elevate the MOD-0288 `UserId` to an independent authority.
 - **Module has not opted in** → no row filtering applied for it; resolver output simply unused (no silent breakage).
 - **Anonymous / unauthenticated** → FU12 anonymous semantics; resolver yields empty; zero rows for opted-in modules.
 - **Archived Org Unit / Position** → excluded from scope per MOD-0288 `IsArchived` semantics.
@@ -410,8 +425,9 @@ wanted, that is MOD-0018-FU14, not FU15.)
 11. **Tenant isolation:** cross-tenant Org/Position/Assignment lookups fail closed; no scope leaks across tenants.
 12. **Position is not a permission store:** no permission is read/inferred from Position; no Position→permission
     binding is added.
-13. **Tenant User guard:** MOD-0288 Position Assignment `UserId` is not consumed as an independent authority until
-    the AuthService Tenant User validation contract (MOD-0288-FU01) is confirmed.
+13. **Tenant User guard (MOD-0288-FU01 done):** Position Assignment `UserId` is validated fail-closed at
+    Create/Update against the AuthService Tenant User contract; FU15 consumes the validated linkage, never treats
+    `UserId` as an independent authority, and adds no new validation.
 14. **FU12 compatibility:** `ResolveAsync` is still called once per request and memoized; no FU12 test changes
     except those asserting non-empty org fields where NoOp previously returned empty.
 15. **No-op default retained:** `NoOpDataScopeResolver` still exists and is still usable for tests / anonymous /
@@ -462,16 +478,18 @@ wanted, that is MOD-0018-FU14, not FU15.)
 
 > Governance gate completed at AG-STEP-008. The pack is promoted `draft → ready-for-dev`: all design/scope
 > decisions are locked. Two items are **intentionally deferred** (resolver host layer = implementation-start
-> decision; pilot consuming-module binding = downstream) and do not block ready-for-dev. Two runtime prerequisites
-> (`AG-STEP-003`, `MOD-0288-FU01`) remain **fail-closed gates before code consumes the gated outputs** — satisfied
-> here by the pack's explicit deferral/guard, not by their completion.
+> decision; pilot consuming-module binding = downstream) and do not block ready-for-dev. **Both external dependency
+> gates are now satisfied:** `AG-STEP-003` (MOD-0220 contract) verified present and `MOD-0288-FU01` (Position
+> Assignment `UserId`) merged / `done`. **No external governance gate remains open for FU15.** Runtime behavior
+> stays fail-closed regardless.
 
 - [x] User reviewed this draft and approved scope/boundaries (AG-STEP-008 review + revision).
 - [x] Status promoted to `ready-for-dev`.
 - [x] **AG-STEP-003 gate SATISFIED** — MOD-0220 read-only `LegalEntityId` contract **verified present both sides**
       (read-only audit, §7); `LegalEntity`-scope is now **ungated at governance level**, runtime stays fail-closed.
-- [x] **MOD-0288-FU01** consumption rule confirmed and recorded — Position Assignment `UserId` is not treated as an
-      independent authority until the AuthService Tenant User validation contract is confirmed (§7, §16 AC#13).
+- [x] **MOD-0288-FU01 gate SATISFIED** — merged / `done` (PR #24 / `d816db6`); AuthService Tenant User
+      lookup-validation consumer + fail-closed validation before Position Assignment Create/Update verified (§7, §16 AC#13).
+- [x] **No external governance gate remains open for FU15** (AG-STEP-003 + MOD-0288-FU01 both satisfied).
 - [x] FU10a contract immutability + FU12 call-shape preservation confirmed (AG-STEP-008 audit against runtime).
 - [x] OD-FU15-1 (Org Unit scope shape) decided — **own + subtree, pre-expanded into flat `OrgUnitIds`** (AG-STEP-008 audit).
 - [x] Output kind coverage (§4 table) confirmed — v1 emits **`OrgUnit`, `Position`, `ManagerChain`, `LegalEntity`** (gated) only (AG-STEP-008 audit).
@@ -509,7 +527,8 @@ wanted, that is MOD-0018-FU14, not FU15.)
   the flat `OrgUnitIds` list; no subtree marker, no new enum value.
 - **AG-STEP-003:** MOD-0220 read-only `LegalEntityId` contract verification — **COMPLETE / verified present both
   sides**; `LegalEntity`-scope is governance-ungated (runtime stays fail-closed). No follow-up pack needed.
-- **MOD-0288-FU01:** AuthService Tenant User validation contract — guards Position Assignment `UserId` consumption.
+- **MOD-0288-FU01:** AuthService Tenant User validation — **COMPLETE / merged (`done`)**; Position Assignment
+  `UserId` is fail-closed-validated at Create/Update. Gate satisfied; **no external governance gate remains open for FU15.**
 - **AG-STEP-004B:** permission-key migration (PascalCase → PKS-001 `module.resource.action`) — separate milestone;
   FU15 only references PKS-001, performs no migration.
 - **MOD-0018-FU14:** Effective Access Explain — can surface FU15 resolved scopes in an explain endpoint.
