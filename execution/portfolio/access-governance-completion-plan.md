@@ -99,6 +99,8 @@ If the live state contradicts the plan (drifted HEAD, unexpected dirty tree, pac
 - AG-STEP-004: completed — canonical permission-key standard PKS-001 committed (`.antigravity/rules/permission-key-standard.md`)
 - AG-STEP-008: completed — MOD-0018-FU15 Real DataScopeResolver pack authored, reviewed, revised, promoted `draft → ready-for-dev`
 - AG-STEP-009: **implemented in integration branch** (commit `26d4fe7`) — real `OrgDataScopeResolver`; production DI `IDataScopeResolver → OrgDataScopeResolver`, `NoOpDataScopeResolver` no longer the production default; **G4 integration audit PASSED**; tests **528 passed, 0 failed**; blocker **none**. **Not pushed / no PR / not merged to `main`** (merge-freeze; awaits batch merge)
+- AG-STEP-006A: **completed in integration branch** (commit `91a2604`) — BME-001 mandatory `[HasPermission]` enforcement rule for new business-domain modules (`.antigravity/rules/business-module-enforcement-standard.md`). **Not pushed / no PR / not merged to `main`**
+- AG-STEP-013: **completed in integration branch** (commit `45561e7`) — BME-001 Part II business-module permission + data-scope enforcement contract (C1–C8) **and** repo-grounded reference pattern documented. **Not pushed / no PR / not merged to `main`**
 - Current main baseline: `d3ab4a4`
 - Next critical step: **AG-STEP-002** — DCP-002 `draft → approved` (and AG-STEP-004B permission-key migration)
 - Parallel-safe candidates:
@@ -172,8 +174,8 @@ Step format `AG-STEP-NNN`. "Parallel?" references §7. The **Live State Refresh 
 | AG-STEP-007 | Tenant Group + Group→Role | CAND-CAP REQUIRED — EA DECISION (no Blueprint RBAC Group ID) | **MISSING in code** | yes | AG-STEP-005; EA OD-B | no | module-pack-author → backend-architect | new pack + AuthService | tests | reserved identity + pack; **deferred from backend-start gate; retained as post-pilot / pre-production capability** | group-based grants |
 
 **AG-STEP-006 split:**
-- **006A — Mandatory rule for new business-domain modules:** every privileged endpoint is `[HasPermission]`-guarded from the first commit. **Required for the Business-Domain Start Gate.**
-- **006B — Existing AuthService / MDM retrofit:** systematic hardening of currently-ungated endpoints. **Required before the Pilot Gate; required before production. Does not, by itself, block the first business-domain backend scaffold.**
+- **006A — Mandatory rule for new business-domain modules:** every privileged endpoint is `[HasPermission]`-guarded from the first commit. **Required for the Business-Domain Start Gate.** **✅ completed in integration branch (commit `91a2604`)** — authored `.antigravity/rules/business-module-enforcement-standard.md` (**BME-001**, Part I): mandatory `[HasPermission("<module>.<resource>.<action>")]` rule, PKS-001 format, default-deny, tenant isolation, frontend-visibility-is-UX-only. **Not pushed / no PR / not merged to `main`.**
+- **006B — Existing AuthService / MDM retrofit:** systematic hardening of currently-ungated endpoints. **Required before the Pilot Gate; required before production. Does not, by itself, block the first business-domain backend scaffold.** _(not started)_
 
 ### PHASE-03 — Data Scope Foundation & Real Resolver  *(critical path)*
 | Plan Step | Capability / Module | Canonical ID | Current State | Pack Needed? | Dependencies | Parallel? | Owner Agent | Repo Scope | Build/Test Gate | Done Criteria | Unlocks |
@@ -191,7 +193,7 @@ Step format `AG-STEP-NNN`. "Parallel?" references §7. The **Live State Refresh 
 ### PHASE-05 — Business-Module Row Enforcement Baseline
 | Plan Step | Capability / Module | Canonical ID | Current State | Pack Needed? | Dependencies | Parallel? | Owner Agent | Repo Scope | Build/Test Gate | Done Criteria | Unlocks |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| AG-STEP-013 | Business-module enforcement contract (§9) | MOD-0018 (standard) | implied, not codified | no (standard doc) | AG-STEP-009, 006A, 004 | yes | backend-architect | `.antigravity/rules` candidate | none | contract documented + reference impl | uniform business modules |
+| AG-STEP-013 | Business-module enforcement contract (§9) | MOD-0018 (standard) | **completed in integration branch** (commit `45561e7`; **not pushed / no PR / not merged to `main`**) | no (standard doc) | AG-STEP-009, 006A, 004 | yes | backend-architect | `.antigravity/rules/business-module-enforcement-standard.md` (BME-001 Part II) | none | **DONE (integration branch).** BME-001 extended with the uniform business-module enforcement contract (C1–C8): `[HasPermission]` action gate; scoped-resource **explicit opt-in** consuming existing `ITenantAuthorizationContext` / `EffectiveScopes` (**no module-authored resolver**); **empty scope ⇒ fail-closed**, auto-open forbidden; tenant isolation server-side only; row filters limited to `OrgUnit`/`LegalEntity`/`ManagerChain`/`Position`; permission vs data-scope separation; frontend-visibility-is-UX-only; audit/Explain (011/FU14) + cache (010/FU13) referenced. **Repo-grounded reference pattern** (request → permission gate → tenant filter → EffectiveScopes filter → empty-scope deny → response) documented. | uniform business modules |
 | AG-STEP-014 | First row-level scope consumer (pilot) | pilot business-domain module | none consume scope yet | yes | AG-STEP-013; G4 (009) | no | backend-architect | one pilot module | enforcement tests | one module filters rows by `EffectiveScopes`, opt-in. **Sequenced after business-domain backend start, before the Pilot Gate (mandatory).** | pattern proven |
 
 ### PHASE-06 — Workflow, Temporary Access & Process Context
