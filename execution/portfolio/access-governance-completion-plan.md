@@ -100,6 +100,10 @@ If the live state contradicts the plan (drifted HEAD, unexpected dirty tree, pac
 - Parallel-safe candidates:
   - AG-STEP-002 — DCP-002 `draft → approved`
   - AG-STEP-003 — MOD-0220 LegalEntityId contract strict read-only verification
+- **Operating mode — MERGE FREEZE:** no reviewer/admin available (~1 week), so branch→`main` merges are paused. All remaining work consolidates on a **single integration branch** and merges in one batch when the freeze lifts. Per-step branch-off-`main` is suspended until then.
+- **Active execution branch:** `feature/governance/access-governance-execution` — created off the plan-refresh tip `adfa140`, so it already contains AG-STEP-000 + AG-STEP-001 (via `main` ancestry) **and** the plan refresh. Each AG-STEP lands as its own commit on this one branch; under the freeze, the parallel-safe steps run **sequentially** here.
+- **Plan refresh:** committed + pushed (`adfa140`, branch `…-completion-plan-refresh`); PR/merge pending (freeze). Superseded for ongoing work by the execution branch above, which already includes it.
+- **Control model:** this CONTROL TOWER chat routes steps, verifies handoffs, and maintains this plan file; the actual development for each AG-STEP runs in a **separate execution chat** working on the execution branch above.
 
 ---
 
