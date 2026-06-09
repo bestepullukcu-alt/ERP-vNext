@@ -22,7 +22,7 @@ public sealed class FeatureCategoriesController : CustomBaseController
     }
 
     [HttpGet]
-    [HasPermission("Platform.SubscriptionFeatures.Read")]
+    [HasPermission("platform.subscription-features.read")]
     public async Task<IActionResult> GetCategories([FromQuery] string? status, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetFeatureCategoriesQuery(status), ct);
@@ -30,7 +30,7 @@ public sealed class FeatureCategoriesController : CustomBaseController
     }
 
     [HttpPost]
-    [HasPermission("Platform.SubscriptionFeatures.Create")]
+    [HasPermission("platform.subscription-features.create")]
     public async Task<IActionResult> Create([FromBody] CreateFeatureCategoryRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new CreateFeatureCategoryCommand(request), ct);
