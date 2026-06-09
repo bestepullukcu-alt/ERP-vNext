@@ -73,11 +73,18 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
         context.Result = new ForbidResult();
     }
 
-    private bool HasPermissionClaim(IEnumerable<Claim> claims) =>
-        claims.Any(claim =>
+    private bool HasPermissionClaim(IEnumerable<Claim> claims)
+    {
+        // AG-STEP-004B Slice 1B (dual-read): a canonical requirement is satisfied by the canonical key OR any legacy
+        // alias mapped to it. A legacy/unknown requirement expands to only itself — no auto-upgrade, fail-closed.
+        var acceptedKeys = PermissionAliasResolver.Expand(_permission);
+
+        return claims.Any(claim =>
             IsPermissionClaim(claim.Type)
-            && claim.Value.Split([' ', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Contains(_permission, StringComparer.OrdinalIgnoreCase));
+            && claim.Value
+                .Split([' ', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Any(token => acceptedKeys.Contains(token, StringComparer.OrdinalIgnoreCase)));
+    }
 
     private static bool IsPermissionClaim(string claimType) =>
         string.Equals(claimType, "permission", StringComparison.OrdinalIgnoreCase)
