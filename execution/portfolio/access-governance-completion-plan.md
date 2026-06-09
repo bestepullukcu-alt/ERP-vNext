@@ -95,11 +95,13 @@ If the live state contradicts the plan (drifted HEAD, unexpected dirty tree, pac
 
 - AG-STEP-000: completed — plan persisted and merged via PR #26
 - AG-STEP-001: completed — MOD-0288 + MOD-0288-FU01 governance drift closed via PR #25
+- AG-STEP-003: completed — MOD-0220 LegalEntityId read-only contract **verified present both sides** (read-only audit); governance reconciliation only, no follow-up pack needed
+- AG-STEP-004: completed — canonical permission-key standard PKS-001 committed (`.antigravity/rules/permission-key-standard.md`)
+- AG-STEP-008: completed — MOD-0018-FU15 Real DataScopeResolver pack authored, reviewed, revised, promoted `draft → ready-for-dev`
 - Current main baseline: `d3ab4a4`
-- Next critical step: **AG-STEP-004** — Permission-key convention decision and catalog baseline
+- Next critical step: **AG-STEP-002** — DCP-002 `draft → approved` (and AG-STEP-004B permission-key migration)
 - Parallel-safe candidates:
   - AG-STEP-002 — DCP-002 `draft → approved`
-  - AG-STEP-003 — MOD-0220 LegalEntityId contract strict read-only verification
 - **Operating mode — MERGE FREEZE:** no reviewer/admin available (~1 week), so branch→`main` merges are paused. All remaining work consolidates on a **single integration branch** and merges in one batch when the freeze lifts. Per-step branch-off-`main` is suspended until then.
 - **Active execution branch:** `feature/governance/access-governance-execution` — created off the plan-refresh tip `adfa140`, so it already contains AG-STEP-000 + AG-STEP-001 (via `main` ancestry) **and** the plan refresh. Each AG-STEP lands as its own commit on this one branch; under the freeze, the parallel-safe steps run **sequentially** here.
 - **Plan refresh:** committed + pushed (`adfa140`, branch `…-completion-plan-refresh`); PR/merge pending (freeze). Superseded for ongoing work by the execution branch above, which already includes it.
@@ -157,7 +159,7 @@ Step format `AG-STEP-NNN`. "Parallel?" references §7. The **Live State Refresh 
 | **AG-STEP-000** | **Persist and Approve Access Governance Completion Plan** | — (governance) | **completed** — persisted & merged (PR #26) | no (this audit) | none | n/a | ACCESS GOVERNANCE EXECUTION + user | none now; later a governance-only write to `execution/portfolio/access-governance-completion-plan.md` | none | (a) plan reviewed by user; (b) open-decision list recorded and tracked; (c) ready to persist via a separate write prompt; (d) subsequent AG-STEPs read this file as the execution-roadmap reference. This plan never overrides Module Pack, Domain Config, AGENTS.md or .antigravity standards. | the whole roadmap |
 | AG-STEP-001 | MOD-0288 + FU01 governance drift closure | MOD-0288, MOD-0288-FU01 | **completed** — drift closed (PR #25) | no (status edit) | AG-STEP-000 | no (registry/DCP-001/master-plan) | read-only-auditor + module-pack-author | docs (packs, registry, master-plan, DCP-001 §20) | none | all 4 sources `done`; verify gate OK | accurate board |
 | AG-STEP-002 | DCP-002 promotion `draft → approved` | DCP-002 | `draft` | no | AG-STEP-000 | yes (after 001) | read-only-auditor | DCP-002 only | none | canonicalization authority off draft | trustworthy alias chain |
-| AG-STEP-003 | MDM Legal Entity read-only `LegalEntityId` contract — **verify, do not assume** | MOD-0220 | `ready-for-dev`; contract impl not evident | conditional | MDM domain-config | yes | read-only-auditor | read-only inspection of `Diten.MdmService` | none | **(1)** live repo inspection first; **(2)** if the read-only lookup-validation contract exists → governance reconciliation only; **(3)** if it genuinely does not exist → author a *narrow* MOD-0220 follow-up pack; **(4)** never start implementation on assumption | MOD-0288 LegalEntityId scope |
+| AG-STEP-003 | MDM Legal Entity read-only `LegalEntityId` contract — **verify, do not assume** | MOD-0220 | **verified / complete** — contract present both sides (read-only audit) | no (governance reconciliation only) | MDM domain-config | done | read-only-auditor + orchestrator | read-only inspection of `Diten.MdmService` + `Diten.Platform`; docs-only reconciliation | none | **DONE.** Live audit confirmed the read-only lookup-validation contract on both sides → governance reconciliation only; **no narrow MOD-0220 follow-up pack needed**, no implementation on assumption. **Provider (MOD-0220):** `GET /api/legal-entities/{id}/lookup-validation` → `ValidateLegalEntityReferenceQuery` → `ValidateLegalEntityReferenceHandler` → `RepositoryBase.GetByIdAsync` (`TenantFilter` = same-tenant + `IsDeleted==false`) + `LifecycleStatus==Active`; returns `LegalEntityLookupDto(LegalEntityId, LegalName, DisplayName, LifecycleState, Referenceable)` — matches MOD-0288 §7 locked contract 1:1. **Consumer (MOD-0288):** `ILegalEntityReferenceValidator` / `MdmLegalEntityReferenceValidator` (HTTP GET, **fail-closed** on non-2xx / ID-mismatch / non-ACTIVE / `Referenceable!=true` / network+JSON errors), wired Scoped with `TenantPropagationHandler`, consumed by Create/UpdateOrganizationUnitCommandHandler. **Note:** provider permission `Modules.LegalEntity.Read` is PascalCase → **AG-STEP-004B** migration target only (no rename here). | MOD-0288 LegalEntityId scope; FU15 LegalEntity scope **ungated at governance level** (runtime stays fail-closed) |
 
 ### PHASE-02 — Permission Catalog, Tenant Role & Group Foundations
 | Plan Step | Capability / Module | Canonical ID | Current State | Pack Needed? | Dependencies | Parallel? | Owner Agent | Repo Scope | Build/Test Gate | Done Criteria | Unlocks |
@@ -330,7 +332,7 @@ Applies to **every business-domain module** (CRM, HR, Sales, Procurement, Financ
 | Segregation of Duties | **MOD-0020** (gate OK) | **absent** | none | No (reserve) | reservation + pack (AG-STEP-018) |
 | Territory Management | **MOD-0151** (gate OK) | **absent** | none | No (reserve) | reservation + pack (AG-STEP-019) |
 | Tenant User Foundation | CAND-CAP-0001 (squats MOD-0047=BCM) | present | `done` (slice) | Yes (final EA ID) | keep candidate; EA assigns Blueprint ID later |
-| Legal Entity contract | MOD-0220 | present | `ready-for-dev` | No | verify contract / narrow follow-up if missing (AG-STEP-003) |
+| Legal Entity contract | MOD-0220 | present | `ready-for-dev` | No | **verified present both sides (AG-STEP-003 complete)** — read-only lookup-validation contract confirmed; no follow-up pack needed |
 | Business-module row enforcement | MOD-0018 standard | n/a | n/a | No | contract + pilot (AG-STEP-013/014) |
 | DCP-002 canonicalization | n/a | n/a | **`draft`** | No | promote `draft → approved` (AG-STEP-002) |
 

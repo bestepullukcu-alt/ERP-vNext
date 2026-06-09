@@ -21,8 +21,9 @@ form_field_count: 0
 > read-only repo evidence, and promoted `draft → ready-for-dev`; all design/scope decisions are locked (§4, §18).
 > Authoring + promotion made **no** runtime, seed, migration, test, frontend, gateway, `.antigravity`, registry, or
 > roadmap change. `ready-for-dev` authorizes implementation **planning/handoff** only; production code still passes
-> the orchestrator / add-module gate, and the §7 fail-closed dependency gates (`AG-STEP-003` for `LegalEntity`-scope,
-> `MOD-0288-FU01` for Position Assignment `UserId`) must hold before the gated outputs are consumed.
+> the orchestrator / add-module gate. Of the §7 dependency gates, **`AG-STEP-003` (MOD-0220 `LegalEntityId`
+> contract) is verified / satisfied** (read-only audit), so `LegalEntity`-scope is governance-ungated;
+> **`MOD-0288-FU01` (Position Assignment `UserId`) remains the open gate**. Runtime behavior stays fail-closed.
 
 > **Identity (DCP-002, proven).** Canonical ID `MOD-0018-FU15`, canonical name **Real DataScopeResolver**, parent
 > **MOD-0018** (RBAC / ABAC Authorization). Verified fail-closed with
@@ -80,7 +81,7 @@ The pack focuses on four goals:
   `OrgDataScopeResolver` / `TenantDataScopeResolver`) that consumes MOD-0288 org master data.
 - The mapping from MOD-0288 structures to `EntitlementDataScope` values over the existing
   `EntitlementDataScopeKind` enum. **v1 emits exactly four kinds** (locked, §4): `OrgUnit`, `Position`,
-  `ManagerChain`, and `LegalEntity` (the last gated on AG-STEP-003). No other kind is emitted and no enum value is
+  `ManagerChain`, and `LegalEntity` (AG-STEP-003 gate now **satisfied** — §7). No other kind is emitted and no enum value is
   invented — every other kind has no FU12 consumer field and/or no MOD-0288 backing.
 - The DI seam swap: replace `services.AddScoped<IDataScopeResolver, NoOpDataScopeResolver>();`
   ([services/Diten.Platform/src/Diten.Platform.Application/DependencyInjection.cs:51](../../../../services/Diten.Platform/src/Diten.Platform.Application/DependencyInjection.cs)) with the real resolver registration (Scoped).
@@ -175,7 +176,7 @@ MOD-0288** and **consumed by FU12**. No new enum value is invented.
 | `OrgUnit` | `OrgUnitIds` | Organization Unit tree | **own + subtree**, descendants pre-expanded into the flat list (OD-FU15-1 locked) |
 | `Position` | `PositionIds` | Position + effective-dated Position Assignment | user's active Position(s) as-of now |
 | `ManagerChain` | `ManagerChain` | derived `GetManagerChain` (Position reporting chain) | list of **Position IDs** up the reporting chain; cycle-safe, max depth 32 |
-| `LegalEntity` | `LegalEntityId` | Org Unit `LegalEntityId` (read-only MOD-0220 ref) | **emitted only after AG-STEP-003 verifies the MOD-0220 contract** (§7); gated, fail-closed |
+| `LegalEntity` | `LegalEntityId` | Org Unit `LegalEntityId` (read-only MOD-0220 ref) | **AG-STEP-003 verified (§7) → emission enabled**; runtime stays fail-closed (non-referenceable → no scope) |
 
 **Excluded from v1 (do NOT emit):**
 
@@ -233,24 +234,28 @@ Exact files are finalized at implementation start; listed for boundary visibilit
 - **MOD-0288 (done):** Organization Unit / Position / effective-dated Position Assignment / derived Manager Chain
   master data and repositories. FU15 reads these as the org-structure source of truth.
 
-**AG-STEP-003 dependency — MOD-0220 LegalEntityId read-only contract (explicit gate):**
+**AG-STEP-003 dependency — MOD-0220 LegalEntityId read-only contract — ✅ SATISFIED (verified present):**
 
 - MOD-0220 (Corporate Secretarial / Entity Management, MDM Legal Entity Foundation) is a **read-only external
   reference** for FU15. FU15 consumes only the `LegalEntityId` already stored and validated on MOD-0288 records; it
   does **not** re-validate, duplicate, persist, or author Legal Entity data.
-- **Runtime evidence (informational, not a substitute for governance verification):** a read-only reference-
-  validation contract appears to exist —
-  `services/Diten.MdmService/.../Features/LegalEntity/` exposes `ValidateLegalEntityReferenceQuery` /
-  `ValidateLegalEntityReferenceHandler` returning `Referenceable`, surfaced by `LegalEntitiesController`, and
-  `LegalEntity.IsReferenceable => LifecycleStatus == Active && !IsDeleted`. The Platform side already has
-  `MdmLegalEntityReferenceValidator` test coverage under `TenantOrganization`.
-- **Gate (fail-closed):** the **authoritative** verification of this contract is **AG-STEP-003** (MOD-0220
-  read-only `LegalEntityId` contract — *verify, do not assume*; see
-  `execution/portfolio/access-governance-completion-plan.md` AG-STEP-003). Until AG-STEP-003 has formally
-  reconciled the contract as present and stable, FU15 must treat the MOD-0220 dependency as **unverified** and must
-  **not** ship `LegalEntity`-scope emission on assumption. If AG-STEP-003 finds the contract genuinely absent or
-  unstable, FU15 either (a) defers `LegalEntity`-scope emission to a follow-up, or (b) blocks on the narrow MOD-0220
-  follow-up authored by AG-STEP-003 — never implementation on assumption.
+- **Gate status — SATISFIED by AG-STEP-003 (read-only audit, this branch).** The read-only lookup-validation
+  contract is confirmed present and matching on **both** sides:
+  - **Provider (MOD-0220, `Diten.MdmService`):** `GET /api/legal-entities/{id}/lookup-validation` →
+    `ValidateLegalEntityReferenceQuery` → `ValidateLegalEntityReferenceHandler` → `RepositoryBase.GetByIdAsync`
+    (`TenantFilter` enforces same-tenant + `IsDeleted == false`) + `LifecycleStatus == Active`; returns
+    `LegalEntityLookupDto(LegalEntityId, LegalName, DisplayName, LifecycleState, Referenceable)`. This maps 1:1 to
+    the MOD-0288 §7 locked validation (exists / same-tenant / ACTIVE / not-deleted) and return shape.
+  - **Consumer (MOD-0288, `Diten.Platform`):** `ILegalEntityReferenceValidator` /
+    `MdmLegalEntityReferenceValidator` (HTTP GET, **fail-closed** on non-2xx, ID-mismatch, non-ACTIVE,
+    `Referenceable != true`, and network/JSON errors), registered Scoped with `TenantPropagationHandler` and
+    consumed by `Create`/`UpdateOrganizationUnitCommandHandler`.
+- **Governance outcome:** `LegalEntity`-scope emission is **ungated at the governance level** — no narrow MOD-0220
+  follow-up pack is required. **Runtime behavior stays fail-closed regardless:** the resolver/consumer still treats
+  a non-referenceable or unresolvable Legal Entity as "no scope" (zero rows), exactly as the verified consumer does.
+- **Note (no rename here):** the provider permission `Modules.LegalEntity.Read` is PascalCase — an **AG-STEP-004B**
+  permission-key migration target only; FU15 performs no key rename (§14).
+- Ref: `execution/portfolio/access-governance-completion-plan.md` AG-STEP-003 (verified / complete).
 
 **Critical guard inherited from MOD-0288 §7 (Tenant User reference):**
 
@@ -295,7 +300,8 @@ Exact files are finalized at implementation start; listed for boundary visibilit
   Organization Unit plus all descendants into the flat `OrgUnitIds` list. No subtree marker, no new enum value.
 - **No-org tenants.** A tenant/user with no Position Assignment resolves to an empty scope set (→ zero rows for
   opted-in modules); this is valid, not an error.
-- **LegalEntity gate.** `LegalEntity`-scope emission is conditional on the AG-STEP-003 verification (§7).
+- **LegalEntity gate (satisfied).** AG-STEP-003 has verified the MOD-0220 read-only contract (§7), so
+  `LegalEntity`-scope emission is enabled; runtime stays fail-closed (a non-referenceable Legal Entity → no scope).
 
 ## 9. Layout & Shell Contract
 
@@ -333,7 +339,7 @@ No frontend files. No DataTable, no Razor partials, no RESX.
 | Position not a permission store | Position reads | Org/Manager/Position scope only; no permission inference |
 | Fail-closed | opted-in consuming module | Empty scope set → zero rows; resolver throw → empty → zero rows |
 | Opt-in | non-opted modules | Unaffected; no implicit global filter |
-| LegalEntity gate | `LegalEntity` scope | Emitted only after AG-STEP-003 verifies the MOD-0220 read-only contract |
+| LegalEntity gate | `LegalEntity` scope | AG-STEP-003 verified (§7) → emission enabled; non-referenceable Legal Entity → no scope (fail-closed) |
 | Tenant User gate | Position Assignment `UserId` | Not treated as independent authority until MOD-0288-FU01 / AuthService contract confirmed |
 | DI lifetime | resolver registration | Scoped (Singleton forbidden) |
 | FU12 compatibility | `ResolveAsync` call | One call per request, memoized by FU12; behavior preserved |
@@ -347,8 +353,9 @@ No frontend files. No DataTable, no Razor partials, no RESX.
 - **Expired Position Assignment only** → contributes no scope (effective-dated filter).
 - **Manager Chain cycle in MOD-0288 data** → cycle detection fails closed; partial chain up to the cycle, no infinite loop.
 - **Cross-tenant Position/Org Unit lookup** → fails closed; no cross-tenant scope leaks.
-- **`LegalEntityId` reference present but AG-STEP-003 not yet verified** → `LegalEntity` scope **not** emitted
-  (gated); no assumption-based scope.
+- **Legal Entity not referenceable** (archived / soft-deleted / cross-tenant / `Referenceable != true`) → the
+  MOD-0220 lookup-validation fails closed → `LegalEntity` scope **not** emitted (no assumption-based scope).
+  (AG-STEP-003 verified the contract; this is the remaining *runtime* fail-closed path.)
 - **MOD-0288 `UserId` linkage unverified (MOD-0288-FU01 open)** → resolver uses the authenticated `userId` from the
   trusted context; does not elevate the MOD-0288 `UserId` to an independent authority.
 - **Module has not opted in** → no row filtering applied for it; resolver output simply unused (no silent breakage).
@@ -392,8 +399,9 @@ wanted, that is MOD-0018-FU14, not FU15.)
 5a. **v1 kind set (locked):** the resolver emits **only** `OrgUnit`, `Position`, `ManagerChain`, and `LegalEntity`
    (gated). It emits **no** `Country` (no MOD-0288 backing) and **no** `Company`/`Own`/`Assigned`/
    `ProcessRelatedRecord`/`Department`/`Team`/`Region`/`RecordOwner` (no FU12 consumer field).
-6. **LegalEntity scope (gated):** emitted **only** when AG-STEP-003 has verified the MOD-0220 read-only contract;
-   uses the MOD-0288-stored `LegalEntityId` reference, never re-validates/duplicates Legal Entity.
+6. **LegalEntity scope (AG-STEP-003 verified):** emission is governance-ungated; uses the MOD-0288-stored
+   `LegalEntityId` reference (validated via the MOD-0220 read-only lookup-validation contract), never
+   re-validates/duplicates Legal Entity. Runtime stays fail-closed: a non-referenceable Legal Entity → no scope.
 7. **Fail-closed:** for an opted-in module, an empty resolved scope set yields **zero rows**; never all rows.
 8. **Opt-in:** modules that have not opted in are unaffected; no implicit global row filter is applied.
 9. **Resolver fail-safe:** a resolver exception keeps FU12 org fields empty and does not change any allow/deny
@@ -428,7 +436,8 @@ wanted, that is MOD-0018-FU14, not FU15.)
   - Manager Chain derivation → chain emitted as **Position IDs** up the reporting chain; cycle → fail-closed partial.
   - Cross-tenant data → no leak (tenant isolation).
   - Archived Org Unit / Position → excluded.
-  - `LegalEntity` scope emitted only when the MOD-0220 / AG-STEP-003 gate is on (test both states).
+  - `LegalEntity` scope: referenceable Legal Entity → scope emitted; non-referenceable (archived/deleted/
+    cross-tenant) → fail-closed, no scope (test both states). AG-STEP-003 contract verified.
   - **Kind-set guard:** resolver output contains **only** `OrgUnit`, `Position`, `ManagerChain`, `LegalEntity`
     (gated) — never `Country` or any other kind.
   - Resolver internal read error → fail-safe empty (no throw escaping to authorization decision).
@@ -459,8 +468,8 @@ wanted, that is MOD-0018-FU14, not FU15.)
 
 - [x] User reviewed this draft and approved scope/boundaries (AG-STEP-008 review + revision).
 - [x] Status promoted to `ready-for-dev`.
-- [x] **AG-STEP-003** gate handled — `LegalEntity`-scope emission is **explicitly deferred / fail-closed** behind
-      AG-STEP-003 (§7, §16 AC#6); not emitted until the MOD-0220 read-only contract is verified.
+- [x] **AG-STEP-003 gate SATISFIED** — MOD-0220 read-only `LegalEntityId` contract **verified present both sides**
+      (read-only audit, §7); `LegalEntity`-scope is now **ungated at governance level**, runtime stays fail-closed.
 - [x] **MOD-0288-FU01** consumption rule confirmed and recorded — Position Assignment `UserId` is not treated as an
       independent authority until the AuthService Tenant User validation contract is confirmed (§7, §16 AC#13).
 - [x] FU10a contract immutability + FU12 call-shape preservation confirmed (AG-STEP-008 audit against runtime).
@@ -485,9 +494,11 @@ wanted, that is MOD-0018-FU14, not FU15.)
 - **Fail-closed + opt-in together:** fail-closed without opt-in would silently break every existing module that
   reads rows; opt-in without fail-closed would leak rows when scope is empty. Both are required and both belong in
   the consuming module's contract, supplied by FU15.
-- **AG-STEP-003 coupling:** the runtime `ValidateLegalEntityReferenceQuery` evidence is encouraging but is **not**
-  the governance verification. FU15 deliberately gates `LegalEntity`-scope emission on AG-STEP-003 so we never ship
-  on assumption (per the Access Governance completion plan, AG-STEP-003 row: "verify, do not assume").
+- **AG-STEP-003 coupling — resolved:** the gate was held until a formal read-only audit (not just the runtime
+  `ValidateLegalEntityReferenceQuery` evidence) verified the MOD-0220 contract on both provider and consumer sides.
+  That audit is **complete**: the contract is present and matching, so `LegalEntity`-scope is governance-ungated.
+  This honored "verify, do not assume" — emission was never shipped on assumption (per the Access Governance
+  completion plan, AG-STEP-003 row, now `verified / complete`).
 - **NoOp retained, not deleted:** anonymous requests, background jobs, and tenants with no org structure still need
   a valid empty resolution; the NoOp resolver remains the natural fallback and the existing FU12 anonymous tests
   keep using it.
@@ -496,7 +507,8 @@ wanted, that is MOD-0018-FU14, not FU15.)
 
 - **OD-FU15-1:** RESOLVED (AG-STEP-008 read-only audit) — `OrgUnit` scope = **own + subtree**, pre-expanded into
   the flat `OrgUnitIds` list; no subtree marker, no new enum value.
-- **AG-STEP-003:** MOD-0220 read-only `LegalEntityId` contract verification — **blocking** for `LegalEntity`-scope.
+- **AG-STEP-003:** MOD-0220 read-only `LegalEntityId` contract verification — **COMPLETE / verified present both
+  sides**; `LegalEntity`-scope is governance-ungated (runtime stays fail-closed). No follow-up pack needed.
 - **MOD-0288-FU01:** AuthService Tenant User validation contract — guards Position Assignment `UserId` consumption.
 - **AG-STEP-004B:** permission-key migration (PascalCase → PKS-001 `module.resource.action`) — separate milestone;
   FU15 only references PKS-001, performs no migration.
