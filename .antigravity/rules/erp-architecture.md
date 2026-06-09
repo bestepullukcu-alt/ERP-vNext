@@ -115,16 +115,16 @@ Controller endpoint'lerinde kullanılan `[HasPermission]` attribute'u için iki 
 
 | Servis | Format | Örnek |
 |---|---|---|
-| `Diten.Platform` (Platform admin shell) | `Platform.{Resource}.{Action}` | `Platform.Administrators.Read` |
-| `Diten.MdmService`, `Diten.DevEnablementService`, `Diten.AuthService` (Tenant shell) | `Modules.{ModuleName}.{Action}` | `Modules.SampleModule.Read` |
+| `Diten.Platform` (Platform admin shell) | `platform.{resource}.{action}` | `platform.administrators.read` |
+| `Diten.MdmService`, `Diten.DevEnablementService`, `Diten.AuthService` (Tenant shell) | `{module}.{resource}.{action}` | `module.sample-module.read` |
 
 **Karar kuralı:** Controller hangi servisin API katmanındaysa o format kullanılır. Module pack'te `service` ve `shell` alanları bu kararı tetikler.
 
 **Örnekler:**
-- Platform admin: `[HasPermission("Platform.Tenants.Create")]`, `[HasPermission("Platform.SubscriptionPlans.Update")]`
-- Tenant: `[HasPermission("Modules.SampleModule.Read")]`, `[HasPermission("Modules.Products.Delete")]`
+- Platform admin: `[HasPermission("platform.tenants.create")]`, `[HasPermission("platform.subscription-plans.update")]`
+- Tenant: `[HasPermission("module.sample-module.read")]`, `[HasPermission("module.products.delete")]`
 
-**Actions:** `Read`, `Create`, `Update`, `Delete`, `BulkDelete` (+ modül-spesifik aksiyonlar: `Suspend`, `Archive`, `AssignRoles`, vb.)
+**Actions:** `read`, `create`, `update`, `delete`, `bulk-delete` (+ modül-spesifik aksiyonlar: `suspend`, `archive`, `assign-roles`, vb.)
 
 **Policy:**
 - Platform admin controller'ları: `[Authorize(Policy = "PlatformActor")]`
@@ -198,7 +198,7 @@ public enum ProductLifecycleStateCode
 - [ ] PRD'deki TÜM alanlar Entity'ye eklendi mi? (Latitude, Longitude vb.)
 - [ ] `UpdateAsync` içinde `entity.UpdatedAt = DateTimeOffset.UtcNow` var mı?
 - [ ] `DeleteAsync` içinde hem `IsDeleted = true` hem `DeletedAt = UtcNow` set ediliyor mu?
-- [ ] `[HasPermission("Modules.{Module}.{Action}")]` veya en az `[Authorize]` koruması var mı?
+- [ ] `[HasPermission("module.resource.action")]` veya en az `[Authorize]` koruması var mı?
 - [ ] Entity-base-template.md okundu mu? (Zorunlu/Opsiyonel alanlar doğru uygulandı mı?)
 - [ ] `Response<T>` envelope kullanılıyor mu? (`response-envelope.md`)
 - [ ] Tüm controller'lar `CustomBaseController`'dan miras alıyor mu?
