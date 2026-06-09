@@ -18,37 +18,37 @@ public sealed class PositionsController : CustomBaseController
     public PositionsController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet]
-    [HasPermission("Modules.Position.Read")]
+    [HasPermission("platform.positions.read")]
     public async Task<IActionResult> GetAll(CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new GetPositionsQuery(), ct));
 
     [HttpGet("{id:guid}")]
-    [HasPermission("Modules.Position.Read")]
+    [HasPermission("platform.positions.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new GetPositionByIdQuery(id), ct));
 
     [HttpGet("{id:guid}/manager-chain")]
-    [HasPermission("Modules.Organization.ReadManagerChain")]
+    [HasPermission("platform.organization.read-manager-chain")]
     public async Task<IActionResult> GetManagerChain(Guid id, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new GetManagerChainQuery(id), ct));
 
     [HttpPost]
-    [HasPermission("Modules.Position.Create")]
+    [HasPermission("platform.positions.create")]
     public async Task<IActionResult> Create([FromBody] PositionRequest request, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new CreatePositionCommand(request), ct));
 
     [HttpPut("{id:guid}")]
-    [HasPermission("Modules.Position.Update")]
+    [HasPermission("platform.positions.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] PositionRequest request, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new UpdatePositionCommand(id, request), ct));
 
     [HttpPost("{id:guid}/archive")]
-    [HasPermission("Modules.Position.Archive")]
+    [HasPermission("platform.positions.archive")]
     public async Task<IActionResult> Archive(Guid id, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new ArchivePositionCommand(id), ct));
 
     [HttpDelete("{id:guid}")]
-    [HasPermission("Modules.Position.Delete")]
+    [HasPermission("platform.positions.delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new DeletePositionCommand(id), ct));
 }
