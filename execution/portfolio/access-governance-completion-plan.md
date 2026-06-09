@@ -101,6 +101,7 @@ If the live state contradicts the plan (drifted HEAD, unexpected dirty tree, pac
 - AG-STEP-009: **implemented in integration branch** (commit `26d4fe7`) — real `OrgDataScopeResolver`; production DI `IDataScopeResolver → OrgDataScopeResolver`, `NoOpDataScopeResolver` no longer the production default; **G4 integration audit PASSED**; tests **528 passed, 0 failed**; blocker **none**. **Not pushed / no PR / not merged to `main`** (merge-freeze; awaits batch merge)
 - AG-STEP-006A: **completed in integration branch** (commit `91a2604`) — BME-001 mandatory `[HasPermission]` enforcement rule for new business-domain modules (`.antigravity/rules/business-module-enforcement-standard.md`). **Not pushed / no PR / not merged to `main`**
 - AG-STEP-013: **completed in integration branch** (commit `45561e7`) — BME-001 Part II business-module permission + data-scope enforcement contract (C1–C8) **and** repo-grounded reference pattern documented. **Not pushed / no PR / not merged to `main`**
+- AG-STEP-021: **Business-Domain Start Gate — integration-branch PASS** (audit @ `d55a564`); all Backend Start Gate criteria (000/001/004/009/013/006A + tenant isolation) verified against the live repo. **Main unlock `PENDING BATCH MERGE`** — `main` still `d3ab4a4`, branch local-only; **no production business-domain rollout until merged**; no automatic rollout
 - Current main baseline: `d3ab4a4`
 - Next critical step: **AG-STEP-002** — DCP-002 `draft → approved` (and AG-STEP-004B permission-key migration)
 - Parallel-safe candidates:
@@ -213,7 +214,7 @@ Step format `AG-STEP-NNN`. "Parallel?" references §7. The **Live State Refresh 
 ### PHASE-08 — Business-Domain Unlock & Rollout
 | Plan Step | Capability / Module | Canonical ID | Current State | Pack Needed? | Dependencies | Parallel? | Owner Agent | Repo Scope | Build/Test Gate | Done Criteria | Unlocks |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| AG-STEP-021 | Business-Domain Start Gate verification | — | — | no (audit) | AG-STEP-000, 001, 004, 009, 013, 006A | — | read-only-auditor | read-only | none | **Business-Domain Start Gate verified** (§8) | business-domain backend start |
+| AG-STEP-021 | Business-Domain Start Gate verification | — | **integration-branch PASS** (audit HEAD `d55a564`); **main unlock PENDING BATCH MERGE** | no (audit) | AG-STEP-000, 001, 004, 009, 013, 006A | — | read-only-auditor | read-only | none | **DONE (integration branch).** All Backend Start Gate criteria verified against live repo @ `d55a564`: AG-STEP-000 ✓, 001 (MOD-0288 + FU01 `done`) ✓, 004 (PKS-001 OD-C locked) ✓, 009 (`IDataScopeResolver → OrgDataScopeResolver`; NoOp not prod default) ✓, 013 (BME-001 Part II contract) ✓, 006A (BME-001 Part I rule) ✓, tenant isolation (`ExecutionFilter` tenant+soft-delete; server-side `tenant_id` claim; BME-001 C4 "no TenantId from request") ✓. **`main` still `d3ab4a4`; integration branch is local-only (not pushed). Real unlock gated on batch merge — not unlocked on `main`.** | business-domain backend start |
 | AG-STEP-022 | **Blueprint-selected business-domain module rollout** | Blueprint-selected at runtime | not started | yes (each) | AG-STEP-021 | yes (separate modules/worktrees) | per-domain bootstrap | per business-domain | full | each module follows §9 contract. *The first business-domain module is not hardcoded in this plan. the execution chat selects it later using Blueprint priority, dependency readiness, canonical ID verification and approved/ready-for-dev module-pack status.* | business value |
 
 > *Business-domain examples include CRM, HR, Sales, Procurement, Finance, Inventory, Warehouse, Project, Asset and Service modules. The actual next module is selected later from the Blueprint after live dependency, canonical ID and module-pack readiness checks. This plan does not preselect CRM or HR as the mandatory first domain.*
@@ -276,6 +277,22 @@ Three thresholds:
 - AG-STEP-013 — business-module enforcement contract
 - mandatory `[HasPermission]` for new business-domain modules (AG-STEP-006A)
 - tenant isolation verified
+
+> **Gate result (AG-STEP-021, audit @ `d55a564`):** **integration-branch PASS** — every Backend Start Gate
+> criterion above is verified present on `feature/governance/access-governance-execution`.
+>
+> **Main unlock: `PENDING BATCH MERGE`.** `main` is still `d3ab4a4` and contains none of these commits; the
+> integration branch is **local-only (not yet pushed to origin)**. On `main` the production `IDataScopeResolver`
+> default is still `NoOpDataScopeResolver` and BME-001 is absent. The gate is therefore **met-pending-merge**, not a
+> live `main` unlock.
+>
+> **Rollout policy:**
+> - **Business-domain production rollout does NOT start until the integration branch is merged to `main`.** Building
+>   on `main` today would run against `NoOpDataScopeResolver` (empty scopes) with no BME-001 — unsafe.
+> - On the integration branch the substrate exists, so **preparation / scaffold work may proceed only by explicit
+>   user/EA decision** under the merge-freeze — it is **not** an automatic unlock.
+> - **Do not auto-start any business-domain rollout.** Module selection (AG-STEP-022) remains a later, explicit step
+>   from the Blueprint after merge.
 
 ### Pilot Gate
 - AG-STEP-006B — existing AuthService/MDM endpoint retrofit complete
