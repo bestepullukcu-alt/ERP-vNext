@@ -1,5 +1,5 @@
 ---
-description: "BME-001 — Business-Module Authorization Enforcement Standard (mandatory [HasPermission] on new business-domain endpoints, default-deny, tenant isolation). Produced by AG-STEP-006A. Basis for the AG-STEP-013 business-module enforcement contract."
+description: "BME-001 — Business-Module Authorization Enforcement Standard. Part I (AG-STEP-006A): mandatory [HasPermission] on new business-domain endpoints, default-deny, tenant isolation. Part II (AG-STEP-013): the uniform business-module enforcement contract + repo-grounded reference pattern (permission gate + tenant filter + EffectiveScopes row filter + empty-scope fail-closed)."
 ---
 
 # Business-Module Authorization Enforcement Standard — BME-001
@@ -32,7 +32,7 @@ description: "BME-001 — Business-Module Authorization Enforcement Standard (ma
 | Key format | **PKS-001** — lowercase-dotted `module.resource.action`, ≥ 3 segments |
 | Confirmed by | User / EA (AG-STEP-006A) |
 | Explicitly NOT in scope | Retrofitting existing AuthService / MDM / Platform controllers (**AG-STEP-006B**); permission-key rename/alias migration (**AG-STEP-004B**) |
-| Consumed by | **AG-STEP-013** — business-module enforcement contract (§9 of the Access Governance plan) uses this standard as its normative basis |
+| Consumed by | **AG-STEP-013** — the business-module enforcement contract (§9 of the Access Governance plan) is now **defined in Part II of this document** with a repo-grounded reference pattern |
 
 ---
 
@@ -127,19 +127,18 @@ revised first (module-pack-standard.md §14) — code does not invent enforcemen
 
 ## 5. Relationship to AG-STEP-013 (business-module enforcement contract)
 
-**AG-STEP-013** (Access Governance plan §9 — "Business-module enforcement contract") will codify the uniform
-contract every business module must satisfy at runtime. That contract is **built on this standard**: BME-001 is the
-normative source for the "every privileged endpoint is `[HasPermission]`-gated, default-deny, tenant-isolated, UX is
-not enforcement" requirements. AG-STEP-013 adds the reference implementation and the verification gate; it does not
-restate or supersede BME-001's rule — it cites it.
+**AG-STEP-013** (Access Governance plan §9 — "Business-module enforcement contract") codifies the uniform contract
+every new business module must satisfy at runtime. That contract is **defined in Part II below** and is built
+directly on Part I: every privileged endpoint is `[HasPermission]`-gated, default-deny, tenant-isolated, and UX is
+never enforcement.
 
-No additional dependency is required for AG-STEP-013 to consume this standard: PKS-001 (format) is locked, FU15
-(data-scope resolver) is implemented on the integration branch, and SEC-001 / RULE-002 already provide the
-default-deny and tenant-isolation substrate. AG-STEP-013 remains a separate authoring step.
+No additional dependency was required: PKS-001 (key format) is locked, FU15 (`OrgDataScopeResolver`) is implemented
+on the integration branch and hydrates `ITenantAuthorizationContext`, and SEC-001 / RULE-002 provide the
+default-deny and tenant-isolation substrate. Part II only *cites and composes* these — it adds no runtime code.
 
 ---
 
-## 6. Review checklist (new business-domain module)
+## 6. Review checklist — Part I (new business-domain module)
 
 - [ ] Every state-changing endpoint (`POST`/`PUT`/`PATCH`/`DELETE` + bulk) has `[HasPermission("module.resource.action")]`.
 - [ ] Every business-data `GET` (list/details/export/lookup over business rows) has `[HasPermission(...)]`.
@@ -151,4 +150,147 @@ default-deny and tenant-isolation substrate. AG-STEP-013 remains a separate auth
 - [ ] No existing endpoint retrofit (AG-STEP-006B) and no key rename/migration (AG-STEP-004B) was performed.
 
 ---
-Diten ERP vNext — Business-Module Authorization Enforcement Standard · BME-001 · produced by AG-STEP-006A · basis for AG-STEP-013
+
+# Part II — AG-STEP-013 Business-Module Enforcement Contract
+
+> **What Part II is.** The uniform runtime contract every **new business-domain module** must satisfy when it serves
+> tenant business data, plus a **repo-grounded reference pattern**. It is documentation only — it composes existing
+> runtime building blocks (FU12 `ITenantAuthorizationContext`, FU15 `OrgDataScopeResolver`,
+> `HasPermissionAttribute`, the tenant-scoped repository base) and introduces **no** runtime code, controller
+> retrofit, key migration, seed, migration, or test.
+
+## 7. The enforcement contract (normative clauses)
+
+A new business module that serves tenant business data MUST satisfy every clause below.
+
+**C1 — Action gate on every privileged endpoint.** Each privileged endpoint (see Part I §2 for the definition)
+carries `[HasPermission("<module>.<resource>.<action>")]` (the `Diten.Platform.API.Security.HasPermissionAttribute`
+filter), key spelled per PKS-001. The action gate runs first; a failed action check denies before any data is read.
+
+**C2 — Scoped resources opt in explicitly and consume the existing scope output.** Row-level data scoping is
+**opt-in per resource**: a module declares (in its module pack) which resources are data-scoped. For a scoped
+resource the module **MUST consume the existing scope output** and **MUST NOT author its own data-scope resolver or
+re-derive organization structure**:
+- the canonical surface is **FU12 `ITenantAuthorizationContext`** — after `await InitializeAsync(ct)` it exposes the
+  hydrated `OrgUnitIds`, `PositionIds`, `LegalEntityId`, `ManagerChain` (sourced from the single
+  `IDataScopeResolver` / FU15 `OrgDataScopeResolver`);
+- equivalently, when a module performs an explicit entitlement check, it consumes
+  **`EntitlementCheckResult.EffectiveScopes`** (`IReadOnlyList<EntitlementDataScope>`).
+- Writing a second resolver, querying MOD-0288 org tables directly for scope, or inferring scope from any other
+  source is **forbidden**.
+
+**C3 — Empty scope is fail-closed.** For a **scoped** (opted-in) resource, an **empty** resolved scope set returns
+**zero rows**. **Auto-open is forbidden** — a module must never interpret "no scope" as "all rows". The default for
+a scoped resource with no matching scope is deny/empty, not allow.
+
+**C4 — Tenant isolation is server-side only.** `TenantId` is taken **only** from the server-side context
+(`ITenantAuthorizationContext.TenantId` / `ITenantContext.TenantId`, resolved from the JWT `tenant_id` claim, which
+SEC-001 reconciles with `X-Tenant-Id`). A `TenantId` supplied in the **request body, query string, or route is
+never accepted**. All reads are tenant-scoped at the data layer (the tenant-scoped repository base applies
+`TenantId == context AND IsDeleted == false`, RULE-002).
+
+**C5 — Row-level filters use only the supported scope kinds.** Row filtering draws **only** from the
+v1-supported `EntitlementDataScopeKind` values that FU15 emits / FU12 hydrates:
+- **`OrgUnit`** — `OrgUnitIds` (own + subtree, already pre-expanded into a flat list by the resolver);
+- **`LegalEntity`** — `LegalEntityId`;
+- **`ManagerChain`** — `ManagerChain` (Position IDs up the reporting chain);
+- **`Position`** — `PositionIds`.
+
+No other kind is used as a row filter in v1 (e.g. `Country` has no backing and is not a row filter). Modules do
+**not** invent new scope kinds or enum values.
+
+**C6 — Permission and Data Scope are separate axes.** They are checked independently and both must pass:
+- **Permission** (`[HasPermission]`) = *the right to perform the action*.
+- **Data Scope** (`EffectiveScopes` / hydrated context lists) = *which records the action may touch*.
+A user with `crm.lead.read` still sees only the leads inside the resolved scope; a user inside a scope but without
+the permission is denied the action. Position is never a permission store — permissions are not derived from
+organizational position.
+
+**C7 — Frontend visibility is UX only.** Hiding a control in the UI is never the enforcement. C1–C6 must hold for
+direct API calls that bypass the UI (scripted client, replayed request). The backend is the sole authority.
+
+**C8 — Audit / Explain / Cache hooks are deferred to later gates.** This contract is the enforcement substrate;
+the following are **referenced, not implemented here**:
+- **Allow/deny audit + Explain Access** (decision trace, `EntitlementResolutionSource`) → **AG-STEP-011 /
+  MOD-0018-FU14**.
+- **Scope/permission cache invalidation** on role/org change events → **AG-STEP-010 / MOD-0018-FU13**.
+A module leaves these as integration points (it emits through the existing `EntitlementCheckResult` /
+`ITenantAuthorizationContext` surfaces) and does not hand-roll its own audit or cache.
+
+## 8. Reference implementation pattern (repo-grounded, illustrative)
+
+Representative read flow for a scoped resource. **Illustrative only — do not create this as a runtime file.** Symbols
+are the real ones: `HasPermissionAttribute` (`Diten.Platform.API.Security`), `ITenantAuthorizationContext`
+(`Diten.Platform.Common.Authorization`), `EntitlementDataScopeKind`, and the tenant-scoped repository base.
+
+```text
+1. REQUEST           GET /api/crm/leads          (no TenantId in body/query/route — C4)
+2. PERMISSION GATE   [HasPermission("crm.lead.read")]  → 401 if unauthenticated, 403 if key missing  (C1)
+3. HANDLER           inject ITenantAuthorizationContext ctx  (+ tenant-scoped repository)
+                     await ctx.InitializeAsync(ct);          // hydrate scopes once (FU12 memoized/fail-safe)
+4. TENANT FILTER     repository reads are tenant-scoped by ctx.TenantId (server-side) — never from request  (C4)
+5. SCOPE FILTER      if resource is scoped (opted-in):
+                         scope = { OrgUnitIds, LegalEntityId, ManagerChain, PositionIds }   // supported kinds (C5)
+                         if scope is empty  →  return EMPTY result   // fail-closed, auto-open forbidden  (C3)
+                         else               →  apply scope as a row filter (e.g. OrgUnitId ∈ OrgUnitIds)
+                     else (non-scoped resource): tenant filter alone applies
+6. RESPONSE          return only rows passing (tenant filter ∧ scope filter)
+```
+
+Sketch (C#-shaped pseudocode; not a runtime artifact):
+
+```csharp
+// API layer — action gate (C1), default-deny (SEC-001)
+[Authorize]
+[HasPermission("crm.lead.read")]
+public Task<IActionResult> GetLeads(CancellationToken ct) => /* dispatch query */;
+
+// Application layer — scoped read handler
+public async Task<Response<IReadOnlyList<LeadDto>>> Handle(GetLeadsQuery q, CancellationToken ct)
+{
+    await _ctx.InitializeAsync(ct);                       // FU12: once-per-request, memoized, fail-safe
+
+    // Platform/partner actors are not tenant-row-scoped; tenant_user IS scoped.
+    var scoped = !_ctx.IsPlatformAdmin;                   // business resources opt in; this resource is scoped
+
+    if (scoped && _ctx.OrgUnitIds.Count == 0
+               && _ctx.PositionIds.Count == 0
+               && _ctx.LegalEntityId is null
+               && _ctx.ManagerChain.Count == 0)
+    {
+        return Response<IReadOnlyList<LeadDto>>.Success(Array.Empty<LeadDto>());   // C3 empty-scope fail-closed
+    }
+
+    // Repository is tenant-scoped by _ctx.TenantId server-side (C4); TenantId never read from the request.
+    var rows = await _leads.QueryAsync(
+        // C5: filter only by supported scope kinds
+        orgUnitIds:   _ctx.OrgUnitIds,
+        positionIds:  _ctx.PositionIds,
+        legalEntityId:_ctx.LegalEntityId,
+        managerChain: _ctx.ManagerChain,
+        applyScope:   scoped,
+        ct: ct);
+
+    return Response<IReadOnlyList<LeadDto>>.Success(rows);
+}
+```
+
+Notes: the handler **consumes** `ITenantAuthorizationContext` (it does not build a resolver — C2); `TenantId` is
+never a parameter of the query (C4); an empty scope returns empty, never unfiltered (C3); only the four supported
+kinds drive the filter (C5).
+
+## 9. Review checklist — Part II (scoped business resource)
+
+- [ ] Action gate `[HasPermission("module.resource.action")]` on every privileged endpoint (C1).
+- [ ] Scoped resources are declared opt-in in the module pack and consume `ITenantAuthorizationContext` /
+      `EffectiveScopes`; **no module-authored resolver** and no direct org-table scope derivation (C2).
+- [ ] Empty resolved scope → zero rows for scoped resources; **no auto-open** (C3).
+- [ ] `TenantId` only from server-side context; **rejected** from body/query/route; reads tenant-scoped (C4).
+- [ ] Row filters use only `OrgUnit` / `LegalEntity` / `ManagerChain` / `Position`; no new scope kinds (C5).
+- [ ] Permission and data scope checked independently, both required (C6).
+- [ ] No frontend hide/show relied on as enforcement (C7).
+- [ ] Audit/Explain (AG-STEP-011/FU14) and cache invalidation (AG-STEP-010/FU13) left as referenced integration
+      points, not hand-rolled (C8).
+
+---
+Diten ERP vNext — Business-Module Authorization Enforcement Standard · BME-001 · Part I produced by AG-STEP-006A · Part II (enforcement contract) produced by AG-STEP-013
