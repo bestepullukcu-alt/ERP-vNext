@@ -213,7 +213,13 @@ seam slice (§7 Slice 1B) and is informational only, since no consumer of the le
 
 ---
 
-## 4. D-6 — validator widening (Slice 2; prerequisite for the rename slices alongside Slice 1B)
+## 4. D-6 — validator widening (Slice 2 ✅ DONE; prerequisite for the rename slices alongside Slice 1B)
+
+> **Completed (integration branch, commit `20d9306`, audit PASS).** The exactly-3 rule lived in **two**
+> `IsCanonicalPermission` validators — `ModulePageActionDescriptorRequestValidator` **and**
+> `ModulePageDescriptorRequestValidator` (the page-descriptor validator that `CreateModulePageDescriptorCommandValidator`
+> uses). **Both** were relaxed to `parts.Length >= 3`. Uppercase input is lowercased by `NormalizePermission` and
+> accepted (PKS-001 "store lowercase"); no strict case-rejection was added.
 
 - Widen `IsCanonicalPermission` from `parts.Length == 3` to `parts.Length >= 3` (keep all other grammar checks:
   lowercase, segment regex, no underscore, action-suffix).
@@ -253,7 +259,7 @@ the global alias seam is **Slice 1B** and is a **cross-cutting prerequisite for 
 |---|---|---|---|---|---|---|
 | **1A** ✅ **DONE** | **D-5 LegalEntity hotfix (attribute-switch-only, NO alias seam)** — completed in integration branch, **runtime commit `64417c2`**; security audit **PASS**; tests **25 passed, 0 failed**; **not pushed / no PR / not merged to `main`** | Close fail-closed break with the smallest safe change | MDM `LegalEntitiesController` 6 attrs `Modules.LegalEntity.* → mdm.legal-entities.{read,create,update,delete}` (match seeded keys); MDM authz tests added; **no alias seam — not needed for D-5** | canonical grant → access; no grant → deny; `platform_admin` bypass unchanged; legacy grant → deny *(legacy-grant→alias test N/A — no such grant exists)* | revert MDM ctrl + tests (1 file + tests) | MDM ctrl + MDM authz tests only |
 | **1B** | **Global alias-resolution seam (cross-cutting; prerequisite for 3–5)** | Build the reusable dual-read seam: alias map (from §1) + handler expansion to `{canonical} ∪ aliases` | shared alias map; the **3 per-service** `PermissionAuthorizationHandler`s (AuthService, DevEnablement, MDM) + Platform attribute path; resolver/dual-read tests; **no controller hacks** | alias-grant ∨ canonical-grant both pass; `platform_admin` bypass + fail-closed preserved; map directional & non-transitive; forward-writes emit canonical only | revert seam + handler edits | alias map + handlers + tests (cross-cutting; own review) |
-| **2** | **D-6 validator** | exactly-3 → ≥3 | `ModulePageActionDescriptorRequestValidator` + its tests | accepts 3 & 4-seg canonical; rejects <3 & bad grammar | revert validator + tests | validator + tests only |
+| **2** ✅ **DONE** | **D-6 validator** — completed in integration branch, **runtime commit `20d9306`**; audit **PASS**; tests **532 passed, 0 failed**; **not pushed / no PR / not merged to `main`** | exactly-3 → ≥3 | **Both** `IsCanonicalPermission` validators (`ModulePageActionDescriptorRequestValidator` **and** `ModulePageDescriptorRequestValidator`) → `parts.Length >= 3` + their tests. **Note:** the plan named one validator, but two carry the rule; both updated for consistency. Uppercase input is normalized to lowercase by `NormalizePermission` and **accepted** (PKS-001 "store lowercase") — **no strict case-rejection added** (out of D-6 scope) | accepts 3 & 4/5-seg canonical; rejects <3 & bad grammar (underscore / illegal char); uppercase normalized-accepted | revert validators + tests | validators + tests only |
 | **3** | **D-1/D-2 Platform.* attrs** *(needs 1B + 2)* | 32 `Platform.*` → `platform.*` | Platform controllers (per resource group: Administrators, Audit, InterfaceRegistry, Lookups, Notifications, SubscriptionFeatures, SubscriptionPlans), seed, Platform authz tests | each canonical enforces; legacy-alias grant passes (via 1B) | per resource-group revert | one commit per resource group |
 | **4** | **D-2 Modules.* org attrs** *(needs 1B)* | 20 remaining `Modules.*` → `platform.*` | Platform org controllers (OrganizationUnit, Position, PositionAssignment, Organization, ModuleCatalog), seed, tests | as Slice 3 | per resource revert | one commit per resource |
 | **5** | **D-3/D-4 strategy + verbs** *(needs 1B)* | underscores → hyphens; `view/edit` → `read/update` | EnterpriseStrategy constants (+ wiring if any), 3 `platform.tenants.*.view`, seed, tests | canonical enforces; verb-alias passes (via 1B) | revert per surface | strategy + tenants-view commit |
