@@ -15,5 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Diten.MdmService.Application\Diten.MdmService.Application.csproj" />
+    <ProjectReference Include="..\..\src\Diten.MdmService.Infrastructure\Diten.MdmService.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Diten.MdmService.Api\Diten.MdmService.Api.csproj" />
   </ItemGroup>
 </Project>
