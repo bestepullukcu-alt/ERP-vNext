@@ -170,23 +170,50 @@ rule. These constants are not yet `[HasPermission]`-wired, so their migration is
 4. **Forward-only writes.** New seeds, new JWT claims, and new `[HasPermission]` attributes emit the **canonical**
    key only; aliases are read-side compatibility, never newly written.
 
+> **Dual-read requires the global alias-resolution seam (§7 Slice 1B).** Today the per-service
+> `PermissionAuthorizationHandler`s do a **single-value exact match** with no alias map — there is **no reusable
+> alias seam anywhere in the repo**. The `{canonical} ∪ {aliases-of-canonical}` expansion is therefore a
+> **cross-cutting prerequisite** that must land (Slice 1B) **before** any rename slice that relies on dual-read.
+> Faking dual-read in a single controller or handler is **forbidden** (it is the one-off bypass PKS-001 §6.1
+> prohibits). **Slice 1A (D-5) is the one slice that needs no dual-read** — no legacy grant of `Modules.LegalEntity.*`
+> exists, so nothing must be kept alive.
+
 ---
 
-## 3. D-5 — priority fix (FIRST controlled slice)
+## 3. D-5 — priority fix: **Slice 1A, attribute-switch-only hotfix (no alias seam)**
 
-**Goal:** close the Legal Entity fail-closed enforcement break before anything else.
+**Goal:** close the Legal Entity fail-closed enforcement break first, with the smallest safe change.
 
-- Switch `Diten.MdmService.../LegalEntitiesController.cs` from `Modules.LegalEntity.{Read,Create,Update,Delete}`
-  to the **canonical, already-seeded** `mdm.legal-entities.{read,create,update,delete}`.
-- Register the alias rows `Modules.LegalEntity.* → mdm.legal-entities.*` so any pre-existing external grant of the
-  legacy key keeps working (dual-read).
+**Grounding (read-only audit @ `ba57460`):**
+- The legacy key `Modules.LegalEntity.*` exists **only** as the controller attribute in
+  `Diten.MdmService.../LegalEntitiesController.cs` (6 uses). It is **never seeded, never granted, and appears in no
+  role-permission row** (repo grep: zero). **No user or role holds a working grant of the legacy key.**
+- The canonical keys are seeded exactly: `DataSeeder.cs` rows `new("mdm","legal-entities","{create,read,update,delete}")`
+  ⇒ `Permission.Key = "{module}.{resource}.{action}".ToLowerInvariant()` = `mdm.legal-entities.{create,read,update,delete}`.
+
+**Consequence — the alias seam is NOT required for D-5.** Because there is no legacy grant to preserve, **dual-read
+is moot here**. The break is fully closed by switching the controller attributes to the already-seeded canonical
+keys; nobody loses access. Any `Modules.LegalEntity.* → mdm.legal-entities.*` alias is deferred to the global alias
+seam slice (§7 Slice 1B) and is informational only, since no consumer of the legacy grant exists.
+
+**Slice 1A change:**
+- Switch `LegalEntitiesController.cs` `[HasPermission]` keys `Modules.LegalEntity.{Read,Create,Update,Delete}` →
+  `mdm.legal-entities.{read,create,update,delete}` (3-segment; **does not depend on D-6**).
 - **Effect:** a non-`platform_admin` actor granted `mdm.legal-entities.read` can finally reach the endpoints
   (today: 403 for everyone except `platform_admin`).
-- This is a 3-segment canonical key → **does not depend on D-6**, so it can ship first.
+- **No one-off bypass.** Slice 1A is a literal attribute correction — it adds **no** alias-resolution logic to the
+  controller or handler. If dual-read for any *granted* legacy key is ever needed, it goes through the global alias
+  seam (Slice 1B), never a controller/handler hack.
+
+**Slice 1A test gate (locked):**
+- canonical grant (`mdm.legal-entities.read`) → **access** (was 403 pre-fix);
+- no grant → **deny** (fail-closed preserved);
+- `platform_admin` bypass → **unchanged**.
+- *(There is no "legacy-grant → alias access" test in 1A: no such grant exists by evidence, so it is N/A — not skipped.)*
 
 ---
 
-## 4. D-6 — validator widening (second slice)
+## 4. D-6 — validator widening (Slice 2; prerequisite for the rename slices alongside Slice 1B)
 
 - Widen `IsCanonicalPermission` from `parts.Length == 3` to `parts.Length >= 3` (keep all other grammar checks:
   lowercase, segment regex, no underscore, action-suffix).
@@ -209,35 +236,41 @@ rule. These constants are not yet `[HasPermission]`-wired, so their migration is
 
 ## 6. No blind mass-rename (PKS-001 §6.1)
 
-Migration is **surface-by-surface through the compatibility map**, never a global find/replace. Each slice
-enumerates and verifies its surfaces; a key is flipped to canonical only after its canonical seed + alias row exist
-and its dual-read test passes. A repo-wide `sed` of `Modules.`/`Platform.` is **forbidden**.
+Migration is **surface-by-surface through the compatibility map**, never a global find/replace. Each rename slice
+enumerates and verifies its surfaces; a key is flipped to canonical only after its canonical seed + alias entry
+exist (via Slice 1B) and its dual-read test passes. **Slice 1A is the single exemption:** it has no legacy grant to
+preserve, so it needs no alias entry and no dual-read — but it is still a literal, scoped attribute correction, not
+a `sed`. A repo-wide `sed` of `Modules.`/`Platform.` is **forbidden**.
 
 ---
 
 ## 7. Controlled implementation slices
 
-Each slice: **scope · surfaces · test gate · rollback boundary · commit boundary.** D-5 is Slice 1.
+Each slice: **scope · surfaces · test gate · rollback boundary · commit boundary.** The D-5 hotfix is **Slice 1A**;
+the global alias seam is **Slice 1B** and is a **cross-cutting prerequisite for every dual-read rename slice (3–5)**.
 
 | # | Slice | Scope | Surfaces changed | Test gate | Rollback boundary | Commit boundary |
 |---|---|---|---|---|---|---|
-| **1** | **D-5 LegalEntity break** | Close fail-closed break | MDM `LegalEntitiesController` attrs → `mdm.legal-entities.*`; compat-map/alias rows; MDM authz tests | granted user reaches endpoints; legacy-alias grant passes; `platform_admin` still bypasses | revert MDM ctrl + alias rows (1 service) | MDM ctrl + alias table + MDM tests only |
+| **1A** | **D-5 LegalEntity hotfix (attribute-switch-only, NO alias seam)** | Close fail-closed break with the smallest safe change | MDM `LegalEntitiesController` attrs `Modules.LegalEntity.* → mdm.legal-entities.*`; MDM authz tests | canonical grant → access; no grant → deny; `platform_admin` bypass unchanged *(legacy-grant→alias test N/A — no such grant exists)* | revert MDM ctrl + tests (1 file + tests) | MDM ctrl + MDM authz tests only |
+| **1B** | **Global alias-resolution seam (cross-cutting; prerequisite for 3–5)** | Build the reusable dual-read seam: alias map (from §1) + handler expansion to `{canonical} ∪ aliases` | shared alias map; the **3 per-service** `PermissionAuthorizationHandler`s (AuthService, DevEnablement, MDM) + Platform attribute path; resolver/dual-read tests; **no controller hacks** | alias-grant ∨ canonical-grant both pass; `platform_admin` bypass + fail-closed preserved; map directional & non-transitive; forward-writes emit canonical only | revert seam + handler edits | alias map + handlers + tests (cross-cutting; own review) |
 | **2** | **D-6 validator** | exactly-3 → ≥3 | `ModulePageActionDescriptorRequestValidator` + its tests | accepts 3 & 4-seg canonical; rejects <3 & bad grammar | revert validator + tests | validator + tests only |
-| **3** | **Alias/dual-read infra** | runtime alias table generated from §1 + dual-read resolver | seeder (canonical keys), enforcement resolver, alias table, resolver tests | dual-read: alias-grant ∨ canonical-grant both pass; forward-writes emit canonical only | revert resolver + table | AuthService seed/resolver + tests |
-| **4** | **D-1/D-2 Platform.* attrs** | 32 `Platform.*` → `platform.*` | Platform controllers (per resource group: Administrators, Audit, InterfaceRegistry, Lookups, Notifications, SubscriptionFeatures, SubscriptionPlans), seed, Platform authz tests | each canonical enforces; legacy-alias grant passes | per resource-group revert | one commit per resource group |
-| **5** | **D-2 Modules.* org attrs** | 20 remaining `Modules.*` → `platform.*` | Platform org controllers (OrganizationUnit, Position, PositionAssignment, Organization, ModuleCatalog), seed, tests | as Slice 4 | per resource revert | one commit per resource |
-| **6** | **D-3/D-4 strategy + verbs** | underscores → hyphens; `view/edit` → `read/update` | EnterpriseStrategy constants (+ wiring if any), 3 `platform.tenants.*.view`, seed, tests | canonical enforces; verb-alias passes | revert per surface | strategy + tenants-view commit |
-| **7** | **Standards reconciliation** | docs only (§8) | the 5 standards docs + agent docs | grep: no PascalCase mandate remains; no runtime diff | revert docs | docs-only commit |
-| **8** | **Alias retirement** | remove aliases | alias table (remove rows); confirm zero legacy refs | full suite green; grep: zero legacy keys anywhere | re-add alias rows | retirement commit per namespace |
+| **3** | **D-1/D-2 Platform.* attrs** *(needs 1B + 2)* | 32 `Platform.*` → `platform.*` | Platform controllers (per resource group: Administrators, Audit, InterfaceRegistry, Lookups, Notifications, SubscriptionFeatures, SubscriptionPlans), seed, Platform authz tests | each canonical enforces; legacy-alias grant passes (via 1B) | per resource-group revert | one commit per resource group |
+| **4** | **D-2 Modules.* org attrs** *(needs 1B)* | 20 remaining `Modules.*` → `platform.*` | Platform org controllers (OrganizationUnit, Position, PositionAssignment, Organization, ModuleCatalog), seed, tests | as Slice 3 | per resource revert | one commit per resource |
+| **5** | **D-3/D-4 strategy + verbs** *(needs 1B)* | underscores → hyphens; `view/edit` → `read/update` | EnterpriseStrategy constants (+ wiring if any), 3 `platform.tenants.*.view`, seed, tests | canonical enforces; verb-alias passes (via 1B) | revert per surface | strategy + tenants-view commit |
+| **6** | **Standards reconciliation** | docs only (§8) | the 5 standards docs + agent docs | grep: no PascalCase mandate remains; no runtime diff | revert docs | docs-only commit |
+| **7** | **Alias retirement** | remove aliases | alias map (remove rows); confirm zero legacy refs | full suite green; grep: zero legacy keys anywhere | re-add alias rows | retirement commit per namespace |
 
-> Slices 1–2 are independent and high-value; Slice 3 (dual-read infra) gates Slices 4–6; Slice 7 is docs-only and
-> can run in parallel; Slice 8 runs last, after every surface is canonical.
+> **Ordering (locked):** **Slice 1A** ships first and standalone (no dependency). **Slice 1B** (global alias seam)
+> and **Slice 2** (D-6 validator) are the two prerequisites for the rename slices and may proceed in parallel;
+> **Slices 3–5** (the dual-read renames) must not start until **1B** lands. **Slice 6** is docs-only and can run any
+> time. **Slice 7** (retirement) runs last, after every surface is canonical. No rename slice may fake dual-read
+> without 1B.
 
 ---
 
 ## 8. Standards-document reconciliation list (PKS-001 §7)
 
-Rewrite to PKS-001 lowercase-dotted format (Slice 7; PKS-001 already supersedes them on format):
+Rewrite to PKS-001 lowercase-dotted format (Slice 6; PKS-001 already supersedes them on format):
 
 - `.antigravity/rules/erp-architecture.md` — §"RBAC Permission Key Formatı" (`Platform.*`/`Modules.*` Pascal) → PKS-001.
 - `.antigravity/rules/module-pack-standard.md` — Authorization Convention (`{Prefix}.{Resource}.{Action}` Pascal) → PKS-001.
@@ -250,7 +283,7 @@ Rewrite to PKS-001 lowercase-dotted format (Slice 7; PKS-001 already supersedes 
 
 ## 9. Alias retirement criteria (PKS-001 §3)
 
-An alias is removed (Slice 8) **only when all** of the following hold for its canonical key:
+An alias is removed (Slice 7) **only when all** of the following hold for its canonical key:
 
 1. Seeded catalog contains the canonical key; the alias is not newly seeded.
 2. All role-permission rows reference the canonical key (alias rows are read-compat only).
@@ -268,9 +301,10 @@ Retirement is per-namespace, never a single bulk deletion.
 
 - [ ] Affected services build clean (`dotnet build`).
 - [ ] Affected test suites green (`dotnet test`), incl. the slice's new dual-read / fail-closed regression tests.
-- [ ] **D-5 regression:** a user granted `mdm.legal-entities.read` reaches the Legal Entity endpoints; pre-fix this returned 403.
-- [ ] Dual-read proven: a grant of the **alias** and a grant of the **canonical** both satisfy enforcement.
-- [ ] Validator (Slice 2+): accepts ≥3-segment canonical, rejects <3 and grammar violations.
+- [ ] **D-5 regression (Slice 1A):** a user granted `mdm.legal-entities.read` reaches the Legal Entity endpoints (pre-fix 403); no grant → deny; `platform_admin` bypass unchanged. *(No legacy-grant→alias assertion — N/A in 1A.)*
+- [ ] Dual-read proven **(Slice 1B and rename Slices 3–5; N/A for 1A)**: a grant of the **alias** and a grant of the **canonical** both satisfy enforcement; map stays directional & non-transitive.
+- [ ] Validator (Slice 2): accepts ≥3-segment canonical, rejects <3 and grammar violations.
+- [ ] **No rename slice (3–5) starts before Slice 1B lands** (no faked dual-read / one-off controller or handler bypass).
 - [ ] `grep` shows no **new** PascalCase `[HasPermission]`; legacy occurrences only where this slice has not yet migrated.
 - [ ] Diff is scoped to the slice's declared surfaces (no out-of-slice file).
 - [ ] **No change** to PKS-001, the module-id registry, DCP-002, the roadmap, or master-plan — unless the slice is the standards-reconciliation slice (which touches only the §8 docs).
