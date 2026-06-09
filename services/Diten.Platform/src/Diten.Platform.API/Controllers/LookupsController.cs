@@ -20,7 +20,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("module-catalog/domains")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetModuleCatalogDomains(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLookupOptionsQuery("module-catalog/domains"), ct);
@@ -28,7 +28,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("module-catalog/services")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetModuleCatalogServices(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLookupOptionsQuery("module-catalog/services"), ct);
@@ -36,7 +36,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("countries")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetCountries(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLookupOptionsQuery("countries"), ct);
@@ -44,7 +44,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("currencies")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetCurrencies(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetCurrencyLookupQuery(), ct);
@@ -52,7 +52,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("locales")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetLocales(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLocaleLookupQuery(), ct);
@@ -60,7 +60,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("languages")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetLanguages(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLocaleLookupQuery(), ct);
@@ -68,7 +68,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("timezones")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetTimezones(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTimezoneLookupQuery(), ct);
@@ -76,7 +76,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("tenant-tiers")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetTenantTiers(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTenantTierLookupQuery(), ct);
@@ -84,7 +84,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("feature-categories")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetFeatureCategories(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLookupOptionsQuery("feature-categories"), ct);
@@ -92,7 +92,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("subscription-cycles")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetSubscriptionCycles(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLookupOptionsQuery("subscription-cycles"), ct);
@@ -100,7 +100,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("audit/categories")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetAuditCategories(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLookupOptionsQuery("audit/categories"), ct);
@@ -108,7 +108,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("audit/operations")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetAuditOperations(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLookupOptionsQuery("audit/operations"), ct);
@@ -116,7 +116,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("audit/outcomes")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetAuditOutcomes(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLookupOptionsQuery("audit/outcomes"), ct);
@@ -124,7 +124,7 @@ public sealed class LookupsController : CustomBaseController
     }
 
     [HttpGet("{lookupKey}")]
-    [HasPermission("Platform.Lookups.Read")]
+    [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetLookupByKey(string lookupKey, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLookupOptionsQuery(lookupKey), ct);
