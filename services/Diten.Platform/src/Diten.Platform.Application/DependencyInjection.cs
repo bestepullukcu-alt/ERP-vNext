@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.BuildingBlocks.BackgroundJobs;
+using Diten.Platform.Application.Authorization;
 using Diten.Platform.Application.BackgroundJobs;
 using Diten.Platform.Application.Contracts.Behaviors;
 using Diten.Platform.Application.Contracts.Audit;
@@ -48,7 +49,7 @@ public static class DependencyInjection
         services.AddScoped<ConsumedEventStore>();
         services.AddScoped<IPlatformCatalogContract, PlatformCatalogContract>();
         services.AddSingleton<ITemporaryAccessProvider, NoOpTemporaryAccessProvider>();
-        services.AddScoped<IDataScopeResolver, NoOpDataScopeResolver>();
+        services.AddScoped<IDataScopeResolver, OrgDataScopeResolver>();
         services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();
