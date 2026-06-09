@@ -23,7 +23,7 @@ public sealed class ModuleAssignmentsController : CustomBaseController
     }
 
     [HttpGet("overview")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetOverview(string moduleCode, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModuleAssignmentOverviewQuery(moduleCode, GetCorrelationId()), ct);
@@ -31,7 +31,7 @@ public sealed class ModuleAssignmentsController : CustomBaseController
     }
 
     [HttpGet("plans")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetPlans(string moduleCode, [FromQuery] ModulePlanAssignmentFilterRequest filter, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModulePlanAssignmentsQuery(moduleCode, filter), ct);
@@ -39,7 +39,7 @@ public sealed class ModuleAssignmentsController : CustomBaseController
     }
 
     [HttpGet("tenants")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetTenants(string moduleCode, [FromQuery] ModuleTenantAssignmentFilterRequest filter, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModuleTenantAssignmentsQuery(moduleCode, filter), ct);
@@ -47,7 +47,7 @@ public sealed class ModuleAssignmentsController : CustomBaseController
     }
 
     [HttpGet("tenants/{tenantCode}")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetTenantDetail(string moduleCode, string tenantCode, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModuleTenantAssignmentDetailQuery(moduleCode, tenantCode, GetCorrelationId()), ct);
