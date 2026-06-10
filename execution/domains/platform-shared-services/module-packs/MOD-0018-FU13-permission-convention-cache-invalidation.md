@@ -105,40 +105,62 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
 > **All FU13 design decisions are LOCKED. No open decision remains.** Each lock below is grounded in read-only repo
 > evidence at HEAD `050dba4`.
 
-### OD-FU13-01 — Authorization-claim (C5) staleness → **LOCKED: Option A (bounded token TTL) + reuse existing refresh-token revocation**
+### OD-FU13-01 — Authorization-claim (C5) staleness → **LOCKED: bounded token TTL + revoke-on-privilege-removal (B-Option 1)**
 - **Repo evidence.** Access-token TTL = **15 min** (`JwtSettings.AccessTokenExpirationMinutes = 15`). The **refresh
   path re-reads the current role-permissions** (`RefreshTokenCommandHandler` → `GetRolesByUserAsync` →
-  `GetPermissionsByRolesAsync` → `GenerateAccessToken`). **Refresh-token revocation already exists**
-  (`RefreshToken.Revoke`, `IRefreshTokenRepository.RevokeAllByUserAsync`, invoked on password-change, rotation and
-  reuse-detection). There is **no** enforcement-side deny-list/blacklist.
-- **Lock.** The maximum authorization-staleness window is the **≤15-min access-token TTL**; role-permission / user-role
-  changes take effect at the next refresh (which re-reads current grants). **v1 implementation also wires the existing
-  `RevokeAllByUserAsync` into the AuthService role-permission / user-role *revocation* handlers** so the refresh path
-  is closed immediately on a privilege removal (reuses an existing repository method — no new infrastructure).
-- **Explicitly deferred (NOT in v1):** cross-service `RolePermissionChangedV1` / `UserRoleChangedV1` change-events, any
-  enforcement hot-path **deny-list / blacklist**, and any per-subject revocation cache. Revisit only if a sub-TTL hard-
-  revocation SLA is mandated.
-- **Security rationale.** The window is bounded (≤15 min, never indefinite); the access token is short-lived; a revoked
-  refresh token cannot mint a new access token → fail-closed. A hot-path token deny-list adds infrastructure and per-
-  request latency for marginal gain over a 15-min bound.
+  `GetPermissionsByRolesAsync` → `GenerateAccessToken`). **Single-user refresh-token revocation already exists**
+  (`RefreshToken.Revoke`, `IRefreshTokenRepository.RevokeAllByUserAsync(userId, tenantId, ct)`, reused in 9 sites). The
+  **users-by-role resolution seam is MISSING** — `IUserRoleRepository` has only `GetRolesByUserAsync` / `AssignAsync` /
+  `RevokeAsync` / `ExistsAsync`, **no by-role query**. There is **no** enforcement-side deny-list/blacklist.
+- **Lock.** Maximum authorization-staleness window = **≤15-min access-token TTL**; grants re-evaluate at the next refresh.
+  **v1 closes the refresh path on a *privilege removal* via existing/new repository methods (no events, no deny-list):**
+  - **User-role removal** (`RevokeRoleCommandHandler`, single user): after `_userRoleRepository.RevokeAsync(...)`, call
+    the **existing** `IRefreshTokenRepository.RevokeAllByUserAsync(request.UserId, _tenantContext.TenantId, ct)`.
+  - **Role-permission removal** (`RevokePermissionCommandHandler`, all role holders): add the **new tenant-scoped seam
+    `IUserRoleRepository.GetUserIdsByRoleAsync(roleId, tenantId, ct)`** (+ Mongo impl); after
+    `_rolePermissionRepository.RevokeAsync(...)`, loop the affected distinct userIds and call `RevokeAllByUserAsync` per
+    holder. **(B-Option 1.)**
+- **Out of revoke scope.** User-role **assign** and role-permission **assign** *grant/widen* access and are **not** FU13
+  revoke targets — a new grant is naturally seen via the next token/refresh.
+- **Explicitly deferred / forbidden (NOT in v1):** cross-service `RolePermissionChangedV1` / `UserRoleChangedV1`
+  change-events, enforcement hot-path **deny-list / blacklist**, and any **per-request / per-subject revocation cache**.
+  (B-Option 3 — TTL-only with *no* immediate revoke — is **rejected** as the normal plan; the ≤15-min TTL is only the
+  **bounded fallback** if a revoke fan-out call fails.)
+- **Security rationale.** The window is bounded (≤15 min, never indefinite); a revoked refresh token cannot mint a new
+  access token → fail-closed. Resolving holders via a tenant-scoped repository method (not a cross-service event or
+  hot-path deny-list) keeps the change in-AuthService, transactional, and low-latency.
 
-### OD-FU13-02 — In-memory cache horizon → **LOCKED: per-instance fan-out endpoint; keep `IMemoryCache`; defer distributed cache**
+### OD-FU13-02 — In-memory cache horizon → **LOCKED: A-Option 1 — per-instance temporary endpoint for the entitlement invalidation consumer only**
 - **Repo evidence.** Eventing uses `cfg.ConfigureEndpoints(context)` = MassTransit **default one-queue-per-consumer =
   competing-consumer**. Caches `EntitlementCacheService` and `PlatformLookupMemoryCache` are **`IMemoryCache`** (per-
   instance); **no `IDistributedCache`/Redis** anywhere; entitlement TTL = **300s** (`EntitlementCacheOptions.CacheTtlSeconds = 300`).
-  Multi-instance ⇒ only the one instance that dequeues the event evicts its local cache; other instances stay stale ≤300s
-  (a latent stale-allow that also affects the existing `EntitlementCacheInvalidationConsumer`).
-- **Lock.** `EntitlementCacheService` and `PlatformLookupMemoryCache` **remain `IMemoryCache`**. The Platform
-  invalidation consumer(s) **must bind a per-instance unique, auto-delete / temporary receive endpoint** so **every**
-  running instance receives each invalidation event and evicts its local cache (fan-out). This also corrects the
-  existing entitlement consumer.
+  4 consumers are registered (`TenantActivatedV1`, `TenantLifecycleAudit`, `TenantLifecycleNotification`,
+  `EntitlementCacheInvalidation`); the dev path uses a custom per-process `InMemoryEventBus` (single-instance). Multi-
+  instance RabbitMQ ⇒ only the one instance that dequeues an event evicts its local cache; others stay stale ≤300s.
+- **Lock (A-Option 1).** `EntitlementCacheService` and `PlatformLookupMemoryCache` **remain `IMemoryCache`**. A **per-
+  instance unique receive endpoint is created for `EntitlementCacheInvalidationConsumer` ONLY**, with these properties:
+  - used on the **RabbitMQ** path only;
+  - named by a **unique instance identity = a single process-lifetime `Guid` generated once at startup**;
+  - **non-durable**, **auto-delete**, **temporary / instance-lifetime scoped** (cleaned on disconnect; no queue
+    accumulation; TTL covers any restart gap);
+  so **every** running instance receives the fanout and evicts its local cache.
+- **Other consumers stay competing-consumer.** `TenantActivatedV1`, tenant-lifecycle **audit**, and tenant-lifecycle
+  **notification** **keep the default `ConfigureEndpoints` shared-queue topology** — they must run **once cluster-wide**
+  (a per-instance endpoint would duplicate audits/notifications). **A global `SetEndpointNameFormatter` or applying an
+  instance suffix to all consumers is forbidden.**
+- **Dev transport unchanged.** The custom in-memory dev transport (`InMemoryEventBus`) is **not modified** — it stays the
+  single-process dev path.
 - **Explicitly deferred (NOT in v1):** Redis / `IDistributedCache`. The cached data is recomputable, so only the
   *eviction signal* must reach all nodes — not the cache contents.
-- **Rollout gate.** **Per-instance fan-out is a mandatory gate before horizontal scaling** of `Diten.Platform`. While
-  Platform runs single-instance the gap is latent (no current exposure), but fan-out must land before any multi-replica
-  deployment.
+- **Rollout gate.** **Per-instance fan-out is a mandatory gate before horizontal scaling** of `Diten.Platform`. Single-
+  instance today ⇒ latent (no current exposure), but fan-out must land before any multi-replica deployment.
+- **`PlatformLookupMemoryCache` — v1 scope clarification.** It is a **reference-data** cache, **not** an authorization
+  grant cache; it has **no eviction consumer and no `Remove`/`Evict` seam** today. **FU13 v1 adds no lookup invalidation
+  consumer.** If lookup invalidation is ever added, it falls under the **same per-instance fan-out rule** — and **no new
+  event contract is invented** for it.
 - **Security/correctness rationale.** Competing-consumer + per-instance `IMemoryCache` can leave stale grants on N-1
-  instances up to TTL; fan-out closes this deterministically without an external dependency.
+  instances up to TTL; per-consumer fan-out closes this deterministically with no external dependency and without
+  duplicating once-only side-effects.
 
 ### OD-FU13-03 — Cross-request data-scope cache → **LOCKED: none added in v1; request-fresh only + future-guard**
 - **Repo evidence.** `OrgDataScopeResolver` (0 cache fields) and `JwtTenantAuthorizationContext` (0 cross-request cache)
@@ -164,26 +186,39 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
    and **fail-safe** on bad payloads (logs `*_payload_invalid`, returns without crashing). A dropped event leaves the
    cache stale only until TTL — it must not extend grants. New FU13 consumers follow the same idempotent + fail-safe
    shape.
-3. **C5 window is documented and bounded.** Whatever OD-FU13-01 chooses, the maximum authorization-staleness window
-   must be explicit and bounded; "indefinite until logout" is not acceptable for revocation.
+3. **C5 window is documented and bounded.** Max authorization-staleness window = **≤15-min access-token TTL**; never
+   "indefinite until logout."
 4. **Data-scope stays request-fresh.** C3/C4 must remain request-recomputed (or evicted on §4 triggers if cached);
    empty/invalid scope ⇒ **no access** (FU15 / BME-001 C-rules), never auto-open.
+5. **Revoke-after-persist failure (privilege removal).** If a refresh-token **revoke** call fails **after** the
+   role-permission / user-role removal has been persisted: the **grant is NOT re-opened** (the removal stands); the
+   failure is **logged visibly**; the command returns **failed** *or* a clearly-marked **safe partial-failure**; the
+   remaining risk is bounded by the **≤15-min access-token TTL** (the stale token still expires). Never roll the grant
+   back to "open" to make the revoke succeed.
+6. **Tenant isolation in the affected-user lookup.** `GetUserIdsByRoleAsync` is **always** scoped by `roleId + tenantId`;
+   a cross-tenant user id can never be returned (server-side tenant scope, BME-001 C4).
+7. **Distinct / empty / cancellation.** Duplicate user ids from the lookup are processed **distinctly** (each user
+   revoked once); an **empty** affected-user set is a **valid no-op**; the `CancellationToken` is propagated through the
+   lookup and every `RevokeAllByUserAsync` call.
 
 ---
 
 ## 7. Service Boundaries and Cross-Service Contracts (per locked decisions)
 
-- **AuthService (C5, OD-FU13-01 = Option A):** **no** new cross-service change-event in v1. AuthService closes the
-  refresh path on a privilege removal by calling the **existing** `RevokeAllByUserAsync` in its role-permission /
-  user-role revocation handlers. `RolePermissionChangedV1` / `UserRoleChangedV1` are **explicitly deferred** (Option B).
+- **AuthService (C5, OD-FU13-01 = B-Option 1):** **no** new cross-service change-event in v1. AuthService closes the
+  refresh path on a privilege removal **in-process**: user-role removal calls the **existing** `RevokeAllByUserAsync`;
+  role-permission removal adds the **new tenant-scoped `IUserRoleRepository.GetUserIdsByRoleAsync(roleId, tenantId, ct)`**
+  seam (+ Mongo impl) and loops `RevokeAllByUserAsync` per affected holder. `RolePermissionChangedV1` /
+  `UserRoleChangedV1` cross-service events and any deny-list are **explicitly forbidden in v1**.
 - **Platform MOD-0288 (OD-FU13-03 = no scope cache):** **no** OrganizationUnit / Position / PositionAssignment change
   events in v1 (data-scope is request-fresh). These become required **only if** a future cross-request scope cache is
   introduced (future-guard, §5 OD-FU13-03).
-- **Platform invalidation consumers (OD-FU13-02 = fan-out):** extend the proven `IConsumer<EventTransportMessage>` +
-  `ConsumedEventStore` pattern (mirroring `EntitlementCacheInvalidationConsumer`), bound to a **per-instance unique /
-  auto-delete receive endpoint** so eviction reaches every instance.
+- **Platform invalidation consumer (OD-FU13-02 = A-Option 1 fan-out):** `EntitlementCacheInvalidationConsumer` keeps the
+  proven `IConsumer<EventTransportMessage>` + `ConsumedEventStore` shape but binds a **per-instance unique, non-durable,
+  auto-delete receive endpoint** (process-lifetime `Guid` identity) so eviction reaches every instance; the other 3
+  consumers stay competing-consumer.
 - **Contract invariants:** events carry `TenantId` + correlation/causation metadata (`EventMetadata`); consumers are
-  idempotent and fail-safe; no synchronous cross-service call on the enforcement hot path.
+  idempotent and fail-safe; no new event contract is invented; no synchronous cross-service call on the enforcement hot path.
 
 ---
 
@@ -191,9 +226,10 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
 
 1. Every cache in §3 has a documented owner, lifetime, and invalidation rule; no enforcement cache lacks an
    invalidation story.
-2. **(OD-FU13-01)** The C5 authorization-staleness window is **≤15 min** (access-token TTL), documented; role-permission
-   / user-role changes take effect at the next refresh (which re-reads grants); a privilege **revocation** triggers the
-   existing `RevokeAllByUserAsync` so the refresh path is closed immediately. No enforcement deny-list is introduced.
+2. **(OD-FU13-01)** The C5 authorization-staleness window is **≤15 min** (access-token TTL), documented; a privilege
+   **removal** closes the refresh path immediately — user-role removal via the existing `RevokeAllByUserAsync`,
+   role-permission removal via the new `IUserRoleRepository.GetUserIdsByRoleAsync` seam looping `RevokeAllByUserAsync`
+   per holder (B-Option 1). Assign/grant ops are out of revoke scope. No deny-list / cross-service event is introduced.
 3. New invalidation consumers are idempotent (`ConsumedEventStore`) and fail-safe (bad-payload tolerant), matching the
    existing entitlement consumer.
 4. No stale cache path can widen access (fail-closed test): a revoked grant + a stale cache entry ⇒ **deny**.
@@ -220,14 +256,8 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
 
 ## 11. Rollout Order (decisions locked)
 
-1. **(OD-FU13-02)** Convert the Platform invalidation consumer endpoint(s) to a **per-instance unique / auto-delete
-   receive endpoint** (fan-out); tests first. This also fixes the existing `EntitlementCacheInvalidationConsumer`.
-2. **(OD-FU13-01)** In AuthService, wire the existing `RevokeAllByUserAsync` into the role-permission / user-role
-   **revocation** handlers (close the refresh path immediately on privilege removal). No new event/consumer/deny-list.
-3. Add any additional Platform invalidation consumer(s) needed by §4, mirroring the existing entitlement consumer
-   (idempotent + fail-safe); tests first.
-4. Fail-closed integration test green (revoked grant + stale cache ⇒ deny); confirm data-scope stays request-fresh.
-5. **Gate:** per-instance fan-out (step 1) is **mandatory before any horizontal scaling** of `Diten.Platform`.
+**Implementation ordering: Group A → Group B → Group C → integration audit → Group D.** Per-instance fan-out (Group A)
+is a **mandatory gate before any horizontal scaling** of `Diten.Platform`. See §15 for the exact per-group surface.
 
 ---
 
@@ -244,7 +274,7 @@ implementation is performed here** — FU13 only ensures the events/timestamps e
 - No runtime, seed, migration, registry, roadmap, test, or `.antigravity` change by this pack (`ready-for-dev` = handoff only).
 - No new `MOD-xxxx`; no EnterpriseStrategy / Slice-5B / Slice-7 interaction.
 - No frontend cache (visibility is UX-only, never an enforcement surface).
-- No new claim-revocation deny-list is built (OD-FU13-01 locked to Option A; v1 reuses existing `RevokeAllByUserAsync`).
+- No claim-revocation deny-list / blacklist / per-request revocation cache and no cross-service role-change event are built (OD-FU13-01 = B-Option 1: existing `RevokeAllByUserAsync` for user-role removal + a new in-AuthService `IUserRoleRepository.GetUserIdsByRoleAsync` seam for role-permission removal).
 - No `IDistributedCache`/Redis (OD-FU13-02 keeps `IMemoryCache` + fan-out).
 - No cross-request data-scope cache (OD-FU13-03 keeps request-fresh).
 
@@ -262,21 +292,43 @@ implementation is performed here** — FU13 only ensures the events/timestamps e
 
 ---
 
-## 15. Implementation Scope & Checklist (v1)
+## 15. Implementation Scope & Checklist (v1) — exact atomic groups
 
-**Scope summary.** v1 is small and confined: (1) a Platform eventing-config change (fan-out endpoint for invalidation
-consumers); (2) a minimal AuthService change (call existing `RevokeAllByUserAsync` on privilege revocation); (3) tests.
-No new event contracts, no deny-list, no distributed cache, no scope cache.
+**Scope summary.** Four atomic groups: (A) Platform per-instance fan-out for the entitlement invalidation consumer;
+(B) AuthService single-user revoke-on-role-removal; (C) AuthService role-permission revoke via a new users-by-role seam;
+(D) governance reconciliation. No new event contracts, no deny-list, no distributed cache, no scope cache.
 
-- [ ] **(OD-FU13-02)** Platform: bind invalidation consumer(s) to a per-instance unique / auto-delete receive endpoint
-      (fan-out); covers the existing `EntitlementCacheInvalidationConsumer`. *(`Diten.Platform.Infrastructure` eventing config.)*
-- [ ] **(OD-FU13-01)** AuthService: call `RevokeAllByUserAsync` in the role-permission / user-role **revocation**
-      handlers. *(No new event/consumer/deny-list.)*
-- [ ] Tests: consumer eviction per event; bad-payload tolerated; idempotency; 2-instance fan-out reaches all nodes.
-- [ ] Fail-closed integration test: revoked grant + stale cache ⇒ **deny**.
-- [ ] Data-scope freshness test: assignment/hierarchy change reflected on the next request (no cross-request leakage).
-- [ ] Regression: existing 554 Platform / entitlement-consumer tests stay green.
-- [ ] Docs: record the ≤15-min C5 bound and the per-instance-fan-out-before-horizontal-scaling gate.
+### Group A — Platform fan-out *(OD-FU13-02)*
+- **Goal:** per-instance temporary receive endpoint for the **entitlement invalidation consumer only**.
+- **Surface:** `Diten.Platform.Infrastructure/DependencyInjection.cs` (+ a small, testable instance-identity helper /
+  options if needed); Platform consumer-topology tests.
+- **Gate:** existing eviction; malformed payload fail-safe; idempotency; **2-instance fan-out — both local caches evict**;
+  the other 3 consumers (`TenantActivatedV1`, lifecycle audit, lifecycle notification) **do not run per-instance**
+  (no duplicate side-effects); Platform full suite **≥ 554 passed, 0 failed**.
+- **Rollback:** revert the infra config + tests.
+
+### Group B — AuthService user-role revoke *(OD-FU13-01)*
+- **Goal:** revoke a single user's refresh tokens after their role is removed.
+- **Surface:** `RevokeRoleCommandHandler.cs` (inject `IRefreshTokenRepository`; call
+  `RevokeAllByUserAsync(request.UserId, _tenantContext.TenantId, ct)` after `RevokeAsync`) + its AuthService test.
+- **Gate:** `RevokeAllByUserAsync` called for the revoked user; unrelated user unaffected; tenant id propagated;
+  AuthService suite green.
+- **Rollback:** revert the handler + test.
+
+### Group C — AuthService role-permission revoke *(OD-FU13-01, B-Option 1)*
+- **Goal:** revoke all role holders' refresh tokens after a role-permission is removed.
+- **Surface:** `IUserRoleRepository.cs` (new `GetUserIdsByRoleAsync(roleId, tenantId, ct)`) + its Mongo repository impl +
+  `RevokePermissionCommandHandler.cs` (inject `IUserRoleRepository` + `IRefreshTokenRepository`; after `RevokeAsync`,
+  resolve affected distinct userIds and loop `RevokeAllByUserAsync`) + AuthService tests.
+- **Gate:** tenant-scoped affected-user lookup (`roleId + tenantId`); **all distinct holders revoked**; unrelated users
+  unaffected; **empty role-holder set = valid no-op**; repository + handler tests green; AuthService suite green.
+- **Rollback:** revert the seam + impl + handler + tests.
+
+### Group D — governance reconciliation *(last)*
+- **After** Groups A–C land and an integration audit PASSes: a **separate docs-only commit** updating the pack
+  implementation note + the roadmap AG-STEP-010 row.
+
+**Ordering:** Group A → Group B → Group C → integration audit → Group D.
 
 > **No open decision remains.** OD-FU13-01/02/03 are all locked (§5) from repo evidence; this pack is promoted to
 > **`ready-for-dev`** (implementation handoff only — no runtime code is written by this pack). AG-STEP-011 Explain Access
