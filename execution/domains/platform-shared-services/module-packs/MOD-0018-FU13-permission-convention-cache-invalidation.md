@@ -334,3 +334,57 @@ implementation is performed here** — FU13 only ensures the events/timestamps e
 > **`ready-for-dev`** (implementation handoff only — no runtime code is written by this pack). AG-STEP-011 Explain Access
 > (MOD-0018-FU14) remains a **downstream reference only** (§12) — not implemented here. Slice 5B / Slice 7 blockers and
 > the AG-STEP-008 roadmap row are untouched.
+
+---
+
+## 16. Runtime implementation — completed in integration branch
+
+> **Pack status note.** Frontmatter stays **`ready-for-dev`** (repo convention: the sibling FU15 pack also kept
+> `ready-for-dev` after its runtime landed on the integration branch; `done` is reserved for runtime **merged to
+> `main`**, which is blocked by the merge-freeze). Runtime completion is recorded here as a section, not a status flip.
+
+**Integration audit: PASS** (read-only audit @ HEAD `34e38cc`). **No PR / no merge; not merged to `main`** (`main`
+still `d3ab4a4`).
+
+**Runtime commits (Groups A → B → C → integration audit → this Group D):**
+- `3a8f9dd` — **Group A:** Platform per-instance entitlement-cache invalidation fan-out.
+- `a9ad416` — **Group B:** AuthService user-role removal → refresh-token revoke.
+- `34e38cc` — **Group C:** AuthService role-permission removal → tenant-scoped holder lookup + refresh-token revoke.
+
+**Group A result.** Only `EntitlementCacheInvalidationConsumer` gets a process-lifetime-GUID temporary
+(non-durable, auto-delete) receive endpoint; the other 3 consumers stay shared competing-consumer; **no
+`SetEndpointNameFormatter`, no Redis / `IDistributedCache`**; the custom in-memory dev transport is unchanged.
+
+**Group B result.** After the user-role `RevokeAsync`, the existing `RevokeAllByUserAsync(userId, tenantId, ct)` is
+called; tenant comes only from `ITenantContext`; a refresh-token revoke failure is **not swallowed**.
+
+**Group C result.** New seam `GetUserIdsByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct)`; the Mongo query
+is **server-side** (`RoleId == roleId && TenantId == tenantId && IsDeleted == false`, `UserId` projection, `Distinct()`);
+after the role-permission `RevokeAsync`, every distinct holder is revoked via `RevokeAllByUserAsync`; an empty holder
+list is a **valid no-op**; **sequential fail-fast** preserved.
+
+**No-op / future guard.** `OrgDataScopeResolver` added no cross-request cache; `JwtTenantAuthorizationContext` stays
+once-per-request memoization; LegalEntity referenceability keeps the live fail-closed lookup. FU13 v1 made **no** change
+on these surfaces (OD-FU13-03).
+
+**Build & test results:** `Diten.Platform.API` **0 errors**; `Diten.Platform.Application.Tests` **557 passed, 0
+failed**; `Diten.Platform.Eventing.Tests` **56 passed, 0 failed, 3 pre-existing skipped**; `Diten.AuthService`
+Application + Persistence + API **0 errors**; `Diten.AuthService.Application.Tests` **30 passed, 0 failed**.
+
+### Open rollout gate — NOT completed
+A mandatory **manual/integration verification before horizontal scaling** of `Diten.Platform`: a real RabbitMQ broker +
+**2 Platform instances** → one published invalidation event evicts **both** instances' local `IMemoryCache`; the
+entitlement consumer is on its instance-specific temporary endpoint while the other 3 share their queue; **no duplicate
+binding**. This is **not** an integration-branch runtime-completion blocker, but it **is** a horizontal-scaling rollout
+blocker, and it is **not yet verified**.
+
+### Bounded fallback note
+A removed permission grant is **not re-opened**; earlier successful token revokes are **not** rolled back. Because of
+the **sequential fail-fast** model, if a per-user revoke fails, some holders after it may not be revoked in that call —
+their access tokens can remain valid for **up to the ≤15-min access-token TTL**. This is a **bounded fallback**, not an
+absolute immediate close for every holder.
+
+### Performance note
+`GetUserIdsByRoleAsync` is **server-side filtered + projected** (no full-collection scan). A composite Mongo index on
+`{ RoleId, TenantId, IsDeleted }` is an optional future optimization — **not required for correctness**; **no
+index/migration was written** in this implementation.
