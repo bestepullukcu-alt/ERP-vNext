@@ -438,3 +438,83 @@ external evidence) and **OD-FU14-09** (cross-user target effective-grants contra
 alternative is **rejected**) remain **deferred** — neither is a self-v1 blocker, neither is complete, and both are
 distinct from **AG-STEP-012** (Allow Audit, `OD-D`, separate, not designed/implemented here). Explain-request audit is
 **not** the AG-STEP-012 allow-decision audit.
+
+---
+
+## 17. Allow-audit policy — deny-only baseline locked (AG-STEP-012 / OD-D)
+
+> **Scope split (LOCKED).** AG-STEP-011 = **Explain Access** (self-explain bounded observation; runtime completed in
+> integration branch, post-fix audit PASS; **observer-only**, produces no enforcement verdict; its handler-level
+> **explain-request execution audit** is **NOT** an allow-decision audit). AG-STEP-012 = **Allow Audit policy**, a
+> **separate EA decision (`OD-D`)**. **This step is a docs-only policy lock; no allow-decision audit runtime
+> implementation begins.** **Explain-request audit ≠ allow-decision audit;** FU14's self-explain runtime completion does
+> **not** complete AG-STEP-012.
+
+### 17.1 LOCKED baseline — `OD-D = deny-only baseline`
+The existing **deny logging** behavior is kept; the baseline emits **no new allow-decision audit event**. In the baseline,
+the following are **NOT** logged as allow-audit events:
+- canonical-permission allows · legacy-alias allows · `platform_admin` bypass allows · `partner_admin` bypass allows ·
+  AuthService policy-success allows · MDM policy-success allows.
+- Internal API-key successes are **not** user-permission allows (§17.5). EnterpriseStrategy is **not** auto-added (§17.6).
+
+**This is not a runtime implementation.** No new sink, feature flag, dedup infrastructure, shared package, event
+contract, registry entry, or `MOD-xxxx` is created. The OD-D alternatives **(b) all-allows** is **rejected as the
+baseline**; **(c) sampled / configurable** and a **bypass-only** variant are **deferred** (§17.3).
+
+### 17.2 Baseline rationale (repo-grounded)
+- The existing audit pipeline `IAuditService.AppendAsync(AuditAppendRequest, CancellationToken)` uses an **async outbox
+  enqueue** (`_outboxWriter.TryEnqueueAsync` → `Queued` / `EnqueueFailed`), **not** synchronous business persistence;
+  masking + redaction run **inside** the audit service; correlation comes from `ICorrelationContext`; an enqueue failure
+  is **non-breaking** and never changes the authorization outcome; raw JWT / claims / secrets are never written.
+- A **deny-logging precedent exists** (`PlatformEntitlementAuditSink.LogDeniedAsync`, `AuditOutcome.Denied`, same async
+  sink). Allow logging is therefore **technically feasible** on the existing pipeline.
+- **But** there are ≈ **174** `[HasPermission]` enforcement points — Platform **151**, AuthService **17**, MDM **6** —
+  a large share read / list / query routes. Logging **all** allow decisions would create **high event volume, storage
+  burden, retention burden, and operational noise**. **Production QPS / storage-growth metrics do not exist in-repo and
+  are not fabricated here.** ∴ **deny-only is the safe default baseline**; all-allows is rejected; sampled/bypass-only is
+  deferred. The audit pipeline being **reusable does not mean allow logging is added to the baseline** — runtime is a
+  separate decision (§17.3).
+
+### 17.3 Deferred follow-up — narrow allow-audit rollout (NOT in baseline)
+Before any future allow-audit implementation, these decisions are required (none is taken here):
+1. **Volume tolerance** — production metrics, route frequency, storage growth, retention horizon, operational noise.
+2. **Retention / compliance** — redaction owner, retention owner, audit export/deletion policy, external policy confirmation.
+3. **Scope** — privileged mutating allows? bypass allows? sampled? configurable category-based?
+4. **Rollout** — feature flag, service-by-service rollout, Platform-first pilot, volume-measurement gate.
+5. **Cross-service architecture** — AuthService/MDM **per-service sink** vs a **shared package** vs a new cross-service
+   abstraction (a separate architecture decision).
+
+**Recommended deferred rollout order (a candidate, NOT a locked runtime plan):** (1) Platform-first **narrow pilot**;
+(2) **high-signal allow types only** — privileged mutating operations + `platform_admin`/`partner_admin` bypass allows;
+(3) **behind a feature flag**; (4) via the existing async-outbox-backed `IAuditService`; (5) **bounded metadata** (§17.7);
+(6) reassess expansion **after** production volume measurement; (7) AuthService/MDM retrofit **only after** a separate
+architecture decision. **No runtime / sink / flag / dedup / package is written.**
+
+### 17.4 Bypass-allow boundary
+`platform_admin` / `partner_admin` bypass allows are **high-signal candidates** (privilege surface). They are **not**
+logged in the baseline; they are the **first candidates** for a future Platform-first pilot and must **not** be lost as
+the same provenance as a normal canonical allow — a future bounded reason (`bypass-platform-admin` / `bypass-partner-admin`)
+would distinguish them. **No runtime code written.**
+
+### 17.5 Internal API-key boundary
+AuthService internal API-key endpoints are **not** user-permission allows → **out of** the AG-STEP-012 baseline allow-audit
+scope; they remain a **separate security-review** category. The internal API key / raw secrets are never written to audit
+metadata. **No internal-endpoint audit retrofit is written.**
+
+### 17.6 EnterpriseStrategy boundary
+EnterpriseStrategy uses a separate `[EnterpriseStrategyPermission]` stack; the **Slice 5B external-evidence blocker
+persists**; it is **not** auto-included in the AG-STEP-012 baseline and **no cross-service bulk retrofit** is performed.
+
+### 17.7 Future metadata proposal (FOLLOW-UP ONLY — no baseline event)
+*If* a future allow-audit follow-up is implemented, bounded metadata only: route template · HTTP method · canonical
+required permission · `matchedViaLegacyAlias` · permission match (`canonical` / `legacy-alias` / `bypass-platform-admin` /
+`bypass-partner-admin`) · actor type · tenant id · correlation id · source service · source module · `outcome: allow` ·
+decision timestamp. **MUST NOT store:** raw JWT · raw claim list · raw alias value · permission inventory · role
+inventory · request body · raw query string · raw scope ids · secrets · internal API key · raw exception · unnecessary
+PII · other-tenant data. **The baseline emits no allow event; this proposal is for the deferred follow-up only.**
+
+### 17.8 Deduplication (DEFERRED)
+A single HTTP request may trigger more than one authorization evaluation (class-level + method-level attribute stacking,
+or multiple policy evaluations) → potential duplicate events. **No runtime dedup infrastructure is added in the baseline.**
+A future **analytics-level** dedup key candidate is `correlationId + route template + permission + actor`; runtime dedup
+is considered **only if** production measurement requires it. **No dedup implementation is written.**
