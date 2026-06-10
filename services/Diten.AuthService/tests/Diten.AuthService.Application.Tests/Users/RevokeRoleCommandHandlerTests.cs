@@ -146,6 +146,7 @@ public sealed class RevokeRoleCommandHandlerTests
         public Task<IEnumerable<string>> GetRolesByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task AssignAsync(UserRole userRole, CancellationToken ct) => throw new NotSupportedException();
         public Task<bool> ExistsAsync(Guid userId, Guid roleId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Guid>> GetUserIdsByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakeRefreshTokenRepository(List<string>? callLog = null) : IRefreshTokenRepository

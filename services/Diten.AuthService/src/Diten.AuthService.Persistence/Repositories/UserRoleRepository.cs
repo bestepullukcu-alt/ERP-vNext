@@ -52,4 +52,18 @@ public sealed class UserRoleRepository : RepositoryBase<UserRole>, IUserRoleRepo
         var userRoles = await Collection.Find(ur => ur.IsDeleted == false).ToListAsync(ct);
         return userRoles.Any(ur => ur.UserId == userId && ur.RoleId == roleId && ur.TenantId == tenantId);
     }
+
+    // AG-STEP-010 / MOD-0018-FU13 Group C — distinct, tenant-scoped holder user ids (active rows only). The role,
+    // tenant and lifecycle predicate is applied SERVER-SIDE in the Mongo Find filter (RoleId + TenantId + IsDeleted),
+    // and only the UserId field is projected — no full-collection scan and no in-process tenant/role filtering. Tenant
+    // scope is mandatory: a cross-tenant user id can never be returned.
+    public async Task<IReadOnlyCollection<Guid>> GetUserIdsByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct)
+    {
+        var holderIds = await Collection
+            .Find(ur => ur.RoleId == roleId && ur.TenantId == tenantId && ur.IsDeleted == false)
+            .Project(ur => ur.UserId)
+            .ToListAsync(ct);
+
+        return holderIds.Distinct().ToList();
+    }
 }
