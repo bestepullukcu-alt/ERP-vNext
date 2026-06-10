@@ -279,10 +279,23 @@ public static class DependencyInjection
 
     internal static void AddPlatformEventConsumers(IBusRegistrationConfigurator configurator)
     {
+        // Default competing-consumer topology: each of these runs once cluster-wide (no duplicate side-effects).
         configurator.AddConsumer<TenantActivatedV1Consumer>();
         configurator.AddConsumer<TenantLifecycleAuditConsumer>();
         configurator.AddConsumer<TenantLifecycleNotificationConsumer>();
-        configurator.AddConsumer<EntitlementCacheInvalidationConsumer>();
+
+        // AG-STEP-010 / MOD-0018-FU13 Group A — per-instance fan-out (OD-FU13-02, A-Option 1).
+        // The entitlement cache lives in a per-instance IMemoryCache, so EVERY instance must receive each
+        // invalidation event and evict its own copy. Bind ONLY this consumer to a per-instance, temporary
+        // (non-durable + auto-delete) receive endpoint via a process-lifetime InstanceId. ConfigureEndpoints(context)
+        // honours this per-consumer endpoint definition (one endpoint per consumer — no duplicate binding). The other
+        // three consumers keep the shared competing-consumer queue above.
+        configurator.AddConsumer<EntitlementCacheInvalidationConsumer>()
+            .Endpoint(endpoint =>
+            {
+                endpoint.InstanceId = PlatformInstanceIdentity.InstanceId;
+                endpoint.Temporary = true;
+            });
     }
 
     private static void RunMongoStartupInitialization(IMongoDatabase database, MongoDbSettings mongoSettings)
