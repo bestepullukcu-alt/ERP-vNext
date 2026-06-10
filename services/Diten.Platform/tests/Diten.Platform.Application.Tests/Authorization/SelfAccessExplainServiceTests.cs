@@ -12,13 +12,18 @@ using Xunit;
 
 namespace Diten.Platform.Application.Tests.Authorization;
 
-// AG-STEP-011 / MOD-0018-FU14 Group B — self-explain observer service. Bounded, self-subject-only, read-only.
+// AG-STEP-011 / MOD-0018-FU14 Group B/C — self-explain observer service. Bounded, self-subject-only, read-only.
+// Group C correctness: the response returns TWO SEPARATE observations (PermissionSatisfied + descriptive scope) and NO
+// combined Allowed verdict — data-scope is opt-in per resource and platform/partner admins are not row-scoped, so an
+// empty scope must NOT flip the permission observation (that would diverge from live enforcement).
 public sealed class SelfAccessExplainServiceTests
 {
     private static readonly Guid TenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid UserId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
     private const string Canonical = "platform.administrators.read";
     private const string Module = "MOD-0018";
+    private const string EmptyScopeNote = "empty-scope-does-not-imply-universal-deny";
+    private const string ScopeFailedNote = "scope-observation-failed";
 
     private readonly Mock<ITenantAuthorizationContext> _authContext = new();
     private readonly Mock<ICurrentUserContext> _currentUser = new();
@@ -72,6 +77,19 @@ public sealed class SelfAccessExplainServiceTests
     private static EntitlementDataScope Scope(EntitlementDataScopeKind kind) =>
         new(kind, scopeId: Guid.NewGuid(), scopeCode: "code");
 
+    // ── DTO contract: separate observations, no combined verdict ──
+
+    [Fact]
+    public void Response_dto_has_separate_observations_and_no_combined_verdict()
+    {
+        var props = typeof(SelfAccessExplainResponse).GetProperties().Select(p => p.Name).ToList();
+        Assert.Contains("PermissionSatisfied", props);
+        Assert.Contains("ScopeNotes", props);
+        Assert.DoesNotContain("Allowed", props);
+        Assert.DoesNotContain("ScopeApplicable", props);
+        Assert.DoesNotContain("ScopeDenied", props);
+    }
+
     // ── Request / validation (validation deny reaches the service → audited, bounded) ──
 
     [Fact]
@@ -84,6 +102,7 @@ public sealed class SelfAccessExplainServiceTests
         Assert.NotNull(_capturedAudit);
         Assert.Equal(AuditOutcome.Denied, _capturedAudit!.Outcome);
         Assert.Equal("permission-key-required", _capturedAudit.Metadata["validationCode"]);
+        Assert.Equal(false, _capturedAudit.Metadata["permissionSatisfied"]);
         // The raw invalid input is never written to metadata.
         Assert.False(_capturedAudit.Metadata.ContainsKey("requiredPermission"));
     }
@@ -110,7 +129,6 @@ public sealed class SelfAccessExplainServiceTests
         Assert.Equal(403, result.StatusCode);
         Assert.Equal(AuditOutcome.Denied, _capturedAudit!.Outcome);
         Assert.Equal("authenticated-context-invalid", _capturedAudit.Metadata["validationCode"]);
-        // No raw claim / exception leak in the bounded validation-deny metadata.
         Assert.False(_capturedAudit.Metadata.ContainsKey("exception"));
     }
 
@@ -161,16 +179,15 @@ public sealed class SelfAccessExplainServiceTests
         _resolver.Verify(r => r.ResolveAsync(TenantId, UserId, Module, null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // ── Permission observation ──
+    // ── Permission observation (independent of data-scope) ──
 
     [Fact]
-    public async Task Canonical_claim_is_canonical_match()
+    public async Task Canonical_claim_is_permission_satisfied()
     {
-        WithScopes(Scope(EntitlementDataScopeKind.OrgUnit));
         var result = await CreateService().ExplainAsync(Principal([Canonical]), Canonical, Module, null, CancellationToken.None);
         Assert.Equal("canonical", result.Data!.PermissionMatch);
         Assert.False(result.Data.MatchedViaLegacyAlias);
-        Assert.True(result.Data.Allowed); // satisfied + non-empty scope
+        Assert.True(result.Data.PermissionSatisfied);
     }
 
     [Fact]
@@ -179,41 +196,75 @@ public sealed class SelfAccessExplainServiceTests
         var result = await CreateService().ExplainAsync(Principal(["PLATFORM.ADMINISTRATORS.READ"]), Canonical, Module, null, CancellationToken.None);
         Assert.Equal("canonical", result.Data!.PermissionMatch);
         Assert.False(result.Data.MatchedViaLegacyAlias);
+        Assert.True(result.Data.PermissionSatisfied);
     }
 
     [Fact]
-    public async Task Genuine_legacy_alias_claim_is_legacy_alias_match()
+    public async Task Genuine_legacy_alias_claim_is_legacy_alias_match_and_satisfied()
     {
         var result = await CreateService().ExplainAsync(
             Principal(["Modules.OrganizationUnit.Read"]), "platform.organization-units.read", Module, null, CancellationToken.None);
         Assert.Equal("legacy-alias", result.Data!.PermissionMatch);
         Assert.True(result.Data.MatchedViaLegacyAlias);
+        Assert.True(result.Data.PermissionSatisfied);
     }
 
     [Fact]
-    public async Task Missing_claim_is_not_allowed()
+    public async Task Missing_claim_is_not_permission_satisfied()
     {
         var result = await CreateService().ExplainAsync(Principal(), Canonical, Module, null, CancellationToken.None);
         Assert.Equal("missing", result.Data!.PermissionMatch);
-        Assert.False(result.Data.Allowed);
+        Assert.False(result.Data.PermissionSatisfied);
+    }
+
+    // ── Parity with live enforcement: empty scope must NOT flip PermissionSatisfied ──
+
+    [Fact]
+    public async Task Canonical_claim_with_empty_scope_is_still_permission_satisfied()
+    {
+        WithScopes(); // empty — but permission is satisfied; empty scope is descriptive, not a universal deny
+        var result = await CreateService().ExplainAsync(Principal([Canonical]), Canonical, Module, null, CancellationToken.None);
+        Assert.True(result.Data!.PermissionSatisfied);
+        Assert.Empty(result.Data.ScopeKinds);
+        Assert.Contains(EmptyScopeNote, result.Data.ScopeNotes);
     }
 
     [Fact]
-    public async Task Platform_admin_actor_is_bypass_platform_admin()
+    public async Task Platform_admin_with_empty_scope_is_satisfied_no_false_negative()
     {
+        // Real-world case: platform admins are NOT row-scoped and have empty org scopes. The explain must NOT report a
+        // false negative just because the scope is empty.
         _authContext.SetupGet(c => c.ActorType).Returns("platform_admin");
-        WithScopes(Scope(EntitlementDataScopeKind.OrgUnit));
+        WithScopes(); // empty
         var result = await CreateService().ExplainAsync(Principal(), Canonical, Module, null, CancellationToken.None);
         Assert.Equal("bypass-platform-admin", result.Data!.PermissionMatch);
-        Assert.True(result.Data.Allowed); // bypass satisfied + non-empty scope
+        Assert.True(result.Data.PermissionSatisfied);
+        Assert.Empty(result.Data.ScopeKinds);
     }
 
     [Fact]
-    public async Task Partner_admin_actor_is_bypass_partner_admin()
+    public async Task Partner_admin_with_empty_scope_is_satisfied_no_false_negative()
     {
         _authContext.SetupGet(c => c.ActorType).Returns("partner_admin");
+        WithScopes(); // empty
         var result = await CreateService().ExplainAsync(Principal(), Canonical, Module, null, CancellationToken.None);
         Assert.Equal("bypass-partner-admin", result.Data!.PermissionMatch);
+        Assert.True(result.Data.PermissionSatisfied);
+    }
+
+    // ── permissionKey ↔ moduleCode independence (no binding catalog) ──
+
+    [Fact]
+    public async Task PermissionKey_and_moduleCode_are_independent_observations()
+    {
+        // A mismatched (permission, module) pair: the permission observation comes ONLY from the claim, the scope
+        // observation ONLY from the module input; no combined verdict and no binding claim is made.
+        const string unrelatedModule = "some-unrelated-module";
+        var result = await CreateService().ExplainAsync(Principal([Canonical]), Canonical, unrelatedModule, null, CancellationToken.None);
+
+        Assert.True(result.Data!.PermissionSatisfied); // from the claim only
+        _resolver.Verify(r => r.ResolveAsync(TenantId, UserId, unrelatedModule, null, It.IsAny<CancellationToken>()), Times.Once);
+        // Compile-time: there is no Allowed property to combine them (asserted by the DTO contract test).
     }
 
     // ── Data-scope observation ──
@@ -230,16 +281,15 @@ public sealed class SelfAccessExplainServiceTests
     }
 
     [Fact]
-    public async Task Empty_scope_is_not_allowed_even_when_permission_satisfied()
+    public async Task Scope_notes_carry_the_bounded_opt_in_vocabulary()
     {
-        WithScopes(); // empty
         var result = await CreateService().ExplainAsync(Principal([Canonical]), Canonical, Module, null, CancellationToken.None);
-        Assert.False(result.Data!.Allowed);
-        Assert.Empty(result.Data.ScopeKinds);
+        Assert.Contains("data-scope-opt-in-per-resource", result.Data!.ScopeNotes);
+        Assert.Contains("scope-applicability-not-determined", result.Data.ScopeNotes);
     }
 
     [Fact]
-    public async Task Resolver_exception_is_a_diagnostic_failure_and_not_allowed()
+    public async Task Resolver_exception_is_a_diagnostic_failure_and_preserves_permission()
     {
         _resolver
             .Setup(r => r.ResolveAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
@@ -249,8 +299,10 @@ public sealed class SelfAccessExplainServiceTests
 
         Assert.True(result.IsSuccessful);
         Assert.True(result.Data!.DiagnosticFailure);
-        Assert.False(result.Data.Allowed);
+        // The permission observation is preserved; the resolver failure does NOT flip it.
+        Assert.True(result.Data.PermissionSatisfied);
         Assert.Empty(result.Data.ScopeKinds);
+        Assert.Contains(ScopeFailedNote, result.Data.ScopeNotes);
     }
 
     [Fact]
@@ -294,12 +346,11 @@ public sealed class SelfAccessExplainServiceTests
         Assert.Equal("self", result.Data.Mode);
     }
 
-    // ── Audit ──
+    // ── Audit (Outcome from the permission-gate observation, never the removed combined verdict) ──
 
     [Fact]
-    public async Task Allowed_result_is_audited_as_succeeded()
+    public async Task Satisfied_permission_is_audited_as_succeeded()
     {
-        WithScopes(Scope(EntitlementDataScopeKind.OrgUnit));
         await CreateService().ExplainAsync(Principal([Canonical]), Canonical, Module, null, CancellationToken.None);
         Assert.NotNull(_capturedAudit);
         Assert.Equal(AuditOutcome.Succeeded, _capturedAudit!.Outcome);
@@ -308,10 +359,9 @@ public sealed class SelfAccessExplainServiceTests
     }
 
     [Fact]
-    public async Task Denied_result_is_audited_as_denied()
+    public async Task Missing_permission_is_audited_as_denied()
     {
-        WithScopes(); // empty → not allowed
-        await CreateService().ExplainAsync(Principal([Canonical]), Canonical, Module, null, CancellationToken.None);
+        await CreateService().ExplainAsync(Principal(), Canonical, Module, null, CancellationToken.None);
         Assert.Equal(AuditOutcome.Denied, _capturedAudit!.Outcome);
     }
 
@@ -323,6 +373,8 @@ public sealed class SelfAccessExplainServiceTests
             .ThrowsAsync(new InvalidOperationException("boom"));
         await CreateService().ExplainAsync(Principal([Canonical]), Canonical, Module, null, CancellationToken.None);
         Assert.Equal(AuditOutcome.Failed, _capturedAudit!.Outcome);
+        // The permission observation is still recorded in metadata as satisfied.
+        Assert.Equal(true, _capturedAudit.Metadata["permissionSatisfied"]);
     }
 
     [Fact]
@@ -337,20 +389,21 @@ public sealed class SelfAccessExplainServiceTests
 
         Assert.True(result.IsSuccessful);
         Assert.Equal(200, result.StatusCode);
-        Assert.True(result.Data!.Allowed);
+        Assert.True(result.Data!.PermissionSatisfied);
     }
 
     [Fact]
-    public async Task Audit_metadata_is_bounded_and_has_no_raw_exception()
+    public async Task Audit_metadata_is_bounded_with_permission_satisfied_and_no_allowed()
     {
         await CreateService().ExplainAsync(Principal([Canonical]), Canonical, Module, null, CancellationToken.None);
         var meta = _capturedAudit!.Metadata;
         Assert.Equal("self", meta["mode"]);
         Assert.Equal(Canonical, meta["requiredPermission"]);
-        Assert.Contains("permissionMatch", meta.Keys);
+        Assert.Contains("permissionSatisfied", meta.Keys);
+        Assert.Contains("scopeNotes", meta.Keys);
+        Assert.False(meta.ContainsKey("allowed")); // combined verdict removed
         Assert.DoesNotContain("exception", meta.Keys);
         Assert.DoesNotContain("stackTrace", meta.Keys);
-        // Only bounded primitive/string values.
         Assert.IsType<string>(meta["scopeKinds"]);
     }
 }

@@ -23,6 +23,14 @@ public sealed class SelfAccessExplainService : ISelfAccessExplainService
     private const string PartnerAdminActorType = "partner_admin";
     private const string TenantUserActorType = "tenant_user";
 
+    // Bounded scope-observation notes. The data-scope observation is DESCRIPTIVE only — never combined with the
+    // permission observation into an Allowed verdict (data-scope is opt-in per resource and platform/partner admins are
+    // not row-scoped, so an empty scope does not imply a universal deny; there is also no permission↔module binding).
+    private const string ScopeOptInNote = "data-scope-opt-in-per-resource";
+    private const string ScopeApplicabilityNote = "scope-applicability-not-determined";
+    private const string EmptyScopeNote = "empty-scope-does-not-imply-universal-deny";
+    private const string ScopeFailedNote = "scope-observation-failed";
+
     // Static, bounded freshness notes. FU14 v1 deliberately cannot prove token-version / revocation / cache state.
     private static readonly IReadOnlyList<string> FreshnessNotesValue =
     [
@@ -97,8 +105,12 @@ public sealed class SelfAccessExplainService : ISelfAccessExplainService
             ObservePermission(principal, actorType, permissionKey);
 
         // Data-scope observation — read-only reuse; project kind + count only (raw scope ids never leave the service).
+        // This is DESCRIPTIVE: it is NOT combined with the permission observation into an Allowed verdict. Data-scope is
+        // opt-in per resource and platform/partner admins are not row-scoped (BME-001), so an empty scope does not imply
+        // a universal deny — and there is no permission↔module binding catalog to soundly combine the two inputs.
         var scopeKinds = new List<string>();
         var scopeCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        var scopeNotes = new List<string> { ScopeOptInNote, ScopeApplicabilityNote };
         var diagnosticFailure = false;
 
         try
@@ -117,6 +129,11 @@ public sealed class SelfAccessExplainService : ISelfAccessExplainService
                     scopeCounts[kind] = 1;
                 }
             }
+
+            if (scopeCounts.Count == 0)
+            {
+                scopeNotes.Add(EmptyScopeNote);
+            }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -124,20 +141,18 @@ public sealed class SelfAccessExplainService : ISelfAccessExplainService
         }
         catch (Exception ex)
         {
-            // The explain is an observer: a resolver failure is a diagnostic, never opens access, and the raw exception
-            // is never returned. The bounded result still succeeds as an observation.
+            // A resolver failure is a diagnostic — it never overrides the permission observation, never opens/closes
+            // access, and the raw exception is never returned.
             _logger.LogWarning(ex, "Data-scope resolution failed during self-access explain. ErrorType={ErrorType}", ex.GetType().Name);
             diagnosticFailure = true;
             scopeKinds.Clear();
             scopeCounts.Clear();
+            scopeNotes.Add(ScopeFailedNote);
         }
-
-        var scopeNonEmpty = scopeCounts.Count > 0;
-        var allowed = permissionSatisfied && scopeNonEmpty && !diagnosticFailure;
 
         var response = new SelfAccessExplainResponse(
             Mode: SelfMode,
-            Allowed: allowed,
+            PermissionSatisfied: permissionSatisfied,
             RequiredPermission: permissionKey,
             PermissionMatch: permissionMatch,
             MatchedViaLegacyAlias: matchedViaLegacyAlias,
@@ -145,6 +160,7 @@ public sealed class SelfAccessExplainService : ISelfAccessExplainService
             TenantId: tenantId,
             ScopeKinds: scopeKinds,
             ScopeCounts: scopeCounts,
+            ScopeNotes: scopeNotes,
             TokenExpiresAtUtc: ReadTokenExpiry(principal),
             FreshnessNotes: FreshnessNotesValue,
             DiagnosticFailure: diagnosticFailure);
@@ -193,22 +209,24 @@ public sealed class SelfAccessExplainService : ISelfAccessExplainService
         bool diagnosticFailure,
         CancellationToken cancellationToken)
     {
+        // Outcome reflects the permission-gate observation (the real access gate), never the removed combined verdict.
         var outcome = diagnosticFailure
             ? AuditOutcome.Failed
-            : response.Allowed ? AuditOutcome.Succeeded : AuditOutcome.Denied;
+            : response.PermissionSatisfied ? AuditOutcome.Succeeded : AuditOutcome.Denied;
 
         // Bounded metadata only — primitive/string values, no raw claim / alias / scope id / exception text.
         var metadata = new Dictionary<string, object?>
         {
             ["mode"] = response.Mode,
             ["requiredPermission"] = response.RequiredPermission,
-            ["allowed"] = response.Allowed,
+            ["permissionSatisfied"] = response.PermissionSatisfied,
             ["permissionMatch"] = response.PermissionMatch,
             ["matchedViaLegacyAlias"] = response.MatchedViaLegacyAlias,
             ["actorType"] = response.ActorType,
             ["tenantId"] = response.TenantId,
             ["scopeKinds"] = string.Join(",", response.ScopeKinds),
             ["scopeCounts"] = string.Join(",", response.ScopeCounts.Select(kv => $"{kv.Key}:{kv.Value}")),
+            ["scopeNotes"] = string.Join(",", response.ScopeNotes),
             ["diagnosticFailure"] = response.DiagnosticFailure,
         };
 
@@ -226,7 +244,7 @@ public sealed class SelfAccessExplainService : ISelfAccessExplainService
         var metadata = new Dictionary<string, object?>
         {
             ["mode"] = SelfMode,
-            ["allowed"] = false,
+            ["permissionSatisfied"] = false,
             ["diagnosticFailure"] = false,
             ["validationCode"] = validationCode,
             ["actorType"] = actorType,

@@ -79,7 +79,7 @@ public sealed class AccessExplainControllerTests
         var dto = new SelfAccessExplainResponse(
             "self", true, "platform.administrators.read", "canonical", false, "tenant_user",
             Guid.NewGuid(), ["OrgUnit"], new Dictionary<string, int> { ["OrgUnit"] = 1 },
-            null, ["refresh-required-after-grant-change"], false);
+            ["data-scope-opt-in-per-resource"], null, ["refresh-required-after-grant-change"], false);
         var service = new Mock<ISelfAccessExplainService>();
         service
             .Setup(s => s.ExplainAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>(), "platform.administrators.read", "MOD-0018", null, It.IsAny<CancellationToken>()))
