@@ -72,9 +72,12 @@ Explain Access **observes** these existing chains; it **never makes or changes**
 - `PermissionAliasResolver.Expand` — **canonical + legacy-alias dual-read** (a canonical requirement is satisfied by the
   canonical key **or** a mapped legacy alias token).
 - `JwtTenantAuthorizationContext` (FU12) — **once-per-request memoized** hydration; `OrgDataScopeResolver` →
-  `EffectiveScopes` of `EntitlementDataScopeKind`: **`OrgUnit`, `Position`, `ManagerChain`, `LegalEntity`, `Country`**.
-  **`Company` is NOT a live scope kind — do not assume it.**
-- **Empty scope ⇒ deny.** LegalEntity referenceability via a **live, fail-closed MOD-0220 lookup**.
+  `EffectiveScopes` of `EntitlementDataScopeKind` (the resolver emits **`OrgUnit`, `Position`, `ManagerChain`,
+  `LegalEntity`**; `Country` arrives via the context path). **`Company` exists in the `EntitlementDataScopeKind` enum,
+  but the current `OrgDataScopeResolver` does NOT emit it; the observer projects only resolver output and never
+  fabricates Company.**
+- **Empty scope ⇒ deny *only for an opted-in scoped resource* (BME-001) — NOT a universal rule;** platform/partner
+  admins are not row-scoped. LegalEntity referenceability via a **live, fail-closed MOD-0220 lookup**.
 
 ### AuthService (policy-based)
 - `HasPermissionAttribute → PermissionPolicyProvider → PermissionRequirement → PermissionAuthorizationHandler`.
@@ -174,9 +177,10 @@ reason code.** The model is a read-only observation of the chain; it does **not*
 
 ## 5. Response security boundary (LOCKED guard) — self-explain v1 shape
 
-**MAY return:** `mode: self` · canonical permission key · allow/deny · bounded reason code (§4) · actor type · tenant id ·
-evaluated **scope kinds** · scope **counts** · `matchedViaLegacyAlias: true/false` · limited freshness note (JWT expiry,
-if available) + bounded `refresh-required` note · `diagnosticFailure: true/false`.
+**MAY return (TWO SEPARATE observations — see §16; NO combined `Allowed` verdict):** `mode: self` · canonical permission
+key · **`PermissionSatisfied`** (permission-gate observation only) · bounded `PermissionMatch` (§4) · actor type ·
+tenant id · descriptive **scope kinds** · scope **counts** · **`ScopeNotes`** · `matchedViaLegacyAlias: true/false` ·
+limited freshness note (JWT expiry, if available) + bounded `refresh-required` note · `diagnosticFailure: true/false`.
 
 **MUST NOT return:** any **other-subject id selection** · raw JWT · raw claims dump · secrets · internal API key ·
 other-tenant data · unnecessary PII · full grant inventory · **raw organization-chain node id list** · **role id /
@@ -240,10 +244,10 @@ masked IP, `OccurredAtUtc`, `SourceService`, `SourceModule`, redaction fields.
 Backend-only v1; **no** Explain Access UI / gateway evidence in repo; frontend/gateway **deferred**; no UI assumed. The existing `effective-access/{moduleCode}` GET is **only** a diagnostic-route precedent. No new route/controller is implemented in this step.
 
 ### OD-FU14-03 — Reason-code granularity → **LOCKED**
-Bounded enum / controlled vocabulary (§4); **no** full internal trace in the response; **no** raw exception text as a reason code; the model **observes** the live chain and does **not** duplicate enforcement logic; a diagnostic failure never changes the decision. `Company` is **not** a scope kind and is not added/assumed.
+Bounded enum / controlled vocabulary (§4); **no** full internal trace in the response; **no** raw exception text as a reason code; the model **observes** the live chain and does **not** duplicate enforcement logic; a diagnostic failure never changes the observation. `Company` **exists** in the `EntitlementDataScopeKind` enum but the current `OrgDataScopeResolver` does **not** emit it (the observer projects only resolver output and never fabricates Company).
 
 ### OD-FU14-04 — Audit every Explain request → **LOCKED (handler-level, honestly bounded)**
-**Every self-explain execution that reaches the application handler is audited** — successful, application-level **denied**, and **diagnostic-failure** — and an **audit-write failure does not change the enforcement decision** (it is isolated at the handler). **Honesty caveat:** an **unauthenticated** request rejected by `[Authorize]` **before** the handler is **not guaranteed** to emit a FU14-specific audit event via the handler seam; FU14 v1 does **not** invent a new middleware/filter audit seam — existing API authentication/logging behavior is kept, and pre-handler-401 FU14 audit hardening is a **separate follow-up**. **Do not claim "every unauthenticated request emits a FU14 AuditEvent."** Reuses **`IAuditService.AppendAsync(AuditAppendRequest, ct)`** (the service performs masking/redaction). **Proposed category** `authorization.explain`; **bounded metadata only:** mode `self`, canonical permission key, allow/deny, bounded reason-code list, actor type, tenant id, scope-kind list, scope counts, `matchedViaLegacyAlias`, diagnostic-failure flag. **MUST NOT include:** raw JWT · raw claim list · raw permission-token list · raw alias claim value · secrets · internal API key · raw role inventory · raw scope ids · raw org-chain node ids · unnecessary PII · raw exception text. Explain audit is **distinct** from the AG-STEP-012 allow-decision audit (not designed/implemented here). **Cross-user audit is deferred with the cross-user flow** (still mandatory when that flow lands).
+**Every self-explain execution that reaches the application handler is audited** — successful, application-level **denied**, and **diagnostic-failure** — and an **audit-write failure does not change the enforcement decision** (it is isolated at the handler). **Honesty caveat:** an **unauthenticated** request rejected by `[Authorize]` **before** the handler is **not guaranteed** to emit a FU14-specific audit event via the handler seam; FU14 v1 does **not** invent a new middleware/filter audit seam — existing API authentication/logging behavior is kept, and pre-handler-401 FU14 audit hardening is a **separate follow-up**. **Do not claim "every unauthenticated request emits a FU14 AuditEvent."** Reuses **`IAuditService.AppendAsync(AuditAppendRequest, ct)`** (the service performs masking/redaction). **Proposed category** `authorization.explain`; **bounded metadata only:** mode `self`, canonical permission key, **`permissionSatisfied`** (not a combined `allowed`), bounded `permissionMatch`, actor type, tenant id, scope-kind list, scope counts, **`scopeNotes`**, `matchedViaLegacyAlias`, diagnostic-failure flag (+ `validationCode` on a validation/invalid-context deny). **MUST NOT include:** raw JWT · raw claim list · raw permission-token list · raw alias claim value · secrets · internal API key · raw role inventory · raw scope ids · raw org-chain node ids · unnecessary PII · raw exception text. Explain audit is **distinct** from the AG-STEP-012 allow-decision audit (not designed/implemented here). **Cross-user audit is deferred with the cross-user flow** (still mandatory when that flow lands).
 
 ### OD-FU14-05 — Alias visibility → **LOCKED**
 Response exposes **only** `matchedViaLegacyAlias: true|false`; **no** raw legacy permission key, **no** raw matched claim, **no** alias-resolver internal dump. Slice 1B / Slice 7 alias-retirement state is **not** changed by FU14.
@@ -252,7 +256,7 @@ Response exposes **only** `matchedViaLegacyAlias: true|false`; **no** raw legacy
 MAY return: limited JWT-expiry info (if present) + bounded `refresh-required-after-grant-change` note + the FU13 `≤15-min` bounded-fallback explanation. MUST NOT return/assume: token version · revocation timestamp · deny-list state · cache-internal key · entitlement-cache staleness debug · RabbitMQ topology debug. A **cache-debug endpoint is a v1 non-goal**; not conflated with the FU13 rollout gate.
 
 ### OD-FU14-07 — Default scope redaction → **LOCKED**
-Default response: scope **kinds + counts**. **Out of the default response:** raw org-unit/position/manager-chain/legal-entity id lists · role id/name inventory · unnecessary PII. Detailed debug view **deferred**; tenant isolation mandatory; empty-scope ⇒ deny preserved; LegalEntity live fail-closed lookup preserved; `Company` scope kind not assumed.
+Default response: scope **kinds + counts** + bounded `ScopeNotes`. **Out of the default response:** raw org-unit/position/manager-chain/legal-entity id lists · role id/name inventory · unnecessary PII. Detailed debug view **deferred**; tenant isolation mandatory; **empty scope is NOT a universal deny** — data-scope is opt-in per resource (BME-001) and the scope observation is **descriptive**, never a verdict; LegalEntity live fail-closed lookup preserved; `Company` exists in the enum but the resolver does not emit it.
 
 ### OD-FU14-08A — Explain permission marker → **RESERVED (not active in self-explain v1)**
 Canonical marker name **`platform.access.explain`** (PKS-001 lowercase-dotted, 3 segments, fits the Platform namespace + the `HasPermissionAttribute` actor-bypass model). Because **cross-user explain is deferred** (OD-FU14-01 / OD-FU14-09), the marker is **RESERVED for the future cross-user diagnostic route** and is **not used on the self-explain v1 route** (the self route is `[Authorize]` only). For self-explain v1: **no seed, no migration, no alias row**; the marker is **not written to runtime** in this revision step; the cross-user route is **not** treated as complete. The alternative `platform.authorization.explain` remains **rejected**.
@@ -357,3 +361,80 @@ effective-grants contract — Platform has no seam for another user's grants; no
 > (not merged to `main`). **Self-explain v1 needs no external grant** (own `[Authorize]` route, own JWT claims, reused
 > `OrgDataScopeResolver`). **Cross-user explain is deferred** until OD-FU14-09 is resolved. AG-STEP-012 Allow Audit stays
 > separate; Slice 5B / Slice 7 + the FU13 rollout gate are unchanged.
+
+---
+
+## 16. Runtime implementation — completed in integration branch
+
+> **Pack status note.** Frontmatter stays **`ready-for-dev`** (repo convention: `done` is reserved for runtime **merged
+> to `main`**, which is blocked by the merge-freeze). Runtime completion is recorded here as a section, not a status flip.
+
+**Self-explain v1 runtime is implemented on the integration branch; post-fix integration audit: PASS. No PR / no merge;
+not merged to `main`** (`main` still `d3ab4a4`).
+
+**Runtime commits:**
+- `a2445b8` — **Group A:** shared pure `PermissionClaimEvaluator` extraction + `HasPermissionAttribute` delegation (enforcement byte-for-byte unchanged).
+- `9ddb36f` — **Group B:** backend-only self-explain route (`GET api/platform/access/explain/me`, plain `[Authorize]`) + API-layer `SelfAccessExplainService` + bounded DTO + audit flow.
+- `bba038a` — **Group C:** **remove the combined `Allowed` verdict**; return **separate permission + descriptive scope observations**.
+
+**Build & test (final):** `Diten.Platform.API` **0 errors**; `Diten.Platform.Application.Tests` **603 passed, 0 failed**;
+`Diten.Platform.Eventing.Tests` **56 passed, 0 failed, 3 pre-existing skipped**. Self-explain v1 is integrated,
+test-green, and **semantically aligned with live enforcement (no false-negative universal empty-scope rule)**.
+
+### 16.1 Response model — RECONCILED (separate observations, no combined verdict)
+The earlier "allow/deny" / combined-`Allowed` wording in §3.1/§5/§8 is **superseded.** The Group C integration audit
+proved a combined verdict is **unsound**: row-level data-scope is **opt-in per resource** and platform/partner admins are
+**not row-scoped** (BME-001), so an empty scope is **not** a universal deny; and there is **no permission↔module binding
+catalog**, so the two inputs cannot be soundly combined. The response therefore carries **two separate observations** and
+**no `Allowed` verdict**:
+- **Permission observation — `PermissionSatisfied`** (+ `PermissionMatch`, `MatchedViaLegacyAlias`): the permission-gate
+  observation **only** (platform/partner-admin bypass, or the pure `PermissionClaimEvaluator` result). It is **not**
+  affected by the data-scope result, an empty scope, a resolver exception, or a module mismatch. It is **not** an
+  authorization grant, **not** an access decision for any other endpoint, and **not** an enforcement verdict — it is a
+  diagnostic observation.
+- **Scope observation — `ScopeKinds` + `ScopeCounts` + `ScopeNotes`**: a **descriptive** observation, **not** an
+  applicability verdict, **not** a scope-deny verdict, and **not** a permission↔module binding claim; raw scope ids are
+  never returned. Base notes: `data-scope-opt-in-per-resource`, `scope-applicability-not-determined`; empty scope adds
+  `empty-scope-does-not-imply-universal-deny`; a resolver failure adds `scope-observation-failed`.
+
+### 16.2 DTO contract (`SelfAccessExplainResponse`)
+**Fields:** `Mode`, `PermissionSatisfied`, `RequiredPermission`, `PermissionMatch`, `MatchedViaLegacyAlias`, `ActorType`,
+`TenantId`, `ScopeKinds`, `ScopeCounts`, `ScopeNotes`, `TokenExpiresAtUtc`, `FreshnessNotes`, `DiagnosticFailure`.
+**Never:** `Allowed` · `ScopeApplicable` · `ScopeDenied` · raw JWT · raw claims · raw alias · permission/role inventory ·
+raw scope ids / `ScopeCode` / `Value` · org-chain ids · secrets · internal API key · raw exception · cache debug ·
+subject/tenant selector.
+
+### 16.3 Empty-scope parity (verified)
+Canonical / legacy-alias / `platform_admin` / `partner_admin` with an **empty** scope → `PermissionSatisfied = true`
+(no false negative; `empty-scope-does-not-imply-universal-deny` note present). Missing permission with a **non-empty**
+scope → `PermissionSatisfied = false`.
+
+### 16.4 permissionKey ↔ moduleCode independence (verified)
+The request is one `permissionKey` + one `moduleCode` (+ optional `featureCode`). The permission observation comes
+**only** from the claim; the scope observation **only** from the resolver's module input. There is **no permission↔module
+binding catalog** in the API layer (the alias map is **not** such a catalog); the endpoint does **not** assert the pair
+is semantically matched, produces **no** combined verdict, and **no** new catalog / mapping / validator was written.
+
+### 16.5 Permission observer + Company (corrected)
+The observer never calls the real `HasPermissionAttribute` filter (side-effect boundary preserved); it reuses the shared
+pure `PermissionClaimEvaluator` (canonical / legacy-alias / missing) + the bounded actor bypass
+(`bypass-platform-admin` / `bypass-partner-admin`); no raw claim/alias is returned. **`permission-key-unknown` is NOT
+produced** at runtime (no known-canonical-key catalog exists in the API layer; none was invented) — it remains a
+deferred-observation limit. **Company correction:** `EntitlementDataScopeKind.Company` **exists** in the enum, but the
+current `OrgDataScopeResolver` does **not** emit it; the observer projects only resolver output and never fabricates it.
+
+### 16.6 Audit (reconciled)
+Audited handler-level flows: success · application-level deny · validation deny · invalid context · resolver diagnostic
+failure. Metadata **removed `allowed`**, **added `permissionSatisfied` + `scopeNotes`**; kept mode, required permission,
+permission match, `matchedViaLegacyAlias`, actor type, tenant id, scope kinds, scope counts, diagnostic-failure flag
+(+ `validationCode` on a validation/invalid-context deny). **Outcome** = `diagnostic ? Failed : permissionSatisfied ?
+Succeeded : Denied`. Failure isolation: `OperationCanceledException` propagates; other audit exceptions are logged +
+swallowed; a Rejected / EnqueueFailed result never changes the response; a pre-handler `[Authorize]` 401 is **not**
+guaranteed to emit a FU14-specific AuditEvent (no new middleware/filter seam was written).
+
+### 16.7 Deferred (unchanged)
+**OD-FU14-08B** (non-bypass tenant-admin / auditor extension + external AuthService catalog migration + role-grant +
+external evidence) and **OD-FU14-09** (cross-user target effective-grants contract; the cross-user data-scope-only
+alternative is **rejected**) remain **deferred** — neither is a self-v1 blocker, neither is complete, and both are
+distinct from **AG-STEP-012** (Allow Audit, `OD-D`, separate, not designed/implemented here). Explain-request audit is
+**not** the AG-STEP-012 allow-decision audit.
