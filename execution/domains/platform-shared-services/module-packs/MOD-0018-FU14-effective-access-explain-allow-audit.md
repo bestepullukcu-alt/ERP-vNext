@@ -16,12 +16,14 @@ form_field_count: 0
 
 # MOD-0018-FU14 — Effective Access Explain + Allow Audit
 
-> **Ready-for-dev note.** Module-pack contract authored, decision-locked, and promoted `draft → ready-for-dev`
-> **before** any Explain Access runtime work (Access Governance step **AG-STEP-011**), grounded on read-only repo
-> evidence at HEAD `c035bf5`. Authoring + decision-lock + promotion made **no** runtime, seed, migration, test,
-> frontend, gateway, `.antigravity`, registry, or roadmap change. **FU14 v1 has no open decision** — §9 locks
-> OD-FU14-01…07 + 08A; only **OD-FU14-08B** (a non-bypass role extension) is deferred and is **not a v1 runtime
-> blocker**. `ready-for-dev` authorizes implementation **planning / handoff only**; production code still passes the
+> **Ready-for-dev note (scope: SELF-EXPLAIN ONLY v1).** Module-pack contract authored, decision-locked, promoted
+> `draft → ready-for-dev`, and **scope-reconciled to self-explain-only** by the AG-STEP-011 runtime-inventory audit (HEAD
+> `8c1d8fb`) — all **before** any Explain Access runtime work. Every revision so far made **no** runtime, seed, migration,
+> test, frontend, gateway, `.antigravity`, registry, or roadmap change. **FU14 self-explain v1 has no open decision** —
+> §9 locks OD-FU14-01 (self-explain) · 02 · 03 · 04 (handler-level) · 05 · 06 · 07 · 08A (marker **reserved**, not active
+> in self-v1). **Cross-user explain is deferred** (OD-FU14-09 target effective-grants contract + OD-FU14-08B non-bypass
+> extension) — Platform has **no seam to read another user's effective grants**, and a permission-less cross-user trace
+> is rejected. `ready-for-dev` authorizes implementation **planning / handoff only**; production code still passes the
 > orchestrator / add-module gate. Runtime stays fail-closed throughout; **no runtime implementation begins in this
 > step.**
 
@@ -95,19 +97,43 @@ introduce a **new bounded reason model** (§4).
 
 ---
 
-## 3. Explain Access v1 goal (backend-only decision-trace contract)
+## 3. Explain Access v1 goal — **SELF-EXPLAIN ONLY** (backend-only decision-trace contract)
 
-A read-only contract that **explains** the result the existing authorization chain would produce, for a given
-(subject, permission key [, optional resource scope]) — **without** making or altering enforcement.
+> **Scope narrowed by the AG-STEP-011 runtime-inventory audit (HEAD `8c1d8fb`).** FU14 **v1 is self-explain only**.
+> Cross-user explain is **deferred** (see §3.1 + OD-FU14-09): Platform has **no seam to read another user's effective
+> permission grants**, so a cross-user *permission* trace cannot be produced today, and a permission-less cross-user
+> trace would be misleading. The `ready-for-dev` status is kept; runtime is a separate step.
 
-- **Observes** the live chain (§2); **never decides**.
-- **Tenant isolation** mandatory.
+A read-only contract that **explains** the result the existing authorization chain would produce for the
+**authenticated caller's own** (permission key [, optional resource scope]) — **without** making or altering enforcement.
+
+- **Self-subject only.** The subject is resolved from the caller's JWT (`sub`/NameIdentifier) + the current tenant
+  context; the caller **cannot** choose another `subjectUserId` (no request/query subject id).
+- **Observes** the live chain (§2); **never decides**. **Tenant isolation** mandatory.
 - **Fail-closed:** if an explanation cannot be produced, **no access is granted**; a diagnostic failure does **not**
   override the real allow/deny.
 - **No sensitive data leak** (§5).
-- **Endpoint precedent (directional only):** `TenantModuleEntitlementsController.HttpGet("effective-access/{moduleCode}")`
-  shows a Platform-API "effective-access" GET shape. The **exact route / controller is NOT finalized here** — proposed
-  at pack level only. No endpoint is implemented in this step.
+- **Auth:** the self route is `[Authorize]` (own identity); **no cross-user diagnostic marker is used on the self route.**
+- **Proposed self route (proposal only — no controller/endpoint created here):** `GET api/platform/access/explain/me`.
+
+### 3.1 Runtime-inventory finding — LOCKED (observer seam, side-effect boundary)
+
+- **Side-effect boundary.** The Explain observer **must NOT call the real `HasPermissionAttribute` filter.** Its
+  platform-actor branch **mutates admin lifecycle state** (`HasPermissionAttribute.cs:56-64` — invitation acceptance,
+  last-login update, `repository.UpdateAsync`). An explain endpoint is a **read-only observer** and must never trigger
+  that write. The **pure claim-matching** part (`HasPermissionClaim` / `IsPermissionClaim` + `PermissionAliasResolver.Expand`)
+  is side-effect-free and is **extracted into a shared pure evaluator** (canonical-match / legacy-alias-match /
+  missing-claim / unknown-key). Extraction must **not** change enforcement behavior; `HasPermissionAttribute` then
+  **delegates** claim-matching to the same evaluator; the observer uses **only** the pure evaluator. Enforced behavior
+  is held by regression tests (Group A).
+- **Data-scope observer.** `OrgDataScopeResolver.ResolveAsync(tenantId, userId, moduleCode, featureCode, ct)` is
+  **read-only** and accepts an **explicit userId**, so it is safely reused for self-explain. The response carries **only
+  scope kinds + counts**; raw scope id lists stay out. The resolver produces no second authorization decision — it is
+  used **only** for the explain projection. **Empty scope ⇒ deny** preserved; LegalEntity **live fail-closed** lookup
+  preserved.
+- **Token-freshness observer.** JWT `exp`, `actor_type`, `sub`, `tenant_id` are readable; there is **no token-version
+  seam and no revocation-timestamp seam**. The response carries **only** expiry + a bounded `refresh-required` note; no
+  freshness state that cannot actually be proven at runtime is produced.
 
 ---
 
@@ -132,17 +158,29 @@ reason code.** The model is a read-only observation of the chain; it does **not*
 > Rules: bounded enum only; never return raw exception messages or an internal full-rule trace; never produce an
 > authorization decision; do not duplicate enforcement logic in a debug path.
 
+### 4.4 Producibility for self-explain v1 (AG-STEP-011 runtime audit)
+- **Producible from self-explain v1 runtime** — Permission: `authenticated` · `permission-claim-canonical-match` ·
+  `permission-claim-legacy-alias-match` · `permission-claim-missing` · `permission-key-unknown`. Data-scope: all §4.2
+  codes (`scope-resolved` … `scope-no-match`). Token-freshness: all §4.3 codes (`token-valid-until-expiry` ·
+  `refresh-required-after-grant-change` · `token-version-unavailable` · `revocation-timestamp-unavailable`).
+- **Observer / regression vocabulary (may not reach the self-v1 response on every flow)** — `unauthenticated` (the self
+  route may be rejected by `[Authorize]` *before* the handler) · `actor-bypass-platform-admin` ·
+  `actor-bypass-partner-admin` (the bypass reasons belong to the deferred cross-user flow, not the self-v1 main path).
+- **Out of the v1 response** — raw exception text · raw JWT · raw claims · raw permission-token list · raw alias claim
+  value · raw role inventory · raw scope ids · raw org-chain ids · cache-internal keys. `Company` scope kind is not added
+  or assumed.
+
 ---
 
-## 5. Response security boundary (LOCKED guard)
+## 5. Response security boundary (LOCKED guard) — self-explain v1 shape
 
-**MAY return:** canonical permission key · allow/deny · bounded reason code (§4) · actor type · tenant id · evaluated
-**scope kinds** · scope **counts** · bypass reason · `matchedViaLegacyAlias: true/false` · limited freshness note (JWT
-expiry, if available).
+**MAY return:** `mode: self` · canonical permission key · allow/deny · bounded reason code (§4) · actor type · tenant id ·
+evaluated **scope kinds** · scope **counts** · `matchedViaLegacyAlias: true/false` · limited freshness note (JWT expiry,
+if available) + bounded `refresh-required` note · `diagnosticFailure: true/false`.
 
-**MUST NOT return (default):** raw JWT · raw claims dump · secrets · internal API key · other-tenant data · unnecessary
-PII · full grant inventory · **raw organization-chain node id list (default)** · **role id / role-name list (default)** ·
-repository exception detail · cache-internal keys.
+**MUST NOT return:** any **other-subject id selection** · raw JWT · raw claims dump · secrets · internal API key ·
+other-tenant data · unnecessary PII · full grant inventory · **raw organization-chain node id list** · **role id /
+role-name list** · raw scope id lists · repository exception detail · cache-internal keys.
 
 **Redaction default:** return scope **kind + count**; **raw scope ids are NOT returned by default**; any more-detailed
 debug level requires a separate explicit decision (OD-FU14-07). The existing `AuditEvent` model's masked fields
@@ -192,10 +230,10 @@ masked IP, `OccurredAtUtc`, `SourceService`, `SourceModule`, redaction fields.
 > extension) is **deferred** and is **not a v1 runtime blocker**. Each lock is grounded in read-only repo evidence at
 > HEAD `c035bf5`. The pack is now `ready-for-dev`; runtime implementation is a separate, explicitly-authorized step.
 
-### OD-FU14-01 — Caller policy → **LOCKED**
+### OD-FU14-01 — Caller policy → **LOCKED (self-explain only in v1)**
 - **Repo evidence.** `platform_admin`/`partner_admin` **bypass** `HasPermissionAttribute` (`isPlatformActor || HasPermissionClaim`); `AuthController.Me` (`HttpGet("me")`, `[Authorize]`, own identity) is the self-read precedent; **no `tenant_admin` actor exists** in Platform.
-- **Self-explain (LOCKED).** An authenticated subject may explain **only its own** effective-access result; the self-explain caller **cannot choose another `subjectUserId`**; no cross-user diagnostic key is required; tenant isolation enforced.
-- **Cross-user explain (LOCKED).** Only `platform_admin` / `partner_admin` may explain another subject — a read-only diagnostic privilege surface gated by the canonical marker `platform.access.explain` and covered by the Platform actor-bypass model. To query another tenant's subject, an **explicit target tenant context** is required **and** the caller's authorized actor-bypass + tenant isolation are both verified. The Explain endpoint is **not** a grant-inventory endpoint.
+- **Self-explain (LOCKED — v1).** An authenticated subject may explain **only its own** effective-access result; the caller **cannot choose another `subjectUserId`** (subject from JWT `sub` + tenant context; no request/query subject id); no cross-user diagnostic marker is used on the self route; tenant isolation enforced; the endpoint is **not** a grant-inventory endpoint. Self route is `[Authorize]`.
+- **Cross-user explain → DEFERRED (NOT in v1).** The actor-bypass model authorizes *who may call*, but Platform has **no seam to read another user's effective permission grants** (those live in the AuthService `RolePermission` DB / only in that user's JWT; the Platform→AuthService client carries only provisioning/invitation surfaces). A cross-user *data-scope-only* explain is **rejected** — without permission provenance it is incomplete and misleading. Cross-user explain therefore moves to a **deferred follow-up** gated by **OD-FU14-09** (target effective-grants contract) and remains subject to **OD-FU14-08B** for any non-bypass caller. **No new AuthService cross-service contract is invented in v1.**
 - **Deferred (08B):** tenant-admin / auditor / any **non-bypass** role cross-user explain — **not in v1.**
 
 ### OD-FU14-02 — Backend-only v1 → **LOCKED**
@@ -204,8 +242,8 @@ Backend-only v1; **no** Explain Access UI / gateway evidence in repo; frontend/g
 ### OD-FU14-03 — Reason-code granularity → **LOCKED**
 Bounded enum / controlled vocabulary (§4); **no** full internal trace in the response; **no** raw exception text as a reason code; the model **observes** the live chain and does **not** duplicate enforcement logic; a diagnostic failure never changes the decision. `Company` is **not** a scope kind and is not added/assumed.
 
-### OD-FU14-04 — Audit every Explain request → **LOCKED**
-**All** explain requests are audited: self-explain, cross-user, **denied** explain, and **diagnostic-failure** are all audited; an **audit-write failure does not change the enforcement decision**. Explain audit is **distinct** from the AG-STEP-012 allow-decision audit (which is **not** designed/implemented/completed here). Reuses `AuditEvent` / `AuditEventRepository` + the existing masked/redacted/correlation/actor/tenant/target/outcome/metadata/occurred-at/source fields. **Proposed category** `authorization.explain`; **proposed bounded metadata only:** self/cross-user mode, canonical permission key, allow/deny, bounded reason-code list, actor type, target tenant id, scope-kind list, scope counts, `matchedViaLegacyAlias`, diagnostic-failure flag. **Audit metadata MUST NOT include:** raw JWT · raw claim list · secrets · internal API key · raw role inventory · raw org-chain node ids · unnecessary PII · raw exception text.
+### OD-FU14-04 — Audit every Explain request → **LOCKED (handler-level, honestly bounded)**
+**Every self-explain execution that reaches the application handler is audited** — successful, application-level **denied**, and **diagnostic-failure** — and an **audit-write failure does not change the enforcement decision** (it is isolated at the handler). **Honesty caveat:** an **unauthenticated** request rejected by `[Authorize]` **before** the handler is **not guaranteed** to emit a FU14-specific audit event via the handler seam; FU14 v1 does **not** invent a new middleware/filter audit seam — existing API authentication/logging behavior is kept, and pre-handler-401 FU14 audit hardening is a **separate follow-up**. **Do not claim "every unauthenticated request emits a FU14 AuditEvent."** Reuses **`IAuditService.AppendAsync(AuditAppendRequest, ct)`** (the service performs masking/redaction). **Proposed category** `authorization.explain`; **bounded metadata only:** mode `self`, canonical permission key, allow/deny, bounded reason-code list, actor type, tenant id, scope-kind list, scope counts, `matchedViaLegacyAlias`, diagnostic-failure flag. **MUST NOT include:** raw JWT · raw claim list · raw permission-token list · raw alias claim value · secrets · internal API key · raw role inventory · raw scope ids · raw org-chain node ids · unnecessary PII · raw exception text. Explain audit is **distinct** from the AG-STEP-012 allow-decision audit (not designed/implemented here). **Cross-user audit is deferred with the cross-user flow** (still mandatory when that flow lands).
 
 ### OD-FU14-05 — Alias visibility → **LOCKED**
 Response exposes **only** `matchedViaLegacyAlias: true|false`; **no** raw legacy permission key, **no** raw matched claim, **no** alias-resolver internal dump. Slice 1B / Slice 7 alias-retirement state is **not** changed by FU14.
@@ -216,36 +254,50 @@ MAY return: limited JWT-expiry info (if present) + bounded `refresh-required-aft
 ### OD-FU14-07 — Default scope redaction → **LOCKED**
 Default response: scope **kinds + counts**. **Out of the default response:** raw org-unit/position/manager-chain/legal-entity id lists · role id/name inventory · unnecessary PII. Detailed debug view **deferred**; tenant isolation mandatory; empty-scope ⇒ deny preserved; LegalEntity live fail-closed lookup preserved; `Company` scope kind not assumed.
 
-### OD-FU14-08A — Explain permission marker → **LOCKED (v1)**
-Canonical cross-user Explain Access marker: **`platform.access.explain`**.
-- **Repo rationale.** PKS-001 lowercase-dotted, 3 segments, fits the Platform namespace and the `HasPermissionAttribute` actor-bypass model. v1 cross-user callers are **only** `platform_admin`/`partner_admin`, which **bypass** `[HasPermission]` — so **no seed / migration / alias row is needed in v1**; the marker fixes the authorization intent at the attribute level (consistent with every other `platform.*` key, none of which are seeded/granted in-repo).
-- The alternative `platform.authorization.explain` is **rejected**. **v1 marker LOCKED: `platform.access.explain`.**
+### OD-FU14-08A — Explain permission marker → **RESERVED (not active in self-explain v1)**
+Canonical marker name **`platform.access.explain`** (PKS-001 lowercase-dotted, 3 segments, fits the Platform namespace + the `HasPermissionAttribute` actor-bypass model). Because **cross-user explain is deferred** (OD-FU14-01 / OD-FU14-09), the marker is **RESERVED for the future cross-user diagnostic route** and is **not used on the self-explain v1 route** (the self route is `[Authorize]` only). For self-explain v1: **no seed, no migration, no alias row**; the marker is **not written to runtime** in this revision step; the cross-user route is **not** treated as complete. The alternative `platform.authorization.explain` remains **rejected**.
 
-### OD-FU14-08B — Non-bypass extension → **DEFERRED (external evidence; NOT a v1 blocker)**
-Granting cross-user explain to a **non-bypass** tenant-admin / auditor role requires an **AuthService `Permission` / `RolePermission` DB catalog migration**, a **role-grant decision**, and **external runtime evidence** (and possibly a separate canonical key). **Out of v1 scope; not a FU14 v1 runtime blocker.** **Rules:** no seed/migration, no alias row, no non-bypass implementation; this deferred item is **not** marked completed.
+### OD-FU14-08B — Non-bypass caller extension → **DEFERRED (external evidence; NOT a v1 blocker)**
+Granting cross-user explain to a **non-bypass** tenant-admin / auditor role requires an **AuthService `Permission` / `RolePermission` DB catalog migration**, a **role-grant decision**, and **external runtime evidence** (and possibly a separate canonical key). **Out of v1 scope; not a FU14 self-explain v1 blocker.** **Rules:** no seed/migration, no alias row, no non-bypass implementation; **not** marked completed.
+
+### OD-FU14-09 — Cross-user target effective-grants contract → **DEFERRED (NOT a self-v1 blocker)**
+Cross-user permission explain needs a **safe target effective-grants lookup seam** that does not exist today. Decisions required before any cross-user runtime:
+- Is a new **AuthService internal contract** required (Platform has no seam for another user's grants)?
+- What **bounded DTO** is returned (no raw grant inventory)?
+- How is **tenant isolation** of the target subject verified?
+- How is **permission-grant-inventory leakage** prevented?
+- How are **audit / redaction** applied to the cross-user path?
+- Does the **Platform→AuthService client** need to be extended?
+
+**Rules:** **no** new endpoint / contract / DTO is written in this step; cross-user runtime **does not start** until this decision is resolved; this is **not** a FU14 self-explain v1 blocker; it is **distinct** from AG-STEP-012 Allow Audit. **FU14 self-explain v1 has no open decision; the cross-user extension is deferred and not completed.**
 
 ---
 
-## 10. Acceptance Criteria (reconciled to the §9 locks)
+## 10. Acceptance Criteria (FU14 self-explain v1 — reconciled to the AG-STEP-011 runtime audit)
 1. Self-explain works **only** for the authenticated own subject.
-2. Cross-user explain works **only** for `platform_admin` / `partner_admin`.
-3. Cross-user marker = `platform.access.explain`.
-4. **No** seed / migration / alias row for v1.
-5. Non-bypass tenant-admin / auditor extension is **deferred** (OD-FU14-08B).
-6. Explain **only observes** the current enforcement decision.
-7. A diagnostic failure does **not** change the enforcement decision.
-8. Tenant isolation is mandatory.
-9. Response uses the **bounded reason-code** model (§4).
-10. No raw JWT / claims / secrets / internal key returned.
-11. Alias visibility is **only** the `matchedViaLegacyAlias` boolean.
-12. Scope-detail default = **kinds + counts**.
-13. Token-freshness = **only** expiry + bounded `refresh-required` note.
-14. **All** explain requests are audited (self, cross-user, denied, diagnostic-failure).
-15. Explain audit **≠** AG-STEP-012 Allow Audit.
-16. Frontend / gateway **deferred**.
-17. EnterpriseStrategy **out of scope**.
-18. Cache-debug endpoint **out of scope**.
-19. **FU13 rollout-gate status is unchanged.**
+2. The caller **cannot** choose another subject.
+3. Tenant isolation is preserved.
+4. The explain observer **does not** call the real `HasPermissionAttribute` filter.
+5. A **shared pure evaluator** is used jointly with the enforcement claim-matching logic.
+6. Existing authorization behavior is preserved by regression (incl. the admin-lifecycle side-effect).
+7. Data-scope returns **only kinds + counts**.
+8. **Empty scope ⇒ deny** preserved.
+9. LegalEntity **live fail-closed** lookup preserved.
+10. Alias visibility is **only** the `matchedViaLegacyAlias` boolean.
+11. Token-freshness = **only** expiry + bounded `refresh-required` note.
+12. No raw JWT / claims / secrets / raw scope ids / role inventory returned.
+13. Every self-explain execution **reaching the handler** is audited.
+14. An audit-write failure does **not** change the enforcement decision.
+15. Pre-handler unauthenticated FU14 audit hardening is **out of v1**.
+16. Cross-user explain is **out of v1**.
+17. The cross-user **data-scope-only** alternative is **rejected**.
+18. `platform.access.explain` is a **reserved** marker; **not actively used** in self v1.
+19. Cross-user runtime does **not** start before **OD-FU14-09** is resolved.
+20. **OD-FU14-08B** stays deferred.
+21. AG-STEP-012 Allow Audit stays separate.
+22. Frontend / gateway deferred.
+23. EnterpriseStrategy out of scope.
+24. **FU13 rollout-gate status is unchanged.**
 
 ---
 
@@ -259,10 +311,12 @@ Platform regression. **No tests are written in this step.**
 ---
 
 ## 12. Non-Goals
-Allow-Audit runtime policy (AG-STEP-012) · frontend / gateway · raw JWT viewer · full grant-inventory endpoint ·
-unrestricted org-chain viewer · cache debug endpoint · Redis / distributed cache · token deny-list · token versioning ·
-EnterpriseStrategy integration · Slice 5B / Slice 7 resolution · FU13 RabbitMQ rollout-gate closure · new seed / migration ·
-the non-bypass cross-user extension (OD-FU14-08B).
+**Cross-user explain runtime** · **cross-user data-scope-only partial explain (rejected)** · **AuthService target
+effective-grants endpoint / contract (OD-FU14-09)** · the non-bypass tenant-admin / auditor extension (OD-FU14-08B) ·
+Allow-Audit runtime policy (AG-STEP-012) · pre-handler-401 FU14 audit middleware/filter · frontend / gateway · raw JWT
+viewer · full grant-inventory endpoint · unrestricted org-chain viewer · cache debug endpoint · Redis / distributed
+cache · token deny-list · token versioning · EnterpriseStrategy integration · Slice 5B / Slice 7 resolution · FU13
+RabbitMQ rollout-gate closure · new seed / migration / alias row.
 
 ---
 
@@ -271,26 +325,35 @@ the non-bypass cross-user extension (OD-FU14-08B).
 > Atomic-group plan for the **future** runtime step (a separate, explicitly-authorized step). **No runtime code, DTO,
 > endpoint, test, seed, or migration is written by this pack.**
 
-- **Group A — Explain reason model.** Bounded reason-code enum/DTO (§4) + response redaction model (§5/§7) + an
-  **enforcement-observer** contract that reads the live decision and **produces no authorization decision**.
-- **Group B — Self-explain backend flow.** Authenticated own-subject only; tenant isolation; **no** cross-user marker;
-  audit-event write (§8); fail-closed diagnostics.
-- **Group C — Cross-user explain backend flow.** Canonical marker `platform.access.explain`; actor bypass
-  (`platform_admin`/`partner_admin`) only; explicit target-tenant isolation; audit-event write; **no** non-bypass grant
-  extension (OD-FU14-08B stays deferred).
-- **Group D — Tests + integration audit.** Caller-policy matrix; redaction; alias boolean; limited token-freshness;
-  audit-event behavior; full Platform regression.
-- **Group E — Governance reconciliation.** Pack runtime-completion note + roadmap; docs-only; last.
+- **Group A — Pure permission evaluator + reason model.** Extract a **shared pure `PermissionClaimEvaluator`** (canonical /
+  legacy-alias / missing / unknown-key); **`HasPermissionAttribute` delegates** claim-matching to it — **enforcement
+  behavior unchanged**; bounded reason-code model (§4) + redacted self-explain projection (§5/§7).
+  **Regression gate:** canonical claim · legacy alias · missing claim · unknown key · unauthenticated · platform_admin
+  bypass · partner_admin bypass · inactive-actor/lifecycle · **admin-lifecycle side-effect** · alias dual-read · full
+  Platform regression.
+- **Group B — Self-explain backend flow.** `[Authorize]`, **own-subject only**; tenant isolation; reuse
+  `OrgDataScopeResolver` (kinds + counts); limited token-freshness; bounded response; **`IAuditService.AppendAsync`**;
+  diagnostic failure fail-closed. **Proposed route (proposal only):** `GET api/platform/access/explain/me`.
+- **Group C — Self-explain tests + integration audit.** Policy matrix; redaction; alias boolean; limited token-freshness;
+  audit-write isolation; no raw claim / raw scope leakage; full Platform regression; FU13 tests green.
+- **Group D — Governance reconciliation.** After a runtime audit PASS: pack runtime-completion note + roadmap; docs-only; last.
+
+> **Deferred cross-user follow-up (separate, explicitly-authorized).** Reserved marker `platform.access.explain` +
+> **OD-FU14-09** (target effective-grants contract) + **OD-FU14-08B** (non-bypass role extension). **Does not start
+> without the new AuthService contract decision.**
 
 ---
 
 ## 14. Open-decision reconciliation
 
-**Resolved / locked (FU14 v1):** OD-FU14-01 · 02 · 03 · 04 · 05 · 06 · 07 · **08A**.
-**Deferred (NOT a v1 blocker):** **OD-FU14-08B** — non-bypass tenant-admin / auditor extension + external grant-catalog
-migration + role-grant decision.
+**FU14 v1 scope = SELF-EXPLAIN ONLY.**
+**Resolved / locked (self-explain v1):** OD-FU14-01 (self-explain) · 02 · 03 · 04 (handler-level) · 05 · 06 · 07 · **08A**
+(marker reserved, not active in self-v1).
+**Deferred (NOT a self-v1 blocker):** **OD-FU14-08B** (non-bypass caller extension) · **OD-FU14-09** (cross-user target
+effective-grants contract — Platform has no seam for another user's grants; no AuthService contract is invented here).
 
-> **FU14 v1 has no open decision.** This pack is promoted to **`ready-for-dev`** (implementation handoff only — **no
-> runtime code is written by this pack**); **runtime implementation is a separate, explicitly-authorized step**, and
-> **no PR / merge** (not merged to `main`). Cross-user runtime relies on the platform/partner-admin **bypass** (no
-> external grant needed for v1); the only external dependency is the **deferred** OD-FU14-08B extension.
+> **FU14 self-explain v1 has no open decision.** This pack stays **`ready-for-dev`** (implementation handoff only — **no
+> runtime code is written by this pack**); **runtime is a separate, explicitly-authorized step**, and **no PR / merge**
+> (not merged to `main`). **Self-explain v1 needs no external grant** (own `[Authorize]` route, own JWT claims, reused
+> `OrgDataScopeResolver`). **Cross-user explain is deferred** until OD-FU14-09 is resolved. AG-STEP-012 Allow Audit stays
+> separate; Slice 5B / Slice 7 + the FU13 rollout gate are unchanged.
