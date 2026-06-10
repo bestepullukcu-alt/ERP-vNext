@@ -65,30 +65,15 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
             }
         }
 
-        if (isPlatformActor || HasPermissionClaim(user.Claims))
+        // AG-STEP-004B Slice 1B (dual-read) + AG-STEP-011 Group A: the canonical/alias claim-matching is delegated to
+        // the side-effect-free PermissionClaimEvaluator so the enforcement filter and the future self-explain observer
+        // share one implementation and cannot drift. Behavior is unchanged: a canonical requirement is satisfied by the
+        // canonical key OR any mapped legacy alias; a legacy/unknown requirement accepts only itself (fail-closed).
+        if (isPlatformActor || PermissionClaimEvaluator.Evaluate(user.Claims, _permission).IsSatisfied)
         {
             return;
         }
 
         context.Result = new ForbidResult();
     }
-
-    private bool HasPermissionClaim(IEnumerable<Claim> claims)
-    {
-        // AG-STEP-004B Slice 1B (dual-read): a canonical requirement is satisfied by the canonical key OR any legacy
-        // alias mapped to it. A legacy/unknown requirement expands to only itself — no auto-upgrade, fail-closed.
-        var acceptedKeys = PermissionAliasResolver.Expand(_permission);
-
-        return claims.Any(claim =>
-            IsPermissionClaim(claim.Type)
-            && claim.Value
-                .Split([' ', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Any(token => acceptedKeys.Contains(token, StringComparer.OrdinalIgnoreCase)));
-    }
-
-    private static bool IsPermissionClaim(string claimType) =>
-        string.Equals(claimType, "permission", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(claimType, "permissions", StringComparison.OrdinalIgnoreCase)
-        || claimType.EndsWith("/permission", StringComparison.OrdinalIgnoreCase)
-        || claimType.EndsWith("/permissions", StringComparison.OrdinalIgnoreCase);
 }
