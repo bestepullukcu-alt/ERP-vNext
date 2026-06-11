@@ -537,3 +537,38 @@ wanted, that is MOD-0018-FU14, not FU15.)
 - **Additional scope kinds:** `Company` / `Country` / `Department` / `Team` / `Region` and exclusion (`IsInclude=false`)
   semantics — deferred until a backed MOD-0288 (or other) source exists.
 - **Partner-admin / S2S runtime scope:** GAP-13-1 and service-actor scope hardening — separate follow-ups.
+
+---
+
+## 21. Runtime implementation — completed in integration branch
+
+> **Pack status note.** Frontmatter stays **`ready-for-dev`** (repo convention: `done` is reserved for runtime **merged
+> to `main`**, which is blocked by the merge-freeze). Runtime completion is recorded here as a section, not a status flip.
+
+**The Real DataScopeResolver runtime is implemented on the integration branch and pushed to origin; not merged to
+`main`** (`main` still `d3ab4a4`; **no PR / no merge**).
+
+**Implementation commit:** `26d4fe7` — `feat(platform): implement real DataScopeResolver (MOD-0018-FU15)` — adds
+`Diten.Platform.Application/Authorization/OrgDataScopeResolver.cs` + DI registration (replacing the NoOp) +
+`OrgDataScopeResolverTests` / `DataScopeResolverRegistrationTests`. **Pushed to `origin/feature/governance/access-governance-execution`.**
+
+**Live behavior (verified against the implementation — not assumed):**
+- `OrgDataScopeResolver` is registered as `IDataScopeResolver` (replaces `NoOpDataScopeResolver`); resolution is
+  **read-only** (tenant-scoped, non-deleted repository reads; `tenantId` re-checked as defense in depth).
+- **Emitted scope kinds (exactly four):** `OrgUnit`, `Position`, `ManagerChain`, `LegalEntity`. It emits **no `Country`**
+  (no MOD-0288 backing) and **no `Company`** (deferred until a consumer field + backing source exist — §20). The
+  `EntitlementDataScopeKind` enum contains additional members (`Company`, `Country`, …) that this resolver does **not**
+  emit; nothing fabricates them.
+- **Manager-chain is bounded (OD-E):** `MaxManagerChainDepth = 32`, **cycle-safe** (visited-set), traversing the Position
+  reporting chain via `Position.ReportsToPositionId` (Position IDs, not Org Unit IDs) — **no recursive auto-open**, no new
+  hierarchy expansion invented.
+- **Fail-closed:** an empty / unresolved scope returns an **empty list** (no identifiable user → empty; for an opted-in
+  scoped resource this is deny, per BME-001 — never auto-open). **Tenant isolation preserved.**
+- **LegalEntity referenceability** via a **live, fail-closed MOD-0220 lookup**; a non-referenceable legal entity drops
+  that scope without affecting the others.
+- **No cross-request scope cache** is added (OD-FU13-03 / request-fresh model preserved). The resolver is reused live by
+  **MOD-0018-FU14** self-explain (proven dependency).
+
+**Governance reconciliation:** the roadmap **AG-STEP-008** (FU15 pack) and **AG-STEP-009** (FU15 implementation) rows are
+reconciled to this state — pack exists (`ready-for-dev`), runtime implemented (`26d4fe7`), **pushed to origin, not merged
+to `main`**.
