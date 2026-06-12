@@ -485,4 +485,11 @@
   <data name="AdminSeedDeleteDenied" xml:space="preserve"><value>Sistem seed yoneticisi silinemez.</value></data>
   <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>Sistem seed yoneticisi askıya alınamaz.</value></data>
   <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Yonetici olusturuldu ancak davet e-postasi gonderilemedi. SMTP ayarlarini kontrol edip Daveti Yeniden Gonder islemini kullanin.</value></data>
+  <data name="AccessGovernance" xml:space="preserve"><value>Erişim Yönetişimi</value></data>
+  <data name="UsersMenu" xml:space="preserve"><value>Kullanıcılar</value></data>
+  <data name="RolesMenu" xml:space="preserve"><value>Roller</value></data>
+  <data name="PermissionsMenu" xml:space="preserve"><value>İzinler</value></data>
+  <data name="RolePermissionAssignmentMenu" xml:space="preserve"><value>Rol İzinleri</value></data>
+  <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>Kullanıcı Rolleri</value></data>
+  <data name="SelfAccessMenu" xml:space="preserve"><value>Erişimim</value></data>
 </root>

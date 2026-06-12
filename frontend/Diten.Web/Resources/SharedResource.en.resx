@@ -485,4 +485,11 @@
   <data name="AdminSeedDeleteDenied" xml:space="preserve"><value>The system seed administrator cannot be deleted.</value></data>
   <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>The system seed administrator cannot be suspended.</value></data>
   <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Administrator was created, but the invitation email could not be sent. Check SMTP settings and use Resend Invitation.</value></data>
+  <data name="AccessGovernance" xml:space="preserve"><value>Access Governance</value></data>
+  <data name="UsersMenu" xml:space="preserve"><value>Users</value></data>
+  <data name="RolesMenu" xml:space="preserve"><value>Roles</value></data>
+  <data name="PermissionsMenu" xml:space="preserve"><value>Permissions</value></data>
+  <data name="RolePermissionAssignmentMenu" xml:space="preserve"><value>Role Permissions</value></data>
+  <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
+  <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
 </root>
