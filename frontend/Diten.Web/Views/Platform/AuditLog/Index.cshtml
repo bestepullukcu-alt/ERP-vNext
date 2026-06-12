@@ -15,6 +15,17 @@
     </div>
 </div>
 
+@* FE-D (MOD-0018-FU9) — labeling only. The audit baseline is deny-only (OD-D); allow decisions are
+   not logged by policy. This note prevents the platform admin from expecting allow events here. No
+   backend / filter / audit-runtime change. *@
+<div class="alert alert-info d-flex align-items-start" role="note">
+    <i class="bx bx-info-circle me-2 mt-1"></i>
+    <div>
+        <span class="badge bg-label-danger me-1">@Localizer["AuditLog.DenyOnlyBadge"]</span>
+        @Localizer["AuditLog.DenyOnlyNotice"]
+    </div>
+</div>
+
 <div id="audit-log-permission" class="alert alert-warning d-none" role="alert">@Localizer["AuditLog.Unauthorized"]</div>
 <div id="audit-log-error" class="alert alert-danger d-none" role="alert"></div>
 <div id="audit-log-empty" class="alert alert-secondary d-none" role="status">@Localizer["AuditLog.Empty"]</div>
