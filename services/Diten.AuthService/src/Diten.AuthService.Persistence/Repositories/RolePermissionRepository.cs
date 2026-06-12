@@ -48,10 +48,29 @@ public sealed class RolePermissionRepository : RepositoryBase<RolePermission>, I
     {
         var allRPs = await Collection.Find(rp => rp.IsDeleted == false).ToListAsync(ct);
         var target = allRPs.FirstOrDefault(rp => rp.RoleId == roleId && rp.PermissionId == permissionId && rp.TenantId == tenantId);
-        
+
         if (target != null)
         {
             await Collection.DeleteOneAsync(rp => rp.Id == target.Id, ct);
         }
+    }
+
+    public async Task<IReadOnlyList<RolePermission>> GetByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct)
+    {
+        var filter = Builders<RolePermission>.Filter.And(
+            Builders<RolePermission>.Filter.Eq(rp => rp.RoleId, roleId),
+            Builders<RolePermission>.Filter.Eq(rp => rp.TenantId, tenantId),
+            Builders<RolePermission>.Filter.Eq(rp => rp.IsDeleted, false));
+
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task RemoveByIdAsync(Guid id, Guid tenantId, CancellationToken ct)
+    {
+        var filter = Builders<RolePermission>.Filter.And(
+            Builders<RolePermission>.Filter.Eq(rp => rp.Id, id),
+            Builders<RolePermission>.Filter.Eq(rp => rp.TenantId, tenantId));
+
+        await Collection.DeleteOneAsync(filter, ct);
     }
 }

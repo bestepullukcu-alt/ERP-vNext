@@ -3,9 +3,11 @@ using Diten.BuildingBlocks.Security.Secrets;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Infrastructure.Authorization;
+using Diten.AuthService.Infrastructure.Eventing;
 using Diten.AuthService.Infrastructure.Middleware;
 using Diten.AuthService.Infrastructure.Services;
 using Diten.AuthService.Infrastructure.Settings;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -84,7 +86,50 @@ public static class DependencyInjection
         services.AddScoped<TenantContext>();
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
 
+        AddEntitlementEventing(services, configuration);
+
         return services;
+    }
+
+    // Cross-service entitlement → role-permission sync transport. Gated by Eventing:Transport
+    // (default InMemory ⇒ NOT wired, since in-memory does not cross process boundaries). Setting
+    // Transport=RabbitMQ (same broker as Platform) activates the consumer. The MassTransit↔RabbitMQ
+    // binding to Platform's exchange is verified end-to-end in S18 (no broker in the unit-test harness).
+    private static void AddEntitlementEventing(IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<AuthServiceEventingOptions>(configuration.GetSection(AuthServiceEventingOptions.SectionName));
+
+        var options = configuration.GetSection(AuthServiceEventingOptions.SectionName).Get<AuthServiceEventingOptions>()
+                      ?? new AuthServiceEventingOptions();
+
+        if (!options.UseRabbitMq)
+        {
+            return;
+        }
+
+        services.AddMassTransit(x =>
+        {
+            x.AddConsumer<EntitlementSyncConsumer>();
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host(options.Host, options.Port, options.VirtualHost, h =>
+                {
+                    h.Username(options.Username);
+                    h.Password(options.Password);
+                    if (options.UseTls)
+                    {
+                        h.UseSsl(s => s.Protocol = System.Security.Authentication.SslProtocols.Tls12);
+                    }
+                });
+
+                cfg.UseMessageRetry(r => r.Exponential(
+                    options.RetryCount,
+                    TimeSpan.FromSeconds(options.InitialRetryDelaySeconds),
+                    TimeSpan.FromSeconds(options.MaxRetryDelaySeconds),
+                    TimeSpan.FromSeconds(options.InitialRetryDelaySeconds)));
+                cfg.ConfigureEndpoints(context);
+            });
+        });
     }
 
     private static IReadOnlyList<RequiredSecretDefinition> BuildSecretRequirements(IConfiguration configuration)

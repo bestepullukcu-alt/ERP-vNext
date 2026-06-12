@@ -20,5 +20,6 @@
     <ProjectReference Include="..\..\src\Diten.AuthService.Api\Diten.AuthService.Api.csproj" />
     <ProjectReference Include="..\..\src\Diten.AuthService.Domain\Diten.AuthService.Domain.csproj" />
     <ProjectReference Include="..\..\src\Diten.AuthService.Persistence\Diten.AuthService.Persistence.csproj" />
+    <ProjectReference Include="..\..\src\Diten.AuthService.Infrastructure\Diten.AuthService.Infrastructure.csproj" />
   </ItemGroup>
 </Project>
