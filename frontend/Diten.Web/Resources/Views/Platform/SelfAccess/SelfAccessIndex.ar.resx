@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Title" xml:space="preserve"><value>My Effective Access</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Explain your own access for a permission key.</value></data>
+  <data name="TwoObservationNotice" xml:space="preserve"><value>This shows two separate observations — a permission-gate check and a descriptive data-scope view. It is NOT a combined allow/deny verdict.</value></data>
+  <data name="PermissionKey" xml:space="preserve"><value>Permission key</value></data>
+  <data name="PermissionKeyPlaceholder" xml:space="preserve"><value>e.g. platform.tenants.read</value></data>
+  <data name="ModuleCode" xml:space="preserve"><value>Module code</value></data>
+  <data name="ModuleCodePlaceholder" xml:space="preserve"><value>e.g. MDM</value></data>
+  <data name="FeatureCode" xml:space="preserve"><value>Feature code</value></data>
+  <data name="Explain" xml:space="preserve"><value>Explain</value></data>
+  <data name="EnterKeyPrompt" xml:space="preserve"><value>Enter a permission key and run Explain.</value></data>
+  <data name="PermissionObservation" xml:space="preserve"><value>Permission gate</value></data>
+  <data name="ScopeObservation" xml:space="preserve"><value>Data scope</value></data>
+  <data name="RequiredPermission" xml:space="preserve"><value>Required permission</value></data>
+  <data name="PermissionSatisfied" xml:space="preserve"><value>Permission satisfied</value></data>
+  <data name="PermissionMatch" xml:space="preserve"><value>Match</value></data>
+  <data name="MatchedViaLegacyAlias" xml:space="preserve"><value>Matched via legacy alias</value></data>
+  <data name="ScopeKinds" xml:space="preserve"><value>Scope kinds</value></data>
+  <data name="ScopeCounts" xml:space="preserve"><value>Scope counts</value></data>
+  <data name="ScopeNotes" xml:space="preserve"><value>Notes</value></data>
+  <data name="ScopeUnavailable" xml:space="preserve"><value>Data-scope resolution was unavailable; the permission observation above is still valid.</value></data>
+  <data name="Context" xml:space="preserve"><value>Context</value></data>
+  <data name="Mode" xml:space="preserve"><value>Mode</value></data>
+  <data name="ActorType" xml:space="preserve"><value>Actor type</value></data>
+  <data name="TenantId" xml:space="preserve"><value>Tenant</value></data>
+  <data name="TokenExpiresAt" xml:space="preserve"><value>Token expires</value></data>
+  <data name="FreshnessNotes" xml:space="preserve"><value>Freshness notes</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="MatchCanonical" xml:space="preserve"><value>Canonical</value></data>
+  <data name="MatchLegacyAlias" xml:space="preserve"><value>Legacy alias</value></data>
+  <data name="MatchMissing" xml:space="preserve"><value>Missing</value></data>
+  <data name="MatchBypassPlatformAdmin" xml:space="preserve"><value>Bypass (platform admin)</value></data>
+  <data name="MatchBypassPartnerAdmin" xml:space="preserve"><value>Bypass (partner admin)</value></data>
+</root>

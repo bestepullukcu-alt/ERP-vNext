@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Etkin Erişimim</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Bir izin anahtarı için kendi erişiminizi açıklayın.</value></data>
+  <data name="TwoObservationNotice" xml:space="preserve"><value>Bu ekran iki ayrı gözlem gösterir — izin-kapısı kontrolü ve açıklayıcı veri-kapsamı görünümü. Birleşik izin/ret kararı DEĞİLDİR.</value></data>
+  <data name="PermissionKey" xml:space="preserve"><value>İzin anahtarı</value></data>
+  <data name="PermissionKeyPlaceholder" xml:space="preserve"><value>örn. platform.tenants.read</value></data>
+  <data name="ModuleCode" xml:space="preserve"><value>Modül kodu</value></data>
+  <data name="ModuleCodePlaceholder" xml:space="preserve"><value>örn. MDM</value></data>
+  <data name="FeatureCode" xml:space="preserve"><value>Özellik kodu</value></data>
+  <data name="Explain" xml:space="preserve"><value>Açıkla</value></data>
+  <data name="EnterKeyPrompt" xml:space="preserve"><value>Bir izin anahtarı girip Açıkla'yı çalıştırın.</value></data>
+  <data name="PermissionObservation" xml:space="preserve"><value>İzin kapısı</value></data>
+  <data name="ScopeObservation" xml:space="preserve"><value>Veri kapsamı</value></data>
+  <data name="RequiredPermission" xml:space="preserve"><value>Gerekli izin</value></data>
+  <data name="PermissionSatisfied" xml:space="preserve"><value>İzin karşılandı</value></data>
+  <data name="PermissionMatch" xml:space="preserve"><value>Eşleşme</value></data>
+  <data name="MatchedViaLegacyAlias" xml:space="preserve"><value>Eski takma adla eşleşti</value></data>
+  <data name="ScopeKinds" xml:space="preserve"><value>Kapsam türleri</value></data>
+  <data name="ScopeCounts" xml:space="preserve"><value>Kapsam sayıları</value></data>
+  <data name="ScopeNotes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="ScopeUnavailable" xml:space="preserve"><value>Veri-kapsamı çözümü kullanılamadı; yukarıdaki izin gözlemi yine de geçerlidir.</value></data>
+  <data name="Context" xml:space="preserve"><value>Bağlam</value></data>
+  <data name="Mode" xml:space="preserve"><value>Mod</value></data>
+  <data name="ActorType" xml:space="preserve"><value>Aktör türü</value></data>
+  <data name="TenantId" xml:space="preserve"><value>Kiracı</value></data>
+  <data name="TokenExpiresAt" xml:space="preserve"><value>Token bitişi</value></data>
+  <data name="FreshnessNotes" xml:space="preserve"><value>Tazelik notları</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="MatchCanonical" xml:space="preserve"><value>Kanonik</value></data>
+  <data name="MatchLegacyAlias" xml:space="preserve"><value>Eski takma ad</value></data>
+  <data name="MatchMissing" xml:space="preserve"><value>Yok</value></data>
+  <data name="MatchBypassPlatformAdmin" xml:space="preserve"><value>Atlama (platform yöneticisi)</value></data>
+  <data name="MatchBypassPartnerAdmin" xml:space="preserve"><value>Atlama (partner yöneticisi)</value></data>
+</root>
