@@ -55,6 +55,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<Diten.Web.Services.IPlatformProfileSnapshotProvider, Diten.Web.Services.PlatformProfileSnapshotProvider>();
+// FE-B (MOD-0018-FU9): UX-only permission snapshot for tenant RBAC screens. Not enforcement.
+builder.Services.AddScoped<Diten.Web.Services.IPermissionSnapshot, Diten.Web.Services.PermissionSnapshot>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
 builder.Services.AddSingleton<ITaskDetailService, TaskDetailService>();
 builder.Services.AddScoped<IManagementGovernanceFrontendAdapter, MockManagementGovernanceFrontendAdapter>();
