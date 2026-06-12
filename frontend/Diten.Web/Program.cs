@@ -215,6 +215,10 @@ else
     app.UseExceptionHandler("/Home/Error");
 }
 
+// FE-A-core: friendly 401/403/404 pages, re-executed through HomeController.Status ([AllowAnonymous]).
+// Only triggers for empty-body error responses (JSON API/proxy responses carry a body → unaffected).
+app.UseStatusCodePagesWithReExecute("/Home/Status/{0}");
+
 app.UseStaticFiles();
 
 app.UseRouting();
