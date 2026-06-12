@@ -18,22 +18,22 @@ public sealed class PositionAssignmentsController : CustomBaseController
     public PositionAssignmentsController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet]
-    [HasPermission("Modules.PositionAssignment.Read")]
+    [HasPermission("platform.position-assignments.read")]
     public async Task<IActionResult> GetAll(CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new GetPositionAssignmentsQuery(), ct));
 
     [HttpPost]
-    [HasPermission("Modules.PositionAssignment.Create")]
+    [HasPermission("platform.position-assignments.create")]
     public async Task<IActionResult> Create([FromBody] PositionAssignmentRequest request, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new CreatePositionAssignmentCommand(request), ct));
 
     [HttpPut("{id:guid}")]
-    [HasPermission("Modules.PositionAssignment.Update")]
+    [HasPermission("platform.position-assignments.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] PositionAssignmentRequest request, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new UpdatePositionAssignmentCommand(id, request), ct));
 
     [HttpDelete("{id:guid}")]
-    [HasPermission("Modules.PositionAssignment.Delete")]
+    [HasPermission("platform.position-assignments.delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new DeletePositionAssignmentCommand(id), ct));
 }

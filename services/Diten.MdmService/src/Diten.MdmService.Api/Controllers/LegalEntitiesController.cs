@@ -20,7 +20,7 @@ public sealed class LegalEntitiesController : CustomBaseController
     }
 
     [HttpGet("{legalEntityId:guid}")]
-    [HasPermission("Modules.LegalEntity.Read")]
+    [HasPermission("mdm.legal-entities.read")]
     public async Task<IActionResult> GetById(Guid legalEntityId, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetLegalEntityByIdQuery(legalEntityId), cancellationToken);
@@ -28,7 +28,7 @@ public sealed class LegalEntitiesController : CustomBaseController
     }
 
     [HttpGet("{legalEntityId:guid}/lookup-validation")]
-    [HasPermission("Modules.LegalEntity.Read")]
+    [HasPermission("mdm.legal-entities.read")]
     public async Task<IActionResult> ValidateReference(Guid legalEntityId, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new ValidateLegalEntityReferenceQuery(legalEntityId), cancellationToken);
@@ -36,7 +36,7 @@ public sealed class LegalEntitiesController : CustomBaseController
     }
 
     [HttpPost]
-    [HasPermission("Modules.LegalEntity.Create")]
+    [HasPermission("mdm.legal-entities.create")]
     public async Task<IActionResult> Create([FromBody] CreateLegalEntityCommand command, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(command, cancellationToken);
@@ -44,7 +44,7 @@ public sealed class LegalEntitiesController : CustomBaseController
     }
 
     [HttpPatch("{legalEntityId:guid}/activate")]
-    [HasPermission("Modules.LegalEntity.Update")]
+    [HasPermission("mdm.legal-entities.update")]
     public async Task<IActionResult> Activate(Guid legalEntityId, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new ActivateLegalEntityCommand(legalEntityId), cancellationToken);
@@ -52,7 +52,7 @@ public sealed class LegalEntitiesController : CustomBaseController
     }
 
     [HttpPatch("{legalEntityId:guid}/archive")]
-    [HasPermission("Modules.LegalEntity.Update")]
+    [HasPermission("mdm.legal-entities.update")]
     public async Task<IActionResult> Archive(Guid legalEntityId, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new ArchiveLegalEntityCommand(legalEntityId), cancellationToken);
@@ -60,7 +60,7 @@ public sealed class LegalEntitiesController : CustomBaseController
     }
 
     [HttpDelete("{legalEntityId:guid}")]
-    [HasPermission("Modules.LegalEntity.Delete")]
+    [HasPermission("mdm.legal-entities.delete")]
     public async Task<IActionResult> Delete(Guid legalEntityId, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new DeleteLegalEntityCommand(legalEntityId), cancellationToken);

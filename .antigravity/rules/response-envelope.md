@@ -149,7 +149,8 @@ public sealed class CreateProductHandler
 
 ```csharp
 [HttpPost]
-[HasPermission(ProductPermissions.Products.Create)]
+// PKS-001: permission key is lowercase-dotted "module.resource.action"; a name-of constant resolves to that string.
+[HasPermission("products.catalog.create")]
 public async Task<IActionResult> Create(
     [FromBody] CreateProductCommand request, CancellationToken ct)
 {

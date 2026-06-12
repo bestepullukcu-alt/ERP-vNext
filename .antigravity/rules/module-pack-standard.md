@@ -300,20 +300,20 @@ Her hata senaryosu icin:
 ```text
 Policy:     [Authorize(Policy = "PlatformActor")]   // shell: platform-admin
             [Authorize]                              // shell: tenant
-Permission: [HasPermission("{Prefix}.{Resource}.{Action}")]
-  - Platform service controller'lari:  Platform.{Resource}.{Action}
-  - Tenant service controller'lari:    Modules.{ModuleName}.{Action}
-Actions:    Read, Create, Update, Delete, BulkDelete (+ modul-spesifik aksiyonlar)
+Permission: [HasPermission("{prefix}.{resource}.{action}")]   (PKS-001: lowercase-dotted, >= 3 segments, kebab-case multiword)
+  - Platform service controller'lari:  platform.{resource}.{action}
+  - Tenant service controller'lari:    {module}.{resource}.{action}
+Actions:    read, create, update, delete, bulk-delete (+ modul-spesifik aksiyonlar)
 Actor type: platform_admin (otomatik tum permission'lara pass) | partner_admin | tenant_user
 ```
 
 Modul-spesifik permission listesi (ornek):
 ```text
-Platform.Administrators.Read
-Platform.Administrators.Create
-Platform.Administrators.Update
-Platform.Administrators.Suspend
-Platform.Administrators.AssignRoles
+platform.administrators.read
+platform.administrators.create
+platform.administrators.update
+platform.administrators.suspend
+platform.administrators.assign-roles
 ```
 
 ---
@@ -521,7 +521,7 @@ Slim partial seti:
 
 ## Authorization Convention
 - Policy: `[Authorize(Policy = "PlatformActor")]`
-- Permission format: `Platform.{Resource}.{Action}`
+- Permission format: `platform.{resource}.{action}` (PKS-001 lowercase-dotted, >= 3 segments; tenant modules use `{module}.{resource}.{action}`)
 - Permissions: ...
 
 ## Gateway / API Routing Decision

@@ -79,7 +79,7 @@ Impacted UI: [Razor View / DataTable / Offcanvas]
 [Gherkin formatında listele]
 
 ## Yetki & Güvenlik
-Permission Key: [Örn: Modules.GoldenReferenceSlim.View]
+Permission Key: [Örn: module.golden-reference-slim.read]
 Tenant Isolation Type: [GUID-based Mandatory]
 
 ## Performans Hedefi

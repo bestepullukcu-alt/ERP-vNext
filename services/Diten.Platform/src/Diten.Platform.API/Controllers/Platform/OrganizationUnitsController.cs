@@ -18,32 +18,32 @@ public sealed class OrganizationUnitsController : CustomBaseController
     public OrganizationUnitsController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet]
-    [HasPermission("Modules.OrganizationUnit.Read")]
+    [HasPermission("platform.organization-units.read")]
     public async Task<IActionResult> GetAll(CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new GetOrganizationUnitsQuery(), ct));
 
     [HttpGet("{id:guid}")]
-    [HasPermission("Modules.OrganizationUnit.Read")]
+    [HasPermission("platform.organization-units.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new GetOrganizationUnitByIdQuery(id), ct));
 
     [HttpPost]
-    [HasPermission("Modules.OrganizationUnit.Create")]
+    [HasPermission("platform.organization-units.create")]
     public async Task<IActionResult> Create([FromBody] OrganizationUnitRequest request, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new CreateOrganizationUnitCommand(request), ct));
 
     [HttpPut("{id:guid}")]
-    [HasPermission("Modules.OrganizationUnit.Update")]
+    [HasPermission("platform.organization-units.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] OrganizationUnitRequest request, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new UpdateOrganizationUnitCommand(id, request), ct));
 
     [HttpPost("{id:guid}/archive")]
-    [HasPermission("Modules.OrganizationUnit.Archive")]
+    [HasPermission("platform.organization-units.archive")]
     public async Task<IActionResult> Archive(Guid id, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new ArchiveOrganizationUnitCommand(id), ct));
 
     [HttpDelete("{id:guid}")]
-    [HasPermission("Modules.OrganizationUnit.Delete")]
+    [HasPermission("platform.organization-units.delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new DeleteOrganizationUnitCommand(id), ct));
 }

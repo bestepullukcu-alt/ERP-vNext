@@ -126,11 +126,11 @@ public sealed class AuditPhase5ApiSurfaceTests
 
         Assert.Equal("api/platform/audit", controllerType.GetCustomAttribute<RouteAttribute>()?.Template);
         Assert.Equal("PlatformAdminOnly", controllerType.GetCustomAttribute<AuthorizeAttribute>()?.Policy);
-        Assert.Equal("Platform.Audit.Read", PermissionFor(nameof(PlatformAuditController.GetEvents)));
-        Assert.Equal("Platform.Audit.Read", PermissionFor(nameof(PlatformAuditController.GetEventById)));
-        Assert.Equal("Platform.Audit.Export", PermissionFor(nameof(PlatformAuditController.Export)));
-        Assert.Equal("Platform.Audit.Retention.Update", PermissionFor(nameof(PlatformAuditController.UpdateRetention)));
-        Assert.Equal("Platform.Audit.RedactActor", PermissionFor(nameof(PlatformAuditController.RedactActor)));
+        Assert.Equal("platform.audit.read", PermissionFor(nameof(PlatformAuditController.GetEvents)));
+        Assert.Equal("platform.audit.read", PermissionFor(nameof(PlatformAuditController.GetEventById)));
+        Assert.Equal("platform.audit.export", PermissionFor(nameof(PlatformAuditController.Export)));
+        Assert.Equal("platform.audit.retention.update", PermissionFor(nameof(PlatformAuditController.UpdateRetention)));
+        Assert.Equal("platform.audit.redact-actor", PermissionFor(nameof(PlatformAuditController.RedactActor)));
     }
 
     private static string? PermissionFor(string methodName)

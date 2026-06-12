@@ -4,7 +4,7 @@ slug: module-identity-canonicalization
 name: Module Identity Canonicalization
 type: Delivery Capability Pack
 standard: CAP-001
-status: draft
+status: approved
 owner_domain: platform-shared-services
 owner: enterprise-architect / platform-team
 branch: feature/governance/blueprint-module-id-reconciliation
@@ -12,13 +12,14 @@ created: 2026-06-04
 canonical_source: "docs/System Capability & Implementation Blueprint - master 5.xlsx#Blueprint_Data"
 inputs:
   - "docs/audits/blueprint-module-id-reconciliation-2026-06-03.md"
+status_note: "Promoted draft → approved by AG-STEP-002 after read-only verification (verify_module_id.py --check-all exit 0, 0 hard violations; deprecated-alias chains resolve; CAND-CAP-0001…0005 recorded)."
 ---
 
 # DCP-002 — Module Identity Canonicalization (Delivery Capability Pack)
 
 > **Artifact type:** This is a **Delivery Capability Pack** (CAP-001 governance / orchestration contract). It is **NOT** a runtime entity, **NOT** a module pack, **NOT** a MOD-0014 runtime Capability Group, and **NOT** a business-capability-matrix row.
 >
-> **Status guard:** `draft`. This pack authorizes the documentation-only canonicalization recorded below (already applied to the working tree on this branch). It does **NOT** approve any new numeric MOD-ID reservation; all unresolved items remain pending explicit Enterprise Architect allocation.
+> **Status guard:** `approved`. This pack approves the documentation-only canonicalization recorded below (applied and consistent in the registry + reconciliation ledger) **and** the second-pass CAND-CAP resolution (§16a). It still does **NOT** mint any new numeric `MOD-xxxx`: the legacy/repo-only capabilities resolved to the temporary candidate namespace `CAND-CAP-0001…0005`, whose **future Enterprise Architect allocation of canonical `MOD-xxxx` remains a separate downstream decision** (PR-2 / out of this pack's scope) and is **not** an approval blocker.
 
 ## 1. Identity and status
 
@@ -27,7 +28,7 @@ inputs:
 | ID | DCP-002 |
 | Slug | module-identity-canonicalization |
 | Type | Delivery Capability Pack (CAP-001) |
-| Status | `draft` |
+| Status | `approved` (AG-STEP-002) |
 | Owner domain | platform-shared-services |
 | Authoring branch | `feature/governance/blueprint-module-id-reconciliation` |
 | Canonical source | Blueprint `Blueprint_Data` (296 MOD rows) |
@@ -86,19 +87,24 @@ No runtime code / job IDs / audit keys / config keys / test assertions / routes 
 - Aliasing an ID before its exact replacement exists (forbidden; see §10).
 - Touching a correct runtime literal during a docs rename (forbidden; see §10).
 
-## 14. Review questions
-- Are the EA reservation items (§16) allocated exact canonical IDs?
-- Is MOD-0299↔MOD-0169 (SaaS vs ERP billing) resolved before any billing-job rename?
-- Is MOD-0047’s canonical home decided (new reservation vs MOD-0288/MOD-0018)?
+## 14. Review questions — resolved by §16a (second pass)
+- **Are the §16 items allocated exact canonical IDs?** Governance-resolved: each maps to an existing Blueprint MOD, an FU under a Blueprint parent, a retirement, or a temporary `CAND-CAP-####` candidate (§16a). The **final canonical `MOD-xxxx`** for `CAND-CAP-0001…0005` is a future EA decision — not an approval blocker.
+- **Is MOD-0299↔MOD-0169 (SaaS vs ERP billing) resolved?** Yes: `MOD-0169` is retired (ERP domain); SaaS Billing & Invoicing is the candidate `CAND-CAP-0005`. `MOD-0299` is retained only as a legacy runtime-compatibility literal (no billing-job rename in this pass).
+- **Is MOD-0047’s canonical home decided?** Yes: mapped to candidate `CAND-CAP-0001` (Tenant User / Identity Foundation); deprecated-alias row recorded.
 
 ## 15. Gate criteria
 - PR-1 contains zero runtime/test diff (verified).
 - Every changed canonical ID passes `verify_module_id.py --check-id`.
 - `verify_module_id.py --check-all` lists the unresolved backlog without blocking the applied safe migration.
 
-## 16. Unresolved EA reservation ledger (pending explicit allocation)
+## 16. EA reservation ledger — first-pass snapshot (superseded by §16a)
 
-> Mirror of the authoritative table in the reconciliation ledger. **Not approved.** No rename, no placeholder ID, no alias-before-replacement, no runtime-literal change. State = pending explicit EA reservation/decision.
+> **Historical first-pass snapshot, retained for traceability — superseded by §16a.** The table below records the
+> items *as first surfaced* ("pending"). They were subsequently **governance-resolved in §16a** (each mapped to a
+> Blueprint MOD, an FU, a retirement, or a temporary `CAND-CAP-####` candidate). The invariants still hold: **no
+> invented `MOD-xxxx`**, no alias-before-replacement, no runtime-literal change. The only item still genuinely
+> pending is the **future EA canonical-`MOD-xxxx` allocation for `CAND-CAP-0001…0005`** (§16a / §19) — **not** a
+> DCP-002 approval blocker.
 
 | Current ID | Requested canonical capability | Existing Blueprint candidate | Exact new ID? | Runtime-sensitive? | Owner |
 |---|---|---|---|---|---|
@@ -129,7 +135,7 @@ The §16 items have been resolved in a second governance pass and are no longer 
 None at runtime. Documentation consumers (master plan, DCP-001, domain configs) updated or annotated; old IDs resolve via aliases.
 
 ## 19. Open decisions
-The §16 ledger items, owned by the Enterprise Architect. PR-2 (runtime migration) stays blocked until any runtime-bearing ID receives an exact new allocation.
+**Single remaining decision, owned by the Enterprise Architect:** the future allocation of canonical `MOD-xxxx` for the temporary candidates `CAND-CAP-0001…0005` (§16a). This is a **separate downstream decision** and does **not** block DCP-002 approval — the candidates are recorded with deprecated-alias chains and governed by the prevention gate today. PR-2 (runtime-sensitive migration) stays blocked until any runtime-bearing ID receives an exact new allocation; runtime literals `MOD-0297` / `MOD-0299` remain legacy compatibility literals until then.
 
 ## 20. Audit and reconciliation notes
 Grounded in `docs/audits/blueprint-module-id-reconciliation-2026-06-03.md` and a read-only backend-architect architecture analysis. This pass is documentation-only; the No-Change proof for runtime paths is recorded in the executing handoff report.

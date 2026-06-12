@@ -78,7 +78,9 @@ public abstract class ModulePageDescriptorRequestValidator<T> : AbstractValidato
         var permission = ModulePageDescriptorNormalizer.NormalizePermission(value);
         var parts = permission.Split('.', StringSplitOptions.RemoveEmptyEntries);
 
-        return parts.Length == 3
+        // PKS-001 §1: module.resource.action is the minimum; deeper resource paths (>= 3 segments) are valid.
+        // AG-STEP-004B Slice 2 (D-6): relaxed from `== 3` to `>= 3`. All other grammar rules are unchanged.
+        return parts.Length >= 3
             && parts.All(part =>
                 part.Length > 0
                 && char.IsAsciiLetterLower(part[0])

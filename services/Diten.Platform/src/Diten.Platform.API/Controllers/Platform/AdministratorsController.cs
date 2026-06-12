@@ -22,7 +22,7 @@ public sealed class AdministratorsController : CustomBaseController
     }
 
     [HttpGet]
-    [HasPermission("Platform.Administrators.Read")]
+    [HasPermission("platform.administrators.read")]
     public async Task<IActionResult> GetItems([FromQuery] PlatformAdministratorFilterRequest filter, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetPlatformAdministratorsQuery(filter), ct);
@@ -30,7 +30,7 @@ public sealed class AdministratorsController : CustomBaseController
     }
 
     [HttpGet("stats")]
-    [HasPermission("Platform.Administrators.Read")]
+    [HasPermission("platform.administrators.read")]
     public async Task<IActionResult> GetStats(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetPlatformAdministratorStatsQuery(), ct);
@@ -38,7 +38,7 @@ public sealed class AdministratorsController : CustomBaseController
     }
 
     [HttpGet("{id:guid}")]
-    [HasPermission("Platform.Administrators.Read")]
+    [HasPermission("platform.administrators.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetPlatformAdministratorByIdQuery(id), ct);
@@ -46,7 +46,7 @@ public sealed class AdministratorsController : CustomBaseController
     }
 
     [HttpPost]
-    [HasPermission("Platform.Administrators.Create")]
+    [HasPermission("platform.administrators.create")]
     public async Task<IActionResult> Invite([FromBody] InvitePlatformAdministratorRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new InvitePlatformAdministratorCommand(request), ct);
@@ -54,7 +54,7 @@ public sealed class AdministratorsController : CustomBaseController
     }
 
     [HttpPut("{id:guid}")]
-    [HasPermission("Platform.Administrators.Update")]
+    [HasPermission("platform.administrators.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePlatformAdministratorRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new UpdatePlatformAdministratorCommand(id, request), ct);
@@ -62,7 +62,7 @@ public sealed class AdministratorsController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/suspend")]
-    [HasPermission("Platform.Administrators.Suspend")]
+    [HasPermission("platform.administrators.suspend")]
     public async Task<IActionResult> Suspend(Guid id, [FromBody] PlatformAdministratorStatusRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new SuspendPlatformAdministratorCommand(id, request), ct);
@@ -70,7 +70,7 @@ public sealed class AdministratorsController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/reactivate")]
-    [HasPermission("Platform.Administrators.Suspend")]
+    [HasPermission("platform.administrators.suspend")]
     public async Task<IActionResult> Reactivate(Guid id, [FromBody] PlatformAdministratorStatusRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new ReactivatePlatformAdministratorCommand(id, request), ct);
@@ -78,7 +78,7 @@ public sealed class AdministratorsController : CustomBaseController
     }
 
     [HttpDelete("{id:guid}")]
-    [HasPermission("Platform.Administrators.Update")]
+    [HasPermission("platform.administrators.update")]
     public async Task<IActionResult> Delete(Guid id, [FromBody] PlatformAdministratorVersionRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeletePlatformAdministratorCommand(id, request), ct);
@@ -86,7 +86,7 @@ public sealed class AdministratorsController : CustomBaseController
     }
 
     [HttpDelete("bulk")]
-    [HasPermission("Platform.Administrators.Update")]
+    [HasPermission("platform.administrators.update")]
     public async Task<IActionResult> BulkDelete([FromBody] IReadOnlyList<PlatformAdministratorBulkDeleteItemRequest> request, CancellationToken ct)
     {
         var response = await _mediator.Send(new BulkDeletePlatformAdministratorsCommand(request), ct);
@@ -94,7 +94,7 @@ public sealed class AdministratorsController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/roles")]
-    [HasPermission("Platform.Administrators.AssignRoles")]
+    [HasPermission("platform.administrators.assign-roles")]
     public async Task<IActionResult> AssignRoles(Guid id, [FromBody] AssignPlatformAdministratorRolesRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new AssignPlatformAdministratorRolesCommand(id, request), ct);
@@ -102,7 +102,7 @@ public sealed class AdministratorsController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/resend-invite")]
-    [HasPermission("Platform.Administrators.Create")]
+    [HasPermission("platform.administrators.create")]
     public async Task<IActionResult> ResendInvite(Guid id, [FromBody] PlatformAdministratorVersionRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new ResendPlatformAdministratorInviteCommand(id, request), ct);

@@ -43,7 +43,7 @@ Sen sistemin omurgasısın. Ürettiğin her Entity ve CQRS yapısı şu kurallar
 
 ### 3. Auth, JWT ve RBAC (Rol Bazlı Erişim)
 - Tüm endpoint'ler varsayılan olarak `[Authorize]` koruması altındadır.
-- Kullanıcı yetkilendirmesi Permission (İzin) bazlıdır. Gerekli yerlerde `[HasPermission("Modules.SampleModule.Create")]` gibi attribute'lar kullanılmalıdır.
+- Kullanıcı yetkilendirmesi Permission (İzin) bazlıdır. Gerekli yerlerde `[HasPermission("module.sample-module.create")]` gibi attribute'lar kullanılmalıdır.
 - JWT token doğrulama işlemleri Gateway'den geçer, servis kendi içinde `JwtBearer` ile doğrular.
 
 ### 4. Controller ve API Disiplini

@@ -24,7 +24,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     }
 
     [HttpGet]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetItems([FromQuery] ModuleCatalogFilterRequest filter, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModuleCatalogItemsQuery(filter), ct);
@@ -32,7 +32,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     }
 
     [HttpGet("stats")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetStats(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModuleCatalogStatsQuery(), ct);
@@ -40,7 +40,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     }
 
     [HttpGet("assignable")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetAssignable(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetAssignableModuleCatalogItemsQuery(), ct);
@@ -48,7 +48,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     }
 
     [HttpGet("{id:guid}")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModuleCatalogItemByIdQuery(id), ct);
@@ -56,7 +56,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     }
 
     [HttpGet("by-code/{moduleCode}")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetByCode(string moduleCode, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModuleCatalogItemByCodeQuery(moduleCode), ct);
@@ -64,7 +64,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     }
 
     [HttpPost]
-    [HasPermission("Modules.ModuleCatalog.Create")]
+    [HasPermission("platform.module-catalog.create")]
     public async Task<IActionResult> Create([FromBody] CreateModuleCatalogItemRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new CreateModuleCatalogItemCommand(request), ct);
@@ -72,7 +72,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     }
 
     [HttpPut("{id:guid}")]
-    [HasPermission("Modules.ModuleCatalog.Update")]
+    [HasPermission("platform.module-catalog.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateModuleCatalogItemRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new UpdateModuleCatalogItemCommand(id, request), ct);
@@ -80,7 +80,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/activate")]
-    [HasPermission("Modules.ModuleCatalog.Update")]
+    [HasPermission("platform.module-catalog.update")]
     public async Task<IActionResult> Activate(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new ActivateModuleCatalogItemCommand(id), ct);
@@ -88,7 +88,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/deactivate")]
-    [HasPermission("Modules.ModuleCatalog.Update")]
+    [HasPermission("platform.module-catalog.update")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeactivateModuleCatalogItemCommand(id), ct);
@@ -96,7 +96,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     }
 
     [HttpDelete("{id:guid}")]
-    [HasPermission("Modules.ModuleCatalog.Delete")]
+    [HasPermission("platform.module-catalog.delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeleteModuleCatalogItemCommand(id), ct);
@@ -104,7 +104,7 @@ public sealed class ModuleCatalogController : CustomBaseController
     }
 
     [HttpDelete("bulk")]
-    [HasPermission("Modules.ModuleCatalog.BulkDelete")]
+    [HasPermission("platform.module-catalog.bulk-delete")]
     public async Task<IActionResult> BulkDelete([FromBody] IReadOnlyList<Guid> ids, CancellationToken ct)
     {
         var response = await _mediator.Send(new BulkDeleteModuleCatalogItemsCommand(ids), ct);
