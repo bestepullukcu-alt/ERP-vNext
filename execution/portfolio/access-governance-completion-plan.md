@@ -112,27 +112,38 @@ If the live state contradicts the plan (drifted HEAD, unexpected dirty tree, pac
 - Current main baseline: `473a7f4` (PR #28; previously `d3ab4a4` pre-merge)
 - **Operating mode:** merge-freeze **lifted**; reviewer/admin available; normal per-branch PR flow restored. The Access Governance integration branch has been merged to `main` (PR #28). The next effort, **AG-INFRA-COMPLETION**, runs on its own single integration branch (see below).
 
-### Active phase — AG-INFRA-COMPLETION (post-merge)
+### Active phase — AG-INFRA-COMPLETION
 
-The integration milestones above (FU13/FU14/FU15 runtime, BME-001 Parts I/II, PKS-001 + the unblocked migration slices, MOD-0288/FU01 governance) are **live on `main` @ `473a7f4`**. The **AG-INFRA-COMPLETION** phase closes the remaining AG-infrastructure gaps surfaced by the post-merge read-only reconciliation audit, before any business-domain backend scaffold consumes the substrate. It runs on a **single integration branch** (`feature/governance/ag-infra-completion`, off `473a7f4`); steps accumulate as commits with **no per-step push** — one push at the very end.
+The integration milestones above (FU13/FU14/FU15 runtime, BME-001 Parts I/II, PKS-001 + the unblocked migration slices, MOD-0288/FU01 governance) are **live on `main` @ `473a7f4`**. The **AG-INFRA-COMPLETION** phase closes the remaining AG-infrastructure gaps surfaced by the post-merge read-only reconciliation audit, before any business-domain backend scaffold consumes the substrate.
 
-Confirmed real gaps in scope (audit-verified against `473a7f4`):
-- **Provisioning bridge** — `RoleProvisioningService.EnsureDefaultRolesAsync` creates **empty** system roles (no `RolePermission` attached); per-tenant permission grants are seeded only for the default tenant (`00000000-…-001`).
-- **Grant source-tracking** — `RolePermission` has `AssignedBy`/`AssignedAt` only; **no `GrantSource`/`GrantType`/`Origin`** field to distinguish system-provisioned vs manual grants (required for safe selective revoke).
-- **Entitlement→permission consumer** — AuthService has **no consumer** for `TenantEntitlementAddedV1`/`EnabledV1`/`DisabledV1` (events carry `ModuleCode`; Platform has `EntitlementCacheInvalidationConsumer`; AuthService side is dormant `AuthCacheContract`). FU13's Platform rollout has no separate feature-flag gate — only transport config (`Eventing:Transport`, default `InMemory`).
-- **Role-permission read API** — no `GET /api/roles/{id}/permissions` (only assign POST + revoke DELETE exist).
-- **006B (AuthService-only)** — MDM is already 100% `[HasPermission]`-gated; the remaining retrofit surface is the genuinely-privileged ungated AuthService endpoints (public-auth `[AllowAnonymous]` + internal-API-key endpoints are intentionally out of scope).
-- **FU9 frontend** — `MOD-0018-FU9` pack is `ready-for-dev`; layout split (`_LayoutTenantShell`/`_LayoutPlatformAdmin`) + npm lockfile exist; **no RBAC screens implemented yet**.
-- **Tenant Role governed identity** — AG-STEP-005 (role primitives have no pack/canonical ID); EA ID allocation pending (OD-A).
+**Status: code + tests COMPLETE on `feature/governance/ag-infra-completion` (HEAD `d7d5ab5`, off `473a7f4`) — NOT yet merged.** `main`/`origin/main` remain `473a7f4`; the branch is unpushed and merges as a single push (S19). The full suite gate (S18) passed: **AG-infra-introduced new test failures = 0** (AuthService 92/92, Platform.Application 603/603, Platform.Eventing 56/56 +3 skip, MDM 25/25, frontend build 0 errors; AG-infra added 12 test files, all green). Canonical-ID gate (`verify_module_id.py --check-all`): **HARD violations = 0** (no new MOD minted).
 
-Open follow-ups, explicitly **out of AG-INFRA-COMPLETION scope (deferred)**:
-- Permission-key migration **Slice 5B / Slice 7** — blocked on external grant-catalog evidence.
-- **Tenant Group / Group→Role** (AG-STEP-007) — deferred from backend-start; retained as pre-production capability (OD-B).
-- **Strict runtime entitlement gate** — beyond the cache-invalidation convention; later gate.
+**DONE on the branch (each its own commit; pending push/merge):**
+- **Provisioning bridge** — `RolePermission.GrantSource` (System/Module/Manual, `System=0` legacy-safe) + `SourceModuleCode` (S1 `75d5b8c`); `EnsureDefaultRolesAsync` now attaches baseline grants (Admin=auth+mdm, Viewer=`*.read`, platform-excluded, `GrantSource=System`, idempotent, tenant-scoped) via a shared template the DataSeeder also uses, no drift (S1 `7000a38`).
+- **Module→permission resolver + revoke semantics** — explicit `ModulePermissionResolver` (convention + override map, platform-excluded, fail-safe) + locked revoke spec `docs/entitlement-permission-bridge.md` (S2 `a96030e`).
+- **Entitlement→permission consumer** — transport-agnostic `EntitlementPermissionSyncService` (add → Module grants tagged with source; disable → only that module's Module grants; never System/Manual; shared survives to last entitlement; idempotent) + MassTransit `EntitlementSyncConsumer` gated by `Eventing:Transport` (S3 `1b4d8b6`).
+- **BE-A read API** — `GET /api/roles/{id}/permissions` returning key + `GrantSource` + `SourceModuleCode` (S4 `22ac608`).
+- **006B** — per-endpoint classification: zero genuinely-unguarded admin-op endpoints (admin surface already 100% guarded; remainder is public-auth / self-service / internal-S2S — guarding would lock out or break S2S); locked by a regression test (S5 `e1866c6`).
+- **S-GUARD revoke integrity** — manual revoke restricted to `Manual` grants; System/Module → 409 (S-GUARD `ccc6e23`).
+- **GW-A** — gateway ocelot route `GET/OPTIONS /api/platform/access/explain/me` → Platform (S8 `a80cc50`).
+- **FU9 frontend (MOD-0018-FU9)** — FE-A-core reachable error + 401/403/404 pages (S9 `1e20701`); FE-B canonical permission UX helper (S10 `63073d0`); FE-C tenant Roles CRUD + Permission catalog (S11a `45a46a6`), role-permission assignment grant-source-aware (S11b `af96027`), Users CRUD + user-role assignment (S11c `3210521`); FE-D deny-only audit labeling (S12 `4b45e76`); FE-E platform Self Effective Access (S13 `93978e9`); shell nav links (S-NAV `014f543`); FE-A-harden refresh single-flight + forwarded headers + per-request HttpClient reference (S14 `d7d5ab5`).
 
-- **Active execution branch:** `feature/governance/ag-infra-completion` — created off `main` @ `473a7f4`. The full AG-INFRA-COMPLETION step plan (S1..S19) is user-approved on the control-tower side; each step lands as its own commit on this branch, **push at the end only**.
-- **Next critical step:** S1 (provisioning baseline — attach default `RolePermission` grants per tenant) and the `RolePermission` grant-source field that the revoke semantics depend on.
-- **Control model:** this CONTROL TOWER chat routes steps, verifies handoffs, and maintains this plan file; the actual development for each step runs in a **separate execution chat** working on the branch above.
+**DEFERRED — open follow-ups (do NOT block this phase or merge):**
+- **S16a Tenant Role governed identity** — EA canonical-ID decision (OD-A); role primitives still ungoverned (MOD-0018 runtime, no own pack/ID).
+- **S16b Tenant Group / Group→Role** (AG-STEP-007) — deferred from backend-start; retained as pre-production capability (OD-B).
+- **Permission-key migration Slice 5B / Slice 7** — blocked on external grant-catalog evidence; dual-read alias seam remains operative.
+- **Strict runtime entitlement gate** (OD-FE9-07) — beyond the cache-invalidation convention; later gate.
+- **Pre-existing known-red tests (NOT AG-infra):** Platform.BackgroundJobs `BackgroundJobContractsTests` (2) + frontend EnterpriseStrategy vitest (9) — baseline-red at `473a7f4`, tracked separately. Plus `X-Internal-Api-Key` hardening (separate security-review topic, not a 006B gap).
+- **FU9 resx:** en/tr authored for new governance screens; es/fr/ru/zh/ar are EN-fallback (translation follow-up). The other 5 gateway-proxy controllers remain safe-by-transient-HttpClient (only GoldenReferenceSlim converted to the per-request reference pattern).
+
+**DEPLOY-TIME VERIFICATION REQUIRED** (could not run in the unit harness — no live Mongo/RabbitMQ/multi-service stack; verify in staging with `Eventing:Transport=RabbitMQ`):
+1. **S1 provisioning** — new tenant → Admin/Viewer get usable `System` baseline grants; platform.* excluded; idempotent.
+2. **S3 bridge** — module entitlement added → its permissions appear on tenant roles as `Module`/`SourceModuleCode`; disabled → only those Module rows drop; shared permission survives to last entitlement. Confirm the AuthService↔Platform `EventTransportMessage` exchange binding on the broker.
+3. **GW-A** — `GET /api/platform/access/explain/me` returns the FU14 DTO through the gateway.
+4. **Frontend** — RBAC screens + self-explain render; FE-B-gated nav works; error/401/403/404 pages.
+5. **FE-A-harden** — concurrent login/refresh (single-flight, no logout); TLS-terminating-proxy scheme + Secure cookies.
+
+- **Control model:** this CONTROL TOWER chat routes steps, verifies handoffs, and maintains this plan file. Remaining: **S19 — single push** of the branch (no PR/merge performed by automation; merge is a human/EA step).
 
 ---
 
