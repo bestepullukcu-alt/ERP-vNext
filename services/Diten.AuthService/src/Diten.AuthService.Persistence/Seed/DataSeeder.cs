@@ -1,3 +1,4 @@
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using MongoDB.Driver;
 
@@ -72,15 +73,15 @@ public static class DataSeeder
 
         // SuperAdmin
         var superAdmin = await EnsureRole(roleCol, "SuperAdmin", "Super Administrator", "All system permissions");
-        await AssignAllPermissions(permCol, rpCol, superAdmin.Id);
+        await AssignBaselineAsync(permCol, rpCol, superAdmin);
 
         // Admin
         var admin = await EnsureRole(roleCol, "Admin", "Administrator", "Auth and MDM administration");
-        await AssignPermissions(permCol, rpCol, admin.Id, "auth", "mdm");
+        await AssignBaselineAsync(permCol, rpCol, admin);
 
         // Viewer
         var viewer = await EnsureRole(roleCol, "Viewer", "Viewer", "Read-only permissions");
-        await AssignReadPermissions(permCol, rpCol, viewer.Id);
+        await AssignBaselineAsync(permCol, rpCol, viewer);
     }
 
     private static async Task SeedUsersAsync(IMongoDatabase database)
@@ -159,44 +160,22 @@ public static class DataSeeder
         return role;
     }
 
-    private static async Task AssignAllPermissions(IMongoCollection<Permission> pCol, IMongoCollection<RolePermission> rpCol, Guid roleId)
+    // Baseline grant wiring for the default tenant. Uses the same shared template as the runtime
+    // RoleProvisioningService so the default-tenant seed and per-tenant provisioning never drift
+    // (OD-FE9-03 Option B). Grants are System-sourced and idempotent (existing pairs are skipped).
+    private static async Task AssignBaselineAsync(IMongoCollection<Permission> pCol, IMongoCollection<RolePermission> rpCol, Role role)
     {
-        var perms = await pCol.Find(_ => true).ToListAsync();
-        var currentRPs = await rpCol.Find(rp => rp.RoleId == roleId).ToListAsync();
-        
-        foreach (var p in perms)
+        var catalog = await pCol.Find(_ => true).ToListAsync();
+        var baseline = DefaultRolePermissionTemplate.SelectFor(role.Name, catalog);
+        if (baseline.Count == 0) return;
+
+        var currentRPs = await rpCol.Find(rp => rp.RoleId == role.Id).ToListAsync();
+
+        foreach (var p in baseline)
         {
             if (!currentRPs.Any(rp => rp.PermissionId == p.Id))
             {
-                await rpCol.InsertOneAsync(new RolePermission(roleId, p.Id, DefaultTenantId, SystemUser));
-            }
-        }
-    }
-
-    private static async Task AssignPermissions(IMongoCollection<Permission> pCol, IMongoCollection<RolePermission> rpCol, Guid roleId, params string[] modules)
-    {
-        var perms = await pCol.Find(p => modules.Contains(p.Module)).ToListAsync();
-        var currentRPs = await rpCol.Find(rp => rp.RoleId == roleId).ToListAsync();
-
-        foreach (var p in perms)
-        {
-            if (!currentRPs.Any(rp => rp.PermissionId == p.Id))
-            {
-                await rpCol.InsertOneAsync(new RolePermission(roleId, p.Id, DefaultTenantId, SystemUser));
-            }
-        }
-    }
-
-    private static async Task AssignReadPermissions(IMongoCollection<Permission> pCol, IMongoCollection<RolePermission> rpCol, Guid roleId)
-    {
-        var perms = await pCol.Find(p => p.Action == "read").ToListAsync();
-        var currentRPs = await rpCol.Find(rp => rp.RoleId == roleId).ToListAsync();
-
-        foreach (var p in perms)
-        {
-            if (!currentRPs.Any(rp => rp.PermissionId == p.Id))
-            {
-                await rpCol.InsertOneAsync(new RolePermission(roleId, p.Id, DefaultTenantId, SystemUser));
+                await rpCol.InsertOneAsync(RolePermission.SystemGrant(role.Id, p.Id, DefaultTenantId, SystemUser));
             }
         }
     }
