@@ -62,6 +62,14 @@ public sealed class RolesController : CustomBaseController
         return CreateActionResultInstance(result);
     }
 
+    [HttpGet("{id:guid}/permissions")]
+    [HasPermission("auth.roles.read")]
+    public async Task<IActionResult> GetPermissions(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetRolePermissionsQuery(id), ct);
+        return CreateActionResultInstance(result);
+    }
+
     [HttpPost("{id:guid}/permissions")]
     [HasPermission("auth.roles.assign-permission")]
     public async Task<IActionResult> AssignPermission(Guid id, [FromBody] AssignPermissionRequest request, CancellationToken ct)

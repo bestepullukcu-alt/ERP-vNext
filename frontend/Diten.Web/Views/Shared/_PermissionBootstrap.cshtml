@@ -1,0 +1,16 @@
+@using System.Text.Json
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    FE-B (MOD-0018-FU9) — UX-ONLY permission bootstrap for tenant RBAC screens (FE-C).
+    Serializes ONLY the bounded canonical permission-key list (no roles, no raw JWT, no other claims)
+    and loads the UX helper. NOT enforcement — backend [HasPermission] is authoritative. Include from a
+    tenant screen that needs permission-aware show/hide:  @await Html.PartialAsync("_PermissionBootstrap")
+
+    Razor-side equivalent (server-rendered show/hide), inject and use directly:
+        @@inject Diten.Web.Services.IPermissionSnapshot Perms
+        @@if (Perms.Has("auth.users.create")) { ... }
+*@
+<script>
+    window.__permissionSnapshot = @Html.Raw(JsonSerializer.Serialize(Perms.Keys));
+</script>
+<script src="~/assets/js/pages/governance/permissions.js" asp-append-version="true"></script>

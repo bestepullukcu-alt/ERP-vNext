@@ -245,6 +245,13 @@
                             <div>@AuditRetentionLocalizer["AuditRetention.Title"]</div>
                         </a>
                     </li>
+                    @* S-NAV (MOD-0018-FU9) — FE-E self effective access *@
+                    <li class="menu-item @(currentPath.StartsWith("/Platform/SelfAccess", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                        <a href="/Platform/SelfAccess" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-user-check"></i>
+                            <div>@SharedLocalizer["SelfAccessMenu"]</div>
+                        </a>
+                    </li>
                 </ul>
             </aside>
 

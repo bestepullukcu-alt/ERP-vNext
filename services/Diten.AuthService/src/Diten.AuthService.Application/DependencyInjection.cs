@@ -24,6 +24,7 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(assembly);
         services.AddScoped<IRoleProvisioningService, RoleProvisioningService>();
+        services.AddScoped<IEntitlementPermissionSyncService, EntitlementPermissionSyncService>();
         services.AddScoped<IPasswordPolicyService, PasswordPolicyService>();
 
         return services;

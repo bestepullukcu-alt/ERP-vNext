@@ -15,6 +15,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
         <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.0" />
+        <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.6" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,6 +23,8 @@
         <ProjectReference Include="..\Diten.AuthService.Application\Diten.AuthService.Application.csproj" />
         <ProjectReference Include="..\Diten.AuthService.Persistence\Diten.AuthService.Persistence.csproj" />
         <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+        <!-- Cross-service event contracts (read-only consumption; light: depends only on BuildingBlocks.Eventing). -->
+        <ProjectReference Include="..\..\..\Diten.Platform.Contracts\Diten.Platform.Contracts.csproj" />
     </ItemGroup>
 
 </Project>

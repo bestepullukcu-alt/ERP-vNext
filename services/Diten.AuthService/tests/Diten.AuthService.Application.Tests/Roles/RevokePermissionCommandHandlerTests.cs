@@ -160,6 +160,71 @@ public sealed class RevokePermissionCommandHandlerTests
         Assert.All(refreshTokens.RevokeTokens, t => Assert.Equal(cts.Token, t));
     }
 
+    // ── S-GUARD: only Manual grants may be removed via the API ──
+
+    [Fact]
+    public async Task System_grant_revoke_is_rejected_409_and_removes_nothing()
+    {
+        var rolePerms = new FakeRolePermissionRepository { TargetGrantSource = GrantSource.System };
+        var userRoles = new FakeUserRoleRepository { Holders = [User1] };
+        var refreshTokens = new FakeRefreshTokenRepository();
+        var handler = CreateHandler(role: null, rolePerms, userRoles, refreshTokens);
+
+        var result = await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Null(rolePerms.RevokedCall);     // baseline grant remains
+        Assert.Null(userRoles.LookupCall);      // no holder token churn
+        Assert.Empty(refreshTokens.RevokedUsers);
+    }
+
+    [Fact]
+    public async Task Module_grant_revoke_is_rejected_409_and_removes_nothing()
+    {
+        var rolePerms = new FakeRolePermissionRepository { TargetGrantSource = GrantSource.Module };
+        var handler = CreateHandler(role: null, rolePerms, new FakeUserRoleRepository { Holders = [User1] }, new FakeRefreshTokenRepository());
+
+        var result = await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Null(rolePerms.RevokedCall);     // module-sourced grant remains (only the consumer removes it)
+    }
+
+    [Fact]
+    public async Task Manual_grant_revoke_succeeds_and_revokes_holder_tokens()
+    {
+        var rolePerms = new FakeRolePermissionRepository { TargetGrantSource = GrantSource.Manual };
+        var userRoles = new FakeUserRoleRepository { Holders = [User1] };
+        var refreshTokens = new FakeRefreshTokenRepository();
+        var handler = CreateHandler(role: null, rolePerms, userRoles, refreshTokens);
+
+        var result = await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(204, result.StatusCode);
+        Assert.Equal((RoleId, PermissionId, TenantId), rolePerms.RevokedCall);
+        Assert.Equal(new[] { User1 }, refreshTokens.RevokedUsers);
+    }
+
+    [Fact]
+    public async Task Missing_grant_is_idempotent_204_and_removes_nothing()
+    {
+        var rolePerms = new FakeRolePermissionRepository { GrantExists = false };
+        var userRoles = new FakeUserRoleRepository { Holders = [User1] };
+        var refreshTokens = new FakeRefreshTokenRepository();
+        var handler = CreateHandler(role: null, rolePerms, userRoles, refreshTokens);
+
+        var result = await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(204, result.StatusCode);
+        Assert.Null(rolePerms.RevokedCall);
+        Assert.Null(userRoles.LookupCall);
+        Assert.Empty(refreshTokens.RevokedUsers);
+    }
+
     private static RevokePermissionCommandHandler CreateHandler(
         Role? role,
         FakeRolePermissionRepository rolePerms,
@@ -192,6 +257,10 @@ public sealed class RevokePermissionCommandHandlerTests
     private sealed class FakeRolePermissionRepository(List<string>? callLog = null) : IRolePermissionRepository
     {
         public bool ThrowOnRevoke { get; init; }
+        // S-GUARD: the grant the handler inspects via GetByRoleAsync. Default Manual so the existing
+        // revoke flow proceeds; set GrantExists=false to simulate "nothing to remove".
+        public GrantSource TargetGrantSource { get; init; } = GrantSource.Manual;
+        public bool GrantExists { get; init; } = true;
         public (Guid roleId, Guid permissionId, Guid tenantId)? RevokedCall { get; private set; }
         public CancellationToken RevokeToken { get; private set; }
 
@@ -204,9 +273,18 @@ public sealed class RevokePermissionCommandHandlerTests
             return Task.CompletedTask;
         }
 
+        public Task<IReadOnlyList<RolePermission>> GetByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct)
+        {
+            IReadOnlyList<RolePermission> rows = GrantExists
+                ? [new RolePermission(roleId, PermissionId, tenantId, "system", TargetGrantSource, sourceModuleCode: null)]
+                : [];
+            return Task.FromResult(rows);
+        }
+
         public Task<IEnumerable<string>> GetPermissionsByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task<IEnumerable<string>> GetPermissionsByRolesAsync(List<Guid> roleIds, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task AssignAsync(RolePermission rolePermission, CancellationToken ct) => throw new NotSupportedException();
+        public Task RemoveByIdAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakeUserRoleRepository(List<string>? callLog = null) : IUserRoleRepository
