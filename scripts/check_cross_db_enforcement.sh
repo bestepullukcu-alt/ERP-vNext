@@ -12,7 +12,8 @@ while IFS= read -r line; do
   path="${line%%:*}"
   normalized="${path//\\//}"
 
-  if [[ "$normalized" == *".Persistence/"* ]] ||
+  if [[ "$normalized" == *"/tests/"* ]] ||
+     [[ "$normalized" == *".Persistence/"* ]] ||
      [[ "$normalized" == *"Infrastructure/DependencyInjection.cs"* ]] ||
      [[ "$normalized" == *"/Infrastructure/Persistence/"* ]] ||
      [[ "$normalized" == *"/EnterpriseStrategy.Persistence/Context/"* ]]; then

@@ -183,4 +183,6 @@
   <data name="Common.DtInfo" xml:space="preserve"><value>_START_ - _END_ / _TOTAL_ gosteriliyor</value></data>
   <data name="Common.DtInfoEmpty" xml:space="preserve"><value>0 - 0 / 0 gosteriliyor</value></data>
   <data name="Common.DtInfoFiltered" xml:space="preserve"><value>_MAX_ kayit icinden filtrelendi</value></data>
+  <data name="AuditLog.DenyOnlyBadge" xml:space="preserve"><value>Yalnız reddedilenler</value></data>
+  <data name="AuditLog.DenyOnlyNotice" xml:space="preserve"><value>Bu kayıt yalnızca reddedilen (deny) erişim kararlarını gösterir. İzin verilen erişimler politika gereği kaydedilmez (yalnız-reddetme temeli).</value></data>
 </root>

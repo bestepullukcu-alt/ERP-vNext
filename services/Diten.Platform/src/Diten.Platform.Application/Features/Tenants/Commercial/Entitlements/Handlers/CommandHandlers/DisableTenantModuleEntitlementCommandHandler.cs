@@ -1,7 +1,10 @@
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Quotas;
 using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
+using Diten.Platform.Contracts.Events;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -13,15 +16,21 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
     private readonly ITenantModuleEntitlementRepository _repository;
     private readonly IModuleCatalogRepository _moduleRepository;
     private readonly IQuotaService _quotaService;
+    private readonly IEventBus _eventBus;
+    private readonly ICurrentUserContext _currentUser;
 
     public DisableTenantModuleEntitlementCommandHandler(
         ITenantModuleEntitlementRepository repository,
         IModuleCatalogRepository moduleRepository,
-        IQuotaService quotaService)
+        IQuotaService quotaService,
+        IEventBus eventBus,
+        ICurrentUserContext currentUser)
     {
         _repository = repository;
         _moduleRepository = moduleRepository;
         _quotaService = quotaService;
+        _eventBus = eventBus;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<NoContent>> Handle(DisableTenantModuleEntitlementCommand request, CancellationToken ct)
@@ -59,6 +68,8 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
                     {
                         return Response<NoContent>.Fail(release.Errors, release.StatusCode);
                     }
+
+                    await PublishDisabledAsync(request.TenantId, entitlement.ModuleCode, ct);
                 }
                 return Response<NoContent>.Success(204);
             }
@@ -77,11 +88,14 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
                     {
                         return Response<NoContent>.Fail(release.Errors, release.StatusCode);
                     }
+
+                    await PublishDisabledAsync(request.TenantId, existingOverride.ModuleCode, ct);
                 }
                 return Response<NoContent>.Success(204);
             }
 
             await _repository.CreateAsync(TenantModuleEntitlementCommandSupport.CreateManualOverride(request.TenantId, moduleCode, false, request.Request.Reason), ct);
+            await PublishDisabledAsync(request.TenantId, moduleCode, ct);
             return Response<NoContent>.Success(204);
         }
         catch (TenantModuleEntitlementConcurrencyException)
@@ -101,4 +115,30 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
             reason ?? "Tenant module entitlement disabled.",
             null,
             Guid.NewGuid().ToString()), ct);
+
+    private async Task PublishDisabledAsync(Guid tenantId, string moduleCode, CancellationToken ct)
+    {
+        var eventId = Guid.NewGuid();
+        var correlationId = Guid.NewGuid();
+        var occurredAtUtc = DateTimeOffset.UtcNow;
+        var actorId = _currentUser.UserId == Guid.Empty ? null : (Guid?)_currentUser.UserId;
+
+        await _eventBus.PublishAsync(
+            new TenantEntitlementDisabledV1(
+                eventId,
+                occurredAtUtc,
+                tenantId,
+                correlationId,
+                actorId,
+                moduleCode),
+            new EventPublishOptions
+            {
+                EventId = eventId,
+                CorrelationId = correlationId,
+                TenantId = tenantId,
+                Producer = "Diten.Platform",
+                OccurredAtUtc = occurredAtUtc
+            },
+            ct);
+    }
 }

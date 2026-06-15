@@ -14,7 +14,7 @@ namespace Diten.Platform.API.Controllers.Platform;
 [Authorize(Policy = "PlatformActor")]
 public sealed class TenantModuleEntitlementsController : CustomBaseController
 {
-    private const string ViewPermission = "platform.tenants.commercial.subscription.view";
+    private const string ViewPermission = "platform.tenants.commercial.subscription.read";
     private const string AssignPermission = "platform.tenants.commercial.subscription.assign";
 
     private readonly IMediator _mediator;

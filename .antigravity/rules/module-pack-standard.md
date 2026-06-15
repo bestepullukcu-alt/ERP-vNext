@@ -1,6 +1,6 @@
 # Module Pack Standard (ERP-vNext)
 
-Bu standart, `execution/domains/{domain}/module-packs/{DOMAIN}-{NNN}-{slug}.md` dosyalarinin minimum formatini tanimlar.
+Bu standart, `execution/domains/{domain}/module-packs/{ID}-{slug}.md` dosyalarinin minimum formatini tanimlar.
 
 > **Otorite zinciri:** Module Pack > Domain Config > AGENTS.md > `.antigravity/`
 >
@@ -13,21 +13,23 @@ Bu standart, `execution/domains/{domain}/module-packs/{DOMAIN}-{NNN}-{slug}.md` 
 
 ## 1. File Naming
 
-Zorunlu format:
+Yeni dosyalar icin zorunlu format:
 
 ```text
-{DOMAIN}-{NNN}-{slug}.md
+{ID}-{slug}.md
 ```
 
 Kurallar:
-- `DOMAIN`: `MDM` | `DEV` | `PSS` | `ESBP` | proje icinde tanimli yeni domain prefix
-- `NNN`: 3 haneli sira numarasi (`001`, `002`, ...)
+- Yeni ERP product module ID: `MOD-NNNN`
+- Follow-up ID: `MOD-NNNN-FUxx`
+- Delivery Capability Pack ID: `DCP-NNN` (module pack degil, kendi portfolio klasorunde tutulur)
+- Developer Enablement golden reference ID: `DEV-NNNN`
 - `slug`: kucuk harf + tire ayirici (`product-management`)
+- Tarihsel domain-prefixed veya legacy ID'ler registry-controlled identity olarak korunur; toplu rename yapilmaz.
 
 Ornekler:
-- `MDM-001-product-management.md`
-- `PSS-002-role-permission-matrix.md`
-- `ESBP-001-strategy-core.md`
+- `MOD-0018-rbac-abac-authorization.md`
+- `MOD-0018-FU12-tenant-authorization-context-foundation.md`
 - `DEV-0000-golden-reference-slim.md`
 
 ---
@@ -58,7 +60,7 @@ form_field_count: 7
 
 | Alan | Tip | Zorunluluk | Aciklama |
 |---|---|---|---|
-| `id` | string | Zorunlu | `{DOMAIN}-{NNN}` |
+| `id` | string | Zorunlu | Registry-controlled ID (`MOD-NNNN`, `MOD-NNNN-FUxx`, `DEV-NNNN`, veya korunmus legacy ID) |
 | `name` | string | Zorunlu | Insan-okunur modul adi |
 | `domain` | string | Zorunlu | Domain klasor adi ile birebir ayni |
 | `service` | string | Zorunlu | Backend servis projesinin adi (`Diten.Platform`, `Diten.MdmService`, `Diten.DevEnablementService`, `Diten.AuthService`) |
@@ -298,20 +300,20 @@ Her hata senaryosu icin:
 ```text
 Policy:     [Authorize(Policy = "PlatformActor")]   // shell: platform-admin
             [Authorize]                              // shell: tenant
-Permission: [HasPermission("{Prefix}.{Resource}.{Action}")]
-  - Platform service controller'lari:  Platform.{Resource}.{Action}
-  - Tenant service controller'lari:    Modules.{ModuleName}.{Action}
-Actions:    Read, Create, Update, Delete, BulkDelete (+ modul-spesifik aksiyonlar)
+Permission: [HasPermission("{prefix}.{resource}.{action}")]   (PKS-001: lowercase-dotted, >= 3 segments, kebab-case multiword)
+  - Platform service controller'lari:  platform.{resource}.{action}
+  - Tenant service controller'lari:    {module}.{resource}.{action}
+Actions:    read, create, update, delete, bulk-delete (+ modul-spesifik aksiyonlar)
 Actor type: platform_admin (otomatik tum permission'lara pass) | partner_admin | tenant_user
 ```
 
 Modul-spesifik permission listesi (ornek):
 ```text
-Platform.Administrators.Read
-Platform.Administrators.Create
-Platform.Administrators.Update
-Platform.Administrators.Suspend
-Platform.Administrators.AssignRoles
+platform.administrators.read
+platform.administrators.create
+platform.administrators.update
+platform.administrators.suspend
+platform.administrators.assign-roles
 ```
 
 ---
@@ -519,7 +521,7 @@ Slim partial seti:
 
 ## Authorization Convention
 - Policy: `[Authorize(Policy = "PlatformActor")]`
-- Permission format: `Platform.{Resource}.{Action}`
+- Permission format: `platform.{resource}.{action}` (PKS-001 lowercase-dotted, >= 3 segments; tenant modules use `{module}.{resource}.{action}`)
 - Permissions: ...
 
 ## Gateway / API Routing Decision

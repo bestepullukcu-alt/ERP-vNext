@@ -1,6 +1,9 @@
 using System.Security.Claims;
 using Diten.ApiGateway.Middleware;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace TenantArchitecture.TenancyTests;
@@ -15,9 +18,10 @@ public class GatewayTenantResolutionTests
         {
             nextCalled = true;
             return Task.CompletedTask;
-        }, NullLogger<TenantResolutionMiddleware>.Instance);
+        }, NullLogger<TenantResolutionMiddleware>.Instance, TestConfiguration, TestEnvironment);
 
         var context = new DefaultHttpContext();
+        context.User = new ClaimsPrincipal(new ClaimsIdentity(Array.Empty<Claim>(), "test-auth"));
         context.Request.Method = HttpMethods.Get;
         context.Request.Path = "/api/products";
 
@@ -35,7 +39,7 @@ public class GatewayTenantResolutionTests
         {
             nextCalled = true;
             return Task.CompletedTask;
-        }, NullLogger<TenantResolutionMiddleware>.Instance);
+        }, NullLogger<TenantResolutionMiddleware>.Instance, TestConfiguration, TestEnvironment);
 
         var context = new DefaultHttpContext();
         context.Request.Method = HttpMethods.Post;
@@ -60,7 +64,7 @@ public class GatewayTenantResolutionTests
         {
             nextCalled = true;
             return Task.CompletedTask;
-        }, NullLogger<TenantResolutionMiddleware>.Instance);
+        }, NullLogger<TenantResolutionMiddleware>.Instance, TestConfiguration, TestEnvironment);
 
         var context = new DefaultHttpContext();
         context.User = principal;
@@ -72,5 +76,17 @@ public class GatewayTenantResolutionTests
 
         Assert.True(nextCalled);
         Assert.Equal(jwtTenant.ToString(), context.Request.Headers["X-Tenant-Id"].ToString());
+    }
+
+    private static IConfiguration TestConfiguration { get; } = new ConfigurationBuilder().Build();
+
+    private static IHostEnvironment TestEnvironment { get; } = new TestHostEnvironment();
+
+    private sealed class TestHostEnvironment : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = Environments.Production;
+        public string ApplicationName { get; set; } = "TenantArchitecture.TenancyTests";
+        public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }

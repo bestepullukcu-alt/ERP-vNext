@@ -22,7 +22,7 @@ public sealed class QuotasController : CustomBaseController
     }
 
     [HttpGet]
-    [HasPermission("platform.tenants.quotas.view")]
+    [HasPermission("platform.tenants.quotas.read")]
     public async Task<IActionResult> GetAll(Guid tenantId, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTenantQuotaStatusQuery(tenantId), ct);
@@ -30,7 +30,7 @@ public sealed class QuotasController : CustomBaseController
     }
 
     [HttpGet("{quotaKey}")]
-    [HasPermission("platform.tenants.quotas.view")]
+    [HasPermission("platform.tenants.quotas.read")]
     public async Task<IActionResult> GetByKey(Guid tenantId, string quotaKey, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTenantQuotaStatusByKeyQuery(tenantId, quotaKey), ct);

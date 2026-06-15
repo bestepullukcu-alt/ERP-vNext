@@ -26,7 +26,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpGet("tenant-settings/{tenantId:guid}")]
-    [HasPermission("Platform.Notifications.Configure")]
+    [HasPermission("platform.notifications.configure")]
     public async Task<IActionResult> GetTenantSettings(Guid tenantId, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTenantMessagingSettingsQuery(tenantId), ct);
@@ -34,7 +34,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpPut("tenant-settings/{tenantId:guid}")]
-    [HasPermission("Platform.Notifications.Configure")]
+    [HasPermission("platform.notifications.configure")]
     public async Task<IActionResult> UpsertTenantSettings(
         Guid tenantId,
         [FromBody] TenantMessagingSettingsUpsertRequest request,
@@ -45,7 +45,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpDelete("tenant-settings/{tenantId:guid}")]
-    [HasPermission("Platform.Notifications.Configure")]
+    [HasPermission("platform.notifications.configure")]
     public async Task<IActionResult> DeleteTenantSettings(Guid tenantId, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeleteTenantMessagingSettingsCommand(tenantId), ct);
@@ -53,7 +53,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpGet("tenant-settings/{tenantId:guid}/resolved")]
-    [HasPermission("Platform.Notifications.Read")]
+    [HasPermission("platform.notifications.read")]
     public async Task<IActionResult> GetResolvedTenantSettings(Guid tenantId, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetResolvedTenantMessagingSettingsQuery(tenantId), ct);
@@ -61,7 +61,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpGet("templates/{templateKey}")]
-    [HasPermission("Platform.Notifications.Templates.Read")]
+    [HasPermission("platform.notifications.templates.read")]
     public async Task<IActionResult> GetPlatformDefaultTemplate(
         string templateKey,
         [FromQuery] string locale = "en",
@@ -73,7 +73,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpGet("tenant-settings/{tenantId:guid}/templates/{templateKey}")]
-    [HasPermission("Platform.Notifications.Templates.Read")]
+    [HasPermission("platform.notifications.templates.read")]
     public async Task<IActionResult> GetTenantTemplate(
         Guid tenantId,
         string templateKey,
@@ -86,7 +86,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpPost("templates")]
-    [HasPermission("Platform.Notifications.Templates.Create")]
+    [HasPermission("platform.notifications.templates.create")]
     public async Task<IActionResult> CreatePlatformDefaultTemplate(
         [FromBody] NotificationTemplateUpsertRequest request,
         CancellationToken ct)
@@ -96,7 +96,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpPost("tenant-settings/{tenantId:guid}/templates")]
-    [HasPermission("Platform.Notifications.Templates.Create")]
+    [HasPermission("platform.notifications.templates.create")]
     public async Task<IActionResult> CreateTenantTemplate(
         Guid tenantId,
         [FromBody] NotificationTemplateUpsertRequest request,
@@ -107,7 +107,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpPut("templates/{id:guid}")]
-    [HasPermission("Platform.Notifications.Templates.Update")]
+    [HasPermission("platform.notifications.templates.update")]
     public async Task<IActionResult> UpdatePlatformDefaultTemplate(
         Guid id,
         [FromBody] NotificationTemplateUpsertRequest request,
@@ -118,7 +118,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpPut("tenant-settings/{tenantId:guid}/templates/{id:guid}")]
-    [HasPermission("Platform.Notifications.Templates.Update")]
+    [HasPermission("platform.notifications.templates.update")]
     public async Task<IActionResult> UpdateTenantTemplate(
         Guid tenantId,
         Guid id,
@@ -130,7 +130,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpPost("templates/{id:guid}/archive")]
-    [HasPermission("Platform.Notifications.Templates.Archive")]
+    [HasPermission("platform.notifications.templates.archive")]
     public async Task<IActionResult> ArchiveTemplate(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new ArchiveNotificationTemplateCommand(id), ct);
@@ -138,7 +138,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpPost("email/queue")]
-    [HasPermission("Platform.Notifications.Dispatches.Queue")]
+    [HasPermission("platform.notifications.dispatches.queue")]
     public async Task<IActionResult> QueueEmail(
         [FromQuery] Guid targetTenantId,
         [FromBody] QueueEmailNotificationRequest request,
@@ -151,7 +151,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpGet("dispatches")]
-    [HasPermission("Platform.Notifications.Dispatches.Read")]
+    [HasPermission("platform.notifications.dispatches.read")]
     public async Task<IActionResult> GetDispatches(
         [FromQuery] Guid targetTenantId,
         [FromQuery] int page = 1,
@@ -163,7 +163,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpGet("dispatches/{id:guid}")]
-    [HasPermission("Platform.Notifications.Dispatches.Read")]
+    [HasPermission("platform.notifications.dispatches.read")]
     public async Task<IActionResult> GetDispatchById(Guid id, [FromQuery] Guid targetTenantId, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetNotificationDispatchByIdQuery(targetTenantId, id), ct);
@@ -171,7 +171,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpPost("dispatches/{id:guid}/sent")]
-    [HasPermission("Platform.Notifications.Dispatches.Queue")]
+    [HasPermission("platform.notifications.dispatches.queue")]
     public async Task<IActionResult> MarkSent(Guid id, [FromQuery] Guid targetTenantId, [FromQuery] string? providerMessageId, CancellationToken ct)
     {
         var response = await _mediator.Send(new MarkNotificationDispatchSentCommand(targetTenantId, id, providerMessageId), ct);
@@ -179,7 +179,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpPost("dispatches/{id:guid}/failed")]
-    [HasPermission("Platform.Notifications.Dispatches.Queue")]
+    [HasPermission("platform.notifications.dispatches.queue")]
     public async Task<IActionResult> MarkFailed(Guid id, [FromQuery] Guid targetTenantId, [FromQuery] string errorCode, [FromQuery] string errorMessage, CancellationToken ct)
     {
         var response = await _mediator.Send(new MarkNotificationDispatchFailedCommand(targetTenantId, id, errorCode, errorMessage), ct);
@@ -187,7 +187,7 @@ public sealed class NotificationsController : CustomBaseController
     }
 
     [HttpPost("dispatches/{id:guid}/cancel")]
-    [HasPermission("Platform.Notifications.Dispatches.Queue")]
+    [HasPermission("platform.notifications.dispatches.queue")]
     public async Task<IActionResult> Cancel(Guid id, [FromQuery] Guid targetTenantId, CancellationToken ct)
     {
         var response = await _mediator.Send(new CancelNotificationDispatchCommand(targetTenantId, id), ct);

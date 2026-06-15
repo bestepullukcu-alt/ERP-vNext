@@ -19,8 +19,12 @@ dotnet build services/Diten.AuthService/Diten.AuthService.sln -c Debug
 echo "[phase1] build platform"
 dotnet build services/Diten.Platform/Diten.Platform.sln -c Debug
 
-echo "[phase1] build mdm"
-dotnet build services/Diten.MdmService/Diten.MdmService.sln -c Debug
+if [ -f "services/Diten.MdmService/Diten.MdmService.sln" ]; then
+  echo "[phase1] build mdm"
+  dotnet build services/Diten.MdmService/Diten.MdmService.sln -c Debug
+else
+  echo "[phase1] skip mdm: services/Diten.MdmService/Diten.MdmService.sln not found"
+fi
 
 echo "[phase1] test tenancy"
 dotnet test tests/tenancy/TenantArchitecture.TenancyTests/TenantArchitecture.TenancyTests.csproj -c Debug

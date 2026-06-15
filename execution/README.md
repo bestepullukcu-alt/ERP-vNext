@@ -24,9 +24,12 @@ execution/
 ├── scripts/
 │   └── generate-dashboard.py
 └── domains/
-    ├── master-data-management/
-    ├── platform-shared-services/
-    └── enterprise-strategy-business-performance/
+    ├── developer-enablement/        # mevcut: Golden Reference pack'leri
+    └── platform-shared-services/    # mevcut: PSS pack'leri
+
+Planned, not scaffolded yet:
+- master-data-management
+- enterprise-strategy-business-performance
 ```
 
 Her domain altinda:
@@ -36,10 +39,10 @@ Her domain altinda:
 ├── README.md
 ├── domain-config.md
 └── module-packs/
-    └── {DOMAIN}-{NNN}-{slug}.md
+    └── {ID}-{slug}.md
 ```
 
-> Tarihsel `controls/`, `decisions/` ve `batches/` katmanlari `archive/domains/` altina tasinmistir. Engineering kurallari `.antigravity/rules/`, MVP scope ve modul envanteri `docs/platform/master-plan.md` uzerinden yurutulur.
+> Tarihsel `controls/`, `decisions/` ve `batches/` katmanlari `archive/domains/` altina tasinmistir. Engineering kurallari `.antigravity/rules/`, MVP scope ve modul envanteri `execution/portfolio/master-development-plan.md` uzerinden yurutulur. `docs/platform/master-plan.md` legacy bridge olarak gecici aktif kalir.
 
 ## Yetki Hiyerarsisi
 
@@ -54,19 +57,22 @@ En spesifik katman kazanir.
 ## Module Pack Adlandirma
 
 ```text
-{DOMAIN-KISA}-{NNN}-{slug}.md
+{ID}-{slug}.md
 ```
 
 - `DOMAIN-KISA`: `MDM` | `PSS` | `ESBP`
-- `NNN`: 3 haneli sira numarasi
+- Yeni ERP product module ID: `MOD-NNNN`
+- Follow-up ID: `MOD-NNNN-FUxx`
+- Delivery Capability Pack ID: `DCP-NNN`
+- Developer Enablement golden reference ID: `DEV-NNNN`
 - `slug`: kucuk harf + tire
 
 Ornekler:
-- `MDM-001-currency-management.md`
-- `PSS-001-identity-access.md`
-- `ESBP-001-strategy-core.md`
+- `MOD-0018-rbac-abac-authorization.md`
+- `MOD-0018-FU12-tenant-authorization-context-foundation.md`
+- `DEV-0000-golden-reference-slim.md`
 
-> Not: `MOD-xxxx` formati kullanilmaz; bu format teknik standart ID'leri icin ayrilmistir.
+> Registry notu: `execution/registries/module-id-registry.md` canonical kaynaktır. Tarihsel domain-prefixed veya legacy ID'ler migration boyunca geçerli kalır; toplu rename yapılmaz.
 
 ## Forward-Only Strateji
 
@@ -78,14 +84,14 @@ Bu tarihten sonraki yeni moduller veya major feature'lar module pack ile acilir.
 - `batches/`: YOK. `/add-module` workflow'u phase orchestration saglar.
 - `snapshots/`: YOK. Git history + `docs/audits/` yeterlidir.
 - `controls/`: YOK. Engineering standartlari `.antigravity/rules/`'dedir; arsivlendi.
-- `decisions/`: YOK. Scope/MVP kararlari `docs/platform/master-plan.md`'dedir; arsivlendi.
+- `decisions/`: YOK. Scope/MVP kararlari `execution/portfolio/master-development-plan.md`'dedir; `docs/platform/master-plan.md` legacy bridge olarak gecici aktif kalir; arsivlendi.
 
 ## Kullanim Rehberi
 
 Yeni bir modul acilirken standard akisi:
 
-1. Domain sec (`MDM` / `PSS` / `ESBP`)
-2. `module-packs/{DOMAIN}-{NNN}-{slug}.md` dosyasi olustur
+1. Domain sec (`MDM` / `PSS` / `DEVEN` / `ESBP`)
+2. Registry-controlled `{ID}-{slug}.md` module pack dosyasi olustur
 3. YAML frontmatter + acceptance criteria doldur
 4. Branch ac (`feature/{domain-short}/{id-lower}-{slug}`)
 5. Orchestrator cagir ve `/add-module` workflow'unu calistir

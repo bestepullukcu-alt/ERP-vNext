@@ -1,0 +1,200 @@
+# Module ID Registry
+
+## Purpose
+The Module ID Registry is the canonical index for reserving Module IDs, module names, slugs, and mapping domain ownership. It ensures module identity integrity and prevents ID collisions across the entire ERP-vNext system.
+
+## Scope
+Maintains the master list of all planned, approved, and implemented Module IDs, names, slugs, types, and owner domains. It covers both executable modules and associated planning aliases, deprecated references, and follow-ups.
+
+## Not the source for
+The registry is strictly for identity management and governance rules. It is **NOT** a tracking tool and must **never** contain:
+- Completion percentages (`%` completion).
+- Active branches, developer names, or daily developer assignments.
+- Work package task lists.
+- QA evidence or test reports.
+- Release notes or changelogs.
+- Detailed "What's done" / "What's missing" task lists.
+
+## Current status
+Fully migrated from the legacy location.
+
+## Source / migration note
+- **Legacy Source Path**: [module-registry.md](file:///Users/alitufanoglu/ERP-vNext/docs/governance/module-registry.md)
+- **Canonical Path after Migration**: [module-id-registry.md](file:///Users/alitufanoglu/ERP-vNext/execution/registries/module-id-registry.md)
+- **Temporary Co-existence Note**: The legacy file at `docs/governance/module-registry.md` will remain temporarily unchanged to prevent breaking existing path-dependent AGENTS, workflows, or validation scripts until they are updated in a later phase.
+
+## Owner / update rule
+- Owner: Lead Architect
+- Update Rule: Modifying or adding records requires reserving an ID here before creating a Module Pack. No progress metrics are permitted in this registry.
+
+---
+
+## Identity Reservation Rules
+
+- `MOD-0021` is reserved for General Audit Trail / Audit Trail Service only.
+- `MOD-0041` is reserved for Logging / Monitoring / Observability only.
+- `MOD-0288` (Organization, Person & Position Directory) is the canonical home of former `MOD-0040` (Tenant Organization Foundation), required before Tenant Users / Tenant Roles implementation. `MOD-0040` and `NEW-MOD-0040` are deprecated aliases.
+- Tenant management is decomposed under canonical `MOD-0009` as `MOD-0009-FU01/FU02/FU03` (former `MOD-0043/0044/0046`, now deprecated aliases).
+- `MOD-0046-QG` is not a standalone module ID. Tenant Quota Governance UI is tracked as `MOD-0033-FU01`.
+- Slug-only IDs are not canonical IDs. Slugs belong in the `Slug` field.
+
+### Canonicalization Gate (DCP-002)
+
+- The Blueprint (`docs/System Capability & Implementation Blueprint - master 5.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. The repository runs a **single** active `MOD-xxxx` namespace.
+- Before reserving or creating any `MOD-xxxx` (new module, FU/child, or repo-only), run the fail-closed preflight: `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`. A non-zero exit BLOCKS the reservation.
+- Legacy (`PSS-*`, `NEW-*`) and repo-only IDs remain valid only as **deprecated aliases pending explicit Enterprise Architect reservation**; no placeholder or next-free ID may be invented. Unresolved items are tracked in [blueprint-master-plan-reconciliation.md](../portfolio/blueprint-master-plan-reconciliation.md).
+- A superseded ID is never deleted: keep its row with `status: deprecated`, `Deprecated Alias = self`, `Replacement ID = canonical`. See [DCP-002](../portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md).
+
+---
+
+## Canonical Registry Table
+
+| Canonical ID | Canonical Module Name | Slug | Type | Status | Deprecated Alias | Replacement ID | Owner Domain | Notes |
+|---|---|---|---|---|---|---|---|---|
+| MOD-0002 | Interface Registry | interface-registry | Module | approved | MOD-0002-interface-registry |  | platform-shared-services | Module pack exists. |
+| MOD-0003 | Data Contract Registry | data-contract-registry | Module | planned / missing | MOD-0003-data-contract-registry |  | platform-shared-services | Referenced by master plan and Interface Registry dependencies; no module pack found. |
+| MOD-0008 | Enterprise Capability / Product Catalog | module-catalog-assignable-expose | Module | partial / master-plan only |  |  | platform-shared-services | Name aligned to Blueprint per DCP-002. (was: Module Catalog Assignable Expose); assignable-expose is a feature within this module, not a separate active identity. |
+| MOD-0009 | Tenant / Environment Management | tenant-lifecycle-events | Module | review | MOD-0009-tenant-lifecycle-events; MOD-0009-owned |  | platform-shared-services | Canonical tenant anchor (Blueprint-aligned name; prior repo name "Tenant Registry Lifecycle Events"). Parent of MOD-0009-FU01/FU02/FU03. Module pack exists. |
+| MOD-0009-FU01 | Tenant Architecture Foundation | tenant-architecture-foundation | Follow-up | done | MOD-0043 | MOD-0009 | platform-shared-services | Canonical child of MOD-0009 (was MOD-0043). Active pack exists. Tenant decomposition per DCP-002. |
+| MOD-0009-FU02 | Tenant Manager Backend | tenant-manager | Follow-up | in-progress | MOD-0044 | MOD-0009 | platform-shared-services | Canonical child of MOD-0009 (was MOD-0044). Active pack exists. Tenant decomposition per DCP-002. |
+| MOD-0009-FU03 | Tenant Core UI | tenant-core-ui | Follow-up | in-progress | MOD-0046 | MOD-0009 | platform-shared-services | Canonical child of MOD-0009 (was MOD-0046). Active pack exists. Tenant decomposition per DCP-002. |
+| MOD-0009-CLOSEOUT | Tenant Lifecycle Events Closeout | tenant-lifecycle-events-closeout | Follow-up | planned |  | MOD-0009 | platform-shared-services | Master-plan follow-up under MOD-0009. [Non-executable] |
+| MOD-0012 | Secrets & Configuration Vault | secrets-configuration-vault | Foundation | review | NEW-001; MOD-0012-secrets-configuration-vault | MOD-0012 | platform-shared-services | `NEW-001` is legacy alias only. |
+| MOD-0013 | Premium Modal Standard | premium-modal-standard | Standard (non-module) | retired-from-module-namespace | MOD-0013 |  | global / platform-shared-services | NOT a product module. Premium Modal/SweetAlert2 UI standard lives in `.antigravity/rules/premium-modal-standard.md`. Blueprint MOD-0013 = "Platform Standards Registry" (distinct); the repo UI-standard concept aligns to Blueprint MOD-0286 "UI Design System & Page Pattern Governance". Removed from active product-module namespace per DCP-002; retained as standard reference. [Non-executable spec] |
+| MOD-0014 | Module Boundary Registry | module-boundary-registry | Module | in-progress | MOD-0014-module-boundary-registry |  | platform-shared-services | Module pack exists. |
+| MOD-0018 | RBAC / ABAC Authorization | rbac-abac-authorization | Foundation | ready-for-dev | MOD-0018-rbac-abac-authorization |  | platform-shared-services | Parent authorization foundation. |
+| MOD-0018-FU1 | Authorization Foundation Follow-up 1 | authorization-foundation-fu1 | Follow-up | planned |  | MOD-0018 | platform-shared-services | Master-plan follow-up. [Non-executable] |
+| MOD-0018-FU9 | Platform Governance / RBAC Admin UI | platform-governance-rbac-admin-ui | Follow-up | planned |  | MOD-0018 | platform-shared-services | Child of MOD-0018; reserved for the separate RBAC Admin UI pack per MOD-0018-FU10/FU12 prose. The MOD-0018-rbac 'FU1-FU9 superseded' note refers to the old informal planning shorthand only and does not preclude this deliberate FU9 reservation. No pack/frontend/gateway/runtime yet. [Non-executable] |
+| MOD-0018-FU10 | Authorization Decision Contract Extension | authorization-decision-contract-extension | Follow-up | ready-for-dev | FU10; MOD-0018-FU10-authorization-decision-contract-extension |  | platform-shared-services | Parent record for FU10a/FU10b. [Non-executable] |
+| MOD-0018-FU10a | Pure Authorization Decision Contract Extension | authorization-decision-contract-extension-contract | Follow-up | implemented / referenced | FU10a | MOD-0018-FU10 | platform-shared-services | Shorthand `FU10a` maps here. [Non-executable] |
+| MOD-0018-FU10b | EntitlementChecker ResolvedFrom Mapping | entitlementchecker-resolvedfrom-mapping | Follow-up | implemented / referenced | FU10b | MOD-0018-FU10 | platform-shared-services | Shorthand `FU10b` maps here. [Non-executable] |
+| MOD-0018-FU11 | Temporary Access Pipeline Binding | temporary-access-pipeline-binding | Follow-up | planned | FU11 | MOD-0018-FU11 | platform-shared-services | Must not be confused with MOD-0041. [Non-executable] |
+| MOD-0018-FU12 | Tenant Authorization Context Foundation | tenant-authorization-context-foundation | Follow-up | done | FU12; MOD-0018-FU12-tenant-authorization-context-foundation |  | platform-shared-services | Module pack exists; reconciled to merged runtime (FU12a + FU12b) 2026-06-02. [Non-executable] |
+| MOD-0018-FU13 | Permission Convention + Cache Invalidation Events | permission-convention-cache-invalidation | Follow-up | planned | FU13 |  | platform-shared-services | Master-plan follow-up under MOD-0018. [Non-executable] |
+| MOD-0018-FU14 | Effective Access Explain + Allow Audit | effective-access-explain-allow-audit | Follow-up | planned | FU14 |  | platform-shared-services | Master-plan follow-up under MOD-0018. [Non-executable] |
+| MOD-0018-FU15 | Real DataScopeResolver | real-data-scope-resolver | Follow-up | planned / reserved | NEW-MOD-0041 | MOD-0018-FU15 | platform-shared-services | Replacement for deprecated `NEW-MOD-0041`; depends on MOD-0040 backing data. [Non-executable] |
+| MOD-0021 | Audit Trail Service | general-audit-trail | Module | ready-for-dev / implemented evidence | MOD-0021-audit-trail-service; MOD-0021-general-audit-trail | MOD-0021 | platform-shared-services | Canonical owner of audit trail. No other module may claim this ID. |
+| MOD-0021-PLAN | General Audit Trail - All Phases Implementation Plan | general-audit-trail-all-phases-plan | Planning Artifact | implementation-plan | MOD-0021 as planning-file frontmatter; MOD-0021-all-phases-implementation-plan; MOD-0021-phase-2-handoff-plan | MOD-0021 | platform-shared-services | Not an executable module ID; references the MOD-0021 source pack. [Non-executable] |
+| MOD-0021-RET | Audit Retention Surface Visibility / Smoke | audit-retention-surface-smoke | Follow-up | planned |  | MOD-0021 | platform-shared-services | Master-plan follow-up under MOD-0021. [Non-executable] |
+| MOD-0021-5C-H1 | Retention Page Loads Existing Policies | audit-retention-load-existing-policies | Follow-up | done |  | MOD-0021 | platform-shared-services | Master-plan hardening item. [Non-executable] |
+| MOD-0021-5C-H2 | Redact Actor UI | redact-actor-ui | Follow-up | done |  | MOD-0021 | platform-shared-services | Master-plan hardening item. [Non-executable] |
+| MOD-0021-5C-H3 | Sidebar Navigation Entry | audit-sidebar-navigation-entry | Follow-up | done |  | MOD-0021 | platform-shared-services | Master-plan hardening item. [Non-executable] |
+| MOD-0021-5C-H4 | Details Modal Partial | audit-details-modal-partial | Follow-up | done |  | MOD-0021 | platform-shared-services | Master-plan hardening item. [Non-executable] |
+| MOD-0021-FU-Partner | Partner Admin Audit Scope | partner-admin-audit-scope | Follow-up | planned |  | MOD-0021 | platform-shared-services | Partner-scoped audit follow-up. [Non-executable] |
+| MOD-0021-FU-CarryOver | Audit Carry-over Hardening | audit-carry-over-hardening | Follow-up | planned |  | MOD-0021 | platform-shared-services | Non-blocker carry-over list. [Non-executable] |
+| MOD-0023 | Workflow Designer (Approvals/SLAs/Escalations) | workflow-designer | Module | review / planned | MOD-0023-workflow-designer; MOD-0023-workflow-designerController |  | platform-shared-services | Module pack exists; controller-style suffix is not a module ID. |
+| MOD-0024 | Task & Checklist Engine | task-checklist-engine | Module | review / planned | MOD-0024-task-checklist-engine; MOD-0024-task-checklist-engineController |  | platform-shared-services | Module pack exists; controller-style suffix is not a module ID. |
+| MOD-0026 | Scheduler / Job Orchestration | background-job-scheduler | Foundation | done | MOD-0026-background-job-scheduler; MOD-0026-owned |  | platform-shared-services | Module pack exists. |
+| MOD-0027 | Notification Service (Email/SMS/WhatsApp) | central-tenant-email-notification-service | Module | approved | MOD-0027-central-tenant-email-notification-service |  | platform-shared-services | Module pack exists. |
+| MOD-0027-FU1 | Notification Service Follow-up 1 | notification-service-fu1 | Follow-up | planned |  | MOD-0027 | platform-shared-services | Master-plan follow-up. [Non-executable] |
+| MOD-0028 | Documentation & Evidence Management | document-management | Module | review / planned | MOD-0028-document-management; MOD-0028-document-managementController |  | platform-shared-services | Module pack exists; controller-style suffix is not a module ID. |
+| MOD-0031 | Evidence Linking Service | evidence-linking-service | Module | review / planned | MOD-0031-evidence-linking-service; MOD-0031-evidence-linking-serviceController |  | platform-shared-services | Module pack exists; controller-style suffix is not a module ID. |
+| MOD-0032 | API Gateway | api-gateway | Foundation | review / partial | MOD-0032-api-gateway; MOD-0032-api-gatewayController |  | platform-shared-services | Module pack exists; controller-style suffix is not a module ID. |
+| MOD-0032-FU1 | Frontend Direct-service Fallback Removal | frontend-direct-service-fallback-removal | Follow-up | planned |  | MOD-0032 | platform-shared-services | Master-plan follow-up. [Non-executable] |
+| MOD-0033 | API Consumer & Credential Management (Developer Portal) | consumer-quota-model | Module | in-progress | MOD-0033-consumer-quota-model |  | platform-shared-services | Single canonical module covering API consumer/credential management + runtime quota model. Runtime literal `Diten.Platform.MOD-0033.QuotaResetJob` is correct and unchanged. Name aligned to Blueprint per DCP-002 (was: Consumer / Quota Model). |
+| MOD-0033-FU01 | Tenant Quota Governance UI | tenant-quota-governance-ui | Feature Slice | approved | MOD-0046-QG; MOD-0046-tenant-quota-governance-ui; MOD-0033-FU01-tenant-quota-governance-ui | MOD-0033-FU01 | platform-shared-services | UI slice rendered in MOD-0046 Tenant UI; owned by MOD-0033. |
+| MOD-0033-FU1 | Quota Runtime Automation | quota-runtime-automation | Follow-up | planned |  | MOD-0033 | platform-shared-services | Existing master-plan follow-up for period reset, warning, breach notification. Kept distinct from MOD-0033-FU01. [Non-executable] |
+| MOD-0034 | Webhook Service | webhook-delivery | Module | planned / missing |  |  | platform-shared-services | Referenced in master plan; no module pack found. |
+| MOD-0035 | Event Bus / Message Queue | event-bus-message-queue | Foundation | partial | MOD-0035-event-bus-message-queue |  | platform-shared-services | Module pack exists. |
+| MOD-0037 | Integration Monitoring & Reconciliation | integration-monitoring | Module | review / planned | MOD-0037-integration-monitoring; MOD-0037-integration-monitoringController |  | platform-shared-services | Module pack exists; controller-style suffix is not a module ID. |
+| MOD-0038 | Event Taxonomy & Naming Standard | event-taxonomy-naming | Module | planned / missing |  |  | platform-shared-services | Referenced in master plan; no module pack found. |
+| MOD-0039 | Schema Compatibility & Deprecation Policy | schema-compatibility-governance | Module | planned / missing | MOD-0039-schema-compatibility-governance |  | platform-shared-services | Referenced in master plan and packs; no module pack found. |
+| MOD-0040 | Tenant Organization Foundation | tenant-organization-foundation | Deprecated Alias | deprecated | MOD-0040; NEW-MOD-0040 | MOD-0288 | platform-shared-services | Canonicalized to MOD-0288 (Blueprint: Organization, Person & Position Directory) per DCP-002. Active pack: `MOD-0288-organization-person-position-directory.md`. Prior alias chain retained for traceability. [Non-executable alias] |
+| MOD-0040-FU01 | Position Assignment User Reference Validation | position-assignment-user-reference-validation | Deprecated Alias | deprecated | MOD-0040-FU01 | MOD-0288-FU01 | platform-shared-services | Canonicalized to MOD-0288-FU01 per DCP-002. Active pack: `MOD-0288-FU01-position-assignment-user-reference-validation.md`. [Non-executable alias] |
+| MOD-0041 | Logging & Monitoring | logging-monitoring | Foundation | approved | MOD-0041-logging-monitoring |  | platform-shared-services | Reserved for observability only. Do not use for DataScopeResolver. |
+| MOD-0041-FU | Observability Exporter / Prometheus / Grafana Follow-up | observability-exporter-follow-up | Follow-up | planned |  | MOD-0041 | platform-shared-services | Master-plan roadmap follow-up under MOD-0041. [Non-executable] |
+| MOD-0042 | Alerting & Incident Runbooks | alerting-incident-runbooks | Module | approved / planned | MOD-0042-alerting-incident-runbooks; MOD-0042-alerting-incident-runbooksController; MOD-0042-ready |  | platform-shared-services | Module pack exists; controller-style/readiness suffixes are not module IDs. |
+| MOD-0043 | Tenant Architecture Foundation | tenant-architecture-foundation | Deprecated Alias | deprecated | MOD-0043 | MOD-0009-FU01 | platform-shared-services | Canonicalized to MOD-0009-FU01 per DCP-002. Blueprint MOD-0043 reserved for "SLO/SLA Monitoring" (SRE). Active pack: `MOD-0009-FU01-tenant-architecture-foundation.md`. [Non-executable alias] |
+| MOD-0043-DRIFT | Tenant Architecture Pack/Audit Drift | tenant-architecture-drift | Governance Finding | open |  | MOD-0043 | platform-shared-services | Master-plan reconciliation item. [Non-executable status tag] |
+| MOD-0043+MOD-0044+MOD-0046 | Tenant Management Aggregate Index | tenant-management-aggregate-index | Reporting Alias | partial | MOD-0043/44/46 | MOD-0043; MOD-0044; MOD-0046 | platform-shared-services | Reporting row only; not an executable module pack. [Non-executable] |
+| MOD-0044 | Tenant Manager Backend | tenant-manager | Deprecated Alias | deprecated | MOD-0044 | MOD-0009-FU02 | platform-shared-services | Canonicalized to MOD-0009-FU02 per DCP-002. Blueprint MOD-0044 reserved for "Backup & Restore". Active pack: `MOD-0009-FU02-tenant-manager.md`. [Non-executable alias] |
+| MOD-0045 | Tenant Management Legacy / Gap Reference | tenant-management-gap-reference | Retired Reference | retired | MOD-0045 |  | platform-shared-services | Retired non-executable legacy/gap reference per DCP-002. Blueprint MOD-0045 reserved for "Disaster Recovery (RTO/RPO)". No canonical repo pack; retained for traceability only. [Non-executable] |
+| MOD-0046 | Tenant Core UI | tenant-core-ui | Deprecated Alias | deprecated | MOD-0046 | MOD-0009-FU03 | platform-shared-services | Canonicalized to MOD-0009-FU03 per DCP-002. Blueprint MOD-0046 reserved for "Performance & Capacity Management". Active pack: `MOD-0009-FU03-tenant-core-ui.md`. [Non-executable alias] |
+| MOD-0046+ | Tenant Core UI Extensions | tenant-core-ui-extensions | Reporting Alias | partial |  | MOD-0046 | platform-shared-services | Aggregate extension label only. [Non-executable] |
+| MOD-0046-QG | Tenant Quota Governance UI | tenant-quota-governance-ui | Deprecated Alias | deprecated | MOD-0046-QG | MOD-0033-FU01 | platform-shared-services | Not standalone; use MOD-0033-FU01. [Non-executable] |
+| MOD-0047 | Tenant User Foundation | tenant-user-foundation | Deprecated Alias | deprecated | MOD-0047 | CAND-CAP-0001 | platform-shared-services | Canonicalized to CAND-CAP-0001 per DCP-002. squatted Blueprint MOD-0047=BCM. Active pack: CAND-CAP-0001-tenant-user-identity-foundation.md. [Non-executable alias] |
+| MOD-0169 | Platform Reference | platform-reference-mod-0169 | Retired Reference | retired | MOD-0169 |  | platform-shared-services | Retired non-executable legacy stub per DCP-002. Blueprint MOD-0169 = Billing & Invoicing (ERP) remains reserved for its real capability. [Non-executable] |
+| MOD-0220 | Corporate Secretarial / Entity Management | legal-entity-foundation | Module | ready-for-dev |  |  | master-data-management | MDM Legal Entity Foundation slice. Reserved ID confirmed from Natig Bey planning Excel; minimal backend schema reconciliation reviewed and explicitly approved; authoritative Enterprise Blueprint repository migration pending as non-blocking follow-up. |
+| MOD-0262 | Docs Repository (SharePoint/M365/Google Drive) [External Provider] | external-document-provider | Module | planned / missing |  |  | platform-shared-services | Referenced in master plan; no module pack found. |
+| MOD-0263 | Messaging Provider (Twilio/Infobip/SendGrid) [External Provider] | external-messaging-provider | Module | approved | MOD-0263-external-messaging-provider; MOD-0263-owned |  | platform-shared-services | Module pack exists. |
+| MOD-0265 | Observability/SIEM (Splunk/Datadog/New Relic) [External Provider] | siem-observability-provider | Module | planned / missing |  |  | platform-shared-services | Consumes MOD-0041 signals; no module pack found. |
+| MOD-0266 | Cloud Infrastructure (AWS/Azure/GCP) [External Provider] | blob-file-storage-provider | Module | planned / missing |  |  | platform-shared-services | Name aligned to Blueprint MOD-0266 per DCP-002. (was: Blob / File Storage Provider). |
+| MOD-0287 | User Preferences & Workspace Personalization | user-notification-preferences | Module | planned / missing |  |  | platform-shared-services | Referenced in master plan; no module pack found. |
+| MOD-0288 | Organization, Person & Position Directory | organization-person-position-directory | Foundation | done | MOD-0040; NEW-MOD-0040 |  | platform-shared-services | Blueprint-canonical org/person/position directory; canonical home of former MOD-0040 (Tenant Organization Foundation). Active pack exists. Child: MOD-0288-FU01. Canonicalized per DCP-002. Runtime merged (entities/controllers/repositories under services/Diten.Platform); governance reconciled to done. |
+| MOD-0288-FU01 | Position Assignment User Reference Validation | position-assignment-user-reference-validation | Follow-up | done | MOD-0040-FU01 | MOD-0288 | platform-shared-services | Canonical child of MOD-0288 (was MOD-0040-FU01). Active pack exists. Canonicalized per DCP-002. Runtime merged via PR #24 / d816db6 (510 tests pass); governance reconciled to done. |
+| MOD-0297 | Tenant Subscription Management | tenant-subscription-management | Deprecated Alias | deprecated | MOD-0297 | CAND-CAP-0002 | platform-shared-services | Governance alias to CAND-CAP-0002 per DCP-002. RUNTIME COMPATIBILITY LITERAL: Hangfire `Diten.Platform.MOD-0297.*` job IDs remain unchanged in code. [Non-executable alias] |
+| MOD-0297-FU1 | Subscription Runtime Automation | subscription-runtime-automation | Deprecated Alias | deprecated | MOD-0297-FU1 | CAND-CAP-0002 | platform-shared-services | Inherits CAND-CAP-0002 per DCP-002. [Non-executable alias] |
+| MOD-0298 | Tenant Module Entitlements | tenant-module-entitlements | Deprecated Alias | deprecated | MOD-0298 | CAND-CAP-0002-FU05 | platform-shared-services | Governance alias to CAND-CAP-0002-FU05 per DCP-002. [Non-executable alias] |
+| MOD-0298-FU1 | Entitlement Cache Invalidation Consumer | entitlement-cache-invalidation-consumer | Deprecated Alias | deprecated | MOD-0298-FU1 | CAND-CAP-0002-FU05 | platform-shared-services | Inherits CAND-CAP-0002-FU05 per DCP-002. [Non-executable alias] |
+| MOD-0299 | SaaS Billing & Invoicing | saas-billing-invoicing | Deprecated Alias | deprecated | MOD-0299 | CAND-CAP-0005 | platform-shared-services | Governance alias to CAND-CAP-0005 per DCP-002. RUNTIME COMPATIBILITY LITERAL: Hangfire owner literal `MOD-0297/MOD-0299` remains unchanged in code. [Non-executable alias] |
+| PSS-001 | Identity Access | identity-access | Deprecated Alias | deprecated | PSS-001 |  | platform-shared-services | Retired historical/upstream reference per DCP-002. [Non-executable] |
+| PSS-004 | Tenant Login Security Settings | tenant-login-security-settings | Deprecated Alias | deprecated | PSS-004 | MOD-0017-FU01 | platform-shared-services | Canonicalized to MOD-0017-FU01 (Blueprint MOD-0017 SSO/MFA) per DCP-002. Active pack: MOD-0017-FU01-tenant-login-security-settings.md. [Non-executable alias] |
+| PSS-005 | Tenant Module Catalog | tenant-module-catalog | Deprecated Alias | deprecated | PSS-005 | CAND-CAP-0002-FU01 | platform-shared-services | Governance alias to CAND-CAP-0002-FU01 per DCP-002. PSS-005<->MOD-0008 overlap = EA refinement. [Non-executable alias] |
+| PSS-006 | Tenant Subscription Plan Catalog | tenant-subscription-plan-catalog | Deprecated Alias | deprecated | PSS-006 | CAND-CAP-0002-FU02 | platform-shared-services | Governance alias to CAND-CAP-0002-FU02 per DCP-002. [Non-executable alias] |
+| PSS-007 | Platform Subscription Feature Management | subscription-feature-management | Deprecated Alias | deprecated | PSS-007 | CAND-CAP-0002-FU03 | platform-shared-services | Governance alias to CAND-CAP-0002-FU03 per DCP-002. [Non-executable alias] |
+| PSS-008 | Module Details Assignment Inspection | module-details-assignment-inspection | Deprecated Alias | deprecated | PSS-008 | CAND-CAP-0002-FU04 | platform-shared-services | Governance alias to CAND-CAP-0002-FU04 per DCP-002. [Non-executable alias] |
+| PSS-009 | Platform Admin Profile & Settings | platform-admin-profile-settings | Deprecated Alias | deprecated | PSS-009 | CAND-CAP-0003-FU01 | platform-shared-services | Governance alias to CAND-CAP-0003-FU01 per DCP-002. [Non-executable alias] |
+| PSS-009-FU1 | Platform Admin Avatar Upload | platform-admin-avatar-upload | Deprecated Alias | deprecated | PSS-009-FU1 | CAND-CAP-0003-FU01 | platform-shared-services | Inherits CAND-CAP-0003-FU01 per DCP-002. [Non-executable alias] |
+| PSS-009-FU2 | Platform Admin Activity Timeline | platform-admin-activity-timeline | Deprecated Alias | deprecated | PSS-009-FU2 | CAND-CAP-0003-FU01 | platform-shared-services | Inherits CAND-CAP-0003-FU01 per DCP-002. [Non-executable alias] |
+| PSS-009-FU3 | Platform Admin Password Change | platform-admin-password-change | Deprecated Alias | deprecated | PSS-009-FU3 | CAND-CAP-0003-FU01 | platform-shared-services | Inherits CAND-CAP-0003-FU01 per DCP-002. [Non-executable alias] |
+| PSS-009-FU4 | Preferred Locale + Timezone | preferred-locale-timezone | Deprecated Alias | deprecated | PSS-009-FU4 | CAND-CAP-0003-FU01 | platform-shared-services | Inherits CAND-CAP-0003-FU01 per DCP-002. [Non-executable alias] |
+| PSS-009-T1 | Platform Account Backend Test Coverage | platform-account-backend-tests | Deprecated Alias | deprecated | PSS-009-T1 | CAND-CAP-0003-FU01 | platform-shared-services | Inherits CAND-CAP-0003-FU01 per DCP-002. [Non-executable alias] |
+| PSS-009-T2 | Platform Account Browser Smoke | platform-account-browser-smoke | Deprecated Alias | deprecated | PSS-009-T2 | CAND-CAP-0003-FU01 | platform-shared-services | Inherits CAND-CAP-0003-FU01 per DCP-002. [Non-executable alias] |
+| PSS-010 | Platform Admin Password & MFA Security Settings | platform-admin-security | Deprecated Alias | deprecated | PSS-010 | CAND-CAP-0003-FU02 | platform-shared-services | Governance alias to CAND-CAP-0003-FU02 per DCP-002. [Non-executable alias] |
+| PSS-010-FU1 | Platform Admin MFA + Active Sessions UI | platform-admin-mfa-active-sessions | Deprecated Alias | deprecated | PSS-010-FU1 | CAND-CAP-0003-FU02 | platform-shared-services | Inherits CAND-CAP-0003-FU02 per DCP-002. [Non-executable alias] |
+| PSS-011 | Lookups / Reference Data | lookups-reference-data | Deprecated Alias | deprecated | PSS-011 | MOD-0048 | platform-shared-services | Canonicalized to MOD-0048 (Blueprint Reference Data Management) per DCP-002. Active pack: MOD-0048-lookups-reference-data.md. [Non-executable alias] |
+| PSS-011-FU1 | Lookups Follow-up 1 | lookups-fu1 | Deprecated Alias | deprecated | PSS-011-FU1 | MOD-0048 | platform-shared-services | Inherits MOD-0048 per DCP-002. [Non-executable alias] |
+| PSS-011-FU2 | Lookups Follow-up 2 | lookups-fu2 | Deprecated Alias | deprecated | PSS-011-FU2 | MOD-0048 | platform-shared-services | Inherits MOD-0048 per DCP-002. [Non-executable alias] |
+| PSS-011-FU3 | Test Runner Unblock | test-runner-unblock | Deprecated Alias | deprecated | PSS-011-FU3 | MOD-0048 | platform-shared-services | Inherits MOD-0048 per DCP-002. [Non-executable alias] |
+| PSS-PLAN-RECON-1 | NEW-001 / MOD-0012 ID Merge | new001-mod0012-id-merge | Deprecated Alias | deprecated | PSS-PLAN-RECON-1 | MOD-0012 | platform-shared-services | Historical governance follow-up per DCP-002. [Non-executable] |
+| PSS-PLAN-RECON-2 | MOD-0043/44/46 Aggregate Reconciliation | tenant-aggregate-reconciliation | Deprecated Alias | deprecated | PSS-PLAN-RECON-2 | MOD-0009 | platform-shared-services | Historical governance follow-up; tenant cluster now MOD-0009-FU01/02/03 per DCP-002. [Non-executable] |
+| PSS-XCUT-SV | SavedViews / Personalization | savedviews-personalization | Deprecated Alias | deprecated | PSS-XCUT-SV | MOD-0287 | platform-shared-services | Governance alias to Blueprint MOD-0287 (User Preferences & Workspace Personalization) per DCP-002. [Non-executable alias] |
+| NEW-001 | Secrets Management | secrets-management | Deprecated Alias | deprecated | NEW-001 | MOD-0012 | platform-shared-services | Use MOD-0012. [Non-executable] |
+| NEW-002 | Platform Administrators Management | platform-administrators | Deprecated Alias | deprecated | NEW-002 | CAND-CAP-0003 | platform-shared-services | Governance alias to CAND-CAP-0003 per DCP-002. Active pack: CAND-CAP-0003-platform-administration-operations.md. [Non-executable alias] |
+| NEW-002-FU1 | Platform Administrators Audit Hookup | platform-administrators-audit-hookup | Deprecated Alias | deprecated | NEW-002-FU1 | CAND-CAP-0003 | platform-shared-services | Inherits CAND-CAP-0003 per DCP-002. [Non-executable alias] |
+| NEW-003 | Notification Template Management UI | notification-template-management-ui | Deprecated Alias | deprecated | NEW-003 | MOD-0027-FU02 | platform-shared-services | Canonicalized to MOD-0027-FU02 (Blueprint MOD-0027 Notification Service) per DCP-002. [Non-executable alias] |
+| NEW-004 | Tenant Impersonation Tooling | tenant-impersonation-tooling | Deprecated Alias | deprecated | NEW-004 | CAND-CAP-0004 | platform-shared-services | Governance alias to CAND-CAP-0004 per DCP-002. [Non-executable alias] |
+| NEW-MOD-0040 | Tenant Org Master Data Foundation | tenant-organization-foundation | Deprecated Alias | deprecated | NEW-MOD-0040 | MOD-0288 | platform-shared-services | Use MOD-0288 (chain: NEW-MOD-0040 → MOD-0040 → MOD-0288). [Non-executable] |
+| NEW-MOD-0041 | Real DataScopeResolver | real-data-scope-resolver | Deprecated Alias | deprecated | NEW-MOD-0041 | MOD-0018-FU15 | platform-shared-services | Must not be used because MOD-0041 is reserved for Logging / Monitoring. [Non-executable] |
+| FU1 | Generic Follow-up 1 Shorthand | fu1 | Shorthand Alias | deprecated | FU1 | parent-specific FU ID | platform-shared-services | Avoid bare FU IDs outside local prose; use parent-prefixed IDs. [Non-executable] |
+| FU10 | Authorization Decision Follow-up Shorthand | authorization-decision-follow-up | Shorthand Alias | deprecated | FU10 | MOD-0018-FU10 | platform-shared-services | Use parent-prefixed ID. [Non-executable] |
+| FU10a | Authorization Decision Contract Extension Shorthand | authorization-decision-contract-extension-contract | Shorthand Alias | deprecated | FU10a | MOD-0018-FU10a | platform-shared-services | Use parent-prefixed ID in registry/frontmatter. [Non-executable] |
+| FU10b | EntitlementChecker Mapping Shorthand | entitlementchecker-mapping | Shorthand Alias | deprecated | FU10b | MOD-0018-FU10b | platform-shared-services | Use parent-prefixed ID in registry/frontmatter. [Non-executable] |
+| FU11 | Temporary Access Follow-up Shorthand | temporary-access-follow-up | Shorthand Alias | deprecated | FU11 | MOD-0018-FU11 | platform-shared-services | Use parent-prefixed ID in registry/frontmatter. [Non-executable] |
+| FU12 | Tenant Authorization Context Shorthand | tenant-authorization-context | Shorthand Alias | deprecated | FU12 | MOD-0018-FU12 | platform-shared-services | Use parent-prefixed ID in registry/frontmatter. [Non-executable] |
+| FU13 | Permission Convention Shorthand | permission-convention | Shorthand Alias | deprecated | FU13 | MOD-0018-FU13 | platform-shared-services | Use parent-prefixed ID in registry/frontmatter. [Non-executable] |
+| FU14 | Effective Access Explain Shorthand | effective-access-explain | Shorthand Alias | deprecated | FU14 | MOD-0018-FU14 | platform-shared-services | Use parent-prefixed ID in registry/frontmatter. [Non-executable] |
+| MOD-0017-FU01 | Tenant Login Security Settings | tenant-login-security-settings | Follow-up | in-progress | PSS-004 | MOD-0017 | platform-shared-services | Canonical FU of Blueprint MOD-0017 (SSO/MFA); was PSS-004. Active pack. per DCP-002. |
+| MOD-0027-FU02 | Notification Template Management UI | notification-template-management-ui | Follow-up | planned | NEW-003 | MOD-0027 | platform-shared-services | Canonical FU of Blueprint MOD-0027; was NEW-003 (MOD-0027-FU1 already exists). per DCP-002. |
+| MOD-0048 | Reference Data Management | lookups-reference-data | Module | ready-for-dev | PSS-011 |  | platform-shared-services | Blueprint-canonical; was PSS-011 (Lookups / Reference Data). Active pack. per DCP-002. |
+| CAND-CAP-0001 | Tenant User / Identity Foundation | tenant-user-identity-foundation | Candidate Capability | candidate / pending-EA | MOD-0047 |  | platform-shared-services | TEMPORARY candidate (no Blueprint match) pending EA MOD-xxxx per DCP-002. Active pack. Never written into runtime literals. |
+| CAND-CAP-0002 | SaaS Subscription, Plan & Entitlement Management | saas-subscription-plan-entitlement | Candidate Capability | candidate / pending-EA | MOD-0297 |  | platform-shared-services | TEMPORARY candidate parent pending EA. RUNTIME COMPAT: Hangfire `MOD-0297` literals retained in code. Active pack. per DCP-002. |
+| CAND-CAP-0002-FU01 | Tenant Module Catalog | tenant-module-catalog | Candidate Follow-up | candidate / pending-EA | PSS-005 | CAND-CAP-0002 | platform-shared-services | Child of CAND-CAP-0002; was PSS-005. per DCP-002. |
+| CAND-CAP-0002-FU02 | Subscription Plan Catalog | tenant-subscription-plan-catalog | Candidate Follow-up | candidate / pending-EA | PSS-006 | CAND-CAP-0002 | platform-shared-services | Child of CAND-CAP-0002; was PSS-006. per DCP-002. |
+| CAND-CAP-0002-FU03 | Subscription Feature Management | subscription-feature-management | Candidate Follow-up | candidate / pending-EA | PSS-007 | CAND-CAP-0002 | platform-shared-services | Child of CAND-CAP-0002; was PSS-007. per DCP-002. |
+| CAND-CAP-0002-FU04 | Module Assignment Inspection | module-assignment-inspection | Candidate Follow-up | candidate / pending-EA | PSS-008 | CAND-CAP-0002 | platform-shared-services | Child of CAND-CAP-0002; was PSS-008. per DCP-002. |
+| CAND-CAP-0002-FU05 | Tenant Module Entitlements | tenant-module-entitlements | Candidate Follow-up | candidate / pending-EA | MOD-0298 | CAND-CAP-0002 | platform-shared-services | Child of CAND-CAP-0002; was MOD-0298. per DCP-002. |
+| CAND-CAP-0003 | Platform Administration & Operations | platform-administration-operations | Candidate Capability | candidate / pending-EA | NEW-002 |  | platform-shared-services | TEMPORARY candidate parent pending EA. Active pack; was NEW-002. per DCP-002. |
+| CAND-CAP-0003-FU01 | Platform Admin Profile & Settings | platform-admin-profile-settings | Candidate Follow-up | candidate / pending-EA | PSS-009 | CAND-CAP-0003 | platform-shared-services | Child of CAND-CAP-0003; was PSS-009. per DCP-002. |
+| CAND-CAP-0003-FU02 | Platform Admin Password & MFA Security | platform-admin-password-mfa-security | Candidate Follow-up | candidate / pending-EA | PSS-010 | CAND-CAP-0003 | platform-shared-services | Child of CAND-CAP-0003; was PSS-010. per DCP-002. |
+| CAND-CAP-0004 | Tenant Impersonation / Support Tooling | tenant-impersonation-support-tooling | Candidate Capability | candidate / pending-EA | NEW-004 |  | platform-shared-services | TEMPORARY candidate pending EA; security model EA-gated. Was NEW-004. per DCP-002. |
+| CAND-CAP-0005 | SaaS Billing & Invoicing | saas-billing-invoicing | Candidate Capability | candidate / pending-EA | MOD-0299 |  | platform-shared-services | TEMPORARY candidate pending EA (distinct from Blueprint MOD-0169 ERP billing). RUNTIME COMPAT: Hangfire owner literal `MOD-0299` retained. Was MOD-0299. per DCP-002. |
+
+---
+
+## Open Governance Notes
+
+- `MOD-0021` duplicate frontmatter use was removed from the all-phases planning file by assigning `MOD-0021-PLAN` and linking it back to canonical `MOD-0021`.
+- `MOD-0297` frontmatter now uses `id: MOD-0297` and `slug: tenant-subscription-management`.
+- `MOD-0041` remains observability-only. Data scope resolution is reserved as `MOD-0018-FU15`.
+- `MOD-0040` is reserved for Tenant Organization Foundation and remains a prerequisite for Tenant Users / Tenant Roles.
+- `MOD-0033-FU1` and `MOD-0033-FU01` are both observed. `MOD-0033-FU01` is the canonical Quota Governance UI slice requested by governance; `MOD-0033-FU1` remains the existing runtime automation follow-up until a later normalization pass.
+
+---
+
+## Cleanup Candidates / Future Normalization
+
+The following entries are non-executable items that should eventually be cleaned up or normalized in the next phases:
+1. **Planning & Governance Aliases**: `MOD-0021-PLAN`, `MOD-0043-DRIFT`, `MOD-0043+MOD-0044+MOD-0046`, `MOD-0046+`, and `PSS-PLAN-RECON-2` are reporting-only or metadata indicators. They do not represent functional packages and should be mapped strictly as metadata links or handled in wave reconciliation documents.
+2. **Follow-ups (FU) / Hardening Slices**: Slices like `MOD-0018-FU*`, `MOD-0021-5C-H*`, and `PSS-009-FU*` should be fully migrated into active sprints or tracked on the Platform Delivery Board rather than remaining in the canonical registry.
+3. **Deprecated Shorthands**: Bare aliases such as `FU1` and `FU10-FU14` are fully deprecated and should be archived once references in legacy files are cleared.

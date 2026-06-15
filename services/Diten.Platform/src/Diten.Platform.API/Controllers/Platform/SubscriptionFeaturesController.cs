@@ -22,7 +22,7 @@ public sealed class SubscriptionFeaturesController : CustomBaseController
     }
 
     [HttpGet]
-    [HasPermission("Platform.SubscriptionFeatures.Read")]
+    [HasPermission("platform.subscription-features.read")]
     public async Task<IActionResult> GetCatalog([FromQuery] FeatureCatalogFilterRequest filter, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetFeatureCatalogQuery(filter), ct);
@@ -30,7 +30,7 @@ public sealed class SubscriptionFeaturesController : CustomBaseController
     }
 
     [HttpGet("{id:guid}")]
-    [HasPermission("Platform.SubscriptionFeatures.Read")]
+    [HasPermission("platform.subscription-features.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetFeatureDefinitionByIdQuery(id), ct);
@@ -38,7 +38,7 @@ public sealed class SubscriptionFeaturesController : CustomBaseController
     }
 
     [HttpPost]
-    [HasPermission("Platform.SubscriptionFeatures.Create")]
+    [HasPermission("platform.subscription-features.create")]
     public async Task<IActionResult> Create([FromBody] CreateFeatureDefinitionRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new CreateFeatureDefinitionCommand(request), ct);
@@ -46,7 +46,7 @@ public sealed class SubscriptionFeaturesController : CustomBaseController
     }
 
     [HttpPut("{id:guid}")]
-    [HasPermission("Platform.SubscriptionFeatures.Update")]
+    [HasPermission("platform.subscription-features.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateFeatureDefinitionRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new UpdateFeatureDefinitionCommand(id, request), ct);
@@ -54,7 +54,7 @@ public sealed class SubscriptionFeaturesController : CustomBaseController
     }
 
     [HttpGet("{id:guid}/plan-mappings")]
-    [HasPermission("Platform.SubscriptionFeatures.Read")]
+    [HasPermission("platform.subscription-features.read")]
     public async Task<IActionResult> GetPlanMappings(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetFeaturePlanMappingsQuery(id), ct);
@@ -62,7 +62,7 @@ public sealed class SubscriptionFeaturesController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/archive")]
-    [HasPermission("Platform.SubscriptionFeatures.Archive")]
+    [HasPermission("platform.subscription-features.archive")]
     public async Task<IActionResult> Archive(Guid id, [FromBody] ArchiveFeatureDefinitionRequest? request, CancellationToken ct)
     {
         var response = await _mediator.Send(new ArchiveFeatureDefinitionCommand(id, request?.RowVersion), ct);
@@ -70,7 +70,7 @@ public sealed class SubscriptionFeaturesController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/deactivate")]
-    [HasPermission("Platform.SubscriptionFeatures.Update")]
+    [HasPermission("platform.subscription-features.update")]
     public async Task<IActionResult> Deactivate(Guid id, [FromBody] ArchiveFeatureDefinitionRequest? request, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeactivateFeatureDefinitionCommand(id, request?.RowVersion), ct);

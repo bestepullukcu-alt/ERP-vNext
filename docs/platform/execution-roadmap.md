@@ -95,7 +95,7 @@ Pack var, kod sıfır. "Aynı modülün iki yere kaydedilmesini önleyen registr
 - `PSS-008` Module Assignment Inspection (%65) — embedded tab yeterli, ayrı sayfa AÇILMAYACAK
 - `PSS-010` Platform Admin MFA + Active Sessions (%60) — MVP dışı
 - `MOD-0033` Quota Dashboard (%78) — dashboard MVP dışı
-- `MOD-0046-QG` Quota Governance UI (%60)
+- `MOD-0033-FU01` Quota Governance UI (%60)
 - `MOD-0046+` Tenant Core UI Extensions (%60)
 - `MOD-0032` API Gateway Hardening (%50) — production öncesi
 

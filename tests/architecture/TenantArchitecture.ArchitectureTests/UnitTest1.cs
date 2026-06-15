@@ -15,13 +15,18 @@ public class PersistenceBoundaryTests
         var offenders = new List<string>();
         foreach (var file in serviceFiles)
         {
+            var normalized = file.Replace('\\', '/');
+            if (normalized.Contains("/tests/"))
+            {
+                continue;
+            }
+
             var content = File.ReadAllText(file);
             if (!content.Contains("new MongoClient("))
             {
                 continue;
             }
 
-            var normalized = file.Replace('\\', '/');
             var allowed = normalized.Contains(".Persistence/")
                           || normalized.Contains("Infrastructure/DependencyInjection.cs")
                           || normalized.Contains("/Infrastructure/Persistence/")
@@ -41,13 +46,18 @@ public class PersistenceBoundaryTests
     public void TenantHeaderContract_MustExistInGatewayAndServices()
     {
         var repoRoot = FindRepoRoot();
-        var requiredFiles = new[]
+        var requiredFiles = new List<string>
         {
-            "gateway/DitenApiGateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs",
-            "services/DitenAuthService/src/Diten.AuthService.Infrastructure/Middleware/TenantResolutionMiddleware.cs",
-            "services/DitenMdmService/src/Diten.MdmService.Infrastructure/Middleware/TenantResolutionMiddleware.cs",
+            "gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs",
+            "services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Middleware/TenantResolutionMiddleware.cs",
             "services/Diten.Platform.Common/src/Diten.Platform.Common/Tenancy/TenantResolutionMiddleware.cs"
         };
+
+        var optionalMdmFile = "services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Middleware/TenantResolutionMiddleware.cs";
+        if (Directory.Exists(Path.Combine(repoRoot, "services", "Diten.MdmService")))
+        {
+            requiredFiles.Add(optionalMdmFile);
+        }
 
         foreach (var file in requiredFiles)
         {

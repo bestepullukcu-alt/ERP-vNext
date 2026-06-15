@@ -60,7 +60,9 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
 
             if (Array.IndexOf(PlatformActors, actorType) < 0)
             {
-                context.Result = new ForbidResult();
+                // Bare 403 → UseStatusCodePagesWithReExecute renders the friendly /Home/Status/403 page
+                // (a ForbidResult would 302-redirect to the cookie scheme's AccessDenied path instead).
+                context.Result = new StatusCodeResult(403);
             }
 
             return;
@@ -74,7 +76,7 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
 
         if (!string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
         {
-            context.Result = new ForbidResult();
+            context.Result = new StatusCodeResult(403);
         }
     }
 

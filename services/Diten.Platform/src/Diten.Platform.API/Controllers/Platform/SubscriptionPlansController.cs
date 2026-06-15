@@ -27,7 +27,7 @@ public sealed class SubscriptionPlansController : CustomBaseController
     }
 
     [HttpGet]
-    [HasPermission("Platform.SubscriptionPlans.Read")]
+    [HasPermission("platform.subscription-plans.read")]
     public async Task<IActionResult> GetPlans([FromQuery] SubscriptionPlanFilterRequest filter, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetSubscriptionPlansQuery(filter), ct);
@@ -35,7 +35,7 @@ public sealed class SubscriptionPlansController : CustomBaseController
     }
 
     [HttpGet("active")]
-    [HasPermission("Platform.SubscriptionPlans.Read")]
+    [HasPermission("platform.subscription-plans.read")]
     public async Task<IActionResult> GetActivePlans(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetActiveSubscriptionPlansQuery(), ct);
@@ -43,7 +43,7 @@ public sealed class SubscriptionPlansController : CustomBaseController
     }
 
     [HttpGet("by-module/{moduleKey}")]
-    [HasPermission("Platform.SubscriptionPlans.Read")]
+    [HasPermission("platform.subscription-plans.read")]
     public async Task<IActionResult> GetByIncludedModuleKey(string moduleKey, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetSubscriptionPlansByModuleKeyQuery(moduleKey), ct);
@@ -51,7 +51,7 @@ public sealed class SubscriptionPlansController : CustomBaseController
     }
 
     [HttpGet("summary")]
-    [HasPermission("Platform.SubscriptionPlans.Read")]
+    [HasPermission("platform.subscription-plans.read")]
     public async Task<IActionResult> GetSummary(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetSubscriptionPlanSummaryQuery(), ct);
@@ -59,7 +59,7 @@ public sealed class SubscriptionPlansController : CustomBaseController
     }
 
     [HttpGet("{id:guid}")]
-    [HasPermission("Platform.SubscriptionPlans.Read")]
+    [HasPermission("platform.subscription-plans.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetSubscriptionPlanByIdQuery(id), ct);
@@ -67,7 +67,7 @@ public sealed class SubscriptionPlansController : CustomBaseController
     }
 
     [HttpPost]
-    [HasPermission("Platform.SubscriptionPlans.Create")]
+    [HasPermission("platform.subscription-plans.create")]
     public async Task<IActionResult> Create([FromBody] CreateSubscriptionPlanRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new CreateSubscriptionPlanCommand(request), ct);
@@ -75,7 +75,7 @@ public sealed class SubscriptionPlansController : CustomBaseController
     }
 
     [HttpPut("{id:guid}")]
-    [HasPermission("Platform.SubscriptionPlans.Update")]
+    [HasPermission("platform.subscription-plans.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSubscriptionPlanRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new UpdateSubscriptionPlanCommand(id, request), ct);
@@ -83,7 +83,7 @@ public sealed class SubscriptionPlansController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/activate")]
-    [HasPermission("Platform.SubscriptionPlans.Activate")]
+    [HasPermission("platform.subscription-plans.activate")]
     public async Task<IActionResult> Activate(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new ActivateSubscriptionPlanCommand(id), ct);
@@ -91,7 +91,7 @@ public sealed class SubscriptionPlansController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/deactivate")]
-    [HasPermission("Platform.SubscriptionPlans.Deactivate")]
+    [HasPermission("platform.subscription-plans.deactivate")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeactivateSubscriptionPlanCommand(id), ct);
@@ -99,7 +99,7 @@ public sealed class SubscriptionPlansController : CustomBaseController
     }
 
     [HttpGet("{id:guid}/features")]
-    [HasPermission("Platform.SubscriptionFeatures.Read")]
+    [HasPermission("platform.subscription-features.read")]
     public async Task<IActionResult> GetFeatures(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetPlanFeatureMappingsQuery(id), ct);
@@ -107,7 +107,7 @@ public sealed class SubscriptionPlansController : CustomBaseController
     }
 
     [HttpPut("{id:guid}/features")]
-    [HasPermission("Platform.SubscriptionFeatures.ManageMappings")]
+    [HasPermission("platform.subscription-features.manage-mappings")]
     public async Task<IActionResult> UpdateFeatures(Guid id, [FromBody] UpdatePlanFeatureMappingsRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new UpdatePlanFeatureMappingsCommand(id, request), ct);

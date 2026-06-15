@@ -5,10 +5,12 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Features.Notifications.Services;
+using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Services;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Eventing;
+using Diten.Platform.Infrastructure.Authorization;
 using Diten.Platform.Infrastructure.BackgroundJobs;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Configurations;
@@ -18,6 +20,7 @@ using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Audit;
 using Diten.Platform.Infrastructure.Services.Http;
+using Diten.Platform.Infrastructure.Services.Mdm;
 using Diten.Platform.Infrastructure.Services.Notifications;
 using Diten.Platform.Infrastructure.Settings;
 using Diten.Platform.Common.Authorization;
@@ -117,6 +120,7 @@ public static class DependencyInjection
         services.Configure<BusinessReferenceDataCatalogLoadOptions>(configuration.GetSection(BusinessReferenceDataCatalogLoadOptions.SectionName));
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         services.Configure<AuthServiceOptions>(configuration.GetSection(AuthServiceOptions.SectionName));
+        services.Configure<MdmServiceOptions>(configuration.GetSection(MdmServiceOptions.SectionName));
         services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
         services.AddOptions<SmtpProviderOptions>()
             .Bind(configuration.GetSection(SmtpProviderOptions.SectionName))
@@ -128,6 +132,7 @@ public static class DependencyInjection
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        services.AddTenantAuthorizationContext();
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
         services.AddSingleton<EntitlementCacheService>();
         services.AddScoped<IEntitlementChecker, EntitlementChecker>();
@@ -137,6 +142,10 @@ public static class DependencyInjection
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
         services.AddTransient<TenantPropagationHandler>();
         services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
+        services.AddHttpClient<ILegalEntityReferenceValidator, MdmLegalEntityReferenceValidator>()
+            .AddHttpMessageHandler<TenantPropagationHandler>();
+        services.AddHttpClient<IUserReferenceValidator, Diten.Platform.Infrastructure.Services.Auth.AuthServiceUserReferenceValidator>()
+            .AddHttpMessageHandler<TenantPropagationHandler>();
 
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
@@ -186,6 +195,9 @@ public static class DependencyInjection
         services.AddScoped<ITenantMessagingSettingsRepository, TenantMessagingSettingsRepository>();
         services.AddScoped<INotificationTemplateRepository, NotificationTemplateRepository>();
         services.AddScoped<INotificationDispatchRepository, NotificationDispatchRepository>();
+        services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
+        services.AddScoped<IPositionRepository, PositionRepository>();
+        services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
         services.AddScoped<IMessagingProvider, FakeMessagingProvider>();
         services.AddScoped<IMessagingProvider, SmtpMessagingProvider>();
         services.AddSingleton<ISmtpClientFactory, MailKitSmtpClientFactory>();
@@ -226,9 +238,7 @@ public static class DependencyInjection
         {
             services.AddMassTransit(x =>
             {
-                x.AddConsumer<TenantActivatedV1Consumer>();
-                x.AddConsumer<TenantLifecycleAuditConsumer>();
-                x.AddConsumer<TenantLifecycleNotificationConsumer>();
+                AddPlatformEventConsumers(x);
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host(eventingOptions.Host, eventingOptions.Port, eventingOptions.VirtualHost, h =>
@@ -262,6 +272,33 @@ public static class DependencyInjection
         RunMongoStartupInitialization(database, mongoSettings);
 
         return services;
+    }
+
+    public static IServiceCollection AddTenantAuthorizationContext(this IServiceCollection services)
+    {
+        services.AddScoped<ITenantAuthorizationContext, JwtTenantAuthorizationContext>();
+        return services;
+    }
+
+    internal static void AddPlatformEventConsumers(IBusRegistrationConfigurator configurator)
+    {
+        // Default competing-consumer topology: each of these runs once cluster-wide (no duplicate side-effects).
+        configurator.AddConsumer<TenantActivatedV1Consumer>();
+        configurator.AddConsumer<TenantLifecycleAuditConsumer>();
+        configurator.AddConsumer<TenantLifecycleNotificationConsumer>();
+
+        // AG-STEP-010 / MOD-0018-FU13 Group A — per-instance fan-out (OD-FU13-02, A-Option 1).
+        // The entitlement cache lives in a per-instance IMemoryCache, so EVERY instance must receive each
+        // invalidation event and evict its own copy. Bind ONLY this consumer to a per-instance, temporary
+        // (non-durable + auto-delete) receive endpoint via a process-lifetime InstanceId. ConfigureEndpoints(context)
+        // honours this per-consumer endpoint definition (one endpoint per consumer — no duplicate binding). The other
+        // three consumers keep the shared competing-consumer queue above.
+        configurator.AddConsumer<EntitlementCacheInvalidationConsumer>()
+            .Endpoint(endpoint =>
+            {
+                endpoint.InstanceId = PlatformInstanceIdentity.InstanceId;
+                endpoint.Temporary = true;
+            });
     }
 
     private static void RunMongoStartupInitialization(IMongoDatabase database, MongoDbSettings mongoSettings)

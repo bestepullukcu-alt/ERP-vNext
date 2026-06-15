@@ -1,6 +1,8 @@
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions.Commands;
+using Diten.Platform.Contracts.Events;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -13,17 +15,20 @@ public sealed class SuspendTenantSubscriptionCommandHandler : IRequestHandler<Su
     private readonly ITenantRegistryRepository _tenantRepository;
     private readonly ISubscriptionPlanRepository _planRepository;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IEventBus _eventBus;
 
     public SuspendTenantSubscriptionCommandHandler(
         ITenantSubscriptionRepository subscriptionRepository,
         ITenantRegistryRepository tenantRepository,
         ISubscriptionPlanRepository planRepository,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        IEventBus eventBus)
     {
         _subscriptionRepository = subscriptionRepository;
         _tenantRepository = tenantRepository;
         _planRepository = planRepository;
         _currentUser = currentUser;
+        _eventBus = eventBus;
     }
 
     public async Task<Response<NoContent>> Handle(SuspendTenantSubscriptionCommand request, CancellationToken ct)
@@ -39,6 +44,8 @@ public sealed class SuspendTenantSubscriptionCommandHandler : IRequestHandler<Su
             return Response<NoContent>.Fail($"Invalid status transition from {subscription.Status} to Suspended.", 400);
         }
 
+        var previousPlanId = subscription.PlanId;
+        var previousStatus = subscription.Status.ToString();
         var reason = request.Request.Reason.Trim();
         var now = DateTimeOffset.UtcNow;
         subscription.Status = TenantSubscriptionStatus.Suspended;
@@ -55,6 +62,37 @@ public sealed class SuspendTenantSubscriptionCommandHandler : IRequestHandler<Su
             return Response<NoContent>.Fail("Tenant subscription was modified by another process.", 409);
         }
 
-        return await TenantSubscriptionCommandSupport.UpdateTenantSnapshotAsync(subscription, _tenantRepository, _planRepository, _currentUser, ct);
+        var snapshotResponse = await TenantSubscriptionCommandSupport.UpdateTenantSnapshotAsync(subscription, _tenantRepository, _planRepository, _currentUser, ct);
+        if (!snapshotResponse.IsSuccessful)
+        {
+            return snapshotResponse;
+        }
+
+        var eventId = Guid.NewGuid();
+        var correlationId = Guid.NewGuid();
+        var actorId = _currentUser.UserId == Guid.Empty ? null : (Guid?)_currentUser.UserId;
+
+        await _eventBus.PublishAsync(
+            new TenantSubscriptionChangedV1(
+                eventId,
+                now,
+                request.TenantId,
+                correlationId,
+                actorId,
+                previousPlanId,
+                subscription.PlanId,
+                previousStatus,
+                subscription.Status.ToString()),
+            new EventPublishOptions
+            {
+                EventId = eventId,
+                CorrelationId = correlationId,
+                TenantId = request.TenantId,
+                Producer = "Diten.Platform",
+                OccurredAtUtc = now
+            },
+            ct);
+
+        return snapshotResponse;
     }
 }

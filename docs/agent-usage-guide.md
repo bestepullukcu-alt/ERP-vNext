@@ -2,7 +2,7 @@
 
 Bu rehber iki temel akışı detaylandırır: **Yol A — Sıfırdan yeni domain açma** (nadir) ve **Yol B — Mevcut domain'de yeni modül yazma** (her gün). Module pack güvenli aşamalar üzerinden yürütülür: önce sözleşme, sonra geliştirme.
 
-> **Otorite hiyerarşisi (her iki yolda da geçerli):** Module Pack → Domain Config → AGENTS.md → `.antigravity/rules/` → `docs/platform/master-plan.md`
+> **Otorite hiyerarşisi (her iki yolda da geçerli):** Module Pack → Domain Config → AGENTS.md → `.antigravity/rules/` → `execution/portfolio/master-development-plan.md`
 
 ---
 
@@ -45,7 +45,7 @@ Engineering kuralları tekrarlanırsa kaçak otorite oluşur ve bayatlar.
 ### A4. AGENTS.md'ye domain'i tanıt
 
 - §2 (klasör yapısı) ve §9 (branch adlandırma) → yeni domain ve kısa kodu (`crm` gibi) eklenir.
-- Platform/Admin domain'i ise → [docs/platform/master-plan.md](platform/master-plan.md) §2 envanter tablosuna eklenir.
+- Platform/Admin domain'i ise → [execution/portfolio/master-development-plan.md](../execution/portfolio/master-development-plan.md) Section 2 envanter tablosuna ve [execution/registries/module-id-registry.md](../execution/registries/module-id-registry.md) içine eklenir.
 
 ### A5. İlk modülü Yol B ile yaz
 
@@ -70,7 +70,7 @@ Vereceğin bilgiler:
 - Entity base kararı (`EntityBase`/`BaseEntity`/`GlobalEntity` + gerekçe)
 
 Ne olur:
-- `module-pack-author` ajanı [AGENTS.md](../AGENTS.md), [domain-config.md](../execution/domains/), [docs/platform/master-plan.md](platform/master-plan.md), [.antigravity/rules/](../.antigravity/rules/), Golden Reference Slim/Compact dosyalarını okur.
+- `module-pack-author` ajanı [AGENTS.md](../AGENTS.md), [domain-config.md](../execution/domains/), [execution/portfolio/master-development-plan.md](../execution/portfolio/master-development-plan.md), [execution/registries/module-id-registry.md](../execution/registries/module-id-registry.md), [.antigravity/rules/](../.antigravity/rules/), Golden Reference Slim/Compact dosyalarını okur.
 - Form alan sayısına göre `golden_reference: slim` (≤8) veya `compact` (>8) kararı verilir.
 - `execution/domains/{domain}/module-packs/{ID}-{slug}.md` dosyası `status: draft` ile üretilir.
 
@@ -173,6 +173,7 @@ A5. İlk modül → Yol B'ye geç          B7. PR
 | User Story + Gherkin Acceptance Criteria + MVP/MoSCoW kapsamı | `product-owner` (module pack içeriği için) |
 | Tek modül için PRD/BRD + IFRS/KVKK iş kuralı + L10n anahtar listesi | `business-analyst` (module pack içeriği için) |
 | Yeni module pack hazırlama (sözleşme dosyası) | `module-pack-author` veya `/prepare-module-pack` |
+| Çok modüllü / cross-cutting yetenek planı (kod yazmadan, Delivery Capability Pack) | `/prepare-capability-pack` (CAP-001) |
 | Onaylı module pack ile uçtan uca geliştirme | `@orchestrator` / `/add-module` |
 | Backend endpoint/CQRS ekleme | `backend-architect` / `/add-endpoint-cqrs` |
 | Frontend DataTable veya form düzenleme | `frontend-ui-ux` / `/add-page` |
@@ -180,11 +181,14 @@ A5. İlk modül → Yol B'ye geç          B7. PR
 | 7 dil RESX ve JS L10n bridge | `l10n-agent` |
 | Test senaryoları | `testing-agent` |
 | Güvenlik/tenant/RBAC denetimi | `security-agent` |
+| Salt-okunur mimari/governance denetimi (kod yazma yok) | `read-only-auditor` / `/read-only-audit` |
 | Hata analizi | `debugger` |
 | Teknik dokümantasyon | `documentation-writer` |
 | Son kullanıcı kılavuzu | `user-manual-generator` |
 
 > **Planlama kadrosu sırası:** `product-manager` (yalnız stratejik scope), `product-owner` (AC/MVP), `business-analyst` (iş kuralı/L10n) **opsiyonel** ön adımlardır; çıktıları **her zaman** `module-pack-author`'a girdi olur. Sıradan tek modül geliştirmesi için `module-pack-author` doğrudan çağrılabilir.
+
+> **Git güvenliği:** Staging / commit / push yalnızca [GIT-002 git-safety.md](../.antigravity/rules/git-safety.md) kapılarıyla ve açık kullanıcı onayıyla yapılır; `main`'e doğrudan push yoktur.
 
 ## Slim / Compact Seçimi
 
@@ -270,3 +274,27 @@ python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checke
 4. Status `approved` veya `ready-for-dev` yapılır.
 5. `@orchestrator Legal Entity module pack'e göre geliştir.`
 6. Orchestrator onaylı pack üzerinden geliştirmeyi yürütür.
+
+
+---
+
+## Module ID Canonicalization Gate (DCP-002)
+
+The Blueprint (`docs/System Capability & Implementation Blueprint - master 5.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+
+1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
+2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.
+3. **Canonical-name validation** — the pack `name` must match the Blueprint canonical name (or an approved alias).
+4. **Parent/FU/child decision** — decide explicitly whether the work is a new module or an FU/child of an existing module before minting an ID.
+5. **Repo-only reservation** — a capability absent from the Blueprint requires an explicit Enterprise Architect reservation recorded in the registry; no placeholder or next-free ID may be invented.
+6. **Preflight (fail-closed)** — run `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`. A non-zero exit BLOCKS pack creation.
+
+Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`. Legacy (`PSS-*`, `NEW-*`) and repo-only IDs are valid only as deprecated aliases pending Enterprise Architect reservation.
+
+### CAND-CAP candidate namespace (DCP-002)
+
+When the Blueprint has no capability and no existing MOD/FU fits, use a temporary candidate identity `CAND-CAP-####` — a governance/documentation identity ONLY, never written into runtime literals. Validate with the fail-closed candidate gate:
+
+`python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-#### --name "Capability Name"`
+
+Lifecycle: `legacy ID → deprecated alias to CAND-CAP-#### → later deprecated alias to the EA-assigned canonical MOD-xxxx`. New-module identity rule: **Blueprint lookup → existing MOD or FU when available → otherwise CAND-CAP only → never invent a MOD / PSS / NEW identity.**

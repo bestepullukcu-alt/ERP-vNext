@@ -31,7 +31,7 @@ public sealed class PlatformAuditController : CustomBaseController
     }
 
     [HttpGet("events")]
-    [HasPermission("Platform.Audit.Read")]
+    [HasPermission("platform.audit.read")]
     public async Task<IActionResult> GetEvents([FromQuery] AuditEventFilterRequest filter, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetAuditEventListQuery(filter), ct);
@@ -39,7 +39,7 @@ public sealed class PlatformAuditController : CustomBaseController
     }
 
     [HttpGet("events/{id:guid}")]
-    [HasPermission("Platform.Audit.Read")]
+    [HasPermission("platform.audit.read")]
     public async Task<IActionResult> GetEventById(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetAuditEventByIdQuery(id), ct);
@@ -47,7 +47,7 @@ public sealed class PlatformAuditController : CustomBaseController
     }
 
     [HttpGet("export")]
-    [HasPermission("Platform.Audit.Export")]
+    [HasPermission("platform.audit.export")]
     public async Task<IActionResult> Export([FromQuery] AuditExportRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new ExportAuditEventsQuery(request), ct);
@@ -61,7 +61,7 @@ public sealed class PlatformAuditController : CustomBaseController
     }
 
     [HttpGet("export-limits")]
-    [HasPermission("Platform.Audit.Read")]
+    [HasPermission("platform.audit.read")]
     public IActionResult GetExportLimits()
     {
         return CreateActionResultInstance(Response<AuditExportLimitsDto>.Success(
@@ -69,7 +69,7 @@ public sealed class PlatformAuditController : CustomBaseController
     }
 
     [HttpGet("retention")]
-    [HasPermission("Platform.Audit.Retention.Update")]
+    [HasPermission("platform.audit.retention.update")]
     public async Task<IActionResult> GetRetentionPolicies(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetAuditRetentionPoliciesQuery(), ct);
@@ -77,7 +77,7 @@ public sealed class PlatformAuditController : CustomBaseController
     }
 
     [HttpPut("retention")]
-    [HasPermission("Platform.Audit.Retention.Update")]
+    [HasPermission("platform.audit.retention.update")]
     public async Task<IActionResult> UpdateRetention([FromBody] UpdateAuditRetentionRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new UpdateAuditRetentionCommand(request), ct);
@@ -85,7 +85,7 @@ public sealed class PlatformAuditController : CustomBaseController
     }
 
     [HttpPost("redact-actor")]
-    [HasPermission("Platform.Audit.RedactActor")]
+    [HasPermission("platform.audit.redact-actor")]
     public async Task<IActionResult> RedactActor([FromBody] RedactAuditActorRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new RedactAuditActorCommand(request), ct);

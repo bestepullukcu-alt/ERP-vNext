@@ -452,6 +452,13 @@
   <data name="ResetPassword.Mismatch" xml:space="preserve"><value>Passwords do not match.</value></data>
   <data name="ResetPassword.SuccessTitle" xml:space="preserve"><value>Password updated</value></data>
   <data name="ResetPassword.SuccessMessage" xml:space="preserve"><value>Your password has been updated.</value></data>
+  <data name="AccessGovernance" xml:space="preserve"><value>Access Governance</value></data>
+  <data name="UsersMenu" xml:space="preserve"><value>Users</value></data>
+  <data name="RolesMenu" xml:space="preserve"><value>Roles</value></data>
+  <data name="PermissionsMenu" xml:space="preserve"><value>Permissions</value></data>
+  <data name="RolePermissionAssignmentMenu" xml:space="preserve"><value>Role Permissions</value></data>
+  <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
+  <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>البيانات المرجعية</value></data>
 </root>
 

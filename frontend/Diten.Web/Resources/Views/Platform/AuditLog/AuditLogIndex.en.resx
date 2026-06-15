@@ -183,4 +183,6 @@
   <data name="Common.DtInfo" xml:space="preserve"><value>Showing _START_ - _END_ / _TOTAL_</value></data>
   <data name="Common.DtInfoEmpty" xml:space="preserve"><value>Showing 0 - 0 / 0</value></data>
   <data name="Common.DtInfoFiltered" xml:space="preserve"><value>filtered from _MAX_ records</value></data>
+  <data name="AuditLog.DenyOnlyBadge" xml:space="preserve"><value>Deny-only</value></data>
+  <data name="AuditLog.DenyOnlyNotice" xml:space="preserve"><value>This log records denied (deny) access decisions only. Allowed accesses are not logged by policy (deny-only baseline).</value></data>
 </root>

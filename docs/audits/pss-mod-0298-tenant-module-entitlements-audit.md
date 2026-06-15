@@ -2,7 +2,7 @@
 
 Date: 2026-05-11
 Domain: platform-shared-services
-Module pack: `execution/domains/platform-shared-services/module-packs/tenant-module-entitlements-module-pack.md`
+Module pack: `execution/domains/platform-shared-services/module-packs/MOD-0298-tenant-module-entitlements.md`
 
 ## Scope
 

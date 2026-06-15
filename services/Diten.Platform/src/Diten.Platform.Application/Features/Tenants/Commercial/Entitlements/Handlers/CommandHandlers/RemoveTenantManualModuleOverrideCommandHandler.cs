@@ -1,7 +1,10 @@
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Quotas;
 using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
+using Diten.Platform.Contracts.Events;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -12,11 +15,19 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
 {
     private readonly ITenantModuleEntitlementRepository _repository;
     private readonly IQuotaService _quotaService;
+    private readonly IEventBus _eventBus;
+    private readonly ICurrentUserContext _currentUser;
 
-    public RemoveTenantManualModuleOverrideCommandHandler(ITenantModuleEntitlementRepository repository, IQuotaService quotaService)
+    public RemoveTenantManualModuleOverrideCommandHandler(
+        ITenantModuleEntitlementRepository repository,
+        IQuotaService quotaService,
+        IEventBus eventBus,
+        ICurrentUserContext currentUser)
     {
         _repository = repository;
         _quotaService = quotaService;
+        _eventBus = eventBus;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<NoContent>> Handle(RemoveTenantManualModuleOverrideCommand request, CancellationToken ct)
@@ -54,6 +65,29 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
                     return Response<NoContent>.Fail(release.Errors, release.StatusCode);
                 }
             }
+
+            var eventId = Guid.NewGuid();
+            var correlationId = Guid.NewGuid();
+            var occurredAtUtc = DateTimeOffset.UtcNow;
+            var actorId = _currentUser.UserId == Guid.Empty ? null : (Guid?)_currentUser.UserId;
+
+            await _eventBus.PublishAsync(
+                new TenantEntitlementOverrideRemovedV1(
+                    eventId,
+                    occurredAtUtc,
+                    request.TenantId,
+                    correlationId,
+                    actorId,
+                    entitlement.ModuleCode),
+                new EventPublishOptions
+                {
+                    EventId = eventId,
+                    CorrelationId = correlationId,
+                    TenantId = request.TenantId,
+                    Producer = "Diten.Platform",
+                    OccurredAtUtc = occurredAtUtc
+                },
+                ct);
 
             return Response<NoContent>.Success(204);
         }

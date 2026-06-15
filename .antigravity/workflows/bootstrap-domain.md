@@ -16,7 +16,7 @@ Bu workflow, bir Excel planlama dosyasındaki verileri kullanarak Diten ERP vNex
 ### Faz 2: Domain Yapılandırması
 - İlgili `execution/domains/{domain-name}/` klasörü oluşturulur.
 - **`domain-config.md`:** Excel'deki kapsam (in-scope) modülleri temel alınarak oluşturulur.
-- `controls/`, `decisions/`, `batches/`, `snapshots/` katmanları **kurulmaz**. Engineering kuralları `.antigravity/rules/`, scope/MVP kararları `docs/platform/master-plan.md` üzerinden taşınır.
+- `controls/`, `decisions/`, `batches/`, `snapshots/` katmanları **kurulmaz**. Engineering kuralları `.antigravity/rules/`, scope/MVP kararları `execution/portfolio/master-development-plan.md` üzerinden taşınır.
 
 ### Faz 3: Modül Paketi Üretimi (Bulk Creation)
 - Excel'deki her satır için bir `{DOMAIN}-{NNN}-{slug}.md` dosyası oluşturulur.
@@ -76,3 +76,27 @@ Eğer bu işlemi dış bir AI'a (ChatGPT/Gemini/Claude) yaptıracaksanız, şu p
 - **(b) Rafine yol — `prepare-module-pack`:** İş kuralları, AC, alan listesi veya golden reference kararı detaylandırılması gerekiyorsa pack `prepare-module-pack` workflow'una verilir; `module-pack-author` ajanı pack'i `Module Summary`, `Acceptance Criteria`, `Test Expectations`, `Runtime Constraints` gibi bölümlerle zenginleştirir ve sonra `approved`'a alır.
 
 `bootstrap-domain` ASLA doğrudan `@orchestrator`'a teslim etmez. `@orchestrator` yalnızca `approved`/`ready-for-dev` pack ile geliştirmeyi başlatır (`add-module.md` Phase 0 kapısı).
+
+
+---
+
+## Module ID Canonicalization Gate (DCP-002)
+
+The Blueprint (`docs/System Capability & Implementation Blueprint - master 5.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+
+1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
+2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.
+3. **Canonical-name validation** — the pack `name` must match the Blueprint canonical name (or an approved alias).
+4. **Parent/FU/child decision** — decide explicitly whether the work is a new module or an FU/child of an existing module before minting an ID.
+5. **Repo-only reservation** — a capability absent from the Blueprint requires an explicit Enterprise Architect reservation recorded in the registry; no placeholder or next-free ID may be invented.
+6. **Preflight (fail-closed)** — run `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`. A non-zero exit BLOCKS pack creation.
+
+Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`. Legacy (`PSS-*`, `NEW-*`) and repo-only IDs are valid only as deprecated aliases pending Enterprise Architect reservation.
+
+### CAND-CAP candidate namespace (DCP-002)
+
+When the Blueprint has no capability and no existing MOD/FU fits, use a temporary candidate identity `CAND-CAP-####` — a governance/documentation identity ONLY, never written into runtime literals. Validate with the fail-closed candidate gate:
+
+`python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-#### --name "Capability Name"`
+
+Lifecycle: `legacy ID → deprecated alias to CAND-CAP-#### → later deprecated alias to the EA-assigned canonical MOD-xxxx`. New-module identity rule: **Blueprint lookup → existing MOD or FU when available → otherwise CAND-CAP only → never invent a MOD / PSS / NEW identity.**

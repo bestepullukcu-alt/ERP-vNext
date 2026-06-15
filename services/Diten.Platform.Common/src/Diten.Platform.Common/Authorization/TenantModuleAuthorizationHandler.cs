@@ -6,25 +6,28 @@ public sealed class TenantModuleAuthorizationHandler : AuthorizationHandler<Tena
 {
     private readonly IEntitlementChecker entitlementChecker;
     private readonly IEntitlementAuditSink auditSink;
+    private readonly ITenantAuthorizationContext tenantAuthorizationContext;
 
     public TenantModuleAuthorizationHandler(
         IEntitlementChecker entitlementChecker,
-        IEntitlementAuditSink auditSink)
+        IEntitlementAuditSink auditSink,
+        ITenantAuthorizationContext tenantAuthorizationContext)
     {
         this.entitlementChecker = entitlementChecker ?? throw new ArgumentNullException(nameof(entitlementChecker));
         this.auditSink = auditSink ?? throw new ArgumentNullException(nameof(auditSink));
+        this.tenantAuthorizationContext = tenantAuthorizationContext ?? throw new ArgumentNullException(nameof(tenantAuthorizationContext));
     }
 
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, TenantModuleRequirement requirement)
     {
-        if (context.User.Identity?.IsAuthenticated != true)
+        if (!tenantAuthorizationContext.IsAuthenticated)
         {
             Fail(context, "Authenticated user is required.");
             return;
         }
 
-        var actorType = context.User.FindFirst("actor_type")?.Value;
-        if (string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase))
+        var actorType = tenantAuthorizationContext.ActorType;
+        if (tenantAuthorizationContext.IsPlatformAdmin)
         {
             context.Succeed(requirement);
             return;
@@ -36,8 +39,8 @@ public sealed class TenantModuleAuthorizationHandler : AuthorizationHandler<Tena
             return;
         }
 
-        var tenantIdClaim = context.User.FindFirst("tenant_id")?.Value;
-        if (!Guid.TryParse(tenantIdClaim, out var tenantId))
+        var tenantId = tenantAuthorizationContext.TenantId;
+        if (tenantId == Guid.Empty)
         {
             Fail(context, "A valid tenant_id claim is required.");
             return;

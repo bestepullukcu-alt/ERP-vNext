@@ -30,6 +30,7 @@ Bu dosya, ERP-vNext icin guncel prompt katalogudur. Amac, agent secimini, module
 |---|---|---|
 | Yeni module pack hazirlama | `module-pack-author` veya `/prepare-module-pack` | Kod yazmaz, status `draft` birakir |
 | Onayli module pack ile yeni modul gelistirme | `@orchestrator` + `/add-module` | Pack `approved` veya `ready-for-dev` olmali |
+| Cok modullu / cross-cutting yetenek hazirlama | `/prepare-capability-pack` | Kod yazmaz; Delivery Capability Pack'i `draft` birakir (CAP-001). Tek modul yeterliyse `/prepare-module-pack`'e doner |
 | Mevcut CRUD/DataTable duzeltmesi | `@orchestrator` | UI, JS, backend, gateway ve test etkisi birlikte yonetilir |
 | Sadece frontend partial/DataTable isi | `frontend-ui-ux` | Dar kapsamliysa dogrudan agent kullanilabilir |
 | Sadece backend CQRS endpoint | `backend-architect` veya `/add-endpoint-cqrs` | Command/query/handler ayrimi korunur |
@@ -37,7 +38,8 @@ Bu dosya, ERP-vNext icin guncel prompt katalogudur. Amac, agent secimini, module
 | Sadece l10n | `l10n-agent` | `.resx`, `_IndexL10n.cshtml`, `index.l10n.js` kontrol edilir |
 | Test ve kalite kapisi | `testing-agent` | Build, verifier, RESX ve smoke test beklentisi yazilir |
 | Son kullanici dokumani | `user-manual-generator` | Kod etkisi yoksa dogrudan agent uygundur |
-| Audit / review | `@orchestrator` veya ilgili uzman agent | Kod yazma istenmiyorsa acikca belirtilir |
+| Genel review / inceleme (edit'e izin verilebilir) | `@orchestrator` veya ilgili uzman agent | Duzenlemeye izin veren genel review normal goreve-ozel rotayi izleyebilir; kod yazma istenmiyorsa acikca belirtilir |
+| Audit-only / no-change review (kod yazma/edit yok) | `/read-only-audit` -> `read-only-auditor` | worktree-read-only veya strict repository-read-only; repoyu degistirmez, baseline'dan sapmaz |
 
 ---
 
@@ -75,7 +77,7 @@ Legal Entity icin module pack hazirla.
 Kod yazma.
 
 Beklenti:
-- AGENTS.md ve ilgili domain-config.md dosyasini oku.
+- AGENTS.md, domain-config.md, execution/portfolio/master-development-plan.md ve execution/registries/module-id-registry.md dosyalarını oku.
 - Domain'i belirle.
 - Owned objects, repo scope, protected paths, acceptance criteria ve test expectations yaz.
 - Create/edit form kullanici alan sayisini cikar.
@@ -116,9 +118,10 @@ Bu module pack'e gore gelistirmeyi baslat.
 
 Zorunlu okuma sirasi:
 1) AGENTS.md
-2) execution/domains/{domain}/domain-config.md
-3) execution/domains/{domain}/module-packs/{ID}.md
-4) .antigravity/workflows/add-module.md
+2) execution/domains/{domain}/module-packs/{ID}.md
+3) execution/delivery/platform-delivery-board.md
+4) gerekiyorsa execution/portfolio/master-development-plan.md
+5) .antigravity/workflows/add-module.md
 
 Kabul kriteri:
 - Module pack'teki acceptance criteria tamamlanacak.
@@ -743,3 +746,27 @@ Sonuclari kisa raporla.
 - Backend CQRS command/query/handler ayrimi korunuyor mu?
 - Frontend Gateway 5000 disina cikmiyor mu?
 - Verifier `--reference slim|compact` ile calisiyor mu?
+
+
+---
+
+## Module ID Canonicalization Gate (DCP-002)
+
+The Blueprint (`docs/System Capability & Implementation Blueprint - master 5.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+
+1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
+2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.
+3. **Canonical-name validation** — the pack `name` must match the Blueprint canonical name (or an approved alias).
+4. **Parent/FU/child decision** — decide explicitly whether the work is a new module or an FU/child of an existing module before minting an ID.
+5. **Repo-only reservation** — a capability absent from the Blueprint requires an explicit Enterprise Architect reservation recorded in the registry; no placeholder or next-free ID may be invented.
+6. **Preflight (fail-closed)** — run `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`. A non-zero exit BLOCKS pack creation.
+
+Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`. Legacy (`PSS-*`, `NEW-*`) and repo-only IDs are valid only as deprecated aliases pending Enterprise Architect reservation.
+
+### CAND-CAP candidate namespace (DCP-002)
+
+When the Blueprint has no capability and no existing MOD/FU fits, use a temporary candidate identity `CAND-CAP-####` — a governance/documentation identity ONLY, never written into runtime literals. Validate with the fail-closed candidate gate:
+
+`python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-#### --name "Capability Name"`
+
+Lifecycle: `legacy ID → deprecated alias to CAND-CAP-#### → later deprecated alias to the EA-assigned canonical MOD-xxxx`. New-module identity rule: **Blueprint lookup → existing MOD or FU when available → otherwise CAND-CAP only → never invent a MOD / PSS / NEW identity.**

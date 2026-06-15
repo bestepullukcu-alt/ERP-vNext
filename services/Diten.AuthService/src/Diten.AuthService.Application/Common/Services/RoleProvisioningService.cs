@@ -1,33 +1,12 @@
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 
 namespace Diten.AuthService.Application.Common.Services;
 
 public sealed class RoleProvisioningService : IRoleProvisioningService
 {
-    private static readonly string[] AdminPermissionKeys =
-    [
-        "platform.businessreferencedata.read",
-        "platform.businessreferencedata.create",
-        "platform.businessreferencedata.update",
-        "platform.businessreferencedata.version.create",
-        "platform.businessreferencedata.version.update",
-        "platform.businessreferencedata.version.validate",
-        "platform.businessreferencedata.version.submit",
-        "platform.businessreferencedata.version.approve",
-        "platform.businessreferencedata.version.publish",
-        "platform.businessreferencedata.version.publishoverride",
-        "platform.businessreferencedata.import.preview",
-        "platform.businessreferencedata.import.commit",
-        "platform.businessreferencedata.usage.register",
-        "platform.businessreferencedata.consumer.read"
-    ];
-
-    private static readonly string[] ViewerPermissionKeys =
-    [
-        "platform.businessreferencedata.read",
-        "platform.businessreferencedata.consumer.read"
-    ];
+    private const string SystemActor = "system";
 
     private static readonly (string Name, string DisplayName, string Description)[] DefaultRoles =
     [
@@ -51,6 +30,8 @@ public sealed class RoleProvisioningService : IRoleProvisioningService
 
     public async Task EnsureDefaultRolesAsync(Guid tenantId, CancellationToken ct = default)
     {
+        var catalog = (await _permissionRepository.GetAllAsync(ct)).ToList();
+
         foreach (var template in DefaultRoles)
         {
             var role = await _roleRepository.UpsertSystemRoleAsync(
@@ -60,34 +41,34 @@ public sealed class RoleProvisioningService : IRoleProvisioningService
                 tenantId,
                 ct);
 
-            var permissionKeys = string.Equals(template.Name, "Admin", StringComparison.OrdinalIgnoreCase)
-                ? AdminPermissionKeys
-                : ViewerPermissionKeys;
-
-            await EnsureRolePermissionsAsync(role.Id, tenantId, permissionKeys, ct);
+            await EnsureBaselineGrantsAsync(role, catalog, tenantId, ct);
         }
     }
 
-    private async Task EnsureRolePermissionsAsync(Guid roleId, Guid tenantId, IEnumerable<string> permissionKeys, CancellationToken ct)
+    // Attaches the baseline permissions for the role using the shared template (same selection the
+    // DataSeeder uses, so the default tenant and every provisioned tenant stay in lock-step).
+    // Idempotent: existing grants are skipped, so re-running on retry produces no duplicates.
+    private async Task EnsureBaselineGrantsAsync(Role role, IReadOnlyList<Permission> catalog, Guid tenantId, CancellationToken ct)
     {
-        var currentPermissions = (await _rolePermissionRepository.GetPermissionsByRoleAsync(roleId, tenantId, ct))
+        var baseline = DefaultRolePermissionTemplate.SelectFor(role.Name, catalog);
+        if (baseline.Count == 0)
+        {
+            return;
+        }
+
+        var existingKeys = (await _rolePermissionRepository.GetPermissionsByRoleAsync(role.Id, tenantId, ct))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var permissionKey in permissionKeys)
+        foreach (var permission in baseline)
         {
-            if (currentPermissions.Contains(permissionKey))
+            if (existingKeys.Contains(permission.Key))
             {
                 continue;
             }
 
-            var permission = await _permissionRepository.GetByKeyAsync(permissionKey, ct);
-            if (permission is null)
-            {
-                continue;
-            }
-
-            await _rolePermissionRepository.AssignAsync(new RolePermission(roleId, permission.Id, tenantId, "system"), ct);
-            currentPermissions.Add(permissionKey);
+            await _rolePermissionRepository.AssignAsync(
+                RolePermission.SystemGrant(role.Id, permission.Id, tenantId, SystemActor),
+                ct);
         }
     }
 }

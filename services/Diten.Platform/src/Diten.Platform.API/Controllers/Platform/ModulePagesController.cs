@@ -24,7 +24,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpGet]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> Search([FromQuery] ModulePageDescriptorFilterRequest filter, CancellationToken ct)
     {
         var response = await _mediator.Send(new SearchModulePageDescriptorsQuery(filter), ct);
@@ -32,7 +32,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpGet("by-module/{moduleCode}")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetByModule(string moduleCode, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModulePageDescriptorsByModuleQuery(moduleCode), ct);
@@ -40,7 +40,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpGet("{id:guid}")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModulePageDescriptorByIdQuery(id), ct);
@@ -48,7 +48,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpPost]
-    [HasPermission("Modules.ModuleCatalog.Create")]
+    [HasPermission("platform.module-catalog.create")]
     public async Task<IActionResult> Create([FromBody] CreateModulePageDescriptorRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new CreateModulePageDescriptorCommand(request), ct);
@@ -56,7 +56,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpPut("{id:guid}")]
-    [HasPermission("Modules.ModuleCatalog.Update")]
+    [HasPermission("platform.module-catalog.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateModulePageDescriptorRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new UpdateModulePageDescriptorCommand(id, request), ct);
@@ -64,7 +64,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/activate")]
-    [HasPermission("Modules.ModuleCatalog.Update")]
+    [HasPermission("platform.module-catalog.update")]
     public async Task<IActionResult> Activate(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new ActivateModulePageDescriptorCommand(id), ct);
@@ -72,7 +72,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/deactivate")]
-    [HasPermission("Modules.ModuleCatalog.Update")]
+    [HasPermission("platform.module-catalog.update")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeactivateModulePageDescriptorCommand(id), ct);
@@ -80,7 +80,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpDelete("{id:guid}")]
-    [HasPermission("Modules.ModuleCatalog.Delete")]
+    [HasPermission("platform.module-catalog.delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeleteModulePageDescriptorCommand(id), ct);
@@ -88,7 +88,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpGet("{pageId:guid}/actions")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetActions(Guid pageId, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModulePageActionsByPageQuery(pageId), ct);
@@ -96,7 +96,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpGet("actions/{id:guid}")]
-    [HasPermission("Modules.ModuleCatalog.Read")]
+    [HasPermission("platform.module-catalog.read")]
     public async Task<IActionResult> GetActionById(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetModulePageActionByIdQuery(id), ct);
@@ -104,7 +104,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpPost("{pageId:guid}/actions")]
-    [HasPermission("Modules.ModuleCatalog.Update")]
+    [HasPermission("platform.module-catalog.update")]
     public async Task<IActionResult> CreateAction(Guid pageId, [FromBody] CreateModulePageActionDescriptorRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new CreateModulePageActionDescriptorCommand(pageId, request), ct);
@@ -112,7 +112,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpPut("actions/{id:guid}")]
-    [HasPermission("Modules.ModuleCatalog.Update")]
+    [HasPermission("platform.module-catalog.update")]
     public async Task<IActionResult> UpdateAction(Guid id, [FromBody] UpdateModulePageActionDescriptorRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new UpdateModulePageActionDescriptorCommand(id, request), ct);
@@ -120,7 +120,7 @@ public sealed class ModulePagesController : CustomBaseController
     }
 
     [HttpDelete("actions/{id:guid}")]
-    [HasPermission("Modules.ModuleCatalog.Update")]
+    [HasPermission("platform.module-catalog.update")]
     public async Task<IActionResult> DeleteAction(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeleteModulePageActionDescriptorCommand(id), ct);

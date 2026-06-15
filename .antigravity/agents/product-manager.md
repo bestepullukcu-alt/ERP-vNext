@@ -3,7 +3,7 @@ name: product-manager
 description: Diten ERP vNext ürün stratejisi, gereksinim analizi (PRD) ve roadmap uzmanı. Belirsiz talepleri teknik ekiplerin (Backend/Frontend) işleyebileceği net iş kurallarına dönüştürür.
 model: inherit
 skills: product-strategy, business-analysis, gherkin-writing, system-thinking
-tools: Read, Grep, Glob, Bash, Edit, Write
+tools: Read, Grep, Glob, Bash
 ---
 
 # Enterprise Product Manager (Diten ERP vNext)
@@ -58,6 +58,8 @@ Yeni bir modül veya özellik tasarlarken şu Diten katmanlarını analiz et:
 - **COULD:** Kullanıcı konforu (UX/UI şıklığı) için iyi olur.
 - **WON'T:** Mevcut vNext fazında kapsam dışı.
 
+> Uygulama veya dosya değişikliği gerekiyorsa doğrudan yazma; implementasyon işi `orchestrator` üzerinden, onaylı module pack veya Delivery Capability Pack kapılarıyla yürür.
+
 ---
 
 ## 📝 PRD (Ürün Gereksinim Dokümanı) Şablonu
@@ -77,7 +79,7 @@ Impacted UI: [Razor View / DataTable / Offcanvas]
 [Gherkin formatında listele]
 
 ## Yetki & Güvenlik
-Permission Key: [Örn: Modules.GoldenReferenceSlim.View]
+Permission Key: [Örn: module.golden-reference-slim.read]
 Tenant Isolation Type: [GUID-based Mandatory]
 
 ## Performans Hedefi

@@ -22,7 +22,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
     }
 
     [HttpGet]
-    [HasPermission("platform.tenants.commercial.subscription.view")]
+    [HasPermission("platform.tenants.commercial.subscription.read")]
     public async Task<IActionResult> GetCurrent(Guid tenantId, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTenantCommercialSubscriptionQuery(tenantId), ct);
@@ -30,7 +30,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
     }
 
     [HttpGet("history")]
-    [HasPermission("platform.tenants.commercial.subscription.history.view")]
+    [HasPermission("platform.tenants.commercial.subscription.history.read")]
     public async Task<IActionResult> GetHistory(Guid tenantId, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTenantSubscriptionHistoryQuery(tenantId), ct);
@@ -38,7 +38,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
     }
 
     [HttpGet("{subscriptionId:guid}")]
-    [HasPermission("platform.tenants.commercial.subscription.view")]
+    [HasPermission("platform.tenants.commercial.subscription.read")]
     public async Task<IActionResult> GetDetail(Guid tenantId, Guid subscriptionId, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTenantSubscriptionDetailQuery(tenantId, subscriptionId), ct);
@@ -46,7 +46,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
     }
 
     [HttpGet("active")]
-    [HasPermission("platform.tenants.commercial.subscription.view")]
+    [HasPermission("platform.tenants.commercial.subscription.read")]
     public async Task<IActionResult> HasActive(Guid tenantId, CancellationToken ct)
     {
         var response = await _mediator.Send(new HasTenantActiveSubscriptionQuery(tenantId), ct);
@@ -54,7 +54,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
     }
 
     [HttpGet("entitlements")]
-    [HasPermission("platform.tenants.commercial.subscription.view")]
+    [HasPermission("platform.tenants.commercial.subscription.read")]
     public async Task<IActionResult> GetEntitlements(Guid tenantId, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTenantSubscriptionEntitlementSnapshotQuery(tenantId), ct);

@@ -1,0 +1,22 @@
+@using Diten.Web.Views.Governance.Permissions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PermissionsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PermissionsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PermissionsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Governance/Permissions/_Filter.cshtml" />
+<partial name="~/Views/Governance/Permissions/_DataTable.cshtml" />
+<partial name="~/Views/Governance/Permissions/_DetailsQuickView.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Governance/Permissions/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Governance/Permissions/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Governance/Permissions/index.js" asp-append-version="true"></script>
+}

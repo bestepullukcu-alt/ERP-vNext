@@ -6,8 +6,10 @@ using Diten.Web.Services.EnterpriseStrategy;
 using Diten.Web.Services.ManagementGovernance;
 using Diten.Web.Services.WorkCenter;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -53,12 +55,30 @@ builder.Services.AddHttpClient<IAuthGateway, AuthGateway>(client =>
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
+// FE-A-harden (A5): the default HttpClient is registered TRANSIENT — each scoped (per-request)
+// controller resolves its own instance and makes only sequential calls, so a controller that mutates
+// HttpClient.DefaultRequestHeaders.Authorization affects only its own request and cannot bleed a token
+// across requests. Keep this registration transient; do NOT make HttpClient a singleton. New code
+// should prefer the per-request HttpRequestMessage pattern (see GoldenReferenceSlimController /
+// PlatformAuditController) so the guarantee holds even if this ever changes.
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<Diten.Web.Services.IPlatformProfileSnapshotProvider, Diten.Web.Services.PlatformProfileSnapshotProvider>();
+// FE-B (MOD-0018-FU9): UX-only permission snapshot for tenant RBAC screens. Not enforcement.
+builder.Services.AddScoped<Diten.Web.Services.IPermissionSnapshot, Diten.Web.Services.PermissionSnapshot>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
 builder.Services.AddSingleton<ITaskDetailService, TaskDetailService>();
 builder.Services.AddScoped<IManagementGovernanceFrontendAdapter, MockManagementGovernanceFrontendAdapter>();
 builder.Services.AddScoped<IEnterpriseStrategyFrontendAdapter, MockEnterpriseStrategyFrontendAdapter>();
+// FE-A-harden (A4): trust forwarded scheme/host/ip from the TLS-terminating reverse proxy.
+// KnownNetworks/Proxies cleared: the proxy topology is deployment-managed (containerized) and not a
+// fixed IP, so the forwarded headers from the trusted edge are honoured.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddSecretsProvider(builder.Configuration, builder.Environment, options => options.ServiceName = "Diten.Web");
 builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environment, "Diten.Web", [
     new("JwtSettings:Secret", "Diten.Web", SecretRequirementKind.JwtCurrent),
@@ -67,6 +87,11 @@ builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environm
 ]);
 
 var app = builder.Build();
+
+// FE-A-harden (A4): honour X-Forwarded-For / X-Forwarded-Proto from the TLS-terminating proxy so the
+// request scheme (https) and client IP resolve correctly — required for Secure cookies to be emitted
+// behind a reverse proxy. Must run before any middleware that reads the scheme / sets cookies.
+app.UseForwardedHeaders();
 
 Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "Data", "uploads"));
 
@@ -145,6 +170,13 @@ var validatedTokenParameters = new TokenValidationParameters
     ClockSkew = TimeSpan.FromSeconds(30)
 };
 
+// FE-A-harden (A3): single-flight the eager refresh. Concurrent requests from the same browser carry
+// the SAME (expired access, rotating refresh) cookies; without this, each would call refresh, the
+// first rotates the refresh token, and the others fail with a now-invalid token and log the user out.
+// Keyed by the old refresh token: all concurrent callers await ONE refresh task, then each writes the
+// resulting new tokens to its own response. (Cookie writes stay per-request; only the gateway call is shared.)
+var refreshInFlight = new ConcurrentDictionary<string, Lazy<Task<AuthBridgeResult>>>();
+
 // MOD-0014: Validated Token-to-User State Bridge
 app.Use(async (context, next) =>
 {
@@ -171,7 +203,23 @@ app.Use(async (context, next) =>
                 var tenantId = TryReadTenantId(accessToken);
                 try
                 {
-                    var refreshResult = await authGateway.RefreshAsync(accessToken, refreshToken, tenantId, context.RequestAborted);
+                    // Single-flight: one shared refresh call per old refresh token (CancellationToken.None
+                    // so one request's cancellation does not abort the shared refresh); each caller then
+                    // writes the resulting tokens to its own response below.
+                    var refreshTask = refreshInFlight
+                        .GetOrAdd(refreshToken, _ => new Lazy<Task<AuthBridgeResult>>(
+                            () => authGateway.RefreshAsync(accessToken, refreshToken, tenantId, CancellationToken.None)))
+                        .Value;
+
+                    AuthBridgeResult refreshResult;
+                    try
+                    {
+                        refreshResult = await refreshTask;
+                    }
+                    finally
+                    {
+                        refreshInFlight.TryRemove(refreshToken, out _);
+                    }
 
                     if (!refreshResult.Success ||
                         string.IsNullOrWhiteSpace(refreshResult.AccessToken) ||
@@ -215,6 +263,10 @@ else
 {
     app.UseExceptionHandler("/Home/Error");
 }
+
+// FE-A-core: friendly 401/403/404 pages, re-executed through HomeController.Status ([AllowAnonymous]).
+// Only triggers for empty-body error responses (JSON API/proxy responses carry a body → unaffected).
+app.UseStatusCodePagesWithReExecute("/Home/Status/{0}");
 
 app.UseStaticFiles();
 

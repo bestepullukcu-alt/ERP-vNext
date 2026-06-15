@@ -29,20 +29,22 @@ Gerekli bilgiler:
 
 1. `AGENTS.md`
 2. `execution/domains/{domain}/domain-config.md`
-3. `docs/platform/master-plan.md` (modül envanteri, MVP scope, cross-cutting standartlar)
-4. `.antigravity/rules/module-pack-standard.md`
-5. **Golden Reference pack'i** (form alan sayısına göre):
+3. `execution/portfolio/master-development-plan.md` (modül envanteri, MVP scope, cross-cutting standartlar)
+4. `execution/registries/module-id-registry.md` (canonical modül ID listesi)
+5. `execution/delivery/platform-delivery-board.md` (blocker ve follow-up kontrolleri)
+6. `.antigravity/rules/module-pack-standard.md`
+7. **Golden Reference pack'i** (form alan sayısına göre):
    - Slim: `execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md`
    - Compact: `execution/domains/developer-enablement/module-packs/DEV-0001-golden-reference-compact.md`
-6. **Gerçek Golden Reference kodu** (birebir şablon):
+8. **Gerçek Golden Reference kodu** (birebir şablon):
    - Backend: `services/Diten.DevEnablementService/.../Features/GoldenReferenceSlim/` (veya `Compact/`)
    - Frontend: `frontend/Diten.Web/Views/DevEnablement/GoldenReferenceSlim/` (veya `Compact/`)
-7. `.antigravity/rules/views-organization.md`
-8. `.antigravity/rules/handler-design.md`
-9. `.antigravity/rules/erp-architecture.md`
-10. `.antigravity/rules/response-envelope.md`
-11. `.antigravity/rules/entity-base-template.md`
-12. `.antigravity/rules/routes.md`
+9. `.antigravity/rules/views-organization.md`
+10. `.antigravity/rules/handler-design.md`
+11. `.antigravity/rules/erp-architecture.md`
+12. `.antigravity/rules/response-envelope.md`
+13. `.antigravity/rules/entity-base-template.md`
+14. `.antigravity/rules/routes.md`
 
 Platform admin shell modülü hazırlanıyorsa ek canlı referans: `frontend/Diten.Web/Views/Platform/Tenants/`.
 
@@ -121,3 +123,27 @@ Pack `ready-for-dev`'e geçmeden önce **Ready-for-dev Checklist** bölümündek
 - [ ] Gateway routing kararı açık
 - [ ] Acceptance criteria test edilebilir maddeler
 - [ ] Test expectations build/verifier/RESX/smoke kapsıyor
+
+
+---
+
+## Module ID Canonicalization Gate (DCP-002)
+
+The Blueprint (`docs/System Capability & Implementation Blueprint - master 5.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+
+1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
+2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.
+3. **Canonical-name validation** — the pack `name` must match the Blueprint canonical name (or an approved alias).
+4. **Parent/FU/child decision** — decide explicitly whether the work is a new module or an FU/child of an existing module before minting an ID.
+5. **Repo-only reservation** — a capability absent from the Blueprint requires an explicit Enterprise Architect reservation recorded in the registry; no placeholder or next-free ID may be invented.
+6. **Preflight (fail-closed)** — run `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`. A non-zero exit BLOCKS pack creation.
+
+Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`. Legacy (`PSS-*`, `NEW-*`) and repo-only IDs are valid only as deprecated aliases pending Enterprise Architect reservation.
+
+### CAND-CAP candidate namespace (DCP-002)
+
+When the Blueprint has no capability and no existing MOD/FU fits, use a temporary candidate identity `CAND-CAP-####` — a governance/documentation identity ONLY, never written into runtime literals. Validate with the fail-closed candidate gate:
+
+`python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-#### --name "Capability Name"`
+
+Lifecycle: `legacy ID → deprecated alias to CAND-CAP-#### → later deprecated alias to the EA-assigned canonical MOD-xxxx`. New-module identity rule: **Blueprint lookup → existing MOD or FU when available → otherwise CAND-CAP only → never invent a MOD / PSS / NEW identity.**

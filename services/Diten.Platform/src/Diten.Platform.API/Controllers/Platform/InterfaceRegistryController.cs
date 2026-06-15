@@ -23,7 +23,7 @@ public sealed class InterfaceRegistryController : CustomBaseController
     }
 
     [HttpPost("manifests/import")]
-    [HasPermission("Platform.InterfaceRegistry.Import")]
+    [HasPermission("platform.interface-registry.import")]
     public async Task<IActionResult> ImportManifest([FromBody] InterfaceManifestDocument manifest, CancellationToken ct)
     {
         var response = await _mediator.Send(new ImportInterfaceManifestRequest(manifest), ct);
@@ -31,7 +31,7 @@ public sealed class InterfaceRegistryController : CustomBaseController
     }
 
     [HttpGet("discovery-batches")]
-    [HasPermission("Platform.InterfaceRegistry.Read")]
+    [HasPermission("platform.interface-registry.read")]
     public async Task<IActionResult> GetDiscoveryBatches(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetInterfaceDiscoveryBatchesRequest(), ct);
@@ -39,7 +39,7 @@ public sealed class InterfaceRegistryController : CustomBaseController
     }
 
     [HttpGet("discovery-batches/{batchId:guid}")]
-    [HasPermission("Platform.InterfaceRegistry.Read")]
+    [HasPermission("platform.interface-registry.read")]
     public async Task<IActionResult> GetDiscoveryBatch(Guid batchId, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetInterfaceDiscoveryBatchByIdRequest(batchId), ct);
@@ -47,7 +47,7 @@ public sealed class InterfaceRegistryController : CustomBaseController
     }
 
     [HttpGet("discovery-batches/{batchId:guid}/diffs")]
-    [HasPermission("Platform.InterfaceRegistry.Read")]
+    [HasPermission("platform.interface-registry.read")]
     public async Task<IActionResult> GetDiscoveryDiffs(Guid batchId, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetInterfaceDiscoveryDiffItemsRequest(batchId), ct);
@@ -55,7 +55,7 @@ public sealed class InterfaceRegistryController : CustomBaseController
     }
 
     [HttpGet("interfaces")]
-    [HasPermission("Platform.InterfaceRegistry.Read")]
+    [HasPermission("platform.interface-registry.read")]
     public async Task<IActionResult> GetInterfaces(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetInterfaceDefinitionsRequest(), ct);
@@ -63,7 +63,7 @@ public sealed class InterfaceRegistryController : CustomBaseController
     }
 
     [HttpGet("interfaces/{interfaceCode}/snapshot")]
-    [HasPermission("Platform.InterfaceRegistry.Read")]
+    [HasPermission("platform.interface-registry.read")]
     public async Task<IActionResult> GetActiveSnapshot(string interfaceCode, [FromQuery] string version, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetInterfaceDefinitionSnapshotRequest(interfaceCode, version), ct);
@@ -71,7 +71,7 @@ public sealed class InterfaceRegistryController : CustomBaseController
     }
 
     [HttpPost("discovery-batches/{batchId:guid}/confirm")]
-    [HasPermission("Platform.InterfaceRegistry.Review")]
+    [HasPermission("platform.interface-registry.review")]
     public async Task<IActionResult> ConfirmBatch(Guid batchId, CancellationToken ct)
     {
         var response = await _mediator.Send(new ConfirmInterfaceDiscoveryBatchRequest(batchId), ct);
@@ -79,7 +79,7 @@ public sealed class InterfaceRegistryController : CustomBaseController
     }
 
     [HttpPost("discovery-batches/{batchId:guid}/reject")]
-    [HasPermission("Platform.InterfaceRegistry.Review")]
+    [HasPermission("platform.interface-registry.review")]
     public async Task<IActionResult> RejectBatch(Guid batchId, [FromBody] InterfaceReviewDecisionRequest? request, CancellationToken ct)
     {
         var response = await _mediator.Send(new RejectInterfaceDiscoveryBatchRequest(batchId, request?.ReviewReason ?? string.Empty), ct);
@@ -87,7 +87,7 @@ public sealed class InterfaceRegistryController : CustomBaseController
     }
 
     [HttpPost("diffs/{diffItemId:guid}/confirm")]
-    [HasPermission("Platform.InterfaceRegistry.Review")]
+    [HasPermission("platform.interface-registry.review")]
     public async Task<IActionResult> ConfirmDiffItem(Guid diffItemId, CancellationToken ct)
     {
         var response = await _mediator.Send(new ConfirmInterfaceDiffItemRequest(diffItemId), ct);
@@ -95,7 +95,7 @@ public sealed class InterfaceRegistryController : CustomBaseController
     }
 
     [HttpPost("diffs/{diffItemId:guid}/reject")]
-    [HasPermission("Platform.InterfaceRegistry.Review")]
+    [HasPermission("platform.interface-registry.review")]
     public async Task<IActionResult> RejectDiffItem(Guid diffItemId, [FromBody] InterfaceReviewDecisionRequest? request, CancellationToken ct)
     {
         var response = await _mediator.Send(new RejectInterfaceDiffItemRequest(diffItemId, request?.ReviewReason ?? string.Empty), ct);
@@ -103,7 +103,7 @@ public sealed class InterfaceRegistryController : CustomBaseController
     }
 
     [HttpPost("interfaces/{interfaceCode}/deprecate")]
-    [HasPermission("Platform.InterfaceRegistry.Deprecate")]
+    [HasPermission("platform.interface-registry.deprecate")]
     public async Task<IActionResult> DeprecateInterface(string interfaceCode, [FromBody] DeprecateInterfaceRequestBody? request, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeprecateInterfaceRequest(interfaceCode, request?.Version ?? string.Empty, request?.Reason ?? string.Empty), ct);

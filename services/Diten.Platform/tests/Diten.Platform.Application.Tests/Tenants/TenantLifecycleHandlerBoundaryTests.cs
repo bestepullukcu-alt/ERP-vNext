@@ -29,7 +29,16 @@ public sealed class TenantLifecycleHandlerBoundaryTests
 
         foreach (var handlerType in HandlerTypes)
         {
-            var source = File.ReadAllText($"{GetRepoRoot()}\\services\\Diten.Platform\\src\\Diten.Platform.Application\\Features\\Tenants\\Handlers\\{handlerType.Name}.cs");
+            var source = File.ReadAllText(Path.Combine(
+                GetRepoRoot(),
+                "services",
+                "Diten.Platform",
+                "src",
+                "Diten.Platform.Application",
+                "Features",
+                "Tenants",
+                "Handlers",
+                $"{handlerType.Name}.cs"));
 
             foreach (var forbiddenTerm in forbiddenTerms)
             {
@@ -41,7 +50,14 @@ public sealed class TenantLifecycleHandlerBoundaryTests
     [Fact]
     public void TenantDomainEntity_DoesNotPublishEventsDirectly()
     {
-        var source = File.ReadAllText($"{GetRepoRoot()}\\services\\Diten.Platform\\src\\Diten.Platform.Domain\\Entities\\Tenant.cs");
+        var source = File.ReadAllText(Path.Combine(
+            GetRepoRoot(),
+            "services",
+            "Diten.Platform",
+            "src",
+            "Diten.Platform.Domain",
+            "Entities",
+            "Tenant.cs"));
 
         Assert.DoesNotContain("IEventBus", source, StringComparison.Ordinal);
         Assert.DoesNotContain("PublishAsync", source, StringComparison.Ordinal);
