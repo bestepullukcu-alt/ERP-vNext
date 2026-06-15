@@ -233,15 +233,31 @@ public class AccountController : Controller
         }
 
         var tenantId = TryReadTenantId(accessToken);
-        var result = await _authGateway.RefreshAsync(accessToken, refreshToken, tenantId, ct);
-        if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
+        try
         {
-            _authCookieService.ClearTokens(Response);
-            return Unauthorized(new { detail = result.ErrorMessage ?? "Refresh failed." });
-        }
+            var result = await _authGateway.RefreshAsync(accessToken, refreshToken, tenantId, ct);
+            if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
+            {
+                if (result.ReauthRequired)
+                {
+                    _authCookieService.ClearTokens(Response);
+                }
+                return StatusCode(result.StatusCode ?? 500, new { 
+                    detail = result.ErrorMessage ?? "Refresh failed.",
+                    reauthRequired = result.ReauthRequired
+                });
+            }
 
-        _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
-        return Ok(new { success = true, user = result.User });
+            _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
+            return Ok(new { success = true, user = result.User });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { 
+                detail = "Transient error during token refresh: " + ex.Message,
+                reauthRequired = false
+            });
+        }
     }
 
     [HttpPost("/account/logout")]

@@ -158,6 +158,7 @@ var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? string.Empty;
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? string.Empty;
 var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? string.Empty;
 var jwtRotationResolver = new JwtSecretRotationResolver(builder.Configuration);
+
 var validatedTokenParameters = new TokenValidationParameters
 {
     ValidateIssuer = true,
@@ -226,7 +227,10 @@ app.Use(async (context, next) =>
                         string.IsNullOrWhiteSpace(refreshResult.RefreshToken) ||
                         !refreshResult.ExpiresAt.HasValue)
                     {
-                        authCookieService.ClearTokens(context.Response);
+                        if (refreshResult.ReauthRequired)
+                        {
+                            authCookieService.ClearTokens(context.Response);
+                        }
                     }
                     else
                     {
@@ -242,7 +246,7 @@ app.Use(async (context, next) =>
                 }
                 catch
                 {
-                    authCookieService.ClearTokens(context.Response);
+                    // Soft failure: do not clear tokens on transient exceptions
                 }
             }
         }

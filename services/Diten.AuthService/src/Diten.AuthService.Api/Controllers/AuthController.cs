@@ -49,6 +49,10 @@ public sealed class AuthController : CustomBaseController
     {
         var command = new RefreshTokenCommand(request.AccessToken, request.RefreshToken, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
         var result = await _mediator.Send(command, ct);
+        if (!result.IsSuccessful)
+        {
+            Response.Headers.Append("X-Refresh-Error-Type", "terminal");
+        }
         return CreateActionResultInstance(result);
     }
 

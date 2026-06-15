@@ -35,12 +35,14 @@ public sealed class GatewayJwtAuthenticationHandler : AuthenticationHandler<Auth
         var rotationResolver = new JwtSecretRotationResolver(_configuration);
         var validationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = issuer,
+            ValidAudience = audience,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             IssuerSigningKeys = rotationResolver.GetValidationKeys(),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.FromSeconds(30)
         };
 
         try

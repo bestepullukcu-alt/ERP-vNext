@@ -50,6 +50,7 @@ public static class DependencyInjection
                     IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
                     ClockSkew = TimeSpan.FromSeconds(30)
                 };
+
             });
 
         // Authorization (Permission-based)

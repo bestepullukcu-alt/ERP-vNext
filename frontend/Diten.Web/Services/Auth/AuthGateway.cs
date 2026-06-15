@@ -164,22 +164,48 @@ public sealed class AuthGateway : IAuthGateway
         var response = await _httpClient.SendAsync(request, ct);
         if (!response.IsSuccessStatusCode)
         {
+            bool reauthRequired = false;
+            if (response.Headers.TryGetValues("X-Refresh-Error-Type", out var values))
+            {
+                reauthRequired = values.Contains("terminal");
+            }
+            else
+            {
+                reauthRequired = response.StatusCode == System.Net.HttpStatusCode.Unauthorized 
+                    || response.StatusCode == System.Net.HttpStatusCode.BadRequest
+                    || response.StatusCode == System.Net.HttpStatusCode.Forbidden;
+            }
+
             return new AuthBridgeResult(
-                false,
-                null,
-                null,
-                null,
-                null,
-                await TryReadErrorAsync(response, ct));
+                Success: false,
+                AccessToken: null,
+                RefreshToken: null,
+                ExpiresAt: null,
+                User: null,
+                ErrorMessage: await TryReadErrorAsync(response, ct),
+                ReauthRequired: reauthRequired,
+                StatusCode: (int)response.StatusCode);
         }
 
         var authResponse = await ReadAuthBridgeResultAsync(response, ct);
         if (authResponse is null)
         {
-            return new AuthBridgeResult(false, null, null, null, null, "Authentication response could not be parsed.");
+            return new AuthBridgeResult(
+                Success: false, 
+                AccessToken: null, 
+                RefreshToken: null, 
+                ExpiresAt: null, 
+                User: null, 
+                ErrorMessage: "Authentication response could not be parsed.",
+                ReauthRequired: false,
+                StatusCode: (int)response.StatusCode);
         }
 
-        return authResponse with { Success = true };
+        return authResponse with { 
+            Success = true, 
+            ReauthRequired = false, 
+            StatusCode = (int)response.StatusCode 
+        };
     }
 
     private static async Task<AuthBridgeResult?> ReadAuthBridgeResultAsync(HttpResponseMessage response, CancellationToken ct)
