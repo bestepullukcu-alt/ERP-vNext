@@ -21,6 +21,16 @@ $services = @(
     @{ Name = "Web"; Path = "frontend/Diten.Web"; Port = 5001 }
 )
 
+# 2. Clean projects sequentially first to prevent concurrent clean conflicts
+Write-Host "🧹 Running dotnet clean sequentially on all projects to avoid build locks..." -ForegroundColor Yellow
+foreach ($svc in $services) {
+    $absPath = Resolve-Path $svc.Path
+    Write-Host "Cleaning $($svc.Name)..." -ForegroundColor Yellow
+    Push-Location $absPath
+    dotnet clean -c Debug --nologo
+    Pop-Location
+}
+
 $jobs = @()
 
 foreach ($svc in $services) {
@@ -31,8 +41,6 @@ foreach ($svc in $services) {
     $job = Start-Job -Name $svc.Name -ScriptBlock {
         param($path)
         cd $path
-        # Clean build artifacts to avoid BadImageFormatException (corrupted DLLs)
-        dotnet clean -c Debug
         # Force production/development environment variable or other parameters if needed
         $env:ASPNETCORE_ENVIRONMENT = "Development"
         dotnet watch run --no-hot-reload --non-interactive --launch-profile http
@@ -42,9 +50,9 @@ foreach ($svc in $services) {
     
     # Wait for Auth service seeding
     if ($svc.Name -eq "Auth") {
-        Start-Sleep -Seconds 3
+        Start-Sleep -Seconds 4
     } else {
-        Start-Sleep -Seconds 1
+        Start-Sleep -Seconds 2
     }
 }
 

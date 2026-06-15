@@ -12,6 +12,9 @@
     <PackageReference Include="MediatR" Version="12.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+    <!-- Align IdentityModel stack at 8.16.0 (see Infrastructure.csproj) — prevents the refresh-token
+         JwtSecurityTokenHandler mis-parse from the transitive 7.1.2 vs 8.16.0 mismatch. -->
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
