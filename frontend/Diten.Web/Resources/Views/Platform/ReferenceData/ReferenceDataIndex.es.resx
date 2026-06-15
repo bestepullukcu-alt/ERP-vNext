@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PageTitle" xml:space="preserve"><value>Datos de referencia de negocio</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gestione conjuntos, versiones, valores, asignaciones, uso y publicación de datos de referencia de negocio gobernados.</value></data>
+  <data name="SetCode" xml:space="preserve"><value>Código del conjunto</value></data>
+  <data name="SetName" xml:space="preserve"><value>Nombre del conjunto</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Tipo de alcance</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Version" xml:space="preserve"><value>Versión</value></data>
+  <data name="Governance" xml:space="preserve"><value>Gobernanza</value></data>
+  <data name="Validation" xml:space="preserve"><value>Validación</value></data>
+  <data name="ImportTitle" xml:space="preserve"><value>Vista previa de importación</value></data>
+  <data name="ImportDescription" xml:space="preserve"><value>Previsualice y confirme las importaciones de datos de referencia.</value></data>
+  <data name="UsageTitle" xml:space="preserve"><value>Dependencias de uso</value></data>
+  <data name="UsageDescription" xml:space="preserve"><value>Registre y revise los consumidores de un conjunto de datos de referencia.</value></data>
+  <data name="UsageSetLabel" xml:space="preserve"><value>Conjunto</value></data>
+  <data name="UsageConsumerModuleLabel" xml:space="preserve"><value>Módulo consumidor</value></data>
+  <data name="UsageConsumerNameLabel" xml:space="preserve"><value>Nombre del consumidor</value></data>
+  <data name="UsageResolutionLabel" xml:space="preserve"><value>Resolución</value></data>
+  <data name="UsageVersionPinLabel" xml:space="preserve"><value>Versión fijada</value></data>
+  <data name="UsageAsOfLabel" xml:space="preserve"><value>A fecha de</value></data>
+  <data name="UsageCriticalityLabel" xml:space="preserve"><value>Criticidad</value></data>
+  <data name="UsageConsumerModuleDefault" xml:space="preserve"><value>ERP</value></data>
+  <data name="UsageConsumerNameDefault" xml:space="preserve"><value>Consumidor</value></data>
+  <data name="UsageResolutionLatest" xml:space="preserve"><value>Última</value></data>
+  <data name="UsageResolutionPinned" xml:space="preserve"><value>Fijada</value></data>
+  <data name="UsageResolutionAsOf" xml:space="preserve"><value>A fecha de</value></data>
+  <data name="UsageCriticalityHigh" xml:space="preserve"><value>Alta</value></data>
+  <data name="UsageCriticalityMedium" xml:space="preserve"><value>Media</value></data>
+  <data name="UsageCriticalityLow" xml:space="preserve"><value>Baja</value></data>
+  <data name="UsageVersionPinRequired" xml:space="preserve"><value>La versión fijada es obligatoria.</value></data>
+  <data name="UsageAsOfRequired" xml:space="preserve"><value>La fecha de referencia es obligatoria.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No se encontraron conjuntos de datos de referencia.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>No se pudieron cargar los datos de referencia.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando...</value></data>
+  <data name="AddSet" xml:space="preserve"><value>Agregar conjunto</value></data>
+  <data name="CreateDraft" xml:space="preserve"><value>Crear borrador</value></data>
+  <data name="Open" xml:space="preserve"><value>Abrir</value></data>
+  <data name="Publish" xml:space="preserve"><value>Publicar</value></data>
+  <data name="Validate" xml:space="preserve"><value>Validar</value></data>
+  <data name="AddValue" xml:space="preserve"><value>Agregar valor</value></data>
+  <data name="ValueGridTitle" xml:space="preserve"><value>Valores</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Orden de clasificación</value></data>
+  <data name="TechnicalJsonView" xml:space="preserve"><value>Vista JSON técnica</value></data>
+  <data name="ValidationBlockers" xml:space="preserve"><value>Bloqueos de validación</value></data>
+  <data name="DraftEditable" xml:space="preserve"><value>Borrador editable</value></data>
+  <data name="ReadOnlyPublished" xml:space="preserve"><value>Publicado de solo lectura</value></data>
+  <data name="Immutable" xml:space="preserve"><value>Inmutable</value></data>
+  <data name="ImportPreview" xml:space="preserve"><value>Vista previa de importación</value></data>
+  <data name="CommitImport" xml:space="preserve"><value>Confirmar importación</value></data>
+  <data name="SelectFile" xml:space="preserve"><value>Seleccionar archivo</value></data>
+  <data name="HierarchyTitle" xml:space="preserve"><value>Jerarquía</value></data>
+  <data name="HierarchyDescription" xml:space="preserve"><value>Revise las relaciones jerárquicas del conjunto seleccionado.</value></data>
+  <data name="ValueCodeColumn" xml:space="preserve"><value>Código de valor</value></data>
+  <data name="ParentColumn" xml:space="preserve"><value>Padre</value></data>
+  <data name="DraftHierarchyPreview" xml:space="preserve"><value>Vista previa de jerarquía del borrador</value></data>
+  <data name="CollapsePreview" xml:space="preserve"><value>Contraer vista previa</value></data>
+  <data name="ExpandPreview" xml:space="preserve"><value>Expandir vista previa</value></data>
+  <data name="NoParentOption" xml:space="preserve"><value>(Sin padre)</value></data>
+  <data name="ClearParent" xml:space="preserve"><value>Borrar padre</value></data>
+  <data name="ClearParentConfirm" xml:space="preserve"><value>¿Borrar la asignación de padre para este valor?</value></data>
+  <data name="AttributesTitle" xml:space="preserve"><value>Atributos</value></data>
+  <data name="AttributesDescription" xml:space="preserve"><value>Gestione las definiciones de atributos para las versiones de borrador.</value></data>
+  <data name="MappingsTitle" xml:space="preserve"><value>Asignaciones</value></data>
+  <data name="MappingsDescription" xml:space="preserve"><value>Gestione las asignaciones externas para los valores.</value></data>
+  <data name="SaveMappings" xml:space="preserve"><value>Guardar asignaciones</value></data>
+  <data name="DraftMappingsTab" xml:space="preserve"><value>Asignaciones de borrador</value></data>
+  <data name="PublishedSnapshotTab" xml:space="preserve"><value>Instantánea publicada</value></data>
+  <data name="DraftMappingAuthoringTitle" xml:space="preserve"><value>Creación de asignación de borrador</value></data>
+  <data name="AddMapping" xml:space="preserve"><value>Agregar asignación</value></data>
+  <data name="PublishedMappingSnapshotTitle" xml:space="preserve"><value>Instantánea de asignación publicada</value></data>
+  <data name="MappingKeyColumn" xml:space="preserve"><value>Clave</value></data>
+  <data name="MappingSourceColumn" xml:space="preserve"><value>Origen</value></data>
+  <data name="MappingTargetColumn" xml:space="preserve"><value>Destino</value></data>
+  <data name="MappingLabelColumn" xml:space="preserve"><value>Etiqueta</value></data>
+  <data name="NoDraftReason" xml:space="preserve"><value>Se requiere una versión de borrador activa.</value></data>
+  <data name="SelectSourceValue" xml:space="preserve"><value>Seleccionar valor de origen</value></data>
+  <data name="MappingKeyRequired" xml:space="preserve"><value>La clave de asignación es obligatoria.</value></data>
+  <data name="MappingSourceRequired" xml:space="preserve"><value>El valor de origen es obligatorio.</value></data>
+  <data name="MappingTargetRequired" xml:space="preserve"><value>El código de destino es obligatorio.</value></data>
+  <data name="MappingSourceNotPresent" xml:space="preserve"><value>El valor de origen {0} no está presente en los valores de borrador.</value></data>
+  <data name="DuplicateMappingKeySource" xml:space="preserve"><value>Asignación duplicada para clave/origen: {0} / {1}</value></data>
+  <data name="MappingsSaved" xml:space="preserve"><value>Asignaciones de borrador guardadas correctamente.</value></data>
+  <data name="MappingsWorkspaceLoaded" xml:space="preserve"><value>Espacio de trabajo de asignación de borrador cargado.</value></data>
+  <data name="SaveMappingsFailed" xml:space="preserve"><value>Error al guardar las asignaciones.</value></data>
+  <data name="SetDetailTitle" xml:space="preserve"><value>Espacio de trabajo del conjunto</value></data>
+  <data name="SetDetailDescription" xml:space="preserve"><value>Revise los metadatos del conjunto y las versiones disponibles.</value></data>
+  <data name="VersionDetailTitle" xml:space="preserve"><value>Detalle de versión</value></data>
+  <data name="VersionDetailDescription" xml:space="preserve"><value>Revise los valores, atributos, asignaciones y resultados de validación.</value></data>
+  <data name="PublishReviewTitle" xml:space="preserve"><value>Revisión de publicación</value></data>
+  <data name="PublishReviewDescription" xml:space="preserve"><value>Valide la preparación, la aprobación, las evidencias y las decisiones de publicación.</value></data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Mostrar todo</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Submit" xml:space="preserve"><value>Enviar</value></data>
+  <data name="Approve" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Actualizar</value></data>
+  <data name="SaveHierarchy" xml:space="preserve"><value>Guardar jerarquía</value></data>
+  <data name="HierarchySaved" xml:space="preserve"><value>Asignaciones de jerarquía guardadas correctamente.</value></data>
+  <data name="HierarchyUnsavedWarning" xml:space="preserve"><value>Tiene cambios de jerarquía sin guardar. Haga clic en Guardar jerarquía para aplicarlos.</value></data>
+  <data name="SaveDefinitions" xml:space="preserve"><value>Guardar definiciones</value></data>
+  <data name="SaveValueAttributes" xml:space="preserve"><value>Guardar atributos de valor</value></data>
+  <data name="Search" xml:space="preserve"><value>Buscar</value></data>
+  <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="NoRecords" xml:space="preserve"><value>Sin registros</value></data>
+  <data name="Details" xml:space="preserve"><value>Detalles</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Editar</value></data>
+  <data name="Active" xml:space="preserve"><value>Activo</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasivo</value></data>
+  <data name="RecordSaved" xml:space="preserve"><value>Registro guardado.</value></data>
+  <data name="Close" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="GovernanceNotConfigured" xml:space="preserve"><value>No configurado</value></data>
+  <data name="GovernanceDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="GovernanceSubmitted" xml:space="preserve"><value>Enviado</value></data>
+  <data name="GovernanceInReview" xml:space="preserve"><value>En revisión</value></data>
+  <data name="GovernanceApproved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="GovernanceRejected" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="SetCodePlaceholder" xml:space="preserve"><value>p. ej. COUNTRY_CODES</value></data>
+  <data name="SetCodeHint" xml:space="preserve"><value>Identificador único y estable en MAYÚSCULAS. Use solo letras, números y guiones bajos: p. ej. COUNTRY_CODES, PAYMENT_TERMS.</value></data>
+  <data name="SetCodeInvalid" xml:space="preserve"><value>El código del conjunto es obligatorio y solo puede contener letras mayúsculas, números y guiones bajos.</value></data>
+  <data name="SetNamePlaceholder" xml:space="preserve"><value>p. ej. Códigos de país</value></data>
+  <data name="SetNameHint" xml:space="preserve"><value>Nombre visible legible que se muestra en toda la aplicación: p. ej. Códigos de país.</value></data>
+  <data name="SetNameRequired" xml:space="preserve"><value>El nombre del conjunto es obligatorio.</value></data>
+  <data name="NoDraftTitle" xml:space="preserve"><value>No hay versión de borrador editable</value></data>
+  <data name="NoDraftDescription" xml:space="preserve"><value>Los atributos solo se pueden editar en una versión de borrador.</value></data>
+  <data name="NoDraftHierarchyDescription" xml:space="preserve"><value>La jerarquía solo se puede editar en una versión de borrador.</value></data>
+  <data name="NoDraftMappingsDescription" xml:space="preserve"><value>Las asignaciones solo se pueden editar en una versión de borrador.</value></data>
+  <data name="NoDraftHintFromPublished" xml:space="preserve"><value>Puede crear un nuevo borrador a partir de la versión publicada.</value></data>
+  <data name="NoDraftHintNoVersions" xml:space="preserve"><value>Este conjunto aún no tiene versiones. Cree el primer borrador.</value></data>
+  <data name="NoDraftRetired" xml:space="preserve"><value>Este conjunto está retirado; no se pueden crear nuevos borradores.</value></data>
+  <data name="NoDraftNoPermission" xml:space="preserve"><value>No tiene permiso para crear un borrador. Póngase en contacto con su administrador.</value></data>
+  <data name="OpenSetWorkspace" xml:space="preserve"><value>Abrir espacio del conjunto</value></data>
+  <data name="BackToSets" xml:space="preserve"><value>Volver a los conjuntos</value></data>
+  <data name="DraftCreated" xml:space="preserve"><value>Versión de borrador creada.</value></data>
+  <data name="DraftAlreadyExists" xml:space="preserve"><value>Ya existe un borrador activo para este conjunto. Actualice la página.</value></data>
+  <data name="CreateDraftFailed" xml:space="preserve"><value>No se pudo crear la versión de borrador.</value></data>
+  <data name="SetNotFoundTitle" xml:space="preserve"><value>Conjunto no encontrado</value></data>
+  <data name="SetNotFoundDescription" xml:space="preserve"><value>No se encontró el conjunto de datos de referencia solicitado:</value></data>
+  <data name="AttributeDefinitionsTitle" xml:space="preserve"><value>Definiciones de atributos</value></data>
+  <data name="ValueAttributesTitle" xml:space="preserve"><value>Atributos de valor</value></data>
+  <data name="AddDefinition" xml:space="preserve"><value>Agregar definición</value></data>
+  <data name="AttributeCodeColumn" xml:space="preserve"><value>Código de atributo</value></data>
+  <data name="DisplayNameColumn" xml:space="preserve"><value>Nombre visible</value></data>
+  <data name="DataTypeColumn" xml:space="preserve"><value>Tipo de dato</value></data>
+  <data name="RequiredColumn" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="ActionColumn" xml:space="preserve"><value>Acción</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>Eliminar</value></data>
+  <data name="ValueColumn" xml:space="preserve"><value>Valor</value></data>
+  <data name="DefinitionsCardHint" xml:space="preserve"><value>Defina qué campos adicionales tendrán los valores de este conjunto.</value></data>
+  <data name="ValueAttributesCardHint" xml:space="preserve"><value>Complete los datos de cada valor para los campos definidos arriba.</value></data>
+  <data name="StepDefineFields" xml:space="preserve"><value>1. Definir campos</value></data>
+  <data name="StepFillValues" xml:space="preserve"><value>2. Completar valores</value></data>
+  <data name="UnsavedChanges" xml:space="preserve"><value>Cambios sin guardar</value></data>
+  <data name="NoDefinitionsYet" xml:space="preserve"><value>Aún no hay definiciones de atributos. Agregue el primer campo con Agregar definición.</value></data>
+  <data name="NoValuesYet" xml:space="preserve"><value>Este borrador aún no tiene valores. Agregue valores primero en el Draft Wizard.</value></data>
+  <data name="OpenDraftWizard" xml:space="preserve"><value>Abrir Draft Wizard</value></data>
+  <data name="WorkspaceLoaded" xml:space="preserve"><value>Espacio de trabajo de atributos (borrador) cargado.</value></data>
+  <data name="DefinitionsSaved" xml:space="preserve"><value>Definiciones de atributos guardadas.</value></data>
+  <data name="ValueAttributesSaved" xml:space="preserve"><value>Atributos de valor guardados.</value></data>
+  <data name="AttributeCodeRequired" xml:space="preserve"><value>El código de atributo es obligatorio.</value></data>
+  <data name="DisplayNameRequired" xml:space="preserve"><value>El nombre visible es obligatorio.</value></data>
+  <data name="DuplicateAttributeCode" xml:space="preserve"><value>Código de atributo duplicado:</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Error al guardar.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>No se pudo cargar el espacio de trabajo de atributos.</value></data>
+  <data name="SaveAndContinue" xml:space="preserve"><value>Guardar y continuar</value></data>
+  <data name="PreviousStep" xml:space="preserve"><value>Anterior</value></data>
+  <data name="StepDefineSubtitle" xml:space="preserve"><value>Esquema / campos</value></data>
+  <data name="StepFillSubtitle" xml:space="preserve"><value>Datos / celdas</value></data>
+  <data name="NoValuesTitle" xml:space="preserve"><value>Aún no hay valores</value></data>
+  <data name="NoDefinitionsTitle" xml:space="preserve"><value>Sin definiciones de atributos</value></data>
+  <data name="UsageConsumerEndpointLabel" xml:space="preserve"><value>Endpoint del consumidor</value></data>
+  <data name="UsageScopeTypeLabel" xml:space="preserve"><value>Tipo de ámbito</value></data>
+  <data name="UsageScopeKeyLabel" xml:space="preserve"><value>Clave de ámbito</value></data>
+  <data name="UsageNotesLabel" xml:space="preserve"><value>Notas</value></data>
+  <data name="UsageCriticalityCritical" xml:space="preserve"><value>Crítico</value></data>
+  <data name="UsageScopeColumn" xml:space="preserve"><value>Ámbito</value></data>
+  <data name="UsageLastResolvedColumn" xml:space="preserve"><value>Última resolución</value></data>
+  <data name="UsageImpactTotal" xml:space="preserve"><value>Total</value></data>
+  <data name="UsageImpactCritical" xml:space="preserve"><value>Crítico</value></data>
+  <data name="UsageAddNew" xml:space="preserve"><value>Registrar uso</value></data>
+  <data name="UsageFormTitleCreate" xml:space="preserve"><value>Registrar dependencia de uso</value></data>
+  <data name="UsageFormTitleEdit" xml:space="preserve"><value>Editar dependencia de uso</value></data>
+  <data name="UsageSectionConsumer" xml:space="preserve"><value>Consumidor</value></data>
+  <data name="UsageSectionResolution" xml:space="preserve"><value>Resolución y criticidad</value></data>
+  <data name="UsageEmptyState" xml:space="preserve"><value>No hay registros de uso para este conjunto.</value></data>
+  <data name="OpenDraft" xml:space="preserve"><value>Abrir borrador</value></data>
+  <data name="OpenPublished" xml:space="preserve"><value>Abrir publicado</value></data>
+  <data name="CreateDraftFromPublished" xml:space="preserve"><value>Crear borrador desde publicado</value></data>
+  <data name="ImportToDraft" xml:space="preserve"><value>Importar al borrador</value></data>
+  <data name="PublishedFirstGuidanceTitle" xml:space="preserve"><value>Los valores publicados están disponibles mientras el borrador activo está vacío.</value></data>
+  <data name="PublishedFirstGuidanceDescription" xml:space="preserve"><value>Abra la versión publicada para inspección o cree valores de borrador con el asistente.</value></data>
+  <data name="SetIdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusRetired" xml:space="preserve"><value>Retirado</value></data>
+  <data name="StewardshipWorkspace" xml:space="preserve"><value>Espacio de administración</value></data>
+  <data name="DraftVersion" xml:space="preserve"><value>Versión borrador</value></data>
+  <data name="PublishedVersion" xml:space="preserve"><value>Versión publicada</value></data>
+  <data name="RowVersion" xml:space="preserve"><value>Versión de fila</value></data>
+  <data name="Updated" xml:space="preserve"><value>Actualizado</value></data>
+  <data name="ValidateDraft" xml:space="preserve"><value>Validar borrador</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Enviar para aprobación</value></data>
+  <data name="PublishReadiness" xml:space="preserve"><value>Revisar preparación de publicación</value></data>
+  <data name="VersionEditor" xml:space="preserve"><value>Editor de versión</value></data>
+  <data name="VersionEditorDescription" xml:space="preserve"><value>Gestione valores, atributos y orden del borrador.</value></data>
+  <data name="LifecycleSummary" xml:space="preserve"><value>Resumen del ciclo de vida</value></data>
+  <data name="SetLabel" xml:space="preserve"><value>Conjunto</value></data>
+  <data name="SubmittedLabel" xml:space="preserve"><value>Enviado</value></data>
+  <data name="PublishedLabel" xml:space="preserve"><value>Publicado</value></data>
+  <data name="EvidenceLabel" xml:space="preserve"><value>Evidencia</value></data>
+  <data name="PublishReadinessTitle" xml:space="preserve"><value>Preparación para publicar</value></data>
+  <data name="ChecksTitle" xml:space="preserve"><value>Comprobaciones</value></data>
+  <data name="GovernanceActions" xml:space="preserve"><value>Acciones de gobernanza</value></data>
+  <data name="CanonicalEvidenceLink" xml:space="preserve"><value>Enlace de evidencia canónica</value></data>
+  <data name="SelectCanonicalEvidence" xml:space="preserve"><value>Seleccionar evidencia canónica</value></data>
+  <data name="EvidenceRefPlaceholder" xml:space="preserve"><value>Solo nota del operador; no es evidencia de preparación</value></data>
+  <data name="PublishMode" xml:space="preserve"><value>Modo de publicación</value></data>
+  <data name="PublishModeImmediate" xml:space="preserve"><value>Inmediato</value></data>
+  <data name="PublishModeFutureDated" xml:space="preserve"><value>Con fecha futura</value></data>
+  <data name="PublishAtUtc" xml:space="preserve"><value>Publicar el (UTC)</value></data>
+  <data name="PublishOverride" xml:space="preserve"><value>Anulación de publicación</value></data>
+  <data name="OverrideReasonPlaceholder" xml:space="preserve"><value>Motivo de anulación (obligatorio si está activado)</value></data>
+  <data name="ApprovalDecision" xml:space="preserve"><value>Decisión de aprobación</value></data>
+  <data name="RejectDecision" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="RejectionReasonPlaceholder" xml:space="preserve"><value>Motivo de rechazo (obligatorio para rechazar)</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>Historial de versiones</value></data>
+  <data name="ApprovalColumn" xml:space="preserve"><value>Aprobación</value></data>
+  <data name="NoVersionHistory" xml:space="preserve"><value>No hay historial de versiones disponible para este conjunto.</value></data>
+  <data name="DependencyImpact" xml:space="preserve"><value>Impacto de dependencias</value></data>
+  <data name="Select" xml:space="preserve"><value>Seleccionar</value></data>
+  <data name="OpenSelectedSetTitle" xml:space="preserve"><value>Abrir {0}</value></data>
+  <data name="SelectSetContextEmpty" xml:space="preserve"><value>Seleccione una fila de conjunto de datos de referencia para abrir la Jerarquía, los Atributos, los Mappings o el Uso de ese conjunto.</value></data>
+  <data name="SelectSetContextFirst" xml:space="preserve"><value>Seleccione una fila de conjunto de datos de referencia antes de abrir este espacio de trabajo.</value></data>
+  <data name="SelectSetContextSelected" xml:space="preserve"><value>Conjunto seleccionado: {0}</value></data>
+  <data name="DraftWizardTitle" xml:space="preserve"><value>Asistente de borrador</value></data>
+  <data name="DraftWizardDescription" xml:space="preserve"><value>Cree una versión de datos de referencia en borrador paso a paso.</value></data>
+  <data name="DraftStrategyTitle" xml:space="preserve"><value>Estrategia de borrador</value></data>
+  <data name="DraftStrategySubtitle" xml:space="preserve"><value>Elija un punto de partida</value></data>
+  <data name="SetBasicsTitle" xml:space="preserve"><value>Datos básicos del conjunto</value></data>
+  <data name="SetBasicsSubtitle" xml:space="preserve"><value>Revise los detalles del conjunto</value></data>
+  <data name="ReferenceValuesTitle" xml:space="preserve"><value>Valores de referencia</value></data>
+  <data name="ReferenceValuesSubtitle" xml:space="preserve"><value>Agregar y editar valores</value></data>
+  <data name="OptionalEnrichmentTitle" xml:space="preserve"><value>Enriquecimiento opcional</value></data>
+  <data name="OptionalEnrichmentSubtitle" xml:space="preserve"><value>Jerarquía, atributos, asignaciones</value></data>
+  <data name="ReviewValidateTitle" xml:space="preserve"><value>Revisar y validar</value></data>
+  <data name="ReviewValidateSubtitle" xml:space="preserve"><value>Comprobar la preparación</value></data>
+  <data name="SubmitPublishTitle" xml:space="preserve"><value>Enviar y publicar</value></data>
+  <data name="SubmitPublishSubtitle" xml:space="preserve"><value>Finalizar el borrador</value></data>
+  <data name="StrategyEmptyTitle" xml:space="preserve"><value>Empezar vacío</value></data>
+  <data name="StrategyEmptyHint" xml:space="preserve"><value>Comience con un borrador en blanco y agregue valores manualmente.</value></data>
+  <data name="StrategyCopyTitle" xml:space="preserve"><value>Copiar de la versión publicada</value></data>
+  <data name="StrategyCopyHint" xml:space="preserve"><value>Comience a partir de los valores de la versión publicada actual.</value></data>
+  <data name="StrategyImportTitle" xml:space="preserve"><value>Importar desde archivo</value></data>
+  <data name="StrategyImportHint" xml:space="preserve"><value>Complete el borrador importando un archivo externo.</value></data>
+  <data name="StrategyResumeTitle" xml:space="preserve"><value>Reanudar borrador</value></data>
+  <data name="StrategyResumeHint" xml:space="preserve"><value>Continúe trabajando en la versión de borrador existente.</value></data>
+  <data name="StartWizard" xml:space="preserve"><value>Iniciar asistente</value></data>
+  <data name="SourceVersion" xml:space="preserve"><value>Versión de origen</value></data>
+  <data name="NextStep" xml:space="preserve"><value>Siguiente</value></data>
+  <data name="AddFirstValue" xml:space="preserve"><value>Agregar valor</value></data>
+  <data name="SaveDraftValues" xml:space="preserve"><value>Guardar valores del borrador</value></data>
+  <data name="DraftNoValuesTitle" xml:space="preserve"><value>Aún no hay valores</value></data>
+  <data name="DraftNoValuesHint" xml:space="preserve"><value>Agregue el primer valor a este borrador con Agregar valor.</value></data>
+  <data name="CodeColumn" xml:space="preserve"><value>Código</value></data>
+  <data name="ActiveColumn" xml:space="preserve"><value>Activo</value></data>
+  <data name="SortColumn" xml:space="preserve"><value>Orden</value></data>
+  <data name="ValuesCountLabel" xml:space="preserve"><value>Valores</value></data>
+  <data name="DuplicateCodesLabel" xml:space="preserve"><value>Códigos duplicados</value></data>
+  <data name="RequiredFieldFailuresLabel" xml:space="preserve"><value>Errores de campos obligatorios</value></data>
+  <data name="RunValidation" xml:space="preserve"><value>Ejecutar validación</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Guardar borrador</value></data>
+  <data name="VersioningSection" xml:space="preserve"><value>Versionado</value></data>
+  <data name="DraftNotEditable" xml:space="preserve"><value>Este borrador ya no se puede editar porque se ha enviado. Cree un nuevo borrador para cambiar los valores.</value></data>
+  <data name="ValueCodeLabelRequired" xml:space="preserve"><value>Agregue al menos un valor, con un código y un nombre para mostrar en cada uno.</value></data>
+  <data name="NoUnsavedChanges" xml:space="preserve"><value>No hay cambios sin guardar.</value></data>
+  <data name="RunValidationFirst" xml:space="preserve"><value>Primero ejecute la validación sin bloqueadores.</value></data>
+  <data name="SaveValuesFirst" xml:space="preserve"><value>Primero guarde los valores del borrador.</value></data>
+  <data name="AddValueFirst" xml:space="preserve"><value>Primero agregue al menos un valor.</value></data>
+  <data name="DownloadCsvTemplate" xml:space="preserve"><value>Descargar plantilla CSV</value></data>
+  <data name="ImportTemplateTitle" xml:space="preserve"><value>Importar valores desde un archivo</value></data>
+  <data name="ImportTemplateHint" xml:space="preserve"><value>Descargue una plantilla, complete sus valores y luego cargue el archivo para importarlos al borrador.</value></data>
+  <data name="DownloadJsonTemplate" xml:space="preserve"><value>Descargar plantilla JSON</value></data>
+  <data name="DownloadTemplate" xml:space="preserve"><value>Descargar plantilla</value></data>
+</root>

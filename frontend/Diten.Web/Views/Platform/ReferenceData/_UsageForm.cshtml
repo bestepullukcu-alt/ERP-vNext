@@ -1,0 +1,109 @@
+@using Diten.Web.Views.Platform.ReferenceData
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReferenceDataIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var setCode = ViewData["SetCode"]?.ToString() ?? string.Empty;
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var usageId = ViewData["UsageRegistrationId"]?.ToString() ?? string.Empty;
+    var title = isEdit ? Localizer["UsageFormTitleEdit"].Value : Localizer["UsageFormTitleCreate"].Value;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title <span class="text-muted fw-normal">— @setCode</span></h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/ReferenceData">@Localizer["PageTitle"]</a></li>
+                <li class="breadcrumb-item"><a href="/Platform/ReferenceData/Usage/@setCode">@Localizer["UsageTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/Platform/ReferenceData/Usage/@setCode" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="usageForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<div id="rd-usage-form-status" class="alert d-none mb-3" role="alert"></div>
+
+<form id="usageForm" class="needs-validation" novalidate
+      data-set-code="@setCode" data-mode="@(isEdit ? "edit" : "create")" data-usage-id="@usageId">
+    <div class="row g-4">
+        <!-- Consumer -->
+        <div class="col-12 col-lg-7">
+            <section class="card mb-4">
+                <div class="card-header"><h5 class="card-title mb-0">@Localizer["UsageSectionConsumer"]</h5></div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-6">
+                        <label for="usageConsumerModule" class="form-label fw-medium">@Localizer["UsageConsumerModuleLabel"] <span class="text-danger">*</span></label>
+                        <select id="usageConsumerModule" name="consumer_module" class="form-select select2" required>
+                            <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                        </select>
+                        <span class="invalid-feedback"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="usageConsumerName" class="form-label fw-medium">@Localizer["UsageConsumerNameLabel"] <span class="text-danger">*</span></label>
+                        <input id="usageConsumerName" name="consumer_name" class="form-control" maxlength="200" required />
+                        <span class="invalid-feedback"></span>
+                    </div>
+                    <div class="col-12">
+                        <label for="usageConsumerEndpoint" class="form-label fw-medium">@Localizer["UsageConsumerEndpointLabel"]</label>
+                        <input id="usageConsumerEndpoint" name="consumer_endpoint" class="form-control" maxlength="400" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="usageScopeType" class="form-label fw-medium">@Localizer["UsageScopeTypeLabel"]</label>
+                        <select id="usageScopeType" name="scope_type" class="form-select select2">
+                            <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="usageScopeKey" class="form-label fw-medium">@Localizer["UsageScopeKeyLabel"]</label>
+                        <select id="usageScopeKey" name="scope_key" class="form-select select2">
+                            <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Resolution & Criticality -->
+        <div class="col-12 col-lg-5">
+            <section class="card mb-4">
+                <div class="card-header"><h5 class="card-title mb-0">@Localizer["UsageSectionResolution"]</h5></div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <label for="usageResolution" class="form-label fw-medium">@Localizer["UsageResolutionLabel"]</label>
+                        <select id="usageResolution" name="resolution_mode" class="form-select select2">
+                            <option value="latest">@Localizer["UsageResolutionLatest"]</option>
+                            <option value="pinned">@Localizer["UsageResolutionPinned"]</option>
+                            <option value="as-of">@Localizer["UsageResolutionAsOf"]</option>
+                        </select>
+                    </div>
+                    <div class="col-12" id="usageVersionPinWrap">
+                        <label for="usageVersionPin" class="form-label fw-medium">@Localizer["UsageVersionPinLabel"]</label>
+                        <input id="usageVersionPin" name="version_pin" type="number" min="1" class="form-control" />
+                    </div>
+                    <div class="col-12" id="usageAsOfWrap">
+                        <label for="usageAsOf" class="form-label fw-medium">@Localizer["UsageAsOfLabel"]</label>
+                        <input id="usageAsOf" name="as_of_date" type="datetime-local" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label for="usageCriticality" class="form-label fw-medium">@Localizer["UsageCriticalityLabel"]</label>
+                        <select id="usageCriticality" name="criticality" class="form-select select2">
+                            <option value="critical">@Localizer["UsageCriticalityCritical"]</option>
+                            <option value="high">@Localizer["UsageCriticalityHigh"]</option>
+                            <option value="medium" selected>@Localizer["UsageCriticalityMedium"]</option>
+                            <option value="low">@Localizer["UsageCriticalityLow"]</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="usageNotes" class="form-label fw-medium">@Localizer["UsageNotesLabel"]</label>
+                        <textarea id="usageNotes" name="notes" class="form-control" rows="3" maxlength="1000"></textarea>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

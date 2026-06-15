@@ -45,7 +45,9 @@ public sealed class AuthGateway : IAuthGateway
 
     public Task<AuthBridgeResult> ChangePlatformPasswordAsync(string currentPassword, string newPassword, bool rememberMe = false, CancellationToken ct = default)
     {
-        var accessToken = _httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
+        var accessToken = _httpContextAccessor.HttpContext is { } context
+            ? AuthTokenCookies.GetAccessToken(context.Request)
+            : null;
         return SendAuthRequestAsync(
             "/api/platform-auth/change-password/forced",
             new { currentPassword, newPassword, rememberMe },

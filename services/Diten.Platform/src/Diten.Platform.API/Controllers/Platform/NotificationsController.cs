@@ -3,7 +3,7 @@ using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.Notifications;
 using Diten.Platform.Application.Features.Notifications.Commands;
 using Diten.Platform.Application.Features.Notifications.Queries;
-using Diten.Platform.API.Observability;
+using Diten.Platform.Common.Observability;
 using Diten.Platform.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

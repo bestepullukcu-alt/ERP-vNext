@@ -6,6 +6,7 @@ using Diten.Platform.Application.Contracts.Behaviors;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Audit;
 using Diten.Platform.Application.Features.Audit.Services;
+using Diten.Platform.Application.Features.BusinessReferenceData.Services;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.Eventing;
@@ -39,6 +40,9 @@ public static class DependencyInjection
             cfg.AddOpenBehavior(typeof(ExceptionBehavior<,>));
             cfg.AddOpenBehavior(typeof(AuditBehavior<,>));
             cfg.AddOpenBehavior(typeof(PerformanceBehavior<,>));
+            // Innermost: maps BusinessReferenceData (PSS-012) coded domain exceptions to Response<T>.Fail
+            // with the correct HTTP status, so its controller can stay thin and free of business error mapping.
+            cfg.AddOpenBehavior(typeof(Features.BusinessReferenceData.BusinessReferenceDataExceptionBehavior<,>));
         });
 
         services.AddValidatorsFromAssembly(assembly);
@@ -54,6 +58,37 @@ public static class DependencyInjection
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();
         services.AddScoped<IPlatformLookupProvider, PlatformLookupProvider>();
+        services.AddScoped<IBusinessReferenceDataValidationService, BusinessReferenceDataValidationService>();
+        services.AddScoped<IBusinessReferenceDataPublishService, BusinessReferenceDataPublishService>();
+        services.AddScoped<IBusinessReferenceDataImportService, BusinessReferenceDataImportService>();
+        services.AddScoped<IBusinessReferenceDataImportParser, CsvBusinessReferenceDataImportParser>();
+        services.AddScoped<IBusinessReferenceDataImportParser, JsonBusinessReferenceDataImportParser>();
+        services.AddScoped<IBusinessReferenceDataImportParser, XlsxBusinessReferenceDataImportParser>();
+        services.AddScoped<IBusinessReferenceDataGovernanceService, BusinessReferenceDataGovernanceService>();
+        // PSS-012 governance adapters. MOD-0023 (workflow) / MOD-0031 (evidence) are not yet implemented.
+        // Mock stubs are registered ONLY in Development/Local/Test (governance mode = Mock); every other
+        // environment defaults to Disabled mode where the mutation still proceeds but is explicitly marked
+        // and audited as governance-disabled rather than silently treated as a successful mock workflow.
+        // Governance events always flow to the central MOD-0021 audit trail via the real audit adapter.
+        // (FailClosed / Live modes are documented in the pack as follow-up and currently resolve to the
+        // Disabled adapter; true FailClosed and Live require GovernanceService + MOD-0023/MOD-0031 work.)
+        var businessReferenceDataGovernanceMode = BusinessReferenceDataGovernanceModeResolver.Resolve();
+        if (businessReferenceDataGovernanceMode == BusinessReferenceDataGovernanceMode.Mock)
+        {
+            services.AddScoped<IBusinessReferenceDataWorkflowAdapter, MockBusinessReferenceDataWorkflowAdapter>();
+            services.AddScoped<IBusinessReferenceDataPostPublicationReviewHook, MockBusinessReferenceDataPostPublicationReviewHook>();
+        }
+        else
+        {
+            services.AddScoped<IBusinessReferenceDataWorkflowAdapter, DisabledBusinessReferenceDataWorkflowAdapter>();
+            services.AddScoped<IBusinessReferenceDataPostPublicationReviewHook, DisabledBusinessReferenceDataPostPublicationReviewHook>();
+        }
+        services.AddScoped<IBusinessReferenceDataEvidenceAdapter, DefaultBusinessReferenceDataEvidenceAdapter>();
+        services.AddScoped<IBusinessReferenceDataGovernanceAuditAdapter, AuditServiceBusinessReferenceDataGovernanceAuditAdapter>();
+        services.AddScoped<IBusinessReferenceDataEventPublisher, DbBusinessReferenceDataEventPublisher>();
+        services.AddScoped<IBusinessReferenceDataConsumerQueryService, BusinessReferenceDataConsumerQueryService>();
+        services.AddScoped<IBusinessReferenceDataCatalogLoaderService, BusinessReferenceDataCatalogLoaderService>();
+        services.AddScoped<IBusinessReferenceDataActiveMembershipService, BusinessReferenceDataActiveMembershipService>();
         services.AddScoped<ITenantMessagingSettingsResolver, TenantMessagingSettingsResolver>();
         services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
         services.AddScoped<TenantCreatedV1NotificationMapper>();

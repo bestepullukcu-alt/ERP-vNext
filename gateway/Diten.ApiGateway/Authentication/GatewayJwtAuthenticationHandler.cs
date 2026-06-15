@@ -76,8 +76,6 @@ public sealed class GatewayJwtAuthenticationHandler : AuthenticationHandler<Auth
             return authorization["Bearer ".Length..].Trim();
         }
 
-        return Request.Cookies.TryGetValue("access_token", out var cookieToken)
-            ? cookieToken
-            : null;
+        return AuthTokenCookies.GetAccessToken(Request);
     }
 }

@@ -85,6 +85,22 @@ window.personalizationClient = (function () {
         return `${apiBaseUrl}/api/personalization/views?${query.toString()}`;
     };
 
+    // The gateway's TenantResolutionMiddleware decides whether a personalization
+    // request is platform-scoped (TenantId = Guid.Empty) vs tenant-scoped by reading
+    // the moduleKey query-string parameter. GET requests already carry it, but write
+    // requests only carry it in the JSON body — invisible to the middleware. Without
+    // it, a tenant_user's save lands under the JWT tenant while the load reads under
+    // the platform scope, so the saved view is never found again. Mirror the scope on
+    // the query string for writes so save and load resolve to the same partition.
+    const appendScopeQuery = (url, moduleKey, pageKey) => {
+        const params = new URLSearchParams();
+        if (moduleKey) params.set('moduleKey', moduleKey);
+        if (pageKey) params.set('pageKey', pageKey);
+        const query = params.toString();
+        if (!query) return url;
+        return `${url}${url.includes('?') ? '&' : '?'}${query}`;
+    };
+
     const getViews = async (moduleKey, pageKey) => {
         const response = await fetch(buildViewsUrl(moduleKey, pageKey), {
             method: 'GET',
@@ -96,7 +112,8 @@ window.personalizationClient = (function () {
     };
 
     const saveView = async (payload) => {
-        const response = await fetch(`${apiBaseUrl}/api/personalization/views`, {
+        const url = appendScopeQuery(`${apiBaseUrl}/api/personalization/views`, payload?.moduleKey, payload?.pageKey);
+        const response = await fetch(url, {
             method: 'POST',
             credentials: 'include',
             headers: getHeaders(true),
@@ -107,7 +124,8 @@ window.personalizationClient = (function () {
     };
 
     const updateView = async (id, payload) => {
-        const response = await fetch(`${apiBaseUrl}/api/personalization/views/${id}`, {
+        const url = appendScopeQuery(`${apiBaseUrl}/api/personalization/views/${id}`, payload?.moduleKey, payload?.pageKey);
+        const response = await fetch(url, {
             method: 'PUT',
             credentials: 'include',
             headers: getHeaders(true),
@@ -117,8 +135,9 @@ window.personalizationClient = (function () {
         return await handleResponse(response);
     };
 
-    const deleteView = async (id) => {
-        const response = await fetch(`${apiBaseUrl}/api/personalization/views/${id}`, {
+    const deleteView = async (id, moduleKey, pageKey) => {
+        const url = appendScopeQuery(`${apiBaseUrl}/api/personalization/views/${id}`, moduleKey, pageKey);
+        const response = await fetch(url, {
             method: 'DELETE',
             credentials: 'include',
             headers: getHeaders(false)

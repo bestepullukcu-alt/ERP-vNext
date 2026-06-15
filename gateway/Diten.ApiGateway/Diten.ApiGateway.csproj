@@ -8,6 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <!-- Align IdentityModel stack at 8.16.0; JwtBearer otherwise pulls System.IdentityModel.Tokens.Jwt
+         7.0.3, which mismatches the transitive Microsoft.IdentityModel.Tokens 8.16.0. Mirrors Diten.Web. -->
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
     <PackageReference Include="Ocelot" Version="24.1.0" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />

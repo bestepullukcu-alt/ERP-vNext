@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PageTitle" xml:space="preserve"><value>البيانات المرجعية للأعمال</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة مجموعات البيانات المرجعية المُدارة وإصداراتها وقيمها وتعييناتها واستخدامها ونشرها.</value></data>
+  <data name="SetCode" xml:space="preserve"><value>رمز المجموعة</value></data>
+  <data name="SetName" xml:space="preserve"><value>اسم المجموعة</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>نوع النطاق</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="Governance" xml:space="preserve"><value>الحوكمة</value></data>
+  <data name="Validation" xml:space="preserve"><value>التحقق</value></data>
+  <data name="ImportTitle" xml:space="preserve"><value>معاينة الاستيراد</value></data>
+  <data name="ImportDescription" xml:space="preserve"><value>معاينة عمليات استيراد البيانات المرجعية وتأكيدها.</value></data>
+  <data name="UsageTitle" xml:space="preserve"><value>تبعيات الاستخدام</value></data>
+  <data name="UsageDescription" xml:space="preserve"><value>سجّل وراجع مستهلكي مجموعة البيانات المرجعية.</value></data>
+  <data name="UsageSetLabel" xml:space="preserve"><value>المجموعة</value></data>
+  <data name="UsageConsumerModuleLabel" xml:space="preserve"><value>وحدة المستهلك</value></data>
+  <data name="UsageConsumerNameLabel" xml:space="preserve"><value>اسم المستهلك</value></data>
+  <data name="UsageResolutionLabel" xml:space="preserve"><value>طريقة الحل</value></data>
+  <data name="UsageVersionPinLabel" xml:space="preserve"><value>الإصدار المثبت</value></data>
+  <data name="UsageAsOfLabel" xml:space="preserve"><value>اعتبارًا من</value></data>
+  <data name="UsageCriticalityLabel" xml:space="preserve"><value>الأهمية</value></data>
+  <data name="UsageConsumerModuleDefault" xml:space="preserve"><value>ERP</value></data>
+  <data name="UsageConsumerNameDefault" xml:space="preserve"><value>مستهلك</value></data>
+  <data name="UsageResolutionLatest" xml:space="preserve"><value>الأحدث</value></data>
+  <data name="UsageResolutionPinned" xml:space="preserve"><value>مثبت</value></data>
+  <data name="UsageResolutionAsOf" xml:space="preserve"><value>اعتبارًا من</value></data>
+  <data name="UsageCriticalityHigh" xml:space="preserve"><value>عالية</value></data>
+  <data name="UsageCriticalityMedium" xml:space="preserve"><value>متوسطة</value></data>
+  <data name="UsageCriticalityLow" xml:space="preserve"><value>منخفضة</value></data>
+  <data name="UsageVersionPinRequired" xml:space="preserve"><value>الإصدار المثبت مطلوب.</value></data>
+  <data name="UsageAsOfRequired" xml:space="preserve"><value>تاريخ "اعتبارًا من" مطلوب.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لم يتم العثور على مجموعات بيانات مرجعية.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>تعذر تحميل البيانات المرجعية.</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل...</value></data>
+  <data name="AddSet" xml:space="preserve"><value>إضافة مجموعة</value></data>
+  <data name="CreateDraft" xml:space="preserve"><value>إنشاء مسودة</value></data>
+  <data name="Open" xml:space="preserve"><value>فتح</value></data>
+  <data name="Publish" xml:space="preserve"><value>نشر</value></data>
+  <data name="Validate" xml:space="preserve"><value>تحقق</value></data>
+  <data name="AddValue" xml:space="preserve"><value>إضافة قيمة</value></data>
+  <data name="ValueGridTitle" xml:space="preserve"><value>القيم</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>ترتيب الفرز</value></data>
+  <data name="TechnicalJsonView" xml:space="preserve"><value>عرض JSON التقني</value></data>
+  <data name="ValidationBlockers" xml:space="preserve"><value>معوقات التحقق</value></data>
+  <data name="DraftEditable" xml:space="preserve"><value>المسودة قابلة للتحرير</value></data>
+  <data name="ReadOnlyPublished" xml:space="preserve"><value>منشور للقراءة فقط</value></data>
+  <data name="Immutable" xml:space="preserve"><value>غير قابل للتغيير</value></data>
+  <data name="ImportPreview" xml:space="preserve"><value>معاينة الاستيراد</value></data>
+  <data name="CommitImport" xml:space="preserve"><value>تأكيد الاستيراد</value></data>
+  <data name="SelectFile" xml:space="preserve"><value>اختر ملفًا</value></data>
+  <data name="HierarchyTitle" xml:space="preserve"><value>التسلسل الهرمي</value></data>
+  <data name="HierarchyDescription" xml:space="preserve"><value>راجع العلاقات الهرمية للمجموعة المحددة.</value></data>
+  <data name="ValueCodeColumn" xml:space="preserve"><value>رمز القيمة</value></data>
+  <data name="ParentColumn" xml:space="preserve"><value>الأصل</value></data>
+  <data name="DraftHierarchyPreview" xml:space="preserve"><value>معاينة التسلسل الهرمي للمسودة</value></data>
+  <data name="CollapsePreview" xml:space="preserve"><value>طي المعاينة</value></data>
+  <data name="ExpandPreview" xml:space="preserve"><value>توسيع المعاينة</value></data>
+  <data name="NoParentOption" xml:space="preserve"><value>(لا يوجد أصل)</value></data>
+  <data name="ClearParent" xml:space="preserve"><value>مسح الأصل</value></data>
+  <data name="ClearParentConfirm" xml:space="preserve"><value>هل تريد مسح تعيين الأصل لهذه القيمة؟</value></data>
+  <data name="AttributesTitle" xml:space="preserve"><value>السمات</value></data>
+  <data name="AttributesDescription" xml:space="preserve"><value>إدارة تعريفات السمات لإصدارات المسودة.</value></data>
+  <data name="MappingsTitle" xml:space="preserve"><value>التعيينات</value></data>
+  <data name="MappingsDescription" xml:space="preserve"><value>إدارة التعيينات الخارجية للقيم.</value></data>
+  <data name="SaveMappings" xml:space="preserve"><value>حفظ التعيينات</value></data>
+  <data name="DraftMappingsTab" xml:space="preserve"><value>مسودات التعيينات</value></data>
+  <data name="PublishedSnapshotTab" xml:space="preserve"><value>لقطة منشورة</value></data>
+  <data name="DraftMappingAuthoringTitle" xml:space="preserve"><value>تأليف مسودة التعيينات</value></data>
+  <data name="AddMapping" xml:space="preserve"><value>إضافة تعيين</value></data>
+  <data name="PublishedMappingSnapshotTitle" xml:space="preserve"><value>لقطة التعيينات المنشورة</value></data>
+  <data name="MappingKeyColumn" xml:space="preserve"><value>المفتاح</value></data>
+  <data name="MappingSourceColumn" xml:space="preserve"><value>المصدر</value></data>
+  <data name="MappingTargetColumn" xml:space="preserve"><value>الهدف</value></data>
+  <data name="MappingLabelColumn" xml:space="preserve"><value>التسمية</value></data>
+  <data name="NoDraftReason" xml:space="preserve"><value>مطلوب نسخة مسودة نشطة.</value></data>
+  <data name="SelectSourceValue" xml:space="preserve"><value>اختر قيمة المصدر</value></data>
+  <data name="MappingKeyRequired" xml:space="preserve"><value>مفتاح التعيين مطلوب.</value></data>
+  <data name="MappingSourceRequired" xml:space="preserve"><value>قيمة المصدر مطلوبة.</value></data>
+  <data name="MappingTargetRequired" xml:space="preserve"><value>رمز الهدف مطلوب.</value></data>
+  <data name="MappingSourceNotPresent" xml:space="preserve"><value>قيمة المصدر {0} غير موجودة في قيم المسودة.</value></data>
+  <data name="DuplicateMappingKeySource" xml:space="preserve"><value>تعيين مكرر للمفتاح/المصدر: {0} / {1}</value></data>
+  <data name="MappingsSaved" xml:space="preserve"><value>تم حفظ مسودة التعيينات بنجاح.</value></data>
+  <data name="MappingsWorkspaceLoaded" xml:space="preserve"><value>تم تحميل مساحة عمل مسودة التعيينات.</value></data>
+  <data name="SaveMappingsFailed" xml:space="preserve"><value>فشل حفظ التعيينات.</value></data>
+  <data name="SetDetailTitle" xml:space="preserve"><value>مساحة عمل المجموعة</value></data>
+  <data name="SetDetailDescription" xml:space="preserve"><value>راجع البيانات الوصفية للمجموعة والإصدارات المتاحة.</value></data>
+  <data name="VersionDetailTitle" xml:space="preserve"><value>تفاصيل الإصدار</value></data>
+  <data name="VersionDetailDescription" xml:space="preserve"><value>راجع القيم والسمات والتعيينات ونتائج التحقق.</value></data>
+  <data name="PublishReviewTitle" xml:space="preserve"><value>مراجعة النشر</value></data>
+  <data name="PublishReviewDescription" xml:space="preserve"><value>تحقق من الجاهزية والموافقة والأدلة وقرارات النشر.</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Submit" xml:space="preserve"><value>إرسال</value></data>
+  <data name="Approve" xml:space="preserve"><value>الموافقة</value></data>
+  <data name="Refresh" xml:space="preserve"><value>تحديث</value></data>
+  <data name="SaveHierarchy" xml:space="preserve"><value>حفظ التسلسل الهرمي</value></data>
+  <data name="HierarchySaved" xml:space="preserve"><value>تم حفظ تعيينات التسلسل الهرمي بنجاح.</value></data>
+  <data name="HierarchyUnsavedWarning" xml:space="preserve"><value>لديك تغييرات غير محفوظة في التسلسل الهرمي. انقر على حفظ التسلسل الهرمي لتطبيقها.</value></data>
+  <data name="SaveDefinitions" xml:space="preserve"><value>حفظ التعريفات</value></data>
+  <data name="SaveValueAttributes" xml:space="preserve"><value>حفظ سمات القيمة</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="NoRecords" xml:space="preserve"><value>لا توجد سجلات</value></data>
+  <data name="Details" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>تحرير</value></data>
+  <data name="Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Passive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="RecordSaved" xml:space="preserve"><value>تم حفظ السجل.</value></data>
+  <data name="Close" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="GovernanceNotConfigured" xml:space="preserve"><value>غير مهيأ</value></data>
+  <data name="GovernanceDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="GovernanceSubmitted" xml:space="preserve"><value>تم الإرسال</value></data>
+  <data name="GovernanceInReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="GovernanceApproved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="GovernanceRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="SetCodePlaceholder" xml:space="preserve"><value>مثال: COUNTRY_CODES</value></data>
+  <data name="SetCodeHint" xml:space="preserve"><value>مُعرّف فريد وثابت بأحرف كبيرة. استخدم الأحرف والأرقام والشرطة السفلية فقط — مثال: COUNTRY_CODES، PAYMENT_TERMS.</value></data>
+  <data name="SetCodeInvalid" xml:space="preserve"><value>رمز المجموعة مطلوب ولا يمكن أن يحتوي إلا على أحرف كبيرة وأرقام وشرطات سفلية.</value></data>
+  <data name="SetNamePlaceholder" xml:space="preserve"><value>مثال: رموز الدول</value></data>
+  <data name="SetNameHint" xml:space="preserve"><value>اسم العرض القابل للقراءة المعروض في جميع أنحاء التطبيق — مثال: رموز الدول.</value></data>
+  <data name="SetNameRequired" xml:space="preserve"><value>اسم المجموعة مطلوب.</value></data>
+  <data name="NoDraftTitle" xml:space="preserve"><value>لا توجد نسخة مسودة قابلة للتعديل</value></data>
+  <data name="NoDraftDescription" xml:space="preserve"><value>لا يمكن تعديل السمات إلا في نسخة مسودة.</value></data>
+  <data name="NoDraftHierarchyDescription" xml:space="preserve"><value>لا يمكن تعديل الهيكل الهرمي إلا في نسخة مسودة.</value></data>
+  <data name="NoDraftMappingsDescription" xml:space="preserve"><value>لا يمكن تعديل التعيينات إلا في نسخة مسودة.</value></data>
+  <data name="NoDraftHintFromPublished" xml:space="preserve"><value>يمكنك إنشاء مسودة جديدة من النسخة المنشورة.</value></data>
+  <data name="NoDraftHintNoVersions" xml:space="preserve"><value>لا تحتوي هذه المجموعة على أي نسخ بعد. أنشئ المسودة الأولى.</value></data>
+  <data name="NoDraftRetired" xml:space="preserve"><value>تم سحب هذه المجموعة؛ لا يمكن إنشاء مسودات جديدة.</value></data>
+  <data name="NoDraftNoPermission" xml:space="preserve"><value>ليس لديك إذن لإنشاء مسودة. يُرجى الاتصال بالمسؤول.</value></data>
+  <data name="OpenSetWorkspace" xml:space="preserve"><value>فتح مساحة عمل المجموعة</value></data>
+  <data name="BackToSets" xml:space="preserve"><value>العودة إلى المجموعات</value></data>
+  <data name="DraftCreated" xml:space="preserve"><value>تم إنشاء نسخة المسودة.</value></data>
+  <data name="DraftAlreadyExists" xml:space="preserve"><value>توجد بالفعل مسودة نشطة لهذه المجموعة. يُرجى التحديث.</value></data>
+  <data name="CreateDraftFailed" xml:space="preserve"><value>تعذّر إنشاء نسخة المسودة.</value></data>
+  <data name="SetNotFoundTitle" xml:space="preserve"><value>المجموعة غير موجودة</value></data>
+  <data name="SetNotFoundDescription" xml:space="preserve"><value>تعذّر العثور على مجموعة البيانات المرجعية المطلوبة:</value></data>
+  <data name="AttributeDefinitionsTitle" xml:space="preserve"><value>تعريفات السمات</value></data>
+  <data name="ValueAttributesTitle" xml:space="preserve"><value>سمات القيمة</value></data>
+  <data name="AddDefinition" xml:space="preserve"><value>إضافة تعريف</value></data>
+  <data name="AttributeCodeColumn" xml:space="preserve"><value>رمز السمة</value></data>
+  <data name="DisplayNameColumn" xml:space="preserve"><value>اسم العرض</value></data>
+  <data name="DataTypeColumn" xml:space="preserve"><value>نوع البيانات</value></data>
+  <data name="RequiredColumn" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="ActionColumn" xml:space="preserve"><value>إجراء</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>إزالة</value></data>
+  <data name="ValueColumn" xml:space="preserve"><value>القيمة</value></data>
+  <data name="DefinitionsCardHint" xml:space="preserve"><value>حدّد الحقول الإضافية التي ستحتوي عليها قيم هذه المجموعة.</value></data>
+  <data name="ValueAttributesCardHint" xml:space="preserve"><value>أدخل بيانات كل قيمة للحقول المُعرّفة أعلاه.</value></data>
+  <data name="StepDefineFields" xml:space="preserve"><value>1. تعريف الحقول</value></data>
+  <data name="StepFillValues" xml:space="preserve"><value>2. تعبئة القيم</value></data>
+  <data name="UnsavedChanges" xml:space="preserve"><value>تغييرات غير محفوظة</value></data>
+  <data name="NoDefinitionsYet" xml:space="preserve"><value>لا توجد تعريفات سمات بعد. أضف الحقل الأول عبر إضافة تعريف.</value></data>
+  <data name="NoValuesYet" xml:space="preserve"><value>لا تحتوي هذه المسودة على قيم بعد. أضف القيم أولاً في Draft Wizard.</value></data>
+  <data name="OpenDraftWizard" xml:space="preserve"><value>فتح Draft Wizard</value></data>
+  <data name="WorkspaceLoaded" xml:space="preserve"><value>تم تحميل مساحة عمل سمات المسودة.</value></data>
+  <data name="DefinitionsSaved" xml:space="preserve"><value>تم حفظ تعريفات السمات.</value></data>
+  <data name="ValueAttributesSaved" xml:space="preserve"><value>تم حفظ سمات القيمة.</value></data>
+  <data name="AttributeCodeRequired" xml:space="preserve"><value>رمز السمة مطلوب.</value></data>
+  <data name="DisplayNameRequired" xml:space="preserve"><value>اسم العرض مطلوب.</value></data>
+  <data name="DuplicateAttributeCode" xml:space="preserve"><value>رمز سمة مكرر:</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>فشل الحفظ.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذّر تحميل مساحة عمل السمات.</value></data>
+  <data name="SaveAndContinue" xml:space="preserve"><value>حفظ ومتابعة</value></data>
+  <data name="PreviousStep" xml:space="preserve"><value>السابق</value></data>
+  <data name="StepDefineSubtitle" xml:space="preserve"><value>المخطط / الحقول</value></data>
+  <data name="StepFillSubtitle" xml:space="preserve"><value>البيانات / الخلايا</value></data>
+  <data name="NoValuesTitle" xml:space="preserve"><value>لا توجد قيم بعد</value></data>
+  <data name="NoDefinitionsTitle" xml:space="preserve"><value>لا توجد تعريفات سمات</value></data>
+  <data name="UsageConsumerEndpointLabel" xml:space="preserve"><value>نقطة نهاية المستهلك</value></data>
+  <data name="UsageScopeTypeLabel" xml:space="preserve"><value>نوع النطاق</value></data>
+  <data name="UsageScopeKeyLabel" xml:space="preserve"><value>مفتاح النطاق</value></data>
+  <data name="UsageNotesLabel" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="UsageCriticalityCritical" xml:space="preserve"><value>حرج</value></data>
+  <data name="UsageScopeColumn" xml:space="preserve"><value>النطاق</value></data>
+  <data name="UsageLastResolvedColumn" xml:space="preserve"><value>آخر تحليل</value></data>
+  <data name="UsageImpactTotal" xml:space="preserve"><value>الإجمالي</value></data>
+  <data name="UsageImpactCritical" xml:space="preserve"><value>حرج</value></data>
+  <data name="UsageAddNew" xml:space="preserve"><value>تسجيل الاستخدام</value></data>
+  <data name="UsageFormTitleCreate" xml:space="preserve"><value>تسجيل تبعية الاستخدام</value></data>
+  <data name="UsageFormTitleEdit" xml:space="preserve"><value>تعديل تبعية الاستخدام</value></data>
+  <data name="UsageSectionConsumer" xml:space="preserve"><value>المستهلك</value></data>
+  <data name="UsageSectionResolution" xml:space="preserve"><value>التحليل والأهمية</value></data>
+  <data name="UsageEmptyState" xml:space="preserve"><value>لا توجد سجلات استخدام لهذه المجموعة.</value></data>
+  <data name="OpenDraft" xml:space="preserve"><value>فتح المسودة</value></data>
+  <data name="OpenPublished" xml:space="preserve"><value>فتح النسخة المنشورة</value></data>
+  <data name="CreateDraftFromPublished" xml:space="preserve"><value>إنشاء مسودة من النسخة المنشورة</value></data>
+  <data name="ImportToDraft" xml:space="preserve"><value>استيراد إلى المسودة</value></data>
+  <data name="PublishedFirstGuidanceTitle" xml:space="preserve"><value>القيم المنشورة متاحة عندما تكون المسودة النشطة فارغة.</value></data>
+  <data name="PublishedFirstGuidanceDescription" xml:space="preserve"><value>افتح النسخة المنشورة للفحص، أو أنشئ قيم المسودة عبر المعالج.</value></data>
+  <data name="SetIdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusRetired" xml:space="preserve"><value>متقاعد</value></data>
+  <data name="StewardshipWorkspace" xml:space="preserve"><value>مساحة عمل الإدارة</value></data>
+  <data name="DraftVersion" xml:space="preserve"><value>نسخة المسودة</value></data>
+  <data name="PublishedVersion" xml:space="preserve"><value>النسخة المنشورة</value></data>
+  <data name="RowVersion" xml:space="preserve"><value>نسخة الصف</value></data>
+  <data name="Updated" xml:space="preserve"><value>تم التحديث</value></data>
+  <data name="ValidateDraft" xml:space="preserve"><value>تحقق من المسودة</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>إرسال للموافقة</value></data>
+  <data name="PublishReadiness" xml:space="preserve"><value>مراجعة جاهزية النشر</value></data>
+  <data name="VersionEditor" xml:space="preserve"><value>محرر النسخة</value></data>
+  <data name="VersionEditorDescription" xml:space="preserve"><value>إدارة قيم المسودة والسمات والترتيب.</value></data>
+  <data name="LifecycleSummary" xml:space="preserve"><value>ملخص دورة الحياة</value></data>
+  <data name="SetLabel" xml:space="preserve"><value>المجموعة</value></data>
+  <data name="SubmittedLabel" xml:space="preserve"><value>تم الإرسال</value></data>
+  <data name="PublishedLabel" xml:space="preserve"><value>تم النشر</value></data>
+  <data name="EvidenceLabel" xml:space="preserve"><value>الإثبات</value></data>
+  <data name="PublishReadinessTitle" xml:space="preserve"><value>جاهزية النشر</value></data>
+  <data name="ChecksTitle" xml:space="preserve"><value>الفحوصات</value></data>
+  <data name="GovernanceActions" xml:space="preserve"><value>إجراءات الحوكمة</value></data>
+  <data name="CanonicalEvidenceLink" xml:space="preserve"><value>رابط الإثبات الأساسي</value></data>
+  <data name="SelectCanonicalEvidence" xml:space="preserve"><value>اختر الإثبات الأساسي</value></data>
+  <data name="EvidenceRefPlaceholder" xml:space="preserve"><value>ملاحظة المشغّل فقط؛ ليست إثبات جاهزية</value></data>
+  <data name="PublishMode" xml:space="preserve"><value>وضع النشر</value></data>
+  <data name="PublishModeImmediate" xml:space="preserve"><value>فوري</value></data>
+  <data name="PublishModeFutureDated" xml:space="preserve"><value>بتاريخ مستقبلي</value></data>
+  <data name="PublishAtUtc" xml:space="preserve"><value>تاريخ النشر (UTC)</value></data>
+  <data name="PublishOverride" xml:space="preserve"><value>تجاوز النشر</value></data>
+  <data name="OverrideReasonPlaceholder" xml:space="preserve"><value>سبب التجاوز (مطلوب عند التفعيل)</value></data>
+  <data name="ApprovalDecision" xml:space="preserve"><value>قرار الموافقة</value></data>
+  <data name="RejectDecision" xml:space="preserve"><value>رفض</value></data>
+  <data name="RejectionReasonPlaceholder" xml:space="preserve"><value>سبب الرفض (مطلوب للرفض)</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>سجل الإصدارات</value></data>
+  <data name="ApprovalColumn" xml:space="preserve"><value>الموافقة</value></data>
+  <data name="NoVersionHistory" xml:space="preserve"><value>لا يوجد سجل إصدارات متاح لهذه المجموعة.</value></data>
+  <data name="DependencyImpact" xml:space="preserve"><value>تأثير التبعيات</value></data>
+  <data name="Select" xml:space="preserve"><value>تحديد</value></data>
+  <data name="OpenSelectedSetTitle" xml:space="preserve"><value>فتح {0}</value></data>
+  <data name="SelectSetContextEmpty" xml:space="preserve"><value>حدد صفًا من مجموعة البيانات المرجعية لفتح التسلسل الهرمي أو السمات أو Mappings أو الاستخدام لتلك المجموعة.</value></data>
+  <data name="SelectSetContextFirst" xml:space="preserve"><value>حدد صفًا من مجموعة البيانات المرجعية قبل فتح مساحة العمل هذه.</value></data>
+  <data name="SelectSetContextSelected" xml:space="preserve"><value>المجموعة المحددة: {0}</value></data>
+  <data name="DraftWizardTitle" xml:space="preserve"><value>معالج المسودة</value></data>
+  <data name="DraftWizardDescription" xml:space="preserve"><value>أنشئ نسخة مسودة من البيانات المرجعية خطوة بخطوة.</value></data>
+  <data name="DraftStrategyTitle" xml:space="preserve"><value>استراتيجية المسودة</value></data>
+  <data name="DraftStrategySubtitle" xml:space="preserve"><value>اختر نقطة البداية</value></data>
+  <data name="SetBasicsTitle" xml:space="preserve"><value>أساسيات المجموعة</value></data>
+  <data name="SetBasicsSubtitle" xml:space="preserve"><value>راجع تفاصيل المجموعة</value></data>
+  <data name="ReferenceValuesTitle" xml:space="preserve"><value>القيم المرجعية</value></data>
+  <data name="ReferenceValuesSubtitle" xml:space="preserve"><value>إضافة القيم وتحريرها</value></data>
+  <data name="OptionalEnrichmentTitle" xml:space="preserve"><value>الإثراء الاختياري</value></data>
+  <data name="OptionalEnrichmentSubtitle" xml:space="preserve"><value>التسلسل الهرمي، السمات، التعيينات</value></data>
+  <data name="ReviewValidateTitle" xml:space="preserve"><value>المراجعة والتحقق</value></data>
+  <data name="ReviewValidateSubtitle" xml:space="preserve"><value>تحقق من الجاهزية</value></data>
+  <data name="SubmitPublishTitle" xml:space="preserve"><value>الإرسال والنشر</value></data>
+  <data name="SubmitPublishSubtitle" xml:space="preserve"><value>إنهاء المسودة</value></data>
+  <data name="StrategyEmptyTitle" xml:space="preserve"><value>البدء من الصفر</value></data>
+  <data name="StrategyEmptyHint" xml:space="preserve"><value>ابدأ بمسودة فارغة وأضف القيم يدويًا.</value></data>
+  <data name="StrategyCopyTitle" xml:space="preserve"><value>نسخ من النسخة المنشورة</value></data>
+  <data name="StrategyCopyHint" xml:space="preserve"><value>ابدأ من قيم النسخة المنشورة الحالية.</value></data>
+  <data name="StrategyImportTitle" xml:space="preserve"><value>استيراد من ملف</value></data>
+  <data name="StrategyImportHint" xml:space="preserve"><value>املأ المسودة عن طريق استيراد ملف خارجي.</value></data>
+  <data name="StrategyResumeTitle" xml:space="preserve"><value>استئناف المسودة</value></data>
+  <data name="StrategyResumeHint" xml:space="preserve"><value>تابع العمل على نسخة المسودة الحالية.</value></data>
+  <data name="StartWizard" xml:space="preserve"><value>بدء المعالج</value></data>
+  <data name="SourceVersion" xml:space="preserve"><value>النسخة المصدر</value></data>
+  <data name="NextStep" xml:space="preserve"><value>التالي</value></data>
+  <data name="AddFirstValue" xml:space="preserve"><value>إضافة قيمة</value></data>
+  <data name="SaveDraftValues" xml:space="preserve"><value>حفظ قيم المسودة</value></data>
+  <data name="DraftNoValuesTitle" xml:space="preserve"><value>لا توجد قيم بعد</value></data>
+  <data name="DraftNoValuesHint" xml:space="preserve"><value>أضف أول قيمة إلى هذه المسودة باستخدام إضافة قيمة.</value></data>
+  <data name="CodeColumn" xml:space="preserve"><value>الرمز</value></data>
+  <data name="ActiveColumn" xml:space="preserve"><value>نشط</value></data>
+  <data name="SortColumn" xml:space="preserve"><value>الترتيب</value></data>
+  <data name="ValuesCountLabel" xml:space="preserve"><value>القيم</value></data>
+  <data name="DuplicateCodesLabel" xml:space="preserve"><value>رموز مكررة</value></data>
+  <data name="RequiredFieldFailuresLabel" xml:space="preserve"><value>أخطاء الحقول المطلوبة</value></data>
+  <data name="RunValidation" xml:space="preserve"><value>تشغيل التحقق</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="VersioningSection" xml:space="preserve"><value>إدارة الإصدارات</value></data>
+  <data name="DraftNotEditable" xml:space="preserve"><value>لم تعد هذه المسودة قابلة للتحرير لأنه تم إرسالها. أنشئ مسودة جديدة لتغيير القيم.</value></data>
+  <data name="ValueCodeLabelRequired" xml:space="preserve"><value>أضف قيمة واحدة على الأقل، مع رمز واسم معروض لكل منها.</value></data>
+  <data name="NoUnsavedChanges" xml:space="preserve"><value>لا توجد تغييرات غير محفوظة.</value></data>
+  <data name="RunValidationFirst" xml:space="preserve"><value>شغّل التحقق دون معوقات أولاً.</value></data>
+  <data name="SaveValuesFirst" xml:space="preserve"><value>احفظ قيم المسودة أولاً.</value></data>
+  <data name="AddValueFirst" xml:space="preserve"><value>أضف قيمة واحدة على الأقل أولاً.</value></data>
+  <data name="DownloadCsvTemplate" xml:space="preserve"><value>تنزيل قالب CSV</value></data>
+  <data name="ImportTemplateTitle" xml:space="preserve"><value>استيراد القيم من ملف</value></data>
+  <data name="ImportTemplateHint" xml:space="preserve"><value>نزّل قالبًا واملأ قيمك ثم ارفع الملف لاستيرادها إلى المسودة.</value></data>
+  <data name="DownloadJsonTemplate" xml:space="preserve"><value>تنزيل قالب JSON</value></data>
+  <data name="DownloadTemplate" xml:space="preserve"><value>تنزيل القالب</value></data>
+</root>

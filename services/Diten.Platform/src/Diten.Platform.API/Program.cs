@@ -1,4 +1,5 @@
 using Diten.Platform.Application;
+using Diten.Platform.API.Services.BusinessReferenceData;
 using Diten.Platform.Infrastructure;
 using Diten.Platform.Infrastructure.BackgroundJobs;
 using Diten.Platform.Common.Tenancy;
@@ -87,7 +88,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 
 // AG-STEP-011 / MOD-0018-FU14 Group B — self-explain observer (API-layer; reuses the API-layer PermissionClaimEvaluator).
+builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();
 builder.Services.AddScoped<Diten.Platform.API.Authorization.Explain.ISelfAccessExplainService, Diten.Platform.API.Authorization.Explain.SelfAccessExplainService>();
+builder.Services.AddHostedService<BusinessReferenceDataCatalogLoadWorker>();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<Diten.Platform.API.Middleware.GlobalExceptionHandler>();
 

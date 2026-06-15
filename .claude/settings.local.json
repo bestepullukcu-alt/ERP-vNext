@@ -12,7 +12,26 @@
       "PowerShell($procs = Get-Process -Name \"Diten.Platform.API\" -ErrorAction SilentlyContinue; if \\($procs\\) { $procs | ForEach-Object { Stop-Process -Id $_.Id -Force }; Start-Sleep -Seconds 2 }; \\(Get-Process -Name \"Diten.Platform.API\" -ErrorAction SilentlyContinue | Measure-Object\\).Count)",
       "PowerShell($procs = Get-Process -Name \"Diten.Platform.API\" -ErrorAction SilentlyContinue; if \\($procs\\) { $procs | ForEach-Object { Stop-Process -Id $_.Id -Force }; Start-Sleep -Seconds 2 }; \"stopped\")",
       "PowerShell($procs = Get-Process -Name \"Diten.Platform.API\" -ErrorAction SilentlyContinue; if \\($procs\\) { $procs | ForEach-Object { Stop-Process -Id $_.Id -Force }; Start-Sleep -Seconds 2 }; \"ready\")",
-      "Bash(findstr /i \"0009 lifecycle tenant\")"
+      "Bash(findstr /i \"0009 lifecycle tenant\")",
+      "PowerShell(git -C \"c:\\\\Users\\\\user\\\\Desktop\\\\ERP-vNext\" diff --stat HEAD -- services/Diten.Platform/src/Diten.Platform.Application/Common/Response.cs services/Diten.Platform/src/Diten.Platform.API/Program.cs services/Diten.Platform/src/Diten.Platform.Application/DependencyInjection.cs services/Diten.Platform/src/Diten.Platform.Infrastructure/DependencyInjection.cs services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Configurations/MongoDbIndexConfigurations.cs)",
+      "PowerShell(git -C \"c:\\\\Users\\\\user\\\\Desktop\\\\ERP-vNext\" diff HEAD -- services/Diten.Platform/src/Diten.Platform.Application/Common/Response.cs services/Diten.Platform/src/Diten.Platform.Application/DependencyInjection.cs services/Diten.Platform/src/Diten.Platform.API/Program.cs)",
+      "Bash(grep -E \"error|BAŞARI|Oluşturma|Hata$\")",
+      "PowerShell(Get-Process dotnet,Diten.Platform.API -ErrorAction SilentlyContinue)",
+      "Bash(node --check frontend/Diten.Web/wwwroot/assets/js/Platform/ReferenceData/attributes.js)",
+      "Bash(cd /c/Users/user/Desktop/ERP-vNext && grep -rl \"createCrudTable\\\\|DitenDataTable\" frontend/Diten.Web/wwwroot/assets/js/ | grep -iv \"GoldenReference\\\\|ReferenceData\" | head)",
+      "Read(//c/c/Users/user/Desktop/ERP-vNext/frontend/Diten.Web/wwwroot/assets/**)",
+      "Bash(npx playwright *)",
+      "Read(//c/Program Files/Google/Chrome/Application/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5001/)",
+      "PowerShell($p = Start-Process -FilePath \"powershell.exe\" -ArgumentList \"-NoProfile\",\"-ExecutionPolicy\",\"Bypass\",\"-File\",\"C:\\\\Users\\\\user\\\\Desktop\\\\ERP-vNext\\\\watch-diten-bg.ps1\" -WorkingDirectory \"C:\\\\Users\\\\user\\\\Desktop\\\\ERP-vNext\" -WindowStyle Hidden -PassThru; Write-Output \"Started watcher PID $\\($p.Id\\)\")",
+      "Read(//c/Users/user/Desktop/ERP-vNext/**)",
+      "Bash(ls -la --time-style=full-iso bin/Debug/net8.0/tr/Diten.Web.resources.dll)",
+      "Bash(grep -c \"Son Çözümleme\" bin/Debug/net8.0/tr/Diten.Web.resources.dll)",
+      "Bash(curl -s -b /tmp/diten_cookies.txt http://localhost:5001/Platform/ReferenceData/Usage/PRODUCT_CATEGORY?setId=4c65c26f-3627-46a3-b557-537d7b033fdd)",
+      "Bash(node -e 'let s=\"\";process.stdin.on\\(\"data\",d=>s+=d\\).on\\(\"end\",\\(\\)=>{const m=s.match\\(/id=\"usage-l10n\"[^>]*>\\([\\\\s\\\\S]*?\\)<\\\\/script>/\\);if\\(!m\\){console.log\\(\"no payload\"\\);return;}const raw=m[1].replace\\(/&quot;/g,\"\\\\\"\"\\).replace\\(/&amp;/g,\"&\"\\).replace\\(/&#x27;|&#39;/g,\"\\\\x27\"\\).replace\\(/&lt;/g,\"<\"\\).replace\\(/&gt;/g,\">\"\\).trim\\(\\);const d=JSON.parse\\(raw\\);[\"UsageConsumerModuleLabel\",\"UsageLastResolvedColumn\",\"UsageImpactTotal\",\"UsageImpactCritical\",\"AddNew\",\"UsageCriticalityCritical\",\"UsageEmptyState\"].forEach\\(k=>console.log\\(\"  \"+k+\" = \"+JSON.stringify\\(d[k]\\)\\)\\);const raws=Object.keys\\(d\\).filter\\(k=>d[k]===k\\);console.log\\(\"RAW-KEY FALLBACKS:\",raws.length?raws.join\\(\", \"\\):\"none\"\\);}\\)')",
+      "Bash(node --check publish-review.js)",
+      "Bash(cd /c/Users/user/Desktop/ERP-vNext/services/Diten.Platform && grep -rhoiE \"\\\\\"\\(Database|DatabaseName|MongoDb?\\)\\\\\"\\\\s*:\\\\s*\\\\\"[^\\\\\"]+\\\\\"|mongodb://[^\\\\\"]+\" src/Diten.Platform.API/appsettings*.json 2>/dev/null | head -20)",
+      "Read(//c/c/Users/user/Desktop/ERP-vNext/services/Diten.Platform/src/**)"
     ]
   }
 }

@@ -344,7 +344,7 @@ public sealed class SubscriptionPlansController : Controller
     private void AddAuthHeader()
     {
         _httpClient.DefaultRequestHeaders.Authorization = null;
-        var token = Request.Cookies["access_token"];
+        var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
         if (!string.IsNullOrWhiteSpace(token))
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);

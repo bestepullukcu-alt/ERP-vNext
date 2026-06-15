@@ -3466,3 +3466,108 @@ div.dt-container div.dt-search input {
 .audit-redaction-swal .swal2-textarea::placeholder {
     font-size: 0.8125rem;
 }
+
+/* Publish Review — sticky governance column (xl and up) */
+@media (min-width: 1200px) {
+    .rd-publish-review-sticky {
+        position: sticky;
+        top: 1.5rem;
+    }
+}
+
+/* Draft Wizard — sticky step navigation footer.
+   The per-step Previous/Next/Start buttons stay pinned to the bottom of the
+   wizard content area in a consistent position across every step.
+
+   Each active step pane becomes a flex column with a min-height that fills the
+   viewport, so `margin-top: auto` always pushes the footer to the bottom edge
+   (no more per-step height jumps). `position: sticky; bottom: 0` keeps the
+   footer visible while a tall step body (e.g. the values table) scrolls.
+   Negative margins bleed the bar to the edges of .bs-stepper-content (Sneat
+   pads it 1.5rem on every side); the padding is added back so the buttons line
+   up with the content. */
+#rd-draft-wizard-page .bs-stepper-content .content.active {
+    display: flex;
+    flex-direction: column;
+    /* Fill the viewport minus the chrome above (navbar + breadcrumb header +
+       the KPI cards row + container padding) and the layout footer below, so
+       the wizard fits on one screen without introducing a page scrollbar.
+       Tune this offset if the footer is not flush with the bottom. */
+    min-height: calc(100vh - 25rem);
+}
+
+.rd-wizard-step-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+    margin-inline: -1.5rem;
+    margin-bottom: -1.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--bs-paper-bg, #fff);
+    border-top: 1px solid var(--bs-border-color);
+}
+
+/* Draft Wizard — Set Basics (step 2) professional field layout.
+   Two titled sections (Identity / Versioning) made of labelled "field tiles":
+   a small uppercase label over the value, in a subtly inset rounded box. */
+#rd-draft-wizard-page .rd-basics-section {
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg, 0.5rem);
+    padding: 1.25rem;
+    background: var(--bs-paper-bg, #fff);
+}
+
+#rd-draft-wizard-page .rd-basics-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color);
+}
+
+#rd-draft-wizard-page .rd-basics-section-title i {
+    font-size: 1.125rem;
+    color: var(--bs-primary);
+}
+
+#rd-draft-wizard-page .rd-basics-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    height: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius, 0.375rem);
+    background: var(--bs-body-bg);
+}
+
+#rd-draft-wizard-page .rd-basics-label {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--bs-secondary-color);
+}
+
+#rd-draft-wizard-page .rd-basics-value {
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    color: var(--bs-heading-color, var(--bs-body-color));
+    word-break: break-word;
+}
+
+#rd-draft-wizard-page .rd-basics-field--accent {
+    border-color: rgba(var(--bs-primary-rgb), 0.35);
+}
+
+#rd-draft-wizard-page .rd-basics-field--accent .rd-basics-value {
+    font-weight: 600;
+    color: var(--bs-primary);
+}

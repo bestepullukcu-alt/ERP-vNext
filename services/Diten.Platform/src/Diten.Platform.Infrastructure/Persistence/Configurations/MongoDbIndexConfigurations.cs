@@ -32,6 +32,11 @@ public static class MongoDbIndexConfigurations
         var featureDefinitionCollection = database.GetCollection<FeatureDefinition>("platform_subscription_features");
         var featureCategoryCollection = database.GetCollection<FeatureCategory>("platform_feature_categories");
         var planFeatureMappingCollection = database.GetCollection<PlanFeatureMapping>("platform_plan_feature_mappings");
+        var businessReferenceDataSetCollection = database.GetCollection<BusinessReferenceDataSet>("business_reference_data_sets");
+        var businessReferenceDataVersionCollection = database.GetCollection<BusinessReferenceDataVersion>("business_reference_data_versions");
+        var businessReferenceDataUsageRegistrationCollection = database.GetCollection<BusinessReferenceDataUsageRegistration>("business_reference_data_usage_registrations");
+        var businessReferenceDataImportPreviewCollection = database.GetCollection<BusinessReferenceDataImportPreview>("business_reference_data_import_previews");
+        var businessReferenceDataIntegrationEventCollection = database.GetCollection<BusinessReferenceDataIntegrationEvent>("business_reference_data_integration_events");
         var interfaceDefinitionCollection = database.GetCollection<InterfaceDefinition>("platform_interface_definitions");
         var interfaceDiscoveryBatchCollection = database.GetCollection<InterfaceDiscoveryBatch>("platform_interface_discovery_batches");
         var interfaceDiscoveryDiffCollection = database.GetCollection<InterfaceDiscoveryDiffItem>("platform_interface_discovery_diff_items");
@@ -297,17 +302,38 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.Status))
         });
 
+        await SoftDeleteDomainsForDeletedTenantsAsync(tenantCollection, tenantDomainCollection);
+        await DropIndexIfExistsAsync(tenantCollection.Indexes, "ux_tenants_code");
+        await DropIndexIfExistsAsync(tenantCollection.Indexes, "ux_tenants_slug");
+        await DropIndexIfExistsAsync(tenantCollection.Indexes, "ux_tenants_domain");
+        await DropIndexIfExistsAsync(tenantDomainCollection.Indexes, "ux_tenant_domains_domain_name");
+
         await tenantCollection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<Tenant>(
                 Builders<Tenant>.IndexKeys.Ascending(x => x.Code),
-                new CreateIndexOptions { Unique = true, Name = "ux_tenants_code" }),
+                new CreateIndexOptions<Tenant>
+                {
+                    Unique = true,
+                    Name = "ux_tenants_code",
+                    PartialFilterExpression = Builders<Tenant>.Filter.Eq(x => x.IsDeleted, false)
+                }),
             new CreateIndexModel<Tenant>(
                 Builders<Tenant>.IndexKeys.Ascending(x => x.Slug),
-                new CreateIndexOptions { Unique = true, Name = "ux_tenants_slug" }),
+                new CreateIndexOptions<Tenant>
+                {
+                    Unique = true,
+                    Name = "ux_tenants_slug",
+                    PartialFilterExpression = Builders<Tenant>.Filter.Eq(x => x.IsDeleted, false)
+                }),
             new CreateIndexModel<Tenant>(
                 Builders<Tenant>.IndexKeys.Ascending(x => x.Domain),
-                new CreateIndexOptions { Unique = true, Name = "ux_tenants_domain" }),
+                new CreateIndexOptions<Tenant>
+                {
+                    Unique = true,
+                    Name = "ux_tenants_domain",
+                    PartialFilterExpression = Builders<Tenant>.Filter.Eq(x => x.IsDeleted, false)
+                }),
             new CreateIndexModel<Tenant>(
                 Builders<Tenant>.IndexKeys
                     .Ascending(x => x.Status)
@@ -329,7 +355,12 @@ public static class MongoDbIndexConfigurations
         {
             new CreateIndexModel<TenantDomain>(
                 Builders<TenantDomain>.IndexKeys.Ascending(x => x.DomainName),
-                new CreateIndexOptions { Unique = true, Name = "ux_tenant_domains_domain_name" }),
+                new CreateIndexOptions<TenantDomain>
+                {
+                    Unique = true,
+                    Name = "ux_tenant_domains_domain_name",
+                    PartialFilterExpression = Builders<TenantDomain>.Filter.Eq(x => x.IsDeleted, false)
+                }),
             new CreateIndexModel<TenantDomain>(
                 Builders<TenantDomain>.IndexKeys
                     .Ascending(x => x.TenantId)
@@ -608,6 +639,98 @@ public static class MongoDbIndexConfigurations
                 new CreateIndexOptions { Name = "ix_platform_feature_categories_sort_order" })
         });
 
+        await businessReferenceDataSetCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<BusinessReferenceDataSet>(
+                Builders<BusinessReferenceDataSet>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.SetCode),
+                new CreateIndexOptions<BusinessReferenceDataSet>
+                {
+                    Unique = true,
+                    Name = "ux_business_reference_data_sets_tenant_code",
+                    PartialFilterExpression = Builders<BusinessReferenceDataSet>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<BusinessReferenceDataSet>(
+                Builders<BusinessReferenceDataSet>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_business_reference_data_sets_tenant_status_deleted" })
+        });
+
+        await businessReferenceDataVersionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<BusinessReferenceDataVersion>(
+                Builders<BusinessReferenceDataVersion>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.BusinessReferenceDataSetId)
+                    .Ascending(x => x.VersionNumber),
+                new CreateIndexOptions<BusinessReferenceDataVersion>
+                {
+                    Unique = true,
+                    Name = "ux_business_reference_data_versions_set_number",
+                    PartialFilterExpression = Builders<BusinessReferenceDataVersion>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<BusinessReferenceDataVersion>(
+                Builders<BusinessReferenceDataVersion>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_business_reference_data_versions_tenant_status_deleted" })
+        });
+
+        await businessReferenceDataUsageRegistrationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<BusinessReferenceDataUsageRegistration>(
+                Builders<BusinessReferenceDataUsageRegistration>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.SetCode)
+                    .Ascending(x => x.ConsumerModule)
+                    .Ascending(x => x.ConsumerName),
+                new CreateIndexOptions<BusinessReferenceDataUsageRegistration>
+                {
+                    Unique = true,
+                    Name = "ux_business_reference_data_usage_consumer",
+                    PartialFilterExpression = Builders<BusinessReferenceDataUsageRegistration>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await businessReferenceDataImportPreviewCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<BusinessReferenceDataImportPreview>(
+                Builders<BusinessReferenceDataImportPreview>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.PreviewId),
+                new CreateIndexOptions<BusinessReferenceDataImportPreview>
+                {
+                    Unique = true,
+                    Name = "ux_business_reference_data_import_previews_tenant_id",
+                    PartialFilterExpression = Builders<BusinessReferenceDataImportPreview>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<BusinessReferenceDataImportPreview>(
+                Builders<BusinessReferenceDataImportPreview>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ExpiresAt),
+                new CreateIndexOptions { Name = "ix_business_reference_data_import_previews_expiry" })
+        });
+
+        await businessReferenceDataIntegrationEventCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<BusinessReferenceDataIntegrationEvent>(
+                Builders<BusinessReferenceDataIntegrationEvent>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.BusinessReferenceDataVersionId)
+                    .Ascending(x => x.EventName)
+                    .Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<BusinessReferenceDataIntegrationEvent>
+                {
+                    Unique = true,
+                    Name = "ux_business_reference_data_events_idempotency",
+                    PartialFilterExpression = Builders<BusinessReferenceDataIntegrationEvent>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
         await planFeatureMappingCollection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<PlanFeatureMapping>(
@@ -796,5 +919,30 @@ public static class MongoDbIndexConfigurations
         catch (MongoCommandException ex) when (ex.CodeName is "IndexNotFound" or "NamespaceNotFound")
         {
         }
+    }
+
+    private static async Task SoftDeleteDomainsForDeletedTenantsAsync(
+        IMongoCollection<Tenant> tenantCollection,
+        IMongoCollection<TenantDomain> tenantDomainCollection)
+    {
+        var deletedTenantIds = await tenantCollection
+            .Find(Builders<Tenant>.Filter.Eq(x => x.IsDeleted, true))
+            .Project(x => x.Id)
+            .ToListAsync();
+
+        if (deletedTenantIds.Count == 0)
+        {
+            return;
+        }
+
+        var filter = Builders<TenantDomain>.Filter.And(
+            Builders<TenantDomain>.Filter.In(x => x.TenantId, deletedTenantIds),
+            Builders<TenantDomain>.Filter.Eq(x => x.IsDeleted, false));
+        var update = Builders<TenantDomain>.Update
+            .Set(x => x.IsDeleted, true)
+            .Set(x => x.Status, TenantDomainStatus.Inactive)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow);
+
+        await tenantDomainCollection.UpdateManyAsync(filter, update);
     }
 }

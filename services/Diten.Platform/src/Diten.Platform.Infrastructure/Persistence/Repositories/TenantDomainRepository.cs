@@ -44,7 +44,7 @@ public sealed class TenantDomainRepository : GlobalRepository<TenantDomain>, ITe
         await Collection.ReplaceOneAsync(filter, domain, cancellationToken: ct);
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
+    public override async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var filter = Builders<TenantDomain>.Filter.And(
             ExecutionFilter,

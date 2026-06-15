@@ -34,6 +34,26 @@ const TenantDetails = (function () {
     const subscriptionFilterCollapseId = 'inlineFilterCollapse';
     const moduleEntitlementFilterCollapseId = 'moduleEntitlementFilterCollapse';
 
+    const extractErrorMessage = (payload, fallback) => {
+        if (!payload) return fallback;
+        if (typeof payload === 'string') {
+            try {
+                return extractErrorMessage(JSON.parse(payload), fallback);
+            } catch (error) {
+                return payload.trim() || fallback;
+            }
+        }
+
+        const errors = payload.errors || payload.Errors;
+        if (Array.isArray(errors) && errors.length > 0) return errors.filter(Boolean).join('\n');
+        if (errors && typeof errors === 'object') {
+            const messages = Object.values(errors).flat().filter(Boolean);
+            if (messages.length > 0) return messages.join('\n');
+        }
+
+        return payload.message || payload.Message || payload.title || payload.Title || fallback;
+    };
+
     const escapeHtml = (value) => {
         if (value === null || value === undefined) return '';
         return String(value)
@@ -169,14 +189,31 @@ const TenantDetails = (function () {
             throw new Error(L.PermissionDenied || 'Permission denied.');
         }
 
-        if (!response.ok) throw new Error(await response.text());
+        const text = await response.text();
+        let payload = null;
+        if (text) {
+            try {
+                payload = JSON.parse(text);
+            } catch (error) {
+                payload = text;
+            }
+        }
+
+        if (!response.ok) {
+            throw new Error(extractErrorMessage(payload, L.ErrorOccurred || 'Error occurred.'));
+        }
+
         if (response.status === 204) return null;
         if (!contentType.toLowerCase().includes('application/json')) {
             throw new Error('Unexpected non-JSON response.');
         }
 
-        const text = await response.text();
-        return text ? unwrap(JSON.parse(text)) : null;
+        const isSuccessful = payload?.isSuccessful ?? payload?.IsSuccessful ?? payload?.succeeded ?? payload?.Succeeded ?? payload?.success ?? payload?.Success;
+        if (isSuccessful === false) {
+            throw new Error(extractErrorMessage(payload, L.ErrorOccurred || 'Error occurred.'));
+        }
+
+        return unwrap(payload);
     };
 
     const imageMarkup = (src, alt, className) => `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" class="${escapeHtml(className)}" />`;
@@ -1944,7 +1981,7 @@ const TenantDetails = (function () {
                     await changeLifecycle('suspend', reason);
                     window.showToast?.(L.TenantSuspended || 'Tenant suspended.', 'success');
                 } catch (error) {
-                    window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
+                    window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error');
                 }
             }, { type: 'warning', confirmButtonText: L.Suspend, showInput: true, inputPlaceholder: L.SuspendReason });
         });
@@ -1955,7 +1992,7 @@ const TenantDetails = (function () {
                     await changeLifecycle('reactivate', '');
                     window.showToast?.(L.TenantReactivated || 'Tenant reactivated.', 'success');
                 } catch (error) {
-                    window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
+                    window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error');
                 }
             }, { type: 'success', confirmButtonText: L.Reactivate });
         });

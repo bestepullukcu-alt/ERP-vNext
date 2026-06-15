@@ -95,7 +95,7 @@ public sealed class PlatformProfileSnapshotProvider : IPlatformProfileSnapshotPr
 
     private async Task<PlatformProfileSnapshot?> FetchFromApiAsync(HttpContext httpContext, ClaimsPrincipal principal, CancellationToken ct)
     {
-        var accessToken = httpContext.Request.Cookies["access_token"];
+        var accessToken = Auth.AuthTokenCookies.GetAccessToken(httpContext.Request);
         if (string.IsNullOrWhiteSpace(accessToken))
         {
             return null;

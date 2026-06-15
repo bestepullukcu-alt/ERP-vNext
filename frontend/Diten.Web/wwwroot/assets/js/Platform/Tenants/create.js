@@ -22,6 +22,37 @@ const TenantCreate = (function () {
     const readBool = (name) => form?.elements[name]?.checked === true;
     const unwrap = (payload) => payload?.data ?? payload?.Data ?? payload ?? null;
 
+    const extractErrorMessage = (payload, fallback) => {
+        if (!payload) return fallback;
+        if (typeof payload === 'string') {
+            try {
+                return extractErrorMessage(JSON.parse(payload), fallback);
+            } catch (error) {
+                return payload.trim() || fallback;
+            }
+        }
+
+        const errors = payload.errors || payload.Errors;
+        if (Array.isArray(errors) && errors.length > 0) return errors.filter(Boolean).join('\n');
+        if (errors && typeof errors === 'object') {
+            const messages = Object.values(errors).flat().filter(Boolean);
+            if (messages.length > 0) return messages.join('\n');
+        }
+
+        return payload.detail || payload.Detail || payload.message || payload.Message || payload.title || payload.Title || fallback;
+    };
+
+    const readJsonOrText = async (response) => {
+        if (response.status === 204) return null;
+        const text = await response.text();
+        if (!text) return null;
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            return text;
+        }
+    };
+
     const setIfValue = (payload, key, value) => {
         if (value !== null && value !== undefined && value !== '') {
             payload[key] = value;
@@ -75,9 +106,14 @@ const TenantCreate = (function () {
             findInputForProperty(key)?.classList.add('is-invalid');
         });
 
-        if (problem?.detail) messages.unshift(problem.detail);
-        if (problem?.message && messages.length === 0) messages.push(problem.message);
-        if (problem?.title && messages.length === 0) messages.push(problem.title);
+        if (problem?.detail || problem?.Detail) messages.unshift(problem.detail || problem.Detail);
+        if ((problem?.message || problem?.Message) && messages.length === 0) messages.push(problem.message || problem.Message);
+        if ((problem?.title || problem?.Title) && messages.length === 0) messages.push(problem.title || problem.Title);
+
+        const envelopeErrors = problem?.errors || problem?.Errors;
+        if (Array.isArray(envelopeErrors) && messages.length === 0) {
+            messages.push(...friendlyMessages(envelopeErrors));
+        }
 
         const summary = document.getElementById('formErrorSummary');
         if (summary) {
@@ -374,9 +410,15 @@ const TenantCreate = (function () {
                     return;
                 }
 
-                const json = await response.json().catch(() => null);
+                const json = await readJsonOrText(response);
                 if (!response.ok) {
                     showErrors(json || { detail: response.statusText });
+                    return;
+                }
+
+                const isSuccessful = json?.isSuccessful ?? json?.IsSuccessful ?? json?.succeeded ?? json?.Succeeded ?? json?.success ?? json?.Success;
+                if (isSuccessful === false) {
+                    showErrors({ detail: extractErrorMessage(json, L.ErrorOccurred || 'Error occurred.') });
                     return;
                 }
 

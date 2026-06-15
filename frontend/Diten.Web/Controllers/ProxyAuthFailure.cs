@@ -14,11 +14,7 @@ public static class ProxyAuthFailure
 
     public static void ClearAuthCookies(HttpResponse response)
     {
-        foreach (var path in new[] { "/", "/account", "/Account", "/platform", "/Platform", "/api" })
-        {
-            response.Cookies.Delete("access_token", BuildDeleteOptions(response, path));
-            response.Cookies.Delete("refresh_token", BuildDeleteOptions(response, path));
-        }
+        Diten.Web.Services.Auth.AuthTokenCookies.ClearTokens(response);
     }
 
     public static object PlatformLoginPayload() => new
@@ -28,14 +24,4 @@ public static class ProxyAuthFailure
         errors = new[] { "Authentication is no longer valid. Please sign in again." }
     };
 
-    private static CookieOptions BuildDeleteOptions(HttpResponse response, string path)
-    {
-        return new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = response.HttpContext.Request.IsHttps,
-            SameSite = SameSiteMode.Lax,
-            Path = path
-        };
-    }
 }

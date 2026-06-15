@@ -1,5 +1,6 @@
 @using System.Security.Claims
 @using System.Text.Json
+@using Diten.Web.Security
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @inject Diten.Web.Services.IPermissionSnapshot Perms
@@ -24,6 +25,8 @@
     var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
     var layoutDirection = string.Equals(currentCulture, "ar", StringComparison.OrdinalIgnoreCase) ? "rtl" : "ltr";
     var activeController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentPath = Context.Request.Path.Value ?? string.Empty;
+    var canReadReferenceData = PermissionClaims.HasPermission(User, "Platform.BusinessReferenceData.Read");
 }
 <!DOCTYPE html>
 
@@ -178,6 +181,15 @@
                             <div>@SharedLocalizer["WorkCenterMenu"]</div>
                         </a>
                     </li>
+                    @if (canReadReferenceData)
+                    {
+                        <li class="menu-item @(currentPath.StartsWith("/Platform/ReferenceData", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/Platform/ReferenceData" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-data"></i>
+                                <div>@SharedLocalizer["ReferenceDataMenu"]</div>
+                            </a>
+                        </li>
+                    }
 
                     <!-- Developer Sandbox -->
                     <li class="menu-header small text-uppercase">
@@ -572,7 +584,7 @@
     <script src="~/assets/vendor/libs/jquery/jquery.js"></script>
     <script src="~/assets/vendor/libs/popper/popper.js"></script>
     <script src="~/assets/vendor/js/bootstrap.js"></script>
-    <script src="~/assets/vendor/libs/@@algolia/autocomplete-js.js"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@algolia/autocomplete-js.js")"></script>
     <script src="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
     <script src="~/assets/vendor/js/menu.js"></script>
     <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>

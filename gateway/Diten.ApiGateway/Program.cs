@@ -128,8 +128,8 @@ app.UseHealthChecks(observabilityOptions.Health.Path, new HealthCheckOptions
 
 app.Use(async (context, next) =>
 {
+    var cookieToken = AuthTokenCookies.GetAccessToken(context.Request);
     if (!context.Request.Headers.ContainsKey("Authorization") &&
-        context.Request.Cookies.TryGetValue("access_token", out var cookieToken) &&
         !string.IsNullOrWhiteSpace(cookieToken))
     {
         context.Request.Headers.Authorization = $"Bearer {cookieToken}";

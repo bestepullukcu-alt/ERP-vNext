@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Diten.ApiGateway.Authentication;
 
 namespace Diten.ApiGateway.Middleware;
 
@@ -299,9 +300,7 @@ public sealed class TenantResolutionMiddleware
             return authorization["Bearer ".Length..].Trim();
         }
 
-        return context.Request.Cookies.TryGetValue("access_token", out var cookieToken)
-            ? cookieToken
-            : null;
+        return AuthTokenCookies.GetAccessToken(context.Request);
     }
 
     private static Guid? ReadHeaderTenant(string? headerValue)
@@ -378,8 +377,8 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        if (request.Cookies.TryGetValue("access_token", out var accessToken) &&
-            !string.IsNullOrWhiteSpace(accessToken))
+        var accessToken = AuthTokenCookies.GetAccessToken(request);
+        if (!string.IsNullOrWhiteSpace(accessToken))
         {
             request.Headers.Authorization = $"Bearer {accessToken}";
         }
