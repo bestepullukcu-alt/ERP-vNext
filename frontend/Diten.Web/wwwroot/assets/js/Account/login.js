@@ -46,6 +46,11 @@ const LoginPage = (function () {
         submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${window.L10n?.LoginLoading || 'Signing in...'}`;
 
         try {
+            const tenantId = config.authMode === 'platform' ? null : resolveTenantIdForLogin();
+            if (config.authMode !== 'platform' && !tenantId) {
+                throw new Error(window.L10n?.TenantLoginMissingTenant || 'Tenant login link is missing tenant information.');
+            }
+
             const loginEndpoint = config.authMode === 'platform'
                 ? config.platformLoginEndpoint
                 : config.tenantLoginEndpoint;
@@ -59,7 +64,7 @@ const LoginPage = (function () {
                     email,
                     password,
                     rememberMe,
-                    tenantId: config.authMode === 'platform' ? null : resolveTenantIdForLogin(),
+                    tenantId,
                     returnUrl: new URLSearchParams(window.location.search).get('ReturnUrl')
                         || new URLSearchParams(window.location.search).get('returnUrl')
                 })
@@ -191,8 +196,7 @@ const LoginPage = (function () {
             return tenantFromQuery;
         }
 
-        // Existing project fallback used by local development until tenant discovery UI lands.
-        return '00000000-0000-0000-0000-000000000001';
+        return null;
     }
 
     function showError(message) {

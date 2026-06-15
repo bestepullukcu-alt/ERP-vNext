@@ -12,15 +12,18 @@ namespace Diten.Platform.Application.Features.Tenants.Handlers;
 public sealed class DeleteTenantCommandHandler : IRequestHandler<DeleteTenantCommand, Response<NoContent>>
 {
     private readonly ITenantRegistryRepository _repository;
+    private readonly ITenantDomainRepository _domainRepository;
     private readonly ICurrentUserContext _currentUser;
     private readonly IEventBus _eventBus;
 
     public DeleteTenantCommandHandler(
         ITenantRegistryRepository repository,
+        ITenantDomainRepository domainRepository,
         ICurrentUserContext currentUser,
         IEventBus eventBus)
     {
         _repository = repository;
+        _domainRepository = domainRepository;
         _currentUser = currentUser;
         _eventBus = eventBus;
     }
@@ -39,6 +42,12 @@ public sealed class DeleteTenantCommandHandler : IRequestHandler<DeleteTenantCom
         }
 
         await _repository.DeleteAsync(tenant.Id, ct);
+        var domains = await _domainRepository.GetByTenantIdAsync(tenant.Id, ct);
+        foreach (var domain in domains)
+        {
+            await _domainRepository.DeleteAsync(domain.Id, ct);
+        }
+
         var now = DateTimeOffset.UtcNow;
         await _eventBus.PublishAsync(
             new TenantCancelledV1(

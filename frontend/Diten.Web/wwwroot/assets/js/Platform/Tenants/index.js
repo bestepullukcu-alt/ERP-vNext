@@ -39,7 +39,38 @@ const TenantsList = (function () {
 
     const normalizeString = (value) => typeof value === 'string' ? value.trim() : '';
     const normalizeArray = (value) => Array.isArray(value) ? value.map(String).filter(Boolean).sort() : [];
-    const unwrap = (payload) => payload?.data ?? payload ?? null;
+    const unwrap = (payload) => payload?.data ?? payload?.Data ?? payload ?? null;
+
+    const extractErrorMessage = (payload, fallback) => {
+        if (!payload) return fallback;
+        if (typeof payload === 'string') {
+            try {
+                return extractErrorMessage(JSON.parse(payload), fallback);
+            } catch (error) {
+                return payload.trim() || fallback;
+            }
+        }
+
+        const errors = payload.errors || payload.Errors;
+        if (Array.isArray(errors) && errors.length > 0) return errors.filter(Boolean).join('\n');
+        if (errors && typeof errors === 'object') {
+            const messages = Object.values(errors).flat().filter(Boolean);
+            if (messages.length > 0) return messages.join('\n');
+        }
+
+        return payload.message || payload.Message || payload.title || payload.Title || fallback;
+    };
+
+    const readJsonOrText = async (response) => {
+        if (response.status === 204) return null;
+        const text = await response.text();
+        if (!text) return null;
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            return text;
+        }
+    };
 
     const firstValue = (source, keys) => {
         for (const key of keys) {
@@ -176,11 +207,18 @@ const TenantsList = (function () {
             throw new Error(L.PermissionDenied || 'Permission denied.');
         }
 
+        const payload = await readJsonOrText(response);
+
         if (!response.ok) {
-            throw new Error(await response.text());
+            throw new Error(extractErrorMessage(payload, L.ErrorOccurred || 'Error occurred.'));
         }
 
-        return unwrap(await response.json());
+        const isSuccessful = payload?.isSuccessful ?? payload?.IsSuccessful ?? payload?.succeeded ?? payload?.Succeeded ?? payload?.success ?? payload?.Success;
+        if (isSuccessful === false) {
+            throw new Error(extractErrorMessage(payload, L.ErrorOccurred || 'Error occurred.'));
+        }
+
+        return unwrap(payload);
     };
 
     const bulkOptions = {
@@ -201,7 +239,7 @@ const TenantsList = (function () {
                         if (!response.ok) throw new Error('Bulk delete failed.');
                         reloadWithSuccessToast('BulkDeleteSuccess');
                     } catch (error) {
-                        if (!isAuthHandledError(error)) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
+                        if (!isAuthHandledError(error)) window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error');
                     }
                 }, { type: 'danger', confirmButtonText: L.BulkDelete });
             }
@@ -751,7 +789,7 @@ const TenantsList = (function () {
                         await changeLifecycle(id, 'suspend', reason);
                         reloadWithSuccessToast('TenantSuspended');
                     } catch (error) {
-                        if (!isAuthHandledError(error)) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
+                        if (!isAuthHandledError(error)) window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error');
                     }
                 }, {
                     entityName: name,
@@ -772,7 +810,7 @@ const TenantsList = (function () {
                         await changeLifecycle(id, 'reactivate', '');
                         reloadWithSuccessToast('TenantReactivated');
                     } catch (error) {
-                        if (!isAuthHandledError(error)) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
+                        if (!isAuthHandledError(error)) window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error');
                     }
                 }, { entityName: name, type: 'success', confirmButtonText: L.Reactivate });
             }

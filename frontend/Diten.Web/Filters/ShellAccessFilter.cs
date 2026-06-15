@@ -2,6 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Diten.Web.Services.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,7 @@ namespace Diten.Web.Filters;
 public sealed class ShellAccessFilter : IAuthorizationFilter
 {
     private static readonly string[] PlatformActors = { "platform_admin", "partner_admin" };
+    private const string ReferenceDataPath = "/Platform/ReferenceData";
     private readonly IConfiguration _configuration;
 
     public ShellAccessFilter(IConfiguration configuration)
@@ -46,7 +48,13 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
         {
             if (string.IsNullOrWhiteSpace(actorType))
             {
-                context.Result = BuildLoginRedirect("/platform/login", request);
+                var loginPath = IsReferenceDataPath(path) ? "/account/login" : "/platform/login";
+                context.Result = BuildLoginRedirect(loginPath, request);
+                return;
+            }
+
+            if (IsReferenceDataPath(path) && string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
+            {
                 return;
             }
 
@@ -70,6 +78,9 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
         }
     }
 
+    private static bool IsReferenceDataPath(Microsoft.AspNetCore.Http.PathString path) =>
+        path.StartsWithSegments(ReferenceDataPath, StringComparison.OrdinalIgnoreCase);
+
     private static RedirectResult BuildLoginRedirect(string loginPath, Microsoft.AspNetCore.Http.HttpRequest request)
     {
         var returnUrl = request.Path + request.QueryString;
@@ -84,7 +95,7 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
             return;
         }
 
-        var accessToken = context.Request.Cookies["access_token"];
+        var accessToken = AuthTokenCookies.GetAccessToken(context.Request);
         if (string.IsNullOrWhiteSpace(accessToken))
         {
             return;
@@ -93,6 +104,9 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
         var jwtSecret = _configuration["JwtSettings:Secret"] ?? string.Empty;
         var jwtIssuer = _configuration["JwtSettings:Issuer"] ?? string.Empty;
         var jwtAudience = _configuration["JwtSettings:Audience"] ?? string.Empty;
+
+        Console.WriteLine($"[SHELL_FILTER_DEBUG] Secret length: {jwtSecret.Length}, Issuer: '{jwtIssuer}', Audience: '{jwtAudience}', AccessToken empty: {string.IsNullOrEmpty(accessToken)}");
+
         if (string.IsNullOrWhiteSpace(jwtSecret) ||
             string.IsNullOrWhiteSpace(jwtIssuer) ||
             string.IsNullOrWhiteSpace(jwtAudience))
@@ -116,10 +130,10 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
 
             context.User = principal;
         }
-        catch
+        catch (Exception ex)
         {
-            context.Response.Cookies.Delete("access_token");
-            context.Response.Cookies.Delete("refresh_token");
+            Console.WriteLine($"[SHELL_FILTER_ERROR] Token validation failed: {ex.Message}");
+            AuthTokenCookies.ClearTokens(context.Response);
             context.User = new ClaimsPrincipal(new ClaimsIdentity());
         }
     }

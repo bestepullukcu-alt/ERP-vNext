@@ -1,4 +1,5 @@
 using Diten.Platform.Application;
+using Diten.Platform.API.Services.BusinessReferenceData;
 using Diten.Platform.Infrastructure;
 using Diten.Platform.Infrastructure.BackgroundJobs;
 using Diten.Platform.Common.Tenancy;
@@ -85,6 +86,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddHostedService<BusinessReferenceDataCatalogLoadWorker>();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<Diten.Platform.API.Middleware.GlobalExceptionHandler>();
 

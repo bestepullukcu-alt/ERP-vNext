@@ -1,0 +1,88 @@
+@using Diten.Web.Views.Platform.ReferenceData
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReferenceDataIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["HierarchyTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var setCode = ViewData["SetCode"]?.ToString() ?? string.Empty;
+    string AccessFlag(string key) => ((bool?)ViewData[key] ?? false).ToString().ToLowerInvariant();
+}
+<div id="rd-hierarchy-page" data-set-code="@setCode" data-testid="rd-hierarchy-page" data-rd-permissions="true"
+     data-can-update-version="@AccessFlag("RdCanUpdateVersion")">
+    <div class="mb-3 d-flex justify-content-between align-items-start gap-2 flex-wrap">
+        <div>
+            <h5 class="mb-0">@Localizer["HierarchyTitle"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="/Platform/ReferenceData">@Localizer["PageTitle"]</a></li>
+                    <li class="breadcrumb-item" id="rd-hierarchy-crumb-set">@setCode</li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["HierarchyTitle"]</li>
+                </ol>
+            </nav>
+            <p class="mb-0 text-muted">@Localizer["HierarchyDescription"]</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-label-secondary btn-sm d-none" id="rd-hierarchy-preview-restore" title="@Localizer["ExpandPreview"]" aria-label="@Localizer["ExpandPreview"]">
+                <i class="icon-base bx bx-show icon-sm me-1"></i>@Localizer["DraftHierarchyPreview"]
+            </button>
+            <button type="button" class="btn btn-label-secondary btn-sm" id="rd-hierarchy-refresh">@Localizer["Refresh"]</button>
+            <a class="btn btn-label-secondary btn-sm" href="/Platform/ReferenceData">@Localizer["BackToSets"]</a>
+        </div>
+    </div>
+
+    <div id="rd-hierarchy-status" class="alert alert-info d-none" role="alert"></div>
+    <div id="rd-hierarchy-empty" class="d-none" role="alert"></div>
+    <div id="rd-hierarchy-error" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="row g-3 align-items-start">
+        <div class="col-12 col-xl-9" id="rd-hierarchy-table-col">
+            <div class="card" id="rd-hierarchy-card">
+                <div id="skeleton-loader" class="backbone-skeleton p-4">
+                    <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row skeleton-row-last"></div>
+                </div>
+
+                <div class="card-datatable table-responsive">
+                    <table id="dt-reference-data-hierarchy" data-dt-standard="v2" class="datatables-reference-data-hierarchy table border-top" data-testid="rd-hierarchy-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>@Localizer["ValueCodeColumn"]</th>
+                                <th class="all">@Localizer["DisplayNameColumn"]</th>
+                                <th style="width: 320px;">@Localizer["ParentColumn"]</th>
+                                <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rd-hierarchy-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-3" id="rd-hierarchy-preview-col">
+            <div class="card sticky-xl-top" id="rd-hierarchy-preview-card" style="top: 1rem;">
+                <div class="card-header d-flex align-items-center justify-content-between gap-2">
+                    <span class="fw-semibold">@Localizer["DraftHierarchyPreview"]</span>
+                    <button type="button" class="btn btn-sm btn-icon btn-label-secondary" id="rd-hierarchy-preview-toggle" aria-expanded="true" aria-controls="rd-hierarchy-preview-body" title="@Localizer["CollapsePreview"]" aria-label="@Localizer["CollapsePreview"]">
+                        <i class="icon-base bx bx-chevron-right icon-sm"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="rd-hierarchy-preview-body">
+                        <ul id="rd-hierarchy-tree" class="mb-0" data-testid="rd-hierarchy-tree"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/ReferenceData/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.permissions.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/hierarchy.js" asp-append-version="true"></script>
+}

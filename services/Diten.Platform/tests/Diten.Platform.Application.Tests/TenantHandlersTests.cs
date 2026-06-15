@@ -494,17 +494,31 @@ public sealed class TenantHandlersTests
         repository.Setup(x => x.GetByIdAsync(tenantId, It.IsAny<CancellationToken>())).ReturnsAsync(tenant);
         repository.Setup(x => x.DeleteAsync(tenantId, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
+        var tenantDomain = new TenantDomain
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            DomainName = "acme.ditenteknoloji.com",
+            Type = DomainType.Platform
+        };
+        var domainRepository = new Mock<ITenantDomainRepository>();
+        domainRepository.Setup(x => x.GetByTenantIdAsync(tenantId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([tenantDomain]);
+        domainRepository.Setup(x => x.DeleteAsync(tenantDomain.Id, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         var user = new Mock<ICurrentUserContext>();
         user.SetupGet(x => x.UserId).Returns(actorId);
 
         var eventBus = new Mock<IEventBus>();
         SetupPublish<TenantCancelledV1>(eventBus);
 
-        var handler = new DeleteTenantCommandHandler(repository.Object, user.Object, eventBus.Object);
+        var handler = new DeleteTenantCommandHandler(repository.Object, domainRepository.Object, user.Object, eventBus.Object);
 
         var result = await handler.Handle(new DeleteTenantCommand(tenantId), CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
+        domainRepository.Verify(x => x.DeleteAsync(tenantDomain.Id, It.IsAny<CancellationToken>()), Times.Once);
         eventBus.Verify(x => x.PublishAsync(
             It.Is<TenantCancelledV1>(e =>
                 e.TenantId == tenantId &&

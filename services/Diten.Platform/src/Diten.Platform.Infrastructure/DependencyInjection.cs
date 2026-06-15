@@ -13,6 +13,7 @@ using Diten.Platform.Infrastructure.BackgroundJobs;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Configurations;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
+using Diten.Platform.Infrastructure.Persistence.Repositories.BusinessReferenceData;
 using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Audit;
@@ -113,6 +114,7 @@ public static class DependencyInjection
         services.Configure<EntitlementCacheOptions>(configuration.GetSection(EntitlementCacheOptions.SectionName));
         services.Configure<TenantManagementOptions>(configuration.GetSection(TenantManagementOptions.SectionName));
         services.Configure<AuditRetentionSeedOptions>(configuration.GetSection(AuditRetentionSeedOptions.SectionName));
+        services.Configure<BusinessReferenceDataCatalogLoadOptions>(configuration.GetSection(BusinessReferenceDataCatalogLoadOptions.SectionName));
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         services.Configure<AuthServiceOptions>(configuration.GetSection(AuthServiceOptions.SectionName));
         services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
@@ -177,6 +179,7 @@ public static class DependencyInjection
         services.AddScoped<IFeatureDefinitionRepository, FeatureDefinitionRepository>();
         services.AddScoped<IFeatureCategoryRepository, FeatureCategoryRepository>();
         services.AddScoped<IPlanFeatureMappingRepository, PlanFeatureMappingRepository>();
+        services.AddScoped<IBusinessReferenceDataStewardshipRepository, BusinessReferenceDataStewardshipRepository>();
         services.AddScoped<IAuditEventRepository, AuditEventRepository>();
         services.AddScoped<IAuditRetentionPolicyRepository, AuditRetentionPolicyRepository>();
         services.AddScoped<ITenantAuditPreferenceRepository, TenantAuditPreferenceRepository>();

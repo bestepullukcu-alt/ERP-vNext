@@ -430,7 +430,7 @@ public sealed class TenantsController : Controller
 
     private bool TryGetPlatformAccessToken(out string token)
     {
-        token = Request.Cookies["access_token"] ?? string.Empty;
+        token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request) ?? string.Empty;
         if (string.IsNullOrWhiteSpace(token))
         {
             return false;
@@ -467,7 +467,7 @@ public sealed class TenantsController : Controller
             return true;
         }
 
-        var token = Request.Cookies["access_token"];
+        var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
         if (string.IsNullOrWhiteSpace(token))
         {
             return false;
@@ -654,7 +654,7 @@ public sealed class TenantsController : Controller
 
     private (string Id, string Display) ResolveCurrentActor()
     {
-        var token = Request.Cookies["access_token"];
+        var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
         if (string.IsNullOrWhiteSpace(token))
         {
             return (string.Empty, string.Empty);

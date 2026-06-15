@@ -1,0 +1,17 @@
+@using Diten.Web.Views.Platform.ReferenceData
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReferenceDataIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["UsageFormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/Platform/ReferenceData/_UsageForm.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Platform/ReferenceData/_UsageIndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/ReferenceData/usage.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/usage.form.js" asp-append-version="true"></script>
+}

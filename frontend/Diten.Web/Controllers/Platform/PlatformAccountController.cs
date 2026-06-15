@@ -123,7 +123,7 @@ public sealed class PlatformAccountController : Controller
 
     private bool TryGetPlatformAccessToken(out string token)
     {
-        token = Request.Cookies["access_token"] ?? string.Empty;
+        token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request) ?? string.Empty;
         if (string.IsNullOrWhiteSpace(token))
         {
             return false;

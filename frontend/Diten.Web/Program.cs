@@ -83,6 +83,7 @@ localizationOptions.RequestCultureProviders.Insert(0, new CustomRequestCulturePr
     var requestHost = context.Request.Host.Host ?? string.Empty;
     var isPlatformContext = requestHost.StartsWith("admin.", StringComparison.OrdinalIgnoreCase) ||
                             context.Request.Path.StartsWithSegments("/platform", StringComparison.OrdinalIgnoreCase);
+    var cultureSet = IsReferenceDataTenantPath(context.Request.Path) ? supportedCultureSet : platformCultureSet;
     if (!isPlatformContext)
     {
         return Task.FromResult<ProviderCultureResult?>(null);
@@ -91,7 +92,7 @@ localizationOptions.RequestCultureProviders.Insert(0, new CustomRequestCulturePr
     var requestedCulture = context.Request.Query["culture"].ToString();
     if (!string.IsNullOrWhiteSpace(requestedCulture))
     {
-        var normalizedCulture = platformCultureSet.Contains(requestedCulture) ? requestedCulture : "en";
+        var normalizedCulture = cultureSet.Contains(requestedCulture) ? requestedCulture : "en";
         return Task.FromResult<ProviderCultureResult?>(new ProviderCultureResult(normalizedCulture, normalizedCulture));
     }
 
@@ -99,7 +100,7 @@ localizationOptions.RequestCultureProviders.Insert(0, new CustomRequestCulturePr
     var cookieCulture = !string.IsNullOrWhiteSpace(cultureCookie)
         ? CookieRequestCultureProvider.ParseCookieValue(cultureCookie)?.Cultures.FirstOrDefault().Value
         : null;
-    var resolvedCulture = !string.IsNullOrWhiteSpace(cookieCulture) && platformCultureSet.Contains(cookieCulture)
+    var resolvedCulture = !string.IsNullOrWhiteSpace(cookieCulture) && cultureSet.Contains(cookieCulture)
         ? cookieCulture
         : "en";
 
@@ -118,7 +119,9 @@ app.Use(async (context, next) =>
         var requestHost = context.Request.Host.Host ?? string.Empty;
         var isPlatformContext = requestHost.StartsWith("admin.", StringComparison.OrdinalIgnoreCase) ||
                                 context.Request.Path.StartsWithSegments("/platform", StringComparison.OrdinalIgnoreCase);
-        var allowedSet = isPlatformContext ? platformCultureSet : supportedCultureSet;
+        var allowedSet = isPlatformContext && !IsReferenceDataTenantPath(context.Request.Path)
+            ? platformCultureSet
+            : supportedCultureSet;
         var normalizedCulture = allowedSet.Contains(requestedCulture) ? requestedCulture : "en";
         var cookieValue = CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(normalizedCulture));
         context.Response.Cookies.Append(CookieRequestCultureProvider.DefaultCookieName, cookieValue, new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) });
@@ -145,7 +148,7 @@ var validatedTokenParameters = new TokenValidationParameters
 // MOD-0014: Validated Token-to-User State Bridge
 app.Use(async (context, next) =>
 {
-    var accessToken = context.Request.Cookies["access_token"];
+    var accessToken = AuthTokenCookies.GetAccessToken(context.Request);
     if (!string.IsNullOrEmpty(accessToken) && !ShouldSkipTokenBridgeRefresh(context.Request.Path))
     {
         var handler = new JwtSecurityTokenHandler();
@@ -156,11 +159,10 @@ app.Use(async (context, next) =>
         }
         catch (SecurityTokenExpiredException)
         {
-            var refreshToken = context.Request.Cookies["refresh_token"];
+            var refreshToken = AuthTokenCookies.GetRefreshToken(context.Request);
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
-                context.Response.Cookies.Delete("access_token");
-                context.Response.Cookies.Delete("refresh_token");
+                AuthTokenCookies.ClearTokens(context.Response);
             }
             else
             {
@@ -198,8 +200,7 @@ app.Use(async (context, next) =>
         }
         catch
         {
-            context.Response.Cookies.Delete("access_token");
-            context.Response.Cookies.Delete("refresh_token");
+            AuthTokenCookies.ClearTokens(context.Response);
         }
     }
     await next();
@@ -224,7 +225,7 @@ app.UseAuthentication();
 // Keep JWT cookie based platform/tenant identity available after cookie auth runs.
 app.Use(async (context, next) =>
 {
-    var accessToken = context.Request.Cookies["access_token"];
+    var accessToken = AuthTokenCookies.GetAccessToken(context.Request);
     if (!string.IsNullOrEmpty(accessToken) && !ShouldSkipTokenBridgeRefresh(context.Request.Path))
     {
         var handler = new JwtSecurityTokenHandler();
@@ -235,8 +236,7 @@ app.Use(async (context, next) =>
         }
         catch
         {
-            context.Response.Cookies.Delete("access_token");
-            context.Response.Cookies.Delete("refresh_token");
+            AuthTokenCookies.ClearTokens(context.Response);
         }
     }
 
@@ -292,6 +292,11 @@ static Guid? TryReadTenantId(string accessToken)
     {
         return null;
     }
+}
+
+static bool IsReferenceDataTenantPath(PathString path)
+{
+    return path.StartsWithSegments("/Platform/ReferenceData", StringComparison.OrdinalIgnoreCase);
 }
 
 static bool ShouldSkipTokenBridgeRefresh(PathString path)

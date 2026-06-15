@@ -1,0 +1,24 @@
+C:\Users\user\Desktop\ERP-vNext\services\Diten.DevEnablementService\src\Diten.DevEnablementService.Api\Properties\launchSettings.json içindeki başlatma ayarları kullanılıyor...
+Derleniyor...
+dbug: Microsoft.Extensions.Hosting.Internal.Host[1]
+      Hosting starting
+info: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[63]
+      User profile is available. Using 'C:\Users\user\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5058
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\user\Desktop\ERP-vNext\services\Diten.DevEnablementService\src\Diten.DevEnablementService.Api
+dbug: Microsoft.Extensions.Hosting.Internal.Host[2]
+      Hosting started
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5058/ - - -
+warn: Diten.DevEnablementService.Infrastructure.Middleware.TenantResolutionMiddleware[0]
+      TenantResolution dev bypass applied in DevEnablementService. Path=/ TenantId=00000000-0000-0000-0000-000000000001
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5058/ - 404 - application/problem+json 141.0285ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[16]
+      Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5058/, Response status code: 404

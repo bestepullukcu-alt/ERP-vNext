@@ -4,25 +4,18 @@ namespace Diten.Web.Services.Auth;
 
 public sealed class AuthCookieService : IAuthCookieService
 {
-    private const string AccessTokenCookie = "access_token";
-    private const string RefreshTokenCookie = "refresh_token";
-
     public void WriteTokens(HttpResponse response, string accessToken, string refreshToken, DateTime refreshExpiresAtUtc)
     {
         ClearTokens(response);
         var cookieOptions = BuildCookieOptions(response, refreshExpiresAtUtc);
 
-        response.Cookies.Append(AccessTokenCookie, accessToken, cookieOptions);
-        response.Cookies.Append(RefreshTokenCookie, refreshToken, cookieOptions);
+        AuthTokenCookies.Append(response, AuthTokenCookies.AccessTokenCookie, accessToken, cookieOptions);
+        AuthTokenCookies.Append(response, AuthTokenCookies.RefreshTokenCookie, refreshToken, cookieOptions);
     }
 
     public void ClearTokens(HttpResponse response)
     {
-        foreach (var path in new[] { "/", "/account", "/Account", "/platform", "/Platform", "/api" })
-        {
-            response.Cookies.Delete(AccessTokenCookie, BuildDeleteOptions(response, path));
-            response.Cookies.Delete(RefreshTokenCookie, BuildDeleteOptions(response, path));
-        }
+        AuthTokenCookies.ClearTokens(response);
     }
 
     private static CookieOptions BuildCookieOptions(HttpResponse response, DateTime refreshExpiresAtUtc)
@@ -37,14 +30,4 @@ public sealed class AuthCookieService : IAuthCookieService
         };
     }
 
-    private static CookieOptions BuildDeleteOptions(HttpResponse response, string path)
-    {
-        return new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = response.HttpContext.Request.IsHttps,
-            SameSite = SameSiteMode.Lax,
-            Path = path
-        };
-    }
 }

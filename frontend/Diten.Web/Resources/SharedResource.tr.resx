@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -485,4 +485,6 @@
   <data name="AdminSeedDeleteDenied" xml:space="preserve"><value>Sistem seed yoneticisi silinemez.</value></data>
   <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>Sistem seed yoneticisi askıya alınamaz.</value></data>
   <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Yonetici olusturuldu ancak davet e-postasi gonderilemedi. SMTP ayarlarini kontrol edip Daveti Yeniden Gonder islemini kullanin.</value></data>
+  <data name="ReferenceDataMenu" xml:space="preserve"><value>Referans Veri</value></data>
 </root>
+

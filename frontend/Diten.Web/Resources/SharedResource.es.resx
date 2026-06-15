@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -452,4 +452,6 @@
   <data name="ResetPassword.Mismatch" xml:space="preserve"><value>Passwords do not match.</value></data>
   <data name="ResetPassword.SuccessTitle" xml:space="preserve"><value>Password updated</value></data>
   <data name="ResetPassword.SuccessMessage" xml:space="preserve"><value>Your password has been updated.</value></data>
+  <data name="ReferenceDataMenu" xml:space="preserve"><value>Datos de referencia</value></data>
 </root>
+

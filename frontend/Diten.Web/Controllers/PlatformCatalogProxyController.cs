@@ -138,7 +138,7 @@ public sealed class PlatformCatalogProxyController : ControllerBase
         {
             var client = _httpClientFactory.CreateClient();
             var request = new HttpRequestMessage(method, BuildUrl(baseUrl, relativePath));
-            var accessToken = Request.Cookies["access_token"];
+            var accessToken = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

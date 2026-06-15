@@ -1,0 +1,191 @@
+@using Diten.Web.Views.Platform.ReferenceData
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReferenceDataIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["MappingsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var setCode = ViewData["SetCode"]?.ToString() ?? string.Empty;
+    string AccessFlag(string key) => ((bool?)ViewData[key] ?? false).ToString().ToLowerInvariant();
+}
+<div id="rd-mappings-page" data-set-code="@setCode" data-testid="rd-mappings-page" data-rd-permissions="true"
+     data-can-update-version="@AccessFlag("RdCanUpdateVersion")">
+    <div class="mb-3 d-flex justify-content-between align-items-start gap-2 flex-wrap">
+        <div>
+            <h5 class="mb-0">@Localizer["MappingsTitle"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="/Platform/ReferenceData">@Localizer["PageTitle"]</a></li>
+                    <li class="breadcrumb-item" id="rd-mappings-crumb-set">@setCode</li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["MappingsTitle"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-label-secondary btn-sm" id="rd-mappings-refresh">@Localizer["Refresh"]</button>
+            <a class="btn btn-label-secondary btn-sm" href="/Platform/ReferenceData">@Localizer["BackToSets"]</a>
+        </div>
+    </div>
+
+    <div id="inlineFilterHost">
+        <div class="collapse" id="inlineFilterCollapse">
+            <div class="pt-0 pb-3">
+                <form class="m-0" id="filterForm" autocomplete="off" data-no-tracker>
+                    <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                        <div class="filter-chip filter-source-value">
+                            <select id="filterSourceValue" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["MappingSourceColumn"]">
+                            </select>
+                        </div>
+                        <div class="filter-chip filter-key-search">
+                            <input type="text" id="filterKey" class="form-control form-control-sm" placeholder="@Localizer["MappingKeyColumn"]" style="min-width: 150px;" />
+                        </div>
+                        <div class="filter-chip filter-target-search">
+                            <input type="text" id="filterTarget" class="form-control form-control-sm" placeholder="@Localizer["MappingTargetColumn"]" style="min-width: 150px;" />
+                        </div>
+                        <div class="ms-auto d-flex gap-3">
+                            <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                            <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="rd-mappings-status" class="alert alert-info d-none mb-3"></div>
+    <div id="rd-mappings-empty" class="d-none" role="alert"></div>
+    <div id="rd-mappings-error" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="row" id="rd-mappings-workspace">
+        <div class="col-12">
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-pills mb-4 nav-fill" role="tablist">
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-mappings-draft" aria-controls="navs-mappings-draft" aria-selected="true">
+                        <span class="d-none d-sm-inline-flex align-items-center">
+                            <i class="icon-base bx bx-edit icon-sm me-1_5"></i>@Localizer["DraftMappingsTab"]
+                        </span>
+                        <i class="icon-base bx bx-edit icon-sm d-sm-none"></i>
+                    </button>
+                </li>
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-mappings-published" aria-controls="navs-mappings-published" aria-selected="false" tabindex="-1">
+                        <span class="d-none d-sm-inline-flex align-items-center">
+                            <i class="icon-base bx bx-show icon-sm me-1_5"></i>@Localizer["PublishedSnapshotTab"]
+                        </span>
+                        <i class="icon-base bx bx-show icon-sm d-sm-none"></i>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content p-0" style="box-shadow: none; background: transparent;">
+                <!-- Tab Pane 1: Draft Mapping Authoring -->
+                <div class="tab-pane fade show active" id="navs-mappings-draft" role="tabpanel">
+                    <div class="card mb-3" id="rd-mappings-card">
+                        <div class="card-datatable table-responsive">
+                            <table id="dt-mappings-draft" data-dt-standard="v2" class="table border-top" data-testid="rd-mappings-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>@Localizer["MappingKeyColumn"]</th>
+                                        <th>@Localizer["MappingSourceColumn"]</th>
+                                        <th>@Localizer["MappingTargetColumn"]</th>
+                                        <th>@Localizer["MappingLabelColumn"]</th>
+                                        <th class="cell-fit text-end pe-3">@Localizer["ActionColumn"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rd-mappings-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Pane 2: Published Mapping Snapshot -->
+                <div class="tab-pane fade" id="navs-mappings-published" role="tabpanel">
+                    <div class="card" id="rd-mappings-published-card">
+                        <div class="card-datatable table-responsive">
+                            <table id="dt-mappings-published" data-dt-standard="v2" class="table border-top" data-testid="rd-mappings-published-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>@Localizer["MappingKeyColumn"]</th>
+                                        <th>@Localizer["MappingSourceColumn"]</th>
+                                        <th>@Localizer["MappingTargetColumn"]</th>
+                                        <th>@Localizer["MappingLabelColumn"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rd-mappings-published-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMappingCreateEdit" aria-labelledby="offcanvasMappingCreateEditLabel">
+    <div class="offcanvas-header py-6">
+        <h5 id="offcanvasMappingCreateEditLabel" class="offcanvas-title">@Localizer["AddMapping"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top">
+        <div id="formMappingAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formMapping" class="pt-0" novalidate>
+            <input type="hidden" id="mappingIndex" value="" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="mappingKeyInput" class="form-label fw-medium">
+                        @Localizer["MappingKeyColumn"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="mappingKeyInput" class="form-control" maxlength="128" required />
+                    <div class="invalid-feedback" id="val-mapping-key"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="mappingSourceSelect" class="form-label fw-medium">
+                        @Localizer["MappingSourceColumn"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="mappingSourceSelect" class="form-select" required>
+                    </select>
+                    <div class="invalid-feedback" id="val-mapping-source"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="mappingTargetInput" class="form-label fw-medium">
+                        @Localizer["MappingTargetColumn"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="mappingTargetInput" class="form-control" maxlength="128" required />
+                    <div class="invalid-feedback" id="val-mapping-target"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="mappingLabelInput" class="form-label fw-medium">
+                        @Localizer["MappingLabelColumn"]
+                    </label>
+                    <input type="text" id="mappingLabelInput" class="form-control" maxlength="256" />
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSaveMapping" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/ReferenceData/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.permissions.js" asp-append-version="true"></script>
+    <script src="~/assets/js/personalization-client.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/mappings.js" asp-append-version="true"></script>
+}

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -485,4 +485,6 @@
   <data name="AdminSeedDeleteDenied" xml:space="preserve"><value>The system seed administrator cannot be deleted.</value></data>
   <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>The system seed administrator cannot be suspended.</value></data>
   <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Administrator was created, but the invitation email could not be sent. Check SMTP settings and use Resend Invitation.</value></data>
+  <data name="ReferenceDataMenu" xml:space="preserve"><value>Reference Data</value></data>
 </root>
+

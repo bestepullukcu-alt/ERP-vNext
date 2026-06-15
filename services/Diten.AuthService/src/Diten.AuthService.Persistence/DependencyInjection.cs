@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
@@ -24,6 +25,13 @@ public static class DependencyInjection
 
         // MongoDB Serializers
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+
+        // MongoDB Conventions - Globally ignore extra elements to prevent deserialization errors on schema changes
+        var conventionPack = new ConventionPack
+        {
+            new IgnoreExtraElementsConvention(true)
+        };
+        ConventionRegistry.Register("IgnoreExtraElementsConvention", conventionPack, type => true);
 
         // Settings
         var mongoSection = configuration.GetSection("MongoDbSettings");

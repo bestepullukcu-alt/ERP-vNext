@@ -1,0 +1,290 @@
+@using Diten.Web.Views.Platform.ReferenceData
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReferenceDataIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["DraftWizardTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var setId = ViewData["SetId"]?.ToString() ?? string.Empty;
+    var mode = ViewData["WizardMode"]?.ToString() ?? string.Empty;
+    var versionId = ViewData["VersionId"]?.ToString() ?? string.Empty;
+    string AccessFlag(string key) => ((bool?)ViewData[key] ?? false).ToString().ToLowerInvariant();
+}
+
+<div id="rd-draft-wizard-page" data-set-id="@setId" data-mode="@mode" data-version-id="@versionId" data-testid="rd-draft-wizard-page" data-rd-permissions="true"
+     data-can-create-version="@AccessFlag("RdCanCreateVersion")"
+     data-can-update-version="@AccessFlag("RdCanUpdateVersion")"
+     data-can-import-preview="@AccessFlag("RdCanImportPreview")"
+     data-can-import-commit="@AccessFlag("RdCanImportCommit")"
+     data-can-validate-version="@AccessFlag("RdCanValidateVersion")"
+     data-can-submit-version="@AccessFlag("RdCanSubmitVersion")"
+     data-can-publish-version="@AccessFlag("RdCanPublishVersion")">
+    <div class="mb-3">
+        <h5 class="mb-0">@Localizer["DraftWizardTitle"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/ReferenceData">@Localizer["PageTitle"]</a></li>
+                <li class="breadcrumb-item"><a id="rd-wizard-open-set" href="#">@Localizer["SetDetailTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["DraftWizardTitle"]</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div id="rd-wizard-alert" class="alert alert-info d-none" role="alert" data-testid="rd-wizard-alert"></div>
+
+    <div class="row g-3 mb-3" id="rd-wizard-kpis">
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card h-100"><div class="card-body">
+                <small class="text-muted d-block">@Localizer["ValuesCountLabel"]</small>
+                <h5 id="rd-wizard-review-values" class="mb-0">0</h5>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card h-100"><div class="card-body">
+                <small class="text-muted d-block">@Localizer["DuplicateCodesLabel"]</small>
+                <h5 id="rd-wizard-review-duplicates" class="mb-0">0</h5>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card h-100"><div class="card-body">
+                <small class="text-muted d-block">@Localizer["RequiredFieldFailuresLabel"]</small>
+                <h5 id="rd-wizard-review-required" class="mb-0">0</h5>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card h-100"><div class="card-body">
+                <small class="text-muted d-block">@Localizer["HierarchyTitle"]</small>
+                <h5 id="rd-wizard-enrich-hierarchy" class="mb-0">0</h5>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card h-100"><div class="card-body">
+                <small class="text-muted d-block">@Localizer["AttributesTitle"]</small>
+                <h5 id="rd-wizard-enrich-attributes" class="mb-0">0</h5>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card h-100"><div class="card-body">
+                <small class="text-muted d-block">@Localizer["MappingsTitle"]</small>
+                <h5 id="rd-wizard-enrich-mappings" class="mb-0">0</h5>
+            </div></div>
+        </div>
+    </div>
+
+    <div id="rd-wizard-card">
+        <div id="rd-wizard-stepper" class="bs-stepper vertical mt-2" data-testid="rd-wizard-steps">
+            <div class="bs-stepper-header border-end">
+                <div class="step active" data-target="#rd-wizard-step-1">
+                    <button type="button" class="step-trigger" aria-selected="true">
+                        <span class="bs-stepper-circle">1</span>
+                        <span class="bs-stepper-label">
+                            <span class="bs-stepper-title">@Localizer["DraftStrategyTitle"]</span>
+                            <span class="bs-stepper-subtitle">@Localizer["DraftStrategySubtitle"]</span>
+                        </span>
+                    </button>
+                </div>
+                <div class="line"></div>
+                <div class="step" data-target="#rd-wizard-step-2">
+                    <button type="button" class="step-trigger" aria-selected="false">
+                        <span class="bs-stepper-circle">2</span>
+                        <span class="bs-stepper-label">
+                            <span class="bs-stepper-title">@Localizer["SetBasicsTitle"]</span>
+                            <span class="bs-stepper-subtitle">@Localizer["SetBasicsSubtitle"]</span>
+                        </span>
+                    </button>
+                </div>
+                <div class="line"></div>
+                <div class="step" data-target="#rd-wizard-step-3">
+                    <button type="button" class="step-trigger" aria-selected="false">
+                        <span class="bs-stepper-circle">3</span>
+                        <span class="bs-stepper-label">
+                            <span class="bs-stepper-title">@Localizer["ReferenceValuesTitle"]</span>
+                            <span class="bs-stepper-subtitle">@Localizer["ReferenceValuesSubtitle"]</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bs-stepper-content">
+                <form onsubmit="return false">
+                    <div id="rd-wizard-step-1" class="content active dstepper-block">
+                        <div class="content-header mb-3">
+                            <h6 class="mb-0">@Localizer["DraftStrategyTitle"]</h6>
+                            <small class="text-muted">@Localizer["DraftStrategySubtitle"]</small>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <div class="form-check border rounded p-3">
+                                    <input class="form-check-input" type="radio" name="rd-strategy" id="rd-strategy-empty" value="empty" checked>
+                                    <label class="form-check-label fw-semibold" for="rd-strategy-empty">@Localizer["StrategyEmptyTitle"]</label>
+                                    <div class="text-muted small">@Localizer["StrategyEmptyHint"]</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="form-check border rounded p-3">
+                                    <input class="form-check-input" type="radio" name="rd-strategy" id="rd-strategy-copy" value="copy">
+                                    <label class="form-check-label fw-semibold" for="rd-strategy-copy">@Localizer["StrategyCopyTitle"]</label>
+                                    <div class="text-muted small">@Localizer["StrategyCopyHint"]</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="form-check border rounded p-3">
+                                    <input class="form-check-input" type="radio" name="rd-strategy" id="rd-strategy-import" value="import">
+                                    <label class="form-check-label fw-semibold" for="rd-strategy-import">@Localizer["StrategyImportTitle"]</label>
+                                    <div class="text-muted small">@Localizer["StrategyImportHint"]</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="form-check border rounded p-3">
+                                    <input class="form-check-input" type="radio" name="rd-strategy" id="rd-strategy-resume" value="resume">
+                                    <label class="form-check-label fw-semibold" for="rd-strategy-resume">@Localizer["StrategyResumeTitle"]</label>
+                                    <div class="text-muted small">@Localizer["StrategyResumeHint"]</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rd-wizard-step-footer justify-content-end">
+                            <button type="button" class="btn btn-primary" id="rd-wizard-start">
+                                <span class="align-middle me-1">@Localizer["StartWizard"]</span><i class="bx bx-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="rd-wizard-step-2" class="content">
+                        <div class="content-header mb-3">
+                            <h6 class="mb-0">@Localizer["SetBasicsTitle"]</h6>
+                            <small class="text-muted">@Localizer["SetBasicsSubtitle"]</small>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-12 col-lg-7">
+                                <div class="rd-basics-section h-100">
+                                    <div class="rd-basics-section-title">
+                                        <i class="bx bx-id-card"></i><span>@Localizer["SetIdentitySection"]</span>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <div class="rd-basics-field">
+                                                <span class="rd-basics-label">@Localizer["SetCode"]</span>
+                                                <span class="rd-basics-value font-monospace fw-semibold" id="rd-wizard-set-code">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="rd-basics-field">
+                                                <span class="rd-basics-label">@Localizer["SetName"]</span>
+                                                <span class="rd-basics-value" id="rd-wizard-set-name">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="rd-basics-field">
+                                                <span class="rd-basics-label">@Localizer["ScopeType"]</span>
+                                                <span class="rd-basics-value" id="rd-wizard-set-scope">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="rd-basics-field">
+                                                <span class="rd-basics-label">@SharedLocalizer["Status"]</span>
+                                                <span class="rd-basics-value" id="rd-wizard-set-status">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-5">
+                                <div class="rd-basics-section h-100">
+                                    <div class="rd-basics-section-title">
+                                        <i class="bx bx-git-branch"></i><span>@Localizer["VersioningSection"]</span>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-sm-6">
+                                            <div class="rd-basics-field rd-basics-field--accent">
+                                                <span class="rd-basics-label">@Localizer["SourceVersion"]</span>
+                                                <span class="rd-basics-value" id="rd-wizard-source-version">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="rd-basics-field rd-basics-field--accent">
+                                                <span class="rd-basics-label">@Localizer["DraftVersion"]</span>
+                                                <span class="rd-basics-value" id="rd-wizard-draft-version">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="rd-wizard-import-panel" class="rd-basics-section d-none mt-4" data-testid="rd-wizard-import-panel">
+                            <div class="rd-basics-section-title">
+                                <i class="bx bx-import"></i><span>@Localizer["ImportTemplateTitle"]</span>
+                            </div>
+                            <p class="small text-muted mb-3">@Localizer["ImportTemplateHint"]</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-label-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bx bx-download me-1"></i>@Localizer["DownloadTemplate"]
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="javascript:void(0);" id="rd-wizard-tpl-csv"><i class="bx bx-file me-2"></i>CSV (.csv)</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0);" id="rd-wizard-tpl-json"><i class="bx bx-code-curly me-2"></i>JSON (.json)</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0);" id="rd-wizard-tpl-xlsx"><i class="bx bxs-spreadsheet me-2"></i>Excel (.xlsx)</a></li>
+                                    </ul>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-primary" id="rd-wizard-import-file"><i class="bx bx-upload me-1"></i>@Localizer["ImportToDraft"]</button>
+                            </div>
+                        </div>
+                        <div class="rd-wizard-step-footer justify-content-between">
+                            <button type="button" class="btn btn-label-secondary" id="rd-wizard-prev-2"><i class="bx bx-chevron-left me-1"></i>@Localizer["PreviousStep"]</button>
+                            <button type="button" class="btn btn-primary" id="rd-wizard-next-2"><span class="align-middle me-1">@Localizer["NextStep"]</span><i class="bx bx-chevron-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div id="rd-wizard-step-3" class="content">
+                        <div class="content-header mb-3 d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                            <div>
+                                <h6 class="mb-0">@Localizer["ReferenceValuesTitle"]</h6>
+                                <small class="text-muted">@Localizer["ReferenceValuesSubtitle"]</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-label-primary" id="rd-wizard-add-value"><i class="bx bx-plus me-1"></i>@Localizer["AddFirstValue"]</button>
+                                <button type="button" class="btn btn-sm btn-primary" id="rd-wizard-save-values">@Localizer["SaveDraftValues"]</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table mb-0" data-testid="rd-wizard-values-table">
+                                <thead>
+                                    <tr>
+                                        <th>@Localizer["CodeColumn"]</th>
+                                        <th>@Localizer["DisplayNameColumn"]</th>
+                                        <th>@Localizer["Description"]</th>
+                                        <th>@Localizer["ActiveColumn"]</th>
+                                        <th>@Localizer["SortColumn"]</th>
+                                        <th>@Localizer["ActionColumn"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rd-wizard-values-body"></tbody>
+                            </table>
+                        </div>
+                        <div id="rd-wizard-final-status" class="alert alert-info d-none mt-3" data-testid="rd-wizard-final-status"></div>
+                        <div class="rd-wizard-step-footer justify-content-between">
+                            <button type="button" class="btn btn-label-secondary" id="rd-wizard-prev-3"><i class="bx bx-chevron-left me-1"></i>@Localizer["PreviousStep"]</button>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-label-primary" id="rd-wizard-validate"><i class="bx bx-check-circle me-1"></i>@Localizer["RunValidation"]</button>
+                                <button type="button" class="btn btn-label-primary" id="rd-wizard-submit"><i class="bx bx-send me-1"></i>@Localizer["SubmitForApproval"]</button>
+                                <button type="button" class="btn btn-primary" id="rd-wizard-publish"><i class="bx bx-shield-quarter me-1"></i>@Localizer["PublishReadiness"]</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/bs-stepper/bs-stepper.css" asp-append-version="true" />
+}
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/ReferenceData/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.permissions.js" asp-append-version="true"></script>
+    <script src="~/assets/vendor/libs/bs-stepper/bs-stepper.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/draft-wizard.js" asp-append-version="true"></script>
+}

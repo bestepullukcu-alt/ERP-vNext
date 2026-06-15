@@ -1,0 +1,109 @@
+@using Diten.Web.Views.Platform.ReferenceData
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReferenceDataIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["UsageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var setCode = ViewData["SetCode"]?.ToString() ?? string.Empty;
+    string AccessFlag(string key) => ((bool?)ViewData[key] ?? false).ToString().ToLowerInvariant();
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel
+            {
+                Key = "delete",
+                Text = SharedLocalizer["BulkDelete"].Value,
+                Icon = "bx bx-trash",
+                ButtonClass = "btn btn-label-danger",
+                ConfirmKey = "BulkDeleteConfirm",
+                Endpoint = "/Platform/ReferenceData/api/usage-registrations/bulk",
+                Method = "DELETE"
+            }
+        ]
+    };
+}
+
+<div id="rd-usage-page" data-set-code="@setCode" data-testid="rd-usage-page" data-rd-permissions="true"
+     data-can-register-usage="@AccessFlag("RdCanRegisterUsage")">
+
+    <div class="mb-3">
+        <h5 class="mb-1">@Localizer["UsageTitle"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/ReferenceData">@Localizer["PageTitle"]</a></li>
+                <li class="breadcrumb-item"><a href="/Platform/ReferenceData">@Localizer["UsageTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@setCode</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div id="rd-usage-status" class="alert alert-info d-none mb-3"></div>
+
+    @* ① Impact Summary cards *@
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-5 g-4 mb-4" id="rd-usage-impact">
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block">@Localizer["UsageImpactTotal"]</small>
+                    <h5 class="mb-0" id="rd-usage-total">0</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block">@Localizer["UsageImpactCritical"]</small>
+                    <h5 class="mb-0 text-danger" id="rd-usage-critical">0</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block">@Localizer["UsageCriticalityHigh"]</small>
+                    <h5 class="mb-0 text-warning" id="rd-usage-high">0</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block">@Localizer["UsageCriticalityMedium"]</small>
+                    <h5 class="mb-0 text-info" id="rd-usage-medium">0</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block">@Localizer["UsageCriticalityLow"]</small>
+                    <h5 class="mb-0 text-success" id="rd-usage-low">0</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ② Inline Filter partial *@
+    @* Contract marker: <partial name="_Filter" /> *@
+    <partial name="~/Views/Platform/ReferenceData/_UsageFilter.cshtml" />
+
+    @* ③ Bulk Action Bar *@
+    <partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+
+    @* ④ DataTable Card *@
+    <partial name="~/Views/Platform/ReferenceData/_UsageDataTable.cshtml" />
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Platform/ReferenceData/_UsageIndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/ReferenceData/usage.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.permissions.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/usage.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,97 @@
+@using Diten.Web.Views.Platform.ReferenceData
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReferenceDataIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    string AccessFlag(string key) => ((bool?)ViewData[key] ?? false).ToString().ToLowerInvariant();
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions = []
+    };
+}
+
+<partial name="_Filter" />
+
+<div id="reference-data-page" data-testid="rd-page" data-rd-permissions="true"
+     data-can-create-set="@AccessFlag("RdCanCreateSet")"
+     data-can-import-preview="@AccessFlag("RdCanImportPreview")">
+    <div class="mb-3">
+        <h5 class="mb-0">@Localizer["PageTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+
+    <partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+
+    <div id="rd-state-loading" class="alert alert-info d-none" data-testid="rd-state-loading">@Localizer["Loading"]</div>
+    <div id="rd-state-error" class="alert alert-danger d-none" data-testid="rd-state-error">@Localizer["ErrorState"]</div>
+    <div id="rd-state-empty" class="alert alert-warning d-none" data-testid="rd-state-empty">@Localizer["EmptyState"]</div>
+
+    <partial name="_DataTable" />
+</div>
+
+<div class="modal fade" id="rd-create-set-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Localizer["AddSet"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rd-create-set-form" class="row g-3" novalidate>
+                    <div class="col-12">
+                        <label class="form-label" for="rd-new-set-code">@Localizer["SetCode"] <span class="text-danger">*</span></label>
+                        <input id="rd-new-set-code" class="form-control text-uppercase" maxlength="64" required
+                               pattern="[A-Za-z0-9_]+" placeholder="@Localizer["SetCodePlaceholder"]"
+                               autocomplete="off" spellcheck="false" />
+                        <div class="form-text">@Localizer["SetCodeHint"]</div>
+                        <div class="invalid-feedback">@Localizer["SetCodeInvalid"]</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="rd-new-set-name">@Localizer["SetName"] <span class="text-danger">*</span></label>
+                        <input id="rd-new-set-name" class="form-control" maxlength="256" required
+                               placeholder="@Localizer["SetNamePlaceholder"]" autocomplete="off" />
+                        <div class="form-text">@Localizer["SetNameHint"]</div>
+                        <div class="invalid-feedback">@Localizer["SetNameRequired"]</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="rd-new-set-scope">@Localizer["ScopeType"] <span class="text-danger">*</span></label>
+                        <select id="rd-new-set-scope" class="form-select">
+                            <option value="Global">Global</option>
+                            <option value="Tenant">Tenant</option>
+                            <option value="Company">Company</option>
+                            <option value="Region">Region</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="rd-new-set-status">@SharedLocalizer["Status"]</label>
+                        <select id="rd-new-set-status" class="form-select">
+                            <option value="Draft">Draft</option>
+                            <option value="Active">Active</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="rd-new-set-description">@Localizer["Description"]</label>
+                        <textarea id="rd-new-set-description" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="button" class="btn btn-primary" id="rd-submit-create-set">@SharedLocalizer["Save"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/ReferenceData/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.permissions.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/index.js" asp-append-version="true"></script>
+}

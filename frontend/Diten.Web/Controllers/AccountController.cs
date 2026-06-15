@@ -298,8 +298,7 @@ public class AccountController : Controller
 
     private bool TryGetCookie(string cookieName, out string value)
     {
-        value = Request.Cookies[cookieName] ?? string.Empty;
-        return !string.IsNullOrWhiteSpace(value);
+        return AuthTokenCookies.TryGet(Request, cookieName, out value);
     }
 
     private static Guid? TryReadTenantId(string accessToken)
