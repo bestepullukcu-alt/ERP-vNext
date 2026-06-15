@@ -86,6 +86,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 
+builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();
 // AG-STEP-011 / MOD-0018-FU14 Group B — self-explain observer (API-layer; reuses the API-layer PermissionClaimEvaluator).
 builder.Services.AddScoped<Diten.Platform.API.Authorization.Explain.ISelfAccessExplainService, Diten.Platform.API.Authorization.Explain.SelfAccessExplainService>();
 builder.Services.AddProblemDetails();
