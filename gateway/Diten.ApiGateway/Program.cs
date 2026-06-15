@@ -60,6 +60,12 @@ builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environm
     new("JwtSettings:PreviousSecrets", "ApiGateway", SecretRequirementKind.JwtPreviousCollection, Required: false)
 ]);
 
+var gatewaySecret = builder.Configuration["JwtSettings:Secret"] ?? string.Empty;
+if (!builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(gatewaySecret))
+{
+    throw new InvalidOperationException("JwtSettings:Secret is missing or empty in non-Development environment.");
+}
+
 builder.Services.AddDitenObservability(builder.Configuration, builder.Environment);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<CorrelationPropagationDelegatingHandler>();

@@ -5,6 +5,7 @@ using System.Text;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Infrastructure.Settings;
+using Diten.BuildingBlocks.Security.Secrets;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -13,10 +14,12 @@ namespace Diten.AuthService.Infrastructure.Services;
 public sealed class TokenService : ITokenService
 {
     private readonly JwtSettings _jwtSettings;
+    private readonly ISecretRotationResolver _rotationResolver;
 
-    public TokenService(IOptions<JwtSettings> jwtSettings)
+    public TokenService(IOptions<JwtSettings> jwtSettings, ISecretRotationResolver rotationResolver)
     {
         _jwtSettings = jwtSettings.Value;
+        _rotationResolver = rotationResolver;
     }
 
     public string GenerateAccessToken(User user, IEnumerable<string> roles, IEnumerable<string> permissions)
@@ -159,7 +162,7 @@ public sealed class TokenService : ITokenService
             ValidateIssuerSigningKey = true,
             ValidAudience = _jwtSettings.Audience,
             ValidIssuer = _jwtSettings.Issuer,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret)),
+            IssuerSigningKeys = _rotationResolver.GetValidationKeys(),
             ValidateLifetime = false,
             ClockSkew = TimeSpan.Zero
         };

@@ -34,10 +34,29 @@ window.DtDefaults = (function () {
         window.location.href = loginPath + '?returnUrl=' + returnUrl;
     }
 
-    function refreshTokenAndReload() {
-        if (_authRefreshInFlight) return _authRefreshInFlight;
+    function refreshTokenAndReload(ajaxSettings) {
+        if (_authRefreshInFlight) {
+            return _authRefreshInFlight.then(function (result) {
+                if (result.success) {
+                    if (ajaxSettings) {
+                        retryAjax(ajaxSettings);
+                    } else {
+                        window.location.reload();
+                    }
+                } else if (result.reauthRequired) {
+                    redirectToLogin();
+                } else if (ajaxSettings) {
+                    retryAjax(ajaxSettings);
+                }
+            });
+        }
 
-        _authRefreshInFlight = fetch('/account/refresh', {
+        var promiseResolve;
+        _authRefreshInFlight = new Promise(function (resolve) {
+            promiseResolve = resolve;
+        });
+
+        fetch('/account/refresh', {
             method: 'POST',
             credentials: 'same-origin',
             headers: {
@@ -45,23 +64,53 @@ window.DtDefaults = (function () {
             }
         })
             .then(function (res) {
-                if (!res.ok) throw new Error('refresh-failed');
-                return res.json();
-            })
-            .then(function (data) {
-                if (data && data.user) {
-                    window.CurrentUser = data.user;
+                var contentType = res.headers.get('content-type') || '';
+                var isJson = contentType.indexOf('application/json') !== -1;
+                if (res.ok) {
+                    return res.json().then(function (data) {
+                        return { success: true, data: data };
+                    });
+                } else if (isJson) {
+                    return res.json().then(function (data) {
+                        return { success: false, reauthRequired: data.reauthRequired !== false, status: res.status };
+                    });
+                } else {
+                    return { success: false, reauthRequired: res.status < 500, status: res.status };
                 }
-                window.location.reload();
             })
             .catch(function () {
-                redirectToLogin();
+                return { success: false, reauthRequired: false, status: 0 };
             })
-            .finally(function () {
+            .then(function (result) {
                 _authRefreshInFlight = null;
+                if (result.success) {
+                    if (result.data && result.data.user) {
+                        window.CurrentUser = result.data.user;
+                    }
+                    promiseResolve({ success: true, reauthRequired: false });
+                    if (ajaxSettings) {
+                        retryAjax(ajaxSettings);
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    promiseResolve({ success: false, reauthRequired: result.reauthRequired });
+                    if (result.reauthRequired) {
+                        redirectToLogin();
+                    } else if (ajaxSettings) {
+                        retryAjax(ajaxSettings);
+                    }
+                }
             });
 
         return _authRefreshInFlight;
+    }
+
+    function retryAjax(settings) {
+        if (!settings) return;
+        if (settings._retried) return;
+        settings._retried = true;
+        $.ajax(settings);
     }
 
     /**
@@ -430,7 +479,10 @@ window.DtDefaults = (function () {
                 console.error('[DtDefaults] Ajax error', { status: status, url: url, textStatus: textStatus, errorThrown: errorThrown, responseText: responseText });
 
                 if (status === 401) {
-                    refreshTokenAndReload();
+                    if (this._retried) {
+                        return;
+                    }
+                    refreshTokenAndReload(this);
                     return;
                 }
 
