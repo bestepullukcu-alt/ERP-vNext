@@ -90,6 +90,15 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
             return Response<AuthResponse>.Fail("Invalid email or password.", 401);
         }
 
+        // Disabled accounts cannot log in. Checked AFTER password verify so it stays enumeration-safe.
+        // Invited (not-yet-redeemed) users are inactive too, but they can't pass verify (random hash),
+        // so the invitation flow is unaffected.
+        if (!user.IsActive)
+        {
+            await _authAuditService.WriteAsync("tenant_login_denied_inactive", user.Id, _tenantContext.TenantId, "{}", ct);
+            return Response<AuthResponse>.Fail("Account is disabled.", 401);
+        }
+
         if (settings.MfaRequired)
         {
             var challenge = await _mfaChallengeService.CreateEmailChallengeAsync(user, request.RequestIp, request.UserAgent, ct);

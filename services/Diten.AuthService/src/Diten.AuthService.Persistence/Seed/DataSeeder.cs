@@ -69,7 +69,12 @@ public static class DataSeeder
             new("Platform", "BusinessReferenceData.Import", "Preview", "Preview Business Reference Data Import", "Permission to preview BusinessReferenceData imports"),
             new("Platform", "BusinessReferenceData.Import", "Commit", "Commit Business Reference Data Import", "Permission to commit BusinessReferenceData imports"),
             new("Platform", "BusinessReferenceData.Usage", "Register", "Register Business Reference Data Usage", "Permission to register BusinessReferenceData usage"),
-            new("Platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values")
+            new("Platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values"),
+
+            new("goldenslim", "records", "read",   "Read Golden Slim",   "View Golden Slim records"),
+            new("goldenslim", "records", "create", "Create Golden Slim", null),
+            new("goldenslim", "records", "update", "Update Golden Slim", null),
+            new("goldenslim", "records", "delete", "Delete Golden Slim", null)
         };
 
         foreach (var p in permissions)

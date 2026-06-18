@@ -16,10 +16,10 @@ const TenantsList = (function () {
     const endpoint = '/Platform/Tenants/api';
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'Platform', pageKey: 'Tenants' };
-    const saveViewColumnIndexes = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-    const defaultVisibleColumnIndexes = [2, 3, 4, 9, 10];
-    const totalColumnCount = 12;
-    const baseOrder = [[2, 'asc']];
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const defaultVisibleColumnIndexes = [1, 2, 3, 8, 9];
+    const totalColumnCount = 11;
+    const baseOrder = [[1, 'asc']];
     const filterCollapseId = 'inlineFilterCollapse';
 
     const syncL10n = () => { L = window.L10n || {}; };
@@ -221,48 +221,6 @@ const TenantsList = (function () {
         return unwrap(payload);
     };
 
-    const bulkOptions = {
-        bulkBarSelector: '#bulkActionBar',
-        bulkCountSelector: '#bulkSelectedCount',
-        clearSelectionSelector: '#btnClearSelection',
-        bulkActionSelector: '[data-bulk-action]',
-        onBulkAction: {
-            delete: ({ ids }) => {
-                window.showConfirm?.(L.BulkDeleteConfirm || L.AreYouSure || '', async () => {
-                    try {
-                        const response = await fetch(`${endpoint}/bulk`, {
-                            method: 'DELETE',
-                            credentials: 'include',
-                            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ ids })
-                        });
-                        if (!response.ok) throw new Error('Bulk delete failed.');
-                        reloadWithSuccessToast('BulkDeleteSuccess');
-                    } catch (error) {
-                        if (!isAuthHandledError(error)) window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error');
-                    }
-                }, { type: 'danger', confirmButtonText: L.BulkDelete });
-            }
-        }
-    };
-
-    const getSelectedIds = () => window.DitenDataTable?.getSelectedIds?.(dtTableEl, bulkOptions.checkboxSelector) || [];
-    const clearSelection = () => window.DitenDataTable?.clearSelection?.(dtTableEl, bulkOptions);
-
-    const updateBulkBar = () => {
-        const selectedIds = getSelectedIds();
-        const bulkBar = document.getElementById('bulkActionBar');
-        const countEl = document.getElementById('bulkSelectedCount');
-        if (countEl) countEl.innerText = String(selectedIds.length);
-        bulkBar?.classList.toggle('d-none', selectedIds.length === 0);
-
-        const checkboxes = Array.from(dtTableEl.querySelectorAll('tbody .dt-checkboxes'));
-        const header = dtTableEl.querySelector('.dt-checkboxes-select-all');
-        if (header) {
-            header.checked = checkboxes.length > 0 && selectedIds.length === checkboxes.length;
-            header.indeterminate = selectedIds.length > 0 && selectedIds.length < checkboxes.length;
-        }
-    };
 
     const defaultColVis = () =>
         saveViewColumnIndexes.reduce((acc, index) => {
@@ -574,7 +532,7 @@ const TenantsList = (function () {
     };
 
     const reloadWithSuccessToast = (messageKey, interpolationValue) => {
-        window.DitenDataTable?.reloadWithToast?.(dt, dtTableEl, messageKey, interpolationValue, bulkOptions);
+        window.DitenDataTable?.reloadWithToast?.(dt, dtTableEl, messageKey, interpolationValue, {});
         loadStats();
     };
 
@@ -600,7 +558,7 @@ const TenantsList = (function () {
         edit: ({ id }) => {
             if (id) window.location.href = `/Platform/Tenants/Edit/${encodeURIComponent(id)}`;
         },
-        details: ({ id }) => {
+        quickView: ({ id }) => {
             if (id) window.location.href = `/Platform/Tenants/Details/${encodeURIComponent(id)}`;
         }
     };
@@ -656,11 +614,10 @@ const TenantsList = (function () {
                 }
             },
             stateSave: false,
-            colReorder: { columns: ':gt(1):not(:last-child)' },
+            colReorder: { columns: ':gt(0):not(:last-child)' },
             order: baseOrder,
             columns: [
                 { data: 'id', name: 'control' },
-                { data: 'id', name: 'checkbox' },
                 { data: 'displayName', name: 'displayName' },
                 { data: 'code', name: 'code' },
                 { data: 'domain', name: 'domain' },
@@ -676,64 +633,63 @@ const TenantsList = (function () {
                 { targets: 0, className: 'control', searchable: false, orderable: false, render: () => '' },
                 {
                     targets: 1,
-                    searchable: false,
-                    orderable: false,
-                    className: 'dt-checkboxes-cell cell-fit',
-                    render: (data) => `<input type="checkbox" class="dt-checkboxes form-check-input" value="${escapeHtml(data)}">`
-                },
-                {
-                    targets: 2,
                     render: (data, type, full) => `<span class="fw-medium text-heading">${escapeHtml(full.displayName || full.name || '-')}</span>`
                 },
                 {
-                    targets: 3,
+                    targets: 2,
                     render: (data, type, full) => `<div><span class="fw-medium text-primary">${escapeHtml(full.code)}</span><br><small class="text-muted">${escapeHtml(full.slug || '-')}</small></div>`
                 },
                 {
-                    targets: 7,
+                    targets: 6,
                     render: (data, type, full) => `<div><span class="fw-medium">${escapeHtml(full.region || '-')}</span><br><small class="text-muted">${escapeHtml(full.environment || '-')}</small></div>`
                 },
-                { targets: 5, render: (data) => tenantTypeBadge(data) },
-                { targets: [5, 6, 7, 8], visible: false },
-                { targets: 9, render: (data) => statusBadge(data) },
-                { targets: 10, render: (data, type, full) => formatStorage(full) },
+                { targets: 4, render: (data) => tenantTypeBadge(data) },
+                { targets: [4, 5, 6, 7], visible: false },
+                { targets: 8, render: (data) => statusBadge(data) },
+                { targets: 9, render: (data, type, full) => formatStorage(full) },
                 {
                     targets: -1,
                     searchable: false,
                     orderable: false,
                     className: 'cell-fit text-end',
                     render: (data, type, full) => {
-                        const suspendDisabled = full.status === 'Suspended' || full.status === 'Deactivated' ? 'disabled' : '';
-                        const reactivateDisabled = full.status === 'Active' || full.status === 'Deactivated' ? 'disabled' : '';
+                        const canSuspend = full.status === 'Active';
+                        const canReactivate = full.status === 'Suspended';
                         const rowJson = JSON.stringify(full);
                         return window.DitenDataTable.renderActions([
                             {
-                                key: 'delete',
-                                className: 'text-danger me-1',
-                                icon: 'bx bx-trash',
-                                attrs: { 'data-id': full.id, 'data-json': rowJson }
+                                key: 'quickView',
+                                className: 'js-quick-view me-1',
+                                icon: 'bx bx-show',
+                                attrs: { 'data-id': full.id, 'title': L.QuickView || '' }
                             },
                             {
                                 key: 'edit',
+                                className: 'js-edit-item',
                                 icon: 'bx bx-edit',
                                 text: L.Edit || '',
                                 attrs: { 'data-id': full.id, 'data-json': rowJson }
                             },
                             {
-                                key: 'details',
-                                icon: 'bx bx-show',
-                                text: L.ViewDetails || '',
+                                key: 'delete',
+                                className: 'text-danger',
+                                icon: 'bx bx-trash',
+                                text: L.Delete || '',
                                 attrs: { 'data-id': full.id, 'data-json': rowJson }
                             },
                             {
                                 key: 'suspend',
-                                className: `js-tenant-suspend ${suspendDisabled}`,
+                                visible: canSuspend,
+                                className: 'js-tenant-suspend',
+                                icon: 'bx bx-pause-circle',
                                 text: L.Suspend || '',
                                 attrs: { 'data-id': full.id, 'data-name': full.displayName || full.name }
                             },
                             {
                                 key: 'reactivate',
-                                className: `js-tenant-reactivate ${reactivateDisabled}`,
+                                visible: canReactivate,
+                                className: 'js-tenant-reactivate',
+                                icon: 'bx bx-play-circle',
                                 text: L.Reactivate || '',
                                 attrs: { 'data-id': full.id, 'data-name': full.displayName || full.name }
                             }
@@ -768,7 +724,6 @@ const TenantsList = (function () {
                 });
             },
             drawCallback: function () {
-                updateBulkBar();
                 window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount());
             }
         }));
@@ -815,8 +770,6 @@ const TenantsList = (function () {
                 }, { entityName: name, type: 'success', confirmButtonText: L.Reactivate });
             }
         });
-
-        window.DitenDataTable?.bindBulkSelection?.(dtTableEl, dt, bulkOptions);
 
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
             appliedFilters = getStagedFilters();

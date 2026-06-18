@@ -48,6 +48,22 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         return await Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
+    public async Task<User?> GetByPasswordResetTokenHashAsync(string tokenHash, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(tokenHash))
+        {
+            return null;
+        }
+
+        // Intentionally NOT tenant-scoped: the anonymous set-password caller has no tenant context.
+        // The token hash is a cryptographically-random unique value, so it maps to one user + tenant.
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, tokenHash),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+
+        return await Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
     public async Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct)
     {
         return await Collection

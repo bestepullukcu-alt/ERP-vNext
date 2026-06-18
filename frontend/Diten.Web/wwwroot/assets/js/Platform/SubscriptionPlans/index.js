@@ -46,7 +46,7 @@
         return c ? `${amount} ${c}` : `${amount}`;
     };
 
-    const badge = (text, cls) => `<span class="badge ${cls} me-1">${text}</span>`;
+    const badge = (text, cls) => `<span class="badge ${cls}">${text}</span>`;
     const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const formatNumber = (value, maximumFractionDigits = 0) => {
@@ -121,42 +121,49 @@
         const yearlyLabel = safe(l10n.Yearly || 'year').toLowerCase();
 
         const actions = `
-            <a class="btn btn-icon btn-sm btn-label-secondary" href="/Platform/SubscriptionPlans/Edit/${plan.id}" title="${l10n.Edit || 'Edit'}" aria-label="${l10n.Edit || 'Edit'}">
-                <i class="bx bx-edit"></i>
-            </a>
-            ${isActive
-                ? `<button class="btn btn-icon btn-sm btn-label-secondary js-toggle" data-id="${plan.id}" data-action="deactivate" title="${l10n.Deactivate || 'Deactivate'}" aria-label="${l10n.Deactivate || 'Deactivate'}">
-                       <i class="bx bx-block"></i>
-                   </button>`
-                : `<button class="btn btn-icon btn-sm btn-label-success js-toggle" data-id="${plan.id}" data-action="activate" title="${l10n.Activate || 'Activate'}" aria-label="${l10n.Activate || 'Activate'}">
-                       <i class="bx bx-check"></i>
-                   </button>`}
+            <div class="d-flex align-items-center">
+                <a href="javascript:;" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" aria-label="${l10n.Actions || 'Actions'}">
+                    <i class="bx bx-dots-vertical-rounded icon-md"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end m-0">
+                    <a href="/Platform/SubscriptionPlans/Edit/${plan.id}" class="dropdown-item dt-action-item">
+                        <i class="bx bx-edit dt-action-icon"></i>${l10n.Edit || 'Edit'}
+                    </a>
+                    ${isActive
+                        ? `<button type="button" class="dropdown-item dt-action-item js-toggle" data-id="${plan.id}" data-action="deactivate">
+                               <i class="bx bx-block dt-action-icon"></i>${l10n.Deactivate || 'Deactivate'}
+                           </button>`
+                        : `<button type="button" class="dropdown-item dt-action-item js-toggle text-success" data-id="${plan.id}" data-action="activate">
+                               <i class="bx bx-check dt-action-icon"></i>${l10n.Activate || 'Activate'}
+                           </button>`}
+                </div>
+            </div>
         `;
 
         return `
         <div class="col-12 col-md-6 col-xl-4">
-            <div class="card h-100 border shadow-sm" data-plan-card>
+            <div class="card h-100" data-plan-card>
                 <div class="card-body d-flex flex-column p-4">
-                    <div class="d-flex align-items-start justify-content-between gap-3 mb-4">
+                    <div class="d-flex align-items-start justify-content-between gap-3 mb-6">
                         <div class="min-w-0">
-                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <div class="d-flex flex-wrap align-items-center gap-1 mb-2">
                                 <h5 class="mb-0 text-truncate">${safe(plan.name)}</h5>
                                 ${headerBadges}
                             </div>
                             <small class="text-uppercase text-muted">${safe(plan.code)}</small>
                         </div>
-                        <div class="d-flex align-items-center gap-1 flex-shrink-0">${actions}</div>
+                        <div class="flex-shrink-0">${actions}</div>
                     </div>
-                    ${plan.description ? `<p class="text-muted mb-5">${safe(plan.description)}</p>` : `<p class="text-muted mb-5">&nbsp;</p>`}
-                    <div class="mb-4">
+                    ${plan.description ? `<p class="text-muted mb-6">${safe(plan.description)}</p>` : ''}
+                    <div class="mb-6">
                         <div class="d-flex align-items-baseline flex-wrap gap-1">
                             <span class="display-6 text-heading mb-0">${formatPrice(plan.priceMonthly, plan.currency)}</span>
                             <span class="text-muted">/${monthlyLabel}</span>
                         </div>
-                        <div class="text-muted small">${formatPrice(plan.priceYearly, plan.currency)}/${yearlyLabel}</div>
+                        <div class="text-muted small">${l10n.Or || 'or'} ${formatPrice(plan.priceYearly, plan.currency)}/${yearlyLabel}</div>
                     </div>
-                    ${plan.isTrialPlan ? `<div class="mb-4"><small class="text-muted">${l10n.TrialDurationDays || 'Trial Duration'}:</small> <span class="fw-semibold">${safe(plan.trialDurationDays || '-')}</span></div>` : ''}
-                    <div class="border-top pt-4 mt-auto">
+                    ${plan.isTrialPlan ? `<div class="mb-6"><small class="text-muted">${l10n.TrialDurationDays || 'Trial Duration'}:</small> <span class="fw-semibold">${safe(plan.trialDurationDays || '-')}</span></div>` : ''}
+                    <div class="border-top pt-6 mt-auto">
                         <small class="text-muted d-block mb-3">${l10n.Features || 'Features'}</small>
                         ${featureItems.length
                             ? `<ul class="list-unstyled mb-0">${featureItems.map((x) => `<li class="d-flex align-items-start gap-2 mb-2"><i class="bx bx-check text-success mt-1"></i><span>${safe(x)}</span></li>`).join('')}</ul>`
@@ -191,7 +198,6 @@
 
             card.addEventListener('mouseenter', () => {
                 card.classList.add('shadow-lg', 'z-1');
-                card.classList.remove('shadow-sm');
 
                 if (reduceMotion || !card.animate) return;
                 if (card._spHoverAnimation) card._spHoverAnimation.cancel();
@@ -202,7 +208,6 @@
             });
 
             card.addEventListener('mouseleave', () => {
-                card.classList.add('shadow-sm');
                 card.classList.remove('shadow-lg', 'z-1');
 
                 if (reduceMotion || !card.animate) return;

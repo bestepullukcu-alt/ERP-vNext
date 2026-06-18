@@ -4,20 +4,35 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="UsersTitle" xml:space="preserve"><value>Users</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Manage tenant users and their roles.</value></data>
-  <data name="Email" xml:space="preserve"><value>Email</value></data>
-  <data name="FirstName" xml:space="preserve"><value>First Name</value></data>
-  <data name="LastName" xml:space="preserve"><value>Last Name</value></data>
+  <data name="UsersTitle" xml:space="preserve"><value>Usuarios</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gestione los usuarios del inquilino y sus roles.</value></data>
+  <data name="Email" xml:space="preserve"><value>Correo electrónico</value></data>
+  <data name="FirstName" xml:space="preserve"><value>Nombre</value></data>
+  <data name="LastName" xml:space="preserve"><value>Apellido</value></data>
   <data name="Roles" xml:space="preserve"><value>Roles</value></data>
-  <data name="Password" xml:space="preserve"><value>Password</value></data>
-  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
-  <data name="AddNew" xml:space="preserve"><value>Add User</value></data>
-  <data name="EditItem" xml:space="preserve"><value>Edit User</value></data>
-  <data name="QuickView" xml:space="preserve"><value>View</value></data>
-  <data name="FormTitleCreate" xml:space="preserve"><value>Add User</value></data>
-  <data name="FormTitleEdit" xml:space="preserve"><value>Edit User</value></data>
-  <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
-  <data name="EmailPlaceholder" xml:space="preserve"><value>e.g. user@example.com</value></data>
-  <data name="EmailImmutableHint" xml:space="preserve"><value>The email cannot be changed after creation.</value></data>
+  <data name="Password" xml:space="preserve"><value>Contraseña</value></data>
+  <data name="InviteHint" xml:space="preserve"><value>Se enviará a este usuario un correo de invitación con un enlace para establecer la contraseña.</value></data>
+  <data name="Disable" xml:space="preserve"><value>Desactivar</value></data>
+  <data name="Enable" xml:space="preserve"><value>Activar</value></data>
+  <data name="ResendInvitation" xml:space="preserve"><value>Reenviar invitación</value></data>
+  <data name="ResetPassword" xml:space="preserve"><value>Restablecer contraseña</value></data>
+  <data name="SecurityMetrics" xml:space="preserve"><value>Métricas de seguridad</value></data>
+  <data name="LastLogin" xml:space="preserve"><value>Último inicio de sesión</value></data>
+  <data name="FailedLogins" xml:space="preserve"><value>Inicios de sesión fallidos</value></data>
+  <data name="MFAStatus" xml:space="preserve"><value>Estado MFA</value></data>
+  <data name="MFATenantPolicy" xml:space="preserve"><value>Política del inquilino</value></data>
+  <data name="Never" xml:space="preserve"><value>Nunca</value></data>
+  <data name="UserDisabled" xml:space="preserve"><value>Usuario desactivado</value></data>
+  <data name="UserEnabled" xml:space="preserve"><value>Usuario activado</value></data>
+  <data name="InvitationResent" xml:space="preserve"><value>Invitación reenviada</value></data>
+  <data name="PasswordReset" xml:space="preserve"><value>Enlace de restablecimiento enviado</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Agregar usuario</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Editar usuario</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Agregar usuario</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar usuario</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Información general</value></data>
+  <data name="EmailPlaceholder" xml:space="preserve"><value>p. ej. usuario@ejemplo.com</value></data>
+  <data name="EmailImmutableHint" xml:space="preserve"><value>El correo electrónico no se puede cambiar después de la creación.</value></data>
 </root>

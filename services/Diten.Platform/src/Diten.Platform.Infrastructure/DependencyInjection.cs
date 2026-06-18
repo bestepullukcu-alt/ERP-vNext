@@ -222,6 +222,7 @@ public static class DependencyInjection
         PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
         services.AddScoped<IOutboxObservabilityReader>(sp => (IOutboxObservabilityReader)sp.GetRequiredService<IOutboxEventRepository>());
@@ -311,6 +312,7 @@ public static class DependencyInjection
             PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         }
         catch (Exception ex) when (mongoSettings.AllowStartupWithoutDatabase)
         {

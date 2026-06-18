@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Features.Quotas;
 using Diten.Platform.Domain.Entities;
 using MongoDB.Driver;
 using MongoDB.Bson;
@@ -27,7 +28,14 @@ public static class SubscriptionPlanSeed
                 PriceYearly = 0,
                 Currency = "USD",
                 IsTrialPlan = true,
-                TrialDurationDays = 14
+                TrialDurationDays = 14,
+                DefaultQuotas = new Dictionary<string, decimal>
+                {
+                    [QuotaKeys.UsersMax] = 5,
+                    [QuotaKeys.StorageGbMax] = 100,
+                    [QuotaKeys.ApiCallsPerMonth] = 10000,
+                    [QuotaKeys.ModulesMax] = 3
+                }
             },
             new SubscriptionPlan
             {
@@ -40,7 +48,14 @@ public static class SubscriptionPlanSeed
                 PriceMonthly = 49,
                 PriceYearly = 499,
                 Currency = "USD",
-                IsTrialPlan = false
+                IsTrialPlan = false,
+                DefaultQuotas = new Dictionary<string, decimal>
+                {
+                    [QuotaKeys.UsersMax] = 25,
+                    [QuotaKeys.StorageGbMax] = 250,
+                    [QuotaKeys.ApiCallsPerMonth] = 100000,
+                    [QuotaKeys.ModulesMax] = 10
+                }
             },
             new SubscriptionPlan
             {
@@ -53,7 +68,14 @@ public static class SubscriptionPlanSeed
                 PriceMonthly = 99,
                 PriceYearly = 999,
                 Currency = "USD",
-                IsTrialPlan = false
+                IsTrialPlan = false,
+                DefaultQuotas = new Dictionary<string, decimal>
+                {
+                    [QuotaKeys.UsersMax] = 100,
+                    [QuotaKeys.StorageGbMax] = 1000,
+                    [QuotaKeys.ApiCallsPerMonth] = 1000000,
+                    [QuotaKeys.ModulesMax] = 25
+                }
             },
             new SubscriptionPlan
             {
@@ -66,7 +88,14 @@ public static class SubscriptionPlanSeed
                 PriceMonthly = null,
                 PriceYearly = null,
                 Currency = null,
-                IsTrialPlan = false
+                IsTrialPlan = false,
+                DefaultQuotas = new Dictionary<string, decimal>
+                {
+                    [QuotaKeys.UsersMax] = 1000,
+                    [QuotaKeys.StorageGbMax] = 10000,
+                    [QuotaKeys.ApiCallsPerMonth] = 10000000,
+                    [QuotaKeys.ModulesMax] = 100
+                }
             }
         };
 
@@ -82,9 +111,17 @@ public static class SubscriptionPlanSeed
                 }
             }
 
-            var exists = await collection.Find(x => x.IsDeleted == false && x.Code == seed.Code).AnyAsync(ct);
-            if (exists)
+            var existing = await collection.Find(x => x.IsDeleted == false && x.Code == seed.Code).FirstOrDefaultAsync(ct);
+            if (existing != null)
             {
+                // Idempotent backfill: only fill quotas for plans seeded before DefaultQuotas existed.
+                // Once populated, the condition is false → never overwrites on subsequent runs or manual edits.
+                if (existing.DefaultQuotas == null || existing.DefaultQuotas.Count == 0)
+                {
+                    var update = Builders<SubscriptionPlan>.Update.Set(x => x.DefaultQuotas, seed.DefaultQuotas);
+                    await collection.UpdateOneAsync(x => x.Id == existing.Id, update, cancellationToken: ct);
+                }
+
                 continue;
             }
 

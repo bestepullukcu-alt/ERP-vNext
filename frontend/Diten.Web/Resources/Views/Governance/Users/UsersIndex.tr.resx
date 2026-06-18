@@ -11,6 +11,21 @@
   <data name="LastName" xml:space="preserve"><value>Soyad</value></data>
   <data name="Roles" xml:space="preserve"><value>Roller</value></data>
   <data name="Password" xml:space="preserve"><value>Parola</value></data>
+  <data name="InviteHint" xml:space="preserve"><value>Bu kullanıcıya, parola belirleme bağlantısı içeren bir davet e-postası gönderilecektir.</value></data>
+  <data name="Disable" xml:space="preserve"><value>Devre Dışı Bırak</value></data>
+  <data name="Enable" xml:space="preserve"><value>Etkinleştir</value></data>
+  <data name="ResendInvitation" xml:space="preserve"><value>Daveti Yeniden Gönder</value></data>
+  <data name="ResetPassword" xml:space="preserve"><value>Parolayı Sıfırla</value></data>
+  <data name="SecurityMetrics" xml:space="preserve"><value>Güvenlik Bilgileri</value></data>
+  <data name="LastLogin" xml:space="preserve"><value>Son Giriş</value></data>
+  <data name="FailedLogins" xml:space="preserve"><value>Başarısız Girişler</value></data>
+  <data name="MFAStatus" xml:space="preserve"><value>MFA Durumu</value></data>
+  <data name="MFATenantPolicy" xml:space="preserve"><value>Kiracı politikası</value></data>
+  <data name="Never" xml:space="preserve"><value>Hiçbir zaman</value></data>
+  <data name="UserDisabled" xml:space="preserve"><value>Kullanıcı devre dışı bırakıldı</value></data>
+  <data name="UserEnabled" xml:space="preserve"><value>Kullanıcı etkinleştirildi</value></data>
+  <data name="InvitationResent" xml:space="preserve"><value>Davet yeniden gönderildi</value></data>
+  <data name="PasswordReset" xml:space="preserve"><value>Parola sıfırlama bağlantısı gönderildi</value></data>
   <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
   <data name="AddNew" xml:space="preserve"><value>Kullanıcı Ekle</value></data>
   <data name="EditItem" xml:space="preserve"><value>Kullanıcıyı Düzenle</value></data>

@@ -4,22 +4,26 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="RolesTitle" xml:space="preserve"><value>Roles</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Manage tenant roles and their permissions.</value></data>
-  <data name="Name" xml:space="preserve"><value>Name</value></data>
-  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
-  <data name="RoleType" xml:space="preserve"><value>Type</value></data>
-  <data name="RoleTypeSystem" xml:space="preserve"><value>System</value></data>
-  <data name="RoleTypeCustom" xml:space="preserve"><value>Custom</value></data>
-  <data name="PermissionCount" xml:space="preserve"><value>Permissions</value></data>
-  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
-  <data name="AddNew" xml:space="preserve"><value>Add Role</value></data>
-  <data name="EditItem" xml:space="preserve"><value>Edit Role</value></data>
-  <data name="QuickView" xml:space="preserve"><value>View</value></data>
-  <data name="FormTitleCreate" xml:space="preserve"><value>Add Role</value></data>
-  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Role</value></data>
-  <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
-  <data name="NamePlaceholder" xml:space="preserve"><value>e.g. Approver</value></data>
-  <data name="NameImmutableHint" xml:space="preserve"><value>The role name cannot be changed after creation.</value></data>
-  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>e.g. Approver</value></data>
+  <data name="RolesTitle" xml:space="preserve"><value>角色</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理租户角色及其权限。</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>显示名称</value></data>
+  <data name="RoleType" xml:space="preserve"><value>类型</value></data>
+  <data name="RoleTypeSystem" xml:space="preserve"><value>系统</value></data>
+  <data name="RoleTypeCustom" xml:space="preserve"><value>自定义</value></data>
+  <data name="SystemRoleLocked" xml:space="preserve"><value>系统角色 — 已锁定</value></data>
+  <data name="PermissionCount" xml:space="preserve"><value>权限</value></data>
+  <data name="UserCount" xml:space="preserve"><value>用户</value></data>
+  <data name="RoleTypeSystemOption" xml:space="preserve"><value>系统（内置，已锁定）</value></data>
+  <data name="RoleTypeCustomOption" xml:space="preserve"><value>自定义（可编辑）</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="AddNew" xml:space="preserve"><value>添加角色</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑角色</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>添加角色</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑角色</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>基本信息</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>例如 审批人</value></data>
+  <data name="NameImmutableHint" xml:space="preserve"><value>创建后无法更改角色名称。</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>例如 审批人</value></data>
 </root>

@@ -3,7 +3,7 @@
 @inject IHtmlLocalizer<AdministratorsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-<div class="offcanvas offcanvas-end backbone-preview-offcanvas administrators-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
     aria-labelledby="offcanvasDetailsPreviewLabel">
     <div class="offcanvas-header py-4">
         <div class="d-flex align-items-center min-w-0">
@@ -21,8 +21,8 @@
 
     <div class="offcanvas-body flex-grow-1 p-6 border-top">
         <div class="d-flex flex-column gap-4">
-            <section class="card backbone-preview-section p-4 administrators-preview-section">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3 administrators-preview-section-title">@Localizer["GeneralInformation"]</h6>
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["GeneralInformation"]</h6>
                 <div class="row g-4">
                     <div class="col-12">
                         <div class="backbone-preview-field">
@@ -54,8 +54,8 @@
                 </div>
             </section>
 
-            <section class="card backbone-preview-section p-4 administrators-preview-section">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3 administrators-preview-section-title">@Localizer["Roles"]</h6>
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["Roles"]</h6>
                 <div class="row g-4">
                     <div class="col-12">
                         <div class="backbone-preview-field">
@@ -87,8 +87,8 @@
                 </div>
             </section>
 
-            <section class="card backbone-preview-section p-4 administrators-preview-section">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3 administrators-preview-section-title">@Localizer["ScopeAndAudit"]</h6>
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["ScopeAndAudit"]</h6>
                 <div class="row g-4">
                     <div class="col-12 js-partner-scope d-none">
                         <div class="backbone-preview-field">

@@ -195,12 +195,15 @@
                     <li class="menu-header small text-uppercase">
                         <span class="menu-header-text">@SharedLocalizer["DeveloperSandbox"]</span>
                     </li>
-                    <li class="menu-item @(activeController == "GoldenReferenceSlim" ? "active" : "")">
-                        <a href="/GoldenReferenceSlim" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-star"></i>
-                            <div>@SharedLocalizer["GoldenSlim"]</div>
-                        </a>
-                    </li>
+                    @if (Perms.Has("goldenslim.records.read"))
+                    {
+                        <li class="menu-item @(activeController == "GoldenReferenceSlim" ? "active" : "")">
+                            <a href="/GoldenReferenceSlim" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-star"></i>
+                                <div>@SharedLocalizer["GoldenSlim"]</div>
+                            </a>
+                        </li>
+                    }
                     <li class="menu-item @(activeController == "GoldenReferenceCompact" ? "active" : "")">
                         <a href="/GoldenReferenceCompact" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-collection"></i>

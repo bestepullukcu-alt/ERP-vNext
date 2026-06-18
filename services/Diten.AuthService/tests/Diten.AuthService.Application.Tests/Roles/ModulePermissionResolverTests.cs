@@ -87,6 +87,33 @@ public sealed class ModulePermissionResolverTests
     }
 
     [Fact]
+    public void GoldenSlim_module_code_resolves_exactly_its_four_records_permissions()
+    {
+        // Golden Slim dev module is entitlement-gated: catalog ModuleCode "GOLDENSLIM" must resolve
+        // to exactly the 4 seeded goldenslim.records.* permissions (and nothing else).
+        List<Permission> catalog =
+        [
+            new("auth", "users", "read", "Read User", null),
+            new("goldenslim", "records", "read", "Read Golden Slim Record", null),
+            new("goldenslim", "records", "create", "Create Golden Slim Record", null),
+            new("goldenslim", "records", "update", "Update Golden Slim Record", null),
+            new("goldenslim", "records", "delete", "Delete Golden Slim Record", null)
+        ];
+
+        var keys = ModulePermissionResolver.ResolvePermissions("GOLDENSLIM", catalog).Select(p => p.Key).ToList();
+
+        Assert.Equal(
+            new[]
+            {
+                "goldenslim.records.read",
+                "goldenslim.records.create",
+                "goldenslim.records.update",
+                "goldenslim.records.delete"
+            }.OrderBy(k => k),
+            keys.OrderBy(k => k));
+    }
+
+    [Fact]
     public void Deleted_permissions_are_excluded()
     {
         var catalog = Catalog();

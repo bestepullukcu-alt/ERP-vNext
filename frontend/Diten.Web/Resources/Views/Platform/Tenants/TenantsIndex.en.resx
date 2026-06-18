@@ -169,6 +169,7 @@
   <data name="ModuleEntitlements" xml:space="preserve"><value>Module Entitlements</value></data>
   <data name="ModuleEntitlementsDescription" xml:space="preserve"><value>Manage plan projections, add-ons, trials, and tenant-specific overrides.</value></data>
   <data name="AddModuleEntitlement" xml:space="preserve"><value>Add Module Entitlement</value></data>
+  <data name="ActivateSubscriptionFirst" xml:space="preserve"><value>Activate the tenant subscription before adding module entitlements.</value></data>
   <data name="ModuleEntitlementFormDescription" xml:space="preserve"><value>Create a tenant-specific module access rule.</value></data>
   <data name="Module" xml:space="preserve"><value>Module</value></data>
   <data name="ModuleRequired" xml:space="preserve"><value>Module is required.</value></data>

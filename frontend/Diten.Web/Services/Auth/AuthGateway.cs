@@ -81,6 +81,21 @@ public sealed class AuthGateway : IAuthGateway
             : new AuthBridgeResult(false, null, null, null, null, await TryReadErrorAsync(response, ct));
     }
 
+    public async Task<AuthBridgeResult> ResetTenantPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default)
+    {
+        // Anonymous redemption: the invited user holds no JWT/tenant yet. The AuthService endpoint
+        // resolves the user by token hash, so no X-Tenant-Id / bearer is sent.
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/users/set-password")
+        {
+            Content = JsonContent.Create(new { email, token, newPassword })
+        };
+        AddClientMetadataHeaders(request);
+        var response = await _httpClient.SendAsync(request, ct);
+        return response.IsSuccessStatusCode
+            ? new AuthBridgeResult(true, null, null, null, null, null)
+            : new AuthBridgeResult(false, null, null, null, null, await TryReadErrorAsync(response, ct));
+    }
+
     public Task<AuthBridgeResult> VerifyTenantMfaAsync(string challengeId, string code, CancellationToken ct = default)
     {
         return SendAuthRequestAsync(
