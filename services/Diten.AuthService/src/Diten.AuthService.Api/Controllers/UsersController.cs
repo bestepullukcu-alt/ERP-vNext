@@ -62,6 +62,52 @@ public sealed class UsersController : CustomBaseController
         return CreateActionResultInstance(result);
     }
 
+    // Anonymous invitation redemption: the user (located by token hash) sets their own password.
+    // No tenant header/JWT is required — see TenantResolutionMiddleware public-path allowance.
+    [HttpPost("set-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SetPassword([FromBody] SetTenantPasswordRequest request, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new SetTenantPasswordCommand(request.Email, request.Token, request.NewPassword), ct);
+        return CreateActionResultInstance(result);
+    }
+
+    // Re-issue a fresh set-password token for a pending invited user and re-send the invitation email.
+    [HttpPost("resend-invite/{id:guid}")]
+    [HasPermission("auth.users.create")]
+    public async Task<IActionResult> ResendInvite(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new ResendUserInvitationCommand(id), ct);
+        return CreateActionResultInstance(result);
+    }
+
+    // Admin disable: deactivate + revoke refresh tokens (live sessions die).
+    [HttpPost("{id:guid}/disable")]
+    [HasPermission("auth.users.update")]
+    public async Task<IActionResult> Disable(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new SetUserActiveStatusCommand(id, false), ct);
+        return CreateActionResultInstance(result);
+    }
+
+    // Admin enable: reactivate the account.
+    [HttpPost("{id:guid}/enable")]
+    [HasPermission("auth.users.update")]
+    public async Task<IActionResult> Enable(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new SetUserActiveStatusCommand(id, true), ct);
+        return CreateActionResultInstance(result);
+    }
+
+    // Admin reset password for an already-active user (forces a change + emails a set-password link).
+    [HttpPost("{id:guid}/reset-password")]
+    [HasPermission("auth.users.update")]
+    public async Task<IActionResult> AdminResetPassword(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new AdminResetPasswordCommand(id), ct);
+        return CreateActionResultInstance(result);
+    }
+
     [HttpPut("{id:guid}")]
     [HasPermission("auth.users.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserRequest request, CancellationToken ct)

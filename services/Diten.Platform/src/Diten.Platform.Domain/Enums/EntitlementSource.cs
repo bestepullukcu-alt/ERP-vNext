@@ -1,5 +1,6 @@
 namespace Diten.Platform.Domain.Enums;
 
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
 public enum EntitlementSource
 {
     ManualOverride = 0,

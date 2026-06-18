@@ -88,10 +88,10 @@
     <value>Se produjo un error durante la operación.</value>
   </data>
   <data name="AreYouSure" xml:space="preserve">
-    <value>¿Estás seguro?</value>
+    <value>¿Está seguro?</value>
   </data>
   <data name="DeleteConfirmationTitle" xml:space="preserve">
-    <value>¿Estás seguro?</value>
+    <value>¿Está seguro?</value>
   </data>
   <data name="DeleteConfirmationSubText" xml:space="preserve">
     <value>¡Esta acción no se puede deshacer!</value>

@@ -26,6 +26,7 @@
         'NoFeaturesAvailable',
         'NoModulesAvailable',
         'NotAvailable',
+        'Or',
         'PaidPlans',
         'Passive',
         'Preview',

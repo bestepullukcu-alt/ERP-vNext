@@ -169,6 +169,7 @@
   <data name="ModuleEntitlements" xml:space="preserve"><value>Modül Yetkileri</value></data>
   <data name="ModuleEntitlementsDescription" xml:space="preserve"><value>Plan yansımalarını, eklentileri, denemeleri ve kiracıya özel override kurallarını yönetin.</value></data>
   <data name="AddModuleEntitlement" xml:space="preserve"><value>Modül Yetkisi Ekle</value></data>
+  <data name="ActivateSubscriptionFirst" xml:space="preserve"><value>Modül yetkisi eklemeden önce tenant aboneliğini aktive edin.</value></data>
   <data name="ModuleEntitlementFormDescription" xml:space="preserve"><value>Kiracıya özel modül erişim kuralı oluşturun.</value></data>
   <data name="Module" xml:space="preserve"><value>Modül</value></data>
   <data name="ModuleRequired" xml:space="preserve"><value>Modül zorunludur.</value></data>

@@ -26,7 +26,9 @@ public sealed record PlatformAdminSyncRequest(
     IReadOnlyList<string> Roles);
 public sealed record AssignRoleRequest(Guid RoleId);
 public sealed record AssignPermissionRequest(Guid PermissionId);
-public sealed record CreateUserRequest(string Email, string Password, string FirstName, string LastName);
+// Password is optional: omit it to create the user as an invitation (set-password link emailed).
+public sealed record CreateUserRequest(string Email, string? Password, string FirstName, string LastName);
+public sealed record SetTenantPasswordRequest(string Email, string Token, string NewPassword);
 public sealed record UpdateUserRequest(string FirstName, string LastName, bool IsActive);
 public sealed record CreateRoleRequest(string Name, string DisplayName, string? Description);
 public sealed record UpdateRoleRequest(string DisplayName, string? Description);

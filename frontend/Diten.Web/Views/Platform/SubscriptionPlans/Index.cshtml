@@ -22,43 +22,79 @@
 <div id="sp-error" class="alert alert-danger d-none" role="alert"></div>
 
 <div class="row g-4 mb-4">
-    <div class="col-6 col-lg-3">
-        <div class="card h-100 shadow-none border">
-            <div class="card-body">
-                <small class="text-muted d-block">@Localizer["TotalPlans"]</small>
-                <h5 id="kpi-total" class="mb-0">0</h5>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-package"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["TotalPlans"]</small>
+                    <h5 id="kpi-total" class="mb-0">0</h5>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-lg-3">
-        <div class="card h-100 shadow-none border">
-            <div class="card-body">
-                <small class="text-muted d-block">@Localizer["ActivePlans"]</small>
-                <h5 id="kpi-active" class="mb-0 text-success">0</h5>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-success"><i class="bx bx-check-circle"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["ActivePlans"]</small>
+                    <h5 id="kpi-active" class="mb-0">0</h5>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-lg-3">
-        <div class="card h-100 shadow-none border">
-            <div class="card-body">
-                <small class="text-muted d-block">@Localizer["TrialPlans"]</small>
-                <h5 id="kpi-trial" class="mb-0 text-info">0</h5>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-time-five"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["TrialPlans"]</small>
+                    <h5 id="kpi-trial" class="mb-0">0</h5>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-lg-3">
-        <div class="card h-100 shadow-none border">
-            <div class="card-body">
-                <small class="text-muted d-block">@Localizer["PaidPlans"]</small>
-                <h5 id="kpi-paid" class="mb-0 text-warning">0</h5>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-dollar-circle"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["PaidPlans"]</small>
+                    <h5 id="kpi-paid" class="mb-0">0</h5>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div id="sp-loading" class="d-flex align-items-center gap-2 text-muted mb-3">
-    <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
-    <span>@SharedLocalizer["Loading"]</span>
+<div id="sp-loading" class="row g-4" role="status" aria-busy="true">
+    <span class="visually-hidden">@SharedLocalizer["Loading"]</span>
+    @for (var i = 0; i < 3; i++)
+    {
+        <div class="col-12 col-md-6 col-xl-4" aria-hidden="true">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start justify-content-between gap-3 mb-6">
+                        <div class="flex-grow-1">
+                            <span class="shimmer d-block mb-2" style="height: 22px; width: 55%;"></span>
+                            <span class="shimmer d-block" style="height: 12px; width: 35%;"></span>
+                        </div>
+                        <span class="shimmer flex-shrink-0" style="height: 24px; width: 24px; border-radius: 6px;"></span>
+                    </div>
+                    <span class="shimmer d-block mb-6" style="height: 12px; width: 90%;"></span>
+                    <span class="shimmer d-block mb-2" style="height: 34px; width: 45%;"></span>
+                    <span class="shimmer d-block mb-6" style="height: 12px; width: 30%;"></span>
+                    <div class="border-top pt-6">
+                        <span class="shimmer d-block mb-3" style="height: 10px; width: 25%;"></span>
+                        <span class="shimmer d-block mb-2" style="height: 12px; width: 80%;"></span>
+                        <span class="shimmer d-block mb-2" style="height: 12px; width: 70%;"></span>
+                        <span class="shimmer d-block" style="height: 12px; width: 75%;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 <div id="sp-empty" class="card d-none">

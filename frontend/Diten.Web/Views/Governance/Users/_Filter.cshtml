@@ -15,6 +15,11 @@
                         </select>
                     </div>
 
+                    @* Role filter — options are populated from the loaded user rows in index.js *@
+                    <div class="filter-chip filter-roles">
+                        <select id="filterRoles" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Roles"]"></select>
+                    </div>
+
                     <div class="ms-auto d-flex gap-3">
                         <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
                         <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>

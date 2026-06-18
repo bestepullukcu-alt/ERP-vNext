@@ -68,8 +68,8 @@ window.DitenDataTable = (function () {
         var primary = visibleActions[0];
         var menuItems = visibleActions.slice(1).map(function (action) {
             var attrs = renderAttrs(action.attrs);
-            var icon = renderIcon(action.icon, 'me-2');
-            return '<a href="javascript:void(0);" class="dropdown-item ' + (action.className || '') + '" ' + attrs + '>' + icon + escapeHtml(action.text || '') + '</a>';
+            var icon = renderIcon(action.icon, 'dt-action-icon');
+            return '<a href="javascript:void(0);" class="dropdown-item dt-action-item ' + (action.className || '') + '" ' + attrs + '>' + icon + escapeHtml(action.text || '') + '</a>';
         }).join('');
 
         var primaryAttrs = renderAttrs(primary.attrs);

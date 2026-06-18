@@ -1096,14 +1096,13 @@ const TenantDetails = (function () {
         };
 
         moduleEntitlementsDt = new DataTable(table, window.DtDefaults.create({
-            ajax: async (_data, callback) => {
-                try {
-                    const rows = await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements`);
-                    callback({ data: Array.isArray(rows) ? rows : [] });
-                } catch (error) {
-                    callback({ data: [] });
-                    if (!error.authHandled) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
-                }
+            ajax: (_data, callback) => {
+                fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements`)
+                    .then(rows => callback({ data: Array.isArray(rows) ? rows : [] }))
+                    .catch(error => {
+                        callback({ data: [] });
+                        if (!error.authHandled) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
+                    });
             },
             paging: true,
             searching: true,
@@ -1283,6 +1282,12 @@ const TenantDetails = (function () {
     };
 
     const openModuleEntitlementOffcanvas = async () => {
+        const subStatus = normalizeSubscriptionStatus(commercialSubscription?.status).key;
+        if (subStatus !== 'Active') {
+            window.showToast?.(L.ActivateSubscriptionFirst || 'Activate the tenant subscription before adding module entitlements.', 'warning');
+            return;
+        }
+
         const form = document.getElementById('moduleEntitlementForm');
         if (!form) return;
         form.reset();

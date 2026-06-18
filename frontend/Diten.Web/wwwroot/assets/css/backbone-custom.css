@@ -233,28 +233,21 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     margin-bottom: 0;
 }
 
-/* Shared offcanvas preview pattern */
+/* Shared offcanvas preview pattern — fully theme-aware so the theme customizer
+   (light / dark / bordered skin) drives every surface. The panel background uses
+   the SAME variable as the list-page body; the header & section cards use the card
+   surface variable. Sections are standard `.card`s: shadow in the default skin and
+   a 1px border in the bordered skin — both produced by Sneat, no hardcoded color. */
 .backbone-preview-offcanvas {
     width: min(568px, 100vw);
-    background: #f8f9fb;
+    background: var(--bs-body-bg);
 }
 
 .backbone-preview-offcanvas .offcanvas-header {
-    background: #fff;
+    background: var(--bs-card-bg);
 }
 
-.administrators-preview-offcanvas .offcanvas-body {
-    background: #fff;
-}
-
-.administrators-preview-offcanvas .administrators-preview-section {
-    background: #fff;
-    border: 1px solid #cfd6e4 !important;
-    border-radius: 8px;
-    box-shadow: none;
-}
-
-.administrators-preview-section-title {
+.backbone-preview-section-title {
     font-size: .8125rem;
     line-height: 1.25;
 }
@@ -330,18 +323,12 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     min-width: 0;
 }
 
-[data-bs-theme=dark] .backbone-preview-offcanvas {
-    background: #25293c;
-}
-
-[data-bs-theme=dark] .backbone-preview-offcanvas .offcanvas-header,
-[data-bs-theme=dark] .backbone-preview-section,
+/* The footer action bar uses Bootstrap's `.bg-white` utility in markup; re-tint it
+   to the card surface in dark mode so it follows the theme instead of staying white.
+   Offcanvas / header / section colors now come from theme variables (above) and need
+   no dark overrides. */
 [data-bs-theme=dark] .backbone-offcanvas-actions.bg-white {
-    background: #2f3349 !important;
-}
-
-[data-bs-theme=dark] .backbone-preview-section {
-    border-color: transparent;
+    background: var(--bs-card-bg) !important;
 }
 
 /* Generic inline filter host — mirrors #inlineFilterHost chip styling
@@ -484,6 +471,23 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     display: inline-flex !important;
     gap: 0 !important;
     padding: 0 !important;
+}
+
+/* DataTable row-action dropdown (window.DitenDataTable.renderActions) — SINGLE
+   SOURCE OF TRUTH for menu-item icon + label layout. Every module that renders row
+   actions through renderActions inherits this; change the values here once and all
+   modules update together. No inline styles, no transforms — alignment is pure flex.
+   Knobs: align-items (vertical centering), gap (icon↔label spacing),
+   line-height + padding (row rhythm), icon font-size (glyph size ~18px vs ~15px text). */
+.dropdown-menu .dt-action-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    line-height: 1.5;
+}
+.dropdown-menu .dt-action-item > .dt-action-icon {
+    flex: 0 0 auto;
+    font-size: 1.125rem;
 }
 
 /* MOD-0018: DataTable Row Selection & Hover (Sneat Aesthetic - Dynamic Theme Support) */

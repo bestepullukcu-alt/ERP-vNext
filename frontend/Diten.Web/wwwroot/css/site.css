@@ -76,9 +76,9 @@ html[data-shell="platform-admin"].layout-menu-collapsed:not(.layout-menu-hover) 
   border-radius: var(--bs-card-border-radius);
 }
 
-#offcanvasDetailsPreview .backbone-preview-section.card {
-  box-shadow: none;
-}
+/* NOTE: no `box-shadow: none` override here. Preview sections are standard `.card`s
+   so they keep Sneat's card shadow (default skin) and turn into a 1px border in the
+   bordered skin — same behavior as list-page cards. See orchestrator Rule [37]. */
 
 #offcanvasDetailsPreview .backbone-preview-status.card {
   flex-direction: row;

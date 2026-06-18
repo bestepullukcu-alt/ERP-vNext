@@ -172,7 +172,39 @@ public class AccountController : Controller
         ViewBag.Email = email ?? string.Empty;
         ViewBag.Token = token ?? string.Empty;
         ViewBag.IsForcedChange = false;
+        ViewBag.SetPasswordUrl = "/platform/reset-password";
+        ViewBag.BackToLoginUrl = "/platform/login";
         return View("ResetPassword");
+    }
+
+    // Tenant invitation redemption — reuses the ResetPassword view/JS with tenant wiring.
+    [HttpGet("/account/set-password")]
+    public IActionResult SetPassword([FromQuery] string? email, [FromQuery] string? token)
+    {
+        ViewBag.AuthMode = "tenant";
+        ViewBag.Email = email ?? string.Empty;
+        ViewBag.Token = token ?? string.Empty;
+        ViewBag.IsForcedChange = false;
+        ViewBag.SetPasswordUrl = "/account/set-password";
+        ViewBag.BackToLoginUrl = "/account/login";
+        return View("ResetPassword");
+    }
+
+    [HttpPost("/account/set-password")]
+    public async Task<IActionResult> SetPassword([FromBody] ResetPasswordRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Token) ||
+            string.IsNullOrWhiteSpace(request.NewPassword) ||
+            !string.Equals(request.NewPassword, request.ConfirmPassword, StringComparison.Ordinal))
+        {
+            return BadRequest(new { detail = "Password setup request is invalid." });
+        }
+
+        var result = await _authGateway.ResetTenantPasswordAsync(request.Email, request.Token, request.NewPassword, ct);
+        return result.Success
+            ? Ok(new { success = true, redirectUrl = "/account/login" })
+            : BadRequest(new { detail = result.ErrorMessage ?? "Password setup link is invalid or expired." });
     }
 
     [HttpPost("/platform/reset-password")]
@@ -199,6 +231,8 @@ public class AccountController : Controller
         ViewBag.Email = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)?.Value ?? string.Empty;
         ViewBag.Token = string.Empty;
         ViewBag.IsForcedChange = true;
+        ViewBag.SetPasswordUrl = "/platform/change-password";
+        ViewBag.BackToLoginUrl = "/platform/login";
         return View("ResetPassword");
     }
 

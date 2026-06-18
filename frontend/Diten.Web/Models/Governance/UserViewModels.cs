@@ -31,13 +31,19 @@ public sealed class UserDetailViewModel
     public string LastName { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public List<string> Roles { get; set; } = [];
+
+    // Security metrics (Admin panel).
+    public DateTime? LastLoginAt { get; set; }
+    public int FailedLoginAttempts { get; set; }
+    public bool MustChangePassword { get; set; }
+    public string? MfaStatus { get; set; }
 }
 
-// AuthService CreateUserRequest: { email, password, firstName, lastName }.
+// AuthService CreateUserRequest: { email, firstName, lastName }. Password is intentionally omitted —
+// the backend treats a missing password as an INVITATION and emails a set-password link.
 public sealed class UserCreatePayload
 {
     public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
 }

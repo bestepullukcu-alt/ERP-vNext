@@ -11,7 +11,11 @@
   <data name="RoleType" xml:space="preserve"><value>Type</value></data>
   <data name="RoleTypeSystem" xml:space="preserve"><value>System</value></data>
   <data name="RoleTypeCustom" xml:space="preserve"><value>Custom</value></data>
+  <data name="SystemRoleLocked" xml:space="preserve"><value>System role — locked</value></data>
   <data name="PermissionCount" xml:space="preserve"><value>Permissions</value></data>
+  <data name="UserCount" xml:space="preserve"><value>Users</value></data>
+  <data name="RoleTypeSystemOption" xml:space="preserve"><value>System (built-in, locked)</value></data>
+  <data name="RoleTypeCustomOption" xml:space="preserve"><value>Custom (editable)</value></data>
   <data name="Actions" xml:space="preserve"><value>Actions</value></data>
   <data name="AddNew" xml:space="preserve"><value>Add Role</value></data>
   <data name="EditItem" xml:space="preserve"><value>Edit Role</value></data>

@@ -20,7 +20,8 @@
 
     .swal-icon-circle i {
         font-size: 2.5rem;
-        color: #ff4c51;
+        /* Colour comes from the per-type text-* utility class on the <i> so the icon
+           matches its circle (warning=amber, success=green, etc.), not a hardcoded red. */
     }
 
     .swal2-title {
@@ -100,7 +101,7 @@
 
         if (type === 'delete') {
             confirmBtnClass = 'btn-danger';
-            iconHtml = '<div class="swal-icon-circle"><i class="bx bx-trash"></i></div>';
+            iconHtml = '<div class="swal-icon-circle"><i class="bx bx-trash text-danger"></i></div>';
         } else if (type === 'danger' || type === 'error') {
             confirmBtnClass = 'btn-danger';
             iconHtml = '<div class="swal-icon-circle bg-label-danger border-danger border-opacity-25"><i class="bx bx-error-circle text-danger"></i></div>';
@@ -109,7 +110,7 @@
             iconHtml = '<div class="swal-icon-circle bg-label-success border-success border-opacity-25"><i class="bx bx-check-circle text-success"></i></div>';
         } else if (type === 'warning') {
             confirmBtnClass = 'btn-warning';
-            iconHtml = '<div class="swal-icon-circle bg-label-warning border-warning border-opacity-25"><i class="bx bx-warning text-warning"></i></div>';
+            iconHtml = '<div class="swal-icon-circle bg-label-warning border-warning border-opacity-25"><i class="bx bx-error text-warning"></i></div>';
         }
 
         try {

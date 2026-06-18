@@ -20,11 +20,11 @@ const UsersList = (function () {
     const personalizationContext = { moduleKey: 'Governance', pageKey: 'Users' };
     const filterHostId = 'inlineFilterHost';
     const filterCollapseId = 'inlineFilterCollapse';
-    const saveViewColumnIndexes = [2, 3, 4, 5];
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5];
     const totalColumnCount = 7;
-    const defaultVisibleColumnIndexes = [2, 3, 4, 5];
-    const baseOrder = [[2, 'asc']];
-    let appliedFilters = { status: [] };
+    const defaultVisibleColumnIndexes = [1, 2, 3, 4, 5];
+    const baseOrder = [[1, 'asc']];
+    let appliedFilters = { status: [], roles: [] };
     let L = window.L10n || {};
 
     const can = (key) => window.Permissions?.has?.(key) === true;
@@ -61,13 +61,22 @@ const UsersList = (function () {
         return s ? [s] : [];
     };
     const normalizeFilterValue = (value) => Array.isArray(value) ? normalizeArray(value) : normalizeString(value);
-    const emptyFilters = () => ({ status: [] });
-    const normalizeFilters = (filters) => ({ status: normalizeArray((filters || {}).status) });
+    const emptyFilters = () => ({ status: [], roles: [] });
+    const normalizeFilters = (filters) => ({
+        status: normalizeArray((filters || {}).status),
+        roles: normalizeArray((filters || {}).roles)
+    });
     const hasFilterValue = (v) => Array.isArray(v) ? normalizeArray(v).length > 0 : normalizeString(v).length > 0;
     const matchesStatusFilter = (selected, isActive) => {
         const norm = normalizeArray(selected);
         if (!norm.length) return true;
         return norm.includes(isActive ? 'Active' : 'Passive');
+    };
+    const matchesRolesFilter = (selected, roles) => {
+        const norm = normalizeArray(selected);
+        if (!norm.length) return true;
+        const rowRoles = normalizeArray(roles);
+        return norm.some((r) => rowRoles.includes(r));
     };
 
     // ─── Column visibility / order helpers ──────────────────────────────────
@@ -237,14 +246,71 @@ const UsersList = (function () {
             if (settings.nTable !== dtTableEl) return true;
             const row = rowData || dt?.row(dataIndex)?.data?.() || null;
             if (!row) return true;
-            return matchesStatusFilter(appliedFilters.status, row.isActive);
+            return matchesStatusFilter(appliedFilters.status, row.isActive)
+                && matchesRolesFilter(appliedFilters.roles, row.roles);
         });
+    };
+
+    // ─── Select2 multi-summary (ported from golden-reference Slim) ────────────
+    const syncMultiSelectSummary = ($select) => {
+        const $container = $select.next('.select2-container');
+        const $rendered = $container.find('.select2-selection__rendered');
+        const $selection = $container.find('.select2-selection--multiple');
+        if (!$container.length || !$rendered.length || !$selection.length) return;
+
+        let $summary = $selection.find('.dt-inline-filter-multi__summary');
+        let $actions = $selection.find('.dt-inline-filter-multi__actions');
+        let $count = $selection.find('.dt-inline-filter-multi__count');
+        let $arrow = $selection.find('.select2-selection__arrow');
+
+        if (!$summary.length) { $summary = $('<span class="dt-inline-filter-multi__summary"></span>'); $selection.prepend($summary); }
+        if (!$actions.length) { $actions = $('<span class="dt-inline-filter-multi__actions"></span>'); $selection.append($actions); }
+        if (!$count.length) { $count = $('<span class="dt-inline-filter-multi__count badge rounded-pill bg-label-primary d-none"></span>'); $actions.append($count); }
+        if (!$arrow.length) { $arrow = $('<span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span>'); $selection.append($arrow); }
+
+        const placeholder = normalizeString($select.data('placeholder')) || '';
+        const selectedValues = normalizeArray($select.val());
+        const selectedTexts = ($select.select2('data') || []).map((i) => normalizeString(i.text)).filter(Boolean);
+
+        $summary.text(placeholder);
+        $rendered.attr('title', selectedTexts.join(', ') || placeholder);
+        $container.toggleClass('dt-inline-filter-multi--has-value', selectedValues.length > 0);
+        $count.toggleClass('d-none', selectedValues.length === 0).text(String(selectedValues.length));
+
+        $actions.find('.dt-multi-clear-btn').remove();
+        if (selectedValues.length > 0) {
+            const $clearBtn = $('<span class="dt-multi-clear-btn" role="button" aria-label="' + (L.Reset || '') + '" title="' + (L.Reset || '') + '">&times;</span>');
+            $clearBtn.on('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); $select.val(null).trigger('change'); });
+            $actions.append($clearBtn);
+        }
     };
 
     const initSelect2Filters = () => {
         if (!window.jQuery || !$.fn.select2) return;
         const $body = $(document.body);
-        $('#filterStatus').each(function () {
+
+        const clampDropdown = () => {
+            requestAnimationFrame(() => {
+                const dd = document.querySelector('.select2-dropdown.dt-inline-filter-dropdown');
+                if (!dd) return;
+                const rect = dd.getBoundingClientRect();
+                const pad = 8;
+                let dx = 0, dy = 0;
+                if (rect.right > window.innerWidth - pad) dx -= rect.right - (window.innerWidth - pad);
+                if (rect.left < pad) dx += pad - rect.left;
+                if (rect.bottom > window.innerHeight - pad) dy -= rect.bottom - (window.innerHeight - pad);
+                if (rect.top < pad) dy += pad - rect.top;
+                if (!dx && !dy) return;
+                const cs = window.getComputedStyle(dd);
+                const baseLeft = parseFloat(cs.left) || rect.left + window.scrollX;
+                const baseTop = parseFloat(cs.top) || rect.top + window.scrollY;
+                if (dx) dd.style.left = `${baseLeft + dx}px`;
+                if (dy) dd.style.top = `${baseTop + dy}px`;
+                dd.style.transform = 'none';
+            });
+        };
+
+        $('#filterStatus, #filterRoles').each(function () {
             const $s = $(this);
             if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
             $s.select2({
@@ -257,10 +323,34 @@ const UsersList = (function () {
                 width: 'element',
                 closeOnSelect: false
             });
+            $s.on('select2:open', clampDropdown);
+            $s.on('change.select2-summary', function () { syncMultiSelectSummary($s); });
+            requestAnimationFrame(() => syncMultiSelectSummary($s));
         });
     };
-    const syncFilterControls = (values) => { $('#filterStatus').val(normalizeArray(values.status)).trigger('change'); };
-    const getAppliedFilterCount = () => [appliedFilters.status].filter(hasFilterValue).length;
+    const syncFilterControls = (values) => {
+        $('#filterStatus').val(normalizeArray(values.status)).trigger('change');
+        $('#filterRoles').val(normalizeArray(values.roles)).trigger('change');
+    };
+    const getAppliedFilterCount = () => [appliedFilters.status, appliedFilters.roles].filter(hasFilterValue).length;
+
+    // Build the role filter options from the distinct roles present in the loaded rows.
+    const populateRoleFilterOptions = (api) => {
+        const sel = document.getElementById('filterRoles');
+        if (!sel || !api) return;
+        const set = new Set();
+        api.rows().data().each((row) => normalizeArray(row?.roles).forEach((r) => set.add(r)));
+        const roles = Array.from(set).sort((a, b) => a.localeCompare(b));
+        const current = normalizeArray($(sel).val());
+        sel.innerHTML = '';
+        roles.forEach((r) => {
+            const opt = document.createElement('option');
+            opt.value = r;
+            opt.textContent = r;
+            if (current.includes(r)) opt.selected = true;
+            sel.appendChild(opt);
+        });
+    };
 
     const applySavedTableState = (api, view) => {
         if (!api || !view) return;
@@ -279,11 +369,12 @@ const UsersList = (function () {
     };
 
     const setupFilters = async (api) => {
+        populateRoleFilterOptions(api);
         initSelect2Filters();
         applySavedTableState(api, defaultViewState || { filters: appliedFilters });
 
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
-            appliedFilters = { status: $('#filterStatus').val() || [] };
+            appliedFilters = { status: $('#filterStatus').val() || [], roles: $('#filterRoles').val() || [] };
             api.draw();
             window.DtDefaults.updateVisualState(api, getAppliedFilterCount());
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
@@ -301,6 +392,41 @@ const UsersList = (function () {
         true: { title: L.Active, class: 'bg-label-success' },
         false: { title: L.Passive, class: 'bg-label-secondary' }
     });
+
+    // ─── Role chips ───────────────────────────────────────────────────────────
+    // One info chip per assigned role (ported from the golden-reference Slim chip pattern).
+    //   • table (collapse:true)      → one nowrap line; overflow folds into a "+N" dropdown.
+    //   • offcanvas (collapse:false) → wraps and shows every role.
+    const escapeChip = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const ROLE_CHIP_MAX = 3;
+    const roleChip = (r) => `<span class="badge bg-label-info">${escapeChip(r)}</span>`;
+    const renderRoleChips = (roles, options) => {
+        const collapse = options?.collapse === true;
+        const max = options?.max || ROLE_CHIP_MAX;
+        const list = Array.isArray(roles) ? roles.map((r) => normalizeString(r)).filter(Boolean) : [];
+        if (!list.length) return '<span class="text-muted">-</span>';
+
+        const tooltip = escapeChip(list.join(', '));
+        if (!collapse) {
+            // Offcanvas: wrap and show all roles.
+            return `<span class="d-inline-flex flex-wrap gap-1" title="${tooltip}">${list.map(roleChip).join('')}</span>`;
+        }
+
+        // Table cell: one line only; fold the overflow into a click dropdown.
+        const shown = list.slice(0, max);
+        const rest = list.slice(max);
+        let html = `<span class="d-inline-flex flex-nowrap align-items-center gap-1" title="${tooltip}">`;
+        html += shown.map(roleChip).join('');
+        if (rest.length) {
+            const menu = rest.map((r) => `<span class="d-block px-2 py-1">${roleChip(r)}</span>`).join('');
+            html += '<span class="dropdown d-inline-block">'
+                + `<a href="javascript:;" class="badge bg-label-secondary text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false" title="${tooltip}">+${rest.length}</a>`
+                + `<span class="dropdown-menu p-1">${menu}</span>`
+                + '</span>';
+        }
+        html += '</span>';
+        return html;
+    };
 
     // ─── Quick View ──────────────────────────────────────────────────────────
     const tryParseRowJson = (el) => {
@@ -333,15 +459,20 @@ const UsersList = (function () {
         document.getElementById('oc-lastname').innerText = data.lastName || '-';
 
         const rolesEl = document.getElementById('oc-roles');
-        const roles = Array.isArray(data.roles) ? data.roles : [];
-        rolesEl.innerHTML = roles.length
-            ? roles.map((r) => `<span class="badge bg-label-primary">${r}</span>`).join(' ')
-            : '-';
+        if (rolesEl) rolesEl.innerHTML = renderRoleChips(data.roles);
 
         const statusEl = document.getElementById('oc-status');
         const status = getStatusMap()[String(!!data.isActive)] || { title: L.Unknown, class: 'bg-label-primary' };
         statusEl.className = `badge ${status.class}`;
         statusEl.innerText = status.title || '-';
+
+        // ── Security metrics (from row JSON — no extra fetch) ──
+        const lastLoginEl = document.getElementById('oc-lastlogin');
+        if (lastLoginEl) lastLoginEl.innerText = data.lastLoginAt ? new Date(data.lastLoginAt).toLocaleString() : (L.Never || 'Never');
+        const failedEl = document.getElementById('oc-failedlogins');
+        if (failedEl) failedEl.innerText = String(data.failedLoginAttempts ?? 0);
+        const mfaEl = document.getElementById('oc-mfastatus');
+        if (mfaEl) mfaEl.innerText = L.MFATenantPolicy || 'Tenant policy';
 
         const editBtn = document.getElementById('oc-btn-edit');
         if (editBtn) {
@@ -352,10 +483,9 @@ const UsersList = (function () {
 
     // ─── Create/Edit offcanvas ────────────────────────────────────────────────
     const setCreateMode = (isCreate) => {
-        document.getElementById('userPasswordRow')?.classList.toggle('d-none', !isCreate);
+        // Invitation hint shows on create; status switch shows on edit. No password field (invite flow).
+        document.getElementById('userInviteHint')?.classList.toggle('d-none', !isCreate);
         document.getElementById('userActiveRow')?.classList.toggle('d-none', isCreate);
-        const pwd = document.getElementById('userPassword');
-        if (pwd) pwd.required = isCreate;
         const emailEl = document.getElementById('userEmail');
         const emailHelp = document.getElementById('userEmailHelp');
         if (emailEl) emailEl.readOnly = !isCreate; // email immutable on edit
@@ -368,7 +498,6 @@ const UsersList = (function () {
         form.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
         document.getElementById('userItemId').value = '';
         document.getElementById('userEmail').value = '';
-        document.getElementById('userPassword').value = '';
         document.getElementById('userFirstName').value = '';
         document.getElementById('userLastName').value = '';
         document.getElementById('userIsActive').checked = true;
@@ -439,7 +568,14 @@ const UsersList = (function () {
                 suppressResponsiveReturn = true;
                 responsiveReturnModalEl = null;
                 getOcCreateEditInstance()?.hide();
-                reloadWithSuccessToast(isEdit ? 'RecordUpdated' : 'RecordCreated');
+                // Dev-only: backend returns a set-password link in setupUrl (null in prod). When present,
+                // surface a copyable dialog instead of the plain toast so a dev without SMTP can grab it.
+                if (!isEdit && json.setupUrl) {
+                    try { dt.ajax.reload(null, false); } catch (e) { }
+                    showInviteLink(json.setupUrl);
+                } else {
+                    reloadWithSuccessToast(isEdit ? 'RecordUpdated' : 'RecordCreated');
+                }
             } else {
                 showFormErrors(json.errors);
             }
@@ -460,6 +596,43 @@ const UsersList = (function () {
     };
     const reloadWithSuccessToast = (messageKey, interpolationValue) =>
         window.DitenDataTable.reloadWithToast(dt, dtTableEl, messageKey, interpolationValue, bulkOptions);
+
+    // Dev-only invitation helper: copyable set-password link (never shown in prod — setupUrl is null there).
+    const showInviteLink = (link) => {
+        const S = window.Swal;
+        if (!S) { window.showToast?.(String(link), 'info'); return; }
+        const safe = String(link).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        S.fire({
+            // Icon mirrors the disable/reset confirm modals (.swal-icon-circle from _GlobalConfirmation).
+            iconHtml: '<div class="swal-icon-circle bg-label-primary border-primary border-opacity-25"><i class="bx bx-link-alt text-primary"></i></div>',
+            title: L.InviteLinkTitle || 'Invite link (dev)',
+            html: `<p class="mb-2 text-muted small text-center">${L.InviteLinkHint || 'Share this set-password link with the user (development only):'}</p>`
+                + '<div class="input-group">'
+                + `<input id="inviteLinkInput" type="text" class="form-control" readonly value="${safe}">`
+                + `<button id="inviteLinkCopyBtn" type="button" class="btn btn-primary" title="${L.Copy || 'Copy'}"><i class="bx bx-copy"></i></button>`
+                + '</div>',
+            confirmButtonText: L.Close || L.Cancel || 'OK',
+            buttonsStyling: false,
+            // Match the confirm modals' top padding so the icon isn't flush against the popup edge.
+            padding: '2.5rem 1.5rem 2rem',
+            customClass: {
+                confirmButton: 'btn btn-label-secondary',
+                popup: 'rounded-4',
+                icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100',
+                title: 'mt-4'
+            },
+            didOpen: () => {
+                const input = document.getElementById('inviteLinkInput');
+                const btn = document.getElementById('inviteLinkCopyBtn');
+                input?.addEventListener('focus', () => input.select());
+                btn?.addEventListener('click', async () => {
+                    try { await navigator.clipboard.writeText(link); }
+                    catch (e) { input?.select(); try { document.execCommand('copy'); } catch (e2) { } }
+                    window.showToast?.(L.Copied || 'Copied', 'success');
+                });
+            }
+        });
+    };
 
     const bindEvents = () => {
         document.addEventListener('click', (e) => {
@@ -507,6 +680,50 @@ const UsersList = (function () {
                     window.showToast?.(L.ErrorOccurred, 'error');
                 }
             }, { entityName: data.email, type: 'danger', confirmButtonText: L.Delete });
+        });
+
+        // ── Admin actions (disable/enable/resend/reset) → MVC proxy → AuthService ──
+        const adminActions = {
+            'js-user-disable': { url: (id) => `/Users/disable/${id}`, toast: 'UserDisabled', confirm: L.Disable, type: 'warning' },
+            'js-user-enable': { url: (id) => `/Users/enable/${id}`, toast: 'UserEnabled', confirm: L.Enable, type: 'primary' },
+            'js-user-resend': { url: (id) => `/Users/resend-invite/${id}`, toast: 'InvitationResent', confirm: L.ResendInvitation, type: 'primary' },
+            'js-user-reset': { url: (id) => `/Users/reset-password/${id}`, toast: 'PasswordReset', confirm: L.ResetPassword, type: 'warning' }
+        };
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.js-user-disable, .js-user-enable, .js-user-resend, .js-user-reset');
+            if (!btn) return;
+            if (!btn.closest('.datatables-users') && !btn.closest('.modal.dtr-bs-modal')) return;
+            e.preventDefault(); e.stopPropagation();
+            const key = Object.keys(adminActions).find((k) => btn.classList.contains(k));
+            const cfg = key ? adminActions[key] : null;
+            if (!cfg) return;
+            const data = tryParseRowJson(btn) || {};
+            const id = btn.dataset.id || data.id;
+            if (!id) return;
+            window.showConfirm?.(L.AreYouSure, async () => {
+                try {
+                    const res = await fetch(cfg.url(id), {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 'RequestVerificationToken': getAntiForgeryToken(), ...getAuthHeaders() }
+                    });
+                    const json = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        throw new Error((json.errors && json.errors[0]) || L.ErrorOccurred);
+                    }
+                    // Dev-only: resend/reset return a copyable set-password link → show the modal
+                    // (same as create). disable/enable have no setupUrl → plain success toast.
+                    if (json.setupUrl) {
+                        try { dt.ajax.reload(null, false); } catch (e) { }
+                        showInviteLink(json.setupUrl);
+                    } else {
+                        reloadWithSuccessToast(cfg.toast);
+                    }
+                } catch (error) {
+                    console.error('[Users] Admin action failed.', error);
+                    window.showToast?.(error.message || L.ErrorOccurred, 'error');
+                }
+            }, { entityName: data.email, type: cfg.type, confirmButtonText: cfg.confirm || '' });
         });
 
         document.getElementById('btnSaveUser')?.addEventListener('click', submitCreateEditForm);
@@ -564,20 +781,27 @@ const UsersList = (function () {
             },
             config: {
                 stateSave: false,
-                colReorder: { columns: ':gt(1):not(:last-child)' },
+                colReorder: { columns: ':gt(0):not(:last-child)' },
                 columns: [
                     { data: 'id', name: 'control' },
-                    { data: 'id', name: 'checkbox' },
                     { data: 'email', name: 'email' },
                     { data: 'firstName', name: 'firstName' },
                     { data: 'lastName', name: 'lastName' },
+                    { data: 'roles', name: 'roles' },
                     { data: 'isActive', name: 'isActive' },
                     { data: 'id', name: 'action' }
                 ],
                 columnDefs: [
                     { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
-                    { targets: 1, orderable: false, searchable: false, responsivePriority: 3, className: 'dt-checkboxes-cell cell-fit', render: (data) => `<input type="checkbox" class="dt-checkboxes form-check-input" value="${data}">` },
-                    { targets: 2, render: (data) => `<span class="fw-medium text-heading">${data ?? ''}</span>` },
+                    { targets: 1, render: (data) => `<span class="fw-medium text-heading">${data ?? ''}</span>` },
+                    {
+                        targets: 4,
+                        orderable: false,
+                        className: 'text-start',
+                        render: (data, type) => type === 'display'
+                            ? renderRoleChips(data, { collapse: true })
+                            : (Array.isArray(data) ? data.join(', ') : '')
+                    },
                     {
                         targets: 5,
                         render: (data, type) => type === 'display'
@@ -593,15 +817,31 @@ const UsersList = (function () {
                         render: (data, type, full) => {
                             const rowJson = JSON.stringify(full).replace(/'/g, "&#39;");
                             const actions = [];
-                            if (canDelete()) {
-                                actions.push({ className: 'delete-record text-danger me-1', icon: '<i class="bx bx-trash icon-md"></i>', attrs: { 'data-json': rowJson } });
-                            }
+                            // View: primary (visible) icon — mirrors the GoldenReference/Roles action set.
                             actions.push({
-                                className: 'js-quick-view', text: L.QuickView,
-                                attrs: { 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasDetailsPreview', 'data-json': rowJson }
+                                className: 'js-quick-view me-1', icon: 'bx bx-show',
+                                attrs: { 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasDetailsPreview', 'data-json': rowJson, 'title': L.QuickView }
                             });
+                            // Edit: requires permission — falls into the kebab (with icon).
                             if (canUpdate()) {
-                                actions.push({ className: 'js-edit-item', text: L.Edit, attrs: { 'data-id': full.id, 'data-json': rowJson } });
+                                actions.push({ className: 'js-edit-item', icon: 'bx bx-edit', text: L.Edit, attrs: { 'data-id': full.id, 'data-json': rowJson } });
+                            }
+                            // ── Admin actions: state-gated, all in the kebab ──
+                            if (canUpdate() && full.isActive) {
+                                actions.push({ className: 'js-user-disable text-warning', icon: 'bx bx-minus-circle', text: L.Disable, attrs: { 'data-id': full.id, 'data-json': rowJson } });
+                            }
+                            if (canUpdate() && !full.isActive) {
+                                actions.push({ className: 'js-user-enable text-success', icon: 'bx bx-check-circle', text: L.Enable, attrs: { 'data-id': full.id, 'data-json': rowJson } });
+                            }
+                            if (canCreate() && full.mustChangePassword) {
+                                actions.push({ className: 'js-user-resend', icon: 'bx bx-mail-send', text: L.ResendInvitation, attrs: { 'data-id': full.id, 'data-json': rowJson } });
+                            }
+                            if (canUpdate() && full.isActive && !full.mustChangePassword) {
+                                actions.push({ className: 'js-user-reset', icon: 'bx bx-key', text: L.ResetPassword, attrs: { 'data-id': full.id, 'data-json': rowJson } });
+                            }
+                            // Delete: requires permission — falls into the kebab (with icon).
+                            if (canDelete()) {
+                                actions.push({ className: 'delete-record text-danger', icon: 'bx bx-trash', text: L.Delete, attrs: { 'data-json': rowJson } });
                             }
                             return window.DitenDataTable.renderActions(actions);
                         }
@@ -609,7 +849,7 @@ const UsersList = (function () {
                 ],
                 buttons: window.DtDefaults.exportButtons(
                     L.AddNew, {}, extraButtons,
-                    { exportColumns: [2, 3, 4, 5], colvisColumns: [2, 3, 4, 5] }
+                    { exportColumns: [1, 2, 3, 4, 5], colvisColumns: [1, 2, 3, 4, 5] }
                 ),
                 initComplete: function () {
                     mountInlineFilter();

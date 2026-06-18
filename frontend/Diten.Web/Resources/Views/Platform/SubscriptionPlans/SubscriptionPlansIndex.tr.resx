@@ -54,6 +54,9 @@
   <data name="Yearly" xml:space="preserve">
     <value>Yillik</value>
   </data>
+  <data name="Or" xml:space="preserve">
+    <value>veya</value>
+  </data>
   <data name="Currency" xml:space="preserve">
     <value>Para Birimi</value>
   </data>
