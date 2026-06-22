@@ -22,7 +22,7 @@
     </div>
     <div class="d-flex align-content-center flex-wrap gap-3">
         <a asp-controller="Tenants" asp-action="Index" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
-        <button type="submit" form="formTenantCreate" id="btnCreateTenant" class="btn btn-primary" disabled>@(isEditMode ? "Update" : Localizer["CreateTenant"])</button>
+        <button type="submit" form="formTenantCreate" id="btnCreateTenant" class="btn btn-primary" disabled>@(isEditMode ? SharedLocalizer["Update"].Value : Localizer["CreateTenant"].Value)</button>
     </div>
 </div>
 
@@ -31,131 +31,153 @@
 <form id="formTenantCreate" data-mode="@(isEditMode ? "edit" : "create")" data-tenant-id="@tenantId" novalidate>
     <input type="hidden" id="planId" name="planId" />
     <div class="row g-4">
-        <div class="col-12 col-xl-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h6 class="mb-0">@Localizer["BasicInformation"]</h6>
-                </div>
-                <div class="card-body row g-3">
-                    <div class="col-12 col-md-6">
-                        <label class="form-label" for="tenantName">@Localizer["TenantName"] <span class="text-danger">*</span></label>
-                        <input type="text" id="tenantName" name="name" class="form-control" required maxlength="120" placeholder="Acme Global" />
-                        <div class="invalid-feedback" data-valmsg-for="Name"></div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label" for="tenantDisplayName">@Localizer["DisplayName"] <span class="text-danger">*</span></label>
-                        <input type="text" id="tenantDisplayName" name="displayName" class="form-control" required maxlength="200" placeholder="Acme Global HQ" />
-                        <div class="invalid-feedback" data-valmsg-for="DisplayName"></div>
-                    </div>
-                    <div class="col-12 col-md-6" id="adminEmailField">
-                        <label class="form-label" for="adminEmail">@Localizer["AdminEmail"] <span class="text-danger">*</span></label>
-                        <input type="email" id="adminEmail" name="initialAdmin.email" class="form-control" required maxlength="255" placeholder="admin@acme.com" />
-                        <div class="invalid-feedback" data-valmsg-for="InitialAdmin.Email"></div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label" for="tenantSlug">@Localizer["Slug"]</label>
-                        <input type="text" id="tenantSlug" name="slug" class="form-control" maxlength="80" placeholder="acme-global" />
-                        <div class="invalid-feedback" data-valmsg-for="Slug"></div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label" for="tenantType">@Localizer["TenantType"] <span class="text-danger">*</span></label>
-                        <select id="tenantType" name="tenantType" class="form-select" required>
-                            <option value="0" selected>@Localizer["TenantTypeCustomer"]</option>
-                            <option value="1">@Localizer["TenantTypeDemo"]</option>
-                            <option value="4">@Localizer["TenantTypeInternal"]</option>
-                        </select>
-                        <div class="invalid-feedback" data-valmsg-for="TenantType"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-xl-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h6 class="mb-0">@Localizer["Domain"]</h6>
-                </div>
-                <div class="card-body row g-3">
-                    <div class="col-12">
-                        <label class="form-label" for="tenantSubdomain">@Localizer["Subdomain"] <span class="text-danger">*</span></label>
-                        <input type="text" id="tenantSubdomain" name="subdomain" class="form-control" required maxlength="63" placeholder="acme-global" />
-                        <div class="invalid-feedback" data-valmsg-for="Subdomain"></div>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label" for="accessUrlPreview">Access URL Preview</label>
-                        <input type="text" id="accessUrlPreview" class="form-control" value="ditenteknoloji.com" disabled />
-                        <input type="hidden" name="domain" value="ditenteknoloji.com" />
-                        <div class="invalid-feedback" data-valmsg-for="Domain"></div>
+        <div class="col-12 col-md-8">
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["BasicInformation"]</h6>
+                    <div class="row g-3 align-content-start">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="tenantName">@Localizer["TenantName"] <span class="text-danger">*</span></label>
+                            <input type="text" id="tenantName" name="name" class="form-control" required maxlength="120" placeholder="@Localizer["TenantNamePlaceholder"]" />
+                            <div class="invalid-feedback" data-valmsg-for="Name"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="tenantDisplayName">@Localizer["DisplayName"] <span class="text-danger">*</span></label>
+                            <input type="text" id="tenantDisplayName" name="displayName" class="form-control" required maxlength="200" placeholder="@Localizer["DisplayNamePlaceholder"]" />
+                            <div class="invalid-feedback" data-valmsg-for="DisplayName"></div>
+                        </div>
+                        <div class="col-12 col-md-6" id="adminEmailField">
+                            <label class="form-label" for="adminEmail">@Localizer["AdminEmail"] <span class="text-danger">*</span></label>
+                            <input type="email" id="adminEmail" name="initialAdmin.email" class="form-control" required maxlength="255" placeholder="@Localizer["AdminEmailPlaceholder"]" />
+                            <div class="invalid-feedback" data-valmsg-for="InitialAdmin.Email"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="tenantType">@Localizer["TenantType"] <span class="text-danger">*</span></label>
+                            <select id="tenantType" name="tenantType" class="select2 form-select" required>
+                                <option value="0" selected>@Localizer["TenantTypeCustomer"]</option>
+                                <option value="1">@Localizer["TenantTypeDemo"]</option>
+                                <option value="4">@Localizer["TenantTypeInternal"]</option>
+                            </select>
+                            <div class="invalid-feedback" data-valmsg-for="TenantType"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="tenantSlug">@Localizer["Slug"]</label>
+                            <input type="text" id="tenantSlug" name="slug" class="form-control" maxlength="80" placeholder="@Localizer["SlugPlaceholder"]" />
+                            <small class="text-muted">@Localizer["SlugHelp"]</small>
+                            <div class="invalid-feedback" data-valmsg-for="Slug"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">@Localizer["SubscriptionPlan"]</h6>
-                    <span class="badge bg-label-secondary" id="plansLoadingBadge">@Localizer["LoadingPlans"]</span>
-                </div>
-                <div class="card-body">
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["SubscriptionPlan"]</h6>
+                        <span class="badge bg-label-secondary" id="plansLoadingBadge">@Localizer["LoadingPlans"]</span>
+                    </div>
                     <div class="alert alert-warning d-none" id="plansError"></div>
                     <div class="row g-3" id="planCardGrid"></div>
                     <div class="text-muted d-none" id="plansEmpty">@Localizer["NoActivePlans"]</div>
                     <div class="invalid-feedback d-block" data-valmsg-for="PlanId"></div>
-                    <hr class="my-4" />
-                    <div class="alert alert-primary mb-0" id="accessPreviewAlert" role="alert">
-                        <h6 class="alert-heading d-flex align-items-center flex-wrap gap-1 mb-2">
-                            <span class="alert-icon rounded-circle"><i class="icon-base bx bx-error"></i></span>
-                            <span id="subscriptionStatusPreview">-</span>
-                        </h6>
-                        <p class="mb-0" id="accessPreviewText">-</p>
+                    <div class="alert alert-primary d-flex align-items-start gap-2 mb-0 py-3 px-3 mt-4" id="accessPreviewAlert" role="alert">
+                        <i class="bx bx-info-circle mt-1"></i>
+                        <div>
+                            <h6 class="alert-heading fw-semibold mb-0" id="subscriptionStatusPreview">-</h6>
+                            <p class="mb-0 small" id="accessPreviewText">-</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">@Localizer["LocaleDefaults"]</h6>
-                </div>
-                <div class="card-body row g-3">
-                    <div class="col-12 col-md-3">
-                        <label class="form-label" for="tenantCountry">@Localizer["Country"]</label>
-                        <select id="tenantCountry" name="country" class="form-select">
-                            <option value="">@Localizer["SelectCountry"]</option>
-                        </select>
-                        <div class="invalid-feedback" data-valmsg-for="Country"></div>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <label class="form-label" for="defaultTimezone">@Localizer["DefaultTimezone"]</label>
-                        <select id="defaultTimezone" name="defaultTimezone" class="form-select">
-                            <option value="">@Localizer["SelectTimezone"]</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <label class="form-label" for="defaultLanguage">@Localizer["DefaultLanguage"]</label>
-                        <select id="defaultLanguage" name="defaultLanguage" class="form-select">
-                            <option value="">@Localizer["UseDefault"]</option>
-                            <option value="en">English</option>
-                            <option value="fr">Français</option>
-                            <option value="es">Español</option>
-                            <option value="zh">中文</option>
-                            <option value="ar">العربية</option>
-                            <option value="ru">Русский</option>
-                            <option value="tr">Türkçe</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <label class="form-label" for="defaultCurrency">@Localizer["DefaultCurrency"]</label>
-                        <select id="defaultCurrency" name="defaultCurrency" class="form-select">
-                            <option value="">@Localizer["SelectCurrency"]</option>
-                        </select>
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LocaleDefaults"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-3">
+                            <label class="form-label" for="tenantCountry">@Localizer["Country"]</label>
+                            <select id="tenantCountry" name="country" class="select2 form-select">
+                                <option value="">@Localizer["SelectCountry"]</option>
+                            </select>
+                            <div class="invalid-feedback" data-valmsg-for="Country"></div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label" for="defaultTimezone">@Localizer["DefaultTimezone"]</label>
+                            <select id="defaultTimezone" name="defaultTimezone" class="select2 form-select">
+                                <option value="">@Localizer["SelectTimezone"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label" for="defaultLanguage">@Localizer["DefaultLanguage"]</label>
+                            <select id="defaultLanguage" name="defaultLanguage" class="select2 form-select">
+                                <option value="">@Localizer["UseDefault"]</option>
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                                <option value="es">Español</option>
+                                <option value="zh">中文</option>
+                                <option value="ar">العربية</option>
+                                <option value="ru">Русский</option>
+                                <option value="tr">Türkçe</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label" for="defaultCurrency">@Localizer["DefaultCurrency"]</label>
+                            <select id="defaultCurrency" name="defaultCurrency" class="select2 form-select">
+                                <option value="">@Localizer["SelectCurrency"]</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <div class="col-12 col-md-4">
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Domain"]</h6>
+                    <div class="mb-3">
+                        <label class="form-label" for="tenantSubdomain">@Localizer["Subdomain"] <span class="text-danger">*</span></label>
+                        <input type="text" id="tenantSubdomain" name="subdomain" class="form-control" required maxlength="63" placeholder="@Localizer["SubdomainPlaceholder"]" />
+                        <small class="text-muted">@Localizer["SubdomainHelp"]</small>
+                        <div class="invalid-feedback" data-valmsg-for="Subdomain"></div>
+                    </div>
+                    <div>
+                        <label class="form-label" for="accessUrlPreview">@Localizer["AccessUrlPreview"]</label>
+                        <input type="text" id="accessUrlPreview" class="form-control" value="ditenteknoloji.com" disabled />
+                        <input type="hidden" name="domain" value="ditenteknoloji.com" />
+                        <small class="text-muted">@Localizer["AccessUrlHelp"]</small>
+                        <div class="invalid-feedback" data-valmsg-for="Domain"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Summary"]</h6>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">@Localizer["Plan"]</span>
+                        <span class="fw-medium font-monospace text-heading" id="summaryPlan">-</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">@Localizer["Monthly"]</span>
+                        <span class="fw-medium font-monospace text-heading" id="summaryMonthly">-</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">@Localizer["Yearly"]</span>
+                        <span class="fw-medium font-monospace text-heading" id="summaryYearly">-</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">@Localizer["Trial"]</span>
+                        <span class="fw-medium font-monospace text-heading" id="summaryTrial">-</span>
+                    </div>
+                    <hr class="my-3" />
+                    <div class="d-flex align-items-center">
+                        <i class="bx bxs-circle text-success me-2"></i>
+                        <small class="text-muted">@Localizer["ProvisioningNote"]</small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </form>
 

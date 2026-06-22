@@ -42,4 +42,23 @@
   <data name="CannotArchiveTooltip" xml:space="preserve"><value>Bu ozellik zaten arsivli.</value></data>
   <data name="PermissionDenied" xml:space="preserve"><value>Bu islem icin yetkiniz yok.</value></data>
   <data name="CategoryCode" xml:space="preserve"><value>Kategori Kodu</value></data>
+  <data name="CategoriesTab" xml:space="preserve"><value>Kategoriler</value></data>
+  <data name="FeaturesTab" xml:space="preserve"><value>Özellikler</value></data>
+  <data name="EditCategory" xml:space="preserve"><value>Kategori Düzenle</value></data>
+  <data name="ArchiveCategory" xml:space="preserve"><value>Kategoriyi Arşivle</value></data>
+  <data name="CategoryArchiveConfirm" xml:space="preserve"><value>Bu kategoriyi arşivlemek istediğinize emin misiniz?</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
+  <data name="CategoriesEmptyState" xml:space="preserve"><value>Henüz özellik kategorisi oluşturulmadı.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Özellik Oluştur</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Özellik Düzenle</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma ve Durum</value></data>
+  <data name="PlanMappingSection" xml:space="preserve"><value>Planlardaki Durumu</value></data>
+  <data name="FeatureCodePlaceholder" xml:space="preserve"><value>örn. ADVANCED_REPORTING</value></data>
+  <data name="FeatureSlugPlaceholder" xml:space="preserve"><value>örn. advanced-reporting</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>örn. Gelişmiş Raporlama</value></data>
+  <data name="FlagKeyPlaceholder" xml:space="preserve"><value>örn. feature.advanced.reporting</value></data>
 </root>

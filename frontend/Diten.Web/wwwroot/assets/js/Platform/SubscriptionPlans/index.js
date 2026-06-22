@@ -67,26 +67,30 @@
         const items = [
             {
                 key: 'users.max',
-                label: l10n.UsersMax || 'Maximum Users',
+                icon: 'bx-group',
+                label: l10n.UsersMax || 'Users',
                 value: getQuotaValue(quotas, 'users.max'),
                 suffix: ''
             },
             {
                 key: 'storage.gb.max',
-                label: l10n.StorageGbMax || 'Storage Limit',
+                icon: 'bx-hdd',
+                label: l10n.StorageGbMax || 'Storage',
                 value: getQuotaValue(quotas, 'storage.gb.max'),
                 suffix: ' GB',
                 fractionDigits: 2
             },
             {
                 key: 'api.calls.per.month',
-                label: l10n.ApiCallsPerMonth || 'API Calls / Month',
+                icon: 'bx-transfer-alt',
+                label: l10n.ApiCallsPerMonth || 'API / month',
                 value: getQuotaValue(quotas, 'api.calls.per.month'),
                 suffix: ''
             },
             {
                 key: 'modules.max',
-                label: l10n.ModulesMax || 'Maximum Modules',
+                icon: 'bx-grid-alt',
+                label: l10n.ModulesMax || 'Modules',
                 value: getQuotaValue(quotas, 'modules.max'),
                 suffix: ''
             }
@@ -97,7 +101,8 @@
             .map((item) => ({
                 label: item.label,
                 text: `${formatNumber(item.value, item.fractionDigits || 0)}${item.suffix}`,
-                key: item.key
+                key: item.key,
+                icon: item.icon
             }));
     };
 
@@ -141,7 +146,7 @@
         `;
 
         return `
-        <div class="col-12 col-md-6 col-xl-4">
+        <div class="col-12 col-sm-6 col-md-3">
             <div class="card h-100" data-plan-card>
                 <div class="card-body d-flex flex-column p-4">
                     <div class="d-flex align-items-start justify-content-between gap-3 mb-6">
@@ -150,7 +155,7 @@
                                 <h5 class="mb-0 text-truncate">${safe(plan.name)}</h5>
                                 ${headerBadges}
                             </div>
-                            <small class="text-uppercase text-muted">${safe(plan.code)}</small>
+                            <small class="text-uppercase font-monospace text-primary fw-medium">${safe(plan.code)}</small>
                         </div>
                         <div class="flex-shrink-0">${actions}</div>
                     </div>
@@ -173,12 +178,10 @@
                                    <small class="text-muted d-block mb-2">${l10n.Quotas || 'Default Quotas'}</small>
                                    <ul class="list-unstyled mb-0">
                                        ${quotas.map((quota) => `
-                                           <li class="d-flex align-items-start gap-2 mb-2">
-                                               <i class="bx bx-check text-success mt-1"></i>
-                                               <span>
-                                                   <span>${safe(quota.label)}</span>
-                                                   <span class="text-muted">: ${safe(quota.text)}</span>
-                                               </span>
+                                           <li class="d-flex align-items-center gap-2 mb-1 small">
+                                               <i class="bx ${safe(quota.icon)} text-muted"></i>
+                                               <span class="text-muted">${safe(quota.label)}:</span>
+                                               <span class="font-monospace text-heading fw-medium">${safe(quota.text)}</span>
                                            </li>`).join('')}
                                    </ul>
                                </div>`

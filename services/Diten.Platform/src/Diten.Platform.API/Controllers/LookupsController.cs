@@ -35,6 +35,14 @@ public sealed class LookupsController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    [HttpGet("module-catalog/permission-modules")]
+    [HasPermission("platform.lookups.read")]
+    public async Task<IActionResult> GetModuleCatalogPermissionModules(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetLookupOptionsQuery("module-catalog/permission-modules"), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("countries")]
     [HasPermission("platform.lookups.read")]
     public async Task<IActionResult> GetCountries(CancellationToken ct)

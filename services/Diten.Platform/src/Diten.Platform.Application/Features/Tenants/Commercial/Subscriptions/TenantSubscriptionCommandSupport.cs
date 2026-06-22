@@ -98,7 +98,8 @@ internal static class TenantSubscriptionCommandSupport
         ITenantRegistryRepository tenantRepository,
         ISubscriptionPlanRepository planRepository,
         ICurrentUserContext currentUser,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool markTenantActive = false)
     {
         var tenant = await tenantRepository.GetByIdAsync(subscription.TenantId, ct);
         if (tenant == null)
@@ -123,6 +124,39 @@ internal static class TenantSubscriptionCommandSupport
             Actor = currentUser.ActorName,
             At = now
         });
+
+        // Go-live: subscription activation is the operator's deliberate go-live action, so finalize tenant
+        // provisioning here. Flag-gated — only ActivateTenantSubscription passes true; cancel/suspend/renew/
+        // expire/reactivate snapshot updates leave the tenant lifecycle Status untouched. Idempotent: only
+        // promotes a still-Provisioning tenant (never demotes an Active one nor resurrects a Suspended/Deactivated one).
+        if (markTenantActive)
+        {
+            if (tenant.Status == TenantStatus.Provisioning)
+            {
+                tenant.Status = TenantStatus.Active;
+                tenant.ActivatedAt ??= now;
+                tenant.ActivityTimeline.Add(new TenantActivityEvent
+                {
+                    EventType = "tenant.activated",
+                    Message = "Tenant activated on subscription activation.",
+                    Actor = currentUser.ActorName,
+                    At = now
+                });
+            }
+
+            tenant.ProvisionedAt ??= now;
+            foreach (var step in tenant.ProvisioningSteps)
+            {
+                if (string.Equals(step.Status, "InProgress", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(step.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+                {
+                    step.Status = "Completed";
+                    step.CompletedAt ??= now;
+                }
+            }
+
+            tenant.ProvisioningStatus = "Completed";
+        }
 
         await tenantRepository.UpdateAsync(tenant, ct);
         return Response<NoContent>.Success(204);

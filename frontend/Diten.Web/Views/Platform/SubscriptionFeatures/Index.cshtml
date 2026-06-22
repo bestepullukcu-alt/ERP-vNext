@@ -12,68 +12,45 @@
         <h5 class="mb-0">@Localizer["SubscriptionFeaturesTitle"]</h5>
         <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
     </div>
-    <div class="d-flex align-content-center flex-wrap gap-3">
-        <button type="button" class="btn btn-label-secondary" id="sf-create-category">
-            <i class="bx bx-folder-plus me-1"></i>@Localizer["CreateCategory"]
-        </button>
-        <button type="button" class="btn btn-primary" id="sf-create-feature">
-            <i class="bx bx-plus me-1"></i>@Localizer["CreateFeature"]
-        </button>
-    </div>
 </div>
 
 <div id="sf-error" class="alert alert-danger d-none" role="alert"></div>
 
+@* ── Tab navigation (Tenant Details pattern) ───────────────────────────── *@
 <div class="card mb-4">
-    <div class="card-body">
-        <div class="row g-3 align-items-end">
-            <div class="col-12 col-lg-4">
-                <label class="form-label" for="sf-search">@SharedLocalizer["Search"]</label>
-                <input id="sf-search" class="form-control" type="search" autocomplete="off" placeholder="@SharedLocalizer["Search"]" />
-            </div>
-            <div class="col-12 col-md-4 col-lg-3">
-                <label class="form-label" for="sf-status">@Localizer["Status"]</label>
-                <select id="sf-status" class="form-select">
-                    <option value="">@Localizer["AllStatuses"]</option>
-                    <option value="Draft">@Localizer["Draft"]</option>
-                    <option value="Active">@SharedLocalizer["Active"]</option>
-                    <option value="Inactive">@SharedLocalizer["Passive"]</option>
-                    <option value="Deprecated">@Localizer["Deprecated"]</option>
-                    <option value="Archived">@Localizer["Archived"]</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-4 col-lg-3">
-                <label class="form-label" for="sf-category">@Localizer["Category"]</label>
-                <select id="sf-category" class="form-select">
-                    <option value="">@Localizer["AllCategories"]</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-4 col-lg-2">
-                <button type="button" class="btn btn-label-secondary w-100" id="sf-reset">
-                    <i class="bx bx-reset me-1"></i>@SharedLocalizer["Reset"]
-                </button>
-            </div>
+    <div class="card-header p-3">
+        <div class="nav-align-top">
+            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link active small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tabCategories" role="tab" aria-selected="true">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-category me-1 wc-tab-icon"></i>@Localizer["CategoriesTab"]</span>
+                        <i class="bx bx-category d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tabFeatures" role="tab" aria-selected="false">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-package me-1 wc-tab-icon"></i>@Localizer["FeaturesTab"]</span>
+                        <i class="bx bx-package d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+            </ul>
         </div>
     </div>
 </div>
 
-<div id="sf-loading" class="d-flex align-items-center gap-2 text-muted mb-3">
-    <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
-    <span>@SharedLocalizer["Loading"]</span>
+<div class="tab-content p-0">
+    @* ── Categories tab (golden DataTable) ────────────────────────────── *@
+    <div class="tab-pane fade show active" id="tabCategories" role="tabpanel">
+        <partial name="~/Views/Platform/SubscriptionFeatures/_CategoriesTab.cshtml" />
+    </div>
+
+    @* ── Features tab (golden DataTable) ──────────────────────────────── *@
+    <div class="tab-pane fade" id="tabFeatures" role="tabpanel">
+        <partial name="~/Views/Platform/SubscriptionFeatures/_FeaturesTab.cshtml" />
+    </div>
 </div>
 
-<div id="sf-empty" class="card d-none">
-    <div class="card-body text-center text-muted">@Localizer["EmptyState"]</div>
-</div>
-
-<div id="sf-no-results" class="card d-none">
-    <div class="card-body text-center text-muted">@Localizer["NoResultsState"]</div>
-</div>
-
-<div id="sf-grid" class="row g-4"></div>
-
-<partial name="_FeatureEditor" />
-<partial name="_CategoryEditor" />
+<partial name="~/Views/Platform/SubscriptionFeatures/_CategoryOffcanvas.cshtml" />
 
 @section Scripts {
     <partial name="_IndexL10n" />

@@ -37,13 +37,28 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         var provisioned = await ProvisionAdminUserAsync(tenant, adminUser, cancellationToken);
         var loginUrl = BuildLoginUrl(tenant);
 
-        await SendInvitationEmailAsync(tenant, adminUser, loginUrl, provisioned.TemporaryPassword, cancellationToken);
+        // When SMTP is not configured (typical dev default), skip the email instead of throwing so the
+        // provisioned admin (already created with a temp password) is not lost behind a 502. The handler
+        // surfaces the login URL + temp password to the operator in Development.
+        var emailSent = false;
+        if (IsSmtpConfigured())
+        {
+            await SendInvitationEmailAsync(tenant, adminUser, loginUrl, provisioned.TemporaryPassword, cancellationToken);
+            emailSent = true;
+        }
+        else
+        {
+            _logger.LogWarning(
+                "SMTP is not configured; skipping admin invitation email. TenantId={TenantId} AdminUserId={AdminUserId}",
+                tenant.Id,
+                adminUser.Id);
+        }
 
         return new AdminUserInvitationResult(
             loginUrl,
             provisioned.TemporaryPassword,
             provisioned.UserProvisioned,
-            InvitationEmailSent: true);
+            InvitationEmailSent: emailSent);
     }
 
     private async Task<AdminProvisioningResponse> ProvisionAdminUserAsync(Tenant tenant, TenantAdminUser adminUser, CancellationToken cancellationToken)
@@ -97,8 +112,6 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         string temporaryPassword,
         CancellationToken cancellationToken)
     {
-        ValidateSmtpConfiguration();
-
         using var message = new MailMessage
         {
             From = new MailAddress(_smtpOptions.FromEmail, _smtpOptions.FromName),
@@ -121,16 +134,12 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         await client.SendMailAsync(message, cancellationToken);
     }
 
-    private void ValidateSmtpConfiguration()
-    {
-        if (string.IsNullOrWhiteSpace(_smtpOptions.Host) ||
-            string.IsNullOrWhiteSpace(_smtpOptions.Username) ||
-            string.IsNullOrWhiteSpace(_smtpOptions.Password) ||
-            string.IsNullOrWhiteSpace(_smtpOptions.FromEmail))
-        {
-            throw new InvalidOperationException("SMTP configuration is incomplete.");
-        }
-    }
+    private bool IsSmtpConfigured() =>
+        _smtpOptions.Enabled &&
+        !string.IsNullOrWhiteSpace(_smtpOptions.Host) &&
+        !string.IsNullOrWhiteSpace(_smtpOptions.Username) &&
+        !string.IsNullOrWhiteSpace(_smtpOptions.Password) &&
+        !string.IsNullOrWhiteSpace(_smtpOptions.FromEmail);
 
     private string BuildLoginUrl(Tenant tenant)
     {

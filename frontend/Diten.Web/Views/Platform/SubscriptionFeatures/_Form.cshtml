@@ -1,0 +1,117 @@
+@using Diten.Web.Views.Platform.SubscriptionFeatures
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SubscriptionFeaturesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var featureId = ViewData["FeatureId"]?.ToString() ?? string.Empty;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/SubscriptionFeatures">@Localizer["SubscriptionFeaturesTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/Platform/SubscriptionFeatures" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="button" id="sf-page-save" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<div id="sf-page-alert" class="alert alert-danger d-none" role="alert"></div>
+
+<form id="sf-feature-page-form" class="needs-validation" novalidate data-feature-id="@featureId">
+    <input type="hidden" id="sf-feature-id" value="@featureId" />
+    <input type="hidden" id="sf-row-version" />
+
+    <div class="row g-4">
+        <!-- Main Column -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="sf-feature-code">@Localizer["FeatureCode"] <span class="text-danger">*</span></label>
+                            <input id="sf-feature-code" class="form-control" maxlength="80" required autocomplete="off" placeholder="@Localizer["FeatureCodePlaceholder"]" />
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="sf-feature-slug">@Localizer["FeatureSlug"] <span class="text-danger">*</span></label>
+                            <input id="sf-feature-slug" class="form-control" maxlength="120" required autocomplete="off" placeholder="@Localizer["FeatureSlugPlaceholder"]" />
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="sf-display-name">@Localizer["DisplayName"] <span class="text-danger">*</span></label>
+                            <input id="sf-display-name" class="form-control" maxlength="200" required autocomplete="off" placeholder="@Localizer["DisplayNamePlaceholder"]" />
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Description"]</h6>
+                    <textarea id="sf-description" class="form-control" rows="6" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["PlanMappingSection"]</h6>
+                        <span class="small text-muted" id="sf-plan-mapping-state"></span>
+                    </div>
+                    <div id="sf-plan-mappings"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="sf-editor-status">@Localizer["Status"] <span class="text-danger">*</span></label>
+                            <select id="sf-editor-status" class="select2 form-select" required>
+                                <option value="Draft">@Localizer["Draft"]</option>
+                                <option value="Active">@SharedLocalizer["Active"]</option>
+                                <option value="Inactive">@SharedLocalizer["Passive"]</option>
+                                <option value="Deprecated">@Localizer["Deprecated"]</option>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="sf-editor-category">@Localizer["Category"]</label>
+                            <select id="sf-editor-category" class="select2 form-select"></select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="sf-sort-order">@Localizer["SortOrder"]</label>
+                            <input id="sf-sort-order" class="form-control" type="number" min="0" step="1" placeholder="0" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="sf-flag-key">@Localizer["OptionalFeatureFlagKey"]</label>
+                            <input id="sf-flag-key" class="form-control" autocomplete="off" placeholder="@Localizer["FlagKeyPlaceholder"]" />
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-2">
+                                <input id="sf-core-feature" class="form-check-input" type="checkbox" role="switch" />
+                                <label class="form-check-label ms-2" for="sf-core-feature">@Localizer["IsCoreFeature"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

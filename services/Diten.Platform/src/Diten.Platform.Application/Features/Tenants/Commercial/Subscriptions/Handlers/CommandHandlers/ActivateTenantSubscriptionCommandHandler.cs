@@ -65,7 +65,7 @@ public sealed class ActivateTenantSubscriptionCommandHandler : IRequestHandler<A
             return Response<NoContent>.Fail("Tenant subscription was modified by another process.", 409);
         }
 
-        var snapshotResponse = await TenantSubscriptionCommandSupport.UpdateTenantSnapshotAsync(subscription, _tenantRepository, _planRepository, _currentUser, ct);
+        var snapshotResponse = await TenantSubscriptionCommandSupport.UpdateTenantSnapshotAsync(subscription, _tenantRepository, _planRepository, _currentUser, ct, markTenantActive: true);
         if (!snapshotResponse.IsSuccessful)
         {
             return snapshotResponse;

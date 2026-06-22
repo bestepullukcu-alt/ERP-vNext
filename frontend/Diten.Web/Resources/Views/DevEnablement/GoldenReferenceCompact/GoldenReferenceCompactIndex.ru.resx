@@ -28,16 +28,34 @@
   <data name="LevelPrefix" xml:space="preserve"><value>Уровень</value></data>
   <data name="NotAvailable" xml:space="preserve"><value>Недоступно</value></data>
   <data name="IdLabel" xml:space="preserve"><value>Идентификатор</value></data>
-  <data name="FormPageDescription" xml:space="preserve"><value>Manage the full reference record across identity, ownership, lifecycle, and notes.</value></data>
-  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
-  <data name="OwnershipSection" xml:space="preserve"><value>Ownership</value></data>
-  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle</value></data>
-  <data name="NotesSection" xml:space="preserve"><value>Notes</value></data>
-  <data name="Category" xml:space="preserve"><value>Category</value></data>
-  <data name="GroupKey" xml:space="preserve"><value>Group Key</value></data>
-  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
-  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
-  <data name="Version" xml:space="preserve"><value>Version</value></data>
-  <data name="EffectiveDate" xml:space="preserve"><value>Effective Date</value></data>
-  <data name="ExpirationDate" xml:space="preserve"><value>Expiration Date</value></data>
+  <data name="FormPageDescription" xml:space="preserve"><value>Управляйте полной справочной записью: идентификация, владение, жизненный цикл и примечания.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="OwnershipSection" xml:space="preserve"><value>Владение</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Примечания</value></data>
+  <data name="Category" xml:space="preserve"><value>Категория</value></data>
+  <data name="GroupKey" xml:space="preserve"><value>Ключ группы</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Исходная система</value></data>
+  <data name="Owner" xml:space="preserve"><value>Владелец</value></data>
+  <data name="Version" xml:space="preserve"><value>Версия</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Дата вступления в силу</value></data>
+  <data name="ExpirationDate" xml:space="preserve"><value>Дата окончания</value></data>
+  <data name="CategoryPlaceholder" xml:space="preserve">
+    <value>например Финансы</value>
+  </data>
+  <data name="GroupKeyPlaceholder" xml:space="preserve">
+    <value>например GRC-GROUP</value>
+  </data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve">
+    <value>например SAP</value>
+  </data>
+  <data name="OwnerPlaceholder" xml:space="preserve">
+    <value>например Иван Иванов</value>
+  </data>
+  <data name="VersionPlaceholder" xml:space="preserve">
+    <value>например 1.0.0</value>
+  </data>
+  <data name="PriorityPlaceholder" xml:space="preserve">
+    <value>например 50</value>
+  </data>
 </root>

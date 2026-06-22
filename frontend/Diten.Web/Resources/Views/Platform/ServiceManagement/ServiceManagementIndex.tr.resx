@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ServiceManagementTitle" xml:space="preserve"><value>Servis Yönetimi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Platform ERP modüllerini sınıflandırmak için kullanılan modül servislerini yönetin.</value></data>
+  <data name="AddNewService" xml:space="preserve"><value>Servis Ekle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Servis Oluştur</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Servisi Düzenle</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>örn. FINANCE</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>örn. Finans</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Sıralama</value></data>
+  <data name="SortOrderPlaceholder" xml:space="preserve"><value>örn. 10</value></data>
+  <data name="IsActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>2-80 büyük harf, rakam ve tek tire kullanın.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>Son Kod</value></data>
+</root>

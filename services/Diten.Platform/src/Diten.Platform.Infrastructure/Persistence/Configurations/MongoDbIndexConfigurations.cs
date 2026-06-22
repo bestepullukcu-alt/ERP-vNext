@@ -21,6 +21,9 @@ public static class MongoDbIndexConfigurations
         var tenantDomainCollection = database.GetCollection<TenantDomain>("tenant_domains");
         var tenantLoginSettingsCollection = database.GetCollection<TenantLoginSettings>("tenant_login_settings");
         var moduleCatalogCollection = database.GetCollection<ModuleCatalogItem>("platform_module_catalog");
+        var moduleDomainCollection = database.GetCollection<ModuleDomain>("platform_module_domains");
+        var moduleServiceCollection = database.GetCollection<ModuleService>("platform_module_services");
+        var seedMarkerCollection = database.GetCollection<SeedMarker>(SeedMarkerStore.CollectionName);
         var modulePageDescriptorCollection = database.GetCollection<ModulePageDescriptor>("platform_module_page_descriptors");
         var modulePageActionDescriptorCollection = database.GetCollection<ModulePageActionDescriptor>("platform_module_page_action_descriptors");
         var platformAdministratorCollection = database.GetCollection<PlatformAdministrator>("platform_administrators");
@@ -380,11 +383,19 @@ public static class MongoDbIndexConfigurations
                 new CreateIndexOptions { Unique = true, Name = "ux_tenant_login_settings_tenant_ref_id" })
         });
 
+        // Eski non-partial unique index'i düşür; aksi halde aynı isimle partial yeniden oluşturmak IndexOptionsConflict verir.
+        await DropIndexIfExistsAsync(moduleCatalogCollection.Indexes, "ux_platform_module_catalog_module_code");
         await moduleCatalogCollection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<ModuleCatalogItem>(
                 Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.ModuleCode),
-                new CreateIndexOptions { Unique = true, Name = "ux_platform_module_catalog_module_code" }),
+                new CreateIndexOptions<ModuleCatalogItem>
+                {
+                    Unique = true,
+                    Name = "ux_platform_module_catalog_module_code",
+                    // Uniqueness yalnız canlı kayıtlar arasında geçerli; soft-deleted kod aynı kodla yeni insert'i bloke etmez.
+                    PartialFilterExpression = Builders<ModuleCatalogItem>.Filter.Eq(x => x.IsDeleted, false)
+                }),
             new CreateIndexModel<ModuleCatalogItem>(
                 Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.Status),
                 new CreateIndexOptions { Name = "ix_platform_module_catalog_status" }),
@@ -406,6 +417,54 @@ public static class MongoDbIndexConfigurations
             Builders<BsonDocument>.Filter.Exists("Category"),
             Builders<BsonDocument>.Update.Unset("Category"));
 
+        await DropIndexIfExistsAsync(moduleDomainCollection.Indexes, "ux_platform_module_domains_code");
+        await moduleDomainCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ModuleDomain>(
+                Builders<ModuleDomain>.IndexKeys.Ascending(x => x.Code),
+                new CreateIndexOptions<ModuleDomain>
+                {
+                    Unique = true,
+                    Name = "ux_platform_module_domains_code",
+                    // UI #C3e: uniqueness yalnız canlı kayıtlar arası — soft-deleted kod aynı kodla yeni insert'i bloke etmez.
+                    PartialFilterExpression = Builders<ModuleDomain>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<ModuleDomain>(
+                Builders<ModuleDomain>.IndexKeys.Ascending(x => x.IsActive),
+                new CreateIndexOptions { Name = "ix_platform_module_domains_active" }),
+            new CreateIndexModel<ModuleDomain>(
+                Builders<ModuleDomain>.IndexKeys.Ascending(x => x.SortOrder),
+                new CreateIndexOptions { Name = "ix_platform_module_domains_sort_order" })
+        });
+
+        await DropIndexIfExistsAsync(moduleServiceCollection.Indexes, "ux_platform_module_services_code");
+        await moduleServiceCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ModuleService>(
+                Builders<ModuleService>.IndexKeys.Ascending(x => x.Code),
+                new CreateIndexOptions<ModuleService>
+                {
+                    Unique = true,
+                    Name = "ux_platform_module_services_code",
+                    // UI #C3e: uniqueness yalnız canlı kayıtlar arası — soft-deleted kod aynı kodla yeni insert'i bloke etmez.
+                    PartialFilterExpression = Builders<ModuleService>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<ModuleService>(
+                Builders<ModuleService>.IndexKeys.Ascending(x => x.IsActive),
+                new CreateIndexOptions { Name = "ix_platform_module_services_active" }),
+            new CreateIndexModel<ModuleService>(
+                Builders<ModuleService>.IndexKeys.Ascending(x => x.SortOrder),
+                new CreateIndexOptions { Name = "ix_platform_module_services_sort_order" })
+        });
+
+        await seedMarkerCollection.Indexes.CreateOneAsync(new CreateIndexModel<SeedMarker>(
+            Builders<SeedMarker>.IndexKeys.Ascending(x => x.Key),
+            new CreateIndexOptions { Unique = true, Name = "ux_platform_seed_markers_key" }));
+
+        // FIX C: page-code + route-path uniqueness must be PARTIAL (live-only), mirroring the catalog C3e pattern, so a
+        // soft-deleted page frees its route/pagecode → operator/manifest can re-open the same route (reclaim works).
+        await DropIndexIfExistsAsync(modulePageDescriptorCollection.Indexes, "ux_platform_module_pages_tenant_module_page_code");
+        await DropIndexIfExistsAsync(modulePageDescriptorCollection.Indexes, "ux_platform_module_pages_tenant_module_route_path");
         await modulePageDescriptorCollection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<ModulePageDescriptor>(
@@ -413,13 +472,23 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.TenantId)
                     .Ascending(x => x.ModuleCode)
                     .Ascending(x => x.PageCode),
-                new CreateIndexOptions { Unique = true, Name = "ux_platform_module_pages_tenant_module_page_code" }),
+                new CreateIndexOptions<ModulePageDescriptor>
+                {
+                    Unique = true,
+                    Name = "ux_platform_module_pages_tenant_module_page_code",
+                    PartialFilterExpression = Builders<ModulePageDescriptor>.Filter.Eq(x => x.IsDeleted, false)
+                }),
             new CreateIndexModel<ModulePageDescriptor>(
                 Builders<ModulePageDescriptor>.IndexKeys
                     .Ascending(x => x.TenantId)
                     .Ascending(x => x.ModuleCode)
                     .Ascending(x => x.RoutePath),
-                new CreateIndexOptions { Unique = true, Name = "ux_platform_module_pages_tenant_module_route_path" }),
+                new CreateIndexOptions<ModulePageDescriptor>
+                {
+                    Unique = true,
+                    Name = "ux_platform_module_pages_tenant_module_route_path",
+                    PartialFilterExpression = Builders<ModulePageDescriptor>.Filter.Eq(x => x.IsDeleted, false)
+                }),
             new CreateIndexModel<ModulePageDescriptor>(
                 Builders<ModulePageDescriptor>.IndexKeys
                     .Ascending(x => x.TenantId)
@@ -438,6 +507,8 @@ public static class MongoDbIndexConfigurations
                 new CreateIndexOptions { Name = "ix_platform_module_pages_tenant_page_type" })
         });
 
+        // FIX C: action-code uniqueness PARTIAL (live-only) too — a soft-deleted action frees its (page, actionCode).
+        await DropIndexIfExistsAsync(modulePageActionDescriptorCollection.Indexes, "ux_platform_module_page_actions_tenant_page_action");
         await modulePageActionDescriptorCollection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<ModulePageActionDescriptor>(
@@ -445,7 +516,12 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.TenantId)
                     .Ascending(x => x.PageDescriptorId)
                     .Ascending(x => x.ActionCode),
-                new CreateIndexOptions { Unique = true, Name = "ux_platform_module_page_actions_tenant_page_action" }),
+                new CreateIndexOptions<ModulePageActionDescriptor>
+                {
+                    Unique = true,
+                    Name = "ux_platform_module_page_actions_tenant_page_action",
+                    PartialFilterExpression = Builders<ModulePageActionDescriptor>.Filter.Eq(x => x.IsDeleted, false)
+                }),
             new CreateIndexModel<ModulePageActionDescriptor>(
                 Builders<ModulePageActionDescriptor>.IndexKeys
                     .Ascending(x => x.TenantId)

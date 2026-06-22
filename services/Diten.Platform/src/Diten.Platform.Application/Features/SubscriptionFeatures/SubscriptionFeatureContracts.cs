@@ -99,6 +99,15 @@ public sealed record CreateFeatureCategoryRequest(
     int? SortOrder,
     string Status);
 
+public sealed record UpdateFeatureCategoryRequest(
+    string DisplayName,
+    string? Description,
+    int? SortOrder,
+    string Status,
+    byte[]? RowVersion);
+
+public sealed record ArchiveFeatureCategoryRequest(byte[]? RowVersion);
+
 public sealed record FeatureCatalogFilterRequest(
     string? Search,
     Guid? CategoryId,

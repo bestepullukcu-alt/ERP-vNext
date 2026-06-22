@@ -28,16 +28,34 @@
   <data name="LevelPrefix" xml:space="preserve"><value>级别</value></data>
   <data name="NotAvailable" xml:space="preserve"><value>不可用</value></data>
   <data name="IdLabel" xml:space="preserve"><value>标识</value></data>
-  <data name="FormPageDescription" xml:space="preserve"><value>Manage the full reference record across identity, ownership, lifecycle, and notes.</value></data>
-  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
-  <data name="OwnershipSection" xml:space="preserve"><value>Ownership</value></data>
-  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle</value></data>
-  <data name="NotesSection" xml:space="preserve"><value>Notes</value></data>
-  <data name="Category" xml:space="preserve"><value>Category</value></data>
-  <data name="GroupKey" xml:space="preserve"><value>Group Key</value></data>
-  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
-  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
-  <data name="Version" xml:space="preserve"><value>Version</value></data>
-  <data name="EffectiveDate" xml:space="preserve"><value>Effective Date</value></data>
-  <data name="ExpirationDate" xml:space="preserve"><value>Expiration Date</value></data>
+  <data name="FormPageDescription" xml:space="preserve"><value>管理涵盖标识、归属、生命周期和备注的完整参考记录。</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="OwnershipSection" xml:space="preserve"><value>归属</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>生命周期</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>备注</value></data>
+  <data name="Category" xml:space="preserve"><value>类别</value></data>
+  <data name="GroupKey" xml:space="preserve"><value>分组键</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>源系统</value></data>
+  <data name="Owner" xml:space="preserve"><value>负责人</value></data>
+  <data name="Version" xml:space="preserve"><value>版本</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>生效日期</value></data>
+  <data name="ExpirationDate" xml:space="preserve"><value>到期日期</value></data>
+  <data name="CategoryPlaceholder" xml:space="preserve">
+    <value>例如 财务</value>
+  </data>
+  <data name="GroupKeyPlaceholder" xml:space="preserve">
+    <value>例如 GRC-GROUP</value>
+  </data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve">
+    <value>例如 SAP</value>
+  </data>
+  <data name="OwnerPlaceholder" xml:space="preserve">
+    <value>例如 张三</value>
+  </data>
+  <data name="VersionPlaceholder" xml:space="preserve">
+    <value>例如 1.0.0</value>
+  </data>
+  <data name="PriorityPlaceholder" xml:space="preserve">
+    <value>例如 50</value>
+  </data>
 </root>

@@ -1,0 +1,52 @@
+@using System.Text.Json
+@using Diten.Web.Views.Platform.DomainManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<DomainManagementIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        DomainManagementTitle = Localizer["DomainManagementTitle"].Value,
+        Actions = Localizer["Actions"].Value,
+        AddNewDomain = Localizer["AddNewDomain"].Value,
+        Edit = Localizer["Edit"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        @* Create/Edit offcanvas keys *@
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+        Code = Localizer["Code"].Value,
+        CodePlaceholder = Localizer["CodePlaceholder"].Value,
+        DisplayName = Localizer["DisplayName"].Value,
+        DisplayNamePlaceholder = Localizer["DisplayNamePlaceholder"].Value,
+        SortOrder = Localizer["SortOrder"].Value,
+        SortOrderPlaceholder = Localizer["SortOrderPlaceholder"].Value,
+        IsActive = Localizer["IsActive"].Value,
+        InvalidCode = Localizer["InvalidCode"].Value,
+        RequiredField = Localizer["RequiredField"].Value,
+        FinalCodePreview = Localizer["FinalCodePreview"].Value,
+        Update = SharedLocalizer["Update"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        DomainCodeInUse = SharedLocalizer["DomainCodeInUse"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusInactive = Localizer["StatusInactive"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Showing = SharedLocalizer["Showing"].Value
+    };
+}
+<script id="domain-management-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

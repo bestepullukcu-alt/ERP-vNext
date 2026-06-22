@@ -9,30 +9,58 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"]</title>
-    <style>
-        :root { color-scheme: light dark; }
-        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-               font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #f5f6f8; color: #1f2933; }
-        .status-card { max-width: 32rem; padding: 2.5rem; text-align: center; background: #fff;
-                       border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
-        .status-code { font-size: 3.5rem; font-weight: 700; color: #d04437; line-height: 1; }
-        h1 { font-size: 1.4rem; margin: .75rem 0 .25rem; }
-        p { color: #52606d; margin: .5rem 0; }
-        .status-home { display: inline-block; margin-top: 1.25rem; padding: .6rem 1.4rem; border-radius: 8px;
-                       background: #2f6fed; color: #fff; text-decoration: none; font-weight: 600; }
-        .status-req { margin-top: 1.25rem; font-size: .8rem; color: #9aa5b1; }
-    </style>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    @* Pick the saved or OS theme before paint so there is no light/dark flash. *@
+    <script>
+        (function () {
+            try {
+                var t = (window.localStorage && (localStorage.getItem('templateCustomizer-vertical-menu-template--Theme'))) || '';
+                if (t !== 'light' && t !== 'dark') {
+                    t = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-bs-theme', t);
+            } catch (e) { document.documentElement.setAttribute('data-bs-theme', 'light'); }
+        })();
+    </script>
+    <link rel="stylesheet" href="~/assets/vendor/fonts/iconify-icons.css" />
+    <link rel="stylesheet" href="~/assets/vendor/css/core.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/assets/vendor/css/theme-default.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/error-pages.css" asp-append-version="true" />
 </head>
-<body>
-    <main class="status-card" role="alert">
-        <div class="status-code">!</div>
-        <h1>Bir hata oluştu</h1>
-        <p>İsteğiniz işlenirken beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.</p>
-        <a class="status-home" href="/">Ana sayfaya dön</a>
+<body class="misc-page">
+    <div class="misc-bg" aria-hidden="true"></div>
+    <main class="misc-wrapper" role="alert">
+        <span class="misc-icon-card">
+            <i class="icon-base bx bx-error-circle text-danger"></i>
+        </span>
+        <div class="misc-code-wrap">
+            <span class="misc-code-ghost" aria-hidden="true">500</span>
+            <span class="misc-code">500</span>
+        </div>
+        <h1 class="misc-title">Bir hata oluştu</h1>
+        <p class="misc-text">İsteğiniz işlenirken beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.</p>
+        <div class="misc-actions">
+            <a class="btn btn-primary" href="/">
+                <i class="icon-base bx bx-home-alt me-1"></i>Ana sayfaya dön
+            </a>
+            <button type="button" class="btn btn-outline-secondary" data-misc-reload>
+                <i class="icon-base bx bx-refresh me-1"></i>Yenile
+            </button>
+        </div>
         @if (Model.ShowRequestId)
         {
-            <p class="status-req">İstek No: <code>@Model.RequestId</code></p>
+            <div class="misc-req">
+                <span class="misc-req-label">İstek No:</span>
+                <code class="misc-req-id">@Model.RequestId</code>
+                <button type="button" class="misc-req-copy" data-misc-copy="@Model.RequestId" title="Kopyala" aria-label="Kopyala">
+                    <i class="icon-base bx bx-copy"></i>
+                </button>
+            </div>
         }
     </main>
+    <footer class="misc-footer">
+        © 2026 | <span class="fw-medium">Di10 ERP</span>
+    </footer>
+    <script src="~/js/error-pages.js" asp-append-version="true"></script>
 </body>
 </html>

@@ -3,19 +3,54 @@ id: CAND-CAP-0002-FU03
 name: Subscription Feature Management
 domain: platform-shared-services
 service: Diten.Platform
-status: review
+status: draft
 owner: module-pack-author
 branch: feature/pss/pss-007-subscription-feature-management
 started: 2026-05-07
 target: 2026-05-28
-ui_pattern: card-grid
-datatable: false
-golden_reference: none
+ui_pattern: tabbed-datatable
+datatable: true
+golden_reference: slim+compact
+revision: R2 (2026-06-19) — card-grid → two-tab DataTable redesign (Categories | Features)
 ---
 
 # CAND-CAP-0002-FU03 — Subscription Feature Management
 
 > **Canonicalization (DCP-002):** Governance identity is now **CAND-CAP-0002-FU03**, a child of **CAND-CAP-0002**. Prior repo ID **PSS-007** is a deprecated alias. Temporary candidate; pending EA. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
+
+## R2 Revision — Two-Tab DataTable Redesign (2026-06-19)
+
+> **Revize gerekçesi:** İlk teslim (`card-grid`, DataTable yok) kategorinin yönetim yüzeyini eksik bıraktı: kategori **oluşturulabiliyor ama düzenlenemiyor/arşivlenemiyor** (immutable `CategoryCode`, değiştirilemez `Status`/`DisplayName`). Bu R2 revizyonu sayfayı iki sekmeli, GoldenReference DataTable tabanlı bir yönetim ekranına dönüştürür ve kategori lifecycle'ını (Update + Archive/Deactivate) tamamlar.
+
+### Yeni Layout Kararı
+- **Sayfa kabuğu:** `_LayoutPlatformAdmin.cshtml` (değişmez).
+- **Sekme deseni — referans: Tenant Details (`Views/Platform/Tenants/Details.cshtml`).** Üstte `card > card-header` içinde `nav nav-pills` + `wc-tab-compact` buton stili, ikon + `data-bs-toggle="tab"` / `data-bs-target`, altta `tab-content > tab-pane fade`. Yeni tab CSS icat edilmez; Tenant Details'taki birebir sınıflar kullanılır.
+- **İki sekme:**
+  1. **Categories** — kategori GoldenReference DataTable (Code, Name, Sort, Status, Actions) + kendi Add/Edit/Archive akışı.
+  2. **Features** — feature GoldenReference DataTable (Feature, Code/Slug, Category, Status, Actions) + kendi Add/Edit/Archive + plan-mapping akışı.
+- **DataTable standardı:** Her iki tablo da `data-dt-standard="v2"` + `DtDefaults.create()` + `_Filter.cshtml` inline filter + skeleton loading ile GoldenReference'a uyar (Tenant Details `dtTenantAdminUsers` deseni gibi). `card-grid` ve `sf-grid` tamamen kaldırılır.
+
+### Slim/Compact Create-Edit Surface Kararı (form_field_count)
+- **Category = Slim** (5 alan: CategoryCode, DisplayName, Description, SortOrder, Status) → Categories tab içinde `_CreateEditOffcanvas.cshtml` (offcanvas create/edit). Mevcut `_CategoryEditor.cshtml` modal'ı bu offcanvas'a taşınır ve **edit modunu** destekler.
+- **Feature = Compact** (≥9 alan: FeatureCode, FeatureSlug, DisplayName, Description, CategoryId, Status, IsCoreFeature, SortOrder, OptionalFeatureFlagKey + plan-mapping bölümü) → route tabanlı `/Platform/SubscriptionFeatures/Create` + `/{id}/Edit` full-page form. `_Form.cshtml` + `Details.cshtml` aynı section haritasını kullanır.
+  > ✅ **Karar (2026-06-19, kullanıcı onayı):** Feature editor full-page Compact olacak; mevcut `_FeatureEditor` modal'ı kaldırılır. Golden reference field-count kuralına uyumludur.
+
+### Kategori Lifecycle Tamamlama (yeni backend scope)
+İlk pakette kategori sadece GET + POST'tu. R2 ile eklenir:
+- `PUT /api/platform/feature-categories/{id}` → `UpdateFeatureCategoryCommand` (DisplayName, Description, SortOrder, Status güncellenebilir; `CategoryCode` immutable kalır).
+- `POST /api/platform/feature-categories/{id}/archive` → `ArchiveFeatureCategoryCommand` (hard delete YOK; mevcut feature archive/deactivate deseninin aynısı, RowVersion concurrency ile).
+- Kategori entity'sine `RowVersion` zaten tanımlı; Update/Archive RowVersion conflict → kontrollü 409.
+- Yeni permission key: `Platform.SubscriptionFeatures.Categories.Manage` (veya mevcut `.Update`/`.Archive` anahtarlarının kategoriye genişletilmesi — security-agent netleştirir).
+
+### Bu revizyonla geçersiz kılınan ilk-paket kararları
+- ❌ "İki kolonlu feature card grid" / "DataTable kullanılmamalı" → ✅ İki-tab GoldenReference DataTable.
+- ❌ Kategori create-only → ✅ Kategori tam lifecycle (Create/Update/Archive).
+
+### Kullanıcı onaylı uygulama kararları (2026-06-19)
+- **Tablo init:** Lazy — açılışta aktif tab (Categories) init; Features tab ilk gösterimde init (gizli tab DataTable genişlik sorununu önlemek için `columns.adjust()` + `responsive.recalc()` tab `shown.bs.tab` event'inde).
+- **Golden parite:** Her iki tab tam golden (inline filter + save-view/personalization + colReorder). Categories tab'ında bulk-delete YOK (kategori bulk backend yok); feature tab'ında bulk-delete mevcut feature endpoint'iyle.
+- **Plan mapping:** Feature Compact full-page `_Form.cshtml` içinde bir section olarak taşınır; mevcut `_FeatureEditor` modal mantığı `form.js`'e taşınır.
+- **Personalization pageKey:** İki ayrı view scope — `SubscriptionFeaturesCategories` ve `SubscriptionFeaturesFeatures` (moduleKey `Platform`).
 
 ## Module Summary
 Platform Subscription Feature Management modülü, Diten ERP-vNext SaaS platformunda yer alan abonelik planlarına ait özelliklerin (features) kataloglanmasını, kategorilendirilmesini, aktif/pasif durumlarının yönetilmesini ve bu özelliklerin (SubscriptionPlan) abonelik planlarıyla eşleştirilmesini (mapping) sağlar.
@@ -194,17 +229,24 @@ Varsayılan PSS ve CQRS yaklaşımlarına göre:
 - `POST /api/platform/subscription-features/{id}/archive` -> `ArchiveFeatureDefinitionCommand`
 - `GET /api/platform/feature-categories` -> `GetFeatureCategoriesQuery`
 - `POST /api/platform/feature-categories` -> `CreateFeatureCategoryCommand`
+- `PUT /api/platform/feature-categories/{id}` -> `UpdateFeatureCategoryCommand` *(R2 — yeni)*
+- `POST /api/platform/feature-categories/{id}/archive` -> `ArchiveFeatureCategoryCommand` *(R2 — yeni)*
 - `GET /api/platform/subscription-plans/{planId}/features` -> `GetPlanFeatureMappingsQuery`
 - `PUT /api/platform/subscription-plans/{planId}/features` -> `UpdatePlanFeatureMappingsCommand`
 
-## UI Scope (Platform Admin)
+## UI Scope (Platform Admin) — R2 Two-Tab DataTable
+
+> **NOT (R2):** Aşağıdaki ilk-paket "card-grid / DataTable kullanılmamalı" kararı **geçersizdir**. Bkz. üstteki *R2 Revision — Two-Tab DataTable Redesign* bölümü.
+
 - **Sayfa:** Subscription Features / Feature Catalog
-- **Layout:** Platform Admin Layout (`_LayoutPlatformAdmin.cshtml` veya `_LayoutBackbone.cshtml`). Kesinlikle Tenant'lara açık olmamalı.
-- **Pattern:** İki kolonlu feature card grid yapısı. DataTable kullanılmamalı.
-- **Filtreler:** All Features, Analytics, Integration, Security vb. (Üstte yer alan kategori filtreleri), Plan/Status filter, Search input.
-- **Card Content:** Feature DisplayName, Code/Slug, Description, Status/Category badge'leri, included plans, edit, archive/deactivate aksiyon ikonları.
-- **Save State:** Kaydetme sonrası sayfa reload olduğunda verinin aynı state'te kalması (Golden Flow).
-- **No-shell rule:** Backend/API ve persistence tarafında henüz hazır olmayan özellikler için UI'a buton konulmamalı (veya konulursa disabled olmalı).
+- **Layout:** `_LayoutPlatformAdmin.cshtml`. Kesinlikle Tenant'lara açık olmamalı.
+- **Pattern:** **İki sekmeli** ekran (Tenant Details tab deseni referans). `card-header > nav nav-pills` + `wc-tab-compact`, `tab-content > tab-pane fade`.
+  - **Tab 1 — Categories:** GoldenReference DataTable (`data-dt-standard="v2"`, `DtDefaults.create()`, `_Filter.cshtml` inline filter, skeleton). Kolonlar: Code, Display Name, Sort, Status, Actions. Add/Edit = Slim `_CreateEditOffcanvas.cshtml`; Archive = ortak confirm wrapper.
+  - **Tab 2 — Features:** GoldenReference DataTable. Kolonlar: Feature (DisplayName), Code/Slug, Category, Status, Actions. Add/Edit = Compact route `/Create` + `/{id}/Edit` (full-page `_Form.cshtml` + `Details.cshtml`); plan-mapping bölümü feature form içinde. Archive/Deactivate = ortak confirm.
+- **Filtreler (inline `_Filter.cshtml`):** Features tab'ında Category + Status Select2 chip; Categories tab'ında Status. Text-input enum filtresi YASAK (Select2 chip — orchestrator [RULE]).
+- **Save State:** Kaydetme/silme sonrası `dt.ajax.reload(..., false)` → success toast (create/bulk delete baseline). Reload sonrası state korunur (Golden Flow).
+- **No-shell rule:** Backend/API hazır olmayan aksiyon için buton konulmaz veya disabled olur.
+- **Ctrl+K:** `/Platform/SubscriptionFeatures` stable route'u zaten registry'de ise sekme değişimi yeni route üretmez (tek sayfa, tab state client-side). Yeni `/Create` route'u `platform-global-search-registry.md` kapsamına göre değerlendirilir (dynamic değilse eklenebilir).
 
 ### Plan Mapping UI Akışı (MVP vs Deferred)
 - **MVP Akışı:** Feature Catalog listesi card-grid olur. Feature edit modal/drawer içerisinde bir **"Available in Plans"** bölümü yer alır. Burada sistemdeki mevcut subscription planlar listelenir. Her plan için `Included`, `AddOn`, `NotAvailable`, `Preview` status'lerinden biri seçilir ve feature özelinde mapping yapılır.
@@ -248,6 +290,33 @@ Varsayılan PSS ve CQRS yaklaşımlarına göre:
 - [x] RowVersion conflict durumunda API controlled hata üretir (raw exception göstermez).
 - [x] `SubscriptionPlan` varlıkları bu modül aracılığıyla kazara duplicate edilmez veya yaratılmaz.
 - [x] Runtime entitlement enforcement (yetki zorlama) bu batch içerisinde yanlışlıkla uygulanmaz.
+
+### R2 Redesign Criteria
+**Faz 2a (tamamlandı — build-verified 2026-06-19):**
+- [x] Sayfa iki sekmeli açılır (Categories | Features), Tenant Details tab deseniyle birebir stil.
+- [x] Categories tab GoldenReference DataTable (`data-dt-standard="v2"`, `createCrudTable`, inline filter, skeleton) kullanır.
+- [x] Kategori düzenlenebilir (DisplayName/Description/SortOrder/Status); `CategoryCode` immutable (edit modunda readonly).
+- [x] Kategori arşivlenebilir (hard delete yok); RowVersion conflict → kontrollü 409.
+- [x] en/tr resx yeni anahtarlar (CategoriesTab, FeaturesTab, EditCategory, ArchiveCategory) için dolu.
+- [x] `dotnet build` web PASS (0 hata).
+- [ ] Runtime smoke test (Kanal C — kullanıcı doğrulaması bekleniyor).
+
+**Faz 2b (tamamlandı — build-verified 2026-06-19):**
+- [x] Features tab GoldenReference DataTable'a dönüştü (`createCrudTable` client-mode + custom `dataSrc` → `{data:{items}}`, inline filter status+category, colReorder); `card-grid`/`sf-grid` kaldırıldı, `_FeatureEditor` modal silindi.
+- [x] Feature create/edit Compact full-page (`/Create` + `/{id}/Edit`, `_Form.cshtml` 4 section); No-ViewModel + JS-fetch (form.js). Plan-mapping form section olarak taşındı.
+- [x] Feature Details full-page (`/Details/{id}`, `subscription-feature-details` + `backbone-preview-section`, details.js); _Form ile aynı 4 section haritası.
+- [x] `dotnet build` web PASS (0 hata).
+- [ ] Runtime smoke test (Kanal C — kullanıcı doğrulaması bekleniyor).
+
+**Faz 2c (kullanıcı kararıyla kapsam dışı — 2026-06-19):**
+- ~~Save-view/personalization~~ → Kullanıcı "gerek yok" dedi; kapsam dışı bırakıldı.
+
+**Kalan açık maddeler:**
+- [ ] Runtime smoke test (Kanal C) — tam stack ile tarayıcı doğrulaması (kullanıcı UI incelemesiyle).
+- [x] Dokümantasyon tazeleme: `api.md` (kategori PUT/archive + two-tab/full-page routes) + `user-manual.md` (two-tab + full-page) güncellendi.
+
+### Verify Script İstisnası (gerekçeli)
+`verify_datatable_page.py` tek-tablolu kanonik dosya adları (`_Filter.cshtml`, `_DataTable.cshtml`, `_CreateEditOffcanvas.cshtml`) varlığını arar. Bu sayfa **onaylı iki-tab çift-tablo** tasarımı olduğundan tek kanonik isim 1:1 karşılanamaz; partial'lar tab-özel adlandırılır (`_CategoriesTab`, `_FeaturesTab`, `_CategoryOffcanvas`, `_Form`). Script bir dosya-varlık heuristic'idir (davranışsal değil); bu FAIL false-negative'dir. Golden davranış (skeleton, inline filter, colReorder, `data-dt-standard="v2"`, `DtDefaults.create`, ortak confirm) korunur.
 
 ### UX Criteria
 - [x] Loading, Empty ve No-result state'leri mevcuttur.

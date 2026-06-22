@@ -4,6 +4,7 @@ using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using MongoDB.Driver;
 
 namespace Diten.Platform.Application.Features.ModuleCatalog.Handlers.CommandHandlers;
 
@@ -19,9 +20,10 @@ public sealed class CreateModuleCatalogItemCommandHandler : IRequestHandler<Crea
     public async Task<Response<Guid>> Handle(CreateModuleCatalogItemCommand request, CancellationToken ct)
     {
         var canonicalCode = ModuleCatalogCodeNormalizer.Normalize(request.Request.ModuleCode);
+        // ExistsByCodeAsync yalnız canlı (IsDeleted=false) kayıtlara bakar; silinen kod tekrar create edilebilsin diye böyledir.
         if (await _repository.ExistsByCodeAsync(canonicalCode, null, ct))
         {
-            return Response<Guid>.Fail("ModuleCode already exists.", 409);
+            return Response<Guid>.Fail(ModuleCatalogErrorCodes.ModuleCodeInUse, 409);
         }
 
         var item = new ModuleCatalogItem
@@ -39,7 +41,16 @@ public sealed class CreateModuleCatalogItemCommandHandler : IRequestHandler<Crea
             SortOrder = request.Request.SortOrder ?? 0
         };
 
-        await _repository.CreateAsync(item, ct);
+        try
+        {
+            await _repository.CreateAsync(item, ct);
+        }
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            // Defense-in-depth: partial unique index + canlı pre-check normalde buraya düşürmez (yalnız yarış durumunda).
+            return Response<Guid>.Fail(ModuleCatalogErrorCodes.ModuleCodeInUse, 409);
+        }
+
         return Response<Guid>.Success(item.Id, 201);
     }
 }

@@ -5,23 +5,15 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
-    <div class="offcanvas-header py-6 d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center gap-2">
-            <h5 id="offcanvasCreateEditLabel" class="offcanvas-title mb-0">-</h5>
-            <div id="administratorRequiredTrackerHost"></div>
-        </div>
-        <button type="button" class="btn-close text-reset m-0" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
 
-    <div class="offcanvas-body border-top">
+    <div class="offcanvas-body border-top p-4">
         <div id="formAdministratorsAlert" class="alert alert-danger d-none" role="alert"></div>
 
-        <form id="formAdministrators"
-              class="pt-0"
-              data-required-tracker-target="#administratorRequiredTrackerHost"
-              data-required-tracker-wrapper-class="d-flex align-items-center"
-              data-required-tracker-badge-class="badge bg-label-danger px-2 py-1 d-inline-flex align-items-center"
-              novalidate>
+        <form id="formAdministrators" class="pt-0" novalidate>
             @Html.AntiForgeryToken()
             <input type="hidden" id="administratorId" name="Id" value="" />
             <input type="hidden" id="administratorVersion" name="Version" value="0" />

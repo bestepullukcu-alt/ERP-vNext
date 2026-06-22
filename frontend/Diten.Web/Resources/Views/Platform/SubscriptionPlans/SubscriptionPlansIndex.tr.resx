@@ -124,16 +124,16 @@
     <value>Bu degerler standart kota anahtarlariyla SubscriptionPlan.DefaultQuotas alanina kaydedilir.</value>
   </data>
   <data name="UsersMax" xml:space="preserve">
-    <value>Maksimum Kullanici</value>
+    <value>Kullanicilar</value>
   </data>
   <data name="StorageGbMax" xml:space="preserve">
-    <value>Depolama Limiti (GB)</value>
+    <value>Depolama</value>
   </data>
   <data name="ApiCallsPerMonth" xml:space="preserve">
-    <value>Aylik API Cagrilari</value>
+    <value>API / ay</value>
   </data>
   <data name="ModulesMax" xml:space="preserve">
-    <value>Maksimum Modul</value>
+    <value>Moduller</value>
   </data>
   <data name="CommaOrLineSeparated" xml:space="preserve">
     <value>Virgul veya satir ayracli</value>
@@ -161,6 +161,27 @@
   </data>
   <data name="FeatureSearchPlaceholder" xml:space="preserve">
     <value>Ozellik adi, kodu veya slug ile ara</value>
+  </data>
+  <data name="CodePlaceholder" xml:space="preserve">
+    <value>FREE, STARTER...</value>
+  </data>
+  <data name="NamePlaceholder" xml:space="preserve">
+    <value>Plan gorunen adi</value>
+  </data>
+  <data name="CurrencyPlaceholder" xml:space="preserve">
+    <value>Para birimi secin...</value>
+  </data>
+  <data name="IsActiveHelp" xml:space="preserve">
+    <value>Plan atama icin kullanilabilir</value>
+  </data>
+  <data name="IsDefaultHelp" xml:space="preserve">
+    <value>Yeni kiracilara otomatik atanir</value>
+  </data>
+  <data name="IsTrialPlanHelp" xml:space="preserve">
+    <value>Bu plan icin deneme suresini etkinlestir</value>
+  </data>
+  <data name="ModulesHelp" xml:space="preserve">
+    <value>Bu plana dahil edilen modulleri arayip secin</value>
   </data>
   <data name="Category" xml:space="preserve">
     <value>Kategori</value>

@@ -6,6 +6,7 @@ using Diten.Platform.Application.Features.Tenants.Commands;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Tenants.Handlers;
@@ -16,6 +17,7 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
     private readonly ICurrentUserContext _currentUser;
     private readonly IAdminUserInvitationService _invitationService;
     private readonly IQuotaService _quotaService;
+    private readonly IHostEnvironment _environment;
     private readonly ILogger<InviteTenantAdminUserCommandHandler> _logger;
 
     public InviteTenantAdminUserCommandHandler(
@@ -23,12 +25,14 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
         ICurrentUserContext currentUser,
         IAdminUserInvitationService invitationService,
         IQuotaService quotaService,
+        IHostEnvironment environment,
         ILogger<InviteTenantAdminUserCommandHandler> logger)
     {
         _repository = repository;
         _currentUser = currentUser;
         _invitationService = invitationService;
         _quotaService = quotaService;
+        _environment = environment;
         _logger = logger;
     }
 
@@ -107,13 +111,19 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
         {
             invitation = await _invitationService.InviteAsync(tenant, user, cancellationToken);
         }
-        catch
+        catch (Exception ex)
         {
             if (reservedQuotaThisAttempt)
             {
                 await ReleaseReservedQuotaAsync(tenant.Id, operationId, sourceReference, correlationId, CancellationToken.None);
             }
 
+            // Previously swallowed silently — left us blind to the real provisioning failure. Log it now.
+            _logger.LogError(
+                ex,
+                "Tenant admin invitation failed. TenantId={TenantId} AdminUserId={AdminUserId}",
+                tenant.Id,
+                user.Id);
             return Response<TenantAdminUserDto>.Fail("Tenant admin invitation could not be completed.", 502);
         }
 
@@ -146,7 +156,22 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
             return Response<TenantAdminUserDto>.Fail("Tenant admin invitation state could not be saved.", 502);
         }
 
-        return Response<TenantAdminUserDto>.Success(TenantAdminUserSupport.ToDto(user));
+        var dto = TenantAdminUserSupport.ToDto(user);
+
+        // SMTP-off path is still a successful provisioning. In Development only, surface the login URL +
+        // temporary password so the operator can finish setup manually (mirrors the tenant-side Users
+        // invite dev-fallback). Production never returns the temp password.
+        if (!invitation.InvitationEmailSent && _environment.IsDevelopment())
+        {
+            dto = dto with
+            {
+                LoginUrl = invitation.LoginUrl,
+                TemporaryPassword = invitation.TemporaryPassword,
+                EmailSent = false
+            };
+        }
+
+        return Response<TenantAdminUserDto>.Success(dto);
     }
 
     private async Task ReleaseReservedQuotaAsync(

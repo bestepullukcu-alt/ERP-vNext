@@ -25,6 +25,7 @@
     <ProjectReference Include="..\Diten.Platform.Infrastructure\Diten.Platform.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Diten.Platform.Common\src\Diten.Platform.Common\Diten.Platform.Common.csproj" />
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.InterfaceRegistry.Abstractions\Diten.BuildingBlocks.InterfaceRegistry.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

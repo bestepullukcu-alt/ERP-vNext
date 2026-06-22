@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.ModulePages.Commands;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
@@ -12,13 +13,16 @@ public sealed class CreateModulePageActionDescriptorCommandHandler
 {
     private readonly IModulePageDescriptorRepository _pageRepository;
     private readonly IModulePageActionDescriptorRepository _repository;
+    private readonly ICatalogPermissionSyncService _catalogPermissionSyncService;
 
     public CreateModulePageActionDescriptorCommandHandler(
         IModulePageDescriptorRepository pageRepository,
-        IModulePageActionDescriptorRepository repository)
+        IModulePageActionDescriptorRepository repository,
+        ICatalogPermissionSyncService catalogPermissionSyncService)
     {
         _pageRepository = pageRepository;
         _repository = repository;
+        _catalogPermissionSyncService = catalogPermissionSyncService;
     }
 
     public async Task<Response<Guid>> Handle(CreateModulePageActionDescriptorCommand request, CancellationToken ct)
@@ -54,6 +58,11 @@ public sealed class CreateModulePageActionDescriptorCommandHandler
         };
 
         await _repository.CreateAsync(descriptor, ct);
+
+        // Declarative permission sync: surface this action's permission into the AuthService catalogue.
+        // Best-effort — the service never throws, so a sync failure cannot roll back the catalog save.
+        await _catalogPermissionSyncService.SyncPermissionAsync(descriptor.PermissionKey, descriptor.DisplayName, ct);
+
         return Response<Guid>.Success(descriptor.Id, 201);
     }
 }

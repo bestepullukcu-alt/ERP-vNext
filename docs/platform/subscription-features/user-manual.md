@@ -1,14 +1,14 @@
 # Subscription Feature Management User Manual
 
-Use Platform > Subscription Features to manage commercial feature definitions and their availability across plans.
+Use Platform > Subscription Features to manage commercial feature definitions and their availability across plans. The page has two tabs: **Categories** and **Features**.
 
 ## Feature Catalog
 
-The main screen shows features grouped by category and status. You can search, filter, create, edit, deactivate, or archive feature definitions.
+The **Features** tab lists features in a table with status and category filters. Use **Create Feature** to open a full-page form, or the row actions to edit, view details, deactivate, or archive a feature. Creating or editing a feature opens a dedicated page (`/Platform/SubscriptionFeatures/Create` or `/Edit/{id}`); the read-only details open at `/Details/{id}`.
 
 ## Categories
 
-Categories organize features for plan management and user-facing display. Create categories before assigning features to them.
+The **Categories** tab lists feature categories in a table. Use **Create Category** (or a row's **Edit**) to open a side panel where you set the code, display name, description, sort order, and status. The category code cannot be changed after creation. Categories can be **archived** (kept for history, removed from active use) but not hard-deleted. Create categories before assigning features to them.
 
 ## Plan Availability
 

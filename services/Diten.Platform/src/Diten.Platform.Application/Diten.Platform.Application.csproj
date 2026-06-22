@@ -10,6 +10,7 @@
     <PackageReference Include="AutoMapper" Version="15.1.3" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="MediatR" Version="12.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
   </ItemGroup>
 
@@ -20,6 +21,7 @@
     <ProjectReference Include="..\..\..\Diten.Platform.Common\src\Diten.Platform.Common\Diten.Platform.Common.csproj" />
     <ProjectReference Include="..\..\..\Diten.Platform.Contracts\Diten.Platform.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.InterfaceRegistry.Abstractions\Diten.BuildingBlocks.InterfaceRegistry.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

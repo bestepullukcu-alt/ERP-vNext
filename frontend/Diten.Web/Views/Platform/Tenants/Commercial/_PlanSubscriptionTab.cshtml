@@ -3,27 +3,31 @@
 @inject IHtmlLocalizer<TenantsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-<div class="nav-align-top">
-    <ul class="nav nav-tabs mb-4" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabPlanSubscription" type="button"
-                role="tab">
-                @Localizer["PlanSubscription"]
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabModuleEntitlements" type="button"
-                role="tab">
-                @Localizer["ModuleEntitlements"]
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabTenantQuotaGovernance" type="button"
-                role="tab">
-                @Localizer["tenant.commercial.quota.title"]
-            </button>
-        </li>
-    </ul>
+<div class="card mb-4">
+    <div class="card-header p-3">
+        <div class="nav-align-top">
+            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link active small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tabPlanSubscription" role="tab" aria-selected="true">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-credit-card me-1 wc-tab-icon"></i>@Localizer["PlanSubscription"]</span>
+                        <i class="bx bx-credit-card d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tabModuleEntitlements" role="tab" aria-selected="false">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-grid-alt me-1 wc-tab-icon"></i>@Localizer["ModuleEntitlements"]</span>
+                        <i class="bx bx-grid-alt d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tabTenantQuotaGovernance" role="tab" aria-selected="false">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-bar-chart-alt-2 me-1 wc-tab-icon"></i>@Localizer["tenant.commercial.quota.title"]</span>
+                        <i class="bx bx-bar-chart-alt-2 d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
 </div>
 
 <div class="tab-content p-0">
@@ -31,8 +35,15 @@
         <div class="row g-4">
             <div class="col-12">
                 <div id="commercialSubscriptionError" class="alert alert-danger d-none"></div>
-                <div id="commercialSubscriptionLoading" class="text-center py-5">
-                    <span class="spinner-border spinner-border-sm me-2"></span>@SharedLocalizer["Loading"]
+                <div id="commercialSubscriptionLoading" class="card" role="status" aria-busy="true">
+                    <div class="p-4">
+                        <span class="visually-hidden">@SharedLocalizer["Loading"]</span>
+                        <div class="shimmer skeleton-row" style="width: 100%; height: 32px; margin-bottom: 2rem;"></div>
+                        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+                        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+                        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+                        <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
+                    </div>
                 </div>
             </div>
 
@@ -51,12 +62,13 @@
 
             <div class="col-12 d-none" id="commercialSubscriptionContent">
                 <div class="card mb-4">
-                    <div class="card-header d-flex align-items-center justify-content-between gap-3">
-                        <h6 class="mb-0">@Localizer["CurrentSubscription"]</h6>
-                        <div class="d-flex flex-wrap gap-2">
-                            <button type="button" id="btnReactivateSubscription"
-                                class="btn btn-label-success btn-sm d-none">@Localizer["Reactivate"]</button>
+                    <div class="card-body p-4 pb-0 d-flex align-items-start justify-content-between gap-3">
+                        <div>
+                            <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["CurrentSubscription"]</h6>
+                            <p class="text-muted mb-0">@Localizer["CurrentSubscriptionSubtitle"]</p>
                         </div>
+                        <button type="button" id="btnReactivateSubscription"
+                            class="btn btn-label-success btn-sm d-none">@Localizer["Reactivate"]</button>
                     </div>
                     <div id="inlineFilterHost">
                         <div class="collapse" id="inlineFilterCollapse">
@@ -100,9 +112,6 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th class="cell-fit">
-                                        <input type="checkbox" class="dt-checkboxes-select-all form-check-input">
-                                    </th>
                                     <th>@Localizer["Plan"]</th>
                                     <th>@Localizer["SubscriptionStatus"]</th>
                                     <th>@Localizer["CancelAtPeriodEnd"]</th>
@@ -117,18 +126,18 @@
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="card subscription-history-card">
+                    <div class="card-body p-4 d-flex align-items-start justify-content-between gap-3">
                         <div>
-                            <h6 class="mb-0">@Localizer["SubscriptionHistory"]</h6>
-                            <small class="text-muted">@Localizer["SubscriptionHistorySubtitle"]</small>
+                            <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["SubscriptionHistory"]</h6>
+                            <p class="text-muted mb-0">@Localizer["SubscriptionHistorySubtitle"]</p>
                         </div>
                         <button type="button" id="btnToggleSubscriptionHistory" class="btn btn-icon btn-label-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#subscriptionHistoryCollapse" aria-expanded="true" aria-controls="subscriptionHistoryCollapse">
                             <i class="icon-base bx bx-chevron-up"></i>
                         </button>
                     </div>
                     <div id="subscriptionHistoryCollapse" class="collapse show">
-                        <div class="card-body pb-0">
+                        <div class="card-body pt-0 pb-0">
                             <div id="commercialSubscriptionHistoryTimeline" class="ms-1 py-3"></div>
                         </div>
                     </div>

@@ -28,16 +28,34 @@
   <data name="LevelPrefix" xml:space="preserve"><value>المستوى</value></data>
   <data name="NotAvailable" xml:space="preserve"><value>غير متاح</value></data>
   <data name="IdLabel" xml:space="preserve"><value>المعرّف</value></data>
-  <data name="FormPageDescription" xml:space="preserve"><value>Manage the full reference record across identity, ownership, lifecycle, and notes.</value></data>
-  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
-  <data name="OwnershipSection" xml:space="preserve"><value>Ownership</value></data>
-  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle</value></data>
-  <data name="NotesSection" xml:space="preserve"><value>Notes</value></data>
-  <data name="Category" xml:space="preserve"><value>Category</value></data>
-  <data name="GroupKey" xml:space="preserve"><value>Group Key</value></data>
-  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
-  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
-  <data name="Version" xml:space="preserve"><value>Version</value></data>
-  <data name="EffectiveDate" xml:space="preserve"><value>Effective Date</value></data>
-  <data name="ExpirationDate" xml:space="preserve"><value>Expiration Date</value></data>
+  <data name="FormPageDescription" xml:space="preserve"><value>إدارة سجل المرجع الكامل عبر الهوية والملكية ودورة الحياة والملاحظات.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="OwnershipSection" xml:space="preserve"><value>الملكية</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="Category" xml:space="preserve"><value>الفئة</value></data>
+  <data name="GroupKey" xml:space="preserve"><value>مفتاح المجموعة</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>النظام المصدر</value></data>
+  <data name="Owner" xml:space="preserve"><value>المالك</value></data>
+  <data name="Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>تاريخ السريان</value></data>
+  <data name="ExpirationDate" xml:space="preserve"><value>تاريخ الانتهاء</value></data>
+  <data name="CategoryPlaceholder" xml:space="preserve">
+    <value>مثال: المالية</value>
+  </data>
+  <data name="GroupKeyPlaceholder" xml:space="preserve">
+    <value>مثال: GRC-GROUP</value>
+  </data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve">
+    <value>مثال: SAP</value>
+  </data>
+  <data name="OwnerPlaceholder" xml:space="preserve">
+    <value>مثال: محمد أحمد</value>
+  </data>
+  <data name="VersionPlaceholder" xml:space="preserve">
+    <value>مثال: 1.0.0</value>
+  </data>
+  <data name="PriorityPlaceholder" xml:space="preserve">
+    <value>مثال: 50</value>
+  </data>
 </root>

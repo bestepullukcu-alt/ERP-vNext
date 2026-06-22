@@ -137,6 +137,8 @@ public static class DependencyInjection
         services.AddSingleton<EntitlementCacheService>();
         services.AddScoped<IEntitlementChecker, EntitlementChecker>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
+        services.AddScoped<ICatalogPermissionSyncService, CatalogPermissionSyncService>();
+        services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
@@ -176,6 +178,8 @@ public static class DependencyInjection
         services.AddScoped<ITenantDomainRepository, TenantDomainRepository>();
         services.AddScoped<ITenantLoginSettingsRepository, TenantLoginSettingsRepository>();
         services.AddScoped<IModuleCatalogRepository, ModuleCatalogRepository>();
+        services.AddScoped<IModuleDomainRepository, ModuleDomainRepository>();
+        services.AddScoped<IModuleServiceRepository, ModuleServiceRepository>();
         services.AddScoped<IModulePageDescriptorRepository, ModulePageDescriptorRepository>();
         services.AddScoped<IModulePageActionDescriptorRepository, ModulePageActionDescriptorRepository>();
         services.AddScoped<IPlatformAdministratorRepository, PlatformAdministratorRepository>();
@@ -223,6 +227,8 @@ public static class DependencyInjection
         TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
         services.AddScoped<IOutboxObservabilityReader>(sp => (IOutboxObservabilityReader)sp.GetRequiredService<IOutboxEventRepository>());
@@ -313,6 +319,8 @@ public static class DependencyInjection
             TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         }
         catch (Exception ex) when (mongoSettings.AllowStartupWithoutDatabase)
         {

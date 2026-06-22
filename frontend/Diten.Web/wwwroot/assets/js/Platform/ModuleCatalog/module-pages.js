@@ -76,7 +76,7 @@ const ModuleCatalogPages = (function () {
         const raw = (rawValue || '').trim();
         return raw.startsWith('/')
             && !/\s/.test(raw)
-            && /^\/[A-Z][A-Za-z0-9-]*(?:\/(?:[A-Z][A-Za-z0-9-]*|\{[A-Za-z0-9_]+\}|:[A-Za-z0-9_]+))+$/.test(routePath);
+            && /^\/[A-Z][A-Za-z0-9-]*(?:\/(?:[A-Z][A-Za-z0-9-]*|\{[A-Za-z0-9_]+\}|:[A-Za-z0-9_]+))*$/.test(routePath);
     };
 
     const isValidPageCode = (pageCode) => pageCode.length >= 3
@@ -198,11 +198,14 @@ const ModuleCatalogPages = (function () {
     };
 
     const generatePermission = () => {
-        const routeSegments = getRouteSegments();
-        const domain = normalizePermissionSegment(routeSegments.domain || moduleCode);
-        const module = normalizePermissionSegment(routeSegments.module || fields.displayName?.value || moduleCode);
+        // First segment is ALWAYS moduleCode — the entitlement bridge maps Permission.Module to it.
+        // Resource segment comes from the route's 2nd segment, else pageCode, else displayName.
+        const moduleSeg = normalizePermissionSegment(moduleCode);
+        const resourceSeg = normalizePermissionSegment(getRouteSegments().module)
+            || normalizePermissionSegment(fields.pageCode?.value)
+            || normalizePermissionSegment(fields.displayName?.value);
         const action = actionByPageType[fields.pageType?.value] || 'view';
-        return normalizePermission([domain, module, action].filter(Boolean).join('.'));
+        return normalizePermission([moduleSeg, resourceSeg, action].filter(Boolean).join('.'));
     };
 
     const updatePermission = () => {
@@ -406,24 +409,29 @@ const ModuleCatalogPages = (function () {
         isTableInitialized = true;
 
         const config = {
-            ajax: async (data, callback) => {
-                try {
-                    const response = await fetch(endpoint);
-                    if (!response.ok) {
-                        await showError(response);
+            // Non-async on purpose: an async ajax fn returns a Promise, which DataTables mistakes for a
+            // jqXHR and calls .abort() on during ajax.reload() → "xhr.abort is not a function". Returning
+            // undefined (promise-chain form) lets reload run clean. Behavior is otherwise identical.
+            ajax: (data, callback) => {
+                fetch(endpoint)
+                    .then((response) => {
+                        if (!response.ok) {
+                            return Promise.resolve(showError(response)).then(() => {
+                                hideSkeleton();
+                                callback({ data: [], recordsTotal: 0, recordsFiltered: 0 });
+                            });
+                        }
+
+                        return response.json().then((payload) => {
+                            const rows = unwrapRows(payload);
+                            callback({ data: rows, recordsTotal: rows.length, recordsFiltered: rows.length });
+                        });
+                    })
+                    .catch(() => {
+                        window.showToast?.(L.ErrorOccurred || '', 'error');
                         hideSkeleton();
                         callback({ data: [], recordsTotal: 0, recordsFiltered: 0 });
-                        return;
-                    }
-
-                    const payload = await response.json();
-                    const rows = unwrapRows(payload);
-                    callback({ data: rows, recordsTotal: rows.length, recordsFiltered: rows.length });
-                } catch {
-                    window.showToast?.(L.ErrorOccurred || '', 'error');
-                    hideSkeleton();
-                    callback({ data: [], recordsTotal: 0, recordsFiltered: 0 });
-                }
+                    });
             },
             stateSave: false,
             paging: true,
