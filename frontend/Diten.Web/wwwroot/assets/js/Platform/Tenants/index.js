@@ -116,10 +116,10 @@ const TenantsList = (function () {
 
         return `<div class="tenant-storage-cell">
             <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="fw-medium">${escapeHtml(usedText || '0 GB')}</span>
+                <span class="fw-medium font-monospace text-heading">${escapeHtml(usedText || '0 GB')}</span>
                 <span class="text-muted">/</span>
-                <span>${escapeHtml(quotaText || '-')}</span>
-                <small class="text-muted ms-auto">${escapeHtml(`${safePercent.toFixed(0)}%`)}</small>
+                <span class="font-monospace">${escapeHtml(quotaText || '-')}</span>
+                <small class="text-muted ms-auto font-monospace">${escapeHtml(`${safePercent.toFixed(0)}%`)}</small>
             </div>
             <div class="progress" style="height: 6px; min-width: 140px;">
                 <div class="progress-bar ${calculatedPercent > 100 ? 'bg-danger' : 'bg-primary'}" role="progressbar" style="width: ${safePercent}%;" aria-valuenow="${safePercent.toFixed(0)}" aria-valuemin="0" aria-valuemax="100"></div>
@@ -637,7 +637,7 @@ const TenantsList = (function () {
                 },
                 {
                     targets: 2,
-                    render: (data, type, full) => `<div><span class="fw-medium text-primary">${escapeHtml(full.code)}</span><br><small class="text-muted">${escapeHtml(full.slug || '-')}</small></div>`
+                    render: (data, type, full) => `<div><span class="fw-medium font-monospace text-primary">${escapeHtml(full.code)}</span><br><small class="text-muted">${escapeHtml(full.slug || '-')}</small></div>`
                 },
                 {
                     targets: 6,
@@ -655,6 +655,9 @@ const TenantsList = (function () {
                     render: (data, type, full) => {
                         const canSuspend = full.status === 'Active';
                         const canReactivate = full.status === 'Suspended';
+                        // Lifecycle-aware: Active tenants must be suspended before deletion (backend 400s
+                        // otherwise). Hide Delete while Active so the flow is Active → Suspend → Delete.
+                        const canDelete = full.status !== 'Active';
                         const rowJson = JSON.stringify(full);
                         return window.DitenDataTable.renderActions([
                             {
@@ -672,6 +675,7 @@ const TenantsList = (function () {
                             },
                             {
                                 key: 'delete',
+                                visible: canDelete,
                                 className: 'text-danger',
                                 icon: 'bx bx-trash',
                                 text: L.Delete || '',

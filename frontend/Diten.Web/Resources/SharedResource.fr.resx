@@ -460,5 +460,6 @@
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Données de référence</value></data>
+  <data name="ModuleCodeInUse" xml:space="preserve"><value>Ce code de module est déjà utilisé.</value></data>
 </root>
 

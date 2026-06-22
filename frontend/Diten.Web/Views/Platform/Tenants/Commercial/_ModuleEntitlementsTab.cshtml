@@ -4,16 +4,11 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
 <div class="card">
-    <div class="card-header d-flex align-items-center justify-content-between gap-3">
-        <div>
-            <h6 class="mb-0">@Localizer["ModuleEntitlements"]</h6>
-            <small class="text-muted">@Localizer["ModuleEntitlementsDescription"]</small>
-        </div>
-        <button type="button" id="btnAddModuleEntitlement" class="btn btn-primary btn-sm">
-            <i class="icon-base bx bx-plus me-1"></i>@Localizer["AddModuleEntitlement"]
-        </button>
+    <div class="card-body p-4 pb-0">
+        <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["ModuleEntitlements"]</h6>
+        <p class="text-muted mb-0">@Localizer["ModuleEntitlementsDescription"]</p>
     </div>
-    <div id="moduleEntitlementFilterHost">
+    <div id="moduleEntitlementFilterHost" class="dt-filter-host">
         <div class="collapse" id="moduleEntitlementFilterCollapse">
             <div class="pt-0 pb-3 px-3">
                 <form class="m-0" id="moduleEntitlementFilterForm" data-no-tracker>
@@ -50,14 +45,19 @@
             </div>
         </div>
     </div>
-    <div class="card-datatable table-responsive">
+    <div id="moduleEntitlementSkeleton" class="px-4 pb-4 pt-2" role="status" aria-busy="true">
+        <span class="visually-hidden">@SharedLocalizer["Loading"]</span>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 32px; margin-bottom: 2rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
+    </div>
+    <div class="card-datatable table-responsive d-none">
         <table id="dtModuleEntitlements" data-dt-standard="v2" class="datatables-module-entitlements table border-top w-100">
             <thead>
                 <tr>
                     <th></th>
-                    <th class="cell-fit">
-                        <input type="checkbox" class="dt-checkboxes-select-all form-check-input">
-                    </th>
                     <th>@Localizer["ModuleCode"]</th>
                     <th>@Localizer["ModuleName"]</th>
                     <th>@Localizer["Source"]</th>

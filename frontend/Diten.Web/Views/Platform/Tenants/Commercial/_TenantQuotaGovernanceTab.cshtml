@@ -4,14 +4,15 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
 <div class="card" id="tenantQuotaGovernance" data-quota-governance="true">
-    <div class="card-header d-flex align-items-start justify-content-between gap-3">
-        <div>
-            <h6 class="mb-0">@Localizer["tenant.commercial.quota.title"]</h6>
-            <small class="text-muted">@Localizer["tenant.commercial.quota.description"]</small>
+    <div class="card-body p-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
+            <div>
+                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["tenant.commercial.quota.title"]</h6>
+                <p class="text-muted mb-0">@Localizer["tenant.commercial.quota.description"]</p>
+            </div>
+            <span class="badge bg-label-secondary" id="tenantQuotaLoadedAt"></span>
         </div>
-        <span class="badge bg-label-secondary" id="tenantQuotaLoadedAt"></span>
-    </div>
-    <div class="card-body">
+
         <div id="tenantQuotaLoading" class="text-center py-5">
             <span class="spinner-border spinner-border-sm me-2"></span>@Localizer["tenant.commercial.quota.loading"]
         </div>
@@ -26,6 +27,8 @@
             @Localizer["tenant.commercial.quota.unauthorized"]
         </div>
 
-        <div id="tenantQuotaRows" class="row g-3 d-none"></div>
+        <div id="tenantQuotaSummary" class="mb-4 d-none"></div>
+        <div id="tenantQuotaRows" class="row g-4 d-none"></div>
+        <div id="tenantQuotaFooter" class="text-center text-muted small mt-4 d-none"></div>
     </div>
 </div>

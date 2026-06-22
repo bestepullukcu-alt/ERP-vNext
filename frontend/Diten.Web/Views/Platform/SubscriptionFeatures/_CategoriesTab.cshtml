@@ -1,0 +1,51 @@
+@using Diten.Web.Views.Platform.SubscriptionFeatures
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SubscriptionFeaturesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Inline filter (mounted under the DataTable toolbar by index.js) *@
+<div id="catInlineFilterHost">
+    <div class="collapse" id="catInlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="catFilterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-status">
+                        <select id="catFilterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="Active">@SharedLocalizer["Active"]</option>
+                            <option value="Inactive">@SharedLocalizer["Passive"]</option>
+                            <option value="Archived">@Localizer["Archived"]</option>
+                        </select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="catBtnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="catBtnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div id="cat-skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive d-none" id="cat-table-wrap">
+        <table id="dt-feature-categories" data-dt-standard="v2" class="datatables-feature-categories table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["Code"]</th>
+                    <th class="all">@Localizer["Name"]</th>
+                    <th>@Localizer["SortOrder"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

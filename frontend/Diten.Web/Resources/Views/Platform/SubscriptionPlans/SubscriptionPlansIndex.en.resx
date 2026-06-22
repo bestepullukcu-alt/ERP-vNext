@@ -124,16 +124,16 @@
     <value>These values are saved to SubscriptionPlan.DefaultQuotas using the standard quota keys.</value>
   </data>
   <data name="UsersMax" xml:space="preserve">
-    <value>Maximum Users</value>
+    <value>Users</value>
   </data>
   <data name="StorageGbMax" xml:space="preserve">
-    <value>Storage Limit (GB)</value>
+    <value>Storage</value>
   </data>
   <data name="ApiCallsPerMonth" xml:space="preserve">
-    <value>API Calls Per Month</value>
+    <value>API / month</value>
   </data>
   <data name="ModulesMax" xml:space="preserve">
-    <value>Maximum Modules</value>
+    <value>Modules</value>
   </data>
   <data name="CommaOrLineSeparated" xml:space="preserve">
     <value>Comma or line separated</value>
@@ -161,6 +161,27 @@
   </data>
   <data name="FeatureSearchPlaceholder" xml:space="preserve">
     <value>Search features by name, code, or slug</value>
+  </data>
+  <data name="CodePlaceholder" xml:space="preserve">
+    <value>FREE, STARTER...</value>
+  </data>
+  <data name="NamePlaceholder" xml:space="preserve">
+    <value>Plan display name</value>
+  </data>
+  <data name="CurrencyPlaceholder" xml:space="preserve">
+    <value>Select currency...</value>
+  </data>
+  <data name="IsActiveHelp" xml:space="preserve">
+    <value>Plan is available for assignment</value>
+  </data>
+  <data name="IsDefaultHelp" xml:space="preserve">
+    <value>Assign to new tenants automatically</value>
+  </data>
+  <data name="IsTrialPlanHelp" xml:space="preserve">
+    <value>Enable trial period for this plan</value>
+  </data>
+  <data name="ModulesHelp" xml:space="preserve">
+    <value>Search and select the modules included in this plan</value>
   </data>
   <data name="Category" xml:space="preserve">
     <value>Category</value>

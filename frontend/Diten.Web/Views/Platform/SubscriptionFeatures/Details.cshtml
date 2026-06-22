@@ -1,0 +1,95 @@
+@using Diten.Web.Views.Platform.SubscriptionFeatures
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SubscriptionFeaturesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    var featureId = ViewData["FeatureId"]?.ToString() ?? string.Empty;
+}
+
+<div class="subscription-feature-details" data-feature-id="@featureId">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0" id="sfd-title">@SharedLocalizer["Details"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/Platform/SubscriptionFeatures">@Localizer["SubscriptionFeaturesTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/Platform/SubscriptionFeatures" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+            <a href="/Platform/SubscriptionFeatures/Edit/@featureId" class="btn btn-primary">@SharedLocalizer["Edit"]</a>
+        </div>
+    </div>
+
+    <div id="sfd-alert" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-label">@Localizer["FeatureCode"]</div>
+                        <div class="backbone-preview-value mt-1" id="sfd-code">-</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-label">@Localizer["FeatureSlug"]</div>
+                        <div class="backbone-preview-value mt-1" id="sfd-slug">-</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-label">@Localizer["DisplayName"]</div>
+                        <div class="backbone-preview-value mt-1" id="sfd-name">-</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["Description"]</h6>
+                <div class="backbone-preview-description" id="sfd-description">-</div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["PlanMappingSection"]</h6>
+                <div id="sfd-plans" class="d-flex flex-wrap gap-2"><span class="text-muted">-</span></div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-label">@Localizer["Status"]</div>
+                        <div class="mt-1" id="sfd-status">-</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-label">@Localizer["Category"]</div>
+                        <div class="backbone-preview-value mt-1" id="sfd-category">-</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-label">@Localizer["SortOrder"]</div>
+                        <div class="backbone-preview-value mt-1" id="sfd-sort">-</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-label">@Localizer["OptionalFeatureFlagKey"]</div>
+                        <div class="backbone-preview-value mt-1" id="sfd-flag">-</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-label">@Localizer["IsCoreFeature"]</div>
+                        <div class="mt-1" id="sfd-core">-</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/SubscriptionFeatures/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/SubscriptionFeatures/details.js" asp-append-version="true"></script>
+}

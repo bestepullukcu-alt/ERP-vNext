@@ -41,7 +41,12 @@ public sealed class ModuleCatalogController : Controller
     public IActionResult LegacyIndexRedirect() => RedirectToAction(nameof(Index));
 
     [HttpGet("Create")]
-    public IActionResult Create() => View("~/Views/Platform/ModuleCatalog/Create.cshtml", new ModuleCatalogEditViewModel());
+    public IActionResult Create() => View("~/Views/Platform/ModuleCatalog/Create.cshtml", new ModuleCatalogEditViewModel
+    {
+        Status = "Active",
+        IsTenantAssignable = true,
+        ModuleVersion = "1.0.0"
+    });
 
     [HttpPost("Create")]
     [ValidateAntiForgeryToken]
@@ -385,7 +390,7 @@ public sealed class ModuleCatalogController : Controller
             var payload = await response.Content.ReadFromJsonAsync<GatewayResponse<object>>(_jsonOptions);
             if (payload?.Errors.Count > 0)
             {
-                return payload.Errors;
+                return payload.Errors.Select(LocalizeGatewayError).ToList();
             }
         }
         catch { }
@@ -393,6 +398,14 @@ public sealed class ModuleCatalogController : Controller
         var raw = await response.Content.ReadAsStringAsync();
         return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
     }
+
+    // Backend, duplicate gibi durumlarda sabit machine-readable error-code döner (örn. MODULE_CODE_IN_USE).
+    // Bu kodları kullanıcının diline çevir; bilinmeyen mesajları olduğu gibi geçir.
+    private string LocalizeGatewayError(string error) => error switch
+    {
+        "MODULE_CODE_IN_USE" => _sharedLocalizer["ModuleCodeInUse"].Value,
+        _ => error
+    };
 
     private static ModuleCatalogEditViewModel ToEditModel(ModuleCatalogDetailViewModel model) => new()
     {

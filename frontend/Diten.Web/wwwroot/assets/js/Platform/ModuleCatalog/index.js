@@ -401,7 +401,7 @@ const ModuleCatalogList = (function () {
             },
             columns: [
                 { data: 'id', name: 'control' },
-                { data: 'moduleCode', name: 'moduleCode', render: (data) => `<code>${escapeHtml(data)}</code>` },
+                { data: 'moduleCode', name: 'moduleCode', render: (data) => `<span class="fw-medium font-monospace text-primary">${escapeHtml(data)}</span>` },
                 { data: 'moduleName', name: 'moduleName', render: escapeHtml },
                 { data: 'status', name: 'status', render: statusBadge },
                 { data: 'domain', name: 'domain', render: domainBadge },

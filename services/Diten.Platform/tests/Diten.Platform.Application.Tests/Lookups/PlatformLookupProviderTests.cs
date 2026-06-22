@@ -1,9 +1,11 @@
 using System.Text.Json;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Lookups;
 using Diten.Platform.Application.Features.Lookups.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.Lookups.Queries;
 using Diten.Platform.Application.Features.Lookups.Services;
+using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
 using Xunit;
@@ -145,10 +147,105 @@ public sealed class PlatformLookupProviderTests
         Assert.DoesNotContain("\"tenantId\"", json);
     }
 
+    [Fact]
+    public async Task Module_catalog_domains_come_from_database_active_records_not_enum()
+    {
+        var domains = new InMemoryModuleDomainRepository();
+        domains.Items.AddRange(
+        [
+            new ModuleDomain { Code = "FINANCE", DisplayName = "Finance", SortOrder = 20, IsActive = true },
+            new ModuleDomain { Code = "CUSTOMDOMAIN", DisplayName = "Custom Domain", SortOrder = 10, IsActive = true },
+            new ModuleDomain { Code = "HIDDEN", DisplayName = "Hidden", SortOrder = 5, IsActive = false }
+        ]);
+        var provider = CreateProvider(moduleDomainRepository: domains);
+
+        var options = await provider.GetLookupOptionsAsync(PlatformLookupKeys.ModuleCatalogDomains, CancellationToken.None);
+
+        Assert.NotNull(options);
+        // An operator-managed domain that is NOT a ModuleCatalogDomain enum member proves DB sourcing.
+        Assert.Contains(options!, option => option.Code == "CUSTOMDOMAIN" && option.Value == "Custom Domain");
+        // Inactive excluded; value == displayName (form contract preserved); group stable.
+        Assert.DoesNotContain(options!, option => option.Code == "HIDDEN");
+        Assert.All(options!, option => Assert.Equal("ModuleCatalogDomain", option.Group));
+        Assert.All(options!, option => Assert.Equal(option.Name, option.Value));
+        AssertCanonicalShape(options!);
+    }
+
+    [Fact]
+    public async Task Module_catalog_services_come_from_database_active_records_not_enum()
+    {
+        var services = new InMemoryModuleServiceRepository();
+        services.Items.AddRange(
+        [
+            new ModuleService { Code = "DITENPLATFORM", DisplayName = "Diten.Platform", SortOrder = 20, IsActive = true },
+            new ModuleService { Code = "CUSTOMSERVICE", DisplayName = "Custom Service", SortOrder = 10, IsActive = true },
+            new ModuleService { Code = "HIDDEN", DisplayName = "Hidden", SortOrder = 5, IsActive = false }
+        ]);
+        var provider = CreateProvider(moduleServiceRepository: services);
+
+        var options = await provider.GetLookupOptionsAsync(PlatformLookupKeys.ModuleCatalogServices, CancellationToken.None);
+
+        Assert.NotNull(options);
+        // An operator-managed service that is NOT a ModuleCatalogService enum member proves DB sourcing.
+        Assert.Contains(options!, option => option.Code == "CUSTOMSERVICE" && option.Value == "Custom Service");
+        Assert.DoesNotContain(options!, option => option.Code == "HIDDEN");
+        Assert.All(options!, option => Assert.Equal("ModuleCatalogService", option.Group));
+        Assert.All(options!, option => Assert.Equal(option.Name, option.Value));
+        AssertCanonicalShape(options!);
+    }
+
+    [Fact]
+    public async Task Permission_modules_lookup_uses_auth_module_string_as_both_code_and_value()
+    {
+        var client = new FakeAuthPermissionModulesClient(
+        [
+            new AuthPermissionModule("goldenslim", 6),
+            new AuthPermissionModule("Platform", 14) // mixed case preserved exactly
+        ]);
+        var provider = CreateProvider(authPermissionModulesClient: client);
+
+        var options = await provider.GetLookupOptionsAsync(PlatformLookupKeys.ModuleCatalogPermissionModules, CancellationToken.None);
+
+        Assert.NotNull(options);
+        Assert.NotEmpty(options!);
+        // Invariant: value == code == the auth Module string verbatim (so catalog ModuleCode maps 1:1 to Permission.Module).
+        Assert.All(options!, option =>
+        {
+            Assert.Equal(option.Code, option.Value);
+            Assert.Equal("PermissionModule", option.Group);
+        });
+        Assert.Contains(options!, option => option.Code == "goldenslim" && option.Value == "goldenslim");
+        Assert.Contains(options!, option => option.Code == "Platform" && option.Value == "Platform");
+        AssertCanonicalShape(options!);
+    }
+
+    [Fact]
+    public async Task Permission_modules_lookup_is_empty_when_auth_unreachable()
+    {
+        var provider = CreateProvider(authPermissionModulesClient: new FakeAuthPermissionModulesClient([]));
+
+        var options = await provider.GetLookupOptionsAsync(PlatformLookupKeys.ModuleCatalogPermissionModules, CancellationToken.None);
+
+        Assert.NotNull(options);
+        Assert.Empty(options!);
+    }
+
     private static PlatformLookupProvider CreateProvider(
         InMemoryLookupCache? cache = null,
-        InMemoryFeatureCategoryRepository? repository = null) =>
-        new(cache ?? new InMemoryLookupCache(), repository ?? new InMemoryFeatureCategoryRepository());
+        InMemoryFeatureCategoryRepository? repository = null,
+        InMemoryModuleDomainRepository? moduleDomainRepository = null,
+        InMemoryModuleServiceRepository? moduleServiceRepository = null,
+        IAuthPermissionModulesClient? authPermissionModulesClient = null) =>
+        new(cache ?? new InMemoryLookupCache(),
+            repository ?? new InMemoryFeatureCategoryRepository(),
+            moduleDomainRepository ?? new InMemoryModuleDomainRepository(),
+            moduleServiceRepository ?? new InMemoryModuleServiceRepository(),
+            authPermissionModulesClient ?? new FakeAuthPermissionModulesClient([]));
+
+    private sealed class FakeAuthPermissionModulesClient(IReadOnlyList<AuthPermissionModule> modules) : IAuthPermissionModulesClient
+    {
+        public Task<IReadOnlyList<AuthPermissionModule>> GetModulesAsync(CancellationToken ct) => Task.FromResult(modules);
+    }
 
     private static void AssertCanonicalShape(IEnumerable<LookupOptionDto> options)
     {
@@ -192,6 +289,52 @@ public sealed class PlatformLookupProviderTests
             Entries[cacheKey] = value;
             return value;
         }
+    }
+
+    private sealed class InMemoryModuleDomainRepository : IModuleDomainRepository
+    {
+        public List<ModuleDomain> Items { get; } = [];
+
+        public Task<IReadOnlyList<ModuleDomain>> GetActiveAsync(CancellationToken ct = default)
+        {
+            IReadOnlyList<ModuleDomain> result = Items
+                .Where(item => item.IsActive && !item.IsDeleted)
+                .OrderBy(item => item.SortOrder)
+                .ThenBy(item => item.DisplayName)
+                .ToList();
+            return Task.FromResult(result);
+        }
+
+        public Task<ModuleDomain> CreateAsync(ModuleDomain item, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<ModuleDomain?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<ModuleDomain?> GetByCodeAsync(string code, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task UpdateAsync(ModuleDomain item, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<(IReadOnlyList<ModuleDomain> Items, long TotalCount)> QueryAsync(ModuleDomainQuery query, CancellationToken ct = default) => throw new NotSupportedException();
+    }
+
+    private sealed class InMemoryModuleServiceRepository : IModuleServiceRepository
+    {
+        public List<ModuleService> Items { get; } = [];
+
+        public Task<IReadOnlyList<ModuleService>> GetActiveAsync(CancellationToken ct = default)
+        {
+            IReadOnlyList<ModuleService> result = Items
+                .Where(item => item.IsActive && !item.IsDeleted)
+                .OrderBy(item => item.SortOrder)
+                .ThenBy(item => item.DisplayName)
+                .ToList();
+            return Task.FromResult(result);
+        }
+
+        public Task<ModuleService> CreateAsync(ModuleService item, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<ModuleService?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<ModuleService?> GetByCodeAsync(string code, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task UpdateAsync(ModuleService item, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<(IReadOnlyList<ModuleService> Items, long TotalCount)> QueryAsync(ModuleServiceQuery query, CancellationToken ct = default) => throw new NotSupportedException();
     }
 
     private sealed class InMemoryFeatureCategoryRepository : IFeatureCategoryRepository

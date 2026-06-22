@@ -20,6 +20,7 @@ public static class PlatformLookupKeys
     public const string SubscriptionCycles = "subscription-cycles";
     public const string ModuleCatalogDomains = "module-catalog/domains";
     public const string ModuleCatalogServices = "module-catalog/services";
+    public const string ModuleCatalogPermissionModules = "module-catalog/permission-modules";
     public const string AuditCategories = "audit/categories";
     public const string AuditOperations = "audit/operations";
     public const string AuditOutcomes = "audit/outcomes";

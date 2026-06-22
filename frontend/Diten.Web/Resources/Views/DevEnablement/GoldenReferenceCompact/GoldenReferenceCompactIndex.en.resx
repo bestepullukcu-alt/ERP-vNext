@@ -40,4 +40,22 @@
   <data name="Version" xml:space="preserve"><value>Version</value></data>
   <data name="EffectiveDate" xml:space="preserve"><value>Effective Date</value></data>
   <data name="ExpirationDate" xml:space="preserve"><value>Expiration Date</value></data>
+  <data name="CategoryPlaceholder" xml:space="preserve">
+    <value>e.g. Finance</value>
+  </data>
+  <data name="GroupKeyPlaceholder" xml:space="preserve">
+    <value>e.g. GRC-GROUP</value>
+  </data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve">
+    <value>e.g. SAP</value>
+  </data>
+  <data name="OwnerPlaceholder" xml:space="preserve">
+    <value>e.g. John Doe</value>
+  </data>
+  <data name="VersionPlaceholder" xml:space="preserve">
+    <value>e.g. 1.0.0</value>
+  </data>
+  <data name="PriorityPlaceholder" xml:space="preserve">
+    <value>e.g. 50</value>
+  </data>
 </root>

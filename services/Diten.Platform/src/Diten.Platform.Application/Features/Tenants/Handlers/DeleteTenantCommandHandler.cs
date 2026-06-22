@@ -36,6 +36,11 @@ public sealed class DeleteTenantCommandHandler : IRequestHandler<DeleteTenantCom
             return Response<NoContent>.Fail("Tenant not found.", 404);
         }
 
+        if (SystemTenantRules.IsSystemTenant(tenant))
+        {
+            return Response<NoContent>.Fail("The platform system tenant cannot be suspended or deleted.", 400);
+        }
+
         if (tenant.Status == TenantStatus.Active)
         {
             return Response<NoContent>.Fail("Active tenants must be suspended before deletion.", 400);

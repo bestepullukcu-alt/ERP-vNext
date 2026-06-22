@@ -9,8 +9,13 @@
   <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
   <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma</value></data>
   <data name="ModuleCode" xml:space="preserve"><value>Modül Kodu</value></data>
+  <data name="ModuleCodePlaceholder" xml:space="preserve"><value>örn. PROJECT-MANAGEMENT</value></data>
   <data name="ModuleName" xml:space="preserve"><value>Modül Adı</value></data>
+  <data name="ModuleNamePlaceholder" xml:space="preserve"><value>örn. Proje Yönetimi</value></data>
   <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>örn. Proje Yönetimi</value></data>
+  <data name="ModuleVersionPlaceholder" xml:space="preserve"><value>örn. 1.0.0</value></data>
+  <data name="SortOrderPlaceholder" xml:space="preserve"><value>örn. 10</value></data>
   <data name="Domain" xml:space="preserve"><value>Domain</value></data>
   <data name="Service" xml:space="preserve"><value>Servis</value></data>
   <data name="Version" xml:space="preserve"><value>Sürüm</value></data>
@@ -34,6 +39,10 @@
   <data name="PreviewModules" xml:space="preserve"><value>Önizleme Modülleri</value></data>
   <data name="HelpTextCoreModule" xml:space="preserve"><value>Sistem seviyesinde modül. Silinemez.</value></data>
   <data name="HelpTextTenantAssignable" xml:space="preserve"><value>Gelecekteki atama akışlarında tenant'lara atanabilir.</value></data>
+  <data name="ModuleCodeHelpText" xml:space="preserve"><value>Modülünüzün kod-içi permission namespace'i ile birebir aynı olmalı (ör. goldenslim). Listeden seçmek eşleşmeyi garanti eder.</value></data>
+  <data name="ModuleCodeSelectPlaceholder" xml:space="preserve"><value>Modül kodu seçin veya yazın (ör. goldenslim)</value></data>
+  <data name="SelectDomainPlaceholder" xml:space="preserve"><value>Bir domain seçin</value></data>
+  <data name="SelectServicePlaceholder" xml:space="preserve"><value>Bir servis seçin</value></data>
   <data name="InvalidVersionFormat" xml:space="preserve"><value>Sürüm 1.0.0 formatında olmalıdır.</value></data>
   <data name="InvalidModuleCode" xml:space="preserve"><value>2-80 karakter; büyük harf, rakam ve tek tire kullanın.</value></data>
   <data name="RequiredField" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
@@ -62,10 +71,10 @@
   <data name="PageTypeDashboard" xml:space="preserve"><value>Pano</value></data>
   <data name="PageTypeCustom" xml:space="preserve"><value>Özel</value></data>
   <data name="InvalidPageCodeGenerated" xml:space="preserve"><value>Sayfa kodu otomatik oluşturulamadı.</value></data>
-  <data name="InvalidRoutePath" xml:space="preserve"><value>Rota /PPM/Projects formatında olmalıdır.</value></data>
-  <data name="InvalidRouteFormat" xml:space="preserve"><value>Rota /PPM/Projects formatında olmalıdır.</value></data>
+  <data name="InvalidRoutePath" xml:space="preserve"><value>Rota /Sayfa veya /Alan/Sayfa formatında olmalıdır.</value></data>
+  <data name="InvalidRouteFormat" xml:space="preserve"><value>Rota /Sayfa veya /Alan/Sayfa formatında olmalıdır.</value></data>
   <data name="InvalidPermissionFormat" xml:space="preserve"><value>İzin anahtarı ppm.projects.view formatında olmalıdır.</value></data>
-  <data name="RoutePathHelpText" xml:space="preserve"><value>Örnek: /PPM/Projects</value></data>
+  <data name="RoutePathHelpText" xml:space="preserve"><value>Örnek: /Sayfa veya /Alan/Sayfa</value></data>
   <data name="PermissionHelpText" xml:space="preserve"><value>Kullanım örneği: ppm.projects.view</value></data>
   <data name="ModulePagesSearchPlaceholder" xml:space="preserve"><value>Sayfa kodu veya rota ara</value></data>
   <data name="ModulePagesDtInfo" xml:space="preserve"><value>_START_–_END_ / _TOTAL_ kayıt gösteriliyor</value></data>

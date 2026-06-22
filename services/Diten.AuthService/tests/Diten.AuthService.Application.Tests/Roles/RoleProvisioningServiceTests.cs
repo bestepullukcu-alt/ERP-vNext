@@ -150,6 +150,7 @@ public sealed class RoleProvisioningServiceTests
         public Task<Permission?> GetByKeyAsync(string key, CancellationToken ct) => throw new NotSupportedException();
         public Task<IEnumerable<Permission>> GetByModuleAsync(string module, CancellationToken ct) => throw new NotSupportedException();
         public Task<Permission> CreateAsync(Permission permission, CancellationToken ct) => throw new NotSupportedException();
+        public Task UpdateAsync(Permission permission, CancellationToken ct) => throw new NotSupportedException();
         public Task DeleteAsync(Guid id, CancellationToken ct) => throw new NotSupportedException();
     }
 

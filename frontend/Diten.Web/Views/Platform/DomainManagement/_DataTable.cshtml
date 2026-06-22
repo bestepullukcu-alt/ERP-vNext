@@ -1,0 +1,29 @@
+@using Diten.Web.Views.Platform.DomainManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<DomainManagementIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="p-4" style="display: none;">
+        <div class="shimmer skeleton-row" style="width: 100%; height: 32px; margin-bottom: 2rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-domainmanagement" data-dt-standard="v2" class="datatables-domain-management table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["Code"]</th>
+                    <th class="all">@Localizer["DisplayName"]</th>
+                    <th>@Localizer["SortOrder"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

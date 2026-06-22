@@ -47,6 +47,21 @@ public static partial class ModulePageDescriptorNormalizer
     public static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
+    /// <summary>
+    /// True when <paramref name="value"/> is a canonical permission key — a normalized,
+    /// dot-separated key of at least three <c>[a-z][a-z0-9-]*</c> segments (PKS-001 §1 / D-6).
+    /// Used to gate catalog→auth permission sync without re-implementing the grammar.
+    /// </summary>
+    public static bool IsCanonicalPermissionKey(string? value)
+    {
+        var permission = NormalizePermission(value);
+        var parts = permission.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 3
+            && parts.All(part => part.Length > 0
+                && char.IsAsciiLetterLower(part[0])
+                && part.All(ch => char.IsAsciiLetterOrDigit(ch) || ch == '-'));
+    }
+
     public static string? NormalizeOptionalPageCode(string? value)
     {
         var normalized = NormalizePageCode(value);

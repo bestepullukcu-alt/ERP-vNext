@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Reflection;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Lookups;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
@@ -15,13 +16,22 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
 
     private readonly IPlatformLookupCache _cache;
     private readonly IFeatureCategoryRepository _featureCategoryRepository;
+    private readonly IModuleDomainRepository _moduleDomainRepository;
+    private readonly IModuleServiceRepository _moduleServiceRepository;
+    private readonly IAuthPermissionModulesClient _authPermissionModulesClient;
 
     public PlatformLookupProvider(
         IPlatformLookupCache cache,
-        IFeatureCategoryRepository featureCategoryRepository)
+        IFeatureCategoryRepository featureCategoryRepository,
+        IModuleDomainRepository moduleDomainRepository,
+        IModuleServiceRepository moduleServiceRepository,
+        IAuthPermissionModulesClient authPermissionModulesClient)
     {
         _cache = cache;
         _featureCategoryRepository = featureCategoryRepository;
+        _moduleDomainRepository = moduleDomainRepository;
+        _moduleServiceRepository = moduleServiceRepository;
+        _authPermissionModulesClient = authPermissionModulesClient;
     }
 
     public Task<IReadOnlyList<LookupOptionDto>> GetCurrenciesAsync(CancellationToken ct) =>
@@ -73,16 +83,17 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
             PlatformLookupKeys.FeatureCategories => Wrap(GetFeatureCategoriesAsync(ct)),
             PlatformLookupKeys.Countries => Wrap(GetCountriesAsync(ct)),
             PlatformLookupKeys.SubscriptionCycles => Wrap(GetSubscriptionCyclesAsync(ct)),
-            PlatformLookupKeys.ModuleCatalogDomains => Wrap(GetEnumLookupAsync<ModuleCatalogDomain>(
-                PlatformLookupKeys.ModuleCatalogDomains,
-                "ModuleCatalogDomain",
-                valueUsesDisplayName: true,
-                ct)),
-            PlatformLookupKeys.ModuleCatalogServices => Wrap(GetEnumLookupAsync<ModuleCatalogService>(
-                PlatformLookupKeys.ModuleCatalogServices,
-                "ModuleCatalogService",
-                valueUsesDisplayName: true,
-                ct)),
+            // Görev 4: domains now come from the operator-managed platform_module_domains collection (DB),
+            // not the ModuleCatalogDomain enum. Same option shape (code / displayName / value) so the
+            // Module Catalog form is unaffected; value stays = displayName (previous valueUsesDisplayName: true).
+            PlatformLookupKeys.ModuleCatalogDomains => Wrap(GetModuleCatalogDomainsAsync(ct)),
+            // UI #3 Görev 4: services now come from the operator-managed platform_module_services collection (DB),
+            // not the ModuleCatalogService enum. Same option shape (code / displayName / value), value = displayName,
+            // so the Module Catalog Service dropdown is unaffected.
+            PlatformLookupKeys.ModuleCatalogServices => Wrap(GetModuleCatalogServicesAsync(ct)),
+            // UI #4: ModuleCode is chosen from AuthService's distinct permission modules so catalog ModuleCode == auth
+            // Permission.Module (entitlement bridge match). value == code (the module string), NOT a displayName.
+            PlatformLookupKeys.ModuleCatalogPermissionModules => Wrap(GetPermissionModulesAsync(ct)),
             PlatformLookupKeys.AuditCategories => Wrap(GetEnumLookupAsync<AuditCategory>(
                 PlatformLookupKeys.AuditCategories,
                 "AuditCategory",
@@ -107,6 +118,62 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
 
     private async Task<IReadOnlyList<LookupOptionDto>?> Wrap(Task<IReadOnlyList<LookupOptionDto>> task) =>
         await task;
+
+    private Task<IReadOnlyList<LookupOptionDto>> GetPermissionModulesAsync(CancellationToken ct) =>
+        _cache.GetOrCreateAsync(
+            BuildCacheKey(PlatformLookupKeys.ModuleCatalogPermissionModules),
+            DataBackedLookupTtl,
+            async token =>
+            {
+                // Best-effort: an empty list (auth down) is fine — the form's ModuleCode select degrades to free-typed tags.
+                var modules = await _authPermissionModulesClient.GetModulesAsync(token);
+                return modules
+                    .Where(module => !string.IsNullOrWhiteSpace(module.Module))
+                    .Select((module, index) => new LookupOptionDto(
+                        module.Module,
+                        module.Module,
+                        module.Module, // value == code: catalog ModuleCode must equal auth Permission.Module exactly
+                        "PermissionModule",
+                        (index + 1) * 10))
+                    .ToList();
+            },
+            ct);
+
+    private Task<IReadOnlyList<LookupOptionDto>> GetModuleCatalogServicesAsync(CancellationToken ct) =>
+        _cache.GetOrCreateAsync(
+            BuildCacheKey(PlatformLookupKeys.ModuleCatalogServices),
+            DataBackedLookupTtl,
+            async token =>
+            {
+                var services = await _moduleServiceRepository.GetActiveAsync(token);
+                return services
+                    .Select(service => new LookupOptionDto(
+                        service.Code,
+                        service.DisplayName,
+                        service.DisplayName,
+                        "ModuleCatalogService",
+                        service.SortOrder))
+                    .ToList();
+            },
+            ct);
+
+    private Task<IReadOnlyList<LookupOptionDto>> GetModuleCatalogDomainsAsync(CancellationToken ct) =>
+        _cache.GetOrCreateAsync(
+            BuildCacheKey(PlatformLookupKeys.ModuleCatalogDomains),
+            DataBackedLookupTtl,
+            async token =>
+            {
+                var domains = await _moduleDomainRepository.GetActiveAsync(token);
+                return domains
+                    .Select(domain => new LookupOptionDto(
+                        domain.Code,
+                        domain.DisplayName,
+                        domain.DisplayName,
+                        "ModuleCatalogDomain",
+                        domain.SortOrder))
+                    .ToList();
+            },
+            ct);
 
     private Task<IReadOnlyList<LookupOptionDto>> GetFeatureCategoriesAsync(CancellationToken ct) =>
         _cache.GetOrCreateAsync(

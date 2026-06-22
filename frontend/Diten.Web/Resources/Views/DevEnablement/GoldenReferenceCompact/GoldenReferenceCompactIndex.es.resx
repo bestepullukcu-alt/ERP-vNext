@@ -28,16 +28,34 @@
   <data name="LevelPrefix" xml:space="preserve"><value>Nivel</value></data>
   <data name="NotAvailable" xml:space="preserve"><value>No Disponible</value></data>
   <data name="IdLabel" xml:space="preserve"><value>Id.</value></data>
-  <data name="FormPageDescription" xml:space="preserve"><value>Manage the full reference record across identity, ownership, lifecycle, and notes.</value></data>
-  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
-  <data name="OwnershipSection" xml:space="preserve"><value>Ownership</value></data>
-  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle</value></data>
-  <data name="NotesSection" xml:space="preserve"><value>Notes</value></data>
-  <data name="Category" xml:space="preserve"><value>Category</value></data>
-  <data name="GroupKey" xml:space="preserve"><value>Group Key</value></data>
-  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
-  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
-  <data name="Version" xml:space="preserve"><value>Version</value></data>
-  <data name="EffectiveDate" xml:space="preserve"><value>Effective Date</value></data>
-  <data name="ExpirationDate" xml:space="preserve"><value>Expiration Date</value></data>
+  <data name="FormPageDescription" xml:space="preserve"><value>Gestione el registro de referencia completo: identidad, propiedad, ciclo de vida y notas.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="OwnershipSection" xml:space="preserve"><value>Propiedad</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Ciclo de vida</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notas</value></data>
+  <data name="Category" xml:space="preserve"><value>Categoría</value></data>
+  <data name="GroupKey" xml:space="preserve"><value>Clave de grupo</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Sistema de origen</value></data>
+  <data name="Owner" xml:space="preserve"><value>Propietario</value></data>
+  <data name="Version" xml:space="preserve"><value>Versión</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Fecha de vigencia</value></data>
+  <data name="ExpirationDate" xml:space="preserve"><value>Fecha de expiración</value></data>
+  <data name="CategoryPlaceholder" xml:space="preserve">
+    <value>p. ej. Finanzas</value>
+  </data>
+  <data name="GroupKeyPlaceholder" xml:space="preserve">
+    <value>p. ej. GRC-GROUP</value>
+  </data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve">
+    <value>p. ej. SAP</value>
+  </data>
+  <data name="OwnerPlaceholder" xml:space="preserve">
+    <value>p. ej. Juan Pérez</value>
+  </data>
+  <data name="VersionPlaceholder" xml:space="preserve">
+    <value>p. ej. 1.0.0</value>
+  </data>
+  <data name="PriorityPlaceholder" xml:space="preserve">
+    <value>p. ej. 50</value>
+  </data>
 </root>

@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.ModulePages.Commands;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
@@ -10,10 +11,14 @@ namespace Diten.Platform.Application.Features.ModulePages.Handlers.CommandHandle
 public sealed class CreateModulePageDescriptorCommandHandler : IRequestHandler<CreateModulePageDescriptorCommand, Response<Guid>>
 {
     private readonly IModulePageDescriptorRepository _repository;
+    private readonly ICatalogPermissionSyncService _catalogPermissionSyncService;
 
-    public CreateModulePageDescriptorCommandHandler(IModulePageDescriptorRepository repository)
+    public CreateModulePageDescriptorCommandHandler(
+        IModulePageDescriptorRepository repository,
+        ICatalogPermissionSyncService catalogPermissionSyncService)
     {
         _repository = repository;
+        _catalogPermissionSyncService = catalogPermissionSyncService;
     }
 
     public async Task<Response<Guid>> Handle(CreateModulePageDescriptorCommand request, CancellationToken ct)
@@ -54,6 +59,11 @@ public sealed class CreateModulePageDescriptorCommandHandler : IRequestHandler<C
         };
 
         await _repository.CreateAsync(descriptor, ct);
+
+        // Declarative permission sync: a page's RequiredPermission is also declared into AuthService.
+        // Best-effort — never blocks the save (null/empty RequiredPermission is skipped by the service).
+        await _catalogPermissionSyncService.SyncPermissionAsync(descriptor.RequiredPermission, descriptor.DisplayName, ct);
+
         return Response<Guid>.Success(descriptor.Id, 201);
     }
 }

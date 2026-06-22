@@ -82,6 +82,11 @@
   <data name="EmailLoginEnabled" xml:space="preserve"><value>E-posta ile giriş etkin</value></data>
   <data name="PhoneLoginEnabled" xml:space="preserve"><value>Telefon ile giriş etkin</value></data>
   <data name="PhoneLoginFutureSupport" xml:space="preserve"><value>Telefon ile giriş ayarı gelecekteki kanal desteği için saklanır. SMS sağlayıcı konfigürasyonu etkinleştirilene kadar telefon OTP gönderimi kapalıdır.</value></data>
+  <data name="PhoneLoginHelp" xml:space="preserve"><value>Gelecekteki SMS desteği için saklanır.</value></data>
+  <data name="PolicyStrength" xml:space="preserve"><value>Politika gücü</value></data>
+  <data name="PolicyStrengthWeak" xml:space="preserve"><value>Zayıf</value></data>
+  <data name="PolicyStrengthFair" xml:space="preserve"><value>Orta</value></data>
+  <data name="PolicyStrengthStrong" xml:space="preserve"><value>Güçlü</value></data>
   <data name="MfaRequiresEmailLogin" xml:space="preserve"><value>MFA zorunlu olduğunda iki faktör ve e-posta ile giriş etkin olmalıdır.</value></data>
   <data name="AtLeastOneLoginMethod" xml:space="preserve"><value>En az bir giriş yöntemi etkin olmalıdır.</value></data>
   <data name="PasswordPolicy" xml:space="preserve"><value>Parola Politikası</value></data>
@@ -115,9 +120,18 @@
   <data name="NoActivePlans" xml:space="preserve"><value>Aktif abonelik planı bulunamadı.</value></data>
   <data name="AccessPreview" xml:space="preserve"><value>Abonelik / Erişim Önizlemesi</value></data>
   <data name="SubscriptionStatus" xml:space="preserve"><value>Abonelik Durumu</value></data>
+  <data name="SubscriptionStatusPendingProvisioning" xml:space="preserve"><value>Sağlama Bekliyor</value></data>
+  <data name="SubscriptionStatusTrialing" xml:space="preserve"><value>Deneme</value></data>
+  <data name="SubscriptionStatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="SubscriptionStatusPastDue" xml:space="preserve"><value>Gecikmiş</value></data>
+  <data name="SubscriptionStatusCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="SubscriptionStatusExpired" xml:space="preserve"><value>Süresi Doldu</value></data>
+  <data name="SubscriptionStatusSuspended" xml:space="preserve"><value>Askıya Alındı</value></data>
+  <data name="SubscriptionStatusTrialExpired" xml:space="preserve"><value>Deneme Süresi Doldu</value></data>
   <data name="TrialDuration" xml:space="preserve"><value>Deneme Süresi</value></data>
   <data name="TrialStartDate" xml:space="preserve"><value>Deneme Başlangıç Tarihi</value></data>
   <data name="TrialEndDate" xml:space="preserve"><value>Deneme Bitiş Tarihi</value></data>
+  <data name="TrialEndDateRequired" xml:space="preserve"><value>Deneme bitiş tarihi zorunludur.</value></data>
   <data name="TrialDateBackendCalculated" xml:space="preserve"><value>Deneme tarihleri oluşturma sırasında backend tarafından hesaplanır.</value></data>
   <data name="TenantTypeCustomer" xml:space="preserve"><value>Müşteri</value></data>
   <data name="TenantTypeDemo" xml:space="preserve"><value>Demo</value></data>
@@ -148,6 +162,7 @@
   <data name="NoActiveSubscriptionDescription" xml:space="preserve"><value>Bu tenant'ın ticari erişimini yönetmek için plan atayın veya deneme başlatın.</value></data>
   <data name="AssignPlan" xml:space="preserve"><value>Plan Ata</value></data>
   <data name="CurrentSubscription" xml:space="preserve"><value>Geçerli Abonelik</value></data>
+  <data name="CurrentSubscriptionSubtitle" xml:space="preserve"><value>Bu kiracı için aktif plan, faturalama dönemi ve yaşam döngüsü durumu.</value></data>
   <data name="CurrentPlan" xml:space="preserve"><value>Geçerli Plan</value></data>
   <data name="CancelAtPeriodEnd" xml:space="preserve"><value>Dönem Sonunda İptal</value></data>
   <data name="CurrentPeriodStart" xml:space="preserve"><value>Geçerli Dönem Başlangıcı</value></data>
@@ -170,6 +185,12 @@
   <data name="ModuleEntitlementsDescription" xml:space="preserve"><value>Plan yansımalarını, eklentileri, denemeleri ve kiracıya özel override kurallarını yönetin.</value></data>
   <data name="AddModuleEntitlement" xml:space="preserve"><value>Modül Yetkisi Ekle</value></data>
   <data name="ActivateSubscriptionFirst" xml:space="preserve"><value>Modül yetkisi eklemeden önce tenant aboneliğini aktive edin.</value></data>
+  <data name="InvitationSent" xml:space="preserve"><value>Davet gönderildi.</value></data>
+  <data name="LoginUrl" xml:space="preserve"><value>Giriş URL'si</value></data>
+  <data name="TemporaryPassword" xml:space="preserve"><value>Geçici parola</value></data>
+  <data name="InviteSetupTitle" xml:space="preserve"><value>Manuel kurulum (dev)</value></data>
+  <data name="InviteSetupEmailNotSent" xml:space="preserve"><value>E-posta gönderilmedi (SMTP kapalı). Bu bilgileri admin'e elle iletin:</value></data>
+  <data name="NoUsableAdminWarning" xml:space="preserve"><value>Bu tenant'ta henüz davet edilmiş admin yok. Giriş yapılabilmesi için aşağıdaki Invite aksiyonuyla bir admin davet edin.</value></data>
   <data name="ModuleEntitlementFormDescription" xml:space="preserve"><value>Kiracıya özel modül erişim kuralı oluşturun.</value></data>
   <data name="Module" xml:space="preserve"><value>Modül</value></data>
   <data name="ModuleRequired" xml:space="preserve"><value>Modül zorunludur.</value></data>
@@ -213,4 +234,56 @@
   <data name="tenant.commercial.quota.unauthorized" xml:space="preserve"><value>Tenant kota yönetimini görüntüleme yetkiniz yok.</value></data>
   <data name="tenant.commercial.quota.loading" xml:space="preserve"><value>Kota durumu yükleniyor...</value></data>
   <data name="tenant.commercial.quota.apiCallsMvpNote" xml:space="preserve"><value>API çağrı kullanımı yönetişim için gösterilir. Canlı gateway enforcement bu MVP kapsamında değildir.</value></data>
+  <data name="tenant.commercial.quota.used" xml:space="preserve"><value>kullanıldı</value></data>
+  <data name="tenant.commercial.quota.remaining" xml:space="preserve"><value>kalan</value></data>
+  <data name="tenant.commercial.quota.allWithinLimits" xml:space="preserve"><value>Tüm kotalar limitler içinde</value></data>
+  <data name="tenant.commercial.quota.needsAttention" xml:space="preserve"><value>Bazı kotalar dikkat gerektiriyor</value></data>
+  <data name="tenant.commercial.quota.monitored" xml:space="preserve"><value>kota izleniyor</value></data>
+  <data name="tenant.commercial.quota.atRisk" xml:space="preserve"><value>Risk altında</value></data>
+  <data name="tenant.commercial.quota.refreshNote" xml:space="preserve"><value>Kota verileri her 60 saniyede bir yenilenir.</value></data>
+  <data name="tenant.commercial.quota.unit.calls" xml:space="preserve"><value>çağrı</value></data>
+  <data name="tenant.commercial.quota.unit.modules" xml:space="preserve"><value>modül</value></data>
+  <data name="tenant.commercial.quota.unit.users" xml:space="preserve"><value>kullanıcı</value></data>
+  <data name="TenantNamePlaceholder" xml:space="preserve"><value>örn. Acme Global</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>örn. Acme Global HQ</value></data>
+  <data name="AdminEmailPlaceholder" xml:space="preserve"><value>örn. admin@acme.com</value></data>
+  <data name="SlugPlaceholder" xml:space="preserve"><value>örn. acme-global</value></data>
+  <data name="SubdomainPlaceholder" xml:space="preserve"><value>örn. acme-global</value></data>
+  <data name="SlugHelp" xml:space="preserve"><value>Tenant adından otomatik oluşturulur. URL'lerde kullanılır.</value></data>
+  <data name="SubdomainHelp" xml:space="preserve"><value>Bu tenant için benzersiz bir alt alan adı seçin.</value></data>
+  <data name="AccessUrlHelp" xml:space="preserve"><value>Tenant'ların giriş yapmak için kullanacağı tam URL.</value></data>
+  <data name="Summary" xml:space="preserve"><value>Özet</value></data>
+  <data name="Monthly" xml:space="preserve"><value>Aylık</value></data>
+  <data name="Yearly" xml:space="preserve"><value>Yıllık</value></data>
+  <data name="Trial" xml:space="preserve"><value>Deneme</value></data>
+  <data name="ProvisioningNote" xml:space="preserve"><value>Provisioning, oluşturmadan hemen sonra başlar</value></data>
+  <data name="TrialingAccess" xml:space="preserve"><value>Deneme erişimi</value></data>
+  <data name="ActiveSubscription" xml:space="preserve"><value>Aktif abonelik</value></data>
+  <data name="TrialAccessDescription" xml:space="preserve"><value>{0}, {1} gün boyunca Deneme olarak başlar ve {2} tarihinde sona erer.</value></data>
+  <data name="ActiveAccessDescription" xml:space="preserve"><value>{0}, deneme süresi olmadan Aktif olarak başlar.</value></data>
+  <data name="NoTrial" xml:space="preserve"><value>Yok</value></data>
+  <data name="Or" xml:space="preserve"><value>veya</value></data>
+  <data name="Selected" xml:space="preserve"><value>Seçili</value></data>
+  <data name="UsersMax" xml:space="preserve"><value>Kullanıcı</value></data>
+  <data name="StorageGbMax" xml:space="preserve"><value>Depolama</value></data>
+  <data name="ApiCallsPerMonth" xml:space="preserve"><value>API / ay</value></data>
+  <data name="ModulesMax" xml:space="preserve"><value>Modül</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Oluşturan</value></data>
+  <data name="Branding" xml:space="preserve"><value>Marka</value></data>
+  <data name="EmailLoginHelp" xml:space="preserve"><value>Kullanıcıların e-posta adresi ve parolasıyla giriş yapmasına izin ver.</value></data>
+  <data name="TwoFactorHelp" xml:space="preserve"><value>Kullanıcıların hesaplarında TOTP tabanlı iki faktörlü kimlik doğrulamayı yapılandırmasına izin ver.</value></data>
+  <data name="MfaRequiredHelp" xml:space="preserve"><value>Tüm kullanıcıları platforma erişmeden önce MFA kurulumunu tamamlamaya zorla.</value></data>
+  <data name="PasswordMinLengthHelp" xml:space="preserve"><value>Bundan kısa parolalar reddedilir.</value></data>
+  <data name="PasswordExpirationHelp" xml:space="preserve"><value>Süre dolumunu devre dışı bırakmak için boş bırakın.</value></data>
+  <data name="ComplexityRequirements" xml:space="preserve"><value>Karmaşıklık gereksinimleri</value></data>
+  <data name="RequireUppercaseHelp" xml:space="preserve"><value>En az bir A–Z karakteri</value></data>
+  <data name="RequireSpecialCharHelp" xml:space="preserve"><value>En az bir !@#$%^&amp;* karakteri</value></data>
+  <data name="SessionTimeoutHelp" xml:space="preserve"><value>Oturumun sona ermesi için gereken hareketsizlik süresi.</value></data>
+  <data name="MaxFailedLoginAttemptsHelp" xml:space="preserve"><value>Bu kadar ardışık başarısız denemeden sonra hesap kilitlenir.</value></data>
+  <data name="LockoutDurationHelp" xml:space="preserve"><value>Maksimum başarısız denemeden sonra hesabın ne kadar kilitli kalacağı.</value></data>
+  <data name="RefreshTokenLifetimeHelp" xml:space="preserve"><value>Yenileme token'larının zorunlu yeniden girişten önce ne kadar geçerli kalacağı.</value></data>
+  <data name="SettingsScopeTitle" xml:space="preserve"><value>Ayar kapsamı</value></data>
+  <data name="SettingsScopeDescription" xml:space="preserve"><value>Bu ayarlar bu tenant'taki tüm kullanıcılara uygulanır. Bireysel kullanıcı geçersiz kılmaları desteklenmez.</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>gün</value></data>
+  <data name="UnitMin" xml:space="preserve"><value>dk</value></data>
 </root>

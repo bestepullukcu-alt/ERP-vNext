@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.ModulePages.Commands;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -10,10 +11,14 @@ public sealed class UpdateModulePageActionDescriptorCommandHandler
     : IRequestHandler<UpdateModulePageActionDescriptorCommand, Response<NoContent>>
 {
     private readonly IModulePageActionDescriptorRepository _repository;
+    private readonly ICatalogPermissionSyncService _catalogPermissionSyncService;
 
-    public UpdateModulePageActionDescriptorCommandHandler(IModulePageActionDescriptorRepository repository)
+    public UpdateModulePageActionDescriptorCommandHandler(
+        IModulePageActionDescriptorRepository repository,
+        ICatalogPermissionSyncService catalogPermissionSyncService)
     {
         _repository = repository;
+        _catalogPermissionSyncService = catalogPermissionSyncService;
     }
 
     public async Task<Response<NoContent>> Handle(UpdateModulePageActionDescriptorCommand request, CancellationToken ct)
@@ -42,6 +47,10 @@ public sealed class UpdateModulePageActionDescriptorCommandHandler
         descriptor.Description = ModulePageDescriptorNormalizer.NormalizeOptional(request.Request.Description);
 
         await _repository.UpdateAsync(descriptor, ct);
+
+        // Declarative permission sync (best-effort; never blocks the save). See create handler.
+        await _catalogPermissionSyncService.SyncPermissionAsync(descriptor.PermissionKey, descriptor.DisplayName, ct);
+
         return Response<NoContent>.Success(204);
     }
 }

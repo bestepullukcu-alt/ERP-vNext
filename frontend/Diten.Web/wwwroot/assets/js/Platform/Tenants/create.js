@@ -205,12 +205,35 @@ const TenantCreate = (function () {
         };
     };
 
+    const formatNumber = (value, maximumFractionDigits = 0) => {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return String(value ?? '');
+        return new Intl.NumberFormat(undefined, { maximumFractionDigits }).format(number);
+    };
+
+    const getQuotaValue = (quotas, key) => {
+        if (!quotas) return null;
+        if (Object.prototype.hasOwnProperty.call(quotas, key)) return quotas[key];
+        const match = Object.keys(quotas).find((item) => item.toLowerCase() === key.toLowerCase());
+        return match ? quotas[match] : null;
+    };
+
+    const quotaItems = (plan) => {
+        const quotas = plan.defaultQuotas || plan.DefaultQuotas || {};
+        const items = [
+            { icon: 'bx-group', label: L.UsersMax || 'Users', value: getQuotaValue(quotas, 'users.max'), suffix: '' },
+            { icon: 'bx-hdd', label: L.StorageGbMax || 'Storage', value: getQuotaValue(quotas, 'storage.gb.max'), suffix: ' GB', fractionDigits: 2 },
+            { icon: 'bx-transfer-alt', label: L.ApiCallsPerMonth || 'API / month', value: getQuotaValue(quotas, 'api.calls.per.month'), suffix: '' },
+            { icon: 'bx-grid-alt', label: L.ModulesMax || 'Modules', value: getQuotaValue(quotas, 'modules.max'), suffix: '' }
+        ];
+        return items
+            .filter((item) => item.value !== null && item.value !== undefined && item.value !== '')
+            .map((item) => ({ label: item.label, text: `${formatNumber(item.value, item.fractionDigits || 0)}${item.suffix}`, icon: item.icon }));
+    };
+
     const featureItems = (plan) => {
         const features = plan.includedFeatures || plan.IncludedFeatures || [];
-        const modules = (plan.includedModuleKeys || plan.IncludedModuleKeys || []).map((item) => `${L.Modules || 'Modules'}: ${item}`);
-        const quotas = plan.defaultQuotas || plan.DefaultQuotas || {};
-        const quotaItems = Object.keys(quotas).map((key) => `${key}: ${quotas[key]}`);
-        return features.concat(modules, quotaItems).slice(0, 7);
+        return features.slice(0, 5);
     };
 
     const renderPlans = () => {
@@ -223,42 +246,46 @@ const TenantCreate = (function () {
             const isDefault = plan.isDefault ?? plan.IsDefault;
             const trialDays = plan.trialDurationDays ?? plan.TrialDurationDays;
             const prices = formatPrice(plan);
-            const items = featureItems(plan);
+            const features = featureItems(plan);
+            const quotas = quotaItems(plan);
             const monthlyLabel = String(L.Month || 'month').toLowerCase();
             const yearlyLabel = String(L.Year || 'year').toLowerCase();
-            return `<div class="col-12 col-md-6 col-xl-3">
-                <div class="card h-100 border shadow-sm ${isSelected ? 'border-primary' : ''}" data-plan-id="${escapeHtml(id)}" role="${isEditMode ? 'group' : 'button'}" tabindex="${isEditMode ? '-1' : '0'}">
+            return `<div class="col-12 col-md-4">
+                <div class="card h-100 border ${isSelected ? 'border-primary' : ''}" data-plan-id="${escapeHtml(id)}" role="${isEditMode ? 'group' : 'button'}" tabindex="${isEditMode ? '-1' : '0'}">
                     <div class="card-body d-flex flex-column p-4">
-                        <div class="d-flex align-items-start justify-content-between gap-3 mb-4">
+                        <div class="d-flex align-items-start justify-content-between gap-3 mb-6">
                             <div class="min-w-0">
-                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                <div class="d-flex flex-wrap align-items-center gap-1 mb-2">
                                     <h5 class="mb-0 text-truncate">${escapeHtml(plan.name || plan.Name)}</h5>
                                     ${isTrial ? `<span class="badge bg-label-info">${escapeHtml(L.FreeTrial || 'Free')}</span>` : ''}
                                     ${isDefault ? `<span class="badge bg-label-primary">${escapeHtml(L.Default || 'Default')}</span>` : ''}
-                                    ${isSelected ? `<span class="badge bg-label-success">${escapeHtml(L.Selected || 'Selected')}</span>` : ''}
                                 </div>
-                                <small class="text-uppercase text-muted">${escapeHtml(plan.code || plan.Code)}</small>
+                                <small class="text-uppercase font-monospace text-primary fw-medium">${escapeHtml(plan.code || plan.Code)}</small>
                             </div>
-                            <div class="avatar avatar-sm flex-shrink-0">
-                                <span class="avatar-initial rounded bg-label-${isSelected ? 'primary' : 'secondary'}">
-                                    <i class="bx ${isSelected ? 'bx-check' : 'bx-layer'}"></i>
-                                </span>
-                            </div>
+                            ${isSelected ? `<div class="avatar avatar-sm flex-shrink-0"><span class="avatar-initial rounded-circle bg-primary"><i class="bx bx-check"></i></span></div>` : ''}
                         </div>
-                        ${plan.description || plan.Description ? `<p class="text-muted mb-5">${escapeHtml(plan.description || plan.Description)}</p>` : `<p class="text-muted mb-5">&nbsp;</p>`}
-                        <div class="mb-4">
+                        ${plan.description || plan.Description ? `<p class="text-muted mb-6">${escapeHtml(plan.description || plan.Description)}</p>` : ''}
+                        <div class="mb-6">
                             <div class="d-flex align-items-baseline flex-wrap gap-1">
                                 <span class="display-6 text-heading mb-0">${escapeHtml(prices.monthly)}</span>
                                 <span class="text-muted">/${escapeHtml(monthlyLabel)}</span>
                             </div>
-                            <div class="text-muted small">${escapeHtml(prices.yearly)}/${escapeHtml(yearlyLabel)}</div>
+                            <div class="text-muted small">${escapeHtml(L.Or || 'or')} ${escapeHtml(prices.yearly)}/${escapeHtml(yearlyLabel)}</div>
                         </div>
-                        ${isTrial ? `<div class="mb-4"><small class="text-muted">${escapeHtml(L.TrialDuration || 'Trial Duration')}:</small> <span class="fw-semibold">${escapeHtml(trialDays || '-')} ${escapeHtml(L.Days || 'days')}</span></div>` : ''}
-                        <div class="border-top pt-4 mt-auto">
+                        ${isTrial ? `<div class="mb-6"><small class="text-muted">${escapeHtml(L.TrialDuration || 'Trial Duration')}:</small> <span class="fw-semibold">${escapeHtml(trialDays || '-')} ${escapeHtml(L.Days || 'days')}</span></div>` : ''}
+                        <div class="border-top pt-6 mt-auto">
                             <small class="text-muted d-block mb-3">${escapeHtml(L.Features || 'Features')}</small>
-                            ${items.length
-                                ? `<ul class="list-unstyled mb-0">${items.map((item) => `<li class="d-flex align-items-start gap-2 mb-2"><i class="bx bx-check text-success mt-1"></i><span>${escapeHtml(item)}</span></li>`).join('')}</ul>`
+                            ${features.length
+                                ? `<ul class="list-unstyled mb-0">${features.map((item) => `<li class="d-flex align-items-start gap-2 mb-2"><i class="bx bx-check text-success mt-1"></i><span>${escapeHtml(item)}</span></li>`).join('')}</ul>`
                                 : `<div class="text-muted small">${escapeHtml(L.NoFeatureSummary || '-')}</div>`}
+                            ${quotas.length
+                                ? `<div class="mt-4">
+                                       <small class="text-muted d-block mb-2">${escapeHtml(L.Quotas || 'Default Quotas')}</small>
+                                       <ul class="list-unstyled mb-0">
+                                           ${quotas.map((quota) => `<li class="d-flex align-items-center gap-2 mb-1 small"><i class="bx ${escapeHtml(quota.icon)} text-muted"></i><span class="text-muted">${escapeHtml(quota.label)}:</span><span class="font-monospace text-heading fw-medium">${escapeHtml(quota.text)}</span></li>`).join('')}
+                                       </ul>
+                                   </div>`
+                                : ''}
                         </div>
                     </div>
                 </div>
@@ -281,10 +308,35 @@ const TenantCreate = (function () {
         const trialDays = selectedPlan.trialDurationDays ?? selectedPlan.TrialDurationDays;
         const planName = selectedPlan.name || selectedPlan.Name || '';
         const trialEndDate = new Date(Date.now() + Number(trialDays || 0) * 86400000).toLocaleDateString();
-        status.textContent = isTrial ? 'Trialing access' : 'Active subscription';
+        status.textContent = isTrial ? (L.TrialingAccess || 'Trialing access') : (L.ActiveSubscription || 'Active subscription');
         text.textContent = isTrial
-            ? `${planName} starts as Trialing for ${trialDays} ${L.Days || 'days'} and ends on ${trialEndDate}.`
-            : `${planName} starts as Active with ${L.NoTrialPeriod || 'no trial period'}.`;
+            ? (L.TrialAccessDescription || '{0} starts as Trialing for {1} days and ends on {2}.')
+                .replace('{0}', planName).replace('{1}', trialDays).replace('{2}', trialEndDate)
+            : (L.ActiveAccessDescription || '{0} starts as Active with no trial period.')
+                .replace('{0}', planName);
+    };
+
+    const updateSummary = () => {
+        const planEl = document.getElementById('summaryPlan');
+        const monthlyEl = document.getElementById('summaryMonthly');
+        const yearlyEl = document.getElementById('summaryYearly');
+        const trialEl = document.getElementById('summaryTrial');
+        if (!planEl) return;
+
+        if (!selectedPlan) {
+            [planEl, monthlyEl, yearlyEl, trialEl].forEach((el) => { if (el) el.textContent = '-'; });
+            return;
+        }
+
+        const prices = formatPrice(selectedPlan);
+        const isTrial = selectedPlan.isTrialPlan ?? selectedPlan.IsTrialPlan;
+        const trialDays = selectedPlan.trialDurationDays ?? selectedPlan.TrialDurationDays;
+        planEl.textContent = selectedPlan.name || selectedPlan.Name || '-';
+        if (monthlyEl) monthlyEl.textContent = prices.monthly;
+        if (yearlyEl) yearlyEl.textContent = prices.yearly;
+        if (trialEl) trialEl.textContent = isTrial && trialDays
+            ? `${trialDays} ${L.Days || 'days'}`
+            : (L.NoTrial || 'None');
     };
 
     const selectPlan = (planId) => {
@@ -293,6 +345,7 @@ const TenantCreate = (function () {
         if (hidden) hidden.value = selectedPlan ? (selectedPlan.id || selectedPlan.Id) : '';
         renderPlans();
         updateAccessPreview();
+        updateSummary();
         setCreateEnabled();
     };
 
@@ -460,7 +513,7 @@ const TenantCreate = (function () {
                 .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' }))
                 .forEach(t => timezoneSelect?.add(new Option(t.name, t.value || t.code || t.id)));
 
-            initTimezoneSelect2();
+            initAllSelect2();
         } catch (err) {
             console.error('[TenantCreate] Lookups could not be loaded:', err);
         }
@@ -529,10 +582,10 @@ const TenantCreate = (function () {
         }
     };
 
-    const initTimezoneSelect2 = () => {
+    const initSelect2 = (selector) => {
         if (!window.jQuery || !window.jQuery.fn?.select2) return;
 
-        const $select = window.jQuery('#defaultTimezone');
+        const $select = window.jQuery(selector);
         if (!$select.length) return;
         if ($select.hasClass('select2-hidden-accessible')) {
             $select.select2('destroy');
@@ -545,9 +598,14 @@ const TenantCreate = (function () {
         $select.select2({
             dropdownParent: $select.parent(),
             placeholder: $select.find('option:first').text(),
-            allowClear: true,
+            allowClear: !$select.prop('required'),
             width: '100%'
         });
+    };
+
+    const initAllSelect2 = () => {
+        ['#tenantType', '#defaultLanguage', '#tenantCountry', '#defaultTimezone', '#defaultCurrency']
+            .forEach((selector) => initSelect2(selector));
     };
 
     return {

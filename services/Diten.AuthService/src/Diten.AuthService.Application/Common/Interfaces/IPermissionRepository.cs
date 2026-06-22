@@ -9,5 +9,6 @@ public interface IPermissionRepository
     Task<IEnumerable<Permission>> GetAllAsync(CancellationToken ct);
     Task<IEnumerable<Permission>> GetByModuleAsync(string module, CancellationToken ct);
     Task<Permission> CreateAsync(Permission permission, CancellationToken ct);
+    Task UpdateAsync(Permission permission, CancellationToken ct);
     Task DeleteAsync(Guid id, CancellationToken ct);
 }

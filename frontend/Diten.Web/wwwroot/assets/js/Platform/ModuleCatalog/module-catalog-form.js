@@ -13,28 +13,6 @@ const ModuleCatalogForm = (function () {
     const previewSpan = previewModuleCode?.querySelector('span');
     const L = window.L10n || {};
     const isEdit = inputModuleCode?.dataset?.isEdit === 'true';
-    let moduleCodeManuallyEdited = Boolean(inputModuleCode?.value);
-
-    const normalizeCode = (value) => {
-        return (value || '')
-            .toUpperCase()
-            .replace(/[^A-Z0-9]+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '')
-            .slice(0, 80)
-            .replace(/-$/g, '');
-    };
-
-    const updatePreview = () => {
-        if (!inputModuleCode || !previewModuleCode || !previewSpan) return;
-        const normalized = normalizeCode(inputModuleCode.value);
-        if (normalized.length > 0) {
-            previewSpan.textContent = normalized;
-            previewModuleCode.classList.remove('d-none');
-        } else {
-            previewModuleCode.classList.add('d-none');
-        }
-    };
 
     const toggleSaveButton = () => {
         if (!form || !btnSave) return;
@@ -71,6 +49,12 @@ const ModuleCatalogForm = (function () {
                 placeholder: $this.data('placeholder') || ''
             };
 
+            // Opt-in tagging: only selects flagged with data-tags="true" allow
+            // free-typed values (e.g. ModuleCode when the module isn't in auth yet).
+            if ($this.attr('data-tags') === 'true') {
+                options.tags = true;
+            }
+
             if (isStatus) {
                 options.templateResult = formatStatus;
                 options.templateSelection = formatStatus;
@@ -91,20 +75,6 @@ const ModuleCatalogForm = (function () {
             }
             return $('<span class="' + colorClass + ' fw-medium"><i class="bx bxs-circle me-1 small"></i>' + state.text + '</span>');
         }
-    };
-
-    const syncGeneratedModuleCode = () => {
-        if (!inputModuleCode || isEdit || moduleCodeManuallyEdited) return;
-
-        const source = inputDisplayName?.value || inputModuleName?.value || '';
-        const normalized = normalizeCode(source);
-        if (inputModuleCode.value !== normalized) {
-            inputModuleCode.value = normalized;
-        }
-
-        updatePreview();
-        handleValidation(inputModuleCode);
-        toggleSaveButton();
     };
 
     const unwrapLookupRows = (payload) => {
@@ -178,24 +148,6 @@ const ModuleCatalogForm = (function () {
     };
 
     const bindEvents = () => {
-        if (inputModuleCode) {
-            inputModuleCode.addEventListener('input', function () {
-                moduleCodeManuallyEdited = true;
-                const normalized = normalizeCode(this.value);
-                if (this.value !== normalized) {
-                    this.value = normalized;
-                }
-                updatePreview();
-                handleValidation(this);
-                toggleSaveButton();
-            });
-            // Initial preview if editing
-            updatePreview();
-        }
-
-        inputDisplayName?.addEventListener('input', syncGeneratedModuleCode);
-        inputModuleName?.addEventListener('input', syncGeneratedModuleCode);
-
         if (form) {
             // Monitor all inputs for validation state
             const inputs = form.querySelectorAll('input:not(#ModuleCode), select, textarea');

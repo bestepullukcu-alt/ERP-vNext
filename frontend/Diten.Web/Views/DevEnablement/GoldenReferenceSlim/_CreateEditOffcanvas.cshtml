@@ -5,12 +5,12 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
-    <div class="offcanvas-header py-6">
+    <div class="offcanvas-header p-4">
         <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
 
-    <div class="offcanvas-body border-top">
+    <div class="offcanvas-body border-top p-4">
         @* Server-side validation errors (from gateway) *@
         <div id="formGoldenReferenceSlimAlert" class="alert alert-danger d-none" role="alert"></div>
 
