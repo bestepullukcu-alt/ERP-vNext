@@ -467,5 +467,8 @@
   <data name="PositionAssignments" xml:space="preserve"><value>Назначения должностей</value></data>
   <data name="MasterData" xml:space="preserve"><value>Мастер-данные</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>Юридические лица</value></data>
+  <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Согласования рабочих процессов</value></data>
+  <data name="DocumentationStructures" xml:space="preserve"><value>Структуры документации</value></data>
+  <data name="QmsBaselines" xml:space="preserve"><value>Базовые линии QMS</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>Не авторизовано</value></data>
 </root>
-

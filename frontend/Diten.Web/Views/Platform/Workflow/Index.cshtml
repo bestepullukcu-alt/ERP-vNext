@@ -1,0 +1,345 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var definitionsBulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions = []
+    };
+}
+
+@* MOD-0023 Batch 08 — Workflow admin console. All data access is via the gateway proxy
+   (/Platform/Workflow/api/**). Backend [HasPermission] gates may return 403; the JS surfaces a
+   clear "Permission missing or not assigned." message plus reasonCode/correlationId. *@
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["PageTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <button type="button" id="wf-open-escalations" class="btn btn-label-secondary">
+            <i class="icon-base bx bx-trending-up me-1"></i>@Localizer["RunEscalations"]
+        </button>
+        <a href="/Platform/Workflow/TransitionGate" id="wf-open-gate" class="btn btn-primary">
+            <i class="icon-base bx bx-git-compare me-1"></i>@Localizer["TabTransitionGate"]
+        </a>
+    </div>
+</div>
+
+@* Golden DataTable v2 contract: inline filter + skeleton card + data-dt-standard="v2". *@
+<partial name="_Filter" />
+<partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="definitionsBulkActionBar" />
+<partial name="_DataTable" />
+<partial name="_DetailsQuickView" />
+
+@* ===================== Modals ===================== *@
+<div class="modal fade" id="wf-instances-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">@Localizer["TabInstances"] <span id="wf-inst-title-code" class="text-muted"></span></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button></div>
+        <div class="modal-body">
+            <div class="d-flex justify-content-end mb-3">
+                <button type="button" id="wf-inst-refresh" class="btn btn-label-secondary btn-sm"><i class="icon-base bx bx-refresh me-1"></i>@Localizer["Refresh"]</button>
+            </div>
+            <div id="wf-inst-loading" class="alert alert-info">@Localizer["Loading"]</div>
+            <div id="wf-inst-error" class="alert alert-danger d-none">@Localizer["ErrorState"]</div>
+            <div id="wf-inst-empty" class="alert alert-warning d-none">@Localizer["EmptyState"]</div>
+            <div id="wf-inst-table" class="card d-none">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead><tr>
+                            <th>@Localizer["InstanceId"]</th><th>@Localizer["TemplateId"]</th><th>@Localizer["ObjectRef"]</th>
+                            <th>@Localizer["Status"]</th><th>@Localizer["StageStep"]</th><th>@Localizer["StartedAt"]</th>
+                            <th>@Localizer["DueAt"]</th><th>@Localizer["CompletedAt"]</th>
+                        </tr></thead>
+                        <tbody id="wf-inst-rows"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="wf-tasks-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">@Localizer["TabTasks"] <span id="wf-task-title-code" class="text-muted"></span></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button></div>
+        <div class="modal-body">
+            <div class="d-flex justify-content-end mb-3">
+                <button type="button" id="wf-task-refresh" class="btn btn-label-secondary btn-sm"><i class="icon-base bx bx-refresh me-1"></i>@Localizer["Refresh"]</button>
+            </div>
+            <div id="wf-task-loading" class="alert alert-info">@Localizer["Loading"]</div>
+            <div id="wf-task-error" class="alert alert-danger d-none">@Localizer["ErrorState"]</div>
+            <div id="wf-task-empty" class="alert alert-warning d-none">@Localizer["EmptyState"]</div>
+            <div id="wf-task-table" class="card d-none">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead><tr>
+                            <th>@Localizer["TaskId"]</th><th>@Localizer["WorkflowInstanceId"]</th><th>@Localizer["Status"]</th>
+                            <th>@Localizer["StageStep"]</th><th>@Localizer["DueAt"]</th><th>@Localizer["ActionedBy"]</th>
+                            <th>@Localizer["CompletedAt"]</th><th class="text-end">@Localizer["Actions"]</th>
+                        </tr></thead>
+                        <tbody id="wf-task-rows"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="wf-sla-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">@Localizer["TabSlaRules"] <span id="wf-sla-title-code" class="text-muted"></span></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button></div>
+        <div class="modal-body">
+            <div class="row g-3">
+                <div class="col-lg-7 order-lg-1 order-2">
+                    <div class="d-flex justify-content-between align-items-end mb-3 gap-2">
+                        <div class="flex-grow-1">
+                            <label class="form-label mb-1" for="wf-sla-filter-templateid">@Localizer["FilterByTemplate"]</label>
+                            <input type="text" id="wf-sla-filter-templateid" class="form-control form-control-sm" placeholder="00000000-0000-0000-0000-000000000000" />
+                        </div>
+                        <button type="button" id="wf-sla-refresh" class="btn btn-label-secondary btn-sm"><i class="icon-base bx bx-refresh me-1"></i>@Localizer["Refresh"]</button>
+                    </div>
+                    <div id="wf-sla-loading" class="alert alert-info">@Localizer["Loading"]</div>
+                    <div id="wf-sla-error" class="alert alert-danger d-none">@Localizer["ErrorState"]</div>
+                    <div id="wf-sla-empty" class="alert alert-warning d-none">@Localizer["EmptyState"]</div>
+                    <div id="wf-sla-table" class="card d-none">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead><tr>
+                                    <th>@Localizer["TemplateId"]</th><th>@Localizer["StageStep"]</th>
+                                    <th class="text-center">@Localizer["DueInMinutes"]</th><th class="text-center">@Localizer["EscalateAfterMinutes"]</th>
+                                    <th class="text-center">@Localizer["TimeoutAfterMinutes"]</th><th>@Localizer["EscalationPrincipalIds"]</th><th>@Localizer["IsActive"]</th>
+                                </tr></thead>
+                                <tbody id="wf-sla-rows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5 order-lg-2 order-1">
+                    <div class="card">
+                        <div class="card-header"><h6 class="mb-0">@Localizer["CreateSlaRule"]</h6></div>
+                        <div class="card-body">
+                            <div id="wf-sla-form-error" class="alert alert-danger d-none"></div>
+                            <form id="wf-sla-form" class="row g-3" novalidate>
+                                <div class="col-12"><label class="form-label" for="wf-sla-templateid">@Localizer["TemplateId"] <span class="text-danger">*</span></label><input id="wf-sla-templateid" class="form-control" /></div>
+                                <div class="col-6"><label class="form-label" for="wf-sla-stage">@Localizer["StageCode"] <span class="text-danger">*</span></label><input id="wf-sla-stage" class="form-control" /></div>
+                                <div class="col-6"><label class="form-label" for="wf-sla-step">@Localizer["StepCode"] <span class="text-danger">*</span></label><input id="wf-sla-step" class="form-control" /></div>
+                                <div class="col-6"><label class="form-label" for="wf-sla-due">@Localizer["DueInMinutes"] <span class="text-danger">*</span></label><input id="wf-sla-due" type="number" min="1" class="form-control" /></div>
+                                <div class="col-6"><label class="form-label" for="wf-sla-escalate">@Localizer["EscalateAfterMinutes"] <span class="text-danger">*</span></label><input id="wf-sla-escalate" type="number" min="1" class="form-control" /></div>
+                                <div class="col-6"><label class="form-label" for="wf-sla-timeout">@Localizer["TimeoutAfterMinutes"]</label><input id="wf-sla-timeout" type="number" min="1" class="form-control" /></div>
+                                <div class="col-12"><label class="form-label" for="wf-sla-principals">@Localizer["EscalationPrincipalIds"] <span class="text-danger">*</span></label><input id="wf-sla-principals" class="form-control" placeholder="id1, id2" /><div class="form-text">@Localizer["CandidatePrincipalIdsHint"]</div></div>
+                                <div class="col-12 text-end"><button type="button" id="wf-sla-submit" class="btn btn-primary btn-sm">@Localizer["Save"]</button></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="wf-escalations-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">@Localizer["EscalationRunner"]</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button></div>
+        <div class="modal-body">
+                    <div id="wf-esc-error" class="alert alert-danger d-none"></div>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3"><label class="form-label" for="wf-esc-now">@Localizer["NowUtc"]</label><input id="wf-esc-now" type="datetime-local" class="form-control" /></div>
+                        <div class="col-md-2"><label class="form-label" for="wf-esc-max">@Localizer["MaxItems"]</label><input id="wf-esc-max" type="number" min="1" class="form-control" /></div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="wf-esc-idem">@Localizer["IdempotencyKey"]</label>
+                            <div class="input-group"><input id="wf-esc-idem" class="form-control" /><button type="button" id="wf-esc-regen" class="btn btn-outline-secondary"><i class="icon-base bx bx-refresh"></i></button></div>
+                        </div>
+                        <div class="col-md-3 text-end"><button type="button" id="wf-esc-run" class="btn btn-primary"><i class="icon-base bx bx-play me-1"></i>@Localizer["RunEscalations"]</button></div>
+                    </div>
+            <div id="wf-esc-summary" class="row row-cols-2 row-cols-md-4 g-3 mb-3 d-none"></div>
+            <div id="wf-esc-results-card" class="card d-none">
+                <div class="card-header"><h6 class="mb-0">@Localizer["Results"]</h6></div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead><tr>
+                            <th>@Localizer["WorkflowInstanceId"]</th><th>@Localizer["TaskId"]</th><th>@Localizer["Action"]</th>
+                            <th>@Localizer["TaskTransition"]</th><th>@Localizer["ReasonCode"]</th><th class="text-center">@Localizer["Idempotent"]</th>
+                        </tr></thead>
+                        <tbody id="wf-esc-rows"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div></div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="wf-create-offcanvas" aria-labelledby="wf-create-offcanvas-label">
+    <div class="offcanvas-header py-6">
+        <h5 id="wf-create-offcanvas-label" class="offcanvas-title">@Localizer["CreateDefinition"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top">
+        <div id="wf-create-error" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="wf-create-form" class="pt-0" novalidate>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-create-code">
+                        @Localizer["TemplateCode"] <span class="text-danger">*</span>
+                    </label>
+                    <input id="wf-create-code" name="TemplateCode" class="form-control" maxlength="128" autocomplete="off" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-create-name">
+                        @Localizer["Name"] <span class="text-danger">*</span>
+                    </label>
+                    <input id="wf-create-name" name="Name" class="form-control" maxlength="256" autocomplete="off" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-create-description">@Localizer["Description"]</label>
+                    <textarea id="wf-create-description" name="Description" class="form-control" rows="4"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @Localizer["Cancel"]
+        </button>
+        <button type="button" id="wf-create-submit" class="btn btn-primary">
+            @Localizer["Save"]
+        </button>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="wf-publish-offcanvas" aria-labelledby="wf-publish-offcanvas-label">
+    <div class="offcanvas-header py-6">
+        <h5 id="wf-publish-offcanvas-label" class="offcanvas-title">
+            @Localizer["PublishDefinition"] <span id="wf-publish-title-code" class="text-muted"></span>
+        </h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Close"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top">
+        <input type="hidden" id="wf-publish-definitionid" />
+        <div id="wf-publish-error" class="alert alert-danger d-none" role="alert"></div>
+        <div id="wf-publish-result" class="d-none mb-4"></div>
+
+        <form id="wf-publish-form" class="pt-0" novalidate>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-publish-json">
+                        @Localizer["DefinitionJson"] <span class="text-danger">*</span>
+                    </label>
+                    <textarea id="wf-publish-json" class="form-control font-monospace" rows="8" spellcheck="false" placeholder='{ "stages": [] }' required></textarea>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-publish-schema">
+                        @Localizer["SchemaVersion"] <span class="text-danger">*</span>
+                    </label>
+                    <input id="wf-publish-schema" class="form-control" placeholder="1.0" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-publish-expression">
+                        @Localizer["ExpressionVersion"] <span class="text-danger">*</span>
+                    </label>
+                    <input id="wf-publish-expression" class="form-control" placeholder="1.0" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-publish-expected">@Localizer["ExpectedTemplateVersion"]</label>
+                    <input id="wf-publish-expected" type="number" min="0" class="form-control" />
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-publish-rowversion">@Localizer["ExpectedRowVersion"]</label>
+                    <input id="wf-publish-rowversion" class="form-control" />
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-publish-reason">@Localizer["PublishReason"]</label>
+                    <input id="wf-publish-reason" class="form-control" />
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @Localizer["Close"]
+        </button>
+        <button type="button" id="wf-publish-submit" class="btn btn-primary">
+            @Localizer["Publish"]
+        </button>
+    </div>
+</div>
+
+<div class="modal fade" id="wf-start-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">@Localizer["StartInstanceTitle"] <span id="wf-start-title-code" class="text-muted"></span></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button></div>
+        <div class="modal-body">
+            <input type="hidden" id="wf-start-templateid" />
+            <div id="wf-start-error" class="alert alert-danger d-none"></div>
+            <form id="wf-start-form" class="row g-3" novalidate>
+                <div class="col-md-6"><label class="form-label" for="wf-start-templatecode">@Localizer["TemplateCode"]</label><input id="wf-start-templatecode" class="form-control" /></div>
+                <div class="col-md-6"><label class="form-label" for="wf-start-objecttype">@Localizer["ObjectType"] <span class="text-danger">*</span></label><input id="wf-start-objecttype" class="form-control" /></div>
+                <div class="col-md-6"><label class="form-label" for="wf-start-objectid">@Localizer["ObjectId"] <span class="text-danger">*</span></label><input id="wf-start-objectid" class="form-control" /></div>
+                <div class="col-md-6"><label class="form-label" for="wf-start-objectref">@Localizer["ObjectRef"]</label><input id="wf-start-objectref" class="form-control" /></div>
+                <div class="col-12">
+                    <label class="form-label" for="wf-start-candidates">@Localizer["CandidatePrincipalIds"] <span class="text-danger">*</span></label>
+                    <div class="btn-group btn-group-sm w-100 mb-2" role="group" aria-label="@Localizer["PrincipalType"]">
+                        <input type="radio" class="btn-check" name="wf-start-candidates-type" id="wf-start-candidates-type-user" value="user" autocomplete="off" checked />
+                        <label class="btn btn-outline-primary" for="wf-start-candidates-type-user">@Localizer["Users"]</label>
+                        <input type="radio" class="btn-check" name="wf-start-candidates-type" id="wf-start-candidates-type-position" value="position" autocomplete="off" />
+                        <label class="btn btn-outline-primary" for="wf-start-candidates-type-position">@Localizer["Positions"]</label>
+                    </div>
+                    <select id="wf-start-candidates" class="form-select" multiple></select>
+                </div>
+                <div class="col-md-6"><label class="form-label" for="wf-start-reason">@Localizer["ReasonCode"]</label><input id="wf-start-reason" class="form-control" /></div>
+                <div class="col-md-6"><label class="form-label" for="wf-start-dueat">@Localizer["DueAt"]</label><input id="wf-start-dueat" type="datetime-local" class="form-control" /></div>
+                <div class="col-12"><label class="form-label" for="wf-start-idem">@Localizer["IdempotencyKey"]</label><div class="input-group"><input id="wf-start-idem" class="form-control" /><button type="button" id="wf-start-regen" class="btn btn-outline-secondary"><i class="icon-base bx bx-refresh"></i></button></div></div>
+                <div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="wf-start-commentrequired" /><label class="form-check-label" for="wf-start-commentrequired">@Localizer["CommentRequired"]</label></div></div>
+                <div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="wf-start-evidencerequired" /><label class="form-check-label" for="wf-start-evidencerequired">@Localizer["EvidenceRequired"]</label></div></div>
+            </form>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button><button type="button" id="wf-start-submit" class="btn btn-primary">@Localizer["StartInstance"]</button></div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="wf-taskaction-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="wf-taskaction-title"></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button></div>
+        <div class="modal-body">
+            <div id="wf-taskaction-error" class="alert alert-danger d-none"></div>
+            <form id="wf-taskaction-form" class="row g-3" novalidate>
+                <div class="col-12"><label class="form-label" for="wf-taskaction-actorid">@Localizer["ActorId"] <span class="text-danger">*</span></label><input id="wf-taskaction-actorid" class="form-control" /></div>
+                <div class="col-12" id="wf-taskaction-row-delegate"><label class="form-label" for="wf-taskaction-delegate">@Localizer["DelegatePrincipalId"] <span class="text-danger">*</span></label><input id="wf-taskaction-delegate" class="form-control" /></div>
+                <div class="col-12" id="wf-taskaction-row-target"><label class="form-label" for="wf-taskaction-target">@Localizer["TargetPrincipalId"]</label><input id="wf-taskaction-target" class="form-control" /></div>
+                <div class="col-12"><label class="form-label" for="wf-taskaction-reason">@Localizer["ReasonCode"] <span class="text-danger">*</span></label><input id="wf-taskaction-reason" class="form-control" /></div>
+                <div class="col-12" id="wf-taskaction-row-evidence"><label class="form-label" for="wf-taskaction-evidence">@Localizer["EvidenceRef"]</label><input id="wf-taskaction-evidence" class="form-control" /></div>
+                <div class="col-12"><label class="form-label" for="wf-taskaction-comment">@Localizer["Comment"]</label><textarea id="wf-taskaction-comment" class="form-control" rows="2"></textarea></div>
+                <div class="col-12"><label class="form-label" for="wf-taskaction-idem">@Localizer["IdempotencyKey"] <span class="text-danger">*</span></label><div class="input-group"><input id="wf-taskaction-idem" class="form-control" /><button type="button" id="wf-taskaction-regen" class="btn btn-outline-secondary"><i class="icon-base bx bx-refresh"></i></button></div></div>
+            </form>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button><button type="button" id="wf-taskaction-submit" class="btn btn-primary">@Localizer["Save"]</button></div>
+    </div></div>
+</div>
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/Workflow/workflow.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Workflow/index.js" asp-append-version="true"></script>
+}

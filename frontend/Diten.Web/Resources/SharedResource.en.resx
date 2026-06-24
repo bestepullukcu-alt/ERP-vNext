@@ -512,5 +512,8 @@
   <data name="PositionAssignments" xml:space="preserve"><value>Position Assignments</value></data>
   <data name="MasterData" xml:space="preserve"><value>Master Data</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>Legal Entities</value></data>
+  <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Workflow Approvals</value></data>
+  <data name="DocumentationStructures" xml:space="preserve"><value>Documentation Structures</value></data>
+  <data name="QmsBaselines" xml:space="preserve"><value>QMS Baselines</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>Unauthorized</value></data>
 </root>
-

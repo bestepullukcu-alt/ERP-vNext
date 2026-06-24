@@ -28,6 +28,14 @@ public sealed class LegalEntitiesController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    [HttpGet("lookup")]
+    [HasPermission("mdm.legal-entities.read")]
+    public async Task<IActionResult> List(CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetLegalEntitiesLookupQuery(), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("{legalEntityId:guid}")]
     [HasPermission("mdm.legal-entities.read")]
     public async Task<IActionResult> GetById(Guid legalEntityId, CancellationToken cancellationToken)

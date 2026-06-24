@@ -1,0 +1,34 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0023 — Workflow Definition Versions DataTable v2 (golden compact contract, read-only). *@
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-workflow-versions" data-dt-standard="v2" class="datatables-workflow-versions table border-top" data-testid="wf-ver-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["VersionNumber"]</th>
+                    <th class="all">@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["SchemaVersion"]</th>
+                    <th>@Localizer["ExpressionVersion"]</th>
+                    <th>@Localizer["Immutable"]</th>
+                    <th>@Localizer["PublishedAt"]</th>
+                    <th>@Localizer["PublishedBy"]</th>
+                    <th>@Localizer["CreatedAt"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

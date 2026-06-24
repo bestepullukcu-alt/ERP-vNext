@@ -1,0 +1,318 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="QmsBaselinesTitle" xml:space="preserve">
+    <value>Structures de documentation</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Référentiels de structure documentaire gouvernés — importez, construisez, publiez et adoptez des hiérarchies de dossiers réutilisables.</value>
+  </data>
+  <data name="BaselineId" xml:space="preserve">
+    <value>ID de référence</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="DefinitionCount" xml:space="preserve">
+    <value>Définitions</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Créé</value>
+  </data>
+  <data name="PublishedAt" xml:space="preserve">
+    <value>Publié</value>
+  </data>
+  <data name="SnapshotHash" xml:space="preserve">
+    <value>Hachage d'instantané</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="StatusDraft" xml:space="preserve">
+    <value>Brouillon</value>
+  </data>
+  <data name="StatusPublished" xml:space="preserve">
+    <value>Publié</value>
+  </data>
+  <data name="ImportWorkbook" xml:space="preserve">
+    <value>Importer un classeur</value>
+  </data>
+  <data name="EmptyList" xml:space="preserve">
+    <value>Aucune référence pour le moment. Importez un classeur pour en créer une.</value>
+  </data>
+  <data name="ImportTitle" xml:space="preserve">
+    <value>Importer une référence</value>
+  </data>
+  <data name="ImportDescription" xml:space="preserve">
+    <value>Validez un classeur de structure de dossiers via une simulation, puis validez-le comme référence en brouillon.</value>
+  </data>
+  <data name="Step1SelectWorkbook" xml:space="preserve">
+    <value>1. Sélectionner le classeur et valider</value>
+  </data>
+  <data name="WorkbookFile" xml:space="preserve">
+    <value>Classeur (.xlsx)</value>
+  </data>
+  <data name="WorkbookFileHint" xml:space="preserve">
+    <value>Le classeur est lu uniquement comme métadonnées de gouvernance ; il n'est jamais stocké comme document.</value>
+  </data>
+  <data name="SourceBaselineKey" xml:space="preserve">
+    <value>Clé de référence source</value>
+  </data>
+  <data name="RunDryRun" xml:space="preserve">
+    <value>Lancer la simulation</value>
+  </data>
+  <data name="Step2ValidationSummary" xml:space="preserve">
+    <value>2. Résumé de validation</value>
+  </data>
+  <data name="Step3Commit" xml:space="preserve">
+    <value>3. Valider l'import</value>
+  </data>
+  <data name="BaselineVersion" xml:space="preserve">
+    <value>Version de la référence</value>
+  </data>
+  <data name="ChangeSummary" xml:space="preserve">
+    <value>Résumé des modifications</value>
+  </data>
+  <data name="CommitImport" xml:space="preserve">
+    <value>Valider l'import</value>
+  </data>
+  <data name="CommitDisabledHint" xml:space="preserve">
+    <value>La validation n'est activée qu'après une simulation valide du fichier sélectionné.</value>
+  </data>
+  <data name="WorkbookRequired" xml:space="preserve">
+    <value>Veuillez sélectionner un classeur .xlsx.</value>
+  </data>
+  <data name="InvalidFileType" xml:space="preserve">
+    <value>Seuls les classeurs .xlsx sont acceptés.</value>
+  </data>
+  <data name="SourceKeyRequired" xml:space="preserve">
+    <value>La clé de référence source est requise.</value>
+  </data>
+  <data name="BaselineVersionRequired" xml:space="preserve">
+    <value>La version de la référence est requise.</value>
+  </data>
+  <data name="DryRunValid" xml:space="preserve">
+    <value>Valide</value>
+  </data>
+  <data name="DryRunInvalid" xml:space="preserve">
+    <value>Non valide</value>
+  </data>
+  <data name="CommitSuccess" xml:space="preserve">
+    <value>Référence importée en brouillon.</value>
+  </data>
+  <data name="SummaryTotalRows" xml:space="preserve">
+    <value>Lignes totales</value>
+  </data>
+  <data name="SummaryImported" xml:space="preserve">
+    <value>Définitions</value>
+  </data>
+  <data name="SummarySkipped" xml:space="preserve">
+    <value>Ignorées</value>
+  </data>
+  <data name="SummaryErrors" xml:space="preserve">
+    <value>Erreurs</value>
+  </data>
+  <data name="SummaryWarnings" xml:space="preserve">
+    <value>Avertissements</value>
+  </data>
+  <data name="SummaryDuplicates" xml:space="preserve">
+    <value>Conflits de chemin en double</value>
+  </data>
+  <data name="SummaryHierarchy" xml:space="preserve">
+    <value>Constats de hiérarchie</value>
+  </data>
+  <data name="DetailTitle" xml:space="preserve">
+    <value>Détail de la référence</value>
+  </data>
+  <data name="DetailDescription" xml:space="preserve">
+    <value>Métadonnées, statut et arbre de définitions importé de la référence.</value>
+  </data>
+  <data name="Metadata" xml:space="preserve">
+    <value>Métadonnées</value>
+  </data>
+  <data name="ManifestId" xml:space="preserve">
+    <value>ID du manifeste</value>
+  </data>
+  <data name="Definitions" xml:space="preserve">
+    <value>Arbre de définitions</value>
+  </data>
+  <data name="NoDefinitions" xml:space="preserve">
+    <value>Aucune définition dans cette référence.</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="FullPath" xml:space="preserve">
+    <value>Chemin</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Publier</value>
+  </data>
+  <data name="PublishConfirm" xml:space="preserve">
+    <value>Publier ce brouillon en instantané immuable ? Cette action est irréversible.</value>
+  </data>
+  <data name="PublishSuccess" xml:space="preserve">
+    <value>Référence publiée.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Vous n'avez pas l'autorisation d'effectuer cette action.</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>La référence demandée est introuvable.</value>
+  </data>
+  <data name="CorrelationId" xml:space="preserve">
+    <value>Référence de support</value>
+  </data>
+  <data name="ReasonValidationFailed" xml:space="preserve">
+    <value>Le classeur n'a pas passé la validation. Consultez les constats ci-dessous.</value>
+  </data>
+  <data name="ReasonConflict" xml:space="preserve">
+    <value>Un conflit a été détecté (p. ex. frère en double ou version périmée).</value>
+  </data>
+  <data name="ReasonPermDenied" xml:space="preserve">
+    <value>Vous n'avez pas l'autorisation d'effectuer cette action.</value>
+  </data>
+  <data name="ReasonNotFound" xml:space="preserve">
+    <value>L'élément demandé est introuvable.</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Retour</value>
+  </data>
+  <data name="SelectedFile" xml:space="preserve">
+    <value>Fichier sélectionné</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>Taille</value>
+  </data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>Tout développer</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>Tout réduire</value>
+  </data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve">
+    <value>Filtrer par nom ou chemin…</value>
+  </data>
+  <data name="CreateManualBaseline" xml:space="preserve">
+    <value>Create Manual Baseline</value>
+  </data>
+  <data name="CreateManualTitle" xml:space="preserve">
+    <value>Créer une référence manuelle</value>
+  </data>
+  <data name="ManualBaselineCreated" xml:space="preserve">
+    <value>Manual draft baseline created.</value>
+  </data>
+  <data name="OpenDesigner" xml:space="preserve">
+    <value>Open Designer</value>
+  </data>
+  <data name="DesignerTitle" xml:space="preserve">
+    <value>Concepteur manuel</value>
+  </data>
+  <data name="BaselineSection" xml:space="preserve">
+    <value>Baseline</value>
+  </data>
+  <data name="BaselineName" xml:space="preserve">
+    <value>Baseline name</value>
+  </data>
+  <data name="LifecycleSection" xml:space="preserve">
+    <value>Lifecycle</value>
+  </data>
+  <data name="EffectiveDate" xml:space="preserve">
+    <value>Effective date</value>
+  </data>
+  <data name="AddRoot" xml:space="preserve">
+    <value>Add root</value>
+  </data>
+  <data name="AddChild" xml:space="preserve">
+    <value>Add child</value>
+  </data>
+  <data name="EditNode" xml:space="preserve">
+    <value>Edit node</value>
+  </data>
+  <data name="MoveNode" xml:space="preserve">
+    <value>Move node</value>
+  </data>
+  <data name="DeleteNode" xml:space="preserve">
+    <value>Delete node</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>Delete this draft node?</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Node deleted.</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>Node moved.</value>
+  </data>
+  <data name="ValidateDraft" xml:space="preserve">
+    <value>Validate draft</value>
+  </data>
+  <data name="DraftTreeValid" xml:space="preserve">
+    <value>Draft tree is valid.</value>
+  </data>
+  <data name="DraftTreeInvalid" xml:space="preserve">
+    <value>Draft tree has findings.</value>
+  </data>
+  <data name="NodeEditorTitle" xml:space="preserve">
+    <value>Node metadata</value>
+  </data>
+  <data name="DisplayOrder" xml:space="preserve">
+    <value>Display order</value>
+  </data>
+  <data name="PurposeScope" xml:space="preserve">
+    <value>Purpose scope</value>
+  </data>
+  <data name="RequiredByScope" xml:space="preserve">
+    <value>Required by scope</value>
+  </data>
+  <data name="AllowedDocClass" xml:space="preserve">
+    <value>Allowed document class</value>
+  </data>
+  <data name="Classification" xml:space="preserve">
+    <value>Classification</value>
+  </data>
+  <data name="RetentionHint" xml:space="preserve">
+    <value>Retention hint</value>
+  </data>
+  <data name="AllowsManualChildren" xml:space="preserve">
+    <value>Allows manual children</value>
+  </data>
+  <data name="TemplatesAllowed" xml:space="preserve">
+    <value>Templates allowed</value>
+  </data>
+  <data name="Mandatory" xml:space="preserve">
+    <value>Mandatory</value>
+  </data>
+  <data name="Protected" xml:space="preserve">
+    <value>Protected</value>
+  </data>
+  <data name="ParentNode" xml:space="preserve">
+    <value>Parent node</value>
+  </data>
+  <data name="RootNode" xml:space="preserve">
+    <value>Root</value>
+  </data>
+  <data name="InstantiateStructures" xml:space="preserve">
+    <value>Instancier les structures</value>
+  </data>
+  <data name="NoDefinitionsHeading" xml:space="preserve">
+    <value>Aucune définition</value>
+  </data>
+  <data name="PublishNeedsDefinitions" xml:space="preserve">
+    <value>Ajoutez au moins une définition avant de publier.</value>
+  </data>
+  <data name="ValidateNeedsDefinitions" xml:space="preserve">
+    <value>Ajoutez au moins une définition avant de valider.</value>
+  </data>
+</root>

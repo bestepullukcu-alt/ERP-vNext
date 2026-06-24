@@ -1,0 +1,104 @@
+@using Diten.Web.Views.DocumentManagement.QmsBaselines
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<QmsBaselinesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ImportTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canImport = Perms.Has("platform.document-management.qms-baselines.import");
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["ImportTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["ImportDescription"]</p>
+    </div>
+    <a href="/DocumentManagementQmsBaselines" class="btn btn-label-secondary">
+        <i class="icon-base bx bx-arrow-back me-1"></i>@Localizer["Back"]
+    </a>
+</div>
+
+@if (!canImport)
+{
+    <div class="alert alert-warning" role="alert">@Localizer["AccessDenied"]</div>
+}
+else
+{
+    @Html.AntiForgeryToken()
+
+    @* Step indicator *@
+    <ul class="qms-steps d-flex list-unstyled mb-4" id="qmsSteps">
+        <li class="qms-step active flex-fill text-center" data-step="1"><span class="qms-step-num">1</span> <span class="d-none d-sm-inline">@Localizer["Step1SelectWorkbook"]</span></li>
+        <li class="qms-step flex-fill text-center" data-step="2"><span class="qms-step-num">2</span> <span class="d-none d-sm-inline">@Localizer["Step2ValidationSummary"]</span></li>
+        <li class="qms-step flex-fill text-center" data-step="3"><span class="qms-step-num">3</span> <span class="d-none d-sm-inline">@Localizer["Step3Commit"]</span></li>
+    </ul>
+
+    <div class="card mb-4">
+        <div class="card-header"><h6 class="mb-0">@Localizer["Step1SelectWorkbook"]</h6></div>
+        <div class="card-body">
+            <form id="qmsImportForm" class="row g-3" novalidate>
+                <div class="col-md-6">
+                    <label class="form-label" for="qmsWorkbookFile">@Localizer["WorkbookFile"] <span class="text-danger">*</span></label>
+                    <input type="file" id="qmsWorkbookFile" name="file" accept=".xlsx" class="form-control" />
+                    <div class="form-text">@Localizer["WorkbookFileHint"]</div>
+                    <div class="form-text text-body d-none mt-1" id="qmsFileInfo"></div>
+                    <div class="invalid-feedback" id="qmsWorkbookFileError"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="qmsSourceBaselineKey">@Localizer["SourceBaselineKey"] <span class="text-danger">*</span></label>
+                    <input type="text" id="qmsSourceBaselineKey" name="sourceBaselineKey" class="form-control" maxlength="200" />
+                    <div class="invalid-feedback" id="qmsSourceBaselineKeyError"></div>
+                </div>
+                <div class="col-12">
+                    <button type="button" id="btnDryRun" class="btn btn-primary">
+                        <span class="spinner-border spinner-border-sm me-1 d-none" id="dryRunSpinner" role="status"></span>
+                        <i class="icon-base bx bx-check-shield me-1"></i>@Localizer["RunDryRun"]
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @* Step 2: validation summary (hidden until a dry-run returns) *@
+    <div class="card mb-4 d-none" id="qmsSummaryCard">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">@Localizer["Step2ValidationSummary"]</h6>
+            <span class="badge" id="qmsSummaryBadge"></span>
+        </div>
+        <div class="card-body">
+            <div class="row text-center mb-3" id="qmsSummaryCounts"></div>
+            <div id="qmsSummaryFindings"></div>
+        </div>
+    </div>
+
+    @* Step 3: commit (enabled only after a valid dry-run for the current file) *@
+    <div class="card mb-4 d-none" id="qmsCommitCard">
+        <div class="card-header"><h6 class="mb-0">@Localizer["Step3Commit"]</h6></div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="qmsBaselineVersion">@Localizer["BaselineVersion"] <span class="text-danger">*</span></label>
+                    <input type="text" id="qmsBaselineVersion" class="form-control" maxlength="64" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="qmsChangeSummary">@Localizer["ChangeSummary"]</label>
+                    <input type="text" id="qmsChangeSummary" class="form-control" maxlength="2000" />
+                </div>
+                <div class="col-12">
+                    <button type="button" id="btnCommit" class="btn btn-success" disabled>
+                        <span class="spinner-border spinner-border-sm me-1 d-none" id="commitSpinner" role="status"></span>
+                        <i class="icon-base bx bx-save me-1"></i>@Localizer["CommitImport"]
+                    </button>
+                    <small class="text-muted ms-2" id="commitHint">@Localizer["CommitDisabledHint"]</small>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/QmsBaselines/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DocumentManagement/QmsBaselines/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/QmsBaselines/import.js" asp-append-version="true"></script>
+}

@@ -1,5 +1,6 @@
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using MongoDB.Driver;
 
@@ -25,6 +26,14 @@ public sealed class LegalEntityRepository : RepositoryBase<LegalEntity>, ILegalE
         }
 
         return await Collection.Find(filter).AnyAsync(cancellationToken);
+    }
+    public async Task<IReadOnlyList<LegalEntity>> GetReferenceableAsync(CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<LegalEntity>.Filter.And(
+            TenantFilter,
+            Builders<LegalEntity>.Filter.Eq(x => x.LifecycleStatus, LegalEntityLifecycleStatus.Active));
+
+        return await Collection.Find(filter).SortBy(x => x.LegalName).ToListAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<LegalEntity>> GetAllAsync(CancellationToken cancellationToken = default)

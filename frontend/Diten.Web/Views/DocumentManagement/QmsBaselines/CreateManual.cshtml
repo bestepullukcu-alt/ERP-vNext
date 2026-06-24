@@ -1,0 +1,81 @@
+@using Diten.Web.Views.DocumentManagement.QmsBaselines
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<QmsBaselinesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["CreateManualTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["CreateManualTitle"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/DocumentManagementQmsBaselines">@Localizer["QmsBaselinesTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Localizer["CreateManualTitle"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/DocumentManagementQmsBaselines" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="qmsManualCreateForm" class="btn btn-primary">
+            <i class="icon-base bx bx-save me-1"></i>@SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+<form id="qmsManualCreateForm" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <div id="qmsManualCreateError" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["BaselineSection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-6">
+                        <label for="baselineVersion" class="form-label fw-medium">@Localizer["BaselineVersion"] <span class="text-danger">*</span></label>
+                        <input id="baselineVersion" name="baselineVersion" class="form-control" maxlength="64" required />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="name" class="form-label fw-medium">@Localizer["BaselineName"]</label>
+                        <input id="name" name="name" class="form-control" maxlength="200" />
+                    </div>
+                    <div class="col-12">
+                        <label for="changeSummary" class="form-label fw-medium">@Localizer["ChangeSummary"]</label>
+                        <textarea id="changeSummary" name="changeSummary" class="form-control" rows="6" maxlength="2000"></textarea>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["LifecycleSection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <label for="effectiveDate" class="form-label fw-medium">@Localizer["EffectiveDate"]</label>
+                        <input id="effectiveDate" name="effectiveDate" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <span class="badge bg-label-warning">@Localizer["StatusDraft"]</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/QmsBaselines/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DocumentManagement/QmsBaselines/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/QmsBaselines/create-manual.js" asp-append-version="true"></script>
+}

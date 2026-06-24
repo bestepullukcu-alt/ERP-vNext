@@ -1,0 +1,318 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="QmsBaselinesTitle" xml:space="preserve">
+    <value>هياكل التوثيق</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>خطوط أساس هيكل التوثيق المُحوكمة — استورد وأنشئ وانشر وتبنَّ تسلسلات هرمية لمجلدات قابلة لإعادة الاستخدام.</value>
+  </data>
+  <data name="BaselineId" xml:space="preserve">
+    <value>معرّف خط الأساس</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>الإصدار</value>
+  </data>
+  <data name="DefinitionCount" xml:space="preserve">
+    <value>التعريفات</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>أُنشئ</value>
+  </data>
+  <data name="PublishedAt" xml:space="preserve">
+    <value>نُشر</value>
+  </data>
+  <data name="SnapshotHash" xml:space="preserve">
+    <value>تجزئة اللقطة</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>الإجراءات</value>
+  </data>
+  <data name="StatusDraft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="StatusPublished" xml:space="preserve">
+    <value>منشور</value>
+  </data>
+  <data name="ImportWorkbook" xml:space="preserve">
+    <value>استيراد مصنّف</value>
+  </data>
+  <data name="EmptyList" xml:space="preserve">
+    <value>لا توجد خطوط أساس بعد. استورد مصنّفًا لإنشاء واحد.</value>
+  </data>
+  <data name="ImportTitle" xml:space="preserve">
+    <value>استيراد خط أساس</value>
+  </data>
+  <data name="ImportDescription" xml:space="preserve">
+    <value>تحقّق من مصنّف بنية المجلدات عبر تشغيل تجريبي، ثم ثبّته كخط أساس مسودة.</value>
+  </data>
+  <data name="Step1SelectWorkbook" xml:space="preserve">
+    <value>1. اختر المصنّف وتحقّق</value>
+  </data>
+  <data name="WorkbookFile" xml:space="preserve">
+    <value>مصنّف (.xlsx)</value>
+  </data>
+  <data name="WorkbookFileHint" xml:space="preserve">
+    <value>يُقرأ المصنّف كبيانات حوكمة فقط؛ ولا يُخزَّن كمستند أبدًا.</value>
+  </data>
+  <data name="SourceBaselineKey" xml:space="preserve">
+    <value>مفتاح خط الأساس المصدر</value>
+  </data>
+  <data name="RunDryRun" xml:space="preserve">
+    <value>تشغيل تجريبي</value>
+  </data>
+  <data name="Step2ValidationSummary" xml:space="preserve">
+    <value>2. ملخص التحقق</value>
+  </data>
+  <data name="Step3Commit" xml:space="preserve">
+    <value>3. تثبيت الاستيراد</value>
+  </data>
+  <data name="BaselineVersion" xml:space="preserve">
+    <value>إصدار خط الأساس</value>
+  </data>
+  <data name="ChangeSummary" xml:space="preserve">
+    <value>ملخص التغييرات</value>
+  </data>
+  <data name="CommitImport" xml:space="preserve">
+    <value>تثبيت الاستيراد</value>
+  </data>
+  <data name="CommitDisabledHint" xml:space="preserve">
+    <value>يُفعَّل التثبيت فقط بعد تشغيل تجريبي صالح للملف المحدد.</value>
+  </data>
+  <data name="WorkbookRequired" xml:space="preserve">
+    <value>يرجى اختيار مصنّف .xlsx.</value>
+  </data>
+  <data name="InvalidFileType" xml:space="preserve">
+    <value>يُقبل فقط مصنّفات .xlsx.</value>
+  </data>
+  <data name="SourceKeyRequired" xml:space="preserve">
+    <value>مفتاح خط الأساس المصدر مطلوب.</value>
+  </data>
+  <data name="BaselineVersionRequired" xml:space="preserve">
+    <value>إصدار خط الأساس مطلوب.</value>
+  </data>
+  <data name="DryRunValid" xml:space="preserve">
+    <value>صالح</value>
+  </data>
+  <data name="DryRunInvalid" xml:space="preserve">
+    <value>غير صالح</value>
+  </data>
+  <data name="CommitSuccess" xml:space="preserve">
+    <value>تم استيراد خط الأساس كمسودة.</value>
+  </data>
+  <data name="SummaryTotalRows" xml:space="preserve">
+    <value>إجمالي الصفوف</value>
+  </data>
+  <data name="SummaryImported" xml:space="preserve">
+    <value>التعريفات</value>
+  </data>
+  <data name="SummarySkipped" xml:space="preserve">
+    <value>تم تخطّيها</value>
+  </data>
+  <data name="SummaryErrors" xml:space="preserve">
+    <value>الأخطاء</value>
+  </data>
+  <data name="SummaryWarnings" xml:space="preserve">
+    <value>التحذيرات</value>
+  </data>
+  <data name="SummaryDuplicates" xml:space="preserve">
+    <value>تعارضات المسارات المكررة</value>
+  </data>
+  <data name="SummaryHierarchy" xml:space="preserve">
+    <value>ملاحظات التسلسل الهرمي</value>
+  </data>
+  <data name="DetailTitle" xml:space="preserve">
+    <value>تفاصيل خط الأساس</value>
+  </data>
+  <data name="DetailDescription" xml:space="preserve">
+    <value>بيانات خط الأساس وحالته وشجرة التعريفات المستوردة.</value>
+  </data>
+  <data name="Metadata" xml:space="preserve">
+    <value>البيانات الوصفية</value>
+  </data>
+  <data name="ManifestId" xml:space="preserve">
+    <value>معرّف البيان</value>
+  </data>
+  <data name="Definitions" xml:space="preserve">
+    <value>شجرة التعريفات</value>
+  </data>
+  <data name="NoDefinitions" xml:space="preserve">
+    <value>لا توجد تعريفات في خط الأساس هذا.</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>الاسم</value>
+  </data>
+  <data name="FullPath" xml:space="preserve">
+    <value>المسار</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>نشر</value>
+  </data>
+  <data name="PublishConfirm" xml:space="preserve">
+    <value>هل تريد نشر هذه المسودة كلقطة غير قابلة للتغيير؟ لا يمكن التراجع عن ذلك.</value>
+  </data>
+  <data name="PublishSuccess" xml:space="preserve">
+    <value>تم نشر خط الأساس.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>ليس لديك إذن لتنفيذ هذا الإجراء.</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>خط الأساس المطلوب غير موجود.</value>
+  </data>
+  <data name="CorrelationId" xml:space="preserve">
+    <value>مرجع الدعم</value>
+  </data>
+  <data name="ReasonValidationFailed" xml:space="preserve">
+    <value>لم يجتز المصنّف التحقق. راجع الملاحظات أدناه.</value>
+  </data>
+  <data name="ReasonConflict" xml:space="preserve">
+    <value>تم اكتشاف تعارض (مثل عنصر شقيق مكرر أو إصدار قديم).</value>
+  </data>
+  <data name="ReasonPermDenied" xml:space="preserve">
+    <value>ليس لديك إذن لتنفيذ هذا الإجراء.</value>
+  </data>
+  <data name="ReasonNotFound" xml:space="preserve">
+    <value>العنصر المطلوب غير موجود.</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>رجوع</value>
+  </data>
+  <data name="SelectedFile" xml:space="preserve">
+    <value>الملف المحدد</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>الحجم</value>
+  </data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>توسيع الكل</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>طي الكل</value>
+  </data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve">
+    <value>التصفية حسب الاسم أو المسار…</value>
+  </data>
+  <data name="CreateManualBaseline" xml:space="preserve">
+    <value>Create Manual Baseline</value>
+  </data>
+  <data name="CreateManualTitle" xml:space="preserve">
+    <value>إنشاء خط أساس يدوي</value>
+  </data>
+  <data name="ManualBaselineCreated" xml:space="preserve">
+    <value>Manual draft baseline created.</value>
+  </data>
+  <data name="OpenDesigner" xml:space="preserve">
+    <value>Open Designer</value>
+  </data>
+  <data name="DesignerTitle" xml:space="preserve">
+    <value>المصمّم اليدوي</value>
+  </data>
+  <data name="BaselineSection" xml:space="preserve">
+    <value>Baseline</value>
+  </data>
+  <data name="BaselineName" xml:space="preserve">
+    <value>Baseline name</value>
+  </data>
+  <data name="LifecycleSection" xml:space="preserve">
+    <value>Lifecycle</value>
+  </data>
+  <data name="EffectiveDate" xml:space="preserve">
+    <value>Effective date</value>
+  </data>
+  <data name="AddRoot" xml:space="preserve">
+    <value>Add root</value>
+  </data>
+  <data name="AddChild" xml:space="preserve">
+    <value>Add child</value>
+  </data>
+  <data name="EditNode" xml:space="preserve">
+    <value>Edit node</value>
+  </data>
+  <data name="MoveNode" xml:space="preserve">
+    <value>Move node</value>
+  </data>
+  <data name="DeleteNode" xml:space="preserve">
+    <value>Delete node</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>Delete this draft node?</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Node deleted.</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>Node moved.</value>
+  </data>
+  <data name="ValidateDraft" xml:space="preserve">
+    <value>Validate draft</value>
+  </data>
+  <data name="DraftTreeValid" xml:space="preserve">
+    <value>Draft tree is valid.</value>
+  </data>
+  <data name="DraftTreeInvalid" xml:space="preserve">
+    <value>Draft tree has findings.</value>
+  </data>
+  <data name="NodeEditorTitle" xml:space="preserve">
+    <value>Node metadata</value>
+  </data>
+  <data name="DisplayOrder" xml:space="preserve">
+    <value>Display order</value>
+  </data>
+  <data name="PurposeScope" xml:space="preserve">
+    <value>Purpose scope</value>
+  </data>
+  <data name="RequiredByScope" xml:space="preserve">
+    <value>Required by scope</value>
+  </data>
+  <data name="AllowedDocClass" xml:space="preserve">
+    <value>Allowed document class</value>
+  </data>
+  <data name="Classification" xml:space="preserve">
+    <value>Classification</value>
+  </data>
+  <data name="RetentionHint" xml:space="preserve">
+    <value>Retention hint</value>
+  </data>
+  <data name="AllowsManualChildren" xml:space="preserve">
+    <value>Allows manual children</value>
+  </data>
+  <data name="TemplatesAllowed" xml:space="preserve">
+    <value>Templates allowed</value>
+  </data>
+  <data name="Mandatory" xml:space="preserve">
+    <value>Mandatory</value>
+  </data>
+  <data name="Protected" xml:space="preserve">
+    <value>Protected</value>
+  </data>
+  <data name="ParentNode" xml:space="preserve">
+    <value>Parent node</value>
+  </data>
+  <data name="RootNode" xml:space="preserve">
+    <value>Root</value>
+  </data>
+  <data name="InstantiateStructures" xml:space="preserve">
+    <value>إنشاء الهياكل</value>
+  </data>
+  <data name="NoDefinitionsHeading" xml:space="preserve">
+    <value>لا توجد تعريفات</value>
+  </data>
+  <data name="PublishNeedsDefinitions" xml:space="preserve">
+    <value>أضف تعريفًا واحدًا على الأقل قبل النشر.</value>
+  </data>
+  <data name="ValidateNeedsDefinitions" xml:space="preserve">
+    <value>أضف تعريفًا واحدًا على الأقل قبل التحقق.</value>
+  </data>
+</root>
