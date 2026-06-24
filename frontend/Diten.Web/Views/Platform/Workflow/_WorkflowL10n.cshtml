@@ -1,0 +1,58 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@using System.Text.Json
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@{
+    // MOD-0023 Batch 08 — generic L10n bridge. Serializes every WorkflowIndex resource string so
+    // both the Razor markup and the page JS share one localized dictionary (window.WorkflowL10n).
+    var bridge = Localizer.GetAllStrings(includeParentCultures: true)
+        .ToDictionary(s => s.Name, s => s.Value);
+
+    // MOD-0023 — the shared DataTable engine (DtDefaults/DitenDataTable) reads window.L10n.
+    // Provide the standard toolbar + action keys (PascalCase) so the Definitions DataTable localizes.
+    var dt = new Dictionary<string, string>
+    {
+        ["Search"] = SharedLocalizer["Search"].Value,
+        ["Filter"] = SharedLocalizer["Filter"].Value,
+        ["Apply"] = SharedLocalizer["Apply"].Value,
+        ["Reset"] = SharedLocalizer["Reset"].Value,
+        ["ColumnVisibility"] = SharedLocalizer["ColumnVisibility"].Value,
+        ["ColumnOrder"] = SharedLocalizer["ColumnOrder"].Value,
+        ["ShowAll"] = SharedLocalizer["ShowAll"].Value,
+        ["Import"] = SharedLocalizer["Import"].Value,
+        ["Export"] = SharedLocalizer["Export"].Value,
+        ["Print"] = SharedLocalizer["Print"].Value,
+        ["PDF"] = SharedLocalizer["PDF"].Value,
+        ["Copy"] = SharedLocalizer["Copy"].Value,
+        ["Action"] = Localizer["Actions"].Value,
+        ["Details"] = SharedLocalizer["Details"].Value,
+        ["SaveView"] = SharedLocalizer["SaveView"].Value,
+        ["RecordSaved"] = SharedLocalizer["RecordSaved"].Value,
+        ["ErrorOccurred"] = SharedLocalizer["ErrorOccurred"].Value,
+        ["NoRecords"] = SharedLocalizer["NoRecordsFound"].Value,
+        ["DtNoRecords"] = SharedLocalizer["DtNoRecords"].Value,
+        ["DtInfo"] = SharedLocalizer["DtInfo"].Value,
+        ["DtInfoEmpty"] = SharedLocalizer["DtInfoEmpty"].Value,
+        ["DtInfoFiltered"] = SharedLocalizer["DtInfoFiltered"].Value,
+        ["DtZeroRecords"] = SharedLocalizer["DtNoRecords"].Value,
+        ["DtEmptyTable"] = SharedLocalizer["DtEmptyTable"].Value,
+        ["SelectedCount"] = SharedLocalizer["SelectedCount"].Value,
+        ["ClearSelection"] = SharedLocalizer["ClearSelection"].Value,
+        ["Status"] = SharedLocalizer["Status"].Value,
+        ["Active"] = SharedLocalizer["Active"].Value,
+        ["Passive"] = SharedLocalizer["Passive"].Value,
+        ["Unknown"] = SharedLocalizer["Unknown"].Value,
+        ["AddNew"] = Localizer["CreateDefinition"].Value,
+        ["Actions"] = Localizer["Actions"].Value,
+        ["Detail"] = Localizer["Detail"].Value,
+        ["Publish"] = Localizer["Publish"].Value,
+        ["StartInstance"] = Localizer["StartInstance"].Value
+    };
+}
+
+<script>
+    window.WorkflowL10n = @Html.Raw(JsonSerializer.Serialize(bridge));
+    window.L10n = Object.assign({}, window.L10n || {}, @Html.Raw(JsonSerializer.Serialize(dt)));
+</script>

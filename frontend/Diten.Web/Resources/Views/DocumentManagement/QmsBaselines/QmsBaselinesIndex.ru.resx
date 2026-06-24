@@ -1,0 +1,318 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="QmsBaselinesTitle" xml:space="preserve">
+    <value>Структуры документации</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Управляемые базовые структуры документации — импорт, создание, публикация и внедрение переиспользуемых иерархий папок.</value>
+  </data>
+  <data name="BaselineId" xml:space="preserve">
+    <value>ID базовой линии</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Версия</value>
+  </data>
+  <data name="DefinitionCount" xml:space="preserve">
+    <value>Определения</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Создано</value>
+  </data>
+  <data name="PublishedAt" xml:space="preserve">
+    <value>Опубликовано</value>
+  </data>
+  <data name="SnapshotHash" xml:space="preserve">
+    <value>Хэш снимка</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="StatusDraft" xml:space="preserve">
+    <value>Черновик</value>
+  </data>
+  <data name="StatusPublished" xml:space="preserve">
+    <value>Опубликовано</value>
+  </data>
+  <data name="ImportWorkbook" xml:space="preserve">
+    <value>Импорт книги</value>
+  </data>
+  <data name="EmptyList" xml:space="preserve">
+    <value>Базовых линий пока нет. Импортируйте книгу, чтобы создать.</value>
+  </data>
+  <data name="ImportTitle" xml:space="preserve">
+    <value>Импорт базовой линии</value>
+  </data>
+  <data name="ImportDescription" xml:space="preserve">
+    <value>Проверьте книгу структуры папок пробным запуском, затем зафиксируйте её как черновую базовую линию.</value>
+  </data>
+  <data name="Step1SelectWorkbook" xml:space="preserve">
+    <value>1. Выберите книгу и проверьте</value>
+  </data>
+  <data name="WorkbookFile" xml:space="preserve">
+    <value>Книга (.xlsx)</value>
+  </data>
+  <data name="WorkbookFileHint" xml:space="preserve">
+    <value>Книга читается только как метаданные управления; как документ она не хранится.</value>
+  </data>
+  <data name="SourceBaselineKey" xml:space="preserve">
+    <value>Ключ исходной базовой линии</value>
+  </data>
+  <data name="RunDryRun" xml:space="preserve">
+    <value>Пробный запуск</value>
+  </data>
+  <data name="Step2ValidationSummary" xml:space="preserve">
+    <value>2. Сводка проверки</value>
+  </data>
+  <data name="Step3Commit" xml:space="preserve">
+    <value>3. Зафиксировать импорт</value>
+  </data>
+  <data name="BaselineVersion" xml:space="preserve">
+    <value>Версия базовой линии</value>
+  </data>
+  <data name="ChangeSummary" xml:space="preserve">
+    <value>Описание изменений</value>
+  </data>
+  <data name="CommitImport" xml:space="preserve">
+    <value>Зафиксировать импорт</value>
+  </data>
+  <data name="CommitDisabledHint" xml:space="preserve">
+    <value>Фиксация доступна только после успешного пробного запуска выбранного файла.</value>
+  </data>
+  <data name="WorkbookRequired" xml:space="preserve">
+    <value>Выберите книгу .xlsx.</value>
+  </data>
+  <data name="InvalidFileType" xml:space="preserve">
+    <value>Принимаются только книги .xlsx.</value>
+  </data>
+  <data name="SourceKeyRequired" xml:space="preserve">
+    <value>Требуется ключ исходной базовой линии.</value>
+  </data>
+  <data name="BaselineVersionRequired" xml:space="preserve">
+    <value>Требуется версия базовой линии.</value>
+  </data>
+  <data name="DryRunValid" xml:space="preserve">
+    <value>Корректно</value>
+  </data>
+  <data name="DryRunInvalid" xml:space="preserve">
+    <value>Некорректно</value>
+  </data>
+  <data name="CommitSuccess" xml:space="preserve">
+    <value>Базовая линия импортирована как черновик.</value>
+  </data>
+  <data name="SummaryTotalRows" xml:space="preserve">
+    <value>Всего строк</value>
+  </data>
+  <data name="SummaryImported" xml:space="preserve">
+    <value>Определения</value>
+  </data>
+  <data name="SummarySkipped" xml:space="preserve">
+    <value>Пропущено</value>
+  </data>
+  <data name="SummaryErrors" xml:space="preserve">
+    <value>Ошибки</value>
+  </data>
+  <data name="SummaryWarnings" xml:space="preserve">
+    <value>Предупреждения</value>
+  </data>
+  <data name="SummaryDuplicates" xml:space="preserve">
+    <value>Конфликты дублирующихся путей</value>
+  </data>
+  <data name="SummaryHierarchy" xml:space="preserve">
+    <value>Замечания по иерархии</value>
+  </data>
+  <data name="DetailTitle" xml:space="preserve">
+    <value>Сведения о базовой линии</value>
+  </data>
+  <data name="DetailDescription" xml:space="preserve">
+    <value>Метаданные, статус и импортированное дерево определений базовой линии.</value>
+  </data>
+  <data name="Metadata" xml:space="preserve">
+    <value>Метаданные</value>
+  </data>
+  <data name="ManifestId" xml:space="preserve">
+    <value>ID манифеста</value>
+  </data>
+  <data name="Definitions" xml:space="preserve">
+    <value>Дерево определений</value>
+  </data>
+  <data name="NoDefinitions" xml:space="preserve">
+    <value>В этой базовой линии нет определений.</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Имя</value>
+  </data>
+  <data name="FullPath" xml:space="preserve">
+    <value>Путь</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Опубликовать</value>
+  </data>
+  <data name="PublishConfirm" xml:space="preserve">
+    <value>Опубликовать этот черновик как неизменяемый снимок? Действие необратимо.</value>
+  </data>
+  <data name="PublishSuccess" xml:space="preserve">
+    <value>Базовая линия опубликована.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>У вас нет прав для выполнения этого действия.</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Запрошенная базовая линия не найдена.</value>
+  </data>
+  <data name="CorrelationId" xml:space="preserve">
+    <value>Идентификатор обращения</value>
+  </data>
+  <data name="ReasonValidationFailed" xml:space="preserve">
+    <value>Книга не прошла проверку. Изучите замечания ниже.</value>
+  </data>
+  <data name="ReasonConflict" xml:space="preserve">
+    <value>Обнаружен конфликт (например, дублирующийся элемент или устаревшая версия).</value>
+  </data>
+  <data name="ReasonPermDenied" xml:space="preserve">
+    <value>У вас нет прав для выполнения этого действия.</value>
+  </data>
+  <data name="ReasonNotFound" xml:space="preserve">
+    <value>Запрошенный элемент не найден.</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="SelectedFile" xml:space="preserve">
+    <value>Выбранный файл</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>Размер</value>
+  </data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>Развернуть всё</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>Свернуть всё</value>
+  </data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve">
+    <value>Фильтр по имени или пути…</value>
+  </data>
+  <data name="CreateManualBaseline" xml:space="preserve">
+    <value>Create Manual Baseline</value>
+  </data>
+  <data name="CreateManualTitle" xml:space="preserve">
+    <value>Создать базовую линию вручную</value>
+  </data>
+  <data name="ManualBaselineCreated" xml:space="preserve">
+    <value>Manual draft baseline created.</value>
+  </data>
+  <data name="OpenDesigner" xml:space="preserve">
+    <value>Open Designer</value>
+  </data>
+  <data name="DesignerTitle" xml:space="preserve">
+    <value>Ручной конструктор</value>
+  </data>
+  <data name="BaselineSection" xml:space="preserve">
+    <value>Baseline</value>
+  </data>
+  <data name="BaselineName" xml:space="preserve">
+    <value>Baseline name</value>
+  </data>
+  <data name="LifecycleSection" xml:space="preserve">
+    <value>Lifecycle</value>
+  </data>
+  <data name="EffectiveDate" xml:space="preserve">
+    <value>Effective date</value>
+  </data>
+  <data name="AddRoot" xml:space="preserve">
+    <value>Add root</value>
+  </data>
+  <data name="AddChild" xml:space="preserve">
+    <value>Add child</value>
+  </data>
+  <data name="EditNode" xml:space="preserve">
+    <value>Edit node</value>
+  </data>
+  <data name="MoveNode" xml:space="preserve">
+    <value>Move node</value>
+  </data>
+  <data name="DeleteNode" xml:space="preserve">
+    <value>Delete node</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>Delete this draft node?</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Node deleted.</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>Node moved.</value>
+  </data>
+  <data name="ValidateDraft" xml:space="preserve">
+    <value>Validate draft</value>
+  </data>
+  <data name="DraftTreeValid" xml:space="preserve">
+    <value>Draft tree is valid.</value>
+  </data>
+  <data name="DraftTreeInvalid" xml:space="preserve">
+    <value>Draft tree has findings.</value>
+  </data>
+  <data name="NodeEditorTitle" xml:space="preserve">
+    <value>Node metadata</value>
+  </data>
+  <data name="DisplayOrder" xml:space="preserve">
+    <value>Display order</value>
+  </data>
+  <data name="PurposeScope" xml:space="preserve">
+    <value>Purpose scope</value>
+  </data>
+  <data name="RequiredByScope" xml:space="preserve">
+    <value>Required by scope</value>
+  </data>
+  <data name="AllowedDocClass" xml:space="preserve">
+    <value>Allowed document class</value>
+  </data>
+  <data name="Classification" xml:space="preserve">
+    <value>Classification</value>
+  </data>
+  <data name="RetentionHint" xml:space="preserve">
+    <value>Retention hint</value>
+  </data>
+  <data name="AllowsManualChildren" xml:space="preserve">
+    <value>Allows manual children</value>
+  </data>
+  <data name="TemplatesAllowed" xml:space="preserve">
+    <value>Templates allowed</value>
+  </data>
+  <data name="Mandatory" xml:space="preserve">
+    <value>Mandatory</value>
+  </data>
+  <data name="Protected" xml:space="preserve">
+    <value>Protected</value>
+  </data>
+  <data name="ParentNode" xml:space="preserve">
+    <value>Parent node</value>
+  </data>
+  <data name="RootNode" xml:space="preserve">
+    <value>Root</value>
+  </data>
+  <data name="InstantiateStructures" xml:space="preserve">
+    <value>Создать структуры</value>
+  </data>
+  <data name="NoDefinitionsHeading" xml:space="preserve">
+    <value>Нет определений</value>
+  </data>
+  <data name="PublishNeedsDefinitions" xml:space="preserve">
+    <value>Добавьте хотя бы одно определение перед публикацией.</value>
+  </data>
+  <data name="ValidateNeedsDefinitions" xml:space="preserve">
+    <value>Добавьте хотя бы одно определение перед проверкой.</value>
+  </data>
+</root>

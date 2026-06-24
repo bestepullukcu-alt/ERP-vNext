@@ -1,0 +1,58 @@
+@using Diten.Web.Views.DocumentManagement.QmsBaselines
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<QmsBaselinesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["QmsBaselinesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canImport = Perms.Has("platform.document-management.qms-baselines.import");
+    var canCreateManual = Perms.Has("platform.document-management.qms-baselines.create");
+    // MOD-0028-FU05 — entry to the company-adoption / instantiation surface (no longer a sidebar item).
+    var canInstantiate = Perms.Has("platform.document-management.baselines.instantiate")
+        || Perms.Has("platform.document-management.instantiations.dry-run")
+        || Perms.Has("platform.document-management.collection-instances.view");
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/DocumentManagement/QmsBaselines/_Filter.cshtml" />
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["QmsBaselinesTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        @* Create Manual Baseline moved into the DataTable toolbar (Golden Compact "Add New" standard), after the filter button. *@
+        @if (canImport)
+        {
+            <a href="/DocumentManagementQmsBaselines/Import" class="btn btn-label-secondary">
+                <i class="icon-base bx bx-import me-1"></i>@Localizer["ImportWorkbook"]
+            </a>
+        }
+        @if (canInstantiate)
+        {
+            <a href="/DocumentManagementInstantiations" class="btn btn-primary">
+                <i class="icon-base bx bx-layer-plus me-1"></i>@Localizer["InstantiateStructures"]
+            </a>
+        }
+    </div>
+</div>
+
+@* ② DataTable Card *@
+@* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-qmsbaselines" data-dt-standard="v2"> *@
+<partial name="~/Views/DocumentManagement/QmsBaselines/_DataTable.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/DocumentManagement/QmsBaselines/_IndexL10n.cshtml" />
+    <script>
+        window.QmsBaselinesPerms = {
+            canCreateManual: @Json.Serialize(canCreateManual),
+            createManualUrl: '/DocumentManagementQmsBaselines/CreateManual'
+        };
+    </script>
+    <script src="~/assets/js/DocumentManagement/QmsBaselines/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/QmsBaselines/index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Documentation Structures</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Instantiate a published documentation baseline for a company.</value></data>
+  <data name="SelectRelease" xml:space="preserve"><value>Select release and company</value></data>
+  <data name="BaselineRelease" xml:space="preserve"><value>Published baseline release</value></data>
+  <data name="CompanyId" xml:space="preserve"><value>Company / LegalEntity ID</value></data>
+  <data name="PlantId" xml:space="preserve"><value>Plant ID</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Business Unit ID</value></data>
+  <data name="BreadcrumbCurrent" xml:space="preserve"><value>Instantiate structures</value></data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve"><value>Filter by name or path…</value></data>
+  <data name="InstanceToken" xml:space="preserve"><value>Instance token</value></data>
+  <data name="InstanceTokenHint" xml:space="preserve"><value>Leave empty unless you deliberately need a second, separate structure for this company.</value></data>
+  <data name="InstanceTokenPlaceholder" xml:space="preserve"><value>Leave empty for the standard structure</value></data>
+  <data name="InstanceTokenHelp" xml:space="preserve"><value>Leave this empty to create the company's standard documentation structure (recommended). Enter a short, stable label (e.g. 'pilot' or '2026-audit') only if you intentionally need a second, separate structure for the same company and baseline. The token becomes part of the instance identity, so keep it consistent — changing it later creates a brand-new tree instead of updating the existing one.</value></data>
+  <data name="Optional" xml:space="preserve"><value>optional</value></data>
+  <data name="RunDryRun" xml:space="preserve"><value>Dry-run</value></data>
+  <data name="Execute" xml:space="preserve"><value>Execute</value></data>
+  <data name="RetryFailed" xml:space="preserve"><value>Retry failed</value></data>
+  <data name="DryRunRequired" xml:space="preserve"><value>Dry-run required</value></data>
+  <data name="DraftBlocked" xml:space="preserve"><value>Draft releases cannot be instantiated.</value></data>
+  <data name="NoPublishedRelease" xml:space="preserve"><value>No published baseline release is available.</value></data>
+  <data name="LocalFallbackOn" xml:space="preserve"><value>Local-smoke company fallback is enabled.</value></data>
+  <data name="LocalFallbackOff" xml:space="preserve"><value>MOD-0220 company validation is fail-closed.</value></data>
+  <data name="Diagnostics" xml:space="preserve"><value>Dry-run diagnostics</value></data>
+  <data name="Outcomes" xml:space="preserve"><value>Outcomes</value></data>
+  <data name="Instances" xml:space="preserve"><value>Collection instances</value></data>
+  <data name="Created" xml:space="preserve"><value>Created</value></data>
+  <data name="Skipped" xml:space="preserve"><value>Skipped</value></data>
+  <data name="Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Total" xml:space="preserve"><value>Total</value></data>
+  <data name="NodesToCreate" xml:space="preserve"><value>Nodes to create</value></data>
+  <data name="NodesToSkip" xml:space="preserve"><value>Nodes to skip</value></data>
+  <data name="Conflicts" xml:space="preserve"><value>Conflicts</value></data>
+  <data name="PlanPreview" xml:space="preserve"><value>Plan preview — folders that will be created</value></data>
+  <data name="TechnicalDetails" xml:space="preserve"><value>Technical details (per-node table)</value></data>
+  <data name="WillBeCreated" xml:space="preserve"><value>Will be created</value></data>
+  <data name="AlreadyExists" xml:space="preserve"><value>Already exists</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="OperationStatus" xml:space="preserve"><value>Operation status</value></data>
+  <data name="OperationId" xml:space="preserve"><value>Operation ID</value></data>
+  <data name="NodeKey" xml:space="preserve"><value>Node key</value></data>
+  <data name="CanonicalId" xml:space="preserve"><value>Canonical ID</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Reason code</value></data>
+  <data name="Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Retryable" xml:space="preserve"><value>Retryable</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Path" xml:space="preserve"><value>Path</value></data>
+  <data name="BaselineId" xml:space="preserve"><value>Baseline release ID</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>Correlation ID</value></data>
+  <data name="MissingSelection" xml:space="preserve"><value>Select a published release.</value></data>
+  <data name="InvalidCompany" xml:space="preserve"><value>Enter a valid GUID for the selected scope.</value></data>
+  <data name="DryRunComplete" xml:space="preserve"><value>Dry-run complete.</value></data>
+  <data name="ExecuteComplete" xml:space="preserve"><value>Instantiation complete.</value></data>
+  <data name="RetryUnavailable" xml:space="preserve"><value>Retry is not available.</value></data>
+  <data name="EmptyOutcomes" xml:space="preserve"><value>No outcomes yet.</value></data>
+  <data name="EmptyPlanHeading" xml:space="preserve"><value>No preview yet</value></data>
+  <data name="EmptyPlanText" xml:space="preserve"><value>Run a dry-run to preview the folders that will be created.</value></data>
+  <data name="EmptyInstances" xml:space="preserve"><value>No collection instances yet.</value></data>
+  <data name="EmptyInstancesHeading" xml:space="preserve"><value>No instances yet</value></data>
+  <data name="FoldersLabel" xml:space="preserve"><value>folders</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Archive “{0}” and all of its sub-folders? They will be marked archived (not permanently deleted).</value></data>
+  <data name="ArchiveSuccess" xml:space="preserve"><value>Archived {0} folder(s).</value></data>
+  <data name="Restore" xml:space="preserve"><value>Restore</value></data>
+  <data name="RestoreConfirm" xml:space="preserve"><value>Restore “{0}” and its sub-folders to active? Required parent folders are re-activated too.</value></data>
+  <data name="RestoreSuccess" xml:space="preserve"><value>Restored {0} folder(s).</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>Collection instance detail</value></data>
+  <data name="DetailDescription" xml:space="preserve"><value>Company-scoped instance metadata and scope bindings.</value></data>
+  <data name="Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading...</value></data>
+  <data name="BindingScope" xml:space="preserve"><value>Binding scope</value></data>
+  <data name="BindingId" xml:space="preserve"><value>Binding ID</value></data>
+  <data name="BindingStatus" xml:space="preserve"><value>Binding status</value></data>
+  <data name="LastValidatedAt" xml:space="preserve"><value>Last validated</value></data>
+  <data name="SelectCompany" xml:space="preserve">
+    <value>Select a legal entity</value>
+  </data>
+  <data name="ApplyMode" xml:space="preserve"><value>Apply mode</value></data>
+  <data name="FullStructure" xml:space="preserve"><value>Full structure</value></data>
+  <data name="SelectedBranches" xml:space="preserve"><value>Selected branches</value></data>
+  <data name="PublishedTree" xml:space="preserve"><value>Published baseline tree</value></data>
+  <data name="BranchSelectionHint" xml:space="preserve"><value>Selected branches include descendants and required ancestors.</value></data>
+  <data name="SelectedBranchCount" xml:space="preserve"><value>Selected branch count</value></data>
+  <data name="IncludedScope" xml:space="preserve"><value>Included scope</value></data>
+  <data name="IncludedAncestors" xml:space="preserve"><value>Included ancestors</value></data>
+  <data name="IncludedDescendants" xml:space="preserve"><value>Included descendants</value></data>
+  <data name="ExcludedNodes" xml:space="preserve"><value>Excluded nodes</value></data>
+  <data name="SelectAtLeastOneBranch" xml:space="preserve"><value>Select at least one branch.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Legal entity lookup is unavailable. You can enter a company GUID manually.</value></data>
+</root>

@@ -1,0 +1,318 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="QmsBaselinesTitle" xml:space="preserve">
+    <value>Estructuras de documentación</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Líneas base de estructura documental gobernadas: importe, construya, publique y adopte jerarquías de carpetas reutilizables.</value>
+  </data>
+  <data name="BaselineId" xml:space="preserve">
+    <value>ID de línea base</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Versión</value>
+  </data>
+  <data name="DefinitionCount" xml:space="preserve">
+    <value>Definiciones</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Creado</value>
+  </data>
+  <data name="PublishedAt" xml:space="preserve">
+    <value>Publicado</value>
+  </data>
+  <data name="SnapshotHash" xml:space="preserve">
+    <value>Hash de instantánea</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="StatusDraft" xml:space="preserve">
+    <value>Borrador</value>
+  </data>
+  <data name="StatusPublished" xml:space="preserve">
+    <value>Publicado</value>
+  </data>
+  <data name="ImportWorkbook" xml:space="preserve">
+    <value>Importar libro</value>
+  </data>
+  <data name="EmptyList" xml:space="preserve">
+    <value>Aún no hay líneas base. Importa un libro para crear una.</value>
+  </data>
+  <data name="ImportTitle" xml:space="preserve">
+    <value>Importar línea base</value>
+  </data>
+  <data name="ImportDescription" xml:space="preserve">
+    <value>Valida un libro de estructura de carpetas con una ejecución de prueba y luego confírmalo como línea base en borrador.</value>
+  </data>
+  <data name="Step1SelectWorkbook" xml:space="preserve">
+    <value>1. Seleccionar libro y validar</value>
+  </data>
+  <data name="WorkbookFile" xml:space="preserve">
+    <value>Libro (.xlsx)</value>
+  </data>
+  <data name="WorkbookFileHint" xml:space="preserve">
+    <value>El libro se lee solo como metadatos de gobierno; nunca se almacena como documento.</value>
+  </data>
+  <data name="SourceBaselineKey" xml:space="preserve">
+    <value>Clave de línea base de origen</value>
+  </data>
+  <data name="RunDryRun" xml:space="preserve">
+    <value>Ejecutar prueba</value>
+  </data>
+  <data name="Step2ValidationSummary" xml:space="preserve">
+    <value>2. Resumen de validación</value>
+  </data>
+  <data name="Step3Commit" xml:space="preserve">
+    <value>3. Confirmar importación</value>
+  </data>
+  <data name="BaselineVersion" xml:space="preserve">
+    <value>Versión de línea base</value>
+  </data>
+  <data name="ChangeSummary" xml:space="preserve">
+    <value>Resumen de cambios</value>
+  </data>
+  <data name="CommitImport" xml:space="preserve">
+    <value>Confirmar importación</value>
+  </data>
+  <data name="CommitDisabledHint" xml:space="preserve">
+    <value>La confirmación se habilita solo tras una prueba válida del archivo seleccionado.</value>
+  </data>
+  <data name="WorkbookRequired" xml:space="preserve">
+    <value>Selecciona un libro .xlsx.</value>
+  </data>
+  <data name="InvalidFileType" xml:space="preserve">
+    <value>Solo se aceptan libros .xlsx.</value>
+  </data>
+  <data name="SourceKeyRequired" xml:space="preserve">
+    <value>La clave de línea base de origen es obligatoria.</value>
+  </data>
+  <data name="BaselineVersionRequired" xml:space="preserve">
+    <value>La versión de línea base es obligatoria.</value>
+  </data>
+  <data name="DryRunValid" xml:space="preserve">
+    <value>Válido</value>
+  </data>
+  <data name="DryRunInvalid" xml:space="preserve">
+    <value>No válido</value>
+  </data>
+  <data name="CommitSuccess" xml:space="preserve">
+    <value>Línea base importada como borrador.</value>
+  </data>
+  <data name="SummaryTotalRows" xml:space="preserve">
+    <value>Filas totales</value>
+  </data>
+  <data name="SummaryImported" xml:space="preserve">
+    <value>Definiciones</value>
+  </data>
+  <data name="SummarySkipped" xml:space="preserve">
+    <value>Omitidas</value>
+  </data>
+  <data name="SummaryErrors" xml:space="preserve">
+    <value>Errores</value>
+  </data>
+  <data name="SummaryWarnings" xml:space="preserve">
+    <value>Advertencias</value>
+  </data>
+  <data name="SummaryDuplicates" xml:space="preserve">
+    <value>Conflictos de ruta duplicada</value>
+  </data>
+  <data name="SummaryHierarchy" xml:space="preserve">
+    <value>Hallazgos de jerarquía</value>
+  </data>
+  <data name="DetailTitle" xml:space="preserve">
+    <value>Detalle de línea base</value>
+  </data>
+  <data name="DetailDescription" xml:space="preserve">
+    <value>Metadatos, estado y árbol de definiciones importado de la línea base.</value>
+  </data>
+  <data name="Metadata" xml:space="preserve">
+    <value>Metadatos</value>
+  </data>
+  <data name="ManifestId" xml:space="preserve">
+    <value>ID de manifiesto</value>
+  </data>
+  <data name="Definitions" xml:space="preserve">
+    <value>Árbol de definiciones</value>
+  </data>
+  <data name="NoDefinitions" xml:space="preserve">
+    <value>No hay definiciones en esta línea base.</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="FullPath" xml:space="preserve">
+    <value>Ruta</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Publicar</value>
+  </data>
+  <data name="PublishConfirm" xml:space="preserve">
+    <value>¿Publicar este borrador como una instantánea inmutable? Esto no se puede deshacer.</value>
+  </data>
+  <data name="PublishSuccess" xml:space="preserve">
+    <value>Línea base publicada.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>No tienes permiso para realizar esta acción.</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>No se encontró la línea base solicitada.</value>
+  </data>
+  <data name="CorrelationId" xml:space="preserve">
+    <value>Referencia de soporte</value>
+  </data>
+  <data name="ReasonValidationFailed" xml:space="preserve">
+    <value>El libro no pasó la validación. Revisa los hallazgos a continuación.</value>
+  </data>
+  <data name="ReasonConflict" xml:space="preserve">
+    <value>Se detectó un conflicto (p. ej., hermano duplicado o versión obsoleta).</value>
+  </data>
+  <data name="ReasonPermDenied" xml:space="preserve">
+    <value>No tienes permiso para realizar esta acción.</value>
+  </data>
+  <data name="ReasonNotFound" xml:space="preserve">
+    <value>No se encontró el elemento solicitado.</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Atrás</value>
+  </data>
+  <data name="SelectedFile" xml:space="preserve">
+    <value>Archivo seleccionado</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>Tamaño</value>
+  </data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>Expandir todo</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>Contraer todo</value>
+  </data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve">
+    <value>Filtrar por nombre o ruta…</value>
+  </data>
+  <data name="CreateManualBaseline" xml:space="preserve">
+    <value>Create Manual Baseline</value>
+  </data>
+  <data name="CreateManualTitle" xml:space="preserve">
+    <value>Crear línea base manual</value>
+  </data>
+  <data name="ManualBaselineCreated" xml:space="preserve">
+    <value>Manual draft baseline created.</value>
+  </data>
+  <data name="OpenDesigner" xml:space="preserve">
+    <value>Open Designer</value>
+  </data>
+  <data name="DesignerTitle" xml:space="preserve">
+    <value>Diseñador manual</value>
+  </data>
+  <data name="BaselineSection" xml:space="preserve">
+    <value>Baseline</value>
+  </data>
+  <data name="BaselineName" xml:space="preserve">
+    <value>Baseline name</value>
+  </data>
+  <data name="LifecycleSection" xml:space="preserve">
+    <value>Lifecycle</value>
+  </data>
+  <data name="EffectiveDate" xml:space="preserve">
+    <value>Effective date</value>
+  </data>
+  <data name="AddRoot" xml:space="preserve">
+    <value>Add root</value>
+  </data>
+  <data name="AddChild" xml:space="preserve">
+    <value>Add child</value>
+  </data>
+  <data name="EditNode" xml:space="preserve">
+    <value>Edit node</value>
+  </data>
+  <data name="MoveNode" xml:space="preserve">
+    <value>Move node</value>
+  </data>
+  <data name="DeleteNode" xml:space="preserve">
+    <value>Delete node</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>Delete this draft node?</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Node deleted.</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>Node moved.</value>
+  </data>
+  <data name="ValidateDraft" xml:space="preserve">
+    <value>Validate draft</value>
+  </data>
+  <data name="DraftTreeValid" xml:space="preserve">
+    <value>Draft tree is valid.</value>
+  </data>
+  <data name="DraftTreeInvalid" xml:space="preserve">
+    <value>Draft tree has findings.</value>
+  </data>
+  <data name="NodeEditorTitle" xml:space="preserve">
+    <value>Node metadata</value>
+  </data>
+  <data name="DisplayOrder" xml:space="preserve">
+    <value>Display order</value>
+  </data>
+  <data name="PurposeScope" xml:space="preserve">
+    <value>Purpose scope</value>
+  </data>
+  <data name="RequiredByScope" xml:space="preserve">
+    <value>Required by scope</value>
+  </data>
+  <data name="AllowedDocClass" xml:space="preserve">
+    <value>Allowed document class</value>
+  </data>
+  <data name="Classification" xml:space="preserve">
+    <value>Classification</value>
+  </data>
+  <data name="RetentionHint" xml:space="preserve">
+    <value>Retention hint</value>
+  </data>
+  <data name="AllowsManualChildren" xml:space="preserve">
+    <value>Allows manual children</value>
+  </data>
+  <data name="TemplatesAllowed" xml:space="preserve">
+    <value>Templates allowed</value>
+  </data>
+  <data name="Mandatory" xml:space="preserve">
+    <value>Mandatory</value>
+  </data>
+  <data name="Protected" xml:space="preserve">
+    <value>Protected</value>
+  </data>
+  <data name="ParentNode" xml:space="preserve">
+    <value>Parent node</value>
+  </data>
+  <data name="RootNode" xml:space="preserve">
+    <value>Root</value>
+  </data>
+  <data name="InstantiateStructures" xml:space="preserve">
+    <value>Instanciar estructuras</value>
+  </data>
+  <data name="NoDefinitionsHeading" xml:space="preserve">
+    <value>Sin definiciones</value>
+  </data>
+  <data name="PublishNeedsDefinitions" xml:space="preserve">
+    <value>Añada al menos una definición antes de publicar.</value>
+  </data>
+  <data name="ValidateNeedsDefinitions" xml:space="preserve">
+    <value>Añada al menos una definición antes de validar.</value>
+  </data>
+</root>

@@ -52,6 +52,43 @@ public sealed class PermissionAliasResolverTests
             result);
     }
 
+    [Theory]
+    [InlineData("platform.document-management.collection-definitions.list", "MOD0028.COLLECTION_DEFINITION.LIST")]
+    [InlineData("platform.document-management.collection-definitions.view", "MOD0028.COLLECTION_DEFINITION.VIEW")]
+    [InlineData("platform.document-management.baseline-releases.list", "MOD0028.BASELINE_RELEASE.LIST")]
+    [InlineData("platform.document-management.corporate-root.initialize", "MOD0028.CORPORATE_ROOT.INITIALIZE")]
+    [InlineData("platform.document-management.collection-instances.view", "MOD0028.COLLECTION_INSTANCE.VIEW")]
+    public void Expand_document_management_canonical_returns_approved_spec_alias(
+        string canonical,
+        string specAlias)
+    {
+        var result = PermissionAliasResolver.Expand(canonical);
+
+        Assert.Equal(new HashSet<string> { canonical, specAlias }, result);
+        Assert.Equal(new HashSet<string> { specAlias }, PermissionAliasResolver.Expand(specAlias));
+    }
+
+    [Fact]
+    public void Expand_qms_baselines_publish_returns_approved_spec_alias_directionally()
+    {
+        const string canonical = "platform.document-management.qms-baselines.publish";
+        const string specAlias = "MOD0028.BASELINE_RELEASE.PUBLISH";
+
+        Assert.Equal(new HashSet<string> { canonical, specAlias }, PermissionAliasResolver.Expand(canonical));
+        // Reverse is not granted: the legacy spec key satisfies only itself.
+        Assert.Equal(new HashSet<string> { specAlias }, PermissionAliasResolver.Expand(specAlias));
+    }
+
+    [Theory]
+    [InlineData("platform.document-management.qms-baselines.import")]
+    [InlineData("platform.document-management.qms-baselines.view")]
+    public void Qms_baselines_import_and_view_have_no_alias_pending_ea_decision(string canonical)
+    {
+        // FU02-native: no parent spec alias is registered until EA/MOD-0018 confirms a directional mapping.
+        Assert.Equal(new HashSet<string> { canonical }, PermissionAliasResolver.Expand(canonical));
+        Assert.False(PermissionAliasMap.CanonicalToAliases.ContainsKey(canonical));
+    }
+
     [Fact]
     public void Expand_always_contains_the_input()
     {
@@ -66,8 +103,8 @@ public sealed class PermissionAliasResolverTests
     [Fact]
     public void Map_has_the_expected_platform_enforced_entry_count()
     {
-        // §1.2 (32) + §1.1 Platform-owned (20) + §1.3 verb aliases (3) = 55. MDM legal-entity rows excluded.
-        Assert.Equal(55, PermissionAliasMap.CanonicalToAliases.Count);
+        // §1.2 (32) + §1.1 Platform-owned (20) + §1.3 verb aliases (3) + MOD-0028-FU01 (5) + MOD-0028-FU02 (1) = 61.
+        Assert.Equal(61, PermissionAliasMap.CanonicalToAliases.Count);
     }
 
     [Fact]

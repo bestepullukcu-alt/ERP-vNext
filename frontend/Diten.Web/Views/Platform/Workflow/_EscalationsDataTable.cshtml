@@ -1,0 +1,22 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+
+@* MOD-0023 — Workflow Escalation Run results DataTable v2 (golden compact contract, client-side). *@
+<div class="card">
+    <div class="card-datatable table-responsive">
+        <table id="dt-workflow-escalations" data-dt-standard="v2" class="datatables-workflow-escalations table border-top" data-testid="wf-esc-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["WorkflowInstanceId"]</th>
+                    <th>@Localizer["TaskId"]</th>
+                    <th>@Localizer["Action"]</th>
+                    <th>@Localizer["TaskTransition"]</th>
+                    <th>@Localizer["ReasonCode"]</th>
+                    <th class="text-center">@Localizer["Idempotent"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

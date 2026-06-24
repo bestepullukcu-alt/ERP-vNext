@@ -28,4 +28,8 @@
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Seed\business-reference-data\document-management-qms.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

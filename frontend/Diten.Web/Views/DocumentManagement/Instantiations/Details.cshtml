@@ -1,0 +1,49 @@
+@using Diten.Web.Views.DocumentManagement.Instantiations
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InstantiationsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["DetailTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var instanceId = ViewData["InstanceId"]?.ToString() ?? string.Empty;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["DetailTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["DetailDescription"]</p>
+    </div>
+    <a href="/DocumentManagementInstantiations" class="btn btn-label-secondary">
+        <i class="icon-base bx bx-arrow-back me-1"></i>@Localizer["Back"]
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header border-bottom">
+        <h6 id="instanceTitle" class="mb-0">@Localizer["Loading"]</h6>
+    </div>
+    <div class="card-body pt-4">
+        <dl id="instanceMeta" class="row mb-4"></dl>
+        <div class="table-responsive">
+            <table class="table border-top">
+                <thead>
+                    <tr>
+                        <th>@Localizer["BindingScope"]</th>
+                        <th>@Localizer["BindingId"]</th>
+                        <th>@Localizer["BindingStatus"]</th>
+                        <th>@Localizer["LastValidatedAt"]</th>
+                    </tr>
+                </thead>
+                <tbody id="bindingRows"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/Instantiations/_IndexL10n.cshtml" />
+    <script>
+        window.FU05InstanceId = @Json.Serialize(instanceId);
+    </script>
+    <script src="~/assets/js/DocumentManagement/Instantiations/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/Instantiations/details.js" asp-append-version="true"></script>
+}

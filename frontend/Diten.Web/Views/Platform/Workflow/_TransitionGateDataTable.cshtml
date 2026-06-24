@@ -1,0 +1,24 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+
+@* MOD-0023 - Workflow Transition Gate evaluation results DataTable v2 (golden compact contract, client-side). *@
+<div class="card">
+    <div class="card-datatable table-responsive">
+        <table id="dt-workflow-transition-gate" data-dt-standard="v2" class="datatables-workflow-transition-gate table border-top" data-testid="wf-gate-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["Decision"]</th>
+                    <th>@Localizer["ObjectRef"]</th>
+                    <th>@Localizer["RequestedTransition"]</th>
+                    <th>@Localizer["RequestedTargetState"]</th>
+                    <th>@Localizer["GateStatus"]</th>
+                    <th>@Localizer["BlockingReasonCode"]</th>
+                    <th>@Localizer["WorkflowInstanceId"]</th>
+                    <th>@Localizer["ActiveTaskId"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

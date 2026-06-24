@@ -282,6 +282,10 @@ public sealed class BusinessReferenceDataCatalogLoaderService : IBusinessReferen
         string correlationId,
         CancellationToken ct)
     {
+        var latestSet = await _repository.GetSetByCodeAsync(set.SetCode, ct)
+            ?? throw new InvalidOperationException("set_not_found_after_publish");
+
+        set = latestSet;
         if (set.PublishedVersionId == publishedVersionId
             && set.ActiveDraftVersionId is null
             && set.Status == BusinessReferenceDataSetStatus.Active)

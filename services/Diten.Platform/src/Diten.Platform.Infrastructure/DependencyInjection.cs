@@ -202,6 +202,24 @@ public static class DependencyInjection
         services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
+
+        // Workflow Repositories
+        services.AddScoped<IWorkflowTemplateRepository, WorkflowTemplateRepository>();
+        services.AddScoped<IWorkflowTemplateVersionRepository, WorkflowTemplateVersionRepository>();
+        services.AddScoped<IWorkflowInstanceRepository, WorkflowInstanceRepository>();
+        services.AddScoped<IApprovalTaskRepository, ApprovalTaskRepository>();
+        services.AddScoped<IRuntimeAssignmentSnapshotRepository, RuntimeAssignmentSnapshotRepository>();
+        services.AddScoped<IWorkflowTransitionLogRepository, WorkflowTransitionLogRepository>();
+        services.AddScoped<ISlaEscalationRuleRepository, SlaEscalationRuleRepository>();
+
+        // Document Management Repositories
+        services.AddScoped<IBaselineReleaseRepository, BaselineReleaseRepository>();
+        services.AddScoped<ICollectionDefinitionRepository, CollectionDefinitionRepository>();
+        services.AddScoped<IBaselineSnapshotManifestRepository, BaselineSnapshotManifestRepository>();
+        services.AddScoped<ICollectionInstanceRepository, CollectionInstanceRepository>();
+        services.AddScoped<IInstantiationOperationRepository, InstantiationOperationRepository>();
+        services.AddScoped<IInstantiationOutcomeRepository, InstantiationOutcomeRepository>();
+
         services.AddScoped<IMessagingProvider, FakeMessagingProvider>();
         services.AddScoped<IMessagingProvider, SmtpMessagingProvider>();
         services.AddSingleton<ISmtpClientFactory, MailKitSmtpClientFactory>();
@@ -229,6 +247,8 @@ public static class DependencyInjection
         ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
         services.AddScoped<IOutboxObservabilityReader>(sp => (IOutboxObservabilityReader)sp.GetRequiredService<IOutboxEventRepository>());
@@ -321,6 +341,8 @@ public static class DependencyInjection
             ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         }
         catch (Exception ex) when (mongoSettings.AllowStartupWithoutDatabase)
         {

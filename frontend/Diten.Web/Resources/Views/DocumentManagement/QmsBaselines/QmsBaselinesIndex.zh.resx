@@ -1,0 +1,318 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="QmsBaselinesTitle" xml:space="preserve">
+    <value>文档结构</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>受治理的文档结构基线 — 导入、构建、发布并采用可复用的文件夹层级。</value>
+  </data>
+  <data name="BaselineId" xml:space="preserve">
+    <value>基线 ID</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>版本</value>
+  </data>
+  <data name="DefinitionCount" xml:space="preserve">
+    <value>定义</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>创建时间</value>
+  </data>
+  <data name="PublishedAt" xml:space="preserve">
+    <value>发布时间</value>
+  </data>
+  <data name="SnapshotHash" xml:space="preserve">
+    <value>快照哈希</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="StatusDraft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="StatusPublished" xml:space="preserve">
+    <value>已发布</value>
+  </data>
+  <data name="ImportWorkbook" xml:space="preserve">
+    <value>导入工作簿</value>
+  </data>
+  <data name="EmptyList" xml:space="preserve">
+    <value>尚无基线。导入工作簿以创建。</value>
+  </data>
+  <data name="ImportTitle" xml:space="preserve">
+    <value>导入基线</value>
+  </data>
+  <data name="ImportDescription" xml:space="preserve">
+    <value>通过试运行验证文件夹结构工作簿，然后将其提交为草稿基线。</value>
+  </data>
+  <data name="Step1SelectWorkbook" xml:space="preserve">
+    <value>1. 选择工作簿并验证</value>
+  </data>
+  <data name="WorkbookFile" xml:space="preserve">
+    <value>工作簿 (.xlsx)</value>
+  </data>
+  <data name="WorkbookFileHint" xml:space="preserve">
+    <value>工作簿仅作为治理元数据读取，绝不作为文档存储。</value>
+  </data>
+  <data name="SourceBaselineKey" xml:space="preserve">
+    <value>源基线键</value>
+  </data>
+  <data name="RunDryRun" xml:space="preserve">
+    <value>运行试运行</value>
+  </data>
+  <data name="Step2ValidationSummary" xml:space="preserve">
+    <value>2. 验证摘要</value>
+  </data>
+  <data name="Step3Commit" xml:space="preserve">
+    <value>3. 提交导入</value>
+  </data>
+  <data name="BaselineVersion" xml:space="preserve">
+    <value>基线版本</value>
+  </data>
+  <data name="ChangeSummary" xml:space="preserve">
+    <value>变更摘要</value>
+  </data>
+  <data name="CommitImport" xml:space="preserve">
+    <value>提交导入</value>
+  </data>
+  <data name="CommitDisabledHint" xml:space="preserve">
+    <value>仅在所选文件通过有效试运行后才能提交。</value>
+  </data>
+  <data name="WorkbookRequired" xml:space="preserve">
+    <value>请选择 .xlsx 工作簿。</value>
+  </data>
+  <data name="InvalidFileType" xml:space="preserve">
+    <value>仅接受 .xlsx 工作簿。</value>
+  </data>
+  <data name="SourceKeyRequired" xml:space="preserve">
+    <value>源基线键为必填项。</value>
+  </data>
+  <data name="BaselineVersionRequired" xml:space="preserve">
+    <value>基线版本为必填项。</value>
+  </data>
+  <data name="DryRunValid" xml:space="preserve">
+    <value>有效</value>
+  </data>
+  <data name="DryRunInvalid" xml:space="preserve">
+    <value>无效</value>
+  </data>
+  <data name="CommitSuccess" xml:space="preserve">
+    <value>基线已作为草稿导入。</value>
+  </data>
+  <data name="SummaryTotalRows" xml:space="preserve">
+    <value>总行数</value>
+  </data>
+  <data name="SummaryImported" xml:space="preserve">
+    <value>定义</value>
+  </data>
+  <data name="SummarySkipped" xml:space="preserve">
+    <value>已跳过</value>
+  </data>
+  <data name="SummaryErrors" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="SummaryWarnings" xml:space="preserve">
+    <value>警告</value>
+  </data>
+  <data name="SummaryDuplicates" xml:space="preserve">
+    <value>重复路径冲突</value>
+  </data>
+  <data name="SummaryHierarchy" xml:space="preserve">
+    <value>层级问题</value>
+  </data>
+  <data name="DetailTitle" xml:space="preserve">
+    <value>基线详情</value>
+  </data>
+  <data name="DetailDescription" xml:space="preserve">
+    <value>基线元数据、状态以及导入的定义树。</value>
+  </data>
+  <data name="Metadata" xml:space="preserve">
+    <value>元数据</value>
+  </data>
+  <data name="ManifestId" xml:space="preserve">
+    <value>清单 ID</value>
+  </data>
+  <data name="Definitions" xml:space="preserve">
+    <value>定义树</value>
+  </data>
+  <data name="NoDefinitions" xml:space="preserve">
+    <value>此基线中没有定义。</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="FullPath" xml:space="preserve">
+    <value>路径</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>发布</value>
+  </data>
+  <data name="PublishConfirm" xml:space="preserve">
+    <value>将此草稿基线发布为不可变快照？此操作无法撤销。</value>
+  </data>
+  <data name="PublishSuccess" xml:space="preserve">
+    <value>基线已发布。</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>您无权执行此操作。</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>未找到请求的基线。</value>
+  </data>
+  <data name="CorrelationId" xml:space="preserve">
+    <value>支持参考</value>
+  </data>
+  <data name="ReasonValidationFailed" xml:space="preserve">
+    <value>工作簿未通过验证。请查看下方的问题。</value>
+  </data>
+  <data name="ReasonConflict" xml:space="preserve">
+    <value>检测到冲突（例如重复的同级或版本过期）。</value>
+  </data>
+  <data name="ReasonPermDenied" xml:space="preserve">
+    <value>您无权执行此操作。</value>
+  </data>
+  <data name="ReasonNotFound" xml:space="preserve">
+    <value>未找到请求的项目。</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>返回</value>
+  </data>
+  <data name="SelectedFile" xml:space="preserve">
+    <value>所选文件</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>大小</value>
+  </data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>全部展开</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>全部折叠</value>
+  </data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve">
+    <value>按名称或路径筛选…</value>
+  </data>
+  <data name="CreateManualBaseline" xml:space="preserve">
+    <value>Create Manual Baseline</value>
+  </data>
+  <data name="CreateManualTitle" xml:space="preserve">
+    <value>手动创建基线</value>
+  </data>
+  <data name="ManualBaselineCreated" xml:space="preserve">
+    <value>Manual draft baseline created.</value>
+  </data>
+  <data name="OpenDesigner" xml:space="preserve">
+    <value>Open Designer</value>
+  </data>
+  <data name="DesignerTitle" xml:space="preserve">
+    <value>手动设计器</value>
+  </data>
+  <data name="BaselineSection" xml:space="preserve">
+    <value>Baseline</value>
+  </data>
+  <data name="BaselineName" xml:space="preserve">
+    <value>Baseline name</value>
+  </data>
+  <data name="LifecycleSection" xml:space="preserve">
+    <value>Lifecycle</value>
+  </data>
+  <data name="EffectiveDate" xml:space="preserve">
+    <value>Effective date</value>
+  </data>
+  <data name="AddRoot" xml:space="preserve">
+    <value>Add root</value>
+  </data>
+  <data name="AddChild" xml:space="preserve">
+    <value>Add child</value>
+  </data>
+  <data name="EditNode" xml:space="preserve">
+    <value>Edit node</value>
+  </data>
+  <data name="MoveNode" xml:space="preserve">
+    <value>Move node</value>
+  </data>
+  <data name="DeleteNode" xml:space="preserve">
+    <value>Delete node</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>Delete this draft node?</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Node deleted.</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>Node moved.</value>
+  </data>
+  <data name="ValidateDraft" xml:space="preserve">
+    <value>Validate draft</value>
+  </data>
+  <data name="DraftTreeValid" xml:space="preserve">
+    <value>Draft tree is valid.</value>
+  </data>
+  <data name="DraftTreeInvalid" xml:space="preserve">
+    <value>Draft tree has findings.</value>
+  </data>
+  <data name="NodeEditorTitle" xml:space="preserve">
+    <value>Node metadata</value>
+  </data>
+  <data name="DisplayOrder" xml:space="preserve">
+    <value>Display order</value>
+  </data>
+  <data name="PurposeScope" xml:space="preserve">
+    <value>Purpose scope</value>
+  </data>
+  <data name="RequiredByScope" xml:space="preserve">
+    <value>Required by scope</value>
+  </data>
+  <data name="AllowedDocClass" xml:space="preserve">
+    <value>Allowed document class</value>
+  </data>
+  <data name="Classification" xml:space="preserve">
+    <value>Classification</value>
+  </data>
+  <data name="RetentionHint" xml:space="preserve">
+    <value>Retention hint</value>
+  </data>
+  <data name="AllowsManualChildren" xml:space="preserve">
+    <value>Allows manual children</value>
+  </data>
+  <data name="TemplatesAllowed" xml:space="preserve">
+    <value>Templates allowed</value>
+  </data>
+  <data name="Mandatory" xml:space="preserve">
+    <value>Mandatory</value>
+  </data>
+  <data name="Protected" xml:space="preserve">
+    <value>Protected</value>
+  </data>
+  <data name="ParentNode" xml:space="preserve">
+    <value>Parent node</value>
+  </data>
+  <data name="RootNode" xml:space="preserve">
+    <value>Root</value>
+  </data>
+  <data name="InstantiateStructures" xml:space="preserve">
+    <value>实例化结构</value>
+  </data>
+  <data name="NoDefinitionsHeading" xml:space="preserve">
+    <value>暂无定义</value>
+  </data>
+  <data name="PublishNeedsDefinitions" xml:space="preserve">
+    <value>发布前请至少添加一个定义。</value>
+  </data>
+  <data name="ValidateNeedsDefinitions" xml:space="preserve">
+    <value>验证前请至少添加一个定义。</value>
+  </data>
+</root>

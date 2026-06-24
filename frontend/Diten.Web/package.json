@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "bpmn-js": "^18.18.0",
     "drawflow": "^0.0.60"
   },
   "devDependencies": {

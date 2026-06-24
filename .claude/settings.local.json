@@ -31,7 +31,18 @@
       "Bash(node -e 'let s=\"\";process.stdin.on\\(\"data\",d=>s+=d\\).on\\(\"end\",\\(\\)=>{const m=s.match\\(/id=\"usage-l10n\"[^>]*>\\([\\\\s\\\\S]*?\\)<\\\\/script>/\\);if\\(!m\\){console.log\\(\"no payload\"\\);return;}const raw=m[1].replace\\(/&quot;/g,\"\\\\\"\"\\).replace\\(/&amp;/g,\"&\"\\).replace\\(/&#x27;|&#39;/g,\"\\\\x27\"\\).replace\\(/&lt;/g,\"<\"\\).replace\\(/&gt;/g,\">\"\\).trim\\(\\);const d=JSON.parse\\(raw\\);[\"UsageConsumerModuleLabel\",\"UsageLastResolvedColumn\",\"UsageImpactTotal\",\"UsageImpactCritical\",\"AddNew\",\"UsageCriticalityCritical\",\"UsageEmptyState\"].forEach\\(k=>console.log\\(\"  \"+k+\" = \"+JSON.stringify\\(d[k]\\)\\)\\);const raws=Object.keys\\(d\\).filter\\(k=>d[k]===k\\);console.log\\(\"RAW-KEY FALLBACKS:\",raws.length?raws.join\\(\", \"\\):\"none\"\\);}\\)')",
       "Bash(node --check publish-review.js)",
       "Bash(cd /c/Users/user/Desktop/ERP-vNext/services/Diten.Platform && grep -rhoiE \"\\\\\"\\(Database|DatabaseName|MongoDb?\\)\\\\\"\\\\s*:\\\\s*\\\\\"[^\\\\\"]+\\\\\"|mongodb://[^\\\\\"]+\" src/Diten.Platform.API/appsettings*.json 2>/dev/null | head -20)",
-      "Read(//c/c/Users/user/Desktop/ERP-vNext/services/Diten.Platform/src/**)"
+      "Read(//c/c/Users/user/Desktop/ERP-vNext/services/Diten.Platform/src/**)",
+      "PowerShell(& 'C:\\\\tmp\\\\gen_fu03_l10n.ps1')",
+      "PowerShell(& 'C:\\\\tmp\\\\patch_shared_resx.ps1')",
+      "Bash(grep -rniE \"CAN-QMS|\\\\\"CAN-\\\\\"|BaselineReleaseId\\\\s*=|GenerateBaselineReleaseId|baselineReleaseId =|ReleaseId.*=.*\\\\\\\\\\\\$|QMS-\" src --include=*.cs)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' 'http://localhost:5001/DocumentManagementQmsBaselines/Details/22478025-3ad0-4b39-bbcd-b3c94bdb68e9')",
+      "Bash(echo \"Details route: HTTP $\\(curl -s -o /dev/null -w '%{http_code}' 'http://localhost:5001/DocumentManagementQmsBaselines/Details/22478025-3ad0-4b39-bbcd-b3c94bdb68e9'\\)\")",
+      "Bash(curl -s 'http://localhost:5001/assets/js/DocumentManagement/QmsBaselines/details.js')",
+      "Bash(echo \"served details.js empty-state present: $\\(curl -s 'http://localhost:5001/assets/js/DocumentManagement/QmsBaselines/details.js')",
+      "Bash(node --check designer.js)",
+      "Bash(curl -s 'http://localhost:5001/assets/js/DocumentManagement/QmsBaselines/designer.js')",
+      "Bash(echo \"served designer.js has empty constraints: $\\(curl -s 'http://localhost:5001/assets/js/DocumentManagement/QmsBaselines/designer.js')",
+      "Bash(grep -iE \"class |public |get;|summary|///\")"
     ]
   }
 }

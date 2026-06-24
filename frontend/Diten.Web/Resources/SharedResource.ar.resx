@@ -467,5 +467,8 @@
   <data name="PositionAssignments" xml:space="preserve"><value>تعيينات المناصب</value></data>
   <data name="MasterData" xml:space="preserve"><value>البيانات الرئيسية</value></data>
   <data name="LegalEntities" xml:space="preserve"><value>الكيانات القانونية</value></data>
+  <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>اعتمادات سير العمل</value></data>
+  <data name="DocumentationStructures" xml:space="preserve"><value>هياكل التوثيق</value></data>
+  <data name="QmsBaselines" xml:space="preserve"><value>خطوط أساس QMS</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>غير مصرّح</value></data>
 </root>
-

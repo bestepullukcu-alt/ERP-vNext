@@ -1,0 +1,91 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["TabTasks"].Value;
+    var definitionId = ViewData["DefinitionId"]?.ToString() ?? string.Empty;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-1">@Localizer["TabTasks"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/Workflow">@Localizer["PageTitle"]</a></li>
+                <li class="breadcrumb-item">
+                    <a href="/Platform/Workflow">
+                        <span id="wf-meta-code">—</span>
+                        <span class="mx-1">/</span>
+                        <span id="wf-meta-name">—</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Localizer["TabTasks"]</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+@* Golden compact DataTable v2 contract: inline filter + skeleton card + data-dt-standard="v2". *@
+<partial name="_Filter" />
+<partial name="_TasksDataTable" />
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="wf-taskaction-offcanvas" aria-labelledby="wf-taskaction-title">
+    <div class="offcanvas-header p-4">
+        <h5 id="wf-taskaction-title" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="wf-taskaction-error" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="wf-taskaction-form" class="pt-0" novalidate>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-taskaction-actorid">@Localizer["ActorId"] <span class="text-danger">*</span></label>
+                    <input id="wf-taskaction-actorid" class="form-control" />
+                </div>
+                <div class="col-12" id="wf-taskaction-row-delegate">
+                    <label class="form-label fw-medium" for="wf-taskaction-delegate">@Localizer["DelegatePrincipalId"] <span class="text-danger">*</span></label>
+                    <input id="wf-taskaction-delegate" class="form-control" />
+                </div>
+                <div class="col-12" id="wf-taskaction-row-target">
+                    <label class="form-label fw-medium" for="wf-taskaction-target">@Localizer["TargetPrincipalId"]</label>
+                    <input id="wf-taskaction-target" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-taskaction-reason">@Localizer["ReasonCode"] <span class="text-danger">*</span></label>
+                    <input id="wf-taskaction-reason" class="form-control" />
+                </div>
+                <div class="col-12" id="wf-taskaction-row-evidence">
+                    <label class="form-label fw-medium" for="wf-taskaction-evidence">@Localizer["EvidenceRef"]</label>
+                    <input id="wf-taskaction-evidence" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-taskaction-comment">@Localizer["Comment"]</label>
+                    <textarea id="wf-taskaction-comment" class="form-control" rows="4"></textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-taskaction-idem">@Localizer["IdempotencyKey"] <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input id="wf-taskaction-idem" class="form-control" />
+                        <button type="button" id="wf-taskaction-regen" class="btn btn-outline-secondary"><i class="icon-base bx bx-refresh"></i></button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        <button type="button" id="wf-taskaction-submit" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_WorkflowL10n" />
+    <script>window.WorkflowDefinitionId = '@Html.Raw(definitionId)';</script>
+    <script src="~/assets/js/Platform/Workflow/workflow.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Workflow/tasks.js" asp-append-version="true"></script>
+}

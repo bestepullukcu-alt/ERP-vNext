@@ -1,9 +1,10 @@
 # Diten ERP - Background Start Script for Antigravity Workspace runner
+$ErrorActionPreference = "Continue"
 Write-Host "🚀 Starting Diten ERP Multi-Service Suite with WATCH (Hot Reload)..." -ForegroundColor Cyan
 
 # 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058)
 Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058..." -ForegroundColor Yellow
-Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058 -ErrorAction SilentlyContinue | 
+Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059 -ErrorAction SilentlyContinue |
     Select-Object -ExpandProperty OwningProcess | 
     Unique | 
     ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
@@ -16,6 +17,7 @@ Start-Sleep -Seconds 1
 $services = @(
     @{ Name = "Auth"; Path = "services/Diten.AuthService/src/Diten.AuthService.Api"; Port = 5056 },
     @{ Name = "DevEnablement"; Path = "services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api"; Port = 5058 },
+    @{ Name = "Mdm"; Path = "services/Diten.MdmService/src/Diten.MdmService.Api"; Port = 5059 },
     @{ Name = "Platform"; Path = "services/Diten.Platform/src/Diten.Platform.API"; Port = 5057 },
     @{ Name = "Gateway"; Path = "gateway/Diten.ApiGateway"; Port = 5000 },
     @{ Name = "Web"; Path = "frontend/Diten.Web"; Port = 5001 }
@@ -41,9 +43,8 @@ foreach ($svc in $services) {
     $job = Start-Job -Name $svc.Name -ScriptBlock {
         param($path)
         cd $path
-        # Force production/development environment variable or other parameters if needed
         $env:ASPNETCORE_ENVIRONMENT = "Development"
-        dotnet watch run --no-hot-reload --non-interactive --launch-profile http
+        dotnet watch run --no-hot-reload --non-interactive --launch-profile http 2>&1
     } -ArgumentList $absPath
     
     $jobs += $job

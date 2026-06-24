@@ -1,0 +1,110 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["TransitionGateTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-1">@Localizer["TransitionGateTitle"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/Workflow">@Localizer["PageTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["TabTransitionGate"]</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div id="wf-gate-status" class="alert d-none" role="alert"></div>
+
+@* Golden compact DataTable v2 contract: inline filter + DataTable card + data-dt-standard="v2". *@
+<partial name="_Filter" />
+<partial name="_TransitionGateDataTable" />
+
+@* Transition Gate Test Panel - golden slim offcanvas. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="wf-gate-offcanvas" aria-labelledby="wf-gate-offcanvas-label">
+    <div class="offcanvas-header p-4">
+        <div>
+            <h5 id="wf-gate-offcanvas-label" class="offcanvas-title">@Localizer["TransitionGateTitle"]</h5>
+            <small class="text-muted">@Localizer["TransitionGateDescription"]</small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="wf-gate-error" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="wf-gate-form" class="pt-0" novalidate>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-gate-objecttype">
+                        @Localizer["ObjectType"] <span class="text-danger">*</span>
+                    </label>
+                    <input id="wf-gate-objecttype" class="form-control" autocomplete="off" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-gate-objectid">
+                        @Localizer["ObjectId"] <span class="text-danger">*</span>
+                    </label>
+                    <input id="wf-gate-objectid" class="form-control" autocomplete="off" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-gate-objectref">
+                        @Localizer["ObjectRef"] <span class="text-danger">*</span>
+                    </label>
+                    <input id="wf-gate-objectref" class="form-control" autocomplete="off" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-gate-transition">
+                        @Localizer["RequestedTransition"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="wf-gate-transition" class="form-select select2-offcanvas" data-placeholder="@Localizer["RequestedTransition"]" required></select>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-gate-target">
+                        @Localizer["RequestedTargetState"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="wf-gate-target" class="form-select select2-offcanvas" data-placeholder="@Localizer["RequestedTargetState"]" required></select>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-gate-actorid">
+                        @Localizer["ActorId"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="wf-gate-actorid" class="form-select select2-offcanvas" data-placeholder="@Localizer["ActorId"]" required></select>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-gate-reason">@Localizer["ReasonCode"]</label>
+                    <input id="wf-gate-reason" class="form-control" autocomplete="off" />
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        <button type="button" id="wf-gate-eval" class="btn btn-primary">
+            <i class="icon-base bx bx-search-alt me-1"></i>@Localizer["Evaluate"]
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_WorkflowL10n" />
+    <script src="~/assets/js/Platform/Workflow/workflow.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Workflow/transition-gate.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,97 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["TabSlaRules"].Value;
+    var definitionId = ViewData["DefinitionId"]?.ToString() ?? string.Empty;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-1">@Localizer["TabSlaRules"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/Workflow">@Localizer["PageTitle"]</a></li>
+                <li class="breadcrumb-item">
+                    <a href="/Platform/Workflow">
+                        <span id="wf-meta-code">—</span>
+                        <span class="mx-1">/</span>
+                        <span id="wf-meta-name">—</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Localizer["TabSlaRules"]</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+@* Golden compact DataTable v2 contract: inline filter + skeleton card + data-dt-standard="v2". *@
+<partial name="_Filter" />
+<partial name="_SlaRulesDataTable" />
+
+@* New SLA Rule — golden slim create offcanvas. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="wf-sla-offcanvas" aria-labelledby="wf-sla-offcanvas-label">
+    <div class="offcanvas-header p-4">
+        <h5 id="wf-sla-offcanvas-label" class="offcanvas-title">@Localizer["CreateSlaRule"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="wf-sla-form-error" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="wf-sla-form" class="pt-0" novalidate>
+            <input type="hidden" id="wf-sla-templateid" />
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-sla-stage">@Localizer["StageCode"] <span class="text-danger">*</span></label>
+                    <input id="wf-sla-stage" class="form-control" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-sla-step">@Localizer["StepCode"] <span class="text-danger">*</span></label>
+                    <input id="wf-sla-step" class="form-control" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-sla-due">@Localizer["DueInMinutes"] <span class="text-danger">*</span></label>
+                    <input id="wf-sla-due" type="number" min="1" class="form-control" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-sla-escalate">@Localizer["EscalateAfterMinutes"] <span class="text-danger">*</span></label>
+                    <input id="wf-sla-escalate" type="number" min="1" class="form-control" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-sla-timeout">@Localizer["TimeoutAfterMinutes"]</label>
+                    <input id="wf-sla-timeout" type="number" min="1" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-sla-principals">@Localizer["EscalationPrincipalIds"] <span class="text-danger">*</span></label>
+                    <div class="btn-group btn-group-sm w-100 mb-2" role="group" aria-label="@Localizer["PrincipalType"]">
+                        <input type="radio" class="btn-check" name="wf-sla-principals-type" id="wf-sla-principals-type-user" value="user" autocomplete="off" checked />
+                        <label class="btn btn-outline-primary" for="wf-sla-principals-type-user">@Localizer["Users"]</label>
+                        <input type="radio" class="btn-check" name="wf-sla-principals-type" id="wf-sla-principals-type-position" value="position" autocomplete="off" />
+                        <label class="btn btn-outline-primary" for="wf-sla-principals-type-position">@Localizer["Positions"]</label>
+                    </div>
+                    <select id="wf-sla-principals" class="form-select" multiple></select>
+                    <div class="invalid-feedback"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        <button type="button" id="wf-sla-submit" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_WorkflowL10n" />
+    <script>window.WorkflowDefinitionId = '@Html.Raw(definitionId)';</script>
+    <script src="~/assets/js/Platform/Workflow/workflow.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Workflow/sla-rules.js" asp-append-version="true"></script>
+}

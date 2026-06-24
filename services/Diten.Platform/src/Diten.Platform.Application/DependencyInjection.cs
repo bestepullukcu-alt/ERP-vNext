@@ -7,6 +7,7 @@ using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Audit;
 using Diten.Platform.Application.Features.Audit.Services;
 using Diten.Platform.Application.Features.BusinessReferenceData.Services;
+using Diten.Platform.Application.Features.DocumentManagementInstantiation.Services;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.Eventing;
@@ -64,6 +65,17 @@ public static class DependencyInjection
         services.AddScoped<IBusinessReferenceDataImportParser, CsvBusinessReferenceDataImportParser>();
         services.AddScoped<IBusinessReferenceDataImportParser, JsonBusinessReferenceDataImportParser>();
         services.AddScoped<IBusinessReferenceDataImportParser, XlsxBusinessReferenceDataImportParser>();
+        // MOD-0028-FU02 QMS folder baseline import services (dependency-free xlsx parsing, deterministic build/hash).
+        services.AddScoped<Features.DocumentManagementQmsBaseline.Services.IQmsFolderImportParser,
+            Features.DocumentManagementQmsBaseline.Services.XlsxQmsFolderImportParser>();
+        services.AddScoped<Features.DocumentManagementQmsBaseline.Services.QmsFolderTreeValidator>();
+        services.AddScoped<Features.DocumentManagementQmsBaseline.Services.DottedOutlineTreeBuilder>();
+        services.AddScoped<Features.DocumentManagementQmsBaseline.Services.QmsBaselineImportService>();
+        services.AddScoped<Features.DocumentManagementQmsBaseline.Services.BaselineSnapshotHasher>();
+        services.AddScoped<Features.DocumentManagementQmsBaseline.Services.QmsManualStructureService>();
+        services.AddScoped<CompanyInstanceKeyFactory>();
+        services.AddScoped<IInstantiationPlanner, InstantiationPlanner>();
+        services.AddScoped<InstantiationService>();
         services.AddScoped<IBusinessReferenceDataGovernanceService, BusinessReferenceDataGovernanceService>();
         // PSS-012 governance adapters. MOD-0023 (workflow) / MOD-0031 (evidence) are not yet implemented.
         // Mock stubs are registered ONLY in Development/Local/Test (governance mode = Mock); every other
