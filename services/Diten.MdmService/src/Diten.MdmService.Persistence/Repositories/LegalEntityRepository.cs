@@ -31,7 +31,7 @@ public sealed class LegalEntityRepository : RepositoryBase<LegalEntity>, ILegalE
     {
         var filter = Builders<LegalEntity>.Filter.And(
             TenantFilter,
-            Builders<LegalEntity>.Filter.Eq(x => x.LifecycleStatus, LegalEntityLifecycleStatus.Active));
+            Builders<LegalEntity>.Filter.Eq(x => x.OperationalStatus, LegalEntityOperationalStatus.Active));
 
         return await Collection.Find(filter).SortBy(x => x.LegalName).ToListAsync(cancellationToken);
     }

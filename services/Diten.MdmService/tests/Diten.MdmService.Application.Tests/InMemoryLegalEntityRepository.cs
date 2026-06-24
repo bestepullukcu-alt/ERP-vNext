@@ -1,4 +1,5 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 
 namespace Diten.MdmService.Application.Tests;
@@ -90,6 +91,15 @@ internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
     {
         IReadOnlyList<LegalEntity> items = _entities
             .Where(x => x.TenantId == _tenantId && !x.IsDeleted)
+            .OrderBy(x => x.LegalName)
+            .ToList();
+        return Task.FromResult(items);
+    }
+
+    public Task<IReadOnlyList<LegalEntity>> GetReferenceableAsync(CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<LegalEntity> items = _entities
+            .Where(x => x.TenantId == _tenantId && !x.IsDeleted && x.OperationalStatus == LegalEntityOperationalStatus.Active)
             .OrderBy(x => x.LegalName)
             .ToList();
         return Task.FromResult(items);
