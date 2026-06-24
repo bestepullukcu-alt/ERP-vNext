@@ -1,0 +1,83 @@
+@using Diten.Web.ViewComponents
+@using Microsoft.AspNetCore.Mvc.Localization
+@model DynamicModuleMenuViewModel
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+
+@functions {
+    // UX-only gate, mirroring the hardcoded sections: an item shows when it has no required permission or the
+    // user holds it. A parent shows when it (or any descendant) is visible. Backend [HasPermission] is authoritative.
+    bool Permitted(NavNodeView node) =>
+        string.IsNullOrWhiteSpace(node.RequiredPermission) || Perms.Has(node.RequiredPermission!);
+
+    bool CanShow(NavNodeView node) =>
+        Permitted(node) || node.Children.Any(CanShow);
+}
+
+@{
+    var currentPath = Context.Request.Path.Value ?? string.Empty;
+
+    Func<string, bool> isActive = route =>
+        !string.IsNullOrWhiteSpace(route) && route != "#"
+        && currentPath.StartsWith(route, StringComparison.OrdinalIgnoreCase);
+}
+
+@if (Model.HasItems)
+{
+    foreach (var group in Model.Groups)
+    {
+        var visibleNodes = group.Nodes.Where(CanShow).ToList();
+        if (visibleNodes.Count == 0)
+        {
+            continue;
+        }
+
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">@group.ModuleDisplayName</span>
+        </li>
+
+        foreach (var node in visibleNodes)
+        {
+            var visibleChildren = node.Children.Where(CanShow).ToList();
+            var icon = string.IsNullOrWhiteSpace(node.IconHint) ? "bx-box" : node.IconHint;
+
+            if (visibleChildren.Count > 0)
+            {
+                var childActive = visibleChildren.Any(c => isActive(c.RoutePath));
+                <li class="menu-item @(childActive ? "open active" : "")">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons bx @icon"></i>
+                        <div>@node.DisplayName</div>
+                    </a>
+                    <ul class="menu-sub">
+                        @if (Permitted(node))
+                        {
+                            <li class="menu-item @(isActive(node.RoutePath) ? "active" : "")">
+                                <a href="@node.RoutePath" class="menu-link">
+                                    <div>@node.DisplayName</div>
+                                </a>
+                            </li>
+                        }
+                        @foreach (var child in visibleChildren)
+                        {
+                            <li class="menu-item @(isActive(child.RoutePath) ? "active" : "")">
+                                <a href="@child.RoutePath" class="menu-link">
+                                    <div>@child.DisplayName</div>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+            else if (Permitted(node))
+            {
+                <li class="menu-item @(isActive(node.RoutePath) ? "active" : "")">
+                    <a href="@node.RoutePath" class="menu-link">
+                        <i class="menu-icon tf-icons bx @icon"></i>
+                        <div>@node.DisplayName</div>
+                    </a>
+                </li>
+            }
+        }
+    }
+}

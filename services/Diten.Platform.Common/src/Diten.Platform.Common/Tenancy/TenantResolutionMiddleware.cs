@@ -212,7 +212,10 @@ public sealed class TenantResolutionMiddleware
     {
         return path.StartsWithSegments("/api/platform/organization-units", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/platform/positions", StringComparison.OrdinalIgnoreCase)
-               || path.StartsWithSegments("/api/platform/position-assignments", StringComparison.OrdinalIgnoreCase);
+               || path.StartsWithSegments("/api/platform/position-assignments", StringComparison.OrdinalIgnoreCase)
+               // MOD-0285 — runtime navigation menu is the tenant's own entitled-module nav; same tenant-scoped
+               // treatment (tenant resolved from JWT tenant_id, tenant_user required, platform_admin rejected).
+               || path.StartsWithSegments("/api/platform/navigation", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsPlatformAuthPath(PathString path)
