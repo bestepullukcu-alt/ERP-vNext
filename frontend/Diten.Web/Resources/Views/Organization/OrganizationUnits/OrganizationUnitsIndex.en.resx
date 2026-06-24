@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OrganizationUnitsTitle" xml:space="preserve"><value>Organization Units</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage organization units, their owning legal entity and reporting hierarchy.</value></data>
+  <data name="AddNewOrganizationUnit" xml:space="preserve"><value>Add Organization Unit</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Create Organization Unit</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Organization Unit</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>e.g. HQ-OPS</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>e.g. Head Office Operations</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Legal Entity</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Select a legal entity…</value></data>
+  <data name="LegalEntityIdPlaceholder" xml:space="preserve"><value>Paste a legal entity ID (GUID)</value></data>
+  <data name="LegalEntityLookupUnavailable" xml:space="preserve"><value>Legal entity lookup is unavailable; enter the ID manually.</value></data>
+  <data name="ParentOrgUnit" xml:space="preserve"><value>Parent Org Unit</value></data>
+  <data name="NoParent" xml:space="preserve"><value>(No parent — top level)</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archive</value></data>
+  <data name="Unarchive" xml:space="preserve"><value>Unarchive</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>This organization unit will be archived. Continue?</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Organization unit archived.</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>Use 2-80 uppercase letters, numbers, and single dashes.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>This field is required.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>Final Code</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+</root>

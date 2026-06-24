@@ -1,0 +1,46 @@
+@using System.Text.Json
+@using Diten.Web.Views.MasterData.LegalEntities
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LegalEntitiesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        LegalEntitiesTitle = Localizer["LegalEntitiesTitle"].Value,
+        Actions = Localizer["Actions"].Value,
+        AddNew = Localizer["AddNewLegalEntity"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        Code = Localizer["Code"].Value,
+        CodePlaceholder = Localizer["CodePlaceholder"].Value,
+        LegalName = Localizer["LegalName"].Value,
+        LegalNamePlaceholder = Localizer["LegalNamePlaceholder"].Value,
+        DisplayName = Localizer["DisplayName"].Value,
+        DisplayNamePlaceholder = Localizer["DisplayNamePlaceholder"].Value,
+        Status = Localizer["Status"].Value,
+        StatusDraft = Localizer["StatusDraft"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusArchived = Localizer["StatusArchived"].Value,
+        Activate = Localizer["Activate"].Value,
+        Archive = Localizer["Archive"].Value,
+        ActivateConfirm = Localizer["ActivateConfirm"].Value,
+        ArchiveConfirm = Localizer["ArchiveConfirm"].Value,
+        RecordActivated = Localizer["RecordActivated"].Value,
+        RecordArchived = Localizer["RecordArchived"].Value,
+        RequiredField = Localizer["RequiredField"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Showing = SharedLocalizer["Showing"].Value
+    };
+}
+<script id="legal-entities-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

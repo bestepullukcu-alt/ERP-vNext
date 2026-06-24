@@ -461,5 +461,11 @@
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>البيانات المرجعية</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>رمز الوحدة هذا مستخدم بالفعل.</value></data>
+  <data name="Organization" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="OrganizationUnits" xml:space="preserve"><value>الوحدات التنظيمية</value></data>
+  <data name="Positions" xml:space="preserve"><value>المناصب</value></data>
+  <data name="PositionAssignments" xml:space="preserve"><value>تعيينات المناصب</value></data>
+  <data name="MasterData" xml:space="preserve"><value>البيانات الرئيسية</value></data>
+  <data name="LegalEntities" xml:space="preserve"><value>الكيانات القانونية</value></data>
 </root>
 

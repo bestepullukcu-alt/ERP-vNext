@@ -22,7 +22,14 @@ public static class DependencyInjection
         var databaseName = configuration["Mongo:DatabaseName"]
             ?? throw new InvalidOperationException("Configuration error: 'Mongo:DatabaseName' is missing.");
 
-        var client = new MongoClient(MongoClientSettings.FromConnectionString(connectionString));
+        // GUID consistency (matches Auth/Platform): the registered GuidSerializer(Standard) pins entity
+        // serialization to subtype-4, but in driver 2.x (V2 mode) the QUERY-FILTER value is rendered using
+        // the client-level GuidRepresentation. Leaving it unset defaults to legacy byte-order, so filters
+        // built on TenantId/Id never match the Standard-encoded documents → reads come back empty even
+        // though the data exists. Pinning the client to Standard makes write and query paths agree.
+        var clientSettings = MongoClientSettings.FromConnectionString(connectionString);
+        clientSettings.GuidRepresentation = GuidRepresentation.Standard;
+        var client = new MongoClient(clientSettings);
 
         services.AddSingleton<IMongoClient>(client);
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));

@@ -1,0 +1,55 @@
+@using System.Text.Json
+@using Diten.Web.Views.Organization.OrganizationUnits
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationUnitsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        OrganizationUnitsTitle = Localizer["OrganizationUnitsTitle"].Value,
+        Actions = Localizer["Actions"].Value,
+        AddNew = Localizer["AddNewOrganizationUnit"].Value,
+        Edit = Localizer["Edit"].Value,
+        Archive = Localizer["Archive"].Value,
+        Unarchive = Localizer["Unarchive"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        ArchiveConfirm = Localizer["ArchiveConfirm"].Value,
+        RecordArchived = Localizer["RecordArchived"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        @* Create/Edit offcanvas keys *@
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+        Code = Localizer["Code"].Value,
+        Name = Localizer["Name"].Value,
+        LegalEntity = Localizer["LegalEntity"].Value,
+        SelectLegalEntity = Localizer["SelectLegalEntity"].Value,
+        LegalEntityLookupUnavailable = Localizer["LegalEntityLookupUnavailable"].Value,
+        ParentOrgUnit = Localizer["ParentOrgUnit"].Value,
+        NoParent = Localizer["NoParent"].Value,
+        InvalidCode = Localizer["InvalidCode"].Value,
+        RequiredField = Localizer["RequiredField"].Value,
+        FinalCodePreview = Localizer["FinalCodePreview"].Value,
+        Archived = Localizer["Archived"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusArchived = Localizer["StatusArchived"].Value,
+        Update = SharedLocalizer["Update"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Showing = SharedLocalizer["Showing"].Value
+    };
+}
+<script id="organization-units-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

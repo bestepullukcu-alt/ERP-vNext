@@ -62,6 +62,15 @@ internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
         return Task.FromResult(true);
     }
 
+    public Task<IReadOnlyList<LegalEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<LegalEntity> items = _entities
+            .Where(x => x.TenantId == _tenantId && !x.IsDeleted)
+            .OrderBy(x => x.LegalName)
+            .ToList();
+        return Task.FromResult(items);
+    }
+
     public Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
         var exists = _entities.Any(x =>

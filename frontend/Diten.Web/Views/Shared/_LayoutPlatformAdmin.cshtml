@@ -8,6 +8,7 @@
 @inject IHtmlLocalizer<AuditLogIndex> AuditLogLocalizer
 @inject IHtmlLocalizer<AuditRetentionIndex> AuditRetentionLocalizer
 @inject IPlatformProfileSnapshotProvider PlatformProfileSnapshotProvider
+@inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     var claimsPrincipal = User;
     var isCurrentUserAuthenticated = claimsPrincipal?.Identity?.IsAuthenticated == true;

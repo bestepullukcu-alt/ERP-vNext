@@ -1,0 +1,77 @@
+@using Diten.Web.Views.Organization.Positions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        @* Server-side validation errors (from gateway) *@
+        <div id="formPositionAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formPosition" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="positionItemId" name="Id" value="" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="positionCode" class="form-label fw-medium">
+                        @Localizer["Code"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="positionCode" name="Code" class="form-control" minlength="2" maxlength="80"
+                           pattern="^[A-Z0-9]+(-[A-Z0-9]+)*$" placeholder="@Localizer["CodePlaceholder"]" required />
+                    <div id="positionCodePreview" class="form-text mt-1 text-muted d-none">
+                        @Localizer["FinalCodePreview"]: <span class="fw-bold text-primary"></span>
+                    </div>
+                    <div class="invalid-feedback">@Localizer["InvalidCode"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="positionName" class="form-label fw-medium">
+                        @Localizer["Name"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="positionName" name="Name" class="form-control" maxlength="200"
+                           placeholder="@Localizer["NamePlaceholder"]" required />
+                    <div class="invalid-feedback">@Localizer["RequiredField"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="positionOrgUnit" class="form-label fw-medium">
+                        @Localizer["OrgUnit"] <span class="text-danger">*</span>
+                    </label>
+                    @* Platform org-units lookup is always reachable; plain required select (no GUID fallback). *@
+                    <select id="positionOrgUnit" name="OrganizationUnitId" class="form-select" required>
+                        <option value="">@Localizer["SelectOrgUnit"]</option>
+                    </select>
+                    <div class="invalid-feedback">@Localizer["RequiredField"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="positionReportsTo" class="form-label fw-medium">@Localizer["ReportsTo"]</label>
+                    <select id="positionReportsTo" name="ReportsToPositionId" class="form-select">
+                        <option value="">@Localizer["NoReportsTo"]</option>
+                    </select>
+                </div>
+
+                @* Read-only manager chain — hidden on create, shown on edit. *@
+                <div class="col-12 d-none" id="positionManagerChainSection">
+                    <label class="form-label fw-medium">@Localizer["ManagerChain"]</label>
+                    <div id="positionManagerChain" class="border rounded p-3 bg-lighter"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSavePosition" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>

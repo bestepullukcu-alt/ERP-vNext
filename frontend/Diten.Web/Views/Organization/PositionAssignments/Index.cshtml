@@ -1,0 +1,24 @@
+@using Diten.Web.Views.Organization.PositionAssignments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionAssignmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["PositionAssignmentsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PositionAssignmentsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="_DataTable.cshtml" />
+
+@* Slim pattern: create/edit happen in an in-page offcanvas (no route navigation). *@
+<partial name="_CreateEditOffcanvas" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Organization/PositionAssignments/index.js" asp-append-version="true"></script>
+}
