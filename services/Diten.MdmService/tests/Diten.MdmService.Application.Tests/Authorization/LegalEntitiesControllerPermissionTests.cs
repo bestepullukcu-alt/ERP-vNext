@@ -13,7 +13,9 @@ public sealed class LegalEntitiesControllerPermissionTests
     [InlineData(nameof(LegalEntitiesController.GetById), "mdm.legal-entities.read")]
     [InlineData(nameof(LegalEntitiesController.ValidateReference), "mdm.legal-entities.read")]
     [InlineData(nameof(LegalEntitiesController.Create), "mdm.legal-entities.create")]
+    [InlineData(nameof(LegalEntitiesController.Update), "mdm.legal-entities.update")]
     [InlineData(nameof(LegalEntitiesController.Activate), "mdm.legal-entities.update")]
+    [InlineData(nameof(LegalEntitiesController.Suspend), "mdm.legal-entities.update")]
     [InlineData(nameof(LegalEntitiesController.Archive), "mdm.legal-entities.update")]
     [InlineData(nameof(LegalEntitiesController.Delete), "mdm.legal-entities.delete")]
     public void Action_enforces_canonical_permission_key(string methodName, string expectedKey)

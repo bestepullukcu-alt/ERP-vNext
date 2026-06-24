@@ -13,7 +13,7 @@ public sealed class LegalEntityReferenceValidationTests
     public async Task Active_same_tenant_legal_entity_is_referenceable()
     {
         var tenantId = Guid.NewGuid();
-        var entity = CreateEntity(tenantId, LegalEntityLifecycleStatus.Active);
+        var entity = CreateEntity(tenantId, LegalEntityOperationalStatus.Active);
         var handler = new ValidateLegalEntityReferenceHandler(new InMemoryLegalEntityRepository(tenantId, [entity]));
 
         var response = await handler.Handle(new ValidateLegalEntityReferenceQuery(entity.Id), CancellationToken.None);
@@ -40,7 +40,7 @@ public sealed class LegalEntityReferenceValidationTests
     public async Task Cross_tenant_legal_entity_fails_closed()
     {
         var currentTenantId = Guid.NewGuid();
-        var otherTenantEntity = CreateEntity(Guid.NewGuid(), LegalEntityLifecycleStatus.Active);
+        var otherTenantEntity = CreateEntity(Guid.NewGuid(), LegalEntityOperationalStatus.Active);
         var handler = new ValidateLegalEntityReferenceHandler(new InMemoryLegalEntityRepository(currentTenantId, [otherTenantEntity]));
 
         var response = await handler.Handle(new ValidateLegalEntityReferenceQuery(otherTenantEntity.Id), CancellationToken.None);
@@ -50,9 +50,9 @@ public sealed class LegalEntityReferenceValidationTests
     }
 
     [Theory]
-    [InlineData(LegalEntityLifecycleStatus.Draft)]
-    [InlineData(LegalEntityLifecycleStatus.Archived)]
-    public async Task Non_active_legal_entity_fails_closed(LegalEntityLifecycleStatus lifecycleStatus)
+    [InlineData(LegalEntityOperationalStatus.Draft)]
+    [InlineData(LegalEntityOperationalStatus.Archived)]
+    public async Task Non_active_legal_entity_fails_closed(LegalEntityOperationalStatus lifecycleStatus)
     {
         var tenantId = Guid.NewGuid();
         var entity = CreateEntity(tenantId, lifecycleStatus);
@@ -68,7 +68,7 @@ public sealed class LegalEntityReferenceValidationTests
     public async Task Soft_deleted_legal_entity_fails_closed()
     {
         var tenantId = Guid.NewGuid();
-        var entity = CreateEntity(tenantId, LegalEntityLifecycleStatus.Active);
+        var entity = CreateEntity(tenantId, LegalEntityOperationalStatus.Active);
         entity.IsDeleted = true;
         entity.DeletedAt = DateTimeOffset.UtcNow;
         var handler = new ValidateLegalEntityReferenceHandler(new InMemoryLegalEntityRepository(tenantId, [entity]));
@@ -79,7 +79,7 @@ public sealed class LegalEntityReferenceValidationTests
         Assert.Equal(404, response.StatusCode);
     }
 
-    private static LegalEntity CreateEntity(Guid tenantId, LegalEntityLifecycleStatus lifecycleStatus)
+    private static LegalEntity CreateEntity(Guid tenantId, LegalEntityOperationalStatus operationalStatus)
         => new()
         {
             Id = Guid.NewGuid(),
@@ -87,6 +87,6 @@ public sealed class LegalEntityReferenceValidationTests
             Code = $"LE-{Guid.NewGuid():N}"[..12],
             LegalName = "Contoso Legal Entity",
             DisplayName = "Contoso",
-            LifecycleStatus = lifecycleStatus
+            OperationalStatus = operationalStatus
         };
 }

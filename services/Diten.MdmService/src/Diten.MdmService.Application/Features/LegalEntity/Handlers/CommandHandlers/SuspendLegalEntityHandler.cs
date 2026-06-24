@@ -5,16 +5,16 @@ using MediatR;
 
 namespace Diten.MdmService.Application.Features.LegalEntity.Handlers.CommandHandlers;
 
-public sealed class ArchiveLegalEntityHandler : IRequestHandler<Commands.ArchiveLegalEntityCommand, Response<NoContent>>
+public sealed class SuspendLegalEntityHandler : IRequestHandler<Commands.SuspendLegalEntityCommand, Response<NoContent>>
 {
     private readonly ILegalEntityRepository _repository;
 
-    public ArchiveLegalEntityHandler(ILegalEntityRepository repository)
+    public SuspendLegalEntityHandler(ILegalEntityRepository repository)
     {
         _repository = repository;
     }
 
-    public async Task<Response<NoContent>> Handle(Commands.ArchiveLegalEntityCommand request, CancellationToken cancellationToken)
+    public async Task<Response<NoContent>> Handle(Commands.SuspendLegalEntityCommand request, CancellationToken cancellationToken)
     {
         var entity = await _repository.GetByIdAsync(request.LegalEntityId, cancellationToken);
         if (entity is null)
@@ -22,12 +22,12 @@ public sealed class ArchiveLegalEntityHandler : IRequestHandler<Commands.Archive
             return Response<NoContent>.Fail("Legal Entity not found.", 404);
         }
 
-        if (entity.OperationalStatus is not (LegalEntityOperationalStatus.Active or LegalEntityOperationalStatus.Suspended))
+        if (entity.OperationalStatus is not LegalEntityOperationalStatus.Active)
         {
-            return Response<NoContent>.Fail("Only active or suspended Legal Entities can be archived.", 409);
+            return Response<NoContent>.Fail("Only active Legal Entities can be suspended.", 409);
         }
 
-        entity.OperationalStatus = LegalEntityOperationalStatus.Archived;
+        entity.OperationalStatus = LegalEntityOperationalStatus.Suspended;
         var updated = await _repository.UpdateAsync(entity, cancellationToken);
         return updated
             ? Response<NoContent>.SuccessWithoutData(204)

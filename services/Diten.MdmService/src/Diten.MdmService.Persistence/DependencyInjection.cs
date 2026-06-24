@@ -31,6 +31,13 @@ public static class DependencyInjection
         clientSettings.GuidRepresentation = GuidRepresentation.Standard;
         var client = new MongoClient(clientSettings);
 
+        // MOD-0220 FULL — one-shot, idempotent backfill of legacy LifecycleStatus → OperationalStatus, run before
+        // any request hits the typed repository (matches Platform's synchronous startup-migration convention).
+        Configurations.LegalEntityOperationalStatusMigration
+            .MigrateAsync(client.GetDatabase(databaseName))
+            .GetAwaiter()
+            .GetResult();
+
         services.AddSingleton<IMongoClient>(client);
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
         services.AddScoped<ILegalEntityRepository, LegalEntityRepository>();

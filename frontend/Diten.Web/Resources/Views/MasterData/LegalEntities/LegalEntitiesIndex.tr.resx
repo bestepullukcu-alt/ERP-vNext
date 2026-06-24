@@ -23,4 +23,103 @@
   <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
   <data name="RequiredField" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
   <data name="CreateDraftHint" xml:space="preserve"><value>Tüzel kişilik Taslak olarak oluşturulur. Organizasyon birimlerinde kullanmak için sonradan etkinleştirin.</value></data>
+
+  <!-- Görev 4 — zengin liste sütunları + filtreler + işlemler -->
+  <data name="LegalForm" xml:space="preserve"><value>Tüzel Yapı</value></data>
+  <data name="OrgRole" xml:space="preserve"><value>Organizasyon Rolü</value></data>
+  <data name="Country" xml:space="preserve"><value>Ülke</value></data>
+  <data name="BaseCurrency" xml:space="preserve"><value>Ana Para Birimi</value></data>
+  <data name="Parent" xml:space="preserve"><value>Üst</value></data>
+  <data name="StatutoryStatus" xml:space="preserve"><value>Yasal Durum</value></data>
+  <data name="OperationalStatus" xml:space="preserve"><value>Operasyonel Durum</value></data>
+  <data name="EvidenceStatus" xml:space="preserve"><value>Kanıt Durumu</value></data>
+  <data name="CreatedFrom" xml:space="preserve"><value>Başlangıç Tarihi</value></data>
+  <data name="CreatedTo" xml:space="preserve"><value>Bitiş Tarihi</value></data>
+  <data name="IncompleteOnly" xml:space="preserve"><value>Yalnızca eksikler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Detayları Görüntüle</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="Suspend" xml:space="preserve"><value>Askıya Al</value></data>
+  <data name="SuspendConfirm" xml:space="preserve"><value>Bu tüzel kişilik askıya alınacak. Devam edilsin mi?</value></data>
+  <data name="RecordSuspended" xml:space="preserve"><value>Tüzel kişilik askıya alındı.</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="StatusSuspended" xml:space="preserve"><value>Askıda</value></data>
+  <data name="StatusRegistered" xml:space="preserve"><value>Tescilli</value></data>
+  <data name="StatusPending" xml:space="preserve"><value>Beklemede</value></data>
+  <data name="StatusDissolved" xml:space="preserve"><value>Feshedildi</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="EvidenceNotStarted" xml:space="preserve"><value>Başlanmadı</value></data>
+  <data name="EvidenceComplete" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="EvidenceVerified" xml:space="preserve"><value>Doğrulandı</value></data>
+
+  <!-- Görev 5 — 8 adımlı sihirbaz -->
+  <data name="WizardCreateTitle" xml:space="preserve"><value>Tüzel Kişilik Oluştur</value></data>
+  <data name="WizardEditTitle" xml:space="preserve"><value>Tüzel Kişilik Düzenle</value></data>
+  <data name="WizardSubtitle" xml:space="preserve"><value>Sekiz bölümde tüzel kişiliğin tam profilini girin.</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Taslağı Kaydet</value></data>
+  <data name="Submit" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="PreviousStep" xml:space="preserve"><value>Önceki</value></data>
+  <data name="NextStep" xml:space="preserve"><value>Sonraki</value></data>
+  <data name="RequiredCounter" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="Step1Identity" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="Step1IdentitySub" xml:space="preserve"><value>Kod / Ad / Yapı</value></data>
+  <data name="Step2Statutory" xml:space="preserve"><value>Yasal &amp; Vergi</value></data>
+  <data name="Step2StatutorySub" xml:space="preserve"><value>Tescil / Ülke</value></data>
+  <data name="Step3Structure" xml:space="preserve"><value>Yapı</value></data>
+  <data name="Step3StructureSub" xml:space="preserve"><value>Üst / Sahiplik</value></data>
+  <data name="Step4Finance" xml:space="preserve"><value>Finans</value></data>
+  <data name="Step4FinanceSub" xml:space="preserve"><value>Mali / Para Birimi</value></data>
+  <data name="Step5Addresses" xml:space="preserve"><value>Adresler &amp; İletişim</value></data>
+  <data name="Step5AddressesSub" xml:space="preserve"><value>Adres / E-posta / Telefon</value></data>
+  <data name="Step6Governance" xml:space="preserve"><value>Yönetişim</value></data>
+  <data name="Step6GovernanceSub" xml:space="preserve"><value>Onay / Kaynak</value></data>
+  <data name="Step7Evidence" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="Step7EvidenceSub" xml:space="preserve"><value>Belgeler</value></data>
+  <data name="Step8Review" xml:space="preserve"><value>Gözden Geçir</value></data>
+  <data name="Step8ReviewSub" xml:space="preserve"><value>Onayla &amp; Kaydet</value></data>
+  <data name="RegistrationNumber" xml:space="preserve"><value>Tescil Numarası</value></data>
+  <data name="TaxId" xml:space="preserve"><value>Vergi No</value></data>
+  <data name="ParentLegalEntity" xml:space="preserve"><value>Üst Tüzel Kişilik</value></data>
+  <data name="NoParent" xml:space="preserve"><value>Yok</value></data>
+  <data name="OwnershipPercent" xml:space="preserve"><value>Sahiplik %</value></data>
+  <data name="ControlType" xml:space="preserve"><value>Kontrol Tipi</value></data>
+  <data name="FiscalYearVariant" xml:space="preserve"><value>Mali Yıl Değişkeni</value></data>
+  <data name="AccountingStandard" xml:space="preserve"><value>Muhasebe Standardı</value></data>
+  <data name="TaxRegime" xml:space="preserve"><value>Vergi Rejimi</value></data>
+  <data name="RegisteredAddress" xml:space="preserve"><value>Tescilli Adres (JSON)</value></data>
+  <data name="CorrespondenceAddress" xml:space="preserve"><value>Yazışma Adresi (JSON)</value></data>
+  <data name="AddressJsonHelp" xml:space="preserve"><value>line1, city, country (zorunlu) ve isteğe bağlı line2, postalCode, state içeren JSON nesnesi.</value></data>
+  <data name="OfficialEmail" xml:space="preserve"><value>Resmi E-posta</value></data>
+  <data name="OfficialPhone" xml:space="preserve"><value>Resmi Telefon</value></data>
+  <data name="Website" xml:space="preserve"><value>Web Sitesi</value></data>
+  <data name="ApprovalStatus" xml:space="preserve"><value>Onay Durumu</value></data>
+  <data name="ReviewDue" xml:space="preserve"><value>İnceleme Tarihi</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Kaynak Sistem</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>Eski Kod</value></data>
+  <data name="CompletenessScore" xml:space="preserve"><value>Tamlık Skoru</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçiniz…</value></data>
+  <data name="ParentRequiredForBranch" xml:space="preserve"><value>Şube / Temsilcilik rolleri için üst tüzel kişilik zorunludur.</value></data>
+  <data name="InvalidAddressJson" xml:space="preserve"><value>Tescilli adres; boş olmayan line1, city ve country içeren geçerli bir JSON olmalıdır.</value></data>
+
+  <!-- Görev 6 — hızlı görünüm + detaylar -->
+  <data name="Referenceable" xml:space="preserve"><value>Referans Alınabilir</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Yaşam Döngüsü Durumu</value></data>
+  <data name="ApprovalStatusLabel" xml:space="preserve"><value>Onay</value></data>
+  <data name="Version" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="SectionStatutory" xml:space="preserve"><value>Yasal &amp; Vergi</value></data>
+  <data name="SectionStructure" xml:space="preserve"><value>Yapı</value></data>
+  <data name="SectionFinance" xml:space="preserve"><value>Finans</value></data>
+  <data name="SectionAddresses" xml:space="preserve"><value>Adresler &amp; İletişim</value></data>
+  <data name="SectionGovernance" xml:space="preserve"><value>Yönetişim</value></data>
+  <data name="SectionEvidence" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Sistem</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Tüzel kişilik yüklenemedi.</value></data>
 </root>

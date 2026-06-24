@@ -15,18 +15,26 @@ public sealed class CreateLegalEntityHandler : IRequestHandler<Commands.CreateLe
 
     public async Task<Response<Guid>> Handle(Commands.CreateLegalEntityCommand request, CancellationToken cancellationToken)
     {
-        var normalizedCode = request.Code.Trim();
+        var r = request.Request;
+        var normalizedCode = r.Code.Trim();
         if (await _repository.ExistsByCodeAsync(normalizedCode, cancellationToken: cancellationToken))
         {
             return Response<Guid>.Fail("A Legal Entity with this code already exists.", 409);
         }
 
-        var entity = new Domain.Entities.LegalEntity
+        // Referential integrity: a declared parent must exist within the same tenant.
+        if (r.ParentLegalEntityId is { } parentId && parentId != Guid.Empty)
         {
-            Code = normalizedCode,
-            LegalName = request.LegalName.Trim(),
-            DisplayName = string.IsNullOrWhiteSpace(request.DisplayName) ? null : request.DisplayName.Trim()
-        };
+            var parent = await _repository.GetByIdAsync(parentId, cancellationToken);
+            if (parent is null)
+            {
+                return Response<Guid>.Fail("Parent Legal Entity not found.", 400);
+            }
+        }
+
+        // New entities always start in Draft (lifecycle owns OperationalStatus); activation is a separate step.
+        var entity = new Domain.Entities.LegalEntity();
+        LegalEntityMappings.Apply(entity, r);
 
         var created = await _repository.CreateAsync(entity, cancellationToken);
         return Response<Guid>.Success(created.Id, 201);

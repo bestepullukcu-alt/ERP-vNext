@@ -23,11 +23,40 @@ public sealed class LegalEntitiesController : Controller
     [HttpGet("")]
     public IActionResult Index() => View("~/Views/MasterData/LegalEntities/Index.cshtml");
 
+    // Full-page 8-step create/edit wizard (Görev 5). The id-less route is "create"; the {id} route is "edit".
+    [HttpGet("Wizard")]
+    public IActionResult Wizard()
+    {
+        ViewData["LegalEntityId"] = string.Empty;
+        return View("~/Views/MasterData/LegalEntities/Wizard.cshtml");
+    }
+
+    [HttpGet("Wizard/{id:guid}")]
+    public IActionResult WizardEdit(Guid id)
+    {
+        ViewData["LegalEntityId"] = id.ToString();
+        return View("~/Views/MasterData/LegalEntities/Wizard.cshtml");
+    }
+
+    // Full details page (Görev 6) — all 8 sections, every field, lifecycle actions.
+    [HttpGet("Details/{id:guid}")]
+    public IActionResult Details(Guid id)
+    {
+        ViewData["LegalEntityId"] = id.ToString();
+        return View("~/Views/MasterData/LegalEntities/Details.cshtml");
+    }
+
     [HttpGet("api")]
     public Task<IActionResult> ListProxy()
     {
         var targetUrl = $"{_gatewayUrl}/api/legal-entities{Request.QueryString}";
         return ProxyGatewayAsync(HttpMethod.Get, targetUrl);
+    }
+
+    [HttpGet("api/{id:guid}")]
+    public Task<IActionResult> GetByIdProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/legal-entities/{id}");
     }
 
     [HttpPost("api")]
@@ -38,10 +67,24 @@ public sealed class LegalEntitiesController : Controller
         return await ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/legal-entities", body);
     }
 
+    [HttpPut("api/{id:guid}")]
+    public async Task<IActionResult> UpdateProxy(Guid id)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Put, $"{_gatewayUrl}/api/legal-entities/{id}", body);
+    }
+
     [HttpPatch("api/{id:guid}/activate")]
     public Task<IActionResult> ActivateProxy(Guid id)
     {
         return ProxyGatewayAsync(HttpMethod.Patch, $"{_gatewayUrl}/api/legal-entities/{id}/activate");
+    }
+
+    [HttpPatch("api/{id:guid}/suspend")]
+    public Task<IActionResult> SuspendProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Patch, $"{_gatewayUrl}/api/legal-entities/{id}/suspend");
     }
 
     [HttpPatch("api/{id:guid}/archive")]
@@ -54,6 +97,20 @@ public sealed class LegalEntitiesController : Controller
     public Task<IActionResult> DeleteProxy(Guid id)
     {
         return ProxyGatewayAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/legal-entities/{id}");
+    }
+
+    // MDM lookups: legal-form, organization-role, control-type, accounting-standard, tax-regime.
+    [HttpGet("api/lookups/{type}")]
+    public Task<IActionResult> LookupProxy(string type)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/legal-entities/lookups/{Uri.EscapeDataString(type)}");
+    }
+
+    // Platform lookups: countries, currencies (and any other Platform-managed lookup key).
+    [HttpGet("api/platform-lookups/{key}")]
+    public Task<IActionResult> PlatformLookupProxy(string key)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/lookups/{Uri.EscapeDataString(key)}");
     }
 
     private async Task<IActionResult> ProxyGatewayAsync(HttpMethod method, string targetUrl, string? jsonBody = null)

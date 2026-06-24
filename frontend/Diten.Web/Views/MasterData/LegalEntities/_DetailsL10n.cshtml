@@ -6,43 +6,51 @@
 @{
     var payload = new
     {
-        LegalEntitiesTitle = Localizer["LegalEntitiesTitle"].Value,
-        Actions = Localizer["Actions"].Value,
-        AddNew = Localizer["AddNewLegalEntity"].Value,
+        // Field labels
         Code = Localizer["Code"].Value,
         LegalName = Localizer["LegalName"].Value,
         DisplayName = Localizer["DisplayName"].Value,
         LegalForm = Localizer["LegalForm"].Value,
         OrgRole = Localizer["OrgRole"].Value,
+        RegistrationNumber = Localizer["RegistrationNumber"].Value,
+        TaxId = Localizer["TaxId"].Value,
         Country = Localizer["Country"].Value,
-        BaseCurrency = Localizer["BaseCurrency"].Value,
-        Parent = Localizer["Parent"].Value,
         StatutoryStatus = Localizer["StatutoryStatus"].Value,
-        OperationalStatus = Localizer["OperationalStatus"].Value,
+        Parent = Localizer["Parent"].Value,
+        OwnershipPercent = Localizer["OwnershipPercent"].Value,
+        ControlType = Localizer["ControlType"].Value,
+        FiscalYearVariant = Localizer["FiscalYearVariant"].Value,
+        AccountingStandard = Localizer["AccountingStandard"].Value,
+        TaxRegime = Localizer["TaxRegime"].Value,
+        BaseCurrency = Localizer["BaseCurrency"].Value,
+        RegisteredAddress = Localizer["RegisteredAddress"].Value,
+        CorrespondenceAddress = Localizer["CorrespondenceAddress"].Value,
+        OfficialEmail = Localizer["OfficialEmail"].Value,
+        OfficialPhone = Localizer["OfficialPhone"].Value,
+        Website = Localizer["Website"].Value,
+        ApprovalStatus = Localizer["ApprovalStatus"].Value,
+        ReviewDue = Localizer["ReviewDue"].Value,
+        SourceSystem = Localizer["SourceSystem"].Value,
+        LegacyCode = Localizer["LegacyCode"].Value,
         EvidenceStatus = Localizer["EvidenceStatus"].Value,
         CompletenessScore = Localizer["CompletenessScore"].Value,
         Referenceable = Localizer["Referenceable"].Value,
-        RegistrationNumber = Localizer["RegistrationNumber"].Value,
-        TaxId = Localizer["TaxId"].Value,
-        OfficialEmail = Localizer["OfficialEmail"].Value,
-        ViewDetails = Localizer["ViewDetails"].Value,
-        QuickView = Localizer["QuickView"].Value,
-        Edit = Localizer["Edit"].Value,
-        // Status labels (operational / lifecycle)
+        LifecycleState = Localizer["LifecycleState"].Value,
+        Version = Localizer["Version"].Value,
+        CreatedAt = Localizer["CreatedAt"].Value,
+        UpdatedAt = Localizer["UpdatedAt"].Value,
+        // Status labels
         StatusDraft = Localizer["StatusDraft"].Value,
         StatusInReview = Localizer["StatusInReview"].Value,
         StatusApproved = Localizer["StatusApproved"].Value,
         StatusActive = Localizer["StatusActive"].Value,
         StatusSuspended = Localizer["StatusSuspended"].Value,
         StatusArchived = Localizer["StatusArchived"].Value,
-        // Statutory status
         StatusRegistered = Localizer["StatusRegistered"].Value,
         StatusPending = Localizer["StatusPending"].Value,
         StatusDissolved = Localizer["StatusDissolved"].Value,
-        // Approval status
         StatusSubmitted = Localizer["StatusSubmitted"].Value,
         StatusRejected = Localizer["StatusRejected"].Value,
-        // Evidence status
         EvidenceNotStarted = Localizer["EvidenceNotStarted"].Value,
         EvidenceComplete = Localizer["EvidenceComplete"].Value,
         EvidenceVerified = Localizer["EvidenceVerified"].Value,
@@ -58,19 +66,12 @@
         RecordArchived = Localizer["RecordArchived"].Value,
         Yes = Localizer["Yes"].Value,
         No = Localizer["No"].Value,
+        LoadFailed = Localizer["LoadFailed"].Value,
         // Shared
-        Delete = SharedLocalizer["Delete"].Value,
         AreYouSure = SharedLocalizer["AreYouSure"].Value,
-        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
-        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
-        Cancel = SharedLocalizer["Cancel"].Value,
-        Filter = SharedLocalizer["Filter"].Value,
-        Apply = SharedLocalizer["Apply"].Value,
-        Reset = SharedLocalizer["Reset"].Value,
-        ShowAll = SharedLocalizer["ShowAll"].Value,
-        Showing = SharedLocalizer["Showing"].Value
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
     };
 }
-<script id="legal-entities-l10n" type="application/json">
+<script id="legal-entities-details-l10n" type="application/json">
 @Html.Raw(JsonSerializer.Serialize(payload))
 </script>

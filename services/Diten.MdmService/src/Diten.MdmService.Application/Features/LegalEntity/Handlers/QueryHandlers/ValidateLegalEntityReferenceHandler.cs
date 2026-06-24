@@ -17,7 +17,7 @@ public sealed class ValidateLegalEntityReferenceHandler : IRequestHandler<Querie
     public async Task<Response<LegalEntityLookupDto>> Handle(Queries.ValidateLegalEntityReferenceQuery request, CancellationToken cancellationToken)
     {
         var entity = await _repository.GetByIdAsync(request.LegalEntityId, cancellationToken);
-        if (entity is null || entity.LifecycleStatus != LegalEntityLifecycleStatus.Active)
+        if (entity is null || entity.OperationalStatus != LegalEntityOperationalStatus.Active)
         {
             return Response<LegalEntityLookupDto>.Fail("Legal Entity is not referenceable.", 404);
         }
