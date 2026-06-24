@@ -417,7 +417,7 @@
         return { json, def };
     };
 
-    // ---- publish + preview reuse (shared DOM with details.js) ----
+    // ---- publish + preview reuse (shared DOM with visual designer page) ----
     const openSharedPublish = (json) => {
         el('wf-publish-error')?.classList.add('d-none');
         el('wf-publish-result')?.classList.add('d-none');

@@ -54,15 +54,6 @@ public sealed class WorkflowController : Controller
         return View("~/Views/Platform/Workflow/Index.cshtml");
     }
 
-    [HttpGet("Definitions/{id:guid}")]
-    public IActionResult Details(Guid id)
-    {
-        ViewBag.ActiveMenu = "workflow";
-        ViewData["DefinitionId"] = id;
-        ApplyPermissionViewData();
-        return View("~/Views/Platform/Workflow/Details.cshtml");
-    }
-
     [HttpGet("Definitions/{id:guid}/VisualDesigner")]
     public IActionResult VisualDesigner(Guid id)
     {
@@ -88,6 +79,49 @@ public sealed class WorkflowController : Controller
         ViewData["DefinitionId"] = id;
         ApplyPermissionViewData();
         return View("~/Views/Platform/Workflow/Versions.cshtml");
+    }
+
+    [HttpGet("Definitions/{id:guid}/Instances")]
+    public IActionResult Instances(Guid id)
+    {
+        ViewBag.ActiveMenu = "workflow";
+        ViewData["DefinitionId"] = id;
+        ApplyPermissionViewData();
+        return View("~/Views/Platform/Workflow/Instances.cshtml");
+    }
+
+    [HttpGet("Definitions/{id:guid}/Tasks")]
+    public IActionResult Tasks(Guid id)
+    {
+        ViewBag.ActiveMenu = "workflow";
+        ViewData["DefinitionId"] = id;
+        ApplyPermissionViewData();
+        return View("~/Views/Platform/Workflow/Tasks.cshtml");
+    }
+
+    [HttpGet("Definitions/{id:guid}/SlaRules")]
+    public IActionResult SlaRules(Guid id)
+    {
+        ViewBag.ActiveMenu = "workflow";
+        ViewData["DefinitionId"] = id;
+        ApplyPermissionViewData();
+        return View("~/Views/Platform/Workflow/SlaRules.cshtml");
+    }
+
+    [HttpGet("Escalations")]
+    public IActionResult Escalations()
+    {
+        ViewBag.ActiveMenu = "workflow";
+        ApplyPermissionViewData();
+        return View("~/Views/Platform/Workflow/Escalations.cshtml");
+    }
+
+    [HttpGet("TransitionGate")]
+    public IActionResult TransitionGate()
+    {
+        ViewBag.ActiveMenu = "workflow";
+        ApplyPermissionViewData();
+        return View("~/Views/Platform/Workflow/TransitionGate.cshtml");
     }
 
     [HttpGet("lookup/users")]

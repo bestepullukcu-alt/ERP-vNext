@@ -1,0 +1,31 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0023 — Workflow SLA Rules DataTable v2 (golden compact contract). *@
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-workflow-slarules" data-dt-standard="v2" class="datatables-workflow-slarules table border-top" data-testid="wf-sla-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["StageStep"]</th>
+                    <th class="text-center">@Localizer["DueInMinutes"]</th>
+                    <th class="text-center">@Localizer["EscalateAfterMinutes"]</th>
+                    <th class="text-center">@Localizer["TimeoutAfterMinutes"]</th>
+                    <th>@Localizer["EscalationPrincipalIds"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

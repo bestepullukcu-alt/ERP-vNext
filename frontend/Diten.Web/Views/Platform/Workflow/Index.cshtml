@@ -27,9 +27,9 @@
         <button type="button" id="wf-open-escalations" class="btn btn-label-secondary">
             <i class="icon-base bx bx-trending-up me-1"></i>@Localizer["RunEscalations"]
         </button>
-        <button type="button" id="wf-open-gate" class="btn btn-primary">
+        <a href="/Platform/Workflow/TransitionGate" id="wf-open-gate" class="btn btn-primary">
             <i class="icon-base bx bx-git-compare me-1"></i>@Localizer["TabTransitionGate"]
-        </button>
+        </a>
     </div>
 </div>
 
@@ -37,6 +37,7 @@
 <partial name="_Filter" />
 <partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="definitionsBulkActionBar" />
 <partial name="_DataTable" />
+<partial name="_DetailsQuickView" />
 
 @* ===================== Modals ===================== *@
 <div class="modal fade" id="wf-instances-modal" tabindex="-1" aria-hidden="true">
@@ -174,39 +175,6 @@
     </div></div>
 </div>
 
-<div class="modal fade" id="wf-gate-modal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">@Localizer["TransitionGateTitle"]</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button></div>
-        <div class="modal-body">
-            <div class="row g-3">
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="mb-0">@Localizer["TransitionGateTitle"]</h6>
-                            <small class="text-muted">@Localizer["TransitionGateDescription"]</small>
-                        </div>
-                        <div class="card-body">
-                            <div id="wf-gate-error" class="alert alert-danger d-none"></div>
-                            <form class="row g-3" novalidate>
-                                <div class="col-md-6"><label class="form-label" for="wf-gate-objecttype">@Localizer["ObjectType"] <span class="text-danger">*</span></label><input id="wf-gate-objecttype" class="form-control" /></div>
-                                <div class="col-md-6"><label class="form-label" for="wf-gate-objectid">@Localizer["ObjectId"] <span class="text-danger">*</span></label><input id="wf-gate-objectid" class="form-control" /></div>
-                                <div class="col-12"><label class="form-label" for="wf-gate-objectref">@Localizer["ObjectRef"] <span class="text-danger">*</span></label><input id="wf-gate-objectref" class="form-control" /></div>
-                                <div class="col-md-6"><label class="form-label" for="wf-gate-transition">@Localizer["RequestedTransition"] <span class="text-danger">*</span></label><input id="wf-gate-transition" class="form-control" /></div>
-                                <div class="col-md-6"><label class="form-label" for="wf-gate-target">@Localizer["RequestedTargetState"] <span class="text-danger">*</span></label><input id="wf-gate-target" class="form-control" /></div>
-                                <div class="col-md-6"><label class="form-label" for="wf-gate-actorid">@Localizer["ActorId"] <span class="text-danger">*</span></label><input id="wf-gate-actorid" class="form-control" /></div>
-                                <div class="col-md-6"><label class="form-label" for="wf-gate-reason">@Localizer["ReasonCode"]</label><input id="wf-gate-reason" class="form-control" /></div>
-                                <div class="col-12 text-end"><button type="button" id="wf-gate-eval" class="btn btn-primary"><i class="icon-base bx bx-search-alt me-1"></i>@Localizer["Evaluate"]</button></div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div id="wf-gate-result" class="d-none"></div>
-                </div>
-            </div>
-        </div>
-    </div></div>
-</div>
 <div class="offcanvas offcanvas-end" tabindex="-1" id="wf-create-offcanvas" aria-labelledby="wf-create-offcanvas-label">
     <div class="offcanvas-header py-6">
         <h5 id="wf-create-offcanvas-label" class="offcanvas-title">@Localizer["CreateDefinition"]</h5>

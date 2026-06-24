@@ -1,0 +1,33 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0023 — Workflow Tasks DataTable v2 (golden compact contract). *@
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-workflow-tasks" data-dt-standard="v2" class="datatables-workflow-tasks table border-top" data-testid="wf-task-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["TaskId"]</th>
+                    <th>@Localizer["WorkflowInstanceId"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["StageStep"]</th>
+                    <th>@Localizer["DueAt"]</th>
+                    <th>@Localizer["ActionedBy"]</th>
+                    <th>@Localizer["CompletedAt"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

@@ -72,6 +72,8 @@
   <data name="MoveDown" xml:space="preserve"><value>Move Down</value></data>
   <data name="Step" xml:space="preserve"><value>Step</value></data>
   <data name="NoStepsYet" xml:space="preserve"><value>Add at least one approval step.</value></data>
+  <data name="LastTransitionAt" xml:space="preserve"><value>Last Transition At</value></data>
+  <data name="InstanceDetails" xml:space="preserve"><value>Instance Details</value></data>
   <data name="CandidatePrincipalIdsHint" xml:space="preserve"><value>Comma-separated principal ids.</value></data>
   <data name="ReasonCode" xml:space="preserve"><value>Reason Code</value></data>
   <data name="IdempotencyKey" xml:space="preserve"><value>Idempotency Key</value></data>

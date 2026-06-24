@@ -73,6 +73,8 @@
   <data name="MoveDown" xml:space="preserve"><value>Aşağı Taşı</value></data>
   <data name="Step" xml:space="preserve"><value>Adım</value></data>
   <data name="NoStepsYet" xml:space="preserve"><value>En az bir onay adımı ekleyin.</value></data>
+  <data name="LastTransitionAt" xml:space="preserve"><value>Son Geçiş</value></data>
+  <data name="InstanceDetails" xml:space="preserve"><value>Örnek Detayı</value></data>
   <data name="ReasonCode" xml:space="preserve"><value>Gerekçe Kodu</value></data>
   <data name="IdempotencyKey" xml:space="preserve"><value>İdempotans Anahtarı</value></data>
   <data name="CommentRequired" xml:space="preserve"><value>Yorum Zorunlu</value></data>

@@ -132,6 +132,14 @@
     };
 
     const asArray = (data) => (Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []));
+    const setText = (id, value) => {
+        const node = el(id);
+        if (node) node.textContent = value || '—';
+    };
+    const setHtml = (id, value) => {
+        const node = el(id);
+        if (node) node.innerHTML = value || '<span class="text-muted">—</span>';
+    };
 
     // ---- principal lookup (Users/Positions) — shared by the Start Instance modal -----------------
     const unwrapItems = (payload) => {
@@ -475,6 +483,50 @@
         populateStatusOptions(definitionsCache);
         return definitionsCache;
     };
+    const setDetailsLoading = () => {
+        show(el('wf-details-loading'));
+        hide(el('wf-details-error'));
+        hide(el('wf-details-content'));
+    };
+    const renderDetailsError = (res) => {
+        hide(el('wf-details-loading'));
+        hide(el('wf-details-content'));
+        const error = el('wf-details-error');
+        if (error) {
+            error.textContent = failureMessage(res);
+            show(error);
+        }
+    };
+    const renderDefinitionDetails = (data) => {
+        hide(el('wf-details-loading'));
+        hide(el('wf-details-error'));
+        setText('wf-details-title', data.templateCode || data.name);
+        setText('wf-details-subtitle', data.name || data.id);
+        setText('wf-details-code', data.templateCode);
+        setText('wf-details-name', data.name);
+        setHtml('wf-details-status', statusBadge(data.status));
+        setHtml('wf-details-active-version', shortId(data.activePublishedVersionId));
+        setHtml('wf-details-current-version', shortId(data.currentVersionId));
+        setHtml('wf-details-created-at', fmtDate(data.createdAt));
+        setText('wf-details-description', data.description || '—');
+        show(el('wf-details-content'));
+    };
+    const openDefinitionDetails = async (id, row) => {
+        if (!id) return;
+        const offcanvasEl = el('wf-details-offcanvas');
+        if (!offcanvasEl) return;
+        setDetailsLoading();
+        setText('wf-details-title', row?.templateCode || '—');
+        setText('wf-details-subtitle', row?.name || '');
+        bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl).show();
+
+        const res = await api.getDefinition(id);
+        if (!res.ok) {
+            renderDetailsError(res);
+            return;
+        }
+        renderDefinitionDetails(res.data || row || {});
+    };
     const setActiveDefinitionContext = (row) => {
         activeDefinitionId = row?.id || null;
         activeDefinitionCode = row?.templateCode || '';
@@ -555,8 +607,8 @@
             },
             actions: {
                 onRowAction: {
-                    detail: ({ id }) => {
-                        if (id) window.location.href = `/Platform/Workflow/Definitions/${encodeURIComponent(id)}`;
+                    detail: ({ id, row }) => {
+                        openDefinitionDetails(id, row);
                     },
                     versions: ({ id }) => {
                         if (id) window.location.href = `/Platform/Workflow/Definitions/${encodeURIComponent(id)}/Versions`;
@@ -573,14 +625,14 @@
                     start: ({ row }) => {
                         if (row?.id) openStartModal(row.id, row.templateCode);
                     },
-                    instances: ({ row }) => {
-                        if (row?.id) openInstancesModal(row);
+                    instances: ({ id }) => {
+                        if (id) window.location.href = `/Platform/Workflow/Definitions/${encodeURIComponent(id)}/Instances`;
                     },
-                    tasks: ({ row }) => {
-                        if (row?.id) openTasksModal(row);
+                    tasks: ({ id }) => {
+                        if (id) window.location.href = `/Platform/Workflow/Definitions/${encodeURIComponent(id)}/Tasks`;
                     },
-                    slaRules: ({ row }) => {
-                        if (row?.id) openSlaModal(row);
+                    slaRules: ({ id }) => {
+                        if (id) window.location.href = `/Platform/Workflow/Definitions/${encodeURIComponent(id)}/SlaRules`;
                     }
                 }
             },
@@ -603,7 +655,7 @@
                     {
                         targets: 2,
                         render: (data, type, row) => type === 'display'
-                            ? `<a href="/Platform/Workflow/Definitions/${encodeURIComponent(row.id)}" class="fw-medium text-heading">${escapeHtml(data || '')}</a>`
+                            ? `<a href="#" class="fw-medium text-heading wf-definition-detail-link" data-id="${escapeHtml(row.id)}">${escapeHtml(data || '')}</a>`
                             : (data || '')
                     },
                     { targets: 4, render: (data, type) => type === 'display' ? statusBadge(data) : (data || '') },
@@ -1090,47 +1142,6 @@
         notify('success', t('EscalationRunComplete', 'Escalation run complete.'), res.correlationId);
     };
 
-    // =====================================================================
-    // Transition gate test panel (read-only evaluate)
-    // =====================================================================
-    const evaluateTransition = async () => {
-        clearFormError('wf-gate-error');
-        const payload = {
-            objectType: val('wf-gate-objecttype'),
-            objectId: val('wf-gate-objectid'),
-            objectRef: val('wf-gate-objectref'),
-            requestedTransition: val('wf-gate-transition'),
-            requestedTargetState: val('wf-gate-target'),
-            actorId: val('wf-gate-actorid'),
-            reasonCode: val('wf-gate-reason') || null
-        };
-        for (const [field, label] of [['objectType', 'ObjectType'], ['objectId', 'ObjectId'], ['objectRef', 'ObjectRef'], ['requestedTransition', 'RequestedTransition'], ['requestedTargetState', 'RequestedTargetState'], ['actorId', 'ActorId']]) {
-            if (!payload[field]) { setFormError('wf-gate-error', { message: `${t(label, label)} ${t('IsRequired', 'is required.')}` }); return; }
-        }
-        const btn = el('wf-gate-eval'); btn.disabled = true;
-        const res = await api.evaluateTransition(payload);
-        btn.disabled = false;
-        if (!res.ok) { setFormError('wf-gate-error', res); return; }
-        const d = res.data || {};
-        const decision = d.decision != null ? String(d.decision) : '';
-        const gateStatus = d.gateStatus != null ? String(d.gateStatus) : '';
-        el('wf-gate-result').innerHTML = `
-            <div class="card border shadow-none">
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">${escapeHtml(t('Decision', 'Decision'))}</dt><dd class="col-sm-8">${statusBadge(decision)}</dd>
-                        <dt class="col-sm-4">${escapeHtml(t('GateStatus', 'Gate Status'))}</dt><dd class="col-sm-8">${escapeHtml(gateStatus || '—')}</dd>
-                        <dt class="col-sm-4">${escapeHtml(t('BlockingReasonCode', 'Blocking Reason Code'))}</dt><dd class="col-sm-8">${escapeHtml(d.blockingReasonCode || '—')}</dd>
-                        <dt class="col-sm-4">${escapeHtml(t('BlockingMessage', 'Blocking Message'))}</dt><dd class="col-sm-8">${escapeHtml(d.blockingMessage || '—')}</dd>
-                        <dt class="col-sm-4">${escapeHtml(t('WorkflowInstanceId', 'Workflow Instance Id'))}</dt><dd class="col-sm-8">${shortId(d.workflowInstanceId)}</dd>
-                        <dt class="col-sm-4">${escapeHtml(t('ActiveTaskId', 'Active Task Id'))}</dt><dd class="col-sm-8">${shortId(d.activeTaskId)}</dd>
-                    </dl>
-                    <div class="small text-muted mt-2">${escapeHtml(debugSuffix(res))}</div>
-                </div>
-            </div>`;
-        show(el('wf-gate-result'));
-    };
-
     document.addEventListener('DOMContentLoaded', () => {
         // Definitions
         el('wf-def-refresh')?.addEventListener('click', loadDefinitions);
@@ -1138,6 +1149,14 @@
         el('wf-create-submit')?.addEventListener('click', submitCreateDefinition);
         el('wf-publish-submit')?.addEventListener('click', submitPublish);
         el('wf-start-submit')?.addEventListener('click', submitStartInstance);
+        dtTableEl?.addEventListener('click', (event) => {
+            const link = event.target.closest('.wf-definition-detail-link');
+            if (!link) return;
+            event.preventDefault();
+            const id = link.dataset.id;
+            const row = id ? definitionsCache.find((item) => String(item.id) === String(id)) : null;
+            openDefinitionDetails(id, row);
+        });
 
         // Instances
         el('wf-inst-refresh')?.addEventListener('click', loadInstances);
@@ -1156,13 +1175,10 @@
         el('wf-sla-submit')?.addEventListener('click', submitSlaRule);
 
         // Escalations
-        el('wf-open-escalations')?.addEventListener('click', () => new bootstrap.Modal(el('wf-escalations-modal')).show());
+        el('wf-open-escalations')?.addEventListener('click', () => { window.location.href = '/Platform/Workflow/Escalations'; });
         el('wf-esc-run')?.addEventListener('click', runEscalations);
         el('wf-esc-regen')?.addEventListener('click', () => { el('wf-esc-idem').value = api.newGuid(); });
 
-        // Transition gate
-        el('wf-open-gate')?.addEventListener('click', () => new bootstrap.Modal(el('wf-gate-modal')).show());
-        el('wf-gate-eval')?.addEventListener('click', evaluateTransition);
         el('wf-start-regen')?.addEventListener('click', () => { el('wf-start-idem').value = api.newGuid(); });
 
         // Initial load of the Definitions table

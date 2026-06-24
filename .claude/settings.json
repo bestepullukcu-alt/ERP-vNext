@@ -77,7 +77,11 @@
       "PowerShell(dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug --nologo -clp:ErrorsOnly 2>&1)",
       "Bash(node --check frontend/Diten.Web/wwwroot/assets/js/Platform/Workflow/designer-page.js)",
       "Bash(node --check frontend/Diten.Web/wwwroot/assets/js/Platform/Workflow/index.js)",
-      "Bash(node --check frontend/Diten.Web/wwwroot/assets/js/Platform/Workflow/versions.js)"
+      "Bash(node --check frontend/Diten.Web/wwwroot/assets/js/Platform/Workflow/versions.js)",
+      "Bash(node --check frontend/Diten.Web/wwwroot/assets/js/Platform/Workflow/instances.js)",
+      "PowerShell(& .\\\\watch-diten-bg.ps1)",
+      "Bash(node --check frontend/Diten.Web/wwwroot/assets/js/Platform/Workflow/tasks.js)",
+      "Bash(node --check frontend/Diten.Web/wwwroot/assets/js/Platform/Workflow/sla-rules.js)"
     ],
     "additionalDirectories": [
       "C:\\tmp"

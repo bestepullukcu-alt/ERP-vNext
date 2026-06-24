@@ -1,0 +1,71 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EscalationRunner"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-1">@Localizer["EscalationRunner"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/Workflow">@Localizer["PageTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["EscalationRunner"]</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div id="wf-esc-status" class="alert d-none" role="alert"></div>
+
+@* Run result summary cards (hidden until the first run). *@
+<div id="wf-esc-summary" class="row row-cols-2 row-cols-md-4 g-3 mb-3 d-none"></div>
+
+@* Golden compact DataTable v2 contract: inline filter + skeleton card + data-dt-standard="v2". *@
+<partial name="_Filter" />
+<partial name="_EscalationsDataTable" />
+
+@* Run Escalations parameters — golden slim offcanvas. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="wf-esc-offcanvas" aria-labelledby="wf-esc-offcanvas-label">
+    <div class="offcanvas-header p-4">
+        <h5 id="wf-esc-offcanvas-label" class="offcanvas-title">@Localizer["RunEscalations"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="wf-esc-error" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="wf-esc-form" class="pt-0" novalidate>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-esc-now">@Localizer["NowUtc"]</label>
+                    <input id="wf-esc-now" type="datetime-local" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-esc-max">@Localizer["MaxItems"]</label>
+                    <input id="wf-esc-max" type="number" min="1" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="wf-esc-idem">@Localizer["IdempotencyKey"]</label>
+                    <div class="input-group">
+                        <input id="wf-esc-idem" class="form-control" />
+                        <button type="button" id="wf-esc-regen" class="btn btn-outline-secondary"><i class="icon-base bx bx-refresh"></i></button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        <button type="button" id="wf-esc-run" class="btn btn-primary"><i class="icon-base bx bx-play me-1"></i>@Localizer["RunEscalations"]</button>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_WorkflowL10n" />
+    <script src="~/assets/js/Platform/Workflow/workflow.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Workflow/escalations.js" asp-append-version="true"></script>
+}
