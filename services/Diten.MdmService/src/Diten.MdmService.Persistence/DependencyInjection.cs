@@ -45,14 +45,6 @@ public static class DependencyInjection
             return;
         }
 
-        // V3 GuidRepresentationMode: under the driver's default V2 mode, documents are written with the
-        // registered Standard (subtype-4) serializer but `Eq`/filter builders encode Guids inconsistently,
-        // so tenant-scoped queries (e.g. TenantFilter) fail to match their own stored Guids. V3 makes the
-        // Standard serializer authoritative for both write and filter paths.
-#pragma warning disable CS0618
-        BsonDefaults.GuidRepresentationMode = GuidRepresentationMode.V3;
-#pragma warning restore CS0618
-
         try
         {
             BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));

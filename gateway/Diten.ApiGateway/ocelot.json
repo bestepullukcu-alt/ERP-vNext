@@ -150,42 +150,6 @@
       "UpstreamHttpMethod": [
         "GET",
         "POST",
-        "PATCH",
-        "DELETE",
-        "OPTIONS"
-      ],
-      "UpstreamScheme": "http"
-    },
-    {
-      "DownstreamPathTemplate": "/api/legal-entities",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5059
-        }
-      ],
-      "UpstreamPathTemplate": "/api/legal-entities",
-      "UpstreamHttpMethod": [
-        "GET",
-        "POST",
-        "OPTIONS"
-      ],
-      "UpstreamScheme": "http"
-    },
-    {
-      "DownstreamPathTemplate": "/api/legal-entities/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5059
-        }
-      ],
-      "UpstreamPathTemplate": "/api/legal-entities/{everything}",
-      "UpstreamHttpMethod": [
-        "GET",
-        "POST",
         "PUT",
         "PATCH",
         "DELETE",
