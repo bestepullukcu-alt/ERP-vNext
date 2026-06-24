@@ -1,0 +1,77 @@
+@using System.Text.Json
+@using Diten.Web.Views.MasterData.LegalEntities
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LegalEntitiesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        // Field labels
+        Code = Localizer["Code"].Value,
+        LegalName = Localizer["LegalName"].Value,
+        DisplayName = Localizer["DisplayName"].Value,
+        LegalForm = Localizer["LegalForm"].Value,
+        OrgRole = Localizer["OrgRole"].Value,
+        RegistrationNumber = Localizer["RegistrationNumber"].Value,
+        TaxId = Localizer["TaxId"].Value,
+        Country = Localizer["Country"].Value,
+        StatutoryStatus = Localizer["StatutoryStatus"].Value,
+        Parent = Localizer["Parent"].Value,
+        OwnershipPercent = Localizer["OwnershipPercent"].Value,
+        ControlType = Localizer["ControlType"].Value,
+        FiscalYearVariant = Localizer["FiscalYearVariant"].Value,
+        AccountingStandard = Localizer["AccountingStandard"].Value,
+        TaxRegime = Localizer["TaxRegime"].Value,
+        BaseCurrency = Localizer["BaseCurrency"].Value,
+        RegisteredAddress = Localizer["RegisteredAddress"].Value,
+        CorrespondenceAddress = Localizer["CorrespondenceAddress"].Value,
+        OfficialEmail = Localizer["OfficialEmail"].Value,
+        OfficialPhone = Localizer["OfficialPhone"].Value,
+        Website = Localizer["Website"].Value,
+        ApprovalStatus = Localizer["ApprovalStatus"].Value,
+        ReviewDue = Localizer["ReviewDue"].Value,
+        SourceSystem = Localizer["SourceSystem"].Value,
+        LegacyCode = Localizer["LegacyCode"].Value,
+        EvidenceStatus = Localizer["EvidenceStatus"].Value,
+        CompletenessScore = Localizer["CompletenessScore"].Value,
+        Referenceable = Localizer["Referenceable"].Value,
+        LifecycleState = Localizer["LifecycleState"].Value,
+        Version = Localizer["Version"].Value,
+        CreatedAt = Localizer["CreatedAt"].Value,
+        UpdatedAt = Localizer["UpdatedAt"].Value,
+        // Status labels
+        StatusDraft = Localizer["StatusDraft"].Value,
+        StatusInReview = Localizer["StatusInReview"].Value,
+        StatusApproved = Localizer["StatusApproved"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusSuspended = Localizer["StatusSuspended"].Value,
+        StatusArchived = Localizer["StatusArchived"].Value,
+        StatusRegistered = Localizer["StatusRegistered"].Value,
+        StatusPending = Localizer["StatusPending"].Value,
+        StatusDissolved = Localizer["StatusDissolved"].Value,
+        StatusSubmitted = Localizer["StatusSubmitted"].Value,
+        StatusRejected = Localizer["StatusRejected"].Value,
+        EvidenceNotStarted = Localizer["EvidenceNotStarted"].Value,
+        EvidenceComplete = Localizer["EvidenceComplete"].Value,
+        EvidenceVerified = Localizer["EvidenceVerified"].Value,
+        // Lifecycle actions
+        Activate = Localizer["Activate"].Value,
+        Suspend = Localizer["Suspend"].Value,
+        Archive = Localizer["Archive"].Value,
+        ActivateConfirm = Localizer["ActivateConfirm"].Value,
+        SuspendConfirm = Localizer["SuspendConfirm"].Value,
+        ArchiveConfirm = Localizer["ArchiveConfirm"].Value,
+        RecordActivated = Localizer["RecordActivated"].Value,
+        RecordSuspended = Localizer["RecordSuspended"].Value,
+        RecordArchived = Localizer["RecordArchived"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        LoadFailed = Localizer["LoadFailed"].Value,
+        // Shared
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
+    };
+}
+<script id="legal-entities-details-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

@@ -1,0 +1,82 @@
+@using Diten.Web.Views.MasterData.LegalEntities
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LegalEntitiesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var legalEntityId = ViewData["LegalEntityId"]?.ToString() ?? string.Empty;
+    ViewData["Title"] = Localizer["ViewDetails"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div id="le-details-page" data-le-id="@legalEntityId">
+    <div class="mb-3 d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+            <h5 class="mb-0" id="leDetailName">@Localizer["ViewDetails"]</h5>
+            <span class="fw-medium font-monospace text-primary" id="leDetailCode">-</span>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="/LegalEntities" class="btn btn-label-secondary btn-sm"><i class="bx bx-chevron-left me-1"></i>@Localizer["BackToList"]</a>
+            <a href="#" id="leDetailEditBtn" class="btn btn-primary btn-sm"><i class="bx bx-edit me-1"></i>@Localizer["Edit"]</a>
+        </div>
+    </div>
+
+    <div id="le-details-alert" class="alert alert-danger d-none" role="alert"></div>
+
+    <div id="le-details-loading" class="text-center text-muted py-5">
+        <div class="spinner-border" role="status"></div>
+    </div>
+
+    <div id="le-details-content" class="d-none">
+        @* Status + completeness header card *@
+        <div class="card mb-4">
+            <div class="card-body d-flex flex-wrap align-items-center gap-3">
+                <div class="d-flex flex-wrap gap-2">
+                    <span id="leDetailOperational"></span>
+                    <span id="leDetailStatutory"></span>
+                    <span id="leDetailApproval"></span>
+                    <span id="leDetailEvidence"></span>
+                    <span id="leDetailReferenceable"></span>
+                    <span id="leDetailLifecycle"></span>
+                </div>
+                <div class="ms-auto" style="min-width: 220px;">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">@Localizer["CompletenessScore"]</small>
+                        <small class="fw-medium" id="leDetailCompletenessLabel">-</small>
+                    </div>
+                    <div class="progress mt-1" style="height: 6px;">
+                        <div id="leDetailCompletenessBar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex gap-2 flex-wrap" id="leDetailLifecycleActions"></div>
+        </div>
+
+        <div class="row g-4">
+            @{
+                void Section(string id, string title)
+                {
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header"><h6 class="mb-0">@title</h6></div>
+                            <div class="card-body"><dl class="row mb-0 small" id="@id"></dl></div>
+                        </div>
+                    </div>
+                }
+            }
+            @{ Section("leSecIdentity", Localizer["SectionIdentity"].Value); }
+            @{ Section("leSecStatutory", Localizer["SectionStatutory"].Value); }
+            @{ Section("leSecStructure", Localizer["SectionStructure"].Value); }
+            @{ Section("leSecFinance", Localizer["SectionFinance"].Value); }
+            @{ Section("leSecAddresses", Localizer["SectionAddresses"].Value); }
+            @{ Section("leSecGovernance", Localizer["SectionGovernance"].Value); }
+            @{ Section("leSecEvidence", Localizer["SectionEvidence"].Value); }
+            @{ Section("leSecSystem", Localizer["SectionSystem"].Value); }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="_DetailsL10n" />
+    <script src="~/assets/js/MasterData/LegalEntities/details.js" asp-append-version="true"></script>
+}

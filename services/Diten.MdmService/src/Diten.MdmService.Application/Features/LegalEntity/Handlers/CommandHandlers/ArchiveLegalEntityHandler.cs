@@ -22,12 +22,12 @@ public sealed class ArchiveLegalEntityHandler : IRequestHandler<Commands.Archive
             return Response<NoContent>.Fail("Legal Entity not found.", 404);
         }
 
-        if (entity.LifecycleStatus is not LegalEntityLifecycleStatus.Active)
+        if (entity.OperationalStatus is not (LegalEntityOperationalStatus.Active or LegalEntityOperationalStatus.Suspended))
         {
-            return Response<NoContent>.Fail("Only active Legal Entities can be archived.", 409);
+            return Response<NoContent>.Fail("Only active or suspended Legal Entities can be archived.", 409);
         }
 
-        entity.LifecycleStatus = LegalEntityLifecycleStatus.Archived;
+        entity.OperationalStatus = LegalEntityOperationalStatus.Archived;
         var updated = await _repository.UpdateAsync(entity, cancellationToken);
         return updated
             ? Response<NoContent>.SuccessWithoutData(204)

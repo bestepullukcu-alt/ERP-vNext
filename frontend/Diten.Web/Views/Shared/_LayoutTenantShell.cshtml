@@ -338,6 +338,12 @@
                             </li>
                         }
                     }
+
+                    @* MOD-0285 — dynamic "Modules" section (AUGMENT). Self-registered/entitled modules whose page
+                       descriptors are navigation-visible render here automatically — no hand-edited <li> above.
+                       Server-side ViewComponent (HttpOnly token, no client flash); best-effort: empty if the
+                       navigation endpoint is unreachable, leaving the hardcoded sections above intact. *@
+                    @await Component.InvokeAsync("DynamicModuleMenu")
                 </ul>
             </aside>
             <!-- / Menu -->

@@ -8,13 +8,52 @@
         <div class="pt-0 pb-3">
             <form class="m-0" id="filterForm" data-no-tracker>
                 <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
-                    <div class="filter-chip filter-status">
-                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["Status"]">
-                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                    <div class="filter-chip filter-country">
+                        <select id="filterCountry" class="form-select form-select-sm select2" data-placeholder="@Localizer["Country"]">
+                            <option value="">@Localizer["Country"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-operational-status">
+                        <select id="filterOperationalStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["OperationalStatus"]">
+                            <option value="">@Localizer["OperationalStatus"]</option>
                             <option value="DRAFT">@Localizer["StatusDraft"]</option>
+                            <option value="INREVIEW">@Localizer["StatusInReview"]</option>
+                            <option value="APPROVED">@Localizer["StatusApproved"]</option>
                             <option value="ACTIVE">@Localizer["StatusActive"]</option>
+                            <option value="SUSPENDED">@Localizer["StatusSuspended"]</option>
                             <option value="ARCHIVED">@Localizer["StatusArchived"]</option>
                         </select>
+                    </div>
+
+                    <div class="filter-chip filter-evidence-status">
+                        <select id="filterEvidenceStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["EvidenceStatus"]">
+                            <option value="">@Localizer["EvidenceStatus"]</option>
+                            <option value="NOTSTARTED">@Localizer["EvidenceNotStarted"]</option>
+                            <option value="COMPLETE">@Localizer["EvidenceComplete"]</option>
+                            <option value="VERIFIED">@Localizer["EvidenceVerified"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-currency">
+                        <select id="filterBaseCurrency" class="form-select form-select-sm select2" data-placeholder="@Localizer["BaseCurrency"]">
+                            <option value="">@Localizer["BaseCurrency"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-created-from">
+                        <input type="date" id="filterCreatedFrom" class="form-control form-control-sm" title="@Localizer["CreatedFrom"]" placeholder="@Localizer["CreatedFrom"]" />
+                    </div>
+
+                    <div class="filter-chip filter-created-to">
+                        <input type="date" id="filterCreatedTo" class="form-control form-control-sm" title="@Localizer["CreatedTo"]" placeholder="@Localizer["CreatedTo"]" />
+                    </div>
+
+                    <div class="filter-chip filter-incomplete d-flex align-items-center">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="filterIncompleteOnly" />
+                            <label class="form-check-label" for="filterIncompleteOnly">@Localizer["IncompleteOnly"]</label>
+                        </div>
                     </div>
 
                     <div class="ms-auto d-flex gap-3">

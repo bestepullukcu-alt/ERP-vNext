@@ -1,19 +1,28 @@
 'use strict';
 
-// MOD-0220 — Legal Entities (tenant shell, Master Data, Slim pattern). Backend list returns a plain array
-// (Response<IReadOnlyList<T>>), so the DataTable is client-side (serverSide:false): one ajax fetch loads
-// the list, paging/sort/search run in the browser. Create happens in an in-page offcanvas (POST → Draft);
-// lifecycle (activate/archive) + delete are status-aware row actions.
+// MOD-0220 — Legal Entities (tenant shell, Master Data). Rich list (Görev 4) + Quick View (Görev 6).
+// Backend list returns a plain array (Response<IReadOnlyList<T>>); the DataTable is client-side
+// (serverSide:false). Filters are pushed to the gateway via query params (country, operationalStatus,
+// evidenceStatus, baseCurrency, createdFrom, createdTo, incompleteOnly), then the list re-fetches.
+// Create/Edit live on the full-page wizard (/LegalEntities/Wizard); the list only navigates there.
 const LegalEntitiesList = (function () {
     let dt;
     let L = {};
     const dtTableEl = document.querySelector('.datatables-legal-entities');
     const endpoint = '/LegalEntities/api';
-    const saveViewColumnIndexes = [1, 2, 3, 4];
+    const wizardUrl = '/LegalEntities/Wizard';
+    const detailsUrl = '/LegalEntities/Details';
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     const baseOrder = [[1, 'asc']];
-    let appliedFilters = { status: '' };
 
     let rowsData = [];
+    const entityMap = {}; // legalEntityId -> { legalName, code } for parent resolution
+    const lookupMaps = { legalForm: {}, organizationRole: {}, country: {}, currency: {} };
+
+    let appliedFilters = {
+        country: '', operationalStatus: '', evidenceStatus: '',
+        baseCurrency: '', createdFrom: '', createdTo: '', incompleteOnly: false
+    };
 
     const loadL10n = () => {
         const node = document.getElementById('legal-entities-l10n');
@@ -29,14 +38,44 @@ const LegalEntitiesList = (function () {
 
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
-    const normalizeString = (value) => (typeof value === 'string' ? value.trim() : '');
-    const statusOf = (row) => String(row.lifecycleState ?? row.LifecycleState ?? '').toUpperCase();
+    const operationalOf = (row) => String(row.operationalStatus ?? row.OperationalStatus ?? row.lifecycleState ?? row.LifecycleState ?? '').toUpperCase();
 
-    const statusBadge = (status) => {
+    // ─── Status badge palettes ───────────────────────────────────────────────
+    const operationalBadge = (status) => {
         const s = String(status || '').toUpperCase();
-        if (s === 'ACTIVE') return `<span class="badge bg-label-success">${escapeHtml(L.StatusActive || 'Active')}</span>`;
-        if (s === 'ARCHIVED') return `<span class="badge bg-label-secondary text-muted">${escapeHtml(L.StatusArchived || 'Archived')}</span>`;
-        return `<span class="badge bg-label-secondary">${escapeHtml(L.StatusDraft || 'Draft')}</span>`;
+        const map = {
+            DRAFT: { cls: 'bg-label-secondary', txt: L.StatusDraft || 'Draft' },
+            INREVIEW: { cls: 'bg-label-info', txt: L.StatusInReview || 'In Review' },
+            APPROVED: { cls: 'bg-label-info', txt: L.StatusApproved || 'Approved' },
+            ACTIVE: { cls: 'bg-label-success', txt: L.StatusActive || 'Active' },
+            SUSPENDED: { cls: 'bg-label-warning', txt: L.StatusSuspended || 'Suspended' },
+            ARCHIVED: { cls: 'bg-label-secondary text-muted', txt: L.StatusArchived || 'Archived' }
+        };
+        const m = map[s] || { cls: 'bg-label-info', txt: s || '-' };
+        return `<span class="badge ${m.cls}">${escapeHtml(m.txt)}</span>`;
+    };
+
+    const statutoryBadge = (status) => {
+        const s = String(status || '').toUpperCase();
+        const map = {
+            REGISTERED: { cls: 'bg-label-success', txt: L.StatusRegistered || 'Registered' },
+            PENDING: { cls: 'bg-label-warning', txt: L.StatusPending || 'Pending' },
+            SUSPENDED: { cls: 'bg-label-warning', txt: L.StatusSuspended || 'Suspended' },
+            DISSOLVED: { cls: 'bg-label-secondary text-muted', txt: L.StatusDissolved || 'Dissolved' }
+        };
+        const m = map[s];
+        return m ? `<span class="badge ${m.cls}">${escapeHtml(m.txt)}</span>` : `<span class="text-muted">-</span>`;
+    };
+
+    const evidenceBadge = (status) => {
+        const s = String(status || '').toUpperCase();
+        const map = {
+            NOTSTARTED: { cls: 'bg-label-secondary', txt: L.EvidenceNotStarted || 'Not Started' },
+            COMPLETE: { cls: 'bg-label-info', txt: L.EvidenceComplete || 'Complete' },
+            VERIFIED: { cls: 'bg-label-success', txt: L.EvidenceVerified || 'Verified' }
+        };
+        const m = map[s];
+        return m ? `<span class="badge ${m.cls}">${escapeHtml(m.txt)}</span>` : `<span class="text-muted">-</span>`;
     };
 
     const reloadWithSuccessToast = (messageKey, interpolationValue) => {
@@ -44,6 +83,8 @@ const LegalEntitiesList = (function () {
     };
 
     const patchLifecycle = (id, action, confirmKey, toastKey, name) => {
+        const typeMap = { activate: 'primary', suspend: 'warning', archive: 'warning' };
+        const btnMap = { activate: L.Activate, suspend: L.Suspend, archive: L.Archive };
         window.showConfirm?.(L[confirmKey] || L.AreYouSure, async () => {
             try {
                 const response = await fetch(`${endpoint}/${encodeURIComponent(id)}/${action}`, { method: 'PATCH', headers: getAuthHeaders() });
@@ -53,34 +94,33 @@ const LegalEntitiesList = (function () {
                 console.error(error);
                 window.showToast?.(L.ErrorOccurred || '', 'error');
             }
-        }, { entityName: name, type: action === 'archive' ? 'warning' : 'primary', confirmButtonText: action === 'archive' ? L.Archive : L.Activate });
+        }, { entityName: name, type: typeMap[action] || 'primary', confirmButtonText: btnMap[action] });
+    };
+
+    const deleteRow = (id, name) => {
+        window.showConfirm?.(L.AreYouSure, async () => {
+            try {
+                const response = await fetch(`${endpoint}/${encodeURIComponent(id)}`, { method: 'DELETE', headers: getAuthHeaders() });
+                if (!response.ok) throw new Error('Delete failed.');
+                reloadWithSuccessToast('RecordDeleted', name);
+            } catch (error) {
+                console.error(error);
+                window.showToast?.(L.ErrorOccurred || '', 'error');
+            }
+        }, { entityName: name, type: 'danger', confirmButtonText: L.Delete });
     };
 
     const rowActionHandlers = {
-        activate: ({ row, id }) => {
-            const rowId = id || row?.id || row?.Id;
-            if (rowId) patchLifecycle(rowId, 'activate', 'ActivateConfirm', 'RecordActivated', row?.legalName || row?.LegalName || '');
-        },
-        archive: ({ row, id }) => {
-            const rowId = id || row?.id || row?.Id;
-            if (rowId) patchLifecycle(rowId, 'archive', 'ArchiveConfirm', 'RecordArchived', row?.legalName || row?.LegalName || '');
-        },
-        delete: ({ row, id }) => {
-            const rowId = id || row?.id || row?.Id;
-            if (!rowId) return;
-            const entityName = row?.legalName || row?.LegalName || row?.code || row?.Code || '';
-            window.showConfirm?.(L.AreYouSure, async () => {
-                try {
-                    const response = await fetch(`${endpoint}/${encodeURIComponent(rowId)}`, { method: 'DELETE', headers: getAuthHeaders() });
-                    if (!response.ok) throw new Error('Delete failed.');
-                    reloadWithSuccessToast('RecordDeleted', entityName);
-                } catch (error) {
-                    console.error(error);
-                    window.showToast?.(L.ErrorOccurred || '', 'error');
-                }
-            }, { entityName, type: 'danger', confirmButtonText: L.Delete });
-        }
+        quickview: ({ id, row }) => { const rid = id || row?.id; if (rid) QuickView.open(rid); },
+        details: ({ id, row }) => { const rid = id || row?.id; if (rid) window.location.href = `${detailsUrl}/${encodeURIComponent(rid)}`; },
+        edit: ({ id, row }) => { const rid = id || row?.id; if (rid) window.location.href = `${wizardUrl}/${encodeURIComponent(rid)}`; },
+        activate: ({ id, row }) => { const rid = id || row?.id; if (rid) patchLifecycle(rid, 'activate', 'ActivateConfirm', 'RecordActivated', nameOf(row)); },
+        suspend: ({ id, row }) => { const rid = id || row?.id; if (rid) patchLifecycle(rid, 'suspend', 'SuspendConfirm', 'RecordSuspended', nameOf(row)); },
+        archive: ({ id, row }) => { const rid = id || row?.id; if (rid) patchLifecycle(rid, 'archive', 'ArchiveConfirm', 'RecordArchived', nameOf(row)); },
+        delete: ({ id, row }) => { const rid = id || row?.id; if (rid) deleteRow(rid, nameOf(row)); }
     };
+
+    const nameOf = (row) => row?.legalName || row?.LegalName || row?.code || row?.Code || '';
 
     const unwrapList = (payload) => {
         const data = payload?.data ?? payload?.Data ?? [];
@@ -88,13 +128,75 @@ const LegalEntitiesList = (function () {
         return data.items || data.Items || [];
     };
 
-    // Backend list rows expose `legalEntityId` (not `id`); normalize to `id` so the shared action
-    // dispatcher and renderers behave like the other slim screens.
+    // Backend rows expose `legalEntityId` (not `id`); normalize so the shared dispatcher + renderers work.
     const normalizeRow = (row) => ({ ...row, id: row.id || row.Id || row.legalEntityId || row.LegalEntityId });
 
-    const applyClientFilter = (rows) => {
-        if (appliedFilters.status === '') return rows;
-        return rows.filter((r) => statusOf(r) === appliedFilters.status);
+    const lookupLabel = (mapKey, code) => (code ? (lookupMaps[mapKey][String(code)] || code) : '-');
+
+    const parentLabel = (parentId) => {
+        if (!parentId) return '-';
+        const p = entityMap[String(parentId)];
+        return p ? (p.legalName ? `${p.code ? p.code + ' — ' : ''}${p.legalName}` : (p.code || parentId)) : parentId;
+    };
+
+    const buildQuery = () => {
+        const params = new URLSearchParams();
+        if (appliedFilters.country) params.set('country', appliedFilters.country);
+        if (appliedFilters.operationalStatus) params.set('operationalStatus', appliedFilters.operationalStatus);
+        if (appliedFilters.evidenceStatus) params.set('evidenceStatus', appliedFilters.evidenceStatus);
+        if (appliedFilters.baseCurrency) params.set('baseCurrency', appliedFilters.baseCurrency);
+        if (appliedFilters.createdFrom) params.set('createdFrom', appliedFilters.createdFrom);
+        if (appliedFilters.createdTo) params.set('createdTo', appliedFilters.createdTo);
+        if (appliedFilters.incompleteOnly) params.set('incompleteOnly', 'true');
+        const qs = params.toString();
+        return qs ? `?${qs}` : '';
+    };
+
+    const rebuildEntityMap = () => {
+        Object.keys(entityMap).forEach((k) => delete entityMap[k]);
+        rowsData.forEach((r) => {
+            const id = r.legalEntityId || r.LegalEntityId || r.id;
+            if (id) entityMap[String(id)] = { legalName: r.legalName || r.LegalName || '', code: r.code || r.Code || '' };
+        });
+    };
+
+    // ─── Lookups for table labels + filter selects (best-effort) ─────────────
+    const fetchLookup = (mapKey, url, valueKey) => fetch(url, { headers: getAuthHeaders() })
+        .then((r) => r.ok ? r.json() : Promise.reject(r))
+        .then((payload) => {
+            const items = unwrapList(payload);
+            items.forEach((it) => {
+                const code = it.code ?? it.Code ?? it.value ?? it.Value;
+                const name = it.name ?? it.Name ?? code;
+                if (code != null) lookupMaps[mapKey][String(code)] = name;
+            });
+            return items;
+        })
+        .catch(() => []);
+
+    const loadReferenceData = () => Promise.all([
+        fetchLookup('legalForm', `${endpoint}/lookups/legal-form`),
+        fetchLookup('organizationRole', `${endpoint}/lookups/organization-role`),
+        fetchLookup('country', `${endpoint}/platform-lookups/countries`),
+        fetchLookup('currency', `${endpoint}/platform-lookups/currencies`)
+    ]).then(([, , countries, currencies]) => {
+        populateFilterSelect('filterCountry', countries, L.Country);
+        populateFilterSelect('filterBaseCurrency', currencies, L.BaseCurrency);
+    });
+
+    const populateFilterSelect = (selectId, items, placeholder) => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        select.innerHTML = `<option value="">${escapeHtml(placeholder || '')}</option>`;
+        (items || []).forEach((it) => {
+            const code = it.code ?? it.Code ?? it.value ?? it.Value;
+            const name = it.name ?? it.Name ?? code;
+            if (code == null) return;
+            const opt = document.createElement('option');
+            opt.value = code;
+            opt.textContent = `${name}`;
+            select.appendChild(opt);
+        });
     };
 
     const initDataTable = () => {
@@ -117,11 +219,12 @@ const LegalEntitiesList = (function () {
             order: baseOrder,
             colReorder: { columns: ':gt(1):not(:last-child)' },
             ajax: function (data, callback) {
-                fetch(`${endpoint}`, { headers: getAuthHeaders() })
+                fetch(`${endpoint}${buildQuery()}`, { headers: getAuthHeaders() })
                     .then((response) => response.ok ? response.json() : Promise.reject(response))
                     .then((payload) => {
                         rowsData = unwrapList(payload).map(normalizeRow);
-                        callback({ data: applyClientFilter(rowsData) });
+                        rebuildEntityMap();
+                        callback({ data: rowsData });
                     })
                     .catch(() => {
                         window.showToast?.(L.ErrorOccurred || '', 'error');
@@ -130,10 +233,15 @@ const LegalEntitiesList = (function () {
             },
             columns: [
                 { data: 'id', name: 'control' },
-                { data: 'code', name: 'code', render: (value) => `<span class="fw-medium font-monospace text-primary">${escapeHtml(value)}</span>` },
                 { data: 'legalName', name: 'legalName', render: escapeHtml },
-                { data: 'displayName', name: 'displayName', render: (value) => escapeHtml(value || '-') },
-                { data: 'lifecycleState', name: 'lifecycleState', render: (value) => statusBadge(value) },
+                { data: 'code', name: 'code', render: (value) => `<span class="fw-medium font-monospace text-primary">${escapeHtml(value)}</span>` },
+                { data: 'legalFormCode', name: 'legalForm', render: (v) => escapeHtml(lookupLabel('legalForm', v)) },
+                { data: 'organizationRoleCode', name: 'orgRole', render: (v) => escapeHtml(lookupLabel('organizationRole', v)) },
+                { data: 'countryCode', name: 'country', render: (v) => escapeHtml(lookupLabel('country', v)) },
+                { data: 'baseCurrencyCode', name: 'baseCurrency', render: (v) => escapeHtml(lookupLabel('currency', v)) },
+                { data: 'parentLegalEntityId', name: 'parent', render: (v) => escapeHtml(parentLabel(v)) },
+                { data: 'statutoryStatus', name: 'statutoryStatus', render: (v) => statutoryBadge(v) },
+                { data: 'operationalStatus', name: 'operationalStatus', render: (v, t, row) => operationalBadge(operationalOf(row)) },
                 {
                     data: null,
                     name: 'action',
@@ -143,23 +251,32 @@ const LegalEntitiesList = (function () {
                     render: (value, type, row) => {
                         const id = row.id;
                         const rowJson = JSON.stringify(row);
-                        const status = statusOf(row);
+                        const status = operationalOf(row);
+                        const baseAttrs = { 'data-id': id, 'data-json': rowJson };
 
-                        const actions = [];
-                        if (status === 'DRAFT') {
-                            actions.push({ key: 'activate', icon: 'bx bx-check-circle', className: 'text-success', text: L.Activate || '', attrs: { 'data-id': id, 'data-json': rowJson } });
-                            actions.push({ key: 'delete', icon: 'bx bx-trash', className: 'text-danger', text: L.Delete || '', attrs: { 'data-id': id, 'data-json': rowJson } });
-                        } else if (status === 'ACTIVE') {
-                            actions.push({ key: 'archive', icon: 'bx bx-archive-in', className: 'text-warning', text: L.Archive || '', attrs: { 'data-id': id, 'data-json': rowJson } });
+                        const actions = [
+                            { key: 'quickview', icon: 'bx bx-show', className: 'text-body', text: L.QuickView || '', attrs: baseAttrs },
+                            { key: 'details', icon: 'bx bx-detail', text: L.ViewDetails || '', attrs: baseAttrs },
+                            { key: 'edit', icon: 'bx bx-edit', className: 'js-edit-item', text: L.Edit || '', attrs: baseAttrs }
+                        ];
+                        if (status === 'DRAFT' || status === 'INREVIEW' || status === 'APPROVED') {
+                            actions.push({ key: 'activate', icon: 'bx bx-check-circle', className: 'text-success', text: L.Activate || '', attrs: baseAttrs });
                         }
+                        if (status === 'ACTIVE') {
+                            actions.push({ key: 'suspend', icon: 'bx bx-pause-circle', className: 'text-warning', text: L.Suspend || '', attrs: baseAttrs });
+                        }
+                        if (status === 'ACTIVE' || status === 'SUSPENDED') {
+                            actions.push({ key: 'archive', icon: 'bx bx-archive-in', className: 'text-warning', text: L.Archive || '', attrs: baseAttrs });
+                        }
+                        actions.push({ key: 'delete', icon: 'bx bx-trash', className: 'text-danger', text: L.Delete || '', attrs: baseAttrs });
 
-                        return actions.length && window.DitenDataTable ? window.DitenDataTable.renderActions(actions) : '<span class="text-muted">—</span>';
+                        return window.DitenDataTable ? window.DitenDataTable.renderActions(actions) : '';
                     }
                 }
             ],
             columnDefs: [
                 { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
-                { targets: 2, responsivePriority: 1 },
+                { targets: 1, responsivePriority: 1 },
                 { targets: -1, title: L.Actions, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3' }
             ],
             buttons: window.DtDefaults.exportButtons(L.AddNew || '', {}, { filterBtn }, {
@@ -220,7 +337,6 @@ const LegalEntitiesList = (function () {
             $select.select2({
                 dropdownParent: $(document.body),
                 dropdownCssClass: 'dt-inline-filter-dropdown',
-                minimumResultsForSearch: Infinity,
                 selectionCssClass: 'form-select form-select-sm',
                 width: 'element',
                 placeholder: $select.data('placeholder') || '',
@@ -230,139 +346,158 @@ const LegalEntitiesList = (function () {
         });
     };
 
+    const readFilters = () => ({
+        country: document.getElementById('filterCountry')?.value || '',
+        operationalStatus: document.getElementById('filterOperationalStatus')?.value || '',
+        evidenceStatus: document.getElementById('filterEvidenceStatus')?.value || '',
+        baseCurrency: document.getElementById('filterBaseCurrency')?.value || '',
+        createdFrom: document.getElementById('filterCreatedFrom')?.value || '',
+        createdTo: document.getElementById('filterCreatedTo')?.value || '',
+        incompleteOnly: !!document.getElementById('filterIncompleteOnly')?.checked
+    });
+
     const bindFilters = () => {
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
-            appliedFilters = { status: document.getElementById('filterStatus')?.value || '' };
+            appliedFilters = readFilters();
             dt?.ajax.reload();
             window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
         });
 
         document.getElementById('btnFilterReset')?.addEventListener('click', (event) => {
             event.preventDefault();
-            appliedFilters = { status: '' };
-            const element = document.getElementById('filterStatus');
-            if (element) {
-                element.value = '';
-                if (window.jQuery?.fn?.select2) $(element).val('').trigger('change');
-            }
+            appliedFilters = { country: '', operationalStatus: '', evidenceStatus: '', baseCurrency: '', createdFrom: '', createdTo: '', incompleteOnly: false };
+            ['filterCountry', 'filterOperationalStatus', 'filterEvidenceStatus', 'filterBaseCurrency'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) { el.value = ''; if (window.jQuery?.fn?.select2) $(el).val('').trigger('change'); }
+            });
+            ['filterCreatedFrom', 'filterCreatedTo'].forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; });
+            const inc = document.getElementById('filterIncompleteOnly');
+            if (inc) inc.checked = false;
             dt?.ajax.reload();
             window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
         });
     };
 
-    const getAppliedFilterCount = () => Object.values(appliedFilters).filter((value) => value !== '').length;
+    const getAppliedFilterCount = () => Object.values(appliedFilters).filter((v) => v !== '' && v !== false).length;
 
-    // ─── Create offcanvas (Slim pattern) ─────────────────────────────────────
-    const getOcInstance = () => {
-        const el = document.getElementById('offcanvasCreateEdit');
-        return el ? bootstrap.Offcanvas.getOrCreateInstance(el) : null;
-    };
-
-    const getAntiForgeryToken = () =>
-        document.querySelector('#formLegalEntity input[name="__RequestVerificationToken"]')?.value || '';
-
-    const clearFormErrors = () => {
-        const alertEl = document.getElementById('formLegalEntityAlert');
-        if (alertEl) { alertEl.classList.add('d-none'); alertEl.innerHTML = ''; }
-    };
-
-    const showFormErrors = (errors) => {
-        const alertEl = document.getElementById('formLegalEntityAlert');
-        if (!alertEl) return;
-        const list = (Array.isArray(errors) ? errors : [errors]).filter(Boolean);
-        alertEl.innerHTML = list.length
-            ? list.map((message) => `<div>${escapeHtml(message)}</div>`).join('')
-            : escapeHtml(L.RequiredField || '');
-        alertEl.classList.remove('d-none');
-    };
-
-    const resetForm = () => {
-        const form = document.getElementById('formLegalEntity');
-        if (!form) return;
-        form.classList.remove('was-validated');
-        form.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
-        document.getElementById('legalEntityCode').value = '';
-        document.getElementById('legalEntityLegalName').value = '';
-        document.getElementById('legalEntityDisplayName').value = '';
-        clearFormErrors();
-    };
-
-    const openCreateOffcanvas = () => {
-        const oc = getOcInstance();
-        if (!oc) {
-            console.error('[LegalEntities] #offcanvasCreateEdit not found. Rebuild + restart the app so the partial renders.');
-            return;
-        }
-        resetForm();
-        const label = document.getElementById('offcanvasCreateEditLabel');
-        if (label) label.textContent = L.FormTitleCreate || L.AddNew || '';
-        const saveBtn = document.getElementById('btnSaveLegalEntity');
-        if (saveBtn) saveBtn.textContent = L.Save || '';
-        oc.show();
-    };
-
-    const submitForm = async () => {
-        const form = document.getElementById('formLegalEntity');
-        if (!form) return;
-        clearFormErrors();
-        form.classList.add('was-validated');
-        if (!form.checkValidity()) {
-            showFormErrors([L.RequiredField || '']);
-            return;
-        }
-
-        const payload = {
-            code: normalizeString(document.getElementById('legalEntityCode').value),
-            legalName: normalizeString(document.getElementById('legalEntityLegalName').value),
-            displayName: normalizeString(document.getElementById('legalEntityDisplayName').value) || null
-        };
-
-        const saveBtn = document.getElementById('btnSaveLegalEntity');
-        if (saveBtn) saveBtn.disabled = true;
-        try {
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': getAntiForgeryToken(),
-                    ...getAuthHeaders()
-                },
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-                getOcInstance()?.hide();
-                reloadWithSuccessToast('RecordCreated', payload.legalName);
-                return;
-            }
-            let errors = [];
-            try {
-                const json = await res.json();
-                errors = (json.errors || json.Errors || []);
-            } catch { /* non-JSON response */ }
-            showFormErrors(errors.length ? errors : [L.ErrorOccurred || '']);
-        } catch (error) {
-            console.error('[LegalEntities] Form submit failed.', error);
-            showFormErrors([L.ErrorOccurred || '']);
-        } finally {
-            if (saveBtn) saveBtn.disabled = false;
-        }
-    };
-
-    const bindOffcanvas = () => {
+    // ─── Add New → full-page wizard ──────────────────────────────────────────
+    const bindAddNew = () => {
         document.addEventListener('click', (event) => {
             if (event.target.closest('.add-new')) {
                 event.preventDefault();
-                openCreateOffcanvas();
+                window.location.href = wizardUrl;
             }
         });
-        document.getElementById('btnSaveLegalEntity')?.addEventListener('click', submitForm);
+    };
+
+    // ─── Quick View offcanvas (Görev 6) ──────────────────────────────────────
+    const QuickView = (function () {
+        const getOc = () => {
+            const el = document.getElementById('offcanvasQuickView');
+            return el ? bootstrap.Offcanvas.getOrCreateInstance(el) : null;
+        };
+        const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value ?? '-'; };
+        const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+
+        const renderLifecycle = (id, status) => {
+            const host = document.getElementById('qvLifecycleActions');
+            if (!host) return;
+            const btns = [];
+            if (status === 'DRAFT' || status === 'INREVIEW' || status === 'APPROVED') {
+                btns.push(`<button type="button" class="btn btn-sm btn-success" data-qv-action="activate"><i class="bx bx-check-circle me-1"></i>${escapeHtml(L.Activate || '')}</button>`);
+            }
+            if (status === 'ACTIVE') {
+                btns.push(`<button type="button" class="btn btn-sm btn-warning" data-qv-action="suspend"><i class="bx bx-pause-circle me-1"></i>${escapeHtml(L.Suspend || '')}</button>`);
+            }
+            if (status === 'ACTIVE' || status === 'SUSPENDED') {
+                btns.push(`<button type="button" class="btn btn-sm btn-label-warning" data-qv-action="archive"><i class="bx bx-archive-in me-1"></i>${escapeHtml(L.Archive || '')}</button>`);
+            }
+            host.innerHTML = btns.join('');
+            host.querySelectorAll('[data-qv-action]').forEach((b) => {
+                b.addEventListener('click', () => {
+                    const action = b.getAttribute('data-qv-action');
+                    const name = document.getElementById('qvLegalName')?.textContent || '';
+                    const map = {
+                        activate: ['ActivateConfirm', 'RecordActivated'],
+                        suspend: ['SuspendConfirm', 'RecordSuspended'],
+                        archive: ['ArchiveConfirm', 'RecordArchived']
+                    };
+                    getOc()?.hide();
+                    patchLifecycle(id, action, map[action][0], map[action][1], name);
+                });
+            });
+        };
+
+        const open = async (id) => {
+            const oc = getOc();
+            if (!oc) return;
+            document.getElementById('quickViewLoading')?.classList.remove('d-none');
+            document.getElementById('quickViewContent')?.classList.add('d-none');
+            oc.show();
+            try {
+                const res = await fetch(`${endpoint}/${encodeURIComponent(id)}`, { headers: getAuthHeaders() });
+                if (!res.ok) throw new Error('load failed');
+                const payload = await res.json();
+                const d = payload.data || payload.Data || {};
+
+                setText('qvLegalName', d.legalName || '-');
+                setText('qvCode', d.code || '-');
+                setText('qvDisplayName', d.displayName || '-');
+                setText('qvLegalForm', lookupLabel('legalForm', d.legalFormCode));
+                setText('qvOrgRole', lookupLabel('organizationRole', d.organizationRoleCode));
+                setText('qvCountry', lookupLabel('country', d.countryCode));
+                setText('qvBaseCurrency', lookupLabel('currency', d.baseCurrencyCode));
+                setText('qvParent', parentLabel(d.parentLegalEntityId));
+                setText('qvRegistrationNumber', d.registrationNumber || '-');
+                setText('qvTaxId', d.taxId || '-');
+                setText('qvOfficialEmail', d.officialEmail || '-');
+
+                const status = String(d.operationalStatus || d.lifecycleState || '').toUpperCase();
+                setHtml('qvOperationalStatus', operationalBadge(status));
+                setHtml('qvStatutoryStatus', statutoryBadge(d.statutoryStatus));
+                setHtml('qvEvidenceStatus', evidenceBadge(d.evidenceStatus));
+                const refOk = d.referenceable === true || d.referenceable === 'true';
+                setHtml('qvReferenceable', `<span class="badge ${refOk ? 'bg-label-success' : 'bg-label-secondary'}">${escapeHtml(L.Referenceable || 'Referenceable')}: ${refOk ? (L.Yes || 'Yes') : (L.No || 'No')}</span>`);
+
+                const score = Number(d.completenessScore ?? 0);
+                const pct = Math.max(0, Math.min(100, score));
+                setText('qvCompletenessLabel', `${pct}%`);
+                const bar = document.getElementById('qvCompletenessBar');
+                if (bar) {
+                    bar.style.width = `${pct}%`;
+                    bar.className = `progress-bar ${pct >= 100 ? 'bg-success' : pct >= 50 ? 'bg-info' : 'bg-warning'}`;
+                }
+
+                const link = document.getElementById('qvViewDetailsLink');
+                if (link) link.href = `${detailsUrl}/${encodeURIComponent(id)}`;
+                renderLifecycle(id, status);
+
+                document.getElementById('quickViewLoading')?.classList.add('d-none');
+                document.getElementById('quickViewContent')?.classList.remove('d-none');
+            } catch (error) {
+                console.error('[LegalEntities] Quick view load failed.', error);
+                window.showToast?.(L.ErrorOccurred || '', 'error');
+                getOc()?.hide();
+            }
+        };
+
+        return { open };
+    })();
+
+    // After a wizard save redirects back here, surface the success toast it stashed.
+    const flushWizardToast = () => {
+        try {
+            const msg = sessionStorage.getItem('le-toast');
+            if (msg) { sessionStorage.removeItem('le-toast'); window.showToast?.(msg, 'success'); }
+        } catch { /* ignore */ }
     };
 
     const init = () => {
         loadL10n();
+        flushWizardToast();
         bindFilters();
-        bindOffcanvas();
-        initDataTable();
+        bindAddNew();
+        loadReferenceData().finally(() => initDataTable());
     };
 
     return { init };

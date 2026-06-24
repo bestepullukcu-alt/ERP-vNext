@@ -1,4 +1,5 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 
 namespace Diten.MdmService.Application.Tests;
@@ -43,7 +44,31 @@ internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
         current.Code = entity.Code;
         current.LegalName = entity.LegalName;
         current.DisplayName = entity.DisplayName;
-        current.LifecycleStatus = entity.LifecycleStatus;
+        current.LegalFormCode = entity.LegalFormCode;
+        current.OrganizationRoleCode = entity.OrganizationRoleCode;
+        current.RegistrationNumber = entity.RegistrationNumber;
+        current.TaxId = entity.TaxId;
+        current.CountryCode = entity.CountryCode;
+        current.StatutoryStatus = entity.StatutoryStatus;
+        current.ParentLegalEntityId = entity.ParentLegalEntityId;
+        current.OwnershipPercent = entity.OwnershipPercent;
+        current.ControlTypeCode = entity.ControlTypeCode;
+        current.FiscalYearVariant = entity.FiscalYearVariant;
+        current.AccountingStandardCode = entity.AccountingStandardCode;
+        current.TaxRegimeCode = entity.TaxRegimeCode;
+        current.BaseCurrencyCode = entity.BaseCurrencyCode;
+        current.RegisteredAddressJson = entity.RegisteredAddressJson;
+        current.CorrespondenceAddressJson = entity.CorrespondenceAddressJson;
+        current.OfficialEmail = entity.OfficialEmail;
+        current.OfficialPhone = entity.OfficialPhone;
+        current.Website = entity.Website;
+        current.OperationalStatus = entity.OperationalStatus;
+        current.ApprovalStatus = entity.ApprovalStatus;
+        current.ReviewDueUtc = entity.ReviewDueUtc;
+        current.SourceSystem = entity.SourceSystem;
+        current.LegacyCode = entity.LegacyCode;
+        current.EvidenceStatus = entity.EvidenceStatus;
+        current.CompletenessScore = entity.CompletenessScore;
         current.UpdatedAt = DateTimeOffset.UtcNow;
         current.Version++;
         return Task.FromResult(true);
@@ -66,6 +91,15 @@ internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
     {
         IReadOnlyList<LegalEntity> items = _entities
             .Where(x => x.TenantId == _tenantId && !x.IsDeleted)
+            .OrderBy(x => x.LegalName)
+            .ToList();
+        return Task.FromResult(items);
+    }
+
+    public Task<IReadOnlyList<LegalEntity>> GetReferenceableAsync(CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<LegalEntity> items = _entities
+            .Where(x => x.TenantId == _tenantId && !x.IsDeleted && x.OperationalStatus == LegalEntityOperationalStatus.Active)
             .OrderBy(x => x.LegalName)
             .ToList();
         return Task.FromResult(items);
