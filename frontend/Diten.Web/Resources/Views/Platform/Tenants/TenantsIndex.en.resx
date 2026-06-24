@@ -82,6 +82,11 @@
   <data name="EmailLoginEnabled" xml:space="preserve"><value>Email login enabled</value></data>
   <data name="PhoneLoginEnabled" xml:space="preserve"><value>Phone login enabled</value></data>
   <data name="PhoneLoginFutureSupport" xml:space="preserve"><value>Phone Login setting is stored for future channel support. Phone OTP delivery is disabled until SMS provider configuration is enabled.</value></data>
+  <data name="PhoneLoginHelp" xml:space="preserve"><value>Stored for future SMS support.</value></data>
+  <data name="PolicyStrength" xml:space="preserve"><value>Policy strength</value></data>
+  <data name="PolicyStrengthWeak" xml:space="preserve"><value>Weak</value></data>
+  <data name="PolicyStrengthFair" xml:space="preserve"><value>Fair</value></data>
+  <data name="PolicyStrengthStrong" xml:space="preserve"><value>Strong</value></data>
   <data name="MfaRequiresEmailLogin" xml:space="preserve"><value>MFA Required needs Two-Factor Authentication and Email Login enabled.</value></data>
   <data name="AtLeastOneLoginMethod" xml:space="preserve"><value>At least one login method must be enabled.</value></data>
   <data name="PasswordPolicy" xml:space="preserve"><value>Password Policy</value></data>
@@ -115,9 +120,18 @@
   <data name="NoActivePlans" xml:space="preserve"><value>No active subscription plan is available.</value></data>
   <data name="AccessPreview" xml:space="preserve"><value>Subscription / Access Preview</value></data>
   <data name="SubscriptionStatus" xml:space="preserve"><value>Subscription Status</value></data>
+  <data name="SubscriptionStatusPendingProvisioning" xml:space="preserve"><value>Pending Provisioning</value></data>
+  <data name="SubscriptionStatusTrialing" xml:space="preserve"><value>Trialing</value></data>
+  <data name="SubscriptionStatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="SubscriptionStatusPastDue" xml:space="preserve"><value>Past Due</value></data>
+  <data name="SubscriptionStatusCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="SubscriptionStatusExpired" xml:space="preserve"><value>Expired</value></data>
+  <data name="SubscriptionStatusSuspended" xml:space="preserve"><value>Suspended</value></data>
+  <data name="SubscriptionStatusTrialExpired" xml:space="preserve"><value>Trial Expired</value></data>
   <data name="TrialDuration" xml:space="preserve"><value>Trial Duration</value></data>
   <data name="TrialStartDate" xml:space="preserve"><value>Trial Start Date</value></data>
   <data name="TrialEndDate" xml:space="preserve"><value>Trial End Date</value></data>
+  <data name="TrialEndDateRequired" xml:space="preserve"><value>Trial end date is required.</value></data>
   <data name="TrialDateBackendCalculated" xml:space="preserve"><value>Trial dates are calculated by the backend during create.</value></data>
   <data name="TenantTypeCustomer" xml:space="preserve"><value>Customer</value></data>
   <data name="TenantTypeDemo" xml:space="preserve"><value>Demo</value></data>
@@ -148,6 +162,7 @@
   <data name="NoActiveSubscriptionDescription" xml:space="preserve"><value>Assign a plan or start a trial to manage this tenant's commercial access.</value></data>
   <data name="AssignPlan" xml:space="preserve"><value>Assign Plan</value></data>
   <data name="CurrentSubscription" xml:space="preserve"><value>Current Subscription</value></data>
+  <data name="CurrentSubscriptionSubtitle" xml:space="preserve"><value>Active plan, billing period, and lifecycle status for this tenant.</value></data>
   <data name="CurrentPlan" xml:space="preserve"><value>Current Plan</value></data>
   <data name="CancelAtPeriodEnd" xml:space="preserve"><value>Cancel At Period End</value></data>
   <data name="CurrentPeriodStart" xml:space="preserve"><value>Current Period Start</value></data>
@@ -169,6 +184,13 @@
   <data name="ModuleEntitlements" xml:space="preserve"><value>Module Entitlements</value></data>
   <data name="ModuleEntitlementsDescription" xml:space="preserve"><value>Manage plan projections, add-ons, trials, and tenant-specific overrides.</value></data>
   <data name="AddModuleEntitlement" xml:space="preserve"><value>Add Module Entitlement</value></data>
+  <data name="ActivateSubscriptionFirst" xml:space="preserve"><value>Activate the tenant subscription before adding module entitlements.</value></data>
+  <data name="InvitationSent" xml:space="preserve"><value>Invitation sent.</value></data>
+  <data name="LoginUrl" xml:space="preserve"><value>Login URL</value></data>
+  <data name="TemporaryPassword" xml:space="preserve"><value>Temporary password</value></data>
+  <data name="InviteSetupTitle" xml:space="preserve"><value>Manual setup (dev)</value></data>
+  <data name="InviteSetupEmailNotSent" xml:space="preserve"><value>Email not sent (SMTP disabled). Share these credentials with the admin manually:</value></data>
+  <data name="NoUsableAdminWarning" xml:space="preserve"><value>This tenant has no invited admin yet. Invite an admin (action below) so they can sign in.</value></data>
   <data name="ModuleEntitlementFormDescription" xml:space="preserve"><value>Create a tenant-specific module access rule.</value></data>
   <data name="Module" xml:space="preserve"><value>Module</value></data>
   <data name="ModuleRequired" xml:space="preserve"><value>Module is required.</value></data>
@@ -212,4 +234,56 @@
   <data name="tenant.commercial.quota.unauthorized" xml:space="preserve"><value>You do not have permission to view tenant quota governance.</value></data>
   <data name="tenant.commercial.quota.loading" xml:space="preserve"><value>Loading quota status...</value></data>
   <data name="tenant.commercial.quota.apiCallsMvpNote" xml:space="preserve"><value>API call usage is shown for governance. Live gateway enforcement is outside this MVP.</value></data>
+  <data name="tenant.commercial.quota.used" xml:space="preserve"><value>used</value></data>
+  <data name="tenant.commercial.quota.remaining" xml:space="preserve"><value>remaining</value></data>
+  <data name="tenant.commercial.quota.allWithinLimits" xml:space="preserve"><value>All quotas within limits</value></data>
+  <data name="tenant.commercial.quota.needsAttention" xml:space="preserve"><value>Some quotas need attention</value></data>
+  <data name="tenant.commercial.quota.monitored" xml:space="preserve"><value>quotas monitored</value></data>
+  <data name="tenant.commercial.quota.atRisk" xml:space="preserve"><value>At risk</value></data>
+  <data name="tenant.commercial.quota.refreshNote" xml:space="preserve"><value>Quota data refreshes every 60 seconds.</value></data>
+  <data name="tenant.commercial.quota.unit.calls" xml:space="preserve"><value>calls</value></data>
+  <data name="tenant.commercial.quota.unit.modules" xml:space="preserve"><value>modules</value></data>
+  <data name="tenant.commercial.quota.unit.users" xml:space="preserve"><value>users</value></data>
+  <data name="TenantNamePlaceholder" xml:space="preserve"><value>e.g. Acme Global</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>e.g. Acme Global HQ</value></data>
+  <data name="AdminEmailPlaceholder" xml:space="preserve"><value>e.g. admin@acme.com</value></data>
+  <data name="SlugPlaceholder" xml:space="preserve"><value>e.g. acme-global</value></data>
+  <data name="SubdomainPlaceholder" xml:space="preserve"><value>e.g. acme-global</value></data>
+  <data name="SlugHelp" xml:space="preserve"><value>Auto-generated from tenant name. Used in URLs.</value></data>
+  <data name="SubdomainHelp" xml:space="preserve"><value>Choose a unique subdomain for this tenant.</value></data>
+  <data name="AccessUrlHelp" xml:space="preserve"><value>The full URL tenants will use to log in.</value></data>
+  <data name="Summary" xml:space="preserve"><value>Summary</value></data>
+  <data name="Monthly" xml:space="preserve"><value>Monthly</value></data>
+  <data name="Yearly" xml:space="preserve"><value>Yearly</value></data>
+  <data name="Trial" xml:space="preserve"><value>Trial</value></data>
+  <data name="ProvisioningNote" xml:space="preserve"><value>Provisioning starts immediately after creation</value></data>
+  <data name="TrialingAccess" xml:space="preserve"><value>Trialing access</value></data>
+  <data name="ActiveSubscription" xml:space="preserve"><value>Active subscription</value></data>
+  <data name="TrialAccessDescription" xml:space="preserve"><value>{0} starts as Trialing for {1} days and ends on {2}.</value></data>
+  <data name="ActiveAccessDescription" xml:space="preserve"><value>{0} starts as Active with no trial period.</value></data>
+  <data name="NoTrial" xml:space="preserve"><value>None</value></data>
+  <data name="Or" xml:space="preserve"><value>or</value></data>
+  <data name="Selected" xml:space="preserve"><value>Selected</value></data>
+  <data name="UsersMax" xml:space="preserve"><value>Users</value></data>
+  <data name="StorageGbMax" xml:space="preserve"><value>Storage</value></data>
+  <data name="ApiCallsPerMonth" xml:space="preserve"><value>API / month</value></data>
+  <data name="ModulesMax" xml:space="preserve"><value>Modules</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Created By</value></data>
+  <data name="Branding" xml:space="preserve"><value>Branding</value></data>
+  <data name="EmailLoginHelp" xml:space="preserve"><value>Allow users to sign in using their email address and password.</value></data>
+  <data name="TwoFactorHelp" xml:space="preserve"><value>Allow users to configure TOTP-based two-factor authentication on their accounts.</value></data>
+  <data name="MfaRequiredHelp" xml:space="preserve"><value>Force all users to complete MFA setup before accessing the platform.</value></data>
+  <data name="PasswordMinLengthHelp" xml:space="preserve"><value>Passwords shorter than this will be rejected.</value></data>
+  <data name="PasswordExpirationHelp" xml:space="preserve"><value>Leave empty to disable expiration.</value></data>
+  <data name="ComplexityRequirements" xml:space="preserve"><value>Complexity requirements</value></data>
+  <data name="RequireUppercaseHelp" xml:space="preserve"><value>At least one A–Z character</value></data>
+  <data name="RequireSpecialCharHelp" xml:space="preserve"><value>At least one !@#$%^&amp;* character</value></data>
+  <data name="SessionTimeoutHelp" xml:space="preserve"><value>Duration of inactivity before a session expires.</value></data>
+  <data name="MaxFailedLoginAttemptsHelp" xml:space="preserve"><value>Account is locked after this many consecutive failures.</value></data>
+  <data name="LockoutDurationHelp" xml:space="preserve"><value>How long an account stays locked after max failed attempts.</value></data>
+  <data name="RefreshTokenLifetimeHelp" xml:space="preserve"><value>How long refresh tokens remain valid before forced re-login.</value></data>
+  <data name="SettingsScopeTitle" xml:space="preserve"><value>Settings scope</value></data>
+  <data name="SettingsScopeDescription" xml:space="preserve"><value>These settings apply to all users in this tenant. Individual user overrides are not supported.</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>days</value></data>
+  <data name="UnitMin" xml:space="preserve"><value>min</value></data>
 </root>

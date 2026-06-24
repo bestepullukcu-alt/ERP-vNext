@@ -28,16 +28,34 @@
   <data name="LevelPrefix" xml:space="preserve"><value>Niveau</value></data>
   <data name="NotAvailable" xml:space="preserve"><value>Non Disponible</value></data>
   <data name="IdLabel" xml:space="preserve"><value>Identifiant</value></data>
-  <data name="FormPageDescription" xml:space="preserve"><value>Manage the full reference record across identity, ownership, lifecycle, and notes.</value></data>
-  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
-  <data name="OwnershipSection" xml:space="preserve"><value>Ownership</value></data>
-  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="FormPageDescription" xml:space="preserve"><value>Gérez l'enregistrement de référence complet : identité, propriété, cycle de vie et notes.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identité</value></data>
+  <data name="OwnershipSection" xml:space="preserve"><value>Propriété</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Cycle de vie</value></data>
   <data name="NotesSection" xml:space="preserve"><value>Notes</value></data>
-  <data name="Category" xml:space="preserve"><value>Category</value></data>
-  <data name="GroupKey" xml:space="preserve"><value>Group Key</value></data>
-  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
-  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="Category" xml:space="preserve"><value>Catégorie</value></data>
+  <data name="GroupKey" xml:space="preserve"><value>Clé de groupe</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Système source</value></data>
+  <data name="Owner" xml:space="preserve"><value>Propriétaire</value></data>
   <data name="Version" xml:space="preserve"><value>Version</value></data>
-  <data name="EffectiveDate" xml:space="preserve"><value>Effective Date</value></data>
-  <data name="ExpirationDate" xml:space="preserve"><value>Expiration Date</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Date d'effet</value></data>
+  <data name="ExpirationDate" xml:space="preserve"><value>Date d'expiration</value></data>
+  <data name="CategoryPlaceholder" xml:space="preserve">
+    <value>ex. Finance</value>
+  </data>
+  <data name="GroupKeyPlaceholder" xml:space="preserve">
+    <value>ex. GRC-GROUP</value>
+  </data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve">
+    <value>ex. SAP</value>
+  </data>
+  <data name="OwnerPlaceholder" xml:space="preserve">
+    <value>ex. Jean Dupont</value>
+  </data>
+  <data name="VersionPlaceholder" xml:space="preserve">
+    <value>ex. 1.0.0</value>
+  </data>
+  <data name="PriorityPlaceholder" xml:space="preserve">
+    <value>ex. 50</value>
+  </data>
 </root>

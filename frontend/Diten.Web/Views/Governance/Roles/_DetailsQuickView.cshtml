@@ -5,33 +5,29 @@
 
 <div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
     aria-labelledby="offcanvasDetailsPreviewLabel">
-    <div class="offcanvas-header py-6">
+    <div class="offcanvas-header p-4">
         <div class="d-flex align-items-center min-w-0">
             <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
                 <i class="bx bx-shield-quarter fs-4"></i>
             </div>
             <div class="min-w-0">
-                <h5 id="oc-title" class="offcanvas-title mb-1 text-truncate">-</h5>
+                <h5 id="oc-title" class="offcanvas-title mb-0 text-truncate">-</h5>
                 <small id="oc-subtitle" class="text-muted d-block text-truncate">-</small>
             </div>
         </div>
-        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+            aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
 
-    <div class="offcanvas-body flex-grow-1 p-0 border-top">
-        <div class="p-4 d-flex flex-column gap-4">
-            <section class="card backbone-preview-section backbone-preview-status p-4 d-flex align-items-center justify-content-between">
-                <span class="fw-semibold text-heading">@Localizer["RoleType"]</span>
-                <span id="oc-type" class="badge bg-label-secondary">-</span>
-            </section>
-
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <div class="d-flex flex-column gap-4">
             <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["GeneralInformation"]</h6>
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["GeneralInformation"]</h6>
                 <div class="row g-4">
                     <div class="col-12">
                         <div class="backbone-preview-field">
                             <i class="bx bx-purchase-tag-alt"></i>
-                            <div>
+                            <div class="min-w-0 flex-grow-1">
                                 <div class="backbone-preview-label">@Localizer["Name"]</div>
                                 <div id="oc-name" class="backbone-preview-value mt-1">-</div>
                             </div>
@@ -40,7 +36,7 @@
                     <div class="col-12">
                         <div class="backbone-preview-field">
                             <i class="bx bx-file"></i>
-                            <div>
+                            <div class="min-w-0 flex-grow-1">
                                 <div class="backbone-preview-label">@Localizer["DisplayName"]</div>
                                 <div id="oc-displayname" class="backbone-preview-value mt-1">-</div>
                             </div>
@@ -48,10 +44,30 @@
                     </div>
                     <div class="col-12">
                         <div class="backbone-preview-field">
+                            <i class="bx bx-check-shield"></i>
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="backbone-preview-label">@Localizer["RoleType"]</div>
+                                <div class="mt-1">
+                                    <span id="oc-type" class="badge bg-label-secondary">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
                             <i class="bx bx-key"></i>
-                            <div>
+                            <div class="min-w-0 flex-grow-1">
                                 <div class="backbone-preview-label">@Localizer["PermissionCount"]</div>
-                                <div id="oc-permcount" class="backbone-preview-value mt-1">-</div>
+                                <div id="oc-permissions" class="backbone-preview-value mt-1 d-flex flex-wrap gap-1">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-group"></i>
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="backbone-preview-label">@Localizer["UserCount"]</div>
+                                <div id="oc-usercount" class="backbone-preview-value mt-1">-</div>
                             </div>
                         </div>
                     </div>
@@ -59,7 +75,7 @@
             </section>
 
             <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3">@SharedLocalizer["Description"]</h6>
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@SharedLocalizer["Description"]</h6>
                 <div id="oc-desc" class="backbone-preview-description">-</div>
             </section>
         </div>
@@ -67,6 +83,8 @@
 
     <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2 bg-white">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
-        <button type="button" id="oc-btn-edit" class="btn btn-primary" data-bs-dismiss="offcanvas">@SharedLocalizer["EditRecord"]</button>
+        <button type="button" id="oc-btn-edit" class="btn btn-primary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["EditRecord"]
+        </button>
     </div>
 </div>

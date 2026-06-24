@@ -221,6 +221,18 @@
                             <div>@SharedLocalizer["ModuleCatalog"]</div>
                         </a>
                     </li>
+                    <li class="menu-item @(activeController == "DomainManagement" ? "active" : "")">
+                        <a href="/Platform/DomainManagement" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-category"></i>
+                            <div>@SharedLocalizer["DomainManagement"]</div>
+                        </a>
+                    </li>
+                    <li class="menu-item @(activeController == "ServiceManagement" ? "active" : "")">
+                        <a href="/Platform/ServiceManagement" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-server"></i>
+                            <div>@SharedLocalizer["ServiceManagement"]</div>
+                        </a>
+                    </li>
                     <li class="menu-item @(activeController == "InterfaceRegistry" ? "active" : "")">
                         <a href="/Platform/InterfaceRegistry" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-git-branch"></i>

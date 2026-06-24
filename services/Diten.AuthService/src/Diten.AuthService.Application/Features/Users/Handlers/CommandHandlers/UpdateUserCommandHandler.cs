@@ -38,6 +38,7 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         
         var roles = await _userRoleRepository.GetRolesByUserAsync(user.Id, _tenantContext.TenantId, ct);
 
-        return Response<UserDto>.Success(new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId));
+        return Response<UserDto>.Success(new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId,
+            user.LastLoginAt, user.FailedLoginAttempts, user.MustChangePassword, "TenantPolicy"));
     }
 }

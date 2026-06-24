@@ -27,7 +27,11 @@ const ResetPasswordPage = (function () {
         button.disabled = true;
         button.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${window.L10n?.Loading || 'Please wait...'}`;
         try {
-            const url = config.isForcedChange ? '/platform/change-password' : '/platform/reset-password';
+            // Same JS drives platform reset, platform forced-change, and tenant set-password.
+            // The POST target is configurable so the screen can be reused across auth modes.
+            const url = config.isForcedChange
+                ? (config.setPasswordUrl || '/platform/change-password')
+                : (config.setPasswordUrl || '/platform/reset-password');
             const body = config.isForcedChange
                 ? { currentPassword, newPassword, confirmPassword, rememberMe: true }
                 : { email: config.email || document.getElementById('email')?.value || '', token: config.token || document.getElementById('token')?.value || '', newPassword, confirmPassword };
@@ -58,7 +62,7 @@ const ResetPasswordPage = (function () {
                 scrollbarPadding: false,
                 heightAuto: false
             });
-            window.location.href = payload.redirectUrl || '/platform/login';
+            window.location.href = payload.redirectUrl || config.backToLoginUrl || '/platform/login';
         } catch (error) {
             showError(error.message);
         } finally {

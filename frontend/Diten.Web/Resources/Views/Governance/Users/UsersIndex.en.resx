@@ -11,6 +11,21 @@
   <data name="LastName" xml:space="preserve"><value>Last Name</value></data>
   <data name="Roles" xml:space="preserve"><value>Roles</value></data>
   <data name="Password" xml:space="preserve"><value>Password</value></data>
+  <data name="InviteHint" xml:space="preserve"><value>An invitation email with a link to set a password will be sent to this user.</value></data>
+  <data name="Disable" xml:space="preserve"><value>Disable</value></data>
+  <data name="Enable" xml:space="preserve"><value>Enable</value></data>
+  <data name="ResendInvitation" xml:space="preserve"><value>Resend Invitation</value></data>
+  <data name="ResetPassword" xml:space="preserve"><value>Reset Password</value></data>
+  <data name="SecurityMetrics" xml:space="preserve"><value>Security Metrics</value></data>
+  <data name="LastLogin" xml:space="preserve"><value>Last Login</value></data>
+  <data name="FailedLogins" xml:space="preserve"><value>Failed Logins</value></data>
+  <data name="MFAStatus" xml:space="preserve"><value>MFA Status</value></data>
+  <data name="MFATenantPolicy" xml:space="preserve"><value>Tenant policy</value></data>
+  <data name="Never" xml:space="preserve"><value>Never</value></data>
+  <data name="UserDisabled" xml:space="preserve"><value>User disabled</value></data>
+  <data name="UserEnabled" xml:space="preserve"><value>User enabled</value></data>
+  <data name="InvitationResent" xml:space="preserve"><value>Invitation resent</value></data>
+  <data name="PasswordReset" xml:space="preserve"><value>Password reset link sent</value></data>
   <data name="Actions" xml:space="preserve"><value>Actions</value></data>
   <data name="AddNew" xml:space="preserve"><value>Add User</value></data>
   <data name="EditItem" xml:space="preserve"><value>Edit User</value></data>

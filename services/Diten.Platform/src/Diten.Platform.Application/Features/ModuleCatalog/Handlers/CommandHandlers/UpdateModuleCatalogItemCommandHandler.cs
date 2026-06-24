@@ -42,7 +42,7 @@ public sealed class UpdateModuleCatalogItemCommandHandler : IRequestHandler<Upda
 
         if (await _repository.ExistsByCodeAsync(canonicalCode, item.Id, ct))
         {
-            return Response<NoContent>.Fail("ModuleCode already exists.", 409);
+            return Response<NoContent>.Fail(ModuleCatalogErrorCodes.ModuleCodeInUse, 409);
         }
 
         item.ModuleName = request.Request.ModuleName.Trim();

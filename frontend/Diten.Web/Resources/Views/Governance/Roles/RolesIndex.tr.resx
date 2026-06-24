@@ -11,7 +11,11 @@
   <data name="RoleType" xml:space="preserve"><value>Tür</value></data>
   <data name="RoleTypeSystem" xml:space="preserve"><value>Sistem</value></data>
   <data name="RoleTypeCustom" xml:space="preserve"><value>Özel</value></data>
+  <data name="SystemRoleLocked" xml:space="preserve"><value>Sistem rolü — kilitli</value></data>
   <data name="PermissionCount" xml:space="preserve"><value>İzinler</value></data>
+  <data name="UserCount" xml:space="preserve"><value>Kullanıcılar</value></data>
+  <data name="RoleTypeSystemOption" xml:space="preserve"><value>Sistem (yerleşik, kilitli)</value></data>
+  <data name="RoleTypeCustomOption" xml:space="preserve"><value>Özel (düzenlenebilir)</value></data>
   <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
   <data name="AddNew" xml:space="preserve"><value>Rol Ekle</value></data>
   <data name="EditItem" xml:space="preserve"><value>Rolü Düzenle</value></data>

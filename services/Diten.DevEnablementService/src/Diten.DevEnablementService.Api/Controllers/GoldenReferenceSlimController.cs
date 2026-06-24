@@ -1,5 +1,6 @@
 using Diten.DevEnablementService.Application.Features.GoldenReferenceSlim.Commands;
 using Diten.DevEnablementService.Application.Features.GoldenReferenceSlim.Queries;
+using Diten.DevEnablementService.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +20,7 @@ public sealed class GoldenReferenceSlimController : CustomBaseController
     }
 
     [HttpGet]
+    [HasPermission("goldenslim.records.read")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetGoldenReferenceSlimListQuery(), cancellationToken);
@@ -26,6 +28,7 @@ public sealed class GoldenReferenceSlimController : CustomBaseController
     }
 
     [HttpGet("{id:guid}")]
+    [HasPermission("goldenslim.records.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetGoldenReferenceSlimByIdQuery(id), cancellationToken);
@@ -33,6 +36,7 @@ public sealed class GoldenReferenceSlimController : CustomBaseController
     }
 
     [HttpPost]
+    [HasPermission("goldenslim.records.create")]
     public async Task<IActionResult> Create([FromBody] CreateGoldenReferenceSlimCommand command, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(command, cancellationToken);
@@ -40,6 +44,7 @@ public sealed class GoldenReferenceSlimController : CustomBaseController
     }
 
     [HttpPut("{id:guid}")]
+    [HasPermission("goldenslim.records.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateGoldenReferenceSlimCommand command, CancellationToken cancellationToken)
     {
         command.Id = id;
@@ -48,6 +53,7 @@ public sealed class GoldenReferenceSlimController : CustomBaseController
     }
 
     [HttpDelete("{id:guid}")]
+    [HasPermission("goldenslim.records.delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new DeleteGoldenReferenceSlimCommand(id), cancellationToken);
@@ -55,6 +61,7 @@ public sealed class GoldenReferenceSlimController : CustomBaseController
     }
 
     [HttpDelete("bulk")]
+    [HasPermission("goldenslim.records.delete")]
     public async Task<IActionResult> BulkDelete([FromBody] List<Guid> ids, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new BulkDeleteGoldenReferenceSlimCommand(ids), cancellationToken);

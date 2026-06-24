@@ -36,6 +36,15 @@ internal sealed class InMemoryUserRepository : IUserRepository
         return Task.FromResult(user);
     }
 
+    public Task<User?> GetByPasswordResetTokenHashAsync(string tokenHash, CancellationToken ct)
+    {
+        var user = string.IsNullOrWhiteSpace(tokenHash)
+            ? null
+            : _users.FirstOrDefault(u => u.PasswordResetTokenHash == tokenHash && !u.IsDeleted);
+
+        return Task.FromResult(user);
+    }
+
     public Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct)
     {
         var users = _users.Where(u => u.TenantId == tenantId && !u.IsDeleted);

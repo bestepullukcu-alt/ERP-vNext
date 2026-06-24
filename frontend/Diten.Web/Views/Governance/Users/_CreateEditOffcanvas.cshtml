@@ -5,12 +5,12 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
-    <div class="offcanvas-header py-6">
+    <div class="offcanvas-header p-4">
         <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
 
-    <div class="offcanvas-body border-top">
+    <div class="offcanvas-body border-top p-4">
         <div id="formUserAlert" class="alert alert-danger d-none" role="alert"></div>
 
         <form id="formUser" class="pt-0" novalidate>
@@ -27,15 +27,7 @@
                     <div class="invalid-feedback"></div>
                 </div>
 
-                <div class="col-12" id="userPasswordRow">
-                    <label for="userPassword" class="form-label fw-medium">
-                        @Localizer["Password"] <span class="text-danger">*</span>
-                    </label>
-                    <input type="password" id="userPassword" name="Password" class="form-control" autocomplete="new-password" />
-                    <div class="invalid-feedback"></div>
-                </div>
-
-                <div class="col-12 col-sm-6">
+                <div class="col-12">
                     <label for="userFirstName" class="form-label fw-medium">
                         @Localizer["FirstName"] <span class="text-danger">*</span>
                     </label>
@@ -43,12 +35,21 @@
                     <div class="invalid-feedback"></div>
                 </div>
 
-                <div class="col-12 col-sm-6">
+                <div class="col-12">
                     <label for="userLastName" class="form-label fw-medium">
                         @Localizer["LastName"] <span class="text-danger">*</span>
                     </label>
                     <input type="text" id="userLastName" name="LastName" class="form-control" maxlength="128" required />
                     <div class="invalid-feedback"></div>
+                </div>
+
+                @* Invitation flow: no password field. A "set your password" link is emailed to the
+                   new user; they activate the account themselves via /account/set-password.
+                   Shown only on create (toggled in index.js); kept at the bottom, below Last Name. *@
+                <div class="col-12" id="userInviteHint">
+                    <div class="alert alert-info mb-0 py-2 px-3 small" role="alert">
+                        <i class="bx bx-envelope me-1"></i>@Localizer["InviteHint"]
+                    </div>
                 </div>
 
                 <div class="col-12 d-none" id="userActiveRow">

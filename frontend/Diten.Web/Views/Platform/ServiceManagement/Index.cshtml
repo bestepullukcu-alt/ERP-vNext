@@ -1,0 +1,26 @@
+@using Diten.Web.Views.Platform.ServiceManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ServiceManagementIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["ServiceManagementTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+}
+
+<partial name="_Filter" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ServiceManagementTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="_DataTable.cshtml" />
+
+@* Slim pattern: create/edit happen in an in-page offcanvas (no route navigation). *@
+<partial name="_CreateEditOffcanvas" />
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/ServiceManagement/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ServiceManagement/index.js" asp-append-version="true"></script>
+}

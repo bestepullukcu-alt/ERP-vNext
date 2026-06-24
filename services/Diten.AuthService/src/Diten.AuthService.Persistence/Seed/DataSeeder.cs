@@ -100,6 +100,12 @@ public static class DataSeeder
             new("Platform", "BusinessReferenceData.Usage", "Register", "Register Business Reference Data Usage", "Permission to register BusinessReferenceData usage"),
             new("Platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values"),
 
+            new("goldenslim", "records", "read",   "Read Golden Slim",   "View Golden Slim records"),
+            new("goldenslim", "records", "create", "Create Golden Slim", null),
+            new("goldenslim", "records", "update", "Update Golden Slim", null),
+            new("goldenslim", "records", "delete", "Delete Golden Slim", null)
+            new("Platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values"),
+
             new("platform", "document-management.contract", "view", "View Documentation Management Contract", "Permission to view the MOD-0028-FU01 foundation contract"),
             new("platform", "document-management.collection-definitions", "list", "List Documentation Collection Definitions", "Permission foundation for listing documentation collection definitions"),
             new("platform", "document-management.collection-definitions", "view", "View Documentation Collection Definitions", "Permission foundation for viewing documentation collection definitions"),

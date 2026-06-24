@@ -19,6 +19,28 @@ public sealed class SubscriptionFeaturesController : Controller
     [HttpGet("")]
     public IActionResult Index() => View("~/Views/Platform/SubscriptionFeatures/Index.cshtml");
 
+    [HttpGet("Create")]
+    public IActionResult Create()
+    {
+        ViewData["FormMode"] = "create";
+        return View("~/Views/Platform/SubscriptionFeatures/Create.cshtml");
+    }
+
+    [HttpGet("Edit/{id:guid}")]
+    public IActionResult Edit(Guid id)
+    {
+        ViewData["FormMode"] = "edit";
+        ViewData["FeatureId"] = id.ToString();
+        return View("~/Views/Platform/SubscriptionFeatures/Edit.cshtml");
+    }
+
+    [HttpGet("Details/{id:guid}")]
+    public IActionResult Details(Guid id)
+    {
+        ViewData["FeatureId"] = id.ToString();
+        return View("~/Views/Platform/SubscriptionFeatures/Details.cshtml");
+    }
+
     [HttpGet("api")]
     public Task<IActionResult> ListProxy()
     {
@@ -73,10 +95,28 @@ public sealed class SubscriptionFeaturesController : Controller
         return ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/feature-categories", readBody: true);
     }
 
+    [HttpPut("api/categories/{id:guid}")]
+    public Task<IActionResult> UpdateCategoryProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Put, $"{_gatewayUrl}/api/platform/feature-categories/{id}", readBody: true);
+    }
+
+    [HttpPost("api/categories/{id:guid}/archive")]
+    public Task<IActionResult> ArchiveCategoryProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/feature-categories/{id}/archive", readBody: true);
+    }
+
     [HttpGet("api/plans/active")]
     public Task<IActionResult> ActivePlansProxy()
     {
         return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/subscription-plans/active");
+    }
+
+    [HttpGet("api/plans")]
+    public Task<IActionResult> PlansProxy()
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/subscription-plans{Request.QueryString}");
     }
 
     [HttpPut("api/plans/{planId:guid}/features")]

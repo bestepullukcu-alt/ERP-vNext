@@ -137,7 +137,13 @@ public sealed record TenantAdminUserDto(
     string Email,
     string Status,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? InvitedAt);
+    DateTimeOffset? InvitedAt,
+    // Dev-only invitation fallback (Development + SMTP not configured). These carry the login URL and
+    // temporary password so an operator without SMTP can complete setup manually. Always null on
+    // production, on the SMTP-on email path, and on every non-invite path. Mirrors UserDto.SetupUrl.
+    string? LoginUrl = null,
+    string? TemporaryPassword = null,
+    bool? EmailSent = null);
 
 public sealed record TenantAdminUserUpsertRequest(
     string Name,

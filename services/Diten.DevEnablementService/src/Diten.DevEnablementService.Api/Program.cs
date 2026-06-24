@@ -1,3 +1,4 @@
+using Diten.DevEnablementService.Api.ModuleRegistration;
 using Diten.DevEnablementService.Application;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.DevEnablementService.Infrastructure;
@@ -19,6 +20,12 @@ builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environm
 ]);
 builder.Services.AddInfrastructure();
 builder.Services.AddPersistence(builder.Configuration, builder.Environment);
+
+// ── Module self-registration: push the Golden Slim manifest to Platform at startup (best-effort, idempotent) ──
+builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IModuleManifestProvider, GoldenSlimManifestProvider>();
+builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 
 // ── JWT ───────────────────────────────────────────────────────────────────
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];

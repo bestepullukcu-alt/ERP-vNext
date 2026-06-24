@@ -1,0 +1,72 @@
+@using Diten.Web.Views.Platform.DomainManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<DomainManagementIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        @* Server-side validation errors (from gateway) *@
+        <div id="formDomainManagementAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formDomainManagement" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="domainItemId" name="Id" value="" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="domainCode" class="form-label fw-medium">
+                        @Localizer["Code"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="domainCode" name="Code" class="form-control" minlength="2" maxlength="80"
+                           pattern="^[A-Z0-9]+(-[A-Z0-9]+)*$" placeholder="@Localizer["CodePlaceholder"]" required />
+                    <div id="domainCodePreview" class="form-text mt-1 text-muted d-none">
+                        @Localizer["FinalCodePreview"]: <span class="fw-bold text-primary"></span>
+                    </div>
+                    <div class="invalid-feedback">@Localizer["InvalidCode"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="domainDisplayName" class="form-label fw-medium">
+                        @Localizer["DisplayName"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="domainDisplayName" name="DisplayName" class="form-control" maxlength="200"
+                           placeholder="@Localizer["DisplayNamePlaceholder"]" required />
+                    <div class="invalid-feedback">@Localizer["RequiredField"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="domainSortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>
+                    <input type="number" id="domainSortOrder" name="SortOrder" class="form-control" min="0" value="0"
+                           placeholder="@Localizer["SortOrderPlaceholder"]" />
+                </div>
+
+                <div class="col-12">
+                    <label for="domainDescription" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                    <textarea id="domainDescription" name="Description" class="form-control" rows="4"
+                              placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input type="checkbox" id="domainIsActive" name="IsActive" class="form-check-input" role="switch" value="true" checked />
+                        <label for="domainIsActive" class="form-check-label ms-2">@Localizer["IsActive"]</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSaveDomain" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>

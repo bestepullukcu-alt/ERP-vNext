@@ -50,6 +50,7 @@ public static class DependencyInjection
                     IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
                     ClockSkew = TimeSpan.FromSeconds(30)
                 };
+
             });
 
         // Authorization (Permission-based)
@@ -65,6 +66,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenHasher, RefreshTokenHasher>();
         services.AddScoped<IInternalEventAuthService, InternalEventAuthService>();
         services.AddScoped<IPlatformAuthEmailService, PlatformAuthEmailService>();
+        services.AddScoped<ITenantUserInvitationEmailService, TenantUserInvitationEmailService>();
         services.AddScoped<IMfaChallengeService, MfaChallengeService>();
         services.AddScoped<IOtpDeliveryService, SmtpOtpDeliveryService>();
         services.AddTransient<TenantPropagationHandler>();

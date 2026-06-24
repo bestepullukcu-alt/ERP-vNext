@@ -113,6 +113,8 @@ public sealed class TenantResolutionMiddleware
                || path.StartsWithSegments("/api/tenant-auth/mfa/verify", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/tenant-auth/mfa/resend", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/tenant-auth/register", StringComparison.OrdinalIgnoreCase)
+               // Anonymous invitation redemption: no tenant header/JWT — the user is resolved by token hash.
+               || path.StartsWithSegments("/api/users/set-password", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/auth/refresh-token", StringComparison.OrdinalIgnoreCase);
     }
 

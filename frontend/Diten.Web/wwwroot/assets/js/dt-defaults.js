@@ -9,6 +9,7 @@ window.DtDefaults = (function () {
     var _authRefreshInFlight = null;
     var _buttonRadiusResizeBound = false;
     var _buttonRadiusResizeTimer = null;
+    var _buttonRadiusSettleTimer = null;
     var _responsiveModalTitleBound = false;
 
     function isPlatformContext() {
@@ -34,10 +35,29 @@ window.DtDefaults = (function () {
         window.location.href = loginPath + '?returnUrl=' + returnUrl;
     }
 
-    function refreshTokenAndReload() {
-        if (_authRefreshInFlight) return _authRefreshInFlight;
+    function refreshTokenAndReload(ajaxSettings) {
+        if (_authRefreshInFlight) {
+            return _authRefreshInFlight.then(function (result) {
+                if (result.success) {
+                    if (ajaxSettings) {
+                        retryAjax(ajaxSettings);
+                    } else {
+                        window.location.reload();
+                    }
+                } else if (result.reauthRequired) {
+                    redirectToLogin();
+                } else if (ajaxSettings) {
+                    retryAjax(ajaxSettings);
+                }
+            });
+        }
 
-        _authRefreshInFlight = fetch('/account/refresh', {
+        var promiseResolve;
+        _authRefreshInFlight = new Promise(function (resolve) {
+            promiseResolve = resolve;
+        });
+
+        fetch('/account/refresh', {
             method: 'POST',
             credentials: 'same-origin',
             headers: {
@@ -45,23 +65,53 @@ window.DtDefaults = (function () {
             }
         })
             .then(function (res) {
-                if (!res.ok) throw new Error('refresh-failed');
-                return res.json();
-            })
-            .then(function (data) {
-                if (data && data.user) {
-                    window.CurrentUser = data.user;
+                var contentType = res.headers.get('content-type') || '';
+                var isJson = contentType.indexOf('application/json') !== -1;
+                if (res.ok) {
+                    return res.json().then(function (data) {
+                        return { success: true, data: data };
+                    });
+                } else if (isJson) {
+                    return res.json().then(function (data) {
+                        return { success: false, reauthRequired: data.reauthRequired !== false, status: res.status };
+                    });
+                } else {
+                    return { success: false, reauthRequired: res.status < 500, status: res.status };
                 }
-                window.location.reload();
             })
             .catch(function () {
-                redirectToLogin();
+                return { success: false, reauthRequired: false, status: 0 };
             })
-            .finally(function () {
+            .then(function (result) {
                 _authRefreshInFlight = null;
+                if (result.success) {
+                    if (result.data && result.data.user) {
+                        window.CurrentUser = result.data.user;
+                    }
+                    promiseResolve({ success: true, reauthRequired: false });
+                    if (ajaxSettings) {
+                        retryAjax(ajaxSettings);
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    promiseResolve({ success: false, reauthRequired: result.reauthRequired });
+                    if (result.reauthRequired) {
+                        redirectToLogin();
+                    } else if (ajaxSettings) {
+                        retryAjax(ajaxSettings);
+                    }
+                }
             });
 
         return _authRefreshInFlight;
+    }
+
+    function retryAjax(settings) {
+        if (!settings) return;
+        if (settings._retried) return;
+        settings._retried = true;
+        $.ajax(settings);
     }
 
     /**
@@ -232,6 +282,16 @@ window.DtDefaults = (function () {
         refreshButtonGroupRadii();
         bindButtonRadiusResizeRefresh();
 
+        // A table rendered inside a freshly-shown tab/collapse can report a not-yet-settled
+        // layout on this synchronous pass — a responsive button (e.g. colvis is `d-md-inline-flex`)
+        // may momentarily test as not-visible, so the joined button group resolves to the wrong
+        // radii and the bad inline `!important` styles override the correct CSS until the next
+        // resize. Re-run after the next paint and once more after layout fully settles, mirroring
+        // what the resize handler already does. Idempotent + debounced, so no pile-up.
+        window.requestAnimationFrame(refreshButtonGroupRadii);
+        window.clearTimeout(_buttonRadiusSettleTimer);
+        _buttonRadiusSettleTimer = window.setTimeout(refreshButtonGroupRadii, 200);
+
         // Ensure dot z-index is protected
         $('.dt-colvis-btn').css('z-index', '4');
 
@@ -280,6 +340,13 @@ window.DtDefaults = (function () {
             var $visibleBtns = $allBtns.filter(':visible').filter(function () {
                 return !this.hidden;
             });
+
+            // A container inside a hidden tab-pane reports 0 visible buttons. Skip it so we
+            // don't strip the radii of buttons that are merely off-screen (e.g. a sibling
+            // sub-tab DataTable); they keep their rounding and are re-evaluated once visible.
+            if ($visibleBtns.length === 0) {
+                return;
+            }
 
             // Mark groups for responsive/layout styling (e.g., keep primary action controlled)
             var hasAddNew = $container.find('.add-new').length > 0;
@@ -430,7 +497,10 @@ window.DtDefaults = (function () {
                 console.error('[DtDefaults] Ajax error', { status: status, url: url, textStatus: textStatus, errorThrown: errorThrown, responseText: responseText });
 
                 if (status === 401) {
-                    refreshTokenAndReload();
+                    if (this._retried) {
+                        return;
+                    }
+                    refreshTokenAndReload(this);
                     return;
                 }
 
@@ -661,9 +731,16 @@ window.DtDefaults = (function () {
         if (extraButtons && extraButtons.saveFilterBtn) group2.push(extraButtons.saveFilterBtn);
 
         var features = [
-            { buttons: group1 },
-            { buttons: group2 }
+            { buttons: group1 }
         ];
+
+        // Only emit the secondary group when it actually has buttons. An empty group (e.g. a
+        // table with skipColVis and no filter/save button, like Admin Users) would otherwise
+        // render an empty .dt-buttons container that adds a phantom gap between the Action
+        // dropdown and the Add New button via the toolbar's column-gap.
+        if (group2.length) {
+            features.push({ buttons: group2 });
+        }
 
         // Extra array buttons (usually custom actions)
         if (Array.isArray(extraButtons)) {
@@ -689,8 +766,19 @@ window.DtDefaults = (function () {
      * Verilen DataTable API'sine göre butonları ve kutuları görsel olarak günceller.
      */
     function updateVisualState(api, filterCount) {
+        // Scope to THIS table's container. On pages with multiple DataTables (e.g. a Details
+        // page with several sub-tab tables) a global selector would paint one table's badges
+        // and active states onto every other table's filter/colvis/search controls.
+        var $scope;
+        try {
+            $scope = $(api.table().container());
+        } catch (e) {
+            $scope = $(document);
+        }
+        if (!$scope.length) $scope = $(document);
+
         // 1. Filter Button Sync
-        var $filterBtn = $('.dt-filter-btn');
+        var $filterBtn = $scope.find('.dt-filter-btn');
         if ($filterBtn.length && filterCount !== undefined) {
             $filterBtn.find('.badge').remove();
             if (filterCount > 0) {
@@ -702,7 +790,7 @@ window.DtDefaults = (function () {
         }
 
         // 2. ColVis Button Sync (Gizlenen kolon varsa işaretle)
-        var $colvisBtn = $('.dt-colvis-btn');
+        var $colvisBtn = $scope.find('.dt-colvis-btn');
         if ($colvisBtn.length) {
             var managedColumns = ($colvisBtn.attr('data-colvis-columns') || '')
                 .split(',')
@@ -727,7 +815,7 @@ window.DtDefaults = (function () {
         }
 
         // 3. Search Box Sync
-        var $searchWrapper = $('.dt-search');
+        var $searchWrapper = $scope.find('.dt-search');
         var $searchInput = $searchWrapper.find('input');
         if ($searchInput.length) {
             if (api.search()) {

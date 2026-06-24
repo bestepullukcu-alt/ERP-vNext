@@ -460,6 +460,7 @@
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>البيانات المرجعية</value></data>
+  <data name="ModuleCodeInUse" xml:space="preserve"><value>رمز الوحدة هذا مستخدم بالفعل.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>اعتمادات سير العمل</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>هياكل التوثيق</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>خطوط أساس QMS</value></data>

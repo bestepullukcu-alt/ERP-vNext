@@ -616,22 +616,24 @@ const GoldenReferenceCompactList = (function () {
                             const rowJson = JSON.stringify(full).replace(/'/g, "&#39;");
                             return window.DitenDataTable.renderActions([
                                 {
-                                    key: 'delete',
-                                    className: 'text-danger me-1',
-                                    icon: 'bx bx-trash',
-                                    attrs: { 'data-json': rowJson }
-                                },
-                                {
                                     key: 'quickView',
-                                    className: 'js-quick-view',
-                                    text: L.QuickView,
-                                    attrs: { 'data-id': full.id }
+                                    className: 'js-quick-view me-1',
+                                    icon: 'bx bx-show',
+                                    attrs: { 'data-id': full.id, 'title': L.QuickView }
                                 },
                                 {
                                     key: 'edit',
                                     className: 'js-edit-item',
+                                    icon: 'bx bx-edit',
                                     text: L.Edit,
                                     attrs: { 'data-id': full.id, 'data-json': rowJson }
+                                },
+                                {
+                                    key: 'delete',
+                                    className: 'text-danger',
+                                    icon: 'bx bx-trash',
+                                    text: L.Delete,
+                                    attrs: { 'data-json': rowJson }
                                 }
                             ]);
                         }

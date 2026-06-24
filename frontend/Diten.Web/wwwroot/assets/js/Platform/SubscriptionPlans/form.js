@@ -3,12 +3,6 @@
 (function () {
     const l10n = () => window.L10n || {};
     const availabilityValues = ['Included', 'AddOn', 'Preview', 'NotAvailable'];
-    const availabilityClass = {
-        Included: 'border-success',
-        AddOn: 'border-warning',
-        Preview: 'border-info',
-        NotAvailable: 'border-light'
-    };
 
     const state = {
         features: [],
@@ -34,6 +28,7 @@
         moduleEmpty: document.getElementById('sp-modules-empty'),
         moduleSelect: document.getElementById('subscription-plan-module-select'),
         trialToggle: document.getElementById('is-trial-plan'),
+        trialWrapper: document.getElementById('trial-duration-wrapper'),
         trialDays: document.getElementById('trial-duration-days'),
         quotasJson: document.getElementById('sp-default-quotas-json'),
         quotaInputs: Array.from(document.querySelectorAll('.sp-quota-input'))
@@ -122,6 +117,16 @@
         els.entitlementJson.value = JSON.stringify(mappings);
     };
 
+    // Toggle the reusable `.is-selected` row marker (leading bullet) based on
+    // the row's current availability — anything other than "NotAvailable" is
+    // considered selected/active.
+    const applyRowSelectedMarker = (select) => {
+        const row = select.closest('.sp-entitlement-row');
+        if (row) {
+            row.classList.toggle('is-selected', (select.value || 'NotAvailable') !== 'NotAvailable');
+        }
+    };
+
     const syncVisibleRowsToState = () => {
         currentRows().forEach((select) => {
             const featureId = safe(select.getAttribute('data-feature-id'));
@@ -164,12 +169,13 @@
         setVisible(els.empty, state.features.length === 0);
 
         if (items.length === 0) {
-            els.list.innerHTML = state.features.length === 0 ? '' : `<div class="text-muted small">${escapeHtml(label('NoFeaturesAvailable'))}</div>`;
+            els.list.innerHTML = state.features.length === 0 ? '' : `<div class="text-muted small py-2">${escapeHtml(label('NoFeaturesAvailable'))}</div>`;
             serializeMappings();
+            initRowSelect2();
             return;
         }
 
-        els.list.innerHTML = items.map((feature) => {
+        els.list.innerHTML = `<div class="list-group sp-entitlement-list">${items.map((feature) => {
             const id = feature.id || feature.Id;
             const status = feature.status || feature.Status;
             const archived = status === 'Archived';
@@ -180,24 +186,25 @@
             const category = categoryName(feature.categoryId || feature.CategoryId);
 
             return `
-                <div class="border rounded p-3 ${availabilityClass[selected] || 'border-light'}">
-                    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-                        <div class="min-w-0">
-                            <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
-                                <span class="fw-semibold text-truncate">${escapeHtml(feature.displayName || feature.DisplayName)}</span>
-                                ${category ? `<span class="badge bg-label-secondary">${escapeHtml(category)}</span>` : ''}
-                                ${archived ? `<span class="badge bg-label-danger">${escapeHtml(label('Archived'))}</span>` : ''}
-                            </div>
-                            <small class="text-muted">${escapeHtml(feature.featureCode || feature.FeatureCode)} · ${escapeHtml(feature.featureSlug || feature.FeatureSlug)}</small>
+                <div class="list-group-item sp-entitlement-row selectable-row${selected !== 'NotAvailable' ? ' is-selected' : ''}${archived ? ' opacity-75' : ''}">
+                    <div class="sp-entitlement-row__info">
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                            <span class="fw-medium text-truncate">${escapeHtml(feature.displayName || feature.DisplayName)}</span>
+                            ${category ? `<span class="badge bg-label-secondary">${escapeHtml(category)}</span>` : ''}
+                            ${archived ? `<span class="badge bg-label-danger">${escapeHtml(label('Archived'))}</span>` : ''}
                         </div>
+                        <small class="text-muted">${escapeHtml(feature.featureCode || feature.FeatureCode)} · ${escapeHtml(feature.featureSlug || feature.FeatureSlug)}</small>
+                    </div>
+                    <div class="sp-entitlement-status">
                         <select class="form-select form-select-sm sp-feature-status" data-feature-id="${escapeHtml(id)}" data-row-version="${escapeHtml(rowVersion)}" ${disabled ? 'disabled' : ''}>
                             ${availabilityValues.map((item) => `<option value="${item}" ${item === selected ? 'selected' : ''}>${escapeHtml(label(item))}</option>`).join('')}
                         </select>
                     </div>
                 </div>`;
-        }).join('');
+        }).join('')}</div>`;
 
         serializeMappings();
+        initRowSelect2();
     };
 
     const parseSelectedModuleKeys = () => {
@@ -299,6 +306,54 @@
         els.category.value = current;
     };
 
+    // Initialize the static enum dropdowns (category/availability filters + currency)
+    // as Select2, matching the project form convention. The module multi-select keeps
+    // its own dedicated init in renderModules and is excluded here.
+    // IMPORTANT: scope to `select.select2` only. Select2 generates a sibling
+    // `<span class="select2 select2-container">` for every widget (including the
+    // per-row availability selects), so a bare `.select2` selector would re-run
+    // select2() on those spans and produce a broken "No results found" widget.
+    const initStaticSelect2 = () => {
+        if (!window.jQuery?.fn?.select2) return;
+        window.jQuery('select.select2').not('#subscription-plan-module-select').each(function () {
+            const $el = window.jQuery(this);
+            if ($el.hasClass('select2-hidden-accessible')) {
+                $el.trigger('change.select2');
+                return;
+            }
+            $el.wrap('<div class="position-relative"></div>').select2({
+                dropdownParent: $el.parent(),
+                width: '100%'
+            });
+        });
+    };
+
+    // Convert the per-row availability selects into Select2 using the exact
+    // GoldenReferenceCompact inline-filter single-select config (#filterPriority):
+    // body-mounted dropdown so it is never clipped by the entitlements card,
+    // sm selection box, no search box for this short enum list, width:'element'.
+    const initRowSelect2 = () => {
+        if (!window.jQuery?.fn?.select2 || !els.list) return;
+        const $body = window.jQuery(document.body);
+        window.jQuery(els.list).find('.sp-feature-status').each(function () {
+            const $s = window.jQuery(this);
+            if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
+            $s.select2({
+                dropdownParent: $body,
+                dropdownCssClass: 'dt-inline-filter-dropdown',
+                selectionCssClass: 'form-select form-select-sm',
+                placeholder: $s.data('placeholder') || '',
+                minimumResultsForSearch: Infinity,
+                width: 'element'
+            });
+            $s.off('change.spStatus').on('change.spStatus', () => {
+                applyRowSelectedMarker(this);
+                syncVisibleRowsToState();
+                serializeMappings();
+            });
+        });
+    };
+
     const loadEntitlements = async () => {
         if (!els.form || !els.list) return;
         const planId = safe(els.form.getAttribute('data-plan-id'));
@@ -343,12 +398,14 @@
         } finally {
             setVisible(els.loading, false);
             setVisible(els.moduleLoading, false);
+            initStaticSelect2();
         }
     };
 
     const applyTrialToggle = () => {
         if (!els.trialToggle || !els.trialDays) return;
         const enabled = !!els.trialToggle.checked;
+        setVisible(els.trialWrapper, enabled);
         els.trialDays.disabled = !enabled;
         if (!enabled) {
             els.trialDays.value = '';
@@ -368,6 +425,7 @@
 
     els.list && els.list.addEventListener('change', (event) => {
         if (event.target && event.target.classList.contains('sp-feature-status')) {
+            applyRowSelectedMarker(event.target);
             syncVisibleRowsToState();
             serializeMappings();
         }

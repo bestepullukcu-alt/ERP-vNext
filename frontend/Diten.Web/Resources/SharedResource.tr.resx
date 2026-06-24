@@ -357,6 +357,18 @@
   <data name="ModuleCatalog" xml:space="preserve">
     <value>Modül Kataloğu</value>
   </data>
+  <data name="DomainManagement" xml:space="preserve">
+    <value>Alan Yönetimi</value>
+  </data>
+  <data name="DomainCodeInUse" xml:space="preserve">
+    <value>Bu alan kodu zaten kullanımda.</value>
+  </data>
+  <data name="ServiceManagement" xml:space="preserve">
+    <value>Servis Yönetimi</value>
+  </data>
+  <data name="ServiceCodeInUse" xml:space="preserve">
+    <value>Servis kodu zaten kullanımda.</value>
+  </data>
   <data name="WorkCenterMenu" xml:space="preserve">
     <value>Görev Merkezi</value>
   </data>
@@ -493,6 +505,7 @@
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>Kullanıcı Rolleri</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>Erişimim</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Referans Veri</value></data>
+  <data name="ModuleCodeInUse" xml:space="preserve"><value>Bu modül kodu zaten kullanılıyor.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>İş Akışı Onayları</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Dokümantasyon Yapıları</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>QMS Baseline'lari</value></data>

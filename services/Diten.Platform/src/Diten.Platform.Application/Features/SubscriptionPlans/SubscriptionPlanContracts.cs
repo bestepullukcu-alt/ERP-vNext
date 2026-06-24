@@ -23,6 +23,7 @@ public sealed record SubscriptionPlanListItemDto(
     Guid Id,
     string Code,
     string Name,
+    string? Description,
     bool IsActive,
     bool IsDefault,
     int SortOrder,

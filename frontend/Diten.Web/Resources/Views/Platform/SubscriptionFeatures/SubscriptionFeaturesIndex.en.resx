@@ -42,4 +42,23 @@
   <data name="CannotArchiveTooltip" xml:space="preserve"><value>This feature is already archived.</value></data>
   <data name="PermissionDenied" xml:space="preserve"><value>You do not have permission to perform this action.</value></data>
   <data name="CategoryCode" xml:space="preserve"><value>Category Code</value></data>
+  <data name="CategoriesTab" xml:space="preserve"><value>Categories</value></data>
+  <data name="FeaturesTab" xml:space="preserve"><value>Features</value></data>
+  <data name="EditCategory" xml:space="preserve"><value>Edit Category</value></data>
+  <data name="ArchiveCategory" xml:space="preserve"><value>Archive Category</value></data>
+  <data name="CategoryArchiveConfirm" xml:space="preserve"><value>Are you sure you want to archive this category?</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
+  <data name="CategoriesEmptyState" xml:space="preserve"><value>No feature categories have been created yet.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Create Feature</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Feature</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Classification &amp; Status</value></data>
+  <data name="PlanMappingSection" xml:space="preserve"><value>Available in Plans</value></data>
+  <data name="FeatureCodePlaceholder" xml:space="preserve"><value>e.g. ADVANCED_REPORTING</value></data>
+  <data name="FeatureSlugPlaceholder" xml:space="preserve"><value>e.g. advanced-reporting</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>e.g. Advanced Reporting</value></data>
+  <data name="FlagKeyPlaceholder" xml:space="preserve"><value>e.g. feature.advanced.reporting</value></data>
 </root>

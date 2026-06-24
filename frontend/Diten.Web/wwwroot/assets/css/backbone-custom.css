@@ -233,28 +233,21 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     margin-bottom: 0;
 }
 
-/* Shared offcanvas preview pattern */
+/* Shared offcanvas preview pattern — fully theme-aware so the theme customizer
+   (light / dark / bordered skin) drives every surface. The panel background uses
+   the SAME variable as the list-page body; the header & section cards use the card
+   surface variable. Sections are standard `.card`s: shadow in the default skin and
+   a 1px border in the bordered skin — both produced by Sneat, no hardcoded color. */
 .backbone-preview-offcanvas {
     width: min(568px, 100vw);
-    background: #f8f9fb;
+    background: var(--bs-body-bg);
 }
 
 .backbone-preview-offcanvas .offcanvas-header {
-    background: #fff;
+    background: var(--bs-card-bg);
 }
 
-.administrators-preview-offcanvas .offcanvas-body {
-    background: #fff;
-}
-
-.administrators-preview-offcanvas .administrators-preview-section {
-    background: #fff;
-    border: 1px solid #cfd6e4 !important;
-    border-radius: 8px;
-    box-shadow: none;
-}
-
-.administrators-preview-section-title {
+.backbone-preview-section-title {
     font-size: .8125rem;
     line-height: 1.25;
 }
@@ -330,18 +323,12 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     min-width: 0;
 }
 
-[data-bs-theme=dark] .backbone-preview-offcanvas {
-    background: #25293c;
-}
-
-[data-bs-theme=dark] .backbone-preview-offcanvas .offcanvas-header,
-[data-bs-theme=dark] .backbone-preview-section,
+/* The footer action bar uses Bootstrap's `.bg-white` utility in markup; re-tint it
+   to the card surface in dark mode so it follows the theme instead of staying white.
+   Offcanvas / header / section colors now come from theme variables (above) and need
+   no dark overrides. */
 [data-bs-theme=dark] .backbone-offcanvas-actions.bg-white {
-    background: #2f3349 !important;
-}
-
-[data-bs-theme=dark] .backbone-preview-section {
-    border-color: transparent;
+    background: var(--bs-card-bg) !important;
 }
 
 /* Generic inline filter host — mirrors #inlineFilterHost chip styling
@@ -459,6 +446,119 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     }
 }
 
+/* Generic multi-select (summary chip mode) — mirrors #inlineFilterHost so a second inline
+   filter on the same page (e.g. Module Entitlements via .dt-filter-host) renders identically
+   instead of collapsing to an unstyled native multi-select. */
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--multiple {
+    padding: 0 .75rem;
+    display: flex;
+    align-items: center;
+    min-block-size: calc(1.85rem + 2px) !important;
+    min-height: calc(1.85rem + 2px) !important;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--multiple .select2-selection__rendered {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--multiple .select2-selection__arrow {
+    position: absolute;
+    right: .7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    height: .6rem;
+    width: .6rem;
+    z-index: 5;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--multiple .select2-selection__arrow b {
+    display: none;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-selection--multiple .select2-selection__arrow::after {
+    content: "";
+    display: block;
+    width: .46rem;
+    height: .46rem;
+    border-right: 1.5px solid var(--bs-secondary-color);
+    border-bottom: 1.5px solid var(--bs-secondary-color);
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .select2-container--default.select2-container--open .select2-selection--multiple,
+.dt-filter-host .dt-filter-bar .filter-chip .select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 .15rem rgba(var(--bs-primary-rgb), .14);
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .dt-inline-filter-multi .dt-inline-filter-multi__summary {
+    display: block;
+    position: absolute;
+    left: .75rem;
+    right: 3.85rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: calc(1.85rem);
+    font-size: .785rem;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .dt-inline-filter-multi.dt-inline-filter-multi--has-value .dt-inline-filter-multi__summary {
+    color: var(--bs-body-color);
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .dt-inline-filter-multi .dt-inline-filter-multi__actions {
+    position: absolute;
+    right: 1.95rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: .125rem;
+    z-index: 3;
+    pointer-events: auto;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .dt-inline-filter-multi .dt-inline-filter-multi__count {
+    min-width: 1rem;
+    padding: .08rem .28rem;
+    font-size: .6rem;
+    line-height: 1.1;
+    pointer-events: none;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .dt-inline-filter-multi .select2-selection--multiple .select2-selection__choice,
+.dt-filter-host .dt-filter-bar .filter-chip .dt-inline-filter-multi .select2-selection--multiple .select2-search--inline {
+    display: none !important;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .dt-inline-filter-multi .select2-selection--multiple .dt-multi-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    font-size: .95rem;
+    line-height: 1;
+    color: var(--bs-secondary-color);
+    opacity: .5;
+    cursor: pointer !important;
+    transition: opacity .12s ease;
+    user-select: none;
+    pointer-events: auto;
+}
+
+.dt-filter-host .dt-filter-bar .filter-chip .dt-inline-filter-multi .select2-selection--multiple .dt-multi-clear-btn:hover {
+    opacity: 1;
+    color: var(--bs-secondary-color);
+}
+
 [data-bs-theme=dark] .backbone-preview-value {
     color: #d7d9e8;
 }
@@ -484,6 +584,23 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     display: inline-flex !important;
     gap: 0 !important;
     padding: 0 !important;
+}
+
+/* DataTable row-action dropdown (window.DitenDataTable.renderActions) — SINGLE
+   SOURCE OF TRUTH for menu-item icon + label layout. Every module that renders row
+   actions through renderActions inherits this; change the values here once and all
+   modules update together. No inline styles, no transforms — alignment is pure flex.
+   Knobs: align-items (vertical centering), gap (icon↔label spacing),
+   line-height + padding (row rhythm), icon font-size (glyph size ~18px vs ~15px text). */
+.dropdown-menu .dt-action-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    line-height: 1.5;
+}
+.dropdown-menu .dt-action-item > .dt-action-icon {
+    flex: 0 0 auto;
+    font-size: 1.125rem;
 }
 
 /* MOD-0018: DataTable Row Selection & Hover (Sneat Aesthetic - Dynamic Theme Support) */
@@ -1224,6 +1341,7 @@ div.dt-container div.dt-search input {
 /* Inline filter Select2 dropdown is rendered in body (no clipping / no scroll-width growth) */
 .dt-inline-filter-dropdown {
     z-index: 2000;
+    min-width: 15rem;
     max-width: calc(100vw - 1rem);
 }
 
@@ -3570,6 +3688,179 @@ div.dt-container div.dt-search input {
 #rd-draft-wizard-page .rd-basics-field--accent .rd-basics-value {
     font-weight: 600;
     color: var(--bs-primary);
+}
+
+/* Settings switch row: label + helper text on the left, toggle aligned right.
+   Reusable for status/rules style cards (e.g. Subscription Plans create form). */
+.setting-switch-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.setting-switch-row__text {
+    min-width: 0;
+}
+
+.setting-switch-row__control.form-check {
+    flex: 0 0 auto;
+    min-height: 0;
+    margin: 0;
+    padding-left: 0;
+}
+
+.setting-switch-row__control.form-check .form-check-input {
+    float: none;
+    margin-top: 0;
+    margin-left: 0;
+}
+
+/* ── Reusable selectable-row marker ─────────────────────────────────────────
+   Prefix any row with a leading bullet to signal a "selected / active" state
+   (e.g. an entitlement set to anything other than "Not available"). Add the
+   base class `.selectable-row` to the row element and toggle `.is-selected`
+   from JS. The left gutter is reserved at all times so toggling the marker
+   causes no horizontal layout shift. Shared across pages — keep page-specific
+   or inline styles out of it. */
+.selectable-row {
+    position: relative;
+    padding-left: 1.75rem;
+}
+
+.selectable-row::before {
+    content: "";
+    position: absolute;
+    left: 0.625rem;
+    top: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-top: -0.25rem;
+    border-radius: 50%;
+    background-color: var(--bs-primary);
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.selectable-row.is-selected::before {
+    opacity: 1;
+}
+
+/* Subscription plan entitlements: clean joined list rows with a per-row
+   availability selector (replaces the heavy bordered-box-per-feature layout). */
+.sp-entitlement-list {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.sp-entitlement-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sp-entitlement-row__info {
+    min-width: 0;
+}
+
+@media (min-width: 576px) {
+    .sp-entitlement-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .sp-entitlement-status {
+        flex: 0 0 auto;
+        width: 180px;
+    }
+}
+
+/* Entitlement filter dropdowns (category / availability) keep a usable width
+   once converted to Select2 inside the flex filter row. */
+.sp-entitlement-filter {
+    min-width: 12rem;
+}
+
+/* Shared dashed empty-state box for the entitlements / modules pickers. */
+.sp-emptybox {
+    border: 1px dashed var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 2rem 1rem;
+}
+
+.sp-emptybox i {
+    font-size: 1.75rem;
+    opacity: 0.5;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* Tenant Details header logo: fixed square avatar sized to roughly match the
+   identity block height (name + code + badges). The avatar's own block/inline
+   sizing keeps it a perfect square — no inline style. */
+.tenant-header-logo {
+    --bs-avatar-size: 4.25rem;
+    flex-shrink: 0;
+}
+
+/* ── Tenant Quota Governance (Commercial → Quota tab) ───────────────────────
+   Dashboard-style quota cards built on Sneat components (card / avatar /
+   badge / progress / alert). Reusable presentation lives here per golden
+   reference — no inline <style> or style="" presentation in the page. The
+   only per-card dynamic value is the usage percentage, carried as the
+   --tqr-pct CSS variable (data binding, set from the quota payload). */
+.tenant-quota-usage .progress {
+    block-size: 0.5rem;
+}
+
+.tenant-quota-usage .progress-bar {
+    inline-size: calc(var(--tqr-pct, 0) * 1%);
+}
+
+.tenant-quota-ring {
+    position: relative;
+    inline-size: 56px;
+    block-size: 56px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    --tqr-track: var(--bs-secondary-bg, #eceef1);
+    --tqr-color: var(--bs-primary);
+    background: conic-gradient(var(--tqr-color) calc(var(--tqr-pct, 0) * 1%), var(--tqr-track) 0);
+}
+
+.tenant-quota-ring::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: var(--bs-card-bg, #fff);
+}
+
+.tenant-quota-ring > span {
+    position: relative;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--bs-heading-color, var(--bs-body-color));
+}
+
+.tenant-quota-ring.is-healthy {
+    --tqr-color: var(--bs-primary);
+}
+
+.tenant-quota-ring.is-warning {
+    --tqr-color: var(--bs-warning);
+}
+
+.tenant-quota-ring.is-danger {
+    --tqr-color: var(--bs-danger);
+}
+
+.tenant-quota-ring.is-muted {
+    --tqr-color: var(--bs-secondary);
 }
 
 /* MOD-0028-FU03 — QMS Baselines (import wizard steps + definition tree) */

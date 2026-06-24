@@ -4,20 +4,35 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="UsersTitle" xml:space="preserve"><value>Users</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Manage tenant users and their roles.</value></data>
-  <data name="Email" xml:space="preserve"><value>Email</value></data>
-  <data name="FirstName" xml:space="preserve"><value>First Name</value></data>
-  <data name="LastName" xml:space="preserve"><value>Last Name</value></data>
-  <data name="Roles" xml:space="preserve"><value>Roles</value></data>
-  <data name="Password" xml:space="preserve"><value>Password</value></data>
-  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
-  <data name="AddNew" xml:space="preserve"><value>Add User</value></data>
-  <data name="EditItem" xml:space="preserve"><value>Edit User</value></data>
-  <data name="QuickView" xml:space="preserve"><value>View</value></data>
-  <data name="FormTitleCreate" xml:space="preserve"><value>Add User</value></data>
-  <data name="FormTitleEdit" xml:space="preserve"><value>Edit User</value></data>
-  <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
-  <data name="EmailPlaceholder" xml:space="preserve"><value>e.g. user@example.com</value></data>
-  <data name="EmailImmutableHint" xml:space="preserve"><value>The email cannot be changed after creation.</value></data>
+  <data name="UsersTitle" xml:space="preserve"><value>用户</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理租户用户及其角色。</value></data>
+  <data name="Email" xml:space="preserve"><value>电子邮件</value></data>
+  <data name="FirstName" xml:space="preserve"><value>名字</value></data>
+  <data name="LastName" xml:space="preserve"><value>姓氏</value></data>
+  <data name="Roles" xml:space="preserve"><value>角色</value></data>
+  <data name="Password" xml:space="preserve"><value>密码</value></data>
+  <data name="InviteHint" xml:space="preserve"><value>系统将向该用户发送一封包含设置密码链接的邀请邮件。</value></data>
+  <data name="Disable" xml:space="preserve"><value>禁用</value></data>
+  <data name="Enable" xml:space="preserve"><value>启用</value></data>
+  <data name="ResendInvitation" xml:space="preserve"><value>重新发送邀请</value></data>
+  <data name="ResetPassword" xml:space="preserve"><value>重置密码</value></data>
+  <data name="SecurityMetrics" xml:space="preserve"><value>安全指标</value></data>
+  <data name="LastLogin" xml:space="preserve"><value>上次登录</value></data>
+  <data name="FailedLogins" xml:space="preserve"><value>失败的登录</value></data>
+  <data name="MFAStatus" xml:space="preserve"><value>多重验证状态</value></data>
+  <data name="MFATenantPolicy" xml:space="preserve"><value>租户策略</value></data>
+  <data name="Never" xml:space="preserve"><value>从不</value></data>
+  <data name="UserDisabled" xml:space="preserve"><value>用户已禁用</value></data>
+  <data name="UserEnabled" xml:space="preserve"><value>用户已启用</value></data>
+  <data name="InvitationResent" xml:space="preserve"><value>邀请已重新发送</value></data>
+  <data name="PasswordReset" xml:space="preserve"><value>已发送密码重置链接</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="AddNew" xml:space="preserve"><value>添加用户</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑用户</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>添加用户</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑用户</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>基本信息</value></data>
+  <data name="EmailPlaceholder" xml:space="preserve"><value>例如 user@example.com</value></data>
+  <data name="EmailImmutableHint" xml:space="preserve"><value>创建后无法更改电子邮件。</value></data>
 </root>

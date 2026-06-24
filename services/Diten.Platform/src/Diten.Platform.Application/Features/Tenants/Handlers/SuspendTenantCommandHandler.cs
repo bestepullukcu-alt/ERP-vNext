@@ -34,6 +34,11 @@ public sealed class SuspendTenantCommandHandler : IRequestHandler<SuspendTenantC
             return Response<TenantLifecycleResultDto>.Fail("Tenant not found.", 404);
         }
 
+        if (SystemTenantRules.IsSystemTenant(tenant))
+        {
+            return Response<TenantLifecycleResultDto>.Fail("The platform system tenant cannot be suspended or deleted.", 400);
+        }
+
         if (tenant.Status == TenantStatus.Suspended)
         {
             return Response<TenantLifecycleResultDto>.Fail("Tenant is already suspended.", 400);

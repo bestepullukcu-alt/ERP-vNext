@@ -1,0 +1,56 @@
+@using Diten.Web.Views.Platform.SubscriptionFeatures
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SubscriptionFeaturesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Inline filter (mounted under the DataTable toolbar by index.js) *@
+<div id="featInlineFilterHost">
+    <div class="collapse" id="featInlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="featFilterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-status">
+                        <select id="featFilterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Status"]">
+                            <option value="Draft">@Localizer["Draft"]</option>
+                            <option value="Active">@SharedLocalizer["Active"]</option>
+                            <option value="Inactive">@SharedLocalizer["Passive"]</option>
+                            <option value="Deprecated">@Localizer["Deprecated"]</option>
+                            <option value="Archived">@Localizer["Archived"]</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip filter-category">
+                        <select id="featFilterCategory" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Category"]"></select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="featBtnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="featBtnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div id="feat-skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive d-none" id="feat-table-wrap">
+        <table id="dt-subscription-features" data-dt-standard="v2" class="datatables-subscription-features table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["DisplayName"]</th>
+                    <th>@Localizer["FeatureCode"]</th>
+                    <th>@Localizer["Category"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

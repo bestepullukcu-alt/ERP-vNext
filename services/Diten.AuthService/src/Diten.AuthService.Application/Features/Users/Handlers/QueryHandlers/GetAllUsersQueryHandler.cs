@@ -31,7 +31,8 @@ public sealed class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, 
         foreach (var user in users)
         {
             var roles = await _userRoleRepository.GetRolesByUserAsync(user.Id, _tenantContext.TenantId, ct);
-            dtos.Add(new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId));
+            dtos.Add(new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId,
+                user.LastLoginAt, user.FailedLoginAttempts, user.MustChangePassword, "TenantPolicy"));
         }
 
         return new PaginatedResult<UserDto>(dtos, total, request.Page, request.PageSize);

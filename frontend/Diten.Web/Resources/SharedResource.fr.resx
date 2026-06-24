@@ -460,6 +460,7 @@
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Données de référence</value></data>
+  <data name="ModuleCodeInUse" xml:space="preserve"><value>Ce code de module est déjà utilisé.</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Approbations de flux de travail</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Structures de documentation</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>Références QMS</value></data>

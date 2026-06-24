@@ -28,16 +28,34 @@
   <data name="LevelPrefix" xml:space="preserve"><value>Seviye</value></data>
   <data name="NotAvailable" xml:space="preserve"><value>Mevcut Değil</value></data>
   <data name="IdLabel" xml:space="preserve"><value>Kimlik</value></data>
-  <data name="FormPageDescription" xml:space="preserve"><value>Manage the full reference record across identity, ownership, lifecycle, and notes.</value></data>
-  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
-  <data name="OwnershipSection" xml:space="preserve"><value>Ownership</value></data>
-  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle</value></data>
-  <data name="NotesSection" xml:space="preserve"><value>Notes</value></data>
-  <data name="Category" xml:space="preserve"><value>Category</value></data>
-  <data name="GroupKey" xml:space="preserve"><value>Group Key</value></data>
-  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
-  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
-  <data name="Version" xml:space="preserve"><value>Version</value></data>
-  <data name="EffectiveDate" xml:space="preserve"><value>Effective Date</value></data>
-  <data name="ExpirationDate" xml:space="preserve"><value>Expiration Date</value></data>
+  <data name="FormPageDescription" xml:space="preserve"><value>Kimlik, sahiplik, yaşam döngüsü ve notlar genelinde tüm referans kaydını yönetin.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="OwnershipSection" xml:space="preserve"><value>Sahiplik</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Yaşam Döngüsü</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notlar</value></data>
+  <data name="Category" xml:space="preserve"><value>Kategori</value></data>
+  <data name="GroupKey" xml:space="preserve"><value>Grup Anahtarı</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Kaynak Sistem</value></data>
+  <data name="Owner" xml:space="preserve"><value>Sahip</value></data>
+  <data name="Version" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Yürürlük Tarihi</value></data>
+  <data name="ExpirationDate" xml:space="preserve"><value>Bitiş Tarihi</value></data>
+  <data name="CategoryPlaceholder" xml:space="preserve">
+    <value>örn. Finans</value>
+  </data>
+  <data name="GroupKeyPlaceholder" xml:space="preserve">
+    <value>örn. GRC-GROUP</value>
+  </data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve">
+    <value>örn. SAP</value>
+  </data>
+  <data name="OwnerPlaceholder" xml:space="preserve">
+    <value>örn. Ahmet Yılmaz</value>
+  </data>
+  <data name="VersionPlaceholder" xml:space="preserve">
+    <value>örn. 1.0.0</value>
+  </data>
+  <data name="PriorityPlaceholder" xml:space="preserve">
+    <value>örn. 50</value>
+  </data>
 </root>

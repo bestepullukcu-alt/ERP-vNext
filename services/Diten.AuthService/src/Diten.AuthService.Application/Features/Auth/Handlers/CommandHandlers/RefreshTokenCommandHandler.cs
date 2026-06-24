@@ -5,6 +5,7 @@ using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 
 namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
@@ -63,7 +64,16 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         if (existingToken.IsExpired)
             return Response<AuthResponse>.Fail("Refresh token has expired.", 401);
 
-        var principal = _tokenService.GetPrincipalFromExpiredToken(request.AccessToken);
+        ClaimsPrincipal principal;
+        try
+        {
+            principal = _tokenService.GetPrincipalFromExpiredToken(request.AccessToken);
+        }
+        catch (SecurityTokenException ex)
+        {
+            _logger.LogWarning(ex, "Token validation failed during refresh token command handler.");
+            return Response<AuthResponse>.Fail("Invalid access token format or signature.", 401);
+        }
         var actorType = principal.FindFirst("actor_type")?.Value;
         var subject = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
                       ?? principal.FindFirst("sub")?.Value;

@@ -45,8 +45,8 @@ public sealed class UsersController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([FromForm] UserEditViewModel model)
     {
-        if (string.IsNullOrWhiteSpace(model.Password))
-            ModelState.AddModelError(nameof(model.Password), _sharedLocalizer["ValidationFailed"].Value);
+        // Invitation flow: no password is collected. The user sets their own via the emailed link.
+        ModelState.Remove(nameof(model.Password));
         if (!ModelState.IsValid)
             return Json(new { success = false, errors = CollectModelErrors() });
 
@@ -55,10 +55,12 @@ public sealed class UsersController : Controller
 
         try
         {
-            var payload = new UserCreatePayload { Email = model.Email, Password = model.Password!, FirstName = model.FirstName, LastName = model.LastName };
+            var payload = new UserCreatePayload { Email = model.Email, FirstName = model.FirstName, LastName = model.LastName };
             var response = await _httpClient.PostAsJsonAsync($"{_gatewayUrl}/api/users", payload, _jsonOptions);
+            // AuthService returns the set-password link in UserDto.setupUrl ONLY in Development;
+            // it is null in Production, so nothing leaks to the UI there.
             return response.IsSuccessStatusCode
-                ? Json(new { success = true })
+                ? Json(new { success = true, setupUrl = await ExtractSetupUrlAsync(response) })
                 : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
         }
         catch (Exception ex)
@@ -122,7 +124,11 @@ public sealed class UsersController : Controller
                     firstName = model.FirstName,
                     lastName = model.LastName,
                     isActive = model.IsActive,
-                    roles = model.Roles
+                    roles = model.Roles,
+                    lastLoginAt = model.LastLoginAt,
+                    failedLoginAttempts = model.FailedLoginAttempts,
+                    mustChangePassword = model.MustChangePassword,
+                    mfaStatus = model.MfaStatus
                 }
             });
         }
@@ -131,6 +137,64 @@ public sealed class UsersController : Controller
             _logger.LogError(ex, "Users get-by-id failed for {UserId}.", id);
             return Json(new { success = false });
         }
+    }
+
+    // ── Admin actions (proxy → AuthService) ────────────────────────────────────
+    [HttpPost("disable/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Disable(Guid id) => ForwardUserActionAsync($"/api/users/{id}/disable", "disable", id);
+
+    [HttpPost("enable/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Enable(Guid id) => ForwardUserActionAsync($"/api/users/{id}/enable", "enable", id);
+
+    [HttpPost("resend-invite/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> ResendInvite(Guid id) => ForwardUserActionAsync($"/api/users/resend-invite/{id}", "resend-invite", id);
+
+    [HttpPost("reset-password/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> ResetPassword(Guid id) => ForwardUserActionAsync($"/api/users/{id}/reset-password", "reset-password", id);
+
+    private async Task<IActionResult> ForwardUserActionAsync(string downstreamPath, string action, Guid id)
+    {
+        if (!AddAuthHeaders())
+            return Json(new { success = false, errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+
+        try
+        {
+            var response = await _httpClient.PostAsync($"{_gatewayUrl}{downstreamPath}", content: null);
+            // resend-invite / reset-password carry a dev-only setupUrl in the envelope; disable/enable
+            // return no body, so ExtractSetupUrlAsync yields null there. Always null in prod.
+            return response.IsSuccessStatusCode
+                ? Json(new { success = true, setupUrl = await ExtractSetupUrlAsync(response) })
+                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Users {Action} failed for {UserId}.", action, id);
+            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+        }
+    }
+
+    // Reads UserDto.setupUrl from the success envelope ({ data: { ..., setupUrl } }). Returns null
+    // when absent (Production) — the dev invite link is never fabricated client-side.
+    private async Task<string?> ExtractSetupUrlAsync(HttpResponseMessage response)
+    {
+        try
+        {
+            var raw = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+            using var doc = JsonDocument.Parse(raw);
+            if (doc.RootElement.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Object &&
+                data.TryGetProperty("setupUrl", out var setupUrl) && setupUrl.ValueKind == JsonValueKind.String)
+            {
+                var value = setupUrl.GetString();
+                return string.IsNullOrWhiteSpace(value) ? null : value;
+            }
+        }
+        catch { }
+        return null;
     }
 
     private List<string> CollectModelErrors() =>
@@ -147,17 +211,69 @@ public sealed class UsersController : Controller
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             return [_sharedLocalizer["Unauthorized"].Value];
 
+        var raw = await response.Content.ReadAsStringAsync();
+        if (string.IsNullOrWhiteSpace(raw))
+            return [_sharedLocalizer["GatewayError"].Value];
+
         try
         {
-            var payload = await response.Content.ReadFromJsonAsync<GovernanceGatewayResponse<object>>(_jsonOptions);
-            var errors = payload?.Errors?.Where(e => !string.IsNullOrWhiteSpace(e)).ToList();
-            if (errors?.Count > 0)
-                return errors;
+            using var doc = JsonDocument.Parse(raw);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("errors", out var errorsEl))
+            {
+                // (1) Response envelope: "errors": [ "..." ]
+                if (errorsEl.ValueKind == JsonValueKind.Array)
+                {
+                    var list = errorsEl.EnumerateArray()
+                        .Where(e => e.ValueKind == JsonValueKind.String)
+                        .Select(e => CleanError(e.GetString()))
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .Select(s => s!)
+                        .ToList();
+                    if (list.Count > 0) return list;
+                }
+                // (2) ProblemDetails validation shape: "errors": { "Field": [ "..." ] }
+                else if (errorsEl.ValueKind == JsonValueKind.Object)
+                {
+                    var list = errorsEl.EnumerateObject()
+                        .Where(p => p.Value.ValueKind == JsonValueKind.Array)
+                        .SelectMany(p => p.Value.EnumerateArray())
+                        .Where(e => e.ValueKind == JsonValueKind.String)
+                        .Select(e => CleanError(e.GetString()))
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .Select(s => s!)
+                        .ToList();
+                    if (list.Count > 0) return list;
+                }
+            }
+
+            // (3) ProblemDetails single line: "detail" then "title" — parsed BEFORE the raw fallback
+            // so password-policy / duplicate-email errors read cleanly in #formUserAlert.
+            if (root.TryGetProperty("detail", out var detail) && detail.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(detail.GetString()))
+                return [CleanError(detail.GetString())!];
+            if (root.TryGetProperty("title", out var title) && title.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(title.GetString()))
+                return [CleanError(title.GetString())!];
         }
         catch { }
 
-        var raw = await response.Content.ReadAsStringAsync();
-        return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
+        return [raw];
+    }
+
+    // Strip FluentValidation noise so a single readable line reaches the form alert.
+    private static string? CleanError(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message)) return message;
+        var clean = message
+            .Replace("Validation failed:", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("Severity: Error", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("\r", string.Empty)
+            .Replace("\n", " ")
+            .Replace(" --", " ")
+            .Trim();
+        while (clean.Contains("  ", StringComparison.Ordinal))
+            clean = clean.Replace("  ", " ", StringComparison.Ordinal);
+        return string.IsNullOrWhiteSpace(clean) ? message : clean;
     }
 
     private bool AddAuthHeaders()

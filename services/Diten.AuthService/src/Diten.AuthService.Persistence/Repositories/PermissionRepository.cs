@@ -48,6 +48,11 @@ public sealed class PermissionRepository : GlobalRepositoryBase<Permission>, IPe
         return permission;
     }
 
+    public async Task UpdateAsync(Permission permission, CancellationToken ct)
+    {
+        await ReplaceOneAsync(permission, ct);
+    }
+
     public async Task DeleteAsync(Guid id, CancellationToken ct)
     {
         var filter = Builders<Permission>.Filter.Eq(p => p.Id, id);

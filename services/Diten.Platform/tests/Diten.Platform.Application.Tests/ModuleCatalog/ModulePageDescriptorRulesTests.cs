@@ -37,6 +37,7 @@ public sealed class ModulePageDescriptorRulesTests
     [InlineData("/PPM//Projects/", "ppm.projects..view")]                               // collapsed double-dot → 3 segments
     [InlineData("/MDM/Legal-Entities", "mdm.legal-entities.view")]                      // canonical module.resource.action
     [InlineData("/PPM/Projects", "ppm.projects.create")]                                // plain module.resource.action
+    [InlineData("/GoldenReferenceSlim", "goldenslim.records.view")]                     // UI FIX #1: single-segment route now valid
     [InlineData("/PPM/Projects", "ppm.projects.view.all")]                              // D-6: 4 segments now valid (was rejected under exactly-3)
     [InlineData("/PPM/Projects", "platform.tenants.commercial.subscription.activate")]  // D-6: 5 segments now valid
     public void Create_validator_accepts_canonical_route_and_permission(string routePath, string permission)

@@ -45,33 +45,47 @@
                 <div class="card-body row g-3">
                     <div class="col-12 col-md-6">
                         <label asp-for="ModuleCode" class="form-label fw-medium">@Localizer["ModuleCode"] <span class="text-danger">*</span></label>
-                        <input asp-for="ModuleCode"
-                               class="form-control"
-                               minlength="2"
-                               maxlength="80"
-                               pattern="^[A-Z0-9]+(-[A-Z0-9]+)*$"
-                               placeholder="e.g. PROJECT-MANAGEMENT"
-                               required
-                               readonly="@isEdit"
-                               data-is-edit="@isEdit.ToString().ToLowerInvariant()" />
-                        <div id="moduleCodePreview" class="form-text mt-1 text-muted d-none">
-                            @Localizer["FinalCodePreview"]: <span class="fw-bold text-primary"></span>
-                        </div>
-                        <div class="invalid-feedback">@Localizer["InvalidModuleCode"]</div>
+                        @if (isEdit)
+                        {
+                            <input asp-for="ModuleCode"
+                                   class="form-control"
+                                   minlength="2"
+                                   maxlength="80"
+                                   pattern="^[A-Z0-9]+(-[A-Z0-9]+)*$"
+                                   placeholder="@Localizer["ModuleCodePlaceholder"]"
+                                   required
+                                   readonly="readonly"
+                                   data-is-edit="true" />
+                            <div id="moduleCodePreview" class="form-text mt-1 text-muted d-none">
+                                @Localizer["FinalCodePreview"]: <span class="fw-bold text-primary"></span>
+                            </div>
+                            <div class="invalid-feedback">@Localizer["InvalidModuleCode"]</div>
+                        }
+                        else
+                        {
+                            <select asp-for="ModuleCode" class="select2 form-select"
+                                    data-lookup-url="/Platform/ModuleCatalog/api/lookups/module-catalog/permission-modules"
+                                    data-selected-value="@Model.ModuleCode" data-tags="true"
+                                    data-placeholder="@Localizer["ModuleCodeSelectPlaceholder"]" required>
+                                <option value=""></option>
+                            </select>
+                            <div class="form-text mt-1 text-muted">@Localizer["ModuleCodeHelpText"]</div>
+                            <div class="invalid-feedback">@Localizer["InvalidModuleCode"]</div>
+                        }
                     </div>
                     <div class="col-12 col-md-6">
                         <label asp-for="ModuleVersion" class="form-label fw-medium">@Localizer["Version"] <span class="text-danger">*</span></label>
-                        <input asp-for="ModuleVersion" class="form-control" placeholder="e.g. 1.0.0" pattern="^\d+\.\d+\.\d+$" required />
+                        <input asp-for="ModuleVersion" class="form-control" placeholder="@Localizer["ModuleVersionPlaceholder"]" pattern="^\d+\.\d+\.\d+$" required />
                         <div class="invalid-feedback">@Localizer["InvalidVersionFormat"]</div>
                     </div>
                     <div class="col-12 col-md-6">
                         <label asp-for="ModuleName" class="form-label fw-medium">@Localizer["ModuleName"] <span class="text-danger">*</span></label>
-                        <input asp-for="ModuleName" class="form-control" maxlength="200" required />
+                        <input asp-for="ModuleName" class="form-control" maxlength="200" placeholder="@Localizer["ModuleNamePlaceholder"]" required />
                         <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                     </div>
                     <div class="col-12 col-md-6">
                         <label asp-for="DisplayName" class="form-label fw-medium">@Localizer["DisplayName"] <span class="text-danger">*</span></label>
-                        <input asp-for="DisplayName" class="form-control" maxlength="200" required />
+                        <input asp-for="DisplayName" class="form-control" maxlength="200" placeholder="@Localizer["DisplayNamePlaceholder"]" required />
                         <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                     </div>
                 </div>
@@ -84,7 +98,7 @@
                 <div class="card-body">
                     <div class="col-12">
                         <label asp-for="Description" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
-                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
                     </div>
                 </div>
             </section>
@@ -102,8 +116,9 @@
                                 class="select2 form-select"
                                 required
                                 data-lookup-url="/Platform/ModuleCatalog/api/lookups/module-catalog/domains"
-                                data-selected-value="@Model.Domain">
-                            <option value="">@SharedLocalizer["Select"]</option>
+                                data-selected-value="@Model.Domain"
+                                data-placeholder="@Localizer["SelectDomainPlaceholder"]">
+                            <option value=""></option>
                         </select>
                         <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                     </div>
@@ -113,14 +128,15 @@
                                 class="select2 form-select"
                                 required
                                 data-lookup-url="/Platform/ModuleCatalog/api/lookups/module-catalog/services"
-                                data-selected-value="@Model.Service">
-                            <option value="">@SharedLocalizer["Select"]</option>
+                                data-selected-value="@Model.Service"
+                                data-placeholder="@Localizer["SelectServicePlaceholder"]">
+                            <option value=""></option>
                         </select>
                         <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                     </div>
                     <div class="col-12">
                         <label asp-for="SortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>
-                        <input asp-for="SortOrder" type="number" min="0" class="form-control" value="@(Model.SortOrder ?? 0)" />
+                        <input asp-for="SortOrder" type="number" min="0" class="form-control" value="@(Model.SortOrder ?? 0)" placeholder="@Localizer["SortOrderPlaceholder"]" />
                         <span asp-validation-for="SortOrder" class="text-danger small"></span>
                     </div>
                 </div>

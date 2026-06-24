@@ -1,6 +1,7 @@
 using System.Reflection;
 using Diten.AuthService.Api.Controllers;
 using Diten.AuthService.Infrastructure.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Diten.AuthService.Application.Tests.Security;
@@ -18,6 +19,9 @@ public sealed class EndpointAuthorizationClassificationTests
     private static bool HasPermissionGuard(MethodInfo m) =>
         m.GetCustomAttribute<HasPermissionAttribute>() is not null;
 
+    private static bool IsExplicitlyAnonymous(MethodInfo m) =>
+        m.GetCustomAttribute<AllowAnonymousAttribute>() is not null;
+
     [Theory]
     [InlineData(typeof(UsersController))]
     [InlineData(typeof(RolesController))]
@@ -27,7 +31,13 @@ public sealed class EndpointAuthorizationClassificationTests
         var actions = ActionMethods(controller).ToList();
         Assert.NotEmpty(actions);
 
-        var unguarded = actions.Where(m => !HasPermissionGuard(m)).Select(m => m.Name).ToList();
+        // Every admin-op action must be [HasPermission]-guarded. An explicit [AllowAnonymous] is a
+        // deliberate, reviewable class-(b) classification (e.g. invitation set-password, where the
+        // user acts before holding any permission) — not the silent "forgot to guard" drift this pins.
+        var unguarded = actions
+            .Where(m => !HasPermissionGuard(m) && !IsExplicitlyAnonymous(m))
+            .Select(m => m.Name)
+            .ToList();
         Assert.True(unguarded.Count == 0, $"{controller.Name} has unguarded admin-op actions: {string.Join(", ", unguarded)}");
     }
 
@@ -37,6 +47,8 @@ public sealed class EndpointAuthorizationClassificationTests
     [InlineData(typeof(AuthController), nameof(AuthController.ChangePassword))]
     [InlineData(typeof(AuthController), nameof(AuthController.Me))]
     [InlineData(typeof(PlatformAuthController), nameof(PlatformAuthController.ForcedChangePassword))]
+    // (b) self-service — invited user redeems their set-password link before holding any permission.
+    [InlineData(typeof(UsersController), nameof(UsersController.SetPassword))]
     // (c) internal service-to-service — no user JWT; [HasPermission] would break the caller.
     [InlineData(typeof(PlatformAuthController), nameof(PlatformAuthController.ProvisionPlatformAdmin))]
     [InlineData(typeof(PlatformAuthController), nameof(PlatformAuthController.SyncPlatformAdmin))]

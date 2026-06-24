@@ -93,6 +93,46 @@ public sealed class ModuleCatalogRulesTests
 
         Assert.False(response.IsSuccessful);
         Assert.Equal(409, response.StatusCode);
+        Assert.Contains("MODULE_CODE_IN_USE", response.Errors);
+    }
+
+    [Fact]
+    public async Task Create_handler_allows_recreating_soft_deleted_module_code()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var existing = await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "MODULE-CATALOG", ModuleName = "Existing", DisplayName = "Existing", Domain = "Platform", Service = "Diten.Platform" });
+        await repository.DeleteAsync(existing.Id);
+        var handler = new CreateModuleCatalogItemCommandHandler(repository);
+
+        var response = await handler.Handle(new CreateModuleCatalogItemCommand(new CreateModuleCatalogItemRequest(
+            "module__catalog",
+            "Module Catalog",
+            "Module Catalog",
+            null,
+            "Platform",
+            "Diten.Platform",
+            "Draft",
+            "1.0.0",
+            false,
+            true,
+            null)), CancellationToken.None);
+
+        // ExistsByCodeAsync canlı-bazlı olduğu için silinen kod yeni create'i bloke etmez.
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(201, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ExistsByCode_ignores_soft_deleted_records()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var existing = await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "DUP-CODE", ModuleName = "Dup", DisplayName = "Dup", Domain = "Platform", Service = "Diten.Platform" });
+
+        Assert.True(await repository.ExistsByCodeAsync("DUP-CODE"));
+
+        await repository.DeleteAsync(existing.Id);
+
+        Assert.False(await repository.ExistsByCodeAsync("DUP-CODE"));
     }
 
     [Fact]

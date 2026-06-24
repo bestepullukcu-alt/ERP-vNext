@@ -903,23 +903,26 @@ const GoldenReferenceSlimList = (function () {
                             const rowJson = JSON.stringify(full).replace(/'/g, "&#39;");
                             return window.DitenDataTable.renderActions([
                                 {
-                                    className: 'delete-record text-danger me-1',
-                                    icon: '<i class="bx bx-trash icon-md"></i>',
-                                    attrs: { 'data-json': rowJson }
-                                },
-                                {
-                                    className: 'js-quick-view',
-                                    text: L.QuickView,
+                                    className: 'js-quick-view me-1',
+                                    icon: 'bx bx-show',
                                     attrs: {
                                         'data-bs-toggle': 'offcanvas',
                                         'data-bs-target': '#offcanvasDetailsPreview',
-                                        'data-json': rowJson
+                                        'data-json': rowJson,
+                                        'title': L.QuickView
                                     }
                                 },
                                 {
                                     className: 'js-edit-item',
+                                    icon: 'bx bx-edit',
                                     text: L.Edit,
                                     attrs: { 'data-id': full.id, 'data-json': rowJson }
+                                },
+                                {
+                                    className: 'delete-record text-danger',
+                                    icon: 'bx bx-trash',
+                                    text: L.Delete,
+                                    attrs: { 'data-json': rowJson }
                                 }
                             ]);
                         }

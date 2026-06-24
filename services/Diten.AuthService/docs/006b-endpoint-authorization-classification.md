@@ -21,7 +21,8 @@
 
 | Controller | Endpoint | Legitimate caller | Class | Enforcement |
 |---|---|---|---|---|
-| UsersController | all 8 actions | tenant admin | (a) | `[HasPermission("auth.users.*")]` — already present |
+| UsersController | all admin-op actions (incl. resend-invite) | tenant admin | (a) | `[HasPermission("auth.users.*")]` — already present |
+| UsersController | set-password (invitation redemption) | invited user, no JWT yet | (b) | `[AllowAnonymous]` — keep (user located by token hash; guarding would lock out) |
 | RolesController | all 8 actions (incl. S4 GET …/permissions) | tenant admin | (a) | `[HasPermission("auth.roles.*")]` — already present |
 | PermissionsController | all 2 actions | tenant admin | (a) | `[HasPermission("auth.permissions.read"/"auth.roles.read")]` — already present |
 | AuthController | login, register, refresh-token | anyone | public | `[AllowAnonymous]` — keep |

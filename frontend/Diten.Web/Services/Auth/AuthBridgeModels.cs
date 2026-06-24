@@ -12,7 +12,9 @@ public sealed record AuthBridgeResult(
     string? MaskedDestination = null,
     string? Channel = null,
     DateTime? MfaExpiresAt = null,
-    bool RequiresPasswordChange = false);
+    bool RequiresPasswordChange = false,
+    bool ReauthRequired = false,
+    int? StatusCode = null);
 
 public sealed record AuthBridgeUser(
     Guid Id,

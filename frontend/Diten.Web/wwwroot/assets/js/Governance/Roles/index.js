@@ -20,10 +20,10 @@ const RolesList = (function () {
     const personalizationContext = { moduleKey: 'Governance', pageKey: 'Roles' };
     const filterHostId = 'inlineFilterHost';
     const filterCollapseId = 'inlineFilterCollapse';
-    const saveViewColumnIndexes = [2, 3, 4, 5];
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5];
     const totalColumnCount = 7;
-    const defaultVisibleColumnIndexes = [2, 3, 4, 5];
-    const baseOrder = [[2, 'asc']];
+    const defaultVisibleColumnIndexes = [1, 2, 3, 4, 5];
+    const baseOrder = [[1, 'asc']];
     let appliedFilters = { type: [] };
     let L = window.L10n || {};
 
@@ -246,9 +246,65 @@ const RolesList = (function () {
         });
     };
 
+    // ─── Select2 multi-summary (ported from golden-reference Slim) ────────────
+    const syncMultiSelectSummary = ($select) => {
+        const $container = $select.next('.select2-container');
+        const $rendered = $container.find('.select2-selection__rendered');
+        const $selection = $container.find('.select2-selection--multiple');
+        if (!$container.length || !$rendered.length || !$selection.length) return;
+
+        let $summary = $selection.find('.dt-inline-filter-multi__summary');
+        let $actions = $selection.find('.dt-inline-filter-multi__actions');
+        let $count = $selection.find('.dt-inline-filter-multi__count');
+        let $arrow = $selection.find('.select2-selection__arrow');
+
+        if (!$summary.length) { $summary = $('<span class="dt-inline-filter-multi__summary"></span>'); $selection.prepend($summary); }
+        if (!$actions.length) { $actions = $('<span class="dt-inline-filter-multi__actions"></span>'); $selection.append($actions); }
+        if (!$count.length) { $count = $('<span class="dt-inline-filter-multi__count badge rounded-pill bg-label-primary d-none"></span>'); $actions.append($count); }
+        if (!$arrow.length) { $arrow = $('<span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span>'); $selection.append($arrow); }
+
+        const placeholder = normalizeString($select.data('placeholder')) || '';
+        const selectedValues = normalizeArray($select.val());
+        const selectedTexts = ($select.select2('data') || []).map((i) => normalizeString(i.text)).filter(Boolean);
+
+        $summary.text(placeholder);
+        $rendered.attr('title', selectedTexts.join(', ') || placeholder);
+        $container.toggleClass('dt-inline-filter-multi--has-value', selectedValues.length > 0);
+        $count.toggleClass('d-none', selectedValues.length === 0).text(String(selectedValues.length));
+
+        $actions.find('.dt-multi-clear-btn').remove();
+        if (selectedValues.length > 0) {
+            const $clearBtn = $('<span class="dt-multi-clear-btn" role="button" aria-label="' + (L.Reset || '') + '" title="' + (L.Reset || '') + '">&times;</span>');
+            $clearBtn.on('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); $select.val(null).trigger('change'); });
+            $actions.append($clearBtn);
+        }
+    };
+
     const initSelect2Filters = () => {
         if (!window.jQuery || !$.fn.select2) return;
         const $body = $(document.body);
+
+        const clampDropdown = () => {
+            requestAnimationFrame(() => {
+                const dd = document.querySelector('.select2-dropdown.dt-inline-filter-dropdown');
+                if (!dd) return;
+                const rect = dd.getBoundingClientRect();
+                const pad = 8;
+                let dx = 0, dy = 0;
+                if (rect.right > window.innerWidth - pad) dx -= rect.right - (window.innerWidth - pad);
+                if (rect.left < pad) dx += pad - rect.left;
+                if (rect.bottom > window.innerHeight - pad) dy -= rect.bottom - (window.innerHeight - pad);
+                if (rect.top < pad) dy += pad - rect.top;
+                if (!dx && !dy) return;
+                const cs = window.getComputedStyle(dd);
+                const baseLeft = parseFloat(cs.left) || rect.left + window.scrollX;
+                const baseTop = parseFloat(cs.top) || rect.top + window.scrollY;
+                if (dx) dd.style.left = `${baseLeft + dx}px`;
+                if (dy) dd.style.top = `${baseTop + dy}px`;
+                dd.style.transform = 'none';
+            });
+        };
+
         $('#filterType').each(function () {
             const $s = $(this);
             if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
@@ -262,6 +318,9 @@ const RolesList = (function () {
                 width: 'element',
                 closeOnSelect: false
             });
+            $s.on('select2:open', clampDropdown);
+            $s.on('change.select2-summary', function () { syncMultiSelectSummary($s); });
+            requestAnimationFrame(() => syncMultiSelectSummary($s));
         });
     };
     const syncFilterControls = (values) => {
@@ -309,6 +368,48 @@ const RolesList = (function () {
         ? `<span class="badge bg-label-primary">${L.RoleTypeSystem || 'System'}</span>`
         : `<span class="badge bg-label-secondary">${L.RoleTypeCustom || 'Custom'}</span>`;
 
+    // ─── Permission module chips ──────────────────────────────────────────────
+    // One info chip per module (Module N). Uses the enriched list response
+    // (data.modulePermissions) — never a per-row fetch.
+    //   • table  (collapse:true)  → single nowrap line so the row height never
+    //                               grows; overflow folds into a "+N" badge that
+    //                               reveals the rest in a click dropdown.
+    //   • offcanvas (collapse:false) → wraps and shows every module (room to spare).
+    const escapeChip = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const MODULE_CHIP_MAX = 3;
+    const moduleChip = ([m, c]) => `<span class="badge bg-label-info">${escapeChip(m)} ${escapeChip(c)}</span>`;
+    const renderModuleChips = (modulePermissions, total, options) => {
+        const collapse = options?.collapse === true;
+        const max = options?.max || MODULE_CHIP_MAX;
+        const entries = modulePermissions && typeof modulePermissions === 'object'
+            ? Object.entries(modulePermissions).filter(([, c]) => Number(c) > 0)
+            : [];
+        const totalText = total != null ? String(total) : '0';
+        if (!entries.length) return `<span class="badge bg-label-info" title="${totalText}">${totalText}</span>`;
+
+        const tooltip = escapeChip(entries.map(([m, c]) => `${m}: ${c}`).join(', '));
+
+        if (!collapse) {
+            // Offcanvas: wrap and show all modules.
+            return `<span class="d-inline-flex flex-wrap gap-1" title="${tooltip}">${entries.map(moduleChip).join('')}</span>`;
+        }
+
+        // Table cell: one line only; fold the overflow into a click dropdown.
+        const shown = entries.slice(0, max);
+        const rest = entries.slice(max);
+        let html = `<span class="d-inline-flex flex-nowrap align-items-center gap-1" title="${tooltip}">`;
+        html += shown.map(moduleChip).join('');
+        if (rest.length) {
+            const menu = rest.map((e) => `<span class="d-block px-2 py-1">${moduleChip(e)}</span>`).join('');
+            html += '<span class="dropdown d-inline-block">'
+                + `<a href="javascript:;" class="badge bg-label-secondary text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false" title="${tooltip}">+${rest.length}</a>`
+                + `<span class="dropdown-menu p-1">${menu}</span>`
+                + '</span>';
+        }
+        html += '</span>';
+        return html;
+    };
+
     // ─── Quick View ──────────────────────────────────────────────────────────
     const tryParseRowJson = (el) => {
         if (!el) return null;
@@ -332,11 +433,14 @@ const RolesList = (function () {
     };
     const populateDetailsOffcanvas = (data) => {
         if (!data) return;
+        const setText = (id, value) => { const el = document.getElementById(id); if (el) { el.innerText = value; el.setAttribute('title', value); } };
         document.getElementById('oc-title').innerText = data.displayName || data.name || '-';
         document.getElementById('oc-subtitle').innerText = data.name || '-';
-        document.getElementById('oc-name').innerText = data.name || '-';
-        document.getElementById('oc-displayname').innerText = data.displayName || '-';
-        document.getElementById('oc-permcount').innerText = data.permissionCount != null ? String(data.permissionCount) : '-';
+        setText('oc-name', data.name || '-');
+        setText('oc-displayname', data.displayName || '-');
+        const permsEl = document.getElementById('oc-permissions');
+        if (permsEl) permsEl.innerHTML = renderModuleChips(data.modulePermissions, data.permissionCount);
+        document.getElementById('oc-usercount').innerText = data.userCount != null ? String(data.userCount) : '-';
         document.getElementById('oc-desc').innerText = data.description || '-';
         const typeEl = document.getElementById('oc-type');
         if (typeEl) { typeEl.className = `badge ${data.isSystem ? 'bg-label-primary' : 'bg-label-secondary'}`; typeEl.innerText = data.isSystem ? (L.RoleTypeSystem || 'System') : (L.RoleTypeCustom || 'Custom'); }
@@ -551,22 +655,22 @@ const RolesList = (function () {
             ajax: { url: apiUrl + '/api/roles', type: 'GET', xhrFields: { withCredentials: true } },
             config: {
                 stateSave: false,
-                colReorder: { columns: ':gt(1):not(:last-child)' },
+                colReorder: { columns: ':gt(0):not(:last-child)' },
                 columns: [
                     { data: 'id', name: 'control' },
-                    { data: 'id', name: 'checkbox' },
                     { data: 'name', name: 'name' },
                     { data: 'displayName', name: 'displayName' },
                     { data: 'isSystem', name: 'isSystem' },
                     { data: 'permissionCount', name: 'permissionCount' },
+                    { data: 'userCount', name: 'userCount' },
                     { data: 'id', name: 'action' }
                 ],
                 columnDefs: [
                     { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
-                    { targets: 1, orderable: false, searchable: false, responsivePriority: 3, className: 'dt-checkboxes-cell cell-fit', render: (data) => `<input type="checkbox" class="dt-checkboxes form-check-input" value="${data}">` },
-                    { targets: 2, render: (data) => `<span class="fw-medium text-heading">${data ?? ''}</span>` },
-                    { targets: 4, render: (data, type) => type === 'display' ? getTypeBadge(!!data) : (data ? 'System' : 'Custom') },
-                    { targets: 5, className: 'text-center', render: (data) => `<span class="badge bg-label-info">${data ?? 0}</span>` },
+                    { targets: 1, render: (data) => `<span class="fw-medium text-heading">${data ?? ''}</span>` },
+                    { targets: 3, render: (data, type) => type === 'display' ? getTypeBadge(!!data) : (data ? 'System' : 'Custom') },
+                    { targets: 4, className: 'text-start', render: (data, type, full) => type === 'display' ? renderModuleChips(full.modulePermissions, data, { collapse: true }) : (data ?? 0) },
+                    { targets: 5, className: 'text-center', render: (data, type) => type === 'display' ? `<span class="badge bg-label-secondary">${data ?? 0}</span>` : (data ?? 0) },
                     {
                         targets: -1,
                         title: L.Actions,
@@ -576,25 +680,33 @@ const RolesList = (function () {
                         render: (data, type, full) => {
                             const rowJson = JSON.stringify(full).replace(/'/g, "&#39;");
                             const actions = [];
-                            // Delete: requires permission and not a system role (UX only).
-                            if (canDelete() && !full.isSystem) {
-                                actions.push({ className: 'delete-record text-danger me-1', icon: '<i class="bx bx-trash icon-md"></i>', attrs: { 'data-json': rowJson } });
-                            }
+                            // View: primary (visible) icon — mirrors the GoldenReference action set.
                             actions.push({
-                                className: 'js-quick-view', text: L.QuickView,
-                                attrs: { 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasDetailsPreview', 'data-json': rowJson }
+                                className: 'js-quick-view me-1', icon: 'bx bx-show',
+                                attrs: { 'data-bs-toggle': 'offcanvas', 'data-bs-target': '#offcanvasDetailsPreview', 'data-json': rowJson, 'title': L.QuickView }
                             });
-                            // Edit: requires permission and not a system role.
+                            // Edit: requires permission and not a system role — falls into the kebab (with icon).
                             if (canUpdate() && !full.isSystem) {
-                                actions.push({ className: 'js-edit-item', text: L.Edit, attrs: { 'data-id': full.id, 'data-json': rowJson } });
+                                actions.push({ className: 'js-edit-item', icon: 'bx bx-edit', text: L.Edit, attrs: { 'data-id': full.id, 'data-json': rowJson } });
                             }
-                            return window.DitenDataTable.renderActions(actions);
+                            // Delete: requires permission and not a system role — falls into the kebab (with icon).
+                            if (canDelete() && !full.isSystem) {
+                                actions.push({ className: 'delete-record text-danger', icon: 'bx bx-trash', text: L.Delete, attrs: { 'data-json': rowJson } });
+                            }
+                            let html = window.DitenDataTable.renderActions(actions);
+                            // System roles are locked (no edit/delete) — surface a lock indicator beside View.
+                            if (full.isSystem) {
+                                const lockTitle = L.SystemRoleLocked || '';
+                                const lock = `<span class="btn btn-icon text-muted pe-none" tabindex="-1" title="${lockTitle}" aria-label="${lockTitle}"><i class="bx bx-lock-alt icon-md"></i></span>`;
+                                html = html.replace('</div>', lock + '</div>');
+                            }
+                            return html;
                         }
                     }
                 ],
                 buttons: window.DtDefaults.exportButtons(
                     L.AddNew, {}, extraButtons,
-                    { exportColumns: [2, 3, 4, 5], colvisColumns: [2, 3, 4, 5] }
+                    { exportColumns: [1, 2, 3, 4, 5], colvisColumns: [1, 2, 3, 4, 5] }
                 ),
                 initComplete: function () {
                     mountInlineFilter();

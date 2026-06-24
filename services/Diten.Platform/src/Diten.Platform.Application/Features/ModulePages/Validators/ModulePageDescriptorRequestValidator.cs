@@ -34,9 +34,9 @@ public abstract class ModulePageDescriptorRequestValidator<T> : AbstractValidato
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("Rota yolu zorunludur.")
             .Must(value => (value ?? string.Empty).Trim().StartsWith("/", StringComparison.Ordinal))
-            .WithMessage("Rota /PPM/Projects formatında olmalıdır.")
+            .WithMessage("Rota /Sayfa veya /Alan/Sayfa formatında olmalıdır.")
             .Must(value => IsCanonicalRoutePath(value))
-            .WithMessage("Rota /PPM/Projects formatında olmalıdır.")
+            .WithMessage("Rota /Sayfa veya /Alan/Sayfa formatında olmalıdır.")
             .MaximumLength(300).WithMessage("Rota yolu 300 karakteri aşamaz.");
 
         RuleFor(x => requiredPermission(x))
@@ -98,7 +98,9 @@ public abstract class ModulePageDescriptorRequestValidator<T> : AbstractValidato
         var route = ModulePageDescriptorNormalizer.NormalizeRoutePath(rawRoute);
         var parts = route.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-        return parts.Length >= 2
+        // AG-STEP-004B / UI FIX #1: a single-segment route (e.g. /GoldenReferenceSlim) is valid;
+        // multi-segment (/Domain/Page) stays valid. Relaxed from `>= 2` to `>= 1`.
+        return parts.Length >= 1
             && parts.All(part =>
                 part.Length > 0
                 && part.All(ch => char.IsAsciiLetterOrDigit(ch) || ch is '-' or '{' or '}' or ':' or '_')
