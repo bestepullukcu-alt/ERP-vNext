@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="LegalEntitiesTitle" xml:space="preserve"><value>Tüzel Kişilikler</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kiracınızın tüzel kişiliklerini yönetin. Taslak olarak oluşturun, ardından organizasyon birimlerinde kullanılabilmesi için etkinleştirin.</value></data>
+  <data name="AddNewLegalEntity" xml:space="preserve"><value>Tüzel Kişilik Ekle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Tüzel Kişilik Oluştur</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>örn. ACME-TR</value></data>
+  <data name="LegalName" xml:space="preserve"><value>Yasal Ad</value></data>
+  <data name="LegalNamePlaceholder" xml:space="preserve"><value>örn. Acme Üretim A.Ş.</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>örn. Acme</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="Activate" xml:space="preserve"><value>Etkinleştir</value></data>
+  <data name="Archive" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="ActivateConfirm" xml:space="preserve"><value>Bu tüzel kişilik etkinleştirilecek ve referans alınabilir hale gelecek. Devam edilsin mi?</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Bu tüzel kişilik arşivlenecek. Devam edilsin mi?</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Tüzel kişilik etkinleştirildi.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Tüzel kişilik arşivlendi.</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
+  <data name="CreateDraftHint" xml:space="preserve"><value>Tüzel kişilik Taslak olarak oluşturulur. Organizasyon birimlerinde kullanmak için sonradan etkinleştirin.</value></data>
+</root>

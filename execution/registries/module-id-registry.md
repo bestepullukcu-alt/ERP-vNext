@@ -15,6 +15,8 @@ The registry is strictly for identity management and governance rules. It is **N
 - Release notes or changelogs.
 - Detailed "What's done" / "What's missing" task lists.
 
+> **Where implementation status lives:** completion %, "what's built / what's missing", and per-module durum are tracked in the separate code-truth tracker → [`module-implementation-status.md`](module-implementation-status.md). This registry stays identity-only.
+
 ## Current status
 Fully migrated from the legacy location.
 
@@ -40,7 +42,7 @@ Fully migrated from the legacy location.
 
 ### Canonicalization Gate (DCP-002)
 
-- The Blueprint (`docs/System Capability & Implementation Blueprint - master 5.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. The repository runs a **single** active `MOD-xxxx` namespace.
+- The Blueprint (`docs/System Capability & Implementation Blueprint - master 7.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. The repository runs a **single** active `MOD-xxxx` namespace.
 - Before reserving or creating any `MOD-xxxx` (new module, FU/child, or repo-only), run the fail-closed preflight: `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`. A non-zero exit BLOCKS the reservation.
 - Legacy (`PSS-*`, `NEW-*`) and repo-only IDs remain valid only as **deprecated aliases pending explicit Enterprise Architect reservation**; no placeholder or next-free ID may be invented. Unresolved items are tracked in [blueprint-master-plan-reconciliation.md](../portfolio/blueprint-master-plan-reconciliation.md).
 - A superseded ID is never deleted: keep its row with `status: deprecated`, `Deprecated Alias = self`, `Replacement ID = canonical`. See [DCP-002](../portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md).

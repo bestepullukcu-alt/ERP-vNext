@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="LegalEntitiesTitle" xml:space="preserve"><value>Legal Entities</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage your tenant's legal entities. Create as Draft, then activate to make them referenceable by organization units.</value></data>
+  <data name="AddNewLegalEntity" xml:space="preserve"><value>Add Legal Entity</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Create Legal Entity</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>e.g. ACME-TR</value></data>
+  <data name="LegalName" xml:space="preserve"><value>Legal Name</value></data>
+  <data name="LegalNamePlaceholder" xml:space="preserve"><value>e.g. Acme Manufacturing Inc.</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>e.g. Acme</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ActivateConfirm" xml:space="preserve"><value>This legal entity will be activated and become referenceable. Continue?</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>This legal entity will be archived. Continue?</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Legal entity activated.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Legal entity archived.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>This field is required.</value></data>
+  <data name="CreateDraftHint" xml:space="preserve"><value>The legal entity is created as a Draft. Activate it afterwards to use it in organization units.</value></data>
+</root>

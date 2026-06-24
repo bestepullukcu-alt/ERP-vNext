@@ -1,0 +1,43 @@
+@using System.Text.Json
+@using Diten.Web.Views.Organization.PositionAssignments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionAssignmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        PositionAssignmentsTitle = Localizer["PositionAssignmentsTitle"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        Actions = Localizer["Actions"].Value,
+        AddNew = Localizer["AddNewAssignment"].Value,
+        Edit = Localizer["Edit"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        @* Create/Edit offcanvas keys *@
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+        Position = Localizer["Position"].Value,
+        SelectPosition = Localizer["SelectPosition"].Value,
+        User = Localizer["User"].Value,
+        SelectUser = Localizer["SelectUser"].Value,
+        EffectiveFrom = Localizer["EffectiveFrom"].Value,
+        EffectiveTo = Localizer["EffectiveTo"].Value,
+        RequiredField = Localizer["RequiredField"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        Update = SharedLocalizer["Update"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Showing = SharedLocalizer["Showing"].Value
+    };
+}
+<script id="position-assignments-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

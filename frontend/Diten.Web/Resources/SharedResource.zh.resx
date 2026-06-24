@@ -461,6 +461,12 @@
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>参考数据</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>此模块代码已被使用。</value></data>
+  <data name="Organization" xml:space="preserve"><value>组织</value></data>
+  <data name="OrganizationUnits" xml:space="preserve"><value>组织单元</value></data>
+  <data name="Positions" xml:space="preserve"><value>职位</value></data>
+  <data name="PositionAssignments" xml:space="preserve"><value>职位分配</value></data>
+  <data name="MasterData" xml:space="preserve"><value>主数据</value></data>
+  <data name="LegalEntities" xml:space="preserve"><value>法律实体</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>工作流审批</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>文档结构</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>QMS 基线</value></data>

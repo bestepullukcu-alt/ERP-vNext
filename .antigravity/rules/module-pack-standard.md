@@ -424,6 +424,14 @@ Kurallar:
 - `done` olduktan sonra module pack silinmez; kalici audit belgesi olarak korunur.
 - Yeni degisiklikte ayni dosyada `Implementation Notes` guncellenir.
 
+### Implementation Status Tracker (zorunlu bakim)
+
+Bir modulun **gerceklesme durumu degistiginde** (frontend eklendi, test eklendi, ozellik tamamlandi, `in-progress`->`done` vb.), isi tamamlayan agent (orchestrator veya ilgili backend/frontend agent) ayni PR icinde [`execution/registries/module-implementation-status.md`](../../execution/registries/module-implementation-status.md) icindeki o modulun satirini guncellemelidir (`durum` + `%` + `var olan` + `eksik`).
+
+- **Yer:** `module-id-registry.md` KIMLIK registry'sidir ve charter geregi `%`/durum **tutamaz**; tum status bu tracker dosyasinda yasar.
+- **Kapsam:** yalnizca kod-izli moduller; yeni modul ilk kez kod kazandiginda tracker'a satir eklenir.
+- **Kaynak:** durum koddan dogrulanir (entity/controller/handler/test/view/`.resx`), dokuman iddiasindan degil.
+
 ---
 
 ## 17. Authority Rule

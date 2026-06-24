@@ -2,7 +2,7 @@
 
 - **Date:** 2026-06-03
 - **Branch:** feature/governance/blueprint-module-id-reconciliation
-- **Source of truth:** `docs/System Capability & Implementation Blueprint - master 5.xlsx` → sheet `Blueprint_Data` (296 modules)
+- **Source of truth:** `docs/System Capability & Implementation Blueprint - master 7.xlsx` → sheet `Blueprint_Data` (296 modules)
 - **Reconciled against:** `execution/registries/module-id-registry.md` (99 records)
 - **Status:** READ-ONLY analysis. No canonical document was modified. Respects AGENTS.md §12 (no mass rename).
 

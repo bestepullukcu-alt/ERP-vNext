@@ -19,7 +19,16 @@ public sealed class LegalEntitiesController : CustomBaseController
         _mediator = mediator;
     }
 
+    // MOD-0288 lookup feed: read-only list (id + code + name) for the platform Organization Units screen.
     [HttpGet]
+    [HasPermission("mdm.legal-entities.read")]
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetLegalEntitiesQuery(), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("lookup")]
     [HasPermission("mdm.legal-entities.read")]
     public async Task<IActionResult> List(CancellationToken cancellationToken)
     {

@@ -461,6 +461,12 @@
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Données de référence</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>Ce code de module est déjà utilisé.</value></data>
+  <data name="Organization" xml:space="preserve"><value>Organisation</value></data>
+  <data name="OrganizationUnits" xml:space="preserve"><value>Unités organisationnelles</value></data>
+  <data name="Positions" xml:space="preserve"><value>Postes</value></data>
+  <data name="PositionAssignments" xml:space="preserve"><value>Affectations de postes</value></data>
+  <data name="MasterData" xml:space="preserve"><value>Données maîtres</value></data>
+  <data name="LegalEntities" xml:space="preserve"><value>Entités juridiques</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Approbations de flux de travail</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Structures de documentation</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>Références QMS</value></data>

@@ -27,7 +27,6 @@ public sealed class LegalEntityRepository : RepositoryBase<LegalEntity>, ILegalE
 
         return await Collection.Find(filter).AnyAsync(cancellationToken);
     }
-
     public async Task<IReadOnlyList<LegalEntity>> GetReferenceableAsync(CancellationToken cancellationToken = default)
     {
         var filter = Builders<LegalEntity>.Filter.And(
@@ -36,6 +35,11 @@ public sealed class LegalEntityRepository : RepositoryBase<LegalEntity>, ILegalE
 
         return await Collection.Find(filter).SortBy(x => x.LegalName).ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<LegalEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+        => await Collection.Find(TenantFilter)
+            .SortBy(x => x.LegalName)
+            .ToListAsync(cancellationToken);
 
     private void EnsureIndexes()
     {

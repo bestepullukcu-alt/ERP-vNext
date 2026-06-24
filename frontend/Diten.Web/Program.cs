@@ -31,6 +31,8 @@ builder.Services.AddControllersWithViews()
     {
         options.ViewLocationFormats.Add("/Views/MDM/{1}/{0}.cshtml");
         options.ViewLocationFormats.Add("/Views/Platform/{1}/{0}.cshtml");
+        options.ViewLocationFormats.Add("/Views/Organization/{1}/{0}.cshtml");
+        options.ViewLocationFormats.Add("/Views/MasterData/{1}/{0}.cshtml");
         options.ViewLocationFormats.Add("/Views/{1}/{0}.cshtml");
         options.ViewLocationFormats.Add("/Views/Archive/{1}/{0}.cshtml");
     });
