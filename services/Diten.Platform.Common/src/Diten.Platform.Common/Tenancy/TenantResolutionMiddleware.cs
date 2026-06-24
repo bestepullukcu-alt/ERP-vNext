@@ -199,8 +199,20 @@ public sealed class TenantResolutionMiddleware
 
     private static bool IsAdminPath(PathString path)
     {
-        return path.StartsWithSegments("/api/admin", StringComparison.OrdinalIgnoreCase)
-               || path.StartsWithSegments("/api/platform", StringComparison.OrdinalIgnoreCase);
+        return (path.StartsWithSegments("/api/admin", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWithSegments("/api/platform", StringComparison.OrdinalIgnoreCase))
+               && !IsTenantScopedOrgPath(path);
+    }
+
+    // MOD-0288 — the Organization/Position directory is tenant-scoped data managed by tenant admins
+    // (like Users/Roles), so these /api/platform/* groups are treated as TENANT endpoints: the tenant
+    // is resolved (JWT tenant_id / X-Tenant-Id) into ITenantContext and the tenant_user actor is required.
+    // (Tenant-only: platform_admin tokens are intentionally rejected here.)
+    private static bool IsTenantScopedOrgPath(PathString path)
+    {
+        return path.StartsWithSegments("/api/platform/organization-units", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/platform/positions", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWithSegments("/api/platform/position-assignments", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsPlatformAuthPath(PathString path)

@@ -262,6 +262,57 @@
                             </li>
                         }
                     }
+
+                    @* MOD-0220 — Master Data (tenant-side). Legal Entities feed the Organization Units form. *@
+                    @if (Perms.Has("mdm.legal-entities.read"))
+                    {
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text">@SharedLocalizer["MasterData"]</span>
+                        </li>
+                        <li class="menu-item @(activeController == "LegalEntities" ? "active" : "")">
+                            <a href="/LegalEntities" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-buildings"></i>
+                                <div>@SharedLocalizer["LegalEntities"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0288 — Organization, Person & Position Directory (relocated to the tenant shell).
+                       Each item is gated by its backend .read permission (UX-only show/hide; [HasPermission]
+                       remains authoritative). *@
+                    @if (Perms.Has("platform.organization-units.read") || Perms.Has("platform.positions.read") || Perms.Has("platform.position-assignments.read"))
+                    {
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text">@SharedLocalizer["Organization"]</span>
+                        </li>
+                        @if (Perms.Has("platform.organization-units.read"))
+                        {
+                            <li class="menu-item @(activeController == "OrganizationUnits" ? "active" : "")">
+                                <a href="/OrganizationUnits" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-sitemap"></i>
+                                    <div>@SharedLocalizer["OrganizationUnits"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (Perms.Has("platform.positions.read"))
+                        {
+                            <li class="menu-item @(activeController == "Positions" ? "active" : "")">
+                                <a href="/Positions" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-id-card"></i>
+                                    <div>@SharedLocalizer["Positions"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (Perms.Has("platform.position-assignments.read"))
+                        {
+                            <li class="menu-item @(activeController == "PositionAssignments" ? "active" : "")">
+                                <a href="/PositionAssignments" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-user-pin"></i>
+                                    <div>@SharedLocalizer["PositionAssignments"]</div>
+                                </a>
+                            </li>
+                        }
+                    }
                 </ul>
             </aside>
             <!-- / Menu -->

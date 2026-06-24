@@ -1,0 +1,54 @@
+@using System.Text.Json
+@using Diten.Web.Views.Organization.Positions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        PositionsTitle = Localizer["PositionsTitle"].Value,
+        Actions = Localizer["Actions"].Value,
+        AddNew = Localizer["AddNewPosition"].Value,
+        Edit = Localizer["Edit"].Value,
+        Archive = Localizer["Archive"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        ArchiveConfirm = Localizer["ArchiveConfirm"].Value,
+        RecordArchived = Localizer["RecordArchived"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        @* Create/Edit offcanvas keys *@
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+        Code = Localizer["Code"].Value,
+        Name = Localizer["Name"].Value,
+        OrgUnit = Localizer["OrgUnit"].Value,
+        SelectOrgUnit = Localizer["SelectOrgUnit"].Value,
+        ReportsTo = Localizer["ReportsTo"].Value,
+        NoReportsTo = Localizer["NoReportsTo"].Value,
+        ManagerChain = Localizer["ManagerChain"].Value,
+        InvalidCode = Localizer["InvalidCode"].Value,
+        RequiredField = Localizer["RequiredField"].Value,
+        FinalCodePreview = Localizer["FinalCodePreview"].Value,
+        Archived = Localizer["Archived"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusArchived = Localizer["StatusArchived"].Value,
+        Update = SharedLocalizer["Update"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Showing = SharedLocalizer["Showing"].Value
+    };
+}
+<script id="positions-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

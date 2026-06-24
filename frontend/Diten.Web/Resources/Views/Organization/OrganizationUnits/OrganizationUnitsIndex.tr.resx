@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OrganizationUnitsTitle" xml:space="preserve"><value>Organizasyon Birimleri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Organizasyon birimlerini, bağlı oldukları tüzel kişiliği ve raporlama hiyerarşisini yönetin.</value></data>
+  <data name="AddNewOrganizationUnit" xml:space="preserve"><value>Organizasyon Birimi Ekle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Organizasyon Birimi Oluştur</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Organizasyon Birimini Düzenle</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>örn. HQ-OPS</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>örn. Genel Müdürlük Operasyonları</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Tüzel Kişilik</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Bir tüzel kişilik seçin…</value></data>
+  <data name="LegalEntityIdPlaceholder" xml:space="preserve"><value>Tüzel kişilik kimliği (GUID) yapıştırın</value></data>
+  <data name="LegalEntityLookupUnavailable" xml:space="preserve"><value>Tüzel kişilik araması kullanılamıyor; kimliği elle girin.</value></data>
+  <data name="ParentOrgUnit" xml:space="preserve"><value>Üst Organizasyon Birimi</value></data>
+  <data name="NoParent" xml:space="preserve"><value>(Üst birim yok — en üst seviye)</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="Archive" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="Unarchive" xml:space="preserve"><value>Arşivden Çıkar</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Bu organizasyon birimi arşivlenecek. Devam edilsin mi?</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Organizasyon birimi arşivlendi.</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>2-80 büyük harf, rakam ve tekli tire kullanın.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>Nihai Kod</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+</root>

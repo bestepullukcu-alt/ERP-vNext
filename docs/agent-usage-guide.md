@@ -280,7 +280,7 @@ python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checke
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`docs/System Capability & Implementation Blueprint - master 5.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+The Blueprint (`docs/System Capability & Implementation Blueprint - master 7.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
 
 1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
 2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.

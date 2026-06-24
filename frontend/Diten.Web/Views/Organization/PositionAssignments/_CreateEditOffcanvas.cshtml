@@ -1,0 +1,65 @@
+@using Diten.Web.Views.Organization.PositionAssignments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionAssignmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        @* Server-side validation errors (from gateway) *@
+        <div id="formPositionAssignmentAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formPositionAssignment" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="paItemId" name="Id" value="" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="paPosition" class="form-label fw-medium">
+                        @Localizer["Position"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="paPosition" name="PositionId" class="form-select" required>
+                        <option value="">@Localizer["SelectPosition"]</option>
+                    </select>
+                    <div class="invalid-feedback">@Localizer["RequiredField"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="paUser" class="form-label fw-medium">
+                        @Localizer["User"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="paUser" name="UserId" class="form-select" required>
+                        <option value="">@Localizer["SelectUser"]</option>
+                    </select>
+                    <div class="invalid-feedback">@Localizer["RequiredField"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="paEffectiveFrom" class="form-label fw-medium">
+                        @Localizer["EffectiveFrom"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="date" id="paEffectiveFrom" name="EffectiveFrom" class="form-control" required />
+                    <div class="invalid-feedback">@Localizer["RequiredField"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="paEffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                    <input type="date" id="paEffectiveTo" name="EffectiveTo" class="form-control" />
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSavePositionAssignment" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>

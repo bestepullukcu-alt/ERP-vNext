@@ -71,6 +71,23 @@ public static class DataSeeder
             new("Platform", "BusinessReferenceData.Usage", "Register", "Register Business Reference Data Usage", "Permission to register BusinessReferenceData usage"),
             new("Platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values"),
 
+            // MOD-0288 — Organization, Person & Position Directory (platform-admin screens).
+            new("Platform", "organization-units", "read", "Read Organization Units", "Permission to view organization units"),
+            new("Platform", "organization-units", "create", "Create Organization Unit", "Permission to create organization units"),
+            new("Platform", "organization-units", "update", "Update Organization Unit", "Permission to edit organization units"),
+            new("Platform", "organization-units", "archive", "Archive Organization Unit", "Permission to archive organization units"),
+            new("Platform", "organization-units", "delete", "Delete Organization Unit", "Permission to delete organization units"),
+            new("Platform", "positions", "read", "Read Positions", "Permission to view positions"),
+            new("Platform", "positions", "create", "Create Position", "Permission to create positions"),
+            new("Platform", "positions", "update", "Update Position", "Permission to edit positions"),
+            new("Platform", "positions", "archive", "Archive Position", "Permission to archive positions"),
+            new("Platform", "positions", "delete", "Delete Position", "Permission to delete positions"),
+            new("Platform", "organization", "read-manager-chain", "Read Manager Chain", "Permission to view a position's manager chain"),
+            new("Platform", "position-assignments", "read", "Read Position Assignments", "Permission to view position assignments"),
+            new("Platform", "position-assignments", "create", "Create Position Assignment", "Permission to create position assignments"),
+            new("Platform", "position-assignments", "update", "Update Position Assignment", "Permission to edit position assignments"),
+            new("Platform", "position-assignments", "delete", "Delete Position Assignment", "Permission to delete position assignments"),
+
             new("goldenslim", "records", "read",   "Read Golden Slim",   "View Golden Slim records"),
             new("goldenslim", "records", "create", "Create Golden Slim", null),
             new("goldenslim", "records", "update", "Update Golden Slim", null),

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PositionAssignmentsTitle" xml:space="preserve"><value>Pozisyon Atamaları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kullanıcıları pozisyonlara atayın ve her atamanın geçerlilik dönemini yönetin.</value></data>
+  <data name="AddNewAssignment" xml:space="preserve"><value>Atama Ekle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Pozisyon Ataması Oluştur</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Pozisyon Atamasını Düzenle</value></data>
+  <data name="Position" xml:space="preserve"><value>Pozisyon</value></data>
+  <data name="SelectPosition" xml:space="preserve"><value>Bir pozisyon seçin…</value></data>
+  <data name="User" xml:space="preserve"><value>Kullanıcı</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>Bir kullanıcı seçin…</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Başlangıç Tarihi</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Bitiş Tarihi</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+</root>
