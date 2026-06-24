@@ -1,0 +1,298 @@
+@using Diten.Web.Views.DocumentManagement.QmsBaselines
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<QmsBaselinesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["DesignerTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var baselineId = ViewData["BaselineId"]?.ToString() ?? string.Empty;
+    var canCreate = Perms.Has("platform.document-management.collection-definitions.create");
+    var canEdit = Perms.Has("platform.document-management.collection-definitions.edit");
+    var canMove = Perms.Has("platform.document-management.collection-definitions.move");
+    var canDelete = Perms.Has("platform.document-management.collection-definitions.delete");
+    var canValidate = Perms.Has("platform.document-management.qms-baselines.validate");
+    var canPublish = Perms.Has("platform.document-management.qms-baselines.publish");
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start mb-3 gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["DesignerTitle"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/DocumentManagementQmsBaselines">@Localizer["QmsBaselinesTitle"]</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/DocumentManagementQmsBaselines/Details/@baselineId" id="qmsDesignerSubtitle">@Localizer["DetailTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Localizer["DesignerTitle"]</li>
+            </ol>
+        </nav>
+    </div>
+    @* Compact status / version / created badges (right of the header). BaselineId is in the breadcrumb. *@
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="badge" id="designerStatusBadge"></span>
+        <span class="badge bg-label-secondary">v:<span id="designerVersion"></span></span>
+        <span class="badge bg-label-secondary" id="designerCreatedAt"></span>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+<div id="qmsDesignerRoot"
+     data-baseline-id="@baselineId"
+     data-can-create="@(canCreate ? "1" : "0")"
+     data-can-edit="@(canEdit ? "1" : "0")"
+     data-can-move="@(canMove ? "1" : "0")"
+     data-can-delete="@(canDelete ? "1" : "0")"
+     data-can-validate="@(canValidate ? "1" : "0")"
+     data-can-publish="@(canPublish ? "1" : "0")">
+    <div id="qmsDesignerSkeleton" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+
+    <div id="qmsDesignerError" class="alert alert-danger d-none" role="alert"></div>
+
+    <div id="qmsDesignerContent" class="d-none">
+        <div id="validationSummary" class="alert d-none" role="alert"></div>
+
+        <div class="card">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <h6 class="mb-0">@Localizer["Definitions"]</h6>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <input type="search" id="designerTreeSearch" class="form-control form-control-sm" style="width: 200px;"
+                           placeholder="@Localizer["TreeSearchPlaceholder"]" aria-label="@Localizer["TreeSearchPlaceholder"]" />
+                    @* Action buttons kept together as one group so they never split across lines. *@
+                    <div class="d-flex align-items-center gap-2">
+                        @if (canDelete)
+                        {
+                            <button type="button" id="btnDeleteSelected" class="btn btn-sm btn-label-danger d-none">
+                                <i class="icon-base bx bx-trash me-1"></i>@SharedLocalizer["BulkDelete"] <span id="selectedCount"></span>
+                            </button>
+                        }
+                        @if (canCreate)
+                        {
+                            <button type="button" id="btnAddRoot" class="btn btn-sm btn-primary">
+                                <i class="icon-base bx bx-folder-plus me-1"></i>@Localizer["AddRoot"]
+                            </button>
+                        }
+                        @if (canValidate)
+                        {
+                            <button type="button" id="btnValidateDraft" class="btn btn-sm btn-label-info">
+                                <i class="icon-base bx bx-check-shield me-1"></i>@Localizer["ValidateDraft"]
+                            </button>
+                        }
+                        @if (canPublish)
+                        {
+                            <button type="button" id="btnDesignerPublish" class="btn btn-sm btn-success d-none">
+                                <i class="icon-base bx bx-cloud-upload me-1"></i>@Localizer["Publish"]
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="designerTree"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="nodeEditorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form id="nodeEditorForm" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nodeEditorTitle">@Localizer["NodeEditorTitle"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="nodeCanonicalId" name="canonicalId" />
+                <input type="hidden" id="nodeParentCanonicalId" name="parentCanonicalId" />
+                <input type="hidden" id="nodeVersionToken" name="versionToken" />
+                <div class="row g-3">
+                    <div class="col-12 col-md-8">
+                        <label for="nodeName" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
+                        <input id="nodeName" name="name" class="form-control" maxlength="200" required />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="nodeDisplayOrder" class="form-label fw-medium">@Localizer["DisplayOrder"]</label>
+                        <input id="nodeDisplayOrder" name="displayOrder" type="number" min="0" class="form-control" value="0" />
+                    </div>
+                    <div class="col-12">
+                        <label for="nodePurposeScope" class="form-label fw-medium">@Localizer["PurposeScope"]</label>
+                        <textarea id="nodePurposeScope" name="purposeScope" class="form-control" rows="3" maxlength="2000"></textarea>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="nodeRequiredByScope" class="form-label fw-medium">@Localizer["RequiredByScope"]</label>
+                        <input id="nodeRequiredByScope" name="requiredByScope" class="form-control" maxlength="256" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="nodeAllowedDocClass" class="form-label fw-medium">@Localizer["AllowedDocClass"]</label>
+                        <select id="nodeAllowedDocClass"
+                                name="allowedDocClass"
+                                class="form-select"
+                                data-reference-set="qms-document-class"
+                                data-placeholder="@Localizer["AllowedDocClass"]"></select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="nodeClassification" class="form-label fw-medium">@Localizer["Classification"]</label>
+                        <select id="nodeClassification"
+                                name="defaultClassificationLevel"
+                                class="form-select"
+                                data-reference-set="qms-document-classification"
+                                data-placeholder="@Localizer["Classification"]"></select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="nodeRetentionHint" class="form-label fw-medium">@Localizer["RetentionHint"]</label>
+                        <select id="nodeRetentionHint"
+                                name="defaultRetentionHint"
+                                class="form-select"
+                                data-reference-set="qms-document-retention"
+                                data-placeholder="@Localizer["RetentionHint"]"></select>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap gap-4">
+                            <div class="form-check form-switch">
+                                <input id="nodeAllowsManualChildren" name="allowsManualChildren" class="form-check-input" type="checkbox" value="true" checked />
+                                <input type="hidden" name="allowsManualChildren" value="false" />
+                                <label for="nodeAllowsManualChildren" class="form-check-label">@Localizer["AllowsManualChildren"]</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="hidden" name="templatesAllowed" value="false" />
+                                <input id="nodeTemplatesAllowed" name="templatesAllowed" class="form-check-input" type="checkbox" value="true" />
+                                <label for="nodeTemplatesAllowed" class="form-check-label">@Localizer["TemplatesAllowed"]</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="hidden" name="isMandatory" value="false" />
+                                <input id="nodeIsMandatory" name="isMandatory" class="form-check-input" type="checkbox" value="true" />
+                                <label for="nodeIsMandatory" class="form-check-label">@Localizer["Mandatory"]</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="hidden" name="isProtected" value="false" />
+                                <input id="nodeIsProtected" name="isProtected" class="form-check-input" type="checkbox" value="true" />
+                                <label for="nodeIsProtected" class="form-check-label">@Localizer["Protected"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="icon-base bx bx-save me-1"></i>@SharedLocalizer["Save"]
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="moveNodeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="moveNodeForm" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Localizer["MoveNode"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body row g-3">
+                <input type="hidden" id="moveCanonicalId" name="canonicalId" />
+                <input type="hidden" id="moveVersionToken" name="versionToken" />
+                <div class="col-12">
+                    <label for="moveParentCanonicalId" class="form-label fw-medium">@Localizer["ParentNode"]</label>
+                    <select id="moveParentCanonicalId" name="parentCanonicalId" class="form-select"></select>
+                </div>
+                <div class="col-12">
+                    <label for="moveDisplayOrder" class="form-label fw-medium">@Localizer["DisplayOrder"]</label>
+                    <input id="moveDisplayOrder" name="displayOrder" type="number" min="0" class="form-control" value="0" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="icon-base bx bx-transfer me-1"></i>@Localizer["MoveNode"]
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/jstree/jstree.css" />
+    @* Re-skin jsTree's right-click menu (.vakata-context) as a Sneat/Bootstrap dropdown.
+       Loaded after jstree.css so these rules win without !important. *@
+    <style>
+        .vakata-context,
+        .vakata-context ul {
+            background-color: var(--bs-dropdown-bg, #fff);
+            background-image: none;
+            border: var(--bs-dropdown-border-width, 1px) solid var(--bs-dropdown-border-color, rgba(0, 0, 0, .05));
+            border-radius: var(--bs-dropdown-border-radius, .375rem);
+            box-shadow: var(--bs-dropdown-box-shadow, 0 .25rem 1rem rgba(0, 0, 0, .15));
+            padding: .375rem 0;
+            min-width: 11rem;
+            font-family: inherit;
+        }
+
+        .vakata-context li { margin: 0; }
+
+        .vakata-context li > a {
+            display: flex;
+            align-items: center;
+            gap: .625rem;
+            padding: .45rem 1.25rem;
+            color: var(--bs-dropdown-link-color, var(--bs-body-color));
+            font-size: .9375rem;
+            line-height: 1.4;
+            text-shadow: none;
+            box-shadow: none;
+            border: 0;
+        }
+
+        .vakata-context li > a:hover,
+        .vakata-context li > a:focus,
+        .vakata-context li > a.vakata-context-hover {
+            background-color: var(--bs-dropdown-link-hover-bg, rgba(67, 89, 113, .06));
+            color: var(--bs-dropdown-link-hover-color, var(--bs-body-color));
+            background-image: none;
+            box-shadow: none;
+            text-shadow: none;
+        }
+
+        /* Text-only menu: jstree always emits an (empty) <i> icon slot — hide it and reclaim the space. */
+        .vakata-context li > a > i {
+            display: none;
+        }
+
+        .vakata-context li > a > ins { display: none; }
+
+        .vakata-context li > a .vakata-contextmenu-shortcut { display: none; }
+
+        .vakata-context .vakata-context-separator > a,
+        .vakata-context .vakata-context-separator {
+            margin: .375rem 0;
+            padding: 0;
+            border: 0;
+            border-top: 1px solid var(--bs-border-color, #e7e7e8);
+            background: transparent;
+            height: 0;
+            line-height: 0;
+            font-size: 0;
+        }
+
+        .vakata-context li > a.vakata-contextmenu-disabled,
+        .vakata-context li > a.vakata-contextmenu-disabled:hover {
+            color: var(--bs-secondary-color, #a7acb2);
+            background: transparent;
+            opacity: .65;
+            cursor: not-allowed;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/QmsBaselines/_IndexL10n.cshtml" />
+    <script src="~/assets/vendor/libs/jstree/jstree.js"></script>
+    <script src="~/assets/js/DocumentManagement/QmsBaselines/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/QmsBaselines/designer.js" asp-append-version="true"></script>
+}

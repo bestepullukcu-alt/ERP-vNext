@@ -1,0 +1,163 @@
+@using Diten.Web.Views.DocumentManagement.Instantiations
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InstantiationsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["Title"].Value;
+    Layout = "_LayoutTenantShell";
+    var canDryRun = Perms.Has("platform.document-management.instantiations.dry-run");
+    var canExecute = Perms.Has("platform.document-management.instantiations.execute");
+    var canRetry = Perms.Has("platform.document-management.collection-instances.retry");
+    // Interim gate: archiving a company instance reuses the execute/instantiate privilege until a
+    // dedicated collection-instances.archive permission is seeded (separate MOD-0018 task).
+    var canArchive = canExecute;
+}
+
+@Html.AntiForgeryToken()
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["Title"]</h5>
+</div>
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="/DocumentManagementQmsBaselines">@SharedLocalizer["DocumentationStructures"]</a>
+        </li>
+        <li class="breadcrumb-item active text-primary" aria-current="page">@Localizer["BreadcrumbCurrent"]</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <div class="col-12 col-xl-4">
+        <div class="card">
+            <div class="card-header border-bottom">
+                <h6 class="mb-0">@Localizer["SelectRelease"]</h6>
+            </div>
+            <div class="card-body pt-4">
+                <div id="preconditionAlert" class="alert alert-warning d-none" role="alert"></div>
+                <form id="instantiationForm" autocomplete="off">
+                    <div class="mb-3">
+                        <label class="form-label" for="baselineReleaseId">@Localizer["BaselineRelease"]</label>
+                        <select id="baselineReleaseId" name="baselineReleaseId" class="form-select"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="companyId">@Localizer["CompanyId"]</label>
+                        <select id="companyId" name="companyId" class="form-select" data-placeholder="@Localizer["SelectCompany"]"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="plantId">@Localizer["PlantId"] <span class="text-muted">(@Localizer["Optional"])</span></label>
+                        <select id="plantId" name="plantId" class="form-select" data-placeholder="@Localizer["Optional"]"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="businessUnitId">@Localizer["BusinessUnitId"] <span class="text-muted">(@Localizer["Optional"])</span></label>
+                        <select id="businessUnitId" name="businessUnitId" class="form-select" data-placeholder="@Localizer["Optional"]"></select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="instanceToken">@Localizer["InstanceToken"] <span class="text-muted">(@Localizer["Optional"])</span>
+                            <i class="icon-base bx bx-info-circle text-muted ms-1" style="cursor: help;" tabindex="0" role="button" aria-label="@Localizer["InstanceTokenHelp"]" data-bs-toggle="tooltip" data-bs-placement="top" title="@Localizer["InstanceTokenHelp"]"></i>
+                        </label>
+                        <input id="instanceToken" name="instanceToken" class="form-control" type="text" maxlength="80" placeholder="@Localizer["InstanceTokenPlaceholder"]" />
+                        <div class="form-text">@Localizer["InstanceTokenHint"]</div>
+                    </div>
+                    <div class="border rounded p-3 mb-4">
+                        <label class="form-label d-block mb-2">@Localizer["ApplyMode"]</label>
+                        <div class="btn-group w-100 mb-3" role="group" aria-label="@Localizer["ApplyMode"]">
+                            <input type="radio" class="btn-check" name="selectionMode" id="selectionModeFullTree" value="FULL_TREE" checked>
+                            <label class="btn btn-outline-primary" for="selectionModeFullTree">@Localizer["FullStructure"]</label>
+                            <input type="radio" class="btn-check" name="selectionMode" id="selectionModeSelectedBranches" value="SELECTED_BRANCHES">
+                            <label class="btn btn-outline-primary" for="selectionModeSelectedBranches">@Localizer["SelectedBranches"]</label>
+                        </div>
+                        <div id="selectedBranchesSection" class="d-none">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                                <span class="text-muted small">@Localizer["PublishedTree"]</span>
+                                <span id="selectedBranchCount" class="badge bg-label-primary">0</span>
+                            </div>
+                            <input type="search" id="baselineTreeSearch" class="form-control form-control-sm mb-2"
+                                   placeholder="@Localizer["TreeSearchPlaceholder"]" aria-label="@Localizer["TreeSearchPlaceholder"]" />
+                            <div id="baselineTreeSelection" class="border rounded p-2 bg-body" style="max-height: 260px; overflow:auto;"></div>
+                            <div class="form-text mt-2">@Localizer["BranchSelectionHint"]</div>
+                            <input type="hidden" id="includeDescendants" name="includeDescendants" value="true" />
+                            <input type="hidden" id="includeRequiredAncestors" name="includeRequiredAncestors" value="true" />
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        @if (canDryRun)
+                        {
+                            <button id="btnDryRun" type="button" class="btn btn-label-primary">
+                                <i class="icon-base bx bx-search-alt me-1"></i>@Localizer["RunDryRun"]
+                            </button>
+                        }
+                        @if (canExecute)
+                        {
+                            <button id="btnExecute" type="button" class="btn btn-primary" disabled>
+                                <i class="icon-base bx bx-check-circle me-1"></i>@Localizer["Execute"]
+                            </button>
+                        }
+                        @if (canRetry)
+                        {
+                            <button id="btnRetry" type="button" class="btn btn-label-secondary" disabled>
+                                <i class="icon-base bx bx-redo me-1"></i>@Localizer["RetryFailed"]
+                            </button>
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-8">
+        <div class="card mb-4">
+            <div class="card-header border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <h6 class="mb-0">@Localizer["Diagnostics"]</h6>
+                <span id="operationStatus" class="badge bg-label-secondary">@Localizer["DryRunRequired"]</span>
+            </div>
+            <div class="card-body pt-4">
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3"><div class="border rounded p-3"><div class="text-muted small">@Localizer["Created"]</div><div id="countCreated" class="h5 mb-0">0</div></div></div>
+                    <div class="col-6 col-md-3"><div class="border rounded p-3"><div class="text-muted small">@Localizer["Skipped"]</div><div id="countSkipped" class="h5 mb-0">0</div></div></div>
+                    <div class="col-6 col-md-3"><div class="border rounded p-3"><div class="text-muted small">@Localizer["Failed"]</div><div id="countFailed" class="h5 mb-0">0</div></div></div>
+                    <div class="col-6 col-md-3"><div class="border rounded p-3"><div class="text-muted small">@Localizer["Total"]</div><div id="countTotal" class="h5 mb-0">0</div></div></div>
+                </div>
+                <div id="diagnosticMessages" class="mb-3"></div>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                    <span class="text-muted small">@Localizer["PlanPreview"]</span>
+                    <input type="search" id="planTreeSearch" class="form-control form-control-sm" style="width: 200px;"
+                           placeholder="@Localizer["TreeSearchPlaceholder"]" aria-label="@Localizer["TreeSearchPlaceholder"]" />
+                </div>
+                <div id="planTree" class="border rounded p-2 bg-body mb-0" style="max-height: 420px; overflow:auto;"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <h6 class="mb-0">@Localizer["Instances"]</h6>
+                <input type="search" id="instancesTreeSearch" class="form-control form-control-sm" style="width: 200px;"
+                       placeholder="@Localizer["TreeSearchPlaceholder"]" aria-label="@Localizer["TreeSearchPlaceholder"]" />
+            </div>
+            <div class="card-body pt-4">
+                <div id="instancesTree" class="border rounded p-2 bg-body mb-0" style="max-height: 460px; overflow:auto;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/jstree/jstree.css" />
+}
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/Instantiations/_IndexL10n.cshtml" />
+    <script>
+        window.FU05Permissions = {
+            canDryRun: @Json.Serialize(canDryRun),
+            canExecute: @Json.Serialize(canExecute),
+            canRetry: @Json.Serialize(canRetry),
+            canArchive: @Json.Serialize(canArchive)
+        };
+    </script>
+    <script src="~/assets/vendor/libs/jstree/jstree.js"></script>
+    <script src="~/assets/js/DocumentManagement/Instantiations/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/Instantiations/index.js" asp-append-version="true"></script>
+}

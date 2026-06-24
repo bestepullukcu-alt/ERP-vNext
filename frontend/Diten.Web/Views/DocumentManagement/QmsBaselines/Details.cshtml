@@ -1,0 +1,103 @@
+@using Diten.Web.Views.DocumentManagement.QmsBaselines
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<QmsBaselinesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["DetailTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var baselineId = ViewData["BaselineId"]?.ToString() ?? string.Empty;
+    var canPublish = Perms.Has("platform.document-management.qms-baselines.publish");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["DetailTitle"]</h5>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="/DocumentManagementQmsBaselines">@Localizer["QmsBaselinesTitle"]</a>
+            </li>
+            <li class="breadcrumb-item active text-primary" id="qmsBaselineSubtitle">@Localizer["DetailTitle"]</li>
+        </ol>
+    </nav>
+</div>
+
+@Html.AntiForgeryToken()
+<div id="qmsBaselineRoot" data-baseline-id="@baselineId" data-can-publish="@(canPublish ? "1" : "0")">
+
+    <div id="qmsBaselineSkeleton" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+
+    <div id="qmsBaselineError" class="alert alert-danger d-none" role="alert"></div>
+
+    <div id="qmsBaselineContent" class="d-none">
+        <div class="row g-4">
+        @* Metadata card (4-col) *@
+        <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">@Localizer["Metadata"]</h6>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge" id="qmsStatusBadge"></span>
+                    @if (canPublish)
+                    {
+                        <button type="button" id="btnPublish" class="btn btn-sm btn-success d-none">
+                            <span class="spinner-border spinner-border-sm me-1 d-none" id="publishSpinner" role="status"></span>
+                            <i class="icon-base bx bx-cloud-upload me-1"></i>@Localizer["Publish"]
+                        </button>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">@Localizer["BaselineId"]</dt><dd class="col-sm-9" id="md-baselineReleaseId">-</dd>
+                    <dt class="col-sm-3">@Localizer["Version"]</dt><dd class="col-sm-9" id="md-version">-</dd>
+                    <dt class="col-sm-3">@Localizer["DefinitionCount"]</dt><dd class="col-sm-9" id="md-definitionCount">-</dd>
+                    <dt class="col-sm-3">@Localizer["SnapshotHash"]</dt><dd class="col-sm-9 text-break"><code id="md-snapshotHash">-</code></dd>
+                    <dt class="col-sm-3">@Localizer["CreatedAt"]</dt><dd class="col-sm-9" id="md-createdAt">-</dd>
+                    <dt class="col-sm-3">@Localizer["PublishedAt"]</dt><dd class="col-sm-9" id="md-publishedAt">-</dd>
+                </dl>
+            </div>
+        </div>
+        </div>
+        @* Definition tree viewer (8-col) *@
+        <div class="col-12 col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <h6 class="mb-0">@Localizer["Definitions"]</h6>
+                <div class="d-flex align-items-center gap-2" id="qmsTreeToolbar">
+                    <input type="search" id="qmsTreeSearch" class="form-control form-control-sm" style="max-width: 240px;"
+                           placeholder="@Localizer["TreeSearchPlaceholder"]" aria-label="@Localizer["TreeSearchPlaceholder"]" />
+                    <a href="javascript:;" class="btn btn-icon btn-text-secondary" id="btnExpandAll"
+                       data-bs-toggle="tooltip" data-bs-placement="top" title="@Localizer["ExpandAll"]">
+                        <i class="bx bx-expand-vertical icon-md"></i>
+                    </a>
+                    <a href="javascript:;" class="btn btn-icon btn-text-secondary" id="btnCollapseAll"
+                       data-bs-toggle="tooltip" data-bs-placement="top" title="@Localizer["CollapseAll"]">
+                        <i class="bx bx-collapse-vertical icon-md"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="qmsTreeError" class="alert alert-warning d-none" role="alert"></div>
+                <div id="qmsDefinitionTree"></div>
+            </div>
+        </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/jstree/jstree.css" />
+}
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/QmsBaselines/_IndexL10n.cshtml" />
+    <script src="~/assets/vendor/libs/jstree/jstree.js"></script>
+    <script src="~/assets/js/DocumentManagement/QmsBaselines/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/QmsBaselines/details.js" asp-append-version="true"></script>
+}

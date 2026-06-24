@@ -493,5 +493,8 @@
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Reference Data</value></data>
+  <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Workflow Approvals</value></data>
+  <data name="DocumentationStructures" xml:space="preserve"><value>Documentation Structures</value></data>
+  <data name="QmsBaselines" xml:space="preserve"><value>QMS Baselines</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>Unauthorized</value></data>
 </root>
-

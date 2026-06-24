@@ -4,6 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Security.Claims;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Domain.Enums;
+using Diten.Platform.API.Observability;
+using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.DocumentManagementContract;
 
 namespace Diten.Platform.API.Security;
 
@@ -41,7 +44,7 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
 
                 if (string.IsNullOrWhiteSpace(email))
                 {
-                    context.Result = new ForbidResult();
+                    context.Result = PermissionDenied(context);
                     return;
                 }
 
@@ -49,7 +52,7 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
                 var admin = await repository.GetByNormalizedEmailAsync(normalizedEmail, context.HttpContext.RequestAborted);
                 if (admin == null || admin.IsDeleted || admin.Status != AdministratorStatus.Active)
                 {
-                    context.Result = new ForbidResult();
+                    context.Result = PermissionDenied(context);
                     return;
                 }
 
@@ -74,6 +77,23 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
             return;
         }
 
-        context.Result = new ForbidResult();
+        context.Result = PermissionDenied(context);
+    }
+
+    private static ObjectResult PermissionDenied(AuthorizationFilterContext context)
+    {
+        var correlationContext = context.HttpContext.RequestServices.GetService<ICorrelationContext>();
+        var correlationId = string.IsNullOrWhiteSpace(correlationContext?.CorrelationId)
+            ? context.HttpContext.TraceIdentifier
+            : correlationContext.CorrelationId;
+
+        return new ObjectResult(Response<NoContent>.Fail(
+            "Permission denied.",
+            StatusCodes.Status403Forbidden,
+            DocumentManagementReasonCodes.PermissionDenied,
+            correlationId))
+        {
+            StatusCode = StatusCodes.Status403Forbidden
+        };
     }
 }

@@ -27,6 +27,7 @@
     var activeController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
     var currentPath = Context.Request.Path.Value ?? string.Empty;
     var canReadReferenceData = PermissionClaims.HasPermission(User, "Platform.BusinessReferenceData.Read");
+    var canViewWorkflow = PermissionClaims.HasPermission(User, "platform.workflow.definitions.view");
 }
 <!DOCTYPE html>
 
@@ -190,6 +191,16 @@
                             </a>
                         </li>
                     }
+                    @* MOD-0023 — Workflow Config / Approval Templates (tenant-scoped admin) *@
+                    @if (canViewWorkflow)
+                    {
+                        <li class="menu-item @(currentPath.StartsWith("/Platform/Workflow", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/Platform/Workflow" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-git-merge"></i>
+                                <div>@SharedLocalizer["WorkflowApprovalsMenu"]</div>
+                            </a>
+                        </li>
+                    }
 
                     <!-- Developer Sandbox -->
                     <li class="menu-header small text-uppercase">
@@ -207,6 +218,20 @@
                             <div>@SharedLocalizer["GoldenCompact"]</div>
                         </a>
                     </li>
+
+                    @* MOD-0028-FU03 — Documentation Management / Documentation Structures (TenantShell).
+                       FE-B UX guard: shown only with the view permission; backend (FU02) is authoritative.
+                       The instantiation (company adoption) surface is reached via the "Instantiate Structures"
+                       button on this page rather than its own sidebar entry. *@
+                    @if (Perms.Has("platform.document-management.qms-baselines.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementQmsBaselines" || activeController == "DocumentManagementInstantiations" ? "active" : "")">
+                            <a href="/DocumentManagementQmsBaselines" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-folder-open"></i>
+                                <div>@SharedLocalizer["DocumentationStructures"]</div>
+                            </a>
+                        </li>
+                    }
 
                     @* S-NAV (MOD-0018-FU9) — Access Governance (FE-C). FE-B UX guard: a link shows only
                        when the user holds the matching read/assign permission; backend is authoritative. *@

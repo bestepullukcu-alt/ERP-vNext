@@ -3571,3 +3571,12 @@ div.dt-container div.dt-search input {
     font-weight: 600;
     color: var(--bs-primary);
 }
+
+/* MOD-0028-FU03 — QMS Baselines (import wizard steps + definition tree) */
+.qms-steps { gap: .5rem; }
+.qms-steps .qms-step { padding: .5rem .75rem; border-radius: .375rem; background: var(--bs-secondary-bg, #f5f5f9); color: var(--bs-secondary-color, #697a8d); font-size: .85rem; }
+.qms-steps .qms-step.active { background: var(--bs-primary); color: #fff; }
+.qms-steps .qms-step.done { background: var(--bs-success, #71dd37); color: #fff; }
+.qms-steps .qms-step-num { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: rgba(0,0,0,.08); font-weight: 600; margin-right: .25rem; }
+.qms-tree .qms-toggle { cursor: pointer; }
+.qms-tree .qms-node { line-height: 1.8; }

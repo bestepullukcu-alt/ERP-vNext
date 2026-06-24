@@ -1,0 +1,51 @@
+{
+  "catalog_version": "2026.06.19-document-management-qms",
+  "module": "BusinessReferenceData",
+  "note": "MOD-0028-FU04/FU05 tenant designer published governance dropdown values.",
+  "sets": [
+    {
+      "set_code": "qms-document-class",
+      "set_name": "QMS Document Class",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "Document class values for documentation structure nodes.",
+      "values": [
+        { "value_code": "SOP", "display_name": "SOP", "description": "Standard operating procedure.", "is_active": true, "sort_order": 10 },
+        { "value_code": "Policy", "display_name": "Policy", "description": "Policy document.", "is_active": true, "sort_order": 20 },
+        { "value_code": "Procedure", "display_name": "Procedure", "description": "Procedure document.", "is_active": true, "sort_order": 30 },
+        { "value_code": "Work Instruction", "display_name": "Work Instruction", "description": "Work instruction document.", "is_active": true, "sort_order": 40 },
+        { "value_code": "Form", "display_name": "Form", "description": "Form document.", "is_active": true, "sort_order": 50 },
+        { "value_code": "Record", "display_name": "Record", "description": "Record document.", "is_active": true, "sort_order": 60 },
+        { "value_code": "Manual", "display_name": "Manual", "description": "Manual document.", "is_active": true, "sort_order": 70 }
+      ]
+    },
+    {
+      "set_code": "qms-document-classification",
+      "set_name": "QMS Document Classification",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "Default classification values for documentation structure nodes.",
+      "values": [
+        { "value_code": "Public", "display_name": "Public", "description": "Publicly shareable content.", "is_active": true, "sort_order": 10 },
+        { "value_code": "Internal", "display_name": "Internal", "description": "Internal company content.", "is_active": true, "sort_order": 20 },
+        { "value_code": "Confidential", "display_name": "Confidential", "description": "Confidential content.", "is_active": true, "sort_order": 30 },
+        { "value_code": "Restricted", "display_name": "Restricted", "description": "Restricted content.", "is_active": true, "sort_order": 40 }
+      ]
+    },
+    {
+      "set_code": "qms-document-retention",
+      "set_name": "QMS Document Retention",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "Default retention hints for documentation structure nodes.",
+      "values": [
+        { "value_code": "1 Year", "display_name": "1 Year", "description": "Retain for one year.", "is_active": true, "sort_order": 10 },
+        { "value_code": "3 Years", "display_name": "3 Years", "description": "Retain for three years.", "is_active": true, "sort_order": 20 },
+        { "value_code": "5 Years", "display_name": "5 Years", "description": "Retain for five years.", "is_active": true, "sort_order": 30 },
+        { "value_code": "7 Years", "display_name": "7 Years", "description": "Retain for seven years.", "is_active": true, "sort_order": 40 },
+        { "value_code": "10 Years", "display_name": "10 Years", "description": "Retain for ten years.", "is_active": true, "sort_order": 50 },
+        { "value_code": "Permanent", "display_name": "Permanent", "description": "Permanent retention.", "is_active": true, "sort_order": 60 }
+      ]
+    }
+  ]
+}

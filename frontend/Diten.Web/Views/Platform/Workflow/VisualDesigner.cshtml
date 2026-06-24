@@ -1,0 +1,405 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["VisualDesigner"].Value;
+    var definitionId = ViewData["DefinitionId"]?.ToString() ?? string.Empty;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h4 class="mb-1">@Localizer["VisualDesigner"]</h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/Platform/Workflow">@Localizer["PageTitle"]</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/Platform/Workflow/Definitions/@definitionId">
+                        <span id="wf-meta-code">—</span>
+                        <span class="mx-1">/</span>
+                        <span id="wf-meta-name">—</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Localizer["VisualDesigner"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" id="wf-vd-validate" class="btn btn-label-secondary">
+            <i class="icon-base bx bx-check-shield me-1"></i>@Localizer["ValidateDiagram"]
+        </button>
+        <button type="button" id="wf-vd-generate" class="btn btn-primary">
+            <i class="icon-base bx bx-cog me-1"></i>@Localizer["GenerateDefinitionJson"]
+        </button>
+        <button type="button" id="wf-vd-usepublish" class="btn btn-label-primary">
+            <i class="icon-base bx bx-cloud-upload me-1"></i>@Localizer["UseInPublish"]
+        </button>
+        <div class="dropdown">
+            <a href="javascript:;" class="btn btn-icon btn-label-secondary dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                <i class="bx bx-dots-vertical-rounded icon-md"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end m-0">
+                <a href="javascript:void(0);" class="dropdown-item" id="wf-vd-preview">
+                    <i class="bx bx-code-alt me-2"></i>@Localizer["PreviewDefinitionJson"]
+                </a>
+                <a href="javascript:void(0);" class="dropdown-item" id="wf-vd-export">
+                    <i class="bx bx-export me-2"></i>@Localizer["ExportBpmnXml"]
+                </a>
+                <a href="javascript:void(0);" class="dropdown-item" id="wf-vd-import">
+                    <i class="bx bx-import me-2"></i>@Localizer["ImportBpmnXml"]
+                </a>
+            </div>
+        </div>
+        <input type="file" id="wf-vd-importfile" accept=".bpmn,.xml,application/xml,text/xml" class="d-none" />
+    </div>
+</div>
+
+<div id="wf-vd-status" class="alert d-none" role="alert"></div>
+
+<div class="workflow-visual-designer-shell">
+    <section class="workflow-bpmn-surface">
+        <div class="alert alert-primary alert-dismissible mb-3" role="alert">
+            <h5 class="alert-heading d-flex align-items-center flex-wrap gap-1 mb-1">
+                <span class="alert-icon rounded-circle"><i class="icon-base bx bx-palette"></i></span>
+                @Localizer["VisualDesigner"]
+            </h5>
+            <p class="mb-2 small">@Localizer["VisualDesignerIntro"]</p>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="badge bg-label-primary">1</span>
+                <span class="small">@Localizer["SelectedElementProperties"]</span>
+                <span class="badge bg-label-primary">2</span>
+                <span class="small">@Localizer["GenerateDefinitionJson"]</span>
+                <span class="badge bg-label-primary">3</span>
+                <span class="small">@Localizer["UseInPublish"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="card workflow-bpmn-card">
+            <div id="wf-vd-canvas" class="workflow-bpmn-canvas"></div>
+        </div>
+    </section>
+
+    <aside class="workflow-bpmn-properties">
+        <div id="wf-vd-noselection" class="card mb-3">
+            <div class="card-body text-center py-4">
+                <i class="icon-base bx bx-pointer text-muted mb-2" style="font-size: 2rem;"></i>
+                <p class="text-muted small mb-0">@Localizer["SelectAnElement"]</p>
+            </div>
+        </div>
+
+        <form id="wf-vd-props" class="d-none" novalidate>
+            <!-- Identity Section -->
+            <section class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["SelectedElementProperties"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="wf-vd-elementid">@Localizer["ElementId"]</label>
+                        <input id="wf-vd-elementid" class="form-control" readonly />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-medium" for="wf-vd-stepcode">@Localizer["StepCode"]</label>
+                        <input id="wf-vd-stepcode" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-medium" for="wf-vd-stepname">@Localizer["StepName"]</label>
+                        <input id="wf-vd-stepname" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="wf-vd-steptype">@Localizer["StepType"]</label>
+                        <select id="wf-vd-steptype" class="form-select">
+                            <option value="approval" selected>Approval</option>
+                            <option value="review">Review</option>
+                            <option value="task">Task</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="wf-vd-candidates">@Localizer["CandidatePrincipalIds"]</label>
+                        <div class="btn-group btn-group-sm w-100 mb-2" role="group" aria-label="@Localizer["PrincipalType"]">
+                            <input type="radio" class="btn-check" name="wf-vd-candidates-type" id="wf-vd-candidates-type-user" value="user" autocomplete="off" checked />
+                            <label class="btn btn-outline-primary" for="wf-vd-candidates-type-user">@Localizer["Users"]</label>
+                            <input type="radio" class="btn-check" name="wf-vd-candidates-type" id="wf-vd-candidates-type-position" value="position" autocomplete="off" />
+                            <label class="btn btn-outline-primary" for="wf-vd-candidates-type-position">@Localizer["Positions"]</label>
+                        </div>
+                        <select id="wf-vd-candidates" class="form-select" multiple></select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Options Section -->
+            <section class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["Options"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" role="switch" id="wf-vd-commentrequired" />
+                            <label class="form-check-label ms-2" for="wf-vd-commentrequired">@Localizer["CommentRequired"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" role="switch" id="wf-vd-evidencerequired" />
+                            <label class="form-check-label ms-2" for="wf-vd-evidencerequired">@Localizer["EvidenceRequired"]</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLA Settings Section -->
+            <section class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["SlaSettings"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-medium" for="wf-vd-due">@Localizer["DueInMinutes"]</label>
+                        <input id="wf-vd-due" type="number" min="1" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-medium" for="wf-vd-escalate">@Localizer["EscalateAfterMinutes"]</label>
+                        <input id="wf-vd-escalate" type="number" min="1" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-medium" for="wf-vd-timeout">@Localizer["TimeoutAfterMinutes"]</label>
+                        <input id="wf-vd-timeout" type="number" min="1" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="wf-vd-escprincipals">@Localizer["EscalationPrincipalIds"]</label>
+                        <div class="btn-group btn-group-sm w-100 mb-2" role="group" aria-label="@Localizer["PrincipalType"]">
+                            <input type="radio" class="btn-check" name="wf-vd-escprincipals-type" id="wf-vd-escprincipals-type-user" value="user" autocomplete="off" checked />
+                            <label class="btn btn-outline-primary" for="wf-vd-escprincipals-type-user">@Localizer["Users"]</label>
+                            <input type="radio" class="btn-check" name="wf-vd-escprincipals-type" id="wf-vd-escprincipals-type-position" value="position" autocomplete="off" />
+                            <label class="btn btn-outline-primary" for="wf-vd-escprincipals-type-position">@Localizer["Positions"]</label>
+                        </div>
+                        <select id="wf-vd-escprincipals" class="form-select" multiple></select>
+                    </div>
+                </div>
+            </section>
+        </form>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">@Localizer["DefinitionJsonPreview"]</h5>
+            </div>
+            <div class="card-body">
+                <textarea id="wf-dz-preview" class="form-control font-monospace workflow-json-preview" spellcheck="false" readonly></textarea>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<div class="modal fade" id="wf-publish-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">@Localizer["PublishDefinition"] <span id="wf-publish-title-code" class="text-muted"></span></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button></div>
+        <div class="modal-body">
+            <input type="hidden" id="wf-publish-definitionid" />
+            <div id="wf-publish-error" class="alert alert-danger d-none"></div>
+            <div id="wf-publish-result" class="d-none mb-3"></div>
+            <form id="wf-publish-form" class="row g-3" novalidate>
+                <div class="col-12"><label class="form-label" for="wf-publish-json">@Localizer["DefinitionJson"] <span class="text-danger">*</span></label><textarea id="wf-publish-json" class="form-control font-monospace" rows="8" spellcheck="false" placeholder='{ "stages": [] }'></textarea></div>
+                <div class="col-md-4"><label class="form-label" for="wf-publish-schema">@Localizer["SchemaVersion"] <span class="text-danger">*</span></label><input id="wf-publish-schema" class="form-control" placeholder="1.0" /></div>
+                <div class="col-md-4"><label class="form-label" for="wf-publish-expression">@Localizer["ExpressionVersion"] <span class="text-danger">*</span></label><input id="wf-publish-expression" class="form-control" placeholder="1.0" /></div>
+                <div class="col-md-4"><label class="form-label" for="wf-publish-expected">@Localizer["ExpectedTemplateVersion"]</label><input id="wf-publish-expected" type="number" min="0" class="form-control" /></div>
+                <div class="col-md-6"><label class="form-label" for="wf-publish-rowversion">@Localizer["ExpectedRowVersion"]</label><input id="wf-publish-rowversion" class="form-control" /></div>
+                <div class="col-md-6"><label class="form-label" for="wf-publish-reason">@Localizer["PublishReason"]</label><input id="wf-publish-reason" class="form-control" /></div>
+            </form>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button><button type="button" id="wf-publish-submit" class="btn btn-primary">@Localizer["Publish"]</button></div>
+    </div></div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/bpmn-js/assets/diagram-js.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/bpmn-js/assets/bpmn-js.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css" asp-append-version="true" />
+    <style>
+        .workflow-visual-designer-shell {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .workflow-bpmn-surface {
+            min-width: 0;
+        }
+
+
+
+        .workflow-bpmn-card {
+            overflow: hidden;
+        }
+
+        .workflow-bpmn-canvas {
+            height: min(58vh, 620px);
+            min-height: 460px;
+            position: relative;
+            overflow: hidden;
+            background: var(--bs-body-bg);
+        }
+
+
+        .workflow-bpmn-properties {
+            min-width: 0;
+        }
+
+        .workflow-json-preview {
+            min-height: 220px;
+            resize: vertical;
+        }
+
+        .workflow-bpmn-canvas .djs-palette {
+            top: 1rem;
+            left: 1rem;
+            width: 9.75rem;
+            border-color: var(--bs-border-color);
+            box-shadow: var(--bs-box-shadow-sm);
+            background: var(--bs-paper-bg, var(--bs-body-bg));
+        }
+
+        .workflow-bpmn-canvas .djs-palette .entry {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            float: none !important;
+            width: auto !important;
+            height: 1.75rem !important;
+            margin: .125rem .25rem !important;
+            padding: 0 .5rem !important;
+            border-radius: .25rem !important;
+            color: var(--bs-body-color) !important;
+            font-size: .75rem !important;
+            line-height: 1.2 !important;
+            opacity: 1 !important;
+        }
+
+        .workflow-bpmn-canvas .djs-palette .entry::before,
+        .workflow-bpmn-canvas [class^="bpmn-icon-"]::before,
+        .workflow-bpmn-canvas [class*=" bpmn-icon-"]::before {
+            display: inline-block !important;
+            color: var(--bs-body-color) !important;
+            font-family: "Public Sans", sans-serif !important;
+            font-size: .75rem !important;
+            font-style: normal !important;
+            font-weight: 600 !important;
+            line-height: 1.2 !important;
+            opacity: 1 !important;
+            text-align: left !important;
+            white-space: nowrap !important;
+        }
+
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-hand-tool::before { content: "Hand" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-lasso-tool::before { content: "Lasso" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-space-tool::before { content: "Space" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-connection-multi::before,
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-connection::before { content: "Connect" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-start-event-none::before { content: "Start Event" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-intermediate-event-none::before { content: "Intermediate" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-end-event-none::before { content: "End Event" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-gateway-none::before { content: "Gateway" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-task::before,
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-task-none::before { content: "Task" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-subprocess-expanded::before { content: "Subprocess" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-data-object::before { content: "Data Object" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-data-store::before { content: "Data Store" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-participant::before { content: "Pool" !important; }
+        .workflow-bpmn-canvas .djs-palette .bpmn-icon-group::before { content: "Group" !important; }
+
+        .workflow-bpmn-canvas .djs-palette .separator {
+            width: auto;
+            margin: .35rem .5rem;
+        }
+
+        .workflow-bpmn-canvas .bjs-powered-by {
+            right: 1rem !important;
+            bottom: 1rem !important;
+        }
+
+        /* Context pad: replace the broken bpmn-font glyphs with text labels (mirrors the palette). */
+        .workflow-bpmn-canvas .djs-context-pad {
+            width: auto !important;
+        }
+
+        .workflow-bpmn-canvas .djs-context-pad.open {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: .125rem !important;
+            width: max-content !important;
+            padding: .25rem !important;
+            border: 1px solid var(--bs-border-color) !important;
+            border-radius: .375rem !important;
+            box-shadow: var(--bs-box-shadow-sm) !important;
+            background: var(--bs-paper-bg, var(--bs-body-bg)) !important;
+        }
+
+        .workflow-bpmn-canvas .djs-context-pad .entry {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            width: auto !important;
+            min-width: 8.5rem !important;
+            height: 1.75rem !important;
+            margin: 0 !important;
+            padding: 0 .5rem !important;
+            border-radius: .25rem !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            color: var(--bs-body-color) !important;
+            font-size: .75rem !important;
+            line-height: 1.2 !important;
+        }
+
+        .workflow-bpmn-canvas .djs-context-pad .entry:hover {
+            background: var(--bs-secondary-bg, rgba(0, 0, 0, .06)) !important;
+        }
+
+        .workflow-bpmn-canvas .djs-context-pad .entry::before {
+            display: inline-block !important;
+            color: var(--bs-body-color) !important;
+            font-family: "Public Sans", sans-serif !important;
+            font-size: .75rem !important;
+            font-style: normal !important;
+            font-weight: 600 !important;
+            line-height: 1.2 !important;
+            white-space: nowrap !important;
+        }
+
+        .workflow-bpmn-canvas .djs-context-pad .bpmn-icon-trash::before { content: "Delete" !important; }
+        .workflow-bpmn-canvas .djs-context-pad .bpmn-icon-connection-multi::before,
+        .workflow-bpmn-canvas .djs-context-pad .bpmn-icon-connection::before { content: "Connect" !important; }
+        .workflow-bpmn-canvas .djs-context-pad .bpmn-icon-end-event-none::before { content: "Append End Event" !important; }
+        .workflow-bpmn-canvas .djs-context-pad .bpmn-icon-gateway-none::before { content: "Append Gateway" !important; }
+        .workflow-bpmn-canvas .djs-context-pad .bpmn-icon-task::before,
+        .workflow-bpmn-canvas .djs-context-pad .bpmn-icon-task-none::before { content: "Append Task" !important; }
+        .workflow-bpmn-canvas .djs-context-pad .bpmn-icon-intermediate-event-none::before { content: "Append Intermediate Event" !important; }
+        .workflow-bpmn-canvas .djs-context-pad .bpmn-icon-text-annotation::before { content: "Append Annotation" !important; }
+        .workflow-bpmn-canvas .djs-context-pad .bpmn-icon-screw-wrench::before { content: "Change Type" !important; }
+
+        @@media (max-width: 991.98px) {
+            .workflow-visual-designer-shell {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            .workflow-bpmn-canvas {
+                height: 460px;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_WorkflowL10n" />
+    <script>window.WorkflowDefinitionId = '@Html.Raw(definitionId)';</script>
+    <script src="~/assets/js/Platform/Workflow/workflow.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Workflow/visual-designer-page.js" asp-append-version="true"></script>
+    <script src="~/assets/vendor/libs/bpmn-js/bpmn-modeler.production.min.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Workflow/workflow.bpmn-designer.js" asp-append-version="true"></script>
+}

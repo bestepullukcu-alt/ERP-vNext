@@ -22,8 +22,9 @@ function Launch-Service {
     )
     Write-Host "Starting $Name on port $Port with watch..." -ForegroundColor Green
     
+    $absPath = (Resolve-Path $Path).Path
     # We use Start-Process to run cmd.exe in a new window, which runs dotnet watch run
-    Start-Process cmd.exe -ArgumentList "/k title Diten ERP - $Name && cd `"$Path`" && dotnet watch run --non-interactive --launch-profile http"
+    Start-Process cmd.exe -ArgumentList "/k title Diten ERP - $Name && cd `"$absPath`" && dotnet watch run --non-interactive --launch-profile http"
 }
 
 # Launch all services

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PageTitle" xml:space="preserve"><value>Onay İş Akışları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Onay iş akışı şablonlarını yapılandırın, örnek başlatın, görevleri işleyin ve SLA yükseltmelerini yönetin.</value></data>
+  <data name="TabDefinitions" xml:space="preserve"><value>Tanımlar</value></data>
+  <data name="TabInstances" xml:space="preserve"><value>Örnekler</value></data>
+  <data name="TabTasks" xml:space="preserve"><value>Görevler</value></data>
+  <data name="TabSlaRules" xml:space="preserve"><value>SLA Kuralları</value></data>
+  <data name="TabEscalations" xml:space="preserve"><value>Yükseltmeler</value></data>
+  <data name="TabTransitionGate" xml:space="preserve"><value>Geçiş Kapısı</value></data>
+  <data name="TabVersions" xml:space="preserve"><value>Sürümler</value></data>
+  <data name="TemplateCode" xml:space="preserve"><value>Şablon Kodu</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="ActivePublishedVersionId" xml:space="preserve"><value>Aktif Yayınlanan Sürüm</value></data>
+  <data name="CurrentVersionId" xml:space="preserve"><value>Geçerli Sürüm</value></data>
+  <data name="HasActivePublished" xml:space="preserve"><value>Aktif Yayın</value></data>
+  <data name="Detail" xml:space="preserve"><value>Detay</value></data>
+  <data name="Publish" xml:space="preserve"><value>Yayınla</value></data>
+  <data name="StartInstance" xml:space="preserve"><value>Örnek Başlat</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Yenile</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Veri yüklenemedi.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Kayıt bulunamadı.</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="Close" xml:space="preserve"><value>Kapat</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="Generate" xml:space="preserve"><value>Üret</value></data>
+  <data name="New" xml:space="preserve"><value>Yeni</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Tanımlara Dön</value></data>
+  <data name="Metadata" xml:space="preserve"><value>Şablon Üst Verisi</value></data>
+  <data name="CreateDefinition" xml:space="preserve"><value>Yeni İş Akışı Tanımı</value></data>
+  <data name="TemplateCodeRequired" xml:space="preserve"><value>Şablon Kodu zorunludur.</value></data>
+  <data name="NameRequired" xml:space="preserve"><value>Ad zorunludur.</value></data>
+  <data name="DefinitionCreated" xml:space="preserve"><value>İş akışı tanımı oluşturuldu.</value></data>
+  <data name="PublishDefinition" xml:space="preserve"><value>İş Akışı Tanımını Yayınla</value></data>
+  <data name="DefinitionJson" xml:space="preserve"><value>Tanım JSON</value></data>
+  <data name="SchemaVersion" xml:space="preserve"><value>Şema Sürümü</value></data>
+  <data name="ExpressionVersion" xml:space="preserve"><value>İfade Sürümü</value></data>
+  <data name="ExpectedTemplateVersion" xml:space="preserve"><value>Beklenen Şablon Sürümü</value></data>
+  <data name="ExpectedRowVersion" xml:space="preserve"><value>Beklenen Satır Sürümü</value></data>
+  <data name="PublishReason" xml:space="preserve"><value>Yayın Gerekçesi</value></data>
+  <data name="DefinitionJsonRequired" xml:space="preserve"><value>Tanım JSON zorunludur.</value></data>
+  <data name="SchemaVersionRequired" xml:space="preserve"><value>Şema Sürümü zorunludur.</value></data>
+  <data name="ExpressionVersionRequired" xml:space="preserve"><value>İfade Sürümü zorunludur.</value></data>
+  <data name="PublishSucceeded" xml:space="preserve"><value>Başarıyla yayınlandı.</value></data>
+  <data name="VersionNumber" xml:space="preserve"><value>Sürüm Numarası</value></data>
+  <data name="Immutable" xml:space="preserve"><value>Değiştirilemez</value></data>
+  <data name="TemplateVersionId" xml:space="preserve"><value>Şablon Sürüm Kimliği</value></data>
+  <data name="ViewDefinitionJson" xml:space="preserve"><value>Tanım JSON Görüntüle</value></data>
+  <data name="PublishedAt" xml:space="preserve"><value>Yayınlanma</value></data>
+  <data name="PublishedBy" xml:space="preserve"><value>Yayınlayan</value></data>
+  <data name="StartInstanceTitle" xml:space="preserve"><value>İş Akışı Örneği Başlat</value></data>
+  <data name="ObjectType" xml:space="preserve"><value>Nesne Tipi</value></data>
+  <data name="ObjectId" xml:space="preserve"><value>Nesne Kimliği</value></data>
+  <data name="ObjectRef" xml:space="preserve"><value>Nesne Referansı</value></data>
+  <data name="CandidatePrincipalIds" xml:space="preserve"><value>Aday Yetkili Kimlikleri</value></data>
+  <data name="CandidatePrincipalIdsHint" xml:space="preserve"><value>Virgülle ayrılmış yetkili kimlikleri.</value></data>
+  <data name="PrincipalType" xml:space="preserve"><value>Atama Türü</value></data>
+  <data name="Users" xml:space="preserve"><value>Kullanıcılar</value></data>
+  <data name="Positions" xml:space="preserve"><value>Pozisyonlar</value></data>
+  <data name="PublishRequiredFirst" xml:space="preserve"><value>Önce tanımı yayınlayın.</value></data>
+  <data name="PublishNotAllowedFromStatus" xml:space="preserve"><value>Bu tanım artık yayınlanamaz.</value></data>
+  <data name="ApprovalSteps" xml:space="preserve"><value>Onay Adımları</value></data>
+  <data name="AddStep" xml:space="preserve"><value>Adım Ekle</value></data>
+  <data name="RemoveStep" xml:space="preserve"><value>Adımı Kaldır</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Yukarı Taşı</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Aşağı Taşı</value></data>
+  <data name="Step" xml:space="preserve"><value>Adım</value></data>
+  <data name="NoStepsYet" xml:space="preserve"><value>En az bir onay adımı ekleyin.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Gerekçe Kodu</value></data>
+  <data name="IdempotencyKey" xml:space="preserve"><value>İdempotans Anahtarı</value></data>
+  <data name="CommentRequired" xml:space="preserve"><value>Yorum Zorunlu</value></data>
+  <data name="EvidenceRequired" xml:space="preserve"><value>Kanıt Zorunlu</value></data>
+  <data name="DueAt" xml:space="preserve"><value>Son Tarih</value></data>
+  <data name="TemplateRequired" xml:space="preserve"><value>Şablon Kimliği veya Şablon Kodu zorunludur.</value></data>
+  <data name="ObjectTypeRequired" xml:space="preserve"><value>Nesne Tipi zorunludur.</value></data>
+  <data name="ObjectIdRequired" xml:space="preserve"><value>Nesne Kimliği zorunludur.</value></data>
+  <data name="CandidatesRequired" xml:space="preserve"><value>En az bir Aday Yetkili Kimliği zorunludur.</value></data>
+  <data name="InstanceStarted" xml:space="preserve"><value>İş akışı örneği başlatıldı.</value></data>
+  <data name="InstanceId" xml:space="preserve"><value>Örnek Kimliği</value></data>
+  <data name="TemplateId" xml:space="preserve"><value>Şablon Kimliği</value></data>
+  <data name="StageStep" xml:space="preserve"><value>Aşama / Adım</value></data>
+  <data name="StartedAt" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="CompletedAt" xml:space="preserve"><value>Tamamlanma</value></data>
+  <data name="TaskId" xml:space="preserve"><value>Görev Kimliği</value></data>
+  <data name="WorkflowInstanceId" xml:space="preserve"><value>İş Akışı Örnek Kimliği</value></data>
+  <data name="ActiveTaskId" xml:space="preserve"><value>Aktif Görev Kimliği</value></data>
+  <data name="ActionedBy" xml:space="preserve"><value>İşleyen</value></data>
+  <data name="Approve" xml:space="preserve"><value>Onayla</value></data>
+  <data name="Reject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="Delegate" xml:space="preserve"><value>Devret</value></data>
+  <data name="RequestInfo" xml:space="preserve"><value>Bilgi İste</value></data>
+  <data name="Comment" xml:space="preserve"><value>Yorum</value></data>
+  <data name="EvidenceRef" xml:space="preserve"><value>Kanıt Referansı</value></data>
+  <data name="ActorId" xml:space="preserve"><value>Aktör Kimliği</value></data>
+  <data name="DelegatePrincipalId" xml:space="preserve"><value>Devredilen Yetkili Kimliği</value></data>
+  <data name="TargetPrincipalId" xml:space="preserve"><value>Hedef Yetkili Kimliği</value></data>
+  <data name="ActorIdRequired" xml:space="preserve"><value>Aktör Kimliği zorunludur.</value></data>
+  <data name="ReasonCodeRequired" xml:space="preserve"><value>Gerekçe Kodu zorunludur.</value></data>
+  <data name="IdempotencyKeyRequired" xml:space="preserve"><value>İdempotans Anahtarı zorunludur.</value></data>
+  <data name="DelegatePrincipalRequired" xml:space="preserve"><value>Devredilen Yetkili Kimliği zorunludur.</value></data>
+  <data name="IdempotentResponse" xml:space="preserve"><value>Zaten işlendi — idempotent yanıt döndü.</value></data>
+  <data name="TaskActionDone" xml:space="preserve"><value>Görev işlemi tamamlandı.</value></data>
+  <data name="StageCode" xml:space="preserve"><value>Aşama Kodu</value></data>
+  <data name="StepCode" xml:space="preserve"><value>Adım Kodu</value></data>
+  <data name="DueInMinutes" xml:space="preserve"><value>Süre (dk)</value></data>
+  <data name="EscalateAfterMinutes" xml:space="preserve"><value>Yükselt (dk)</value></data>
+  <data name="TimeoutAfterMinutes" xml:space="preserve"><value>Zaman Aşımı (dk)</value></data>
+  <data name="EscalationPrincipalIds" xml:space="preserve"><value>Yükseltme Yetkili Kimlikleri</value></data>
+  <data name="IsActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="CreateSlaRule" xml:space="preserve"><value>Yeni SLA Kuralı</value></data>
+  <data name="FilterByTemplate" xml:space="preserve"><value>Şablon Kimliğine göre Filtrele</value></data>
+  <data name="StageStepRequired" xml:space="preserve"><value>Aşama Kodu ve Adım Kodu zorunludur.</value></data>
+  <data name="DueMinutesPositive" xml:space="preserve"><value>Süre dakikası 0'dan büyük olmalıdır.</value></data>
+  <data name="EscalateGteDue" xml:space="preserve"><value>Yükseltme dakikası, Süre dakikasından büyük/eşit olmalıdır.</value></data>
+  <data name="TimeoutGteEscalate" xml:space="preserve"><value>Zaman aşımı dakikası, Yükseltme dakikasından büyük/eşit olmalıdır.</value></data>
+  <data name="EscalationPrincipalsRequired" xml:space="preserve"><value>Yükseltme Yetkili Kimlikleri zorunludur.</value></data>
+  <data name="SlaRuleCreated" xml:space="preserve"><value>SLA kuralı oluşturuldu.</value></data>
+  <data name="EscalationRunner" xml:space="preserve"><value>Yükseltme Çalıştırıcı</value></data>
+  <data name="NowUtc" xml:space="preserve"><value>Şimdi (UTC)</value></data>
+  <data name="MaxItems" xml:space="preserve"><value>Maks. Öğe</value></data>
+  <data name="RunEscalations" xml:space="preserve"><value>Yükseltmeleri Çalıştır</value></data>
+  <data name="EvaluatedCount" xml:space="preserve"><value>Değerlendirilen</value></data>
+  <data name="EscalatedCount" xml:space="preserve"><value>Yükseltilen</value></data>
+  <data name="TimedOutCount" xml:space="preserve"><value>Zaman Aşımı</value></data>
+  <data name="SkippedCount" xml:space="preserve"><value>Atlanan</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sonuç yok.</value></data>
+  <data name="EscalationRunComplete" xml:space="preserve"><value>Yükseltme çalışması tamamlandı.</value></data>
+  <data name="Results" xml:space="preserve"><value>Sonuçlar</value></data>
+  <data name="Action" xml:space="preserve"><value>İşlem</value></data>
+  <data name="TaskTransition" xml:space="preserve"><value>Görev Geçişi</value></data>
+  <data name="Idempotent" xml:space="preserve"><value>İdempotent</value></data>
+  <data name="TransitionGateTitle" xml:space="preserve"><value>Geçiş Kapısı Test Paneli</value></data>
+  <data name="TransitionGateDescription" xml:space="preserve"><value>Bir nesne için iş akışı kapısını değerlendirin. Salt okunur — iş durumu değişmez.</value></data>
+  <data name="RequestedTransition" xml:space="preserve"><value>İstenen Geçiş</value></data>
+  <data name="RequestedTargetState" xml:space="preserve"><value>İstenen Hedef Durum</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Değerlendir</value></data>
+  <data name="Decision" xml:space="preserve"><value>Karar</value></data>
+  <data name="GateStatus" xml:space="preserve"><value>Kapı Durumu</value></data>
+  <data name="BlockingReasonCode" xml:space="preserve"><value>Engelleme Gerekçe Kodu</value></data>
+  <data name="BlockingMessage" xml:space="preserve"><value>Engelleme Mesajı</value></data>
+  <data name="IsRequired" xml:space="preserve"><value>zorunludur.</value></data>
+  <data name="PermissionMissing" xml:space="preserve"><value>İzin eksik veya atanmamış.</value></data>
+  <data name="NetworkError" xml:space="preserve"><value>İş akışı ağ geçidine ulaşılamıyor.</value></data>
+  <data name="GatewayUnavailable" xml:space="preserve"><value>İş akışı ağ geçidi vekili kullanılamıyor.</value></data>
+  <data name="NotFound" xml:space="preserve"><value>Bulunamadı.</value></data>
+  <data name="RequestFailed" xml:space="preserve"><value>İstek başarısız oldu.</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>İlişki</value></data>
+  <data name="Designer" xml:space="preserve"><value>Tasarımcı</value></data>
+  <data name="DesignerLite" xml:space="preserve"><value>Tasarımcı Lite</value></data>
+  <data name="DesignerIntro" xml:space="preserve"><value>Tek bir onay aşaması/adımı tanımlayın ve yayınlamak için kararlı bir Tanım JSON üretin — BPMN gerekmez.</value></data>
+  <data name="WorkflowMetadata" xml:space="preserve"><value>İş Akışı Üst Verisi</value></data>
+  <data name="StageName" xml:space="preserve"><value>Aşama Adı</value></data>
+  <data name="StepName" xml:space="preserve"><value>Adım Adı</value></data>
+  <data name="StepType" xml:space="preserve"><value>Adım Tipi</value></data>
+  <data name="ApprovalMode" xml:space="preserve"><value>Onay Modu</value></data>
+  <data name="Assignment" xml:space="preserve"><value>Atama</value></data>
+  <data name="Requirements" xml:space="preserve"><value>Gereksinimler</value></data>
+  <data name="SlaSettings" xml:space="preserve"><value>SLA Ayarları</value></data>
+  <data name="Options" xml:space="preserve"><value>Seçenekler</value></data>
+  <data name="AdvancedOptions" xml:space="preserve"><value>Gelişmiş</value></data>
+  <data name="RequestedObjectType" xml:space="preserve"><value>İstenen Nesne Tipi</value></data>
+  <data name="ManualJsonEdit" xml:space="preserve"><value>JSON'u elle düzenle (gelişmiş)</value></data>
+  <data name="ManualJsonHint" xml:space="preserve"><value>Etkinleştirildiğinde önizleme düzenlenebilir ve olduğu gibi kullanılır; geçerli JSON olmalıdır.</value></data>
+  <data name="GenerateDefinitionJson" xml:space="preserve"><value>Tanım JSON Üret</value></data>
+  <data name="UseInPublish" xml:space="preserve"><value>Yayında Kullan</value></data>
+  <data name="CopyJson" xml:space="preserve"><value>JSON Kopyala</value></data>
+  <data name="ResetDesigner" xml:space="preserve"><value>Tasarımcıyı Sıfırla</value></data>
+  <data name="DefinitionJsonPreview" xml:space="preserve"><value>Tanım JSON Önizleme</value></data>
+  <data name="DesignerJsonReady" xml:space="preserve"><value>Tanım JSON üretildi.</value></data>
+  <data name="InvalidDesignerInput" xml:space="preserve"><value>Lütfen işaretli tasarımcı alanlarını düzeltin.</value></data>
+  <data name="InvalidJson" xml:space="preserve"><value>JSON geçerli değil.</value></data>
+  <data name="JsonCopied" xml:space="preserve"><value>Tanım JSON panoya kopyalandı.</value></data>
+  <data name="CopyFailed" xml:space="preserve"><value>Panoya kopyalanamadı.</value></data>
+  <data name="PublishUsingDesignerJson" xml:space="preserve"><value>Tasarımcı JSON ile yayınla</value></data>
+  <data name="GenerateFirst" xml:space="preserve"><value>Önce Tanım JSON üretin.</value></data>
+  <data name="ValidateFirst" xml:space="preserve"><value>Lütfen önce diyagramı doğrulayın.</value></data>
+  <data name="StepNameRequired" xml:space="preserve"><value>Adım Adı zorunludur.</value></data>
+  <data name="StageCodeRequired" xml:space="preserve"><value>Aşama Kodu zorunludur.</value></data>
+  <data name="StageNameRequired" xml:space="preserve"><value>Aşama Adı zorunludur.</value></data>
+  <data name="StepCodeRequired" xml:space="preserve"><value>Adım Kodu zorunludur.</value></data>
+  <data name="VisualDesigner" xml:space="preserve"><value>Görsel Tasarımcı</value></data>
+  <data name="VisualDesignerIntro" xml:space="preserve"><value>Onay akışını BPMN tuvalinde çizin. BPMN yalnızca tasarım katmanıdır; çalışma zamanı mevcut iş akışı motoru + Tanım JSON olmaya devam eder.</value></data>
+  <data name="BpmnCanvas" xml:space="preserve"><value>BPMN Tuvali</value></data>
+  <data name="SelectedElementProperties" xml:space="preserve"><value>Seçili Öğe Özellikleri</value></data>
+  <data name="SelectAnElement" xml:space="preserve"><value>Özelliklerini düzenlemek için tuvalde bir görev seçin.</value></data>
+  <data name="ElementId" xml:space="preserve"><value>Öğe Kimliği</value></data>
+  <data name="ValidateDiagram" xml:space="preserve"><value>Diyagramı Doğrula</value></data>
+  <data name="PreviewDefinitionJson" xml:space="preserve"><value>Tanım JSON Önizle</value></data>
+  <data name="ExportBpmnXml" xml:space="preserve"><value>BPMN XML Dışa Aktar</value></data>
+  <data name="ImportBpmnXml" xml:space="preserve"><value>BPMN XML İçe Aktar</value></data>
+  <data name="UnsupportedBpmnElement" xml:space="preserve"><value>MOD-0023 çalışma zamanı için desteklenmeyen BPMN öğesi.</value></data>
+  <data name="MissingStartEvent" xml:space="preserve"><value>Diyagramda tam olarak bir başlangıç olayı olmalıdır.</value></data>
+  <data name="MissingEndEvent" xml:space="preserve"><value>Diyagramda en az bir bitiş olayı olmalıdır.</value></data>
+  <data name="MissingApprovalTask" xml:space="preserve"><value>Diyagramda en az bir onay görevi olmalıdır.</value></data>
+  <data name="CandidatePrincipalsRequired" xml:space="preserve"><value>Her onay görevi aday yetkili kimlikleri gerektirir.</value></data>
+  <data name="InvalidSlaMinutes" xml:space="preserve"><value>SLA dakikaları şunu sağlamalı: Süre &gt; 0, Yükseltme &gt;= Süre, Zaman Aşımı &gt;= Yükseltme.</value></data>
+  <data name="DiagramValid" xml:space="preserve"><value>Diyagram geçerli.</value></data>
+  <data name="DiagramJsonGenerated" xml:space="preserve"><value>Diyagramdan Tanım JSON üretildi.</value></data>
+  <data name="BpmnXmlImported" xml:space="preserve"><value>BPMN XML içe aktarıldı.</value></data>
+  <data name="BpmnXmlExported" xml:space="preserve"><value>BPMN XML dışa aktarıldı.</value></data>
+  <data name="BpmnImportFailed" xml:space="preserve"><value>BPMN XML içe aktarılamadı.</value></data>
+  <data name="ExclusiveGatewayWarning" xml:space="preserve"><value>Dışlayıcı ağ geçitleri diyagramda kabul edilir ancak henüz çalışma zamanı dallarına eşlenmez.</value></data>
+  <data name="BpmnLibraryMissing" xml:space="preserve"><value>BPMN tasarımcı kütüphanesi yüklenemedi.</value></data>
+</root>

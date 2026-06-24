@@ -1,0 +1,55 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["TabVersions"].Value;
+    var definitionId = ViewData["DefinitionId"]?.ToString() ?? string.Empty;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-1">@Localizer["TabVersions"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/Workflow">@Localizer["PageTitle"]</a></li>
+                <li class="breadcrumb-item">
+                    <a href="/Platform/Workflow/Definitions/@definitionId">
+                        <span id="wf-meta-code">—</span>
+                        <span class="mx-1">/</span>
+                        <span id="wf-meta-name">—</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Localizer["TabVersions"]</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+@* Golden compact DataTable v2 contract: inline filter + skeleton card + data-dt-standard="v2". *@
+<partial name="_Filter" />
+<partial name="_VersionsDataTable" />
+
+<div class="modal fade" id="wf-ver-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">@Localizer["ViewDefinitionJson"] <span id="wf-ver-modal-version" class="text-muted"></span></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
+        </div>
+        <div class="modal-body">
+            <textarea id="wf-ver-json" class="form-control font-monospace" rows="18" spellcheck="false" readonly></textarea>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
+            <button type="button" id="wf-ver-copy" class="btn btn-primary"><i class="icon-base bx bx-copy me-1"></i>@SharedLocalizer["Copy"]</button>
+        </div>
+    </div></div>
+</div>
+
+@section Scripts {
+    <partial name="_WorkflowL10n" />
+    <script>window.WorkflowDefinitionId = '@Html.Raw(definitionId)';</script>
+    <script src="~/assets/js/Platform/Workflow/workflow.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Workflow/versions.js" asp-append-version="true"></script>
+}

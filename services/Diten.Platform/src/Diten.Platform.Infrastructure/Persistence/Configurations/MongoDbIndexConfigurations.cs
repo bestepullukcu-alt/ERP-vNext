@@ -2,8 +2,10 @@ using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Entities.Audit;
+using Diten.Platform.Domain.Entities.DocumentManagement;
 using Diten.Platform.Domain.Entities.InterfaceRegistry;
 using Diten.Platform.Domain.Entities.Organization;
+using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Models;
@@ -55,6 +57,336 @@ public static class MongoDbIndexConfigurations
         var positionCollection = database.GetCollection<Position>("positions");
         var positionAssignmentCollection = database.GetCollection<PositionAssignment>("position_assignments");
         var moduleCatalogDocuments = database.GetCollection<BsonDocument>("platform_module_catalog");
+        var baselineReleaseCollection = database.GetCollection<BaselineRelease>("document_management_baseline_releases");
+        var collectionDefinitionCollection = database.GetCollection<CollectionDefinition>("document_management_collection_definitions");
+        var baselineSnapshotManifestCollection = database.GetCollection<BaselineSnapshotManifest>("document_management_baseline_snapshot_manifests");
+        var collectionInstanceCollection = database.GetCollection<CollectionInstance>("document_management_collection_instances");
+        var instantiationOperationCollection = database.GetCollection<InstantiationOperation>("document_management_instantiation_operations");
+        var instantiationOutcomeCollection = database.GetCollection<InstantiationOutcome>("document_management_instantiation_outcomes");
+        var workflowTemplateCollection = database.GetCollection<WorkflowTemplate>("workflow_templates");
+        var workflowTemplateVersionCollection = database.GetCollection<WorkflowTemplateVersion>("workflow_template_versions");
+        var workflowInstanceCollection = database.GetCollection<WorkflowInstance>("workflow_instances");
+        var approvalTaskCollection = database.GetCollection<ApprovalTask>("approval_tasks");
+        var runtimeAssignmentSnapshotCollection = database.GetCollection<RuntimeAssignmentSnapshot>("workflow_runtime_assignment_snapshots");
+        var workflowTransitionLogCollection = database.GetCollection<WorkflowTransitionLog>("workflow_transition_logs");
+        var workflowSlaRuleCollection = database.GetCollection<SlaEscalationRule>("workflow_sla_rules");
+
+        await baselineReleaseCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<BaselineRelease>(
+                Builders<BaselineRelease>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.BaselineReleaseId),
+                new CreateIndexOptions<BaselineRelease>
+                {
+                    Unique = true,
+                    Name = "ux_dm_baseline_releases_tenant_baseline_id_active",
+                    PartialFilterExpression = Builders<BaselineRelease>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<BaselineRelease>(
+                Builders<BaselineRelease>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_dm_baseline_releases_tenant_status_deleted" })
+        });
+
+        await collectionDefinitionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<CollectionDefinition>(
+                Builders<CollectionDefinition>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.BaselineReleaseId)
+                    .Ascending(x => x.CanonicalId),
+                new CreateIndexOptions<CollectionDefinition>
+                {
+                    Unique = true,
+                    Name = "ux_dm_collection_definitions_tenant_baseline_canonical_active",
+                    PartialFilterExpression = Builders<CollectionDefinition>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<CollectionDefinition>(
+                Builders<CollectionDefinition>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.BaselineReleaseId)
+                    .Ascending(x => x.ParentCanonicalId)
+                    .Ascending(x => x.PathSegment),
+                new CreateIndexOptions<CollectionDefinition>
+                {
+                    Unique = true,
+                    Name = "ux_dm_collection_definitions_sibling_segment_active",
+                    PartialFilterExpression = Builders<CollectionDefinition>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<CollectionDefinition>(
+                Builders<CollectionDefinition>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.BaselineReleaseId)
+                    .Ascending(x => x.DisplayOrder),
+                new CreateIndexOptions { Name = "ix_dm_collection_definitions_tree_order" })
+        });
+
+        await baselineSnapshotManifestCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<BaselineSnapshotManifest>(
+                Builders<BaselineSnapshotManifest>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.BaselineReleaseId),
+                new CreateIndexOptions<BaselineSnapshotManifest>
+                {
+                    Unique = true,
+                    Name = "ux_dm_baseline_snapshot_manifests_tenant_baseline_active",
+                    PartialFilterExpression = Builders<BaselineSnapshotManifest>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await collectionInstanceCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<CollectionInstance>(
+                Builders<CollectionInstance>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.InstanceKey),
+                new CreateIndexOptions<CollectionInstance>
+                {
+                    Unique = true,
+                    Name = "ux_dm_collection_instances_tenant_instance_key_active",
+                    PartialFilterExpression = Builders<CollectionInstance>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<CollectionInstance>(
+                Builders<CollectionInstance>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.CompanyId)
+                    .Ascending(x => x.BaselineReleaseId)
+                    .Ascending(x => x.InstanceToken)
+                    .Ascending(x => x.FullPath),
+                new CreateIndexOptions { Name = "ix_dm_collection_instances_company_baseline_path" })
+        });
+
+        await instantiationOperationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<InstantiationOperation>(
+                Builders<InstantiationOperation>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.OperationId),
+                new CreateIndexOptions<InstantiationOperation>
+                {
+                    Unique = true,
+                    Name = "ux_dm_instantiation_operations_tenant_operation_active",
+                    PartialFilterExpression = Builders<InstantiationOperation>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<InstantiationOperation>(
+                Builders<InstantiationOperation>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.CorrelationId),
+                new CreateIndexOptions { Name = "ix_dm_instantiation_operations_correlation" })
+        });
+
+        await instantiationOutcomeCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<InstantiationOutcome>(
+                Builders<InstantiationOutcome>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.OperationId)
+                    .Ascending(x => x.NodeKey),
+                new CreateIndexOptions<InstantiationOutcome>
+                {
+                    Unique = true,
+                    Name = "ux_dm_instantiation_outcomes_tenant_operation_node_active",
+                    PartialFilterExpression = Builders<InstantiationOutcome>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<InstantiationOutcome>(
+                Builders<InstantiationOutcome>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.OperationId)
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.Retryable),
+                new CreateIndexOptions { Name = "ix_dm_instantiation_outcomes_retry" })
+        });
+
+        // MOD-0023 Batch 01 — workflow engine, tenant-first compound indexes. Unique constraints are
+        // tenant-scoped and partial on IsDeleted == false so soft-deleted rows never block re-use.
+        await workflowTemplateCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<WorkflowTemplate>(
+                Builders<WorkflowTemplate>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.TemplateCode),
+                new CreateIndexOptions<WorkflowTemplate>
+                {
+                    Unique = true,
+                    Name = "ux_workflow_templates_tenant_code_active",
+                    PartialFilterExpression = Builders<WorkflowTemplate>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<WorkflowTemplate>(
+                Builders<WorkflowTemplate>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_workflow_templates_tenant_status_deleted" })
+        });
+
+        await workflowTemplateVersionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<WorkflowTemplateVersion>(
+                Builders<WorkflowTemplateVersion>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.TemplateId)
+                    .Ascending(x => x.VersionNumber),
+                new CreateIndexOptions<WorkflowTemplateVersion>
+                {
+                    Unique = true,
+                    Name = "ux_workflow_template_versions_tenant_template_number_active",
+                    PartialFilterExpression = Builders<WorkflowTemplateVersion>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<WorkflowTemplateVersion>(
+                Builders<WorkflowTemplateVersion>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.TemplateId)
+                    .Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_workflow_template_versions_tenant_template_status" }),
+            new CreateIndexModel<WorkflowTemplateVersion>(
+                Builders<WorkflowTemplateVersion>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.TemplateId)
+                    .Ascending(x => x.IsImmutable),
+                new CreateIndexOptions { Name = "ix_workflow_template_versions_tenant_template_immutable" })
+        });
+
+        await workflowInstanceCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<WorkflowInstance>(
+                Builders<WorkflowInstance>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ObjectRef)
+                    .Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_workflow_instances_tenant_objectref_status" }),
+            new CreateIndexModel<WorkflowInstance>(
+                Builders<WorkflowInstance>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ObjectType)
+                    .Ascending(x => x.ObjectId)
+                    .Descending(x => x.StartedAt),
+                new CreateIndexOptions { Name = "ix_workflow_instances_tenant_object_started" }),
+            new CreateIndexModel<WorkflowInstance>(
+                Builders<WorkflowInstance>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ObjectRef)
+                    .Descending(x => x.StartedAt),
+                new CreateIndexOptions { Name = "ix_workflow_instances_tenant_objectref_started" }),
+            new CreateIndexModel<WorkflowInstance>(
+                Builders<WorkflowInstance>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.WorkflowTemplateId),
+                new CreateIndexOptions { Name = "ix_workflow_instances_tenant_template" }),
+            new CreateIndexModel<WorkflowInstance>(
+                Builders<WorkflowInstance>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<WorkflowInstance>
+                {
+                    Unique = true,
+                    Name = "ux_workflow_instances_tenant_idempotency_key_active",
+                    // MongoDB partial indexes do not allow $ne; $type is supported and matches only
+                    // documents where IdempotencyKey is a set (non-null) string — excludes null/missing.
+                    PartialFilterExpression = Builders<WorkflowInstance>.Filter.And(
+                        Builders<WorkflowInstance>.Filter.Eq(x => x.IsDeleted, false),
+                        Builders<WorkflowInstance>.Filter.Type(x => x.IdempotencyKey, BsonType.String))
+                })
+        });
+
+        await approvalTaskCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ApprovalTask>(
+                Builders<ApprovalTask>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.WorkflowInstanceId)
+                    .Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_approval_tasks_tenant_instance_status" }),
+            new CreateIndexModel<ApprovalTask>(
+                Builders<ApprovalTask>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_approval_tasks_tenant_status" }),
+            new CreateIndexModel<ApprovalTask>(
+                Builders<ApprovalTask>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.DueAt),
+                new CreateIndexOptions { Name = "ix_approval_tasks_tenant_status_due" }),
+            new CreateIndexModel<ApprovalTask>(
+                Builders<ApprovalTask>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.AssignmentSnapshotId),
+                new CreateIndexOptions { Name = "ix_approval_tasks_tenant_assignment_snapshot" })
+        });
+
+        await runtimeAssignmentSnapshotCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<RuntimeAssignmentSnapshot>(
+                Builders<RuntimeAssignmentSnapshot>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.WorkflowInstanceId),
+                new CreateIndexOptions { Name = "ix_workflow_assignment_snapshots_tenant_instance" }),
+            new CreateIndexModel<RuntimeAssignmentSnapshot>(
+                Builders<RuntimeAssignmentSnapshot>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ApprovalTaskId),
+                new CreateIndexOptions { Name = "ix_workflow_assignment_snapshots_tenant_task" }),
+            new CreateIndexModel<RuntimeAssignmentSnapshot>(
+                Builders<RuntimeAssignmentSnapshot>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ResolvedPrincipalId),
+                new CreateIndexOptions { Name = "ix_workflow_assignment_snapshots_tenant_principal" })
+        });
+
+        await DropIndexIfExistsAsync(workflowTransitionLogCollection.Indexes, "ix_workflow_transition_logs_tenant_instance_sequence");
+        await workflowTransitionLogCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<WorkflowTransitionLog>(
+                Builders<WorkflowTransitionLog>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.WorkflowInstanceId)
+                    .Ascending(x => x.SequenceNo),
+                new CreateIndexOptions<WorkflowTransitionLog>
+                {
+                    Unique = true,
+                    Name = "ux_workflow_transition_logs_tenant_instance_sequence_active",
+                    PartialFilterExpression = Builders<WorkflowTransitionLog>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<WorkflowTransitionLog>(
+                Builders<WorkflowTransitionLog>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ApprovalTaskId)
+                    .Ascending(x => x.Action)
+                    .Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<WorkflowTransitionLog>
+                {
+                    Unique = true,
+                    Name = "ux_workflow_transition_logs_task_action_idempotency_active",
+                    // MongoDB partial indexes do not allow $ne; $type is supported and matches only
+                    // documents where the key is set (Guid -> Binary, IdempotencyKey -> String),
+                    // excluding null/missing so the unique constraint behaves like a sparse index.
+                    PartialFilterExpression = Builders<WorkflowTransitionLog>.Filter.And(
+                        Builders<WorkflowTransitionLog>.Filter.Eq(x => x.IsDeleted, false),
+                        Builders<WorkflowTransitionLog>.Filter.Type(x => x.ApprovalTaskId, BsonType.Binary),
+                        Builders<WorkflowTransitionLog>.Filter.Type(x => x.IdempotencyKey, BsonType.String))
+                })
+        });
+
+        await workflowSlaRuleCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<SlaEscalationRule>(
+                Builders<SlaEscalationRule>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.TemplateId)
+                    .Ascending(x => x.StageCode)
+                    .Ascending(x => x.StepCode)
+                    .Ascending(x => x.IsActive),
+                new CreateIndexOptions { Name = "ix_workflow_sla_rules_tenant_template_step_active" }),
+            new CreateIndexModel<SlaEscalationRule>(
+                Builders<SlaEscalationRule>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.IsActive),
+                new CreateIndexOptions { Name = "ix_workflow_sla_rules_tenant_active" })
+        });
 
         await organizationUnitCollection.Indexes.CreateManyAsync(new[]
         {

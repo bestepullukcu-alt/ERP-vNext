@@ -460,5 +460,8 @@
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Справочные данные</value></data>
+  <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Согласования рабочих процессов</value></data>
+  <data name="DocumentationStructures" xml:space="preserve"><value>Структуры документации</value></data>
+  <data name="QmsBaselines" xml:space="preserve"><value>Базовые линии QMS</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>Не авторизовано</value></data>
 </root>
-

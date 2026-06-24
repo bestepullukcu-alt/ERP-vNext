@@ -14,6 +14,9 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
 {
     private static readonly string[] PlatformActors = { "platform_admin", "partner_admin" };
     private const string ReferenceDataPath = "/Platform/ReferenceData";
+    // MOD-0023 — Workflow admin is a tenant-scoped screen that lives under /Platform but is reached by
+    // tenant_user actors (like ReferenceData). It must be exempt from the platform-actor-only gate.
+    private const string WorkflowPath = "/Platform/Workflow";
     private readonly IConfiguration _configuration;
 
     public ShellAccessFilter(IConfiguration configuration)
@@ -48,12 +51,12 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
         {
             if (string.IsNullOrWhiteSpace(actorType))
             {
-                var loginPath = IsReferenceDataPath(path) ? "/account/login" : "/platform/login";
+                var loginPath = IsTenantScopedPlatformPath(path) ? "/account/login" : "/platform/login";
                 context.Result = BuildLoginRedirect(loginPath, request);
                 return;
             }
 
-            if (IsReferenceDataPath(path) && string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
+            if (IsTenantScopedPlatformPath(path) && string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -82,6 +85,11 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
 
     private static bool IsReferenceDataPath(Microsoft.AspNetCore.Http.PathString path) =>
         path.StartsWithSegments(ReferenceDataPath, StringComparison.OrdinalIgnoreCase);
+
+    // Platform-hosted screens that are nonetheless tenant-scoped and reachable by tenant_user actors.
+    private static bool IsTenantScopedPlatformPath(Microsoft.AspNetCore.Http.PathString path) =>
+        IsReferenceDataPath(path) ||
+        path.StartsWithSegments(WorkflowPath, StringComparison.OrdinalIgnoreCase);
 
     private static RedirectResult BuildLoginRedirect(string loginPath, Microsoft.AspNetCore.Http.HttpRequest request)
     {

@@ -87,6 +87,22 @@ public static class PermissionAliasMap
             ["platform.tenants.quotas.read"] = Aliases("platform.tenants.quotas.view"),
             ["platform.tenants.commercial.subscription.read"] = Aliases("platform.tenants.commercial.subscription.view"),
             ["platform.tenants.commercial.subscription.history.read"] = Aliases("platform.tenants.commercial.subscription.history.view"),
+
+            // MOD-0028-FU01 spec keys -> effective lowercase runtime permissions (5).
+            ["platform.document-management.collection-definitions.list"] = Aliases("MOD0028.COLLECTION_DEFINITION.LIST"),
+            ["platform.document-management.collection-definitions.view"] = Aliases("MOD0028.COLLECTION_DEFINITION.VIEW"),
+            ["platform.document-management.baseline-releases.list"] = Aliases("MOD0028.BASELINE_RELEASE.LIST"),
+            ["platform.document-management.corporate-root.initialize"] = Aliases("MOD0028.CORPORATE_ROOT.INITIALIZE"),
+            ["platform.document-management.collection-instances.view"] = Aliases("MOD0028.COLLECTION_INSTANCE.VIEW"),
+
+            // MOD-0028-FU02 spec keys -> effective lowercase runtime permissions (1).
+            // Only the unambiguous parent-spec match is mapped:
+            //   qms-baselines.publish  -> MOD0028.BASELINE_RELEASE.PUBLISH (exact parent spec verb).
+            // Deliberately NOT mapped, pending an explicit EA/MOD-0018 decision:
+            //   qms-baselines.import  -> no parent spec key exists (FU02-native; mint MOD0028.QMS_BASELINE.IMPORT or leave native).
+            //   qms-baselines.view    -> parent spec has only BASELINE_RELEASE.LIST, not a VIEW verb; view<->list is a semantic
+            //                            widening that requires EA confirmation before a directional alias is added.
+            ["platform.document-management.qms-baselines.publish"] = Aliases("MOD0028.BASELINE_RELEASE.PUBLISH"),
         };
 
     private static IReadOnlySet<string> Aliases(params string[] aliases) =>

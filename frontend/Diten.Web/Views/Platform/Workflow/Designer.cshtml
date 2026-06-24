@@ -1,0 +1,228 @@
+@using Diten.Web.Views.Platform.Workflow
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkflowIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["Designer"].Value;
+    var definitionId = ViewData["DefinitionId"]?.ToString() ?? string.Empty;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h4 class="mb-1">@Localizer["Designer"]</h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/Platform/Workflow">@Localizer["PageTitle"]</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/Platform/Workflow/Definitions/@definitionId">
+                        <span id="wf-meta-code">—</span>
+                        <span class="mx-1">/</span>
+                        <span id="wf-meta-name">—</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Localizer["Designer"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" id="wf-dz-addstep" class="btn btn-label-secondary">
+            <i class="icon-base bx bx-plus me-1"></i>@Localizer["AddStep"]
+        </button>
+        <button type="button" id="wf-dz-generate" class="btn btn-primary">
+            <i class="icon-base bx bx-cog me-1"></i>@Localizer["GenerateDefinitionJson"]
+        </button>
+        <button type="button" id="wf-dz-usepublish" class="btn btn-label-primary">
+            <i class="icon-base bx bx-cloud-upload me-1"></i>@Localizer["UseInPublish"]
+        </button>
+    </div>
+</div>
+
+<div id="wf-dz-status" class="alert d-none" role="alert"></div>
+
+<div class="alert alert-primary alert-dismissible mb-3" role="alert">
+    <h5 class="alert-heading d-flex align-items-center flex-wrap gap-1 mb-1">
+        <span class="alert-icon rounded-circle"><i class="icon-base bx bx-list-ol"></i></span>
+        @Localizer["Designer"]
+    </h5>
+    <p class="mb-0 small">@Localizer["DesignerIntro"]</p>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-xl-8">
+        <!-- Definition settings -->
+        <section class="card mb-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">@Localizer["Metadata"]</h5>
+            </div>
+            <div class="card-body row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-medium" for="wf-dz-stagecode">@Localizer["StageCode"]</label>
+                    <input id="wf-dz-stagecode" class="form-control" value="stage-1" />
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-medium" for="wf-dz-stagename">@Localizer["StageName"]</label>
+                    <input id="wf-dz-stagename" class="form-control" value="Approval Flow" />
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-medium" for="wf-dz-schema">@Localizer["SchemaVersion"]</label>
+                    <input id="wf-dz-schema" class="form-control" value="workflow_schema_v1" />
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-medium" for="wf-dz-expression">@Localizer["ExpressionVersion"]</label>
+                    <input id="wf-dz-expression" class="form-control" value="workflow_expr_v1" />
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-medium" for="wf-dz-objecttype">@Localizer["ObjectType"]</label>
+                    <input id="wf-dz-objecttype" class="form-control" />
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-medium" for="wf-dz-description">@Localizer["Description"]</label>
+                    <input id="wf-dz-description" class="form-control" />
+                </div>
+            </div>
+        </section>
+
+        <!-- Approval steps -->
+        <section class="card mb-3">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-title mb-0">@Localizer["ApprovalSteps"]</h5>
+                <button type="button" id="wf-dz-addstep-2" class="btn btn-sm btn-label-primary">
+                    <i class="icon-base bx bx-plus me-1"></i>@Localizer["AddStep"]
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="wf-dz-steps"></div>
+                <div id="wf-dz-steps-empty" class="text-center text-muted py-4">
+                    <i class="icon-base bx bx-list-ul mb-2" style="font-size: 2rem;"></i>
+                    <p class="mb-0 small">@Localizer["NoStepsYet"]</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-xl-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">@Localizer["DefinitionJsonPreview"]</h5>
+            </div>
+            <div class="card-body">
+                <textarea id="wf-dz-preview" class="form-control font-monospace" spellcheck="false" readonly style="min-height: 320px; resize: vertical;"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Step card template (cloned by designer-page.js for each approval step) -->
+<template id="wf-dz-step-template">
+    <section class="card border mb-3 wf-dz-step">
+        <div class="card-header d-flex align-items-center justify-content-between py-2">
+            <h6 class="mb-0">
+                <span class="badge bg-label-primary me-2 wf-dz-step-index">@Localizer["Step"] 1</span>
+                <span class="text-muted small wf-dz-step-name-echo"></span>
+            </h6>
+            <div class="d-flex align-items-center gap-1">
+                <button type="button" class="btn btn-sm btn-icon btn-text-secondary wf-dz-step-up" title="@Localizer["MoveUp"]"><i class="icon-base bx bx-up-arrow-alt"></i></button>
+                <button type="button" class="btn btn-sm btn-icon btn-text-secondary wf-dz-step-down" title="@Localizer["MoveDown"]"><i class="icon-base bx bx-down-arrow-alt"></i></button>
+                <button type="button" class="btn btn-sm btn-icon btn-text-danger wf-dz-step-remove" title="@Localizer["RemoveStep"]"><i class="icon-base bx bx-trash"></i></button>
+            </div>
+        </div>
+        <div class="card-body row g-3">
+            <div class="col-12 col-md-6">
+                <label class="form-label fw-medium">@Localizer["StepCode"]</label>
+                <input class="form-control wf-dz-stepcode" />
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label fw-medium">@Localizer["StepName"] <span class="text-danger">*</span></label>
+                <input class="form-control wf-dz-stepname" />
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label fw-medium">@Localizer["StepType"]</label>
+                <select class="form-select wf-dz-steptype">
+                    <option value="approval" selected>Approval</option>
+                    <option value="review">Review</option>
+                    <option value="task">Task</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-6 d-flex align-items-end">
+                <div class="row g-2 w-100">
+                    <div class="col-6">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input wf-dz-commentrequired" type="checkbox" role="switch" />
+                            <label class="form-check-label ms-2">@Localizer["CommentRequired"]</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input wf-dz-evidencerequired" type="checkbox" role="switch" />
+                            <label class="form-check-label ms-2">@Localizer["EvidenceRequired"]</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium">@Localizer["CandidatePrincipalIds"] <span class="text-danger">*</span></label>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm wf-dz-cand-type" style="max-width: 9rem;">
+                        <option value="user">@Localizer["Users"]</option>
+                        <option value="position">@Localizer["Positions"]</option>
+                    </select>
+                    <select class="form-select wf-dz-candidates" multiple></select>
+                </div>
+            </div>
+
+            <div class="col-12"><hr class="my-1" /><span class="text-muted small">@Localizer["SlaSettings"]</span></div>
+            <div class="col-12 col-md-4">
+                <label class="form-label fw-medium">@Localizer["DueInMinutes"]</label>
+                <input type="number" min="1" class="form-control wf-dz-due" />
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label fw-medium">@Localizer["EscalateAfterMinutes"]</label>
+                <input type="number" min="1" class="form-control wf-dz-escalate" />
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label fw-medium">@Localizer["TimeoutAfterMinutes"]</label>
+                <input type="number" min="1" class="form-control wf-dz-timeout" />
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium">@Localizer["EscalationPrincipalIds"]</label>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm wf-dz-esc-type" style="max-width: 9rem;">
+                        <option value="user">@Localizer["Users"]</option>
+                        <option value="position">@Localizer["Positions"]</option>
+                    </select>
+                    <select class="form-select wf-dz-escprincipals" multiple></select>
+                </div>
+            </div>
+        </div>
+    </section>
+</template>
+
+<div class="modal fade" id="wf-publish-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">@Localizer["PublishDefinition"] <span id="wf-publish-title-code" class="text-muted"></span></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button></div>
+        <div class="modal-body">
+            <input type="hidden" id="wf-publish-definitionid" />
+            <div id="wf-publish-error" class="alert alert-danger d-none"></div>
+            <div id="wf-publish-result" class="d-none mb-3"></div>
+            <form id="wf-publish-form" class="row g-3" novalidate>
+                <div class="col-12"><label class="form-label" for="wf-publish-json">@Localizer["DefinitionJson"] <span class="text-danger">*</span></label><textarea id="wf-publish-json" class="form-control font-monospace" rows="8" spellcheck="false" placeholder='{ "stages": [] }'></textarea></div>
+                <div class="col-md-4"><label class="form-label" for="wf-publish-schema">@Localizer["SchemaVersion"] <span class="text-danger">*</span></label><input id="wf-publish-schema" class="form-control" placeholder="1.0" /></div>
+                <div class="col-md-4"><label class="form-label" for="wf-publish-expression">@Localizer["ExpressionVersion"] <span class="text-danger">*</span></label><input id="wf-publish-expression" class="form-control" placeholder="1.0" /></div>
+                <div class="col-md-4"><label class="form-label" for="wf-publish-expected">@Localizer["ExpectedTemplateVersion"]</label><input id="wf-publish-expected" type="number" min="0" class="form-control" /></div>
+                <div class="col-md-6"><label class="form-label" for="wf-publish-rowversion">@Localizer["ExpectedRowVersion"]</label><input id="wf-publish-rowversion" class="form-control" /></div>
+                <div class="col-md-6"><label class="form-label" for="wf-publish-reason">@Localizer["PublishReason"]</label><input id="wf-publish-reason" class="form-control" /></div>
+            </form>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button><button type="button" id="wf-publish-submit" class="btn btn-primary">@Localizer["Publish"]</button></div>
+    </div></div>
+</div>
+
+@section Scripts {
+    <partial name="_WorkflowL10n" />
+    <script>window.WorkflowDefinitionId = '@Html.Raw(definitionId)';</script>
+    <script src="~/assets/js/Platform/Workflow/workflow.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Workflow/designer-page.js" asp-append-version="true"></script>
+}
