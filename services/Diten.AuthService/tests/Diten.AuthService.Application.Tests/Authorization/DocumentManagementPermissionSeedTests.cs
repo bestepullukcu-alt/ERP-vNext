@@ -43,6 +43,28 @@ public sealed class DocumentManagementPermissionSeedTests
         Assert.Contains(permissionConstructor, seederSource, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("platform\", \"document-management.controlled-documents\", \"view")]
+    [InlineData("platform\", \"document-management.controlled-documents\", \"create")]
+    [InlineData("platform\", \"document-management.controlled-documents.version\", \"create")]
+    [InlineData("platform\", \"document-management.controlled-documents.version\", \"view")]
+    [InlineData("platform\", \"document-management.controlled-documents\", \"share")]
+    [InlineData("platform\", \"document-management.controlled-documents.access\", \"manage")]
+    [InlineData("platform\", \"document-management.templates\", \"view")]
+    [InlineData("platform\", \"document-management.templates\", \"create")]
+    [InlineData("platform\", \"document-management.templates.version\", \"create")]
+    [InlineData("platform\", \"document-management.templates\", \"share")]
+    [InlineData("platform\", \"document-management.folder-documents\", \"upload")]
+    [InlineData("platform\", \"document-management.folder-documents.access\", \"manage")]
+    [InlineData("platform\", \"document-management.folder-shares\", \"create")]
+    [InlineData("platform\", \"document-management.folder-shares\", \"view")]
+    public void Mod0029Fu01_layer1_permission_is_present_in_canonical_seed(string permissionConstructor)
+    {
+        var seederSource = File.ReadAllText(GetDataSeederPath());
+
+        Assert.Contains(permissionConstructor, seederSource, StringComparison.Ordinal);
+    }
+
     private static string GetDataSeederPath()
     {
         var directory = Path.GetDirectoryName(typeof(DataSeeder).Assembly.Location)

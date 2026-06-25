@@ -1,0 +1,109 @@
+@using Diten.Web.Views.DocumentManagement.ControlledDocuments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ControlledDocumentsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ViewDetails"].Value;
+    Layout = "_LayoutTenantShell";
+    var documentId = ViewData["DocumentId"]?.ToString();
+}
+
+<div class="controlleddocuments-details">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+            <h5 class="mb-0" id="detailTitle">@Localizer["ViewDetails"]</h5>
+            <p class="mb-0 text-muted" id="detailFolderPath"></p>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2" id="detailActions"></div>
+    </div>
+
+    @* ── Card 1: Identity ── *@
+    <div class="card backbone-preview-section mb-4">
+        <div class="card-header"><h6 class="mb-0">@Localizer["Title"]</h6></div>
+        <div class="card-body" id="detailIdentity"></div>
+    </div>
+
+    @* ── Card 2: Classification ── *@
+    <div class="card backbone-preview-section mb-4">
+        <div class="card-header"><h6 class="mb-0">@Localizer["Description"]</h6></div>
+        <div class="card-body" id="detailClassification"></div>
+    </div>
+
+    @* ── Card 3: Lifecycle ── *@
+    <div class="card backbone-preview-section mb-4">
+        <div class="card-header"><h6 class="mb-0">@Localizer["EffectiveDate"]</h6></div>
+        <div class="card-body" id="detailLifecycle"></div>
+    </div>
+
+    @* ── Card 4: Version history + upload new version ── *@
+    <div class="card backbone-preview-section mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">@Localizer["VersionHistory"]</h6>
+            <button type="button" class="btn btn-sm btn-label-primary" id="btnUploadVersion">
+                <i class="icon-base bx bx-upload me-1"></i>@Localizer["UploadNewVersion"]
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="uploadVersionPanel" class="d-none mb-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label" for="versionFile">@Localizer["SelectFile"]</label>
+                        <input type="file" id="versionFile" class="form-control" />
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" for="versionChangeSummary">@Localizer["ChangeSummary"]</label>
+                        <input type="text" id="versionChangeSummary" class="form-control" />
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <button type="button" class="btn btn-primary" id="btnSubmitVersion">@Localizer["UploadNewVersion"]</button>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm" id="versionHistoryTable">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["Version"]</th>
+                            <th>@Localizer["DocumentType"]</th>
+                            <th>@Localizer["UploadedBy"]</th>
+                            <th>@Localizer["UploadedAt"]</th>
+                            <th>@Localizer["ChangeSummary"]</th>
+                            <th class="text-end">@Localizer["Actions"]</th>
+                        </tr>
+                    </thead>
+                    <tbody id="versionHistoryBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    @* ── Card 5: Share document ── *@
+    <div class="card backbone-preview-section mb-4">
+        <div class="card-header"><h6 class="mb-0">@Localizer["ShareDocument"]</h6></div>
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label" for="shareTargetCompany">@Localizer["TargetCompany"]</label>
+                    <input type="text" id="shareTargetCompany" class="form-control" />
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label" for="shareMode">@Localizer["ShareMode"]</label>
+                    <select id="shareMode" class="form-select">
+                        <option value="REFERENCE">@Localizer["ShareModeReference"]</option>
+                        <option value="COPY_ON_ADOPT">@Localizer["ShareModeCopyOnAdopt"]</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="button" class="btn btn-primary" id="btnShareDocument">@Localizer["ShareDocument"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/ControlledDocuments/_IndexL10n.cshtml" />
+    @Html.AntiForgeryToken()
+    <script>window.ControlledDocumentContext = { documentId: '@documentId' };</script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/details.js" asp-append-version="true"></script>
+}

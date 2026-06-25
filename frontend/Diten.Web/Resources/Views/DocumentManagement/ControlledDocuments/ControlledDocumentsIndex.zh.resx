@@ -1,0 +1,246 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ControlledDocumentsTitle" xml:space="preserve">
+    <value>受控文档</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Add, version, access-control and share your company documents and templates.</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>标题</value>
+  </data>
+  <data name="DocumentType" xml:space="preserve">
+    <value>文档类型</value>
+  </data>
+  <data name="FolderPath" xml:space="preserve">
+    <value>Folder Path</value>
+  </data>
+  <data name="CurrentVersion" xml:space="preserve">
+    <value>Current Version</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="EmptyList" xml:space="preserve">
+    <value>No documents found.</value>
+  </data>
+  <data name="DocumentLibrary" xml:space="preserve">
+    <value>Document Library</value>
+  </data>
+  <data name="Templates" xml:space="preserve">
+    <value>模板</value>
+  </data>
+  <data name="FolderDocuments" xml:space="preserve">
+    <value>Folder Documents</value>
+  </data>
+  <data name="TypeSop" xml:space="preserve">
+    <value>SOP</value>
+  </data>
+  <data name="TypeWorkInstruction" xml:space="preserve">
+    <value>Work Instruction</value>
+  </data>
+  <data name="TypePolicy" xml:space="preserve">
+    <value>Policy</value>
+  </data>
+  <data name="TypeForm" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="TypeTemplate" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="TypeOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="StatusActive" xml:space="preserve">
+    <value>启用</value>
+  </data>
+  <data name="StatusArchived" xml:space="preserve">
+    <value>已归档</value>
+  </data>
+  <data name="AddDocument" xml:space="preserve">
+    <value>添加文档</value>
+  </data>
+  <data name="AddTemplate" xml:space="preserve">
+    <value>添加模板</value>
+  </data>
+  <data name="EditMetadata" xml:space="preserve">
+    <value>Edit Metadata</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="ShareDocument" xml:space="preserve">
+    <value>共享文档</value>
+  </data>
+  <data name="ShareTemplate" xml:space="preserve">
+    <value>Share Template</value>
+  </data>
+  <data name="FolderShare" xml:space="preserve">
+    <value>文件夹共享</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>标签</value>
+  </data>
+  <data name="EffectiveDate" xml:space="preserve">
+    <value>Effective Date</value>
+  </data>
+  <data name="ReviewDate" xml:space="preserve">
+    <value>Review Date</value>
+  </data>
+  <data name="ExpiryDate" xml:space="preserve">
+    <value>Expiry Date</value>
+  </data>
+  <data name="Controlled" xml:space="preserve">
+    <value>Controlled</value>
+  </data>
+  <data name="CollectionInstanceId" xml:space="preserve">
+    <value>Folder (Collection Instance)</value>
+  </data>
+  <data name="CompanyId" xml:space="preserve">
+    <value>Company Legal Entity</value>
+  </data>
+  <data name="SelectFile" xml:space="preserve">
+    <value>选择文件</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="VersionHistory" xml:space="preserve">
+    <value>版本历史</value>
+  </data>
+  <data name="UploadNewVersion" xml:space="preserve">
+    <value>上传新版本</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="UploadedBy" xml:space="preserve">
+    <value>Uploaded By</value>
+  </data>
+  <data name="UploadedAt" xml:space="preserve">
+    <value>Uploaded At</value>
+  </data>
+  <data name="ChangeSummary" xml:space="preserve">
+    <value>Change Summary</value>
+  </data>
+  <data name="VersionStatusActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="VersionStatusSuperseded" xml:space="preserve">
+    <value>Superseded</value>
+  </data>
+  <data name="Reusable" xml:space="preserve">
+    <value>Reusable</value>
+  </data>
+  <data name="Shareable" xml:space="preserve">
+    <value>Shareable</value>
+  </data>
+  <data name="CopyableOnAdopt" xml:space="preserve">
+    <value>Copyable on Adopt</value>
+  </data>
+  <data name="ReferenceOnly" xml:space="preserve">
+    <value>Reference Only</value>
+  </data>
+  <data name="AccessControl" xml:space="preserve">
+    <value>Access Control</value>
+  </data>
+  <data name="ShareMode" xml:space="preserve">
+    <value>共享模式</value>
+  </data>
+  <data name="ShareModeReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="ShareModeCopyOnAdopt" xml:space="preserve">
+    <value>Copy on Adopt</value>
+  </data>
+  <data name="TargetCompany" xml:space="preserve">
+    <value>目标公司</value>
+  </data>
+  <data name="IncludeTemplates" xml:space="preserve">
+    <value>Include Templates</value>
+  </data>
+  <data name="BranchToShare" xml:space="preserve">
+    <value>Branch to Share</value>
+  </data>
+  <data name="DryRun" xml:space="preserve">
+    <value>试运行</value>
+  </data>
+  <data name="Execute" xml:space="preserve">
+    <value>执行</value>
+  </data>
+  <data name="FoldersIncluded" xml:space="preserve">
+    <value>Folders Included</value>
+  </data>
+  <data name="TemplatesIncluded" xml:space="preserve">
+    <value>Templates Included</value>
+  </data>
+  <data name="TemplatesSkipped" xml:space="preserve">
+    <value>Templates Skipped</value>
+  </data>
+  <data name="DocumentCreated" xml:space="preserve">
+    <value>Document created.</value>
+  </data>
+  <data name="VersionUploaded" xml:space="preserve">
+    <value>New version uploaded.</value>
+  </data>
+  <data name="ShareSuccess" xml:space="preserve">
+    <value>Shared successfully.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>A file is required.</value>
+  </data>
+  <data name="TitleRequired" xml:space="preserve">
+    <value>Title is required.</value>
+  </data>
+  <data name="NoAccess" xml:space="preserve">
+    <value>No access.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>访问被拒绝</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>未找到</value>
+  </data>
+  <data name="CorrelationId" xml:space="preserve">
+    <value>Correlation ID</value>
+  </data>
+  <data name="ReasonValidationFailed" xml:space="preserve">
+    <value>Validation failed.</value>
+  </data>
+  <data name="ReasonConflict" xml:space="preserve">
+    <value>Conflict.</value>
+  </data>
+  <data name="ReasonPermDenied" xml:space="preserve">
+    <value>Permission denied.</value>
+  </data>
+  <data name="ReasonNotFound" xml:space="preserve">
+    <value>Not found.</value>
+  </data>
+  <data name="ReasonStorageUnavailable" xml:space="preserve">
+    <value>Content storage is unavailable.</value>
+  </data>
+  <data name="ReasonFeatureDisabled" xml:space="preserve">
+    <value>This capability is disabled.</value>
+  </data>
+</root>

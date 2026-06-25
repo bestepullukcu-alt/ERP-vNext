@@ -129,6 +129,11 @@ public static class DependencyInjection
         services.Configure<EventBusOptions>(configuration.GetSection(EventBusOptions.SectionName));
         services.Configure<RabbitMqEventingOptions>(configuration.GetSection(RabbitMqEventingOptions.SectionName));
         services.Configure<BackgroundJobSchedulerOptions>(configuration.GetSection(BackgroundJobSchedulerOptions.SectionName));
+        // MOD-0029-FU01 — controlled-document feature flags + Phase 1 content-storage options.
+        services.Configure<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ControlledDocumentsFeatureFlagOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ControlledDocumentsFeatureFlagOptions.SectionName));
+        services.Configure<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ContentStorageOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ContentStorageOptions.SectionName));
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
@@ -219,6 +224,22 @@ public static class DependencyInjection
         services.AddScoped<ICollectionInstanceRepository, CollectionInstanceRepository>();
         services.AddScoped<IInstantiationOperationRepository, InstantiationOperationRepository>();
         services.AddScoped<IInstantiationOutcomeRepository, InstantiationOutcomeRepository>();
+
+        // MOD-0029-FU01 — controlled documents / templates / versions / shares repositories + seams.
+        services.AddScoped<IControlledDocumentRepository, ControlledDocumentRepository>();
+        services.AddScoped<IControlledDocumentVersionRepository, ControlledDocumentVersionRepository>();
+        services.AddScoped<ITemplateDocumentRepository, TemplateDocumentRepository>();
+        services.AddScoped<ITemplateVersionRepository, TemplateVersionRepository>();
+        services.AddScoped<IFolderDocumentAccessPolicyRepository, FolderDocumentAccessPolicyRepository>();
+        services.AddScoped<IDocumentShareRecordRepository, DocumentShareRecordRepository>();
+        services.AddScoped<IFolderShareOperationRepository, FolderShareOperationRepository>();
+        services.AddScoped<IFolderShareOutcomeRepository, FolderShareOutcomeRepository>();
+        services.AddScoped<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services.ICollectionInstanceReferenceReader,
+            Diten.Platform.Infrastructure.Services.DocumentManagement.CollectionInstanceReferenceReader>();
+        services.AddScoped<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services.IDocumentAccessPrincipalAccessor,
+            Diten.Platform.Infrastructure.Services.DocumentManagement.DocumentAccessPrincipalAccessor>();
+        services.AddScoped<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services.IContentStorageGateway,
+            Diten.Platform.Infrastructure.Services.DocumentManagement.LocalFileSystemContentStorageGateway>();
 
         services.AddScoped<IMessagingProvider, FakeMessagingProvider>();
         services.AddScoped<IMessagingProvider, SmtpMessagingProvider>();

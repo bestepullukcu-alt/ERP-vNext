@@ -66,6 +66,15 @@ public static class MongoDbIndexConfigurations
         var collectionInstanceCollection = database.GetCollection<CollectionInstance>("document_management_collection_instances");
         var instantiationOperationCollection = database.GetCollection<InstantiationOperation>("document_management_instantiation_operations");
         var instantiationOutcomeCollection = database.GetCollection<InstantiationOutcome>("document_management_instantiation_outcomes");
+        // MOD-0029-FU01 — controlled documents / templates / versions / shares.
+        var controlledDocumentCollection = database.GetCollection<ControlledDocument>("document_management_controlled_documents");
+        var controlledDocumentVersionCollection = database.GetCollection<ControlledDocumentVersion>("document_management_controlled_document_versions");
+        var templateDocumentCollection = database.GetCollection<TemplateDocument>("document_management_template_documents");
+        var templateVersionCollection = database.GetCollection<TemplateVersion>("document_management_template_versions");
+        var folderDocumentAccessPolicyCollection = database.GetCollection<FolderDocumentAccessPolicy>("document_management_folder_document_access_policies");
+        var documentShareCollection = database.GetCollection<DocumentShareRecord>("document_management_document_shares");
+        var folderShareOperationCollection = database.GetCollection<FolderShareOperation>("document_management_folder_share_operations");
+        var folderShareOutcomeCollection = database.GetCollection<FolderShareOutcome>("document_management_folder_share_outcomes");
         var workflowTemplateCollection = database.GetCollection<WorkflowTemplate>("workflow_templates");
         var workflowTemplateVersionCollection = database.GetCollection<WorkflowTemplateVersion>("workflow_template_versions");
         var workflowInstanceCollection = database.GetCollection<WorkflowInstance>("workflow_instances");
@@ -202,6 +211,118 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.Status)
                     .Ascending(x => x.Retryable),
                 new CreateIndexOptions { Name = "ix_dm_instantiation_outcomes_retry" })
+        });
+
+        // MOD-0029-FU01 — controlled documents / templates / versions / shares. Tenant-first compound indexes;
+        // unique constraints tenant-scoped and partial on IsDeleted == false (no hard delete).
+        await controlledDocumentCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ControlledDocument>(
+                Builders<ControlledDocument>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.DocumentKey),
+                new CreateIndexOptions<ControlledDocument>
+                {
+                    Unique = true,
+                    Name = "ux_dm_controlled_documents_tenant_key_active",
+                    PartialFilterExpression = Builders<ControlledDocument>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<ControlledDocument>(
+                Builders<ControlledDocument>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.CollectionInstanceId),
+                new CreateIndexOptions { Name = "ix_dm_controlled_documents_collection_instance" }),
+            new CreateIndexModel<ControlledDocument>(
+                Builders<ControlledDocument>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.OwnerCompanyId),
+                new CreateIndexOptions { Name = "ix_dm_controlled_documents_owner_company" })
+        });
+
+        await controlledDocumentVersionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ControlledDocumentVersion>(
+                Builders<ControlledDocumentVersion>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.DocumentId).Ascending(x => x.VersionNumber),
+                new CreateIndexOptions<ControlledDocumentVersion>
+                {
+                    Unique = true,
+                    Name = "ux_dm_controlled_document_versions_tenant_doc_number_active",
+                    PartialFilterExpression = Builders<ControlledDocumentVersion>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await templateDocumentCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TemplateDocument>(
+                Builders<TemplateDocument>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.TemplateKey),
+                new CreateIndexOptions<TemplateDocument>
+                {
+                    Unique = true,
+                    Name = "ux_dm_template_documents_tenant_key_active",
+                    PartialFilterExpression = Builders<TemplateDocument>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<TemplateDocument>(
+                Builders<TemplateDocument>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.CollectionInstanceId),
+                new CreateIndexOptions { Name = "ix_dm_template_documents_collection_instance" }),
+            new CreateIndexModel<TemplateDocument>(
+                Builders<TemplateDocument>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.OwnerCompanyId),
+                new CreateIndexOptions { Name = "ix_dm_template_documents_owner_company" })
+        });
+
+        await templateVersionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TemplateVersion>(
+                Builders<TemplateVersion>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.TemplateId).Ascending(x => x.VersionNumber),
+                new CreateIndexOptions<TemplateVersion>
+                {
+                    Unique = true,
+                    Name = "ux_dm_template_versions_tenant_template_number_active",
+                    PartialFilterExpression = Builders<TemplateVersion>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await folderDocumentAccessPolicyCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<FolderDocumentAccessPolicy>(
+                Builders<FolderDocumentAccessPolicy>.IndexKeys
+                    .Ascending(x => x.TenantId).Ascending(x => x.CollectionInstanceId).Ascending(x => x.TargetType).Ascending(x => x.TargetId),
+                new CreateIndexOptions<FolderDocumentAccessPolicy>
+                {
+                    Unique = true,
+                    Name = "ux_dm_folder_access_policies_tenant_instance_target_active",
+                    PartialFilterExpression = Builders<FolderDocumentAccessPolicy>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await documentShareCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentShareRecord>(
+                Builders<DocumentShareRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ItemKind).Ascending(x => x.ItemId).Ascending(x => x.TargetCompanyId),
+                new CreateIndexOptions { Name = "ix_dm_document_shares_item_target" }),
+            new CreateIndexModel<DocumentShareRecord>(
+                Builders<DocumentShareRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.TargetCompanyId),
+                new CreateIndexOptions { Name = "ix_dm_document_shares_target_company" })
+        });
+
+        await folderShareOperationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<FolderShareOperation>(
+                Builders<FolderShareOperation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.OperationId),
+                new CreateIndexOptions<FolderShareOperation>
+                {
+                    Unique = true,
+                    Name = "ux_dm_folder_share_operations_tenant_operation_active",
+                    PartialFilterExpression = Builders<FolderShareOperation>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<FolderShareOperation>(
+                Builders<FolderShareOperation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.CorrelationId),
+                new CreateIndexOptions { Name = "ix_dm_folder_share_operations_correlation" })
+        });
+
+        await folderShareOutcomeCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<FolderShareOutcome>(
+                Builders<FolderShareOutcome>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.OperationId).Ascending(x => x.ItemKey),
+                new CreateIndexOptions<FolderShareOutcome>
+                {
+                    Unique = true,
+                    Name = "ux_dm_folder_share_outcomes_tenant_operation_item_active",
+                    PartialFilterExpression = Builders<FolderShareOutcome>.Filter.Eq(x => x.IsDeleted, false)
+                })
         });
 
         // MOD-0023 Batch 01 — workflow engine, tenant-first compound indexes. Unique constraints are

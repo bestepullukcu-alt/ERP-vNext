@@ -148,6 +148,25 @@ public static class DataSeeder
             new("platform", "document-management.instantiations", "execute", "Execute Documentation Instantiation", "Permission to execute a CollectionInstance provisioning plan"),
             new("platform", "document-management.collection-instances", "retry", "Retry Documentation Instantiation", "Permission to retry failed nodes of a CollectionInstance provisioning operation"),
 
+            // MOD-0029-FU01 — Controlled Document Versioning & Template Sharing (Layer 1 central keys) (14).
+            // Keys must match the constants in Diten.Platform DocumentManagementPermissions (platform.document-management.*).
+            // Platform-scoped, so DefaultRolePermissionTemplate grants them to SuperAdmin (full catalog) only.
+            // NOTE: per-folder/per-document access is MOD-0029 AccessPolicy domain data (Layer 2), NOT central catalog keys.
+            new("platform", "document-management.controlled-documents", "view", "View Controlled Documents", "Permission to view controlled documents, details and version listings"),
+            new("platform", "document-management.controlled-documents", "create", "Create Controlled Document", "Permission to create a controlled document attached to a CollectionInstance folder"),
+            new("platform", "document-management.controlled-documents.version", "create", "Upload Controlled Document Version", "Permission to upload a new immutable version of a controlled document"),
+            new("platform", "document-management.controlled-documents.version", "view", "View Controlled Document Versions", "Permission to view the version history of a controlled document"),
+            new("platform", "document-management.controlled-documents", "share", "Share Controlled Document", "Permission to share a controlled document with another company/legal entity"),
+            new("platform", "document-management.controlled-documents.access", "manage", "Manage Controlled Document Access", "Permission to manage a controlled document's resource-level access policy"),
+            new("platform", "document-management.templates", "view", "View Templates", "Permission to view template documents and their details"),
+            new("platform", "document-management.templates", "create", "Create Template", "Permission to create a reusable template document"),
+            new("platform", "document-management.templates.version", "create", "Upload Template Version", "Permission to upload a new immutable version of a template document"),
+            new("platform", "document-management.templates", "share", "Share Template", "Permission to share a template document with another company/legal entity"),
+            new("platform", "document-management.folder-documents", "upload", "Upload Folder Document", "Permission for folder-level upload of a document/template into a CollectionInstance node"),
+            new("platform", "document-management.folder-documents.access", "manage", "Manage Folder Document Access", "Permission to manage folder-level document access policies (FolderDocumentAccessPolicy)"),
+            new("platform", "document-management.folder-shares", "create", "Create Folder Share", "Permission to dry-run and execute a folder/branch share with associated templates"),
+            new("platform", "document-management.folder-shares", "view", "View Folder Share", "Permission to view folder/branch share operation status and per-item outcomes"),
+
             // MOD-0023 — Workflow Config / Approval Templates permissions (13). Keys must match the
             // constants in Diten.Platform WorkflowPermissions (platform.workflow.*). Platform-scoped, so
             // the DefaultRolePermissionTemplate grants them to SuperAdmin (full catalog) only.

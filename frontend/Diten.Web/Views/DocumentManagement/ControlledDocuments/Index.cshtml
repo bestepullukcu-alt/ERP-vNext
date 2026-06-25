@@ -1,0 +1,50 @@
+@using Diten.Web.Views.DocumentManagement.ControlledDocuments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ControlledDocumentsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ControlledDocumentsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canCreate = Perms.Has("platform.document-management.controlled-documents.create");
+    var canCreateTemplate = Perms.Has("platform.document-management.templates.create");
+    var canFolderShare = Perms.Has("platform.document-management.folder-shares.create");
+}
+
+@* ① Inline Filter partial — Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/DocumentManagement/ControlledDocuments/_Filter.cshtml" />
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["ControlledDocumentsTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        @if (canCreateTemplate)
+        {
+            <a href="/DocumentManagementControlledDocuments/Create?kind=template" class="btn btn-label-secondary">
+                <i class="icon-base bx bx-copy-alt me-1"></i>@Localizer["AddTemplate"]
+            </a>
+        }
+        @if (canFolderShare)
+        {
+            <a href="/DocumentManagementControlledDocuments/FolderShare" class="btn btn-label-primary">
+                <i class="icon-base bx bx-share-alt me-1"></i>@Localizer["FolderShare"]
+            </a>
+        }
+    </div>
+</div>
+
+@* ② DataTable Card — markers: id="skeleton-loader", <table id="dt-controlleddocuments" data-dt-standard="v2"> *@
+<partial name="~/Views/DocumentManagement/ControlledDocuments/_DataTable.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/ControlledDocuments/_IndexL10n.cshtml" />
+    <script>
+        window.ControlledDocumentsPerms = {
+            canCreate: @Json.Serialize(canCreate),
+            createUrl: '/DocumentManagementControlledDocuments/Create'
+        };
+    </script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/index.js" asp-append-version="true"></script>
+}

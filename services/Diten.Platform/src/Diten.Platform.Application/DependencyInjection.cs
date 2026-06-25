@@ -76,6 +76,17 @@ public static class DependencyInjection
         services.AddScoped<CompanyInstanceKeyFactory>();
         services.AddScoped<IInstantiationPlanner, InstantiationPlanner>();
         services.AddScoped<InstantiationService>();
+        // MOD-0029-FU01 — controlled documents / templates / versioning / sharing services.
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.DocumentKeyFactory>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.DocumentVersioningService>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.DocumentAccessEvaluator>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.ControlledDocumentService>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.TemplateService>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.TemplateSharingService>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.IFolderSharePlanner,
+            Features.DocumentManagementControlledDocuments.Services.FolderSharePlanner>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.FolderShareService>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.FolderDocumentService>();
         services.AddScoped<IBusinessReferenceDataGovernanceService, BusinessReferenceDataGovernanceService>();
         // PSS-012 governance adapters. MOD-0023 (workflow) / MOD-0031 (evidence) are not yet implemented.
         // Mock stubs are registered ONLY in Development/Local/Test (governance mode = Mock); every other
