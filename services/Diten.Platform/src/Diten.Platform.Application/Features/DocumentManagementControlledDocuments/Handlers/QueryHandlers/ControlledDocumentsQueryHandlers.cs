@@ -88,3 +88,17 @@ public sealed class GetFolderShareOperationHandler(FolderShareService service)
     public Task<Response<FolderShareResultModel>> Handle(GetFolderShareOperationQuery request, CancellationToken ct) =>
         service.GetOperationAsync(request.OperationId, request.CorrelationId, ct);
 }
+
+public sealed class GetActiveDocumentationStructuresHandler(ControlledDocumentExplorerService service)
+    : IRequestHandler<GetActiveDocumentationStructuresQuery, Response<IReadOnlyList<DocumentationStructureModel>>>
+{
+    public Task<Response<IReadOnlyList<DocumentationStructureModel>>> Handle(GetActiveDocumentationStructuresQuery request, CancellationToken ct) =>
+        service.GetActiveStructuresAsync(request.CompanyId, request.CorrelationId, ct);
+}
+
+public sealed class SearchControlledDocumentsHandler(ControlledDocumentExplorerService service)
+    : IRequestHandler<SearchControlledDocumentsQuery, Response<ExplorerSearchResultModelList>>
+{
+    public Task<Response<ExplorerSearchResultModelList>> Handle(SearchControlledDocumentsQuery request, CancellationToken ct) =>
+        service.SearchAsync(request.Input, request.CorrelationId, ct);
+}

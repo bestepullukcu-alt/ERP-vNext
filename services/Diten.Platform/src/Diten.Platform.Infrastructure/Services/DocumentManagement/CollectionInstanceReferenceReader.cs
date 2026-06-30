@@ -70,6 +70,15 @@ public sealed class CollectionInstanceReferenceReader : ICollectionInstanceRefer
             .ToList();
     }
 
+    public async Task<IReadOnlyList<CollectionInstanceReferenceDto>> GetCompanyInstancesAsync(Guid companyId, CancellationToken ct = default)
+    {
+        var instances = await _repository.GetByCompanyAsync(companyId, ct);
+        return instances
+            .OrderBy(x => x.FullPath, StringComparer.Ordinal)
+            .Select(Map)
+            .ToList();
+    }
+
     private static CollectionInstanceReferenceDto Map(CollectionInstance instance) => new(
         instance.Id,
         instance.CompanyId,
@@ -80,7 +89,8 @@ public sealed class CollectionInstanceReferenceReader : ICollectionInstanceRefer
         instance.FullPath,
         instance.InstanceStatus.ToString().ToUpperInvariant(),
         instance.InstanceStatus == CollectionInstanceStatus.Active,
-        MapBindings(instance));
+        MapBindings(instance),
+        instance.DisplayOrder);
 
     private static IReadOnlyList<CollectionInstanceScopeBindingDto> MapBindings(CollectionInstance instance) =>
         instance.ScopeBindings

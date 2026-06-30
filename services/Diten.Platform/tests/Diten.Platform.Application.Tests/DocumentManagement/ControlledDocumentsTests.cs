@@ -1,8 +1,11 @@
+using Diten.Platform.Application.Features.DocumentManagementAccessMatrix;
+using Diten.Platform.Application.Features.DocumentManagementAccessMatrix.Services;
 using Diten.Platform.Application.Features.DocumentManagementControlledDocuments;
 using Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
 using Diten.Platform.Domain.Enums.DocumentManagement;
+using Diten.Platform.Domain.Repositories;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -99,7 +102,7 @@ public sealed class ControlledDocumentsTests
         var created = await f.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
         var docId = created.Data!.Id;
 
-        var second = await f.Documents.CreateVersionAsync(docId, File("v2"), "second", Corr, CancellationToken.None);
+        var second = await f.Documents.CreateVersionAsync(docId, File("v2"), "second", false, Corr, CancellationToken.None);
 
         Assert.True(second.IsSuccessful);
         Assert.Equal(2, second.Data!.VersionNumber);
@@ -108,6 +111,38 @@ public sealed class ControlledDocumentsTests
         Assert.Equal(DocumentVersionStatus.Active, f.VersionRepo.Items.Single(v => v.VersionNumber == 2).VersionStatus);
         Assert.Equal(docId, f.DocumentRepo.Items.Single().Id);
         Assert.Equal(2, f.DocumentRepo.Items.Single().CurrentVersionNumber);
+    }
+
+    [Fact]
+    public async Task New_version_identical_to_active_is_rejected_with_no_content_change()
+    {
+        var f = Fixture(grantFolder: true);
+        var created = await f.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
+        var docId = created.Data!.Id;
+
+        // Re-upload byte-identical content to the initial active version (File("v1")) without forcing.
+        var response = await f.Documents.CreateVersionAsync(docId, File("v1"), "no real change", false, Corr, CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(ControlledDocumentReasonCodes.NoContentChange, response.ReasonCode);
+        Assert.Single(f.VersionRepo.Items);            // no second version row
+        Assert.Single(f.Storage.Stored);               // no second storage write (no orphan)
+        Assert.Empty(f.Storage.Deleted);
+    }
+
+    [Fact]
+    public async Task New_version_identical_to_active_is_allowed_when_explicitly_forced()
+    {
+        var f = Fixture(grantFolder: true);
+        var created = await f.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
+        var docId = created.Data!.Id;
+
+        var response = await f.Documents.CreateVersionAsync(docId, File("v1"), "intentional re-version", true, Corr, CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(2, response.Data!.VersionNumber);
+        Assert.Equal(2, f.VersionRepo.Items.Count);
     }
 
     [Fact]
@@ -230,6 +265,147 @@ public sealed class ControlledDocumentsTests
         Assert.Empty(f.FolderOpRepo.Items);
     }
 
+    [Fact]
+    public async Task Company_claimless_principal_with_folder_view_grant_can_list_and_reach_document()
+    {
+        // Seed-admin JWT shape: a user id (sub) but NO company claim; visibility relies on a user/role folder grant.
+        var userId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var f = Fixture(grantFolder: true, folderGrantUserId: userId);
+
+        var created = await f.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
+        Assert.True(created.IsSuccessful);
+
+        var list = await f.Documents.ListAsync(null, Corr, CancellationToken.None);
+        Assert.True(list.IsSuccessful);
+        Assert.Single(list.Data!); // folder-view fallback makes it visible without a company claim
+
+        var detail = await f.Documents.GetDetailAsync(created.Data!.Id, Corr, CancellationToken.None);
+        Assert.True(detail.IsSuccessful);
+
+        var folderDocs = await f.FolderDocs.GetFolderDocumentsAsync(InstanceId, Corr, CancellationToken.None);
+        Assert.True(folderDocs.IsSuccessful);
+        Assert.Single(folderDocs.Data!.Documents);
+    }
+
+    [Fact]
+    public async Task Company_claimless_principal_without_grant_sees_documents_in_compatibility_deny_only()
+    {
+        // FU04 Deny-only rollout: a token with no company claim (seed-admin shape) is a tenant-wide viewer in
+        // Compatibility mode — visibility no longer requires owner-company membership or a folder grant.
+        var owner = Fixture(grantFolder: true); // claimed principal seeds the document
+        var created = await owner.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
+        Assert.True(created.IsSuccessful);
+
+        var claimless = Fixture(grantFolder: false, principalCompanies: [], shareReader: owner);
+        var list = await claimless.Documents.ListAsync(null, Corr, CancellationToken.None);
+        var folderDocs = await claimless.FolderDocs.GetFolderDocumentsAsync(InstanceId, Corr, CancellationToken.None);
+
+        Assert.True(list.IsSuccessful);
+        Assert.Single(list.Data!);
+        Assert.True(folderDocs.IsSuccessful);
+        Assert.Single(folderDocs.Data!.Documents);
+    }
+
+    [Fact]
+    public async Task Controlled_document_item_view_deny_hides_from_lists_even_with_folder_allow()
+    {
+        var f = Fixture(grantFolder: true);
+        var created = await f.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
+        Assert.True(created.IsSuccessful);
+        SeedMatrixPolicy(f, DocumentAccessTargetType.ControlledDocument, created.Data!.Id, DocumentAccessEffect.Deny, DocumentAccessMatrixAction.View);
+
+        var list = await f.Documents.ListAsync(null, Corr, CancellationToken.None);
+        var folderDocs = await f.FolderDocs.GetFolderDocumentsAsync(InstanceId, Corr, CancellationToken.None);
+        var detail = await f.Documents.GetDetailAsync(created.Data.Id, Corr, CancellationToken.None);
+
+        Assert.True(list.IsSuccessful);
+        Assert.Empty(list.Data!);
+        Assert.True(folderDocs.IsSuccessful);
+        Assert.Empty(folderDocs.Data!.Documents);
+        Assert.False(detail.IsSuccessful);
+        Assert.Equal(404, detail.StatusCode);
+    }
+
+    [Fact]
+    public async Task Controlled_document_action_deny_returns_403_when_view_is_transitionally_allowed()
+    {
+        var f = Fixture(grantFolder: true);
+        var created = await f.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
+        Assert.True(created.IsSuccessful);
+        var docId = created.Data!.Id;
+        var versionId = f.VersionRepo.Items.Single().Id;
+        SeedMatrixPolicy(f, DocumentAccessTargetType.ControlledDocument, docId, DocumentAccessEffect.Deny,
+            DocumentAccessMatrixAction.Download,
+            DocumentAccessMatrixAction.EditMetadata,
+            DocumentAccessMatrixAction.UploadVersion,
+            DocumentAccessMatrixAction.Archive,
+            DocumentAccessMatrixAction.Share);
+
+        var download = await f.Documents.DownloadAsync(docId, versionId, Corr, CancellationToken.None);
+        var edit = await f.Documents.EditMetadataAsync(docId, new EditControlledDocumentInput("Denied", null, [], null, null, null), Corr, CancellationToken.None);
+        var upload = await f.Documents.CreateVersionAsync(docId, File("v2"), "blocked", false, Corr, CancellationToken.None);
+        var archive = await f.Documents.DeleteAsync(docId, Corr, CancellationToken.None);
+        var share = await f.Sharing.ShareDocumentAsync(docId, CompanyB, DocumentShareMode.Reference, Corr, CancellationToken.None);
+
+        Assert.Equal(403, download.StatusCode);
+        Assert.Equal(403, edit.StatusCode);
+        Assert.Equal(403, upload.StatusCode);
+        Assert.Equal(403, archive.StatusCode);
+        Assert.Equal(403, share.StatusCode);
+    }
+
+    [Fact]
+    public async Task Template_document_item_view_deny_hides_from_lists_even_with_folder_allow()
+    {
+        var f = Fixture(grantFolder: true);
+        var template = SeedTemplate(f, shareable: true, instanceId: InstanceId);
+        SeedMatrixPolicy(f, DocumentAccessTargetType.TemplateDocument, template.Id, DocumentAccessEffect.Deny, DocumentAccessMatrixAction.View);
+
+        var list = await f.Templates.ListAsync(null, Corr, CancellationToken.None);
+        var folderDocs = await f.FolderDocs.GetFolderDocumentsAsync(InstanceId, Corr, CancellationToken.None);
+        var detail = await f.Templates.GetDetailAsync(template.Id, Corr, CancellationToken.None);
+
+        Assert.True(list.IsSuccessful);
+        Assert.Empty(list.Data!);
+        Assert.True(folderDocs.IsSuccessful);
+        Assert.Empty(folderDocs.Data!.Templates);
+        Assert.False(detail.IsSuccessful);
+        Assert.Equal(404, detail.StatusCode);
+    }
+
+    [Fact]
+    public async Task Template_document_action_deny_beats_owner_company_fallback()
+    {
+        var f = Fixture(grantFolder: true);
+        var template = SeedTemplate(f, shareable: true, instanceId: InstanceId);
+        SeedMatrixPolicy(f, DocumentAccessTargetType.TemplateDocument, template.Id, DocumentAccessEffect.Deny,
+            DocumentAccessMatrixAction.Download,
+            DocumentAccessMatrixAction.UploadVersion,
+            DocumentAccessMatrixAction.Share);
+
+        var download = await f.Templates.DownloadAsync(template.Id, Guid.NewGuid(), Corr, CancellationToken.None);
+        var upload = await f.Templates.CreateVersionAsync(template.Id, File("v2"), "blocked", false, Corr, CancellationToken.None);
+        var share = await f.Sharing.ShareTemplateAsync(template.Id, CompanyB, DocumentShareMode.Reference, Corr, CancellationToken.None);
+
+        Assert.Equal(403, download.StatusCode);
+        Assert.Equal(403, upload.StatusCode);
+        Assert.Equal(403, share.StatusCode);
+    }
+
+    [Fact]
+    public async Task Transitional_default_without_matrix_policy_keeps_existing_folder_visibility()
+    {
+        var f = Fixture(grantFolder: true);
+        var created = await f.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
+        Assert.True(created.IsSuccessful);
+
+        var list = await f.Documents.ListAsync(null, Corr, CancellationToken.None);
+        var folderDocs = await f.FolderDocs.GetFolderDocumentsAsync(InstanceId, Corr, CancellationToken.None);
+
+        Assert.Single(list.Data!);
+        Assert.Single(folderDocs.Data!.Documents);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private static CreateControlledDocumentInput CreateInput() => new(
@@ -262,7 +438,8 @@ public sealed class ControlledDocumentsTests
         bool referenceable = true,
         bool copyEnabled = false,
         IReadOnlyCollection<Guid>? principalCompanies = null,
-        TestFixture? shareReader = null)
+        TestFixture? shareReader = null,
+        Guid? folderGrantUserId = null)
     {
         var tenantContext = new TenantContext();
         tenantContext.SetTenant(TenantId);
@@ -280,29 +457,50 @@ public sealed class ControlledDocumentsTests
         var folderOutcomes = new FakeFolderShareOutcomeRepository();
         var storage = shareReader?.Storage ?? new FakeContentStorageGateway();
 
+        var fullPermissions = new FolderPermissionSet
+        {
+            CanViewFolderDocuments = true,
+            CanUploadDocument = true,
+            CanEditFolderDocuments = true,
+            CanUploadNewVersion = true,
+            CanShareFolderDocuments = true,
+            CanManageFolderDocumentAccess = true
+        };
+
         if (grantFolder)
         {
+            // Company-level grant (default) or, when folderGrantUserId is set, a user-level grant matching a
+            // company-claimless principal (mirrors the seed-admin JWT shape: sub claim, no company claim).
             folderPolicies.Items.Add(new FolderDocumentAccessPolicy
             {
                 TenantId = TenantId,
                 CollectionInstanceId = InstanceId,
                 CompanyId = CompanyA,
-                TargetType = AccessTargetType.Company,
-                TargetId = CompanyA.ToString("D"),
-                FolderPermissions = new FolderPermissionSet
-                {
-                    CanViewFolderDocuments = true,
-                    CanUploadDocument = true,
-                    CanEditFolderDocuments = true,
-                    CanUploadNewVersion = true,
-                    CanShareFolderDocuments = true,
-                    CanManageFolderDocumentAccess = true
-                }
+                TargetType = folderGrantUserId is null ? AccessTargetType.Company : AccessTargetType.User,
+                TargetId = (folderGrantUserId ?? CompanyA).ToString("D"),
+                FolderPermissions = fullPermissions
             });
         }
 
-        var principal = new DocumentPrincipal(Guid.NewGuid(), [], principalCompanies ?? [CompanyA]);
-        var access = new DocumentAccessEvaluator(folderPolicies, shares, new FakePrincipalAccessor(principal));
+        var principal = folderGrantUserId is { } uid
+            ? new DocumentPrincipal(uid, [], principalCompanies ?? [])
+            : new DocumentPrincipal(Guid.NewGuid(), [], principalCompanies ?? [CompanyA]);
+        var matrixPolicies = new FakeDocumentAccessPolicyRepository();
+        var inheritance = new DocumentAccessInheritanceResolver(
+            new EmptyTemplateVariantRepository(),
+            templateRepo,
+            documentRepo,
+            new EmptyTemplateMasterRepository(),
+            reader,
+            tenantContext);
+        var compatibility = new DocumentAccessCompatibilityAdapter(folderPolicies);
+        var matrix = new DocumentAccessResolver(
+            matrixPolicies,
+            inheritance,
+            compatibility,
+            new FakePrincipalAccessor(principal),
+            Options.Create(new AccessMatrixOptions()));
+        var access = new DocumentAccessEvaluator(folderPolicies, shares, new FakePrincipalAccessor(principal), matrix);
         var flags = Options.Create(new ControlledDocumentsFeatureFlagOptions
         {
             ControlledDocumentsEnabled = true,
@@ -314,20 +512,43 @@ public sealed class ControlledDocumentsTests
         var currentUser = new FakeCurrentUserContext();
         var legalEntity = new FakeLegalEntityReferenceValidator(referenceable);
 
-        var documents = new ControlledDocumentService(reader, documentRepo, versionRepo, shares, versioning, access, keyFactory, currentUser, tenantContext, flags);
+        var favoriteRepo = new FakeDocumentFavoriteRepository();
+        var documents = new ControlledDocumentService(reader, documentRepo, versionRepo, shares, favoriteRepo, versioning, access, keyFactory, currentUser, tenantContext, flags);
         var templates = new TemplateService(reader, templateRepo, templateVersionRepo, shares, versioning, access, keyFactory, currentUser, tenantContext, flags);
         var sharing = new TemplateSharingService(documentRepo, versionRepo, templateRepo, templateVersionRepo, shares, legalEntity, access, currentUser, tenantContext, flags);
         var planner = new FolderSharePlanner(reader, templateRepo, legalEntity, access, tenantContext);
         var folderShares = new FolderShareService(planner, sharing, folderOps, folderOutcomes, currentUser, tenantContext);
+        var folderDocs = new FolderDocumentService(reader, documentRepo, templateRepo, favoriteRepo, folderPolicies, access, currentUser, tenantContext);
 
-        return new TestFixture(documents, templates, sharing, folderShares, documentRepo, versionRepo, templateRepo, templateVersionRepo, shares, folderOps, folderOutcomes, storage);
+        return new TestFixture(documents, templates, sharing, folderShares, folderDocs, documentRepo, versionRepo, templateRepo, templateVersionRepo, shares, folderOps, folderOutcomes, storage, matrixPolicies);
     }
+
+    private static void SeedMatrixPolicy(
+        TestFixture f,
+        DocumentAccessTargetType targetType,
+        Guid targetId,
+        DocumentAccessEffect effect,
+        params DocumentAccessMatrixAction[] actions) =>
+        f.MatrixPolicies.Items.Add(new DocumentAccessPolicyEntry
+        {
+            Id = Guid.NewGuid(),
+            TenantId = TenantId,
+            TargetType = targetType,
+            TargetId = targetId.ToString("D"),
+            PrincipalType = DocumentAccessPrincipalType.Company,
+            PrincipalId = CompanyA.ToString("D"),
+            Actions = actions.ToList(),
+            Effect = effect,
+            InheritFromParent = false,
+            Status = DocumentAccessPolicyStatus.Active
+        });
 
     private sealed record TestFixture(
         ControlledDocumentService Documents,
         TemplateService Templates,
         TemplateSharingService Sharing,
         FolderShareService FolderShares,
+        FolderDocumentService FolderDocs,
         FakeControlledDocumentRepository DocumentRepo,
         FakeControlledDocumentVersionRepository VersionRepo,
         FakeTemplateDocumentRepository TemplateRepo,
@@ -335,5 +556,92 @@ public sealed class ControlledDocumentsTests
         FakeDocumentShareRecordRepository ShareRepo,
         FakeFolderShareOperationRepository FolderOpRepo,
         FakeFolderShareOutcomeRepository FolderOutcomeRepo,
-        FakeContentStorageGateway Storage);
+        FakeContentStorageGateway Storage,
+        FakeDocumentAccessPolicyRepository MatrixPolicies);
+
+    private sealed class FakeDocumentAccessPolicyRepository : IDocumentAccessPolicyRepository
+    {
+        public List<DocumentAccessPolicyEntry> Items { get; } = [];
+
+        public Task<DocumentAccessPolicyEntry> CreateAsync(DocumentAccessPolicyEntry entry, CancellationToken ct = default)
+        {
+            Items.Add(entry);
+            return Task.FromResult(entry);
+        }
+
+        public Task<DocumentAccessPolicyEntry?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
+            Task.FromResult(Items.FirstOrDefault(x => x.Id == id && !x.IsDeleted));
+
+        public Task<IReadOnlyList<DocumentAccessPolicyEntry>> ListAsync(string? targetType, string? targetId, string? principalType, string? principalId, string? effect, string? action, string? status, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<DocumentAccessPolicyEntry>>(Items.Where(x => !x.IsDeleted).ToList());
+
+        public Task<IReadOnlyList<DocumentAccessPolicyEntry>> GetByTargetsAsync(IReadOnlyList<(DocumentAccessTargetType TargetType, string TargetId)> targets, CancellationToken ct = default)
+        {
+            var set = targets.Select(t => $"{t.TargetType}:{t.TargetId}".ToLowerInvariant()).ToHashSet();
+            return Task.FromResult<IReadOnlyList<DocumentAccessPolicyEntry>>(
+                Items.Where(x => !x.IsDeleted && set.Contains($"{x.TargetType}:{x.TargetId}".ToLowerInvariant())).ToList());
+        }
+
+        public Task<DocumentAccessPolicyEntry?> FindDuplicateAsync(DocumentAccessTargetType targetType, string targetId, DocumentAccessPrincipalType principalType, string principalId, DocumentAccessEffect effect, CancellationToken ct = default) =>
+            Task.FromResult(Items.FirstOrDefault(x => !x.IsDeleted && x.TargetType == targetType && x.TargetId == targetId && x.PrincipalType == principalType && x.PrincipalId == principalId && x.Effect == effect));
+
+        public Task<bool> UpdateAsync(DocumentAccessPolicyEntry entry, CancellationToken ct = default)
+        {
+            var i = Items.FindIndex(x => x.Id == entry.Id);
+            if (i >= 0) Items[i] = entry;
+            return Task.FromResult(i >= 0);
+        }
+
+        public Task SoftDeleteAsync(Guid id, CancellationToken ct = default)
+        {
+            var entry = Items.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
+            if (entry is not null)
+            {
+                entry.IsDeleted = true;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task<int> BulkSoftDeleteAsync(IReadOnlyList<Guid> ids, CancellationToken ct = default)
+        {
+            var set = ids.ToHashSet();
+            var affected = Items.Where(x => set.Contains(x.Id) && !x.IsDeleted).ToList();
+            foreach (var entry in affected)
+            {
+                entry.IsDeleted = true;
+            }
+
+            return Task.FromResult(affected.Count);
+        }
+    }
+
+    private sealed class EmptyTemplateVariantRepository : ITemplateVariantRepository
+    {
+        public Task<TemplateVariant> CreateAsync(TemplateVariant v, CancellationToken ct = default) => Task.FromResult(v);
+        public Task<TemplateVariant?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult<TemplateVariant?>(null);
+        public Task<TemplateVariant?> GetByScopeAndCodeAsync(TemplateVariantScopeType scopeType, Guid scopeId, string variantCode, CancellationToken ct = default) => Task.FromResult<TemplateVariant?>(null);
+        public Task<IReadOnlyList<TemplateVariant>> ListAsync(Guid? templateMasterId, string? scopeType, Guid? scopeId, string? status, string? approvalStatus, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<TemplateVariant>>([]);
+        public Task<IReadOnlyList<TemplateVariant>> GetByMasterAsync(Guid templateMasterId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<TemplateVariant>>([]);
+        public Task<bool> UpdateAsync(TemplateVariant v, CancellationToken ct = default) => Task.FromResult(true);
+        public Task SoftDeleteAsync(Guid id, CancellationToken ct = default) => Task.CompletedTask;
+    }
+
+    private sealed class EmptyTemplateMasterRepository : ITemplateMasterRepository
+    {
+        public Task<TemplateMaster> CreateAsync(TemplateMaster m, CancellationToken ct = default) => Task.FromResult(m);
+        public Task<TemplateMaster?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult<TemplateMaster?>(null);
+        public Task<TemplateMaster?> GetByMasterCodeAsync(string masterCode, CancellationToken ct = default) => Task.FromResult<TemplateMaster?>(null);
+        public Task<IReadOnlyList<TemplateMaster>> ListAsync(
+            string? status,
+            string? classification,
+            Guid? collectionDefinitionId,
+            string? canonicalId,
+            string? variantPolicy,
+            CancellationToken ct = default) => Task.FromResult<IReadOnlyList<TemplateMaster>>([]);
+        public Task<bool> UpdateAsync(TemplateMaster m, CancellationToken ct = default) => Task.FromResult(true);
+        public Task<int> CountByCurrentVersionAsync(Guid templateMasterVersionId, CancellationToken ct = default) => Task.FromResult(0);
+        public Task SoftDeleteAsync(Guid id, CancellationToken ct = default) => Task.CompletedTask;
+        public Task<int> BulkSoftDeleteAsync(IReadOnlyList<Guid> ids, CancellationToken ct = default) => Task.FromResult(0);
+    }
 }

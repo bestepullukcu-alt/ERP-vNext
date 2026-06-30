@@ -79,7 +79,7 @@ public sealed class TemplateService
                 return Fail<TemplateDetailModel>("The target folder is not active.", 409, ControlledDocumentReasonCodes.Conflict, correlationId);
             }
 
-            if (!await _access.HasFolderUploadAsync(instanceId, ct))
+            if (!await _access.HasFolderCreateTemplateAsync(instanceId, ct))
             {
                 return PermDenied<TemplateDetailModel>(correlationId);
             }
@@ -158,27 +158,131 @@ public sealed class TemplateService
         return Response<TemplateDetailModel>.Success(ControlledDocumentMapping.ToDetail(template), 201, correlationId);
     }
 
+    public async Task<Response<TemplateDetailModel>> CopyAsync(Guid templateId, Guid targetCollectionInstanceId, string? titleOverride, string correlationId, CancellationToken ct)
+    {
+        var source = await _templates.GetByIdAsync(templateId, ct);
+        if (source is null || !await _access.CanReachTemplateAsync(source, ct))
+        {
+            return Fail<TemplateDetailModel>("Not found.", 404, ControlledDocumentReasonCodes.NotFoundNonLeakage, correlationId);
+        }
+
+        var target = await _reader.ResolveByIdAsync(targetCollectionInstanceId, ct);
+        if (target is null || target.CompanyId != source.OwnerCompanyId)
+        {
+            return Fail<TemplateDetailModel>("Not found.", 404, ControlledDocumentReasonCodes.NotFoundNonLeakage, correlationId);
+        }
+
+        if (!target.IsUsable)
+        {
+            return Fail<TemplateDetailModel>("The target folder is not active.", 409, ControlledDocumentReasonCodes.Conflict, correlationId);
+        }
+
+        if (!await _access.HasFolderCreateTemplateAsync(targetCollectionInstanceId, ct) && !_access.Principal.BelongsToCompany(target.CompanyId))
+        {
+            return PermDenied<TemplateDetailModel>(correlationId);
+        }
+
+        var tenantId = TenantGuard.RequireTenant(_tenantContext);
+        var newId = Guid.NewGuid();
+        var title = string.IsNullOrWhiteSpace(titleOverride) ? source.Title : titleOverride.Trim();
+        var copy = new TemplateDocument
+        {
+            Id = newId,
+            TenantId = tenantId,
+            TemplateKey = _keyFactory.ForTemplate(tenantId, target.CompanyId, target.CollectionInstanceId, $"{title}|copy|{newId:N}"),
+            CompanyId = target.CompanyId,
+            OwnerCompanyId = target.CompanyId,
+            CollectionInstanceId = target.CollectionInstanceId,
+            CollectionPath = target.FullPath,
+            CanonicalId = target.CanonicalId,
+            Title = title,
+            Description = source.Description,
+            Tags = [.. source.Tags],
+            TemplateFlags = new TemplateFlags
+            {
+                Reusable = source.TemplateFlags.Reusable,
+                Shareable = source.TemplateFlags.Shareable,
+                CopyableOnAdopt = source.TemplateFlags.CopyableOnAdopt,
+                ReferenceOnly = source.TemplateFlags.ReferenceOnly
+            },
+            CurrentVersionNumber = 1,
+            Status = ControlledItemStatus.Active,
+            CopiedFromTemplateId = source.Id,
+            CreatedBy = _currentUser.ActorName
+        };
+
+        var sourceVersion = source.CurrentVersionId is { } cv ? await _versions.GetByIdAsync(cv, ct) : null;
+        if (sourceVersion is not null)
+        {
+            var versionId = Guid.NewGuid();
+            copy.CurrentVersionId = versionId;
+            await _templates.CreateAsync(copy, ct);
+            await _versions.CreateAsync(CloneTemplateVersion(sourceVersion, newId, versionId, tenantId), ct);
+        }
+        else
+        {
+            await _templates.CreateAsync(copy, ct);
+        }
+
+        return Response<TemplateDetailModel>.Success(ControlledDocumentMapping.ToDetail(copy), 201, correlationId);
+    }
+
+    private TemplateVersion CloneTemplateVersion(TemplateVersion source, Guid templateId, Guid versionId, Guid tenantId) => new()
+    {
+        Id = versionId,
+        TenantId = tenantId,
+        TemplateId = templateId,
+        VersionNumber = 1,
+        FileRef = new ContentRef
+        {
+            ContentId = source.FileRef.ContentId,
+            StorageProvider = source.FileRef.StorageProvider,
+            ObjectKey = source.FileRef.ObjectKey,
+            FileName = source.FileRef.FileName,
+            MediaType = source.FileRef.MediaType,
+            ByteSize = source.FileRef.ByteSize,
+            Checksum = source.FileRef.Checksum,
+            CreatedAt = DateTimeOffset.UtcNow,
+            CreatedBy = _currentUser.ActorName,
+            VersionId = versionId
+        },
+        Checksum = source.Checksum,
+        UploadedBy = _currentUser.ActorName,
+        UploadedAt = DateTimeOffset.UtcNow,
+        ChangeSummary = source.ChangeSummary,
+        VersionStatus = DocumentVersionStatus.Active,
+        CreatedBy = _currentUser.ActorName
+    };
+
     public async Task<Response<IReadOnlyList<TemplateListItemModel>>> ListAsync(Guid? collectionInstanceId, string correlationId, CancellationToken ct)
     {
         IReadOnlyList<TemplateDocument> source = collectionInstanceId.HasValue
             ? await _templates.GetByCollectionInstanceAsync(collectionInstanceId.Value, ct)
             : await _templates.GetAllForTenantAsync(ct);
 
-        var principal = _access.Principal;
         var shared = await SharedTemplateIdsAsync(ct);
-        var visible = source
-            .Where(t => principal.BelongsToCompany(t.OwnerCompanyId) || shared.Contains(t.Id))
+
+        var visible = new List<TemplateDocument>();
+        foreach (var template in source)
+        {
+            if (await _access.CanViewTemplateDocumentAsync(template, shared, ct))
+            {
+                visible.Add(template);
+            }
+        }
+
+        var items = visible
             .OrderByDescending(t => t.CreatedAt)
             .Select(ControlledDocumentMapping.ToListItem)
             .ToList();
 
-        return Response<IReadOnlyList<TemplateListItemModel>>.Success(visible, correlationId: correlationId);
+        return Response<IReadOnlyList<TemplateListItemModel>>.Success(items, correlationId: correlationId);
     }
 
     public async Task<Response<TemplateDetailModel>> GetDetailAsync(Guid templateId, string correlationId, CancellationToken ct)
     {
         var template = await _templates.GetByIdAsync(templateId, ct);
-        if (template is null || !await _access.CanReachItemAsync(SharedItemKind.Template, templateId, template.OwnerCompanyId, ct))
+        if (template is null || !await _access.CanReachTemplateAsync(template, ct))
         {
             return NotFound<TemplateDetailModel>(correlationId);
         }
@@ -189,7 +293,7 @@ public sealed class TemplateService
     public async Task<Response<IReadOnlyList<DocumentVersionModel>>> GetVersionsAsync(Guid templateId, string correlationId, CancellationToken ct)
     {
         var template = await _templates.GetByIdAsync(templateId, ct);
-        if (template is null || !await _access.CanReachItemAsync(SharedItemKind.Template, templateId, template.OwnerCompanyId, ct))
+        if (template is null || !await _access.CanReachTemplateAsync(template, ct))
         {
             return NotFound<IReadOnlyList<DocumentVersionModel>>(correlationId);
         }
@@ -200,24 +304,36 @@ public sealed class TemplateService
             correlationId: correlationId);
     }
 
-    public async Task<Response<DocumentVersionModel>> CreateVersionAsync(Guid templateId, FileUploadInput file, string? changeSummary, string correlationId, CancellationToken ct)
+    public async Task<Response<DocumentVersionModel>> CreateVersionAsync(Guid templateId, FileUploadInput file, string? changeSummary, bool allowUnchanged, string correlationId, CancellationToken ct)
     {
         var template = await _templates.GetByIdAsync(templateId, ct);
-        if (template is null || !await _access.CanReachItemAsync(SharedItemKind.Template, templateId, template.OwnerCompanyId, ct))
+        if (template is null || !await _access.CanReachTemplateAsync(template, ct))
         {
             return NotFound<DocumentVersionModel>(correlationId);
         }
 
-        if (template.CollectionInstanceId is { } instanceId
-            && !await _access.HasDocumentActionAsync(template.AccessPolicy, instanceId, DocumentAccessAction.Version, ct)
-            && !_access.Principal.BelongsToCompany(template.OwnerCompanyId))
+        if (!await _access.HasTemplateDocumentActionOrOwnerDefaultAsync(
+                template,
+                DocumentAccessMatrixAction.UploadVersion,
+                DocumentAccessAction.Version,
+                ct))
         {
             return PermDenied<DocumentVersionModel>(correlationId);
         }
 
-        if (template.CollectionInstanceId is null && !_access.Principal.BelongsToCompany(template.OwnerCompanyId))
+        // Content-change guard: reject a byte-identical re-upload of the current active version before any storage
+        // write (no orphan) unless explicitly forced — same deterministic "did it actually change?" check as documents.
+        if (!allowUnchanged && template.CurrentVersionId is { } activeId)
         {
-            return PermDenied<DocumentVersionModel>(correlationId);
+            var uploadChecksum = DocumentVersioningService.ComputeChecksum(file?.ContentBase64);
+            var activeVersion = await _versions.GetByIdAsync(activeId, ct);
+            if (uploadChecksum is not null && activeVersion is not null
+                && string.Equals(uploadChecksum, activeVersion.Checksum, StringComparison.OrdinalIgnoreCase))
+            {
+                return Fail<DocumentVersionModel>(
+                    "Uploaded content is identical to the current active version; no change detected.",
+                    409, ControlledDocumentReasonCodes.NoContentChange, correlationId);
+            }
         }
 
         var tenantId = TenantGuard.RequireTenant(_tenantContext);
@@ -268,9 +384,18 @@ public sealed class TemplateService
     public async Task<Response<DocumentDownloadResult>> DownloadAsync(Guid templateId, Guid versionId, string correlationId, CancellationToken ct)
     {
         var template = await _templates.GetByIdAsync(templateId, ct);
-        if (template is null || !await _access.CanReachItemAsync(SharedItemKind.Template, templateId, template.OwnerCompanyId, ct))
+        if (template is null || !await _access.CanReachTemplateAsync(template, ct))
         {
             return NotFound<DocumentDownloadResult>(correlationId);
+        }
+
+        if (!await _access.HasTemplateDocumentActionOrOwnerDefaultAsync(
+                template,
+                DocumentAccessMatrixAction.Download,
+                DocumentAccessAction.Download,
+                ct))
+        {
+            return PermDenied<DocumentDownloadResult>(correlationId);
         }
 
         var version = await _versions.GetByIdAsync(versionId, ct);

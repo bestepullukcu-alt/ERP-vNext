@@ -470,6 +470,9 @@
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>工作流审批</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>文档结构</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>受控文档</value></data>
+  <data name="TemplateMasters" xml:space="preserve"><value>企业模板主库</value></data>
+  <data name="TemplateVariants" xml:space="preserve"><value>模板变体</value></data>
+  <data name="AccessMatrix" xml:space="preserve"><value>访问矩阵</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>QMS 基线</value></data>
   <data name="Unauthorized" xml:space="preserve"><value>未授权</value></data>
 </root>

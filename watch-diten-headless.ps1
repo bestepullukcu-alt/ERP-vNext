@@ -1,9 +1,9 @@
 # Diten ERP - Headless Background Start Script with Watch (Hot Reload) for Windows
 Write-Host "🚀 Starting Diten ERP Multi-Service Suite with WATCH (Hot Reload) in Background..." -ForegroundColor Cyan
 
-# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058)
-Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058..." -ForegroundColor Yellow
-Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058 -ErrorAction SilentlyContinue | 
+# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059)
+Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059..." -ForegroundColor Yellow
+Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059 -ErrorAction SilentlyContinue | 
     Select-Object -ExpandProperty OwningProcess | 
     Unique | 
     ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
@@ -49,6 +49,9 @@ Launch-Service-Headless -Name "DevEnablement" -Path "services/Diten.DevEnablemen
 Start-Sleep -Seconds 2
 
 Launch-Service-Headless -Name "Platform" -Path "services/Diten.Platform/src/Diten.Platform.API" -Port 5057
+Start-Sleep -Seconds 2
+
+Launch-Service-Headless -Name "Mdm" -Path "services/Diten.MdmService/src/Diten.MdmService.Api" -Port 5059
 Start-Sleep -Seconds 2
 
 Launch-Service-Headless -Name "Gateway" -Path "gateway/Diten.ApiGateway" -Port 5000

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AccessMatrixTitle" xml:space="preserve"><value>Doküman Erişim Matrisi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Şirket, dokümantasyon yapısı, klasör, doküman, şablon ve varyantlar için kaynak düzeyinde erişim politikaları</value></data>
+  <data name="CreatePolicy" xml:space="preserve"><value>Politika Oluştur</value></data>
+  <data name="EditPolicy" xml:space="preserve"><value>Politika Düzenle</value></data>
+  <data name="Target" xml:space="preserve"><value>Hedef</value></data>
+  <data name="TargetType" xml:space="preserve"><value>Hedef Türü</value></data>
+  <data name="TargetId" xml:space="preserve"><value>Hedef Kimliği</value></data>
+  <data name="Principal" xml:space="preserve"><value>Yetkili</value></data>
+  <data name="PrincipalType" xml:space="preserve"><value>Yetkili Türü</value></data>
+  <data name="PrincipalId" xml:space="preserve"><value>Yetkili Kimliği</value></data>
+  <data name="Actions" xml:space="preserve"><value>Eylemler</value></data>
+  <data name="Effect" xml:space="preserve"><value>Etki</value></data>
+  <data name="Inheritance" xml:space="preserve"><value>Kalıtım</value></data>
+  <data name="Validity" xml:space="preserve"><value>Geçerlilik</value></data>
+  <data name="Updated" xml:space="preserve"><value>Güncellendi</value></data>
+  <data name="RowActions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="InheritFromParent" xml:space="preserve"><value>Alt öğelere yay</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="Reason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="Expired" xml:space="preserve"><value>Süresi Doldu</value></data>
+  <data name="EffectivePreview" xml:space="preserve"><value>Etkin Erişim Önizlemesi</value></data>
+  <data name="EffectivePreviewNote" xml:space="preserve"><value>Bir yetkili seçip önizlemeyi çalıştırarak bu hedef için çözümlenen etkin eylemleri görün.</value></data>
+  <data name="AllowedActions" xml:space="preserve"><value>İzin Verilen Eylemler</value></data>
+  <data name="NoAllowedActions" xml:space="preserve"><value>İzin verilen eylem yok</value></data>
+  <data name="PreviewPrincipal" xml:space="preserve"><value>Yetkili</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>Çalıştır</value></data>
+  <data name="EnforcementMode" xml:space="preserve"><value>Uygulama modu</value></data>
+  <data name="TargetSection" xml:space="preserve"><value>Hedef</value></data>
+  <data name="PrincipalSection" xml:space="preserve"><value>Yetkili</value></data>
+  <data name="PermissionsSection" xml:space="preserve"><value>İzinler</value></data>
+  <data name="ValiditySection" xml:space="preserve"><value>Geçerlilik ve Yönetişim</value></data>
+  <data name="TargetTenant" xml:space="preserve"><value>Kiracı</value></data>
+  <data name="TargetCompany" xml:space="preserve"><value>Şirket</value></data>
+  <data name="TargetCollectionDefinition" xml:space="preserve"><value>Dokümantasyon Yapısı</value></data>
+  <data name="TargetCollectionInstance" xml:space="preserve"><value>Klasör</value></data>
+  <data name="TargetTemplateDocument" xml:space="preserve"><value>Şablon Dokümanı</value></data>
+  <data name="TargetControlledDocument" xml:space="preserve"><value>Kontrollü Doküman</value></data>
+  <data name="TargetTemplateMaster" xml:space="preserve"><value>Şablon Master</value></data>
+  <data name="TargetTemplateVariant" xml:space="preserve"><value>Şablon Varyantı</value></data>
+  <data name="PrincipalUser" xml:space="preserve"><value>Kullanıcı</value></data>
+  <data name="PrincipalRole" xml:space="preserve"><value>Rol</value></data>
+  <data name="PrincipalGroup" xml:space="preserve"><value>Grup</value></data>
+  <data name="PrincipalCompany" xml:space="preserve"><value>Şirket</value></data>
+  <data name="EffectAllow" xml:space="preserve"><value>İzin Ver</value></data>
+  <data name="EffectDeny" xml:space="preserve"><value>Reddet</value></data>
+  <data name="ActionView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="ActionDownload" xml:space="preserve"><value>İndir</value></data>
+  <data name="ActionCreateDocument" xml:space="preserve"><value>Doküman Oluştur</value></data>
+  <data name="ActionCreateTemplate" xml:space="preserve"><value>Şablon Oluştur</value></data>
+  <data name="ActionEditMetadata" xml:space="preserve"><value>Meta Veri Düzenle</value></data>
+  <data name="ActionUploadVersion" xml:space="preserve"><value>Versiyon Yükle</value></data>
+  <data name="ActionPublish" xml:space="preserve"><value>Yayınla</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="ActionShare" xml:space="preserve"><value>Paylaş</value></data>
+  <data name="ActionManageAccess" xml:space="preserve"><value>Erişimi Yönet</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusDisabled" xml:space="preserve"><value>Devre Dışı</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="InheritancePropagates" xml:space="preserve"><value>Yayılır</value></data>
+  <data name="InheritanceDirect" xml:space="preserve"><value>Doğrudan</value></data>
+  <data name="ManualTargetId" xml:space="preserve"><value>Veya hedef kimliğini elle girin</value></data>
+  <data name="ManualPrincipalId" xml:space="preserve"><value>Veya yetkili kimliğini elle girin</value></data>
+</root>

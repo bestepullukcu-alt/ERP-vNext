@@ -134,6 +134,9 @@ public static class DependencyInjection
             configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ControlledDocumentsFeatureFlagOptions.SectionName));
         services.Configure<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ContentStorageOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ContentStorageOptions.SectionName));
+        // MOD-0029-FU04 — access matrix rollout/enforcement mode (defaults to Compatibility when unset).
+        services.Configure<Diten.Platform.Application.Features.DocumentManagementAccessMatrix.Services.AccessMatrixOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementAccessMatrix.Services.AccessMatrixOptions.SectionName));
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
@@ -230,10 +233,17 @@ public static class DependencyInjection
         services.AddScoped<IControlledDocumentVersionRepository, ControlledDocumentVersionRepository>();
         services.AddScoped<ITemplateDocumentRepository, TemplateDocumentRepository>();
         services.AddScoped<ITemplateVersionRepository, TemplateVersionRepository>();
+        services.AddScoped<ITemplateMasterRepository, TemplateMasterRepository>();
+        services.AddScoped<ITemplateMasterVersionRepository, TemplateMasterVersionRepository>();
+        // MOD-0029-FU03 — tenant-scoped template variant governance + drift repository.
+        services.AddScoped<ITemplateVariantRepository, TemplateVariantRepository>();
+        // MOD-0029-FU04 — generalized document access matrix policy repository.
+        services.AddScoped<IDocumentAccessPolicyRepository, DocumentAccessPolicyRepository>();
         services.AddScoped<IFolderDocumentAccessPolicyRepository, FolderDocumentAccessPolicyRepository>();
         services.AddScoped<IDocumentShareRecordRepository, DocumentShareRecordRepository>();
         services.AddScoped<IFolderShareOperationRepository, FolderShareOperationRepository>();
         services.AddScoped<IFolderShareOutcomeRepository, FolderShareOutcomeRepository>();
+        services.AddScoped<IDocumentFavoriteRepository, DocumentFavoriteRepository>();
         services.AddScoped<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services.ICollectionInstanceReferenceReader,
             Diten.Platform.Infrastructure.Services.DocumentManagement.CollectionInstanceReferenceReader>();
         services.AddScoped<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services.IDocumentAccessPrincipalAccessor,

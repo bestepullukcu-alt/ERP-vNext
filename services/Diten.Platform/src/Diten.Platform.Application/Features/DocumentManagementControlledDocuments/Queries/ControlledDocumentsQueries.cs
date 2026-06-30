@@ -41,3 +41,9 @@ public sealed record GetFolderDocumentAccessQuery(Guid CollectionInstanceId, str
 
 public sealed record GetFolderShareOperationQuery(Guid OperationId, string CorrelationId)
     : IRequest<Response<FolderShareResultModel>>;
+
+public sealed record GetActiveDocumentationStructuresQuery(Guid CompanyId, string CorrelationId)
+    : IRequest<Response<IReadOnlyList<DocumentationStructureModel>>>;
+
+public sealed record SearchControlledDocumentsQuery(ExplorerSearchInput Input, string CorrelationId)
+    : IRequest<Response<ExplorerSearchResultModelList>>;

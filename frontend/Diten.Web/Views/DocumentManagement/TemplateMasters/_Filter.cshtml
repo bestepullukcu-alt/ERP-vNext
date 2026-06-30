@@ -1,0 +1,55 @@
+@using Diten.Web.Views.DocumentManagement.TemplateMasters
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TemplateMastersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost" class="px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Status (Multi-select) *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="DRAFT">@Localizer["StatusDraft"]</option>
+                            <option value="PUBLISHED">@Localizer["StatusPublished"]</option>
+                            <option value="DEPRECATED">@Localizer["StatusDeprecated"]</option>
+                            <option value="ARCHIVED">@Localizer["StatusArchived"]</option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Classification (Multi-select) *@
+                    <div class="filter-chip filter-classification">
+                        <select id="filterClassification" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Classification"]">
+                            <option value="SOP">@Localizer["ClassificationSop"]</option>
+                            <option value="WORK_INSTRUCTION">@Localizer["ClassificationWorkInstruction"]</option>
+                            <option value="POLICY">@Localizer["ClassificationPolicy"]</option>
+                            <option value="FORM">@Localizer["ClassificationForm"]</option>
+                            <option value="TEMPLATE">@Localizer["ClassificationTemplate"]</option>
+                            <option value="OTHER">@Localizer["ClassificationOther"]</option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Variant Policy (Multi-select) *@
+                    <div class="filter-chip filter-variant-policy">
+                        <select id="filterVariantPolicy" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["VariantPolicy"]">
+                            <option value="ALLOWED">@Localizer["VariantAllowed"]</option>
+                            <option value="LOCKED">@Localizer["VariantLocked"]</option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Canonical Id (Free text) *@
+                    <div class="filter-chip filter-canonical">
+                        <input id="filterCanonicalId" class="form-control form-control-sm" placeholder="@Localizer["CanonicalId"]" maxlength="200" />
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

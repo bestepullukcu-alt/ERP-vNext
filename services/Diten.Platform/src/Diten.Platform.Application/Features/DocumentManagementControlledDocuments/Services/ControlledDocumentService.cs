@@ -20,6 +20,7 @@ public sealed class ControlledDocumentService
     private readonly IControlledDocumentRepository _documents;
     private readonly IControlledDocumentVersionRepository _versions;
     private readonly IDocumentShareRecordRepository _shares;
+    private readonly IDocumentFavoriteRepository _favorites;
     private readonly DocumentVersioningService _versioning;
     private readonly DocumentAccessEvaluator _access;
     private readonly DocumentKeyFactory _keyFactory;
@@ -32,6 +33,7 @@ public sealed class ControlledDocumentService
         IControlledDocumentRepository documents,
         IControlledDocumentVersionRepository versions,
         IDocumentShareRecordRepository shares,
+        IDocumentFavoriteRepository favorites,
         DocumentVersioningService versioning,
         DocumentAccessEvaluator access,
         DocumentKeyFactory keyFactory,
@@ -43,6 +45,7 @@ public sealed class ControlledDocumentService
         _documents = documents;
         _versions = versions;
         _shares = shares;
+        _favorites = favorites;
         _versioning = versioning;
         _access = access;
         _keyFactory = keyFactory;
@@ -94,7 +97,7 @@ public sealed class ControlledDocumentService
         }
 
         // 3) Folder-level upload permission (Layer 2).
-        if (!await _access.HasFolderUploadAsync(input.CollectionInstanceId, ct))
+        if (!await _access.HasFolderCreateDocumentAsync(input.CollectionInstanceId, ct))
         {
             return PermDenied<ControlledDocumentDetailModel>(correlationId);
         }
@@ -170,14 +173,230 @@ public sealed class ControlledDocumentService
     public async Task<Response<IReadOnlyList<ControlledDocumentListItemModel>>> ListAsync(Guid? collectionInstanceId, string correlationId, CancellationToken ct)
     {
         var visible = await GetVisibleDocumentsAsync(collectionInstanceId, ct);
-        return Response<IReadOnlyList<ControlledDocumentListItemModel>>.Success(
-            visible.Select(ControlledDocumentMapping.ToListItem).ToList(), correlationId: correlationId);
+        var favorites = _currentUser.UserId == Guid.Empty
+            ? (IReadOnlySet<Guid>)new HashSet<Guid>()
+            : await _favorites.GetFavoriteDocumentIdsAsync(_currentUser.UserId, ct);
+        var items = visible
+            .Select(d => ControlledDocumentMapping.ToListItem(d) with { IsFavorite = favorites.Contains(d.Id) })
+            .ToList();
+        return Response<IReadOnlyList<ControlledDocumentListItemModel>>.Success(items, correlationId: correlationId);
+    }
+
+    public async Task<Response<NoContent>> DeleteAsync(Guid documentId, string correlationId, CancellationToken ct)
+    {
+        var document = await _documents.GetByIdAsync(documentId, ct);
+        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
+        {
+            return NotFound<NoContent>(correlationId);
+        }
+
+        // Delete = soft delete (no hard delete per pack §4/§8). Requires the Layer 2 edit grant.
+        if (!await _access.HasControlledDocumentMatrixActionAsync(
+                document,
+                DocumentAccessMatrixAction.Archive,
+                DocumentAccessAction.Edit,
+                ct))
+        {
+            return PermDenied<NoContent>(correlationId);
+        }
+
+        await _documents.SoftDeleteAsync(documentId, ct);
+        return Response<NoContent>.Success(204, correlationId);
+    }
+
+    public async Task<Response<ControlledDocumentDetailModel>> MoveAsync(Guid documentId, Guid targetCollectionInstanceId, string correlationId, CancellationToken ct)
+    {
+        var document = await _documents.GetByIdAsync(documentId, ct);
+        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
+        {
+            return NotFound<ControlledDocumentDetailModel>(correlationId);
+        }
+
+        if (!await _access.HasControlledDocumentMatrixActionAsync(
+                document,
+                DocumentAccessMatrixAction.EditMetadata,
+                DocumentAccessAction.Edit,
+                ct)
+            && !_access.Principal.BelongsToCompany(document.OwnerCompanyId))
+        {
+            return PermDenied<ControlledDocumentDetailModel>(correlationId);
+        }
+
+        var target = await _reader.ResolveByIdAsync(targetCollectionInstanceId, ct);
+        if (target is null)
+        {
+            return NotFound<ControlledDocumentDetailModel>(correlationId);
+        }
+
+        // Move stays within the owning company; a cross-company transfer is a share, not a move.
+        if (target.CompanyId != document.OwnerCompanyId)
+        {
+            return NotFound<ControlledDocumentDetailModel>(correlationId);
+        }
+
+        if (!target.IsUsable)
+        {
+            return Fail<ControlledDocumentDetailModel>("The target folder is not active.", 409, ControlledDocumentReasonCodes.Conflict, correlationId);
+        }
+
+        // Folder-level upload permission on the target folder (same gate as attaching a document there).
+        if (!await _access.HasFolderCreateDocumentAsync(targetCollectionInstanceId, ct) && !_access.Principal.BelongsToCompany(target.CompanyId))
+        {
+            return PermDenied<ControlledDocumentDetailModel>(correlationId);
+        }
+
+        if (targetCollectionInstanceId == document.CollectionInstanceId)
+        {
+            return Fail<ControlledDocumentDetailModel>("The document is already in this folder.", 400, ControlledDocumentReasonCodes.ValidationFailed, correlationId);
+        }
+
+        document.CollectionInstanceId = target.CollectionInstanceId;
+        document.CollectionPath = target.FullPath;
+        document.CanonicalId = target.CanonicalId;
+        document.UpdatedAt = DateTimeOffset.UtcNow;
+        document.UpdatedBy = _currentUser.ActorName;
+        await _documents.UpdateAsync(document, ct);
+
+        return Response<ControlledDocumentDetailModel>.Success(ControlledDocumentMapping.ToDetail(document), correlationId: correlationId);
+    }
+
+    public async Task<Response<ControlledDocumentDetailModel>> CopyAsync(Guid documentId, Guid targetCollectionInstanceId, string? titleOverride, string correlationId, CancellationToken ct)
+    {
+        var source = await _documents.GetByIdAsync(documentId, ct);
+        if (source is null || !await _access.CanReachDocumentAsync(source, ct))
+        {
+            return NotFound<ControlledDocumentDetailModel>(correlationId);
+        }
+
+        // Source view/download permission required to copy out of the source.
+        if (!await _access.HasControlledDocumentMatrixActionAsync(
+                source,
+                DocumentAccessMatrixAction.View,
+                DocumentAccessAction.View,
+                ct)
+            && !_access.Principal.BelongsToCompany(source.OwnerCompanyId))
+        {
+            return PermDenied<ControlledDocumentDetailModel>(correlationId);
+        }
+
+        var target = await _reader.ResolveByIdAsync(targetCollectionInstanceId, ct);
+        if (target is null)
+        {
+            return NotFound<ControlledDocumentDetailModel>(correlationId);
+        }
+
+        // Same company only (cross-company copy is a share flow); target folder must be active.
+        if (target.CompanyId != source.OwnerCompanyId)
+        {
+            return NotFound<ControlledDocumentDetailModel>(correlationId);
+        }
+
+        if (!target.IsUsable)
+        {
+            return Fail<ControlledDocumentDetailModel>("The target folder is not active.", 409, ControlledDocumentReasonCodes.Conflict, correlationId);
+        }
+
+        // Target upload/create permission required.
+        if (!await _access.HasFolderCreateDocumentAsync(targetCollectionInstanceId, ct) && !_access.Principal.BelongsToCompany(target.CompanyId))
+        {
+            return PermDenied<ControlledDocumentDetailModel>(correlationId);
+        }
+
+        var tenantId = TenantGuard.RequireTenant(_tenantContext);
+        var newId = Guid.NewGuid();
+        var title = string.IsNullOrWhiteSpace(titleOverride) ? source.Title : titleOverride.Trim();
+        var copy = new ControlledDocument
+        {
+            Id = newId,
+            TenantId = tenantId,
+            DocumentKey = _keyFactory.ForDocument(tenantId, target.CompanyId, target.CollectionInstanceId, $"{title}|copy|{newId:N}"),
+            CompanyId = target.CompanyId,
+            OwnerCompanyId = target.CompanyId,
+            CollectionInstanceId = target.CollectionInstanceId,
+            CollectionPath = target.FullPath,
+            CanonicalId = target.CanonicalId,
+            Title = title,
+            DocumentType = source.DocumentType,
+            Description = source.Description,
+            Tags = [.. source.Tags],
+            Controlled = source.Controlled,
+            EffectiveDate = source.EffectiveDate,
+            ReviewDate = source.ReviewDate,
+            ExpiryDate = source.ExpiryDate,
+            CurrentVersionNumber = 1,
+            Status = ControlledItemStatus.Active,
+            AccessPolicy = new DocumentAccessPolicy { Source = AccessPolicySource.Inherited },
+            CopiedFromDocumentId = source.Id,
+            CreatedBy = _currentUser.ActorName
+        };
+
+        // Default copy = current active version copied as a new independent initial version (same immutable
+        // content object; lineage diverges on the target's subsequent uploads).
+        var sourceVersion = source.CurrentVersionId is { } cv ? await _versions.GetByIdAsync(cv, ct) : null;
+        if (sourceVersion is not null)
+        {
+            var versionId = Guid.NewGuid();
+            copy.CurrentVersionId = versionId;
+            await _documents.CreateAsync(copy, ct);
+            await _versions.CreateAsync(CloneVersion(sourceVersion, newId, versionId, tenantId), ct);
+        }
+        else
+        {
+            await _documents.CreateAsync(copy, ct);
+        }
+
+        return Response<ControlledDocumentDetailModel>.Success(ControlledDocumentMapping.ToDetail(copy), 201, correlationId);
+    }
+
+    private ControlledDocumentVersion CloneVersion(ControlledDocumentVersion source, Guid documentId, Guid versionId, Guid tenantId) => new()
+    {
+        Id = versionId,
+        TenantId = tenantId,
+        DocumentId = documentId,
+        VersionNumber = 1,
+        FileRef = new ContentRef
+        {
+            ContentId = source.FileRef.ContentId,
+            StorageProvider = source.FileRef.StorageProvider,
+            ObjectKey = source.FileRef.ObjectKey,
+            FileName = source.FileRef.FileName,
+            MediaType = source.FileRef.MediaType,
+            ByteSize = source.FileRef.ByteSize,
+            Checksum = source.FileRef.Checksum,
+            CreatedAt = DateTimeOffset.UtcNow,
+            CreatedBy = _currentUser.ActorName,
+            VersionId = versionId
+        },
+        Checksum = source.Checksum,
+        UploadedBy = _currentUser.ActorName,
+        UploadedAt = DateTimeOffset.UtcNow,
+        ChangeSummary = source.ChangeSummary,
+        VersionStatus = DocumentVersionStatus.Active,
+        CreatedBy = _currentUser.ActorName
+    };
+
+    public async Task<Response<DocumentFavoriteResult>> ToggleFavoriteAsync(Guid documentId, string correlationId, CancellationToken ct)
+    {
+        var document = await _documents.GetByIdAsync(documentId, ct);
+        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
+        {
+            return NotFound<DocumentFavoriteResult>(correlationId);
+        }
+
+        if (_currentUser.UserId == Guid.Empty)
+        {
+            return PermDenied<DocumentFavoriteResult>(correlationId);
+        }
+
+        var isFavorite = await _favorites.IsFavoriteAsync(_currentUser.UserId, documentId, ct);
+        await _favorites.ToggleAsync(_currentUser.UserId, documentId, !isFavorite, ct);
+        return Response<DocumentFavoriteResult>.Success(new DocumentFavoriteResult(documentId, !isFavorite), correlationId: correlationId);
     }
 
     public async Task<Response<ControlledDocumentDetailModel>> GetDetailAsync(Guid documentId, string correlationId, CancellationToken ct)
     {
         var document = await _documents.GetByIdAsync(documentId, ct);
-        if (document is null || !await _access.CanReachItemAsync(SharedItemKind.ControlledDocument, documentId, document.OwnerCompanyId, ct))
+        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
         {
             return NotFound<ControlledDocumentDetailModel>(correlationId);
         }
@@ -193,7 +412,7 @@ public sealed class ControlledDocumentService
     public async Task<Response<IReadOnlyList<DocumentVersionModel>>> GetVersionsAsync(Guid documentId, string correlationId, CancellationToken ct)
     {
         var document = await _documents.GetByIdAsync(documentId, ct);
-        if (document is null || !await _access.CanReachItemAsync(SharedItemKind.ControlledDocument, documentId, document.OwnerCompanyId, ct))
+        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
         {
             return NotFound<IReadOnlyList<DocumentVersionModel>>(correlationId);
         }
@@ -212,7 +431,7 @@ public sealed class ControlledDocumentService
     public async Task<Response<DocumentVersionModel>> GetVersionAsync(Guid documentId, Guid versionId, string correlationId, CancellationToken ct)
     {
         var document = await _documents.GetByIdAsync(documentId, ct);
-        if (document is null || !await _access.CanReachItemAsync(SharedItemKind.ControlledDocument, documentId, document.OwnerCompanyId, ct))
+        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
         {
             return NotFound<DocumentVersionModel>(correlationId);
         }
@@ -231,18 +450,38 @@ public sealed class ControlledDocumentService
         return Response<DocumentVersionModel>.Success(ControlledDocumentMapping.ToVersionModel(version), correlationId: correlationId);
     }
 
-    public async Task<Response<DocumentVersionModel>> CreateVersionAsync(Guid documentId, FileUploadInput file, string? changeSummary, string correlationId, CancellationToken ct)
+    public async Task<Response<DocumentVersionModel>> CreateVersionAsync(Guid documentId, FileUploadInput file, string? changeSummary, bool allowUnchanged, string correlationId, CancellationToken ct)
     {
         var document = await _documents.GetByIdAsync(documentId, ct);
-        if (document is null || !await _access.CanReachItemAsync(SharedItemKind.ControlledDocument, documentId, document.OwnerCompanyId, ct))
+        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
         {
             return NotFound<DocumentVersionModel>(correlationId);
         }
 
         // Layer 2 version-create (document-level or inherited folder-level canUploadNewVersion).
-        if (!await _access.HasDocumentActionAsync(document.AccessPolicy, document.CollectionInstanceId, DocumentAccessAction.Version, ct))
+        if (!await _access.HasControlledDocumentMatrixActionAsync(
+                document,
+                DocumentAccessMatrixAction.UploadVersion,
+                DocumentAccessAction.Version,
+                ct))
         {
             return PermDenied<DocumentVersionModel>(correlationId);
+        }
+
+        // Content-change guard: a "new version" whose SHA-256 is byte-identical to the current ACTIVE version is
+        // not a real change. Reject it before any storage write (no orphan) unless the uploader explicitly forces
+        // it. This is the deterministic answer to "did the document actually change?".
+        if (!allowUnchanged && document.CurrentVersionId is { } activeId)
+        {
+            var uploadChecksum = DocumentVersioningService.ComputeChecksum(file?.ContentBase64);
+            var activeVersion = await _versions.GetByIdAsync(activeId, ct);
+            if (uploadChecksum is not null && activeVersion is not null
+                && string.Equals(uploadChecksum, activeVersion.Checksum, StringComparison.OrdinalIgnoreCase))
+            {
+                return Fail<DocumentVersionModel>(
+                    "Uploaded content is identical to the current active version; no change detected.",
+                    409, ControlledDocumentReasonCodes.NoContentChange, correlationId);
+            }
         }
 
         var tenantId = TenantGuard.RequireTenant(_tenantContext);
@@ -293,13 +532,17 @@ public sealed class ControlledDocumentService
     public async Task<Response<DocumentDownloadResult>> DownloadAsync(Guid documentId, Guid versionId, string correlationId, CancellationToken ct)
     {
         var document = await _documents.GetByIdAsync(documentId, ct);
-        if (document is null || !await _access.CanReachItemAsync(SharedItemKind.ControlledDocument, documentId, document.OwnerCompanyId, ct))
+        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
         {
             return NotFound<DocumentDownloadResult>(correlationId);
         }
 
         // Backend-gated download: tenant → company → document/folder access → version → download permission.
-        if (!await _access.HasDocumentActionAsync(document.AccessPolicy, document.CollectionInstanceId, DocumentAccessAction.Download, ct))
+        if (!await _access.HasControlledDocumentMatrixActionAsync(
+                document,
+                DocumentAccessMatrixAction.Download,
+                DocumentAccessAction.Download,
+                ct))
         {
             return PermDenied<DocumentDownloadResult>(correlationId);
         }
@@ -318,12 +561,16 @@ public sealed class ControlledDocumentService
     public async Task<Response<ControlledDocumentDetailModel>> EditMetadataAsync(Guid documentId, EditControlledDocumentInput input, string correlationId, CancellationToken ct)
     {
         var document = await _documents.GetByIdAsync(documentId, ct);
-        if (document is null || !await _access.CanReachItemAsync(SharedItemKind.ControlledDocument, documentId, document.OwnerCompanyId, ct))
+        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
         {
             return NotFound<ControlledDocumentDetailModel>(correlationId);
         }
 
-        if (!await _access.HasDocumentActionAsync(document.AccessPolicy, document.CollectionInstanceId, DocumentAccessAction.Edit, ct))
+        if (!await _access.HasControlledDocumentMatrixActionAsync(
+                document,
+                DocumentAccessMatrixAction.EditMetadata,
+                DocumentAccessAction.Edit,
+                ct))
         {
             return PermDenied<ControlledDocumentDetailModel>(correlationId);
         }
@@ -350,18 +597,8 @@ public sealed class ControlledDocumentService
         return Response<ControlledDocumentDetailModel>.Success(ControlledDocumentMapping.ToDetail(document), correlationId: correlationId);
     }
 
-    private async Task<bool> CanViewAsync(ControlledDocument document, CancellationToken ct)
-    {
-        // Documented first-version reduction (§2 Access Control): list/detail visibility is company-scoped.
-        // An owner-company principal (or an explicit-share target, already verified by CanReachItemAsync) may
-        // view the library entry; per-document Layer 2 still gates edit / version / share / download.
-        if (_access.Principal.BelongsToCompany(document.OwnerCompanyId))
-        {
-            return true;
-        }
-
-        return await _access.HasDocumentActionAsync(document.AccessPolicy, document.CollectionInstanceId, DocumentAccessAction.View, ct);
-    }
+    private Task<bool> CanViewAsync(ControlledDocument document, CancellationToken ct) =>
+        _access.CanViewControlledDocumentAsync(document, null, ct);
 
     private async Task<IReadOnlyList<ControlledDocument>> GetVisibleDocumentsAsync(Guid? collectionInstanceId, CancellationToken ct)
     {
@@ -369,13 +606,18 @@ public sealed class ControlledDocumentService
             ? await _documents.GetByCollectionInstanceAsync(collectionInstanceId.Value, ct)
             : await _documents.GetAllForTenantAsync(ct);
 
-        var principal = _access.Principal;
         var sharedItemIds = await SharedDocumentIdsAsync(ct);
 
-        return source
-            .Where(d => principal.BelongsToCompany(d.OwnerCompanyId) || sharedItemIds.Contains(d.Id))
-            .OrderByDescending(d => d.CreatedAt)
-            .ToList();
+        var visible = new List<ControlledDocument>();
+        foreach (var document in source)
+        {
+            if (await _access.CanViewControlledDocumentAsync(document, sharedItemIds, ct))
+            {
+                visible.Add(document);
+            }
+        }
+
+        return visible.OrderByDescending(d => d.CreatedAt).ToList();
     }
 
     private async Task<HashSet<Guid>> SharedDocumentIdsAsync(CancellationToken ct)
@@ -465,3 +707,5 @@ public sealed record EditControlledDocumentInput(
     DateTimeOffset? ExpiryDate);
 
 public sealed record DocumentDownloadResult(string StorageProvider, string ObjectKey, string FileName, string MediaType);
+
+public sealed record DocumentFavoriteResult(Guid DocumentId, bool IsFavorite);

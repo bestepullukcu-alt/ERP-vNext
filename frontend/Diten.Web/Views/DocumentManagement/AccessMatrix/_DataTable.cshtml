@@ -1,0 +1,34 @@
+@using Diten.Web.Views.DocumentManagement.AccessMatrix
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AccessMatrixIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-accessmatrix" data-dt-standard="v2" class="datatables-accessmatrix table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
+                    <th class="all">@Localizer["Target"]</th>
+                    <th>@Localizer["Principal"]</th>
+                    <th>@Localizer["Actions"]</th>
+                    <th>@Localizer["Effect"]</th>
+                    <th>@Localizer["Inheritance"]</th>
+                    <th>@Localizer["Validity"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["Updated"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["RowActions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

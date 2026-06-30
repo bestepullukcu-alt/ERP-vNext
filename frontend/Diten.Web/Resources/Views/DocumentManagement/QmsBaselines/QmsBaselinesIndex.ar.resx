@@ -315,4 +315,15 @@
   <data name="ValidateNeedsDefinitions" xml:space="preserve">
     <value>أضف تعريفًا واحدًا على الأقل قبل التحقق.</value>
   </data>
+  <data name="RelatedTemplatesTitle" xml:space="preserve"><value>القوالب المؤسسية ذات الصلة</value></data>
+  <data name="RelatedTemplatesSelectFolder" xml:space="preserve"><value>حدد مجلدًا لعرض القوالب الرئيسية ذات الصلة.</value></data>
+  <data name="RelatedTemplatesEmpty" xml:space="preserve"><value>لا توجد قوالب رئيسية ذات صلة لهذا المجلد.</value></data>
+  <data name="MasterCode" xml:space="preserve"><value>رمز الأصل</value></data>
+  <data name="TemplateName" xml:space="preserve"><value>اسم القالب</value></data>
+  <data name="VariantPolicy" xml:space="preserve"><value>سياسة المتغير</value></data>
+  <data name="Owner" xml:space="preserve"><value>المالك</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>مهمل</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="VariantAllowed" xml:space="preserve"><value>المتغير مسموح</value></data>
+  <data name="VariantLocked" xml:space="preserve"><value>المتغير مقفل</value></data>
 </root>

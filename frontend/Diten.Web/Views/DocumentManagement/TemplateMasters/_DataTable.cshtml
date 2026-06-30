@@ -1,6 +1,6 @@
-@using Diten.Web.Views.DocumentManagement.ControlledDocuments
+@using Diten.Web.Views.DocumentManagement.TemplateMasters
 @using Microsoft.AspNetCore.Mvc.Localization
-@inject IHtmlLocalizer<ControlledDocumentsIndex> Localizer
+@inject IHtmlLocalizer<TemplateMastersIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
 <div class="card">
@@ -13,16 +13,19 @@
     </div>
 
     <div class="card-datatable table-responsive">
-        <table id="dt-controlleddocuments" data-dt-standard="v2" class="datatables-controlleddocuments table border-top">
+        <table id="dt-templatemasters" data-dt-standard="v2" class="datatables-templatemasters table border-top">
             <thead>
                 <tr>
                     <th></th>
-                    <th>@Localizer["Title"]</th>
-                    <th class="all">@Localizer["DocumentType"]</th>
-                    <th>@Localizer["FolderPath"]</th>
-                    <th>@Localizer["CurrentVersion"]</th>
+                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
+                    <th>@Localizer["MasterCode"]</th>
+                    <th class="all">@Localizer["TemplateName"]</th>
+                    <th>@Localizer["Version"]</th>
                     <th>@SharedLocalizer["Status"]</th>
-                    <th>@Localizer["CreatedAt"]</th>
+                    <th>@Localizer["Classification"]</th>
+                    <th>@Localizer["Binding"]</th>
+                    <th>@Localizer["VariantPolicy"]</th>
+                    <th>@Localizer["Owner"]</th>
                     <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
                 </tr>
             </thead>

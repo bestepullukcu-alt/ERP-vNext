@@ -315,4 +315,15 @@
   <data name="ValidateNeedsDefinitions" xml:space="preserve">
     <value>验证前请至少添加一个定义。</value>
   </data>
+  <data name="RelatedTemplatesTitle" xml:space="preserve"><value>相关企业模板</value></data>
+  <data name="RelatedTemplatesSelectFolder" xml:space="preserve"><value>选择一个文件夹以查看相关的模板主记录。</value></data>
+  <data name="RelatedTemplatesEmpty" xml:space="preserve"><value>此文件夹没有相关的模板主记录。</value></data>
+  <data name="MasterCode" xml:space="preserve"><value>主代码</value></data>
+  <data name="TemplateName" xml:space="preserve"><value>模板名称</value></data>
+  <data name="VariantPolicy" xml:space="preserve"><value>变体策略</value></data>
+  <data name="Owner" xml:space="preserve"><value>所有者</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>已弃用</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="VariantAllowed" xml:space="preserve"><value>允许变体</value></data>
+  <data name="VariantLocked" xml:space="preserve"><value>变体锁定</value></data>
 </root>

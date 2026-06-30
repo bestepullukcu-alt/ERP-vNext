@@ -132,6 +132,9 @@
   <data name="UploadNewVersion" xml:space="preserve">
     <value>Téléverser une nouvelle version</value>
   </data>
+  <data name="Upload" xml:space="preserve">
+    <value>Téléverser</value>
+  </data>
   <data name="Version" xml:space="preserve">
     <value>Version</value>
   </data>
@@ -176,6 +179,54 @@
   </data>
   <data name="TargetCompany" xml:space="preserve">
     <value>Société cible</value>
+  </data>
+  <data name="DocumentContext" xml:space="preserve">
+    <value>Contexte du document</value>
+  </data>
+  <data name="InternalLink" xml:space="preserve">
+    <value>Lien interne</value>
+  </data>
+  <data name="RecipientEmail" xml:space="preserve">
+    <value>Email du destinataire</value>
+  </data>
+  <data name="SendEmail" xml:space="preserve">
+    <value>Envoyer un email</value>
+  </data>
+  <data name="CopyLink" xml:space="preserve">
+    <value>Copier le lien</value>
+  </data>
+  <data name="CompanyShare" xml:space="preserve">
+    <value>Partage société</value>
+  </data>
+  <data name="AccessLevel" xml:space="preserve">
+    <value>Niveau d'accès</value>
+  </data>
+  <data name="ViewOnly" xml:space="preserve">
+    <value>Lecture seule</value>
+  </data>
+  <data name="CopyAllowed" xml:space="preserve">
+    <value>Copie autorisée</value>
+  </data>
+  <data name="ExpiryDateOptional" xml:space="preserve">
+    <value>Date d'expiration (facultatif)</value>
+  </data>
+  <data name="PasswordProtectionOptional" xml:space="preserve">
+    <value>Protection par mot de passe (facultatif)</value>
+  </data>
+  <data name="DirectUserShare" xml:space="preserve">
+    <value>Partage utilisateur direct</value>
+  </data>
+  <data name="TargetCompanyPlaceholder" xml:space="preserve">
+    <value>Id de la société cible</value>
+  </data>
+  <data name="UnsupportedShareOption" xml:space="preserve">
+    <value>Les aides email/lien ne créent pas de droits d'accès. L'expiration, le mot de passe et les droits utilisateur directs nécessitent un périmètre de suivi approuvé.</value>
+  </data>
+  <data name="ShareNow" xml:space="preserve">
+    <value>Partager maintenant</value>
+  </data>
+  <data name="LinkCopied" xml:space="preserve">
+    <value>Lien copié.</value>
   </data>
   <data name="IncludeTemplates" xml:space="preserve">
     <value>Include Templates</value>
@@ -243,4 +294,228 @@
   <data name="ReasonFeatureDisabled" xml:space="preserve">
     <value>This capability is disabled.</value>
   </data>
-</root>
+  <data name="Preview" xml:space="preserve">
+    <value>Aperçu</value>
+  </data>
+  <data name="Favorite" xml:space="preserve">
+    <value>Favori</value>
+  </data>
+  <data name="Unfavorite" xml:space="preserve">
+    <value>Retirer des favoris</value>
+  </data>
+  <data name="Favorited" xml:space="preserve">
+    <value>Ajouté aux favoris.</value>
+  </data>
+  <data name="Unfavorited" xml:space="preserve">
+    <value>Retiré des favoris.</value>
+  </data>
+  <data name="Move" xml:space="preserve">
+    <value>Déplacer</value>
+  </data>
+  <data name="MoveTitle" xml:space="preserve">
+    <value>Déplacer le document</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>Document déplacé.</value>
+  </data>
+  <data name="TargetFolder" xml:space="preserve">
+    <value>Dossier cible</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>Supprimer ce document ? Il sera archivé.</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Document supprimé.</value>
+  </data>
+  <data name="SoftDelete" xml:space="preserve">
+    <value>Soft delete</value>
+  </data>
+  <data name="Archived" xml:space="preserve">
+    <value>Archivé</value>
+  </data>
+  <data name="RemoveFavorite" xml:space="preserve">
+    <value>Remove favorite</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copier</value>
+  </data>
+  <data name="Paste" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="CopyToFolder" xml:space="preserve">
+    <value>Copier vers le dossier</value>
+  </data>
+  <data name="MoveToFolder" xml:space="preserve">
+    <value>Déplacer vers le dossier</value>
+  </data>
+  <data name="SelectTargetFolder" xml:space="preserve">
+    <value>Sélectionner le dossier cible</value>
+  </data>
+  <data name="OpenInNewTab" xml:space="preserve">
+    <value>Ouvrir dans un nouvel onglet</value>
+  </data>
+  <data name="UploadDocument" xml:space="preserve">
+    <value>Upload document</value>
+  </data>
+  <data name="UploadTemplate" xml:space="preserve">
+    <value>Upload template</value>
+  </data>
+  <data name="AddFolder" xml:space="preserve">
+    <value>Add folder</value>
+  </data>
+  <data name="FolderActionsUnavailable" xml:space="preserve">
+    <value>Folder actions are not available here.</value>
+  </data>
+  <data name="FolderOperationsDeferred" xml:space="preserve">
+    <value>Folder operations are managed in Documentation Structures.</value>
+  </data>
+  <data name="PreviewUnavailable" xml:space="preserve">
+    <value>Preview is not available.</value>
+  </data>
+  <data name="UnsupportedPreviewType" xml:space="preserve">
+    <value>Preview is not supported for this file type; downloading instead.</value>
+  </data>
+  <data name="DocumentationStructure" xml:space="preserve">
+    <value>Structure de documentation</value>
+  </data>
+  <data name="SelectStructure" xml:space="preserve">
+    <value>Sélectionner une structure</value>
+  </data>
+  <data name="SearchIn" xml:space="preserve">
+    <value>Rechercher dans</value>
+  </data>
+  <data name="ThisFolder" xml:space="preserve">
+    <value>Ce dossier</value>
+  </data>
+  <data name="ThisFolderAndSubfolders" xml:space="preserve">
+    <value>Ce dossier et sous-dossiers</value>
+  </data>
+  <data name="EntireStructure" xml:space="preserve">
+    <value>Toute la structure</value>
+  </data>
+  <data name="SearchResults" xml:space="preserve">
+    <value>Résultats</value>
+  </data>
+  <data name="FolderResult" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="DocumentResult" xml:space="preserve">
+    <value>Document</value>
+  </data>
+  <data name="TemplateResult" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>Aucun résultat.</value>
+  </data>
+  <data name="Path" xml:space="preserve">
+    <value>Chemin</value>
+  </data>
+  <data name="OpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>Open document</value>
+  </data>
+  <data name="OpenTemplate" xml:space="preserve">
+    <value>Open template</value>
+  </data>
+  <data name="ModifiedAt" xml:space="preserve">
+    <value>Modifié le</value>
+  </data>
+  <data name="CurrentFolderDocuments" xml:space="preserve">
+    <value>Documents du dossier actuel</value>
+  </data>
+  <data name="SelectCompany" xml:space="preserve">
+    <value>Sélectionner une société</value>
+  </data>
+  <data name="SelectItemForDetails" xml:space="preserve">
+    <value>Sélectionnez un document, un modèle ou un résultat de recherche pour afficher les détails.</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Rechercher dossiers, documents et modèles</value>
+  </data>
+  <data name="FolderTree" xml:space="preserve">
+    <value>Arborescence des dossiers</value>
+  </data>
+  <data name="AccessPanelDeferred" xml:space="preserve">
+    <value>L&apos;interface complète de gestion des accès est différée; l&apos;application reste côté serveur.</value>
+  </data>
+  <data name="NoFolderSelected" xml:space="preserve">
+    <value>Sélectionnez une société et une structure documentaire pour parcourir les dossiers.</value>
+  </data>
+  <data name="NoStructures" xml:space="preserve">
+    <value>Aucune structure documentaire active n&apos;est disponible pour cette société.</value>
+  </data>
+  <data name="EmptyExplorerHeading" xml:space="preserve">
+    <value>Aucun aperçu pour le moment</value>
+  </data>
+  <data name="EmptyExplorerText" xml:space="preserve">
+    <value>Sélectionnez une société et une structure documentaire pour prévisualiser les dossiers.</value>
+  </data>
+  <data name="ActiveStructure" xml:space="preserve">
+    <value>Structure active</value>
+  </data>
+  <data name="DetailsPanel" xml:space="preserve">
+    <value>Détails / Actions</value>
+  </data>
+  <data name="Collapse" xml:space="preserve">
+    <value>Réduire</value>
+  </data>
+  <data name="Expand" xml:space="preserve">
+    <value>Développer</value>
+  </data>
+  <data name="ResizeHint" xml:space="preserve">
+    <value>Glisser pour redimensionner</value>
+  </data>
+  <data name="SectionIdentity" xml:space="preserve">
+    <value>Identité</value>
+  </data>
+  <data name="SectionClassification" xml:space="preserve">
+    <value>Classification</value>
+  </data>
+  <data name="SectionLifecycle" xml:space="preserve">
+    <value>Cycle de vie</value>
+  </data>
+  <data name="Checksum" xml:space="preserve">
+    <value>Somme de contrôle (SHA-256)</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>Nom du fichier</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>Taille</value>
+  </data>
+  <data name="Integrity" xml:space="preserve">
+    <value>Intégrité</value>
+  </data>
+  <data name="ContentUnchanged" xml:space="preserve">
+    <value>Contenu inchangé</value>
+  </data>
+  <data name="ContentChanged" xml:space="preserve">
+    <value>Nouveau contenu</value>
+  </data>
+  <data name="IdenticalToActiveWarning" xml:space="preserve">
+    <value>Ce fichier est identique à la version active actuelle — aucun changement réel.</value>
+  </data>
+  <data name="ForceNewVersion" xml:space="preserve">
+    <value>Ajouter quand même comme nouvelle version (contenu identique)</value>
+  </data>
+  <data name="ChangeSummaryRequired" xml:space="preserve">
+    <value>Un résumé des modifications est requis.</value>
+  </data>
+  <data name="FileTypeChanged" xml:space="preserve">
+    <value>Type de fichier modifié</value>
+  </data>
+  <data name="ReasonNoContentChange" xml:space="preserve">
+    <value>Le fichier téléversé est identique à la version active actuelle ; aucun changement détecté.</value>
+  </data>
+  <data name="SameAsPrevious" xml:space="preserve">
+    <value>Identique à la version précédente</value>
+  </data>
+  <data name="Computing" xml:space="preserve">
+    <value>Calcul…</value>
+  </data></root>

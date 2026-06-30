@@ -70,6 +70,30 @@ public sealed class DocumentVersioningService
     public Task<bool> TryDeleteAsync(ContentStoreResult stored, CancellationToken ct) =>
         _storage.TryDeleteAsync(stored.StorageProvider, stored.ObjectKey, ct);
 
+    /// <summary>
+    /// Computes the SHA-256 content fingerprint (lowercase hex) of a base64 upload, matching the format produced
+    /// by the storage gateway. Used to detect a byte-identical re-upload before any storage write — so a "new
+    /// version" that did not actually change the content can be rejected without leaving an orphan object.
+    /// Returns <c>null</c> when the payload is empty or not valid base64 (the caller surfaces the real error).
+    /// </summary>
+    public static string? ComputeChecksum(string? contentBase64)
+    {
+        if (string.IsNullOrWhiteSpace(contentBase64))
+        {
+            return null;
+        }
+
+        try
+        {
+            var bytes = Convert.FromBase64String(contentBase64);
+            return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)).ToLowerInvariant();
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
+    }
+
     public static ContentRef ToContentRef(ContentStoreResult r, Guid versionId, string createdBy) => new()
     {
         ContentId = r.ContentId,

@@ -28,5 +28,11 @@ public sealed class TemplateDocument : TenantScopedEntity
     // COPY_ON_ADOPT lineage: when this template is a copied target, points back to the source template.
     public Guid? CopiedFromTemplateId { get; set; }
 
+    // MOD-0029-FU02 nullable corporate master lineage. Existing folder/company-scoped templates remain masterless.
+    public Guid? TemplateMasterId { get; set; }
+    public Guid? TemplateMasterVersionId { get; set; }
+    public Guid? SourceTemplateDocumentId { get; set; }
+    public Guid? SourceTemplateVersionId { get; set; }
+
     public DateTimeOffset? DeletedAt { get; set; }
 }

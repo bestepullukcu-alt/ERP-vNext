@@ -88,6 +88,9 @@ internal sealed class FakeCollectionInstanceReferenceReader : ICollectionInstanc
             .ToList();
         return Task.FromResult<IReadOnlyList<CollectionInstanceReferenceDto>>(branch);
     }
+
+    public Task<IReadOnlyList<CollectionInstanceReferenceDto>> GetCompanyInstancesAsync(Guid companyId, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<CollectionInstanceReferenceDto>>(Items.Where(x => x.CompanyId == companyId).ToList());
 }
 
 internal sealed class FakePrincipalAccessor : IDocumentAccessPrincipalAccessor
@@ -131,6 +134,20 @@ internal sealed class FakeControlledDocumentRepository : IControlledDocumentRepo
     public Task<IReadOnlyList<ControlledDocument>> GetByCompanyAsync(Guid companyId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<ControlledDocument>>(Items.Where(x => x.OwnerCompanyId == companyId && !x.IsDeleted).ToList());
     public Task<IReadOnlyList<ControlledDocument>> GetByCollectionInstanceAsync(Guid id, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<ControlledDocument>>(Items.Where(x => x.CollectionInstanceId == id && !x.IsDeleted).ToList());
     public Task<bool> UpdateAsync(ControlledDocument d, CancellationToken ct = default) { var i = Items.FindIndex(x => x.Id == d.Id); if (i >= 0) Items[i] = d; return Task.FromResult(i >= 0); }
+    public Task SoftDeleteAsync(Guid id, CancellationToken ct = default) { var d = Items.FirstOrDefault(x => x.Id == id); if (d is not null) d.IsDeleted = true; return Task.CompletedTask; }
+}
+
+internal sealed class FakeDocumentFavoriteRepository : IDocumentFavoriteRepository
+{
+    public HashSet<(Guid User, Guid Doc)> Items { get; } = [];
+    public Task ToggleAsync(Guid userId, Guid documentId, bool favorite, CancellationToken ct = default)
+    {
+        if (favorite) Items.Add((userId, documentId)); else Items.Remove((userId, documentId));
+        return Task.CompletedTask;
+    }
+    public Task<bool> IsFavoriteAsync(Guid userId, Guid documentId, CancellationToken ct = default) => Task.FromResult(Items.Contains((userId, documentId)));
+    public Task<IReadOnlySet<Guid>> GetFavoriteDocumentIdsAsync(Guid userId, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlySet<Guid>>(Items.Where(x => x.User == userId).Select(x => x.Doc).ToHashSet());
 }
 
 internal sealed class FakeControlledDocumentVersionRepository : IControlledDocumentVersionRepository
@@ -154,13 +171,19 @@ internal sealed class FakeControlledDocumentVersionRepository : IControlledDocum
 internal sealed class FakeTemplateDocumentRepository : ITemplateDocumentRepository
 {
     public List<TemplateDocument> Items { get; } = [];
-    public Task<TemplateDocument> CreateAsync(TemplateDocument t, CancellationToken ct = default) { Items.Add(t); return Task.FromResult(t); }
+    public bool FailCreate { get; set; }
+    public Task<TemplateDocument> CreateAsync(TemplateDocument t, CancellationToken ct = default)
+    {
+        if (FailCreate) throw new InvalidOperationException("template create failed");
+        Items.Add(t); return Task.FromResult(t);
+    }
     public Task<TemplateDocument?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult(Items.FirstOrDefault(x => x.Id == id && !x.IsDeleted));
     public Task<TemplateDocument?> GetByTemplateKeyAsync(string key, CancellationToken ct = default) => Task.FromResult(Items.FirstOrDefault(x => x.TemplateKey == key && !x.IsDeleted));
     public Task<IReadOnlyList<TemplateDocument>> GetAllForTenantAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<TemplateDocument>>(Items.Where(x => !x.IsDeleted).ToList());
     public Task<IReadOnlyList<TemplateDocument>> GetByCompanyAsync(Guid companyId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<TemplateDocument>>(Items.Where(x => x.OwnerCompanyId == companyId && !x.IsDeleted).ToList());
     public Task<IReadOnlyList<TemplateDocument>> GetByCollectionInstanceAsync(Guid id, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<TemplateDocument>>(Items.Where(x => x.CollectionInstanceId == id && !x.IsDeleted).ToList());
     public Task<bool> UpdateAsync(TemplateDocument t, CancellationToken ct = default) { var i = Items.FindIndex(x => x.Id == t.Id); if (i >= 0) Items[i] = t; return Task.FromResult(i >= 0); }
+    public Task SoftDeleteAsync(Guid id, CancellationToken ct = default) { var t = Items.FirstOrDefault(x => x.Id == id); if (t is not null) t.IsDeleted = true; return Task.CompletedTask; }
 }
 
 internal sealed class FakeTemplateVersionRepository : ITemplateVersionRepository

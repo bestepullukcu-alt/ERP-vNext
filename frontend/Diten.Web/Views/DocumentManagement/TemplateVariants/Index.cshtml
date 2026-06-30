@@ -1,0 +1,63 @@
+@using Diten.Web.Views.DocumentManagement.TemplateVariants
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TemplateVariantsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["TemplateVariantsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canCreate = Perms.Has("platform.document-management.template-variants.create");
+    var canCompare = Perms.Has("platform.document-management.template-variants.compare");
+    var canRebase = Perms.Has("platform.document-management.template-variants.rebase");
+
+    // MOD-0029-FU03 exposes View / Compare / Rebase only. No delete/archive command is in scope, so the bulk
+    // action bar carries no destructive actions; the select-all surface remains for the Golden v2 contract.
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions = []
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/DocumentManagement/TemplateVariants/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["TemplateVariantsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* Bulk Action Bar *@
+<partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+
+<partial name="~/Views/DocumentManagement/TemplateVariants/_DataTable.cshtml" />
+
+<div class="modal fade" id="compareModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="icon-base bx bx-git-compare me-2 text-primary"></i>@Localizer["CompareTitle"]
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body pt-2" id="compareModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/DocumentManagement/TemplateVariants/_IndexL10n.cshtml" />
+    <script>
+        window.TemplateVariantsPerms = {
+            canCreate: @Json.Serialize(canCreate),
+            canCompare: @Json.Serialize(canCompare),
+            canRebase: @Json.Serialize(canRebase)
+        };
+    </script>
+    <script src="~/assets/js/DocumentManagement/TemplateVariants/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/TemplateVariants/index.js" asp-append-version="true"></script>
+}

@@ -132,6 +132,9 @@
   <data name="UploadNewVersion" xml:space="preserve">
     <value>تحميل إصدار جديد</value>
   </data>
+  <data name="Upload" xml:space="preserve">
+    <value>رفع</value>
+  </data>
   <data name="Version" xml:space="preserve">
     <value>Version</value>
   </data>
@@ -176,6 +179,54 @@
   </data>
   <data name="TargetCompany" xml:space="preserve">
     <value>الشركة المستهدفة</value>
+  </data>
+  <data name="DocumentContext" xml:space="preserve">
+    <value>سياق المستند</value>
+  </data>
+  <data name="InternalLink" xml:space="preserve">
+    <value>رابط داخلي</value>
+  </data>
+  <data name="RecipientEmail" xml:space="preserve">
+    <value>بريد المستلم</value>
+  </data>
+  <data name="SendEmail" xml:space="preserve">
+    <value>إرسال بريد</value>
+  </data>
+  <data name="CopyLink" xml:space="preserve">
+    <value>نسخ الرابط</value>
+  </data>
+  <data name="CompanyShare" xml:space="preserve">
+    <value>مشاركة الشركة</value>
+  </data>
+  <data name="AccessLevel" xml:space="preserve">
+    <value>مستوى الوصول</value>
+  </data>
+  <data name="ViewOnly" xml:space="preserve">
+    <value>عرض فقط</value>
+  </data>
+  <data name="CopyAllowed" xml:space="preserve">
+    <value>السماح بالنسخ</value>
+  </data>
+  <data name="ExpiryDateOptional" xml:space="preserve">
+    <value>تاريخ الانتهاء (اختياري)</value>
+  </data>
+  <data name="PasswordProtectionOptional" xml:space="preserve">
+    <value>حماية بكلمة مرور (اختياري)</value>
+  </data>
+  <data name="DirectUserShare" xml:space="preserve">
+    <value>مشاركة مباشرة مع المستخدم</value>
+  </data>
+  <data name="TargetCompanyPlaceholder" xml:space="preserve">
+    <value>معرف الشركة المستهدفة</value>
+  </data>
+  <data name="UnsupportedShareOption" xml:space="preserve">
+    <value>مساعدات البريد/الرابط لا تنشئ صلاحيات وصول. تاريخ الانتهاء وحماية كلمة المرور وصلاحيات المستخدم المباشرة تتطلب نطاق متابعة معتمدًا منفصلًا.</value>
+  </data>
+  <data name="ShareNow" xml:space="preserve">
+    <value>شارك الآن</value>
+  </data>
+  <data name="LinkCopied" xml:space="preserve">
+    <value>تم نسخ الرابط.</value>
   </data>
   <data name="IncludeTemplates" xml:space="preserve">
     <value>Include Templates</value>
@@ -243,4 +294,228 @@
   <data name="ReasonFeatureDisabled" xml:space="preserve">
     <value>This capability is disabled.</value>
   </data>
-</root>
+  <data name="Preview" xml:space="preserve">
+    <value>معاينة</value>
+  </data>
+  <data name="Favorite" xml:space="preserve">
+    <value>إضافة للمفضلة</value>
+  </data>
+  <data name="Unfavorite" xml:space="preserve">
+    <value>إزالة من المفضلة</value>
+  </data>
+  <data name="Favorited" xml:space="preserve">
+    <value>تمت الإضافة إلى المفضلة.</value>
+  </data>
+  <data name="Unfavorited" xml:space="preserve">
+    <value>تمت الإزالة من المفضلة.</value>
+  </data>
+  <data name="Move" xml:space="preserve">
+    <value>نقل</value>
+  </data>
+  <data name="MoveTitle" xml:space="preserve">
+    <value>نقل المستند</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>تم نقل المستند.</value>
+  </data>
+  <data name="TargetFolder" xml:space="preserve">
+    <value>المجلد الهدف</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>حذف هذا المستند؟ سيتم أرشفته.</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>تم حذف المستند.</value>
+  </data>
+  <data name="SoftDelete" xml:space="preserve">
+    <value>Soft delete</value>
+  </data>
+  <data name="Archived" xml:space="preserve">
+    <value>مؤرشف</value>
+  </data>
+  <data name="RemoveFavorite" xml:space="preserve">
+    <value>Remove favorite</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>نسخ</value>
+  </data>
+  <data name="Paste" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="CopyToFolder" xml:space="preserve">
+    <value>نسخ إلى مجلد</value>
+  </data>
+  <data name="MoveToFolder" xml:space="preserve">
+    <value>نقل إلى مجلد</value>
+  </data>
+  <data name="SelectTargetFolder" xml:space="preserve">
+    <value>اختر المجلد الهدف</value>
+  </data>
+  <data name="OpenInNewTab" xml:space="preserve">
+    <value>فتح في علامة تبويب جديدة</value>
+  </data>
+  <data name="UploadDocument" xml:space="preserve">
+    <value>Upload document</value>
+  </data>
+  <data name="UploadTemplate" xml:space="preserve">
+    <value>Upload template</value>
+  </data>
+  <data name="AddFolder" xml:space="preserve">
+    <value>Add folder</value>
+  </data>
+  <data name="FolderActionsUnavailable" xml:space="preserve">
+    <value>Folder actions are not available here.</value>
+  </data>
+  <data name="FolderOperationsDeferred" xml:space="preserve">
+    <value>Folder operations are managed in Documentation Structures.</value>
+  </data>
+  <data name="PreviewUnavailable" xml:space="preserve">
+    <value>Preview is not available.</value>
+  </data>
+  <data name="UnsupportedPreviewType" xml:space="preserve">
+    <value>Preview is not supported for this file type; downloading instead.</value>
+  </data>
+  <data name="DocumentationStructure" xml:space="preserve">
+    <value>هيكل التوثيق</value>
+  </data>
+  <data name="SelectStructure" xml:space="preserve">
+    <value>اختر هيكلاً</value>
+  </data>
+  <data name="SearchIn" xml:space="preserve">
+    <value>البحث في</value>
+  </data>
+  <data name="ThisFolder" xml:space="preserve">
+    <value>هذا المجلد</value>
+  </data>
+  <data name="ThisFolderAndSubfolders" xml:space="preserve">
+    <value>هذا المجلد والمجلدات الفرعية</value>
+  </data>
+  <data name="EntireStructure" xml:space="preserve">
+    <value>الهيكل بالكامل</value>
+  </data>
+  <data name="SearchResults" xml:space="preserve">
+    <value>النتائج</value>
+  </data>
+  <data name="FolderResult" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="DocumentResult" xml:space="preserve">
+    <value>Document</value>
+  </data>
+  <data name="TemplateResult" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>لا توجد نتائج.</value>
+  </data>
+  <data name="Path" xml:space="preserve">
+    <value>المسار</value>
+  </data>
+  <data name="OpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>Open document</value>
+  </data>
+  <data name="OpenTemplate" xml:space="preserve">
+    <value>Open template</value>
+  </data>
+  <data name="ModifiedAt" xml:space="preserve">
+    <value>تاريخ التعديل</value>
+  </data>
+  <data name="CurrentFolderDocuments" xml:space="preserve">
+    <value>مستندات المجلد الحالي</value>
+  </data>
+  <data name="SelectCompany" xml:space="preserve">
+    <value>اختر الشركة</value>
+  </data>
+  <data name="SelectItemForDetails" xml:space="preserve">
+    <value>اختر مستندًا أو قالبًا أو نتيجة بحث لعرض التفاصيل.</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>ابحث في المجلدات والمستندات والقوالب</value>
+  </data>
+  <data name="FolderTree" xml:space="preserve">
+    <value>شجرة المجلدات</value>
+  </data>
+  <data name="AccessPanelDeferred" xml:space="preserve">
+    <value>واجهة إدارة الوصول الكاملة مؤجلة؛ يستمر فرض الصلاحيات من الخادم.</value>
+  </data>
+  <data name="NoFolderSelected" xml:space="preserve">
+    <value>اختر الشركة وبنية التوثيق لاستعراض المجلدات.</value>
+  </data>
+  <data name="NoStructures" xml:space="preserve">
+    <value>لا توجد بنية توثيق نشطة متاحة لهذه الشركة.</value>
+  </data>
+  <data name="EmptyExplorerHeading" xml:space="preserve">
+    <value>لا توجد معاينة بعد</value>
+  </data>
+  <data name="EmptyExplorerText" xml:space="preserve">
+    <value>حدد الشركة وهيكل التوثيق لمعاينة المجلدات.</value>
+  </data>
+  <data name="ActiveStructure" xml:space="preserve">
+    <value>الهيكل النشط</value>
+  </data>
+  <data name="DetailsPanel" xml:space="preserve">
+    <value>التفاصيل / الإجراءات</value>
+  </data>
+  <data name="Collapse" xml:space="preserve">
+    <value>طي</value>
+  </data>
+  <data name="Expand" xml:space="preserve">
+    <value>توسيع</value>
+  </data>
+  <data name="ResizeHint" xml:space="preserve">
+    <value>اسحب لتغيير الحجم</value>
+  </data>
+  <data name="SectionIdentity" xml:space="preserve">
+    <value>الهوية</value>
+  </data>
+  <data name="SectionClassification" xml:space="preserve">
+    <value>التصنيف</value>
+  </data>
+  <data name="SectionLifecycle" xml:space="preserve">
+    <value>دورة الحياة</value>
+  </data>
+  <data name="Checksum" xml:space="preserve">
+    <value>المجموع الاختباري (SHA-256)</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>اسم الملف</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>الحجم</value>
+  </data>
+  <data name="Integrity" xml:space="preserve">
+    <value>السلامة</value>
+  </data>
+  <data name="ContentUnchanged" xml:space="preserve">
+    <value>المحتوى دون تغيير</value>
+  </data>
+  <data name="ContentChanged" xml:space="preserve">
+    <value>محتوى جديد</value>
+  </data>
+  <data name="IdenticalToActiveWarning" xml:space="preserve">
+    <value>هذا الملف مطابق تمامًا للإصدار النشط الحالي — لا يوجد تغيير فعلي.</value>
+  </data>
+  <data name="ForceNewVersion" xml:space="preserve">
+    <value>أضِف كإصدار جديد على أي حال (المحتوى مطابق)</value>
+  </data>
+  <data name="ChangeSummaryRequired" xml:space="preserve">
+    <value>ملخص التغيير مطلوب.</value>
+  </data>
+  <data name="FileTypeChanged" xml:space="preserve">
+    <value>تغيّر نوع الملف</value>
+  </data>
+  <data name="ReasonNoContentChange" xml:space="preserve">
+    <value>الملف المرفوع مطابق للإصدار النشط الحالي؛ لم يتم اكتشاف أي تغيير.</value>
+  </data>
+  <data name="SameAsPrevious" xml:space="preserve">
+    <value>مطابق للإصدار السابق</value>
+  </data>
+  <data name="Computing" xml:space="preserve">
+    <value>جارٍ الحساب…</value>
+  </data></root>

@@ -1,0 +1,17 @@
+@using Diten.Web.Views.DocumentManagement.TemplateMasters
+@using Microsoft.AspNetCore.Mvc.Localization
+@model Diten.Web.Models.DocumentManagementTemplateMasterFormModel
+@inject IHtmlLocalizer<TemplateMastersIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["CreateMaster"].Value;
+    ViewData["FormMode"] = "create";
+    Layout = "_LayoutTenantShell";
+}
+
+<partial name="~/Views/DocumentManagement/TemplateMasters/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/TemplateMasters/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DocumentManagement/TemplateMasters/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/TemplateMasters/index.js" asp-append-version="true"></script>
+}

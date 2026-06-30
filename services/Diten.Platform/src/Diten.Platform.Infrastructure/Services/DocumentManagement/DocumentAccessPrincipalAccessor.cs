@@ -47,6 +47,12 @@ public sealed class DocumentAccessPrincipalAccessor : IDocumentAccessPrincipalAc
             .Distinct()
             .ToList();
 
-        return new DocumentPrincipal(_currentUser.UserId, roles, companies);
+        var actorType = user.FindFirst("actor_type")?.Value?.Trim();
+        var isPlatformAdmin = string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase);
+        var isTenantAdmin = string.Equals(actorType, "tenant_admin", StringComparison.OrdinalIgnoreCase)
+            || roles.Any(r => string.Equals(r, "tenant_admin", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(r, "TenantAdmin", StringComparison.OrdinalIgnoreCase));
+
+        return new DocumentPrincipal(_currentUser.UserId, roles, companies, isPlatformAdmin, isTenantAdmin);
     }
 }

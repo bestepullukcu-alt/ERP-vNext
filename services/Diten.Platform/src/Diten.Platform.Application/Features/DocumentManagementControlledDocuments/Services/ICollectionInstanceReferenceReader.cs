@@ -29,6 +29,11 @@ public interface ICollectionInstanceReferenceReader
     /// <summary>Read-only descendants of a root node, derived from the FullPath prefix / ParentCanonicalId chain.
     /// The root itself is included as the first element.</summary>
     Task<IReadOnlyList<CollectionInstanceReferenceDto>> GetBranchAsync(Guid rootCollectionInstanceId, CancellationToken ct = default);
+
+    /// <summary>Read-only enumeration of all `CollectionInstance` nodes for a company (across its instantiated
+    /// structures). Used by the Explorer to derive active Documentation Structures and to scope search. No
+    /// mutation reachable.</summary>
+    Task<IReadOnlyList<CollectionInstanceReferenceDto>> GetCompanyInstancesAsync(Guid companyId, CancellationToken ct = default);
 }
 
 /// <summary>Read DTO. TenantId stays internal-only (resolved from tenant context, never returned to the client).</summary>
@@ -42,7 +47,8 @@ public sealed record CollectionInstanceReferenceDto(
     string FullPath,
     string InstanceStatus,
     bool IsUsable,
-    IReadOnlyList<CollectionInstanceScopeBindingDto> ScopeBindings);
+    IReadOnlyList<CollectionInstanceScopeBindingDto> ScopeBindings,
+    int DisplayOrder = 0);
 
 public sealed record CollectionInstanceScopeBindingDto(
     string ScopeType,

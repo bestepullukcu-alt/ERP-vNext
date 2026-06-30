@@ -1,0 +1,62 @@
+@model int
+@{
+    Layout = null; // self-contained Sneat misc page (no frozen shell, may be reached without an active session)
+    var code = Model == 401 ? 401 : 403;
+    var isAuth = code == 401;
+    ViewData["Title"] = isAuth ? "Oturum gerekli" : "Not Authorized";
+    // 401 → login (always anonymous); 403 → real tenant home (root maps to the dashboard). No static demo link.
+    var homeHref = isAuth ? "/account/login" : "/";
+    var homeText = isAuth ? "Giriş sayfasına dön" : "Back to home";
+    var title = isAuth ? "Oturum gerekli" : "Not Authorized";
+    var message = isAuth
+        ? "Bu sayfayı görüntülemek için giriş yapmanız gerekiyor."
+        : "You don’t have permission to access this page.";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    @* Pick the saved/OS theme before paint so there is no light/dark flash. *@
+    <script>
+        (function () {
+            try {
+                var t = (window.localStorage && (localStorage.getItem('templateCustomizer-vertical-menu-template--Theme'))) || '';
+                if (t !== 'light' && t !== 'dark') {
+                    t = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-bs-theme', t);
+            } catch (e) { document.documentElement.setAttribute('data-bs-theme', 'light'); }
+        })();
+    </script>
+    <link rel="stylesheet" href="~/assets/vendor/fonts/iconify-icons.css" />
+    <link rel="stylesheet" href="~/assets/vendor/css/core.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/assets/vendor/css/theme-default.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/error-pages.css" asp-append-version="true" />
+</head>
+<body class="misc-page">
+    <div class="misc-bg" aria-hidden="true"></div>
+    <main class="misc-wrapper" role="alert">
+        <span class="misc-icon-card">
+            <i class="icon-base bx bx-shield-x text-primary"></i>
+        </span>
+        <div class="misc-code-wrap">
+            <span class="misc-code-ghost" aria-hidden="true">@code</span>
+            <span class="misc-code">@code</span>
+        </div>
+        <h1 class="misc-title">@title 🔐</h1>
+        <p class="misc-text">@message</p>
+        <div class="misc-actions">
+            <a class="btn btn-primary" href="@homeHref">
+                <i class="icon-base bx @(isAuth ? "bx-log-in" : "bx-home-alt") me-1"></i>@homeText
+            </a>
+        </div>
+    </main>
+    <footer class="misc-footer">
+        © 2026 | <span class="fw-medium">Di10 ERP</span>
+    </footer>
+    <script src="~/js/error-pages.js" asp-append-version="true"></script>
+</body>
+</html>

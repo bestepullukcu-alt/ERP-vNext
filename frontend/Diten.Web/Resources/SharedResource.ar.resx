@@ -470,6 +470,9 @@
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>اعتمادات سير العمل</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>هياكل التوثيق</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>المستندات المُدارة</value></data>
+  <data name="TemplateMasters" xml:space="preserve"><value>قوالب الشركة الرئيسية</value></data>
+  <data name="TemplateVariants" xml:space="preserve"><value>متغيرات القالب</value></data>
+  <data name="AccessMatrix" xml:space="preserve"><value>مصفوفة الوصول</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>خطوط أساس QMS</value></data>
   <data name="Unauthorized" xml:space="preserve"><value>غير مصرّح</value></data>
 </root>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AccessMatrixTitle" xml:space="preserve"><value>Матрица доступа к документам</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Политики доступа на уровне ресурсов для компаний, структур документации, папок, документов, шаблонов и вариантов</value></data>
+  <data name="CreatePolicy" xml:space="preserve"><value>Создать политику</value></data>
+  <data name="EditPolicy" xml:space="preserve"><value>Изменить политику</value></data>
+  <data name="Target" xml:space="preserve"><value>Объект</value></data>
+  <data name="TargetType" xml:space="preserve"><value>Тип объекта</value></data>
+  <data name="TargetId" xml:space="preserve"><value>ID объекта</value></data>
+  <data name="Principal" xml:space="preserve"><value>Субъект</value></data>
+  <data name="PrincipalType" xml:space="preserve"><value>Тип субъекта</value></data>
+  <data name="PrincipalId" xml:space="preserve"><value>ID субъекта</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Effect" xml:space="preserve"><value>Эффект</value></data>
+  <data name="Inheritance" xml:space="preserve"><value>Наследование</value></data>
+  <data name="Validity" xml:space="preserve"><value>Срок действия</value></data>
+  <data name="Updated" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="RowActions" xml:space="preserve"><value>Действия</value></data>
+  <data name="InheritFromParent" xml:space="preserve"><value>Распространять на дочерние</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>Действует до</value></data>
+  <data name="Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="Expired" xml:space="preserve"><value>Истёк</value></data>
+  <data name="EffectivePreview" xml:space="preserve"><value>Предпросмотр эффективного доступа</value></data>
+  <data name="EffectivePreviewNote" xml:space="preserve"><value>Выберите субъект и запустите предпросмотр, чтобы увидеть эффективные действия для этого объекта.</value></data>
+  <data name="AllowedActions" xml:space="preserve"><value>Разрешённые действия</value></data>
+  <data name="NoAllowedActions" xml:space="preserve"><value>Нет разрешённых действий</value></data>
+  <data name="PreviewPrincipal" xml:space="preserve"><value>Субъект</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>Запустить</value></data>
+  <data name="EnforcementMode" xml:space="preserve"><value>Режим применения</value></data>
+  <data name="TargetSection" xml:space="preserve"><value>Объект</value></data>
+  <data name="PrincipalSection" xml:space="preserve"><value>Субъект</value></data>
+  <data name="PermissionsSection" xml:space="preserve"><value>Разрешения</value></data>
+  <data name="ValiditySection" xml:space="preserve"><value>Срок действия и управление</value></data>
+  <data name="TargetTenant" xml:space="preserve"><value>Арендатор</value></data>
+  <data name="TargetCompany" xml:space="preserve"><value>Компания</value></data>
+  <data name="TargetCollectionDefinition" xml:space="preserve"><value>Структура документации</value></data>
+  <data name="TargetCollectionInstance" xml:space="preserve"><value>Папка</value></data>
+  <data name="TargetTemplateDocument" xml:space="preserve"><value>Документ-шаблон</value></data>
+  <data name="TargetControlledDocument" xml:space="preserve"><value>Контролируемый документ</value></data>
+  <data name="TargetTemplateMaster" xml:space="preserve"><value>Мастер-шаблон</value></data>
+  <data name="TargetTemplateVariant" xml:space="preserve"><value>Вариант шаблона</value></data>
+  <data name="PrincipalUser" xml:space="preserve"><value>Пользователь</value></data>
+  <data name="PrincipalRole" xml:space="preserve"><value>Роль</value></data>
+  <data name="PrincipalGroup" xml:space="preserve"><value>Группа</value></data>
+  <data name="PrincipalCompany" xml:space="preserve"><value>Компания</value></data>
+  <data name="EffectAllow" xml:space="preserve"><value>Разрешить</value></data>
+  <data name="EffectDeny" xml:space="preserve"><value>Запретить</value></data>
+  <data name="ActionView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="ActionDownload" xml:space="preserve"><value>Скачать</value></data>
+  <data name="ActionCreateDocument" xml:space="preserve"><value>Создать документ</value></data>
+  <data name="ActionCreateTemplate" xml:space="preserve"><value>Создать шаблон</value></data>
+  <data name="ActionEditMetadata" xml:space="preserve"><value>Редактировать метаданные</value></data>
+  <data name="ActionUploadVersion" xml:space="preserve"><value>Загрузить версию</value></data>
+  <data name="ActionPublish" xml:space="preserve"><value>Опубликовать</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="ActionShare" xml:space="preserve"><value>Поделиться</value></data>
+  <data name="ActionManageAccess" xml:space="preserve"><value>Управление доступом</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активный</value></data>
+  <data name="StatusDisabled" xml:space="preserve"><value>Отключён</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Архивирован</value></data>
+  <data name="InheritancePropagates" xml:space="preserve"><value>Распространяется</value></data>
+  <data name="InheritanceDirect" xml:space="preserve"><value>Прямой</value></data>
+  <data name="ManualTargetId" xml:space="preserve"><value>Или введите id объекта вручную</value></data>
+  <data name="ManualPrincipalId" xml:space="preserve"><value>Или введите id субъекта вручную</value></data>
+</root>

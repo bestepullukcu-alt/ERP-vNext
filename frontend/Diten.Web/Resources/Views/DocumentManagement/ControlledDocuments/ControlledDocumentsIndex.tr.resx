@@ -132,6 +132,9 @@
   <data name="UploadNewVersion" xml:space="preserve">
     <value>Yeni Sürüm Yükle</value>
   </data>
+  <data name="Upload" xml:space="preserve">
+    <value>Yükle</value>
+  </data>
   <data name="Version" xml:space="preserve">
     <value>Sürüm</value>
   </data>
@@ -176,6 +179,54 @@
   </data>
   <data name="TargetCompany" xml:space="preserve">
     <value>Hedef Şirket</value>
+  </data>
+  <data name="DocumentContext" xml:space="preserve">
+    <value>Belge Bağlamı</value>
+  </data>
+  <data name="InternalLink" xml:space="preserve">
+    <value>İç Bağlantı</value>
+  </data>
+  <data name="RecipientEmail" xml:space="preserve">
+    <value>Alıcı E-postası</value>
+  </data>
+  <data name="SendEmail" xml:space="preserve">
+    <value>E-posta Gönder</value>
+  </data>
+  <data name="CopyLink" xml:space="preserve">
+    <value>Bağlantıyı Kopyala</value>
+  </data>
+  <data name="CompanyShare" xml:space="preserve">
+    <value>Şirket Paylaşımı</value>
+  </data>
+  <data name="AccessLevel" xml:space="preserve">
+    <value>Erişim Seviyesi</value>
+  </data>
+  <data name="ViewOnly" xml:space="preserve">
+    <value>Yalnızca Görüntüle</value>
+  </data>
+  <data name="CopyAllowed" xml:space="preserve">
+    <value>Kopyalamaya İzin Ver</value>
+  </data>
+  <data name="ExpiryDateOptional" xml:space="preserve">
+    <value>Bitiş Tarihi (İsteğe Bağlı)</value>
+  </data>
+  <data name="PasswordProtectionOptional" xml:space="preserve">
+    <value>Parola Koruması (İsteğe Bağlı)</value>
+  </data>
+  <data name="DirectUserShare" xml:space="preserve">
+    <value>Doğrudan Kullanıcı Paylaşımı</value>
+  </data>
+  <data name="TargetCompanyPlaceholder" xml:space="preserve">
+    <value>Hedef şirket id</value>
+  </data>
+  <data name="UnsupportedShareOption" xml:space="preserve">
+    <value>E-posta/bağlantı yardımcıları erişim yetkisi oluşturmaz. Bitiş tarihi, parola koruması ve doğrudan kullanıcı yetkisi ayrı onaylı takip kapsamı gerektirir.</value>
+  </data>
+  <data name="ShareNow" xml:space="preserve">
+    <value>Şimdi Paylaş</value>
+  </data>
+  <data name="LinkCopied" xml:space="preserve">
+    <value>Bağlantı kopyalandı.</value>
   </data>
   <data name="IncludeTemplates" xml:space="preserve">
     <value>Şablonları Dahil Et</value>
@@ -243,4 +294,228 @@
   <data name="ReasonFeatureDisabled" xml:space="preserve">
     <value>Bu yetenek devre dışı.</value>
   </data>
-</root>
+  <data name="Preview" xml:space="preserve">
+    <value>Önizle</value>
+  </data>
+  <data name="Favorite" xml:space="preserve">
+    <value>Favorile</value>
+  </data>
+  <data name="Unfavorite" xml:space="preserve">
+    <value>Favoriden çıkar</value>
+  </data>
+  <data name="Favorited" xml:space="preserve">
+    <value>Favorilere eklendi.</value>
+  </data>
+  <data name="Unfavorited" xml:space="preserve">
+    <value>Favorilerden çıkarıldı.</value>
+  </data>
+  <data name="Move" xml:space="preserve">
+    <value>Taşı</value>
+  </data>
+  <data name="MoveTitle" xml:space="preserve">
+    <value>Belgeyi Taşı</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>Belge taşındı.</value>
+  </data>
+  <data name="TargetFolder" xml:space="preserve">
+    <value>Hedef Klasör</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Sil</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>Bu belge silinsin mi? Arşivlenecek.</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Belge silindi.</value>
+  </data>
+  <data name="SoftDelete" xml:space="preserve">
+    <value>Yumuşak silme</value>
+  </data>
+  <data name="Archived" xml:space="preserve">
+    <value>Arşivlendi</value>
+  </data>
+  <data name="RemoveFavorite" xml:space="preserve">
+    <value>Favoriden çıkar</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Kopyala</value>
+  </data>
+  <data name="Paste" xml:space="preserve">
+    <value>Yapıştır</value>
+  </data>
+  <data name="CopyToFolder" xml:space="preserve">
+    <value>Klasöre kopyala</value>
+  </data>
+  <data name="MoveToFolder" xml:space="preserve">
+    <value>Klasöre taşı</value>
+  </data>
+  <data name="SelectTargetFolder" xml:space="preserve">
+    <value>Hedef klasör seçin</value>
+  </data>
+  <data name="OpenInNewTab" xml:space="preserve">
+    <value>Yeni sekmede aç</value>
+  </data>
+  <data name="UploadDocument" xml:space="preserve">
+    <value>Belge yükle</value>
+  </data>
+  <data name="UploadTemplate" xml:space="preserve">
+    <value>Şablon yükle</value>
+  </data>
+  <data name="AddFolder" xml:space="preserve">
+    <value>Klasör ekle</value>
+  </data>
+  <data name="FolderActionsUnavailable" xml:space="preserve">
+    <value>Klasör işlemleri burada kullanılamaz.</value>
+  </data>
+  <data name="FolderOperationsDeferred" xml:space="preserve">
+    <value>Klasör işlemleri Dokümantasyon Yapıları'nda yönetilir.</value>
+  </data>
+  <data name="PreviewUnavailable" xml:space="preserve">
+    <value>Önizleme kullanılamıyor.</value>
+  </data>
+  <data name="UnsupportedPreviewType" xml:space="preserve">
+    <value>Bu dosya türü için önizleme desteklenmiyor; indiriliyor.</value>
+  </data>
+  <data name="DocumentationStructure" xml:space="preserve">
+    <value>Dokümantasyon Yapısı</value>
+  </data>
+  <data name="SelectStructure" xml:space="preserve">
+    <value>Bir dokümantasyon yapısı seçin</value>
+  </data>
+  <data name="SearchIn" xml:space="preserve">
+    <value>Şurada ara</value>
+  </data>
+  <data name="ThisFolder" xml:space="preserve">
+    <value>Bu klasör</value>
+  </data>
+  <data name="ThisFolderAndSubfolders" xml:space="preserve">
+    <value>Bu klasör ve alt klasörler</value>
+  </data>
+  <data name="EntireStructure" xml:space="preserve">
+    <value>Tüm yapı</value>
+  </data>
+  <data name="SearchResults" xml:space="preserve">
+    <value>Arama sonuçları</value>
+  </data>
+  <data name="FolderResult" xml:space="preserve">
+    <value>Klasör</value>
+  </data>
+  <data name="DocumentResult" xml:space="preserve">
+    <value>Belge</value>
+  </data>
+  <data name="TemplateResult" xml:space="preserve">
+    <value>Şablon</value>
+  </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>Sonuç bulunamadı.</value>
+  </data>
+  <data name="Path" xml:space="preserve">
+    <value>Yol</value>
+  </data>
+  <data name="OpenFolder" xml:space="preserve">
+    <value>Klasörü aç</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>Belgeyi aç</value>
+  </data>
+  <data name="OpenTemplate" xml:space="preserve">
+    <value>Şablonu aç</value>
+  </data>
+  <data name="ModifiedAt" xml:space="preserve">
+    <value>Değiştirilme Tarihi</value>
+  </data>
+  <data name="CurrentFolderDocuments" xml:space="preserve">
+    <value>Geçerli Klasör Belgeleri</value>
+  </data>
+  <data name="SelectCompany" xml:space="preserve">
+    <value>Şirket seçin</value>
+  </data>
+  <data name="SelectItemForDetails" xml:space="preserve">
+    <value>Detayları görüntülemek için belge, şablon veya arama sonucu seçin.</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Klasör, belge ve şablon ara</value>
+  </data>
+  <data name="FolderTree" xml:space="preserve">
+    <value>Klasör Ağacı</value>
+  </data>
+  <data name="AccessPanelDeferred" xml:space="preserve">
+    <value>Tam erişim yönetimi arayüzü ertelendi; yetkilendirme sunucu tarafında uygulanır.</value>
+  </data>
+  <data name="NoFolderSelected" xml:space="preserve">
+    <value>Klasörleri görüntülemek için şirket ve dokümantasyon yapısı seçin.</value>
+  </data>
+  <data name="NoStructures" xml:space="preserve">
+    <value>Bu şirket için aktif dokümantasyon yapısı bulunmuyor.</value>
+  </data>
+  <data name="EmptyExplorerHeading" xml:space="preserve">
+    <value>Henüz önizleme yok</value>
+  </data>
+  <data name="EmptyExplorerText" xml:space="preserve">
+    <value>Klasörleri önizlemek için şirket ve dokümantasyon yapısı seçin.</value>
+  </data>
+  <data name="ActiveStructure" xml:space="preserve">
+    <value>Aktif Yapı</value>
+  </data>
+  <data name="DetailsPanel" xml:space="preserve">
+    <value>Detaylar / İşlemler</value>
+  </data>
+  <data name="Collapse" xml:space="preserve">
+    <value>Daralt</value>
+  </data>
+  <data name="Expand" xml:space="preserve">
+    <value>Genişlet</value>
+  </data>
+  <data name="ResizeHint" xml:space="preserve">
+    <value>Yeniden boyutlandırmak için sürükleyin · sıfırlamak için çift tıklayın</value>
+  </data>
+  <data name="SectionIdentity" xml:space="preserve">
+    <value>Kimlik</value>
+  </data>
+  <data name="SectionClassification" xml:space="preserve">
+    <value>Sınıflandırma</value>
+  </data>
+  <data name="SectionLifecycle" xml:space="preserve">
+    <value>Yaşam Döngüsü</value>
+  </data>
+  <data name="Checksum" xml:space="preserve">
+    <value>Sağlama (SHA-256)</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>Dosya adı</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>Boyut</value>
+  </data>
+  <data name="Integrity" xml:space="preserve">
+    <value>Bütünlük</value>
+  </data>
+  <data name="ContentUnchanged" xml:space="preserve">
+    <value>İçerik değişmedi</value>
+  </data>
+  <data name="ContentChanged" xml:space="preserve">
+    <value>Yeni içerik</value>
+  </data>
+  <data name="IdenticalToActiveWarning" xml:space="preserve">
+    <value>Bu dosya mevcut aktif versiyon ile birebir aynı — gerçek bir değişiklik yok.</value>
+  </data>
+  <data name="ForceNewVersion" xml:space="preserve">
+    <value>İçerik aynı olsa da yeni versiyon olarak ekle</value>
+  </data>
+  <data name="ChangeSummaryRequired" xml:space="preserve">
+    <value>Değişiklik özeti zorunludur.</value>
+  </data>
+  <data name="FileTypeChanged" xml:space="preserve">
+    <value>Dosya türü değişti</value>
+  </data>
+  <data name="ReasonNoContentChange" xml:space="preserve">
+    <value>Yüklenen dosya mevcut aktif versiyon ile birebir aynı; değişiklik algılanmadı.</value>
+  </data>
+  <data name="SameAsPrevious" xml:space="preserve">
+    <value>Önceki versiyonla aynı</value>
+  </data>
+  <data name="Computing" xml:space="preserve">
+    <value>Hesaplanıyor…</value>
+  </data></root>

@@ -60,13 +60,16 @@ public sealed class TemplateSharingService
         }
 
         var document = await _documents.GetByIdAsync(documentId, ct);
-        if (document is null || !await _access.CanReachItemAsync(SharedItemKind.ControlledDocument, documentId, document.OwnerCompanyId, ct))
+        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
         {
             return NotFound(correlationId);
         }
 
-        if (!await _access.HasDocumentActionAsync(document.AccessPolicy, document.CollectionInstanceId, DocumentAccessAction.Share, ct)
-            && !_access.Principal.BelongsToCompany(document.OwnerCompanyId))
+        if (!await _access.HasControlledDocumentActionOrOwnerDefaultAsync(
+                document,
+                DocumentAccessMatrixAction.Share,
+                DocumentAccessAction.Share,
+                ct))
         {
             return PermDenied(correlationId);
         }
@@ -102,14 +105,16 @@ public sealed class TemplateSharingService
         }
 
         var template = await _templates.GetByIdAsync(templateId, ct);
-        if (template is null || !await _access.CanReachItemAsync(SharedItemKind.Template, templateId, template.OwnerCompanyId, ct))
+        if (template is null || !await _access.CanReachTemplateAsync(template, ct))
         {
             return NotFound(correlationId);
         }
 
-        if (!_access.Principal.BelongsToCompany(template.OwnerCompanyId)
-            && template.CollectionInstanceId is { } instanceId
-            && !await _access.HasDocumentActionAsync(template.AccessPolicy, instanceId, DocumentAccessAction.Share, ct))
+        if (!await _access.HasTemplateDocumentActionOrOwnerDefaultAsync(
+                template,
+                DocumentAccessMatrixAction.Share,
+                DocumentAccessAction.Share,
+                ct))
         {
             return PermDenied(correlationId);
         }

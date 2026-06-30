@@ -54,12 +54,26 @@ public sealed class CreateVersionApiRequest
 {
     public FileUploadApiInput? File { get; set; }
     public string? ChangeSummary { get; set; }
+
+    /// <summary>When true, allows a new version even if its content is byte-identical to the current active version.</summary>
+    public bool AllowUnchanged { get; set; }
 }
 
 public sealed class ShareItemApiRequest
 {
     public Guid TargetCompanyId { get; set; }
     public string? ShareMode { get; set; }
+}
+
+public sealed class MoveDocumentApiRequest
+{
+    public Guid TargetCollectionInstanceId { get; set; }
+}
+
+public sealed class CopyDocumentApiRequest
+{
+    public Guid TargetCollectionInstanceId { get; set; }
+    public string? TitleOverride { get; set; }
 }
 
 public sealed class TemplateFlagsApiInput
@@ -80,6 +94,32 @@ public sealed class CreateTemplateApiRequest
     public TemplateFlagsApiInput? Flags { get; set; }
     public FileUploadApiInput? File { get; set; }
     public string? ChangeSummary { get; set; }
+}
+
+public sealed class CreateTemplateMasterApiRequest
+{
+    public string MasterCode { get; set; } = string.Empty;
+    public string TemplateName { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string Classification { get; set; } = string.Empty;
+    public Guid? CollectionDefinitionId { get; set; }
+    public string? CanonicalId { get; set; }
+    public string VariantPolicy { get; set; } = "ALLOWED";
+    public Guid? OwnerCompanyId { get; set; }
+    public Guid? OwnerUserId { get; set; }
+    public DateTimeOffset? EffectiveDate { get; set; }
+}
+
+public sealed class PublishTemplateMasterVersionApiRequest
+{
+    public FileUploadApiInput? File { get; set; }
+    public string? ChangeSummary { get; set; }
+    public bool AllowUnchanged { get; set; }
+}
+
+public sealed class DeprecateTemplateMasterApiRequest
+{
+    public string? DeprecationReason { get; set; }
 }
 
 public sealed class FolderPermissionsApiInput

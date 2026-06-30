@@ -54,6 +54,20 @@ public sealed class DocumentManagementControlledDocumentsController : Controller
         return View("~/Views/DocumentManagement/ControlledDocuments/Edit.cshtml");
     }
 
+    [HttpGet("VersionHistory/{id:guid}")]
+    public IActionResult VersionHistory(Guid id)
+    {
+        ViewData["DocumentId"] = id;
+        return View("~/Views/DocumentManagement/ControlledDocuments/VersionHistory.cshtml");
+    }
+
+    [HttpGet("Share/{id:guid}")]
+    public IActionResult ShareDocument(Guid id)
+    {
+        ViewData["DocumentId"] = id;
+        return View("~/Views/DocumentManagement/ControlledDocuments/ShareDocument.cshtml");
+    }
+
     [HttpGet("Details/{id:guid}")]
     public IActionResult Details(Guid id)
     {
@@ -96,7 +110,7 @@ public sealed class DocumentManagementControlledDocumentsController : Controller
 
     [HttpPost("upload-version/{id:guid}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UploadVersion(Guid id, IFormFile? file, [FromForm] string? changeSummary, CancellationToken ct)
+    public async Task<IActionResult> UploadVersion(Guid id, IFormFile? file, [FromForm] string? changeSummary, [FromForm] bool allowUnchanged, CancellationToken ct)
     {
         var fileInput = await BuildFileInputAsync(file, ct);
         if (fileInput is null)
@@ -104,7 +118,7 @@ public sealed class DocumentManagementControlledDocumentsController : Controller
             return UnprocessableJson("invalid_upload");
         }
 
-        return await ProxyPostAsync($"{ApiBase}/controlled-documents/{id}/versions", new { file = fileInput, changeSummary }, ct);
+        return await ProxyPostAsync($"{ApiBase}/controlled-documents/{id}/versions", new { file = fileInput, changeSummary, allowUnchanged }, ct);
     }
 
     [HttpGet("download/{id:guid}/{versionId:guid}")]
@@ -142,6 +156,52 @@ public sealed class DocumentManagementControlledDocumentsController : Controller
     public Task<IActionResult> Share(Guid id, [FromForm] Guid targetCompanyId, [FromForm] string? shareMode, CancellationToken ct) =>
         ProxyPostAsync($"{ApiBase}/controlled-documents/{id}/share", new { targetCompanyId, shareMode }, ct);
 
+    // Preview = inline open of the current/selected version (no attachment disposition → browser renders it).
+    [HttpGet("preview/{id:guid}/{versionId:guid}")]
+    public async Task<IActionResult> Preview(Guid id, Guid versionId, CancellationToken ct)
+    {
+        if (!AddAuthHeaders())
+        {
+            return UnauthorizedJson();
+        }
+
+        try
+        {
+            var response = await _httpClient.GetAsync($"{_gatewayUrl}{ApiBase}/controlled-documents/{id}/versions/{versionId}/download", ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                return await PassthroughAsync(response, ct);
+            }
+
+            var bytes = await response.Content.ReadAsByteArrayAsync(ct);
+            var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+            return File(bytes, contentType); // no fileName → inline disposition (preview, not download)
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Controlled-document preview proxy failed.");
+            return GatewayErrorJson();
+        }
+    }
+
+    // Soft delete (archive).
+    [HttpPost("delete/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Delete(Guid id, CancellationToken ct) =>
+        ProxyJsonAsync(HttpMethod.Delete, $"{ApiBase}/controlled-documents/{id}", new { }, ct);
+
+    // Move to another folder within the same company.
+    [HttpPost("move/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Move(Guid id, [FromForm] Guid targetCollectionInstanceId, CancellationToken ct) =>
+        ProxyPostAsync($"{ApiBase}/controlled-documents/{id}/move", new { targetCollectionInstanceId }, ct);
+
+    // Per-user favorite ("star") toggle.
+    [HttpPost("favorite/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Favorite(Guid id, CancellationToken ct) =>
+        ProxyPostAsync($"{ApiBase}/controlled-documents/{id}/favorite", new { }, ct);
+
     // ----- Template JSON proxy -----
 
     [HttpGet("templates")]
@@ -155,10 +215,110 @@ public sealed class DocumentManagementControlledDocumentsController : Controller
 
     [HttpGet("collection-instances")]
     public Task<IActionResult> CollectionInstances([FromQuery] Guid companyId, CancellationToken ct) =>
-        ProxyGetAsync($"{ApiBase}/collection-instances{Query("companyId", companyId)}", ct);
+        // The explorer folder TREE must use the same effective-View gate as the folder CONTENTS endpoint
+        // (folder-documents), otherwise a folder can appear in the tree yet 403 when opened. requiredAction=View
+        // keeps both consistent; the Instantiate Structures management grid (no requiredAction) stays permissive.
+        ProxyGetAsync($"{ApiBase}/collection-instances{Query("companyId", companyId, ("requiredAction", "View"))}", ct);
+
+    // ----- Explorer: active structures + permission-filtered search + copy -----
+
+    [HttpGet("documentation-structures")]
+    public Task<IActionResult> DocumentationStructures([FromQuery] Guid companyId, CancellationToken ct) =>
+        ProxyGetAsync($"{ApiBase}/documentation-structures{Query("companyId", companyId)}", ct);
+
+    [HttpGet("search")]
+    public Task<IActionResult> Search(
+        [FromQuery] Guid companyId,
+        [FromQuery] Guid activeStructureId,
+        [FromQuery] Guid? collectionInstanceId,
+        [FromQuery] string? scope,
+        [FromQuery] string? query,
+        [FromQuery] string? documentType,
+        [FromQuery] bool includeTemplates,
+        [FromQuery] string? status,
+        CancellationToken ct)
+    {
+        var qs = $"?companyId={companyId:D}&activeStructureId={activeStructureId:D}&includeTemplates={includeTemplates.ToString().ToLowerInvariant()}";
+        if (collectionInstanceId is { } ci && ci != Guid.Empty) qs += $"&collectionInstanceId={ci:D}";
+        if (!string.IsNullOrWhiteSpace(scope)) qs += $"&scope={Uri.EscapeDataString(scope)}";
+        if (!string.IsNullOrWhiteSpace(query)) qs += $"&query={Uri.EscapeDataString(query)}";
+        if (!string.IsNullOrWhiteSpace(documentType)) qs += $"&documentType={Uri.EscapeDataString(documentType)}";
+        if (!string.IsNullOrWhiteSpace(status)) qs += $"&status={Uri.EscapeDataString(status)}";
+        return ProxyGetAsync($"{ApiBase}/controlled-documents/search{qs}", ct);
+    }
+
+    [HttpPost("copy/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Copy(Guid id, [FromForm] Guid targetCollectionInstanceId, [FromForm] string? titleOverride, CancellationToken ct) =>
+        ProxyPostAsync($"{ApiBase}/controlled-documents/{id}/copy", new { targetCollectionInstanceId, titleOverride }, ct);
+
+    [HttpPost("templates/copy/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> CopyTemplate(Guid id, [FromForm] Guid targetCollectionInstanceId, [FromForm] string? titleOverride, CancellationToken ct) =>
+        ProxyPostAsync($"{ApiBase}/templates/{id}/copy", new { targetCollectionInstanceId, titleOverride }, ct);
 
     [HttpGet("templates/detail/{id:guid}")]
     public Task<IActionResult> TemplateDetail(Guid id, CancellationToken ct) => ProxyGetAsync($"{ApiBase}/templates/{id}", ct);
+
+    [HttpGet("templates/versions/{id:guid}")]
+    public Task<IActionResult> TemplateVersions(Guid id, CancellationToken ct) => ProxyGetAsync($"{ApiBase}/templates/{id}/versions", ct);
+
+    [HttpGet("templates/download/{id:guid}/{versionId:guid}")]
+    public async Task<IActionResult> DownloadTemplate(Guid id, Guid versionId, CancellationToken ct)
+    {
+        if (!AddAuthHeaders())
+        {
+            return UnauthorizedJson();
+        }
+
+        try
+        {
+            var response = await _httpClient.GetAsync($"{_gatewayUrl}{ApiBase}/templates/{id}/versions/{versionId}/download", ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                return await PassthroughAsync(response, ct);
+            }
+
+            var bytes = await response.Content.ReadAsByteArrayAsync(ct);
+            var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+            var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
+                ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
+                ?? "template";
+            return File(bytes, contentType, fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Template download proxy failed.");
+            return GatewayErrorJson();
+        }
+    }
+
+    [HttpGet("templates/preview/{id:guid}/{versionId:guid}")]
+    public async Task<IActionResult> PreviewTemplate(Guid id, Guid versionId, CancellationToken ct)
+    {
+        if (!AddAuthHeaders())
+        {
+            return UnauthorizedJson();
+        }
+
+        try
+        {
+            var response = await _httpClient.GetAsync($"{_gatewayUrl}{ApiBase}/templates/{id}/versions/{versionId}/download", ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                return await PassthroughAsync(response, ct);
+            }
+
+            var bytes = await response.Content.ReadAsByteArrayAsync(ct);
+            var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+            return File(bytes, contentType);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Template preview proxy failed.");
+            return GatewayErrorJson();
+        }
+    }
 
     [HttpPost("templates/create")]
     [ValidateAntiForgeryToken]
@@ -270,6 +430,16 @@ public sealed class DocumentManagementControlledDocumentsController : Controller
 
     private static string Query(string key, Guid? value) => value is null || value == Guid.Empty ? string.Empty : $"?{key}={value:D}";
 
+    private static string Query(string key, Guid? value, (string Key, string Value) extra)
+    {
+        var baseQs = Query(key, value);
+        if (string.IsNullOrEmpty(baseQs))
+        {
+            return $"?{extra.Key}={extra.Value}";
+        }
+        return $"{baseQs}&{extra.Key}={extra.Value}";
+    }
+
     private async Task<IActionResult> ProxyGetAsync(string path, CancellationToken ct)
     {
         if (!AddAuthHeaders())
@@ -313,21 +483,9 @@ public sealed class DocumentManagementControlledDocumentsController : Controller
         }
     }
 
-    private async Task<IActionResult> PassthroughAsync(HttpResponseMessage response, CancellationToken ct)
-    {
-        if ((int)response.StatusCode is 204 or 205 or 304)
-        {
-            return new StatusCodeResult((int)response.StatusCode);
-        }
-
-        var body = await response.Content.ReadAsStringAsync(ct);
-        return new ContentResult
-        {
-            Content = string.IsNullOrWhiteSpace(body) ? "{}" : body,
-            ContentType = "application/json",
-            StatusCode = (int)response.StatusCode
-        };
-    }
+    // MOD-0029-FU04C — navigation 401/403 → friendly Not Authorized page; AJAX keeps the JSON envelope for a toast.
+    private Task<IActionResult> PassthroughAsync(HttpResponseMessage response, CancellationToken ct) =>
+        Diten.Web.Infrastructure.TenantShellProxyResponse.PassthroughAsync(response, Request, ct);
 
     private IActionResult UnauthorizedJson() => JsonFailure(401, "UNAUTHORIZED", _sharedLocalizer["Unauthorized"].Value);
     private IActionResult GatewayErrorJson() => JsonFailure(502, "GATEWAY_ERROR", _sharedLocalizer["GatewayError"].Value);

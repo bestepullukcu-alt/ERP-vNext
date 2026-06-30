@@ -13,9 +13,13 @@ public interface IDocumentAccessPrincipalAccessor
 public sealed record DocumentPrincipal(
     Guid UserId,
     IReadOnlyCollection<string> RoleIds,
-    IReadOnlyCollection<Guid> CompanyIds)
+    IReadOnlyCollection<Guid> CompanyIds,
+    bool IsPlatformAdmin = false,
+    bool IsTenantAdmin = false)
 {
     public static readonly DocumentPrincipal Empty = new(Guid.Empty, [], []);
+
+    public bool HasAdministrativeDocumentAccess => IsPlatformAdmin || IsTenantAdmin;
 
     /// <summary>Builds the set of typed grantee tokens (<c>user:{id}</c>, <c>role:{id}</c>, <c>company:{id}</c>)
     /// used for AccessPolicy matching.</summary>

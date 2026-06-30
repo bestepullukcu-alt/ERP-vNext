@@ -132,6 +132,9 @@
   <data name="UploadNewVersion" xml:space="preserve">
     <value>Upload New Version</value>
   </data>
+  <data name="Upload" xml:space="preserve">
+    <value>Upload</value>
+  </data>
   <data name="Version" xml:space="preserve">
     <value>Version</value>
   </data>
@@ -176,6 +179,54 @@
   </data>
   <data name="TargetCompany" xml:space="preserve">
     <value>Target Company</value>
+  </data>
+  <data name="DocumentContext" xml:space="preserve">
+    <value>Document Context</value>
+  </data>
+  <data name="InternalLink" xml:space="preserve">
+    <value>Internal Link</value>
+  </data>
+  <data name="RecipientEmail" xml:space="preserve">
+    <value>Recipient Email</value>
+  </data>
+  <data name="SendEmail" xml:space="preserve">
+    <value>Send Email</value>
+  </data>
+  <data name="CopyLink" xml:space="preserve">
+    <value>Copy Link</value>
+  </data>
+  <data name="CompanyShare" xml:space="preserve">
+    <value>Company Share</value>
+  </data>
+  <data name="AccessLevel" xml:space="preserve">
+    <value>Access Level</value>
+  </data>
+  <data name="ViewOnly" xml:space="preserve">
+    <value>View Only</value>
+  </data>
+  <data name="CopyAllowed" xml:space="preserve">
+    <value>Copy Allowed</value>
+  </data>
+  <data name="ExpiryDateOptional" xml:space="preserve">
+    <value>Expiry Date (Optional)</value>
+  </data>
+  <data name="PasswordProtectionOptional" xml:space="preserve">
+    <value>Password Protection (Optional)</value>
+  </data>
+  <data name="DirectUserShare" xml:space="preserve">
+    <value>Direct User Share</value>
+  </data>
+  <data name="TargetCompanyPlaceholder" xml:space="preserve">
+    <value>Target company id</value>
+  </data>
+  <data name="UnsupportedShareOption" xml:space="preserve">
+    <value>Email/link helpers do not create access grants. Expiry, password protection, and direct user grants require a separate approved follow-up scope.</value>
+  </data>
+  <data name="ShareNow" xml:space="preserve">
+    <value>Share Now</value>
+  </data>
+  <data name="LinkCopied" xml:space="preserve">
+    <value>Link copied.</value>
   </data>
   <data name="IncludeTemplates" xml:space="preserve">
     <value>Include Templates</value>
@@ -243,4 +294,228 @@
   <data name="ReasonFeatureDisabled" xml:space="preserve">
     <value>This capability is disabled.</value>
   </data>
-</root>
+  <data name="Preview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="Favorite" xml:space="preserve">
+    <value>Favorite</value>
+  </data>
+  <data name="Unfavorite" xml:space="preserve">
+    <value>Unfavorite</value>
+  </data>
+  <data name="Favorited" xml:space="preserve">
+    <value>Added to favorites.</value>
+  </data>
+  <data name="Unfavorited" xml:space="preserve">
+    <value>Removed from favorites.</value>
+  </data>
+  <data name="Move" xml:space="preserve">
+    <value>Move</value>
+  </data>
+  <data name="MoveTitle" xml:space="preserve">
+    <value>Move Document</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>Document moved.</value>
+  </data>
+  <data name="TargetFolder" xml:space="preserve">
+    <value>Target Folder</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>Delete this document? It will be archived.</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Document deleted.</value>
+  </data>
+  <data name="SoftDelete" xml:space="preserve">
+    <value>Soft delete</value>
+  </data>
+  <data name="Archived" xml:space="preserve">
+    <value>Archived</value>
+  </data>
+  <data name="RemoveFavorite" xml:space="preserve">
+    <value>Remove favorite</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="Paste" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="CopyToFolder" xml:space="preserve">
+    <value>Copy to folder</value>
+  </data>
+  <data name="MoveToFolder" xml:space="preserve">
+    <value>Move to folder</value>
+  </data>
+  <data name="SelectTargetFolder" xml:space="preserve">
+    <value>Select target folder</value>
+  </data>
+  <data name="OpenInNewTab" xml:space="preserve">
+    <value>Open in new tab</value>
+  </data>
+  <data name="UploadDocument" xml:space="preserve">
+    <value>Upload document</value>
+  </data>
+  <data name="UploadTemplate" xml:space="preserve">
+    <value>Upload template</value>
+  </data>
+  <data name="AddFolder" xml:space="preserve">
+    <value>Add folder</value>
+  </data>
+  <data name="FolderActionsUnavailable" xml:space="preserve">
+    <value>Folder actions are not available here.</value>
+  </data>
+  <data name="FolderOperationsDeferred" xml:space="preserve">
+    <value>Folder operations are managed in Documentation Structures.</value>
+  </data>
+  <data name="PreviewUnavailable" xml:space="preserve">
+    <value>Preview is not available.</value>
+  </data>
+  <data name="UnsupportedPreviewType" xml:space="preserve">
+    <value>Preview is not supported for this file type; downloading instead.</value>
+  </data>
+  <data name="DocumentationStructure" xml:space="preserve">
+    <value>Documentation Structure</value>
+  </data>
+  <data name="SelectStructure" xml:space="preserve">
+    <value>Select a documentation structure</value>
+  </data>
+  <data name="SearchIn" xml:space="preserve">
+    <value>Search in</value>
+  </data>
+  <data name="ThisFolder" xml:space="preserve">
+    <value>This folder</value>
+  </data>
+  <data name="ThisFolderAndSubfolders" xml:space="preserve">
+    <value>This folder and subfolders</value>
+  </data>
+  <data name="EntireStructure" xml:space="preserve">
+    <value>Entire structure</value>
+  </data>
+  <data name="SearchResults" xml:space="preserve">
+    <value>Search results</value>
+  </data>
+  <data name="FolderResult" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="DocumentResult" xml:space="preserve">
+    <value>Document</value>
+  </data>
+  <data name="TemplateResult" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>No results found.</value>
+  </data>
+  <data name="Path" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="OpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>Open document</value>
+  </data>
+  <data name="OpenTemplate" xml:space="preserve">
+    <value>Open template</value>
+  </data>
+  <data name="ModifiedAt" xml:space="preserve">
+    <value>Modified At</value>
+  </data>
+  <data name="CurrentFolderDocuments" xml:space="preserve">
+    <value>Current Folder Documents</value>
+  </data>
+  <data name="SelectCompany" xml:space="preserve">
+    <value>Select company</value>
+  </data>
+  <data name="SelectItemForDetails" xml:space="preserve">
+    <value>Select a document, template, or search result to view details.</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search folders, documents, and templates</value>
+  </data>
+  <data name="FolderTree" xml:space="preserve">
+    <value>Folder Tree</value>
+  </data>
+  <data name="AccessPanelDeferred" xml:space="preserve">
+    <value>Full access management UI is deferred; enforcement remains server-side.</value>
+  </data>
+  <data name="NoFolderSelected" xml:space="preserve">
+    <value>Select a company and documentation structure to browse folders.</value>
+  </data>
+  <data name="NoStructures" xml:space="preserve">
+    <value>No active documentation structure is available for this company.</value>
+  </data>
+  <data name="EmptyExplorerHeading" xml:space="preserve">
+    <value>No preview yet</value>
+  </data>
+  <data name="EmptyExplorerText" xml:space="preserve">
+    <value>Select a company and documentation structure to preview folders.</value>
+  </data>
+  <data name="ActiveStructure" xml:space="preserve">
+    <value>Active Structure</value>
+  </data>
+  <data name="DetailsPanel" xml:space="preserve">
+    <value>Details / Actions</value>
+  </data>
+  <data name="Collapse" xml:space="preserve">
+    <value>Collapse</value>
+  </data>
+  <data name="Expand" xml:space="preserve">
+    <value>Expand</value>
+  </data>
+  <data name="ResizeHint" xml:space="preserve">
+    <value>Drag to resize · double-click to reset</value>
+  </data>
+  <data name="SectionIdentity" xml:space="preserve">
+    <value>Identity</value>
+  </data>
+  <data name="SectionClassification" xml:space="preserve">
+    <value>Classification</value>
+  </data>
+  <data name="SectionLifecycle" xml:space="preserve">
+    <value>Lifecycle</value>
+  </data>
+  <data name="Checksum" xml:space="preserve">
+    <value>Checksum (SHA-256)</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>File name</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="Integrity" xml:space="preserve">
+    <value>Integrity</value>
+  </data>
+  <data name="ContentUnchanged" xml:space="preserve">
+    <value>Content unchanged</value>
+  </data>
+  <data name="ContentChanged" xml:space="preserve">
+    <value>New content</value>
+  </data>
+  <data name="IdenticalToActiveWarning" xml:space="preserve">
+    <value>This file is byte-identical to the current active version — no real change.</value>
+  </data>
+  <data name="ForceNewVersion" xml:space="preserve">
+    <value>Add as a new version anyway (content is identical)</value>
+  </data>
+  <data name="ChangeSummaryRequired" xml:space="preserve">
+    <value>A change summary is required.</value>
+  </data>
+  <data name="FileTypeChanged" xml:space="preserve">
+    <value>File type changed</value>
+  </data>
+  <data name="ReasonNoContentChange" xml:space="preserve">
+    <value>The uploaded file is identical to the current active version; no change detected.</value>
+  </data>
+  <data name="SameAsPrevious" xml:space="preserve">
+    <value>Same as previous version</value>
+  </data>
+  <data name="Computing" xml:space="preserve">
+    <value>Computing…</value>
+  </data></root>

@@ -60,7 +60,7 @@ public sealed class DocumentManagementTemplatesController : CustomBaseController
     [HasPermission(DocumentManagementControlledDocumentsPermissions.TemplatesVersionCreate)]
     public async Task<IActionResult> CreateVersion(Guid templateId, [FromBody] CreateVersionApiRequest request, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(
-            new CreateTemplateVersionCommand(templateId, ApiRequestMapper.ToFileInput(request.File), request.ChangeSummary, CorrelationId), ct));
+            new CreateTemplateVersionCommand(templateId, ApiRequestMapper.ToFileInput(request.File), request.ChangeSummary, request.AllowUnchanged, CorrelationId), ct));
 
     [HttpGet("templates/{templateId:guid}/versions")]
     [HasPermission(DocumentManagementControlledDocumentsPermissions.TemplatesView)]
@@ -91,6 +91,11 @@ public sealed class DocumentManagementTemplatesController : CustomBaseController
     [HasPermission(DocumentManagementControlledDocumentsPermissions.TemplatesShare)]
     public async Task<IActionResult> Share(Guid templateId, [FromBody] ShareItemApiRequest request, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new ShareTemplateCommand(templateId, request.TargetCompanyId, request.ShareMode, CorrelationId), ct));
+
+    [HttpPost("templates/{templateId:guid}/copy")]
+    [HasPermission(DocumentManagementControlledDocumentsPermissions.TemplatesCreate)]
+    public async Task<IActionResult> Copy(Guid templateId, [FromBody] CopyDocumentApiRequest request, CancellationToken ct) =>
+        CreateActionResultInstance(await _mediator.Send(new CopyTemplateCommand(templateId, request.TargetCollectionInstanceId, request.TitleOverride, CorrelationId), ct));
 
     private string CorrelationId =>
         string.IsNullOrWhiteSpace(_correlationContext.CorrelationId) ? HttpContext.TraceIdentifier : _correlationContext.CorrelationId!;

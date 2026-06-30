@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TemplateMastersTitle" xml:space="preserve"><value>Corporate Template Masters</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Corporate reusable master template library</value></data>
+  <data name="CreateMaster" xml:space="preserve"><value>Create Master</value></data>
+  <data name="MasterCode" xml:space="preserve"><value>Master Code</value></data>
+  <data name="TemplateName" xml:space="preserve"><value>Template Name</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Classification" xml:space="preserve"><value>Classification</value></data>
+  <data name="CollectionDefinitionId" xml:space="preserve"><value>Collection Definition</value></data>
+  <data name="CanonicalId" xml:space="preserve"><value>Canonical ID</value></data>
+  <data name="PublishedBaseline" xml:space="preserve"><value>Published Baseline</value></data>
+  <data name="CanonicalFolder" xml:space="preserve"><value>Canonical Folder</value></data>
+  <data name="VariantPolicy" xml:space="preserve"><value>Variant Policy</value></data>
+  <data name="OwnerCompanyId" xml:space="preserve"><value>Owner Company</value></data>
+  <data name="OwnerUserId" xml:space="preserve"><value>Owner User</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Effective Date</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Binding" xml:space="preserve"><value>Binding</value></data>
+  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="PublishVersion" xml:space="preserve"><value>Publish New Version</value></data>
+  <data name="AdoptionImpact" xml:space="preserve"><value>Adoption Impact</value></data>
+  <data name="AdoptionImpactNote" xml:space="preserve"><value>Предварительная сводка использования — полный анализ влияния внедрения скоро появится.</value></data>
+  <data name="Deprecate" xml:space="preserve"><value>Deprecate</value></data>
+  <data name="DeprecateConfirm" xml:space="preserve"><value>Deprecate this template master?</value></data>
+  <data name="DeprecateReason" xml:space="preserve"><value>Deprecation reason</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>Deprecated</value></data>
+  <data name="File" xml:space="preserve"><value>File</value></data>
+  <data name="FileSize" xml:space="preserve"><value>Размер файла</value></data>
+  <data name="PublishedBy" xml:space="preserve"><value>Опубликовал</value></data>
+  <data name="PublishedAt" xml:space="preserve"><value>Дата публикации</value></data>
+  <data name="ChangeSummary" xml:space="preserve"><value>Change Summary</value></data>
+  <data name="AllowUnchanged" xml:space="preserve"><value>Allow unchanged content</value></data>
+  <data name="Published" xml:space="preserve"><value>Published</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusPublished" xml:space="preserve"><value>Published</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Deprecated</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>Superseded</value></data>
+  <data name="VariantAllowed" xml:space="preserve"><value>Allowed</value></data>
+  <data name="VariantLocked" xml:space="preserve"><value>Locked</value></data>
+  <data name="ClassificationSop" xml:space="preserve"><value>SOP</value></data>
+  <data name="ClassificationWorkInstruction" xml:space="preserve"><value>Work Instruction</value></data>
+  <data name="ClassificationPolicy" xml:space="preserve"><value>Policy</value></data>
+  <data name="ClassificationForm" xml:space="preserve"><value>Form</value></data>
+  <data name="ClassificationTemplate" xml:space="preserve"><value>Template</value></data>
+  <data name="ClassificationOther" xml:space="preserve"><value>Other</value></data>
+  <data name="UsageCount" xml:space="preserve"><value>Usage Count</value></data>
+  <data name="VariantCount" xml:space="preserve"><value>Variant Count</value></data>
+  <data name="FolderAttachedTemplateCount" xml:space="preserve"><value>Folder Templates</value></data>
+  <data name="Details" xml:space="preserve"><value>Details</value></data>
+  <data name="Metadata" xml:space="preserve"><value>Metadata</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>Version History</value></data>
+  <data name="MasterMetadataSection" xml:space="preserve"><value>Master Metadata</value></data>
+  <data name="MetadataEditDeferred" xml:space="preserve"><value>Metadata editing is deferred for this foundation slice.</value></data>
+</root>

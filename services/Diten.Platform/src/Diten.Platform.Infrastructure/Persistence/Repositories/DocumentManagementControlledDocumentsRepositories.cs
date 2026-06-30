@@ -36,8 +36,57 @@ public sealed class ControlledDocumentRepository : TenantRepository<ControlledDo
         return result.ModifiedCount > 0;
     }
 
+    // Soft delete (no hard delete): the base sets IsDeleted = true, tenant-scoped.
+    public Task SoftDeleteAsync(Guid id, CancellationToken ct = default) => base.DeleteAsync(id, ct);
+
     private FilterDefinition<ControlledDocument> And(FilterDefinition<ControlledDocument> extra) =>
         Builders<ControlledDocument>.Filter.And(ExecutionFilter, extra);
+}
+
+public sealed class DocumentFavoriteRepository : TenantRepository<DocumentFavorite>, IDocumentFavoriteRepository
+{
+    public DocumentFavoriteRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, "document_management_document_favorites") { }
+
+    public async Task ToggleAsync(Guid userId, Guid documentId, bool favorite, CancellationToken ct = default)
+    {
+        var filter = And(Builders<DocumentFavorite>.Filter.And(
+            Builders<DocumentFavorite>.Filter.Eq(x => x.UserId, userId),
+            Builders<DocumentFavorite>.Filter.Eq(x => x.DocumentId, documentId)));
+
+        if (favorite)
+        {
+            var existing = await Collection.Find(filter).FirstOrDefaultAsync(ct);
+            if (existing is null)
+            {
+                await CreateAsync(new DocumentFavorite { TenantId = TenantContext.TenantId, UserId = userId, DocumentId = documentId }, ct);
+            }
+        }
+        else
+        {
+            await Collection.UpdateOneAsync(
+                filter,
+                Builders<DocumentFavorite>.Update.Set(x => x.IsDeleted, true).Set(x => x.UpdatedAt, DateTimeOffset.UtcNow),
+                cancellationToken: ct);
+        }
+    }
+
+    public async Task<bool> IsFavoriteAsync(Guid userId, Guid documentId, CancellationToken ct = default)
+    {
+        var count = await Collection.CountDocumentsAsync(And(Builders<DocumentFavorite>.Filter.And(
+            Builders<DocumentFavorite>.Filter.Eq(x => x.UserId, userId),
+            Builders<DocumentFavorite>.Filter.Eq(x => x.DocumentId, documentId))), cancellationToken: ct);
+        return count > 0;
+    }
+
+    public async Task<IReadOnlySet<Guid>> GetFavoriteDocumentIdsAsync(Guid userId, CancellationToken ct = default)
+    {
+        var rows = await Collection.Find(And(Builders<DocumentFavorite>.Filter.Eq(x => x.UserId, userId))).ToListAsync(ct);
+        return rows.Select(x => x.DocumentId).ToHashSet();
+    }
+
+    private FilterDefinition<DocumentFavorite> And(FilterDefinition<DocumentFavorite> extra) =>
+        Builders<DocumentFavorite>.Filter.And(ExecutionFilter, extra);
 }
 
 public sealed class ControlledDocumentVersionRepository : TenantRepository<ControlledDocumentVersion>, IControlledDocumentVersionRepository
@@ -105,6 +154,8 @@ public sealed class TemplateDocumentRepository : TenantRepository<TemplateDocume
         return result.ModifiedCount > 0;
     }
 
+    public Task SoftDeleteAsync(Guid id, CancellationToken ct = default) => base.DeleteAsync(id, ct);
+
     private FilterDefinition<TemplateDocument> And(FilterDefinition<TemplateDocument> extra) =>
         Builders<TemplateDocument>.Filter.And(ExecutionFilter, extra);
 }
@@ -145,6 +196,210 @@ public sealed class TemplateVersionRepository : TenantRepository<TemplateVersion
 
     private FilterDefinition<TemplateVersion> And(FilterDefinition<TemplateVersion> extra) =>
         Builders<TemplateVersion>.Filter.And(ExecutionFilter, extra);
+}
+
+public sealed class TemplateMasterRepository : TenantRepository<TemplateMaster>, ITemplateMasterRepository
+{
+    public TemplateMasterRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, "document_management_template_masters") { }
+
+    public new Task<TemplateMaster> CreateAsync(TemplateMaster master, CancellationToken ct = default) =>
+        base.CreateAsync(master, ct);
+
+    public Task<TemplateMaster?> GetByMasterCodeAsync(string masterCode, CancellationToken ct = default) =>
+        Collection.Find(And(Builders<TemplateMaster>.Filter.Eq(x => x.MasterCode, masterCode))).FirstOrDefaultAsync(ct)!;
+
+    public async Task<IReadOnlyList<TemplateMaster>> ListAsync(
+        string? status,
+        string? classification,
+        Guid? collectionDefinitionId,
+        string? canonicalId,
+        string? variantPolicy,
+        CancellationToken ct = default)
+    {
+        var filters = new List<FilterDefinition<TemplateMaster>> { ExecutionFilter };
+
+        if (Enum.TryParse<TemplateMasterStatus>(status, true, out var parsedStatus))
+        {
+            filters.Add(Builders<TemplateMaster>.Filter.Eq(x => x.Status, parsedStatus));
+        }
+
+        if (!string.IsNullOrWhiteSpace(classification))
+        {
+            filters.Add(Builders<TemplateMaster>.Filter.Eq(x => x.Classification, classification.Trim().ToUpperInvariant()));
+        }
+
+        if (collectionDefinitionId is { } definitionId && definitionId != Guid.Empty)
+        {
+            filters.Add(Builders<TemplateMaster>.Filter.Eq(x => x.CollectionDefinitionId, definitionId));
+        }
+
+        if (!string.IsNullOrWhiteSpace(canonicalId))
+        {
+            filters.Add(Builders<TemplateMaster>.Filter.Eq(x => x.CanonicalId, canonicalId.Trim()));
+        }
+
+        if (Enum.TryParse<TemplateVariantPolicy>(variantPolicy, true, out var parsedPolicy))
+        {
+            filters.Add(Builders<TemplateMaster>.Filter.Eq(x => x.VariantPolicy, parsedPolicy));
+        }
+
+        return await Collection.Find(Builders<TemplateMaster>.Filter.And(filters))
+            .SortByDescending(x => x.CreatedAt)
+            .ToListAsync(ct);
+    }
+
+    public async Task<bool> UpdateAsync(TemplateMaster master, CancellationToken ct = default)
+    {
+        var result = await Collection.ReplaceOneAsync(
+            And(Builders<TemplateMaster>.Filter.Eq(x => x.Id, master.Id)), master, cancellationToken: ct);
+        return result.ModifiedCount > 0;
+    }
+
+    public async Task<int> CountByCurrentVersionAsync(Guid templateMasterVersionId, CancellationToken ct = default)
+    {
+        var count = await Collection.CountDocumentsAsync(
+            And(Builders<TemplateMaster>.Filter.Eq(x => x.CurrentVersionId, templateMasterVersionId)),
+            cancellationToken: ct);
+        return (int)count;
+    }
+
+    public Task SoftDeleteAsync(Guid id, CancellationToken ct = default) => base.DeleteAsync(id, ct);
+
+    public async Task<int> BulkSoftDeleteAsync(IReadOnlyList<Guid> ids, CancellationToken ct = default)
+    {
+        if (ids is null || ids.Count == 0)
+        {
+            return 0;
+        }
+
+        var filter = And(Builders<TemplateMaster>.Filter.In(x => x.Id, ids));
+        var update = Builders<TemplateMaster>.Update
+            .Set(x => x.IsDeleted, true)
+            .Set(x => x.DeletedAt, DateTimeOffset.UtcNow)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow);
+
+        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
+        return (int)result.ModifiedCount;
+    }
+
+    private FilterDefinition<TemplateMaster> And(FilterDefinition<TemplateMaster> extra) =>
+        Builders<TemplateMaster>.Filter.And(ExecutionFilter, extra);
+}
+
+public sealed class TemplateMasterVersionRepository : TenantRepository<TemplateMasterVersion>, ITemplateMasterVersionRepository
+{
+    public TemplateMasterVersionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, "document_management_template_master_versions") { }
+
+    public new Task<TemplateMasterVersion> CreateAsync(TemplateMasterVersion version, CancellationToken ct = default) =>
+        base.CreateAsync(version, ct);
+
+    public async Task<IReadOnlyList<TemplateMasterVersion>> GetByMasterAsync(Guid templateMasterId, CancellationToken ct = default) =>
+        await Collection.Find(And(Builders<TemplateMasterVersion>.Filter.Eq(x => x.TemplateMasterId, templateMasterId)))
+            .SortByDescending(x => x.VersionNumber)
+            .ToListAsync(ct);
+
+    public Task<TemplateMasterVersion?> GetByMasterAndNumberAsync(Guid templateMasterId, int versionNumber, CancellationToken ct = default) =>
+        Collection.Find(And(Builders<TemplateMasterVersion>.Filter.And(
+            Builders<TemplateMasterVersion>.Filter.Eq(x => x.TemplateMasterId, templateMasterId),
+            Builders<TemplateMasterVersion>.Filter.Eq(x => x.VersionNumber, versionNumber)))).FirstOrDefaultAsync(ct)!;
+
+    public async Task<int> GetMaxVersionNumberAsync(Guid templateMasterId, CancellationToken ct = default)
+    {
+        var top = await Collection.Find(And(Builders<TemplateMasterVersion>.Filter.Eq(x => x.TemplateMasterId, templateMasterId)))
+            .SortByDescending(x => x.VersionNumber)
+            .Limit(1)
+            .FirstOrDefaultAsync(ct);
+        return top?.VersionNumber ?? 0;
+    }
+
+    public async Task SupersedePublishedVersionsAsync(Guid templateMasterId, Guid exceptVersionId, CancellationToken ct = default)
+    {
+        var filter = And(Builders<TemplateMasterVersion>.Filter.And(
+            Builders<TemplateMasterVersion>.Filter.Eq(x => x.TemplateMasterId, templateMasterId),
+            Builders<TemplateMasterVersion>.Filter.Ne(x => x.Id, exceptVersionId),
+            Builders<TemplateMasterVersion>.Filter.Eq(x => x.Status, TemplateMasterVersionStatus.Published)));
+        var update = Builders<TemplateMasterVersion>.Update.Set(x => x.Status, TemplateMasterVersionStatus.Superseded);
+        await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
+    }
+
+    public Task DeleteAsync(Guid id, CancellationToken ct = default) => base.DeleteAsync(id, ct);
+
+    private FilterDefinition<TemplateMasterVersion> And(FilterDefinition<TemplateMasterVersion> extra) =>
+        Builders<TemplateMasterVersion>.Filter.And(ExecutionFilter, extra);
+}
+
+public sealed class TemplateVariantRepository : TenantRepository<TemplateVariant>, ITemplateVariantRepository
+{
+    public TemplateVariantRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, "document_management_template_variants") { }
+
+    public new Task<TemplateVariant> CreateAsync(TemplateVariant variant, CancellationToken ct = default) =>
+        base.CreateAsync(variant, ct);
+
+    public Task<TemplateVariant?> GetByScopeAndCodeAsync(TemplateVariantScopeType scopeType, Guid scopeId, string variantCode, CancellationToken ct = default) =>
+        Collection.Find(And(Builders<TemplateVariant>.Filter.And(
+            Builders<TemplateVariant>.Filter.Eq(x => x.ScopeType, scopeType),
+            Builders<TemplateVariant>.Filter.Eq(x => x.ScopeId, scopeId),
+            Builders<TemplateVariant>.Filter.Eq(x => x.VariantCode, variantCode)))).FirstOrDefaultAsync(ct)!;
+
+    public async Task<IReadOnlyList<TemplateVariant>> ListAsync(
+        Guid? templateMasterId,
+        string? scopeType,
+        Guid? scopeId,
+        string? status,
+        string? approvalStatus,
+        CancellationToken ct = default)
+    {
+        var filters = new List<FilterDefinition<TemplateVariant>> { ExecutionFilter };
+
+        if (templateMasterId is { } masterId && masterId != Guid.Empty)
+        {
+            filters.Add(Builders<TemplateVariant>.Filter.Eq(x => x.TemplateMasterId, masterId));
+        }
+
+        if (Enum.TryParse<TemplateVariantScopeType>(scopeType, true, out var parsedScopeType))
+        {
+            filters.Add(Builders<TemplateVariant>.Filter.Eq(x => x.ScopeType, parsedScopeType));
+        }
+
+        if (scopeId is { } sid && sid != Guid.Empty)
+        {
+            filters.Add(Builders<TemplateVariant>.Filter.Eq(x => x.ScopeId, sid));
+        }
+
+        if (Enum.TryParse<TemplateVariantStatus>(status, true, out var parsedStatus))
+        {
+            filters.Add(Builders<TemplateVariant>.Filter.Eq(x => x.Status, parsedStatus));
+        }
+
+        if (Enum.TryParse<TemplateVariantApprovalStatus>(approvalStatus, true, out var parsedApproval))
+        {
+            filters.Add(Builders<TemplateVariant>.Filter.Eq(x => x.ApprovalStatus, parsedApproval));
+        }
+
+        return await Collection.Find(Builders<TemplateVariant>.Filter.And(filters))
+            .SortByDescending(x => x.CreatedAt)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TemplateVariant>> GetByMasterAsync(Guid templateMasterId, CancellationToken ct = default) =>
+        await Collection.Find(And(Builders<TemplateVariant>.Filter.Eq(x => x.TemplateMasterId, templateMasterId)))
+            .SortByDescending(x => x.CreatedAt)
+            .ToListAsync(ct);
+
+    public async Task<bool> UpdateAsync(TemplateVariant variant, CancellationToken ct = default)
+    {
+        var result = await Collection.ReplaceOneAsync(
+            And(Builders<TemplateVariant>.Filter.Eq(x => x.Id, variant.Id)), variant, cancellationToken: ct);
+        return result.ModifiedCount > 0;
+    }
+
+    public Task SoftDeleteAsync(Guid id, CancellationToken ct = default) => base.DeleteAsync(id, ct);
+
+    private FilterDefinition<TemplateVariant> And(FilterDefinition<TemplateVariant> extra) =>
+        Builders<TemplateVariant>.Filter.And(ExecutionFilter, extra);
 }
 
 public sealed class FolderDocumentAccessPolicyRepository : TenantRepository<FolderDocumentAccessPolicy>, IFolderDocumentAccessPolicyRepository

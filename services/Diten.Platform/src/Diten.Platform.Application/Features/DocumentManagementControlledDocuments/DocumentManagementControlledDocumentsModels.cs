@@ -29,6 +29,7 @@ public static class ControlledDocumentReasonCodes
 {
     public const string ValidationFailed = "VALIDATION_FAILED";
     public const string Conflict = "CONFLICT";
+    public const string NoContentChange = "NO_CONTENT_CHANGE";
     public const string NotFoundNonLeakage = "NOT_FOUND_NON_LEAKAGE";
     public const string PermissionDenied = "PERM_DENIED";
     public const string StorageUnavailable = "STORAGE_UNAVAILABLE";
@@ -109,9 +110,11 @@ public sealed record ControlledDocumentListItemModel(
     Guid CollectionInstanceId,
     string CollectionPath,
     int CurrentVersionNumber,
+    Guid? CurrentVersionId,
     string Status,
     bool Controlled,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    bool IsFavorite = false);
 
 public sealed record ControlledDocumentDetailModel(
     Guid Id,
@@ -201,6 +204,51 @@ public sealed record FolderShareOutcomeModel(
     string ReasonCode,
     string Message,
     bool Retryable);
+
+// ── Explorer: active documentation structures + permission-filtered search ───
+
+/// <summary>An active, company-instantiated Documentation Structure (an instantiation group), surfaced as a
+/// selectable Explorer root. Raw published baselines are never returned here.</summary>
+public sealed record DocumentationStructureModel(
+    Guid ActiveStructureId,
+    Guid RootCollectionInstanceId,
+    string DisplayName,
+    Guid CompanyId,
+    Guid? BaselineReleaseId,
+    string? InstanceToken,
+    string Status,
+    int FolderCount,
+    DateTimeOffset? AdoptedAt);
+
+public sealed record SearchResultPermissions(
+    bool CanView,
+    bool CanDownload,
+    bool CanEditMetadata,
+    bool CanUploadNewVersion,
+    bool CanShare,
+    bool CanManageAccess);
+
+/// <summary>One mixed Explorer search result (folder / document / template), permission-filtered server-side.</summary>
+public sealed record ExplorerSearchResultModel(
+    string ResultType,           // FOLDER / DOCUMENT / TEMPLATE
+    Guid Id,
+    string Name,
+    string FullPath,
+    Guid CollectionInstanceId,
+    Guid? DocumentId,
+    Guid? TemplateId,
+    string? DocumentType,
+    int? CurrentVersion,
+    string Status,
+    DateTimeOffset? ModifiedAt,
+    SearchResultPermissions Permissions);
+
+public sealed record ExplorerSearchResultModelList(
+    Guid CompanyId,
+    Guid ActiveStructureId,
+    string Scope,
+    string? Query,
+    IReadOnlyList<ExplorerSearchResultModel> Results);
 
 public sealed record FolderShareResultModel(
     Guid OperationId,

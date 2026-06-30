@@ -167,6 +167,34 @@ public static class DataSeeder
             new("platform", "document-management.folder-shares", "create", "Create Folder Share", "Permission to dry-run and execute a folder/branch share with associated templates"),
             new("platform", "document-management.folder-shares", "view", "View Folder Share", "Permission to view folder/branch share operation status and per-item outcomes"),
 
+            // MOD-0029-FU02 — Corporate Template Master Library Foundation (Layer 1 central keys) (6).
+            // Keys must match the approved module pack contract (platform.document-management.template-masters.*).
+            // Platform-scoped, so DefaultRolePermissionTemplate grants them to SuperAdmin (full catalog) only.
+            new("platform", "document-management.template-masters", "view", "View Template Masters", "Permission to view corporate template masters and details"),
+            new("platform", "document-management.template-masters", "create", "Create Template Master", "Permission to create a corporate template master"),
+            new("platform", "document-management.template-masters", "version.publish", "Publish Template Master Version", "Permission to publish a new corporate template master version"),
+            new("platform", "document-management.template-masters", "deprecate", "Deprecate Template Master", "Permission to deprecate a corporate template master"),
+            new("platform", "document-management.template-masters", "impact.view", "View Template Master Impact", "Permission to view template master adoption impact summaries"),
+            new("platform", "document-management.template-masters", "delete", "Delete Template Master", "Permission to soft-delete corporate template masters (single and bulk)"),
+            new("platform", "document-management.template-masters", "manage", "Manage Template Masters", "Permission to manage corporate template masters"),
+
+            // MOD-0029-FU03 — Template Variant Drift Foundation (Layer 1 central keys) (5).
+            // Keys must match the approved module pack contract (platform.document-management.template-variants.*).
+            // Platform-scoped, so DefaultRolePermissionTemplate grants them to SuperAdmin (full catalog) only.
+            new("platform", "document-management.template-variants", "view", "View Template Variants", "Permission to view template variants and details"),
+            new("platform", "document-management.template-variants", "create", "Create Template Variant", "Permission to create a template variant from a corporate template master"),
+            new("platform", "document-management.template-variants", "compare", "Compare Template Variant", "Permission to compare template variant metadata against its source master"),
+            new("platform", "document-management.template-variants", "rebase", "Rebase Template Variant", "Permission to perform metadata-only template variant rebase"),
+            new("platform", "document-management.template-variants", "manage", "Manage Template Variants", "Permission to manage template variants"),
+
+            // MOD-0029-FU04 — Folder Access & Permission Matrix Foundation (Layer 1 central keys) (4).
+            // Keys must match the approved module pack contract (platform.document-management.access.*).
+            // Platform-scoped, so DefaultRolePermissionTemplate grants them to SuperAdmin (full catalog) only.
+            new("platform", "document-management.access", "view", "View Document Access Matrix", "Permission to view document management access policies and matrix"),
+            new("platform", "document-management.access", "manage", "Manage Document Access Matrix", "Permission to create, update, disable and archive document management access policies"),
+            new("platform", "document-management.access", "preview", "Preview Effective Document Access", "Permission to preview effective document management access for users/roles and targets"),
+            new("platform", "document-management.access", "audit.view", "View Document Access Audit", "Permission to view document management access policy audit history"),
+
             // MOD-0023 — Workflow Config / Approval Templates permissions (13). Keys must match the
             // constants in Diten.Platform WorkflowPermissions (platform.workflow.*). Platform-scoped, so
             // the DefaultRolePermissionTemplate grants them to SuperAdmin (full catalog) only.

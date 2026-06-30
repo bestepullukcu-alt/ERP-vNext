@@ -91,6 +91,51 @@ share policy (`REFERENCE` or `COPY_ON_ADOPT`).
 | `FileRef` / `ContentRef` | Pointer to the approved binary/content storage abstraction (no physical FS) |
 | `VersionStatus` | DRAFT / ACTIVE / SUPERSEDED / ARCHIVED |
 
+### Controlled Documents Explorer & active-structure model
+
+The Controlled Documents day-to-day surface behaves like a **Windows-Explorer-style file browser** over a
+company's **active, instantiated/adopted documentation structures** — **not** over the raw published baseline
+catalog. This elaborates the already-approved attach / version / share / permission behavior with a UX model;
+it adds **no runtime scope beyond the approved FU01 scope** and **no new aggregate** (search is a read-only
+query over already-owned data + the read-only `CollectionInstance` seam).
+
+**Terminology split (governance vs. daily use):**
+
+| Surface | Vocabulary |
+|---|---|
+| Admin / governance (MOD-0028) | Baseline / Baseline Release / Publish / **Instantiate** |
+| Controlled Documents (daily, MOD-0029-FU01) | **Documentation Structure** / **Folder Tree** / **Folder Documents** |
+
+**Active-structure model (rules):**
+
+1. **Company + Documentation Structure selection.** The Explorer first resolves (a) the selected
+   company/legal entity and (b) the **active instantiated Documentation Structures** for that company. If
+   exactly one active structure exists, **auto-select** it; if multiple exist, show a `Documentation Structure`
+   selector. **Raw published baselines are never exposed as selectable document roots** — only
+   company-instantiated/adopted **active** structures appear.
+2. **Folder tree source.** The left tree is built from **active `CollectionInstance` nodes** for the selected
+   company + selected Documentation Structure, consumed **read-only** through `ICollectionInstanceReferenceReader`
+   (FullPath prefix / `ParentCanonicalId` chain). FU01 never mutates the structure.
+3. **Multiple baselines / multiple structures.** A company may have multiple published baselines instantiated
+   as active structures. The Explorer shows the company's **active instantiated structures**, not every
+   published baseline. If multiple releases exist for the same baseline, use the company's **active instantiated
+   release**; do not show all published releases as selectable document roots.
+4. **Side-by-side mode is NOT default.** Showing two structures side by side requires an explicit
+   governance/product decision in a later wave; FU01 default avoids confusing duplicate structures.
+
+**3-panel Explorer layout (TenantShell):**
+
+| Panel | Content |
+|---|---|
+| Top/left selector | Company / Legal Entity + Documentation Structure selection |
+| Left tree | Active instantiated `CollectionInstance` folder tree for the selection |
+| Middle list | Search empty → the **selected folder's** documents/templates; search active → permission-filtered matches across the **selected Documentation Structure** |
+| Right detail | Selected document/template **details + version history + access control + share + download/upload** actions |
+
+> **Provenance, not attachment root:** documents/templates attach to **`CollectionInstanceId`** (a folder
+> node), **never** directly to a raw `BaselineReleaseId`. `BaselineReleaseId` may be stored only as
+> **provenance/trace** metadata (see §3/§4); it is never a selectable document root in the daily surface.
+
 ### Sharing model (first version)
 
 | Mode | Behavior | First-version status |
@@ -163,6 +208,56 @@ Default recommendation: templates are shared by `REFERENCE`; `COPY_ON_ADOPT` is 
   upload-version + share controls + folder-share wizard).
 - Focused backend + frontend tests.
 
+#### Explorer document/template operations (in scope — per-item, permission-gated)
+
+The Explorer (§1 *Explorer & active-structure model*) supports these **document/template** operations as FU01
+implementation targets. Every operation is permission-gated by the **already-approved** two-layer model
+(§14); the frontend only hides/disables, the backend is authoritative. None of these mutate the MOD-0028 folder
+tree (which stays read-only — see *Folder tree operations* below):
+
+- **Add document/template** to the selected `CollectionInstance` folder (folder-level upload permission).
+- **Upload new version** (immutable; never overwrite).
+- **View version history**; **Download** the current/selected version.
+- **Preview** (controlled backend endpoint, new tab; no public URL — see §15).
+- **Share** document/template (and folder/branch share) per share policy + MOD-0220 fail-closed.
+- **Copy** a document/template to another authorized folder (see *Copy semantics*).
+- **Move** a document/template to another authorized folder (see *Move semantics*).
+- **Soft delete / archive** a document/template (no hard delete — see *Delete semantics*).
+- **Add / remove favorite** (per-user; see *Favorite semantics*).
+- **Open details panel** (details + version + access + share).
+- **Manage access** panel — enforcement is in scope; a **full per-folder/per-document access-management UI may
+  be a phased follow-up** (placeholder allowed; see §20). This is MOD-0029 Layer 2 domain data, **never** the
+  central RBAC screen (which manages Layer 1 only).
+
+**Copy semantics.** Copy creates a **new** document/template record (a new folder attachment) in the target;
+the **source remains unchanged**. The target folder must be in the **same tenant** and an **authorized
+company/structure scope**; the user needs **source view/download** + **target upload/create** permission.
+Version-lineage handling is explicit: either **copy the current active version as the new initial version**
+(default — independent target) **or reference the source version** when reference/share mode is explicitly
+selected. **Default recommendation: copy the current active version into the target as a new independent
+document/template** unless share/reference is explicitly chosen.
+
+**Move semantics.** Move changes the item's **`CollectionInstanceId` + `CollectionPath` snapshot** (and
+`CanonicalId` snapshot); it does **not** change binary content or version rows. The target folder must be
+**active**, **same tenant**, valid **company/legal-entity scope**; the user needs **source manage/edit** +
+**target upload/create** permission. **Move across company is blocked** (use explicit share/copy instead). The
+operation records a move `reason_code` / `correlation_id` on the MOD-0021 audit seam.
+
+**Delete semantics.** Delete in FU01 is **soft delete / archive by default**; **no physical binary deletion**
+in the first step (unless a retention/storage-cleanup policy explicitly allows it — out of FU01). A soft delete
+**must not break version-history references**. **Hard delete / purge stays out of scope** (future
+retention/storage-cleanup scope, MOD-0030).
+
+**Favorite semantics.** A user may favorite **folders / documents / templates they can access**; favorites are
+**tenant + user scoped**. A favorite **does not grant access** — if access is later removed, the favorite item
+is **hidden or shown as unavailable** per convention. Candidate object: `DocumentFavorite` /
+`UserDocumentFavorite` (or equivalent).
+
+**Preview semantics.** Preview opens a **controlled backend endpoint in a new tab** (no direct public file
+URL); the backend checks **Layer 1 + Layer 2** before streaming. First-version preview supports **PDF + image**
+types; Office render (DOCX/XLSX/PPTX) stays a follow-up unless an existing viewer is available; **unsupported
+preview types fall back to download**.
+
 ### Consumed, not owned
 
 - MOD-0028-FU05 `CollectionInstance` (read-only): `CollectionInstance` id, tree path, company/legal-entity
@@ -186,10 +281,18 @@ Default recommendation: templates are shared by `REFERENCE`; `COPY_ON_ADOPT` is 
 
 - Editing MOD-0028 folder structure; `CollectionDefinition` editing; FU04 manual-builder changes;
   FU05 instantiation logic changes (read-only consumption only).
+- **Folder tree operations (explicit GAP / MOD-0028 territory):** create folder, rename folder, move folder,
+  delete folder, copy/paste folder, alter `CollectionInstance` hierarchy, or mutate `CollectionDefinition` /
+  `BaselineRelease` / `CollectionInstance` are **NOT** implemented directly inside MOD-0029-FU01. These are
+  **MOD-0028-owned structure operations** (or a separate company-instance-folder-management follow-up — §20)
+  and require a separately approved MOD-0028/structure extension. The Controlled Documents UI may show
+  **disabled placeholders / future-action notes only**; it must **never** mutate the folder tree. (Document/
+  template copy/move **into** a folder is in scope — only the folder node tree is read-only.)
 - OCR / content indexing; e-signature; approval workflow (unless already approved by the MOD-0029 parent);
   retention / legal hold (MOD-0030); evidence export (MOD-0031); external customer portal; public/anonymous
   sharing; email notification.
-- Physical folder creation; direct filesystem storage; browser-based document editing.
+- Physical folder creation; direct filesystem storage; browser-based document editing; **hard delete / purge**
+  of document binaries/version rows (soft delete/archive only — future retention/storage-cleanup scope).
 
 ### Access Control & Folder-Upload Authorization Model
 
@@ -284,9 +387,9 @@ Business versions use semantic names (`VersionNumber`), never the technical `Ver
 
 | Object | Principal fields | Required constraints / indexes |
 |---|---|---|
-| ControlledDocument | DocumentKey, CompanyId, CollectionInstanceId, CollectionPath, Title, DocumentType, Description, Tags[], Controlled (bool), EffectiveDate?, ReviewDate?, ExpiryDate?, CurrentVersionId?, Status, OwnerCompanyId, CreatedBy, AccessPolicy (DocumentAccessPolicy) | Tenant + DocumentKey unique (non-deleted); tenant-first index; CollectionInstanceId indexed; no hard delete |
+| ControlledDocument | DocumentKey, CompanyId, OwnerCompanyId, CollectionInstanceId, CollectionPath, CanonicalId? (snapshot), BaselineReleaseId? (provenance/trace only — never an attachment root), Title, DocumentType, Description, Tags[], Controlled (bool), EffectiveDate?, ReviewDate?, ExpiryDate?, CurrentVersionId?, Status, CreatedBy, AccessPolicy (DocumentAccessPolicy) | Tenant + DocumentKey unique (non-deleted); tenant-first index; CollectionInstanceId indexed; no hard delete |
 | ControlledDocumentVersion | DocumentId, VersionNumber, FileRef (ContentRef), Checksum, UploadedBy, UploadedAt, ChangeSummary, VersionStatus | Tenant + DocumentId + VersionNumber unique; activated version immutable |
-| TemplateDocument | TemplateKey, CompanyId, CollectionInstanceId?, CollectionPath?, Title, Description, Tags[], TemplateFlags (reusable/shareable/copyableOnAdopt/referenceOnly), CurrentVersionId?, Status, OwnerCompanyId, CreatedBy, AccessPolicy (DocumentAccessPolicy) | Tenant + TemplateKey unique (non-deleted); tenant-first index; no hard delete |
+| TemplateDocument | TemplateKey, CompanyId, OwnerCompanyId, CollectionInstanceId?, CollectionPath?, CanonicalId? (snapshot), BaselineReleaseId? (provenance/trace only), Title, Description, Tags[], TemplateFlags (reusable/shareable/copyableOnAdopt/referenceOnly), CurrentVersionId?, Status, CreatedBy, AccessPolicy (DocumentAccessPolicy) | Tenant + TemplateKey unique (non-deleted); tenant-first index; no hard delete |
 | TemplateVersion | TemplateId, VersionNumber, FileRef (ContentRef), Checksum, UploadedBy, UploadedAt, ChangeSummary, VersionStatus | Tenant + TemplateId + VersionNumber unique; activated version immutable |
 | DocumentSharePolicy (embedded) | ShareMode (REFERENCE/COPY_ON_ADOPT), CanUse, CanCopy, VisibilityScope (COMPANY/PLANT/BU), SourceVisibleOnUpdate | COMPANY target uses MOD-0220 LegalEntity GUID |
 | DocumentAccessPolicy (embedded) | Grants[] {Action (VIEW/DOWNLOAD/EDIT/VERSION/SHARE/MANAGE_ACCESS), TargetType (USER/ROLE/COMPANY/PLANT/BU), TargetId}, Source (INHERITED/EXPLICIT) | Override may only narrow; never crosses tenant/company isolation; first version may be ROLE/COMPANY-level |
@@ -299,6 +402,11 @@ Business versions use semantic names (`VersionNumber`), never the technical `Ver
 and `TemplateKey = {tenantId}|{companyId}|{collectionInstanceId?}|{slug(title)}` (or a repo-approved
 equivalent). `CollectionPath` is copied read-only from the consumed `CollectionInstance`; FU01 never derives
 or edits folder hierarchy.
+
+**Attachment target vs. provenance:** documents/templates attach to **`CollectionInstanceId`** (a folder
+node), never to a raw `BaselineReleaseId`. `BaselineReleaseId` (and `CanonicalId`) are stored only as a
+**read-only provenance/trace snapshot** captured at attach time; they are never selectable document roots and
+are never used to drive the daily Explorer (see §1 *Explorer & active-structure model*).
 
 ## 5. Repo Scope
 
@@ -601,15 +709,39 @@ FU01 reuses the confirmed MOD-0028 (QmsBaselines/Instantiations) localization br
 - **Localized message classes:** library/type/version-history/share/folder-share-wizard/access-control labels,
   empty/loading/saving states, validation errors, storage errors (incl. a new `ReasonStorageUnavailable`),
   permission/access-denied messages, and the `reason_code` + `correlation_id` display strings.
+- **Explorer & search L10n key group (added; 7-language parity, identical key set, `requiredKeys`-synced):**
+  `Search`, `SearchIn`, `ThisFolder`, `ThisFolderAndSubfolders`, `EntireStructure`, `SearchResults`,
+  `FolderResult`, `DocumentResult`, `TemplateResult`, `NoSearchResults`, `Path`, `OpenFolder`,
+  `OpenDocument`, `OpenTemplate` (plus `DocumentationStructure` / `SelectStructure` selector labels). Generic
+  `Search` may reuse `SharedResource`. **No approval/review/e-signature labels.**
+- **Explorer operations L10n key group (added; 7-language parity, identical key set, `requiredKeys`-synced):**
+  `Copy`, `Paste`, `Move`, `Delete`, `SoftDelete`, `Archived`, `Favorite`, `RemoveFavorite`, `Preview`,
+  `OpenInNewTab`, `Download`, `UploadDocument`, `UploadTemplate`, `UploadNewVersion`, `AddFolder`,
+  `FolderActionsUnavailable`, `FolderOperationsDeferred`, `CopyToFolder`, `MoveToFolder`, `SelectTargetFolder`,
+  `PreviewUnavailable`, `UnsupportedPreviewType`. Generic `Copy`/`Delete`/`Download` may reuse `SharedResource`.
+  Folder-mutation labels (`AddFolder` / `FolderActionsUnavailable` / `FolderOperationsDeferred`) back **disabled
+  placeholders only** — FU01 never mutates the folder tree.
 - **Approval-workflow labels must NOT be added** (review/approve, approver, e-signature, MOD-0023 are
   out-of-scope per §1/§2/§19; `ACTIVE` is a technical-activation label, not an approval label).
 
 Surfaces:
 
-- **Controlled Documents — Document Library** (DataTable v2): title, type (SOP / Work Instruction / Policy /
-  Form / Template / Other), company, folder path, current version, status, actions.
-- **CollectionInstance folder detail attachments**: documents/templates attached to the selected folder node
-  (reached from the MOD-0028 Documentation Structures detail).
+- **Controlled Documents Explorer** (Windows-Explorer-style; see §1 *Explorer & active-structure model*):
+  - **Company / Documentation Structure selector** — resolve the selected company/legal entity and its
+    **active instantiated** Documentation Structures; auto-select when one exists, else show a
+    `Documentation Structure` selector. Raw published baselines are **not** selectable document roots.
+  - **Left folder tree** — active `CollectionInstance` nodes for the selection (read-only via the seam).
+  - **Middle list** — *search empty* → the selected folder's documents/templates (current-folder browsing);
+    *search active* → server-side, permission-filtered matches across the selected structure (see §15 search
+    endpoint). A `Search in` dropdown offers **This folder / This folder and subfolders / Entire structure**
+    (default: empty → current folder; active → entire structure, authorization-filtered).
+  - **Right detail panel** — selected document/template **details + version history + access control + share +
+    download/upload** actions.
+- **Search navigation:** clicking a **Folder** result selects/navigates to that folder in the tree; clicking a
+  **Document/Template** result opens the details/version panel. Every result shows its **path/breadcrumb**
+  (`Path`); search never detaches an item from its folder context.
+- **Document Library list** (DataTable v2): title, type (SOP / Work Instruction / Policy / Form / Template /
+  Other), company, folder path, current version, status, actions — used as the middle-panel list renderer.
 - **Add controlled document/template** (Compact form): the §12 metadata + file upload/link through the proxy.
 - **Version history panel** + **upload new version** (new version, never overwrite).
 - **Share document/template** controls (target + mode).
@@ -796,7 +928,19 @@ the backend **correctly fails closed with `403 PERM_DENIED`** and the UI gate sh
 - Backend and frontend resolve the **same** effective lowercase key; hidden/disabled controls are the UI
   expression of the backend's 403.
 
-## 15. Gateway / API Routing Decision
+### Permission-filtered search (server-side, non-leakage)
+
+The Explorer search is **backend-supported**, not only a frontend DataTable filter. Search results are filtered
+**server-side** by, in order: **tenant → company/legal entity → selected active Documentation Structure /
+`CollectionInstance` structure → folder-level access policy (Layer 2) → document-level access policy (Layer 2)
+→ share policy → Layer 1 global permission → Layer 2 resource policy**. This reuses the **already-approved**
+two-layer model (no new authorization decision):
+
+- An item the user has **no access** to **simply does not appear** in results — names/titles/paths of
+  unauthorized folders/documents/templates **must not leak**.
+- Cross-company items appear only via an explicit share; raw, non-instantiated published baselines never appear.
+- The same effective-permission flags returned per result (see §15 result DTO) are advisory UX only; the
+  backend remains authoritative on every subsequent action.
 
 - The existing `/api/v1/document-management/{everything}` catch-all already supports `GET, POST, PUT, PATCH,
   DELETE, OPTIONS` (after the FU04 widening). **FU01 uses GET/POST only**, so **no gateway change is
@@ -811,20 +955,59 @@ Candidate endpoints (names may adjust to repo convention):
 |---|---|---|
 | POST | `api/v1/document-management/controlled-documents` | create controlled document |
 | GET | `api/v1/document-management/controlled-documents` | document library list |
+| GET | `api/v1/document-management/controlled-documents/search` | Explorer permission-filtered mixed search |
 | GET | `api/v1/document-management/controlled-documents/{documentId}` | document detail |
 | POST | `api/v1/document-management/controlled-documents/{documentId}/versions` | upload new version |
 | GET | `api/v1/document-management/controlled-documents/{documentId}/versions` | version list |
 | GET | `api/v1/document-management/controlled-documents/{documentId}/versions/{versionId}` | version detail |
+| GET | `api/v1/document-management/controlled-documents/{documentId}/versions/{versionId}/download` | controlled download (attachment) |
+| GET | `api/v1/document-management/controlled-documents/{documentId}/versions/{versionId}/preview` | controlled inline preview (new tab; PDF/image; fallback download) |
+| POST | `api/v1/document-management/controlled-documents/{documentId}/copy` | copy document to another authorized folder |
+| POST | `api/v1/document-management/controlled-documents/{documentId}/move` | move document to another authorized folder |
+| DELETE | `api/v1/document-management/controlled-documents/{documentId}` | soft delete / archive document |
+| POST | `api/v1/document-management/controlled-documents/{documentId}/favorite` | toggle per-user favorite |
 | POST | `api/v1/document-management/controlled-documents/{documentId}/share` | share document |
 | POST | `api/v1/document-management/templates` | create template |
 | GET | `api/v1/document-management/templates` | template list |
 | GET | `api/v1/document-management/templates/{templateId}` | template detail |
 | POST | `api/v1/document-management/templates/{templateId}/versions` | upload template version |
 | GET | `api/v1/document-management/templates/{templateId}/versions` | template version list |
+| GET | `api/v1/document-management/templates/{templateId}/versions/{versionId}/preview` | controlled inline template preview |
+| POST | `api/v1/document-management/templates/{templateId}/copy` | copy template to another authorized folder |
 | POST | `api/v1/document-management/templates/{templateId}/share` | share template |
 | POST | `api/v1/document-management/folder-shares/dry-run` | folder/branch share dry-run |
 | POST | `api/v1/document-management/folder-shares/execute` | folder/branch share execute |
 | GET | `api/v1/document-management/folder-shares/{operationId}` | folder-share operation status + outcomes |
+| GET | `api/v1/document-management/documentation-structures?companyId=...` | active instantiated Documentation Structures for the company (Explorer selector source) |
+
+### Explorer permission-filtered search endpoint
+
+`GET /api/v1/document-management/controlled-documents/search` (route name may adjust to repo convention, but a
+**backend** search capability is required — frontend-only DataTable filtering is **not** sufficient). It uses
+GET only, so the existing catch-all covers it (no gateway change).
+
+**Candidate filters:** `companyId`, `activeStructureId` / `structureRootId`, `collectionInstanceId` (optional),
+`scope = currentFolder | subtree | structure`, `query`, `documentType`, `includeTemplates`, `status`.
+Default: search empty → current-folder contents; search active → entire selected structure, authorization-filtered.
+
+**Mixed result DTO** (one shape for folders + documents + templates):
+
+| Field | Notes |
+|---|---|
+| `ResultType` | `FOLDER` / `DOCUMENT` / `TEMPLATE` |
+| `Id` | result id |
+| `Name` / `Title` | folder name or document/template title |
+| `FullPath` / `FolderPath` | path for breadcrumb display |
+| `CollectionInstanceId` | owning folder node |
+| `DocumentId` / `TemplateId` | when `ResultType` is DOCUMENT/TEMPLATE |
+| `DocumentType` | document type when applicable |
+| `CurrentVersion` | current version number |
+| `Status` | item status |
+| `ModifiedAt` / `UploadedAt` | last change |
+| Permission flags | `canView`, `canDownload`, `canEditMetadata`, `canUploadNewVersion`, `canShare`, `canManageAccess` (advisory UX; backend stays authoritative) |
+
+All results are server-side filtered per §14 *Permission-filtered search*; unauthorized items never appear and
+their names/paths never leak.
 
 ## 16. Acceptance Criteria
 
@@ -865,6 +1048,30 @@ Candidate endpoints (names may adjust to repo convention):
   share + folder-share wizard) delivered with `Layout = "_LayoutTenantShell"`.
 - [ ] No MOD-0028 structure edit / `CollectionDefinition` edit / FU05 instantiation change; no MOD-0030 /
   MOD-0031 side effect.
+- [ ] Controlled Documents Explorer resolves the company's **active instantiated Documentation Structures**
+  only (auto-select when one; selector when many); raw published baselines are never selectable document roots.
+- [ ] Left tree is built from active `CollectionInstance` nodes (read-only seam); search-empty middle list
+  shows the selected folder's contents.
+- [ ] Search is **backend-supported** and permission-filtered server-side; a `Search in`
+  (folder / folder+subfolders / structure) scope is honored; unauthorized items/names/paths never leak.
+- [ ] Mixed search results (folder / document / template) carry path/breadcrumb + per-result permission flags;
+  folder result navigates the tree, document/template result opens the detail/version panel.
+- [ ] User can **add a document/template** to an authorized folder and **upload a new version** when authorized.
+- [ ] User can **preview** PDF/image through the controlled backend endpoint (new tab; unsupported type →
+  download fallback); no direct public file URL.
+- [ ] User can **favorite/unfavorite** accessible documents/templates/folders (tenant+user scoped; favorite
+  does not grant access).
+- [ ] User can **copy/move** documents/templates to authorized folders per access rules (copy = new independent
+  record by default; move = re-point `CollectionInstanceId`/`CollectionPath`, same company only).
+- [ ] **Delete is soft-delete/archive** (no hard delete; version-history references preserved).
+- [ ] **Folder tree mutations** (create/rename/move/delete/copy folder; CollectionInstance/Definition/Baseline
+  mutation) are **explicitly deferred** to MOD-0028/follow-up and are **not silently implemented** in FU01
+  (disabled placeholders only).
+- [ ] Layer 2 enforcement is in place even though a **full folder/document access-management UI may be a
+  follow-up**; folder/document ACL stays MOD-0029 domain data (never the central RBAC screen, which is Layer 1
+  only).
+- [ ] From search results, document/template actions (preview/download/favorite/copy/move/share/delete/upload
+  new version) honor permissions; folder-mutation actions are disabled/deferred.
 
 ## 17. Test Expectations
 
@@ -880,10 +1087,21 @@ Backend tests:
 - binary storage unavailable → controlled failure, no metadata orphan.
 - missing permission 403; cross-tenant 404 non-leakage; correlation id preserved across the flow.
 - no physical folder/filesystem write; no MOD-0030/0031 side effect.
+- Explorer structures: only active instantiated structures returned for the company; non-instantiated published
+  baselines and other companies' structures excluded.
+- search scope `currentFolder` vs `subtree` vs `structure` returns the correct node set; empty query → current
+  folder only.
+- permission-filtered search: a folder/document/template the user lacks Layer 1 OR Layer 2 access to is **absent**
+  from results (no name/path leakage); cross-company item appears only via an explicit share.
+- mixed result DTO carries `ResultType` + path + correct per-result permission flags.
 
 Frontend tests/smoke:
 - library opens in TenantShell (`_LayoutTenantShell`); add document/template form renders; upload + new version
   works; version history panel renders.
+- Explorer: company + Documentation Structure selector resolves active structures; folder tree renders; empty
+  search shows current-folder contents; active search shows structure-wide authorized results with breadcrumb;
+  `Search in` scope dropdown switches folder / subtree / structure; folder result navigates, doc/template result
+  opens the detail panel.
 - share document/template controls gated by permission; folder-share wizard: source branch → target company →
   include templates → share mode → dry-run preview → execute disabled until a valid dry-run → results.
 - no direct service-port call; no client `TenantId`/`X-Tenant-Id`; controlled `reason_code`/`correlation_id`
@@ -1096,6 +1314,21 @@ Any reference to workflow-candidate-style grantee keys (`user:{id}` / `role:{id}
     of these keys for browser smoke / E2E validation — a runtime entitlement step (`platform.*` keys are not
     auto-granted to tenant roles by the escalation boundary, same as MOD-0028). Until that grant is applied, the
     backend correctly fails closed with `403 PERM_DENIED`. **Runtime grant follow-up.**
+15. **Company-instance folder-management (folder tree operations) — separate MOD-0028 extension:** create /
+    rename / move / delete / copy-paste folder and any `CollectionInstance` hierarchy change are **MOD-0028-owned
+    structure mutations**. FU01 consumes the tree read-only and must **not** implement folder mutation; the
+    Explorer may surface **disabled placeholders** only. Requires a separately approved MOD-0028/structure (or
+    company-instance-folder-management) extension scope.
+16. **Full folder/document access-management UI — phased:** Layer 2 **enforcement** ships in FU01 (with
+    defaults/inheritance), but the full UI to manage `FolderDocumentAccessPolicy` / `DocumentAccessPolicy` may be
+    a follow-up. Candidate locations: a MOD-0029 **Access Control** page, a folder-details **access tab**, or a
+    baseline/structure admin integration. This is **MOD-0029 Layer 2 domain data**, never the central RBAC
+    permission screen (Layer 1 only).
+17. **Office/browser-render preview:** DOCX / XLSX / PPTX inline render is a follow-up (FU01 supports PDF/image
+    inline; unsupported types fall back to download) unless an existing viewer is available.
+18. **Document/template copy reference-mode & paste UX:** richer copy semantics (reference vs independent copy),
+    multi-select copy/paste, and cross-folder paste affordances beyond the FU01 default (independent copy of the
+    current active version) are a follow-up.
 
 Each follow-up requires its own approved or ready-for-dev scope. FU01 does not authorize any later wave, and
 does not authorize approval workflow, retention, or evidence export.

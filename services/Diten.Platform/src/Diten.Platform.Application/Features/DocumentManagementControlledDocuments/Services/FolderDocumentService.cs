@@ -17,23 +17,29 @@ public sealed class FolderDocumentService
     private readonly ICollectionInstanceReferenceReader _reader;
     private readonly IControlledDocumentRepository _documents;
     private readonly ITemplateDocumentRepository _templates;
+    private readonly IDocumentFavoriteRepository _favorites;
     private readonly IFolderDocumentAccessPolicyRepository _folderPolicies;
     private readonly DocumentAccessEvaluator _access;
+    private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
 
     public FolderDocumentService(
         ICollectionInstanceReferenceReader reader,
         IControlledDocumentRepository documents,
         ITemplateDocumentRepository templates,
+        IDocumentFavoriteRepository favorites,
         IFolderDocumentAccessPolicyRepository folderPolicies,
         DocumentAccessEvaluator access,
+        ICurrentUserContext currentUser,
         ITenantContext tenantContext)
     {
         _reader = reader;
         _documents = documents;
         _templates = templates;
+        _favorites = favorites;
         _folderPolicies = folderPolicies;
         _access = access;
+        _currentUser = currentUser;
         _tenantContext = tenantContext;
     }
 
@@ -45,17 +51,35 @@ public sealed class FolderDocumentService
             return Response<FolderDocumentsModel>.Fail("Not found.", 404, ControlledDocumentReasonCodes.NotFoundNonLeakage, correlationId);
         }
 
-        var principal = _access.Principal;
-        var documents = (await _documents.GetByCollectionInstanceAsync(collectionInstanceId, ct))
-            .Where(d => principal.BelongsToCompany(d.OwnerCompanyId))
-            .OrderByDescending(d => d.CreatedAt)
-            .Select(ControlledDocumentMapping.ToListItem)
-            .ToList();
-        var templates = (await _templates.GetByCollectionInstanceAsync(collectionInstanceId, ct))
-            .Where(t => principal.BelongsToCompany(t.OwnerCompanyId))
-            .OrderByDescending(t => t.CreatedAt)
-            .Select(ControlledDocumentMapping.ToListItem)
-            .ToList();
+        // Folder access selects the folder; each item still computes effective View so item-level deny wins.
+        if (!await _access.CanViewFolderAsync(collectionInstanceId, folder.CompanyId, ct))
+        {
+            return Response<FolderDocumentsModel>.Fail("Permission denied.", 403, ControlledDocumentReasonCodes.PermissionDenied, correlationId);
+        }
+
+        var favoriteIds = _currentUser.UserId == Guid.Empty
+            ? (IReadOnlySet<Guid>)new HashSet<Guid>()
+            : await _favorites.GetFavoriteDocumentIdsAsync(_currentUser.UserId, ct);
+        var documents = new List<ControlledDocumentListItemModel>();
+        foreach (var document in await _documents.GetByCollectionInstanceAsync(collectionInstanceId, ct))
+        {
+            if (await _access.CanViewControlledDocumentAsync(document, null, ct))
+            {
+                documents.Add(ControlledDocumentMapping.ToListItem(document) with { IsFavorite = favoriteIds.Contains(document.Id) });
+            }
+        }
+
+        var templates = new List<TemplateListItemModel>();
+        foreach (var template in await _templates.GetByCollectionInstanceAsync(collectionInstanceId, ct))
+        {
+            if (await _access.CanViewTemplateDocumentAsync(template, null, ct))
+            {
+                templates.Add(ControlledDocumentMapping.ToListItem(template));
+            }
+        }
+
+        documents = documents.OrderByDescending(d => d.CreatedAt).ToList();
+        templates = templates.OrderByDescending(t => t.CreatedAt).ToList();
 
         return Response<FolderDocumentsModel>.Success(
             new FolderDocumentsModel(collectionInstanceId, folder.FullPath, documents, templates), correlationId: correlationId);

@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -286,7 +287,7 @@ public sealed class UsersController : Controller
         if (_httpClient.DefaultRequestHeaders.Contains("X-Tenant-Id"))
             _httpClient.DefaultRequestHeaders.Remove("X-Tenant-Id");
 
-        var tenantId = GetTenantId();
+        var tenantId = GetTenantId(token);
         if (string.IsNullOrWhiteSpace(tenantId))
             return false;
 
@@ -294,9 +295,38 @@ public sealed class UsersController : Controller
         return true;
     }
 
-    private string? GetTenantId() =>
-        User.Claims.FirstOrDefault(x =>
+    // Resolve the tenant id from the cookie-auth principal first; fall back to decoding the access-token JWT. The
+    // cookie principal does not always carry the tenant claim (e.g. platform_admin sessions viewing a tenant), but
+    // the bearer JWT does — without this fallback the tenant-scoped admin-action proxy would 401 locally.
+    private string? GetTenantId(string? accessToken)
+    {
+        var claimValue = User.Claims.FirstOrDefault(x =>
             x.Type == "tenantId" ||
             x.Type == "tenant_id" ||
-            x.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase))?.Value;
+            x.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase) ||
+            x.Type.EndsWith("/tenant_id", StringComparison.OrdinalIgnoreCase))?.Value;
+        if (!string.IsNullOrWhiteSpace(claimValue))
+            return claimValue;
+
+        if (string.IsNullOrWhiteSpace(accessToken))
+            return null;
+
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            if (!handler.CanReadToken(accessToken))
+                return null;
+
+            var jwt = handler.ReadJwtToken(accessToken);
+            return jwt.Claims.FirstOrDefault(x =>
+                string.Equals(x.Type, "tenantId", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(x.Type, "tenant_id", StringComparison.OrdinalIgnoreCase) ||
+                x.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase) ||
+                x.Type.EndsWith("/tenant_id", StringComparison.OrdinalIgnoreCase))?.Value;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

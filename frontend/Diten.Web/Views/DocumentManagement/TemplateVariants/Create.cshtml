@@ -1,0 +1,17 @@
+@using Diten.Web.Views.DocumentManagement.TemplateVariants
+@using Microsoft.AspNetCore.Mvc.Localization
+@model Diten.Web.Models.DocumentManagementTemplateVariantFormModel
+@inject IHtmlLocalizer<TemplateVariantsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["CreateVariant"].Value;
+    ViewData["FormMode"] = "create";
+    Layout = "_LayoutTenantShell";
+}
+
+<partial name="~/Views/DocumentManagement/TemplateVariants/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/TemplateVariants/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DocumentManagement/TemplateVariants/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/TemplateVariants/index.js" asp-append-version="true"></script>
+}

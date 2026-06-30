@@ -23,24 +23,91 @@
         if (Array.isArray(data)) return data;
         if (Array.isArray(data?.items)) return data.items;
         if (Array.isArray(data?.Items)) return data.Items;
+        if (Array.isArray(data?.results)) return data.results;
+        if (Array.isArray(data?.Results)) return data.Results;
         return [];
     };
 
+    const upper = (value) => String(value || '').toUpperCase();
+    const get = (item, camel, pascal) => item?.[camel] ?? item?.[pascal];
+
     const optionText = (item, fallback) =>
-        item?.displayName || item?.DisplayName ||
-        item?.legalName || item?.LegalName ||
-        item?.name || item?.Name ||
-        item?.fullPath || item?.FullPath ||
+        get(item, 'displayName', 'DisplayName') ||
+        get(item, 'legalName', 'LegalName') ||
+        get(item, 'fullPath', 'FullPath') ||
+        get(item, 'name', 'Name') ||
         fallback;
 
     const optionId = (item) =>
-        item?.legalEntityId || item?.LegalEntityId ||
-        item?.id || item?.Id;
+        get(item, 'legalEntityId', 'LegalEntityId') ||
+        get(item, 'collectionInstanceId', 'CollectionInstanceId') ||
+        get(item, 'id', 'Id');
+
+    const structureId = (item) =>
+        get(item, 'activeStructureId', 'ActiveStructureId') ||
+        get(item, 'rootCollectionInstanceId', 'RootCollectionInstanceId') ||
+        get(item, 'id', 'Id');
 
     const folderDepth = (item) => {
-        const path = String(item?.fullPath || item?.FullPath || '');
+        const path = String(get(item, 'fullPath', 'FullPath') || '');
         if (!path) return 0;
         return Math.max(0, path.split('/').filter(Boolean).length - 1);
+    };
+
+    const isActiveFolder = (item) => upper(get(item, 'instanceStatus', 'InstanceStatus')) === 'ACTIVE';
+    const isActiveStructure = (item) => {
+        const status = upper(get(item, 'status', 'Status'));
+        return status === 'ACTIVE' || status === 'PROVISIONED';
+    };
+
+    const deriveStructuresFromFolders = (folders) => {
+        const grouped = new Map();
+        folders.filter(isActiveFolder).forEach((folder) => {
+            const baselineId = get(folder, 'baselineReleaseId', 'BaselineReleaseId') || '__company_structure__';
+            if (!grouped.has(baselineId)) grouped.set(baselineId, []);
+            grouped.get(baselineId).push(folder);
+        });
+
+        return Array.from(grouped.entries()).map(([baselineId, group]) => {
+            const root = group.slice().sort((a, b) => {
+                const pathA = String(get(a, 'fullPath', 'FullPath') || get(a, 'name', 'Name') || '');
+                const pathB = String(get(b, 'fullPath', 'FullPath') || get(b, 'name', 'Name') || '');
+                const depthA = pathA.split('/').filter(Boolean).length;
+                const depthB = pathB.split('/').filter(Boolean).length;
+                return depthA - depthB
+                    || Number(get(a, 'displayOrder', 'DisplayOrder') || 0) - Number(get(b, 'displayOrder', 'DisplayOrder') || 0)
+                    || pathA.localeCompare(pathB);
+            })[0];
+            return {
+                activeStructureId: optionId(root),
+                rootCollectionInstanceId: optionId(root),
+                baselineReleaseId: baselineId === '__company_structure__' ? '' : baselineId,
+                displayName: optionText(root, optionId(root)),
+                status: 'ACTIVE'
+            };
+        });
+    };
+
+    const fetchLookup = async (url, reason) => {
+        const res = await fetch(url, { credentials: 'same-origin' });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || json.isSuccessful === false) throw new Error(reason);
+        return json;
+    };
+
+    const setSelectDisabled = (select, disabled) => {
+        if (!select) return;
+        const jq = window.jQuery;
+        select.disabled = disabled;
+        select.toggleAttribute('disabled', disabled);
+        if (jq?.fn?.select2) {
+            const $select = jq(select);
+            $select.prop('disabled', disabled).trigger('change');
+            const $container = $select.next('.select2-container');
+            $container
+                .toggleClass('select2-container--disabled', disabled)
+                .attr('aria-disabled', disabled ? 'true' : 'false');
+        }
     };
 
     const initSelect2 = () => {
@@ -63,22 +130,18 @@
                 return jq('<span>').css('padding-left', `${depth * 14}px`).text(state.text);
             }
         });
+        setSelectDisabled(folderSelect, true);
     };
 
     const setSelectLoading = (select, isLoading) => {
         if (!select) return;
-        select.disabled = isLoading || select.dataset.locked === 'true';
-        if (window.jQuery?.fn?.select2) {
-            window.jQuery(select).trigger('change.select2');
-        }
+        setSelectDisabled(select, isLoading || select.dataset.locked === 'true');
     };
 
     const loadLegalEntities = async () => {
         if (!companySelect) return;
         try {
-            const res = await fetch('/DocumentManagementControlledDocuments/legal-entities', { credentials: 'same-origin' });
-            const json = await res.json().catch(() => ({}));
-            if (!res.ok || json.isSuccessful === false) throw new Error('legal-entities');
+            const json = await fetchLookup('/DocumentManagementControlledDocuments/legal-entities', 'legal-entities');
             companySelect.innerHTML = '<option value=""></option>';
             unwrapList(json).forEach((item) => {
                 const id = optionId(item);
@@ -97,7 +160,7 @@
         if (!folderSelect) return;
         folderSelect.innerHTML = '<option value=""></option>';
         folderSelect.value = '';
-        folderSelect.disabled = true;
+        setSelectDisabled(folderSelect, true);
         if (window.jQuery?.fn?.select2) {
             window.jQuery(folderSelect).val('').trigger('change');
         }
@@ -108,17 +171,38 @@
         if (!companyId || !folderSelect) return;
         setSelectLoading(folderSelect, true);
         try {
-            const res = await fetch(`/DocumentManagementControlledDocuments/collection-instances?companyId=${encodeURIComponent(companyId)}`, { credentials: 'same-origin' });
-            const json = await res.json().catch(() => ({}));
-            if (!res.ok || json.isSuccessful === false) throw new Error('collection-instances');
-            const folders = unwrapList(json).slice().sort((a, b) => {
-                const left = String(a.fullPath || a.FullPath || a.name || a.Name || '');
-                const right = String(b.fullPath || b.FullPath || b.name || b.Name || '');
-                return left.localeCompare(right);
-            });
+            const [structureJson, folderJson] = await Promise.all([
+                fetchLookup(`/DocumentManagementControlledDocuments/documentation-structures?companyId=${encodeURIComponent(companyId)}`, 'documentation-structures'),
+                fetchLookup(`/DocumentManagementControlledDocuments/collection-instances?companyId=${encodeURIComponent(companyId)}`, 'collection-instances')
+            ]);
+            const allFolders = unwrapList(folderJson);
+            let structures = unwrapList(structureJson).filter(isActiveStructure);
+            if (!structures.length) structures = deriveStructuresFromFolders(allFolders);
+            const baselineIds = new Set(structures
+                .map((item) => get(item, 'baselineReleaseId', 'BaselineReleaseId'))
+                .filter(Boolean)
+                .map(String));
+            const rootIds = new Set(structures.map(structureId).filter(Boolean).map(String));
+            const rootPaths = allFolders
+                .filter((item) => rootIds.has(String(optionId(item))))
+                .map((item) => String(get(item, 'fullPath', 'FullPath') || get(item, 'name', 'Name') || ''))
+                .filter(Boolean);
+            const folders = allFolders
+                .filter(isActiveFolder)
+                .filter((item) => {
+                    const baselineId = get(item, 'baselineReleaseId', 'BaselineReleaseId');
+                    if (baselineIds.size) return baselineIds.has(String(baselineId));
+                    if (!rootIds.size) return true;
+                    const path = String(get(item, 'fullPath', 'FullPath') || get(item, 'name', 'Name') || '');
+                    return rootIds.has(String(optionId(item))) || rootPaths.some((rootPath) => path === rootPath || path.startsWith(`${rootPath}/`));
+                })
+                .sort((a, b) =>
+                    Number(get(a, 'displayOrder', 'DisplayOrder') || 0) - Number(get(b, 'displayOrder', 'DisplayOrder') || 0)
+                    || String(get(a, 'fullPath', 'FullPath') || get(a, 'name', 'Name') || '')
+                        .localeCompare(String(get(b, 'fullPath', 'FullPath') || get(b, 'name', 'Name') || '')));
             folderSelect.innerHTML = '<option value=""></option>';
             folders.forEach((item) => {
-                const id = item.id || item.Id;
+                const id = optionId(item);
                 if (!id) return;
                 const opt = document.createElement('option');
                 opt.value = id;
@@ -126,8 +210,15 @@
                 opt.dataset.depth = String(folderDepth(item));
                 folderSelect.appendChild(opt);
             });
-            folderSelect.disabled = false;
+            setSelectDisabled(folderSelect, false);
+            if (!folders.length) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = L.NoStructures || '';
+                folderSelect.appendChild(opt);
+            }
         } catch (_) {
+            setSelectDisabled(folderSelect, false);
             toast(L.ErrorOccurred || 'Error', 'error');
         } finally {
             if (window.jQuery?.fn?.select2) {
@@ -138,13 +229,24 @@
 
     const initLookups = async () => {
         initSelect2();
+        const handleCompanyChange = (value) => {
+            loadFoldersForCompany(value);
+        };
+        if (window.jQuery?.fn?.select2) {
+            window.jQuery(companySelect)
+                .off('change.controlled-documents')
+                .on('change.controlled-documents', function () {
+                    handleCompanyChange(this.value);
+                });
+        } else {
+            companySelect?.addEventListener('change', (event) => {
+                handleCompanyChange(event.target.value);
+            });
+        }
         await loadLegalEntities();
         if (window.jQuery?.fn?.select2) {
-            window.jQuery(companySelect).trigger('change.select2');
+            window.jQuery(companySelect).trigger('change');
         }
-        companySelect?.addEventListener('change', (event) => {
-            loadFoldersForCompany(event.target.value);
-        });
     };
 
     const token = () => document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';

@@ -71,10 +71,15 @@ public static class MongoDbIndexConfigurations
         var controlledDocumentVersionCollection = database.GetCollection<ControlledDocumentVersion>("document_management_controlled_document_versions");
         var templateDocumentCollection = database.GetCollection<TemplateDocument>("document_management_template_documents");
         var templateVersionCollection = database.GetCollection<TemplateVersion>("document_management_template_versions");
+        var templateMasterCollection = database.GetCollection<TemplateMaster>("document_management_template_masters");
+        var templateMasterVersionCollection = database.GetCollection<TemplateMasterVersion>("document_management_template_master_versions");
+        var templateVariantCollection = database.GetCollection<TemplateVariant>("document_management_template_variants");
+        var documentAccessPolicyCollection = database.GetCollection<DocumentAccessPolicyEntry>("document_management_access_policies");
         var folderDocumentAccessPolicyCollection = database.GetCollection<FolderDocumentAccessPolicy>("document_management_folder_document_access_policies");
         var documentShareCollection = database.GetCollection<DocumentShareRecord>("document_management_document_shares");
         var folderShareOperationCollection = database.GetCollection<FolderShareOperation>("document_management_folder_share_operations");
         var folderShareOutcomeCollection = database.GetCollection<FolderShareOutcome>("document_management_folder_share_outcomes");
+        var documentFavoriteCollection = database.GetCollection<DocumentFavorite>("document_management_document_favorites");
         var workflowTemplateCollection = database.GetCollection<WorkflowTemplate>("workflow_templates");
         var workflowTemplateVersionCollection = database.GetCollection<WorkflowTemplateVersion>("workflow_template_versions");
         var workflowInstanceCollection = database.GetCollection<WorkflowInstance>("workflow_instances");
@@ -275,6 +280,116 @@ public static class MongoDbIndexConfigurations
                 })
         });
 
+        // MOD-0029-FU02 — corporate template master library. Tenant-first indexes; unique constraints are
+        // partial on IsDeleted == false so soft-deleted records do not block reuse.
+        await templateMasterCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TemplateMaster>(
+                Builders<TemplateMaster>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.MasterCode),
+                new CreateIndexOptions<TemplateMaster>
+                {
+                    Unique = true,
+                    Name = "ux_dm_template_masters_tenant_code_active",
+                    PartialFilterExpression = Builders<TemplateMaster>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<TemplateMaster>(
+                Builders<TemplateMaster>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_dm_template_masters_tenant_status" }),
+            new CreateIndexModel<TemplateMaster>(
+                Builders<TemplateMaster>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.Classification),
+                new CreateIndexOptions { Name = "ix_dm_template_masters_tenant_classification" }),
+            new CreateIndexModel<TemplateMaster>(
+                Builders<TemplateMaster>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.CollectionDefinitionId).Ascending(x => x.CanonicalId),
+                new CreateIndexOptions { Name = "ix_dm_template_masters_collection_canonical" }),
+            new CreateIndexModel<TemplateMaster>(
+                Builders<TemplateMaster>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.VariantPolicy),
+                new CreateIndexOptions { Name = "ix_dm_template_masters_tenant_variant_policy" })
+        });
+
+        await templateMasterVersionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TemplateMasterVersion>(
+                Builders<TemplateMasterVersion>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.TemplateMasterId).Ascending(x => x.VersionNumber),
+                new CreateIndexOptions<TemplateMasterVersion>
+                {
+                    Unique = true,
+                    Name = "ux_dm_template_master_versions_tenant_master_number_active",
+                    PartialFilterExpression = Builders<TemplateMasterVersion>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<TemplateMasterVersion>(
+                Builders<TemplateMasterVersion>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.TemplateMasterId).Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_dm_template_master_versions_master_status" })
+        });
+
+        // MOD-0029-FU03 — template variant governance + drift. Unique on tenant + scope + code is partial on
+        // IsDeleted == false so soft-deleted records do not block reuse of a variant code within a scope.
+        await templateVariantCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TemplateVariant>(
+                Builders<TemplateVariant>.IndexKeys
+                    .Ascending(x => x.TenantId).Ascending(x => x.ScopeType).Ascending(x => x.ScopeId).Ascending(x => x.VariantCode),
+                new CreateIndexOptions<TemplateVariant>
+                {
+                    Unique = true,
+                    Name = "ux_dm_template_variants_tenant_scope_code_active",
+                    PartialFilterExpression = Builders<TemplateVariant>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<TemplateVariant>(
+                Builders<TemplateVariant>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.TemplateMasterId),
+                new CreateIndexOptions { Name = "ix_dm_template_variants_tenant_master" }),
+            new CreateIndexModel<TemplateVariant>(
+                Builders<TemplateVariant>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ScopeType).Ascending(x => x.ScopeId),
+                new CreateIndexOptions { Name = "ix_dm_template_variants_tenant_scope" }),
+            new CreateIndexModel<TemplateVariant>(
+                Builders<TemplateVariant>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_dm_template_variants_tenant_status" }),
+            new CreateIndexModel<TemplateVariant>(
+                Builders<TemplateVariant>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ApprovalStatus),
+                new CreateIndexOptions { Name = "ix_dm_template_variants_tenant_approval_status" }),
+            new CreateIndexModel<TemplateVariant>(
+                Builders<TemplateVariant>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LinkedTemplateDocumentId),
+                new CreateIndexOptions<TemplateVariant>
+                {
+                    Name = "ix_dm_template_variants_tenant_linked_document",
+                    PartialFilterExpression = Builders<TemplateVariant>.Filter.Exists(x => x.LinkedTemplateDocumentId)
+                })
+        });
+
+        // MOD-0029-FU04 — document access matrix policies. Target/principal lookups drive the effective-access
+        // resolver; the unique key prevents duplicate (target + principal + effect) rows among non-deleted policies.
+        await documentAccessPolicyCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentAccessPolicyEntry>(
+                Builders<DocumentAccessPolicyEntry>.IndexKeys
+                    .Ascending(x => x.TenantId).Ascending(x => x.TargetType).Ascending(x => x.TargetId)
+                    .Ascending(x => x.PrincipalType).Ascending(x => x.PrincipalId).Ascending(x => x.Effect),
+                new CreateIndexOptions<DocumentAccessPolicyEntry>
+                {
+                    Unique = true,
+                    Name = "ux_dm_access_policies_target_principal_effect_active",
+                    PartialFilterExpression = Builders<DocumentAccessPolicyEntry>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentAccessPolicyEntry>(
+                Builders<DocumentAccessPolicyEntry>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.TargetType).Ascending(x => x.TargetId),
+                new CreateIndexOptions { Name = "ix_dm_access_policies_tenant_target" }),
+            new CreateIndexModel<DocumentAccessPolicyEntry>(
+                Builders<DocumentAccessPolicyEntry>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.PrincipalType).Ascending(x => x.PrincipalId),
+                new CreateIndexOptions { Name = "ix_dm_access_policies_tenant_principal" }),
+            new CreateIndexModel<DocumentAccessPolicyEntry>(
+                Builders<DocumentAccessPolicyEntry>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_dm_access_policies_tenant_status" }),
+            new CreateIndexModel<DocumentAccessPolicyEntry>(
+                Builders<DocumentAccessPolicyEntry>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.Effect),
+                new CreateIndexOptions { Name = "ix_dm_access_policies_tenant_effect" }),
+            new CreateIndexModel<DocumentAccessPolicyEntry>(
+                Builders<DocumentAccessPolicyEntry>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ValidTo),
+                new CreateIndexOptions<DocumentAccessPolicyEntry>
+                {
+                    Name = "ix_dm_access_policies_tenant_valid_to",
+                    PartialFilterExpression = Builders<DocumentAccessPolicyEntry>.Filter.Exists(x => x.ValidTo)
+                })
+        });
+
         await folderDocumentAccessPolicyCollection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<FolderDocumentAccessPolicy>(
@@ -322,6 +437,18 @@ public static class MongoDbIndexConfigurations
                     Unique = true,
                     Name = "ux_dm_folder_share_outcomes_tenant_operation_item_active",
                     PartialFilterExpression = Builders<FolderShareOutcome>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await documentFavoriteCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentFavorite>(
+                Builders<DocumentFavorite>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.UserId).Ascending(x => x.DocumentId),
+                new CreateIndexOptions<DocumentFavorite>
+                {
+                    Unique = true,
+                    Name = "ux_dm_document_favorites_tenant_user_document_active",
+                    PartialFilterExpression = Builders<DocumentFavorite>.Filter.Eq(x => x.IsDeleted, false)
                 })
         });
 

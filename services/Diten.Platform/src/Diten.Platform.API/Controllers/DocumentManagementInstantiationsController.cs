@@ -78,10 +78,11 @@ public sealed class DocumentManagementInstantiationsController : CustomBaseContr
         [FromQuery] Guid? companyId,
         [FromQuery] Guid? baselineReleaseId,
         [FromQuery] string? instanceToken,
+        [FromQuery] string? requiredAction,
         CancellationToken ct)
     {
         var response = await _mediator.Send(
-            new GetCollectionInstancesQuery(companyId, baselineReleaseId, instanceToken, CorrelationId),
+            new GetCollectionInstancesQuery(companyId, baselineReleaseId, instanceToken, requiredAction, CorrelationId),
             ct);
         return CreateActionResultInstance(response);
     }

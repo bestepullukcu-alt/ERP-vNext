@@ -14,6 +14,7 @@ public static class ControlledDocumentMapping
         d.CollectionInstanceId,
         d.CollectionPath,
         d.CurrentVersionNumber,
+        d.CurrentVersionId,
         d.Status.ToWire(),
         d.Controlled,
         d.CreatedAt);
