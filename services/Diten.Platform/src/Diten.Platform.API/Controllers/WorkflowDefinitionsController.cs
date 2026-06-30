@@ -113,6 +113,15 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // MOD-0023 — the current user's actionable tasks (WorkCenter inbox foundation).
+    [HttpGet("tasks/mine")]
+    [HasPermission(WorkflowPermissions.InstancesView)]
+    public async Task<IActionResult> GetMyTasks(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetMyWorkflowTasksQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("lookups/positions")]
     [HasPermission(WorkflowPermissions.DefinitionsView)]
     public async Task<IActionResult> GetPositionLookup(CancellationToken ct)

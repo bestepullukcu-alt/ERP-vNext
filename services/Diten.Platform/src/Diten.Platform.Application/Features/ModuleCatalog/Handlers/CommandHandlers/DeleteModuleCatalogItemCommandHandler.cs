@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.ModuleCatalog.Commands;
+using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 
@@ -25,6 +26,12 @@ public sealed class DeleteModuleCatalogItemCommandHandler : IRequestHandler<Dele
         if (item.IsCoreModule)
         {
             return Response<NoContent>.Fail("Core modules cannot be deleted.", 400);
+        }
+
+        // MC-4 — a self-registered (code-owned) module must be removed from its manifest, not deleted manually.
+        if (item.Origin == ModuleCatalogOrigin.SelfRegistered)
+        {
+            return Response<NoContent>.Fail(ModuleCatalogErrorCodes.ModuleManagedByCode, 409);
         }
 
         await _repository.DeleteAsync(item.Id, ct);

@@ -55,6 +55,50 @@ div.dt-container div.dt-search input {
     display: none !important;
 }
 
+/* FIX-SHELL-BRANDING-4 — tenant sidebar two-asset brand via platform's DISPLAY-SWAP (NOT Sneat's opacity/.menu-text).
+   Square mark when truly collapsed; full logo when expanded OR collapsed+hover. Single source of truth, scoped to
+   html[data-shell="tenant"] so the platform-admin brand is untouched. Mirrors site.css platform-admin-brand rules. */
+html[data-shell="tenant"] .tenant-brand-mark {
+    display: inline-flex;
+    align-items: center;
+}
+
+html[data-shell="tenant"]:not(.layout-menu-collapsed) .tenant-brand-mark,
+html[data-shell="tenant"].layout-menu-collapsed.layout-menu-hover .tenant-brand-mark {
+    display: none;
+}
+
+html[data-shell="tenant"] .tenant-brand-full {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    text-align: center;
+}
+
+html[data-shell="tenant"].layout-menu-collapsed:not(.layout-menu-hover) .tenant-brand-full {
+    display: none;
+}
+
+html[data-shell="tenant"] .tenant-brand-mark img {
+    max-height: 1.75rem;
+    width: auto;
+    object-fit: contain;
+}
+
+html[data-shell="tenant"] .tenant-brand-full-logo {
+    max-height: 2.5rem;
+    max-width: 12rem;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Center the brand; the chevron stays right via its ms-auto. */
+html[data-shell="tenant"] .tenant-brand-link {
+    flex-grow: 1;
+    justify-content: center;
+}
+
 .menu-backbone .menu-inner-shadow {
     display: none;
 }

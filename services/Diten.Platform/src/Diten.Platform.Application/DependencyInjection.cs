@@ -59,6 +59,7 @@ public static class DependencyInjection
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();
         services.AddScoped<IPlatformLookupProvider, PlatformLookupProvider>();
+        services.AddScoped<Features.ModuleCatalog.Services.IModuleTaxonomyResolver, Features.ModuleCatalog.Services.ModuleTaxonomyResolver>();
         services.AddScoped<IBusinessReferenceDataValidationService, BusinessReferenceDataValidationService>();
         services.AddScoped<IBusinessReferenceDataPublishService, BusinessReferenceDataPublishService>();
         services.AddScoped<IBusinessReferenceDataImportService, BusinessReferenceDataImportService>();
@@ -122,7 +123,19 @@ public static class DependencyInjection
         services.AddScoped<DeferredPlatformJobHandler>();
         services.AddScoped<EmailDispatchJob>();
         services.AddScoped<EmailDispatchSweepJob>();
+        services.AddScoped<Features.Workflow.BackgroundJobs.WorkflowEscalationSweepJob>();
         services.AddSingleton<IRecurringJobRegistrar, PlatformRecurringJobRegistrar>();
+
+        // A3 — workflow transition gate (defence-in-depth): business modules inject this and must check it
+        // BEFORE committing a state transition. Blocked ⇒ do not commit (not best-effort).
+        services.AddScoped<Contracts.IWorkflowTransitionGate, Services.WorkflowTransitionGate>();
+
+        // MC-3b — Platform-internal modules that self-register their catalog manifest in-process. Collected by
+        // PlatformModuleSelfRegistrationWorker at startup. Add a line here for each new self-registering module.
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.Workflow.SelfRegistration.WorkflowManifestProvider>();
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.Organization.SelfRegistration.OrganizationManifestProvider>();
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.DocumentManagement.SelfRegistration.DocumentManagementManifestProvider>();
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.ReferenceData.SelfRegistration.ReferenceDataManifestProvider>();
 
         return services;
     }

@@ -13,8 +13,12 @@ public sealed class InternalEventsController : ControllerBase
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
     private const string TenantActivatedEventName = "tenant.activated";
 
+    private const string EntitlementSyncActor = "tenant-provisioning";
+
     private readonly IInternalEventAuthService _internalEventAuthService;
     private readonly IRoleProvisioningService _roleProvisioningService;
+    private readonly ITenantEntitlementClient _tenantEntitlementClient;
+    private readonly IEntitlementPermissionSyncService _entitlementPermissionSyncService;
     private readonly IIntegrationEventInboxRepository _inboxRepository;
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
@@ -28,6 +32,8 @@ public sealed class InternalEventsController : ControllerBase
     public InternalEventsController(
         IInternalEventAuthService internalEventAuthService,
         IRoleProvisioningService roleProvisioningService,
+        ITenantEntitlementClient tenantEntitlementClient,
+        IEntitlementPermissionSyncService entitlementPermissionSyncService,
         IIntegrationEventInboxRepository inboxRepository,
         IUserRepository userRepository,
         IRoleRepository roleRepository,
@@ -40,6 +46,8 @@ public sealed class InternalEventsController : ControllerBase
     {
         _internalEventAuthService = internalEventAuthService;
         _roleProvisioningService = roleProvisioningService;
+        _tenantEntitlementClient = tenantEntitlementClient;
+        _entitlementPermissionSyncService = entitlementPermissionSyncService;
         _inboxRepository = inboxRepository;
         _userRepository = userRepository;
         _roleRepository = roleRepository;
@@ -81,6 +89,7 @@ public sealed class InternalEventsController : ControllerBase
         }
 
         await _roleProvisioningService.EnsureDefaultRolesAsync(integrationEvent.TenantId, ct);
+        await SyncEntitledModulesBestEffortAsync(integrationEvent.TenantId, ct);
 
         return Ok(new { status = "processed" });
     }
@@ -99,6 +108,7 @@ public sealed class InternalEventsController : ControllerBase
         }
 
         await _roleProvisioningService.EnsureDefaultRolesAsync(request.TenantId, ct);
+        await SyncEntitledModulesBestEffortAsync(request.TenantId, ct);
 
         var loginSettings = await _tenantLoginSettingsClient.GetAsync(request.TenantId, ct);
         var temporaryPassword = _passwordPolicyService.GenerateTemporaryPassword(loginSettings);
@@ -139,6 +149,30 @@ public sealed class InternalEventsController : ControllerBase
         }
 
         return Ok(new TenantAdminInvitationProvisioningResponse(userProvisioned, temporaryPassword, "processed"));
+    }
+
+    // Best-effort entitled-module → role-permission sync at provisioning. Pulls the tenant's effective entitled
+    // modules from Platform and grants them. NEVER throws (provisioning must not fail on a Platform blip), and
+    // SKIPS when the pull is empty so a transient/unreachable Platform can't strip existing Module-grants.
+    private async Task SyncEntitledModulesBestEffortAsync(Guid tenantId, CancellationToken ct)
+    {
+        try
+        {
+            // FIX-3 — pull each entitled module WITH its declared catalog permission keys and reconcile by them
+            // (namespace-agnostic). Per-module convention fallback is applied inside the sync service when a module
+            // declares no keys, so workflow / goldencompact still get granted.
+            var modules = await _tenantEntitlementClient.GetEntitledModulesWithPermissionKeysAsync(tenantId, ct);
+            if (modules.Count == 0)
+            {
+                return; // nothing to grant, and never revoke on an empty/failed pull
+            }
+
+            await _entitlementPermissionSyncService.SyncTenantModulesWithKeysAsync(tenantId, modules, EntitlementSyncActor, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Entitled-module sync skipped for TenantId={TenantId}.", tenantId);
+        }
     }
 
     private static User CreateUser(TenantAdminInvitationProvisioningRequest request, string passwordHash)

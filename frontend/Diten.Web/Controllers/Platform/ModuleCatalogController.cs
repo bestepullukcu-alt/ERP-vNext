@@ -153,6 +153,10 @@ public sealed class ModuleCatalogController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        // Page/action mutations are rejected for code-owned (self-registered) modules. Surface the
+        // parent module's origin so the page can render the Actions table read-only (MC-7).
+        ViewData["ModuleOrigin"] = await LoadModuleOriginAsync(payload.Data.ModuleCode);
+
         return View("~/Views/Platform/ModuleCatalog/PageDetails.cshtml", payload.Data);
     }
 
@@ -334,6 +338,35 @@ public sealed class ModuleCatalogController : Controller
         return payload?.Data;
     }
 
+    // Best-effort origin lookup by module code; defaults to "Manual" so the UI stays editable if the
+    // call fails (back-compat — the backend remains the source of truth that rejects bad mutations).
+    private async Task<string> LoadModuleOriginAsync(string moduleCode)
+    {
+        if (string.IsNullOrWhiteSpace(moduleCode))
+        {
+            return "Manual";
+        }
+
+        try
+        {
+            AddAuthHeader();
+            var response = await _httpClient.GetAsync(
+                $"{_gatewayUrl}/api/platform/module-catalog/by-code/{Uri.EscapeDataString(moduleCode)}");
+            if (!response.IsSuccessStatusCode)
+            {
+                return "Manual";
+            }
+
+            var payload = await response.Content.ReadFromJsonAsync<GatewayResponse<ModuleCatalogDetailViewModel>>(_jsonOptions);
+            return string.IsNullOrWhiteSpace(payload?.Data?.Origin) ? "Manual" : payload!.Data!.Origin;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Module origin lookup failed for {ModuleCode}.", moduleCode);
+            return "Manual";
+        }
+    }
+
     private async Task<IActionResult> ProxyGatewayAsync(HttpMethod method, string targetUrl, string? jsonBody = null)
     {
         AddAuthHeader();
@@ -404,6 +437,7 @@ public sealed class ModuleCatalogController : Controller
     private string LocalizeGatewayError(string error) => error switch
     {
         "MODULE_CODE_IN_USE" => _sharedLocalizer["ModuleCodeInUse"].Value,
+        "MODULE_MANAGED_BY_CODE" => _sharedLocalizer["ModuleManagedByCode"].Value,
         _ => error
     };
 

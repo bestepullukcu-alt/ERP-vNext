@@ -1,6 +1,7 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants.Commands;
 using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions;
 using Diten.Platform.Contracts.Events;
@@ -21,6 +22,8 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
     private readonly ITenantDefaultsProvider _defaults;
     private readonly ICurrentUserContext _currentUser;
     private readonly IEventBus _eventBus;
+    private readonly IQuotaService _quotaService;
+    private readonly ITenantActivationNotifier _tenantActivationNotifier;
     private readonly ILogger<RegisterTenantCommandHandler> _logger;
 
     public RegisterTenantCommandHandler(
@@ -32,6 +35,8 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
         ITenantDefaultsProvider defaults,
         ICurrentUserContext currentUser,
         IEventBus eventBus,
+        IQuotaService quotaService,
+        ITenantActivationNotifier tenantActivationNotifier,
         ILogger<RegisterTenantCommandHandler> logger)
     {
         _repository = repository;
@@ -42,6 +47,8 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
         _defaults = defaults;
         _currentUser = currentUser;
         _eventBus = eventBus;
+        _quotaService = quotaService;
+        _tenantActivationNotifier = tenantActivationNotifier;
         _logger = logger;
     }
 
@@ -311,6 +318,13 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
                 code, request.InitialAdmin.Email);
         }
 
+        // 9. Auto-complete provisioning (best-effort + idempotent): REUSE the subscription-activation snapshot
+        //    logic to seed quota_usages from the plan, mark the tenant Active and finalize its provisioning steps —
+        //    no duplication of ActivateTenantSubscription. A failure here must NOT fail tenant creation; it is
+        //    recorded so the MOD-0009 retry job / manual activate can finish it later. Idempotent: UpdateTenantSnapshot
+        //    only promotes a still-Provisioning tenant, and quota init is itself idempotent.
+        await TryCompleteProvisioningAsync(tenant.Id, code, actor, cancellationToken);
+
         var initialAdminUserId = tenant.AdminUsers.FirstOrDefault()?.Id;
         Guid? actorUserId = _currentUser.UserId == Guid.Empty ? null : _currentUser.UserId;
         await _eventBus.PublishAsync(
@@ -330,7 +344,71 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
             },
             cancellationToken);
 
+        // 10. B1 — tell AuthService the tenant is active so it provisions default roles + syncs entitled-module
+        //     permissions (FIX-2) automatically. Best-effort + idempotent; never blocks tenant creation.
+        await _tenantActivationNotifier.NotifyActivatedAsync(tenant.Id, cancellationToken);
+
         return Response<Guid>.Success(tenant.Id, 201);
+    }
+
+    // Best-effort provisioning finalize — see call site. Never throws to the caller.
+    private async Task TryCompleteProvisioningAsync(Guid tenantId, string code, string actor, CancellationToken ct)
+    {
+        try
+        {
+            var subscription = await _tenantSubscriptionRepository.GetCurrentByTenantIdAsync(tenantId, ct);
+            if (subscription is not null)
+            {
+                await TenantSubscriptionCommandSupport.UpdateTenantSnapshotAsync(
+                    subscription, _repository, _subscriptionPlanRepository, _currentUser, ct, markTenantActive: true);
+            }
+
+            var quotaResponse = await _quotaService.InitializeTenantQuotasAsync(
+                tenantId,
+                "TenantProvisioning",
+                "Tenant provisioned; quota usage initialized.",
+                actor,
+                Guid.NewGuid().ToString(),
+                ct);
+
+            if (quotaResponse is { IsSuccessful: false })
+            {
+                _logger.LogWarning(
+                    "Quota initialization returned failure during tenant provisioning. TenantCode={TenantCode} Errors={Errors}",
+                    code, string.Join("; ", quotaResponse.Errors ?? new List<string>()));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Auto-provisioning finalize failed for tenant {TenantCode}; left for retry.", code);
+            await TryMarkProvisioningFailedAsync(tenantId, actor, ct);
+        }
+    }
+
+    private async Task TryMarkProvisioningFailedAsync(Guid tenantId, string actor, CancellationToken ct)
+    {
+        try
+        {
+            var fresh = await _repository.GetByIdAsync(tenantId, ct);
+            if (fresh is null)
+            {
+                return;
+            }
+
+            fresh.ProvisioningStatus = "Failed";
+            fresh.ActivityTimeline.Add(new TenantActivityEvent
+            {
+                EventType = "tenant.provisioning.failed",
+                Message = "Auto-provisioning finalize failed; will retry.",
+                Actor = actor,
+                At = DateTimeOffset.UtcNow
+            });
+            await _repository.UpdateAsync(fresh, ct);
+        }
+        catch
+        {
+            // Never fail tenant creation on the failure-reporting path.
+        }
     }
 
     private async Task<string?> GenerateUniqueCodeAsync(string name, CancellationToken cancellationToken)

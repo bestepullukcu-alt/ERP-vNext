@@ -225,11 +225,50 @@ public sealed class RevokePermissionCommandHandlerTests
         Assert.Empty(refreshTokens.RevokedUsers);
     }
 
+    [Fact]
+    public async Task Manual_grant_revoke_bumps_role_assignment_version()
+    {
+        var version = new FakeRoleAssignmentVersionService();
+        var handler = CreateHandler(role: null, new FakeRolePermissionRepository(), new FakeUserRoleRepository { Holders = [User1] }, new FakeRefreshTokenRepository(), version);
+
+        await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.Equal(1, version.IncrementCount);
+        Assert.Contains(TenantId, version.IncrementedTenants);
+    }
+
+    [Fact]
+    public async Task Idempotent_missing_grant_does_not_bump_version()
+    {
+        var version = new FakeRoleAssignmentVersionService();
+        var rolePerms = new FakeRolePermissionRepository { GrantExists = false };
+        var handler = CreateHandler(role: null, rolePerms, new FakeUserRoleRepository(), new FakeRefreshTokenRepository(), version);
+
+        var result = await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful); // 204 idempotent no-op
+        Assert.Equal(0, version.IncrementCount);
+    }
+
+    [Fact]
+    public async Task System_role_revoke_does_not_bump_version()
+    {
+        var systemRole = new Role("admin", "Admin", null, TenantId);
+        systemRole.MarkAsSystem();
+        var version = new FakeRoleAssignmentVersionService();
+        var handler = CreateHandler(systemRole, new FakeRolePermissionRepository(), new FakeUserRoleRepository(), new FakeRefreshTokenRepository(), version);
+
+        await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.Equal(0, version.IncrementCount);
+    }
+
     private static RevokePermissionCommandHandler CreateHandler(
         Role? role,
         FakeRolePermissionRepository rolePerms,
         FakeUserRoleRepository userRoles,
-        FakeRefreshTokenRepository refreshTokens)
+        FakeRefreshTokenRepository refreshTokens,
+        FakeRoleAssignmentVersionService? version = null)
     {
         var tenantContext = new TestTenantContext();
         tenantContext.SetTenant(TenantId);
@@ -238,6 +277,7 @@ public sealed class RevokePermissionCommandHandlerTests
             rolePerms,
             userRoles,
             refreshTokens,
+            version ?? new FakeRoleAssignmentVersionService(),
             tenantContext);
     }
 

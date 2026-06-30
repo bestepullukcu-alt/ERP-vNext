@@ -26,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<IRoleProvisioningService, RoleProvisioningService>();
         services.AddScoped<IEntitlementPermissionSyncService, EntitlementPermissionSyncService>();
         services.AddScoped<IPasswordPolicyService, PasswordPolicyService>();
+        services.AddScoped<IFullCatalogPermissionGrantService, FullCatalogPermissionGrantService>();
 
         return services;
     }

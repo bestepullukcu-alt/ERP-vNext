@@ -168,6 +168,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 - Modül mutlaka module pack'te belirtilen `Views/{AreaName}/{ModuleName}` klasörü altında olmalıdır.
 - Soft Delete asla atlanamaz. Tenant-owned modüllerde TenantId filtrelemesi zorunludur; module pack'te açık Platform global katalog istisnası varsa TenantId yerine `GlobalEntity` gerekçesi, global index ve RBAC kontrolü doğrulanır.
 - Details/Edit sayfaları Compact modüllerde zorunludur; Slim modüllerde create/edit offcanvas zorunludur.
+- **⛔ SELF-REGISTRATION ZORUNLU (BLOCKER):** Her tenant-assignable modül bir `ModuleManifestProvider` ile gelmek ZORUNDADIR — modül kataloğa elle değil, KODDAN otomatik düşer. Manifest, modülün **gerçek frontend controller view-route'larını + UI satır/toolbar aksiyon menüsünü** birebir aynalar (sadece API değil). Wiring + iki-yönlü completeness testi şart. Tam kurallar: `.antigravity/rules/module-self-registration-standard.md`. Manifest + completeness testi yeşil olmadan modül **kapanmaz**.
 
 
 ---

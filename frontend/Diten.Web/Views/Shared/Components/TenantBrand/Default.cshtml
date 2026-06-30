@@ -1,0 +1,35 @@
+@using Diten.Web.ViewComponents
+@model TenantBrandViewModel
+@{
+    var alt = string.IsNullOrWhiteSpace(Model.DisplayName) ? "Logo" : Model.DisplayName;
+}
+
+@* FIX-SHELL-BRANDING-2 — two-asset SWAP (never both at once; CSS toggles by collapsed/expanded):
+   • Mark span (collapsed/mini): favicon → else logo → else default bx-buildings icon.
+   • Full span (expanded): big logo → else "Di10" wordmark. (.menu-text auto-hides it when collapsed.) *@
+<a href="/" class="app-brand-link tenant-brand-link">
+    <span class="app-brand-logo demo tenant-brand-mark">
+        @if (Model.HasFavicon)
+        {
+            <img src="@Model.FaviconDataUrl" alt="@alt" />
+        }
+        else if (Model.HasLogo)
+        {
+            <img src="@Model.LogoDataUrl" alt="@alt" />
+        }
+        else
+        {
+            <i class="bx bx-buildings text-primary fs-2"></i>
+        }
+    </span>
+    <span class="tenant-brand-full">
+        @if (Model.HasLogo)
+        {
+            <img class="tenant-brand-full-logo" src="@Model.LogoDataUrl" alt="@alt" />
+        }
+        else
+        {
+            <span class="fw-bold">Di10</span>
+        }
+    </span>
+</a>

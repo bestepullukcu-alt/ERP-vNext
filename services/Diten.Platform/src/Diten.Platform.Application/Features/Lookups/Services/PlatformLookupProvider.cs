@@ -119,6 +119,13 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
     private async Task<IReadOnlyList<LookupOptionDto>?> Wrap(Task<IReadOnlyList<LookupOptionDto>> task) =>
         await task;
 
+    // MC-3a — bare infrastructure/service namespaces that are NOT tenant-assignable module codes.
+    private static readonly HashSet<string> UmbrellaNamespaces =
+        new(StringComparer.OrdinalIgnoreCase) { "auth", "platform", "mdm" };
+
+    private static bool IsUmbrellaNamespace(string module) =>
+        UmbrellaNamespaces.Contains(module.Trim());
+
     private Task<IReadOnlyList<LookupOptionDto>> GetPermissionModulesAsync(CancellationToken ct) =>
         _cache.GetOrCreateAsync(
             BuildCacheKey(PlatformLookupKeys.ModuleCatalogPermissionModules),
@@ -129,6 +136,9 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
                 var modules = await _authPermissionModulesClient.GetModulesAsync(token);
                 return modules
                     .Where(module => !string.IsNullOrWhiteSpace(module.Module))
+                    // MC-3a — drop pure-infra/non-assignable umbrella namespaces (bare auth/platform/mdm); they are
+                    // permission top-segments, not assignable module codes, and would leak into the catalog picker.
+                    .Where(module => !IsUmbrellaNamespace(module.Module))
                     .Select((module, index) => new LookupOptionDto(
                         module.Module,
                         module.Module,
@@ -146,11 +156,13 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
             async token =>
             {
                 var services = await _moduleServiceRepository.GetActiveAsync(token);
+                // FIX-DOMAIN-SERVICE-CANONICAL — option VALUE is the canonical Code (label stays DisplayName), so the
+                // form submits and stores the Code, not the DisplayName. Keeps catalog Domain/Service drift-free.
                 return services
                     .Select(service => new LookupOptionDto(
                         service.Code,
                         service.DisplayName,
-                        service.DisplayName,
+                        service.Code,
                         "ModuleCatalogService",
                         service.SortOrder))
                     .ToList();
@@ -164,11 +176,13 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
             async token =>
             {
                 var domains = await _moduleDomainRepository.GetActiveAsync(token);
+                // FIX-DOMAIN-SERVICE-CANONICAL — option VALUE is the canonical Code (label stays DisplayName), so the
+                // form submits and stores the Code, not the DisplayName. Keeps catalog Domain/Service drift-free.
                 return domains
                     .Select(domain => new LookupOptionDto(
                         domain.Code,
                         domain.DisplayName,
-                        domain.DisplayName,
+                        domain.Code,
                         "ModuleCatalogDomain",
                         domain.SortOrder))
                     .ToList();

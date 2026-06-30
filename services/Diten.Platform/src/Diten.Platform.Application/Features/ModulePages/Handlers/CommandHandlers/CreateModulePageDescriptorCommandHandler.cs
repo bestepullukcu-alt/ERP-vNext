@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.ModuleCatalog;
 using Diten.Platform.Application.Features.ModulePages.Commands;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
@@ -11,13 +12,16 @@ namespace Diten.Platform.Application.Features.ModulePages.Handlers.CommandHandle
 public sealed class CreateModulePageDescriptorCommandHandler : IRequestHandler<CreateModulePageDescriptorCommand, Response<Guid>>
 {
     private readonly IModulePageDescriptorRepository _repository;
+    private readonly IModuleCatalogRepository _catalogRepository;
     private readonly ICatalogPermissionSyncService _catalogPermissionSyncService;
 
     public CreateModulePageDescriptorCommandHandler(
         IModulePageDescriptorRepository repository,
+        IModuleCatalogRepository catalogRepository,
         ICatalogPermissionSyncService catalogPermissionSyncService)
     {
         _repository = repository;
+        _catalogRepository = catalogRepository;
         _catalogPermissionSyncService = catalogPermissionSyncService;
     }
 
@@ -27,6 +31,12 @@ public sealed class CreateModulePageDescriptorCommandHandler : IRequestHandler<C
         if (!await _repository.ModuleExistsAsync(moduleCode, ct))
         {
             return Response<Guid>.Fail("Parent module catalog item not found.", 404);
+        }
+
+        // MC-7 — code-owned module: pages are reconciled from the manifest, not added/edited by hand.
+        if (await SelfRegisteredModuleGuard.IsManagedByCodeAsync(_catalogRepository, moduleCode, ct))
+        {
+            return Response<Guid>.Fail(ModuleCatalogErrorCodes.ModuleManagedByCode, 409);
         }
 
         var pageCode = ModulePageDescriptorNormalizer.NormalizePageCode(request.Request.PageCode);

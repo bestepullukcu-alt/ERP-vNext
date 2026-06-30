@@ -12,6 +12,7 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IUserRoleRepository _userRoleRepository;
+    private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<AssignRoleCommandHandler> _logger;
 
@@ -19,12 +20,14 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
         IUserRepository userRepository,
         IRoleRepository roleRepository,
         IUserRoleRepository userRoleRepository,
+        IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
         ILogger<AssignRoleCommandHandler> logger)
     {
         _userRepository = userRepository;
         _roleRepository = roleRepository;
         _userRoleRepository = userRoleRepository;
+        _versionService = versionService;
         _tenantContext = tenantContext;
         _logger = logger;
     }
@@ -41,6 +44,9 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
             return Response<NoContent>.Success(204);
 
         await _userRoleRepository.AssignAsync(new UserRole(request.UserId, request.RoleId, _tenantContext.TenantId, "System"), ct);
+
+        // FU13 — invalidate the tenant's cached authorization snapshots by bumping the role-assignment version.
+        await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
         return Response<NoContent>.Success(204);
     }
 }

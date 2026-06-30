@@ -14,7 +14,20 @@ namespace Diten.Platform.Application.Tests.Navigation;
 public sealed class GetTenantNavigationMenuQueryHandlerTests
 {
     private static AssignableModuleInfo Module(string code, string display, int sort) =>
-        new(Guid.NewGuid(), code, $"{code} Module", display, "Desc", "D", "S", "Active", "1.0", false, true, sort, DateTimeOffset.UtcNow, null);
+        Module(code, display, sort, "D");
+
+    private static AssignableModuleInfo Module(string code, string display, int sort, string domain) =>
+        new(Guid.NewGuid(), code, $"{code} Module", display, "Desc", domain, "S", "Active", "1.0", false, true, sort, DateTimeOffset.UtcNow, null);
+
+    private static IModuleDomainRepository DomainRepo(params (string Code, string Display)[] domains)
+    {
+        var mock = new Mock<IModuleDomainRepository>();
+        mock.Setup(x => x.GetActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(domains
+                .Select(d => new ModuleDomain { Code = d.Code, DisplayName = d.Display, IsActive = true })
+                .ToList());
+        return mock.Object;
+    }
 
     private static ModulePageDescriptor Page(
         string moduleCode,
@@ -59,7 +72,7 @@ public sealed class GetTenantNavigationMenuQueryHandlerTests
                 Page("GOLDENSLIM", "HIDDENPAGE", navVisible: false, sortOrder: 30)
             });
 
-        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, new Mock<ITenantContext>().Object);
+        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D Display")), new Mock<ITenantContext>().Object);
 
         var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
 
@@ -68,10 +81,67 @@ public sealed class GetTenantNavigationMenuQueryHandlerTests
         var group = Assert.Single(response.Data!);
         Assert.Equal("GOLDENSLIM", group.ModuleCode);
         Assert.Equal("Golden Slim", group.ModuleDisplayName);
+        Assert.Equal("D", group.Domain);                          // catalog domain code carried through
+        Assert.Equal("Domain D Display", group.DomainDisplayName); // resolved from platform_module_domains
         var item = Assert.Single(group.Items); // Draft + hidden filtered out
         Assert.Equal("RECORDS", item.PageCode);
         Assert.Equal("/GOLDENSLIM/RECORDS", item.RoutePath);
         Assert.Equal("goldenslim.records.read", item.RequiredPermission);
+    }
+
+    [Fact]
+    public async Task DomainDisplayName_ResolvesAcrossSeparatorAndCaseDifferences()
+    {
+        var tenantId = Guid.NewGuid();
+        var catalog = new Mock<IPlatformCatalogContract>();
+        catalog.Setup(x => x.GetAssignableModulesAsync(It.IsAny<CancellationToken>()))
+            // Manifest domain is PascalCase, with no separators.
+            .ReturnsAsync(new List<AssignableModuleInfo> { Module("LEGALENTITY", "Legal Entity", 1, "MasterDataManagement") });
+
+        var access = new Mock<ITenantModuleAccessService>();
+        access.Setup(x => x.HasAccessAsync(tenantId, "LEGALENTITY", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var repo = new Mock<IModulePageDescriptorRepository>();
+        repo.Setup(x => x.GetByModuleAsync("LEGALENTITY", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ModulePageDescriptor> { Page("LEGALENTITY", "INDEX", sortOrder: 10) });
+
+        // Domain ROW code uses dashes + different case — must still resolve to the display name.
+        var handler = new GetTenantNavigationMenuQueryHandler(
+            catalog.Object, access.Object, repo.Object,
+            DomainRepo(("master-data-management", "Master Data Management")), new Mock<ITenantContext>().Object);
+
+        var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
+
+        var group = Assert.Single(response.Data!);
+        Assert.Equal("MasterDataManagement", group.Domain);            // raw catalog code carried through
+        Assert.Equal("Master Data Management", group.DomainDisplayName); // resolved despite separator/case mismatch
+    }
+
+    [Fact]
+    public async Task UnresolvedDomainCode_FallsBackToTheRawCodeAsDisplayName()
+    {
+        var tenantId = Guid.NewGuid();
+        var catalog = new Mock<IPlatformCatalogContract>();
+        catalog.Setup(x => x.GetAssignableModulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AssignableModuleInfo> { Module("GOLDENSLIM", "Golden Slim", 1) });
+
+        var access = new Mock<ITenantModuleAccessService>();
+        access.Setup(x => x.HasAccessAsync(tenantId, "GOLDENSLIM", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var repo = new Mock<IModulePageDescriptorRepository>();
+        repo.Setup(x => x.GetByModuleAsync("GOLDENSLIM", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ModulePageDescriptor> { Page("GOLDENSLIM", "RECORDS", sortOrder: 10) });
+
+        // No domain rows registered → display name must fall back to the raw catalog code ("D").
+        var handler = new GetTenantNavigationMenuQueryHandler(
+            catalog.Object, access.Object, repo.Object, DomainRepo(), new Mock<ITenantContext>().Object);
+
+        var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
+
+        var group = Assert.Single(response.Data!);
+        Assert.Equal("D", group.Domain);
+        Assert.Equal("D", group.DomainDisplayName);
     }
 
     [Fact]
@@ -88,7 +158,7 @@ public sealed class GetTenantNavigationMenuQueryHandlerTests
 
         var repo = new Mock<IModulePageDescriptorRepository>();
 
-        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, new Mock<ITenantContext>().Object);
+        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D Display")), new Mock<ITenantContext>().Object);
 
         var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
 
@@ -114,7 +184,7 @@ public sealed class GetTenantNavigationMenuQueryHandlerTests
         repo.Setup(x => x.GetByModuleAsync("HR", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ModulePageDescriptor>()); // self-registered but no nav descriptors yet
 
-        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, new Mock<ITenantContext>().Object);
+        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D Display")), new Mock<ITenantContext>().Object);
 
         var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
 

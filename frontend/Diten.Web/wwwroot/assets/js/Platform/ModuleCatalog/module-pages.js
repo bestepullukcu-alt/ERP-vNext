@@ -7,6 +7,7 @@ const ModuleCatalogPages = (function () {
     const tableEl = document.getElementById('dt-module-pages');
     const skeletonEl = document.getElementById('module-pages-skeleton-loader');
     const moduleCode = tableEl?.dataset.moduleCode || '';
+    const isReadonly = (tableEl?.dataset.readonly || '').toLowerCase() === 'true';
     const endpoint = `/Platform/ModuleCatalog/api/${encodeURIComponent(moduleCode)}/pages`;
     const offcanvasEl = document.getElementById('modulePageOffcanvas');
     const form = document.getElementById('modulePageForm');
@@ -382,6 +383,8 @@ const ModuleCatalogPages = (function () {
     };
 
     const mountToolbarAddButton = () => {
+        // Read-only (code-owned) modules don't get an "Add Page" affordance.
+        if (isReadonly) return;
         const wrapper = tableEl?.closest('.dt-container') || tableEl?.closest('.card') || document;
         const toolbarEnd = wrapper.querySelector('.dt-layout-row:first-child .dt-layout-end') || wrapper.querySelector('.dt-layout-end');
         if (!toolbarEnd || toolbarEnd.querySelector('.module-page-add-btn')) return;
@@ -510,36 +513,41 @@ const ModuleCatalogPages = (function () {
                                     'data-json': rowJson,
                                     'aria-label': L.Details || ''
                                 }
-                            },
-                            {
-                                key: 'edit',
-                                text: L.Edit || '',
-                                attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Edit || '' }
                             }
                         ];
 
-                        if (status === 'Active') {
+                        // Code-owned (self-registered) modules are read-only: only the view action is
+                        // offered. The backend rejects page mutations with 409 MODULE_MANAGED_BY_CODE.
+                        if (!isReadonly) {
                             actions.push({
-                                key: 'deactivate',
-                                className: 'text-warning',
-                                text: L.Deactivate || '',
-                                attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Deactivate || '' }
+                                key: 'edit',
+                                text: L.Edit || '',
+                                attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Edit || '' }
                             });
-                        } else {
+
+                            if (status === 'Active') {
+                                actions.push({
+                                    key: 'deactivate',
+                                    className: 'text-warning',
+                                    text: L.Deactivate || '',
+                                    attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Deactivate || '' }
+                                });
+                            } else {
+                                actions.push({
+                                    key: 'activate',
+                                    className: 'text-success',
+                                    text: L.Activate || '',
+                                    attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Activate || '' }
+                                });
+                            }
+
                             actions.push({
-                                key: 'activate',
-                                className: 'text-success',
-                                text: L.Activate || '',
-                                attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Activate || '' }
+                                key: 'delete',
+                                className: 'text-danger',
+                                text: L.Delete || '',
+                                attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Delete || '' }
                             });
                         }
-
-                        actions.push({
-                            key: 'delete',
-                            className: 'text-danger',
-                            text: L.Delete || '',
-                            attrs: { 'data-id': id, 'data-json': rowJson, 'aria-label': L.Delete || '' }
-                        });
 
                         return window.DitenDataTable?.renderActions?.(actions) || '';
                     }

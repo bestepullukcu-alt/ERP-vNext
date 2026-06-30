@@ -97,26 +97,47 @@ public sealed class AddTenantModuleEntitlementCommandHandlerTests
             Times.Never);
     }
 
+    // FIX-ENTITLEMENT-DUP — an active row under ANY source blocks a re-add, regardless of the incoming Source.
     [Fact]
     public async Task AddTenantModuleEntitlementCommandHandler_DoesNotPublishWhenDuplicateExists()
     {
         var fixture = CreateFixture(ActorId);
         fixture.Repository
-            .Setup(x => x.GetActiveBySourceAsync(
-                TenantId,
-                "HR",
-                EntitlementSource.ManualOverride,
-                null,
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new TenantModuleEntitlement { TenantId = TenantId, ModuleCode = "HR", Source = EntitlementSource.ManualOverride });
+            .Setup(x => x.GetByTenantAndModuleAsync(TenantId, "HR", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<TenantModuleEntitlement>
+            {
+                // Different source than the incoming ManualOverride — still a duplicate (module-based guard).
+                new() { TenantId = TenantId, ModuleCode = "HR", Source = EntitlementSource.System, IsEnabled = true }
+            });
 
         var result = await fixture.Handler.Handle(CreateCommand("HR"), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
         VerifyPublishNever(fixture.EventBus);
         fixture.Repository.Verify(
             x => x.CreateAsync(It.IsAny<TenantModuleEntitlement>(), It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    // A disabled (IsEnabled=false) row must NOT block re-adding — the re-enable / re-add path stays open.
+    [Fact]
+    public async Task AddTenantModuleEntitlementCommandHandler_AllowsReAddWhenExistingRowIsDisabled()
+    {
+        var fixture = CreateFixture(ActorId);
+        fixture.Repository
+            .Setup(x => x.GetByTenantAndModuleAsync(TenantId, "HR", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<TenantModuleEntitlement>
+            {
+                new() { TenantId = TenantId, ModuleCode = "HR", Source = EntitlementSource.ManualOverride, IsEnabled = false }
+            });
+
+        var result = await fixture.Handler.Handle(CreateCommand("HR"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        fixture.Repository.Verify(
+            x => x.CreateAsync(It.IsAny<TenantModuleEntitlement>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
@@ -140,13 +161,11 @@ public sealed class AddTenantModuleEntitlementCommandHandlerTests
     {
         var repository = new Mock<ITenantModuleEntitlementRepository>();
         repository
-            .Setup(x => x.GetActiveBySourceAsync(
+            .Setup(x => x.GetByTenantAndModuleAsync(
                 It.IsAny<Guid>(),
                 It.IsAny<string>(),
-                It.IsAny<EntitlementSource>(),
-                It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync((TenantModuleEntitlement?)null);
+            .ReturnsAsync(new List<TenantModuleEntitlement>());
         repository
             .Setup(x => x.CreateAsync(It.IsAny<TenantModuleEntitlement>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((TenantModuleEntitlement entitlement, CancellationToken _) => entitlement);

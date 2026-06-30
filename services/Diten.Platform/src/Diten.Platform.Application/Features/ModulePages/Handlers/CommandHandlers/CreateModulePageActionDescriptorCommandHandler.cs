@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.ModuleCatalog;
 using Diten.Platform.Application.Features.ModulePages.Commands;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
@@ -13,15 +14,18 @@ public sealed class CreateModulePageActionDescriptorCommandHandler
 {
     private readonly IModulePageDescriptorRepository _pageRepository;
     private readonly IModulePageActionDescriptorRepository _repository;
+    private readonly IModuleCatalogRepository _catalogRepository;
     private readonly ICatalogPermissionSyncService _catalogPermissionSyncService;
 
     public CreateModulePageActionDescriptorCommandHandler(
         IModulePageDescriptorRepository pageRepository,
         IModulePageActionDescriptorRepository repository,
+        IModuleCatalogRepository catalogRepository,
         ICatalogPermissionSyncService catalogPermissionSyncService)
     {
         _pageRepository = pageRepository;
         _repository = repository;
+        _catalogRepository = catalogRepository;
         _catalogPermissionSyncService = catalogPermissionSyncService;
     }
 
@@ -31,6 +35,12 @@ public sealed class CreateModulePageActionDescriptorCommandHandler
         if (page is null)
         {
             return Response<Guid>.Fail("Module page descriptor not found.", 404);
+        }
+
+        // MC-7 — code-owned module: actions are reconciled from the manifest, not added by hand.
+        if (await SelfRegisteredModuleGuard.IsManagedByCodeAsync(_catalogRepository, page.ModuleCode, ct))
+        {
+            return Response<Guid>.Fail(ModuleCatalogErrorCodes.ModuleManagedByCode, 409);
         }
 
         var actionCode = ModulePageDescriptorNormalizer.NormalizePageCode(request.Request.ActionCode);

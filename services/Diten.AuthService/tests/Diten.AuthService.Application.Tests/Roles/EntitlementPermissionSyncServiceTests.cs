@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Diten.AuthService.Application.Tests.Roles;
 
@@ -138,7 +139,180 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.Empty(rolePerms.Rows);
     }
 
+    // ── FIX-2: reconcile against the full entitled set ──
+
+    [Fact]
+    public async Task SyncTenantModules_grants_entitled_and_revokes_stale_module_grants_preserving_system_and_manual()
+    {
+        var catalog = new List<Permission>
+        {
+            new("mdm", "legal-entities", "read", "", null),
+            new("goldenslim", "records", "read", "", null),
+            new("goldenslim", "records", "create", "", null)
+        };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var adminId = roles.IdOf(TenantA, "Admin");
+        var mdmRead = catalog.Single(p => p.Key == "mdm.legal-entities.read").Id;
+        var gsRead = catalog.Single(p => p.Key == "goldenslim.records.read").Id;
+
+        // Prior state: mdm Module-granted (will become stale), plus a System + Manual grant that must survive.
+        await svc.GrantModuleAsync(TenantA, "mdm", Actor, CancellationToken.None);
+        rolePerms.Seed(RolePermission.SystemGrant(adminId, mdmRead, TenantA, "system"));
+        rolePerms.Seed(RolePermission.ManualGrant(adminId, gsRead, TenantA, "operator"));
+
+        // Reconcile to entitled = { goldenslim }: grants goldenslim, revokes the stale mdm Module-grants.
+        await svc.SyncTenantModulesAsync(TenantA, new[] { "goldenslim" }, Actor, CancellationToken.None);
+
+        var admin = rolePerms.Rows.Where(rp => rp.RoleId == adminId).ToList();
+        Assert.Contains(admin, rp => rp.GrantSource == GrantSource.Module && rp.SourceModuleCode == "goldenslim");
+        Assert.DoesNotContain(admin, rp => rp.GrantSource == GrantSource.Module && rp.SourceModuleCode == "mdm");
+        Assert.Contains(admin, rp => rp.GrantSource == GrantSource.System);
+        Assert.Contains(admin, rp => rp.GrantSource == GrantSource.Manual);
+    }
+
+    [Fact]
+    public async Task SyncTenantModules_grants_platform_hosted_workflow_via_allow_list_but_not_platform_admin()
+    {
+        var catalog = new List<Permission>
+        {
+            new("platform", "workflow.definitions", "view", "", null),
+            new("platform", "workflow.tasks", "approve", "", null),
+            new("platform", "tenants", "read", "", null) // platform-admin umbrella → must stay blocked
+        };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var adminId = roles.IdOf(TenantA, "Admin");
+
+        await svc.SyncTenantModulesAsync(TenantA, new[] { "workflow" }, Actor, CancellationToken.None);
+
+        var keys = rolePerms.KeysFor(adminId, catalog).ToList();
+        Assert.Contains("platform.workflow.definitions.view", keys);
+        Assert.Contains("platform.workflow.tasks.approve", keys);
+        Assert.DoesNotContain("platform.tenants.read", keys); // escalation boundary preserved
+        Assert.All(rolePerms.Rows, rp => Assert.Equal(GrantSource.Module, rp.GrantSource));
+        Assert.All(rolePerms.Rows, rp => Assert.Equal("workflow", rp.SourceModuleCode));
+    }
+
+    // FIX-2b — a module permission that overlaps an existing System (baseline) grant must NOT cause a duplicate
+    // insert (E11000) that aborts the whole sync; later modules (workflow) must still be granted. Idempotent re-run.
+    [Fact]
+    public async Task SyncTenantModules_with_baseline_overlap_does_not_throw_and_still_grants_other_modules()
+    {
+        var catalog = new List<Permission>
+        {
+            new("goldenslim", "records", "read", "", null),
+            new("goldenslim", "records", "create", "", null),
+            new("platform", "workflow.definitions", "view", "", null)
+        };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        rolePerms.EnforceUniqueIndex = true; // behave like the real unique index
+        var adminId = roles.IdOf(TenantA, "Admin");
+        var gsRead = catalog.Single(p => p.Key == "goldenslim.records.read").Id;
+
+        // The role already holds goldenslim.records.read as a System (baseline) grant — the overlap that the old
+        // GrantSource-filtered check missed.
+        rolePerms.Seed(RolePermission.SystemGrant(adminId, gsRead, TenantA, "system"));
+
+        // Must not throw, and workflow must be granted despite the goldenslim overlap.
+        await svc.SyncTenantModulesAsync(TenantA, new[] { "goldenslim", "workflow" }, Actor, CancellationToken.None);
+
+        var adminKeys = rolePerms.KeysFor(adminId, catalog).ToList();
+        Assert.Contains("goldenslim.records.read", adminKeys);                 // still effective (System grant kept)
+        Assert.Contains("goldenslim.records.create", adminKeys);              // new Module grant
+        Assert.Contains("platform.workflow.definitions.view", adminKeys);    // proves the sync did NOT abort
+        // The overlapping permission keeps exactly one row (the System baseline) — never duplicated.
+        Assert.Single(rolePerms.Rows.Where(rp => rp.RoleId == adminId && rp.PermissionId == gsRead));
+        Assert.Equal(GrantSource.System,
+            rolePerms.Rows.Single(rp => rp.RoleId == adminId && rp.PermissionId == gsRead).GrantSource);
+
+        // Idempotent: a second reconcile adds nothing and still does not throw.
+        var before = rolePerms.Rows.Count;
+        await svc.SyncTenantModulesAsync(TenantA, new[] { "goldenslim", "workflow" }, Actor, CancellationToken.None);
+        Assert.Equal(before, rolePerms.Rows.Count);
+    }
+
+    // ── FIX-3: catalog-key-driven sync (namespace-agnostic) ──
+
+    // The organization regression: its permissions live across THREE platform.* resource roots, which the
+    // Module==ModuleCode convention (and the platform.* escalation boundary) can never resolve. Driving the grant
+    // by the module's DECLARED catalog keys grants them anyway — Admin full, Viewer read-only, tagged to the module.
+    [Fact]
+    public async Task SyncTenantModulesWithKeys_grants_declared_keys_across_platform_namespaces()
+    {
+        var catalog = new List<Permission>
+        {
+            new("platform", "organization-units", "read", "", null),
+            new("platform", "organization-units", "create", "", null),
+            new("platform", "positions", "read", "", null),
+            new("platform", "tenants", "read", "", null) // NOT declared by the module → must stay blocked
+        };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var adminId = roles.IdOf(TenantA, "Admin");
+        var viewerId = roles.IdOf(TenantA, "Viewer");
+
+        var modules = new[]
+        {
+            new EntitledModulePermissionKeys("ORGANIZATION", new[]
+            {
+                "platform.organization-units.read",
+                "platform.organization-units.create",
+                "platform.positions.read"
+            })
+        };
+
+        await svc.SyncTenantModulesWithKeysAsync(TenantA, modules, Actor, CancellationToken.None);
+
+        var adminKeys = rolePerms.KeysFor(adminId, catalog).ToList();
+        Assert.Contains("platform.organization-units.read", adminKeys);
+        Assert.Contains("platform.organization-units.create", adminKeys);
+        Assert.Contains("platform.positions.read", adminKeys);
+        Assert.DoesNotContain("platform.tenants.read", adminKeys); // undeclared key never leaks in
+
+        // Viewer gets only the read-action declared keys.
+        var viewerKeys = rolePerms.KeysFor(viewerId, catalog).OrderBy(k => k).ToList();
+        Assert.Equal(new[] { "platform.organization-units.read", "platform.positions.read" }, viewerKeys);
+
+        // Everything tagged as a Module grant against the normalized module code (revoke-by-source safe).
+        Assert.All(rolePerms.Rows, rp => Assert.Equal(GrantSource.Module, rp.GrantSource));
+        Assert.All(rolePerms.Rows, rp => Assert.Equal("organization", rp.SourceModuleCode));
+    }
+
+    // Regression guard: a module that declares NO keys (empty list — e.g. ships no descriptors, or the catalog
+    // pull failed) must fall back to the convention + allow-list resolver, so workflow / goldenslim still grant.
+    [Fact]
+    public async Task SyncTenantModulesWithKeys_empty_keys_falls_back_to_convention()
+    {
+        var catalog = new List<Permission>
+        {
+            new("goldenslim", "records", "read", "", null),
+            new("platform", "workflow.definitions", "view", "", null),
+            new("platform", "tenants", "read", "", null) // platform-admin umbrella → stays blocked
+        };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var adminId = roles.IdOf(TenantA, "Admin");
+
+        var modules = new[]
+        {
+            new EntitledModulePermissionKeys("goldenslim", Array.Empty<string>()),
+            new EntitledModulePermissionKeys("workflow", Array.Empty<string>())
+        };
+
+        await svc.SyncTenantModulesWithKeysAsync(TenantA, modules, Actor, CancellationToken.None);
+
+        var adminKeys = rolePerms.KeysFor(adminId, catalog).ToList();
+        Assert.Contains("goldenslim.records.read", adminKeys);                // convention
+        Assert.Contains("platform.workflow.definitions.view", adminKeys);    // allow-list
+        Assert.DoesNotContain("platform.tenants.read", adminKeys);           // escalation boundary preserved
+    }
+
     // ── harness ──
+
+    private static (EntitlementPermissionSyncService svc, FakeRoleRepository roles, FakeRolePermissionRepository rolePerms) BuildWith(List<Permission> catalog)
+    {
+        var roles = new FakeRoleRepository(TenantA, TenantB);
+        var rolePerms = new FakeRolePermissionRepository();
+        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, NullLogger<EntitlementPermissionSyncService>.Instance);
+        return (svc, roles, rolePerms);
+    }
 
     private static readonly List<Permission> SharedCatalog = Catalog();
     private static Guid CatalogPermissionId(string key) => SharedCatalog.Single(p => p.Key == key).Id;
@@ -148,7 +322,7 @@ public sealed class EntitlementPermissionSyncServiceTests
         var catalog = SharedCatalog;
         var roles = new FakeRoleRepository(TenantA, TenantB);
         var rolePerms = new FakeRolePermissionRepository();
-        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms);
+        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, NullLogger<EntitlementPermissionSyncService>.Instance);
         return (svc, roles, rolePerms, catalog);
     }
 
@@ -197,6 +371,10 @@ public sealed class EntitlementPermissionSyncServiceTests
     {
         public List<RolePermission> Rows { get; } = [];
 
+        // Opt-in mirror of the Mongo unique index (RoleId, PermissionId, TenantId): when on, AssignAsync throws
+        // on a duplicate exactly like a real E11000. Off by default so unrelated tests are unaffected.
+        public bool EnforceUniqueIndex { get; set; }
+
         public void Seed(RolePermission rp) => Rows.Add(rp);
 
         public IEnumerable<string> KeysFor(Guid roleId, List<Permission> catalog) =>
@@ -204,6 +382,15 @@ public sealed class EntitlementPermissionSyncServiceTests
 
         public Task AssignAsync(RolePermission rolePermission, CancellationToken ct)
         {
+            if (EnforceUniqueIndex && Rows.Any(rp =>
+                    rp.RoleId == rolePermission.RoleId
+                    && rp.PermissionId == rolePermission.PermissionId
+                    && rp.TenantId == rolePermission.TenantId
+                    && !rp.IsDeleted))
+            {
+                throw new InvalidOperationException("E11000 duplicate key (RoleId, PermissionId, TenantId).");
+            }
+
             Rows.Add(rolePermission);
             return Task.CompletedTask;
         }

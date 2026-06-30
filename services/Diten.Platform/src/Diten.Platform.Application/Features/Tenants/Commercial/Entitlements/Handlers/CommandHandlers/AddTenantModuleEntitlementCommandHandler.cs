@@ -46,7 +46,6 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
             _repository,
             request.TenantId,
             moduleCode,
-            request.Request.Source,
             null,
             ct);
         if (!duplicate.IsValid)

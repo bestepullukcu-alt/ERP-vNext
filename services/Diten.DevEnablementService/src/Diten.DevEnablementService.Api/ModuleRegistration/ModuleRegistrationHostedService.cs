@@ -15,18 +15,18 @@ public sealed class ModuleRegistrationHostedService : BackgroundService
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
     private const int MaxAttempts = 5;
 
-    private readonly IModuleManifestProvider _manifestProvider;
+    private readonly IEnumerable<IModuleManifestProvider> _manifestProviders;
     private readonly PlatformRegistrationOptions _options;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ModuleRegistrationHostedService> _logger;
 
     public ModuleRegistrationHostedService(
-        IModuleManifestProvider manifestProvider,
+        IEnumerable<IModuleManifestProvider> manifestProviders,
         IOptions<PlatformRegistrationOptions> options,
         IHttpClientFactory httpClientFactory,
         ILogger<ModuleRegistrationHostedService> logger)
     {
-        _manifestProvider = manifestProvider;
+        _manifestProviders = manifestProviders;
         _options = options.Value;
         _httpClientFactory = httpClientFactory;
         _logger = logger;
@@ -40,27 +40,43 @@ public sealed class ModuleRegistrationHostedService : BackgroundService
             return;
         }
 
-        var manifest = _manifestProvider.GetManifest();
-        try
+        // Push EVERY registered provider as its own manifest (GoldenSlim + GoldenCompact + …). Each is independent
+        // and best-effort: one module's failure (or the shutdown signal) never blocks the others.
+        foreach (var provider in _manifestProviders)
         {
-            var stopped = await ModuleRegistrationRetry.RunAsync(
-                attempt: (attemptNumber, ct) => TryRegisterAsync(manifest, attemptNumber, ct),
-                maxAttempts: MaxAttempts,
-                backoff: attemptNumber => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber)), // 2s, 4s, 8s, 16s
-                delay: Task.Delay,
-                stoppingToken);
-
-            if (!stopped)
+            if (stoppingToken.IsCancellationRequested)
             {
-                _logger.LogWarning(
-                    "Module self-registration gave up after {MaxAttempts} attempts (Platform unreachable?). ModuleCode={ModuleCode}",
-                    MaxAttempts,
-                    manifest.ModuleCode);
+                break;
             }
-        }
-        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-        {
-            // Service shutting down — fine.
+
+            var manifest = provider.GetManifest();
+            try
+            {
+                var stopped = await ModuleRegistrationRetry.RunAsync(
+                    attempt: (attemptNumber, ct) => TryRegisterAsync(manifest, attemptNumber, ct),
+                    maxAttempts: MaxAttempts,
+                    backoff: attemptNumber => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber)), // 2s, 4s, 8s, 16s
+                    delay: Task.Delay,
+                    stoppingToken);
+
+                if (!stopped)
+                {
+                    _logger.LogWarning(
+                        "Module self-registration gave up after {MaxAttempts} attempts (Platform unreachable?). ModuleCode={ModuleCode}",
+                        MaxAttempts,
+                        manifest.ModuleCode);
+                }
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                // Service shutting down — fine.
+                break;
+            }
+            catch (Exception ex)
+            {
+                // Best-effort: one module's failure must not block the others or startup.
+                _logger.LogError(ex, "Self-registration failed for module {ModuleCode}.", manifest.ModuleCode);
+            }
         }
     }
 

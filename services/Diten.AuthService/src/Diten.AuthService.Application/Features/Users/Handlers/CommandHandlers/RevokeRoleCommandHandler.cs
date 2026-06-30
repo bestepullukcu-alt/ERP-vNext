@@ -11,6 +11,7 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
     private readonly IRoleRepository _roleRepository;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<RevokeRoleCommandHandler> _logger;
 
@@ -18,12 +19,14 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
         IRoleRepository roleRepository,
         IUserRoleRepository userRoleRepository,
         IRefreshTokenRepository refreshTokenRepository,
+        IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
         ILogger<RevokeRoleCommandHandler> logger)
     {
         _roleRepository = roleRepository;
         _userRoleRepository = userRoleRepository;
         _refreshTokenRepository = refreshTokenRepository;
+        _versionService = versionService;
         _tenantContext = tenantContext;
         _logger = logger;
     }
@@ -35,6 +38,9 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
             return Response<NoContent>.Fail("Cannot remove users from system roles.", 403);
 
         await _userRoleRepository.RevokeAsync(request.UserId, request.RoleId, _tenantContext.TenantId, ct);
+
+        // FU13 — bump the tenant role-assignment version so cached authorization snapshots are invalidated at once.
+        await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
 
         // AG-STEP-010 / MOD-0018-FU13 Group B (OD-FU13-01): removing a role narrows the user's effective permissions,
         // so close the refresh path immediately — a still-valid refresh token must not re-mint an access token that

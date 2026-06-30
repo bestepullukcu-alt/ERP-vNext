@@ -11,6 +11,8 @@
         "Active" => "bg-label-success",
         "Inactive" => "bg-label-warning",
         "Deprecated" => "bg-label-danger",
+        "Beta" => "bg-label-info",
+        "Preview" => "bg-label-primary",
         _ => "bg-label-secondary"
     };
     var statusText = Model.Status switch
@@ -19,8 +21,11 @@
         "Active" => Localizer["StatusActive"].Value,
         "Inactive" => Localizer["StatusInactive"].Value,
         "Deprecated" => Localizer["StatusDeprecated"].Value,
+        "Beta" => Localizer["StatusBeta"].Value,
+        "Preview" => Localizer["StatusPreview"].Value,
         _ => Model.Status
     };
+    var isSelfRegistered = string.Equals(Model.Origin, "SelfRegistered", StringComparison.OrdinalIgnoreCase);
 }
 
 <div class="module-catalog-details">
@@ -241,6 +246,14 @@
                         <small class="text-muted">@Localizer["PagesDescription"]</small>
                     </div>
                 </div>
+                @if (isSelfRegistered)
+                {
+                    <div class="px-3 pt-2">
+                        <small class="text-muted d-inline-flex align-items-center">
+                            <i class="bx bx-lock-alt me-1"></i>@Localizer["SelfRegisteredPagesReadOnly"]
+                        </small>
+                    </div>
+                }
                 <div id="module-pages-skeleton-loader" class="backbone-skeleton p-4">
                     <div class="shimmer skeleton-row skeleton-row-lg"></div>
                     <div class="shimmer skeleton-row"></div>
@@ -252,6 +265,7 @@
                     <table id="dt-module-pages"
                            data-dt-standard="v2"
                            data-module-code="@Model.ModuleCode"
+                           data-readonly="@(isSelfRegistered ? "true" : "false")"
                            class="datatables-module-pages table border-top">
                         <thead>
                             <tr>
@@ -415,16 +429,36 @@
         </div>
 
         <div class="tab-pane fade" id="module-permissions-tab" role="tabpanel">
-            <section class="card backbone-preview-section p-4">
-                <div class="fw-semibold text-heading mb-2">@Localizer["PermissionsTab"]</div>
-                <div class="text-muted">@Localizer["PermissionsPlaceholder"]</div>
+            <section class="card backbone-preview-section" id="module-permissions-root"
+                     data-module-code="@Model.ModuleCode"
+                     data-label-page="@Localizer["PermissionTypePage"]"
+                     data-label-action="@Localizer["PermissionTypeAction"]">
+                <div class="card-header p-3">
+                    <div class="fw-semibold text-heading mb-1">@Localizer["PermissionsTab"]</div>
+                    <div class="text-muted small mb-0">@Localizer["PermissionsTabDescription"]</div>
+                </div>
+                <div id="module-permissions-loading" class="text-muted small d-none p-4">@Localizer["PermissionsLoading"]</div>
+                <div id="module-permissions-error" class="alert alert-warning d-none m-3" role="alert">@Localizer["PermissionsLoadError"]</div>
+                <div id="module-permissions-empty" class="text-muted small d-none p-4">@Localizer["PermissionsNone"]</div>
+                <div class="table-responsive d-none" id="module-permissions-table-wrap">
+                    <table class="table table-sm align-middle mb-0 border-top">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">@Localizer["PermissionKeyColumn"]</th>
+                                <th>@Localizer["PermissionSourceColumn"]</th>
+                                <th class="pe-3">@Localizer["PermissionTypeColumn"]</th>
+                            </tr>
+                        </thead>
+                        <tbody id="module-permissions-tbody"></tbody>
+                    </table>
+                </div>
             </section>
         </div>
     </div>
 </div>
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="modulePageOffcanvas" aria-labelledby="modulePageOffcanvasTitle">
-    <div class="offcanvas-header py-6">
+    <div class="offcanvas-header p-4">
         <div class="d-flex align-items-center gap-2">
             <h5 class="offcanvas-title mb-0" id="modulePageOffcanvasTitle">@Localizer["AddPage"]</h5>
             <div id="modulePageRequiredTrackerHost"></div>
@@ -432,9 +466,8 @@
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
 
-    <div class="offcanvas-body border-top">
+    <div class="offcanvas-body border-top p-4">
         <form id="modulePageForm"
-              class="pt-0"
               data-required-tracker-target="#modulePageRequiredTrackerHost"
               data-required-tracker-wrapper-class="d-flex align-items-center"
               data-required-tracker-badge-class="badge bg-label-danger px-2 py-1 d-inline-flex align-items-center"
@@ -488,6 +521,8 @@
                         <option value="Active">@Localizer["StatusActive"]</option>
                         <option value="Inactive">@Localizer["StatusInactive"]</option>
                         <option value="Deprecated">@Localizer["StatusDeprecated"]</option>
+                        <option value="Beta">@Localizer["StatusBeta"]</option>
+                        <option value="Preview">@Localizer["StatusPreview"]</option>
                     </select>
                 </div>
                 <div class="col-12">
@@ -520,4 +555,5 @@
     <script src="~/assets/js/Platform/ModuleCatalog/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Platform/ModuleCatalog/module-pages.js" asp-append-version="true"></script>
     <script src="~/assets/js/Platform/ModuleCatalog/module-assignments.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ModuleCatalog/module-permissions.js" asp-append-version="true"></script>
 }

@@ -163,11 +163,11 @@ public sealed class PlatformLookupProviderTests
 
         Assert.NotNull(options);
         // An operator-managed domain that is NOT a ModuleCatalogDomain enum member proves DB sourcing.
-        Assert.Contains(options!, option => option.Code == "CUSTOMDOMAIN" && option.Value == "Custom Domain");
-        // Inactive excluded; value == displayName (form contract preserved); group stable.
+        Assert.Contains(options!, option => option.Code == "CUSTOMDOMAIN" && option.Value == "CUSTOMDOMAIN");
+        // Inactive excluded; FIX-DOMAIN-SERVICE-CANONICAL — value == Code (label stays DisplayName); group stable.
         Assert.DoesNotContain(options!, option => option.Code == "HIDDEN");
         Assert.All(options!, option => Assert.Equal("ModuleCatalogDomain", option.Group));
-        Assert.All(options!, option => Assert.Equal(option.Name, option.Value));
+        Assert.All(options!, option => Assert.Equal(option.Code, option.Value));
         AssertCanonicalShape(options!);
     }
 
@@ -187,10 +187,10 @@ public sealed class PlatformLookupProviderTests
 
         Assert.NotNull(options);
         // An operator-managed service that is NOT a ModuleCatalogService enum member proves DB sourcing.
-        Assert.Contains(options!, option => option.Code == "CUSTOMSERVICE" && option.Value == "Custom Service");
+        Assert.Contains(options!, option => option.Code == "CUSTOMSERVICE" && option.Value == "CUSTOMSERVICE");
         Assert.DoesNotContain(options!, option => option.Code == "HIDDEN");
         Assert.All(options!, option => Assert.Equal("ModuleCatalogService", option.Group));
-        Assert.All(options!, option => Assert.Equal(option.Name, option.Value));
+        Assert.All(options!, option => Assert.Equal(option.Code, option.Value));
         AssertCanonicalShape(options!);
     }
 
@@ -200,7 +200,10 @@ public sealed class PlatformLookupProviderTests
         var client = new FakeAuthPermissionModulesClient(
         [
             new AuthPermissionModule("goldenslim", 6),
-            new AuthPermissionModule("Platform", 14) // mixed case preserved exactly
+            new AuthPermissionModule("Ppm", 14), // non-umbrella, mixed case preserved exactly
+            new AuthPermissionModule("auth", 30),     // MC-3a: bare umbrella → filtered out
+            new AuthPermissionModule("Platform", 14), // MC-3a: bare umbrella (any case) → filtered out
+            new AuthPermissionModule("mdm", 12)       // MC-3a: bare umbrella → filtered out
         ]);
         var provider = CreateProvider(authPermissionModulesClient: client);
 
@@ -215,7 +218,11 @@ public sealed class PlatformLookupProviderTests
             Assert.Equal("PermissionModule", option.Group);
         });
         Assert.Contains(options!, option => option.Code == "goldenslim" && option.Value == "goldenslim");
-        Assert.Contains(options!, option => option.Code == "Platform" && option.Value == "Platform");
+        Assert.Contains(options!, option => option.Code == "Ppm" && option.Value == "Ppm");
+        // MC-3a: pure-infra/non-assignable umbrella namespaces never appear in the Module Code picker.
+        Assert.DoesNotContain(options!, option => string.Equals(option.Code, "auth", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(options!, option => string.Equals(option.Code, "platform", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(options!, option => string.Equals(option.Code, "mdm", StringComparison.OrdinalIgnoreCase));
         AssertCanonicalShape(options!);
     }
 

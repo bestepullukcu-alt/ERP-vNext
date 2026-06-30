@@ -11,20 +11,33 @@ namespace Diten.Platform.Application.Features.ModuleCatalog.Handlers.CommandHand
 public sealed class CreateModuleCatalogItemCommandHandler : IRequestHandler<CreateModuleCatalogItemCommand, Response<Guid>>
 {
     private readonly IModuleCatalogRepository _repository;
+    private readonly Services.IModuleTaxonomyResolver _taxonomyResolver;
 
-    public CreateModuleCatalogItemCommandHandler(IModuleCatalogRepository repository)
+    public CreateModuleCatalogItemCommandHandler(
+        IModuleCatalogRepository repository,
+        Services.IModuleTaxonomyResolver taxonomyResolver)
     {
         _repository = repository;
+        _taxonomyResolver = taxonomyResolver;
     }
 
     public async Task<Response<Guid>> Handle(CreateModuleCatalogItemCommand request, CancellationToken ct)
     {
         var canonicalCode = ModuleCatalogCodeNormalizer.Normalize(request.Request.ModuleCode);
-        // ExistsByCodeAsync yalnız canlı (IsDeleted=false) kayıtlara bakar; silinen kod tekrar create edilebilsin diye böyledir.
-        if (await _repository.ExistsByCodeAsync(canonicalCode, null, ct))
+        // GetByCodeAsync yalnız canlı (IsDeleted=false) kayıtlara bakar; silinen kod tekrar create edilebilsin diye böyledir.
+        var existing = await _repository.GetByCodeAsync(canonicalCode, ct);
+        if (existing is not null)
         {
-            return Response<Guid>.Fail(ModuleCatalogErrorCodes.ModuleCodeInUse, 409);
+            // MC-4 — a self-registered (code-owned) module cannot be re-created manually; surface a distinct reason.
+            return existing.Origin == ModuleCatalogOrigin.SelfRegistered
+                ? Response<Guid>.Fail(ModuleCatalogErrorCodes.ModuleManagedByCode, 409)
+                : Response<Guid>.Fail(ModuleCatalogErrorCodes.ModuleCodeInUse, 409);
         }
+
+        // FIX-DOMAIN-SERVICE-CANONICAL — defensive: even though the form now submits lookup Codes, resolve again so a
+        // free-typed DisplayName/enum-name can never be persisted as the Domain/Service.
+        var domain = await _taxonomyResolver.ResolveDomainCodeAsync(request.Request.Domain, ct);
+        var service = await _taxonomyResolver.ResolveServiceCodeAsync(request.Request.Service, ct);
 
         var item = new ModuleCatalogItem
         {
@@ -32,13 +45,14 @@ public sealed class CreateModuleCatalogItemCommandHandler : IRequestHandler<Crea
             ModuleName = request.Request.ModuleName.Trim(),
             DisplayName = request.Request.DisplayName.Trim(),
             Description = string.IsNullOrWhiteSpace(request.Request.Description) ? null : request.Request.Description.Trim(),
-            Domain = request.Request.Domain.Trim(),
-            Service = request.Request.Service.Trim(),
+            Domain = domain,
+            Service = service,
             Status = Enum.Parse<ModuleCatalogStatus>(request.Request.Status, ignoreCase: false),
             ModuleVersion = request.Request.ModuleVersion.Trim(),
             IsCoreModule = request.Request.IsCoreModule,
             IsTenantAssignable = request.Request.IsTenantAssignable,
-            SortOrder = request.Request.SortOrder ?? 0
+            SortOrder = request.Request.SortOrder ?? 0,
+            Origin = ModuleCatalogOrigin.Manual // MC-4 — operator-added
         };
 
         try

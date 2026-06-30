@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants;
 using Diten.Platform.Application.Features.Tenants.Commands;
 using Diten.Platform.Application.Features.Tenants.Handlers;
@@ -22,6 +23,8 @@ public sealed class TenantHandlersTests
     private readonly Mock<ITenantDefaultsProvider> _defaults;
     private readonly Mock<ICurrentUserContext> _currentUser;
     private readonly Mock<IEventBus> _eventBus;
+    private readonly Mock<IQuotaService> _quotaService;
+    private readonly Mock<ITenantActivationNotifier> _tenantActivationNotifier;
     private readonly Mock<ILogger<RegisterTenantCommandHandler>> _logger;
     private readonly RegisterTenantCommandHandler _handler;
 
@@ -41,8 +44,10 @@ public sealed class TenantHandlersTests
                 createdTenant = t;
                 return t;
             });
+        // Mirror Mongo: each read returns a FRESH copy, so post-create updates (subscription snapshot /
+        // provisioning finalize) never mutate the instance CreateAsync captured for the It.Is<> verifies.
         _repository.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid id, CancellationToken _) => createdTenant?.Id == id ? createdTenant : null);
+            .ReturnsAsync((Guid id, CancellationToken _) => createdTenant?.Id == id ? CloneForRead(createdTenant) : null);
 
         _domainRepository = new Mock<ITenantDomainRepository>();
         _domainRepository.Setup(x => x.GetByDomainNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -92,6 +97,13 @@ public sealed class TenantHandlersTests
         _eventBus = new Mock<IEventBus>();
         SetupPublish<TenantCreatedV1>(_eventBus);
 
+        // FIX-ONBOARDING — current subscription is read back during the auto-provisioning finalize.
+        _tenantSubscriptionRepository.Setup(x => x.GetCurrentByTenantIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid tenantId, CancellationToken _) => new TenantSubscription { TenantId = tenantId, PlanId = Guid.NewGuid() });
+
+        _quotaService = new Mock<IQuotaService>();
+        _tenantActivationNotifier = new Mock<ITenantActivationNotifier>();
+
         _logger = new Mock<ILogger<RegisterTenantCommandHandler>>();
 
         _handler = new RegisterTenantCommandHandler(
@@ -103,6 +115,8 @@ public sealed class TenantHandlersTests
             _defaults.Object,
             _currentUser.Object,
             _eventBus.Object,
+            _quotaService.Object,
+            _tenantActivationNotifier.Object,
             _logger.Object);
     }
 
@@ -121,6 +135,38 @@ public sealed class TenantHandlersTests
             t.ProvisioningSteps.Count >= 3 &&
             t.ActivityTimeline.Any(a => a.EventType == "tenant.created") &&
             t.ActivityTimeline.Any(a => a.EventType == "tenant.provisioning.started")), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RegisterTenant_ShouldAutoCompleteProvisioning_SeedQuotasAndNotifyAuthService()
+    {
+        var result = await _handler.Handle(
+            CreateCommand("Acme Onboard", "diten.tech", "acme-onboard"),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        // Quota usages seeded from the plan (no QUOTA_USAGE_NOT_FOUND later).
+        _quotaService.Verify(x => x.InitializeTenantQuotasAsync(
+            result.Data, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+        // AuthService told the tenant is active → it provisions roles + syncs entitled-module permissions (FIX-2).
+        _tenantActivationNotifier.Verify(x => x.NotifyActivatedAsync(result.Data, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RegisterTenant_ProvisioningFinalizeFailure_DoesNotFailTenantCreation()
+    {
+        _quotaService.Setup(x => x.InitializeTenantQuotasAsync(
+                It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("quota backend down"));
+
+        var result = await _handler.Handle(
+            CreateCommand("Acme Resilient", "diten.tech", "acme-resilient"),
+            CancellationToken.None);
+
+        // Best-effort: a finalize failure must not fail tenant creation.
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(201, result.StatusCode);
     }
 
     [Fact]
@@ -314,6 +360,36 @@ public sealed class TenantHandlersTests
         Assert.False(result.IsSuccessful);
         Assert.Equal(400, result.StatusCode);
     }
+
+    // Fresh read copy (like a Mongo deserialize): copies the fields the register/finalize paths touch and gives
+    // fresh mutable collections, so updates to a read copy never bleed into the CreateAsync-captured instance.
+    private static Tenant CloneForRead(Tenant t) => new()
+    {
+        Id = t.Id,
+        Code = t.Code,
+        Slug = t.Slug,
+        Name = t.Name,
+        DisplayName = t.DisplayName,
+        Domain = t.Domain,
+        Status = t.Status,
+        ProvisioningStatus = t.ProvisioningStatus,
+        ProvisionedAt = t.ProvisionedAt,
+        ActivatedAt = t.ActivatedAt,
+        PlanId = t.PlanId,
+        PlanCode = t.PlanCode,
+        PlanName = t.PlanName,
+        SubscriptionStatus = t.SubscriptionStatus,
+        TrialStartDateUtc = t.TrialStartDateUtc,
+        TrialEndDateUtc = t.TrialEndDateUtc,
+        ProvisioningSteps = t.ProvisioningSteps.Select(s => new TenantProvisioningStep
+        {
+            Key = s.Key, Label = s.Label, Status = s.Status, CreatedAt = s.CreatedAt, CompletedAt = s.CompletedAt, Detail = s.Detail
+        }).ToList(),
+        ActivityTimeline = t.ActivityTimeline.Select(a => new TenantActivityEvent
+        {
+            EventType = a.EventType, Message = a.Message, Actor = a.Actor, At = a.At
+        }).ToList()
+    };
 
     private static RegisterTenantCommand CreateCommand(string name, string domain, string? subdomain = null, string? Slug = null) =>
         new(
