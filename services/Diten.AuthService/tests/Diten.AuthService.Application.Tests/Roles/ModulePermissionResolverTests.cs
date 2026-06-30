@@ -43,6 +43,31 @@ public sealed class ModulePermissionResolverTests
         Assert.Empty(ModulePermissionResolver.ResolvePermissions("DOES-NOT-EXIST", Catalog()));
     }
 
+    // FIX-2 — curated allow-list: workflow is a tenant-scoped, platform-HOSTED module, so its
+    // platform.workflow.* permissions resolve even though the broad platform.* exclusion blocks the rest.
+    [Fact]
+    public void Platform_hosted_workflow_resolves_its_namespace_but_not_the_platform_admin_umbrella()
+    {
+        var catalog = new List<Permission>
+        {
+            new("platform", "workflow.definitions", "view", "View Workflow", null),
+            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", null),
+            new("platform", "tenants", "read", "Read Tenant", null) // platform-admin → must stay excluded
+        };
+
+        var keys = ModulePermissionResolver.ResolvePermissions("workflow", catalog).Select(p => p.Key).ToList();
+
+        Assert.Contains("platform.workflow.definitions.view", keys);
+        Assert.Contains("platform.workflow.tasks.approve", keys);
+        Assert.DoesNotContain("platform.tenants.read", keys);
+    }
+
+    [Fact]
+    public void Workflow_is_in_the_platform_hosted_allow_list()
+    {
+        Assert.Contains("workflow", ModulePermissionResolver.PlatformHostedTenantModules);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]

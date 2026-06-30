@@ -11,15 +11,18 @@ namespace Diten.AuthService.Application.Features.Roles.Handlers.CommandHandlers;
 public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, Response<RoleDto>>
 {
     private readonly IRoleRepository _roleRepository;
+    private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<CreateRoleCommandHandler> _logger;
 
     public CreateRoleCommandHandler(
         IRoleRepository roleRepository,
+        IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
         ILogger<CreateRoleCommandHandler> logger)
     {
         _roleRepository = roleRepository;
+        _versionService = versionService;
         _tenantContext = tenantContext;
         _logger = logger;
     }
@@ -31,6 +34,9 @@ public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand
 
         var role = new Role(request.Name, request.DisplayName, request.Description, _tenantContext.TenantId);
         var created = await _roleRepository.CreateAsync(role, ct);
+
+        // FU13 — a role mutation changes the tenant's authorization surface; bump to invalidate cached snapshots.
+        await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
 
         return Response<RoleDto>.Success(new RoleDto(created.Id, created.Name, created.DisplayName, created.Description, created.IsSystem, 0), 201);
     }

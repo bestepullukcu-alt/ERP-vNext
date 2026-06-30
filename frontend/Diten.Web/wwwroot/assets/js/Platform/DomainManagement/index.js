@@ -3,6 +3,8 @@
 const DomainManagementList = (function () {
     let dt;
     let editingId = null;
+    // FIX-DS1 — auto-slug Code from Display Name until the user manually edits Code (then user wins).
+    let codeManuallyEdited = false;
     let L = window.L10n || {};
     const dtTableEl = document.querySelector('.datatables-domain-management');
     const endpoint = '/Platform/DomainManagement/api';
@@ -291,6 +293,7 @@ const DomainManagementList = (function () {
         document.getElementById('domainSortOrder').value = '0';
         document.getElementById('domainIsActive').checked = true;
         document.getElementById('domainCodePreview')?.classList.add('d-none');
+        codeManuallyEdited = false; // fresh form → resume auto-deriving Code from Display Name
         clearFormErrors();
     };
 
@@ -402,7 +405,17 @@ const DomainManagementList = (function () {
         });
         document.getElementById('btnSaveDomain')?.addEventListener('click', submitForm);
         document.getElementById('domainCode')?.addEventListener('input', function () {
+            // The user touched Code → stop auto-deriving it from Display Name (user keeps control).
+            codeManuallyEdited = true;
             this.value = this.value.toUpperCase();
+            updateCodePreview();
+        });
+        // CREATE mode only: mirror Display Name → Code until the user edits Code. Never in EDIT (keep existing Code).
+        document.getElementById('domainDisplayName')?.addEventListener('input', function () {
+            if (editingId || codeManuallyEdited) return;
+            const codeEl = document.getElementById('domainCode');
+            if (!codeEl) return;
+            codeEl.value = normalizeCode(this.value);
             updateCodePreview();
         });
     };

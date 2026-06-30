@@ -23,15 +23,18 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly IEntitlementPermissionSyncService _sync;
+    private readonly ITenantEntitlementClient _entitlementClient;
     private readonly IIntegrationEventInboxRepository _inbox;
     private readonly ILogger<EntitlementSyncConsumer> _logger;
 
     public EntitlementSyncConsumer(
         IEntitlementPermissionSyncService sync,
+        ITenantEntitlementClient entitlementClient,
         IIntegrationEventInboxRepository inbox,
         ILogger<EntitlementSyncConsumer> logger)
     {
         _sync = sync;
+        _entitlementClient = entitlementClient;
         _inbox = inbox;
         _logger = logger;
     }
@@ -47,6 +50,9 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
             TenantEntitlementAddedV1.Name => EntitlementOperation.Grant,
             TenantEntitlementEnabledV1.Name => EntitlementOperation.Grant,
             TenantEntitlementDisabledV1.Name => EntitlementOperation.Revoke,
+            // FIX-2 — a plan/subscription change re-points the tenant's virtual (plan-derived) entitlement set,
+            // which emits no per-module events. Pull the authoritative set and reconcile Module-grants.
+            TenantSubscriptionChangedV1.Name => EntitlementOperation.Reconcile,
             _ => EntitlementOperation.Ignore
         };
 
@@ -65,9 +71,15 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
             ? payload.TenantId
             : message.TenantId ?? Guid.Empty;
 
-        if (tenantId == Guid.Empty || string.IsNullOrWhiteSpace(payload.ModuleCode))
+        if (tenantId == Guid.Empty)
         {
             return; // nothing actionable
+        }
+
+        // Grant/Revoke target one module; Reconcile (subscription change) needs only the tenant.
+        if (operation != EntitlementOperation.Reconcile && string.IsNullOrWhiteSpace(payload.ModuleCode))
+        {
+            return;
         }
 
         // Idempotency — reuse the internal-events inbox; the sync operations are themselves idempotent,
@@ -81,13 +93,30 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
             return;
         }
 
-        if (operation == EntitlementOperation.Grant)
+        switch (operation)
         {
-            await _sync.GrantModuleAsync(tenantId, payload.ModuleCode, Actor, ct);
-        }
-        else
-        {
-            await _sync.RevokeModuleAsync(tenantId, payload.ModuleCode, Actor, ct);
+            case EntitlementOperation.Grant:
+                // FIX-3 — resolve the module's DECLARED catalog permission keys (namespace-agnostic) and grant by
+                // them. Pull the full entitled set and pick this module; if the pull is empty/unreachable, the keys
+                // fall through empty and GrantModuleWithKeysAsync falls back to the convention resolver.
+                var grantModules = await _entitlementClient.GetEntitledModulesWithPermissionKeysAsync(tenantId, ct);
+                var grantKeys = grantModules
+                    .FirstOrDefault(m => string.Equals(m.ModuleCode, payload.ModuleCode, StringComparison.OrdinalIgnoreCase))
+                    ?.PermissionKeys ?? (IReadOnlyList<string>)Array.Empty<string>();
+                await _sync.GrantModuleWithKeysAsync(tenantId, payload.ModuleCode, grantKeys, Actor, ct);
+                break;
+            case EntitlementOperation.Revoke:
+                await _sync.RevokeModuleAsync(tenantId, payload.ModuleCode, Actor, ct);
+                break;
+            case EntitlementOperation.Reconcile:
+                // FIX-3 — catalog-key-driven reconcile. Skip on empty: never strip existing Module-grants on a
+                // transient/unreachable Platform pull.
+                var entitledModules = await _entitlementClient.GetEntitledModulesWithPermissionKeysAsync(tenantId, ct);
+                if (entitledModules.Count > 0)
+                {
+                    await _sync.SyncTenantModulesWithKeysAsync(tenantId, entitledModules, Actor, ct);
+                }
+                break;
         }
 
         _logger.LogInformation(
@@ -115,7 +144,8 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
     {
         Ignore,
         Grant,
-        Revoke
+        Revoke,
+        Reconcile
     }
 
     // Minimal projection of the entitlement events — only the fields the bridge needs.

@@ -53,6 +53,7 @@ public sealed class ModuleCatalogDetailViewModel
     public bool IsCoreModule { get; set; }
     public bool IsTenantAssignable { get; set; }
     public int SortOrder { get; set; }
+    public string Origin { get; set; } = "Manual";
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
 }

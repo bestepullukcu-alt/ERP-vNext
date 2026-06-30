@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Security Settings</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage your organization's login and security policies.</value></data>
+  <data name="LoginMethods" xml:space="preserve"><value>Login Methods</value></data>
+  <data name="TwoFactorEnabled" xml:space="preserve"><value>Two-Factor Authentication</value></data>
+  <data name="MfaRequired" xml:space="preserve"><value>Require MFA</value></data>
+  <data name="EmailLoginEnabled" xml:space="preserve"><value>Email Login</value></data>
+  <data name="PhoneLoginEnabled" xml:space="preserve"><value>Phone Login</value></data>
+  <data name="PasswordPolicy" xml:space="preserve"><value>Password Policy</value></data>
+  <data name="PasswordMinLength" xml:space="preserve"><value>Minimum Length</value></data>
+  <data name="PasswordExpirationDays" xml:space="preserve"><value>Password Expiration (days)</value></data>
+  <data name="PasswordExpirationDaysHint" xml:space="preserve"><value>Leave empty for no expiration.</value></data>
+  <data name="LoginAuditRetentionDays" xml:space="preserve"><value>Login Audit Retention (days)</value></data>
+  <data name="RequireUppercase" xml:space="preserve"><value>Require Uppercase</value></data>
+  <data name="RequireLowercase" xml:space="preserve"><value>Require Lowercase</value></data>
+  <data name="RequireDigit" xml:space="preserve"><value>Require Digit</value></data>
+  <data name="RequireSpecialChar" xml:space="preserve"><value>Require Special Character</value></data>
+  <data name="SessionLockoutPolicy" xml:space="preserve"><value>Session &amp; Lockout</value></data>
+  <data name="SessionTimeoutMinutes" xml:space="preserve"><value>Session Timeout (minutes)</value></data>
+  <data name="RefreshTokenLifetimeDays" xml:space="preserve"><value>Refresh Token Lifetime (days)</value></data>
+  <data name="MaxFailedLoginAttempts" xml:space="preserve"><value>Max Failed Login Attempts</value></data>
+  <data name="LockoutDurationMinutes" xml:space="preserve"><value>Lockout Duration (minutes)</value></data>
+  <data name="AccessRestrictions" xml:space="preserve"><value>Access Restrictions</value></data>
+  <data name="IpWhitelistEnabled" xml:space="preserve"><value>Enable IP Whitelist</value></data>
+  <data name="AllowedIps" xml:space="preserve"><value>Allowed IP Addresses</value></data>
+  <data name="AllowedIpsHint" xml:space="preserve"><value>One IPv4 or IPv6 address per line.</value></data>
+  <data name="AllowedCountries" xml:space="preserve"><value>Allowed Countries</value></data>
+  <data name="AllowedCountriesHint" xml:space="preserve"><value>One ISO alpha-2 country code per line (e.g. TR, US).</value></data>
+  <data name="Saved" xml:space="preserve"><value>Security settings saved.</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>Please correct the highlighted fields.</value></data>
+  <data name="MfaRequires2FA" xml:space="preserve"><value>When MFA is required, two-factor authentication and email login must both be enabled.</value></data>
+  <data name="AtLeastOneLoginMethod" xml:space="preserve"><value>At least one login method (email or phone) must be enabled.</value></data>
+  <data name="IpWhitelistEmpty" xml:space="preserve"><value>Add at least one allowed IP address when the IP whitelist is enabled.</value></data>
+  <data name="InvalidIp" xml:space="preserve"><value>Invalid IP address: </value></data>
+  <data name="InvalidCountry" xml:space="preserve"><value>Invalid country code (use ISO alpha-2): </value></data>
+  <data name="TwoFactorAutoEnabled" xml:space="preserve"><value>Two-factor and email login were enabled automatically for MFA.</value></data>
+  <data name="MfaAutoDisabled" xml:space="preserve"><value>MFA was disabled because two-factor authentication was turned off.</value></data>
+</root>

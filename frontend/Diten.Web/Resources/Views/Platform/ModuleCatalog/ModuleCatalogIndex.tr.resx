@@ -33,6 +33,8 @@
   <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
   <data name="StatusInactive" xml:space="preserve"><value>Pasif</value></data>
   <data name="StatusDeprecated" xml:space="preserve"><value>Kullanımdan Kalkan</value></data>
+  <data name="StatusBeta" xml:space="preserve"><value>Beta</value></data>
+  <data name="StatusPreview" xml:space="preserve"><value>Önizleme</value></data>
   <data name="TotalModules" xml:space="preserve"><value>Toplam Modül</value></data>
   <data name="ActiveModules" xml:space="preserve"><value>Aktif Modüller</value></data>
   <data name="BetaModules" xml:space="preserve"><value>Beta Modüller</value></data>
@@ -56,6 +58,15 @@
   <data name="PagesDescription" xml:space="preserve"><value>Bu modüle ait sayfa, ekran ve rota tanımlarını yönetin.</value></data>
   <data name="AssignmentsPlaceholder" xml:space="preserve"><value>Atamalar ayrı bir onaylı module pack ile yönetilecektir.</value></data>
   <data name="PermissionsPlaceholder" xml:space="preserve"><value>İzin kayıt detayları ayrı bir onaylı module pack ile yönetilecektir.</value></data>
+  <data name="PermissionsTabDescription" xml:space="preserve"><value>Bu modülün sayfa ve aksiyonlarının gerektirdiği tüm izinler.</value></data>
+  <data name="PermissionsLoading" xml:space="preserve"><value>İzinler yükleniyor…</value></data>
+  <data name="PermissionsLoadError" xml:space="preserve"><value>İzinler yüklenemedi.</value></data>
+  <data name="PermissionsNone" xml:space="preserve"><value>Bu modül için tanımlı izin yok.</value></data>
+  <data name="PermissionKeyColumn" xml:space="preserve"><value>İzin Anahtarı</value></data>
+  <data name="PermissionSourceColumn" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="PermissionTypeColumn" xml:space="preserve"><value>Tip</value></data>
+  <data name="PermissionTypePage" xml:space="preserve"><value>Sayfa</value></data>
+  <data name="PermissionTypeAction" xml:space="preserve"><value>Aksiyon</value></data>
   <data name="AddPage" xml:space="preserve"><value>Sayfa Ekle</value></data>
   <data name="EditPage" xml:space="preserve"><value>Sayfa Düzenle</value></data>
   <data name="PageCode" xml:space="preserve"><value>Sayfa Kodu</value></data>
@@ -80,6 +91,10 @@
   <data name="ModulePagesDtInfo" xml:space="preserve"><value>_START_–_END_ / _TOTAL_ kayıt gösteriliyor</value></data>
   <data name="ModulePagesDtInfoEmpty" xml:space="preserve"><value>0 / 0 kayıt gösteriliyor</value></data>
   <data name="ModulePagesDtInfoFiltered" xml:space="preserve"><value></value></data>
+  <data name="ModuleActionsSearchPlaceholder" xml:space="preserve"><value>Aksiyon kodu veya yetki ara</value></data>
+  <data name="ModuleActionsDtInfo" xml:space="preserve"><value>_START_–_END_ / _TOTAL_ kayıt gösteriliyor</value></data>
+  <data name="ModuleActionsDtInfoEmpty" xml:space="preserve"><value>0 / 0 kayıt gösteriliyor</value></data>
+  <data name="ModuleActionsDtInfoFiltered" xml:space="preserve"><value></value></data>
   <data name="PageSaved" xml:space="preserve"><value>Sayfa tanımı kaydedildi.</value></data>
   <data name="Navigation" xml:space="preserve"><value>Navigasyon</value></data>
   <data name="ParentPageCode" xml:space="preserve"><value>Üst Sayfa Kodu</value></data>
@@ -168,4 +183,11 @@
   <data name="ManualDisabled" xml:space="preserve"><value>Manuel Pasif</value></data>
   <data name="TenantSuspended" xml:space="preserve"><value>Tenant Askıda</value></data>
   <data name="DegradedCount" xml:space="preserve"><value>Alınamıyor</value></data>
+  <data name="OriginAuto" xml:space="preserve"><value>Otomatik</value></data>
+  <data name="OriginManual" xml:space="preserve"><value>Elle</value></data>
+  <data name="SelfRegisteredDeleteHint" xml:space="preserve"><value>Koddan kaydedildi; modül manifestinden yönetin</value></data>
+  <data name="ModuleManagedByCode" xml:space="preserve"><value>Bu modül koddan yönetiliyor (otomatik kaydedildi); buradan değiştirilemez.</value></data>
+  <data name="ModuleCodeInvalidSlug" xml:space="preserve"><value>Küçük harf, rakam ve tire kullanın (harfle başlamalı).</value></data>
+  <data name="SelfRegisteredReadOnlyHint" xml:space="preserve"><value>Koddan yönetiliyor (otomatik kaydedildi); modül manifestinden düzenleyin.</value></data>
+  <data name="SelfRegisteredPagesReadOnly" xml:space="preserve"><value>Bu modülün sayfa ve aksiyonları koddan yönetilir ve salt-okunurdur.</value></data>
 </root>

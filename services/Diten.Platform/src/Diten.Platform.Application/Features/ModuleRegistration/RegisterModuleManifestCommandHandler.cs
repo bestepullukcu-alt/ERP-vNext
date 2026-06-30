@@ -16,8 +16,9 @@ namespace Diten.Platform.Application.Features.ModuleRegistration;
 /// Idempotent, BEST-EFFORT reconcile of a pushed module manifest. Ownership model:
 ///   • Catalog item: HARD = ModuleCode (case-insensitive match), ModuleName, ModuleVersion. SOFT (seed-once,
 ///     operator-owned, NEVER overwritten on re-push) = Domain, Service, DisplayName, SortOrder, IsTenantAssignable, Status.
-///   • Pages + Actions: HARD (code-owned) — upserted by natural key. Pages NOT in the manifest are PRESERVED (v1 additive,
-///     no delete) so operator-added pages survive.
+///   • Pages + Actions: HARD (code-owned) — upserted by natural key. AUTHORITATIVE (MC-6): module pages/actions the
+///     manifest no longer declares are SOFT-DELETED (module-scoped, idempotent) so the catalog mirrors code with zero
+///     drift. Permissions in AuthService are NOT deleted (additive; permission removal is separate and riskier).
 ///   • Resilience: a manifest page whose route is already held by a DIFFERENT page in the module is SKIPPED (logged +
 ///     reported), never deleting the holder. Any page/action that still hits a unique-key violation (E11000) is skipped
 ///     too. A partial failure returns 200 + a summary listing the skips — the whole register never 500s.
@@ -30,6 +31,7 @@ public sealed class RegisterModuleManifestCommandHandler
     private readonly IModulePageDescriptorRepository _pageRepository;
     private readonly IModulePageActionDescriptorRepository _actionRepository;
     private readonly ICatalogPermissionSyncService _permissionSyncService;
+    private readonly Features.ModuleCatalog.Services.IModuleTaxonomyResolver _taxonomyResolver;
     private readonly ILogger<RegisterModuleManifestCommandHandler> _logger;
 
     public RegisterModuleManifestCommandHandler(
@@ -37,12 +39,14 @@ public sealed class RegisterModuleManifestCommandHandler
         IModulePageDescriptorRepository pageRepository,
         IModulePageActionDescriptorRepository actionRepository,
         ICatalogPermissionSyncService permissionSyncService,
+        Features.ModuleCatalog.Services.IModuleTaxonomyResolver taxonomyResolver,
         ILogger<RegisterModuleManifestCommandHandler> logger)
     {
         _catalogRepository = catalogRepository;
         _pageRepository = pageRepository;
         _actionRepository = actionRepository;
         _permissionSyncService = permissionSyncService;
+        _taxonomyResolver = taxonomyResolver;
         _logger = logger;
     }
 
@@ -57,12 +61,41 @@ public sealed class RegisterModuleManifestCommandHandler
 
         var catalogAction = await ReconcileCatalogItemAsync(manifest, moduleCode, ct);
 
-        // Mutable so collisions between two manifest pages in the SAME push are detected (newly created pages occupy their route).
-        var existingPages = (await _pageRepository.GetByModuleAsync(moduleCode, ct)).ToList();
         var pagesUpserted = 0;
         var actionsUpserted = 0;
         var permissionsSynced = 0;
+        var pagesPruned = 0;
+        var actionsPruned = 0;
         var pagesSkipped = new List<string>();
+
+        // MC-6 — authoritative prune set: pages the manifest still declares (everything else in the module is orphan).
+        var manifestPageCodes = manifest.Pages
+            .Select(p => ModulePageDescriptorNormalizer.NormalizePageCode(p.PageCode))
+            .ToHashSet(StringComparer.Ordinal);
+
+        // Mutable so collisions between two manifest pages in the SAME push are detected (newly created pages occupy their route).
+        var existingPages = (await _pageRepository.GetByModuleAsync(moduleCode, ct)).ToList();
+
+        // MC-6 — authoritative prune FIRST: soft-delete this module's live pages (and their actions) that the manifest
+        // no longer declares, BEFORE upserting. This frees the routes/codes of moved/renamed descriptors so the new
+        // page upserts cleanly in the same push (a non-manifest orphan never blocks a manifest page). Module-scoped
+        // (GetByModuleAsync is filtered by moduleCode), soft-delete only, idempotent (live query excludes the pruned).
+        foreach (var orphanPage in existingPages.Where(p => !manifestPageCodes.Contains(p.PageCode)).ToList())
+        {
+            foreach (var orphanAction in await _actionRepository.GetByPageAsync(orphanPage.Id, ct))
+            {
+                await _actionRepository.DeleteAsync(orphanAction.Id, ct);
+                actionsPruned++;
+            }
+
+            await _pageRepository.DeleteAsync(orphanPage.Id, ct);
+            pagesPruned++;
+            _logger.LogInformation(
+                "Pruned orphan module page (not in manifest). ModuleCode={ModuleCode} PageCode={PageCode}",
+                moduleCode,
+                orphanPage.PageCode);
+        }
+        existingPages.RemoveAll(p => !manifestPageCodes.Contains(p.PageCode));
 
         foreach (var manifestPage in manifest.Pages)
         {
@@ -108,6 +141,18 @@ public sealed class RegisterModuleManifestCommandHandler
             }
 
             var existingActions = await _actionRepository.GetByPageAsync(page.Id, ct);
+
+            // MC-6 — prune actions on THIS page that the manifest no longer declares (e.g. an action moved to
+            // another page). existingActions was read before the upserts, so newly-created actions are excluded.
+            var manifestActionCodes = manifestPage.Actions
+                .Select(a => ModulePageDescriptorNormalizer.NormalizePageCode(a.ActionCode))
+                .ToHashSet(StringComparer.Ordinal);
+            foreach (var orphanAction in existingActions.Where(a => !manifestActionCodes.Contains(a.ActionCode)))
+            {
+                await _actionRepository.DeleteAsync(orphanAction.Id, ct);
+                actionsPruned++;
+            }
+
             foreach (var manifestAction in manifestPage.Actions)
             {
                 ModulePageActionDescriptor? action;
@@ -131,8 +176,18 @@ public sealed class RegisterModuleManifestCommandHandler
             }
         }
 
+        if (pagesPruned > 0 || actionsPruned > 0)
+        {
+            _logger.LogInformation(
+                "Manifest reconcile pruned orphans. ModuleCode={ModuleCode} PagesPruned={PagesPruned} ActionsPruned={ActionsPruned}",
+                moduleCode,
+                pagesPruned,
+                actionsPruned);
+        }
+
         return Response<ModuleManifestReconcileResult>.Success(
-            new ModuleManifestReconcileResult(moduleCode, catalogAction, pagesUpserted, actionsUpserted, permissionsSynced, pagesSkipped));
+            new ModuleManifestReconcileResult(
+                moduleCode, catalogAction, pagesUpserted, actionsUpserted, permissionsSynced, pagesSkipped, pagesPruned, actionsPruned));
     }
 
     private async Task<string> ReconcileCatalogItemAsync(ModuleManifestDocument manifest, string moduleCode, CancellationToken ct)
@@ -140,18 +195,23 @@ public sealed class RegisterModuleManifestCommandHandler
         var existing = await _catalogRepository.GetByCodeAsync(moduleCode, ct);
         if (existing is null)
         {
-            // First registration: HARD identity + SOFT metadata seeded once from the manifest.
+            // First registration: HARD identity + SOFT metadata seeded once from the manifest. FIX-DOMAIN-SERVICE-
+            // CANONICAL — the manifest carries enum-names (e.g. "PlatformSharedServices"); resolve them to the
+            // canonical lookup Code at seed time so the catalog never stores an enum-name/DisplayName variant.
+            var seededDomain = await _taxonomyResolver.ResolveDomainCodeAsync(manifest.Domain, ct);
+            var seededService = await _taxonomyResolver.ResolveServiceCodeAsync(manifest.Service, ct);
             await _catalogRepository.CreateAsync(new ModuleCatalogItem
             {
                 ModuleCode = moduleCode,
                 ModuleName = manifest.ModuleName.Trim(),
                 DisplayName = manifest.DisplayName.Trim(),
-                Domain = manifest.Domain.Trim(),
-                Service = manifest.Service.Trim(),
+                Domain = seededDomain,
+                Service = seededService,
                 Status = ModuleCatalogStatus.Active,
                 ModuleVersion = string.IsNullOrWhiteSpace(manifest.ModuleVersion) ? "1.0.0" : manifest.ModuleVersion.Trim(),
                 IsTenantAssignable = manifest.IsTenantAssignable,
-                SortOrder = manifest.SortOrder
+                SortOrder = manifest.SortOrder,
+                Origin = ModuleCatalogOrigin.SelfRegistered // MC-4 — code-owned
             }, ct);
             return "created";
         }
@@ -160,6 +220,8 @@ public sealed class RegisterModuleManifestCommandHandler
         // belongs to the operator and is NEVER overwritten here.
         existing.ModuleName = manifest.ModuleName.Trim();
         existing.ModuleVersion = string.IsNullOrWhiteSpace(manifest.ModuleVersion) ? existing.ModuleVersion : manifest.ModuleVersion.Trim();
+        // MC-4 — a manual placeholder that later self-registers flips to code-owned (Manual → SelfRegistered).
+        existing.Origin = ModuleCatalogOrigin.SelfRegistered;
         await _catalogRepository.UpdateAsync(existing, ct);
         return "updated";
     }

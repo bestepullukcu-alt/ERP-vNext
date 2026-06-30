@@ -1,4 +1,5 @@
 using System.Text;
+using Diten.MdmService.Api.ModuleRegistration;
 using Diten.MdmService.Application;
 using Diten.MdmService.Infrastructure;
 using Diten.MdmService.Persistence;
@@ -67,6 +68,13 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Tenant GUID."
     });
 });
+
+// MC-3b-expand (Part B) — self-register the legal-entity module with the Platform catalog at startup (HTTP push,
+// cross-service). Best-effort with retry; never blocks MDM startup if Platform is down.
+builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IModuleManifestProvider, LegalEntityManifestProvider>();
+builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 
 var app = builder.Build();
 

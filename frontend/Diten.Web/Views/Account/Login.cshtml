@@ -5,6 +5,14 @@
     ViewData["Title"] = SharedLocalizer["Login.Title"];
     var authMode = (ViewBag.AuthMode as string ?? "tenant").ToLowerInvariant();
     var defaultRedirect = (ViewBag.PostLoginDefault as string) ?? "/WorkCenter";
+
+    // Tenant branding (pre-auth). Falls back to the platform default when no tenant branding is set.
+    var brandingLogo = ViewBag.BrandingLogoDataUrl as string;
+    var brandingFavicon = ViewBag.BrandingFaviconDataUrl as string;
+    var brandingName = ViewBag.BrandingDisplayName as string;
+    var logoSrc = !string.IsNullOrWhiteSpace(brandingLogo) ? brandingLogo : Url.Content("~/assets/img/branding/platform-logo-light.png");
+    var faviconHref = !string.IsNullOrWhiteSpace(brandingFavicon) ? brandingFavicon : Url.Content("~/assets/img/favicon/favicon.ico");
+    var logoAlt = !string.IsNullOrWhiteSpace(brandingName) ? brandingName : "Di10 Enterprise Solutions";
 }
 
 <!DOCTYPE html>
@@ -14,8 +22,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <title>@ViewData["Title"] - Di10</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="~/assets/img/favicon/favicon.ico" />
+    <!-- Favicon (tenant branding, falls back to platform default) -->
+    <link rel="icon" href="@faviconHref" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -75,7 +83,7 @@
                         <div class="app-brand justify-content-center" style="height: 60px !important; min-height: 60px !important; margin-bottom: 25px;">
                             <a href="/" class="app-brand-link gap-2" style="height: 60px !important;">
                                 <span class="app-brand-logo demo">
-                                    <img src="~/assets/img/branding/platform-logo-light.png" alt="Di10 Enterprise Solutions" style="height:60px;width:auto;" />
+                                    <img src="@logoSrc" alt="@logoAlt" style="height:60px;width:auto;" />
                                 </span>
                             </a>
                         </div>

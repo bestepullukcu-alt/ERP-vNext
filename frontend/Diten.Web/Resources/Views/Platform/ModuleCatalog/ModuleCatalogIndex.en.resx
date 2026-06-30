@@ -33,6 +33,8 @@
   <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
   <data name="StatusInactive" xml:space="preserve"><value>Inactive</value></data>
   <data name="StatusDeprecated" xml:space="preserve"><value>Deprecated</value></data>
+  <data name="StatusBeta" xml:space="preserve"><value>Beta</value></data>
+  <data name="StatusPreview" xml:space="preserve"><value>Preview</value></data>
   <data name="TotalModules" xml:space="preserve"><value>Total Modules</value></data>
   <data name="ActiveModules" xml:space="preserve"><value>Active Modules</value></data>
   <data name="BetaModules" xml:space="preserve"><value>Beta Modules</value></data>
@@ -56,6 +58,15 @@
   <data name="PagesDescription" xml:space="preserve"><value>Manage page, screen and route descriptors owned by this module.</value></data>
   <data name="AssignmentsPlaceholder" xml:space="preserve"><value>Assignments will be managed by a separate approved module pack.</value></data>
   <data name="PermissionsPlaceholder" xml:space="preserve"><value>Permission registry details will be managed by a separate approved module pack.</value></data>
+  <data name="PermissionsTabDescription" xml:space="preserve"><value>All permissions this module's pages and actions require.</value></data>
+  <data name="PermissionsLoading" xml:space="preserve"><value>Loading permissions…</value></data>
+  <data name="PermissionsLoadError" xml:space="preserve"><value>Could not load permissions.</value></data>
+  <data name="PermissionsNone" xml:space="preserve"><value>No permissions declared for this module.</value></data>
+  <data name="PermissionKeyColumn" xml:space="preserve"><value>Permission Key</value></data>
+  <data name="PermissionSourceColumn" xml:space="preserve"><value>Source</value></data>
+  <data name="PermissionTypeColumn" xml:space="preserve"><value>Type</value></data>
+  <data name="PermissionTypePage" xml:space="preserve"><value>Page</value></data>
+  <data name="PermissionTypeAction" xml:space="preserve"><value>Action</value></data>
   <data name="AddPage" xml:space="preserve"><value>Add Page</value></data>
   <data name="EditPage" xml:space="preserve"><value>Edit Page</value></data>
   <data name="PageCode" xml:space="preserve"><value>Page Code</value></data>
@@ -80,6 +91,10 @@
   <data name="ModulePagesDtInfo" xml:space="preserve"><value>Showing _START_–_END_ / _TOTAL_ records</value></data>
   <data name="ModulePagesDtInfoEmpty" xml:space="preserve"><value>Showing 0 / 0 records</value></data>
   <data name="ModulePagesDtInfoFiltered" xml:space="preserve"><value></value></data>
+  <data name="ModuleActionsSearchPlaceholder" xml:space="preserve"><value>Search action code or permission</value></data>
+  <data name="ModuleActionsDtInfo" xml:space="preserve"><value>Showing _START_–_END_ / _TOTAL_ records</value></data>
+  <data name="ModuleActionsDtInfoEmpty" xml:space="preserve"><value>Showing 0 / 0 records</value></data>
+  <data name="ModuleActionsDtInfoFiltered" xml:space="preserve"><value></value></data>
   <data name="PageSaved" xml:space="preserve"><value>Page descriptor saved.</value></data>
   <data name="Navigation" xml:space="preserve"><value>Navigation</value></data>
   <data name="ParentPageCode" xml:space="preserve"><value>Parent Page Code</value></data>
@@ -168,4 +183,11 @@
   <data name="ManualDisabled" xml:space="preserve"><value>Manual Disabled</value></data>
   <data name="TenantSuspended" xml:space="preserve"><value>Tenant Suspended</value></data>
   <data name="DegradedCount" xml:space="preserve"><value>Unavailable</value></data>
+  <data name="OriginAuto" xml:space="preserve"><value>Auto</value></data>
+  <data name="OriginManual" xml:space="preserve"><value>Manual</value></data>
+  <data name="SelfRegisteredDeleteHint" xml:space="preserve"><value>Self-registered; manage via the module manifest</value></data>
+  <data name="ModuleManagedByCode" xml:space="preserve"><value>This module is managed by code (self-registered) and cannot be changed here.</value></data>
+  <data name="ModuleCodeInvalidSlug" xml:space="preserve"><value>Use lowercase letters, digits and hyphens (must start with a letter).</value></data>
+  <data name="SelfRegisteredReadOnlyHint" xml:space="preserve"><value>Managed by code (self-registered); edit via the module manifest.</value></data>
+  <data name="SelfRegisteredPagesReadOnly" xml:space="preserve"><value>This module's pages and actions are code-owned and read-only.</value></data>
 </root>

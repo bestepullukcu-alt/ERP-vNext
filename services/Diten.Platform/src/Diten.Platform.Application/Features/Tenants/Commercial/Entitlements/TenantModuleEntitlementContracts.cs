@@ -17,6 +17,14 @@ public sealed record TenantModuleEntitlementRowDto(
     DateTimeOffset? LastUpdatedAtUtc,
     byte[]? RowVersion);
 
+// FIX-3 — S2S projection for AuthService's catalog-key-driven entitlement → permission sync. For each
+// effectively-Active entitled module, carries the permission keys the module DECLARES in the page/action
+// descriptor catalog (page RequiredPermission ∪ action PermissionKey). PermissionKeys may be empty when a
+// module ships no descriptors yet — the AuthService caller then falls back to its convention resolver.
+public sealed record TenantEntitledModulePermissionsDto(
+    string ModuleCode,
+    IReadOnlyList<string> PermissionKeys);
+
 public sealed record TenantModuleEffectiveAccessDto(
     Guid TenantId,
     string ModuleCode,

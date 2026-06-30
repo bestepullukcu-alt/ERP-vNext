@@ -11,5 +11,5 @@
   <data name="SelectUserPrompt" xml:space="preserve"><value>Rollerini yönetmek için bir kullanıcı seçin.</value></data>
   <data name="NoRoles" xml:space="preserve"><value>Kullanılabilir rol yok.</value></data>
   <data name="Assign" xml:space="preserve"><value>Ata</value></data>
-  <data name="Assigned" xml:space="preserve"><value>Atanmış</value></data>
+  <data name="Assigned" xml:space="preserve"><value>Atandı</value></data>
 </root>

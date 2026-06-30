@@ -36,6 +36,16 @@ public static class ModulePermissionResolver
     public static readonly IReadOnlyDictionary<string, string> ModuleCodeOverrides =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Curated allow-list of tenant-scoped modules HOSTED inside Diten.Platform, whose permissions therefore live
+    /// under the <c>platform.&lt;module&gt;.*</c> namespace (e.g. <c>workflow</c> → <c>platform.workflow.*</c>).
+    /// These are tenant features — NOT the platform-admin umbrella — so an entitled tenant role MAY receive them;
+    /// everything else under <c>platform.*</c> stays blocked by the escalation boundary. Add a code here ONLY on
+    /// confirmed evidence that the module is a tenant-scoped, platform-hosted product (never guessed).
+    /// </summary>
+    public static readonly IReadOnlySet<string> PlatformHostedTenantModules =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "workflow" };
+
     /// <summary>Trim + lowercase; null/blank → empty string.</summary>
     public static string NormalizeModuleCode(string? moduleCode)
         => string.IsNullOrWhiteSpace(moduleCode) ? string.Empty : moduleCode.Trim().ToLowerInvariant();
@@ -65,6 +75,19 @@ public static class ModulePermissionResolver
         IEnumerable<Permission> catalog,
         IReadOnlyDictionary<string, string>? overrides = null)
     {
+        // Curated exception (tenant-scoped, platform-hosted module): resolve its platform.<module>.* permissions
+        // even though the broad platform.* exclusion below would otherwise block them.
+        var normalized = NormalizeModuleCode(moduleCode);
+        if (PlatformHostedTenantModules.Contains(normalized))
+        {
+            return catalog
+                .Where(p => !p.IsDeleted
+                            && string.Equals(p.Module, PlatformModule, StringComparison.OrdinalIgnoreCase)
+                            && (string.Equals(p.Resource, normalized, StringComparison.OrdinalIgnoreCase)
+                                || p.Resource.StartsWith(normalized + ".", StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+        }
+
         var module = ResolvePermissionModule(moduleCode, overrides);
         if (module.Length == 0 || string.Equals(module, PlatformModule, StringComparison.OrdinalIgnoreCase))
         {

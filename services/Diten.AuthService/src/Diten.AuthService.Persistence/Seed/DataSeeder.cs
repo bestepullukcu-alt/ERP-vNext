@@ -51,6 +51,9 @@ public static class DataSeeder
             Console.WriteLine("Seeding tenant-97c5 workflow operator grant...");
             await SeedTenant97c5WorkflowGrantAsync(database);
 
+            Console.WriteLine("Seeding default-tenant entitled-module grants (goldenslim + workflow)...");
+            await SeedDefaultTenantEntitledModuleGrantsAsync(database);
+
             Console.WriteLine("Seeding completed successfully.");
         }
         catch (Exception ex)
@@ -435,5 +438,57 @@ public static class DataSeeder
         }
 
         Console.WriteLine($"tenant-97c5 workflow grant: ensured {permissions.Count} permissions across {targetRoleIds.Count} role(s); {granted} new grant(s).");
+    }
+
+    // FIX-2 — the default/dev tenant's Admin role is entitled (via its plan) to goldenslim + workflow, but the
+    // baseline template only grants auth+mdm, and dev runs with eventing/provisioning off — so the entitlement
+    // bridge never fires here. Seed those modules as MODULE grants (SourceModuleCode) so devadmin sees them on
+    // next login, exactly as the runtime EntitlementPermissionSyncService would produce them. Idempotent.
+    private static async Task SeedDefaultTenantEntitledModuleGrantsAsync(IMongoDatabase database)
+    {
+        var roleCol = database.GetCollection<Role>("roles");
+        var permCol = database.GetCollection<Permission>("permissions");
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+
+        var adminRole = await roleCol
+            .Find(r => r.TenantId == DefaultTenantId && r.Name == DefaultRolePermissionTemplate.AdminRole && !r.IsDeleted)
+            .FirstOrDefaultAsync();
+        if (adminRole is null)
+        {
+            Console.WriteLine("Skipped default-tenant entitled-module grants: Admin role not found.");
+            return;
+        }
+
+        // moduleCode → which catalog permissions belong to it (goldenslim by Module; workflow is platform-hosted
+        // so matched by its known platform.workflow.* keys — the same set the resolver allow-list resolves).
+        var modules = new (string ModuleCode, Func<Permission, bool> Match)[]
+        {
+            ("goldenslim", p => string.Equals(p.Module, "goldenslim", StringComparison.OrdinalIgnoreCase)),
+            ("workflow",   p => WorkflowPermissionKeys.Contains(p.Key))
+        };
+
+        var catalog = await permCol.Find(p => !p.IsDeleted).ToListAsync();
+        var current = await rpCol
+            .Find(rp => rp.RoleId == adminRole.Id && rp.TenantId == DefaultTenantId && !rp.IsDeleted)
+            .ToListAsync();
+        var grantedPermissionIds = current.Select(rp => rp.PermissionId).ToHashSet();
+
+        var granted = 0;
+        foreach (var (moduleCode, match) in modules)
+        {
+            foreach (var permission in catalog.Where(match))
+            {
+                if (!grantedPermissionIds.Add(permission.Id))
+                {
+                    continue; // already granted to this role (any source) → idempotent skip
+                }
+
+                await rpCol.InsertOneAsync(
+                    RolePermission.ModuleGrant(adminRole.Id, permission.Id, DefaultTenantId, SystemUser, moduleCode));
+                granted++;
+            }
+        }
+
+        Console.WriteLine($"default-tenant entitled-module grants: {granted} new Module-grant(s) on Admin role.");
     }
 }

@@ -1,6 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,67 +31,39 @@ public sealed class PlatformSelfAccessController : Controller
         // Self-explain endpoint (GW-A): GET /api/platform/access/explain/me?permissionKey&moduleCode&featureCode
         var targetUrl = $"{_gatewayUrl}/api/platform/access/explain/me{Request.QueryString}";
 
-        if (!TryCreatePlatformAdminRequest(HttpMethod.Get, targetUrl, out var request))
-        {
-            Diten.Web.Controllers.ProxyAuthFailure.ClearAuthCookies(Response);
-            return StatusCode(StatusCodes.Status401Unauthorized, Diten.Web.Controllers.ProxyAuthFailure.PlatformLoginPayload());
-        }
-
+        // FIX-MYACCESS-PROXY-LOGOUT — forward the cookie token AS-IS and let the gateway decide (mirrors
+        // ModuleCatalogController.ProxyGatewayAsync). The previous client-side expiry/actor pre-check tripped on the
+        // 5-minute dev token boundary and signed the user out even though the gateway would have accepted the token.
+        // Only a real downstream 401 clears cookies; every other status (200/400/403/...) is reflected verbatim so
+        // the page shows the actual result or error message instead of logging out.
         try
         {
-            using (request)
+            using var request = new HttpRequestMessage(HttpMethod.Get, targetUrl);
+            var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
+            if (!string.IsNullOrWhiteSpace(token))
             {
-                using var response = await _httpClient.SendAsync(request);
-                if (Diten.Web.Controllers.ProxyAuthFailure.IsAuthFailure(response.StatusCode))
-                {
-                    Diten.Web.Controllers.ProxyAuthFailure.ClearAuthCookies(Response);
-                    return StatusCode((int)response.StatusCode, Diten.Web.Controllers.ProxyAuthFailure.PlatformLoginPayload());
-                }
-
-                var content = await response.Content.ReadAsStringAsync();
-                return new ContentResult
-                {
-                    Content = content,
-                    ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json",
-                    StatusCode = (int)response.StatusCode
-                };
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
+
+            using var response = await _httpClient.SendAsync(request);
+            if (Diten.Web.Controllers.ProxyAuthFailure.IsAuthFailure(response.StatusCode))
+            {
+                Diten.Web.Controllers.ProxyAuthFailure.ClearAuthCookies(Response);
+                return StatusCode((int)response.StatusCode, Diten.Web.Controllers.ProxyAuthFailure.PlatformLoginPayload());
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            return new ContentResult
+            {
+                Content = content,
+                ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json",
+                StatusCode = (int)response.StatusCode
+            };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Self-access explain proxy failed for {TargetUrl}.", targetUrl);
             return StatusCode(StatusCodes.Status502BadGateway, new { detail = "Gateway request failed." });
-        }
-    }
-
-    private bool TryCreatePlatformAdminRequest(HttpMethod method, string targetUrl, out HttpRequestMessage request)
-    {
-        request = new HttpRequestMessage(method, targetUrl);
-        var token = Request.Cookies["access_token"] ?? string.Empty;
-        if (!string.IsNullOrWhiteSpace(token) && IsPlatformAdminToken(token))
-        {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            return true;
-        }
-
-        request.Dispose();
-        request = null!;
-        return false;
-    }
-
-    private static bool IsPlatformAdminToken(string token)
-    {
-        try
-        {
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            var actorType = jwt.Claims.FirstOrDefault(c => string.Equals(c.Type, "actor_type", StringComparison.OrdinalIgnoreCase))?.Value?.Trim();
-            return jwt.ValidTo > DateTime.UtcNow
-                   && (string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
-                       || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase));
-        }
-        catch
-        {
-            return false;
         }
     }
 }

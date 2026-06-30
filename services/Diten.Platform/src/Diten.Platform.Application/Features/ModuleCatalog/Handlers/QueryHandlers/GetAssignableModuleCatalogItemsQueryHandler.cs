@@ -31,6 +31,7 @@ public sealed class GetAssignableModuleCatalogItemsQueryHandler
                 x.IsCoreModule,
                 x.IsTenantAssignable,
                 x.SortOrder,
+                Origin: string.Empty, // not applicable to the assignable-modules feed (origin is a catalog-admin concern)
                 x.CreatedAt,
                 x.UpdatedAt))
             .ToList();

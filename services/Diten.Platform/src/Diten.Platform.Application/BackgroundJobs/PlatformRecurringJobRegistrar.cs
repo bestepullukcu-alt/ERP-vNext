@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
+using Diten.Platform.Application.Features.Workflow.BackgroundJobs;
 using Microsoft.Extensions.Options;
 
 namespace Diten.Platform.Application.BackgroundJobs;
@@ -25,6 +26,7 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             CreateDeferred("Diten.Platform.MOD-0034.WebhookRetryJob", "WebhookRetryJob", "MOD-0034", "*/5 * * * *"),
             CreateDeferred("Diten.Platform.MOD-0021.AuditLogArchiveJob", "AuditLogArchiveJob", "MOD-0021", "0 4 * * 0"),
             CreateEmailDispatchSweepRegistration(),
+            CreateWorkflowEscalationSweepRegistration(),
             CreateDeferred("Diten.Platform.MOD-0009.ProvisioningRetryJob", "ProvisioningRetryJob", "MOD-0009", "*/2 * * * *")
         };
 
@@ -59,6 +61,44 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             typeof(EmailDispatchSweepJob),
             typeof(EmailDispatchSweepJobArgs),
             new EmailDispatchSweepJobArgs(BatchSize: 50, MaxRetryCount: Math.Max(1, _options.DefaultRetryAttempts)),
+            new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string>
+                {
+                    ["owner"] = owner,
+                    ["execution"] = "sweep"
+                }));
+    }
+
+    private RecurringJobRegistration CreateWorkflowEscalationSweepRegistration()
+    {
+        const string id = "Diten.Platform.MOD-0023.WorkflowEscalationSweepJob";
+        const string jobName = "WorkflowEscalationSweepJob";
+        const string owner = "MOD-0023";
+        const string cron = "*/5 * * * *"; // every 5 minutes
+
+        var enabled = _options.RegisterStandardJobs
+                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
+                      && configuredEnabled;
+
+        var descriptor = new BackgroundJobDescriptor(
+            Id: id,
+            ServiceName: ServiceName,
+            JobName: jobName,
+            Owner: owner,
+            CronExpression: cron,
+            TimeZoneId: "UTC",
+            IsEnabled: enabled,
+            Queue: "platform",
+            MaxRetryAttempts: _options.DefaultRetryAttempts,
+            TriggerType: BackgroundJobTriggerTypes.Recurring);
+
+        return new RecurringJobRegistration(
+            descriptor,
+            typeof(WorkflowEscalationSweepJob),
+            typeof(WorkflowEscalationSweepJobArgs),
+            new WorkflowEscalationSweepJobArgs(MaxItemsPerTenant: 100),
             new BackgroundJobContext(
                 TriggerType: BackgroundJobTriggerTypes.Recurring,
                 TriggeredBy: nameof(PlatformRecurringJobRegistrar),

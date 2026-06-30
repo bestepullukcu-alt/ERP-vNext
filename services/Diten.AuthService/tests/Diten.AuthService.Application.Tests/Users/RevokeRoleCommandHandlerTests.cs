@@ -102,10 +102,36 @@ public sealed class RevokeRoleCommandHandlerTests
         Assert.Equal(cts.Token, refreshTokens.RevokeAllToken);
     }
 
+    [Fact]
+    public async Task Successful_revoke_bumps_role_assignment_version()
+    {
+        var version = new FakeRoleAssignmentVersionService();
+        var handler = CreateHandler(role: null, new FakeUserRoleRepository(), new FakeRefreshTokenRepository(), version);
+
+        await handler.Handle(new RevokeRoleCommand(UserId, RoleId), CancellationToken.None);
+
+        Assert.Equal(1, version.IncrementCount);
+        Assert.Contains(TenantId, version.IncrementedTenants);
+    }
+
+    [Fact]
+    public async Task System_role_revoke_does_not_bump_version()
+    {
+        var systemRole = new Role("admin", "Admin", null, TenantId);
+        systemRole.MarkAsSystem();
+        var version = new FakeRoleAssignmentVersionService();
+        var handler = CreateHandler(systemRole, new FakeUserRoleRepository(), new FakeRefreshTokenRepository(), version);
+
+        await handler.Handle(new RevokeRoleCommand(UserId, RoleId), CancellationToken.None);
+
+        Assert.Equal(0, version.IncrementCount);
+    }
+
     private static RevokeRoleCommandHandler CreateHandler(
         Role? role,
         FakeUserRoleRepository userRoles,
-        FakeRefreshTokenRepository refreshTokens)
+        FakeRefreshTokenRepository refreshTokens,
+        FakeRoleAssignmentVersionService? version = null)
     {
         var tenantContext = new TestTenantContext();
         tenantContext.SetTenant(TenantId);
@@ -113,6 +139,7 @@ public sealed class RevokeRoleCommandHandlerTests
             new FakeRoleRepository(role),
             userRoles,
             refreshTokens,
+            version ?? new FakeRoleAssignmentVersionService(),
             tenantContext,
             NullLogger<RevokeRoleCommandHandler>.Instance);
     }

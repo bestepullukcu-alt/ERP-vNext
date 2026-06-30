@@ -16,4 +16,8 @@ public sealed class ModuleCatalogItem : GlobalEntity
     public bool IsCoreModule { get; set; }
     public bool IsTenantAssignable { get; set; }
     public int SortOrder { get; set; }
+
+    // MC-4 — Manual (operator-added) vs SelfRegistered (code-owned via manifest). Default Manual: legacy docs with
+    // no Origin field deserialize to Manual, preserving existing behaviour.
+    public ModuleCatalogOrigin Origin { get; set; } = ModuleCatalogOrigin.Manual;
 }

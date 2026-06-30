@@ -1,0 +1,82 @@
+using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.ModuleRegistration;
+using Diten.Platform.Common.Tenancy;
+using MediatR;
+
+namespace Diten.Platform.API.Services.ModuleRegistration;
+
+/// <summary>
+/// MC-3b — at startup, reconciles every Platform-internal <see cref="IModuleManifestProvider"/> into the module
+/// catalog IN-PROCESS (no HTTP/self-call). Mirrors InternalModuleRegistrationController: sets the platform context
+/// (Guid.Empty) so the reconcile reads/writes the same scope the catalog UI uses, then sends
+/// <see cref="RegisterModuleManifestCommand"/> via MediatR. Idempotent (the reconcile is); a failure for one
+/// provider is logged and never blocks the others or startup. Cross-service modules (goldenslim) still push over
+/// HTTP from their own service — this only covers modules that live inside Platform.
+/// </summary>
+public sealed class PlatformModuleSelfRegistrationWorker : BackgroundService
+{
+    private readonly IEnumerable<IModuleManifestProvider> _providers;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<PlatformModuleSelfRegistrationWorker> _logger;
+
+    public PlatformModuleSelfRegistrationWorker(
+        IEnumerable<IModuleManifestProvider> providers,
+        IServiceScopeFactory scopeFactory,
+        ILogger<PlatformModuleSelfRegistrationWorker> logger)
+    {
+        _providers = providers;
+        _scopeFactory = scopeFactory;
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        foreach (var provider in _providers)
+        {
+            if (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+
+            var manifest = provider.GetManifest();
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+                var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+
+                // Same scope the catalog UI / internal registration endpoint uses (platform-scope, Guid.Empty).
+                tenantContext.SetPlatformContext(Guid.Empty);
+
+                var response = await mediator.Send(new RegisterModuleManifestCommand(manifest), stoppingToken);
+                if (response.IsSuccessful)
+                {
+                    var r = response.Data;
+                    _logger.LogInformation(
+                        "Self-registered module {ModuleCode} ({Action}). Pages={Pages} Actions={Actions} PermissionsSynced={Perms}.",
+                        manifest.ModuleCode,
+                        r?.CatalogAction,
+                        r?.PagesUpserted,
+                        r?.ActionsUpserted,
+                        r?.PermissionsSynced);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Self-registration reconcile returned failure for module {ModuleCode}: {Errors}",
+                        manifest.ModuleCode,
+                        string.Join("; ", response.Errors));
+                }
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                // Best-effort: one module's failure must not block the others or startup.
+                _logger.LogError(ex, "Self-registration failed for module {ModuleCode}.", manifest.ModuleCode);
+            }
+        }
+    }
+}

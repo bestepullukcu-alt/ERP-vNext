@@ -11,6 +11,8 @@
         "Active" => "bg-label-success",
         "Inactive" => "bg-label-warning",
         "Deprecated" => "bg-label-danger",
+        "Beta" => "bg-label-info",
+        "Preview" => "bg-label-primary",
         _ => "bg-label-secondary"
     };
     var statusText = Model.Status switch
@@ -19,6 +21,8 @@
         "Active" => Localizer["StatusActive"].Value,
         "Inactive" => Localizer["StatusInactive"].Value,
         "Deprecated" => Localizer["StatusDeprecated"].Value,
+        "Beta" => Localizer["StatusBeta"].Value,
+        "Preview" => Localizer["StatusPreview"].Value,
         _ => Model.Status
     };
     var pageTypeText = Model.PageType switch
@@ -33,6 +37,7 @@
         "Custom" => Localizer["PageTypeCustom"].Value,
         _ => Model.PageType
     };
+    var isSelfRegistered = string.Equals(ViewData["ModuleOrigin"] as string, "SelfRegistered", StringComparison.OrdinalIgnoreCase);
 }
 
 <div class="module-page-details">
@@ -47,7 +52,6 @@
                 </ol>
             </nav>
         </div>
-        <a href="javascript:history.back()" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
     </div>
 
     <div class="card mb-4">
@@ -201,33 +205,46 @@
 
         <div class="tab-pane fade" id="page-actions-tab" role="tabpanel">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center gap-3 p-3">
+                <div class="card-header d-flex align-items-center justify-content-between gap-3 p-3 pb-0">
                     <div>
                         <h6 class="mb-0">@Localizer["ActionsTab"]</h6>
                         <small class="text-muted">@Localizer["ActionsDescription"]</small>
                     </div>
-                    <button type="button" class="btn btn-primary" id="btnAddPageAction">
-                        <i class="bx bx-plus me-1"></i>@Localizer["AddAction"]
-                    </button>
                 </div>
-                <div class="table-responsive">
-                    <table class="table border-top"
-                           id="dt-module-page-actions"
+                @if (isSelfRegistered)
+                {
+                    <div class="px-3 pt-2">
+                        <small class="text-muted d-inline-flex align-items-center">
+                            <i class="bx bx-lock-alt me-1"></i>@Localizer["SelfRegisteredPagesReadOnly"]
+                        </small>
+                    </div>
+                }
+                <div id="module-page-actions-skeleton-loader" class="backbone-skeleton p-4">
+                    <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row skeleton-row-last"></div>
+                </div>
+                <div class="card-datatable table-responsive">
+                    <table id="dt-module-page-actions"
+                           data-dt-standard="v2"
                            data-page-id="@Model.Id"
                            data-module-code="@Model.ModuleCode"
-                           data-page-code="@Model.PageCode">
+                           data-page-code="@Model.PageCode"
+                           data-readonly="@(isSelfRegistered ? "true" : "false")"
+                           class="datatables-module-page-actions table border-top">
                         <thead>
                             <tr>
                                 <th>@Localizer["ActionCode"]</th>
-                                <th>@Localizer["DisplayName"]</th>
+                                <th class="all">@Localizer["DisplayName"]</th>
                                 <th>@Localizer["PermissionKey"]</th>
                                 <th>@Localizer["ActionType"]</th>
                                 <th>@SharedLocalizer["Status"]</th>
-                                <th class="text-end">@Localizer["SortOrder"]</th>
-                                <th class="text-end">@Localizer["Actions"]</th>
+                                <th class="cell-fit text-end">@Localizer["SortOrder"]</th>
+                                <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
                             </tr>
                         </thead>
-                        <tbody></tbody>
                     </table>
                 </div>
             </div>
@@ -235,15 +252,15 @@
     </div>
 </div>
 
-<div class="offcanvas offcanvas-end" tabindex="-1" id="pageActionOffcanvas">
-    <div class="offcanvas-header py-6">
+<div class="offcanvas offcanvas-end" tabindex="-1" id="pageActionOffcanvas" aria-labelledby="pageActionOffcanvasTitle">
+    <div class="offcanvas-header p-4">
         <div class="d-flex align-items-center gap-2">
             <h5 class="offcanvas-title mb-0" id="pageActionOffcanvasTitle">@Localizer["AddAction"]</h5>
             <div id="pageActionRequiredTrackerHost"></div>
         </div>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
-    <div class="offcanvas-body border-top">
+    <div class="offcanvas-body border-top p-4">
         <form id="pageActionForm"
               data-required-tracker-target="#pageActionRequiredTrackerHost"
               data-required-tracker-wrapper-class="d-flex align-items-center"
@@ -286,6 +303,8 @@
                         <option value="Active">@Localizer["StatusActive"]</option>
                         <option value="Inactive">@Localizer["StatusInactive"]</option>
                         <option value="Deprecated">@Localizer["StatusDeprecated"]</option>
+                        <option value="Beta">@Localizer["StatusBeta"]</option>
+                        <option value="Preview">@Localizer["StatusPreview"]</option>
                     </select>
                     <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                 </div>

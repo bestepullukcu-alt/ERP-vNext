@@ -77,6 +77,34 @@ public sealed class InternalPermissionsControllerTests
     }
 
     [Fact]
+    public async Task First_sync_grants_new_permission_to_full_catalog_role()
+    {
+        var repo = new FakePermissionRepository();
+        var grant = new FakeFullCatalogPermissionGrantService();
+        var controller = Build(repo, authorized: true, grant);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest("platform.workflow.definitions.view", "View", null), CancellationToken.None);
+
+        var created = Assert.Single(repo.Items);
+        var grantedId = Assert.Single(grant.GrantedPermissionIds);
+        Assert.Equal(created.Id, grantedId);
+    }
+
+    [Fact]
+    public async Task Repeated_sync_does_not_grant_again()
+    {
+        var repo = new FakePermissionRepository();
+        var grant = new FakeFullCatalogPermissionGrantService();
+        var controller = Build(repo, authorized: true, grant);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest("platform.workflow.definitions.view", "View", null), CancellationToken.None);
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest("platform.workflow.definitions.view", "View again", null), CancellationToken.None);
+
+        // Grant only fires on first-time creation; the second sync is an "updated" no-op for grants.
+        Assert.Single(grant.GrantedPermissionIds);
+    }
+
+    [Fact]
     public async Task GetModules_without_api_key_is_unauthorized()
     {
         var controller = Build(new FakePermissionRepository(), authorized: false);
@@ -104,17 +132,29 @@ public sealed class InternalPermissionsControllerTests
         Assert.Contains(modules, m => m.Module == "mdm" && m.PermissionCount == 1);
     }
 
-    private static InternalPermissionsController Build(FakePermissionRepository repo, bool authorized)
+    private static InternalPermissionsController Build(FakePermissionRepository repo, bool authorized, IFullCatalogPermissionGrantService? grant = null)
     {
         var controller = new InternalPermissionsController(
             new FakeInternalEventAuthService(authorized ? ApiKey : null),
             repo,
+            grant ?? new FakeFullCatalogPermissionGrantService(),
             NullLogger<InternalPermissionsController>.Instance);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Headers[Header] = ApiKey;
         controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
         return controller;
+    }
+
+    private sealed class FakeFullCatalogPermissionGrantService : IFullCatalogPermissionGrantService
+    {
+        public List<Guid> GrantedPermissionIds { get; } = [];
+
+        public Task GrantToFullCatalogRolesAsync(Guid permissionId, CancellationToken ct)
+        {
+            GrantedPermissionIds.Add(permissionId);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeInternalEventAuthService(string? expectedKey) : IInternalEventAuthService

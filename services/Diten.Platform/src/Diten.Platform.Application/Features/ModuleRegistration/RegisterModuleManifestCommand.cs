@@ -14,4 +14,6 @@ public sealed record ModuleManifestReconcileResult(
     int PagesUpserted,
     int ActionsUpserted,
     int PermissionsSynced,
-    IReadOnlyList<string> PagesSkipped);
+    IReadOnlyList<string> PagesSkipped,
+    int PagesPruned = 0,    // MC-6 — module pages soft-deleted because the manifest no longer declares them
+    int ActionsPruned = 0); // MC-6 — module page-actions soft-deleted because the manifest no longer declares them

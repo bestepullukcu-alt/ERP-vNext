@@ -35,5 +35,8 @@ public enum ModuleCatalogDomain
     Production,
 
     [Display(Name = "HR")]
-    Hr
+    Hr,
+
+    [Display(Name = "Developer Enablement")]
+    DevEnablement
 }

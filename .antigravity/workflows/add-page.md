@@ -4,6 +4,12 @@ description: "WORKFLOW-002 — Mevcut Modüle Action Bazlı Sayfa ve UI Bileşen
 
 # /add-page - Sayfa ve Action Ekleme
 
+> ⛔ **MANIFEST GÜNCELLEME ZORUNLU:** Mevcut bir modüle sayfa VEYA action eklediğinde, modülün
+> `ModuleManifestProvider`'ına karşılık gelen page/action kaydını da EKLE (route + gerçek RequiredPermission/
+> PermissionKey + doğru placement). Manifest, gerçek frontend view-route'larını ve UI satır/toolbar menüsünü
+> birebir aynalamalı. İki-yönlü completeness testi güncellenir. Aksi halde katalog koddan sapar (drift).
+> Kurallar: `.antigravity/rules/module-self-registration-standard.md`.
+
 ## 🛠️ 1. Sayfa Tipine Göre Zorunlu Standartlar
 
 ### A. DataTable Liste Sayfası (Index)

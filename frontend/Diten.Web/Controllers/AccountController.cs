@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Diten.Web.Services.Auth;
+using Diten.Web.Services.Branding;
 
 namespace Diten.Web.Controllers;
 
@@ -11,15 +12,31 @@ public class AccountController : Controller
 {
     private readonly IAuthGateway _authGateway;
     private readonly IAuthCookieService _authCookieService;
+    private readonly IBrandingGateway _brandingGateway;
 
-    public AccountController(IAuthGateway authGateway, IAuthCookieService authCookieService)
+    public AccountController(
+        IAuthGateway authGateway,
+        IAuthCookieService authCookieService,
+        IBrandingGateway brandingGateway)
     {
         _authGateway = authGateway;
         _authCookieService = authCookieService;
+        _brandingGateway = brandingGateway;
+    }
+
+    // FIX-LOGIN-BRIDGE-RESILIENCE — a transport failure (auth service / gateway unreachable) surfaces from the
+    // bridge as StatusCode >= 500 with a clean ErrorMessage; map it to 503 so the client shows "service
+    // unavailable" instead of a misleading 401. Credential / validation failures keep the existing 401.
+    private IActionResult AuthFailureResult(AuthBridgeResult result, string fallbackMessage)
+    {
+        var detail = result.ErrorMessage ?? fallbackMessage;
+        return result.StatusCode is >= 500
+            ? StatusCode(503, new { detail })
+            : Unauthorized(new { detail });
     }
 
     [HttpGet("/account/login")]
-    public IActionResult Login(string? returnUrl = null)
+    public async Task<IActionResult> Login(Guid? tenantId = null, string? returnUrl = null, CancellationToken ct = default)
     {
         if (HasValidActor("tenant_user"))
         {
@@ -29,7 +46,30 @@ public class AccountController : Controller
         ViewBag.AuthMode = "tenant";
         ViewBag.PostLoginDefault = "/WorkCenter";
         ViewBag.ReturnUrl = returnUrl;
+
+        // Pre-auth theming: when a tenant login link carries ?tenantId=, fetch that tenant's branding
+        // so the login screen shows its logo/favicon. Best-effort — any miss leaves the platform default.
+        await ApplyTenantBrandingAsync(tenantId, ct);
+
         return View();
+    }
+
+    private async Task ApplyTenantBrandingAsync(Guid? tenantId, CancellationToken ct)
+    {
+        if (tenantId is not { } id || id == Guid.Empty)
+        {
+            return;
+        }
+
+        var branding = await _brandingGateway.GetTenantBrandingAsync(id, ct);
+        if (branding is null)
+        {
+            return;
+        }
+
+        ViewBag.BrandingLogoDataUrl = branding.LogoDataUrl;
+        ViewBag.BrandingFaviconDataUrl = branding.FaviconDataUrl;
+        ViewBag.BrandingDisplayName = branding.DisplayName;
     }
 
     [HttpPost("/account/login")]
@@ -55,7 +95,7 @@ public class AccountController : Controller
 
         if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
-            return Unauthorized(new { detail = result.ErrorMessage ?? "Login failed." });
+            return AuthFailureResult(result, "Login failed.");
         }
 
         _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
@@ -76,7 +116,7 @@ public class AccountController : Controller
         var result = await _authGateway.VerifyTenantMfaAsync(request.ChallengeId, request.Code, ct);
         if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
-            return Unauthorized(new { detail = result.ErrorMessage ?? "Verification failed." });
+            return AuthFailureResult(result, "Verification failed.");
         }
 
         _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
@@ -96,7 +136,7 @@ public class AccountController : Controller
         var result = await _authGateway.ResendTenantMfaAsync(request.ChallengeId, ct);
         if (!result.Success || string.IsNullOrWhiteSpace(result.ChallengeId))
         {
-            return Unauthorized(new { detail = result.ErrorMessage ?? "Verification code could not be resent." });
+            return AuthFailureResult(result, "Verification code could not be resent.");
         }
 
         return Ok(new LoginBridgeResponse(
@@ -134,7 +174,7 @@ public class AccountController : Controller
         var result = await _authGateway.LoginPlatformAsync(request.Email, request.Password, request.RememberMe, ct);
         if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
-            return Unauthorized(new { detail = result.ErrorMessage ?? "Platform login failed." });
+            return AuthFailureResult(result, "Platform login failed.");
         }
 
         _authCookieService.ClearTokens(Response);
@@ -249,7 +289,7 @@ public class AccountController : Controller
         var result = await _authGateway.ChangePlatformPasswordAsync(request.CurrentPassword, request.NewPassword, request.RememberMe, ct);
         if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
-            return Unauthorized(new { detail = result.ErrorMessage ?? "Password change failed." });
+            return AuthFailureResult(result, "Password change failed.");
         }
 
         _authCookieService.ClearTokens(Response);

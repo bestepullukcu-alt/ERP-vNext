@@ -21,15 +21,18 @@ public sealed class InternalPermissionsController : ControllerBase
 
     private readonly IInternalEventAuthService _internalEventAuthService;
     private readonly IPermissionRepository _permissionRepository;
+    private readonly IFullCatalogPermissionGrantService _fullCatalogGrantService;
     private readonly ILogger<InternalPermissionsController> _logger;
 
     public InternalPermissionsController(
         IInternalEventAuthService internalEventAuthService,
         IPermissionRepository permissionRepository,
+        IFullCatalogPermissionGrantService fullCatalogGrantService,
         ILogger<InternalPermissionsController> logger)
     {
         _internalEventAuthService = internalEventAuthService;
         _permissionRepository = permissionRepository;
+        _fullCatalogGrantService = fullCatalogGrantService;
         _logger = logger;
     }
 
@@ -62,6 +65,10 @@ public sealed class InternalPermissionsController : ControllerBase
                 : request.DisplayName.Trim();
             var permission = new Permission(module, resource, action, displayName, NormalizeOptional(request.Description));
             await _permissionRepository.CreateAsync(permission, ct);
+
+            // A1 — a first-time permission must land on the full-catalog role (default-tenant SuperAdmin) so it
+            // becomes usable on re-login without a hand-edited seed. Idempotent + best-effort (never blocks sync).
+            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(permission.Id, ct);
 
             _logger.LogInformation(
                 "Catalog permission synced (created). Key={Key} Module={Module}",

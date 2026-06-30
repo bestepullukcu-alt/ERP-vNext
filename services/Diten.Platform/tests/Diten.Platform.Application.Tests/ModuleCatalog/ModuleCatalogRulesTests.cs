@@ -76,7 +76,7 @@ public sealed class ModuleCatalogRulesTests
     {
         var repository = new InMemoryModuleCatalogRepository();
         await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "MODULE-CATALOG", ModuleName = "Existing", DisplayName = "Existing", Domain = "Platform", Service = "Diten.Platform" });
-        var handler = new CreateModuleCatalogItemCommandHandler(repository);
+        var handler = new CreateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
 
         var response = await handler.Handle(new CreateModuleCatalogItemCommand(new CreateModuleCatalogItemRequest(
             "module__catalog",
@@ -102,7 +102,7 @@ public sealed class ModuleCatalogRulesTests
         var repository = new InMemoryModuleCatalogRepository();
         var existing = await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "MODULE-CATALOG", ModuleName = "Existing", DisplayName = "Existing", Domain = "Platform", Service = "Diten.Platform" });
         await repository.DeleteAsync(existing.Id);
-        var handler = new CreateModuleCatalogItemCommandHandler(repository);
+        var handler = new CreateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
 
         var response = await handler.Handle(new CreateModuleCatalogItemCommand(new CreateModuleCatalogItemRequest(
             "module__catalog",
@@ -169,7 +169,7 @@ public sealed class ModuleCatalogRulesTests
             Domain = "Platform",
             Service = "Diten.Platform"
         });
-        var handler = new UpdateModuleCatalogItemCommandHandler(repository);
+        var handler = new UpdateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
 
         var response = await handler.Handle(new UpdateModuleCatalogItemCommand(item.Id, new UpdateModuleCatalogItemRequest(
             "CHANGED-CODE",
@@ -203,6 +203,146 @@ public sealed class ModuleCatalogRulesTests
 
         Assert.Single(items);
         Assert.Equal("A", items[0].ModuleCode);
+    }
+
+    // ── MC-1b lifecycle ───────────────────────────────────────────────────────
+    [Theory]
+    [InlineData(ModuleCatalogStatus.Draft, "Preview")]
+    [InlineData(ModuleCatalogStatus.Draft, "Beta")]
+    [InlineData(ModuleCatalogStatus.Draft, "Active")]
+    [InlineData(ModuleCatalogStatus.Preview, "Beta")]
+    [InlineData(ModuleCatalogStatus.Preview, "Active")]
+    [InlineData(ModuleCatalogStatus.Beta, "Active")]
+    [InlineData(ModuleCatalogStatus.Active, "Inactive")]
+    [InlineData(ModuleCatalogStatus.Inactive, "Active")]
+    [InlineData(ModuleCatalogStatus.Active, "Deprecated")]
+    public async Task Update_handler_allows_approved_lifecycle_transitions(ModuleCatalogStatus from, string to)
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var item = await repository.CreateAsync(Item("LE", from));
+        var handler = new UpdateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+
+        var response = await handler.Handle(UpdateStatus(item, to), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(204, response.StatusCode);
+        Assert.Equal(Enum.Parse<ModuleCatalogStatus>(to), item.Status);
+    }
+
+    [Theory]
+    [InlineData(ModuleCatalogStatus.Active, "Draft")]   // no demotion
+    [InlineData(ModuleCatalogStatus.Active, "Beta")]    // no demotion
+    [InlineData(ModuleCatalogStatus.Beta, "Preview")]   // no demotion
+    [InlineData(ModuleCatalogStatus.Beta, "Draft")]
+    [InlineData(ModuleCatalogStatus.Preview, "Draft")]
+    [InlineData(ModuleCatalogStatus.Deprecated, "Active")]
+    public async Task Update_handler_rejects_invalid_transitions(ModuleCatalogStatus from, string to)
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var item = await repository.CreateAsync(Item("LE", from));
+        var handler = new UpdateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+
+        var response = await handler.Handle(UpdateStatus(item, to), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(400, response.StatusCode);
+        Assert.Equal(from, item.Status);
+    }
+
+    // ── MC-4 origin governance ────────────────────────────────────────────────
+    [Fact]
+    public async Task Create_handler_rejects_manual_create_of_self_registered_code()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "WORKFLOW", ModuleName = "Workflow", DisplayName = "Workflow", Domain = "P", Service = "S", Origin = ModuleCatalogOrigin.SelfRegistered });
+        var handler = new CreateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+
+        var response = await handler.Handle(new CreateModuleCatalogItemCommand(new CreateModuleCatalogItemRequest(
+            "workflow", "Workflow", "Workflow", null, "P", "S", "Draft", "1.0.0", false, true, null)), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Contains(ModuleCatalogErrorCodes.ModuleManagedByCode, response.Errors);
+    }
+
+    [Fact]
+    public async Task Create_handler_sets_manual_origin()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var handler = new CreateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+
+        var response = await handler.Handle(new CreateModuleCatalogItemCommand(new CreateModuleCatalogItemRequest(
+            "newmod", "New", "New", null, "P", "S", "Beta", "1.0.0", false, true, null)), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        var created = await repository.GetByCodeAsync("NEWMOD");
+        Assert.NotNull(created);
+        Assert.Equal(ModuleCatalogOrigin.Manual, created!.Origin);
+    }
+
+    [Fact]
+    public async Task Update_handler_allows_soft_edit_of_self_registered_but_blocks_hard_change()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var item = await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "WORKFLOW", ModuleName = "Workflow", DisplayName = "Workflow", Domain = "P", Service = "S", Status = ModuleCatalogStatus.Active, ModuleVersion = "1.0.0", Origin = ModuleCatalogOrigin.SelfRegistered });
+        var handler = new UpdateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+
+        // SOFT-only change (Domain) → allowed.
+        var soft = await handler.Handle(UpdateStatus(item, "Active", domain: "Finance"), CancellationToken.None);
+        Assert.True(soft.IsSuccessful);
+        Assert.Equal("Finance", item.Domain);
+
+        // HARD change (ModuleName) → 409 managed-by-code.
+        var hard = await handler.Handle(UpdateStatus(item, "Active", moduleName: "Renamed"), CancellationToken.None);
+        Assert.False(hard.IsSuccessful);
+        Assert.Equal(409, hard.StatusCode);
+        Assert.Contains(ModuleCatalogErrorCodes.ModuleManagedByCode, hard.Errors);
+        Assert.Equal("Workflow", item.ModuleName);
+    }
+
+    [Fact]
+    public async Task Delete_handler_rejects_self_registered_item()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var item = await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "WORKFLOW", ModuleName = "Workflow", DisplayName = "Workflow", Domain = "P", Service = "S", Origin = ModuleCatalogOrigin.SelfRegistered });
+        var handler = new DeleteModuleCatalogItemCommandHandler(repository);
+
+        var response = await handler.Handle(new DeleteModuleCatalogItemCommand(item.Id), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Contains(ModuleCatalogErrorCodes.ModuleManagedByCode, response.Errors);
+        Assert.False(item.IsDeleted);
+    }
+
+    private static ModuleCatalogItem Item(string code, ModuleCatalogStatus status) =>
+        new() { ModuleCode = code, ModuleName = code, DisplayName = code, Domain = "P", Service = "S", ModuleVersion = "1.0.0", Status = status };
+
+    private static UpdateModuleCatalogItemCommand UpdateStatus(ModuleCatalogItem item, string status, string? moduleName = null, string? domain = null) =>
+        new(item.Id, new UpdateModuleCatalogItemRequest(
+            item.ModuleCode,
+            moduleName ?? item.ModuleName,
+            item.DisplayName,
+            item.Description,
+            domain ?? item.Domain,
+            item.Service,
+            status,
+            item.ModuleVersion,
+            item.IsCoreModule,
+            item.IsTenantAssignable,
+            item.SortOrder));
+
+    // Identity resolver — these tests assert pre-canonicalization rules (codes, status, soft-delete), so the
+    // taxonomy resolution is a passthrough (returns the trimmed input unchanged).
+    private sealed class PassthroughTaxonomyResolver : Diten.Platform.Application.Features.ModuleCatalog.Services.IModuleTaxonomyResolver
+    {
+        public static readonly PassthroughTaxonomyResolver Instance = new();
+
+        public Task<string> ResolveDomainCodeAsync(string? rawDomain, CancellationToken ct = default)
+            => Task.FromResult(rawDomain?.Trim() ?? string.Empty);
+
+        public Task<string> ResolveServiceCodeAsync(string? rawService, CancellationToken ct = default)
+            => Task.FromResult(rawService?.Trim() ?? string.Empty);
     }
 
     private sealed class InMemoryModuleCatalogRepository : IModuleCatalogRepository

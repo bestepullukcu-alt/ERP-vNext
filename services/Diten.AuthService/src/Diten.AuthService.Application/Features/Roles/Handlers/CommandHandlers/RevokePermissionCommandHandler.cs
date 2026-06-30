@@ -12,6 +12,7 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
 
     public RevokePermissionCommandHandler(
@@ -19,12 +20,14 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
         IRolePermissionRepository rolePermissionRepository,
         IUserRoleRepository userRoleRepository,
         IRefreshTokenRepository refreshTokenRepository,
+        IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext)
     {
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
         _userRoleRepository = userRoleRepository;
         _refreshTokenRepository = refreshTokenRepository;
+        _versionService = versionService;
         _tenantContext = tenantContext;
     }
 
@@ -49,6 +52,9 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
             return Response<NoContent>.Fail("System/Module grants are provisioning-managed and cannot be manually removed.", 409);
 
         await _rolePermissionRepository.RevokeAsync(request.RoleId, request.PermissionId, tenantId, ct);
+
+        // FU13 — bump the tenant role-assignment version so every holder's cached snapshot is invalidated at once.
+        await _versionService.IncrementAsync(tenantId, ct);
 
         // AG-STEP-010 / MOD-0018-FU13 Group C (OD-FU13-01, B-Option 1): removing a permission from a role narrows the
         // effective permissions of EVERY user holding that role, so close the refresh path for each holder — a still-
