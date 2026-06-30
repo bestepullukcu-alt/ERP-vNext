@@ -40,7 +40,18 @@ public static class ModuleServiceSeed
                 IsActive = true
             }).ToList();
 
-            await collection.InsertManyAsync(defaults, cancellationToken: ct);
+            // Idempotent per-Code insert (mirrors SubscriptionPlanSeed): the Code is the HARD identity, so never
+            // insert a default whose Code already has a live row — a blind InsertMany is what produced duplicates.
+            foreach (var item in defaults)
+            {
+                var exists = await collection
+                    .Find(x => x.IsDeleted == false && x.Code == item.Code)
+                    .AnyAsync(ct);
+                if (!exists)
+                {
+                    await collection.InsertOneAsync(item, cancellationToken: ct);
+                }
+            }
         }
 
         // Record the marker in BOTH non-skip cases (fresh seed AND preserve-existing) so this never runs again.

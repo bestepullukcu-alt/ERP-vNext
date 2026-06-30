@@ -33,6 +33,7 @@ builder.Services.AddControllersWithViews()
         options.ViewLocationFormats.Add("/Views/Platform/{1}/{0}.cshtml");
         options.ViewLocationFormats.Add("/Views/Organization/{1}/{0}.cshtml");
         options.ViewLocationFormats.Add("/Views/MasterData/{1}/{0}.cshtml");
+        options.ViewLocationFormats.Add("/Views/Governance/{1}/{0}.cshtml");
         options.ViewLocationFormats.Add("/Views/{1}/{0}.cshtml");
         options.ViewLocationFormats.Add("/Views/Archive/{1}/{0}.cshtml");
     });
@@ -54,6 +55,21 @@ var authServiceUrl = builder.Configuration["GatewayUrl"] ?? "http://localhost:50
 builder.Services.AddHttpClient<IAuthGateway, AuthGateway>(client =>
 {
     client.BaseAddress = new Uri(authServiceUrl);
+});
+// Pre-auth tenant branding lookup for the login screen. Targets the Platform service DIRECTLY
+// (the internal branding endpoint is not exposed through the gateway), authenticated with the
+// shared internal API key. Best-effort: failures fall back to platform default branding.
+var platformServiceUrl = builder.Configuration["PlatformServiceUrl"] ?? "http://localhost:5057";
+builder.Services.AddHttpClient<Diten.Web.Services.Branding.IBrandingGateway, Diten.Web.Services.Branding.BrandingGateway>(client =>
+{
+    client.BaseAddress = new Uri(platformServiceUrl);
+});
+// FIX-4: per-request tenant liveness lookup for the shell session guard (deleted/suspended tenant → sign-out).
+// Same Platform target + shared internal API key; best-effort/fail-open and short-cached (~30s) in the gateway.
+builder.Services.AddHttpClient<Diten.Web.Services.TenantStatus.ITenantStatusGateway, Diten.Web.Services.TenantStatus.TenantStatusGateway>(client =>
+{
+    client.BaseAddress = new Uri(platformServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
@@ -303,6 +319,31 @@ app.Use(async (context, next) =>
 
 app.UseAuthorization();
 
+// FIX-4: tenant-shell session guard. A JWT stays cryptographically valid until it expires, so a tenant that was
+// deleted or suspended after the token was issued would keep an open session. On top-level tenant-shell document
+// navigations (tenant_user only) we check Platform for the tenant's liveness (short-cached, S2S); a DEFINITIVE
+// missing/inactive answer clears the auth cookies and redirects to login. FAIL-OPEN: a null (unverifiable)
+// result — Platform down/slow/no key — never signs anyone out. Ajax/DataTable/API/static calls are skipped so a
+// JSON consumer never gets an HTML redirect; the next document navigation enforces it.
+app.Use(async (context, next) =>
+{
+    if (ShouldCheckTenantStatus(context) &&
+        TryReadTenantIdFromClaims(context.User, out var guardedTenantId))
+    {
+        var statusGateway = context.RequestServices.GetRequiredService<Diten.Web.Services.TenantStatus.ITenantStatusGateway>();
+        var liveness = await statusGateway.GetTenantLivenessAsync(guardedTenantId, context.RequestAborted);
+        if (liveness is not null && (!liveness.Exists || !liveness.IsActive))
+        {
+            var authCookieService = context.RequestServices.GetRequiredService<IAuthCookieService>();
+            authCookieService.ClearTokens(context.Response);
+            context.Response.Redirect("/account/login?reason=tenant-unavailable");
+            return;
+        }
+    }
+
+    await next();
+});
+
 app.Use(async (context, next) =>
 {
     if (RequiresPlatformPasswordChange(context) && !IsPasswordChangeAllowedPath(context.Request.Path))
@@ -355,6 +396,46 @@ static Guid? TryReadTenantId(string accessToken)
 static bool IsReferenceDataTenantPath(PathString path)
 {
     return path.StartsWithSegments("/Platform/ReferenceData", StringComparison.OrdinalIgnoreCase);
+}
+
+// FIX-4: gate the tenant-shell session guard to top-level HTML document navigations by a tenant_user. Excludes
+// login/account, platform-admin, API and static paths, and any ajax/non-HTML request, so DataTable/JSON callers
+// never receive an HTML login redirect — the next page navigation enforces the sign-out instead.
+static bool ShouldCheckTenantStatus(HttpContext context)
+{
+    if (!HttpMethods.IsGet(context.Request.Method))
+    {
+        return false;
+    }
+
+    var actorType = context.User.FindFirst("actor_type")?.Value;
+    if (!string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
+    {
+        return false;
+    }
+
+    var path = context.Request.Path;
+    if (path.StartsWithSegments("/account", StringComparison.OrdinalIgnoreCase)
+        || path.StartsWithSegments("/platform", StringComparison.OrdinalIgnoreCase)
+        || path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase)
+        || path.StartsWithSegments("/assets", StringComparison.OrdinalIgnoreCase))
+    {
+        return false;
+    }
+
+    if (string.Equals(context.Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase))
+    {
+        return false;
+    }
+
+    var accept = context.Request.Headers.Accept.ToString();
+    return accept.Contains("text/html", StringComparison.OrdinalIgnoreCase);
+}
+
+static bool TryReadTenantIdFromClaims(System.Security.Claims.ClaimsPrincipal user, out Guid tenantId)
+{
+    var raw = user.FindFirst("tenant_id")?.Value ?? user.FindFirst("tenantId")?.Value;
+    return Guid.TryParse(raw, out tenantId);
 }
 
 static bool ShouldSkipTokenBridgeRefresh(PathString path)

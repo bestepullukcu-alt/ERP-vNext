@@ -7,4 +7,7 @@ namespace Diten.Platform.Application.Features.ModuleCatalog;
 public static class ModuleCatalogErrorCodes
 {
     public const string ModuleCodeInUse = "MODULE_CODE_IN_USE";
+
+    // MC-4 — the target module is code-owned (self-registered from a manifest); manual create/update/delete is refused.
+    public const string ModuleManagedByCode = "MODULE_MANAGED_BY_CODE";
 }

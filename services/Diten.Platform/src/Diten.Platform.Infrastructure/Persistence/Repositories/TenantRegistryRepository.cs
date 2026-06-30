@@ -73,12 +73,13 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
 
     public async Task<(IReadOnlyList<Tenant> Items, long TotalCount)> QueryAsync(TenantListQuery query, CancellationToken ct = default)
     {
-        // Exclude the platform system tenant (TenantType.Internal) from the customer tenant list + counts.
-        // Single-tenant GetById/GetByCode/... intentionally still return it so system-side access keeps working.
+        // Exclude ONLY the specific platform system tenant (Id …0001) from the customer tenant list + counts —
+        // NOT all Internal tenants, so operator-created Internal tenants stay visible. Single-tenant
+        // GetById/GetByCode/... intentionally still return it so system-side access keeps working.
         var filters = new List<FilterDefinition<Tenant>>
         {
             ExecutionFilter,
-            Builders<Tenant>.Filter.Ne(x => x.TenantType, TenantType.Internal)
+            Builders<Tenant>.Filter.Ne(x => x.Id, SystemTenantRules.PlatformSystemTenantId)
         };
 
         if (!string.IsNullOrWhiteSpace(query.Search))
@@ -123,7 +124,7 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
     {
         var stats = await Collection.Aggregate()
             .Match(ExecutionFilter)
-            .Match(Builders<Tenant>.Filter.Ne(x => x.TenantType, TenantType.Internal))
+            .Match(Builders<Tenant>.Filter.Ne(x => x.Id, SystemTenantRules.PlatformSystemTenantId))
             .Group(
                 _ => 1,
                 group => new TenantRegistryStats(

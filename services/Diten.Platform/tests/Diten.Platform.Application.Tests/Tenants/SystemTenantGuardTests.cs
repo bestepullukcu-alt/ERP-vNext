@@ -71,6 +71,18 @@ public sealed class SystemTenantGuardTests
         Assert.False(SystemTenantRules.IsSystemTenant(new Tenant { Code = "ACME", Slug = "acme", Name = "Acme", DisplayName = "Acme", Domain = "acme.local", TenantType = TenantType.Customer }));
     }
 
+    // FIX-TENANTLIST — the customer LIST/stats hide only the specific platform system tenant by Id, so
+    // operator-created Internal tenants stay visible. The constant must be …0001 (NOT the audit …2121).
+    [Fact]
+    public void IsSystemTenantId_MatchesOnlyThePlatformSystemTenantId()
+    {
+        Assert.Equal(Guid.Parse("00000000-0000-0000-0000-000000000001"), SystemTenantRules.PlatformSystemTenantId);
+        Assert.True(SystemTenantRules.IsSystemTenantId(SystemTenantRules.PlatformSystemTenantId));
+        Assert.False(SystemTenantRules.IsSystemTenantId(Guid.NewGuid()));
+        // An operator-created Internal tenant (different Id) is NOT treated as the system tenant by the list filter.
+        Assert.False(SystemTenantRules.IsSystemTenantId(Guid.Parse("00000000-0000-0000-0000-000000009999")));
+    }
+
     private static Tenant CreateSystemTenant(TenantStatus status) => new()
     {
         Id = SystemTenantId,

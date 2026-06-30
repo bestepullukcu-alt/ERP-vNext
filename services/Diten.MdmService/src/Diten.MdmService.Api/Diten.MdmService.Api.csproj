@@ -15,5 +15,6 @@
     <ProjectReference Include="..\Diten.MdmService.Application\Diten.MdmService.Application.csproj" />
     <ProjectReference Include="..\Diten.MdmService.Infrastructure\Diten.MdmService.Infrastructure.csproj" />
     <ProjectReference Include="..\Diten.MdmService.Persistence\Diten.MdmService.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj" />
   </ItemGroup>
 </Project>

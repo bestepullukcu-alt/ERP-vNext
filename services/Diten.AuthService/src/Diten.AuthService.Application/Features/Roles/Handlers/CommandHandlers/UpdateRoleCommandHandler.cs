@@ -10,15 +10,18 @@ public sealed class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand
 {
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
+    private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
 
     public UpdateRoleCommandHandler(
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
+        IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext)
     {
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
+        _versionService = versionService;
         _tenantContext = tenantContext;
     }
 
@@ -29,6 +32,9 @@ public sealed class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand
 
         role.Update(request.DisplayName, request.Description);
         var updated = await _roleRepository.UpdateAsync(role, ct);
+
+        // FU13 — bump the tenant role-assignment version so cached authorization snapshots refresh.
+        await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
 
         var permissions = await _rolePermissionRepository.GetPermissionsByRoleAsync(role.Id, _tenantContext.TenantId, ct);
 

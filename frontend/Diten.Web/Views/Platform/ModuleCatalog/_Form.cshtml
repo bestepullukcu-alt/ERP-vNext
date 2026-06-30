@@ -48,10 +48,10 @@
                         @if (isEdit)
                         {
                             <input asp-for="ModuleCode"
-                                   class="form-control"
+                                   class="form-control bg-label-secondary text-muted"
                                    minlength="2"
                                    maxlength="80"
-                                   pattern="^[A-Z0-9]+(-[A-Z0-9]+)*$"
+                                   pattern="^[a-z][a-z0-9-]*$"
                                    placeholder="@Localizer["ModuleCodePlaceholder"]"
                                    required
                                    readonly="readonly"
@@ -59,18 +59,21 @@
                             <div id="moduleCodePreview" class="form-text mt-1 text-muted d-none">
                                 @Localizer["FinalCodePreview"]: <span class="fw-bold text-primary"></span>
                             </div>
-                            <div class="invalid-feedback">@Localizer["InvalidModuleCode"]</div>
+                            <div class="invalid-feedback">@Localizer["ModuleCodeInvalidSlug"]</div>
                         }
                         else
                         {
-                            <select asp-for="ModuleCode" class="select2 form-select"
-                                    data-lookup-url="/Platform/ModuleCatalog/api/lookups/module-catalog/permission-modules"
-                                    data-selected-value="@Model.ModuleCode" data-tags="true"
-                                    data-placeholder="@Localizer["ModuleCodeSelectPlaceholder"]" required>
-                                <option value=""></option>
-                            </select>
+                            <input asp-for="ModuleCode"
+                                   type="text"
+                                   class="form-control"
+                                   minlength="2"
+                                   maxlength="80"
+                                   pattern="^[a-z][a-z0-9-]*$"
+                                   placeholder="@Localizer["ModuleCodePlaceholder"]"
+                                   required
+                                   data-is-edit="false" />
                             <div class="form-text mt-1 text-muted">@Localizer["ModuleCodeHelpText"]</div>
-                            <div class="invalid-feedback">@Localizer["InvalidModuleCode"]</div>
+                            <div class="invalid-feedback">@Localizer["ModuleCodeInvalidSlug"]</div>
                         }
                     </div>
                     <div class="col-12 col-md-6">
@@ -154,20 +157,25 @@
                             <option value="Active">@Localizer["StatusActive"]</option>
                             <option value="Inactive">@Localizer["StatusInactive"]</option>
                             <option value="Deprecated">@Localizer["StatusDeprecated"]</option>
+                            <option value="Beta">@Localizer["StatusBeta"]</option>
+                            <option value="Preview">@Localizer["StatusPreview"]</option>
                         </select>
                     </div>
                     <div class="col-12">
                         <div class="form-check form-switch" data-bs-toggle="tooltip" data-bs-placement="top" title="@Localizer["HelpTextCoreModule"]">
-                            <input type="hidden" name="IsCoreModule" value="false" />
+                            @* Checkbox FIRST, hidden "false" LAST: model binding takes the first value for a
+                               repeated name, so the checkbox's "true" wins when checked (standard CheckBoxFor order). *@
                             <input asp-for="IsCoreModule" class="form-check-input" role="switch" value="true" />
                             <label asp-for="IsCoreModule" class="form-check-label">@Localizer["Core"]</label>
+                            <input type="hidden" name="IsCoreModule" value="false" />
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="form-check form-switch" data-bs-toggle="tooltip" data-bs-placement="top" title="@Localizer["HelpTextTenantAssignable"]">
-                            <input type="hidden" name="IsTenantAssignable" value="false" />
+                            @* Checkbox FIRST, hidden "false" LAST (see IsCoreModule above). *@
                             <input asp-for="IsTenantAssignable" class="form-check-input" role="switch" value="true" />
                             <label asp-for="IsTenantAssignable" class="form-check-label">@Localizer["Assignable"]</label>
+                            <input type="hidden" name="IsTenantAssignable" value="false" />
                         </div>
                     </div>
                 </div>

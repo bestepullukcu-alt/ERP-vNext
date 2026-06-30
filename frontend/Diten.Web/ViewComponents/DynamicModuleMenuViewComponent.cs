@@ -66,12 +66,31 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
                 return DynamicModuleMenuViewModel.Empty;
             }
 
-            return new DynamicModuleMenuViewModel(groups
-                .Select(g => new NavModuleGroupView(
-                    g.ModuleDisplayName ?? g.ModuleCode ?? string.Empty,
-                    BuildTree(g.Items)))
-                .Where(g => g.Nodes.Count > 0)
-                .ToList());
+            // FIX-3 — DATA-DRIVEN: group modules by DOMAIN (display name resolved server-side). Each module is one
+            // entry; the view links a single-page module straight to its page, or makes a multi-page module a
+            // collapsible group. Grouping/order/visibility come entirely from the response (Domain, SortOrder,
+            // IsNavigationVisible) — nothing hardcoded; operators manage it from the Module Catalog.
+            var moduleEntries = groups
+                .Select(g => new
+                {
+                    Domain = g.Domain ?? string.Empty,
+                    DomainDisplay = !string.IsNullOrWhiteSpace(g.DomainDisplayName)
+                        ? g.DomainDisplayName!
+                        : (!string.IsNullOrWhiteSpace(g.Domain) ? g.Domain! : "Modules"),
+                    Module = new NavModuleEntryView(
+                        g.ModuleDisplayName ?? g.ModuleCode ?? string.Empty,
+                        BuildTree(g.Items))
+                })
+                .Where(x => x.Module.Nodes.Count > 0)
+                .ToList();
+
+            // GroupBy preserves first-seen order; modules arrive SortOrder-ordered from the backend.
+            var domains = moduleEntries
+                .GroupBy(x => (x.Domain, x.DomainDisplay))
+                .Select(dg => new NavDomainGroupView(dg.Key.DomainDisplay, dg.Select(x => x.Module).ToList()))
+                .ToList();
+
+            return new DynamicModuleMenuViewModel(domains);
         }
         catch (Exception ex)
         {
@@ -127,7 +146,12 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
 
     private sealed record NavigationResponse(IReadOnlyList<NavigationGroup>? Data);
 
-    private sealed record NavigationGroup(string? ModuleCode, string? ModuleDisplayName, IReadOnlyList<NavigationItem>? Items);
+    private sealed record NavigationGroup(
+        string? ModuleCode,
+        string? ModuleDisplayName,
+        string? Domain,
+        string? DomainDisplayName,
+        IReadOnlyList<NavigationItem>? Items);
 
     private sealed record NavigationItem(
         string PageCode,
@@ -139,14 +163,22 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
         int SortOrder);
 }
 
-public sealed record DynamicModuleMenuViewModel(IReadOnlyList<NavModuleGroupView> Groups)
+public sealed record DynamicModuleMenuViewModel(IReadOnlyList<NavDomainGroupView> Domains)
 {
-    public static readonly DynamicModuleMenuViewModel Empty = new(Array.Empty<NavModuleGroupView>());
+    public static readonly DynamicModuleMenuViewModel Empty = new(Array.Empty<NavDomainGroupView>());
 
-    public bool HasItems => Groups.Count > 0;
+    public bool HasItems => Domains.Count > 0;
 }
 
-public sealed record NavModuleGroupView(string ModuleDisplayName, IReadOnlyList<NavNodeView> Nodes);
+// FIX-3 — DOMAIN is the menu group; each module is one entry under it.
+public sealed record NavDomainGroupView(string DomainDisplayName, IReadOnlyList<NavModuleEntryView> Modules);
+
+public sealed record NavModuleEntryView(string ModuleDisplayName, IReadOnlyList<NavNodeView> Nodes)
+{
+    // A module with exactly one nav-visible page (no sub-pages) links straight to that page (its name is the
+    // module name, the page name is not shown separately). Anything else renders as a collapsible module group.
+    public bool IsSinglePage => Nodes.Count == 1 && Nodes[0].Children.Count == 0;
+}
 
 public sealed record NavNodeView(
     string DisplayName,

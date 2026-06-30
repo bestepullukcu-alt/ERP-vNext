@@ -2,11 +2,17 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Web.Services.Auth;
 
 public sealed class AuthGateway : IAuthGateway
 {
+    // User-facing message when the auth service / gateway is unreachable. Plain (non-localized) by design — the
+    // raw transport exception / stack is NEVER surfaced; it is only logged.
+    private const string AuthServiceUnavailableMessage =
+        "The authentication service is temporarily unavailable. Please try again in a moment.";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -14,11 +20,13 @@ public sealed class AuthGateway : IAuthGateway
 
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<AuthGateway> _logger;
 
-    public AuthGateway(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
+    public AuthGateway(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, ILogger<AuthGateway> logger)
     {
         _httpClient = httpClient;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     public Task<AuthBridgeResult> LoginTenantAsync(string email, string password, Guid tenantId, bool rememberMe = false, CancellationToken ct = default)
@@ -176,7 +184,29 @@ public sealed class AuthGateway : IAuthGateway
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         }
 
-        var response = await _httpClient.SendAsync(request, ct);
+        HttpResponseMessage response;
+        try
+        {
+            response = await _httpClient.SendAsync(request, ct);
+        }
+        catch (Exception ex) when (ex is HttpRequestException || (ex is TaskCanceledException && !ct.IsCancellationRequested))
+        {
+            // Auth service / gateway unreachable (connection refused / DNS / socket) or a client-side timeout.
+            // Surface a clean, user-friendly 503 — never the raw exception text/stack — so the login page shows a
+            // friendly message instead of a 500. A genuine caller cancellation (ct) is excluded by the filter and
+            // propagates as a real cancellation.
+            _logger.LogWarning(ex, "Auth bridge request to {Url} failed: authentication service is unreachable.", url);
+            return new AuthBridgeResult(
+                Success: false,
+                AccessToken: null,
+                RefreshToken: null,
+                ExpiresAt: null,
+                User: null,
+                ErrorMessage: AuthServiceUnavailableMessage,
+                ReauthRequired: false,
+                StatusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
         if (!response.IsSuccessStatusCode)
         {
             bool reauthRequired = false;

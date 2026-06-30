@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.ModuleCatalog.Commands;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -8,11 +9,19 @@ namespace Diten.Platform.Application.Features.ModuleCatalog.Handlers.CommandHand
 
 public sealed class ActivateModuleCatalogItemCommandHandler : IRequestHandler<ActivateModuleCatalogItemCommand, Response<NoContent>>
 {
-    private readonly IModuleCatalogRepository _repository;
+    // A3-ref — system actor for the gate (this handler has no per-user context; the gate decision is driven by
+    // the object's workflow state, not the actor). The actor id only needs to be a non-empty identifier.
+    private const string GateActor = "system:module-catalog-activate";
 
-    public ActivateModuleCatalogItemCommandHandler(IModuleCatalogRepository repository)
+    private readonly IModuleCatalogRepository _repository;
+    private readonly IWorkflowTransitionGate _transitionGate;
+
+    public ActivateModuleCatalogItemCommandHandler(
+        IModuleCatalogRepository repository,
+        IWorkflowTransitionGate transitionGate)
     {
         _repository = repository;
+        _transitionGate = transitionGate;
     }
 
     public async Task<Response<NoContent>> Handle(ActivateModuleCatalogItemCommand request, CancellationToken ct)
@@ -27,6 +36,22 @@ public sealed class ActivateModuleCatalogItemCommandHandler : IRequestHandler<Ac
         {
             return Response<NoContent>.Fail($"Invalid status transition from {item.Status} to Active.", 400);
         }
+
+        // A3-ref — reference consumer of the workflow transition gate. Call the gate BEFORE committing the
+        // state change. No workflow bound to this object → NotApplicable → Allowed (behaviour unchanged).
+        // Blocked (or a failed evaluation — fail-closed) → WorkflowTransitionBlockedException → activation is
+        // aborted and the item stays in its current state (no commit). This is the template other state-
+        // transitioning modules follow (see docs/workflow-transition-gate-standard.md).
+        await _transitionGate.EnsureAllowedOrThrowAsync(
+            new WorkflowGateRequest(
+                ObjectType: "ModuleCatalogItem",
+                ObjectId: item.Id.ToString(),
+                ObjectRef: $"ModuleCatalogItem:{item.ModuleCode}",
+                RequestedTransition: "Activate",
+                RequestedTargetState: ModuleCatalogStatus.Active.ToString(),
+                ActorId: GateActor,
+                ReasonCode: null),
+            ct);
 
         item.Status = ModuleCatalogStatus.Active;
         await _repository.UpdateAsync(item, ct);

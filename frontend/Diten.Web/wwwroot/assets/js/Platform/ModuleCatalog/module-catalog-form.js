@@ -14,6 +14,45 @@ const ModuleCatalogForm = (function () {
     const L = window.L10n || {};
     const isEdit = inputModuleCode?.dataset?.isEdit === 'true';
 
+    // MC-3a — module code is a canonical slug: lowercase + PermissionKeyParser rule [a-z][a-z0-9-]*.
+    const MODULE_CODE_SLUG_RE = /^[a-z][a-z0-9-]*$/;
+
+    // Map machine-readable backend error codes to localized messages (mirrors the
+    // server-side LocalizeGatewayError switch; used if errors ever surface client-side).
+    const localizeError = (code) => {
+        switch (code) {
+            case 'MODULE_MANAGED_BY_CODE':
+                return L.ModuleManagedByCode || code;
+            case 'MODULE_CODE_IN_USE':
+                return L.ModuleCodeInUse || code;
+            default:
+                return code;
+        }
+    };
+
+    // Lowercase-normalize the module code as the user types and validate the slug
+    // format. Invalid input marks the field is-invalid and blocks submit. Readonly
+    // (edit mode) is left untouched — module code is HARD/immutable once created.
+    const handleModuleCodeInput = () => {
+        if (!inputModuleCode || isEdit) return;
+        const normalized = (inputModuleCode.value || '').toLowerCase();
+        if (inputModuleCode.value !== normalized) {
+            const caret = inputModuleCode.selectionStart;
+            inputModuleCode.value = normalized;
+            try { inputModuleCode.setSelectionRange(caret, caret); } catch (error) { /* noop */ }
+        }
+        const value = inputModuleCode.value.trim();
+        const valid = value.length > 0 && MODULE_CODE_SLUG_RE.test(value);
+        inputModuleCode.classList.toggle('is-invalid', !valid && value.length > 0);
+        inputModuleCode.classList.toggle('is-valid', valid);
+        if (!valid) {
+            inputModuleCode.setCustomValidity('invalid-module-code');
+        } else {
+            inputModuleCode.setCustomValidity('');
+        }
+        toggleSaveButton();
+    };
+
     const toggleSaveButton = () => {
         if (!form || !btnSave) return;
         
@@ -49,12 +88,6 @@ const ModuleCatalogForm = (function () {
                 placeholder: $this.data('placeholder') || ''
             };
 
-            // Opt-in tagging: only selects flagged with data-tags="true" allow
-            // free-typed values (e.g. ModuleCode when the module isn't in auth yet).
-            if ($this.attr('data-tags') === 'true') {
-                options.tags = true;
-            }
-
             if (isStatus) {
                 options.templateResult = formatStatus;
                 options.templateSelection = formatStatus;
@@ -72,6 +105,8 @@ const ModuleCatalogForm = (function () {
                 case 'Inactive': colorClass = 'text-warning'; break;
                 case 'Deprecated': colorClass = 'text-danger'; break;
                 case 'Draft': colorClass = 'text-secondary'; break;
+                case 'Beta': colorClass = 'text-info'; break;
+                case 'Preview': colorClass = 'text-primary'; break;
             }
             return $('<span class="' + colorClass + ' fw-medium"><i class="bx bxs-circle me-1 small"></i>' + state.text + '</span>');
         }
@@ -161,6 +196,13 @@ const ModuleCatalogForm = (function () {
                     toggleSaveButton();
                 });
             });
+
+            // Module code: lowercase-normalize + slug validation (create mode only;
+            // edit mode the field is readonly/immutable).
+            if (inputModuleCode && !isEdit) {
+                inputModuleCode.addEventListener('input', handleModuleCodeInput);
+                inputModuleCode.addEventListener('blur', handleModuleCodeInput);
+            }
 
             // Special handling for Select2
             $('.select2').on('change', function (e) {

@@ -11,17 +11,20 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
     private readonly IRoleRepository _roleRepository;
     private readonly IPermissionRepository _permissionRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
+    private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
 
     public AssignPermissionCommandHandler(
         IRoleRepository roleRepository,
         IPermissionRepository permissionRepository,
         IRolePermissionRepository rolePermissionRepository,
+        IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext)
     {
         _roleRepository = roleRepository;
         _permissionRepository = permissionRepository;
         _rolePermissionRepository = rolePermissionRepository;
+        _versionService = versionService;
         _tenantContext = tenantContext;
     }
 
@@ -34,6 +37,9 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         // Note: Repository might need module.resource.action check later if needed
         
         await _rolePermissionRepository.AssignAsync(new RolePermission(request.RoleId, request.PermissionId, _tenantContext.TenantId, "System"), ct);
+
+        // FU13 — bump the tenant role-assignment version so every holder's cached snapshot is invalidated at once.
+        await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
         return Response<NoContent>.Success(204);
     }
 }

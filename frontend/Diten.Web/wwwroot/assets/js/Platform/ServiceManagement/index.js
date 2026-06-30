@@ -3,6 +3,8 @@
 const ServiceManagementList = (function () {
     let dt;
     let editingId = null;
+    // FIX-DS1 — auto-slug Code from Display Name until the user manually edits Code (then user wins).
+    let codeManuallyEdited = false;
     let L = window.L10n || {};
     const dtTableEl = document.querySelector('.datatables-service-management');
     const endpoint = '/Platform/ServiceManagement/api';
@@ -291,6 +293,7 @@ const ServiceManagementList = (function () {
         document.getElementById('serviceSortOrder').value = '0';
         document.getElementById('serviceIsActive').checked = true;
         document.getElementById('serviceCodePreview')?.classList.add('d-none');
+        codeManuallyEdited = false; // fresh form → resume auto-deriving Code from Display Name
         clearFormErrors();
     };
 
@@ -402,7 +405,17 @@ const ServiceManagementList = (function () {
         });
         document.getElementById('btnSaveService')?.addEventListener('click', submitForm);
         document.getElementById('serviceCode')?.addEventListener('input', function () {
+            // The user touched Code → stop auto-deriving it from Display Name (user keeps control).
+            codeManuallyEdited = true;
             this.value = this.value.toUpperCase();
+            updateCodePreview();
+        });
+        // CREATE mode only: mirror Display Name → Code until the user edits Code. Never in EDIT (keep existing Code).
+        document.getElementById('serviceDisplayName')?.addEventListener('input', function () {
+            if (editingId || codeManuallyEdited) return;
+            const codeEl = document.getElementById('serviceCode');
+            if (!codeEl) return;
+            codeEl.value = normalizeCode(this.value);
             updateCodePreview();
         });
     };

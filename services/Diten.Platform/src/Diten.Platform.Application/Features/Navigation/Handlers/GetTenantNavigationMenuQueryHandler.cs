@@ -22,17 +22,20 @@ public sealed class GetTenantNavigationMenuQueryHandler
     private readonly IPlatformCatalogContract _catalogContract;
     private readonly ITenantModuleAccessService _accessService;
     private readonly IModulePageDescriptorRepository _pageRepository;
+    private readonly IModuleDomainRepository _domainRepository;
     private readonly ITenantContext _tenantContext;
 
     public GetTenantNavigationMenuQueryHandler(
         IPlatformCatalogContract catalogContract,
         ITenantModuleAccessService accessService,
         IModulePageDescriptorRepository pageRepository,
+        IModuleDomainRepository domainRepository,
         ITenantContext tenantContext)
     {
         _catalogContract = catalogContract;
         _accessService = accessService;
         _pageRepository = pageRepository;
+        _domainRepository = domainRepository;
         _tenantContext = tenantContext;
     }
 
@@ -50,6 +53,17 @@ public sealed class GetTenantNavigationMenuQueryHandler
                 entitled.Add(module);
             }
         }
+
+        // Domain code → display name (operator-managed platform_module_domains). Unresolved codes fall back to
+        // the raw code so the menu still groups data-drivenly. Global entity — read outside the platform scope.
+        // FIX-3b — match FORMAT-tolerantly: the manifest domain ("MasterDataManagement") and the domain row code
+        // ("MASTER-DATA-MANAGEMENT") differ only by separators/case, so normalize both sides (strip every
+        // non-alphanumeric char + uppercase) before keying. Display-only; grouping/data is unaffected.
+        var domains = await _domainRepository.GetActiveAsync(ct);
+        var domainNames = domains
+            .Where(d => NormalizeDomainKey(d.Code).Length > 0)
+            .GroupBy(d => NormalizeDomainKey(d.Code), StringComparer.Ordinal)
+            .ToDictionary(g => g.Key, g => g.First().DisplayName, StringComparer.Ordinal);
 
         var groups = new List<NavigationModuleGroupDto>();
 
@@ -78,11 +92,42 @@ public sealed class GetTenantNavigationMenuQueryHandler
                     var displayName = !string.IsNullOrWhiteSpace(module.DisplayName)
                         ? module.DisplayName
                         : !string.IsNullOrWhiteSpace(module.ModuleName) ? module.ModuleName : module.ModuleCode;
-                    groups.Add(new NavigationModuleGroupDto(module.ModuleCode, displayName, items));
+
+                    var domainCode = module.Domain ?? string.Empty;
+                    var domainKey = NormalizeDomainKey(domainCode);
+                    var domainDisplay = domainKey.Length > 0
+                                        && domainNames.TryGetValue(domainKey, out var dn)
+                                        && !string.IsNullOrWhiteSpace(dn)
+                        ? dn
+                        : (string.IsNullOrWhiteSpace(domainCode) ? "Modules" : domainCode);
+
+                    groups.Add(new NavigationModuleGroupDto(module.ModuleCode, displayName, domainCode, domainDisplay, items));
                 }
             }
         }
 
         return Response<IReadOnlyList<NavigationModuleGroupDto>>.Success(groups);
+    }
+
+    // Format-tolerant domain key: drop every non-alphanumeric char (dash/space/dot/underscore) and uppercase,
+    // so "MasterDataManagement", "MASTER-DATA-MANAGEMENT" and "master data management" all collapse to the same key.
+    private static string NormalizeDomainKey(string? code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return string.Empty;
+        }
+
+        Span<char> buffer = stackalloc char[code.Length];
+        var length = 0;
+        foreach (var ch in code)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                buffer[length++] = char.ToUpperInvariant(ch);
+            }
+        }
+
+        return new string(buffer[..length]);
     }
 }

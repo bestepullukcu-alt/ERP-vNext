@@ -13,6 +13,6 @@
   <data name="Assign" xml:space="preserve"><value>Ata</value></data>
   <data name="BadgeBaseline" xml:space="preserve"><value>Temel</value></data>
   <data name="BadgeModule" xml:space="preserve"><value>Modül</value></data>
-  <data name="BadgeManual" xml:space="preserve"><value>Manuel</value></data>
-  <data name="LockedHint" xml:space="preserve"><value>Temel ve modülden gelen izinler buradan değiştirilemez.</value></data>
+  <data name="BadgeManual" xml:space="preserve"><value>Elle</value></data>
+  <data name="LockedHint" xml:space="preserve"><value>Temel ve modül kaynaklı izinler buradan değiştirilemez.</value></data>
 </root>

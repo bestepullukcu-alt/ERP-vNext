@@ -20,62 +20,100 @@
     Func<string, bool> isActive = route =>
         !string.IsNullOrWhiteSpace(route) && route != "#"
         && currentPath.StartsWith(route, StringComparison.OrdinalIgnoreCase);
+
+    // A node is "active" if it or any visible child matches the current route (for open/active styling).
+    Func<NavNodeView, bool> nodeActive = null!;
+    nodeActive = n => isActive(n.RoutePath) || n.Children.Any(c => nodeActive(c));
 }
 
 @if (Model.HasItems)
 {
-    foreach (var group in Model.Groups)
+    @* DATA-DRIVEN: DOMAIN header → module entries. Single-page module links straight to its page (module name
+       shown, page name hidden); multi-page module is a collapsible group of its pages. Nothing hardcoded. *@
+    foreach (var domain in Model.Domains)
     {
-        var visibleNodes = group.Nodes.Where(CanShow).ToList();
-        if (visibleNodes.Count == 0)
+        var visibleModules = domain.Modules.Where(m => m.Nodes.Any(CanShow)).ToList();
+        if (visibleModules.Count == 0)
         {
             continue;
         }
 
         <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">@group.ModuleDisplayName</span>
+            <span class="menu-header-text">@domain.DomainDisplayName</span>
         </li>
 
-        foreach (var node in visibleNodes)
+        foreach (var module in visibleModules)
         {
-            var visibleChildren = node.Children.Where(CanShow).ToList();
-            var icon = string.IsNullOrWhiteSpace(node.IconHint) ? "bx-box" : node.IconHint;
+            if (module.IsSinglePage)
+            {
+                var node = module.Nodes[0];
+                if (!Permitted(node))
+                {
+                    continue;
+                }
 
-            if (visibleChildren.Count > 0)
-            {
-                var childActive = visibleChildren.Any(c => isActive(c.RoutePath));
-                <li class="menu-item @(childActive ? "open active" : "")">
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <i class="menu-icon tf-icons bx @icon"></i>
-                        <div>@node.DisplayName</div>
-                    </a>
-                    <ul class="menu-sub">
-                        @if (Permitted(node))
-                        {
-                            <li class="menu-item @(isActive(node.RoutePath) ? "active" : "")">
-                                <a href="@node.RoutePath" class="menu-link">
-                                    <div>@node.DisplayName</div>
-                                </a>
-                            </li>
-                        }
-                        @foreach (var child in visibleChildren)
-                        {
-                            <li class="menu-item @(isActive(child.RoutePath) ? "active" : "")">
-                                <a href="@child.RoutePath" class="menu-link">
-                                    <div>@child.DisplayName</div>
-                                </a>
-                            </li>
-                        }
-                    </ul>
-                </li>
-            }
-            else if (Permitted(node))
-            {
+                var icon = string.IsNullOrWhiteSpace(node.IconHint) ? "bx-box" : node.IconHint;
                 <li class="menu-item @(isActive(node.RoutePath) ? "active" : "")">
                     <a href="@node.RoutePath" class="menu-link">
                         <i class="menu-icon tf-icons bx @icon"></i>
-                        <div>@node.DisplayName</div>
+                        <div>@module.ModuleDisplayName</div>
                     </a>
+                </li>
+            }
+            else
+            {
+                var visibleNodes = module.Nodes.Where(CanShow).ToList();
+                if (visibleNodes.Count == 0)
+                {
+                    continue;
+                }
+
+                var moduleActive = visibleNodes.Any(nodeActive);
+                <li class="menu-item @(moduleActive ? "open active" : "")">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons bx bx-box"></i>
+                        <div>@module.ModuleDisplayName</div>
+                    </a>
+                    <ul class="menu-sub">
+                        @foreach (var node in visibleNodes)
+                        {
+                            var visibleChildren = node.Children.Where(CanShow).ToList();
+                            if (visibleChildren.Count > 0)
+                            {
+                                <li class="menu-item @(nodeActive(node) ? "open active" : "")">
+                                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                                        <div>@node.DisplayName</div>
+                                    </a>
+                                    <ul class="menu-sub">
+                                        @if (Permitted(node))
+                                        {
+                                            <li class="menu-item @(isActive(node.RoutePath) ? "active" : "")">
+                                                <a href="@node.RoutePath" class="menu-link">
+                                                    <div>@node.DisplayName</div>
+                                                </a>
+                                            </li>
+                                        }
+                                        @foreach (var child in visibleChildren)
+                                        {
+                                            <li class="menu-item @(isActive(child.RoutePath) ? "active" : "")">
+                                                <a href="@child.RoutePath" class="menu-link">
+                                                    <div>@child.DisplayName</div>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </li>
+                            }
+                            else if (Permitted(node))
+                            {
+                                <li class="menu-item @(isActive(node.RoutePath) ? "active" : "")">
+                                    <a href="@node.RoutePath" class="menu-link">
+                                        <div>@node.DisplayName</div>
+                                    </a>
+                                </li>
+                            }
+                        }
+                    </ul>
                 </li>
             }
         }

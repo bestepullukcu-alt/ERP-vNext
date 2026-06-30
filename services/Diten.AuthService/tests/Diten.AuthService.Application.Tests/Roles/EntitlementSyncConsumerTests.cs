@@ -89,10 +89,37 @@ public sealed class EntitlementSyncConsumerTests
         Assert.Null(sync.Granted);
     }
 
+    [Fact]
+    public async Task Subscription_changed_reconciles_against_the_pulled_entitled_set()
+    {
+        var sync = new FakeSync();
+        var client = new FakeEntitlementClient(["goldenslim", "workflow"]);
+        var consumer = Build(sync, new FakeInbox(firstDelivery: true), client);
+
+        await consumer.ConsumeAsync(Message(TenantSubscriptionChangedV1.Name, TenantA, moduleCode: ""));
+
+        Assert.Equal(TenantA, sync.Synced?.tenantId);
+        Assert.Equal(new[] { "goldenslim", "workflow" }, sync.Synced?.codes);
+        Assert.Null(sync.Granted);
+        Assert.Null(sync.Revoked);
+    }
+
+    [Fact]
+    public async Task Subscription_changed_with_empty_pull_does_not_reconcile()
+    {
+        var sync = new FakeSync();
+        var client = new FakeEntitlementClient([]); // Platform unreachable / no entitlements
+        var consumer = Build(sync, new FakeInbox(firstDelivery: true), client);
+
+        await consumer.ConsumeAsync(Message(TenantSubscriptionChangedV1.Name, TenantA, moduleCode: ""));
+
+        Assert.Null(sync.Synced); // never strip grants on an empty pull
+    }
+
     // ── harness ──
 
-    private static EntitlementSyncConsumer Build(FakeSync sync, FakeInbox inbox)
-        => new(sync, inbox, NullLogger<EntitlementSyncConsumer>.Instance);
+    private static EntitlementSyncConsumer Build(FakeSync sync, FakeInbox inbox, FakeEntitlementClient? client = null)
+        => new(sync, client ?? new FakeEntitlementClient([]), inbox, NullLogger<EntitlementSyncConsumer>.Instance);
 
     private static EventTransportMessage Message(string eventName, Guid tenantId, string moduleCode)
     {
@@ -105,6 +132,7 @@ public sealed class EntitlementSyncConsumerTests
     {
         public (Guid tenantId, string moduleCode)? Granted { get; private set; }
         public (Guid tenantId, string moduleCode)? Revoked { get; private set; }
+        public (Guid tenantId, string[] codes)? Synced { get; private set; }
 
         public Task GrantModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default)
         {
@@ -117,6 +145,34 @@ public sealed class EntitlementSyncConsumerTests
             Revoked = (tenantId, moduleCode);
             return Task.CompletedTask;
         }
+
+        public Task SyncTenantModulesAsync(Guid tenantId, IReadOnlyCollection<string> entitledModuleCodes, string actor, CancellationToken ct = default)
+        {
+            Synced = (tenantId, entitledModuleCodes.ToArray());
+            return Task.CompletedTask;
+        }
+
+        public Task GrantModuleWithKeysAsync(Guid tenantId, string moduleCode, IReadOnlyCollection<string> permissionKeys, string actor, CancellationToken ct = default)
+        {
+            Granted = (tenantId, moduleCode);
+            return Task.CompletedTask;
+        }
+
+        public Task SyncTenantModulesWithKeysAsync(Guid tenantId, IReadOnlyCollection<EntitledModulePermissionKeys> modules, string actor, CancellationToken ct = default)
+        {
+            Synced = (tenantId, modules.Select(m => m.ModuleCode).ToArray());
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeEntitlementClient(IReadOnlyList<string> codes) : ITenantEntitlementClient
+    {
+        public Task<IReadOnlyList<string>> GetEntitledModuleCodesAsync(Guid tenantId, CancellationToken ct)
+            => Task.FromResult(codes);
+
+        public Task<IReadOnlyList<EntitledModulePermissionKeys>> GetEntitledModulesWithPermissionKeysAsync(Guid tenantId, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<EntitledModulePermissionKeys>>(
+                codes.Select(c => new EntitledModulePermissionKeys(c, Array.Empty<string>())).ToList());
     }
 
     private sealed class FakeInbox(bool firstDelivery) : IIntegrationEventInboxRepository

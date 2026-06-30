@@ -20,6 +20,10 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
         _permission = permission;
     }
 
+    /// <summary>The required permission key. Exposed so startup auto-registration (A1) can reflect it without
+    /// reaching into the private field.</summary>
+    public string Permission => _permission;
+
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
         var user = context.HttpContext.User;

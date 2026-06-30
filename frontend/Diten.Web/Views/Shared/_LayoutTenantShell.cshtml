@@ -3,6 +3,7 @@
 @using Diten.Web.Security
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject IHtmlLocalizer<Diten.Web.Views.Governance.TenantSecuritySettings.TenantSecuritySettingsIndex> TenantSecurityLocalizer
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     var currentUser = User?.Identity?.IsAuthenticated == true
@@ -25,9 +26,6 @@
     var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
     var layoutDirection = string.Equals(currentCulture, "ar", StringComparison.OrdinalIgnoreCase) ? "rtl" : "ltr";
     var activeController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
-    var currentPath = Context.Request.Path.Value ?? string.Empty;
-    var canReadReferenceData = PermissionClaims.HasPermission(User, "Platform.BusinessReferenceData.Read");
-    var canViewWorkflow = PermissionClaims.HasPermission(User, "platform.workflow.definitions.view");
 }
 <!DOCTYPE html>
 
@@ -158,12 +156,8 @@
             <!-- Menu (Sidebar) -->
             <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
                 <div class="app-brand demo">
-                    <a href="/" class="app-brand-link">
-                        <span class="app-brand-logo demo">
-                            <i class="bx bx-buildings text-primary fs-2"></i>
-                        </span>
-                        <span class="app-brand-text demo menu-text fw-bold ms-2">Di10</span>
-                    </a>
+                    @* FIX-SHELL-BRANDING — tenant logo varsa sadece logo, yoksa default ikon + "Di10". *@
+                    @await Component.InvokeAsync("TenantBrand")
                     <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
                         <i class="icon-base bx bx-chevron-left"></i>
                     </a>
@@ -182,59 +176,6 @@
                             <div>@SharedLocalizer["WorkCenterMenu"]</div>
                         </a>
                     </li>
-                    @if (canReadReferenceData)
-                    {
-                        <li class="menu-item @(currentPath.StartsWith("/Platform/ReferenceData", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
-                            <a href="/Platform/ReferenceData" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-data"></i>
-                                <div>@SharedLocalizer["ReferenceDataMenu"]</div>
-                            </a>
-                        </li>
-                    }
-                    @* MOD-0023 — Workflow Config / Approval Templates (tenant-scoped admin) *@
-                    @if (canViewWorkflow)
-                    {
-                        <li class="menu-item @(currentPath.StartsWith("/Platform/Workflow", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
-                            <a href="/Platform/Workflow" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-git-merge"></i>
-                                <div>@SharedLocalizer["WorkflowApprovalsMenu"]</div>
-                            </a>
-                        </li>
-                    }
-
-                    <!-- Developer Sandbox -->
-                    <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">@SharedLocalizer["DeveloperSandbox"]</span>
-                    </li>
-                    @if (Perms.Has("goldenslim.records.read"))
-                    {
-                        <li class="menu-item @(activeController == "GoldenReferenceSlim" ? "active" : "")">
-                            <a href="/GoldenReferenceSlim" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-star"></i>
-                                <div>@SharedLocalizer["GoldenSlim"]</div>
-                            </a>
-                        </li>
-                    }
-                    <li class="menu-item @(activeController == "GoldenReferenceCompact" ? "active" : "")">
-                        <a href="/GoldenReferenceCompact" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-collection"></i>
-                            <div>@SharedLocalizer["GoldenCompact"]</div>
-                        </a>
-                    </li>
-
-                    @* MOD-0028-FU03 — Documentation Management / Documentation Structures (TenantShell).
-                       FE-B UX guard: shown only with the view permission; backend (FU02) is authoritative.
-                       The instantiation (company adoption) surface is reached via the "Instantiate Structures"
-                       button on this page rather than its own sidebar entry. *@
-                    @if (Perms.Has("platform.document-management.qms-baselines.view"))
-                    {
-                        <li class="menu-item @(activeController == "DocumentManagementQmsBaselines" || activeController == "DocumentManagementInstantiations" ? "active" : "")">
-                            <a href="/DocumentManagementQmsBaselines" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-folder-open"></i>
-                                <div>@SharedLocalizer["DocumentationStructures"]</div>
-                            </a>
-                        </li>
-                    }
 
                     @* MOD-0029-FU01 — Controlled Documents (TenantShell). FE-B UX guard: shown only with the
                        view permission; backend (FU01 Layer 1 + Layer 2) is authoritative. The folder-share
@@ -337,54 +278,14 @@
                                 </a>
                             </li>
                         }
-                    }
-
-                    @* MOD-0220 — Master Data (tenant-side). Legal Entities feed the Organization Units form. *@
-                    @if (Perms.Has("mdm.legal-entities.read"))
-                    {
-                        <li class="menu-header small text-uppercase">
-                            <span class="menu-header-text">@SharedLocalizer["MasterData"]</span>
-                        </li>
-                        <li class="menu-item @(activeController == "LegalEntities" ? "active" : "")">
-                            <a href="/LegalEntities" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-buildings"></i>
-                                <div>@SharedLocalizer["LegalEntities"]</div>
-                            </a>
-                        </li>
-                    }
-
-                    @* MOD-0288 — Organization, Person & Position Directory (relocated to the tenant shell).
-                       Each item is gated by its backend .read permission (UX-only show/hide; [HasPermission]
-                       remains authoritative). *@
-                    @if (Perms.Has("platform.organization-units.read") || Perms.Has("platform.positions.read") || Perms.Has("platform.position-assignments.read"))
-                    {
-                        <li class="menu-header small text-uppercase">
-                            <span class="menu-header-text">@SharedLocalizer["Organization"]</span>
-                        </li>
-                        @if (Perms.Has("platform.organization-units.read"))
+                        @* MOD — Tenant self-service Security Settings. UX guard only; backend
+                           [HasPermission("platform.tenant-security.manage")] is authoritative. *@
+                        @if (Perms.Has("platform.tenant-security.manage"))
                         {
-                            <li class="menu-item @(activeController == "OrganizationUnits" ? "active" : "")">
-                                <a href="/OrganizationUnits" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-sitemap"></i>
-                                    <div>@SharedLocalizer["OrganizationUnits"]</div>
-                                </a>
-                            </li>
-                        }
-                        @if (Perms.Has("platform.positions.read"))
-                        {
-                            <li class="menu-item @(activeController == "Positions" ? "active" : "")">
-                                <a href="/Positions" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-id-card"></i>
-                                    <div>@SharedLocalizer["Positions"]</div>
-                                </a>
-                            </li>
-                        }
-                        @if (Perms.Has("platform.position-assignments.read"))
-                        {
-                            <li class="menu-item @(activeController == "PositionAssignments" ? "active" : "")">
-                                <a href="/PositionAssignments" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-user-pin"></i>
-                                    <div>@SharedLocalizer["PositionAssignments"]</div>
+                            <li class="menu-item @(activeController == "TenantSecuritySettings" ? "active" : "")">
+                                <a href="/TenantSecurity" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
+                                    <div>@TenantSecurityLocalizer["Title"]</div>
                                 </a>
                             </li>
                         }

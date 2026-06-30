@@ -91,6 +91,10 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();
 builder.Services.AddScoped<Diten.Platform.API.Authorization.Explain.ISelfAccessExplainService, Diten.Platform.API.Authorization.Explain.SelfAccessExplainService>();
 builder.Services.AddHostedService<BusinessReferenceDataCatalogLoadWorker>();
+// A1 — auto-register every controller [HasPermission] key into AuthService at startup (best-effort, idempotent).
+builder.Services.AddHostedService<Diten.Platform.API.Services.Security.PlatformPermissionAutoRegistrationWorker>();
+// MC-3b — self-register Platform-internal module manifests (workflow, …) into the catalog in-process at startup.
+builder.Services.AddHostedService<Diten.Platform.API.Services.ModuleRegistration.PlatformModuleSelfRegistrationWorker>();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<Diten.Platform.API.Middleware.GlobalExceptionHandler>();
 

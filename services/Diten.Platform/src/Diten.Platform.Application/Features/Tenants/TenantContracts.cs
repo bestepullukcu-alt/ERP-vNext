@@ -179,6 +179,23 @@ public sealed record TenantBrandingUpdateRequest(
     string? LogoDataUrl,
     string? FaviconDataUrl);
 
+// Slim, pre-auth-safe branding projection. Returned by the anonymous/internal branding
+// endpoint consumed by the login page — carries ONLY presentation fields (display name,
+// logo, favicon), never anything sensitive.
+public sealed record TenantBrandingDto(
+    Guid TenantId,
+    string DisplayName,
+    string? LogoDataUrl,
+    string? FaviconDataUrl);
+
+// FIX-4 — minimal per-request tenant liveness projection consumed S2S by the Web shell guard. Carries ONLY
+// existence + active flag + coarse status string; nothing sensitive. Always returned (never 404): a missing
+// tenant is Exists=false so the caller can distinguish "definitely gone" from a transport error (fail-open).
+public sealed record TenantStatusDto(
+    bool Exists,
+    bool IsActive,
+    string Status);
+
 public sealed record TenantLoginSettingsDto(
     Guid TenantId,
     bool TwoFactorEnabled,

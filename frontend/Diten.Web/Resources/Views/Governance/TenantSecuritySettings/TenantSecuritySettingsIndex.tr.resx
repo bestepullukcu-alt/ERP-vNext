@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Güvenlik Ayarları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kuruluşunuzun oturum açma ve güvenlik politikalarını yönetin.</value></data>
+  <data name="LoginMethods" xml:space="preserve"><value>Oturum Açma Yöntemleri</value></data>
+  <data name="TwoFactorEnabled" xml:space="preserve"><value>İki Adımlı Doğrulama</value></data>
+  <data name="MfaRequired" xml:space="preserve"><value>MFA Zorunlu</value></data>
+  <data name="EmailLoginEnabled" xml:space="preserve"><value>E-posta ile Giriş</value></data>
+  <data name="PhoneLoginEnabled" xml:space="preserve"><value>Telefon ile Giriş</value></data>
+  <data name="PasswordPolicy" xml:space="preserve"><value>Parola Politikası</value></data>
+  <data name="PasswordMinLength" xml:space="preserve"><value>Minimum Uzunluk</value></data>
+  <data name="PasswordExpirationDays" xml:space="preserve"><value>Parola Geçerlilik Süresi (gün)</value></data>
+  <data name="PasswordExpirationDaysHint" xml:space="preserve"><value>Süre sınırı olmaması için boş bırakın.</value></data>
+  <data name="LoginAuditRetentionDays" xml:space="preserve"><value>Oturum Denetim Saklama Süresi (gün)</value></data>
+  <data name="RequireUppercase" xml:space="preserve"><value>Büyük Harf Zorunlu</value></data>
+  <data name="RequireLowercase" xml:space="preserve"><value>Küçük Harf Zorunlu</value></data>
+  <data name="RequireDigit" xml:space="preserve"><value>Rakam Zorunlu</value></data>
+  <data name="RequireSpecialChar" xml:space="preserve"><value>Özel Karakter Zorunlu</value></data>
+  <data name="SessionLockoutPolicy" xml:space="preserve"><value>Oturum &amp; Kilitleme</value></data>
+  <data name="SessionTimeoutMinutes" xml:space="preserve"><value>Oturum Zaman Aşımı (dakika)</value></data>
+  <data name="RefreshTokenLifetimeDays" xml:space="preserve"><value>Yenileme Belirteci Ömrü (gün)</value></data>
+  <data name="MaxFailedLoginAttempts" xml:space="preserve"><value>Maksimum Başarısız Giriş Denemesi</value></data>
+  <data name="LockoutDurationMinutes" xml:space="preserve"><value>Kilitleme Süresi (dakika)</value></data>
+  <data name="AccessRestrictions" xml:space="preserve"><value>Erişim Kısıtlamaları</value></data>
+  <data name="IpWhitelistEnabled" xml:space="preserve"><value>IP Beyaz Listesini Etkinleştir</value></data>
+  <data name="AllowedIps" xml:space="preserve"><value>İzin Verilen IP Adresleri</value></data>
+  <data name="AllowedIpsHint" xml:space="preserve"><value>Her satıra bir IPv4 veya IPv6 adresi.</value></data>
+  <data name="AllowedCountries" xml:space="preserve"><value>İzin Verilen Ülkeler</value></data>
+  <data name="AllowedCountriesHint" xml:space="preserve"><value>Her satıra bir ISO alpha-2 ülke kodu (örn. TR, US).</value></data>
+  <data name="Saved" xml:space="preserve"><value>Güvenlik ayarları kaydedildi.</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>Lütfen işaretli alanları düzeltin.</value></data>
+  <data name="MfaRequires2FA" xml:space="preserve"><value>MFA zorunlu olduğunda, iki adımlı doğrulama ve e-posta ile giriş birlikte etkin olmalıdır.</value></data>
+  <data name="AtLeastOneLoginMethod" xml:space="preserve"><value>En az bir oturum açma yöntemi (e-posta veya telefon) etkin olmalıdır.</value></data>
+  <data name="IpWhitelistEmpty" xml:space="preserve"><value>IP beyaz listesi etkinken en az bir izin verilen IP adresi ekleyin.</value></data>
+  <data name="InvalidIp" xml:space="preserve"><value>Geçersiz IP adresi: </value></data>
+  <data name="InvalidCountry" xml:space="preserve"><value>Geçersiz ülke kodu (ISO alpha-2 kullanın): </value></data>
+  <data name="TwoFactorAutoEnabled" xml:space="preserve"><value>MFA için iki adımlı doğrulama ve e-posta ile giriş otomatik olarak etkinleştirildi.</value></data>
+  <data name="MfaAutoDisabled" xml:space="preserve"><value>İki adımlı doğrulama kapatıldığı için MFA devre dışı bırakıldı.</value></data>
+</root>

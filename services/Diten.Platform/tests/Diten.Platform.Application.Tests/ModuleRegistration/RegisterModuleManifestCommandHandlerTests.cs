@@ -84,12 +84,12 @@ public sealed class RegisterModuleManifestCommandHandlerTests
     }
 
     [Fact]
-    public async Task Page_upsert_updates_route_and_never_deletes_operator_added_pages()
+    public async Task Page_upsert_refreshes_route_and_prunes_pages_not_in_the_manifest()
     {
         var (handler, _, pages, _, _) = Build();
 
         await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest("/GoldenReferenceSlim")), CancellationToken.None);
-        // Operator adds a page that is NOT in the manifest.
+        // A page on this (code-owned) module that the manifest does NOT declare → an orphan.
         pages.Items.Add(new ModulePageDescriptor
         {
             TenantId = Guid.Empty,
@@ -103,10 +103,12 @@ public sealed class RegisterModuleManifestCommandHandlerTests
         var second = await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest("/GoldenReferenceSlim/V2")), CancellationToken.None);
 
         Assert.True(second.IsSuccessful);
-        var records = Assert.Single(pages.Items, p => p.PageCode == "RECORDS");
+        var records = Assert.Single(pages.Items, p => p.PageCode == "RECORDS" && !p.IsDeleted);
         Assert.Equal("/GoldenReferenceSlim/V2", records.RoutePath); // HARD route refreshed
-        Assert.Contains(pages.Items, p => p.PageCode == "OPERATOR_PAGE"); // operator page preserved (additive)
-        Assert.Equal(2, pages.Items.Count);
+        // MC-6 — authoritative: the orphan page is pruned (soft-deleted), not preserved.
+        Assert.Contains(pages.Items, p => p.PageCode == "OPERATOR_PAGE" && p.IsDeleted);
+        Assert.Equal(1, second.Data!.PagesPruned);
+        Assert.Single(pages.Items, p => !p.IsDeleted); // only RECORDS is live
     }
 
     // ── manifest ──
@@ -130,15 +132,15 @@ public sealed class RegisterModuleManifestCommandHandlerTests
         var actions = new FakeActionRepository();
         var sync = new FakeSyncService();
         var handler = new RegisterModuleManifestCommandHandler(catalog, pages, actions, sync,
-            NullLogger<RegisterModuleManifestCommandHandler>.Instance);
+            new PassthroughTaxonomyResolver(), NullLogger<RegisterModuleManifestCommandHandler>.Instance);
         return (handler, catalog, pages, actions, sync);
     }
 
     [Fact]
-    public async Task Page_whose_route_is_held_by_a_different_page_is_skipped_and_register_still_succeeds()
+    public async Task Orphan_page_holding_a_manifest_route_is_pruned_then_the_route_is_reclaimed()
     {
         var (handler, _, pages, _, _) = Build();
-        // Operator page already holding the route the manifest's RECORDS page wants.
+        // An orphan page (not in the manifest) currently holds the route the manifest's RECORDS page wants.
         pages.Items.Add(new ModulePageDescriptor
         {
             TenantId = Guid.Empty,
@@ -150,13 +152,14 @@ public sealed class RegisterModuleManifestCommandHandlerTests
 
         var result = await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest("/GoldenReferenceSlim")), CancellationToken.None);
 
-        Assert.True(result.IsSuccessful);          // best-effort: no 500
-        Assert.Equal(0, result.Data!.PagesUpserted);
-        var skip = Assert.Single(result.Data.PagesSkipped);
-        Assert.Contains("OPERATOR_RECORDS", skip);
-        Assert.Contains("/GoldenReferenceSlim", skip);
-        Assert.DoesNotContain(pages.Items, p => p.PageCode == "RECORDS"); // holder untouched, nothing forced
-        Assert.Single(pages.Items);
+        Assert.True(result.IsSuccessful);
+        // MC-6 — prune-first frees the route: the orphan is soft-deleted and RECORDS is created (no skip).
+        Assert.Equal(1, result.Data!.PagesUpserted);
+        Assert.Equal(1, result.Data!.PagesPruned);
+        Assert.Empty(result.Data.PagesSkipped);
+        Assert.Contains(pages.Items, p => p.PageCode == "OPERATOR_RECORDS" && p.IsDeleted);
+        Assert.Contains(pages.Items, p => p.PageCode == "RECORDS" && !p.IsDeleted);
+        Assert.Single(pages.Items, p => !p.IsDeleted);
     }
 
     [Fact]
@@ -224,11 +227,17 @@ public sealed class RegisterModuleManifestCommandHandlerTests
 
         public Task UpdateAsync(ModulePageDescriptor descriptor, CancellationToken ct = default) => Task.CompletedTask;
 
+        public Task DeleteAsync(Guid id, CancellationToken ct = default) // MC-6 — soft-delete
+        {
+            var p = Items.FirstOrDefault(x => x.Id == id);
+            if (p is not null) p.IsDeleted = true;
+            return Task.CompletedTask;
+        }
+
         public Task<ModulePageDescriptor?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<bool> ModuleExistsAsync(string moduleCode, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<bool> ExistsByPageCodeAsync(string moduleCode, string pageCode, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<bool> ExistsByRoutePathAsync(string moduleCode, string routePath, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
-        public Task DeleteAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<(IReadOnlyList<ModulePageDescriptor> Items, long TotalCount)> SearchAsync(ModulePageDescriptorQuery query, CancellationToken ct = default) => throw new NotSupportedException();
     }
 
@@ -247,9 +256,26 @@ public sealed class RegisterModuleManifestCommandHandlerTests
 
         public Task UpdateAsync(ModulePageActionDescriptor descriptor, CancellationToken ct = default) => Task.CompletedTask;
 
+        public Task DeleteAsync(Guid id, CancellationToken ct = default) // MC-6 — soft-delete
+        {
+            var a = Items.FirstOrDefault(x => x.Id == id);
+            if (a is not null) a.IsDeleted = true;
+            return Task.CompletedTask;
+        }
+
         public Task<ModulePageActionDescriptor?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<bool> ExistsByActionCodeAsync(Guid pageDescriptorId, string actionCode, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
-        public Task DeleteAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+    }
+
+    // Identity resolver — preserves manifest Domain/Service so the seed-once assertions hold (resolution is
+    // exercised separately in ModuleTaxonomyCanonicalizerTests).
+    private sealed class PassthroughTaxonomyResolver : Diten.Platform.Application.Features.ModuleCatalog.Services.IModuleTaxonomyResolver
+    {
+        public Task<string> ResolveDomainCodeAsync(string? rawDomain, CancellationToken ct = default)
+            => Task.FromResult(rawDomain?.Trim() ?? string.Empty);
+
+        public Task<string> ResolveServiceCodeAsync(string? rawService, CancellationToken ct = default)
+            => Task.FromResult(rawService?.Trim() ?? string.Empty);
     }
 
     private sealed class FakeSyncService : ICatalogPermissionSyncService

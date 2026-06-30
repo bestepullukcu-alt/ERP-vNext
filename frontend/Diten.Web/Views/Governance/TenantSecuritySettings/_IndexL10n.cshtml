@@ -1,0 +1,20 @@
+@using Diten.Web.Views.Governance.TenantSecuritySettings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TenantSecuritySettingsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="tenant-security-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Saved = Localizer["Saved"].Value,
+        ValidationFailed = Localizer["ValidationFailed"].Value,
+        MfaRequires2FA = Localizer["MfaRequires2FA"].Value,
+        AtLeastOneLoginMethod = Localizer["AtLeastOneLoginMethod"].Value,
+        IpWhitelistEmpty = Localizer["IpWhitelistEmpty"].Value,
+        InvalidIp = Localizer["InvalidIp"].Value,
+        InvalidCountry = Localizer["InvalidCountry"].Value,
+        TwoFactorAutoEnabled = Localizer["TwoFactorAutoEnabled"].Value,
+        MfaAutoDisabled = Localizer["MfaAutoDisabled"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
+    })
+</script>

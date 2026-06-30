@@ -225,6 +225,16 @@ const ModuleCatalogList = (function () {
         return `<span class="badge ${item[0]}">${escapeHtml(item[1] || status)}</span>`;
     };
 
+    const originBadge = (origin) => {
+        if (origin === 'SelfRegistered') {
+            return `<span class="badge bg-label-info">${escapeHtml(L.OriginAuto || 'Auto')}</span>`;
+        }
+        if (origin === 'Manual') {
+            return `<span class="badge bg-label-secondary">${escapeHtml(L.OriginManual || 'Manual')}</span>`;
+        }
+        return '';
+    };
+
     const boolBadge = (value, isCore = false) => {
         if (isCore && value) {
             return `<i class="bx bx-lock-alt text-warning fs-4" title="${escapeHtml(L.Core || '')}"></i>`;
@@ -304,6 +314,10 @@ const ModuleCatalogList = (function () {
             const isCore = row?.isCoreModule || row?.IsCoreModule;
             if (isCore) {
                 window.showToast?.(L.CoreModuleCannotBeDeleted || '', 'warning');
+                return;
+            }
+            if ((row?.origin || row?.Origin) === 'SelfRegistered') {
+                window.showToast?.(L.SelfRegisteredDeleteHint || '', 'warning');
                 return;
             }
             window.showConfirm?.(L.AreYouSure, async () => {
@@ -403,7 +417,17 @@ const ModuleCatalogList = (function () {
                 { data: 'id', name: 'control' },
                 { data: 'moduleCode', name: 'moduleCode', render: (data) => `<span class="fw-medium font-monospace text-primary">${escapeHtml(data)}</span>` },
                 { data: 'moduleName', name: 'moduleName', render: escapeHtml },
-                { data: 'status', name: 'status', render: statusBadge },
+                {
+                    data: 'status',
+                    name: 'status',
+                    render: (data, type, row) => {
+                        if (type !== 'display') return data;
+                        const origin = originBadge(row.origin || row.Origin);
+                        return origin
+                            ? `<span class="d-inline-flex align-items-center gap-1">${statusBadge(data)}${origin}</span>`
+                            : statusBadge(data);
+                    }
+                },
                 { data: 'domain', name: 'domain', render: domainBadge },
                 { data: 'isTenantAssignable', name: 'isTenantAssignable', render: (data) => boolBadge(data) },
                 { data: 'isCoreModule', name: 'isCoreModule', render: (data) => boolBadge(data, true) },
@@ -421,6 +445,7 @@ const ModuleCatalogList = (function () {
                         const id = row.id || row.Id;
                         const status = row.status || row.Status;
                         const isCore = row.isCoreModule || row.IsCoreModule;
+                        const isSelfRegistered = (row.origin || row.Origin) === 'SelfRegistered';
                         const rowJson = JSON.stringify(row);
                         
                         const actions = [
@@ -455,15 +480,19 @@ const ModuleCatalogList = (function () {
                             });
                         }
 
+                        const deleteDisabled = isCore || isSelfRegistered;
+                        const deleteTitle = isSelfRegistered
+                            ? (L.SelfRegisteredDeleteHint || 'Self-registered; manage via the module manifest')
+                            : (isCore ? (L.CoreModuleCannotBeDeleted || '') : '');
                         actions.push({
                             key: 'delete',
-                            className: isCore ? 'text-muted' : 'text-danger',
+                            className: deleteDisabled ? 'text-muted' : 'text-danger',
                             text: L.Delete || '',
-                            attrs: { 
-                                'data-id': id, 
+                            attrs: {
+                                'data-id': id,
                                 'data-json': rowJson,
-                                'title': isCore ? (L.CoreModuleCannotBeDeleted || '') : '',
-                                'style': isCore ? 'pointer-events: none; opacity: 0.5;' : ''
+                                'title': deleteTitle,
+                                'style': deleteDisabled ? 'pointer-events: none; opacity: 0.5;' : ''
                             }
                         });
 

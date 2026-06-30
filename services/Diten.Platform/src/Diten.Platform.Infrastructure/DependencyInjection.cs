@@ -145,6 +145,7 @@ public static class DependencyInjection
         services.AddSingleton<EntitlementCacheService>();
         services.AddScoped<IEntitlementChecker, EntitlementChecker>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
+        services.AddScoped<ITenantActivationNotifier, AuthServiceTenantActivationNotifier>();
         services.AddScoped<ICatalogPermissionSyncService, CatalogPermissionSyncService>();
         services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
@@ -265,6 +266,8 @@ public static class DependencyInjection
         services.AddHostedService<AuditOutboxWorker>();
 
         LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
+        // MC-2 — drop duplicate live module-service rows before the unique partial index is (re)created.
+        ModuleServiceDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
         MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
         var auditRetentionSeedOptions = configuration
             .GetSection(AuditRetentionSeedOptions.SectionName)
@@ -278,6 +281,9 @@ public static class DependencyInjection
         ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        // FIX-DOMAIN-SERVICE-CANONICAL — must run AFTER the domain/service lookups are seeded: pins catalog
+        // Domain/Service to canonical Codes and fixes the 'Servicec' DisplayName typo. Marker-gated + idempotent.
+        ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
         PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
@@ -364,6 +370,8 @@ public static class DependencyInjection
         try
         {
             LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // MC-2 — drop duplicate live module-service rows before the unique partial index is (re)created.
+            ModuleServiceDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
             MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
             SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
@@ -372,6 +380,9 @@ public static class DependencyInjection
             ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            // FIX-DOMAIN-SERVICE-CANONICAL — after the lookups are seeded: canonicalize catalog Domain/Service and
+            // fix the 'Servicec' DisplayName typo. Marker-gated + idempotent.
+            ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
             PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         }

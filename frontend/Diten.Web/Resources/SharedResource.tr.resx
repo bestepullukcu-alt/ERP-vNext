@@ -506,6 +506,7 @@
   <data name="SelfAccessMenu" xml:space="preserve"><value>Erişimim</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Referans Veri</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>Bu modül kodu zaten kullanılıyor.</value></data>
+  <data name="ModuleManagedByCode" xml:space="preserve"><value>Bu modül koddan yönetiliyor (otomatik kaydedildi); buradan değiştirilemez.</value></data>
   <data name="Organization" xml:space="preserve"><value>Organizasyon</value></data>
   <data name="OrganizationUnits" xml:space="preserve"><value>Organizasyon Birimleri</value></data>
   <data name="Positions" xml:space="preserve"><value>Pozisyonlar</value></data>
