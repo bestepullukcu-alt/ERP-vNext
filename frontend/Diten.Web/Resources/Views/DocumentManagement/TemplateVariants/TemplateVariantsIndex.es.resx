@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TemplateVariantsTitle" xml:space="preserve"><value>Variantes de plantilla</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Variantes de plantilla con alcance de empresa, unidad de negocio y sitio derivadas de las plantillas maestras corporativas</value></data>
+  <data name="CreateVariant" xml:space="preserve"><value>Crear variante</value></data>
+  <data name="EditVariant" xml:space="preserve"><value>Editar variante</value></data>
+  <data name="Variant" xml:space="preserve"><value>Variante</value></data>
+  <data name="VariantCode" xml:space="preserve"><value>Código de variante</value></data>
+  <data name="VariantName" xml:space="preserve"><value>Nombre de variante</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="DerivedMaster" xml:space="preserve"><value>Maestro derivado</value></data>
+  <data name="TemplateMaster" xml:space="preserve"><value>Plantilla maestra</value></data>
+  <data name="LastRebased" xml:space="preserve"><value>Último rebase</value></data>
+  <data name="DriftStatus" xml:space="preserve"><value>Estado de desviación</value></data>
+  <data name="Scope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Tipo de alcance</value></data>
+  <data name="ScopeId" xml:space="preserve"><value>Alcance</value></data>
+  <data name="Owner" xml:space="preserve"><value>Propietario</value></data>
+  <data name="OwnerCompanyId" xml:space="preserve"><value>Empresa propietaria</value></data>
+  <data name="OwnerUserId" xml:space="preserve"><value>Usuario propietario</value></data>
+  <data name="Approval" xml:space="preserve"><value>Aprobación</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Compare" xml:space="preserve"><value>Comparar</value></data>
+  <data name="Rebase" xml:space="preserve"><value>Rebasar</value></data>
+  <data name="RebaseConfirm" xml:space="preserve"><value>¿Rebasar esta variante a la versión actual del maestro? Se borrarán los cambios locales.</value></data>
+  <data name="Rebased" xml:space="preserve"><value>Variante rebasada</value></data>
+  <data name="CompareTitle" xml:space="preserve"><value>Comparación variante / maestro</value></data>
+  <data name="CompareNote" xml:space="preserve"><value>Comparación solo a nivel de metadatos: no se calcula ninguna diferencia binaria o de contenido en esta base.</value></data>
+  <data name="MasterCurrentVersion" xml:space="preserve"><value>Versión actual del maestro</value></data>
+  <data name="VariantLastRebasedVersion" xml:space="preserve"><value>Última versión rebasada de la variante</value></data>
+  <data name="MasterStatus" xml:space="preserve"><value>Estado del maestro</value></data>
+  <data name="VariantStatus" xml:space="preserve"><value>Estado de la variante</value></data>
+  <data name="HasLocalChanges" xml:space="preserve"><value>Tiene cambios locales</value></data>
+  <data name="VariantIdentitySection" xml:space="preserve"><value>Identidad de la variante</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Alcance</value></data>
+  <data name="OwnerSection" xml:space="preserve"><value>Propietario</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Gobernanza y linaje</value></data>
+  <data name="LineageSection" xml:space="preserve"><value>Linaje</value></data>
+  <data name="MetadataEditDeferred" xml:space="preserve"><value>La edición de metadatos está aplazada para esta porción de base.</value></data>
+  <data name="ScopeCompany" xml:space="preserve"><value>Empresa</value></data>
+  <data name="ScopeBusinessUnit" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="ScopeSite" xml:space="preserve"><value>Sitio</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Activo</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Obsoleto</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="DriftInSync" xml:space="preserve"><value>Sincronizado</value></data>
+  <data name="DriftRebaseRequired" xml:space="preserve"><value>Rebase requerido</value></data>
+  <data name="DriftDrifted" xml:space="preserve"><value>Desviado</value></data>
+  <data name="DriftBlocked" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="ApprovalNotRequired" xml:space="preserve"><value>No requerido</value></data>
+  <data name="ApprovalPending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="ApprovalApproved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="ApprovalRejected" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="ApprovalBlocked" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="DocumentationStructure" xml:space="preserve"><value>Estructura documental</value></data>
+  <data name="TargetFolder" xml:space="preserve"><value>Carpeta destino</value></data>
+  <data name="LinkedTemplateDocument" xml:space="preserve"><value>Plantilla de carpeta vinculada</value></data>
+  <data name="TemplateDocumentCurrentVersion" xml:space="preserve"><value>Versión de plantilla de carpeta</value></data>
+  <data name="ContentLinked" xml:space="preserve"><value>Contenido vinculado</value></data>
+  <data name="VariantContentSection" xml:space="preserve"><value>Contenido de variante</value></data>
+  <data name="VariantContentSource" xml:space="preserve"><value>Origen del contenido</value></data>
+  <data name="UseMasterVersionContent" xml:space="preserve"><value>Usar el contenido de la versión master seleccionada</value></data>
+  <data name="UploadLocalVariantContent" xml:space="preserve"><value>Cargar contenido local de variante</value></data>
+  <data name="MasterContentHelp" xml:space="preserve"><value>Esta variante usará inicialmente el archivo de la versión master seleccionada.</value></data>
+  <data name="LocalUploadHelp" xml:space="preserve"><value>Esta variante comenzará con contenido local cargado y se marcará como cambiado localmente.</value></data>
+  <data name="LocalVariantFile" xml:space="preserve"><value>Archivo local de variante</value></data>
+  <data name="MasterVersionContent" xml:space="preserve"><value>Usando contenido de versión master</value></data>
+  <data name="LocalVariantUpload" xml:space="preserve"><value>Usando contenido local de variante</value></data>
+</root>

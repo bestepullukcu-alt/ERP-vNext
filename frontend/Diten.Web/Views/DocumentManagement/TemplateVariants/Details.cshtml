@@ -1,0 +1,118 @@
+@using Diten.Web.Views.DocumentManagement.TemplateVariants
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TemplateVariantsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    Layout = "_LayoutTenantShell";
+    var id = (Guid)(ViewData["TemplateVariantId"] ?? Guid.Empty);
+    var canCompare = Perms.Has("platform.document-management.template-variants.compare");
+    var canRebase = Perms.Has("platform.document-management.template-variants.rebase");
+}
+
+<div class="template-variants-details" data-template-variant-id="@id">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-4">
+        <div class="d-flex flex-column justify-content-center">
+            <h4 class="mb-1" id="detailTitle">@SharedLocalizer["Details"]</h4>
+            <span class="text-muted small" id="detailSubtitle"></span>
+            <nav aria-label="breadcrumb" class="text-muted mt-1">
+                <ol class="breadcrumb mb-0 py-0">
+                    <li class="breadcrumb-item"><a href="/DocumentManagementTemplateVariants">@Localizer["TemplateVariantsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-content-center flex-wrap gap-2">
+            @if (canCompare)
+            {
+                <button type="button" class="btn btn-label-primary border" id="btnDetailCompare">
+                    <i class="icon-base bx bx-git-compare me-1"></i>@Localizer["Compare"]
+                </button>
+            }
+            @if (canRebase)
+            {
+                <button type="button" class="btn btn-label-success border" id="btnDetailRebase">
+                    <i class="icon-base bx bx-git-pull-request me-1"></i>@Localizer["Rebase"]
+                </button>
+            }
+            <a href="/DocumentManagementTemplateVariants" class="btn btn-label-secondary border">
+                <i class="icon-base bx bx-arrow-back me-1"></i>@SharedLocalizer["BackToList"]
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-6">
+
+        @* ── Card 1: Variant Identity ── *@
+        <div class="col-12 col-lg-6">
+            <section class="card backbone-preview-section h-100 p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <i class="icon-base bx bx-id-card me-2"></i>@Localizer["VariantIdentitySection"]
+                </h5>
+                <dl class="row mb-0" id="variantIdentityDetailList"></dl>
+            </section>
+        </div>
+
+        @* ── Card 2: Scope ── *@
+        <div class="col-12 col-lg-6">
+            <section class="card backbone-preview-section h-100 p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <i class="icon-base bx bx-sitemap me-2"></i>@Localizer["ScopeSection"]
+                </h5>
+                <dl class="row mb-0" id="variantScopeDetailList"></dl>
+            </section>
+        </div>
+
+        @* ── Card 3: Variant Content ── *@
+        <div class="col-12 col-lg-6">
+            <section class="card backbone-preview-section h-100 p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <i class="icon-base bx bx-file me-2"></i>@Localizer["VariantContentSection"]
+                </h5>
+                <dl class="row mb-0" id="variantContentDetailList"></dl>
+            </section>
+        </div>
+
+        @* ── Card 3: Owner ── *@
+        <div class="col-12 col-lg-6">
+            <section class="card backbone-preview-section h-100 p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <i class="icon-base bx bx-user me-2"></i>@Localizer["OwnerSection"]
+                </h5>
+                <dl class="row mb-0" id="variantOwnerDetailList"></dl>
+            </section>
+        </div>
+
+        @* ── Governance + lineage (plain card; intentionally not a <section> heading) ── *@
+        <div class="col-12 col-lg-6">
+            <div class="card backbone-preview-section h-100 p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <i class="icon-base bx bx-git-branch me-2"></i>@Localizer["GovernanceSection"]
+                </h5>
+                <dl class="row mb-0" id="variantGovernanceDetailList"></dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="compareModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="icon-base bx bx-git-compare me-2 text-primary"></i>@Localizer["CompareTitle"]
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body pt-2" id="compareModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/TemplateVariants/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DocumentManagement/TemplateVariants/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/TemplateVariants/index.js" asp-append-version="true"></script>
+}

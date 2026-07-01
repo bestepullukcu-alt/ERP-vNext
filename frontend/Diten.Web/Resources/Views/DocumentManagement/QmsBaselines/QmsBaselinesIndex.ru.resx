@@ -315,4 +315,15 @@
   <data name="ValidateNeedsDefinitions" xml:space="preserve">
     <value>Добавьте хотя бы одно определение перед проверкой.</value>
   </data>
+  <data name="RelatedTemplatesTitle" xml:space="preserve"><value>Связанные корпоративные шаблоны</value></data>
+  <data name="RelatedTemplatesSelectFolder" xml:space="preserve"><value>Выберите папку, чтобы просмотреть связанные мастер-шаблоны.</value></data>
+  <data name="RelatedTemplatesEmpty" xml:space="preserve"><value>Для этой папки нет связанных мастер-шаблонов.</value></data>
+  <data name="MasterCode" xml:space="preserve"><value>Код мастера</value></data>
+  <data name="TemplateName" xml:space="preserve"><value>Название шаблона</value></data>
+  <data name="VariantPolicy" xml:space="preserve"><value>Политика вариантов</value></data>
+  <data name="Owner" xml:space="preserve"><value>Владелец</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Устаревший</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Архивировано</value></data>
+  <data name="VariantAllowed" xml:space="preserve"><value>Вариант разрешён</value></data>
+  <data name="VariantLocked" xml:space="preserve"><value>Вариант заблокирован</value></data>
 </root>

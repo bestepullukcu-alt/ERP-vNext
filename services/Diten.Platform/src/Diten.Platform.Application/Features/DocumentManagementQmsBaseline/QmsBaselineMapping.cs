@@ -36,6 +36,8 @@ public static class QmsBaselineMapping
         baseline.Version);
 
     public static QmsCollectionDefinitionModel ToDefinitionModel(CollectionDefinition d) => new(
+        d.Id,
+        d.BaselineReleaseId,
         d.CanonicalId,
         d.ParentCanonicalId,
         d.Name,

@@ -1,0 +1,144 @@
+@using Diten.Web.Views.DocumentManagement.ControlledDocuments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ControlledDocumentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["EditMetadata"].Value : Localizer["AddDocument"].Value;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0" id="createHeading">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/DocumentManagementControlledDocuments">@Localizer["ControlledDocumentsTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/DocumentManagementControlledDocuments" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        <button type="submit" form="controlledDocumentForm" class="btn btn-primary" id="btnSaveDocument">@Localizer["Save"]</button>
+    </div>
+</div>
+
+@* MOD-0029-FU01 - Compact shared form. The logical section map mirrors Details.cshtml. *@
+<form id="controlledDocumentForm" class="needs-validation" novalidate>
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Title"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="fldTitle">@Localizer["Title"] <span class="text-danger">*</span></label>
+                            <input type="text" id="fldTitle" name="title" class="form-control" required maxlength="256" />
+                        </div>
+                        <div class="col-12 col-md-6" data-doc-only>
+                            <label class="form-label fw-medium" for="fldDocumentType">@Localizer["DocumentType"] <span class="text-danger">*</span></label>
+                            <select id="fldDocumentType" name="documentType" class="form-select" required>
+                                <option value="SOP">@Localizer["TypeSop"]</option>
+                                <option value="WORK_INSTRUCTION">@Localizer["TypeWorkInstruction"]</option>
+                                <option value="POLICY">@Localizer["TypePolicy"]</option>
+                                <option value="FORM">@Localizer["TypeForm"]</option>
+                                <option value="TEMPLATE">@Localizer["TypeTemplate"]</option>
+                                <option value="OTHER">@Localizer["TypeOther"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="fldCompanyId">@Localizer["CompanyId"] <span class="text-danger">*</span></label>
+                            <select id="fldCompanyId" name="companyId" class="form-select select2" required data-placeholder="@Localizer["CompanyId"]">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="fldCollectionInstanceId">@Localizer["CollectionInstanceId"] <span class="text-danger">*</span></label>
+                            <select id="fldCollectionInstanceId" name="collectionInstanceId" class="form-select select2" required data-placeholder="@Localizer["CollectionInstanceId"]">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Description"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="fldDescription">@Localizer["Description"]</label>
+                            <textarea id="fldDescription" name="description" class="form-control" rows="7"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="fldTags">@Localizer["Tags"]</label>
+                            <input type="text" id="fldTags" name="tags" class="form-control" />
+                        </div>
+                        <div class="col-12" data-doc-only>
+                            <div class="form-check form-switch mt-2">
+                                <input type="hidden" name="controlled" value="false" />
+                                <input class="form-check-input" type="checkbox" id="fldControlled" name="controlled" value="true" role="switch" checked />
+                                <label class="form-check-label ms-2" for="fldControlled">@Localizer["Controlled"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4" data-doc-only>
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["EffectiveDate"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="fldEffectiveDate">@Localizer["EffectiveDate"]</label>
+                            <input type="date" id="fldEffectiveDate" name="effectiveDate" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="fldReviewDate">@Localizer["ReviewDate"]</label>
+                            <input type="date" id="fldReviewDate" name="reviewDate" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="fldExpiryDate">@Localizer["ExpiryDate"]</label>
+                            <input type="date" id="fldExpiryDate" name="expiryDate" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["VersionHistory"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="fldFile">@Localizer["SelectFile"] <span class="text-danger">*</span></label>
+                            <input type="file" id="fldFile" name="file" class="form-control" required />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ShareDocument"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="shareTargetCompany">@Localizer["TargetCompany"]</label>
+                            <input type="text" id="shareTargetCompany" class="form-control" disabled />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="shareMode">@Localizer["ShareMode"]</label>
+                            <select id="shareMode" class="form-select" disabled>
+                                <option value="REFERENCE">@Localizer["ShareModeReference"]</option>
+                                <option value="COPY_ON_ADOPT">@Localizer["ShareModeCopyOnAdopt"]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

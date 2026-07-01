@@ -177,6 +177,57 @@
                         </a>
                     </li>
 
+                    @* MOD-0029-FU01 — Controlled Documents (TenantShell). FE-B UX guard: shown only with the
+                       view permission; backend (FU01 Layer 1 + Layer 2) is authoritative. The folder-share
+                       wizard and add-document/template flows are reached from this page. *@
+                    @if (Perms.Has("platform.document-management.controlled-documents.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementControlledDocuments" ? "active" : "")">
+                            <a href="/DocumentManagementControlledDocuments" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-file"></i>
+                                <div>@SharedLocalizer["ControlledDocuments"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0029-FU02 — Corporate Template Masters (TenantShell). FE-B UX guard: shown only with
+                       the view permission; backend (FU02 Layer 1) is authoritative. Publish-version, deprecate
+                       and adoption-impact actions are reached from this page. *@
+                    @if (Perms.Has("platform.document-management.template-masters.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementTemplateMasters" ? "active" : "")">
+                            <a href="/DocumentManagementTemplateMasters" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-copy"></i>
+                                <div>@SharedLocalizer["TemplateMasters"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0029-FU03 — Template Variant Drift (TenantShell). FE-B UX guard: shown only with the
+                       view permission; backend (FU03 Layer 1) is authoritative. Compare and rebase actions are
+                       reached from this page. *@
+                    @if (Perms.Has("platform.document-management.template-variants.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementTemplateVariants" ? "active" : "")">
+                            <a href="/DocumentManagementTemplateVariants" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-git-branch"></i>
+                                <div>@SharedLocalizer["TemplateVariants"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0029-FU04 — Document Access Matrix (TenantShell). FE-B UX guard: shown only with the
+                       access view permission; backend (FU04 Layer 1) is authoritative. *@
+                    @if (Perms.Has("platform.document-management.access.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementAccessMatrix" ? "active" : "")">
+                            <a href="/DocumentManagementAccessMatrix" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-lock-alt"></i>
+                                <div>@SharedLocalizer["AccessMatrix"]</div>
+                            </a>
+                        </li>
+                    }
+
                     @* S-NAV (MOD-0018-FU9) — Access Governance (FE-C). FE-B UX guard: a link shows only
                        when the user holds the matching read/assign permission; backend is authoritative. *@
                     @if (Perms.Has("auth.users.read") || Perms.Has("auth.roles.read")
@@ -600,6 +651,8 @@
         };
     </script>
     <script src="~/assets/js/backbone-shell.js" asp-append-version="true"></script>
+    @* MOD-0029-FU04C — shared 401/403/PERM_DENIED toast helper (window.DitenUnauthorized), loaded before page scripts. *@
+    <script src="~/assets/js/diten-unauthorized.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

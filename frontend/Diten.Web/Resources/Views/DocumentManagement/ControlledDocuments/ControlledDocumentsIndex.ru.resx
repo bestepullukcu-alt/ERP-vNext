@@ -1,0 +1,521 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ControlledDocumentsTitle" xml:space="preserve">
+    <value>Управляемые документы</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Add, version, access-control and share your company documents and templates.</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Заголовок</value>
+  </data>
+  <data name="DocumentType" xml:space="preserve">
+    <value>Тип документа</value>
+  </data>
+  <data name="FolderPath" xml:space="preserve">
+    <value>Folder Path</value>
+  </data>
+  <data name="CurrentVersion" xml:space="preserve">
+    <value>Current Version</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="EmptyList" xml:space="preserve">
+    <value>No documents found.</value>
+  </data>
+  <data name="DocumentLibrary" xml:space="preserve">
+    <value>Document Library</value>
+  </data>
+  <data name="Templates" xml:space="preserve">
+    <value>Шаблоны</value>
+  </data>
+  <data name="FolderDocuments" xml:space="preserve">
+    <value>Folder Documents</value>
+  </data>
+  <data name="TypeSop" xml:space="preserve">
+    <value>SOP</value>
+  </data>
+  <data name="TypeWorkInstruction" xml:space="preserve">
+    <value>Work Instruction</value>
+  </data>
+  <data name="TypePolicy" xml:space="preserve">
+    <value>Policy</value>
+  </data>
+  <data name="TypeForm" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="TypeTemplate" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="TypeOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="StatusActive" xml:space="preserve">
+    <value>Активен</value>
+  </data>
+  <data name="StatusArchived" xml:space="preserve">
+    <value>Архив</value>
+  </data>
+  <data name="AddDocument" xml:space="preserve">
+    <value>Добавить документ</value>
+  </data>
+  <data name="AddTemplate" xml:space="preserve">
+    <value>Добавить шаблон</value>
+  </data>
+  <data name="EditMetadata" xml:space="preserve">
+    <value>Edit Metadata</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>Скачать</value>
+  </data>
+  <data name="ShareDocument" xml:space="preserve">
+    <value>Поделиться документом</value>
+  </data>
+  <data name="ShareTemplate" xml:space="preserve">
+    <value>Share Template</value>
+  </data>
+  <data name="FolderShare" xml:space="preserve">
+    <value>Общий доступ к папке</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Описание</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>Теги</value>
+  </data>
+  <data name="EffectiveDate" xml:space="preserve">
+    <value>Effective Date</value>
+  </data>
+  <data name="ReviewDate" xml:space="preserve">
+    <value>Review Date</value>
+  </data>
+  <data name="ExpiryDate" xml:space="preserve">
+    <value>Expiry Date</value>
+  </data>
+  <data name="Controlled" xml:space="preserve">
+    <value>Controlled</value>
+  </data>
+  <data name="CollectionInstanceId" xml:space="preserve">
+    <value>Folder (Collection Instance)</value>
+  </data>
+  <data name="CompanyId" xml:space="preserve">
+    <value>Company Legal Entity</value>
+  </data>
+  <data name="SelectFile" xml:space="preserve">
+    <value>Выбрать файл</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="VersionHistory" xml:space="preserve">
+    <value>История версий</value>
+  </data>
+  <data name="UploadNewVersion" xml:space="preserve">
+    <value>Загрузить новую версию</value>
+  </data>
+  <data name="Upload" xml:space="preserve">
+    <value>Загрузить</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="UploadedBy" xml:space="preserve">
+    <value>Uploaded By</value>
+  </data>
+  <data name="UploadedAt" xml:space="preserve">
+    <value>Uploaded At</value>
+  </data>
+  <data name="ChangeSummary" xml:space="preserve">
+    <value>Change Summary</value>
+  </data>
+  <data name="VersionStatusActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="VersionStatusSuperseded" xml:space="preserve">
+    <value>Superseded</value>
+  </data>
+  <data name="Reusable" xml:space="preserve">
+    <value>Reusable</value>
+  </data>
+  <data name="Shareable" xml:space="preserve">
+    <value>Shareable</value>
+  </data>
+  <data name="CopyableOnAdopt" xml:space="preserve">
+    <value>Copyable on Adopt</value>
+  </data>
+  <data name="ReferenceOnly" xml:space="preserve">
+    <value>Reference Only</value>
+  </data>
+  <data name="AccessControl" xml:space="preserve">
+    <value>Access Control</value>
+  </data>
+  <data name="ShareMode" xml:space="preserve">
+    <value>Режим доступа</value>
+  </data>
+  <data name="ShareModeReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="ShareModeCopyOnAdopt" xml:space="preserve">
+    <value>Copy on Adopt</value>
+  </data>
+  <data name="TargetCompany" xml:space="preserve">
+    <value>Целевая компания</value>
+  </data>
+  <data name="DocumentContext" xml:space="preserve">
+    <value>Контекст документа</value>
+  </data>
+  <data name="InternalLink" xml:space="preserve">
+    <value>Внутренняя ссылка</value>
+  </data>
+  <data name="RecipientEmail" xml:space="preserve">
+    <value>Email получателя</value>
+  </data>
+  <data name="SendEmail" xml:space="preserve">
+    <value>Отправить email</value>
+  </data>
+  <data name="CopyLink" xml:space="preserve">
+    <value>Копировать ссылку</value>
+  </data>
+  <data name="CompanyShare" xml:space="preserve">
+    <value>Доступ компании</value>
+  </data>
+  <data name="AccessLevel" xml:space="preserve">
+    <value>Уровень доступа</value>
+  </data>
+  <data name="ViewOnly" xml:space="preserve">
+    <value>Только просмотр</value>
+  </data>
+  <data name="CopyAllowed" xml:space="preserve">
+    <value>Копирование разрешено</value>
+  </data>
+  <data name="ExpiryDateOptional" xml:space="preserve">
+    <value>Дата истечения (необязательно)</value>
+  </data>
+  <data name="PasswordProtectionOptional" xml:space="preserve">
+    <value>Защита паролем (необязательно)</value>
+  </data>
+  <data name="DirectUserShare" xml:space="preserve">
+    <value>Прямой доступ пользователю</value>
+  </data>
+  <data name="TargetCompanyPlaceholder" xml:space="preserve">
+    <value>Id целевой компании</value>
+  </data>
+  <data name="UnsupportedShareOption" xml:space="preserve">
+    <value>Помощники email/ссылки не создают права доступа. Истечение, пароль и прямые права пользователя требуют отдельного утвержденного follow-up.</value>
+  </data>
+  <data name="ShareNow" xml:space="preserve">
+    <value>Поделиться сейчас</value>
+  </data>
+  <data name="LinkCopied" xml:space="preserve">
+    <value>Ссылка скопирована.</value>
+  </data>
+  <data name="IncludeTemplates" xml:space="preserve">
+    <value>Include Templates</value>
+  </data>
+  <data name="BranchToShare" xml:space="preserve">
+    <value>Branch to Share</value>
+  </data>
+  <data name="DryRun" xml:space="preserve">
+    <value>Пробный запуск</value>
+  </data>
+  <data name="Execute" xml:space="preserve">
+    <value>Выполнить</value>
+  </data>
+  <data name="FoldersIncluded" xml:space="preserve">
+    <value>Folders Included</value>
+  </data>
+  <data name="TemplatesIncluded" xml:space="preserve">
+    <value>Templates Included</value>
+  </data>
+  <data name="TemplatesSkipped" xml:space="preserve">
+    <value>Templates Skipped</value>
+  </data>
+  <data name="DocumentCreated" xml:space="preserve">
+    <value>Document created.</value>
+  </data>
+  <data name="VersionUploaded" xml:space="preserve">
+    <value>New version uploaded.</value>
+  </data>
+  <data name="ShareSuccess" xml:space="preserve">
+    <value>Shared successfully.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>A file is required.</value>
+  </data>
+  <data name="TitleRequired" xml:space="preserve">
+    <value>Title is required.</value>
+  </data>
+  <data name="NoAccess" xml:space="preserve">
+    <value>No access.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Доступ запрещён</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Не найдено</value>
+  </data>
+  <data name="CorrelationId" xml:space="preserve">
+    <value>Correlation ID</value>
+  </data>
+  <data name="ReasonValidationFailed" xml:space="preserve">
+    <value>Validation failed.</value>
+  </data>
+  <data name="ReasonConflict" xml:space="preserve">
+    <value>Conflict.</value>
+  </data>
+  <data name="ReasonPermDenied" xml:space="preserve">
+    <value>Permission denied.</value>
+  </data>
+  <data name="ReasonNotFound" xml:space="preserve">
+    <value>Not found.</value>
+  </data>
+  <data name="ReasonStorageUnavailable" xml:space="preserve">
+    <value>Content storage is unavailable.</value>
+  </data>
+  <data name="ReasonFeatureDisabled" xml:space="preserve">
+    <value>This capability is disabled.</value>
+  </data>
+  <data name="Preview" xml:space="preserve">
+    <value>Просмотр</value>
+  </data>
+  <data name="Favorite" xml:space="preserve">
+    <value>В избранное</value>
+  </data>
+  <data name="Unfavorite" xml:space="preserve">
+    <value>Из избранного</value>
+  </data>
+  <data name="Favorited" xml:space="preserve">
+    <value>Добавлено в избранное.</value>
+  </data>
+  <data name="Unfavorited" xml:space="preserve">
+    <value>Удалено из избранного.</value>
+  </data>
+  <data name="Move" xml:space="preserve">
+    <value>Переместить</value>
+  </data>
+  <data name="MoveTitle" xml:space="preserve">
+    <value>Переместить документ</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>Документ перемещён.</value>
+  </data>
+  <data name="TargetFolder" xml:space="preserve">
+    <value>Целевая папка</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>Удалить этот документ? Он будет архивирован.</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Документ удалён.</value>
+  </data>
+  <data name="SoftDelete" xml:space="preserve">
+    <value>Soft delete</value>
+  </data>
+  <data name="Archived" xml:space="preserve">
+    <value>В архиве</value>
+  </data>
+  <data name="RemoveFavorite" xml:space="preserve">
+    <value>Remove favorite</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Копировать</value>
+  </data>
+  <data name="Paste" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="CopyToFolder" xml:space="preserve">
+    <value>Копировать в папку</value>
+  </data>
+  <data name="MoveToFolder" xml:space="preserve">
+    <value>Переместить в папку</value>
+  </data>
+  <data name="SelectTargetFolder" xml:space="preserve">
+    <value>Выберите целевую папку</value>
+  </data>
+  <data name="OpenInNewTab" xml:space="preserve">
+    <value>Открыть в новой вкладке</value>
+  </data>
+  <data name="UploadDocument" xml:space="preserve">
+    <value>Upload document</value>
+  </data>
+  <data name="UploadTemplate" xml:space="preserve">
+    <value>Upload template</value>
+  </data>
+  <data name="AddFolder" xml:space="preserve">
+    <value>Add folder</value>
+  </data>
+  <data name="FolderActionsUnavailable" xml:space="preserve">
+    <value>Folder actions are not available here.</value>
+  </data>
+  <data name="FolderOperationsDeferred" xml:space="preserve">
+    <value>Folder operations are managed in Documentation Structures.</value>
+  </data>
+  <data name="PreviewUnavailable" xml:space="preserve">
+    <value>Preview is not available.</value>
+  </data>
+  <data name="UnsupportedPreviewType" xml:space="preserve">
+    <value>Preview is not supported for this file type; downloading instead.</value>
+  </data>
+  <data name="DocumentationStructure" xml:space="preserve">
+    <value>Структура документации</value>
+  </data>
+  <data name="SelectStructure" xml:space="preserve">
+    <value>Выберите структуру</value>
+  </data>
+  <data name="SearchIn" xml:space="preserve">
+    <value>Искать в</value>
+  </data>
+  <data name="ThisFolder" xml:space="preserve">
+    <value>Эта папка</value>
+  </data>
+  <data name="ThisFolderAndSubfolders" xml:space="preserve">
+    <value>Эта папка и подпапки</value>
+  </data>
+  <data name="EntireStructure" xml:space="preserve">
+    <value>Вся структура</value>
+  </data>
+  <data name="SearchResults" xml:space="preserve">
+    <value>Результаты</value>
+  </data>
+  <data name="FolderResult" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="DocumentResult" xml:space="preserve">
+    <value>Document</value>
+  </data>
+  <data name="TemplateResult" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>Ничего не найдено.</value>
+  </data>
+  <data name="Path" xml:space="preserve">
+    <value>Путь</value>
+  </data>
+  <data name="OpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>Open document</value>
+  </data>
+  <data name="OpenTemplate" xml:space="preserve">
+    <value>Open template</value>
+  </data>
+  <data name="ModifiedAt" xml:space="preserve">
+    <value>Изменено</value>
+  </data>
+  <data name="CurrentFolderDocuments" xml:space="preserve">
+    <value>Документы текущей папки</value>
+  </data>
+  <data name="SelectCompany" xml:space="preserve">
+    <value>Выберите компанию</value>
+  </data>
+  <data name="SelectItemForDetails" xml:space="preserve">
+    <value>Выберите документ, шаблон или результат поиска для просмотра деталей.</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Поиск папок, документов и шаблонов</value>
+  </data>
+  <data name="FolderTree" xml:space="preserve">
+    <value>Дерево папок</value>
+  </data>
+  <data name="AccessPanelDeferred" xml:space="preserve">
+    <value>Полный интерфейс управления доступом отложен; проверки выполняются на сервере.</value>
+  </data>
+  <data name="NoFolderSelected" xml:space="preserve">
+    <value>Выберите компанию и структуру документации, чтобы просмотреть папки.</value>
+  </data>
+  <data name="NoStructures" xml:space="preserve">
+    <value>Для этой компании нет активной структуры документации.</value>
+  </data>
+  <data name="EmptyExplorerHeading" xml:space="preserve">
+    <value>Предпросмотра пока нет</value>
+  </data>
+  <data name="EmptyExplorerText" xml:space="preserve">
+    <value>Выберите компанию и структуру документации, чтобы предварительно просмотреть папки.</value>
+  </data>
+  <data name="ActiveStructure" xml:space="preserve">
+    <value>Активная структура</value>
+  </data>
+  <data name="DetailsPanel" xml:space="preserve">
+    <value>Детали / Действия</value>
+  </data>
+  <data name="Collapse" xml:space="preserve">
+    <value>Свернуть</value>
+  </data>
+  <data name="Expand" xml:space="preserve">
+    <value>Развернуть</value>
+  </data>
+  <data name="ResizeHint" xml:space="preserve">
+    <value>Перетащите для изменения размера</value>
+  </data>
+  <data name="SectionIdentity" xml:space="preserve">
+    <value>Идентификация</value>
+  </data>
+  <data name="SectionClassification" xml:space="preserve">
+    <value>Классификация</value>
+  </data>
+  <data name="SectionLifecycle" xml:space="preserve">
+    <value>Жизненный цикл</value>
+  </data>
+  <data name="Checksum" xml:space="preserve">
+    <value>Контрольная сумма (SHA-256)</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>Имя файла</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>Размер</value>
+  </data>
+  <data name="Integrity" xml:space="preserve">
+    <value>Целостность</value>
+  </data>
+  <data name="ContentUnchanged" xml:space="preserve">
+    <value>Содержимое не изменено</value>
+  </data>
+  <data name="ContentChanged" xml:space="preserve">
+    <value>Новое содержимое</value>
+  </data>
+  <data name="IdenticalToActiveWarning" xml:space="preserve">
+    <value>Этот файл побайтово идентичен текущей активной версии — реальных изменений нет.</value>
+  </data>
+  <data name="ForceNewVersion" xml:space="preserve">
+    <value>Всё равно добавить как новую версию (содержимое идентично)</value>
+  </data>
+  <data name="ChangeSummaryRequired" xml:space="preserve">
+    <value>Требуется описание изменений.</value>
+  </data>
+  <data name="FileTypeChanged" xml:space="preserve">
+    <value>Тип файла изменён</value>
+  </data>
+  <data name="ReasonNoContentChange" xml:space="preserve">
+    <value>Загруженный файл идентичен текущей активной версии; изменения не обнаружены.</value>
+  </data>
+  <data name="SameAsPrevious" xml:space="preserve">
+    <value>Как в предыдущей версии</value>
+  </data>
+  <data name="Computing" xml:space="preserve">
+    <value>Вычисление…</value>
+  </data></root>

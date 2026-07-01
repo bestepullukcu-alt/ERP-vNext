@@ -77,6 +77,27 @@ public static class DependencyInjection
         services.AddScoped<CompanyInstanceKeyFactory>();
         services.AddScoped<IInstantiationPlanner, InstantiationPlanner>();
         services.AddScoped<InstantiationService>();
+        // MOD-0029-FU01 — controlled documents / templates / versioning / sharing services.
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.DocumentKeyFactory>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.DocumentVersioningService>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.DocumentAccessEvaluator>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.ControlledDocumentService>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.TemplateService>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.TemplateSharingService>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.IFolderSharePlanner,
+            Features.DocumentManagementControlledDocuments.Services.FolderSharePlanner>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.FolderShareService>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.FolderDocumentService>();
+        services.AddScoped<Features.DocumentManagementControlledDocuments.Services.ControlledDocumentExplorerService>();
+        services.AddScoped<Features.DocumentManagementTemplateMasters.Services.TemplateMasterService>();
+        // MOD-0029-FU03 — template variant governance + drift orchestration.
+        services.AddScoped<Features.DocumentManagementTemplateVariants.Services.TemplateVariantService>();
+        // MOD-0029-FU04 — document access matrix resolver + orchestration services.
+        services.AddScoped<Features.DocumentManagementAccessMatrix.Services.DocumentAccessInheritanceResolver>();
+        services.AddScoped<Features.DocumentManagementAccessMatrix.Services.DocumentAccessCompatibilityAdapter>();
+        services.AddScoped<Features.DocumentManagementAccessMatrix.Services.DocumentAccessTargetResolver>();
+        services.AddScoped<Features.DocumentManagementAccessMatrix.Services.DocumentAccessResolver>();
+        services.AddScoped<Features.DocumentManagementAccessMatrix.Services.DocumentAccessMatrixService>();
         services.AddScoped<IBusinessReferenceDataGovernanceService, BusinessReferenceDataGovernanceService>();
         // PSS-012 governance adapters. MOD-0023 (workflow) / MOD-0031 (evidence) are not yet implemented.
         // Mock stubs are registered ONLY in Development/Local/Test (governance mode = Mock); every other

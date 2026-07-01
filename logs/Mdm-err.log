@@ -1,0 +1,6 @@
+dotnet watch 🔥 Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.
+dotnet watch 💡 Press Ctrl+R to restart.
+dotnet watch 🔨 Building C:\Users\user\Desktop\ERP-vNext\services\Diten.MdmService\src\Diten.MdmService.Api\Diten.MdmService.Api.csproj ...
+dotnet watch 🔨 Build succeeded: C:\Users\user\Desktop\ERP-vNext\services\Diten.MdmService\src\Diten.MdmService.Api\Diten.MdmService.Api.csproj
+dotnet watch ❌ [Diten.MdmService.Api (net8.0)] Exited with error code -1
+dotnet watch ⏳ Waiting for a file to change before restarting ...

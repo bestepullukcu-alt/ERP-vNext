@@ -126,6 +126,8 @@ public sealed record QmsBaselinePublishResult(
 
 /// <summary>Definition list/detail projection.</summary>
 public sealed record QmsCollectionDefinitionModel(
+    Guid Id,
+    Guid BaselineReleaseId,
     string CanonicalId,
     string? ParentCanonicalId,
     string Name,

@@ -88,6 +88,48 @@
         </div>
         </div>
         </div>
+
+        @* MOD-0029-FU02A — read-only Related Corporate Templates for the selected definition node (no tree mutation) *@
+        <div class="row g-4 mt-1">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <h6 class="mb-0 d-flex align-items-center">
+                            <i class="icon-base bx bx-bookmark-alt me-2 text-primary"></i>@Localizer["RelatedTemplatesTitle"]
+                        </h6>
+                        <span id="relatedTplPath" class="badge bg-label-secondary d-none"></span>
+                    </div>
+                    <div class="card-body" id="relatedTplStates">
+                        <div id="relatedTplSelect" class="text-center text-muted py-4">@Localizer["RelatedTemplatesSelectFolder"]</div>
+                        <div id="relatedTplLoading" class="text-center py-4 d-none">
+                            <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+                        </div>
+                        <div id="relatedTplError" class="alert alert-warning d-none" role="alert"></div>
+                        <div id="relatedTplEmpty" class="text-center text-muted py-4 d-none">@Localizer["RelatedTemplatesEmpty"]</div>
+                    </div>
+
+                    @* Golden Compact DataTable v2 surface (read-only) *@
+                    <div id="relatedTplTableWrap" class="card-datatable table-responsive d-none">
+                        <table id="relatedTemplatesTable" data-dt-standard="v2" class="datatables-related-templates table border-top">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th class="all">@Localizer["MasterCode"]</th>
+                                    <th>@Localizer["TemplateName"]</th>
+                                    <th>@Localizer["Version"]</th>
+                                    <th>@SharedLocalizer["Status"]</th>
+                                    <th>@Localizer["Classification"]</th>
+                                    <th>@Localizer["VariantPolicy"]</th>
+                                    <th>@Localizer["Owner"]</th>
+                                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                                </tr>
+                            </thead>
+                            <tbody id="relatedTplBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

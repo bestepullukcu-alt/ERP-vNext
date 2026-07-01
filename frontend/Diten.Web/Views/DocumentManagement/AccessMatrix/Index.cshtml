@@ -1,0 +1,94 @@
+@using Diten.Web.Views.DocumentManagement.AccessMatrix
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AccessMatrixIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["AccessMatrixTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("platform.document-management.access.manage");
+    var canPreview = Perms.Has("platform.document-management.access.preview");
+
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions = canManage
+            ?
+            [
+                new DataTableActionItemViewModel
+                {
+                    Key = "delete",
+                    Text = SharedLocalizer["BulkDelete"].Value,
+                    Icon = "bx bx-trash",
+                    ButtonClass = "btn btn-label-danger",
+                    ConfirmKey = "BulkDeleteConfirm",
+                    Endpoint = "/DocumentManagement/AccessMatrix/api/bulk",
+                    Method = "POST"
+                }
+            ]
+            : []
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/DocumentManagement/AccessMatrix/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["AccessMatrixTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* Bulk Action Bar *@
+<partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+
+<partial name="~/Views/DocumentManagement/AccessMatrix/_DataTable.cshtml" />
+
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="icon-base bx bx-shield-quarter me-2 text-primary"></i>@Localizer["EffectivePreview"]
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <input type="hidden" id="previewTargetType" />
+                <input type="hidden" id="previewTargetId" />
+                <div class="row g-3 align-items-end mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="previewPrincipalType">@Localizer["PrincipalType"]</label>
+                        <select class="form-select form-select-sm" id="previewPrincipalType">
+                            <option value="User">@Localizer["PrincipalUser"]</option>
+                            <option value="Role">@Localizer["PrincipalRole"]</option>
+                            <option value="Company">@Localizer["PrincipalCompany"]</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="previewPrincipalId">@Localizer["PreviewPrincipal"]</label>
+                        <input class="form-control form-control-sm" id="previewPrincipalId" placeholder="@Localizer["ManualPrincipalId"]" />
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-sm btn-primary w-100" id="btnRunPreview">@Localizer["RunPreview"]</button>
+                    </div>
+                </div>
+                <div id="previewModalBody"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/DocumentManagement/AccessMatrix/_IndexL10n.cshtml" />
+    <script>
+        window.AccessMatrixPerms = {
+            canManage: @Json.Serialize(canManage),
+            canPreview: @Json.Serialize(canPreview)
+        };
+    </script>
+    <script src="~/assets/js/DocumentManagement/AccessMatrix/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/AccessMatrix/index.js" asp-append-version="true"></script>
+}

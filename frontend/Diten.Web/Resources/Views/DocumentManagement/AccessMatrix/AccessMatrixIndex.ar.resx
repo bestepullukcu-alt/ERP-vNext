@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AccessMatrixTitle" xml:space="preserve"><value>مصفوفة الوصول إلى المستندات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>سياسات وصول على مستوى المورد للشركات وهياكل التوثيق والمجلدات والمستندات والقوالب والمتغيرات</value></data>
+  <data name="CreatePolicy" xml:space="preserve"><value>إنشاء سياسة</value></data>
+  <data name="EditPolicy" xml:space="preserve"><value>تعديل السياسة</value></data>
+  <data name="Target" xml:space="preserve"><value>الهدف</value></data>
+  <data name="TargetType" xml:space="preserve"><value>نوع الهدف</value></data>
+  <data name="TargetId" xml:space="preserve"><value>معرّف الهدف</value></data>
+  <data name="Principal" xml:space="preserve"><value>الكيان</value></data>
+  <data name="PrincipalType" xml:space="preserve"><value>نوع الكيان</value></data>
+  <data name="PrincipalId" xml:space="preserve"><value>معرّف الكيان</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Effect" xml:space="preserve"><value>الأثر</value></data>
+  <data name="Inheritance" xml:space="preserve"><value>الوراثة</value></data>
+  <data name="Validity" xml:space="preserve"><value>الصلاحية</value></data>
+  <data name="Updated" xml:space="preserve"><value>تم التحديث</value></data>
+  <data name="RowActions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="InheritFromParent" xml:space="preserve"><value>النشر إلى العناصر الفرعية</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>صالح من</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>صالح حتى</value></data>
+  <data name="Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Expired" xml:space="preserve"><value>منتهي الصلاحية</value></data>
+  <data name="EffectivePreview" xml:space="preserve"><value>معاينة الوصول الفعلي</value></data>
+  <data name="EffectivePreviewNote" xml:space="preserve"><value>اختر كيانًا وشغّل المعاينة لرؤية الإجراءات الفعلية المحسوبة لهذا الهدف.</value></data>
+  <data name="AllowedActions" xml:space="preserve"><value>الإجراءات المسموح بها</value></data>
+  <data name="NoAllowedActions" xml:space="preserve"><value>لا توجد إجراءات مسموح بها</value></data>
+  <data name="PreviewPrincipal" xml:space="preserve"><value>الكيان</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>تشغيل</value></data>
+  <data name="EnforcementMode" xml:space="preserve"><value>وضع التطبيق</value></data>
+  <data name="TargetSection" xml:space="preserve"><value>الهدف</value></data>
+  <data name="PrincipalSection" xml:space="preserve"><value>الكيان</value></data>
+  <data name="PermissionsSection" xml:space="preserve"><value>الأذونات</value></data>
+  <data name="ValiditySection" xml:space="preserve"><value>الصلاحية والحوكمة</value></data>
+  <data name="TargetTenant" xml:space="preserve"><value>المستأجر</value></data>
+  <data name="TargetCompany" xml:space="preserve"><value>الشركة</value></data>
+  <data name="TargetCollectionDefinition" xml:space="preserve"><value>هيكل التوثيق</value></data>
+  <data name="TargetCollectionInstance" xml:space="preserve"><value>مجلد</value></data>
+  <data name="TargetTemplateDocument" xml:space="preserve"><value>مستند القالب</value></data>
+  <data name="TargetControlledDocument" xml:space="preserve"><value>مستند مُتحكَّم به</value></data>
+  <data name="TargetTemplateMaster" xml:space="preserve"><value>القالب الرئيسي</value></data>
+  <data name="TargetTemplateVariant" xml:space="preserve"><value>متغير القالب</value></data>
+  <data name="PrincipalUser" xml:space="preserve"><value>مستخدم</value></data>
+  <data name="PrincipalRole" xml:space="preserve"><value>دور</value></data>
+  <data name="PrincipalGroup" xml:space="preserve"><value>مجموعة</value></data>
+  <data name="PrincipalCompany" xml:space="preserve"><value>الشركة</value></data>
+  <data name="EffectAllow" xml:space="preserve"><value>سماح</value></data>
+  <data name="EffectDeny" xml:space="preserve"><value>رفض</value></data>
+  <data name="ActionView" xml:space="preserve"><value>عرض</value></data>
+  <data name="ActionDownload" xml:space="preserve"><value>تنزيل</value></data>
+  <data name="ActionCreateDocument" xml:space="preserve"><value>إنشاء مستند</value></data>
+  <data name="ActionCreateTemplate" xml:space="preserve"><value>إنشاء قالب</value></data>
+  <data name="ActionEditMetadata" xml:space="preserve"><value>تعديل البيانات الوصفية</value></data>
+  <data name="ActionUploadVersion" xml:space="preserve"><value>رفع إصدار</value></data>
+  <data name="ActionPublish" xml:space="preserve"><value>نشر</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ActionShare" xml:space="preserve"><value>مشاركة</value></data>
+  <data name="ActionManageAccess" xml:space="preserve"><value>إدارة الوصول</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="StatusDisabled" xml:space="preserve"><value>معطّل</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="InheritancePropagates" xml:space="preserve"><value>ينتشر</value></data>
+  <data name="InheritanceDirect" xml:space="preserve"><value>مباشر</value></data>
+  <data name="ManualTargetId" xml:space="preserve"><value>أو أدخل معرّف الهدف يدويًا</value></data>
+  <data name="ManualPrincipalId" xml:space="preserve"><value>أو أدخل معرّف الكيان يدويًا</value></data>
+</root>

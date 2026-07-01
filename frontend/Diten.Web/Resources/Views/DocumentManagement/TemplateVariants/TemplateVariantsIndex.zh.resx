@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TemplateVariantsTitle" xml:space="preserve"><value>模板变体</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>从企业主模板派生的公司、业务单元和站点范围的模板变体</value></data>
+  <data name="CreateVariant" xml:space="preserve"><value>创建变体</value></data>
+  <data name="EditVariant" xml:space="preserve"><value>编辑变体</value></data>
+  <data name="Variant" xml:space="preserve"><value>变体</value></data>
+  <data name="VariantCode" xml:space="preserve"><value>变体代码</value></data>
+  <data name="VariantName" xml:space="preserve"><value>变体名称</value></data>
+  <data name="Description" xml:space="preserve"><value>描述</value></data>
+  <data name="DerivedMaster" xml:space="preserve"><value>派生主模板</value></data>
+  <data name="TemplateMaster" xml:space="preserve"><value>主模板</value></data>
+  <data name="LastRebased" xml:space="preserve"><value>上次变基</value></data>
+  <data name="DriftStatus" xml:space="preserve"><value>漂移状态</value></data>
+  <data name="Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>范围类型</value></data>
+  <data name="ScopeId" xml:space="preserve"><value>范围</value></data>
+  <data name="Owner" xml:space="preserve"><value>所有者</value></data>
+  <data name="OwnerCompanyId" xml:space="preserve"><value>所有者公司</value></data>
+  <data name="OwnerUserId" xml:space="preserve"><value>所有者用户</value></data>
+  <data name="Approval" xml:space="preserve"><value>审批</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Compare" xml:space="preserve"><value>比较</value></data>
+  <data name="Rebase" xml:space="preserve"><value>变基</value></data>
+  <data name="RebaseConfirm" xml:space="preserve"><value>将此变体变基到主模板的当前版本？本地更改将被清除。</value></data>
+  <data name="Rebased" xml:space="preserve"><value>变体已变基</value></data>
+  <data name="CompareTitle" xml:space="preserve"><value>变体 / 主模板比较</value></data>
+  <data name="CompareNote" xml:space="preserve"><value>仅元数据级别比较——此基础不计算二进制或内容差异。</value></data>
+  <data name="MasterCurrentVersion" xml:space="preserve"><value>主模板当前版本</value></data>
+  <data name="VariantLastRebasedVersion" xml:space="preserve"><value>变体上次变基版本</value></data>
+  <data name="MasterStatus" xml:space="preserve"><value>主模板状态</value></data>
+  <data name="VariantStatus" xml:space="preserve"><value>变体状态</value></data>
+  <data name="HasLocalChanges" xml:space="preserve"><value>存在本地更改</value></data>
+  <data name="VariantIdentitySection" xml:space="preserve"><value>变体标识</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>范围</value></data>
+  <data name="OwnerSection" xml:space="preserve"><value>所有者</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>治理与谱系</value></data>
+  <data name="LineageSection" xml:space="preserve"><value>谱系</value></data>
+  <data name="MetadataEditDeferred" xml:space="preserve"><value>此基础切片暂缓元数据编辑。</value></data>
+  <data name="ScopeCompany" xml:space="preserve"><value>公司</value></data>
+  <data name="ScopeBusinessUnit" xml:space="preserve"><value>业务单元</value></data>
+  <data name="ScopeSite" xml:space="preserve"><value>站点</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>启用</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>已弃用</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="DriftInSync" xml:space="preserve"><value>已同步</value></data>
+  <data name="DriftRebaseRequired" xml:space="preserve"><value>需要变基</value></data>
+  <data name="DriftDrifted" xml:space="preserve"><value>已漂移</value></data>
+  <data name="DriftBlocked" xml:space="preserve"><value>已阻止</value></data>
+  <data name="ApprovalNotRequired" xml:space="preserve"><value>无需审批</value></data>
+  <data name="ApprovalPending" xml:space="preserve"><value>待处理</value></data>
+  <data name="ApprovalApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="ApprovalRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="ApprovalBlocked" xml:space="preserve"><value>已阻止</value></data>
+  <data name="DocumentationStructure" xml:space="preserve"><value>文档结构</value></data>
+  <data name="TargetFolder" xml:space="preserve"><value>目标文件夹</value></data>
+  <data name="LinkedTemplateDocument" xml:space="preserve"><value>已链接文件夹模板</value></data>
+  <data name="TemplateDocumentCurrentVersion" xml:space="preserve"><value>文件夹模板版本</value></data>
+  <data name="ContentLinked" xml:space="preserve"><value>内容已链接</value></data>
+  <data name="VariantContentSection" xml:space="preserve"><value>变体内容</value></data>
+  <data name="VariantContentSource" xml:space="preserve"><value>变体内容来源</value></data>
+  <data name="UseMasterVersionContent" xml:space="preserve"><value>使用所选主版本内容</value></data>
+  <data name="UploadLocalVariantContent" xml:space="preserve"><value>上传本地变体内容</value></data>
+  <data name="MasterContentHelp" xml:space="preserve"><value>此变体最初将使用所选主版本文件。</value></data>
+  <data name="LocalUploadHelp" xml:space="preserve"><value>此变体将以本地上传内容开始，并标记为本地已更改。</value></data>
+  <data name="LocalVariantFile" xml:space="preserve"><value>本地变体文件</value></data>
+  <data name="MasterVersionContent" xml:space="preserve"><value>使用主版本内容</value></data>
+  <data name="LocalVariantUpload" xml:space="preserve"><value>使用本地变体内容</value></data>
+</root>

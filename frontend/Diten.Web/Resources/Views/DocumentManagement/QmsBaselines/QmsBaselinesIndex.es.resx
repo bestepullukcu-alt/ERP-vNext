@@ -315,4 +315,15 @@
   <data name="ValidateNeedsDefinitions" xml:space="preserve">
     <value>Añada al menos una definición antes de validar.</value>
   </data>
+  <data name="RelatedTemplatesTitle" xml:space="preserve"><value>Plantillas corporativas relacionadas</value></data>
+  <data name="RelatedTemplatesSelectFolder" xml:space="preserve"><value>Seleccione una carpeta para ver las plantillas maestras relacionadas.</value></data>
+  <data name="RelatedTemplatesEmpty" xml:space="preserve"><value>No hay plantillas maestras relacionadas para esta carpeta.</value></data>
+  <data name="MasterCode" xml:space="preserve"><value>Código maestro</value></data>
+  <data name="TemplateName" xml:space="preserve"><value>Nombre de plantilla</value></data>
+  <data name="VariantPolicy" xml:space="preserve"><value>Política de variantes</value></data>
+  <data name="Owner" xml:space="preserve"><value>Propietario</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Obsoleto</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="VariantAllowed" xml:space="preserve"><value>Variante permitida</value></data>
+  <data name="VariantLocked" xml:space="preserve"><value>Variante bloqueada</value></data>
 </root>

@@ -1,0 +1,19 @@
+@using Diten.Web.Views.DocumentManagement.AccessMatrix
+@using Microsoft.AspNetCore.Mvc.Localization
+@model Diten.Web.Models.DocumentManagementAccessMatrixFormModel
+@inject IHtmlLocalizer<AccessMatrixIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EditPolicy"].Value;
+    ViewData["FormMode"] = "edit";
+    Layout = "_LayoutTenantShell";
+    var id = (Guid)(ViewData["AccessPolicyId"] ?? Guid.Empty);
+}
+
+<div data-access-policy-id="@id"></div>
+<partial name="~/Views/DocumentManagement/AccessMatrix/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/AccessMatrix/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DocumentManagement/AccessMatrix/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/AccessMatrix/index.js" asp-append-version="true"></script>
+}

@@ -515,6 +515,10 @@
   <data name="LegalEntities" xml:space="preserve"><value>Tüzel Kişilikler</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>İş Akışı Onayları</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Dokümantasyon Yapıları</value></data>
+  <data name="ControlledDocuments" xml:space="preserve"><value>Kontrollü Belgeler</value></data>
+  <data name="TemplateMasters" xml:space="preserve"><value>Kurumsal Şablonlar</value></data>
+  <data name="TemplateVariants" xml:space="preserve"><value>Şablon Varyantları</value></data>
+  <data name="AccessMatrix" xml:space="preserve"><value>Erişim Matrisi</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>QMS Baseline'lari</value></data>
   <data name="Unauthorized" xml:space="preserve"><value>Yetkisiz</value></data>
 </root>

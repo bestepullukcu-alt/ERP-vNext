@@ -1,0 +1,153 @@
+@using Diten.Web.Views.DocumentManagement.ControlledDocuments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ControlledDocumentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["ShareDocument"].Value;
+    Layout = "_LayoutTenantShell";
+    var documentId = ViewData["DocumentId"]?.ToString();
+}
+
+<div class="controlleddocuments-share">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@Localizer["ShareDocument"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/DocumentManagementControlledDocuments">@Localizer["ControlledDocumentsTitle"]</a>
+                    </li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["ShareDocument"]</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="/DocumentManagementControlledDocuments/VersionHistory/@documentId" class="btn btn-label-secondary">
+            @Localizer["VersionHistory"]
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-5 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["DocumentContext"]</h6>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-file"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["Title"]</div>
+                                <div class="backbone-preview-value mt-1" id="shareDocumentTitle">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-folder"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["FolderPath"]</div>
+                                <div class="backbone-preview-value mt-1" id="shareDocumentPath">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-git-branch"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["CurrentVersion"]</div>
+                                <div class="backbone-preview-value mt-1" id="shareDocumentVersion">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["InternalLink"]</h6>
+                <label class="form-label fw-medium" for="shareInternalLink">@Localizer["InternalLink"]</label>
+                <div class="input-group">
+                    <input type="text" id="shareInternalLink" class="form-control" readonly />
+                    <button type="button" class="btn btn-label-secondary" id="btnCopyShareLink">
+                        <i class="icon-base bx bx-copy me-1"></i>@Localizer["CopyLink"]
+                    </button>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label fw-medium" for="shareRecipientEmail">@Localizer["RecipientEmail"]</label>
+                    <div class="input-group">
+                        <input type="email" id="shareRecipientEmail" class="form-control" />
+                        <button type="button" class="btn btn-label-primary" id="btnSendShareEmail">
+                            <i class="icon-base bx bx-envelope me-1"></i>@Localizer["SendEmail"]
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-7 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["CompanyShare"]</h6>
+                <form id="formShareDocument" novalidate>
+                    @Html.AntiForgeryToken()
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="shareTargetCompany">@Localizer["TargetCompany"] <span class="text-danger">*</span></label>
+                            <input type="text" id="shareTargetCompany" class="form-control" placeholder="@Localizer["TargetCompanyPlaceholder"]" required />
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="shareAccessLevel">@Localizer["AccessLevel"]</label>
+                            <select id="shareAccessLevel" class="form-select">
+                                <option value="REFERENCE">@Localizer["ViewOnly"]</option>
+                                <option value="COPY_ON_ADOPT">@Localizer["CopyAllowed"]</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="shareMode">@Localizer["ShareMode"]</label>
+                            <select id="shareMode" class="form-select">
+                                <option value="REFERENCE">@Localizer["ShareModeReference"]</option>
+                                <option value="COPY_ON_ADOPT">@Localizer["ShareModeCopyOnAdopt"]</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="shareExpiryDate">@Localizer["ExpiryDateOptional"]</label>
+                            <input type="date" id="shareExpiryDate" class="form-control" disabled />
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="sharePassword">@Localizer["PasswordProtectionOptional"]</label>
+                            <input type="password" id="sharePassword" class="form-control" disabled />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="shareDirectUser">@Localizer["DirectUserShare"]</label>
+                            <input type="text" id="shareDirectUser" class="form-control" disabled />
+                        </div>
+
+                        <div class="col-12">
+                            <div class="alert alert-warning mb-0" role="alert">
+                                @Localizer["UnsupportedShareOption"]
+                            </div>
+                        </div>
+
+                        <div class="col-12 d-flex justify-content-end gap-2">
+                            <a href="/DocumentManagementControlledDocuments" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+                            <button type="button" class="btn btn-primary" id="btnShareDocumentNow">
+                                @Localizer["ShareNow"]
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/ControlledDocuments/_IndexL10n.cshtml" />
+    @Html.AntiForgeryToken()
+    <script>window.ControlledDocumentShareContext = { documentId: '@documentId' };</script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/share-document.js" asp-append-version="true"></script>
+}

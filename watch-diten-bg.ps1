@@ -1,5 +1,8 @@
 # Diten ERP - Background Start Script for Antigravity Workspace runner
 $ErrorActionPreference = "Continue"
+# Anchor to the repo root (this script's own folder) so relative service paths resolve regardless of the
+# caller's current working directory (background runners may start in C:\Users\<user>\Documents).
+Set-Location -Path $PSScriptRoot
 Write-Host "🚀 Starting Diten ERP Multi-Service Suite with WATCH (Hot Reload)..." -ForegroundColor Cyan
 
 # 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058)

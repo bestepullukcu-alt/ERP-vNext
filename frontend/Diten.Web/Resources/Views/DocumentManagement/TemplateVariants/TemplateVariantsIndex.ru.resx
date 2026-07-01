@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TemplateVariantsTitle" xml:space="preserve"><value>Варианты шаблонов</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Варианты шаблонов на уровне компании, бизнес-единицы и площадки, производные от корпоративных мастер-шаблонов</value></data>
+  <data name="CreateVariant" xml:space="preserve"><value>Создать вариант</value></data>
+  <data name="EditVariant" xml:space="preserve"><value>Изменить вариант</value></data>
+  <data name="Variant" xml:space="preserve"><value>Вариант</value></data>
+  <data name="VariantCode" xml:space="preserve"><value>Код варианта</value></data>
+  <data name="VariantName" xml:space="preserve"><value>Название варианта</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="DerivedMaster" xml:space="preserve"><value>Производный мастер</value></data>
+  <data name="TemplateMaster" xml:space="preserve"><value>Мастер-шаблон</value></data>
+  <data name="LastRebased" xml:space="preserve"><value>Последний rebase</value></data>
+  <data name="DriftStatus" xml:space="preserve"><value>Статус расхождения</value></data>
+  <data name="Scope" xml:space="preserve"><value>Область</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Тип области</value></data>
+  <data name="ScopeId" xml:space="preserve"><value>Область</value></data>
+  <data name="Owner" xml:space="preserve"><value>Владелец</value></data>
+  <data name="OwnerCompanyId" xml:space="preserve"><value>Компания-владелец</value></data>
+  <data name="OwnerUserId" xml:space="preserve"><value>Пользователь-владелец</value></data>
+  <data name="Approval" xml:space="preserve"><value>Утверждение</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Compare" xml:space="preserve"><value>Сравнить</value></data>
+  <data name="Rebase" xml:space="preserve"><value>Rebase</value></data>
+  <data name="RebaseConfirm" xml:space="preserve"><value>Выполнить rebase этого варианта на текущую версию мастера? Локальные изменения будут очищены.</value></data>
+  <data name="Rebased" xml:space="preserve"><value>Вариант перебазирован</value></data>
+  <data name="CompareTitle" xml:space="preserve"><value>Сравнение варианта и мастера</value></data>
+  <data name="CompareNote" xml:space="preserve"><value>Сравнение только на уровне метаданных — двоичное или содержательное сравнение в этой основе не выполняется.</value></data>
+  <data name="MasterCurrentVersion" xml:space="preserve"><value>Текущая версия мастера</value></data>
+  <data name="VariantLastRebasedVersion" xml:space="preserve"><value>Последняя перебазированная версия варианта</value></data>
+  <data name="MasterStatus" xml:space="preserve"><value>Статус мастера</value></data>
+  <data name="VariantStatus" xml:space="preserve"><value>Статус варианта</value></data>
+  <data name="HasLocalChanges" xml:space="preserve"><value>Есть локальные изменения</value></data>
+  <data name="VariantIdentitySection" xml:space="preserve"><value>Идентификация варианта</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Область</value></data>
+  <data name="OwnerSection" xml:space="preserve"><value>Владелец</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Управление и происхождение</value></data>
+  <data name="LineageSection" xml:space="preserve"><value>Происхождение</value></data>
+  <data name="MetadataEditDeferred" xml:space="preserve"><value>Редактирование метаданных отложено для этого этапа основы.</value></data>
+  <data name="ScopeCompany" xml:space="preserve"><value>Компания</value></data>
+  <data name="ScopeBusinessUnit" xml:space="preserve"><value>Бизнес-единица</value></data>
+  <data name="ScopeSite" xml:space="preserve"><value>Площадка</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активный</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Устаревший</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Архивирован</value></data>
+  <data name="DriftInSync" xml:space="preserve"><value>Синхронизирован</value></data>
+  <data name="DriftRebaseRequired" xml:space="preserve"><value>Требуется rebase</value></data>
+  <data name="DriftDrifted" xml:space="preserve"><value>Расходится</value></data>
+  <data name="DriftBlocked" xml:space="preserve"><value>Заблокирован</value></data>
+  <data name="ApprovalNotRequired" xml:space="preserve"><value>Не требуется</value></data>
+  <data name="ApprovalPending" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="ApprovalApproved" xml:space="preserve"><value>Утверждён</value></data>
+  <data name="ApprovalRejected" xml:space="preserve"><value>Отклонён</value></data>
+  <data name="ApprovalBlocked" xml:space="preserve"><value>Заблокирован</value></data>
+  <data name="DocumentationStructure" xml:space="preserve"><value>Структура документации</value></data>
+  <data name="TargetFolder" xml:space="preserve"><value>Целевая папка</value></data>
+  <data name="LinkedTemplateDocument" xml:space="preserve"><value>Связанный шаблон папки</value></data>
+  <data name="TemplateDocumentCurrentVersion" xml:space="preserve"><value>Версия шаблона папки</value></data>
+  <data name="ContentLinked" xml:space="preserve"><value>Контент связан</value></data>
+  <data name="VariantContentSection" xml:space="preserve"><value>Содержимое варианта</value></data>
+  <data name="VariantContentSource" xml:space="preserve"><value>Источник содержимого</value></data>
+  <data name="UseMasterVersionContent" xml:space="preserve"><value>Использовать содержимое выбранной master-версии</value></data>
+  <data name="UploadLocalVariantContent" xml:space="preserve"><value>Загрузить локальное содержимое варианта</value></data>
+  <data name="MasterContentHelp" xml:space="preserve"><value>Этот вариант сначала будет использовать файл выбранной master-версии.</value></data>
+  <data name="LocalUploadHelp" xml:space="preserve"><value>Этот вариант начнется с локально загруженного содержимого и будет отмечен как локально измененный.</value></data>
+  <data name="LocalVariantFile" xml:space="preserve"><value>Локальный файл варианта</value></data>
+  <data name="MasterVersionContent" xml:space="preserve"><value>Используется содержимое master-версии</value></data>
+  <data name="LocalVariantUpload" xml:space="preserve"><value>Используется локальное содержимое варианта</value></data>
+</root>

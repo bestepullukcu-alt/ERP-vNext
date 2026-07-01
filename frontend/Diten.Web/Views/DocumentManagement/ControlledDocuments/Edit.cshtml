@@ -1,0 +1,20 @@
+@using Diten.Web.Views.DocumentManagement.ControlledDocuments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ControlledDocumentsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EditMetadata"].Value;
+    Layout = "_LayoutTenantShell";
+    var documentId = ViewData["DocumentId"]?.ToString();
+    ViewData["FormMode"] = "edit";
+}
+
+@* Edit reuses the shared 4-card form; identity/file fields are disabled in edit mode by edit.js. *@
+<partial name="~/Views/DocumentManagement/ControlledDocuments/_Form.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/ControlledDocuments/_IndexL10n.cshtml" />
+    @Html.AntiForgeryToken()
+    <script>window.ControlledDocumentContext = { documentId: '@documentId' };</script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/edit.js" asp-append-version="true"></script>
+}

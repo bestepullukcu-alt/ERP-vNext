@@ -14,7 +14,8 @@ public enum AuditCategory
     DataExport = 9,
     DataPrivacy = 10,
     Integration = 11,
-    System = 12
+    System = 12,
+    DocumentManagement = 13
 }
 
 public enum AuditOperation

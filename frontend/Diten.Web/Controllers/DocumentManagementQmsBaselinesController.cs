@@ -89,6 +89,29 @@ public sealed class DocumentManagementQmsBaselinesController : Controller
     public Task<IActionResult> Definition(Guid id, string canonicalId, CancellationToken ct) =>
         ProxyGetAsync($"{ApiBase}/{id}/definitions/{Uri.EscapeDataString(canonicalId)}", ct);
 
+    // MOD-0029-FU02A — read-only "Related Corporate Templates" for a selected definition node. Reuses the FU02
+    // template-masters list filter (collectionDefinitionId / canonicalId); the backend is tenant-scoped, AND-matches
+    // the binding fields and is gated by platform.document-management.template-masters.view. No MOD-0028 mutation.
+    [HttpGet("related-template-masters")]
+    public Task<IActionResult> RelatedTemplateMasters(
+        [FromQuery] Guid? collectionDefinitionId,
+        [FromQuery] string? canonicalId,
+        CancellationToken ct)
+    {
+        var hasDefinition = collectionDefinitionId is { } cd && cd != Guid.Empty;
+        var hasCanonical = !string.IsNullOrWhiteSpace(canonicalId);
+        if (!hasDefinition && !hasCanonical)
+        {
+            // No binding key → never fall through to an unfiltered (all masters) query for a folder.
+            return Task.FromResult<IActionResult>(EmptyListJson());
+        }
+
+        var qs = new List<string>();
+        if (hasDefinition) qs.Add($"collectionDefinitionId={collectionDefinitionId:D}");
+        if (hasCanonical) qs.Add($"canonicalId={Uri.EscapeDataString(canonicalId!)}");
+        return ProxyGetAsync($"/api/v1/document-management/template-masters?{string.Join('&', qs)}", ct);
+    }
+
     // MOD-0028-FU04 — Business Reference Data (PSS-012) published values feeding the node-editor governance dropdowns
     // (document class / classification / retention). Same-origin proxy → Gateway → Platform.
     [HttpGet("reference-data/{setCode}")]
@@ -294,21 +317,9 @@ public sealed class DocumentManagementQmsBaselinesController : Controller
         }
     }
 
-    private async Task<IActionResult> PassthroughAsync(HttpResponseMessage response, CancellationToken ct)
-    {
-        if ((int)response.StatusCode is 204 or 205 or 304)
-        {
-            return new StatusCodeResult((int)response.StatusCode);
-        }
-
-        var body = await response.Content.ReadAsStringAsync(ct);
-        return new ContentResult
-        {
-            Content = string.IsNullOrWhiteSpace(body) ? "{}" : body,
-            ContentType = "application/json",
-            StatusCode = (int)response.StatusCode
-        };
-    }
+    // MOD-0029-FU04C — navigation 401/403 → friendly Not Authorized page; AJAX keeps the JSON envelope for a toast.
+    private Task<IActionResult> PassthroughAsync(HttpResponseMessage response, CancellationToken ct) =>
+        Diten.Web.Infrastructure.TenantShellProxyResponse.PassthroughAsync(response, Request, ct);
 
     private IActionResult UnauthorizedJson() =>
         JsonFailure(401, "UNAUTHORIZED", _sharedLocalizer["Unauthorized"].Value);
@@ -318,6 +329,21 @@ public sealed class DocumentManagementQmsBaselinesController : Controller
 
     private IActionResult UnprocessableJson(string reasonCode) =>
         JsonFailure(422, reasonCode, _sharedLocalizer["ValidationFailed"].Value);
+
+    // Successful empty-list envelope (matches the gateway shape) used when no binding key is supplied.
+    private ContentResult EmptyListJson() => new()
+    {
+        Content = JsonSerializer.Serialize(new
+        {
+            data = Array.Empty<object>(),
+            isSuccessful = true,
+            statusCode = 200,
+            errors = Array.Empty<string>(),
+            correlation_id = HttpContext.TraceIdentifier
+        }),
+        ContentType = "application/json",
+        StatusCode = 200
+    };
 
     private ContentResult JsonFailure(int status, string reasonCode, string message)
     {

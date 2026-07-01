@@ -1,0 +1,167 @@
+@using Diten.Web.Views.DocumentManagement.AccessMatrix
+@using Microsoft.AspNetCore.Mvc.Localization
+@model Diten.Web.Models.DocumentManagementAccessMatrixFormModel
+@inject IHtmlLocalizer<AccessMatrixIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"] as string, "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["EditPolicy"] : Localizer["CreatePolicy"];
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h5 class="mb-1">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-style1 mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/DocumentManagementAccessMatrix">@Localizer["AccessMatrixTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/DocumentManagementAccessMatrix" class="btn btn-label-secondary">
+            <i class="icon-base bx bx-x me-1"></i>@SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="accessPolicyForm" class="btn btn-primary">
+            <i class="icon-base bx bx-save me-1"></i>@SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+<form id="accessPolicyForm" class="needs-validation" novalidate data-mode="@(isEdit ? "edit" : "create")">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["TargetSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" for="targetType">@Localizer["TargetType"] <span class="text-danger">*</span></label>
+                            <select class="select2 form-select" id="targetType" name="targetType" data-placeholder="@Localizer["TargetType"]" required>
+                                <option value="Tenant">@Localizer["TargetTenant"]</option>
+                                <option value="Company">@Localizer["TargetCompany"]</option>
+                                <option value="CollectionDefinition">@Localizer["TargetCollectionDefinition"]</option>
+                                <option value="CollectionInstance">@Localizer["TargetCollectionInstance"]</option>
+                                <option value="TemplateDocument">@Localizer["TargetTemplateDocument"]</option>
+                                <option value="ControlledDocument">@Localizer["TargetControlledDocument"]</option>
+                                <option value="TemplateMaster">@Localizer["TargetTemplateMaster"]</option>
+                                <option value="TemplateVariant">@Localizer["TargetTemplateVariant"]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-none" id="targetCompanyGroup">
+                            <label class="form-label" for="targetCompany">@Localizer["TargetCompany"]</label>
+                            <select class="select2 form-select" id="targetCompany" data-placeholder="@Localizer["TargetCompany"]">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-none" id="targetPickGroup">
+                            <label class="form-label" for="targetPick">@Localizer["Target"]</label>
+                            <select class="select2 form-select" id="targetPick" data-placeholder="@Localizer["Target"]">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="targetId">@Localizer["TargetId"] <span class="text-danger">*</span></label>
+                            <input class="form-control bg-label-secondary" id="targetId" name="targetId" maxlength="160" required readonly placeholder="@Localizer["ManualTargetId"]" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["PrincipalSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label" for="principalType">@Localizer["PrincipalType"] <span class="text-danger">*</span></label>
+                            <select class="select2 form-select" id="principalType" name="principalType" data-placeholder="@Localizer["PrincipalType"]" required>
+                                <option value="User">@Localizer["PrincipalUser"]</option>
+                                <option value="Role">@Localizer["PrincipalRole"]</option>
+                                <option value="Company">@Localizer["PrincipalCompany"]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label" for="principalPick">@Localizer["Principal"] <span class="text-danger">*</span></label>
+                            <select class="select2 form-select" id="principalPick" data-placeholder="@Localizer["Principal"]">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="principalId">@Localizer["PrincipalId"] <span class="text-danger">*</span></label>
+                            <input class="form-control bg-label-secondary" id="principalId" name="principalId" maxlength="160" required readonly placeholder="@Localizer["ManualPrincipalId"]" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["PermissionsSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="actions">@Localizer["Actions"] <span class="text-danger">*</span></label>
+                            <select class="select2 form-select" id="actions" name="actions" multiple="multiple" data-placeholder="@Localizer["Actions"]" required>
+                                <option value="View">@Localizer["ActionView"]</option>
+                                <option value="Download">@Localizer["ActionDownload"]</option>
+                                <option value="CreateDocument">@Localizer["ActionCreateDocument"]</option>
+                                <option value="CreateTemplate">@Localizer["ActionCreateTemplate"]</option>
+                                <option value="EditMetadata">@Localizer["ActionEditMetadata"]</option>
+                                <option value="UploadVersion">@Localizer["ActionUploadVersion"]</option>
+                                <option value="Publish">@Localizer["ActionPublish"]</option>
+                                <option value="Archive">@Localizer["ActionArchive"]</option>
+                                <option value="Share">@Localizer["ActionShare"]</option>
+                                <option value="ManageAccess">@Localizer["ActionManageAccess"]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="effect">@Localizer["Effect"] <span class="text-danger">*</span></label>
+                            <select class="select2 form-select" id="effect" name="effect" data-placeholder="@Localizer["Effect"]" required>
+                                <option value="ALLOW">@Localizer["EffectAllow"]</option>
+                                <option value="DENY">@Localizer["EffectDeny"]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="inheritFromParent" name="inheritFromParent" value="true" checked />
+                                <label class="form-check-label" for="inheritFromParent">@Localizer["InheritFromParent"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["ValiditySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="status">@SharedLocalizer["Status"]</label>
+                            <select class="select2 form-select" id="status" name="status" data-placeholder="@SharedLocalizer["Status"]">
+                                <option value="ACTIVE">@Localizer["StatusActive"]</option>
+                                <option value="DISABLED">@Localizer["StatusDisabled"]</option>
+                                <option value="ARCHIVED">@Localizer["StatusArchived"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="validFrom">@Localizer["ValidFrom"]</label>
+                            <input class="form-control" id="validFrom" name="validFrom" type="datetime-local" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="validTo">@Localizer["ValidTo"]</label>
+                            <input class="form-control" id="validTo" name="validTo" type="datetime-local" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="reason">@Localizer["Reason"]</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" maxlength="1000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

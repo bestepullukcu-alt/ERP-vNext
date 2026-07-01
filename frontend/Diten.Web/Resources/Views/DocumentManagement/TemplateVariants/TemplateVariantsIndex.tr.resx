@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TemplateVariantsTitle" xml:space="preserve"><value>Şablon Varyantları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kurumsal şablon master'larından türeyen şirket, iş birimi ve saha kapsamlı şablon varyantları</value></data>
+  <data name="CreateVariant" xml:space="preserve"><value>Varyant Oluştur</value></data>
+  <data name="EditVariant" xml:space="preserve"><value>Varyant Düzenle</value></data>
+  <data name="Variant" xml:space="preserve"><value>Varyant</value></data>
+  <data name="VariantCode" xml:space="preserve"><value>Varyant Kodu</value></data>
+  <data name="VariantName" xml:space="preserve"><value>Varyant Adı</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="DerivedMaster" xml:space="preserve"><value>Türetilen Master</value></data>
+  <data name="TemplateMaster" xml:space="preserve"><value>Şablon Master</value></data>
+  <data name="LastRebased" xml:space="preserve"><value>Son Rebase</value></data>
+  <data name="DriftStatus" xml:space="preserve"><value>Sapma Durumu</value></data>
+  <data name="Scope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Kapsam Türü</value></data>
+  <data name="ScopeId" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="Owner" xml:space="preserve"><value>Sahip</value></data>
+  <data name="OwnerCompanyId" xml:space="preserve"><value>Sahip Şirket</value></data>
+  <data name="OwnerUserId" xml:space="preserve"><value>Sahip Kullanıcı</value></data>
+  <data name="Approval" xml:space="preserve"><value>Onay</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Compare" xml:space="preserve"><value>Karşılaştır</value></data>
+  <data name="Rebase" xml:space="preserve"><value>Rebase</value></data>
+  <data name="RebaseConfirm" xml:space="preserve"><value>Bu varyant master'ın güncel versiyonuna rebase edilsin mi? Yerel değişiklikler temizlenecek.</value></data>
+  <data name="Rebased" xml:space="preserve"><value>Varyant rebase edildi</value></data>
+  <data name="CompareTitle" xml:space="preserve"><value>Varyant / Master Karşılaştırması</value></data>
+  <data name="CompareNote" xml:space="preserve"><value>Yalnızca meta veri düzeyinde karşılaştırma — bu temelde ikili veya içerik farkı hesaplanmaz.</value></data>
+  <data name="MasterCurrentVersion" xml:space="preserve"><value>Master Güncel Versiyon</value></data>
+  <data name="VariantLastRebasedVersion" xml:space="preserve"><value>Varyant Son Rebase Versiyonu</value></data>
+  <data name="MasterStatus" xml:space="preserve"><value>Master Durumu</value></data>
+  <data name="VariantStatus" xml:space="preserve"><value>Varyant Durumu</value></data>
+  <data name="HasLocalChanges" xml:space="preserve"><value>Yerel Değişiklik Var</value></data>
+  <data name="VariantIdentitySection" xml:space="preserve"><value>Varyant Kimliği</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="OwnerSection" xml:space="preserve"><value>Sahip</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Yönetişim ve Soy Ağacı</value></data>
+  <data name="LineageSection" xml:space="preserve"><value>Soy Ağacı</value></data>
+  <data name="MetadataEditDeferred" xml:space="preserve"><value>Bu temel dilimi için meta veri düzenleme ertelenmiştir.</value></data>
+  <data name="ScopeCompany" xml:space="preserve"><value>Şirket</value></data>
+  <data name="ScopeBusinessUnit" xml:space="preserve"><value>İş Birimi</value></data>
+  <data name="ScopeSite" xml:space="preserve"><value>Saha</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Kullanımdan Kaldırıldı</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="DriftInSync" xml:space="preserve"><value>Senkronize</value></data>
+  <data name="DriftRebaseRequired" xml:space="preserve"><value>Rebase Gerekli</value></data>
+  <data name="DriftDrifted" xml:space="preserve"><value>Sapmış</value></data>
+  <data name="DriftBlocked" xml:space="preserve"><value>Engellendi</value></data>
+  <data name="ApprovalNotRequired" xml:space="preserve"><value>Gerekli Değil</value></data>
+  <data name="ApprovalPending" xml:space="preserve"><value>Beklemede</value></data>
+  <data name="ApprovalApproved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="ApprovalRejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="ApprovalBlocked" xml:space="preserve"><value>Engellendi</value></data>
+  <data name="DocumentationStructure" xml:space="preserve"><value>Dokümantasyon Yapısı</value></data>
+  <data name="TargetFolder" xml:space="preserve"><value>Hedef Klasör</value></data>
+  <data name="LinkedTemplateDocument" xml:space="preserve"><value>Bağlı Klasör Şablonu</value></data>
+  <data name="TemplateDocumentCurrentVersion" xml:space="preserve"><value>Klasör Şablonu Versiyonu</value></data>
+  <data name="ContentLinked" xml:space="preserve"><value>İçerik Bağlandı</value></data>
+  <data name="VariantContentSection" xml:space="preserve"><value>Varyant İçeriği</value></data>
+  <data name="VariantContentSource" xml:space="preserve"><value>Varyant İçerik Kaynağı</value></data>
+  <data name="UseMasterVersionContent" xml:space="preserve"><value>Seçilen master versiyon içeriğini kullan</value></data>
+  <data name="UploadLocalVariantContent" xml:space="preserve"><value>Lokal varyant içeriği yükle</value></data>
+  <data name="MasterContentHelp" xml:space="preserve"><value>Bu varyant başlangıçta seçilen master versiyon dosyasını kullanır.</value></data>
+  <data name="LocalUploadHelp" xml:space="preserve"><value>Bu varyant lokal yüklenen içerikle başlar ve lokal değişiklikli işaretlenir.</value></data>
+  <data name="LocalVariantFile" xml:space="preserve"><value>Lokal Varyant Dosyası</value></data>
+  <data name="MasterVersionContent" xml:space="preserve"><value>Master versiyon içeriği kullanılıyor</value></data>
+  <data name="LocalVariantUpload" xml:space="preserve"><value>Lokal varyant içeriği kullanılıyor</value></data>
+</root>

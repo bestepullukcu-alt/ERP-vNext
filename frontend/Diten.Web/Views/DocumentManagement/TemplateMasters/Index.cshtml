@@ -1,0 +1,110 @@
+@using Diten.Web.Views.DocumentManagement.TemplateMasters
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TemplateMastersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["TemplateMastersTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canCreate = Perms.Has("platform.document-management.template-masters.create");
+    var canPublish = Perms.Has("platform.document-management.template-masters.version.publish");
+    var canDeprecate = Perms.Has("platform.document-management.template-masters.deprecate");
+    var canImpact = Perms.Has("platform.document-management.template-masters.impact.view");
+    var canDelete = Perms.Has("platform.document-management.template-masters.delete");
+
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions = canDelete
+            ?
+            [
+                new DataTableActionItemViewModel
+                {
+                    Key = "delete",
+                    Text = SharedLocalizer["BulkDelete"].Value,
+                    Icon = "bx bx-trash",
+                    ButtonClass = "btn btn-label-danger",
+                    ConfirmKey = "BulkDeleteConfirm",
+                    Endpoint = "/DocumentManagement/TemplateMasters/api/bulk",
+                    Method = "POST"
+                }
+            ]
+            : []
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/DocumentManagement/TemplateMasters/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["TemplateMastersTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* Bulk Action Bar *@
+<partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+
+<partial name="~/Views/DocumentManagement/TemplateMasters/_DataTable.cshtml" />
+
+<div class="modal fade" id="publishVersionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="modal-content" id="publishVersionForm" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="modal-header">
+                <h5 class="modal-title">@Localizer["PublishVersion"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="publishMasterId" />
+                <div class="mb-3">
+                    <label class="form-label" for="publishFile">@Localizer["File"]</label>
+                    <input class="form-control" id="publishFile" name="file" type="file" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="publishChangeSummary">@Localizer["ChangeSummary"]</label>
+                    <textarea class="form-control" id="publishChangeSummary" name="changeSummary" rows="3" maxlength="1000"></textarea>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="publishAllowUnchanged" name="allowUnchanged" value="true" />
+                    <label class="form-check-label" for="publishAllowUnchanged">@Localizer["AllowUnchanged"]</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="submit" class="btn btn-primary">@Localizer["PublishVersion"]</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="impactModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="icon-base bx bx-line-chart me-2 text-primary"></i>@Localizer["AdoptionImpact"]
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body pt-2" id="impactModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/DocumentManagement/TemplateMasters/_IndexL10n.cshtml" />
+    <script>
+        window.TemplateMastersPerms = {
+            canCreate: @Json.Serialize(canCreate),
+            canPublish: @Json.Serialize(canPublish),
+            canDeprecate: @Json.Serialize(canDeprecate),
+            canImpact: @Json.Serialize(canImpact),
+            canDelete: @Json.Serialize(canDelete)
+        };
+    </script>
+    <script src="~/assets/js/DocumentManagement/TemplateMasters/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/TemplateMasters/index.js" asp-append-version="true"></script>
+}

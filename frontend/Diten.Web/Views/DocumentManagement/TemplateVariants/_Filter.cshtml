@@ -1,0 +1,56 @@
+@using Diten.Web.Views.DocumentManagement.TemplateVariants
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TemplateVariantsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost" class="px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Derived Master (Multi-select, populated from options) *@
+                    <div class="filter-chip filter-master">
+                        <select id="filterMaster" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["DerivedMaster"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Scope Type (Multi-select) *@
+                    <div class="filter-chip filter-scope-type">
+                        <select id="filterScopeType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ScopeType"]">
+                            <option value="Company">@Localizer["ScopeCompany"]</option>
+                            <option value="BusinessUnit">@Localizer["ScopeBusinessUnit"]</option>
+                            <option value="Site">@Localizer["ScopeSite"]</option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Drift Status (Multi-select, computed read-time) *@
+                    <div class="filter-chip filter-drift-status">
+                        <select id="filterDriftStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["DriftStatus"]">
+                            <option value="INSYNC">@Localizer["DriftInSync"]</option>
+                            <option value="REBASEREQUIRED">@Localizer["DriftRebaseRequired"]</option>
+                            <option value="DRIFTED">@Localizer["DriftDrifted"]</option>
+                            <option value="BLOCKED">@Localizer["DriftBlocked"]</option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Approval Status placeholder (Multi-select) *@
+                    <div class="filter-chip filter-approval-status">
+                        <select id="filterApprovalStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Approval"]">
+                            <option value="NOTREQUIRED">@Localizer["ApprovalNotRequired"]</option>
+                            <option value="PENDING">@Localizer["ApprovalPending"]</option>
+                            <option value="APPROVED">@Localizer["ApprovalApproved"]</option>
+                            <option value="REJECTED">@Localizer["ApprovalRejected"]</option>
+                            <option value="BLOCKED">@Localizer["ApprovalBlocked"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
