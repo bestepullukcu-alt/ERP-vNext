@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Configuración del menú</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Personalice la barra lateral de su organización: reordene, muestre/oculte y renombre módulos.</value></data>
+  <data name="ResetToDefault" xml:space="preserve"><value>Restablecer valores predeterminados</value></data>
+  <data name="SidebarRefreshHint" xml:space="preserve"><value>Los cambios se aplican a la barra lateral poco después de guardar. Actualice la página si no los ve de inmediato.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando menú…</value></data>
+  <data name="NoModules" xml:space="preserve"><value>No hay módulos para personalizar.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Preferencias del menú guardadas.</value></data>
+  <data name="ResetDone" xml:space="preserve"><value>Menú restablecido a los valores predeterminados.</value></data>
+  <data name="HiddenGroup" xml:space="preserve"><value>Módulos ocultos</value></data>
+  <data name="ShowHide" xml:space="preserve"><value>Mostrar / Ocultar</value></data>
+  <data name="Visible" xml:space="preserve"><value>Visible</value></data>
+  <data name="Hidden" xml:space="preserve"><value>Oculto</value></data>
+  <data name="RenamePlaceholder" xml:space="preserve"><value>Nombre del módulo</value></data>
+  <data name="ResetConfirm" xml:space="preserve"><value>¿Restablecer la barra lateral a su orden, nombres y visibilidad predeterminados?</value></data>
+  <data name="Saving" xml:space="preserve"><value>Guardando…</value></data>
+  <data name="MenuPreview" xml:space="preserve"><value>Vista previa del menú</value></data>
+  <data name="PreviewBrand" xml:space="preserve"><value>Su espacio de trabajo</value></data>
+  <data name="PreviewNote" xml:space="preserve"><value>Así se ve la barra lateral después de guardar.</value></data>
+  <data name="ColName" xml:space="preserve"><value>Nombre del menú</value></data>
+  <data name="ColVisibility" xml:space="preserve"><value>Visibilidad</value></data>
+  <data name="StatTotal" xml:space="preserve"><value>Total de elementos</value></data>
+  <data name="StatVisible" xml:space="preserve"><value>Visible</value></data>
+  <data name="StatHidden" xml:space="preserve"><value>Oculto</value></data>
+  <data name="StatChanged" xml:space="preserve"><value>Modificado</value></data>
+  <data name="VisibleSuffix" xml:space="preserve"><value>elementos visibles</value></data>
+</root>

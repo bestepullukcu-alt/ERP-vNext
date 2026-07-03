@@ -32,6 +32,8 @@ public static class MongoDbIndexConfigurations
         var subscriptionPlanCollection = database.GetCollection<SubscriptionPlan>("platform_subscription_plans");
         var tenantSubscriptionCollection = database.GetCollection<TenantSubscription>("tenant_subscriptions");
         var tenantModuleEntitlementCollection = database.GetCollection<TenantModuleEntitlement>("tenant_module_entitlements");
+        var tenantNavPreferenceCollection = database.GetCollection<TenantNavPreference>("tenant_nav_preferences");
+        var tenantNavDomainPreferenceCollection = database.GetCollection<TenantNavDomainPreference>("tenant_nav_domain_preferences");
         var quotaUsageCollection = database.GetCollection<QuotaUsage>("quota_usages");
         var quotaEventCollection = database.GetCollection<QuotaEvent>("quota_events");
         var featureDefinitionCollection = database.GetCollection<FeatureDefinition>("platform_subscription_features");
@@ -975,6 +977,36 @@ public static class MongoDbIndexConfigurations
             new CreateIndexModel<TenantModuleEntitlement>(
                 Builders<TenantModuleEntitlement>.IndexKeys.Ascending(x => x.ExpiryDateUtc),
                 new CreateIndexOptions { Name = "ix_tenant_module_entitlements_expiry" })
+        });
+
+        await tenantNavPreferenceCollection.Indexes.CreateManyAsync(new[]
+        {
+            // FEAT-TENANT-NAV-PREFS — one live preference per (TenantId, ModuleCode).
+            new CreateIndexModel<TenantNavPreference>(
+                Builders<TenantNavPreference>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ModuleCode),
+                new CreateIndexOptions<TenantNavPreference>
+                {
+                    Unique = true,
+                    Name = "ux_tenant_nav_preferences_tenant_module",
+                    PartialFilterExpression = Builders<TenantNavPreference>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await tenantNavDomainPreferenceCollection.Indexes.CreateManyAsync(new[]
+        {
+            // FEAT-NAVPREFS-DOMAINS — one live preference per (TenantId, DomainCode).
+            new CreateIndexModel<TenantNavDomainPreference>(
+                Builders<TenantNavDomainPreference>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.DomainCode),
+                new CreateIndexOptions<TenantNavDomainPreference>
+                {
+                    Unique = true,
+                    Name = "ux_tenant_nav_domain_preferences_tenant_domain",
+                    PartialFilterExpression = Builders<TenantNavDomainPreference>.Filter.Eq(x => x.IsDeleted, false)
+                })
         });
 
         await quotaUsageCollection.Indexes.CreateManyAsync(new[]

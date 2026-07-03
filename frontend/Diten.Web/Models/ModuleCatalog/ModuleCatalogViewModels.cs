@@ -37,6 +37,14 @@ public sealed class ModuleCatalogEditViewModel
 
     [Range(0, int.MaxValue)]
     public int? SortOrder { get; set; }
+
+    // FIX-MODULE-ICON — optional boxicons class (e.g. "bx-cog"). Operator-owned SOFT field.
+    [StringLength(60)]
+    [RegularExpression(@"^bxs?-[a-z0-9-]+$")]
+    public string? Icon { get; set; }
+
+    // FEAT-CATALOG-BASELINE-BADGE — HARD/code-owned; read-only in the form (shown as an info row, never editable).
+    public bool IsBaseline { get; set; }
 }
 
 public sealed class ModuleCatalogDetailViewModel
@@ -54,6 +62,8 @@ public sealed class ModuleCatalogDetailViewModel
     public bool IsTenantAssignable { get; set; }
     public int SortOrder { get; set; }
     public string Origin { get; set; } = "Manual";
+    public string? Icon { get; set; } // FIX-MODULE-ICON
+    public bool IsBaseline { get; set; } // FEAT-CATALOG-BASELINE-BADGE
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
 }
@@ -71,6 +81,7 @@ public sealed class ModuleCatalogSavePayload
     public bool IsCoreModule { get; set; }
     public bool IsTenantAssignable { get; set; }
     public int? SortOrder { get; set; }
+    public string? Icon { get; set; } // FIX-MODULE-ICON
 }
 
 public sealed class GatewayResponse<T>

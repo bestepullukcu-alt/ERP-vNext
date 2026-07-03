@@ -52,6 +52,7 @@ public sealed class CreateModuleCatalogItemCommandHandler : IRequestHandler<Crea
             IsCoreModule = request.Request.IsCoreModule,
             IsTenantAssignable = request.Request.IsTenantAssignable,
             SortOrder = request.Request.SortOrder ?? 0,
+            Icon = string.IsNullOrWhiteSpace(request.Request.Icon) ? null : request.Request.Icon.Trim(), // FIX-MODULE-ICON
             Origin = ModuleCatalogOrigin.Manual // MC-4 — operator-added
         };
 

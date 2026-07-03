@@ -191,7 +191,10 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
             accessToken,
             refreshTokenStr,
             refreshExpiresAt,
-            new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId)
+            new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId),
+            // FIX-TENANT-MUSTCHANGEPW — surface the forced-change flag so the Web bridge can route a temp-password
+            // tenant user to the change-password page (mirrors the platform login).
+            RequiresPasswordChange: user.MustChangePassword
         );
     }
 

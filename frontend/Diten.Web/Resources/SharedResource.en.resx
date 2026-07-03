@@ -504,9 +504,16 @@
   <data name="RolePermissionAssignmentMenu" xml:space="preserve"><value>Role Permissions</value></data>
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
+  <data name="TenantManagementMenu" xml:space="preserve"><value>Tenant Management</value></data>
+  <data name="AuditLogMenu" xml:space="preserve"><value>Audit Log</value></data>
+  <data name="AuditRetentionMenu" xml:space="preserve"><value>Audit Retention</value></data>
+  <data name="AddTenant" xml:space="preserve"><value>Add Tenant</value></data>
+  <data name="AddSubscriptionPlan" xml:space="preserve"><value>Add Subscription Plan</value></data>
+  <data name="AddModule" xml:space="preserve"><value>Add Module</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Reference Data</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>This module code is already in use.</value></data>
   <data name="ModuleManagedByCode" xml:space="preserve"><value>This module is managed by code (self-registered) and cannot be changed here.</value></data>
+  <data name="BaselineCannotBeDeactivated" xml:space="preserve"><value>Baseline modules cannot be deactivated — they are automatically available to every tenant.</value></data>
   <data name="Organization" xml:space="preserve"><value>Organization</value></data>
   <data name="OrganizationUnits" xml:space="preserve"><value>Organization Units</value></data>
   <data name="Positions" xml:space="preserve"><value>Positions</value></data>

@@ -34,7 +34,18 @@
       novalidate>
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
+    @* FEAT-CATALOG-BASELINE-BADGE — IsBaseline is HARD/code-owned: shown read-only, never an editable field. The
+       hidden input only preserves it across a validation re-render; it is never posted to the backend. *@
+    <input type="hidden" asp-for="IsBaseline" />
     <div asp-validation-summary="ModelOnly" class="alert alert-danger validation-summary" role="alert"></div>
+
+    @if (Model.IsBaseline)
+    {
+        <div class="alert alert-info d-flex align-items-start mb-4 p-3" role="note">
+            <i class="bx bx-shield-quarter me-2 mt-1"></i>
+            <div>@Localizer["BaselineInfo"]</div>
+        </div>
+    }
 
     <div class="row g-4">
         <div class="col-12 col-lg-8 d-flex flex-column gap-4">
@@ -141,6 +152,20 @@
                         <label asp-for="SortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>
                         <input asp-for="SortOrder" type="number" min="0" class="form-control" value="@(Model.SortOrder ?? 0)" placeholder="@Localizer["SortOrderPlaceholder"]" />
                         <span asp-validation-for="SortOrder" class="text-danger small"></span>
+                    </div>
+                    @* FIX-MODULE-ICON — module sidebar icon (boxicons class) with a live preview. The input-group prefix
+                       shows the current icon; module-catalog-form.js swaps its class live as the operator types. *@
+                    <div class="col-12">
+                        <label asp-for="Icon" class="form-label fw-medium">@Localizer["Icon"]</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i id="moduleIconPreview" class="bx @(string.IsNullOrWhiteSpace(Model.Icon) ? "bx-box" : Model.Icon)"></i>
+                            </span>
+                            <input asp-for="Icon" id="moduleIconInput" type="text" class="form-control" maxlength="60"
+                                   pattern="^bxs?-[a-z0-9-]+$" placeholder="@Localizer["IconPlaceholder"]" />
+                        </div>
+                        <div class="form-text mt-1 text-muted">@Localizer["IconHelpText"]</div>
+                        <span asp-validation-for="Icon" class="text-danger small"></span>
                     </div>
                 </div>
             </section>

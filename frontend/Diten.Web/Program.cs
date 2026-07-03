@@ -355,6 +355,19 @@ app.Use(async (context, next) =>
     await next();
 });
 
+// FIX-TENANT-MUSTCHANGEPW — tenant counterpart of the platform forced-change gate: a tenant_user carrying
+// pwd_change_required=true is pinned to /account/change-password until they set a real password.
+app.Use(async (context, next) =>
+{
+    if (RequiresTenantPasswordChange(context) && !IsPasswordChangeAllowedPath(context.Request.Path))
+    {
+        context.Response.Redirect("/account/change-password");
+        return;
+    }
+
+    await next();
+});
+
 app.MapGet("/", (HttpContext context) =>
 {
     var host = context.Request.Host.Host;
@@ -457,12 +470,24 @@ static bool RequiresPlatformPasswordChange(HttpContext context)
            string.Equals(requiresChange, "true", StringComparison.OrdinalIgnoreCase);
 }
 
+// FIX-TENANT-MUSTCHANGEPW — tenant equivalent of RequiresPlatformPasswordChange.
+static bool RequiresTenantPasswordChange(HttpContext context)
+{
+    var actorType = context.User.FindFirst("actor_type")?.Value;
+    var requiresChange = context.User.FindFirst("pwd_change_required")?.Value;
+    return string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase)
+           && string.Equals(requiresChange, "true", StringComparison.OrdinalIgnoreCase);
+}
+
 static bool IsPasswordChangeAllowedPath(PathString path)
 {
     return path.StartsWithSegments("/platform/change-password", StringComparison.OrdinalIgnoreCase)
            || path.StartsWithSegments("/platform/login", StringComparison.OrdinalIgnoreCase)
            || path.StartsWithSegments("/platform/forgot-password", StringComparison.OrdinalIgnoreCase)
            || path.StartsWithSegments("/platform/reset-password", StringComparison.OrdinalIgnoreCase)
+           // FIX-TENANT-MUSTCHANGEPW — tenant change-password page/POST + login must be reachable (no redirect loop).
+           || path.StartsWithSegments("/account/change-password", StringComparison.OrdinalIgnoreCase)
+           || path.StartsWithSegments("/account/login", StringComparison.OrdinalIgnoreCase)
            || path.StartsWithSegments("/account/logout", StringComparison.OrdinalIgnoreCase)
            || path.StartsWithSegments("/assets", StringComparison.OrdinalIgnoreCase);
 }

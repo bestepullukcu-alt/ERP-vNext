@@ -19,6 +19,7 @@ public sealed class GoldenSlimManifestProvider : IModuleManifestProvider
             ModuleVersion: "1.0.0",
             IsTenantAssignable: true,
             SortOrder: 100,
+            Icon: "bx-collection", // FIX-MODULE-ICON — default sidebar icon (SOFT; operator can override in catalog).
             Pages:
             [
                 new ModuleManifestPage(

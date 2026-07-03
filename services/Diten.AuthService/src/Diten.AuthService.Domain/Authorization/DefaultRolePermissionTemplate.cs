@@ -21,6 +21,20 @@ public static class DefaultRolePermissionTemplate
     public static readonly IReadOnlyList<string> AdminModules = new[] { "auth", "mdm" };
 
     /// <summary>
+    /// FIX-TENANT-SELFSERVICE-PERMS — curated exception to the platform.* escalation boundary: tenant SELF-SERVICE
+    /// capabilities that live under the platform.* namespace but operate ONLY within the tenant's own scope (the
+    /// backend forces the caller's tenant_id), so they are NOT an escalation. The tenant Admin role receives exactly
+    /// these platform.* keys and no others; matched by Permission.Key (case-insensitive). Add a key here ONLY for a
+    /// genuinely tenant-scoped self-service capability.
+    /// </summary>
+    public static readonly IReadOnlySet<string> TenantSelfServicePermissions =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "platform.tenant-security.read",
+            "platform.tenant-security.manage"
+        };
+
+    /// <summary>
     /// Returns the catalog permissions that <paramref name="roleName"/> should be granted.
     /// Deleted permissions are always excluded; platform permissions are excluded from tenant
     /// roles. Unknown roles get nothing.
@@ -34,9 +48,11 @@ public static class DefaultRolePermissionTemplate
             // SuperAdmin (default-tenant only) keeps the full catalog.
             SuperAdminRole => available.ToList(),
 
-            // Tenant roles: never platform.* (escalation boundary).
+            // Tenant Admin: its own modules in full, plus the curated tenant self-service platform.* keys
+            // (tenant-scoped, not escalation). Every other platform.* permission stays excluded.
             AdminRole => available
-                .Where(p => !IsPlatform(p) && AdminModules.Contains(p.Module))
+                .Where(p => (!IsPlatform(p) && AdminModules.Contains(p.Module))
+                            || TenantSelfServicePermissions.Contains(p.Key))
                 .ToList(),
 
             ViewerRole => available

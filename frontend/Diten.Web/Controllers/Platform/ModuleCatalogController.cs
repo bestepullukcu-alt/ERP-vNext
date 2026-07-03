@@ -438,6 +438,7 @@ public sealed class ModuleCatalogController : Controller
     {
         "MODULE_CODE_IN_USE" => _sharedLocalizer["ModuleCodeInUse"].Value,
         "MODULE_MANAGED_BY_CODE" => _sharedLocalizer["ModuleManagedByCode"].Value,
+        "BASELINE_CANNOT_BE_DEACTIVATED" => _sharedLocalizer["BaselineCannotBeDeactivated"].Value,
         _ => error
     };
 
@@ -454,7 +455,9 @@ public sealed class ModuleCatalogController : Controller
         ModuleVersion = model.ModuleVersion,
         IsCoreModule = model.IsCoreModule,
         IsTenantAssignable = model.IsTenantAssignable,
-        SortOrder = model.SortOrder
+        SortOrder = model.SortOrder,
+        Icon = model.Icon,
+        IsBaseline = model.IsBaseline // FEAT-CATALOG-BASELINE-BADGE — read-only info only (never posted back).
     };
 
     private static ModuleCatalogSavePayload ToPayload(ModuleCatalogEditViewModel model) => new()
@@ -469,6 +472,7 @@ public sealed class ModuleCatalogController : Controller
         ModuleVersion = model.ModuleVersion,
         IsCoreModule = model.IsCoreModule,
         IsTenantAssignable = model.IsTenantAssignable,
-        SortOrder = model.SortOrder
+        SortOrder = model.SortOrder,
+        Icon = string.IsNullOrWhiteSpace(model.Icon) ? null : model.Icon.Trim() // FIX-MODULE-ICON
     };
 }

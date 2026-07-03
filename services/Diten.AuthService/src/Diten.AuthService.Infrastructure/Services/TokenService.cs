@@ -36,7 +36,10 @@ public sealed class TokenService : ITokenService
             new(JwtRegisteredClaimNames.GivenName, user.FirstName),
             new(JwtRegisteredClaimNames.FamilyName, user.LastName),
             new("actor_type", "tenant_user"),
-            new("tenant_id", user.TenantId.ToString())
+            new("tenant_id", user.TenantId.ToString()),
+            // FIX-TENANT-MUSTCHANGEPW — mirror the platform token: tenant token carries the forced-password-change
+            // flag derived from the user's real state, so the shell guard can require a first-login change.
+            new("pwd_change_required", user.MustChangePassword ? "true" : "false")
         };
 
         foreach (var role in roles)

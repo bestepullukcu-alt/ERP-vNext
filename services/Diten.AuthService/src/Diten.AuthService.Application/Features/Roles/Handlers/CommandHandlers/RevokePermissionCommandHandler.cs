@@ -14,6 +14,8 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
+    private readonly IPermissionRepository _permissionRepository;
+    private readonly IRbacAuditRecorder _rbacAudit;
 
     public RevokePermissionCommandHandler(
         IRoleRepository roleRepository,
@@ -21,7 +23,9 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
         IUserRoleRepository userRoleRepository,
         IRefreshTokenRepository refreshTokenRepository,
         IRoleAssignmentVersionService versionService,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IPermissionRepository permissionRepository,
+        IRbacAuditRecorder rbacAudit)
     {
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
@@ -29,6 +33,8 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
         _refreshTokenRepository = refreshTokenRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
+        _permissionRepository = permissionRepository;
+        _rbacAudit = rbacAudit;
     }
 
     public async Task<Response<NoContent>> Handle(RevokePermissionCommand request, CancellationToken ct)
@@ -66,6 +72,11 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
         {
             await _refreshTokenRepository.RevokeAllByUserAsync(userId, tenantId, ct);
         }
+
+        // FEAT-AUDIT-RBAC — a permission was revoked from a role (permissionKey resolved best-effort for readability).
+        var permission = await _permissionRepository.GetByIdAsync(request.PermissionId, ct);
+        await _rbacAudit.RecordAsync("role_permission_revoked", tenantId,
+            new { roleId = request.RoleId, roleName = role?.Name, permissionId = request.PermissionId, permissionKey = permission?.Key }, ct);
 
         return Response<NoContent>.Success(204);
     }

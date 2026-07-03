@@ -1,5 +1,8 @@
+using System.Security.Claims;
 using Diten.AuthService.Api.Controllers.Common;
 using Diten.AuthService.Api.Models;
+using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -55,6 +58,31 @@ public sealed class TenantAuthController : CustomBaseController
             request.LastName,
             ResolveRequestIp(HttpContext),
             ResolveUserAgent(HttpContext));
+        var result = await _mediator.Send(command, ct);
+        return CreateActionResultInstance(result);
+    }
+
+    // FIX-TENANT-MUSTCHANGEPW — forced first-login password change for tenant_user (mirrors PlatformAuthController's
+    // change-password/forced). Identity is taken from the validated JWT (sub + tenant_id), not the body.
+    [HttpPost("change-password/forced")]
+    [Authorize]
+    public async Task<IActionResult> ForcedChangePassword([FromBody] TenantForcedChangePasswordRequest request, CancellationToken ct)
+    {
+        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+        var tenantIdString = User.FindFirst("tenant_id")?.Value;
+        if (!Guid.TryParse(userIdString, out var userId) || !Guid.TryParse(tenantIdString, out var tenantId))
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("Unauthorized.", 401));
+        }
+
+        var command = new ForcedChangeTenantPasswordCommand(
+            userId,
+            tenantId,
+            request.CurrentPassword,
+            request.NewPassword,
+            ResolveRequestIp(HttpContext),
+            ResolveUserAgent(HttpContext),
+            request.RememberMe);
         var result = await _mediator.Send(command, ct);
         return CreateActionResultInstance(result);
     }

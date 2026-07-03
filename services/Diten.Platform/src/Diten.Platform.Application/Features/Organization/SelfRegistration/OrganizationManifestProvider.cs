@@ -43,6 +43,7 @@ public sealed class OrganizationManifestProvider : IModuleManifestProvider
             ModuleVersion: "1.0.0",
             IsTenantAssignable: true,
             SortOrder: 300,
+            Icon: "bx-sitemap", // FIX-MODULE-ICON — default sidebar icon (SOFT; operator can override in catalog).
             Pages:
             [
                 // Organization Units — slim list (toolbar Add + row Edit/Archive/Delete).

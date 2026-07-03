@@ -1,0 +1,13 @@
+@using Diten.Web.ViewComponents
+@model TenantFaviconViewModel
+
+@* FIX-TENANT-FAVICON — browser-tab favicon: tenant's uploaded FaviconDataUrl (a data: URL, supported by browsers)
+   when present, else the platform default. *@
+@if (Model.HasFavicon)
+{
+    <link rel="icon" href="@Model.FaviconDataUrl" />
+}
+else
+{
+    <link rel="icon" type="image/x-icon" href="~/assets/img/favicon/favicon.ico" asp-append-version="true" />
+}

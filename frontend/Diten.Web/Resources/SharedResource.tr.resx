@@ -504,9 +504,16 @@
   <data name="RolePermissionAssignmentMenu" xml:space="preserve"><value>Rol İzinleri</value></data>
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>Kullanıcı Rolleri</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>Erişimim</value></data>
+  <data name="TenantManagementMenu" xml:space="preserve"><value>Tenant Yönetimi</value></data>
+  <data name="AuditLogMenu" xml:space="preserve"><value>Audit Kaydi</value></data>
+  <data name="AuditRetentionMenu" xml:space="preserve"><value>Audit Retention</value></data>
+  <data name="AddTenant" xml:space="preserve"><value>Tenant Ekle</value></data>
+  <data name="AddSubscriptionPlan" xml:space="preserve"><value>Abonelik Planı Ekle</value></data>
+  <data name="AddModule" xml:space="preserve"><value>Modül Ekle</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Referans Veri</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>Bu modül kodu zaten kullanılıyor.</value></data>
   <data name="ModuleManagedByCode" xml:space="preserve"><value>Bu modül koddan yönetiliyor (otomatik kaydedildi); buradan değiştirilemez.</value></data>
+  <data name="BaselineCannotBeDeactivated" xml:space="preserve"><value>Baseline modüller deaktive edilemez — her tenant'a otomatik gelir.</value></data>
   <data name="Organization" xml:space="preserve"><value>Organizasyon</value></data>
   <data name="OrganizationUnits" xml:space="preserve"><value>Organizasyon Birimleri</value></data>
   <data name="Positions" xml:space="preserve"><value>Pozisyonlar</value></data>

@@ -80,6 +80,17 @@ public sealed class ModulePageDescriptorRepository : TenantRepository<ModulePage
             .ToListAsync(ct);
     }
 
+    // FEAT-CATALOG-PERM-DELETE-SYNC — ExecutionFilter excludes soft-deleted rows, so a count taken AFTER the delete
+    // of the owning descriptor naturally excludes it; a result of 0 (across pages + actions) means the last reference.
+    public async Task<long> CountByRequiredPermissionAsync(string permissionKey, CancellationToken ct = default)
+    {
+        var filter = Builders<ModulePageDescriptor>.Filter.And(
+            ExecutionFilter,
+            Builders<ModulePageDescriptor>.Filter.Eq(x => x.RequiredPermission, permissionKey));
+
+        return await Collection.CountDocumentsAsync(filter, cancellationToken: ct);
+    }
+
     public async Task<(IReadOnlyList<ModulePageDescriptor> Items, long TotalCount)> SearchAsync(ModulePageDescriptorQuery query, CancellationToken ct = default)
     {
         var filters = new List<FilterDefinition<ModulePageDescriptor>> { ExecutionFilter };

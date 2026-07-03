@@ -10,4 +10,8 @@ public static class ModuleCatalogErrorCodes
 
     // MC-4 — the target module is code-owned (self-registered from a manifest); manual create/update/delete is refused.
     public const string ModuleManagedByCode = "MODULE_MANAGED_BY_CODE";
+
+    // FIX-BASELINE-NO-DEACTIVATE — a baseline module reaches EVERY tenant automatically; deactivating (or moving it
+    // off Active) would break RBAC/settings for all tenants and a re-push won't restore SOFT Status. Refused.
+    public const string BaselineCannotBeDeactivated = "BASELINE_CANNOT_BE_DEACTIVATED";
 }

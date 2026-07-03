@@ -4,9 +4,27 @@
     var alt = string.IsNullOrWhiteSpace(Model.DisplayName) ? "Logo" : Model.DisplayName;
 }
 
-@* FIX-SHELL-BRANDING-2 — two-asset SWAP (never both at once; CSS toggles by collapsed/expanded):
-   • Mark span (collapsed/mini): favicon → else logo → else default bx-buildings icon.
-   • Full span (expanded): big logo → else "Di10" wordmark. (.menu-text auto-hides it when collapsed.) *@
+@if (Model.IsPreview)
+{
+    @* FIX-TNAV-PREVIEW-BRAND — compact, non-interactive variant for the Menu Settings preview panel.
+       Not a link (preview isn't clickable): real logo if the tenant has one, else display-name text
+       (falls back to "Diten" if the tenant has neither, mirroring the sidebar's platform default). *@
+    if (Model.HasLogo)
+    {
+        <img src="@Model.LogoDataUrl" alt="@alt" class="tnav-preview-brand-logo" />
+    }
+    else
+    {
+        <i class="bx bx-grid-alt"></i>
+        <span class="tnav-preview-brand-text">@(Model.DisplayName ?? "Diten")</span>
+    }
+    return;
+}
+
+@* FIX-SHELL-BRANDING-2 / -5 — two-asset SWAP (never both at once; CSS toggles by collapsed/expanded):
+   • Mark span (collapsed/mini): favicon → else logo → else platform brand ICON (light/dark).
+   • Full span (expanded): big logo → else platform brand LOGO (light/dark). (.menu-text auto-hides it when collapsed.)
+   A tenant WITH its own favicon/logo is unchanged; only the no-logo default now mirrors the platform brand. *@
 <a href="/" class="app-brand-link tenant-brand-link">
     <span class="app-brand-logo demo tenant-brand-mark">
         @if (Model.HasFavicon)
@@ -19,7 +37,8 @@
         }
         else
         {
-            <i class="bx bx-buildings text-primary fs-2"></i>
+            <img class="tenant-default-brand-icon tenant-default-brand-icon-light" src="~/assets/img/branding/platform-icon-light.png" alt="Diten" asp-append-version="true" />
+            <img class="tenant-default-brand-icon tenant-default-brand-icon-dark" src="~/assets/img/branding/platform-icon-dark.png" alt="Diten" asp-append-version="true" />
         }
     </span>
     <span class="tenant-brand-full">
@@ -29,7 +48,8 @@
         }
         else
         {
-            <span class="fw-bold">Di10</span>
+            <img class="tenant-default-brand-logo tenant-default-brand-logo-light" src="~/assets/img/branding/platform-logo-light.png" alt="Diten" asp-append-version="true" />
+            <img class="tenant-default-brand-logo tenant-default-brand-logo-dark" src="~/assets/img/branding/platform-logo-dark.png" alt="Diten" asp-append-version="true" />
         }
     </span>
 </a>

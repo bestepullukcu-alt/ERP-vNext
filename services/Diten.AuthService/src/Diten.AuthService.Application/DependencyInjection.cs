@@ -27,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<IEntitlementPermissionSyncService, EntitlementPermissionSyncService>();
         services.AddScoped<IPasswordPolicyService, PasswordPolicyService>();
         services.AddScoped<IFullCatalogPermissionGrantService, FullCatalogPermissionGrantService>();
+        services.AddScoped<IRbacAuditRecorder, RbacAuditRecorder>(); // FEAT-AUDIT-RBAC
 
         return services;
     }

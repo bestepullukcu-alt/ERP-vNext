@@ -233,7 +233,10 @@ function loadSearchData() {
   const loadCandidate = index => {
     const searchJson = candidates[index];
 
-    fetch(assetsPath + 'json/' + searchJson)
+    // FEAT-CTRLK-DYNAMIC-SEARCH-S1 — an absolute path (e.g. "/TenantSearch/data") is fetched as-is; a bare filename
+    // is resolved under the static assets/json/ folder as before.
+    const url = searchJson.charAt(0) === '/' ? searchJson : assetsPath + 'json/' + searchJson;
+    fetch(url)
       .then(response => {
         if (!response.ok) throw new Error('Failed to fetch search data');
         return response.json();
@@ -256,9 +259,19 @@ function loadSearchData() {
 }
 
 function getSearchJsonNames() {
-  if (document.documentElement.dataset.shell === 'platform-admin') {
-    const culture = (window.CurrentLanguage || document.documentElement.lang || 'en').toLowerCase().split('-')[0];
-    return [`platform-search.${culture}.json`, 'platform-search.json'];
+  const shell = document.documentElement.dataset.shell;
+
+  // FEAT-CTRLK-DYNAMIC-SEARCH-S1 — the tenant shell's Ctrl+K is fed LIVE from the tenant's own data-driven nav
+  // (entitlement + permission filtered), so newly self-registered modules become searchable with no JSON edit.
+  if (shell === 'tenant') {
+    return ['/TenantSearch/data'];
+  }
+
+  // FEAT-CTRLK-PLATFORM-DYNAMIC — platform-admin Ctrl+K is now server-driven from the single canonical platform nav
+  // (PlatformSearchController), so it stays in sync with the sidebar and needs no per-culture JSON. The static
+  // platform-search.json remains only as a safety fallback if the dynamic endpoint is unreachable.
+  if (shell === 'platform-admin') {
+    return ['/Platform/Search/data', 'platform-search.json'];
   }
 
   return $('#layout-menu').hasClass('menu-horizontal') ? 'search-horizontal.json' : 'search-vertical.json';
@@ -327,14 +340,20 @@ function initializeAutocomplete() {
       const { render, html, children, state } = args;
 
       if (!state.query) {
+        // FIX-CTRLK-PLATFORM-SUGGESTIONS-LAYOUT — a single-section palette (Platform) fills the full
+        // width in two columns instead of a lone col-md-6 half; multi-section shells (Tenant) keep the
+        // existing grid unchanged.
+        const suggestionSections = Object.entries(searchData.suggestions || {});
+        const isSingleSection = suggestionSections.length === 1;
+
         const initialSuggestions = html`
-          <div class="p-5 p-lg-12">
+          <div class="px-5 px-lg-10 pt-4 pb-5">
             <div class="row g-4">
-              ${Object.entries(searchData.suggestions || {}).map(
+              ${suggestionSections.map(
                 ([section, items]) => html`
-                  <div class="col-md-6 suggestion-section">
+                  <div class="${isSingleSection ? 'col-12' : 'col-md-6'} suggestion-section">
                     <p class="search-headings mb-2">${section}</p>
-                    <div class="suggestion-items">
+                    <div class="suggestion-items${isSingleSection ? ' suggestion-items-cols' : ''}">
                       ${items.map(
                         item => html`
                           <a href="${item.url}" class="suggestion-item d-flex align-items-center">

@@ -132,6 +132,7 @@
       "UpstreamPathTemplate": "/api/platform/navigation/{everything}",
       "UpstreamHttpMethod": [
         "GET",
+        "PUT",
         "OPTIONS"
       ],
       "UpstreamScheme": "http"

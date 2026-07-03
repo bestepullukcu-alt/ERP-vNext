@@ -198,73 +198,18 @@
                     <li class="menu-header small text-uppercase">
                         <span class="menu-header-text">@SharedLocalizer["PlatformAdministration"]</span>
                     </li>
-                    <li class="menu-item @(activeController == "Tenants" ? "active" : "")">
-                        <a href="/Platform/Tenants" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-buildings"></i>
-                            <div>Tenant Management</div>
-                        </a>
-                    </li>
-                    <li class="menu-item @(activeController == "SubscriptionPlans" ? "active" : "")">
-                        <a href="/Platform/SubscriptionPlans" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-credit-card"></i>
-                            <div>@SharedLocalizer["SubscriptionPlans"]</div>
-                        </a>
-                    </li>
-                    <li class="menu-item @(activeController == "SubscriptionFeatures" ? "active" : "")">
-                        <a href="/Platform/SubscriptionFeatures" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-package"></i>
-                            <div>@SharedLocalizer["SubscriptionFeatures"]</div>
-                        </a>
-                    </li>
-                    <li class="menu-item @(activeController == "ModuleCatalog" ? "active" : "")">
-                        <a href="/Platform/ModuleCatalog" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-grid-alt"></i>
-                            <div>@SharedLocalizer["ModuleCatalog"]</div>
-                        </a>
-                    </li>
-                    <li class="menu-item @(activeController == "DomainManagement" ? "active" : "")">
-                        <a href="/Platform/DomainManagement" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-category"></i>
-                            <div>@SharedLocalizer["DomainManagement"]</div>
-                        </a>
-                    </li>
-                    <li class="menu-item @(activeController == "ServiceManagement" ? "active" : "")">
-                        <a href="/Platform/ServiceManagement" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-server"></i>
-                            <div>@SharedLocalizer["ServiceManagement"]</div>
-                        </a>
-                    </li>
-                    <li class="menu-item @(activeController == "InterfaceRegistry" ? "active" : "")">
-                        <a href="/Platform/InterfaceRegistry" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-git-branch"></i>
-                            <div>@SharedLocalizer["InterfaceRegistry"]</div>
-                        </a>
-                    </li>
-                    <li class="menu-item @(activeController == "Administrators" ? "active" : "")">
-                        <a href="/Platform/Administrators" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-user-check"></i>
-                            <div>@SharedLocalizer["PlatformAdministrators"]</div>
-                        </a>
-                    </li>
-                    <li class="menu-item @(currentPath.StartsWith("/Platform/AuditLog", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
-                        <a href="/Platform/AuditLog" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-history"></i>
-                            <div>@AuditLogLocalizer["AuditLog.Title"]</div>
-                        </a>
-                    </li>
-                    <li class="menu-item @(currentPath.StartsWith("/Platform/AuditRetention", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
-                        <a href="/Platform/AuditRetention" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
-                            <div>@AuditRetentionLocalizer["AuditRetention.Title"]</div>
-                        </a>
-                    </li>
-                    @* S-NAV (MOD-0018-FU9) — FE-E self effective access *@
-                    <li class="menu-item @(currentPath.StartsWith("/Platform/SelfAccess", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
-                        <a href="/Platform/SelfAccess" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-user-check"></i>
-                            <div>@SharedLocalizer["SelfAccessMenu"]</div>
-                        </a>
-                    </li>
+                    @* FEAT-CTRLK-PLATFORM-DYNAMIC — rendered from the single canonical PlatformNavigationCatalog (the
+                       same source Ctrl+K uses), so the sidebar and search can never drift. Markup / icons / order /
+                       labels are byte-for-byte the same as the previous hardcoded list. *@
+                    @foreach (var navItem in Diten.Web.Navigation.PlatformNavigationCatalog.Items)
+                    {
+                        <li class="menu-item @(currentPath.StartsWith(navItem.Url, StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="@navItem.Url" class="menu-link">
+                                <i class="menu-icon tf-icons bx @navItem.Icon"></i>
+                                <div>@SharedLocalizer[navItem.LabelResourceKey]</div>
+                            </a>
+                        </li>
+                    }
                 </ul>
             </aside>
 
@@ -457,7 +402,7 @@
     <script src="~/assets/js/personalization-client.js" asp-append-version="true"></script>
 
     <!-- Main JS -->
-    <script src="~/assets/js/main.js"></script>
+    <script src="~/assets/js/main.js" asp-append-version="true"></script>
 
     <script src="~/assets/js/custom/required-fields-tracker.js" asp-append-version="true"></script>
 

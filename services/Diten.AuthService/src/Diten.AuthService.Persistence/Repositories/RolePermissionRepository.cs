@@ -73,4 +73,13 @@ public sealed class RolePermissionRepository : RepositoryBase<RolePermission>, I
 
         await Collection.DeleteOneAsync(filter, ct);
     }
+
+    // FEAT-CATALOG-PERM-DELETE-SYNC — a catalog permission is global, so removing it clears its grants in every
+    // tenant/role (RevokeAsync/RemoveByIdAsync are hard-deletes; this mirrors that across all rows for the id).
+    public async Task<long> RemoveByPermissionIdAsync(Guid permissionId, CancellationToken ct)
+    {
+        var filter = Builders<RolePermission>.Filter.Eq(rp => rp.PermissionId, permissionId);
+        var result = await Collection.DeleteManyAsync(filter, ct);
+        return result.IsAcknowledged ? result.DeletedCount : 0;
+    }
 }

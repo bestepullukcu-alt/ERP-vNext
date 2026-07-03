@@ -6,6 +6,7 @@ using Diten.Platform.Application.Features.ModulePages.Handlers.CommandHandlers;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.ModulePages;
@@ -47,7 +48,9 @@ public sealed class ModulePageDescriptorOriginGuardTests
         var pages = new FakePages();
         var descriptor = new ModulePageDescriptor { TenantId = Guid.Empty, ModuleCode = "WORKFLOW", PageCode = "P", DisplayName = "P", RoutePath = "/p" };
         pages.Stored = descriptor;
-        var handler = new DeleteModulePageDescriptorCommandHandler(pages, new FakeCatalog(ModuleCatalogOrigin.SelfRegistered));
+        var handler = new DeleteModulePageDescriptorCommandHandler(
+            pages, new FakeCatalog(ModuleCatalogOrigin.SelfRegistered), new FakeActions(), new NoopSync(),
+            NullLogger<DeleteModulePageDescriptorCommandHandler>.Instance);
 
         var response = await handler.Handle(new DeleteModulePageDescriptorCommand(descriptor.Id), CancellationToken.None);
 
@@ -63,7 +66,9 @@ public sealed class ModulePageDescriptorOriginGuardTests
         var actions = new FakeActions();
         var descriptor = new ModulePageActionDescriptor { TenantId = Guid.Empty, ModuleCode = "WORKFLOW", PageCode = "P", ActionCode = "A", DisplayName = "A" };
         actions.Stored = descriptor;
-        var handler = new DeleteModulePageActionDescriptorCommandHandler(actions, new FakeCatalog(ModuleCatalogOrigin.SelfRegistered));
+        var handler = new DeleteModulePageActionDescriptorCommandHandler(
+            actions, new FakeCatalog(ModuleCatalogOrigin.SelfRegistered), new FakePages(), new NoopSync(),
+            NullLogger<DeleteModulePageActionDescriptorCommandHandler>.Instance);
 
         var response = await handler.Handle(new DeleteModulePageActionDescriptorCommand(descriptor.Id), CancellationToken.None);
 
@@ -107,6 +112,7 @@ public sealed class ModulePageDescriptorOriginGuardTests
         public Task UpdateAsync(ModulePageDescriptor descriptor, CancellationToken ct = default) => Task.CompletedTask;
         public Task<IReadOnlyList<ModulePageDescriptor>> GetByModuleAsync(string moduleCode, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<(IReadOnlyList<ModulePageDescriptor> Items, long TotalCount)> SearchAsync(ModulePageDescriptorQuery query, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<long> CountByRequiredPermissionAsync(string permissionKey, CancellationToken ct = default) => Task.FromResult(0L);
     }
 
     private sealed class FakeActions : IModulePageActionDescriptorRepository
@@ -125,11 +131,14 @@ public sealed class ModulePageDescriptorOriginGuardTests
         public Task<bool> ExistsByActionCodeAsync(Guid pageDescriptorId, string actionCode, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
         public Task UpdateAsync(ModulePageActionDescriptor descriptor, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<IReadOnlyList<ModulePageActionDescriptor>> GetByPageAsync(Guid pageDescriptorId, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<long> CountByPermissionKeyAsync(string permissionKey, CancellationToken ct = default) => Task.FromResult(0L);
     }
 
     private sealed class NoopSync : ICatalogPermissionSyncService
     {
         public Task<CatalogPermissionSyncStatus> SyncPermissionAsync(string? permissionKey, string? displayName, CancellationToken ct)
             => Task.FromResult(CatalogPermissionSyncStatus.Synced);
+        public Task<CatalogPermissionSyncStatus> RemovePermissionAsync(string? permissionKey, CancellationToken ct)
+            => Task.FromResult(CatalogPermissionSyncStatus.Removed);
     }
 }

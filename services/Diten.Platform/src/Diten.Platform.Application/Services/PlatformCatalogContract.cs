@@ -38,5 +38,6 @@ public sealed class PlatformCatalogContract : IPlatformCatalogContract
             item.IsTenantAssignable,
             item.SortOrder,
             item.CreatedAt,
-            item.UpdatedAt);
+            item.UpdatedAt,
+            item.Icon);
 }

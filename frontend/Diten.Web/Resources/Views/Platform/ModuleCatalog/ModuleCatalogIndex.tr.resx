@@ -22,6 +22,9 @@
   <data name="Assignable" xml:space="preserve"><value>Tenant'a Atanabilir</value></data>
   <data name="Core" xml:space="preserve"><value>Çekirdek Modül</value></data>
   <data name="SortOrder" xml:space="preserve"><value>Sıralama</value></data>
+  <data name="Icon" xml:space="preserve"><value>Menü İkonu</value></data>
+  <data name="IconPlaceholder" xml:space="preserve"><value>örn. bx-cog</value></data>
+  <data name="IconHelpText" xml:space="preserve"><value>Modülün sol menüde görünecek Boxicons sınıfı (örn. bx-cog, bx-data). Boş bırakılırsa varsayılan kullanılır.</value></data>
   <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
   <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
   <data name="Deleted" xml:space="preserve"><value>Silindi</value></data>
@@ -185,6 +188,11 @@
   <data name="DegradedCount" xml:space="preserve"><value>Alınamıyor</value></data>
   <data name="OriginAuto" xml:space="preserve"><value>Otomatik</value></data>
   <data name="OriginManual" xml:space="preserve"><value>Elle</value></data>
+  <data name="Baseline" xml:space="preserve"><value>Baseline</value></data>
+  <data name="BaselineHint" xml:space="preserve"><value>Baseline modül — her tenant'a otomatik gelir (entitlement veya atama gerekmez).</value></data>
+  <data name="BaselineAuto" xml:space="preserve"><value>Baseline (otomatik)</value></data>
+  <data name="BaselineAutoHint" xml:space="preserve"><value>Atama gerekmez — baseline modüller her tenant'a otomatik ulaşır.</value></data>
+  <data name="BaselineInfo" xml:space="preserve"><value>Bu modül bir baseline modüldür — her tenant'a otomatik gelir. Baseline durumu kod tarafından yönetilir, buradan değiştirilemez.</value></data>
   <data name="SelfRegisteredDeleteHint" xml:space="preserve"><value>Koddan kaydedildi; modül manifestinden yönetin</value></data>
   <data name="ModuleManagedByCode" xml:space="preserve"><value>Bu modül koddan yönetiliyor (otomatik kaydedildi); buradan değiştirilemez.</value></data>
   <data name="ModuleCodeInvalidSlug" xml:space="preserve"><value>Küçük harf, rakam ve tire kullanın (harfle başlamalı).</value></data>

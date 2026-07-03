@@ -49,6 +49,48 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("platform.tenants.read", keys);
     }
 
+    // FIX-TENANT-SELFSERVICE-PERMS — the tenant Admin receives the curated tenant-scoped platform.* self-service
+    // keys, but NO other platform.* permission (escalation boundary preserved).
+    [Fact]
+    public void Admin_gets_tenant_self_service_platform_keys_but_no_other_platform()
+    {
+        var catalog = new List<Permission>
+        {
+            new("auth", "users", "read", "Read User", null),
+            new("platform", "tenant-security", "read", "Read Tenant Security", null),
+            new("platform", "tenant-security", "manage", "Manage Tenant Security", null),
+            new("platform", "tenants", "read", "Read Tenant", null),                 // other platform.* → excluded
+            new("platform", "workflow.definitions", "view", "View Workflow", null)    // other platform.* → excluded
+        };
+
+        var keys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+
+        Assert.Contains("auth.users.read", keys);
+        Assert.Contains("platform.tenant-security.read", keys);
+        Assert.Contains("platform.tenant-security.manage", keys);
+        Assert.DoesNotContain("platform.tenants.read", keys);
+        Assert.DoesNotContain("platform.workflow.definitions.view", keys);
+    }
+
+    // Viewer is unchanged: tenant-security.read is a read action but platform-scoped → still excluded (the
+    // self-service exception is Admin-only).
+    [Fact]
+    public void Viewer_does_not_get_tenant_self_service_platform_keys()
+    {
+        var catalog = new List<Permission>
+        {
+            new("auth", "users", "read", "Read User", null),
+            new("platform", "tenant-security", "read", "Read Tenant Security", null),
+            new("platform", "tenant-security", "manage", "Manage Tenant Security", null)
+        };
+
+        var keys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.Equal(new[] { "auth.users.read" }, keys);
+        Assert.DoesNotContain("platform.tenant-security.read", keys);
+        Assert.DoesNotContain("platform.tenant-security.manage", keys);
+    }
+
     [Fact]
     public void Unknown_role_gets_nothing()
     {

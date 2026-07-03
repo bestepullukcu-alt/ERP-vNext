@@ -38,5 +38,18 @@ public enum ModuleCatalogDomain
     Hr,
 
     [Display(Name = "Developer Enablement")]
-    DevEnablement
+    DevEnablement,
+
+    // FEAT-BASELINE-MODULES-S1 — domain for the Access Governance baseline module (Users/Roles/Permissions/…).
+    [Display(Name = "Access Governance")]
+    AccessGovernance,
+
+    // FEAT-BASELINE-MODULES-S2 — domain for the Tenant Settings baseline module (Security Settings / Menu Settings).
+    [Display(Name = "Settings")]
+    Settings,
+
+    // FEAT-ADMIN-DOMAIN — unified tenant-administration domain (Access Governance + Tenant Settings). The older
+    // AccessGovernance/Settings values are retained (harmless — no module uses them now; operator may retire them).
+    [Display(Name = "Administration")]
+    Administration
 }

@@ -9,6 +9,10 @@ description: "WORKFLOW-002 — Mevcut Modüle Action Bazlı Sayfa ve UI Bileşen
 > PermissionKey + doğru placement). Manifest, gerçek frontend view-route'larını ve UI satır/toolbar menüsünü
 > birebir aynalamalı. İki-yönlü completeness testi güncellenir. Aksi halde katalog koddan sapar (drift).
 > Kurallar: `.antigravity/rules/module-self-registration-standard.md`.
+>
+> **Ctrl+K (tenant):** Yeni sayfa `IsNavigationVisible: true` ise tenant Ctrl+K aramasında **otomatik** çıkar
+> (arama data-driven nav'dan beslenir) — anlamlı `DisplayName` + gerçek `RoutePath` yeter; statik JSON güncellemesi
+> yok. Bkz. `module-self-registration-standard.md §7`.
 
 ## 🛠️ 1. Sayfa Tipine Göre Zorunlu Standartlar
 

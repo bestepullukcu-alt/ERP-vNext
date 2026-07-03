@@ -84,6 +84,94 @@ public sealed class RegisterModuleManifestCommandHandlerTests
     }
 
     [Fact]
+    public async Task First_register_seeds_the_module_icon_from_the_manifest()
+    {
+        var (handler, catalog, _, _, _) = Build();
+
+        // FIX-MODULE-ICON — SOFT: the manifest's default icon is seeded once on first registration.
+        await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest() with { Icon = "bx-collection" }), CancellationToken.None);
+
+        var item = Assert.Single(catalog.Items);
+        Assert.Equal("bx-collection", item.Icon);
+    }
+
+    [Fact]
+    public async Task Re_register_preserves_the_operator_icon_override()
+    {
+        var (handler, catalog, _, _, _) = Build();
+        // Operator picked a different icon in the catalog after the first seed.
+        catalog.Items.Add(new ModuleCatalogItem
+        {
+            ModuleCode = "GOLDENSLIM",
+            ModuleName = "Stale Name",
+            ModuleVersion = "0.0.1",
+            Icon = "bx-star"
+        });
+
+        await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest() with { Icon = "bx-collection" }), CancellationToken.None);
+
+        // FIX-MODULE-ICON — SOFT: a re-push NEVER overwrites the operator's icon.
+        var item = Assert.Single(catalog.Items);
+        Assert.Equal("bx-star", item.Icon);
+    }
+
+    [Fact]
+    public async Task Baseline_flag_is_seeded_on_create_and_refreshed_on_re_register()
+    {
+        var (handler, catalog, _, _, _) = Build();
+
+        // First register with IsBaseline=true → seeded HARD.
+        await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest() with { IsBaseline = true }), CancellationToken.None);
+        Assert.True(Assert.Single(catalog.Items).IsBaseline);
+
+        // Re-register the SAME module now declaring IsBaseline=false → HARD, so it is refreshed (unlike SOFT fields).
+        await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest() with { IsBaseline = false }), CancellationToken.None);
+        Assert.False(Assert.Single(catalog.Items).IsBaseline);
+    }
+
+    [Fact]
+    public async Task Unknown_manifest_domain_is_auto_registered_and_becomes_the_module_domain()
+    {
+        var (handler, catalog, _, _, _, domains) = BuildFull();
+        var before = domains.Items.Count;
+
+        // FIX-SELFREG-DOMAIN-REGISTER — a domain not present in the lookup is auto-created (SOFT, active).
+        await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest() with { Domain = "Brand New Domain" }), CancellationToken.None);
+
+        var created = Assert.Single(domains.Items, d => d.DisplayName == "Brand New Domain");
+        Assert.Equal("BRAND-NEW-DOMAIN", created.Code); // canonical dash-uppercase
+        Assert.True(created.IsActive);
+        Assert.Equal(before + 1, domains.Items.Count);
+        Assert.Equal("BRAND-NEW-DOMAIN", Assert.Single(catalog.Items).Domain); // module domain = canonical Code
+    }
+
+    [Fact]
+    public async Task Auto_registered_domain_is_reused_on_re_register_no_duplicate()
+    {
+        var (handler, _, _, _, _, domains) = BuildFull();
+        var manifest = GoldenSlimManifest() with { Domain = "Brand New Domain" };
+
+        await handler.Handle(new RegisterModuleManifestCommand(manifest), CancellationToken.None);
+        await handler.Handle(new RegisterModuleManifestCommand(manifest), CancellationToken.None);
+
+        Assert.Single(domains.Items, d => d.DisplayName == "Brand New Domain"); // idempotent — no duplicate
+    }
+
+    [Fact]
+    public async Task Deactivated_domain_is_reused_not_recreated()
+    {
+        var (handler, catalog, _, _, _, domains) = BuildFull();
+        // Operator deactivated a domain — a re-push must NOT recreate/reactivate it (respects operator intent).
+        domains.Items.Add(new ModuleDomain { Code = "SETTINGS", DisplayName = "Settings", IsActive = false });
+        var before = domains.Items.Count;
+
+        await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest() with { Domain = "Settings" }), CancellationToken.None);
+
+        Assert.Equal(before, domains.Items.Count);                  // no new row
+        Assert.Equal("SETTINGS", Assert.Single(catalog.Items).Domain); // resolved to the existing (inactive) Code
+    }
+
+    [Fact]
     public async Task Page_upsert_refreshes_route_and_prunes_pages_not_in_the_manifest()
     {
         var (handler, _, pages, _, _) = Build();
@@ -127,13 +215,23 @@ public sealed class RegisterModuleManifestCommandHandlerTests
     // ── harness ──
     private static (RegisterModuleManifestCommandHandler handler, FakeCatalogRepository catalog, FakePageRepository pages, FakeActionRepository actions, FakeSyncService sync) Build()
     {
+        var (handler, catalog, pages, actions, sync, _) = BuildFull();
+        return (handler, catalog, pages, actions, sync);
+    }
+
+    private static (RegisterModuleManifestCommandHandler handler, FakeCatalogRepository catalog, FakePageRepository pages, FakeActionRepository actions, FakeSyncService sync, FakeDomainRepository domains) BuildFull()
+    {
         var catalog = new FakeCatalogRepository();
         var pages = new FakePageRepository();
         var actions = new FakeActionRepository();
         var sync = new FakeSyncService();
+        var domains = new FakeDomainRepository();
+        // The GoldenSlim manifest's "DevEnablement" domain is already a known (seeded) lookup row, so the reconcile
+        // reuses it (matching the real seeded DB) rather than auto-registering — keeps the existing assertions valid.
+        domains.Items.Add(new ModuleDomain { Code = "DevEnablement", DisplayName = "DevEnablement", IsActive = true });
         var handler = new RegisterModuleManifestCommandHandler(catalog, pages, actions, sync,
-            new PassthroughTaxonomyResolver(), NullLogger<RegisterModuleManifestCommandHandler>.Instance);
-        return (handler, catalog, pages, actions, sync);
+            new PassthroughTaxonomyResolver(), domains, NullLogger<RegisterModuleManifestCommandHandler>.Instance);
+        return (handler, catalog, pages, actions, sync, domains);
     }
 
     [Fact]
@@ -239,6 +337,7 @@ public sealed class RegisterModuleManifestCommandHandlerTests
         public Task<bool> ExistsByPageCodeAsync(string moduleCode, string pageCode, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<bool> ExistsByRoutePathAsync(string moduleCode, string routePath, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<(IReadOnlyList<ModulePageDescriptor> Items, long TotalCount)> SearchAsync(ModulePageDescriptorQuery query, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<long> CountByRequiredPermissionAsync(string permissionKey, CancellationToken ct = default) => Task.FromResult(0L);
     }
 
     private sealed class FakeActionRepository : IModulePageActionDescriptorRepository
@@ -265,6 +364,7 @@ public sealed class RegisterModuleManifestCommandHandlerTests
 
         public Task<ModulePageActionDescriptor?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<bool> ExistsByActionCodeAsync(Guid pageDescriptorId, string actionCode, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<long> CountByPermissionKeyAsync(string permissionKey, CancellationToken ct = default) => Task.FromResult(0L);
     }
 
     // Identity resolver — preserves manifest Domain/Service so the seed-once assertions hold (resolution is
@@ -291,5 +391,34 @@ public sealed class RegisterModuleManifestCommandHandlerTests
 
             return Task.FromResult(CatalogPermissionSyncStatus.Synced);
         }
+
+        public Task<CatalogPermissionSyncStatus> RemovePermissionAsync(string? permissionKey, CancellationToken ct) => Task.FromResult(CatalogPermissionSyncStatus.SkippedEmpty);
+    }
+
+    private sealed class FakeDomainRepository : IModuleDomainRepository
+    {
+        public List<ModuleDomain> Items { get; } = [];
+
+        public Task<ModuleDomain> CreateAsync(ModuleDomain item, CancellationToken ct = default)
+        {
+            Items.Add(item);
+            return Task.FromResult(item);
+        }
+
+        // The reconcile reads ALL live domains (IsActive=null) and normalized-matches; honour the IsActive filter.
+        public Task<(IReadOnlyList<ModuleDomain> Items, long TotalCount)> QueryAsync(ModuleDomainQuery query, CancellationToken ct = default)
+        {
+            var items = Items.Where(d => !query.IsActive.HasValue || d.IsActive == query.IsActive.Value).ToList();
+            return Task.FromResult<(IReadOnlyList<ModuleDomain>, long)>((items, items.Count));
+        }
+
+        public Task<ModuleDomain?> GetByCodeAsync(string code, CancellationToken ct = default) =>
+            Task.FromResult(Items.FirstOrDefault(d => d.Code == code));
+
+        public Task<ModuleDomain?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task UpdateAsync(ModuleDomain item, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<ModuleDomain>> GetActiveAsync(CancellationToken ct = default) => throw new NotSupportedException();
     }
 }

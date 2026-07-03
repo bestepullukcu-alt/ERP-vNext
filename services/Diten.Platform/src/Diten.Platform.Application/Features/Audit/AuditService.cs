@@ -157,6 +157,18 @@ public sealed class AuditService : IAuditService
         }
 
         var tenantId = _tenantContext.TenantId;
+
+        // FIX-AUDIT-TARGET-EMPTY — platform-admin requests are pinned by TenantResolutionMiddleware with
+        // SetPlatformContext(Guid.Empty), so the context alone cannot own a tenant-scoped audit event. A command
+        // that self-declares its target tenant (TargetTenantId) owns the event under that tenant.
+        if (tenantId == Guid.Empty
+            && _tenantContext.IsPlatformContext
+            && request.TargetTenantId is { } declaredTarget
+            && declaredTarget != Guid.Empty)
+        {
+            return (true, declaredTarget, null);
+        }
+
         return tenantId == Guid.Empty
             ? (false, Guid.Empty, "Audit tenant id cannot be empty. Use PlatformSystemTenantId for platform-global audit events.")
             : (true, tenantId, null);
@@ -166,12 +178,16 @@ public sealed class AuditService : IAuditService
     {
         if (request.TargetTenantId.HasValue)
         {
-            return request.TargetTenantId;
+            return request.TargetTenantId; // explicit Guid.Empty is still rejected by AppendAsync (intentional misuse guard)
         }
 
         if (_tenantContext.IsResolved && _tenantContext.IsPlatformContext)
         {
-            return _tenantContext.TargetTenantId;
+            // FIX-AUDIT-TARGET-EMPTY — TenantResolutionMiddleware pins platform-admin requests with
+            // SetPlatformContext(Guid.Empty); that sentinel means "no specific target tenant", so normalize
+            // it to null instead of letting the Guid.Empty guard reject the append.
+            var contextTarget = _tenantContext.TargetTenantId;
+            return contextTarget == Guid.Empty ? null : contextTarget;
         }
 
         return null;

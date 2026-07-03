@@ -35,7 +35,7 @@ const UserRoleAssignments = (function () {
 
     const unwrap = (json) => {
         if (json?.data?.data !== undefined) return json.data.data;
-        return json?.data ?? json?.Data ?? null;
+        return json?.data ?? json?.Data ?? json;
     };
 
     const apiGet = async (path) => {

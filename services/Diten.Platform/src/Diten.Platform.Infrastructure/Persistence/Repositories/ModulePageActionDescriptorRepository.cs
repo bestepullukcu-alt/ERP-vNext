@@ -50,4 +50,15 @@ public sealed class ModulePageActionDescriptorRepository
             .Sort(Builders<ModulePageActionDescriptor>.Sort.Ascending(x => x.SortOrder).Ascending(x => x.ActionCode))
             .ToListAsync(ct);
     }
+
+    // FEAT-CATALOG-PERM-DELETE-SYNC — count of LIVE actions referencing the permission key (ExecutionFilter excludes
+    // soft-deleted rows, so a count after the owning descriptor's delete excludes it).
+    public async Task<long> CountByPermissionKeyAsync(string permissionKey, CancellationToken ct = default)
+    {
+        var filter = Builders<ModulePageActionDescriptor>.Filter.And(
+            ExecutionFilter,
+            Builders<ModulePageActionDescriptor>.Filter.Eq(x => x.PermissionKey, permissionKey));
+
+        return await Collection.CountDocumentsAsync(filter, cancellationToken: ct);
+    }
 }

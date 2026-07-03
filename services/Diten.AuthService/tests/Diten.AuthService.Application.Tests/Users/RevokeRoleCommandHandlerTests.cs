@@ -141,7 +141,14 @@ public sealed class RevokeRoleCommandHandlerTests
             refreshTokens,
             version ?? new FakeRoleAssignmentVersionService(),
             tenantContext,
+            new NoOpRbacAuditRecorder(),
             NullLogger<RevokeRoleCommandHandler>.Instance);
+    }
+
+    // FEAT-AUDIT-RBAC — audit is instrumented but not asserted here (see RbacAuditRecorderTests); no-op keeps focus.
+    private sealed class NoOpRbacAuditRecorder : Diten.AuthService.Application.Common.Interfaces.IRbacAuditRecorder
+    {
+        public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default) => Task.CompletedTask;
     }
 
     // ── Minimal inline fakes (codebase convention: hand-written, no Moq) ──

@@ -77,17 +77,23 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
                     DomainDisplay = !string.IsNullOrWhiteSpace(g.DomainDisplayName)
                         ? g.DomainDisplayName!
                         : (!string.IsNullOrWhiteSpace(g.Domain) ? g.Domain! : "Modules"),
+                    // FEAT-NAVPREFS-DOMAINS — effective domain order (tenant override else implicit catalog rank).
+                    DomainSort = g.DomainSortOrder,
                     Module = new NavModuleEntryView(
                         g.ModuleDisplayName ?? g.ModuleCode ?? string.Empty,
-                        BuildTree(g.Items))
+                        BuildTree(g.Items),
+                        g.Icon) // FIX-MODULE-ICON — module sidebar icon from the catalog (nav DTO carries the resolved value).
                 })
                 .Where(x => x.Module.Nodes.Count > 0)
                 .ToList();
 
-            // GroupBy preserves first-seen order; modules arrive SortOrder-ordered from the backend.
+            // FEAT-NAVPREFS-DOMAINS — order DOMAIN groups by DomainSortOrder (all modules of a domain share it);
+            // modules within stay SortOrder-ordered. OrderBy is stable, so equal ranks keep first-seen order.
             var domains = moduleEntries
                 .GroupBy(x => (x.Domain, x.DomainDisplay))
-                .Select(dg => new NavDomainGroupView(dg.Key.DomainDisplay, dg.Select(x => x.Module).ToList()))
+                .Select(dg => new { dg.Key.DomainDisplay, Sort = dg.Min(x => x.DomainSort), Modules = dg.Select(x => x.Module).ToList() })
+                .OrderBy(d => d.Sort)
+                .Select(d => new NavDomainGroupView(d.DomainDisplay, d.Modules))
                 .ToList();
 
             return new DynamicModuleMenuViewModel(domains);
@@ -151,7 +157,9 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
         string? ModuleDisplayName,
         string? Domain,
         string? DomainDisplayName,
-        IReadOnlyList<NavigationItem>? Items);
+        IReadOnlyList<NavigationItem>? Items,
+        int DomainSortOrder = 0,
+        string? Icon = null); // FIX-MODULE-ICON — module sidebar icon (boxicons class) from the platform nav DTO.
 
     private sealed record NavigationItem(
         string PageCode,
@@ -173,7 +181,7 @@ public sealed record DynamicModuleMenuViewModel(IReadOnlyList<NavDomainGroupView
 // FIX-3 — DOMAIN is the menu group; each module is one entry under it.
 public sealed record NavDomainGroupView(string DomainDisplayName, IReadOnlyList<NavModuleEntryView> Modules);
 
-public sealed record NavModuleEntryView(string ModuleDisplayName, IReadOnlyList<NavNodeView> Nodes)
+public sealed record NavModuleEntryView(string ModuleDisplayName, IReadOnlyList<NavNodeView> Nodes, string? Icon = null)
 {
     // A module with exactly one nav-visible page (no sub-pages) links straight to that page (its name is the
     // module name, the page name is not shown separately). Anything else renders as a collapsible module group.

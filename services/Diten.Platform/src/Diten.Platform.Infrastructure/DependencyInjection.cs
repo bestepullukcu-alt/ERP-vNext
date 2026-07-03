@@ -183,6 +183,8 @@ public static class DependencyInjection
         services.AddScoped<IModuleServiceRepository, ModuleServiceRepository>();
         services.AddScoped<IModulePageDescriptorRepository, ModulePageDescriptorRepository>();
         services.AddScoped<IModulePageActionDescriptorRepository, ModulePageActionDescriptorRepository>();
+        services.AddScoped<ITenantNavPreferenceRepository, TenantNavPreferenceRepository>();
+        services.AddScoped<ITenantNavDomainPreferenceRepository, TenantNavDomainPreferenceRepository>();
         services.AddScoped<IPlatformAdministratorRepository, PlatformAdministratorRepository>();
         services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
         services.AddScoped<ITenantSubscriptionRepository, TenantSubscriptionRepository>();

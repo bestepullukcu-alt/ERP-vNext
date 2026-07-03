@@ -14,6 +14,7 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
+    private readonly IRbacAuditRecorder _rbacAudit;
     private readonly ILogger<AssignRoleCommandHandler> _logger;
 
     public AssignRoleCommandHandler(
@@ -22,6 +23,7 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
         IUserRoleRepository userRoleRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
+        IRbacAuditRecorder rbacAudit,
         ILogger<AssignRoleCommandHandler> logger)
     {
         _userRepository = userRepository;
@@ -29,6 +31,7 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
         _userRoleRepository = userRoleRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
+        _rbacAudit = rbacAudit;
         _logger = logger;
     }
 
@@ -47,6 +50,11 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
 
         // FU13 — invalidate the tenant's cached authorization snapshots by bumping the role-assignment version.
         await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
+
+        // FEAT-AUDIT-RBAC — a role was newly assigned to a user (idempotent no-op above is not audited).
+        await _rbacAudit.RecordAsync("user_role_assigned", _tenantContext.TenantId,
+            new { targetUserId = request.UserId, roleId = request.RoleId, roleName = role.Name }, ct);
+
         return Response<NoContent>.Success(204);
     }
 }

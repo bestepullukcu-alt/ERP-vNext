@@ -1,8 +1,10 @@
+using System.Text;
 using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.ModuleCatalog;
 using Diten.Platform.Application.Features.ModulePages;
+using Diten.Platform.Domain.Catalog;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -32,6 +34,7 @@ public sealed class RegisterModuleManifestCommandHandler
     private readonly IModulePageActionDescriptorRepository _actionRepository;
     private readonly ICatalogPermissionSyncService _permissionSyncService;
     private readonly Features.ModuleCatalog.Services.IModuleTaxonomyResolver _taxonomyResolver;
+    private readonly IModuleDomainRepository _domainRepository;
     private readonly ILogger<RegisterModuleManifestCommandHandler> _logger;
 
     public RegisterModuleManifestCommandHandler(
@@ -40,6 +43,7 @@ public sealed class RegisterModuleManifestCommandHandler
         IModulePageActionDescriptorRepository actionRepository,
         ICatalogPermissionSyncService permissionSyncService,
         Features.ModuleCatalog.Services.IModuleTaxonomyResolver taxonomyResolver,
+        IModuleDomainRepository domainRepository,
         ILogger<RegisterModuleManifestCommandHandler> logger)
     {
         _catalogRepository = catalogRepository;
@@ -47,6 +51,7 @@ public sealed class RegisterModuleManifestCommandHandler
         _actionRepository = actionRepository;
         _permissionSyncService = permissionSyncService;
         _taxonomyResolver = taxonomyResolver;
+        _domainRepository = domainRepository;
         _logger = logger;
     }
 
@@ -192,13 +197,17 @@ public sealed class RegisterModuleManifestCommandHandler
 
     private async Task<string> ReconcileCatalogItemAsync(ModuleManifestDocument manifest, string moduleCode, CancellationToken ct)
     {
+        // FIX-SELFREG-DOMAIN-REGISTER — ensure the manifest's Domain exists in the operator lookup (auto-register an
+        // unknown domain), on BOTH first-register and re-push, so Domain Management surfaces self-registered domains
+        // (e.g. Access Governance, Settings) that were added to the enum AFTER the one-time ModuleDomainSeed ran.
+        var seededDomain = await ResolveOrRegisterDomainCodeAsync(manifest.Domain, ct);
+
         var existing = await _catalogRepository.GetByCodeAsync(moduleCode, ct);
         if (existing is null)
         {
             // First registration: HARD identity + SOFT metadata seeded once from the manifest. FIX-DOMAIN-SERVICE-
             // CANONICAL — the manifest carries enum-names (e.g. "PlatformSharedServices"); resolve them to the
             // canonical lookup Code at seed time so the catalog never stores an enum-name/DisplayName variant.
-            var seededDomain = await _taxonomyResolver.ResolveDomainCodeAsync(manifest.Domain, ct);
             var seededService = await _taxonomyResolver.ResolveServiceCodeAsync(manifest.Service, ct);
             await _catalogRepository.CreateAsync(new ModuleCatalogItem
             {
@@ -211,6 +220,11 @@ public sealed class RegisterModuleManifestCommandHandler
                 ModuleVersion = string.IsNullOrWhiteSpace(manifest.ModuleVersion) ? "1.0.0" : manifest.ModuleVersion.Trim(),
                 IsTenantAssignable = manifest.IsTenantAssignable,
                 SortOrder = manifest.SortOrder,
+                // FIX-MODULE-ICON — SOFT: seed the module's default sidebar icon once. Re-push (below) never
+                // overwrites it, so an operator's catalog edit is permanent.
+                Icon = string.IsNullOrWhiteSpace(manifest.Icon) ? null : manifest.Icon.Trim(),
+                // FEAT-BASELINE-MODULES — HARD (code-owned): baseline is a code decision, refreshed on every push.
+                IsBaseline = manifest.IsBaseline,
                 Origin = ModuleCatalogOrigin.SelfRegistered // MC-4 — code-owned
             }, ct);
             return "created";
@@ -220,10 +234,95 @@ public sealed class RegisterModuleManifestCommandHandler
         // belongs to the operator and is NEVER overwritten here.
         existing.ModuleName = manifest.ModuleName.Trim();
         existing.ModuleVersion = string.IsNullOrWhiteSpace(manifest.ModuleVersion) ? existing.ModuleVersion : manifest.ModuleVersion.Trim();
+        // FEAT-BASELINE-MODULES — HARD (code-owned): refreshed on every re-push (unlike SOFT Icon/Domain/Service).
+        existing.IsBaseline = manifest.IsBaseline;
         // MC-4 — a manual placeholder that later self-registers flips to code-owned (Manual → SelfRegistered).
         existing.Origin = ModuleCatalogOrigin.SelfRegistered;
         await _catalogRepository.UpdateAsync(existing, ct);
         return "updated";
+    }
+
+    /// <summary>
+    /// FIX-SELFREG-DOMAIN-REGISTER — resolves the manifest's raw Domain to a canonical lookup Code, AUTO-REGISTERING
+    /// it in <c>platform_module_domains</c> when it is genuinely unknown. Matching is format-tolerant (normalized
+    /// Code OR DisplayName) and considers ALL live domains — active AND inactive — so a domain the operator
+    /// DEACTIVATED is reused, never recreated. A soft-deleted domain (excluded by the repo filter) is guarded by a
+    /// duplicate-key catch on create, so "delete is permanent" holds. Idempotent: a re-push finds the existing row.
+    /// </summary>
+    private async Task<string> ResolveOrRegisterDomainCodeAsync(string? rawDomain, CancellationToken ct)
+    {
+        var trimmed = rawDomain?.Trim() ?? string.Empty;
+        if (trimmed.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var key = ModuleTaxonomyCanonicalizer.NormalizeKey(trimmed);
+        if (key.Length == 0)
+        {
+            return trimmed;
+        }
+
+        // Match against every live domain (active + inactive) by normalized Code OR DisplayName. Domains are few,
+        // so a single page (repo clamps to 200) covers them. An existing match is REUSED — never recreated.
+        var (all, _) = await _domainRepository.QueryAsync(new ModuleDomainQuery(null, null, 1, 200, "code"), ct);
+        var match = all.FirstOrDefault(d =>
+            string.Equals(ModuleTaxonomyCanonicalizer.NormalizeKey(d.Code), key, StringComparison.Ordinal)
+            || string.Equals(ModuleTaxonomyCanonicalizer.NormalizeKey(d.DisplayName), key, StringComparison.Ordinal));
+        if (match is not null)
+        {
+            return match.Code;
+        }
+
+        // Genuinely unknown → register it (SOFT: operator may rename/deactivate/delete later; a re-push finds it
+        // by the match above and never duplicates).
+        var code = ToDomainCode(trimmed);
+        try
+        {
+            var created = await _domainRepository.CreateAsync(new ModuleDomain
+            {
+                Code = code,
+                DisplayName = trimmed,
+                IsActive = true,
+                SortOrder = 1000 // appended after the seeded defaults; operator can reorder
+            }, ct);
+            _logger.LogInformation(
+                "Auto-registered module domain from manifest. Code={Code} DisplayName={DisplayName}", created.Code, trimmed);
+            return created.Code;
+        }
+        catch (MongoWriteException ex) when (IsDuplicateKey(ex))
+        {
+            // A soft-deleted domain (or a race) already holds this Code under a full unique index → do NOT revive it.
+            _logger.LogWarning(ex, "Module domain '{Code}' already exists (possibly soft-deleted); not recreating.", code);
+            return code;
+        }
+    }
+
+    // "Access Governance" → "ACCESS-GOVERNANCE": uppercase, collapse each run of non-alphanumerics to one dash.
+    private static string ToDomainCode(string displayName)
+    {
+        var upper = displayName.Trim().ToUpperInvariant();
+        var sb = new StringBuilder(upper.Length);
+        var pendingDash = false;
+        foreach (var ch in upper)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                if (pendingDash && sb.Length > 0)
+                {
+                    sb.Append('-');
+                }
+                pendingDash = false;
+                sb.Append(ch);
+            }
+            else
+            {
+                pendingDash = true;
+            }
+        }
+
+        var code = sb.ToString();
+        return code.Length == 0 ? upper : code;
     }
 
     private async Task<(ModulePageDescriptor Page, bool Created)> UpsertPageAsync(

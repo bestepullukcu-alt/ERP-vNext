@@ -29,6 +29,33 @@ public sealed class GetTenantNavigationMenuQueryHandlerTests
         return mock.Object;
     }
 
+    // Default: tenant has no nav preferences → menu is unchanged from catalog behavior.
+    private static ITenantNavPreferenceRepository NoPrefs()
+    {
+        var mock = new Mock<ITenantNavPreferenceRepository>();
+        mock.Setup(x => x.GetByTenantAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<TenantNavPreference>());
+        return mock.Object;
+    }
+
+    private static ITenantNavPreferenceRepository PrefsRepo(params TenantNavPreference[] prefs)
+    {
+        var mock = new Mock<ITenantNavPreferenceRepository>();
+        mock.Setup(x => x.GetByTenantAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(prefs.ToList());
+        return mock.Object;
+    }
+
+    private static ITenantNavDomainPreferenceRepository NoDomainPrefs() => DomainPrefsRepo();
+
+    private static ITenantNavDomainPreferenceRepository DomainPrefsRepo(params TenantNavDomainPreference[] prefs)
+    {
+        var mock = new Mock<ITenantNavDomainPreferenceRepository>();
+        mock.Setup(x => x.GetByTenantAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(prefs.ToList());
+        return mock.Object;
+    }
+
     private static ModulePageDescriptor Page(
         string moduleCode,
         string pageCode,
@@ -72,7 +99,7 @@ public sealed class GetTenantNavigationMenuQueryHandlerTests
                 Page("GOLDENSLIM", "HIDDENPAGE", navVisible: false, sortOrder: 30)
             });
 
-        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D Display")), new Mock<ITenantContext>().Object);
+        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D Display")), NoPrefs(), NoDomainPrefs(), new Mock<ITenantContext>().Object);
 
         var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
 
@@ -87,6 +114,46 @@ public sealed class GetTenantNavigationMenuQueryHandlerTests
         Assert.Equal("RECORDS", item.PageCode);
         Assert.Equal("/GOLDENSLIM/RECORDS", item.RoutePath);
         Assert.Equal("goldenslim.records.read", item.RequiredPermission);
+        // FIX-CTRLK-GROUPING+CREATE — a slim/offcanvas module (no "/Create" page) exposes no navigable create route.
+        Assert.Null(group.CreateRoute);
+        Assert.Null(group.CreatePermission);
+    }
+
+    [Fact]
+    public async Task Module_WithNavigableCreatePage_ExposesCreateRouteAndPermission_ButKeepsItCreateOutOfItems()
+    {
+        var tenantId = Guid.NewGuid();
+        var catalog = new Mock<IPlatformCatalogContract>();
+        catalog.Setup(x => x.GetAssignableModulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AssignableModuleInfo> { Module("GOLDENCOMPACT", "Golden Compact", 1) });
+
+        var access = new Mock<ITenantModuleAccessService>();
+        access.Setup(x => x.HasAccessAsync(tenantId, "GOLDENCOMPACT", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var repo = new Mock<IModulePageDescriptorRepository>();
+        repo.Setup(x => x.GetByModuleAsync("GOLDENCOMPACT", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ModulePageDescriptor>
+            {
+                Page("GOLDENCOMPACT", "RECORDS", requiredPermission: "goldencompact.records.read", sortOrder: 10),
+                // Compact "Add New": non-nav-visible, route ends "/Create", no {id}, carries the create permission.
+                Page("GOLDENCOMPACT", "CREATE", navVisible: false, requiredPermission: "goldencompact.records.create", sortOrder: 20),
+                // Edit page carries an {id} placeholder → must NOT be picked as a navigable create route.
+                new ModulePageDescriptor
+                {
+                    TenantId = Guid.Empty, ModuleCode = "GOLDENCOMPACT", PageCode = "EDIT", DisplayName = "Edit",
+                    RoutePath = "/GOLDENCOMPACT/Edit/{id}", IsNavigationVisible = false, Status = ModulePageStatus.Active, SortOrder = 30
+                }
+            });
+
+        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D Display")), NoPrefs(), NoDomainPrefs(), new Mock<ITenantContext>().Object);
+
+        var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
+
+        var group = Assert.Single(response.Data!);
+        Assert.Equal("/GOLDENCOMPACT/CREATE", group.CreateRoute);            // navigable create route exposed
+        Assert.Equal("goldencompact.records.create", group.CreatePermission); // its per-user permission gate
+        var item = Assert.Single(group.Items);                               // only the nav-visible RECORDS is a menu item
+        Assert.Equal("RECORDS", item.PageCode);
     }
 
     [Fact]
@@ -108,7 +175,7 @@ public sealed class GetTenantNavigationMenuQueryHandlerTests
         // Domain ROW code uses dashes + different case — must still resolve to the display name.
         var handler = new GetTenantNavigationMenuQueryHandler(
             catalog.Object, access.Object, repo.Object,
-            DomainRepo(("master-data-management", "Master Data Management")), new Mock<ITenantContext>().Object);
+            DomainRepo(("master-data-management", "Master Data Management")), NoPrefs(), NoDomainPrefs(), new Mock<ITenantContext>().Object);
 
         var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
 
@@ -135,7 +202,7 @@ public sealed class GetTenantNavigationMenuQueryHandlerTests
 
         // No domain rows registered → display name must fall back to the raw catalog code ("D").
         var handler = new GetTenantNavigationMenuQueryHandler(
-            catalog.Object, access.Object, repo.Object, DomainRepo(), new Mock<ITenantContext>().Object);
+            catalog.Object, access.Object, repo.Object, DomainRepo(), NoPrefs(), NoDomainPrefs(), new Mock<ITenantContext>().Object);
 
         var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
 
@@ -158,7 +225,7 @@ public sealed class GetTenantNavigationMenuQueryHandlerTests
 
         var repo = new Mock<IModulePageDescriptorRepository>();
 
-        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D Display")), new Mock<ITenantContext>().Object);
+        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D Display")), NoPrefs(), NoDomainPrefs(), new Mock<ITenantContext>().Object);
 
         var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
 
@@ -184,11 +251,169 @@ public sealed class GetTenantNavigationMenuQueryHandlerTests
         repo.Setup(x => x.GetByModuleAsync("HR", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ModulePageDescriptor>()); // self-registered but no nav descriptors yet
 
-        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D Display")), new Mock<ITenantContext>().Object);
+        var handler = new GetTenantNavigationMenuQueryHandler(catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D Display")), NoPrefs(), NoDomainPrefs(), new Mock<ITenantContext>().Object);
 
         var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
 
         Assert.True(response.IsSuccessful);
         Assert.Empty(response.Data!);
+    }
+
+    // ── FEAT-TENANT-NAV-PREFS ──
+
+    private static (Mock<IPlatformCatalogContract> Catalog, Mock<ITenantModuleAccessService> Access, Mock<IModulePageDescriptorRepository> Repo) ThreeModuleScenario(Guid tenantId)
+    {
+        var catalog = new Mock<IPlatformCatalogContract>();
+        catalog.Setup(x => x.GetAssignableModulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AssignableModuleInfo>
+            {
+                Module("ALPHA", "Alpha", 1),
+                Module("BETA", "Beta", 2),
+                Module("GAMMA", "Gamma", 3)
+            });
+
+        var access = new Mock<ITenantModuleAccessService>();
+        access.Setup(x => x.HasAccessAsync(tenantId, It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var repo = new Mock<IModulePageDescriptorRepository>();
+        foreach (var code in new[] { "ALPHA", "BETA", "GAMMA" })
+        {
+            repo.Setup(x => x.GetByModuleAsync(code, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ModulePageDescriptor> { Page(code, "INDEX", sortOrder: 10) });
+        }
+
+        return (catalog, access, repo);
+    }
+
+    [Fact]
+    public async Task Preferences_Hide_Rename_And_Reorder_AreApplied()
+    {
+        var tenantId = Guid.NewGuid();
+        var (catalog, access, repo) = ThreeModuleScenario(tenantId);
+
+        // Hide BETA; rename ALPHA; reorder GAMMA before ALPHA (UI sends explicit order for the visible modules).
+        var prefs = PrefsRepo(
+            new TenantNavPreference { TenantId = tenantId, ModuleCode = "BETA", IsHidden = true },
+            new TenantNavPreference { TenantId = tenantId, ModuleCode = "ALPHA", DisplayNameOverride = "Custom Alpha", SortOrder = 2 },
+            new TenantNavPreference { TenantId = tenantId, ModuleCode = "GAMMA", SortOrder = 1 });
+
+        var handler = new GetTenantNavigationMenuQueryHandler(
+            catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D")), prefs, NoDomainPrefs(), new Mock<ITenantContext>().Object);
+
+        var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        var codes = response.Data!.Select(g => g.ModuleCode).ToList();
+        Assert.Equal(new[] { "GAMMA", "ALPHA" }, codes);                  // BETA hidden, GAMMA reordered first
+        Assert.Equal("Custom Alpha", response.Data!.Single(g => g.ModuleCode == "ALPHA").ModuleDisplayName);
+    }
+
+    [Fact]
+    public async Task NoPreferences_LeavesMenuUnchanged()
+    {
+        var tenantId = Guid.NewGuid();
+        var (catalog, access, repo) = ThreeModuleScenario(tenantId);
+
+        var handler = new GetTenantNavigationMenuQueryHandler(
+            catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D")), NoPrefs(), NoDomainPrefs(), new Mock<ITenantContext>().Object);
+
+        var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        // Catalog order preserved, nothing hidden/renamed.
+        Assert.Equal(new[] { "ALPHA", "BETA", "GAMMA" }, response.Data!.Select(g => g.ModuleCode).ToList());
+        Assert.Equal("Alpha", response.Data!.Single(g => g.ModuleCode == "ALPHA").ModuleDisplayName);
+    }
+
+    [Fact]
+    public async Task Preference_ForNonEntitledModule_HasNoEffect()
+    {
+        var tenantId = Guid.NewGuid();
+        var (catalog, access, repo) = ThreeModuleScenario(tenantId);
+
+        // A stale preference for a module the tenant is NOT entitled to (not in the menu) must not break ordering.
+        var prefs = PrefsRepo(
+            new TenantNavPreference { TenantId = tenantId, ModuleCode = "DELTA", IsHidden = true, DisplayNameOverride = "X" });
+
+        var handler = new GetTenantNavigationMenuQueryHandler(
+            catalog.Object, access.Object, repo.Object, DomainRepo(("D", "Domain D")), prefs, NoDomainPrefs(), new Mock<ITenantContext>().Object);
+
+        var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(new[] { "ALPHA", "BETA", "GAMMA" }, response.Data!.Select(g => g.ModuleCode).ToList());
+    }
+
+    // ── FEAT-NAVPREFS-DOMAINS ──
+
+    [Fact]
+    public async Task DomainPreference_OverridesDomainSortOrder_AndRenamesDomain()
+    {
+        var tenantId = Guid.NewGuid();
+        var catalog = new Mock<IPlatformCatalogContract>();
+        catalog.Setup(x => x.GetAssignableModulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AssignableModuleInfo>
+            {
+                Module("ALPHA", "Alpha", 1, "SALES"),
+                Module("BETA", "Beta", 2, "FINANCE")
+            });
+
+        var access = new Mock<ITenantModuleAccessService>();
+        access.Setup(x => x.HasAccessAsync(tenantId, It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var repo = new Mock<IModulePageDescriptorRepository>();
+        repo.Setup(x => x.GetByModuleAsync("ALPHA", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ModulePageDescriptor> { Page("ALPHA", "INDEX", sortOrder: 10) });
+        repo.Setup(x => x.GetByModuleAsync("BETA", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ModulePageDescriptor> { Page("BETA", "INDEX", sortOrder: 10) });
+
+        // FINANCE moved first (0) + renamed; SALES second (1).
+        var domainPrefs = DomainPrefsRepo(
+            new TenantNavDomainPreference { TenantId = tenantId, DomainCode = "FINANCE", SortOrder = 0, DisplayNameOverride = "Money" },
+            new TenantNavDomainPreference { TenantId = tenantId, DomainCode = "SALES", SortOrder = 1 });
+
+        var handler = new GetTenantNavigationMenuQueryHandler(
+            catalog.Object, access.Object, repo.Object,
+            DomainRepo(("SALES", "Sales"), ("FINANCE", "Finance")),
+            NoPrefs(), domainPrefs, new Mock<ITenantContext>().Object);
+
+        var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        var sales = response.Data!.Single(g => g.ModuleCode == "ALPHA");
+        var finance = response.Data!.Single(g => g.ModuleCode == "BETA");
+        Assert.Equal(1, sales.DomainSortOrder);
+        Assert.Equal(0, finance.DomainSortOrder);
+        Assert.Equal("Money", finance.DomainDisplayName);   // domain renamed
+        Assert.Equal("Sales", sales.DomainDisplayName);      // untouched domain unchanged
+    }
+
+    [Fact]
+    public async Task NoDomainPreference_StampsImplicitCatalogRank()
+    {
+        var tenantId = Guid.NewGuid();
+        var catalog = new Mock<IPlatformCatalogContract>();
+        catalog.Setup(x => x.GetAssignableModulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AssignableModuleInfo>
+            {
+                Module("ALPHA", "Alpha", 1, "SALES"),
+                Module("BETA", "Beta", 2, "FINANCE")
+            });
+        var access = new Mock<ITenantModuleAccessService>();
+        access.Setup(x => x.HasAccessAsync(tenantId, It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        var repo = new Mock<IModulePageDescriptorRepository>();
+        repo.Setup(x => x.GetByModuleAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string code, CancellationToken _) => new List<ModulePageDescriptor> { Page(code, "INDEX", sortOrder: 10) });
+
+        var handler = new GetTenantNavigationMenuQueryHandler(
+            catalog.Object, access.Object, repo.Object,
+            DomainRepo(("SALES", "Sales"), ("FINANCE", "Finance")),
+            NoPrefs(), NoDomainPrefs(), new Mock<ITenantContext>().Object);
+
+        var response = await handler.Handle(new GetTenantNavigationMenuQuery(tenantId), CancellationToken.None);
+
+        // First-appearance rank: SALES=0, FINANCE=1 (catalog order preserved).
+        Assert.Equal(0, response.Data!.Single(g => g.ModuleCode == "ALPHA").DomainSortOrder);
+        Assert.Equal(1, response.Data!.Single(g => g.ModuleCode == "BETA").DomainSortOrder);
     }
 }

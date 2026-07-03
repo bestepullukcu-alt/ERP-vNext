@@ -6,7 +6,9 @@ const LoginPage = (function () {
         tenantLoginEndpoint: '/account/login',
         mfaEndpoint: '/account/login/mfa',
         mfaResendEndpoint: '/account/login/mfa/resend',
-        platformLoginEndpoint: '/platform/login'
+        platformLoginEndpoint: '/platform/login',
+        // FIX-LOGIN-TENANT-FALLBACK — Development only: DefaultTenant id injected by the server (empty in Production).
+        devDefaultTenantId: window.DevDefaultTenantId || null
     };
 
     function init() {
@@ -84,6 +86,12 @@ const LoginPage = (function () {
                 showMfaStep(data);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
+                return;
+            }
+
+            // FIX-TENANT-MUSTCHANGEPW — temp-password tenant user must change it first (server sets redirectUrl).
+            if (data.requiresPasswordChange) {
+                window.location.href = data.redirectUrl || '/account/change-password';
                 return;
             }
 
@@ -191,12 +199,11 @@ const LoginPage = (function () {
     }
 
     function resolveTenantIdForLogin() {
+        // FIX-LOGIN-TENANT-FALLBACK — prefer ?tenantId= (invite link); otherwise fall back to the Development-only
+        // DefaultTenant injected by the server. In Production devDefaultTenantId is null, so the guard below still
+        // blocks a tenant login that has no explicit tenant.
         const tenantFromQuery = new URLSearchParams(window.location.search).get('tenantId');
-        if (tenantFromQuery) {
-            return tenantFromQuery;
-        }
-
-        return null;
+        return tenantFromQuery || config.devDefaultTenantId || null;
     }
 
     function showError(message) {

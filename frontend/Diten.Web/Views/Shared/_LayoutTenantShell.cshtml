@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @inject IHtmlLocalizer<Diten.Web.Views.Governance.TenantSecuritySettings.TenantSecuritySettingsIndex> TenantSecurityLocalizer
+@inject IHtmlLocalizer<Diten.Web.Views.Governance.TenantNavigationSettings.TenantNavigationSettingsIndex> TenantNavigationLocalizer
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     var currentUser = User?.Identity?.IsAuthenticated == true
@@ -40,8 +41,8 @@
 
     <title>@ViewData["Title"] - Di10</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="~/assets/img/favicon/favicon.ico" />
+    <!-- Favicon (tenant branding, falls back to platform default) -->
+    @await Component.InvokeAsync("TenantFavicon")
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -177,68 +178,10 @@
                         </a>
                     </li>
 
-                    @* S-NAV (MOD-0018-FU9) — Access Governance (FE-C). FE-B UX guard: a link shows only
-                       when the user holds the matching read/assign permission; backend is authoritative. *@
-                    @if (Perms.Has("auth.users.read") || Perms.Has("auth.roles.read")
-                         || Perms.Has("auth.roles.assign-permission") || Perms.Has("auth.users.assign-role"))
-                    {
-                        <li class="menu-header small text-uppercase">
-                            <span class="menu-header-text">@SharedLocalizer["AccessGovernance"]</span>
-                        </li>
-                        @if (Perms.Has("auth.users.read"))
-                        {
-                            <li class="menu-item @(activeController == "Users" ? "active" : "")">
-                                <a href="/Users" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-user"></i>
-                                    <div>@SharedLocalizer["UsersMenu"]</div>
-                                </a>
-                            </li>
-                        }
-                        @if (Perms.Has("auth.roles.read"))
-                        {
-                            <li class="menu-item @(activeController == "Roles" ? "active" : "")">
-                                <a href="/Roles" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
-                                    <div>@SharedLocalizer["RolesMenu"]</div>
-                                </a>
-                            </li>
-                            <li class="menu-item @(activeController == "Permissions" ? "active" : "")">
-                                <a href="/Permissions" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-key"></i>
-                                    <div>@SharedLocalizer["PermissionsMenu"]</div>
-                                </a>
-                            </li>
-                        }
-                        @if (Perms.Has("auth.roles.assign-permission"))
-                        {
-                            <li class="menu-item @(activeController == "RoleAssignments" ? "active" : "")">
-                                <a href="/RoleAssignments" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-link"></i>
-                                    <div>@SharedLocalizer["RolePermissionAssignmentMenu"]</div>
-                                </a>
-                            </li>
-                        }
-                        @if (Perms.Has("auth.users.assign-role"))
-                        {
-                            <li class="menu-item @(activeController == "UserRoleAssignments" ? "active" : "")">
-                                <a href="/UserRoleAssignments" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-user-plus"></i>
-                                    <div>@SharedLocalizer["UserRoleAssignmentMenu"]</div>
-                                </a>
-                            </li>
-                        }
-                        @* MOD — Tenant self-service Security Settings. UX guard only; backend
-                           [HasPermission("platform.tenant-security.manage")] is authoritative. *@
-                        @if (Perms.Has("platform.tenant-security.manage"))
-                        {
-                            <li class="menu-item @(activeController == "TenantSecuritySettings" ? "active" : "")">
-                                <a href="/TenantSecurity" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
-                                    <div>@TenantSecurityLocalizer["Title"]</div>
-                                </a>
-                            </li>
-                        }
-                    }
+                    @* FEAT-BASELINE-MODULES-S2 — Security Settings (/TenantSecurity) and Menu Settings (/TenantNavigation)
+                       are now rendered DATA-DRIVEN by the DynamicModuleMenu below (the `tenant-settings` BASELINE module,
+                       "Settings" domain — same routes + same platform.tenant-security.manage per-item gate). The Work
+                       Center block above stays hardcoded (Phase B / MOD-0024 will self-register it, entitlement-gated). *@
 
                     @* MOD-0285 — dynamic "Modules" section (AUGMENT). Self-registered/entitled modules whose page
                        descriptors are navigation-visible render here automatically — no hand-edited <li> above.
@@ -586,7 +529,7 @@
     <script src="~/assets/js/personalization-client.js" asp-append-version="true"></script>
 
     <!-- Main JS -->
-    <script src="~/assets/js/main.js"></script>
+    <script src="~/assets/js/main.js" asp-append-version="true"></script>
 
     <script src="~/assets/js/custom/required-fields-tracker.js" asp-append-version="true"></script>
 

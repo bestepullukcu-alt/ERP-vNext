@@ -315,6 +315,61 @@ public sealed class ModuleCatalogRulesTests
         Assert.False(item.IsDeleted);
     }
 
+    // ── FIX-BASELINE-NO-DEACTIVATE — baseline modules must stay Active (they reach every tenant) ───────────────
+    [Fact]
+    public async Task Deactivate_handler_refuses_a_baseline_module()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var item = await repository.CreateAsync(new ModuleCatalogItem
+        {
+            ModuleCode = "ACCESS-GOVERNANCE", ModuleName = "Access Governance", DisplayName = "Access Governance",
+            Domain = "P", Service = "S", ModuleVersion = "1.0.0", Status = ModuleCatalogStatus.Active,
+            Origin = ModuleCatalogOrigin.SelfRegistered, IsBaseline = true
+        });
+        var handler = new DeactivateModuleCatalogItemCommandHandler(repository);
+
+        var response = await handler.Handle(new DeactivateModuleCatalogItemCommand(item.Id), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Contains(ModuleCatalogErrorCodes.BaselineCannotBeDeactivated, response.Errors);
+        Assert.Equal(ModuleCatalogStatus.Active, item.Status); // unchanged
+    }
+
+    [Fact]
+    public async Task Deactivate_handler_still_works_for_a_non_baseline_active_module()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var item = await repository.CreateAsync(Item("REGULAR", ModuleCatalogStatus.Active));
+        var handler = new DeactivateModuleCatalogItemCommandHandler(repository);
+
+        var response = await handler.Handle(new DeactivateModuleCatalogItemCommand(item.Id), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(204, response.StatusCode);
+        Assert.Equal(ModuleCatalogStatus.Inactive, item.Status);
+    }
+
+    [Fact]
+    public async Task Update_handler_refuses_moving_a_baseline_module_off_active()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var item = await repository.CreateAsync(new ModuleCatalogItem
+        {
+            ModuleCode = "TENANT-SETTINGS", ModuleName = "Tenant Settings", DisplayName = "Tenant Settings",
+            Domain = "P", Service = "S", ModuleVersion = "1.0.0", Status = ModuleCatalogStatus.Active,
+            Origin = ModuleCatalogOrigin.SelfRegistered, IsBaseline = true
+        });
+        var handler = new UpdateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+
+        var response = await handler.Handle(UpdateStatus(item, "Inactive"), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Contains(ModuleCatalogErrorCodes.BaselineCannotBeDeactivated, response.Errors);
+        Assert.Equal(ModuleCatalogStatus.Active, item.Status); // unchanged
+    }
+
     private static ModuleCatalogItem Item(string code, ModuleCatalogStatus status) =>
         new() { ModuleCode = code, ModuleName = code, DisplayName = code, Domain = "P", Service = "S", ModuleVersion = "1.0.0", Status = status };
 
