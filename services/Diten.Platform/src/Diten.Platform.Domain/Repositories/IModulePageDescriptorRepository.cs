@@ -14,6 +14,12 @@ public interface IModulePageDescriptorRepository
     Task DeleteAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<ModulePageDescriptor>> GetByModuleAsync(string moduleCode, CancellationToken ct = default);
     Task<(IReadOnlyList<ModulePageDescriptor> Items, long TotalCount)> SearchAsync(ModulePageDescriptorQuery query, CancellationToken ct = default);
+
+    /// <summary>
+    /// FEAT-CATALOG-PERM-DELETE-SYNC — count of LIVE pages whose <c>RequiredPermission</c> equals the key (used to
+    /// decide whether a permission is still referenced before requesting its removal from AuthService).
+    /// </summary>
+    Task<long> CountByRequiredPermissionAsync(string permissionKey, CancellationToken ct = default);
 }
 
 public sealed record ModulePageDescriptorQuery(

@@ -41,6 +41,7 @@ public sealed class ReferenceDataManifestProvider : IModuleManifestProvider
             ModuleVersion: "1.0.0",
             IsTenantAssignable: true,
             SortOrder: 320,
+            Icon: "bx-data", // FIX-MODULE-ICON — default sidebar icon (SOFT; operator can override in catalog).
             Pages:
             [
                 // Sets list — the navigable entry. Toolbar Add-Set / Import; the row Open / Hierarchy / Attributes /

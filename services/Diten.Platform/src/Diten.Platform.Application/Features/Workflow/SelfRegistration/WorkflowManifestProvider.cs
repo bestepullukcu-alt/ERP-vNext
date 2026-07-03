@@ -22,6 +22,7 @@ public sealed class WorkflowManifestProvider : IModuleManifestProvider
             ModuleVersion: "1.0.0",
             IsTenantAssignable: true,
             SortOrder: 200,
+            Icon: "bx-git-merge", // FIX-MODULE-ICON — default sidebar icon (SOFT; operator can override in catalog).
             Pages:
             [
                 // Definitions — the navigable entry (gated like the tenant nav: definitions.view).

@@ -13,17 +13,20 @@ public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand
     private readonly IRoleRepository _roleRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
+    private readonly IRbacAuditRecorder _rbacAudit;
     private readonly ILogger<CreateRoleCommandHandler> _logger;
 
     public CreateRoleCommandHandler(
         IRoleRepository roleRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
+        IRbacAuditRecorder rbacAudit,
         ILogger<CreateRoleCommandHandler> logger)
     {
         _roleRepository = roleRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
+        _rbacAudit = rbacAudit;
         _logger = logger;
     }
 
@@ -37,6 +40,10 @@ public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand
 
         // FU13 — a role mutation changes the tenant's authorization surface; bump to invalidate cached snapshots.
         await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
+
+        // FEAT-AUDIT-RBAC — a new role was created.
+        await _rbacAudit.RecordAsync("role_created", _tenantContext.TenantId,
+            new { roleId = created.Id, roleName = created.Name, displayName = created.DisplayName, description = created.Description }, ct);
 
         return Response<RoleDto>.Success(new RoleDto(created.Id, created.Name, created.DisplayName, created.Description, created.IsSystem, 0), 201);
     }

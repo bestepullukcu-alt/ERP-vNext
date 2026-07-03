@@ -11,17 +11,20 @@ public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand
     private readonly IRoleRepository _roleRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
+    private readonly IRbacAuditRecorder _rbacAudit;
     private readonly ILogger<DeleteRoleCommandHandler> _logger;
 
     public DeleteRoleCommandHandler(
         IRoleRepository roleRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
+        IRbacAuditRecorder rbacAudit,
         ILogger<DeleteRoleCommandHandler> logger)
     {
         _roleRepository = roleRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
+        _rbacAudit = rbacAudit;
         _logger = logger;
     }
 
@@ -36,6 +39,11 @@ public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand
 
         // FU13 — deleting a role removes it from every holder; bump to invalidate cached snapshots immediately.
         await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
+
+        // FEAT-AUDIT-RBAC — a role was deleted.
+        await _rbacAudit.RecordAsync("role_deleted", _tenantContext.TenantId,
+            new { roleId = request.Id, roleName = role.Name }, ct);
+
         return Response<NoContent>.Success(204);
     }
 }

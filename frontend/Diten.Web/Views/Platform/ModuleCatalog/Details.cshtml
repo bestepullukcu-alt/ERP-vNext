@@ -219,7 +219,17 @@
                         <i class="bx bx-building-house"></i>
                         <div>
                             <div class="backbone-preview-label">@Localizer["Assignable"]</div>
-                            <div class="backbone-preview-value mt-1">@(Model.IsTenantAssignable ? Localizer["Yes"] : Localizer["No"])</div>
+                            <div class="backbone-preview-value mt-1">
+                                @if (Model.IsBaseline)
+                                {
+                                    @* FEAT-CATALOG-BASELINE-BADGE — baseline reaches every tenant automatically; assignment is moot. *@
+                                    <span class="text-muted" title="@Localizer["BaselineAutoHint"]">@Localizer["BaselineAuto"]</span>
+                                }
+                                else
+                                {
+                                    @(Model.IsTenantAssignable ? Localizer["Yes"] : Localizer["No"])
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -229,6 +239,25 @@
                         <div>
                             <div class="backbone-preview-label">@Localizer["Core"]</div>
                             <div class="backbone-preview-value mt-1">@(Model.IsCoreModule ? Localizer["Yes"] : Localizer["No"])</div>
+                        </div>
+                    </div>
+                </div>
+                @* FEAT-CATALOG-BASELINE-BADGE — baseline (entitlement-free) indicator. *@
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-shield-quarter"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Baseline"]</div>
+                            <div class="backbone-preview-value mt-1">
+                                @if (Model.IsBaseline)
+                                {
+                                    <span class="badge bg-label-info" title="@Localizer["BaselineHint"]">@Localizer["Baseline"]</span>
+                                }
+                                else
+                                {
+                                    @Localizer["No"]
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>

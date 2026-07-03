@@ -10,4 +10,10 @@ public interface IModulePageActionDescriptorRepository
     Task UpdateAsync(ModulePageActionDescriptor descriptor, CancellationToken ct = default);
     Task DeleteAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<ModulePageActionDescriptor>> GetByPageAsync(Guid pageDescriptorId, CancellationToken ct = default);
+
+    /// <summary>
+    /// FEAT-CATALOG-PERM-DELETE-SYNC — count of LIVE actions whose <c>PermissionKey</c> equals the key (used to
+    /// decide whether a permission is still referenced before requesting its removal from AuthService).
+    /// </summary>
+    Task<long> CountByPermissionKeyAsync(string permissionKey, CancellationToken ct = default);
 }

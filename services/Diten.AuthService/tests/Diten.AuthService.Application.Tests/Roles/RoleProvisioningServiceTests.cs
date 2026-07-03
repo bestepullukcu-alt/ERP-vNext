@@ -148,6 +148,8 @@ public sealed class RoleProvisioningServiceTests
 
         public Task<Permission?> GetByIdAsync(Guid id, CancellationToken ct) => throw new NotSupportedException();
         public Task<Permission?> GetByKeyAsync(string key, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Permission?> GetByKeyIncludingDeletedAsync(string key, CancellationToken ct) => throw new NotSupportedException();
+        public Task ReactivateAsync(Guid id, string displayName, string? description, CancellationToken ct) => throw new NotSupportedException();
         public Task<IEnumerable<Permission>> GetByModuleAsync(string module, CancellationToken ct) => throw new NotSupportedException();
         public Task<Permission> CreateAsync(Permission permission, CancellationToken ct) => throw new NotSupportedException();
         public Task UpdateAsync(Permission permission, CancellationToken ct) => throw new NotSupportedException();
@@ -180,5 +182,6 @@ public sealed class RoleProvisioningServiceTests
         public Task RevokeAsync(Guid roleId, Guid permissionId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task<IReadOnlyList<RolePermission>> GetByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task RemoveByIdAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<long> RemoveByPermissionIdAsync(Guid permissionId, CancellationToken ct) => Task.FromResult(0L);
     }
 }

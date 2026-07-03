@@ -23,6 +23,7 @@ public sealed class GoldenCompactManifestProvider : IModuleManifestProvider
             ModuleVersion: "1.0.0",
             IsTenantAssignable: true,
             SortOrder: 110,
+            Icon: "bx-grid-alt", // FIX-MODULE-ICON — default sidebar icon (SOFT; operator can override in catalog).
             Pages:
             [
                 // Records list — the navigable entry. Export + Delete run here; Add-New/Edit/Details navigate.

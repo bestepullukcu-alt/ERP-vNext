@@ -36,7 +36,7 @@
     <!-- Core CSS -->
     <link rel="stylesheet" href="~/assets/vendor/css/core.css" class="template-customizer-core-css" />
     <link rel="stylesheet" href="~/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="~/assets/css/demo.css" />
+    <link rel="stylesheet" href="~/assets/css/demo.css" asp-append-version="true" />
 
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
@@ -47,7 +47,7 @@
 
     <!-- Helpers -->
     <script src="~/assets/vendor/js/helpers.js"></script>
-    <script src="~/assets/js/config.js"></script>
+    <script src="~/assets/js/config.js" asp-append-version="true"></script>
 
     <script>
         // Dev (localhost): the gateway is reachable directly on :5000, so call it. Deployment (real host):
@@ -58,6 +58,9 @@
             : "";
         window.AuthMode = "@authMode";
         window.PostLoginDefault = "@defaultRedirect";
+        // FIX-LOGIN-TENANT-FALLBACK — Development only: DefaultTenant id so a plain /account/login can sign in.
+        // Empty string in Production (explicit tenant still required).
+        window.DevDefaultTenantId = "@(ViewBag.DevDefaultTenantId)";
         window.L10n = {
             LoginErrorTitle: "@SharedLocalizer["Login.ErrorTitle"]",
             LoginErrorRequired: "@SharedLocalizer["Login.ErrorRequired"]",
@@ -158,9 +161,9 @@
     <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
 
     <!-- Main JS -->
-    <script src="~/assets/js/main.js"></script>
+    <script src="~/assets/js/main.js" asp-append-version="true"></script>
 
     <!-- Page JS -->
-    <script src="~/assets/js/Account/login.js"></script>
+    <script src="~/assets/js/Account/login.js" asp-append-version="true"></script>
 </body>
 </html>

@@ -1,7 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Diten.Web.Services.Auth;
 using Diten.Web.Services.Branding;
 
@@ -10,18 +12,26 @@ namespace Diten.Web.Controllers;
 [AllowAnonymous]
 public class AccountController : Controller
 {
+    // FIX-LOGIN-TENANT-FALLBACK — the seeded DefaultTenant. ONLY used as a fallback in Development so a developer
+    // can sign in via a plain /account/login (no invite link). Production NEVER falls back — an explicit tenant
+    // is still required.
+    private static readonly Guid DevDefaultTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
     private readonly IAuthGateway _authGateway;
     private readonly IAuthCookieService _authCookieService;
     private readonly IBrandingGateway _brandingGateway;
+    private readonly IWebHostEnvironment _environment;
 
     public AccountController(
         IAuthGateway authGateway,
         IAuthCookieService authCookieService,
-        IBrandingGateway brandingGateway)
+        IBrandingGateway brandingGateway,
+        IWebHostEnvironment environment)
     {
         _authGateway = authGateway;
         _authCookieService = authCookieService;
         _brandingGateway = brandingGateway;
+        _environment = environment;
     }
 
     // FIX-LOGIN-BRIDGE-RESILIENCE — a transport failure (auth service / gateway unreachable) surfaces from the
@@ -47,9 +57,19 @@ public class AccountController : Controller
         ViewBag.PostLoginDefault = "/WorkCenter";
         ViewBag.ReturnUrl = returnUrl;
 
-        // Pre-auth theming: when a tenant login link carries ?tenantId=, fetch that tenant's branding
-        // so the login screen shows its logo/favicon. Best-effort — any miss leaves the platform default.
-        await ApplyTenantBrandingAsync(tenantId, ct);
+        // FIX-LOGIN-TENANT-FALLBACK — in Development only, expose the DefaultTenant id to the page so a plain
+        // /account/login (no ?tenantId=) can still sign in. Stays null in Production (explicit tenant required).
+        if (_environment.IsDevelopment())
+        {
+            ViewBag.DevDefaultTenantId = DevDefaultTenantId;
+        }
+
+        // Pre-auth theming: when a tenant login link carries ?tenantId=, fetch that tenant's branding so the login
+        // screen shows its logo/favicon. In Development a missing tenantId falls back to the DefaultTenant's branding
+        // so the dev login screen is not blank. Best-effort — any miss leaves the platform default.
+        var brandingTenantId = tenantId
+            ?? (_environment.IsDevelopment() ? DevDefaultTenantId : (Guid?)null);
+        await ApplyTenantBrandingAsync(brandingTenantId, ct);
 
         return View();
     }
@@ -75,12 +95,20 @@ public class AccountController : Controller
     [HttpPost("/account/login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
-        if (!ModelState.IsValid || request.TenantId == Guid.Empty)
+        // FIX-LOGIN-TENANT-FALLBACK — defensive: in Development a missing tenant resolves to the DefaultTenant so a
+        // plain /account/login works. Production keeps requiring an explicit tenant.
+        var effectiveTenantId = request.TenantId;
+        if (effectiveTenantId == Guid.Empty && _environment.IsDevelopment())
+        {
+            effectiveTenantId = DevDefaultTenantId;
+        }
+
+        if (!ModelState.IsValid || effectiveTenantId == Guid.Empty)
         {
             return BadRequest(new { detail = "Tenant login requires a valid tenant identifier." });
         }
 
-        var result = await _authGateway.LoginTenantAsync(request.Email, request.Password, request.TenantId, request.RememberMe, ct);
+        var result = await _authGateway.LoginTenantAsync(request.Email, request.Password, effectiveTenantId, request.RememberMe, ct);
         if (result.RequiresMfa && !string.IsNullOrWhiteSpace(result.ChallengeId))
         {
             return Ok(new LoginBridgeResponse(
@@ -100,9 +128,11 @@ public class AccountController : Controller
 
         _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
 
+        // FIX-TENANT-MUSTCHANGEPW — a temp-password tenant user must change it before anything else (mirrors platform).
         return Ok(new LoginBridgeResponse(
-            ResolveReturnUrl(request.ReturnUrl, "/WorkCenter"),
-            result.User));
+            result.RequiresPasswordChange ? "/account/change-password" : ResolveReturnUrl(request.ReturnUrl, "/WorkCenter"),
+            result.User,
+            RequiresPasswordChange: result.RequiresPasswordChange));
     }
 
     [HttpPost("/account/login/mfa")]
@@ -295,6 +325,41 @@ public class AccountController : Controller
         _authCookieService.ClearTokens(Response);
         _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
         return Ok(new { success = true, redirectUrl = "/Platform/Tenants" });
+    }
+
+    // FIX-TENANT-MUSTCHANGEPW — tenant forced first-login change (mirror of /platform/change-password). Reuses the
+    // shared ResetPassword view in forced-change mode, pointed at the tenant endpoints.
+    [HttpGet("/account/change-password")]
+    public IActionResult ChangePassword()
+    {
+        ViewBag.AuthMode = "tenant";
+        ViewBag.Email = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)?.Value ?? string.Empty;
+        ViewBag.Token = string.Empty;
+        ViewBag.IsForcedChange = true;
+        ViewBag.SetPasswordUrl = "/account/change-password";
+        ViewBag.BackToLoginUrl = "/account/login";
+        return View("ResetPassword");
+    }
+
+    [HttpPost("/account/change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ForcedChangePasswordRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword) ||
+            string.IsNullOrWhiteSpace(request.NewPassword) ||
+            !string.Equals(request.NewPassword, request.ConfirmPassword, StringComparison.Ordinal))
+        {
+            return BadRequest(new { detail = "Password change request is invalid." });
+        }
+
+        var result = await _authGateway.ChangeTenantPasswordAsync(request.CurrentPassword, request.NewPassword, request.RememberMe, ct);
+        if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
+        {
+            return AuthFailureResult(result, "Password change failed.");
+        }
+
+        _authCookieService.ClearTokens(Response);
+        _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
+        return Ok(new { success = true, redirectUrl = "/WorkCenter" });
     }
 
     [HttpPost("/account/refresh")]

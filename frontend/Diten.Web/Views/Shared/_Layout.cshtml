@@ -73,7 +73,7 @@
     <link rel="stylesheet" href="~/assets/vendor/libs/pickr/pickr-themes.css" />
 
     <link rel="stylesheet" href="~/assets/vendor/css/core.css" />
-    <link rel="stylesheet" href="~/assets/css/demo.css" />
+    <link rel="stylesheet" href="~/assets/css/demo.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
     <link rel="stylesheet" href="~/assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css" />
     <link rel="stylesheet" href="~/assets/vendor/libs/jquery-timepicker/jquery-timepicker.css" />
@@ -153,7 +153,7 @@
     </script>
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <script src="~/assets/vendor/js/template-customizer.js"></script>
-    <script src="~/assets/js/config.js"></script>
+    <script src="~/assets/js/config.js" asp-append-version="true"></script>
 
 
     <!-- Global Config -->
@@ -762,9 +762,9 @@
     <script src="~/assets/vendor/libs/@@form-validation/bootstrap5.js"></script>
     <script src="~/assets/vendor/libs/@@form-validation/auto-focus.js"></script>
     <script src="~/assets/vendor/libs/cleave-zen/cleave-zen.js"></script>
-    <script src="~/assets/js/forms-selects.js"></script>
-    <script src="~/assets/js/forms-tagify.js"></script>
-    <script src="~/assets/js/forms-typeahead.js"></script>
+    <script src="~/assets/js/forms-selects.js" asp-append-version="true"></script>
+    <script src="~/assets/js/forms-tagify.js" asp-append-version="true"></script>
+    <script src="~/assets/js/forms-typeahead.js" asp-append-version="true"></script>
     <script src="~/assets/vendor/libs/bloodhound/bloodhound.js"></script>
     <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
     <script src="~/assets/js/pages/enterprise-strategy/esbp-horizon-dates.js" asp-append-version="true"></script>
@@ -817,11 +817,11 @@
     </script>
     <!-- Main JS -->
 
-    <script src="~/assets/js/main.js"></script>
+    <script src="~/assets/js/main.js" asp-append-version="true"></script>
 
     <!-- Page JS -->
-    <script src="~/assets/js/dashboards-analytics.js"></script>
-    <script src="~/assets/js/ui-toasts.js"></script>
+    <script src="~/assets/js/dashboards-analytics.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ui-toasts.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 

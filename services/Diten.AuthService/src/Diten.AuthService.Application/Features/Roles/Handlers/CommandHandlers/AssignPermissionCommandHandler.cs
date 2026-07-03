@@ -13,19 +13,22 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
+    private readonly IRbacAuditRecorder _rbacAudit;
 
     public AssignPermissionCommandHandler(
         IRoleRepository roleRepository,
         IPermissionRepository permissionRepository,
         IRolePermissionRepository rolePermissionRepository,
         IRoleAssignmentVersionService versionService,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IRbacAuditRecorder rbacAudit)
     {
         _roleRepository = roleRepository;
         _permissionRepository = permissionRepository;
         _rolePermissionRepository = rolePermissionRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
+        _rbacAudit = rbacAudit;
     }
 
     public async Task<Response<NoContent>> Handle(AssignPermissionCommand request, CancellationToken ct)
@@ -40,6 +43,12 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
 
         // FU13 — bump the tenant role-assignment version so every holder's cached snapshot is invalidated at once.
         await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
+
+        // FEAT-AUDIT-RBAC — a permission was granted to a role (permissionKey resolved best-effort for readability).
+        var permission = await _permissionRepository.GetByIdAsync(request.PermissionId, ct);
+        await _rbacAudit.RecordAsync("role_permission_granted", _tenantContext.TenantId,
+            new { roleId = request.RoleId, roleName = role.Name, permissionId = request.PermissionId, permissionKey = permission?.Key }, ct);
+
         return Response<NoContent>.Success(204);
     }
 }

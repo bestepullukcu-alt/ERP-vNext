@@ -204,6 +204,20 @@ const ModuleCatalogForm = (function () {
                 inputModuleCode.addEventListener('blur', handleModuleCodeInput);
             }
 
+            // FIX-MODULE-ICON — live boxicons preview: mirror the typed class onto the input-group prefix <i>.
+            const iconInput = document.getElementById('moduleIconInput');
+            const iconPreview = document.getElementById('moduleIconPreview');
+            if (iconInput && iconPreview) {
+                const syncIconPreview = () => {
+                    const value = (iconInput.value || '').trim();
+                    // Keep only a valid boxicons class; fall back to bx-box while empty/invalid so the badge never breaks.
+                    const cls = /^bxs?-[a-z0-9-]+$/.test(value) ? value : 'bx-box';
+                    iconPreview.className = 'bx ' + cls;
+                };
+                iconInput.addEventListener('input', syncIconPreview);
+                syncIconPreview();
+            }
+
             // Special handling for Select2
             $('.select2').on('change', function (e) {
                 const el = e.target;

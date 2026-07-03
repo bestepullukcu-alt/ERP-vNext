@@ -94,6 +94,20 @@ Tests must assert BOTH directions, else missing pages/actions slip through silen
 Module catalog status lifecycle (promotion-only): `Draft→Preview→Beta→Active→Inactive⇄Active`, `Active→Deprecated`,
 plus forward-jumps (`Draft→Beta/Active`, `Preview→Active`). No demotion. Self-registered create lands `Active`.
 
+## 7. Ctrl+K search (data-driven, automatic) — FEAT-CTRLK-DYNAMIC-SEARCH
+- A module's **nav-visible self-registered page** (`IsNavigationVisible: true`) is **automatically included in the
+  tenant Ctrl+K global search** — NO separate work, NO static-JSON edit. The tenant shell's search is fed live
+  from the tenant's data-driven navigation (`/TenantSearch/data` → `GET /api/platform/navigation/menu`), the same
+  entitlement- + permission-filtered menu the sidebar renders. So a user only ever searches pages they can reach.
+- Therefore: give every nav-visible page a **meaningful `DisplayName`** and a **real `RoutePath`** — those become
+  the search result label and target. The module `DisplayName` is the search section header; the module `Icon`
+  (see §catalog Icon) is the result icon. `ModuleCode`, module/domain names and page name are folded into search
+  keywords automatically (so "roles", "access governance" and "administration" all surface the Roles page).
+- Pages with `IsNavigationVisible: false` (UI-only Designer/Versions/detail routes) are intentionally NOT searched.
+- (Platform-admin shell still uses the curated `platform-search.{culture}.json`; this data-driven feed is tenant-only.)
+- (Future/optional) a manifest page MAY declare explicit search synonyms via a `SearchKeywords` field when it is
+  added; until then keywords are derived from the names above.
+
 ## Ready-for-dev checklist (manifest)
 - [ ] ModuleManifestProvider exists, ModuleCode = clean slug.
 - [ ] Every frontend view-route → a page (incl. UI-only Designer/Versions/etc.).
@@ -101,3 +115,4 @@ plus forward-jumps (`Draft→Beta/Active`, `Preview→Active`). No demotion. Sel
 - [ ] Wired (in-process for Platform, HTTP for other services).
 - [ ] Completeness tests (both directions) green.
 - [ ] Restart → module + pages + actions appear in catalog with no manual add; re-restart idempotent (no dup).
+- [ ] Nav-visible pages have meaningful DisplayName + RoutePath → auto-searchable in tenant Ctrl+K (§7); no JSON edit.

@@ -1,5 +1,7 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Domain.Entities;
+using Diten.Platform.Domain.Enums;
 using MediatR;
 
 namespace Diten.Platform.Application.Features.Tenants.Commands;
@@ -33,4 +35,10 @@ public sealed record RegisterTenantCommand(
     string? DefaultCurrency = null,
 
     // Initial Admin (invitation-based onboarding placeholder)
-    InitialAdminInfo? InitialAdmin = null) : IRequest<Response<Guid>>;
+    InitialAdminInfo? InitialAdmin = null) : IRequest<Response<Guid>>, IAuditableCommand, IAuditMetadataProvider
+{
+    public AuditRequestMetadata GetAuditMetadata() => new(
+        Category: AuditCategory.TenantAdministration, Operation: AuditOperation.Create, EntityType: "Tenant",
+        IsPlatformGlobal: true, SourceModule: "tenant-registry",
+        Metadata: new Dictionary<string, object?> { ["name"] = Name, ["slug"] = Slug, ["domain"] = Domain });
+}

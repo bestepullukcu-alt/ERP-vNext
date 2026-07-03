@@ -17,7 +17,9 @@ public sealed record ModuleCatalogItemDto(
     int SortOrder,
     string Origin,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    string? Icon = null, // FIX-MODULE-ICON — module sidebar icon (boxicons class), operator-editable SOFT field.
+    bool IsBaseline = false); // FEAT-CATALOG-BASELINE-BADGE — entitlement-free module (HARD/code-owned; read-only).
 
 public sealed record ModuleCatalogListItemDto(
     Guid Id,
@@ -33,7 +35,8 @@ public sealed record ModuleCatalogListItemDto(
     int SortOrder,
     string Origin,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    bool IsBaseline = false); // FEAT-CATALOG-BASELINE-BADGE — entitlement-free module (HARD/code-owned; read-only).
 
 public sealed record CreateModuleCatalogItemRequest(
     string ModuleCode,
@@ -46,7 +49,8 @@ public sealed record CreateModuleCatalogItemRequest(
     string ModuleVersion,
     bool IsCoreModule,
     bool IsTenantAssignable,
-    int? SortOrder);
+    int? SortOrder,
+    string? Icon = null); // FIX-MODULE-ICON — optional boxicons class.
 
 public sealed record UpdateModuleCatalogItemRequest(
     string ModuleCode,
@@ -59,7 +63,8 @@ public sealed record UpdateModuleCatalogItemRequest(
     string ModuleVersion,
     bool IsCoreModule,
     bool IsTenantAssignable,
-    int? SortOrder);
+    int? SortOrder,
+    string? Icon = null); // FIX-MODULE-ICON — optional boxicons class.
 
 public sealed record ModuleCatalogFilterRequest(
     string? Search,
@@ -77,12 +82,12 @@ public static class ModuleCatalogMapper
     public static ModuleCatalogItemDto ToDto(Diten.Platform.Domain.Entities.ModuleCatalogItem item) =>
         new(item.Id, item.ModuleCode, item.ModuleName, item.DisplayName, item.Description, item.Domain, item.Service,
             item.Status.ToString(), item.ModuleVersion, item.IsCoreModule, item.IsTenantAssignable,
-            item.SortOrder, item.Origin.ToString(), item.CreatedAt, item.UpdatedAt);
+            item.SortOrder, item.Origin.ToString(), item.CreatedAt, item.UpdatedAt, item.Icon, item.IsBaseline);
 
     public static ModuleCatalogListItemDto ToListDto(Diten.Platform.Domain.Entities.ModuleCatalogItem item) =>
         new(item.Id, item.ModuleCode, item.ModuleName, item.DisplayName, item.Domain, item.Service,
             item.Status.ToString(), item.ModuleVersion, item.IsCoreModule, item.IsTenantAssignable, item.SortOrder,
-            item.Origin.ToString(), item.CreatedAt, item.UpdatedAt);
+            item.Origin.ToString(), item.CreatedAt, item.UpdatedAt, item.IsBaseline);
 
     public static PagedResult<ModuleCatalogListItemDto> ToPagedResult(
         IReadOnlyList<Diten.Platform.Domain.Entities.ModuleCatalogItem> items,

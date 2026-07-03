@@ -9,6 +9,14 @@ namespace Diten.Platform.Application.Contracts;
 public interface ICatalogPermissionSyncService
 {
     Task<CatalogPermissionSyncStatus> SyncPermissionAsync(string? permissionKey, string? displayName, CancellationToken ct);
+
+    /// <summary>
+    /// FEAT-CATALOG-PERM-DELETE-SYNC — Phase 1.5, the counterpart of <see cref="SyncPermissionAsync"/>: requests
+    /// AuthService to remove a catalog-sourced permission (called only when the LAST catalog descriptor referencing
+    /// it is being deleted). Same best-effort contract — never throws; a failure is logged and the catalog delete is
+    /// unaffected. AuthService protects seeded/system permissions (they return 409 → <see cref="CatalogPermissionSyncStatus.Failed"/>).
+    /// </summary>
+    Task<CatalogPermissionSyncStatus> RemovePermissionAsync(string? permissionKey, CancellationToken ct);
 }
 
 public enum CatalogPermissionSyncStatus
@@ -23,5 +31,11 @@ public enum CatalogPermissionSyncStatus
     Synced,
 
     /// <summary>AuthService was unreachable or rejected the upsert; logged, save not blocked.</summary>
-    Failed
+    Failed,
+
+    /// <summary>AuthService removed the permission (204/404 — idempotent).</summary>
+    Removed,
+
+    /// <summary>Removal not attempted — another live catalog descriptor still references this permission key.</summary>
+    SkippedStillReferenced
 }

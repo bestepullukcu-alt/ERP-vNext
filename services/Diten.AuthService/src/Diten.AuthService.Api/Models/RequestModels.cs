@@ -9,6 +9,7 @@ public sealed record RegisterRequest(string Email, string Password, string First
 public sealed record RefreshTokenRequest(string AccessToken, string RefreshToken);
 public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 public sealed record PlatformForcedChangePasswordRequest(string CurrentPassword, string NewPassword, bool RememberMe = false);
+public sealed record TenantForcedChangePasswordRequest(string CurrentPassword, string NewPassword, bool RememberMe = false);
 public sealed record PlatformForgotPasswordRequest(string Email);
 public sealed record PlatformResetPasswordRequest(string Email, string Token, string NewPassword);
 public sealed record PlatformAdminProvisioningRequest(

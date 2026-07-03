@@ -23,6 +23,8 @@ public sealed class GetTenantNavigationMenuQueryHandler
     private readonly ITenantModuleAccessService _accessService;
     private readonly IModulePageDescriptorRepository _pageRepository;
     private readonly IModuleDomainRepository _domainRepository;
+    private readonly ITenantNavPreferenceRepository _navPreferenceRepository;
+    private readonly ITenantNavDomainPreferenceRepository _navDomainPreferenceRepository;
     private readonly ITenantContext _tenantContext;
 
     public GetTenantNavigationMenuQueryHandler(
@@ -30,12 +32,16 @@ public sealed class GetTenantNavigationMenuQueryHandler
         ITenantModuleAccessService accessService,
         IModulePageDescriptorRepository pageRepository,
         IModuleDomainRepository domainRepository,
+        ITenantNavPreferenceRepository navPreferenceRepository,
+        ITenantNavDomainPreferenceRepository navDomainPreferenceRepository,
         ITenantContext tenantContext)
     {
         _catalogContract = catalogContract;
         _accessService = accessService;
         _pageRepository = pageRepository;
         _domainRepository = domainRepository;
+        _navPreferenceRepository = navPreferenceRepository;
+        _navDomainPreferenceRepository = navDomainPreferenceRepository;
         _tenantContext = tenantContext;
     }
 
@@ -101,12 +107,139 @@ public sealed class GetTenantNavigationMenuQueryHandler
                         ? dn
                         : (string.IsNullOrWhiteSpace(domainCode) ? "Modules" : domainCode);
 
-                    groups.Add(new NavigationModuleGroupDto(module.ModuleCode, displayName, domainCode, domainDisplay, items));
+                    // FIX-MODULE-ICON — module sidebar icon from the catalog; "bx-box" fallback when unset (regression-safe).
+                    var icon = string.IsNullOrWhiteSpace(module.Icon) ? "bx-box" : module.Icon!.Trim();
+
+                    // FIX-CTRLK-GROUPING+CREATE — expose a NAVIGABLE create route (a compact "Add New" page: route ends
+                    // "/Create", no {id}). Non-nav-visible, so it isn't in Items; slim/offcanvas modules have none → null.
+                    var createPage = descriptors.FirstOrDefault(d =>
+                        d.Status == ModulePageStatus.Active
+                        && !string.IsNullOrWhiteSpace(d.RoutePath)
+                        && !d.RoutePath.Contains('{')
+                        && d.RoutePath.EndsWith("/Create", StringComparison.OrdinalIgnoreCase));
+
+                    groups.Add(new NavigationModuleGroupDto(
+                        module.ModuleCode, displayName, domainCode, domainDisplay, items,
+                        Icon: icon,
+                        CreateRoute: createPage?.RoutePath,
+                        CreatePermission: createPage?.RequiredPermission));
                 }
             }
         }
 
-        return Response<IReadOnlyList<NavigationModuleGroupDto>>.Success(groups);
+        // FEAT-TENANT-NAV-PREFS — apply the tenant's per-module preferences over the catalog-ordered groups:
+        // hide, rename, reorder. A module with NO preference row keeps the default behavior (catalog order, real
+        // display name, visible), so a tenant with no preferences sees exactly the unchanged menu.
+        var preferences = await _navPreferenceRepository.GetByTenantAsync(request.TenantId, ct);
+        var moduleGroups = ApplyPreferences(groups, preferences);
+
+        // FEAT-NAVPREFS-DOMAINS — stamp each group's effective DomainSortOrder (domain pref override else implicit
+        // catalog rank) and apply any domain rename. The frontend orders domain groups by DomainSortOrder.
+        var domainPreferences = await _navDomainPreferenceRepository.GetByTenantAsync(request.TenantId, ct);
+        var finalGroups = ApplyDomainPreferences(moduleGroups, domainPreferences);
+
+        return Response<IReadOnlyList<NavigationModuleGroupDto>>.Success(finalGroups);
+    }
+
+    private static IReadOnlyList<NavigationModuleGroupDto> ApplyDomainPreferences(
+        IReadOnlyList<NavigationModuleGroupDto> groups,
+        IReadOnlyList<Domain.Entities.TenantNavDomainPreference> domainPreferences)
+    {
+        if (groups.Count == 0)
+        {
+            return groups;
+        }
+
+        // Implicit rank = first-appearance order of each domain key in the (module-ordered) groups. All modules of
+        // a domain share the same rank, so domains stay coherent when the frontend orders by DomainSortOrder.
+        var implicitRank = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var g in groups)
+        {
+            var key = NormalizeDomainKey(g.Domain);
+            if (!implicitRank.ContainsKey(key))
+            {
+                implicitRank[key] = implicitRank.Count;
+            }
+        }
+
+        var prefByKey = new Dictionary<string, Domain.Entities.TenantNavDomainPreference>(StringComparer.Ordinal);
+        foreach (var p in domainPreferences)
+        {
+            var key = NormalizeDomainKey(p.DomainCode);
+            if (key.Length > 0)
+            {
+                prefByKey[key] = p;
+            }
+        }
+
+        return groups.Select(g =>
+        {
+            var key = NormalizeDomainKey(g.Domain);
+            var sort = implicitRank.TryGetValue(key, out var rank) ? rank : 0;
+            var display = g.DomainDisplayName;
+
+            if (prefByKey.TryGetValue(key, out var pref))
+            {
+                if (pref.SortOrder.HasValue)
+                {
+                    sort = pref.SortOrder.Value;
+                }
+                if (!string.IsNullOrWhiteSpace(pref.DisplayNameOverride))
+                {
+                    display = pref.DisplayNameOverride.Trim();
+                }
+            }
+
+            return g with { DomainSortOrder = sort, DomainDisplayName = display };
+        }).ToList();
+    }
+
+    private static IReadOnlyList<NavigationModuleGroupDto> ApplyPreferences(
+        IReadOnlyList<NavigationModuleGroupDto> groups,
+        IReadOnlyList<Domain.Entities.TenantNavPreference> preferences)
+    {
+        if (preferences.Count == 0)
+        {
+            return groups; // no preferences → unchanged (regression-safe fast path)
+        }
+
+        // Last-writer-wins on duplicate codes (the unique index normally prevents duplicates).
+        var prefByCode = new Dictionary<string, Domain.Entities.TenantNavPreference>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pref in preferences)
+        {
+            if (!string.IsNullOrWhiteSpace(pref.ModuleCode))
+            {
+                prefByCode[pref.ModuleCode] = pref;
+            }
+        }
+
+        // catalogRank = position in the catalog-ordered groups list. The effective sort key is the preference's
+        // SortOrder override when set, else the catalog rank; ties break by catalog rank for stability.
+        var ordered = groups
+            .Select((group, catalogRank) => (group, catalogRank))
+            .Where(x => !(prefByCode.TryGetValue(x.group.ModuleCode, out var p) && p.IsHidden))
+            .Select(x =>
+            {
+                var group = x.group;
+                var sortKey = x.catalogRank;
+                if (prefByCode.TryGetValue(group.ModuleCode, out var pref))
+                {
+                    if (!string.IsNullOrWhiteSpace(pref.DisplayNameOverride))
+                    {
+                        group = group with { ModuleDisplayName = pref.DisplayNameOverride.Trim() };
+                    }
+
+                    sortKey = pref.SortOrder ?? x.catalogRank;
+                }
+
+                return (group, sortKey, x.catalogRank);
+            })
+            .OrderBy(x => x.sortKey)
+            .ThenBy(x => x.catalogRank)
+            .Select(x => x.group)
+            .ToList();
+
+        return ordered;
     }
 
     // Format-tolerant domain key: drop every non-alphanumeric char (dash/space/dot/underscore) and uppercase,

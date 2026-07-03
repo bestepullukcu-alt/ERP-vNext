@@ -278,7 +278,29 @@ public sealed class RevokePermissionCommandHandlerTests
             userRoles,
             refreshTokens,
             version ?? new FakeRoleAssignmentVersionService(),
-            tenantContext);
+            tenantContext,
+            new FakePermissionRepository(),
+            new NoOpRbacAuditRecorder());
+    }
+
+    // FEAT-AUDIT-RBAC — permission lookup is best-effort (for the audit key); audit itself asserted in
+    // RbacAuditRecorderTests. Minimal no-op fakes keep this handler's tests focused on the revoke behaviour.
+    private sealed class FakePermissionRepository : IPermissionRepository
+    {
+        public Task<Permission?> GetByIdAsync(Guid id, CancellationToken ct) => Task.FromResult<Permission?>(null);
+        public Task<Permission?> GetByKeyAsync(string key, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Permission?> GetByKeyIncludingDeletedAsync(string key, CancellationToken ct) => throw new NotSupportedException();
+        public Task ReactivateAsync(Guid id, string displayName, string? description, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IEnumerable<Permission>> GetAllAsync(CancellationToken ct) => throw new NotSupportedException();
+        public Task<IEnumerable<Permission>> GetByModuleAsync(string module, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Permission> CreateAsync(Permission permission, CancellationToken ct) => throw new NotSupportedException();
+        public Task UpdateAsync(Permission permission, CancellationToken ct) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, CancellationToken ct) => throw new NotSupportedException();
+    }
+
+    private sealed class NoOpRbacAuditRecorder : IRbacAuditRecorder
+    {
+        public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default) => Task.CompletedTask;
     }
 
     // ── Minimal inline fakes (codebase convention: hand-written, no Moq) ──
@@ -325,6 +347,7 @@ public sealed class RevokePermissionCommandHandlerTests
         public Task<IEnumerable<string>> GetPermissionsByRolesAsync(List<Guid> roleIds, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task AssignAsync(RolePermission rolePermission, CancellationToken ct) => throw new NotSupportedException();
         public Task RemoveByIdAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<long> RemoveByPermissionIdAsync(Guid permissionId, CancellationToken ct) => Task.FromResult(0L);
     }
 
     private sealed class FakeUserRoleRepository(List<string>? callLog = null) : IUserRoleRepository

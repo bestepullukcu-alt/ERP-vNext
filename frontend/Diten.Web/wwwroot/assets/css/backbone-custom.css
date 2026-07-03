@@ -81,16 +81,53 @@ html[data-shell="tenant"].layout-menu-collapsed:not(.layout-menu-hover) .tenant-
 }
 
 html[data-shell="tenant"] .tenant-brand-mark img {
-    max-height: 1.75rem;
+    max-height: 2rem;
     width: auto;
     object-fit: contain;
 }
 
 html[data-shell="tenant"] .tenant-brand-full-logo {
-    max-height: 2.5rem;
-    max-width: 12rem;
+    max-height: 4.5rem;
+    max-width: 12.5rem;
     width: auto;
     object-fit: contain;
+}
+
+/* FIX-SHELL-BRANDING-6 — tenant brand header'ı platformla birebir aynı yükseklikte (site.css .platform-admin-brand
+   88px). Görsel boyutları da platform değerleriyle eşlenir; sadece boyut, swap'ler aynen çalışır.
+   FIX-TENANT-SIDEBAR-SCROLL-OVERLAP — brand was transparent + position:relative with no z-index, so the
+   PerfectScrollbar-scrolled .menu-inner content (later in DOM, same stacking context) could paint over it once
+   scrolled. Pin it to the top of its scroll container (sticky), give it an opaque menu-themed background, and
+   raise it above .menu-inner-shadow (z-index: 2) so scrolled items pass behind it instead of over it. */
+html[data-shell="tenant"] .app-brand.demo {
+    height: 88px;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background-color: var(--bs-menu-bg);
+}
+
+/* FIX-SHELL-BRANDING-5/-6 — logosuz tenant default = platform brand görselleri (platform boyutlarında).
+   Collapsed/expanded/hover swap'i tenant-brand-mark / tenant-brand-full zaten yönetir; burada boyut + light/dark. */
+html[data-shell="tenant"] .tenant-default-brand-icon {
+    height: 2rem;
+    width: 2rem;
+    object-fit: contain;
+}
+
+html[data-shell="tenant"] .tenant-default-brand-logo {
+    height: 4.5rem;
+    max-width: 12.5rem;
+    width: auto;
+    object-fit: contain;
+}
+
+/* light/dark swap — site.css platform-admin kuralının tenant karşılığı */
+html[data-shell="tenant"][data-bs-theme="dark"] .tenant-default-brand-logo-light,
+html[data-shell="tenant"][data-bs-theme="dark"] .tenant-default-brand-icon-light,
+html[data-shell="tenant"]:not([data-bs-theme="dark"]) .tenant-default-brand-logo-dark,
+html[data-shell="tenant"]:not([data-bs-theme="dark"]) .tenant-default-brand-icon-dark {
+    display: none;
 }
 
 /* Center the brand; the chevron stays right via its ms-auto. */
@@ -3916,6 +3953,122 @@ div.dt-container div.dt-search input {
 .qms-tree .qms-toggle { cursor: pointer; }
 .qms-tree .qms-node { line-height: 1.8; }
 
+/* FEAT-TENANT-NAV-PREFS-S2 / FIX-NAVPREFS-DOMAIN-HANDLE — tenant Menu Settings editor: drag handles.
+   The module-row handle (.tnav-drag-handle) is the REFERENCE. The domain-header handle (.tnav-domain-handle)
+   sits next to a large icon badge + a flex:1 rename input, so without a fixed box it gets flex-shrunk and reads
+   smaller. Pin BOTH to identical rendering — same glyph size, no shrink, centered — so they match pixel-for-pixel. */
+.tnav-drag-handle,
+.tnav-domain-handle {
+  flex: 0 0 auto;
+  font-size: 1.35rem;
+  line-height: 1;
+  align-self: center;
+}
+/* Specificity boost so the domain handle can never be shrunk/re-sized by the header's flex layout. */
+.tnav-group-header .tnav-domain-handle {
+  flex: 0 0 auto;
+  font-size: 1.35rem;
+  line-height: 1;
+  align-self: center;
+}
+.tnav-drag-handle { cursor: grab; }
+.tnav-drag-handle:active { cursor: grabbing; }
+
+/* FEAT-NAVPREFS-REDESIGN — tenant Menu Settings: editor cards, live preview, stat cards. No inline styles. */
+.tnav-sticky { position: sticky; top: 1.25rem; }
+
+/* Editor: collapsible domain cards + rows */
+.tnav-group-header { cursor: pointer; }
+.tnav-group-chevron { transition: transform .2s ease; }
+.tnav-group.tnav-collapsed .tnav-group-chevron { transform: rotate(180deg); }
+.tnav-group.tnav-collapsed .tnav-group-body { display: none; }
+.tnav-row:last-child { border-bottom: 0 !important; }
+.tnav-row-hidden { opacity: .5; }
+.tnav-row-ghost { opacity: .4; background-color: rgba(105, 108, 255, .12); }
+.tnav-row-icon { font-size: 1.05rem; }
+.tnav-eye { font-size: 1.05rem; }
+
+/* Stat cards */
+.tnav-stat-value { font-size: 1.5rem; font-weight: 600; line-height: 1.2; }
+
+/* Live mini-sidebar preview — brand strip and the menu body below it share ONE light background
+   (same tint as the "Menu Name" column head), with dark/muted text for readability. */
+.tnav-preview { background-color: color-mix(in sRGB, var(--bs-paper-bg) 97.5%, #000); border-radius: .5rem; max-height: 26rem; overflow-y: auto; }
+.tnav-preview-brand { display: flex; align-items: center; gap: .5rem; padding: .85rem 1rem; color: var(--bs-heading-color); border-bottom: 1px solid var(--bs-border-color); position: sticky; top: 0; background-color: color-mix(in sRGB, var(--bs-paper-bg) 97.5%, #000); }
+.tnav-preview-brand .bx { font-size: 1.25rem; color: var(--bs-secondary-color); }
+.tnav-preview-brand-text { font-weight: 600; font-size: .9rem; }
+/* FIX-TNAV-PREVIEW-BRAND — tenant logo rendered by the TenantBrand ViewComponent in preview mode. */
+.tnav-preview-brand-logo { max-height: 1.75rem; width: auto; object-fit: contain; }
+.tnav-preview-body { padding: .5rem .5rem .85rem; }
+.tnav-preview-group { margin-top: .5rem; }
+.tnav-preview-group-title { color: var(--bs-secondary-color); text-transform: uppercase; font-size: .68rem; letter-spacing: .04em; padding: .35rem .75rem; }
+.tnav-preview-item { display: flex; align-items: center; gap: .5rem; padding: .4rem .75rem; border-radius: .375rem; color: var(--bs-body-color); }
+.tnav-preview-item .bx { font-size: .9rem; color: var(--bs-secondary-color); }
+.tnav-preview-item-text { font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tnav-preview-item:hover { background-color: rgba(0, 0, 0, .04); }
+.tnav-preview-empty { color: var(--bs-secondary-color); text-align: center; padding: 1.25rem .75rem; font-size: .85rem; }
+
+/* FEAT-NAVPREFS-DOMAINS — two-column layout hardening + domain card header. No inline styles. */
+#tenantNavRoot .row > [class*="col-"] { min-width: 0; }
+.tnav-domain-handle { cursor: grab; }
+.tnav-domain-handle:active { cursor: grabbing; }
+/* Larger hit target for the collapse/expand chevron so it's easy to click. */
+.tnav-group-chevron {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--bs-border-radius);
+  font-size: 1.35rem;
+}
+.tnav-group-chevron:hover { background-color: rgba(0, 0, 0, .04); }
+.tnav-group-header .tnav-domain-name,
+.tnav-group-header .tnav-domain-static { flex: 1 1 auto; min-width: 0; }
+
+/* FEAT-NAVPREFS — column-heading strip (MENÜ ADI / GÖRÜNÜRLÜK): top+bottom borders + light tinted bg, kept INSIDE
+   the card-body content box (no negative margins → no horizontal overflow). */
+.tnav-col-head {
+  padding: .45rem 1rem;
+  border-top: 1px solid rgba(0, 0, 0, .1);
+  border-bottom: 1px solid rgba(0, 0, 0, .1);
+  background-color: rgba(0, 0, 0, .025);
+  letter-spacing: .04em;
+}
+[data-bs-theme="dark"] .tnav-col-head {
+  border-top-color: rgba(255, 255, 255, .12);
+  border-bottom-color: rgba(255, 255, 255, .12);
+  background-color: rgba(255, 255, 255, .04);
+}
+
+/* FEAT-NAVPREFS — domain/module left icons mirror the project's `btn btn-icon btn-label-primary`
+   button look: same box size + radius + icon size. The lavender tint + primary color come from the
+   shared `bg-label-primary` utility on the element, so it matches label buttons exactly — but it is
+   a non-interactive <i>, not a button. */
+.tnav-icon-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  block-size: calc(2.2505001rem + calc(var(--bs-border-width) * 2));
+  inline-size: calc(2.2505001rem + calc(var(--bs-border-width) * 2));
+  border-radius: var(--bs-border-radius);
+  font-size: 1.2890625rem;
+  line-height: 1;
+}
+
+/* FIX-CTRLK-PLATFORM-SUGGESTIONS-LAYOUT — the empty-query Ctrl+K suggestion palette flows a single
+   section's items into two columns (instead of one narrow col-md-6) so a one-section shell (Platform)
+   fills the palette width the same way a multi-section shell (Tenant) already does via its own grid. */
+.suggestion-items-cols {
+  column-count: 2;
+  column-gap: 1rem;
+}
+.suggestion-items-cols .suggestion-item {
+  break-inside: avoid-column;
+}
 /* ── MOD-0029-FU01 Controlled Documents Explorer — single-card 3-panel layout ── */
 .explorer-shell-card { overflow: hidden; }
 .explorer-shell { display: flex; align-items: stretch; min-height: 60vh; }

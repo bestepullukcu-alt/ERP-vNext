@@ -60,6 +60,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         // Services
+        services.AddScoped<Diten.AuthService.Application.Common.Interfaces.ICurrentUserAccessor, Services.CurrentUserAccessor>(); // FEAT-AUDIT-RBAC
         services.AddScoped<PasswordHasher>(); // concrete class registration
         services.AddScoped<IPasswordHasher>(sp => sp.GetRequiredService<PasswordHasher>());
         services.AddScoped<ITokenService, TokenService>();

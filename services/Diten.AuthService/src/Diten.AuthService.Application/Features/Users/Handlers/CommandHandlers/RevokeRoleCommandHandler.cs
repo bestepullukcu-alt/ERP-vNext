@@ -13,6 +13,7 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
+    private readonly IRbacAuditRecorder _rbacAudit;
     private readonly ILogger<RevokeRoleCommandHandler> _logger;
 
     public RevokeRoleCommandHandler(
@@ -21,6 +22,7 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
         IRefreshTokenRepository refreshTokenRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
+        IRbacAuditRecorder rbacAudit,
         ILogger<RevokeRoleCommandHandler> logger)
     {
         _roleRepository = roleRepository;
@@ -28,6 +30,7 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
         _refreshTokenRepository = refreshTokenRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
+        _rbacAudit = rbacAudit;
         _logger = logger;
     }
 
@@ -47,6 +50,10 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
         // carries the now-removed grant. If this revoke throws, the role removal above stands (no rollback) and the
         // command fails; residual exposure is bounded by the access-token TTL (≤15 min). No deny-list / event is added.
         await _refreshTokenRepository.RevokeAllByUserAsync(request.UserId, _tenantContext.TenantId, ct);
+
+        // FEAT-AUDIT-RBAC — a role was removed from a user (roleName best-effort; role may be a stale id).
+        await _rbacAudit.RecordAsync("user_role_removed", _tenantContext.TenantId,
+            new { targetUserId = request.UserId, roleId = request.RoleId, roleName = role?.Name }, ct);
 
         return Response<NoContent>.Success(204);
     }

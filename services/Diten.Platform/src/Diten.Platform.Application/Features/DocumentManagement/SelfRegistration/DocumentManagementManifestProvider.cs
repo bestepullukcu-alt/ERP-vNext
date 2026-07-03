@@ -33,6 +33,7 @@ public sealed class DocumentManagementManifestProvider : IModuleManifestProvider
             ModuleVersion: "1.0.0",
             IsTenantAssignable: true,
             SortOrder: 310,
+            Icon: "bx-file", // FIX-MODULE-ICON — default sidebar icon (SOFT; operator can override in catalog).
             Pages:
             [
                 // ── QMS baselines (governance authoring) ──────────────────────────────────────────────────

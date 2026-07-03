@@ -157,6 +157,10 @@ public static class DependencyInjection
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Organization.SelfRegistration.OrganizationManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.DocumentManagement.SelfRegistration.DocumentManagementManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.ReferenceData.SelfRegistration.ReferenceDataManifestProvider>();
+        // FEAT-BASELINE-MODULES-S1 — Access Governance pilot baseline module (entitlement-free; per-user auth.* gate kept).
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.AccessGovernance.SelfRegistration.AccessGovernanceManifestProvider>();
+        // FEAT-BASELINE-MODULES-S2 — Tenant Settings baseline module (Security Settings / Menu Settings; entitlement-free).
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.TenantSettingsModule.SelfRegistration.TenantSettingsManifestProvider>();
 
         return services;
     }

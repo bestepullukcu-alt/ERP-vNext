@@ -33,6 +33,14 @@ public sealed class UpdateModuleCatalogItemCommandHandler : IRequestHandler<Upda
         var service = await _taxonomyResolver.ResolveServiceCodeAsync(request.Request.Service, ct);
 
         var nextStatus = Enum.Parse<ModuleCatalogStatus>(request.Request.Status, ignoreCase: false);
+
+        // FIX-BASELINE-NO-DEACTIVATE — a baseline module must stay Active (it reaches every tenant automatically);
+        // moving it off Active via edit would break RBAC/settings for ALL tenants. Refused (authoritative).
+        if (item.IsBaseline && nextStatus != ModuleCatalogStatus.Active)
+        {
+            return Response<NoContent>.Fail(ModuleCatalogErrorCodes.BaselineCannotBeDeactivated, 409);
+        }
+
         if (item.Status == ModuleCatalogStatus.Deprecated && !IsDeprecatedMetadataOnlyUpdate(request, item, domain, service))
         {
             return Response<NoContent>.Fail("Deprecated module catalog items are read-only except DisplayName, Description and SortOrder.", 400);
@@ -74,6 +82,9 @@ public sealed class UpdateModuleCatalogItemCommandHandler : IRequestHandler<Upda
         item.IsCoreModule = request.Request.IsCoreModule;
         item.IsTenantAssignable = request.Request.IsTenantAssignable;
         item.SortOrder = request.Request.SortOrder ?? 0;
+        // FIX-MODULE-ICON — SOFT + operator-owned: the admin form is the ONLY place the icon changes (self-registration
+        // seeds it once, never re-writes). Allowed for self-registered modules too (icon is not a HARD field).
+        item.Icon = string.IsNullOrWhiteSpace(request.Request.Icon) ? null : request.Request.Icon.Trim();
 
         await _repository.UpdateAsync(item, ct);
         return Response<NoContent>.Success(204);

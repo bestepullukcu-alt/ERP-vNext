@@ -46,6 +46,18 @@ public sealed class TenantModuleAccessService : ITenantModuleAccessService
     {
         var normalizedCode = NormalizeModuleCode(moduleCode);
         var module = await _moduleRepository.GetByCodeAsync(normalizedCode, ct);
+
+        // FEAT-BASELINE-MODULES — a baseline module is entitlement-free: every tenant automatically has access, so
+        // the tenant-level entitlement check is bypassed here. The per-user permission gate (each page's
+        // RequiredPermission, e.g. auth.*) still applies downstream — this only removes the tenant entitlement wall.
+        if (module?.IsBaseline == true)
+        {
+            var displayName = module.DisplayName ?? module.ModuleName ?? normalizedCode;
+            return new TenantModuleEffectiveAccessDto(
+                tenantId, normalizedCode, displayName, "Baseline",
+                Domain.Enums.TenantModuleEffectiveAccess.Active, true, null, null);
+        }
+
         var physicalRows = await _entitlementRepository.GetByTenantAndModuleAsync(tenantId, normalizedCode, ct);
         var planCodes = await GetPlanModuleCodesAsync(tenantId, ct);
         return TenantModuleEntitlementAccessEvaluator.Evaluate(

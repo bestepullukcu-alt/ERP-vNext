@@ -52,7 +52,8 @@
                     continue;
                 }
 
-                var icon = string.IsNullOrWhiteSpace(node.IconHint) ? "bx-box" : node.IconHint;
+                @* FIX-MODULE-ICON — module sidebar icon from the catalog (bx-box fallback). *@
+                var icon = string.IsNullOrWhiteSpace(module.Icon) ? "bx-box" : module.Icon;
                 <li class="menu-item @(isActive(node.RoutePath) ? "active" : "")">
                     <a href="@node.RoutePath" class="menu-link">
                         <i class="menu-icon tf-icons bx @icon"></i>
@@ -69,9 +70,11 @@
                 }
 
                 var moduleActive = visibleNodes.Any(nodeActive);
+                @* FIX-MODULE-ICON — module sidebar icon from the catalog (bx-box fallback). *@
+                var groupIcon = string.IsNullOrWhiteSpace(module.Icon) ? "bx-box" : module.Icon;
                 <li class="menu-item @(moduleActive ? "open active" : "")">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <i class="menu-icon tf-icons bx bx-box"></i>
+                        <i class="menu-icon tf-icons bx @groupIcon"></i>
                         <div>@module.ModuleDisplayName</div>
                     </a>
                     <ul class="menu-sub">

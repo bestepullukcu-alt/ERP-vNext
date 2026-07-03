@@ -138,6 +138,8 @@ public sealed class GetRolePermissionsQueryHandlerTests
         public Task<IEnumerable<Permission>> GetAllAsync(CancellationToken ct) => Task.FromResult<IEnumerable<Permission>>(catalog);
         public Task<Permission?> GetByIdAsync(Guid id, CancellationToken ct) => throw new NotSupportedException();
         public Task<Permission?> GetByKeyAsync(string key, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Permission?> GetByKeyIncludingDeletedAsync(string key, CancellationToken ct) => throw new NotSupportedException();
+        public Task ReactivateAsync(Guid id, string displayName, string? description, CancellationToken ct) => throw new NotSupportedException();
         public Task<IEnumerable<Permission>> GetByModuleAsync(string module, CancellationToken ct) => throw new NotSupportedException();
         public Task<Permission> CreateAsync(Permission permission, CancellationToken ct) => throw new NotSupportedException();
         public Task UpdateAsync(Permission permission, CancellationToken ct) => throw new NotSupportedException();
@@ -158,6 +160,7 @@ public sealed class GetRolePermissionsQueryHandlerTests
         public Task AssignAsync(RolePermission rolePermission, CancellationToken ct) => throw new NotSupportedException();
         public Task RevokeAsync(Guid roleId, Guid permissionId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task RemoveByIdAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<long> RemoveByPermissionIdAsync(Guid permissionId, CancellationToken ct) => Task.FromResult(0L);
     }
 
     private sealed class TestTenantContext : ITenantContext

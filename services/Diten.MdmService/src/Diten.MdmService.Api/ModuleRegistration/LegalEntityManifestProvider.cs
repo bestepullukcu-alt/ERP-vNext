@@ -28,6 +28,7 @@ public sealed class LegalEntityManifestProvider : IModuleManifestProvider
             ModuleVersion: "1.0.0",
             IsTenantAssignable: true,
             SortOrder: 330,
+            Icon: "bx-buildings", // FIX-MODULE-ICON — default sidebar icon (SOFT; operator can override in catalog).
             Pages:
             [
                 // List — the navigable entry. Add-New / Edit / Quick View / Details are navigation (to the wizard

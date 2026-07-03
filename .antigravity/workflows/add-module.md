@@ -105,6 +105,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      - Tenant/public shell modüllerinde `direct-gateway-profile` kullanılacaksa bu karar module pack veya orchestration report'ta açık yazılır ve `window.API.{service}` kullanılır.
    - **[ZORUNLU]** `colReorder: { columns: ':gt(1):not(:last-child)' }` DataTable config'e eklenmelidir (standart kolon yapısı için varsayılan; bkz. `frontend-js-standard.md §11`). `column-reorder.dt`/`columns-reordered.dt` event'leri dirty-state hesabına bağlanmalıdır.
    - Shell tipine göre `_LayoutPlatformAdmin` veya `_LayoutTenantShell` içine menü linkini ekle ve aktif state için `ViewContext.RouteData` dinamik kontrolü yap.
+   - **Tenant Ctrl+K (data-driven, otomatik):** `shell: tenant` modüllerde ayrı Ctrl+K işi YOK — nav-visible self-registered sayfalar tenant aramasına **otomatik** dahil olur (arama tenant'ın data-driven nav'ından beslenir; bkz. `module-self-registration-standard.md §7`). Yalnız her nav-visible sayfaya anlamlı `DisplayName` + gerçek `RoutePath` ver; statik JSON güncellemesi gerekmez.
    - **Platform Global Search Registry + Localization (Platform/Admin için ZORUNLU):**
      - `shell: platform-admin` veya `/Platform/...` route'u üreten kullanıcıya açık UI modülleri `.antigravity/rules/platform-global-search-registry.md` standardına göre Ctrl+K registry'ye eklenir.
      - Stable list/index route eklenir; kullanıcıya açık stable create route varsa eklenebilir.

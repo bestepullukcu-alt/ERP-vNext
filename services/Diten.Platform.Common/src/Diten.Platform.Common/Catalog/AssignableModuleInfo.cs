@@ -14,4 +14,5 @@ public sealed record AssignableModuleInfo(
     bool IsTenantAssignable,
     int SortOrder,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    string? Icon = null); // FIX-MODULE-ICON — module default sidebar icon (boxicons class); null → nav fallback.

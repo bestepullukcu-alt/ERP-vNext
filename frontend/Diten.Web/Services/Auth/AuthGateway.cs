@@ -65,6 +65,22 @@ public sealed class AuthGateway : IAuthGateway
             ct: ct);
     }
 
+    public Task<AuthBridgeResult> ChangeTenantPasswordAsync(string currentPassword, string newPassword, bool rememberMe = false, CancellationToken ct = default)
+    {
+        // FIX-TENANT-MUSTCHANGEPW — mirror of ChangePlatformPasswordAsync for tenant_user. The AuthService reads the
+        // user + tenant from the validated bearer JWT, so no X-Tenant-Id is sent (tenantId: null).
+        var accessToken = _httpContextAccessor.HttpContext is { } context
+            ? AuthTokenCookies.GetAccessToken(context.Request)
+            : null;
+        return SendAuthRequestAsync(
+            "/api/tenant-auth/change-password/forced",
+            new { currentPassword, newPassword, rememberMe },
+            tenantId: null,
+            includeBearer: true,
+            accessToken: accessToken,
+            ct: ct);
+    }
+
     public async Task<bool> ForgotPlatformPasswordAsync(string email, CancellationToken ct = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/platform-auth/forgot-password")

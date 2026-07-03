@@ -13,7 +13,21 @@ namespace Diten.Platform.Application.Tests.ModuleRegistration;
 public sealed class ModuleManifestReconcilePruneTests
 {
     private static RegisterModuleManifestCommandHandler Handler(FakePages pages, FakeActions actions, FakeCatalog catalog) =>
-        new(catalog, pages, actions, new NoopPermissionSync(), new PassthroughTaxonomyResolver(), NullLogger<RegisterModuleManifestCommandHandler>.Instance);
+        new(catalog, pages, actions, new NoopPermissionSync(), new PassthroughTaxonomyResolver(), new FakeDomains(), NullLogger<RegisterModuleManifestCommandHandler>.Instance);
+
+    // These tests assert page/action prune STATE, not domain auto-registration — a no-op lookup suffices.
+    private sealed class FakeDomains : IModuleDomainRepository
+    {
+        public Task<ModuleDomain> CreateAsync(ModuleDomain item, CancellationToken ct = default) => Task.FromResult(item);
+        public Task<(IReadOnlyList<ModuleDomain> Items, long TotalCount)> QueryAsync(ModuleDomainQuery query, CancellationToken ct = default)
+            => Task.FromResult<(IReadOnlyList<ModuleDomain>, long)>((Array.Empty<ModuleDomain>(), 0));
+        public Task<ModuleDomain?> GetByCodeAsync(string code, CancellationToken ct = default) => Task.FromResult<ModuleDomain?>(null);
+        public Task<ModuleDomain?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task UpdateAsync(ModuleDomain item, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<ModuleDomain>> GetActiveAsync(CancellationToken ct = default) => throw new NotSupportedException();
+    }
 
     // Identity resolver — these tests assert page/action prune STATE, not taxonomy resolution.
     private sealed class PassthroughTaxonomyResolver : Diten.Platform.Application.Features.ModuleCatalog.Services.IModuleTaxonomyResolver
@@ -125,6 +139,7 @@ public sealed class ModuleManifestReconcilePruneTests
         public Task<bool> ExistsByPageCodeAsync(string moduleCode, string pageCode, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<bool> ExistsByRoutePathAsync(string moduleCode, string routePath, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<(IReadOnlyList<ModulePageDescriptor> Items, long TotalCount)> SearchAsync(ModulePageDescriptorQuery query, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<long> CountByRequiredPermissionAsync(string permissionKey, CancellationToken ct = default) => Task.FromResult(0L);
     }
 
     private sealed class FakeActions : IModulePageActionDescriptorRepository
@@ -152,6 +167,7 @@ public sealed class ModuleManifestReconcilePruneTests
 
         public Task<ModulePageActionDescriptor?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<bool> ExistsByActionCodeAsync(Guid pageDescriptorId, string actionCode, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<long> CountByPermissionKeyAsync(string permissionKey, CancellationToken ct = default) => Task.FromResult(0L);
     }
 
     private sealed class FakeCatalog : IModuleCatalogRepository
@@ -181,5 +197,6 @@ public sealed class ModuleManifestReconcilePruneTests
     {
         public Task<CatalogPermissionSyncStatus> SyncPermissionAsync(string? permissionKey, string? displayName, CancellationToken ct)
             => Task.FromResult(CatalogPermissionSyncStatus.Synced);
+        public Task<CatalogPermissionSyncStatus> RemovePermissionAsync(string? permissionKey, CancellationToken ct) => Task.FromResult(CatalogPermissionSyncStatus.SkippedEmpty);
     }
 }

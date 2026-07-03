@@ -177,7 +177,9 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
                 user.IsActive,
                 roles,
                 isPlatformActor ? null : user.TenantId),
-            RequiresPasswordChange: isPlatformActor && user.MustChangePassword
+            // FIX-TENANT-MUSTCHANGEPW — applies to BOTH actor types now: the tenant token (re-issued above) also
+            // carries the pwd_change_required claim, so a refresh must keep surfacing the requirement until cleared.
+            RequiresPasswordChange: user.MustChangePassword
         );
     }
 

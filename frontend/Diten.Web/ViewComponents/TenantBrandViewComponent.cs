@@ -18,10 +18,10 @@ public sealed class TenantBrandViewComponent : ViewComponent
         _logger = logger;
     }
 
-    public async Task<IViewComponentResult> InvokeAsync()
+    public async Task<IViewComponentResult> InvokeAsync(bool preview = false)
     {
         var model = await ResolveAsync(HttpContext.RequestAborted);
-        return View(model);
+        return View(model with { IsPreview = preview });
     }
 
     private async Task<TenantBrandViewModel> ResolveAsync(CancellationToken ct)
@@ -60,6 +60,10 @@ public sealed class TenantBrandViewComponent : ViewComponent
 public sealed record TenantBrandViewModel(string? DisplayName, string? LogoDataUrl, string? FaviconDataUrl)
 {
     public static readonly TenantBrandViewModel Default = new(null, null, null);
+
+    // FIX-TNAV-PREVIEW-BRAND — when true, Default.cshtml renders the compact non-interactive preview
+    // variant (Menu Settings preview panel) instead of the clickable sidebar swap markup.
+    public bool IsPreview { get; init; }
 
     public bool HasLogo => !string.IsNullOrWhiteSpace(LogoDataUrl);
 

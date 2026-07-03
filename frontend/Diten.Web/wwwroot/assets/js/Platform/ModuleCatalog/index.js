@@ -244,6 +244,12 @@ const ModuleCatalogList = (function () {
             : `<i class="bx bx-x text-danger fs-4"></i>`;
     };
 
+    // FEAT-CATALOG-BASELINE-BADGE — baseline (entitlement-free) marker; empty for regular modules.
+    const isBaselineRow = (row) => !!(row && (row.isBaseline || row.IsBaseline));
+    const baselineBadge = (row) => isBaselineRow(row)
+        ? ` <span class="badge bg-label-info ms-1" title="${escapeHtml(L.BaselineHint || '')}">${escapeHtml(L.Baseline || 'Baseline')}</span>`
+        : '';
+
     const domainBadge = (domain) => {
         const value = normalizeString(domain);
         return value
@@ -416,7 +422,7 @@ const ModuleCatalogList = (function () {
             columns: [
                 { data: 'id', name: 'control' },
                 { data: 'moduleCode', name: 'moduleCode', render: (data) => `<span class="fw-medium font-monospace text-primary">${escapeHtml(data)}</span>` },
-                { data: 'moduleName', name: 'moduleName', render: escapeHtml },
+                { data: 'moduleName', name: 'moduleName', render: (data, type, row) => type === 'display' ? `${escapeHtml(data)}${baselineBadge(row)}` : data },
                 {
                     data: 'status',
                     name: 'status',
@@ -429,7 +435,7 @@ const ModuleCatalogList = (function () {
                     }
                 },
                 { data: 'domain', name: 'domain', render: domainBadge },
-                { data: 'isTenantAssignable', name: 'isTenantAssignable', render: (data) => boolBadge(data) },
+                { data: 'isTenantAssignable', name: 'isTenantAssignable', render: (data, type, row) => isBaselineRow(row) ? `<span class="text-muted" title="${escapeHtml(L.BaselineAutoHint || '')}">${escapeHtml(L.BaselineAuto || 'Baseline (auto)')}</span>` : boolBadge(data) },
                 { data: 'isCoreModule', name: 'isCoreModule', render: (data) => boolBadge(data, true) },
                 { data: 'displayName', name: 'displayName', visible: false, render: escapeHtml },
                 { data: 'service', name: 'service', visible: false, render: escapeHtml },
@@ -471,7 +477,9 @@ const ModuleCatalogList = (function () {
                                 text: L.Activate || '',
                                 attrs: { 'data-id': id, 'data-json': rowJson }
                             });
-                        } else if (status === 'Active') {
+                        } else if (status === 'Active' && !isBaselineRow(row)) {
+                            // FIX-BASELINE-NO-DEACTIVATE — baseline modules reach every tenant automatically; hide
+                            // Deactivate (the backend also refuses it with 409). Delete is already disabled (self-reg).
                             actions.push({
                                 key: 'deactivate',
                                 className: 'text-warning',

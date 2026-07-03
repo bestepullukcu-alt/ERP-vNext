@@ -23,6 +23,13 @@ public sealed class DeactivateModuleCatalogItemCommandHandler : IRequestHandler<
             return Response<NoContent>.Fail("Module catalog item not found.", 404);
         }
 
+        // FIX-BASELINE-NO-DEACTIVATE — a baseline module is entitlement-free (reaches every tenant). Deactivating it
+        // would break RBAC/settings for ALL tenants and a re-push won't restore SOFT Status. Authoritative refusal.
+        if (item.IsBaseline)
+        {
+            return Response<NoContent>.Fail(ModuleCatalogErrorCodes.BaselineCannotBeDeactivated, 409);
+        }
+
         if (item.Status != ModuleCatalogStatus.Active)
         {
             return Response<NoContent>.Fail($"Invalid status transition from {item.Status} to Inactive.", 400);

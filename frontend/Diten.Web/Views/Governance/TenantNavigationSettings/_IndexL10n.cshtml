@@ -1,0 +1,25 @@
+@using Diten.Web.Views.Governance.TenantNavigationSettings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TenantNavigationSettingsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="tenant-navigation-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Saved = Localizer["Saved"].Value,
+        ResetDone = Localizer["ResetDone"].Value,
+        NoModules = Localizer["NoModules"].Value,
+        HiddenGroup = Localizer["HiddenGroup"].Value,
+        ShowHide = Localizer["ShowHide"].Value,
+        Visible = Localizer["Visible"].Value,
+        Hidden = Localizer["Hidden"].Value,
+        RenamePlaceholder = Localizer["RenamePlaceholder"].Value,
+        ResetConfirm = Localizer["ResetConfirm"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Saving = Localizer["Saving"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        ColName = Localizer["ColName"].Value,
+        ColVisibility = Localizer["ColVisibility"].Value,
+        VisibleSuffix = Localizer["VisibleSuffix"].Value
+    })
+</script>
