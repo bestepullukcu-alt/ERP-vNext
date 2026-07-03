@@ -238,67 +238,20 @@
                         </li>
                     }
 
-                    @* S-NAV (MOD-0018-FU9) — Access Governance (FE-C). FE-B UX guard: a link shows only
-                       when the user holds the matching read/assign permission; backend is authoritative. *@
-                    @if (Perms.Has("auth.users.read") || Perms.Has("auth.roles.read")
-                         || Perms.Has("auth.roles.assign-permission") || Perms.Has("auth.users.assign-role"))
+                    @* MERGE-DEDUPE (feature/phase-b-workcenter × main) — Access Governance (Users/Roles/
+                       Permissions/RoleAssignments/UserRoleAssignments) is now rendered DATA-DRIVEN by the
+                       DynamicModuleMenu below (ACCESS-GOVERNANCE baseline module), so main's hardcoded copy
+                       was removed to avoid a duplicated section. Security Settings stays hardcoded as a bridge
+                       because the TENANT-SETTINGS baseline is not yet emitting nav page-descriptors
+                       (TODO: register its /TenantSecurity + /TenantNavigation descriptors, then drop this too). *@
+                    @if (Perms.Has("platform.tenant-security.manage"))
                     {
-                        <li class="menu-header small text-uppercase">
-                            <span class="menu-header-text">@SharedLocalizer["AccessGovernance"]</span>
+                        <li class="menu-item @(activeController == "TenantSecuritySettings" ? "active" : "")">
+                            <a href="/TenantSecurity" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
+                                <div>@TenantSecurityLocalizer["Title"]</div>
+                            </a>
                         </li>
-                        @if (Perms.Has("auth.users.read"))
-                        {
-                            <li class="menu-item @(activeController == "Users" ? "active" : "")">
-                                <a href="/Users" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-user"></i>
-                                    <div>@SharedLocalizer["UsersMenu"]</div>
-                                </a>
-                            </li>
-                        }
-                        @if (Perms.Has("auth.roles.read"))
-                        {
-                            <li class="menu-item @(activeController == "Roles" ? "active" : "")">
-                                <a href="/Roles" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
-                                    <div>@SharedLocalizer["RolesMenu"]</div>
-                                </a>
-                            </li>
-                            <li class="menu-item @(activeController == "Permissions" ? "active" : "")">
-                                <a href="/Permissions" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-key"></i>
-                                    <div>@SharedLocalizer["PermissionsMenu"]</div>
-                                </a>
-                            </li>
-                        }
-                        @if (Perms.Has("auth.roles.assign-permission"))
-                        {
-                            <li class="menu-item @(activeController == "RoleAssignments" ? "active" : "")">
-                                <a href="/RoleAssignments" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-link"></i>
-                                    <div>@SharedLocalizer["RolePermissionAssignmentMenu"]</div>
-                                </a>
-                            </li>
-                        }
-                        @if (Perms.Has("auth.users.assign-role"))
-                        {
-                            <li class="menu-item @(activeController == "UserRoleAssignments" ? "active" : "")">
-                                <a href="/UserRoleAssignments" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-user-plus"></i>
-                                    <div>@SharedLocalizer["UserRoleAssignmentMenu"]</div>
-                                </a>
-                            </li>
-                        }
-                        @* MOD — Tenant self-service Security Settings. UX guard only; backend
-                           [HasPermission("platform.tenant-security.manage")] is authoritative. *@
-                        @if (Perms.Has("platform.tenant-security.manage"))
-                        {
-                            <li class="menu-item @(activeController == "TenantSecuritySettings" ? "active" : "")">
-                                <a href="/TenantSecurity" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
-                                    <div>@TenantSecurityLocalizer["Title"]</div>
-                                </a>
-                            </li>
-                        }
                     }
 
                     @* MOD-0285 — dynamic "Modules" section (AUGMENT). Self-registered/entitled modules whose page
