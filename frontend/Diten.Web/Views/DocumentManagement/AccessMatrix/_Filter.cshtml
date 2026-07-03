@@ -1,0 +1,79 @@
+@using Diten.Web.Views.DocumentManagement.AccessMatrix
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AccessMatrixIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost" class="px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-target-type">
+                        <select id="filterTargetType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["TargetType"]">
+                            <option value="Tenant">@Localizer["TargetTenant"]</option>
+                            <option value="Company">@Localizer["TargetCompany"]</option>
+                            <option value="CollectionDefinition">@Localizer["TargetCollectionDefinition"]</option>
+                            <option value="CollectionInstance">@Localizer["TargetCollectionInstance"]</option>
+                            <option value="TemplateDocument">@Localizer["TargetTemplateDocument"]</option>
+                            <option value="ControlledDocument">@Localizer["TargetControlledDocument"]</option>
+                            <option value="TemplateMaster">@Localizer["TargetTemplateMaster"]</option>
+                            <option value="TemplateVariant">@Localizer["TargetTemplateVariant"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-principal-type">
+                        <select id="filterPrincipalType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["PrincipalType"]">
+                            <option value="User">@Localizer["PrincipalUser"]</option>
+                            <option value="Role">@Localizer["PrincipalRole"]</option>
+                            <option value="Group">@Localizer["PrincipalGroup"]</option>
+                            <option value="Company">@Localizer["PrincipalCompany"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-effect">
+                        <select id="filterEffect" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Effect"]">
+                            <option value="ALLOW">@Localizer["EffectAllow"]</option>
+                            <option value="DENY">@Localizer["EffectDeny"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-action">
+                        <select id="filterAction" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Actions"]">
+                            <option value="View">@Localizer["ActionView"]</option>
+                            <option value="Download">@Localizer["ActionDownload"]</option>
+                            <option value="CreateDocument">@Localizer["ActionCreateDocument"]</option>
+                            <option value="CreateTemplate">@Localizer["ActionCreateTemplate"]</option>
+                            <option value="EditMetadata">@Localizer["ActionEditMetadata"]</option>
+                            <option value="UploadVersion">@Localizer["ActionUploadVersion"]</option>
+                            <option value="Publish">@Localizer["ActionPublish"]</option>
+                            <option value="Archive">@Localizer["ActionArchive"]</option>
+                            <option value="Share">@Localizer["ActionShare"]</option>
+                            <option value="ManageAccess">@Localizer["ActionManageAccess"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="ACTIVE">@Localizer["StatusActive"]</option>
+                            <option value="DISABLED">@Localizer["StatusDisabled"]</option>
+                            <option value="ARCHIVED">@Localizer["StatusArchived"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-inheritance">
+                        <select id="filterInheritance" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Inheritance"]">
+                            <option value="INHERITED">@Localizer["InheritancePropagates"]</option>
+                            <option value="EXPLICIT">@Localizer["InheritanceDirect"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

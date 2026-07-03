@@ -19,9 +19,14 @@ public sealed class DocumentManagementManifestProviderTests
     private static readonly HashSet<string> EnforcedPermissions = ReflectEnforcedPermissions(
         typeof(DocumentManagementController),
         typeof(DocumentManagementQmsBaselinesController),
-        typeof(DocumentManagementInstantiationsController));
+        typeof(DocumentManagementInstantiationsController),
+        typeof(DocumentManagementControlledDocumentsController),
+        typeof(DocumentManagementTemplateMastersController),
+        typeof(DocumentManagementTemplateVariantsController),
+        typeof(DocumentManagementAccessPoliciesController));
 
-    // Real frontend view-routes (Diten.Web QmsBaselines + Instantiations controllers), hard-coded.
+    // Real frontend view-routes (Diten.Web QmsBaselines + Instantiations + ControlledDocuments +
+    // TemplateMasters + TemplateVariants + AccessMatrix controllers), hard-coded.
     private static readonly HashSet<string> FrontendViewRoutes = new(StringComparer.Ordinal)
     {
         "/DocumentManagementQmsBaselines",
@@ -30,7 +35,22 @@ public sealed class DocumentManagementManifestProviderTests
         "/DocumentManagementQmsBaselines/Details/{id}",
         "/DocumentManagementQmsBaselines/Designer/{id}",
         "/DocumentManagementInstantiations",
-        "/DocumentManagementInstantiations/Details/{id}"
+        "/DocumentManagementInstantiations/Details/{id}",
+        "/DocumentManagementControlledDocuments",
+        "/DocumentManagementControlledDocuments/Create",
+        "/DocumentManagementControlledDocuments/Details/{id}",
+        "/DocumentManagementControlledDocuments/VersionHistory/{id}",
+        "/DocumentManagementControlledDocuments/Share/{id}",
+        "/DocumentManagementTemplateMasters",
+        "/DocumentManagementTemplateMasters/Create",
+        "/DocumentManagementTemplateMasters/Details/{id}",
+        "/DocumentManagementTemplateVariants",
+        "/DocumentManagementTemplateVariants/Create",
+        "/DocumentManagementTemplateVariants/Details/{id}",
+        "/DocumentManagementAccessMatrix",
+        "/DocumentManagementAccessMatrix/Create",
+        "/DocumentManagementAccessMatrix/Details/{id}",
+        "/DocumentManagementAccessMatrix/Edit/{id}"
     };
 
     [Fact]
@@ -80,7 +100,11 @@ public sealed class DocumentManagementManifestProviderTests
     public void Two_list_pages_are_the_top_level_nav_entries()
     {
         var navPages = Manifest.Pages.Where(p => p.IsNavigationVisible).Select(p => p.PageCode).ToHashSet();
-        Assert.True(navPages.SetEquals(new[] { "QMS_BASELINES", "INSTANCES" }));
+        Assert.True(navPages.SetEquals(new[]
+        {
+            "QMS_BASELINES", "INSTANCES",
+            "CONTROLLED_DOCUMENTS", "TEMPLATE_MASTERS", "TEMPLATE_VARIANTS", "ACCESS_MATRIX"
+        }));
         // Top-level entries have no parent; every sub-page does.
         Assert.All(Manifest.Pages, p =>
             Assert.Equal(p.IsNavigationVisible, p.ParentPageCode is null));

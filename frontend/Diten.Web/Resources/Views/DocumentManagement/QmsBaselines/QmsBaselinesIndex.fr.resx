@@ -315,4 +315,15 @@
   <data name="ValidateNeedsDefinitions" xml:space="preserve">
     <value>Ajoutez au moins une définition avant de valider.</value>
   </data>
+  <data name="RelatedTemplatesTitle" xml:space="preserve"><value>Modèles d'entreprise associés</value></data>
+  <data name="RelatedTemplatesSelectFolder" xml:space="preserve"><value>Sélectionnez un dossier pour afficher les modèles maîtres associés.</value></data>
+  <data name="RelatedTemplatesEmpty" xml:space="preserve"><value>Aucun modèle maître associé pour ce dossier.</value></data>
+  <data name="MasterCode" xml:space="preserve"><value>Code maître</value></data>
+  <data name="TemplateName" xml:space="preserve"><value>Nom du modèle</value></data>
+  <data name="VariantPolicy" xml:space="preserve"><value>Politique de variante</value></data>
+  <data name="Owner" xml:space="preserve"><value>Propriétaire</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Obsolète</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="VariantAllowed" xml:space="preserve"><value>Variante autorisée</value></data>
+  <data name="VariantLocked" xml:space="preserve"><value>Variante verrouillée</value></data>
 </root>

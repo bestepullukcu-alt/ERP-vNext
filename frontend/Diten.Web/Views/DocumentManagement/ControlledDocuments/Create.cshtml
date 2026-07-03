@@ -1,0 +1,17 @@
+@using Diten.Web.Views.DocumentManagement.ControlledDocuments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ControlledDocumentsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["AddDocument"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "create";
+}
+
+<partial name="~/Views/DocumentManagement/ControlledDocuments/_Form.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/ControlledDocuments/_IndexL10n.cshtml" />
+    @Html.AntiForgeryToken()
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/create.js" asp-append-version="true"></script>
+}

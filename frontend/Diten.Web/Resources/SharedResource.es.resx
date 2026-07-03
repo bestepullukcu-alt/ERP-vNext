@@ -469,6 +469,10 @@
   <data name="LegalEntities" xml:space="preserve"><value>Entidades jurídicas</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Aprobaciones de flujo de trabajo</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Estructuras de documentación</value></data>
+  <data name="ControlledDocuments" xml:space="preserve"><value>Documentos Controlados</value></data>
+  <data name="TemplateMasters" xml:space="preserve"><value>Plantillas Corporativas</value></data>
+  <data name="TemplateVariants" xml:space="preserve"><value>Variantes de plantilla</value></data>
+  <data name="AccessMatrix" xml:space="preserve"><value>Matriz de acceso</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>Líneas base QMS</value></data>
   <data name="Unauthorized" xml:space="preserve"><value>No autorizado</value></data>
 </root>

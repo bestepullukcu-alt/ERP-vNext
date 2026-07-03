@@ -1,0 +1,521 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ControlledDocumentsTitle" xml:space="preserve">
+    <value>Documentos Controlados</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Add, version, access-control and share your company documents and templates.</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Título</value>
+  </data>
+  <data name="DocumentType" xml:space="preserve">
+    <value>Tipo de documento</value>
+  </data>
+  <data name="FolderPath" xml:space="preserve">
+    <value>Folder Path</value>
+  </data>
+  <data name="CurrentVersion" xml:space="preserve">
+    <value>Current Version</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="EmptyList" xml:space="preserve">
+    <value>No documents found.</value>
+  </data>
+  <data name="DocumentLibrary" xml:space="preserve">
+    <value>Document Library</value>
+  </data>
+  <data name="Templates" xml:space="preserve">
+    <value>Plantillas</value>
+  </data>
+  <data name="FolderDocuments" xml:space="preserve">
+    <value>Folder Documents</value>
+  </data>
+  <data name="TypeSop" xml:space="preserve">
+    <value>SOP</value>
+  </data>
+  <data name="TypeWorkInstruction" xml:space="preserve">
+    <value>Work Instruction</value>
+  </data>
+  <data name="TypePolicy" xml:space="preserve">
+    <value>Policy</value>
+  </data>
+  <data name="TypeForm" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="TypeTemplate" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="TypeOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="StatusActive" xml:space="preserve">
+    <value>Activo</value>
+  </data>
+  <data name="StatusArchived" xml:space="preserve">
+    <value>Archivado</value>
+  </data>
+  <data name="AddDocument" xml:space="preserve">
+    <value>Agregar documento</value>
+  </data>
+  <data name="AddTemplate" xml:space="preserve">
+    <value>Agregar plantilla</value>
+  </data>
+  <data name="EditMetadata" xml:space="preserve">
+    <value>Edit Metadata</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>Descargar</value>
+  </data>
+  <data name="ShareDocument" xml:space="preserve">
+    <value>Compartir documento</value>
+  </data>
+  <data name="ShareTemplate" xml:space="preserve">
+    <value>Share Template</value>
+  </data>
+  <data name="FolderShare" xml:space="preserve">
+    <value>Compartir carpeta</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Descripción</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>Etiquetas</value>
+  </data>
+  <data name="EffectiveDate" xml:space="preserve">
+    <value>Effective Date</value>
+  </data>
+  <data name="ReviewDate" xml:space="preserve">
+    <value>Review Date</value>
+  </data>
+  <data name="ExpiryDate" xml:space="preserve">
+    <value>Expiry Date</value>
+  </data>
+  <data name="Controlled" xml:space="preserve">
+    <value>Controlled</value>
+  </data>
+  <data name="CollectionInstanceId" xml:space="preserve">
+    <value>Folder (Collection Instance)</value>
+  </data>
+  <data name="CompanyId" xml:space="preserve">
+    <value>Company Legal Entity</value>
+  </data>
+  <data name="SelectFile" xml:space="preserve">
+    <value>Seleccionar archivo</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="VersionHistory" xml:space="preserve">
+    <value>Historial de versiones</value>
+  </data>
+  <data name="UploadNewVersion" xml:space="preserve">
+    <value>Subir nueva versión</value>
+  </data>
+  <data name="Upload" xml:space="preserve">
+    <value>Subir</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="UploadedBy" xml:space="preserve">
+    <value>Uploaded By</value>
+  </data>
+  <data name="UploadedAt" xml:space="preserve">
+    <value>Uploaded At</value>
+  </data>
+  <data name="ChangeSummary" xml:space="preserve">
+    <value>Change Summary</value>
+  </data>
+  <data name="VersionStatusActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="VersionStatusSuperseded" xml:space="preserve">
+    <value>Superseded</value>
+  </data>
+  <data name="Reusable" xml:space="preserve">
+    <value>Reusable</value>
+  </data>
+  <data name="Shareable" xml:space="preserve">
+    <value>Shareable</value>
+  </data>
+  <data name="CopyableOnAdopt" xml:space="preserve">
+    <value>Copyable on Adopt</value>
+  </data>
+  <data name="ReferenceOnly" xml:space="preserve">
+    <value>Reference Only</value>
+  </data>
+  <data name="AccessControl" xml:space="preserve">
+    <value>Access Control</value>
+  </data>
+  <data name="ShareMode" xml:space="preserve">
+    <value>Modo de compartir</value>
+  </data>
+  <data name="ShareModeReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="ShareModeCopyOnAdopt" xml:space="preserve">
+    <value>Copy on Adopt</value>
+  </data>
+  <data name="TargetCompany" xml:space="preserve">
+    <value>Empresa destino</value>
+  </data>
+  <data name="DocumentContext" xml:space="preserve">
+    <value>Contexto del documento</value>
+  </data>
+  <data name="InternalLink" xml:space="preserve">
+    <value>Enlace interno</value>
+  </data>
+  <data name="RecipientEmail" xml:space="preserve">
+    <value>Email del destinatario</value>
+  </data>
+  <data name="SendEmail" xml:space="preserve">
+    <value>Enviar email</value>
+  </data>
+  <data name="CopyLink" xml:space="preserve">
+    <value>Copiar enlace</value>
+  </data>
+  <data name="CompanyShare" xml:space="preserve">
+    <value>Compartir con empresa</value>
+  </data>
+  <data name="AccessLevel" xml:space="preserve">
+    <value>Nivel de acceso</value>
+  </data>
+  <data name="ViewOnly" xml:space="preserve">
+    <value>Solo lectura</value>
+  </data>
+  <data name="CopyAllowed" xml:space="preserve">
+    <value>Copia permitida</value>
+  </data>
+  <data name="ExpiryDateOptional" xml:space="preserve">
+    <value>Fecha de expiración (opcional)</value>
+  </data>
+  <data name="PasswordProtectionOptional" xml:space="preserve">
+    <value>Protección con contraseña (opcional)</value>
+  </data>
+  <data name="DirectUserShare" xml:space="preserve">
+    <value>Compartir con usuario directo</value>
+  </data>
+  <data name="TargetCompanyPlaceholder" xml:space="preserve">
+    <value>Id de empresa destino</value>
+  </data>
+  <data name="UnsupportedShareOption" xml:space="preserve">
+    <value>Los asistentes de email/enlace no crean permisos de acceso. La expiración, contraseña y permisos directos de usuario requieren un alcance de seguimiento aprobado.</value>
+  </data>
+  <data name="ShareNow" xml:space="preserve">
+    <value>Compartir ahora</value>
+  </data>
+  <data name="LinkCopied" xml:space="preserve">
+    <value>Enlace copiado.</value>
+  </data>
+  <data name="IncludeTemplates" xml:space="preserve">
+    <value>Include Templates</value>
+  </data>
+  <data name="BranchToShare" xml:space="preserve">
+    <value>Branch to Share</value>
+  </data>
+  <data name="DryRun" xml:space="preserve">
+    <value>Simulación</value>
+  </data>
+  <data name="Execute" xml:space="preserve">
+    <value>Ejecutar</value>
+  </data>
+  <data name="FoldersIncluded" xml:space="preserve">
+    <value>Folders Included</value>
+  </data>
+  <data name="TemplatesIncluded" xml:space="preserve">
+    <value>Templates Included</value>
+  </data>
+  <data name="TemplatesSkipped" xml:space="preserve">
+    <value>Templates Skipped</value>
+  </data>
+  <data name="DocumentCreated" xml:space="preserve">
+    <value>Document created.</value>
+  </data>
+  <data name="VersionUploaded" xml:space="preserve">
+    <value>New version uploaded.</value>
+  </data>
+  <data name="ShareSuccess" xml:space="preserve">
+    <value>Shared successfully.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>A file is required.</value>
+  </data>
+  <data name="TitleRequired" xml:space="preserve">
+    <value>Title is required.</value>
+  </data>
+  <data name="NoAccess" xml:space="preserve">
+    <value>No access.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Acceso denegado</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>No encontrado</value>
+  </data>
+  <data name="CorrelationId" xml:space="preserve">
+    <value>Correlation ID</value>
+  </data>
+  <data name="ReasonValidationFailed" xml:space="preserve">
+    <value>Validation failed.</value>
+  </data>
+  <data name="ReasonConflict" xml:space="preserve">
+    <value>Conflict.</value>
+  </data>
+  <data name="ReasonPermDenied" xml:space="preserve">
+    <value>Permission denied.</value>
+  </data>
+  <data name="ReasonNotFound" xml:space="preserve">
+    <value>Not found.</value>
+  </data>
+  <data name="ReasonStorageUnavailable" xml:space="preserve">
+    <value>Content storage is unavailable.</value>
+  </data>
+  <data name="ReasonFeatureDisabled" xml:space="preserve">
+    <value>This capability is disabled.</value>
+  </data>
+  <data name="Preview" xml:space="preserve">
+    <value>Vista previa</value>
+  </data>
+  <data name="Favorite" xml:space="preserve">
+    <value>Favorito</value>
+  </data>
+  <data name="Unfavorite" xml:space="preserve">
+    <value>Quitar favorito</value>
+  </data>
+  <data name="Favorited" xml:space="preserve">
+    <value>Añadido a favoritos.</value>
+  </data>
+  <data name="Unfavorited" xml:space="preserve">
+    <value>Quitado de favoritos.</value>
+  </data>
+  <data name="Move" xml:space="preserve">
+    <value>Mover</value>
+  </data>
+  <data name="MoveTitle" xml:space="preserve">
+    <value>Mover documento</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>Documento movido.</value>
+  </data>
+  <data name="TargetFolder" xml:space="preserve">
+    <value>Carpeta destino</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>¿Eliminar este documento? Se archivará.</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Documento eliminado.</value>
+  </data>
+  <data name="SoftDelete" xml:space="preserve">
+    <value>Soft delete</value>
+  </data>
+  <data name="Archived" xml:space="preserve">
+    <value>Archivado</value>
+  </data>
+  <data name="RemoveFavorite" xml:space="preserve">
+    <value>Remove favorite</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copiar</value>
+  </data>
+  <data name="Paste" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="CopyToFolder" xml:space="preserve">
+    <value>Copiar a carpeta</value>
+  </data>
+  <data name="MoveToFolder" xml:space="preserve">
+    <value>Mover a carpeta</value>
+  </data>
+  <data name="SelectTargetFolder" xml:space="preserve">
+    <value>Seleccionar carpeta destino</value>
+  </data>
+  <data name="OpenInNewTab" xml:space="preserve">
+    <value>Abrir en nueva pestaña</value>
+  </data>
+  <data name="UploadDocument" xml:space="preserve">
+    <value>Upload document</value>
+  </data>
+  <data name="UploadTemplate" xml:space="preserve">
+    <value>Upload template</value>
+  </data>
+  <data name="AddFolder" xml:space="preserve">
+    <value>Add folder</value>
+  </data>
+  <data name="FolderActionsUnavailable" xml:space="preserve">
+    <value>Folder actions are not available here.</value>
+  </data>
+  <data name="FolderOperationsDeferred" xml:space="preserve">
+    <value>Folder operations are managed in Documentation Structures.</value>
+  </data>
+  <data name="PreviewUnavailable" xml:space="preserve">
+    <value>Preview is not available.</value>
+  </data>
+  <data name="UnsupportedPreviewType" xml:space="preserve">
+    <value>Preview is not supported for this file type; downloading instead.</value>
+  </data>
+  <data name="DocumentationStructure" xml:space="preserve">
+    <value>Estructura de documentación</value>
+  </data>
+  <data name="SelectStructure" xml:space="preserve">
+    <value>Seleccione una estructura</value>
+  </data>
+  <data name="SearchIn" xml:space="preserve">
+    <value>Buscar en</value>
+  </data>
+  <data name="ThisFolder" xml:space="preserve">
+    <value>Esta carpeta</value>
+  </data>
+  <data name="ThisFolderAndSubfolders" xml:space="preserve">
+    <value>Esta carpeta y subcarpetas</value>
+  </data>
+  <data name="EntireStructure" xml:space="preserve">
+    <value>Toda la estructura</value>
+  </data>
+  <data name="SearchResults" xml:space="preserve">
+    <value>Resultados</value>
+  </data>
+  <data name="FolderResult" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="DocumentResult" xml:space="preserve">
+    <value>Document</value>
+  </data>
+  <data name="TemplateResult" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>Sin resultados.</value>
+  </data>
+  <data name="Path" xml:space="preserve">
+    <value>Ruta</value>
+  </data>
+  <data name="OpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>Open document</value>
+  </data>
+  <data name="OpenTemplate" xml:space="preserve">
+    <value>Open template</value>
+  </data>
+  <data name="ModifiedAt" xml:space="preserve">
+    <value>Modificado el</value>
+  </data>
+  <data name="CurrentFolderDocuments" xml:space="preserve">
+    <value>Documentos de la carpeta actual</value>
+  </data>
+  <data name="SelectCompany" xml:space="preserve">
+    <value>Seleccionar empresa</value>
+  </data>
+  <data name="SelectItemForDetails" xml:space="preserve">
+    <value>Seleccione un documento, plantilla o resultado de búsqueda para ver detalles.</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Buscar carpetas, documentos y plantillas</value>
+  </data>
+  <data name="FolderTree" xml:space="preserve">
+    <value>Árbol de carpetas</value>
+  </data>
+  <data name="AccessPanelDeferred" xml:space="preserve">
+    <value>La interfaz completa de gestión de acceso está diferida; la aplicación continúa en el servidor.</value>
+  </data>
+  <data name="NoFolderSelected" xml:space="preserve">
+    <value>Seleccione una empresa y una estructura documental para explorar carpetas.</value>
+  </data>
+  <data name="NoStructures" xml:space="preserve">
+    <value>No hay una estructura documental activa disponible para esta empresa.</value>
+  </data>
+  <data name="EmptyExplorerHeading" xml:space="preserve">
+    <value>Aún no hay vista previa</value>
+  </data>
+  <data name="EmptyExplorerText" xml:space="preserve">
+    <value>Seleccione una empresa y una estructura documental para previsualizar las carpetas.</value>
+  </data>
+  <data name="ActiveStructure" xml:space="preserve">
+    <value>Estructura activa</value>
+  </data>
+  <data name="DetailsPanel" xml:space="preserve">
+    <value>Detalles / Acciones</value>
+  </data>
+  <data name="Collapse" xml:space="preserve">
+    <value>Contraer</value>
+  </data>
+  <data name="Expand" xml:space="preserve">
+    <value>Expandir</value>
+  </data>
+  <data name="ResizeHint" xml:space="preserve">
+    <value>Arrastre para redimensionar</value>
+  </data>
+  <data name="SectionIdentity" xml:space="preserve">
+    <value>Identidad</value>
+  </data>
+  <data name="SectionClassification" xml:space="preserve">
+    <value>Clasificación</value>
+  </data>
+  <data name="SectionLifecycle" xml:space="preserve">
+    <value>Ciclo de vida</value>
+  </data>
+  <data name="Checksum" xml:space="preserve">
+    <value>Suma de verificación (SHA-256)</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>Nombre de archivo</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>Tamaño</value>
+  </data>
+  <data name="Integrity" xml:space="preserve">
+    <value>Integridad</value>
+  </data>
+  <data name="ContentUnchanged" xml:space="preserve">
+    <value>Contenido sin cambios</value>
+  </data>
+  <data name="ContentChanged" xml:space="preserve">
+    <value>Contenido nuevo</value>
+  </data>
+  <data name="IdenticalToActiveWarning" xml:space="preserve">
+    <value>Este archivo es idéntico a la versión activa actual: sin cambios reales.</value>
+  </data>
+  <data name="ForceNewVersion" xml:space="preserve">
+    <value>Agregar como nueva versión de todos modos (contenido idéntico)</value>
+  </data>
+  <data name="ChangeSummaryRequired" xml:space="preserve">
+    <value>Se requiere un resumen de cambios.</value>
+  </data>
+  <data name="FileTypeChanged" xml:space="preserve">
+    <value>Tipo de archivo cambiado</value>
+  </data>
+  <data name="ReasonNoContentChange" xml:space="preserve">
+    <value>El archivo cargado es idéntico a la versión activa actual; no se detectaron cambios.</value>
+  </data>
+  <data name="SameAsPrevious" xml:space="preserve">
+    <value>Igual que la versión anterior</value>
+  </data>
+  <data name="Computing" xml:space="preserve">
+    <value>Calculando…</value>
+  </data></root>

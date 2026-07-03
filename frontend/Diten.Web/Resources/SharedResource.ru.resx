@@ -469,6 +469,10 @@
   <data name="LegalEntities" xml:space="preserve"><value>Юридические лица</value></data>
   <data name="WorkflowApprovalsMenu" xml:space="preserve"><value>Согласования рабочих процессов</value></data>
   <data name="DocumentationStructures" xml:space="preserve"><value>Структуры документации</value></data>
+  <data name="ControlledDocuments" xml:space="preserve"><value>Управляемые документы</value></data>
+  <data name="TemplateMasters" xml:space="preserve"><value>Корпоративные шаблоны</value></data>
+  <data name="TemplateVariants" xml:space="preserve"><value>Варианты шаблонов</value></data>
+  <data name="AccessMatrix" xml:space="preserve"><value>Матрица доступа</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>Базовые линии QMS</value></data>
   <data name="Unauthorized" xml:space="preserve"><value>Не авторизовано</value></data>
 </root>

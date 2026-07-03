@@ -1,0 +1,431 @@
+frontend\Diten.Web\Properties\launchSettings.json içindeki başlatma ayarları kullanılıyor...
+Derleniyor...
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\EnterpriseStrategyBusinessPerformance\Components\Planning\_GovernancePanel.cshtml(2,48): warning CS8605: Olası bir null değeri kutudan çıkarma. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\EnterpriseStrategyBusinessPerformance\Components\Planning\_SectionCardHeader.cshtml(17,55): warning CS8605: Olası bir null değeri kutudan çıkarma. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\WorkCenter\DevScenarios.cshtml(34,13): warning CS8619: '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string? Approver, string? Reviewer, string? IrRecipient, string Notes>' türündeki değerdeki başvuru türlerinin boş değer atanabilirliği '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string? Reviewer, string? IrRecipient, string Notes>' hedef türü ile eşleşmiyor. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\WorkCenter\DevScenarios.cshtml(38,13): warning CS8619: '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string? Approver, string? Reviewer, string? IrRecipient, string Notes>' türündeki değerdeki başvuru türlerinin boş değer atanabilirliği '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string? Reviewer, string? IrRecipient, string Notes>' hedef türü ile eşleşmiyor. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\WorkCenter\DevScenarios.cshtml(42,13): warning CS8619: '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string? Approver, string? Reviewer, string? IrRecipient, string Notes>' türündeki değerdeki başvuru türlerinin boş değer atanabilirliği '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string? Reviewer, string? IrRecipient, string Notes>' hedef türü ile eşleşmiyor. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\WorkCenter\DevScenarios.cshtml(46,13): warning CS8619: '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string? Approver, string? Reviewer, string? IrRecipient, string Notes>' türündeki değerdeki başvuru türlerinin boş değer atanabilirliği '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string? Reviewer, string? IrRecipient, string Notes>' hedef türü ile eşleşmiyor. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\WorkCenter\DevScenarios.cshtml(50,13): warning CS8619: '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string Reviewer, string IrRecipient, string Notes>' türündeki değerdeki başvuru türlerinin boş değer atanabilirliği '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string? Reviewer, string? IrRecipient, string Notes>' hedef türü ile eşleşmiyor. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\WorkCenter\DevScenarios.cshtml(54,13): warning CS8619: '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string? Approver, string? Reviewer, string? IrRecipient, string Notes>' türündeki değerdeki başvuru türlerinin boş değer atanabilirliği '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string? Reviewer, string? IrRecipient, string Notes>' hedef türü ile eşleşmiyor. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\WorkCenter\DevScenarios.cshtml(58,13): warning CS8619: '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string? Approver, string Reviewer, string? IrRecipient, string Notes>' türündeki değerdeki başvuru türlerinin boş değer atanabilirliği '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string? Reviewer, string? IrRecipient, string Notes>' hedef türü ile eşleşmiyor. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\WorkCenter\DevScenarios.cshtml(62,13): warning CS8619: '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string? Approver, string? Reviewer, string IrRecipient, string Notes>' türündeki değerdeki başvuru türlerinin boş değer atanabilirliği '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string? Reviewer, string? IrRecipient, string Notes>' hedef türü ile eşleşmiyor. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\WorkCenter\DevScenarios.cshtml(66,13): warning CS8619: '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string? Approver, string Reviewer, string? IrRecipient, string Notes>' türündeki değerdeki başvuru türlerinin boş değer atanabilirliği '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string? Reviewer, string? IrRecipient, string Notes>' hedef türü ile eşleşmiyor. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\WorkCenter\DevScenarios.cshtml(70,13): warning CS8619: '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string? Approver, string? Reviewer, string? IrRecipient, string Notes>' türündeki değerdeki başvuru türlerinin boş değer atanabilirliği '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string? Reviewer, string? IrRecipient, string Notes>' hedef türü ile eşleşmiyor. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Views\WorkCenter\DevScenarios.cshtml(74,13): warning CS8619: '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string? Approver, string? Reviewer, string? IrRecipient, string Notes>' türündeki değerdeki başvuru türlerinin boş değer atanabilirliği '<anonymous type: int Order, string Status, string Label, string Id, string Owner, string Approver, string? Reviewer, string? IrRecipient, string Notes>' hedef türü ile eşleşmiyor. [C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj]
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5001
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5000/api/auth/refresh-token
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5000/api/auth/refresh-token
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 408.2661ms - 500
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 427.4579ms - 500
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 987.2505ms - 500
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 987.5642ms - 500
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 505.5901ms - 500
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 505.7729ms - 500
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 550.5655ms - 500
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 550.7732ms - 500
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 488.5476ms - 500
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 488.7254ms - 500
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 2086.5743ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 2086.9108ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5000/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 446.4731ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 446.6551ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 308.206ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 308.3653ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 41.9256ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 42.0546ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 79.9577ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 80.0919ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 153.1674ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 153.3538ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 43.4025ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 43.5093ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 26.7144ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 26.8397ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 29.3274ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 29.4658ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 50.6247ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 50.7412ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 52.8413ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 53.0281ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 53.9008ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 54.0482ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST http://localhost:5000/api/v1/document-management/controlled-documents
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST http://localhost:5000/api/v1/document-management/controlled-documents
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 215.3164ms - 201
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 215.4828ms - 201
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 28.7647ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 28.9383ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 34.5999ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 34.8072ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 33.951ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 34.0852ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 22.6448ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 22.8164ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 23.1156ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 23.2584ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/search?companyId=099219a0-9780-454a-9580-a216f0fe33d0&activeStructureId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f&includeTemplates=true&scope=structure&query=e
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/search?companyId=099219a0-9780-454a-9580-a216f0fe33d0&activeStructureId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f&includeTemplates=true&scope=structure&query=e
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 282.9741ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 283.4882ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/e92a782e-4c2f-4d4b-94d1-94109ea559be
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/e92a782e-4c2f-4d4b-94d1-94109ea559be
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 61.0219ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 61.1452ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/e92a782e-4c2f-4d4b-94d1-94109ea559be/versions
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/e92a782e-4c2f-4d4b-94d1-94109ea559be/versions
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 60.7377ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 60.8655ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/search?companyId=099219a0-9780-454a-9580-a216f0fe33d0&activeStructureId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f&includeTemplates=true&scope=structure&query=e
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/search?companyId=099219a0-9780-454a-9580-a216f0fe33d0&activeStructureId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f&includeTemplates=true&scope=structure&query=e
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 69.125ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 69.2564ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/search?companyId=099219a0-9780-454a-9580-a216f0fe33d0&activeStructureId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f&includeTemplates=true&scope=structure&query=e
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/search?companyId=099219a0-9780-454a-9580-a216f0fe33d0&activeStructureId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f&includeTemplates=true&scope=structure&query=e
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 66.0184ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 66.2196ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/search?companyId=099219a0-9780-454a-9580-a216f0fe33d0&activeStructureId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f&includeTemplates=true&scope=structure&query=e
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/search?companyId=099219a0-9780-454a-9580-a216f0fe33d0&activeStructureId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f&includeTemplates=true&scope=structure&query=e
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 136.4061ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 136.5437ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/e92a782e-4c2f-4d4b-94d1-94109ea559be
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/e92a782e-4c2f-4d4b-94d1-94109ea559be
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 49.5514ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 49.6509ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/e92a782e-4c2f-4d4b-94d1-94109ea559be/versions
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/controlled-documents/e92a782e-4c2f-4d4b-94d1-94109ea559be/versions
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 21.2684ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 21.4201ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 54.937ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 55.0648ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 23.1067ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 23.184ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 47.2549ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 47.3286ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 16.9323ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.0037ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.8726ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.9428ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/folder-documents?collectionInstanceId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/folder-documents?collectionInstanceId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 44.3526ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 44.4407ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/folder-documents?collectionInstanceId=aca4a942-6826-4492-bed6-914ad2030b50
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/folder-documents?collectionInstanceId=aca4a942-6826-4492-bed6-914ad2030b50
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 27.8623ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 27.9522ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/folder-documents?collectionInstanceId=66d75853-3485-40a1-bfe8-364dac3c2d58
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/folder-documents?collectionInstanceId=66d75853-3485-40a1-bfe8-364dac3c2d58
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 23.3058ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 23.3813ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/folder-documents?collectionInstanceId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/folder-documents?collectionInstanceId=2ab2c114-4896-47a2-9d3e-0f6fe48eb64f
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 19.8887ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 19.9677ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/folder-documents?collectionInstanceId=aca4a942-6826-4492-bed6-914ad2030b50
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/folder-documents?collectionInstanceId=aca4a942-6826-4492-bed6-914ad2030b50
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 18.2358ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 18.2998ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 43.0793ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 43.4808ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 62.1962ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 62.3427ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 23.9817ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 24.0667ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 16.9831ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.0544ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.8591ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.9228ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 372.8861ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 373.0511ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/legal-entities
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 99.8254ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 100.0493ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/documentation-structures?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 21.5634ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 21.6404ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 25.4066ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 25.5237ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/document-management/collection-instances?companyId=099219a0-9780-454a-9580-a216f0fe33d0
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 61.8231ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 62.1586ms - 200

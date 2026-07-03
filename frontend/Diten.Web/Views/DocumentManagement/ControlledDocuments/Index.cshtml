@@ -1,0 +1,190 @@
+@using Diten.Web.Views.DocumentManagement.ControlledDocuments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ControlledDocumentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ControlledDocumentsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canCreate = Perms.Has("platform.document-management.controlled-documents.create");
+    var canCreateTemplate = Perms.Has("platform.document-management.templates.create");
+    var canFolderShare = Perms.Has("platform.document-management.folder-shares.create");
+}
+
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["ControlledDocumentsTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        @if (canCreate)
+        {
+            <a href="/DocumentManagementControlledDocuments/Create" class="btn btn-primary add-new-document" id="btnAddDocument">
+                <i class="icon-base bx bx-plus me-1"></i>@Localizer["AddDocument"]
+            </a>
+        }
+        @if (canCreateTemplate)
+        {
+            <a href="/DocumentManagementControlledDocuments/Create?kind=template" class="btn btn-label-secondary">
+                <i class="icon-base bx bx-copy-alt me-1"></i>@Localizer["AddTemplate"]
+            </a>
+        }
+        @if (canFolderShare)
+        {
+            <a href="/DocumentManagementControlledDocuments/FolderShare" class="btn btn-label-primary">
+                <i class="icon-base bx bx-share-alt me-1"></i>@Localizer["FolderShare"]
+            </a>
+        }
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-lg-6">
+                <label class="form-label fw-medium" for="explorerCompanySelect">@Localizer["CompanyId"]</label>
+                <select id="explorerCompanySelect" class="form-select select2" data-placeholder="@Localizer["SelectCompany"]">
+                    <option value=""></option>
+                </select>
+            </div>
+            <div class="col-12 col-lg-6">
+                <label class="form-label fw-medium" for="explorerStructureSelect">@Localizer["DocumentationStructure"]</label>
+                <select id="explorerStructureSelect" class="form-select select2" data-placeholder="@Localizer["SelectStructure"]" disabled>
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Single-card Explorer: folder tree (resizable + collapsible) | divider | middle | divider | details (collapsible) *@
+<div class="card explorer-shell-card d-none" id="explorerWorkspace">
+
+    @* ── Card header: current-folder context (top) then the search bar ── *@
+    <div class="card-header explorer-card-header">
+        <div class="explorer-address-row">
+            <div id="folderContentsTitle" class="explorer-address-bar">
+                <i class="icon-base bx bx-home-alt"></i>
+                <i class="icon-base bx bx-chevron-right text-muted"></i>
+                <span class="text-truncate" id="selectedFolderPath">@Localizer["NoFolderSelected"]</span>
+            </div>
+            <div class="explorer-search-bar">
+                <label class="visually-hidden" for="explorerSearchInput">@SharedLocalizer["Search"]</label>
+                <i class="icon-base bx bx-search"></i>
+                <input type="search" class="form-control" id="explorerSearchInput" placeholder="@Localizer["SearchPlaceholder"]" disabled />
+            </div>
+        </div>
+        <div class="explorer-command-bar">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary explorer-command-btn" id="btnExplorerFolderOperations" disabled
+                        title="@Localizer["FolderOperationsDeferred"]">
+                    <i class="icon-base bx bx-folder-plus me-1"></i>@Localizer["AddFolder"]
+                </button>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2 ms-lg-auto">
+                <label class="visually-hidden" for="explorerSearchScope">@Localizer["SearchIn"]</label>
+                <select id="explorerSearchScope" class="form-select form-select-sm explorer-scope-select" disabled>
+                    <option value="structure">@Localizer["EntireStructure"]</option>
+                    <option value="currentFolder">@Localizer["ThisFolder"]</option>
+                    <option value="subtree">@Localizer["ThisFolderAndSubfolders"]</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-label-secondary" id="btnExplorerSearchReset" disabled>@SharedLocalizer["Reset"]</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="explorer-shell" id="explorerShell">
+
+        @* ── Folder tree panel (collapsible + drag-resizable) ── *@
+        <aside class="explorer-panel explorer-tree-panel" id="folderTreePanel">
+            <div class="explorer-panel-header">
+                <h6 class="mb-0 explorer-panel-title">@Localizer["FolderTree"]</h6>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-label-secondary" id="folderTreeCount">0</span>
+                    <button type="button" class="btn btn-icon btn-text-secondary btn-sm explorer-collapse-btn" id="folderTreeCollapseBtn"
+                            title="@Localizer["Collapse"]" aria-label="@Localizer["Collapse"]">
+                        <i class="icon-base bx bx-chevrons-left"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="explorer-panel-body p-3">
+                <div id="folderTreeEmpty" class="text-center text-muted py-4">@Localizer["NoFolderSelected"]</div>
+                <div id="folderTree" class="small"></div>
+            </div>
+        </aside>
+
+        @* Collapsed rail — click to expand the folder tree *@
+        <button type="button" class="explorer-rail d-none" id="folderTreeExpandBtn" title="@Localizer["Expand"]" aria-label="@Localizer["Expand"]">
+            <i class="icon-base bx bx-chevrons-right"></i>
+            <span class="explorer-rail-label">@Localizer["FolderTree"]</span>
+        </button>
+
+        @* Vertical divider that doubles as a drag-resize handle for the folder tree *@
+        <div class="explorer-resizer" id="explorerResizer" role="separator" aria-orientation="vertical" tabindex="0"
+             title="@Localizer["ResizeHint"]" aria-label="@Localizer["ResizeHint"]"></div>
+
+        @* ── Middle panel: folder contents / search results ── *@
+        <section class="explorer-panel explorer-main-panel" id="explorerMainPanel">
+            <div class="explorer-panel-body">
+                <div id="searchResultsPanel" class="card d-none">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h6 class="mb-0">@Localizer["SearchResults"]</h6>
+                        <span class="badge bg-label-primary" id="searchResultsCount">0</span>
+                    </div>
+                    <div class="list-group list-group-flush" id="searchResultsList"></div>
+                    <div class="card-body text-center text-muted d-none" id="searchResultsEmpty">@Localizer["NoSearchResults"]</div>
+                </div>
+
+                @* Folder contents use the same compact list language as search results. *@
+                <div id="folderContentsPanel" class="card explorer-content-card">
+                    <div class="list-group list-group-flush" id="folderContentsList"></div>
+                    <div id="folderContentsEmpty" class="text-center text-muted py-5 d-none">
+                        <i class="icon-base bx bx-folder-open mb-2" style="font-size: 1.5rem;"></i>
+                        <div>@Localizer["EmptyList"]</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@* Move-document modal (folder picker, same company) *@
+<div class="modal fade" id="moveDocumentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="moveDocumentModalTitle">@Localizer["MoveTitle"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label fw-medium" for="moveTargetFolder">@Localizer["TargetFolder"]</label>
+                <select id="moveTargetFolder" class="form-select"></select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
+                <button type="button" class="btn btn-primary" id="btnMoveConfirm">@Localizer["Move"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    @* jsTree powers the collapsible/expandable Folder Tree; without it the explorer falls back to a flat indented list. *@
+    <link rel="stylesheet" href="~/assets/vendor/libs/jstree/jstree.css" />
+}
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/ControlledDocuments/_IndexL10n.cshtml" />
+    @Html.AntiForgeryToken()
+    <script>
+        window.ControlledDocumentsPerms = {
+            canCreate: @Json.Serialize(canCreate),
+            createUrl: '/DocumentManagementControlledDocuments/Create'
+        };
+    </script>
+    @* jsTree must load after jQuery (provided by the layout) and before index.js, which uses window.jQuery.fn.jstree. *@
+    <script src="~/assets/vendor/libs/jstree/jstree.js"></script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/index.js" asp-append-version="true"></script>
+}

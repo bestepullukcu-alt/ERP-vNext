@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AccessMatrixTitle" xml:space="preserve"><value>Document Access Matrix</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Resource-level access policies for companies, documentation structures, folders, documents, templates and variants</value></data>
+  <data name="CreatePolicy" xml:space="preserve"><value>Create Policy</value></data>
+  <data name="EditPolicy" xml:space="preserve"><value>Edit Policy</value></data>
+  <data name="Target" xml:space="preserve"><value>Target</value></data>
+  <data name="TargetType" xml:space="preserve"><value>Target Type</value></data>
+  <data name="TargetId" xml:space="preserve"><value>Target ID</value></data>
+  <data name="Principal" xml:space="preserve"><value>Principal</value></data>
+  <data name="PrincipalType" xml:space="preserve"><value>Principal Type</value></data>
+  <data name="PrincipalId" xml:space="preserve"><value>Principal ID</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Effect" xml:space="preserve"><value>Effect</value></data>
+  <data name="Inheritance" xml:space="preserve"><value>Inheritance</value></data>
+  <data name="Validity" xml:space="preserve"><value>Validity</value></data>
+  <data name="Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="RowActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="InheritFromParent" xml:space="preserve"><value>Propagate to children</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Valid From</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>Valid To</value></data>
+  <data name="Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="EffectivePreview" xml:space="preserve"><value>Effective Access Preview</value></data>
+  <data name="EffectivePreviewNote" xml:space="preserve"><value>Choose a principal and run the preview to see the effective actions resolved for this target.</value></data>
+  <data name="AllowedActions" xml:space="preserve"><value>Allowed Actions</value></data>
+  <data name="NoAllowedActions" xml:space="preserve"><value>No allowed actions</value></data>
+  <data name="PreviewPrincipal" xml:space="preserve"><value>Principal</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>Run</value></data>
+  <data name="EnforcementMode" xml:space="preserve"><value>Enforcement mode</value></data>
+  <data name="TargetSection" xml:space="preserve"><value>Target</value></data>
+  <data name="PrincipalSection" xml:space="preserve"><value>Principal</value></data>
+  <data name="PermissionsSection" xml:space="preserve"><value>Permissions</value></data>
+  <data name="ValiditySection" xml:space="preserve"><value>Validity &amp; Governance</value></data>
+  <data name="TargetTenant" xml:space="preserve"><value>Tenant</value></data>
+  <data name="TargetCompany" xml:space="preserve"><value>Company</value></data>
+  <data name="TargetCollectionDefinition" xml:space="preserve"><value>Documentation Structure</value></data>
+  <data name="TargetCollectionInstance" xml:space="preserve"><value>Folder</value></data>
+  <data name="TargetTemplateDocument" xml:space="preserve"><value>Template Document</value></data>
+  <data name="TargetControlledDocument" xml:space="preserve"><value>Controlled Document</value></data>
+  <data name="TargetTemplateMaster" xml:space="preserve"><value>Template Master</value></data>
+  <data name="TargetTemplateVariant" xml:space="preserve"><value>Template Variant</value></data>
+  <data name="PrincipalUser" xml:space="preserve"><value>User</value></data>
+  <data name="PrincipalRole" xml:space="preserve"><value>Role</value></data>
+  <data name="PrincipalGroup" xml:space="preserve"><value>Group</value></data>
+  <data name="PrincipalCompany" xml:space="preserve"><value>Company</value></data>
+  <data name="EffectAllow" xml:space="preserve"><value>Allow</value></data>
+  <data name="EffectDeny" xml:space="preserve"><value>Deny</value></data>
+  <data name="ActionView" xml:space="preserve"><value>View</value></data>
+  <data name="ActionDownload" xml:space="preserve"><value>Download</value></data>
+  <data name="ActionCreateDocument" xml:space="preserve"><value>Create Document</value></data>
+  <data name="ActionCreateTemplate" xml:space="preserve"><value>Create Template</value></data>
+  <data name="ActionEditMetadata" xml:space="preserve"><value>Edit Metadata</value></data>
+  <data name="ActionUploadVersion" xml:space="preserve"><value>Upload Version</value></data>
+  <data name="ActionPublish" xml:space="preserve"><value>Publish</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ActionShare" xml:space="preserve"><value>Share</value></data>
+  <data name="ActionManageAccess" xml:space="preserve"><value>Manage Access</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusDisabled" xml:space="preserve"><value>Disabled</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="InheritancePropagates" xml:space="preserve"><value>Propagates</value></data>
+  <data name="InheritanceDirect" xml:space="preserve"><value>Direct</value></data>
+  <data name="ManualTargetId" xml:space="preserve"><value>Or enter the target id manually</value></data>
+  <data name="ManualPrincipalId" xml:space="preserve"><value>Or enter the principal id manually</value></data>
+</root>

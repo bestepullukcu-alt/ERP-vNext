@@ -106,7 +106,12 @@
     <script src="~/assets/vendor/libs/pickr/pickr.js"></script>
     <script src="~/assets/vendor/js/template-customizer.js"></script>
     <script>
-        window.ApiBaseUrl = window.location.protocol + "//" + window.location.hostname + ":5000";
+        // Dev (localhost): the gateway is reachable directly on :5000, so call it. Deployment (real host):
+        // IIS reverse-proxies /api/* to the internal gateway on the same origin (the gateway port is not
+        // publicly exposed), so use an empty (same-origin) base.
+        window.ApiBaseUrl = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+            ? window.location.protocol + "//" + window.location.hostname + ":5000"
+            : "";
         window.API = {
             mdm: window.ApiBaseUrl,
             deven: window.ApiBaseUrl,

@@ -315,4 +315,15 @@
   <data name="ValidateNeedsDefinitions" xml:space="preserve">
     <value>Add at least one definition before validating.</value>
   </data>
+  <data name="RelatedTemplatesTitle" xml:space="preserve"><value>Related Corporate Templates</value></data>
+  <data name="RelatedTemplatesSelectFolder" xml:space="preserve"><value>Select a folder to view related template masters.</value></data>
+  <data name="RelatedTemplatesEmpty" xml:space="preserve"><value>No related template masters for this folder.</value></data>
+  <data name="MasterCode" xml:space="preserve"><value>Master Code</value></data>
+  <data name="TemplateName" xml:space="preserve"><value>Template Name</value></data>
+  <data name="VariantPolicy" xml:space="preserve"><value>Variant Policy</value></data>
+  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Deprecated</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="VariantAllowed" xml:space="preserve"><value>Variant Allowed</value></data>
+  <data name="VariantLocked" xml:space="preserve"><value>Variant Locked</value></data>
 </root>

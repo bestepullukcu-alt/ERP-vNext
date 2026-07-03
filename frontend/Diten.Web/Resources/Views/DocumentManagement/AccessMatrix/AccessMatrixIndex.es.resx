@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AccessMatrixTitle" xml:space="preserve"><value>Matriz de acceso a documentos</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Políticas de acceso a nivel de recurso para empresas, estructuras documentales, carpetas, documentos, plantillas y variantes</value></data>
+  <data name="CreatePolicy" xml:space="preserve"><value>Crear política</value></data>
+  <data name="EditPolicy" xml:space="preserve"><value>Editar política</value></data>
+  <data name="Target" xml:space="preserve"><value>Destino</value></data>
+  <data name="TargetType" xml:space="preserve"><value>Tipo de destino</value></data>
+  <data name="TargetId" xml:space="preserve"><value>ID de destino</value></data>
+  <data name="Principal" xml:space="preserve"><value>Principal</value></data>
+  <data name="PrincipalType" xml:space="preserve"><value>Tipo de principal</value></data>
+  <data name="PrincipalId" xml:space="preserve"><value>ID de principal</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Effect" xml:space="preserve"><value>Efecto</value></data>
+  <data name="Inheritance" xml:space="preserve"><value>Herencia</value></data>
+  <data name="Validity" xml:space="preserve"><value>Validez</value></data>
+  <data name="Updated" xml:space="preserve"><value>Actualizado</value></data>
+  <data name="RowActions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="InheritFromParent" xml:space="preserve"><value>Propagar a los hijos</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Válido desde</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>Válido hasta</value></data>
+  <data name="Reason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="Expired" xml:space="preserve"><value>Caducado</value></data>
+  <data name="EffectivePreview" xml:space="preserve"><value>Vista previa de acceso efectivo</value></data>
+  <data name="EffectivePreviewNote" xml:space="preserve"><value>Elija un principal y ejecute la vista previa para ver las acciones efectivas resueltas para este destino.</value></data>
+  <data name="AllowedActions" xml:space="preserve"><value>Acciones permitidas</value></data>
+  <data name="NoAllowedActions" xml:space="preserve"><value>Sin acciones permitidas</value></data>
+  <data name="PreviewPrincipal" xml:space="preserve"><value>Principal</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>Ejecutar</value></data>
+  <data name="EnforcementMode" xml:space="preserve"><value>Modo de aplicación</value></data>
+  <data name="TargetSection" xml:space="preserve"><value>Destino</value></data>
+  <data name="PrincipalSection" xml:space="preserve"><value>Principal</value></data>
+  <data name="PermissionsSection" xml:space="preserve"><value>Permisos</value></data>
+  <data name="ValiditySection" xml:space="preserve"><value>Validez y gobernanza</value></data>
+  <data name="TargetTenant" xml:space="preserve"><value>Inquilino</value></data>
+  <data name="TargetCompany" xml:space="preserve"><value>Empresa</value></data>
+  <data name="TargetCollectionDefinition" xml:space="preserve"><value>Estructura documental</value></data>
+  <data name="TargetCollectionInstance" xml:space="preserve"><value>Carpeta</value></data>
+  <data name="TargetTemplateDocument" xml:space="preserve"><value>Documento de plantilla</value></data>
+  <data name="TargetControlledDocument" xml:space="preserve"><value>Documento controlado</value></data>
+  <data name="TargetTemplateMaster" xml:space="preserve"><value>Plantilla maestra</value></data>
+  <data name="TargetTemplateVariant" xml:space="preserve"><value>Variante de plantilla</value></data>
+  <data name="PrincipalUser" xml:space="preserve"><value>Usuario</value></data>
+  <data name="PrincipalRole" xml:space="preserve"><value>Rol</value></data>
+  <data name="PrincipalGroup" xml:space="preserve"><value>Grupo</value></data>
+  <data name="PrincipalCompany" xml:space="preserve"><value>Empresa</value></data>
+  <data name="EffectAllow" xml:space="preserve"><value>Permitir</value></data>
+  <data name="EffectDeny" xml:space="preserve"><value>Denegar</value></data>
+  <data name="ActionView" xml:space="preserve"><value>Ver</value></data>
+  <data name="ActionDownload" xml:space="preserve"><value>Descargar</value></data>
+  <data name="ActionCreateDocument" xml:space="preserve"><value>Crear documento</value></data>
+  <data name="ActionCreateTemplate" xml:space="preserve"><value>Crear plantilla</value></data>
+  <data name="ActionEditMetadata" xml:space="preserve"><value>Editar metadatos</value></data>
+  <data name="ActionUploadVersion" xml:space="preserve"><value>Subir versión</value></data>
+  <data name="ActionPublish" xml:space="preserve"><value>Publicar</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>Archivar</value></data>
+  <data name="ActionShare" xml:space="preserve"><value>Compartir</value></data>
+  <data name="ActionManageAccess" xml:space="preserve"><value>Gestionar acceso</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Activo</value></data>
+  <data name="StatusDisabled" xml:space="preserve"><value>Deshabilitado</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="InheritancePropagates" xml:space="preserve"><value>Se propaga</value></data>
+  <data name="InheritanceDirect" xml:space="preserve"><value>Directo</value></data>
+  <data name="ManualTargetId" xml:space="preserve"><value>O introduzca el id del destino manualmente</value></data>
+  <data name="ManualPrincipalId" xml:space="preserve"><value>O introduzca el id del principal manualmente</value></data>
+</root>

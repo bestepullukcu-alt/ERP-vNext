@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TemplateVariantsTitle" xml:space="preserve"><value>متغيرات القالب</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>متغيرات القوالب على نطاق الشركة ووحدة الأعمال والموقع المشتقة من القوالب الرئيسية للمؤسسة</value></data>
+  <data name="CreateVariant" xml:space="preserve"><value>إنشاء متغير</value></data>
+  <data name="EditVariant" xml:space="preserve"><value>تعديل المتغير</value></data>
+  <data name="Variant" xml:space="preserve"><value>المتغير</value></data>
+  <data name="VariantCode" xml:space="preserve"><value>رمز المتغير</value></data>
+  <data name="VariantName" xml:space="preserve"><value>اسم المتغير</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="DerivedMaster" xml:space="preserve"><value>القالب الرئيسي المشتق</value></data>
+  <data name="TemplateMaster" xml:space="preserve"><value>القالب الرئيسي</value></data>
+  <data name="LastRebased" xml:space="preserve"><value>آخر إعادة تأسيس</value></data>
+  <data name="DriftStatus" xml:space="preserve"><value>حالة الانحراف</value></data>
+  <data name="Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>نوع النطاق</value></data>
+  <data name="ScopeId" xml:space="preserve"><value>النطاق</value></data>
+  <data name="Owner" xml:space="preserve"><value>المالك</value></data>
+  <data name="OwnerCompanyId" xml:space="preserve"><value>الشركة المالكة</value></data>
+  <data name="OwnerUserId" xml:space="preserve"><value>المستخدم المالك</value></data>
+  <data name="Approval" xml:space="preserve"><value>الموافقة</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Compare" xml:space="preserve"><value>مقارنة</value></data>
+  <data name="Rebase" xml:space="preserve"><value>إعادة التأسيس</value></data>
+  <data name="RebaseConfirm" xml:space="preserve"><value>هل تريد إعادة تأسيس هذا المتغير على الإصدار الحالي للقالب الرئيسي؟ سيتم مسح التغييرات المحلية.</value></data>
+  <data name="Rebased" xml:space="preserve"><value>تمت إعادة تأسيس المتغير</value></data>
+  <data name="CompareTitle" xml:space="preserve"><value>مقارنة المتغير / القالب الرئيسي</value></data>
+  <data name="CompareNote" xml:space="preserve"><value>مقارنة على مستوى البيانات الوصفية فقط — لا يتم حساب أي فرق ثنائي أو في المحتوى في هذا الأساس.</value></data>
+  <data name="MasterCurrentVersion" xml:space="preserve"><value>الإصدار الحالي للقالب الرئيسي</value></data>
+  <data name="VariantLastRebasedVersion" xml:space="preserve"><value>آخر إصدار معاد تأسيسه للمتغير</value></data>
+  <data name="MasterStatus" xml:space="preserve"><value>حالة القالب الرئيسي</value></data>
+  <data name="VariantStatus" xml:space="preserve"><value>حالة المتغير</value></data>
+  <data name="HasLocalChanges" xml:space="preserve"><value>يحتوي على تغييرات محلية</value></data>
+  <data name="VariantIdentitySection" xml:space="preserve"><value>هوية المتغير</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>النطاق</value></data>
+  <data name="OwnerSection" xml:space="preserve"><value>المالك</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>الحوكمة والنسب</value></data>
+  <data name="LineageSection" xml:space="preserve"><value>النسب</value></data>
+  <data name="MetadataEditDeferred" xml:space="preserve"><value>تم تأجيل تحرير البيانات الوصفية لهذه الشريحة الأساسية.</value></data>
+  <data name="ScopeCompany" xml:space="preserve"><value>الشركة</value></data>
+  <data name="ScopeBusinessUnit" xml:space="preserve"><value>وحدة الأعمال</value></data>
+  <data name="ScopeSite" xml:space="preserve"><value>الموقع</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>مهمل</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="DriftInSync" xml:space="preserve"><value>متزامن</value></data>
+  <data name="DriftRebaseRequired" xml:space="preserve"><value>إعادة التأسيس مطلوبة</value></data>
+  <data name="DriftDrifted" xml:space="preserve"><value>منحرف</value></data>
+  <data name="DriftBlocked" xml:space="preserve"><value>محظور</value></data>
+  <data name="ApprovalNotRequired" xml:space="preserve"><value>غير مطلوب</value></data>
+  <data name="ApprovalPending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="ApprovalApproved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="ApprovalRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="ApprovalBlocked" xml:space="preserve"><value>محظور</value></data>
+  <data name="DocumentationStructure" xml:space="preserve"><value>هيكل التوثيق</value></data>
+  <data name="TargetFolder" xml:space="preserve"><value>المجلد الهدف</value></data>
+  <data name="LinkedTemplateDocument" xml:space="preserve"><value>قالب المجلد المرتبط</value></data>
+  <data name="TemplateDocumentCurrentVersion" xml:space="preserve"><value>إصدار قالب المجلد</value></data>
+  <data name="ContentLinked" xml:space="preserve"><value>المحتوى مرتبط</value></data>
+  <data name="VariantContentSection" xml:space="preserve"><value>محتوى المتغير</value></data>
+  <data name="VariantContentSource" xml:space="preserve"><value>مصدر محتوى المتغير</value></data>
+  <data name="UseMasterVersionContent" xml:space="preserve"><value>استخدم محتوى إصدار القالب الرئيسي المحدد</value></data>
+  <data name="UploadLocalVariantContent" xml:space="preserve"><value>تحميل محتوى متغير محلي</value></data>
+  <data name="MasterContentHelp" xml:space="preserve"><value>سيستخدم هذا المتغير في البداية ملف إصدار القالب الرئيسي المحدد.</value></data>
+  <data name="LocalUploadHelp" xml:space="preserve"><value>سيبدأ هذا المتغير بمحتوى محلي محمل وسيتم تمييزه كتغيير محلي.</value></data>
+  <data name="LocalVariantFile" xml:space="preserve"><value>ملف المتغير المحلي</value></data>
+  <data name="MasterVersionContent" xml:space="preserve"><value>يستخدم محتوى إصدار القالب الرئيسي</value></data>
+  <data name="LocalVariantUpload" xml:space="preserve"><value>يستخدم محتوى المتغير المحلي</value></data>
+</root>

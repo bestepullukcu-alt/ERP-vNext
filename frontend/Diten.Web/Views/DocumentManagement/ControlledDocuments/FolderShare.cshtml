@@ -1,0 +1,72 @@
+@using Diten.Web.Views.DocumentManagement.ControlledDocuments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ControlledDocumentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["FolderShare"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["FolderShare"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header"><h6 class="mb-0">@Localizer["BranchToShare"]</h6></div>
+    <div class="card-body row g-3">
+        <div class="col-md-6">
+            <label class="form-label" for="fsBranch">@Localizer["BranchToShare"] <span class="text-danger">*</span></label>
+            <input type="text" id="fsBranch" class="form-control" placeholder="CollectionInstanceId" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="fsTarget">@Localizer["TargetCompany"] <span class="text-danger">*</span></label>
+            <input type="text" id="fsTarget" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="fsShareMode">@Localizer["ShareMode"]</label>
+            <select id="fsShareMode" class="form-select">
+                <option value="REFERENCE">@Localizer["ShareModeReference"]</option>
+                <option value="COPY_ON_ADOPT">@Localizer["ShareModeCopyOnAdopt"]</option>
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" id="fsIncludeTemplates" checked />
+                <label class="form-check-label" for="fsIncludeTemplates">@Localizer["IncludeTemplates"]</label>
+            </div>
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button type="button" class="btn btn-label-secondary" id="btnDryRun">@Localizer["DryRun"]</button>
+            <button type="button" class="btn btn-primary" id="btnExecute" disabled>@Localizer["Execute"]</button>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4 d-none" id="fsResultCard">
+    <div class="card-header"><h6 class="mb-0" id="fsResultTitle"></h6></div>
+    <div class="card-body">
+        <div class="row mb-3" id="fsCounts"></div>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>@Localizer["DocumentType"]</th>
+                        <th>@Localizer["Title"]</th>
+                        <th>@SharedLocalizer["Status"]</th>
+                    </tr>
+                </thead>
+                <tbody id="fsOutcomes"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/ControlledDocuments/_IndexL10n.cshtml" />
+    @Html.AntiForgeryToken()
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/folder-share.js" asp-append-version="true"></script>
+}

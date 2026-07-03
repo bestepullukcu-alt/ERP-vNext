@@ -71,6 +71,13 @@ builder.Services.AddHttpClient<Diten.Web.Services.TenantStatus.ITenantStatusGate
     client.BaseAddress = new Uri(platformServiceUrl);
     client.Timeout = TimeSpan.FromSeconds(5);
 });
+// Vanity slug → tenant login redirect (e.g. http://<host>/gmg → /account/login?tenantId=...).
+// Targets the Platform service DIRECTLY with the shared internal API key (same pattern as branding).
+builder.Services.AddHttpClient<Diten.Web.Services.TenantResolution.ITenantSlugResolver, Diten.Web.Services.TenantResolution.TenantSlugResolver>(client =>
+{
+    client.BaseAddress = new Uri(platformServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
 // FE-A-harden (A5): the default HttpClient is registered TRANSIENT — each scoped (per-request)
@@ -381,7 +388,61 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=WorkCenter}/{action=Index}/{id?}");
 
+// Vanity tenant slug entry point. Runs ONLY when no controller/route matched (lowest priority),
+// so it never shadows real routes/static files. A single-segment GET like "/gmg" is treated as a
+// tenant slug: if it resolves to an ACTIVE tenant, redirect to that tenant's login; otherwise fall
+// through to a normal 404 (re-executed as the friendly /Home/Status/404 page).
+app.MapFallback(async (HttpContext context) =>
+{
+    if (!HttpMethods.IsGet(context.Request.Method) || !TryGetSlugCandidate(context.Request.Path, out var slug))
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        return;
+    }
+
+    var resolver = context.RequestServices.GetRequiredService<Diten.Web.Services.TenantResolution.ITenantSlugResolver>();
+    var tenantId = await resolver.ResolveActiveTenantIdAsync(slug, context.RequestAborted);
+    if (tenantId is { } id)
+    {
+        context.Response.Redirect($"/account/login?tenantId={id}");
+        return;
+    }
+
+    context.Response.StatusCode = StatusCodes.Status404NotFound;
+});
+
 app.Run();
+
+// A vanity-slug candidate is a single path segment of slug-safe characters (letters, digits, dash)
+// with no file extension — e.g. "/gmg". Anything multi-segment, dotted (static file), or oversized
+// is rejected so we never make a Platform lookup for junk or asset paths.
+static bool TryGetSlugCandidate(PathString path, out string slug)
+{
+    slug = string.Empty;
+    var value = path.Value;
+    if (string.IsNullOrEmpty(value) || value.Length < 2 || value[0] != '/')
+    {
+        return false;
+    }
+
+    var segment = value[1..];
+    if (segment.Length is < 1 or > 63 || segment.Contains('/') || segment.Contains('.'))
+    {
+        return false;
+    }
+
+    foreach (var c in segment)
+    {
+        var ok = c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9' || c == '-';
+        if (!ok)
+        {
+            return false;
+        }
+    }
+
+    slug = segment;
+    return true;
+}
 
 static Guid? TryReadTenantId(string accessToken)
 {

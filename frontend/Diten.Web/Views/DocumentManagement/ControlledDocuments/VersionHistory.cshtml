@@ -1,0 +1,118 @@
+@using Diten.Web.Views.DocumentManagement.ControlledDocuments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ControlledDocumentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["VersionHistory"].Value;
+    Layout = "_LayoutTenantShell";
+    var documentId = ViewData["DocumentId"]?.ToString();
+}
+
+<div class="controlleddocuments-details">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0" id="detailTitle"></h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/DocumentManagementControlledDocuments">@Localizer["ControlledDocumentsTitle"]</a></li>
+                    <li class="breadcrumb-item"><a href="/DocumentManagementControlledDocuments/Details/@documentId">@SharedLocalizer["Details"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["VersionHistory"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/DocumentManagementControlledDocuments/Details/@documentId" class="btn btn-label-secondary border">@SharedLocalizer["BackToList"]</a>
+        </div>
+    </div>
+
+    @* ── Version history (golden compact DataTable surface) + upload-new-version trigger ── *@
+    <section class="card">
+        <div id="skeleton-loader" class="backbone-skeleton p-4">
+            <div class="shimmer skeleton-row skeleton-row-lg"></div>
+            <div class="shimmer skeleton-row"></div>
+            <div class="shimmer skeleton-row"></div>
+            <div class="shimmer skeleton-row"></div>
+            <div class="shimmer skeleton-row skeleton-row-last"></div>
+        </div>
+
+        <div class="card-datatable table-responsive">
+            <table id="versionHistoryTable" data-dt-standard="v2" class="datatables-version-history table border-top">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
+                        <th>@Localizer["Version"]</th>
+                        <th class="all">@Localizer["FileName"]</th>
+                        <th>@Localizer["FileSize"]</th>
+                        <th>@Localizer["Integrity"]</th>
+                        <th>@Localizer["UploadedBy"]</th>
+                        <th>@Localizer["UploadedAt"]</th>
+                        <th>@Localizer["ChangeSummary"]</th>
+                        <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody id="versionHistoryBody"></tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+@* ── Upload new version (golden slim create offcanvas) ── *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasUploadVersion" aria-labelledby="offcanvasUploadVersionLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasUploadVersionLabel" class="offcanvas-title d-flex align-items-center">
+            <i class="icon-base bx bx-upload me-2"></i>@Localizer["UploadNewVersion"]
+        </h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <form id="formUploadVersion" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="versionFile" class="form-label fw-medium">@Localizer["SelectFile"] <span class="text-danger">*</span></label>
+                    <input type="file" id="versionFile" class="form-control" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="versionChangeSummary" class="form-label fw-medium">@Localizer["ChangeSummary"] <span class="text-danger">*</span></label>
+                    <textarea id="versionChangeSummary" class="form-control" rows="3" maxlength="500" required></textarea>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                @* Live SHA-256 verdict computed client-side from the selected file *@
+                <div class="col-12">
+                    <div id="versionIntegrityVerdict" class="d-none"></div>
+                </div>
+
+                @* Revealed only when the chosen file is byte-identical to the active version *@
+                <div class="col-12">
+                    <div id="versionForcePanel" class="form-check d-none">
+                        <input class="form-check-input" type="checkbox" id="versionAllowUnchanged" />
+                        <label class="form-check-label" for="versionAllowUnchanged">@Localizer["ForceNewVersion"]</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSubmitVersion" class="btn btn-primary">
+            @Localizer["Upload"]
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/ControlledDocuments/_IndexL10n.cshtml" />
+    @Html.AntiForgeryToken()
+    <script>window.ControlledDocumentContext = { documentId: '@documentId' };</script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/ControlledDocuments/details.js" asp-append-version="true"></script>
+}

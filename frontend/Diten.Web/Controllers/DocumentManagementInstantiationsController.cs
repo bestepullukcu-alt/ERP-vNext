@@ -152,16 +152,9 @@ public sealed class DocumentManagementInstantiationsController : Controller
         }
     }
 
-    private async Task<IActionResult> PassthroughAsync(HttpResponseMessage response, CancellationToken ct)
-    {
-        var body = await response.Content.ReadAsStringAsync(ct);
-        return new ContentResult
-        {
-            Content = string.IsNullOrWhiteSpace(body) ? "{}" : body,
-            ContentType = "application/json",
-            StatusCode = (int)response.StatusCode
-        };
-    }
+    // MOD-0029-FU04C — navigation 401/403 → friendly Not Authorized page; AJAX keeps the JSON envelope for a toast.
+    private Task<IActionResult> PassthroughAsync(HttpResponseMessage response, CancellationToken ct) =>
+        Diten.Web.Infrastructure.TenantShellProxyResponse.PassthroughAsync(response, Request, ct);
 
     private IActionResult UnauthorizedJson() =>
         JsonFailure(401, "UNAUTHORIZED", _sharedLocalizer["Unauthorized"].Value);

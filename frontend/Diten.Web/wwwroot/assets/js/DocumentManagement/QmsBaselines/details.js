@@ -79,6 +79,10 @@
         content?.classList.remove('d-none');
     };
 
+    // Node binding metadata keyed by the (controlled) jsTree node id, so selection lookup never depends on how
+    // jsTree preserves custom `data` across versions. Rebuilt on every renderTree().
+    const nodeMetaById = new Map();
+
     // Build nested tree from a flat list (parentCanonicalId + displayOrder), preserving order, never flattening.
     const buildTree = (items) => {
         const byParent = new Map();
@@ -99,11 +103,18 @@
         if (node.fullPath) titleBits.push(`${t('FullPath')}: ${node.fullPath}`);
         if (node.requiredByScope) titleBits.push(node.requiredByScope);
         if (node.defaultClassificationLevel) titleBits.push(node.defaultClassificationLevel);
+        // Controlled, DOM-safe node id; canonicalId is unique per node within a baseline.
+        const meta = { id: node.id, canonicalId: node.canonicalId, fullPath: node.fullPath, name: node.name };
+        const nodeId = node.canonicalId ? `qnode-${node.canonicalId}` : undefined;
+        if (nodeId) nodeMetaById.set(nodeId, meta);
         return {
+            id: nodeId,
             text: `<span class="fw-medium">${esc(node.name || '')}</span>`,
             type: 'folder', // every QMS definition node is a documentation folder
             state: { opened: true },
             a_attr: { title: titleBits.join('  ·  ') },
+            // Carried so node selection can look up Related Corporate Templates by binding (read-only).
+            data: meta,
             children: children.map((c) => toJstreeNode(c, byParent))
         };
     };
@@ -153,6 +164,9 @@
     };
 
     const renderTree = (items) => {
+        nodeMetaById.clear();
+        destroyRelatedDt?.(); // drop any stale DataTable instance before the tree is rebuilt
+        relatedShow?.('select'); // reset the related panel to its "pick a folder" state on (re)render
         if (!window.jQuery || !window.jQuery.fn.jstree) {
             treeEl.innerHTML = emptyStateHtml();
             return;
@@ -178,7 +192,154 @@
             },
             search: { show_only_matches: true, show_only_matches_children: true, close_opened_onclear: false }
         });
+        // Read-only: selecting a node loads its Related Corporate Templates (no tree mutation).
+        // Resolve metadata via the controlled node id first, then fall back to jsTree's preserved data.
+        $t.off('select_node.jstree').on('select_node.jstree', (e, sel) => {
+            const meta = nodeMetaById.get(sel?.node?.id) || sel?.node?.data || sel?.node?.original?.data || {};
+            loadRelatedTemplates(meta);
+        });
         applyTreeEmptyConstraints(false);
+    };
+
+    // ── MOD-0029-FU02A: Related Corporate Templates for the selected definition node (read-only) ──
+    const relatedEls = {
+        states: document.getElementById('relatedTplStates'),
+        select: document.getElementById('relatedTplSelect'),
+        loading: document.getElementById('relatedTplLoading'),
+        error: document.getElementById('relatedTplError'),
+        empty: document.getElementById('relatedTplEmpty'),
+        wrap: document.getElementById('relatedTplTableWrap'),
+        table: document.getElementById('relatedTemplatesTable'),
+        body: document.getElementById('relatedTplBody'),
+        path: document.getElementById('relatedTplPath')
+    };
+    let relatedReqSeq = 0;
+    let relatedDt = null;
+
+    const destroyRelatedDt = () => {
+        if (relatedDt) { try { relatedDt.destroy(); } catch (e) { /* ignore */ } relatedDt = null; }
+    };
+
+    // The table lives in its own card-datatable surface; the message states share the card-body. Show one or
+    // the other (golden compact list surface for results, centered message otherwise).
+    const relatedShow = (which) => {
+        ['select', 'loading', 'error', 'empty'].forEach((k) => relatedEls[k]?.classList.add('d-none'));
+        if (which === 'wrap') {
+            relatedEls.states?.classList.add('d-none');
+            relatedEls.wrap?.classList.remove('d-none');
+        } else {
+            relatedEls.wrap?.classList.add('d-none');
+            relatedEls.states?.classList.remove('d-none');
+            relatedEls[which]?.classList.remove('d-none');
+        }
+    };
+
+    const masterBadge = (status) => {
+        const s = String(status || '').toUpperCase();
+        const color = { DRAFT: 'warning', PUBLISHED: 'success', DEPRECATED: 'danger', ARCHIVED: 'secondary' }[s] || 'secondary';
+        const label = { DRAFT: t('StatusDraft'), PUBLISHED: t('StatusPublished'), DEPRECATED: t('StatusDeprecated'), ARCHIVED: t('StatusArchived') }[s] || t('Unknown');
+        return `<span class="badge bg-label-${color}">${esc(label)}</span>`;
+    };
+    const variantLabel = (v) => {
+        const s = String(v || '').toUpperCase();
+        if (s === 'LOCKED') return esc(t('VariantLocked'));
+        if (s === 'ALLOWED') return esc(t('VariantAllowed'));
+        return s ? esc(s) : '-';
+    };
+
+    // Standard golden-compact action cell (full-size btn btn-icon + icon-md), dispatched via DitenDataTable.
+    const renderRelatedActions = (r) => {
+        const actions = [{ key: 'view', icon: 'bx bx-show', attrs: { 'data-id': r.id, title: t('ViewDetails'), 'aria-label': t('ViewDetails') } }];
+        return window.DitenDataTable?.renderActions
+            ? window.DitenDataTable.renderActions(actions)
+            : `<a href="/DocumentManagementTemplateMasters/Details/${esc(r.id)}" class="btn btn-icon"><i class="bx bx-show icon-md"></i></a>`;
+    };
+
+    // Bind the row-action dispatcher once (self-guards); the <table> element persists across DataTable re-inits.
+    if (relatedEls.table && window.DitenDataTable?.bindActionDispatcher) {
+        window.DitenDataTable.bindActionDispatcher({
+            tableEl: relatedEls.table,
+            getTable: () => relatedDt,
+            onRowAction: {
+                view: ({ id }) => { if (id) window.location.href = `/DocumentManagementTemplateMasters/Details/${id}`; }
+            }
+        });
+    }
+
+    // Golden Compact DataTable v2: build rows (with control + actions columns), then init via DtDefaults.
+    const renderRelatedRows = (rows) => {
+        destroyRelatedDt();
+        relatedEls.body.innerHTML = rows.map((r) => {
+            const owner = r.ownerCompanyId || r.ownerUserId || '-';
+            return `<tr>
+                <td></td>
+                <td class="fw-medium">${esc(r.masterCode)}</td>
+                <td>${esc(r.templateName)}</td>
+                <td class="text-nowrap" data-order="${esc(r.currentMasterVersion)}">v${esc(r.currentMasterVersion)}</td>
+                <td>${masterBadge(r.status)}</td>
+                <td>${esc(r.classification) || '-'}</td>
+                <td>${variantLabel(r.variantPolicy)}</td>
+                <td class="text-truncate" style="max-width:160px" title="${esc(owner)}">${esc(owner)}</td>
+                <td>${renderRelatedActions(r)}</td>
+            </tr>`;
+        }).join('');
+        relatedShow('wrap');
+
+        if (relatedEls.table && window.DataTable && window.DtDefaults?.create && window.DtDefaults?.exportButtons) {
+            relatedDt = new DataTable(relatedEls.table, window.DtDefaults.create({
+                stateSave: false,
+                colReorder: { columns: ':gt(0):not(:last-child)' },
+                paging: true,
+                lengthChange: true,
+                searching: true,
+                info: true,
+                order: [[1, 'asc']],
+                columnDefs: [
+                    { targets: 0, className: 'control', orderable: false, searchable: false, responsivePriority: 2, render: () => '' },
+                    { targets: -1, orderable: false, searchable: false, className: 'cell-fit all' },
+                    { responsivePriority: 1, targets: 1 }
+                ],
+                buttons: window.DtDefaults.exportButtons(
+                    null,
+                    {},
+                    {},
+                    { exportColumns: [1, 2, 3, 4, 5, 6, 7], colvisColumns: [1, 2, 3, 4, 5, 6, 7] }
+                ),
+                drawCallback: function () { window.DtDefaults?.updateVisualState?.(this.api(), 0); },
+                initComplete: function () { window.DtDefaults?.updateVisualState?.(this.api(), 0); }
+            }));
+        }
+    };
+
+    const loadRelatedTemplates = async (node) => {
+        const collectionDefinitionId = node?.id || '';
+        const canonicalId = node?.canonicalId || '';
+        destroyRelatedDt();
+        if (!collectionDefinitionId && !canonicalId) {
+            relatedEls.path?.classList.add('d-none');
+            relatedShow('select');
+            return;
+        }
+        if (relatedEls.path) {
+            const label = node?.fullPath || node?.name || '';
+            relatedEls.path.textContent = label;
+            relatedEls.path.classList.toggle('d-none', !label);
+        }
+        const seq = ++relatedReqSeq;
+        relatedShow('loading');
+        const qs = new URLSearchParams();
+        if (collectionDefinitionId) qs.set('collectionDefinitionId', collectionDefinitionId);
+        if (canonicalId) qs.set('canonicalId', canonicalId);
+        const { ok, json } = await getJson(`/DocumentManagementQmsBaselines/related-template-masters?${qs.toString()}`);
+        if (seq !== relatedReqSeq) return; // superseded by a newer selection
+        if (!ok || !json || json.isSuccessful === false) {
+            relatedEls.error.textContent = mapReason(json?.reason_code || json?.reasonCode);
+            relatedShow('error');
+            return;
+        }
+        const rows = json.data || json.Data || [];
+        if (!rows.length) { relatedShow('empty'); return; }
+        renderRelatedRows(rows);
     };
 
     const loadDefinitions = async () => {

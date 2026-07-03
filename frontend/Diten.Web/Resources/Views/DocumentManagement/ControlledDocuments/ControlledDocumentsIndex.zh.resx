@@ -1,0 +1,521 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ControlledDocumentsTitle" xml:space="preserve">
+    <value>受控文档</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Add, version, access-control and share your company documents and templates.</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>标题</value>
+  </data>
+  <data name="DocumentType" xml:space="preserve">
+    <value>文档类型</value>
+  </data>
+  <data name="FolderPath" xml:space="preserve">
+    <value>Folder Path</value>
+  </data>
+  <data name="CurrentVersion" xml:space="preserve">
+    <value>Current Version</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="EmptyList" xml:space="preserve">
+    <value>No documents found.</value>
+  </data>
+  <data name="DocumentLibrary" xml:space="preserve">
+    <value>Document Library</value>
+  </data>
+  <data name="Templates" xml:space="preserve">
+    <value>模板</value>
+  </data>
+  <data name="FolderDocuments" xml:space="preserve">
+    <value>Folder Documents</value>
+  </data>
+  <data name="TypeSop" xml:space="preserve">
+    <value>SOP</value>
+  </data>
+  <data name="TypeWorkInstruction" xml:space="preserve">
+    <value>Work Instruction</value>
+  </data>
+  <data name="TypePolicy" xml:space="preserve">
+    <value>Policy</value>
+  </data>
+  <data name="TypeForm" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="TypeTemplate" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="TypeOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="StatusActive" xml:space="preserve">
+    <value>启用</value>
+  </data>
+  <data name="StatusArchived" xml:space="preserve">
+    <value>已归档</value>
+  </data>
+  <data name="AddDocument" xml:space="preserve">
+    <value>添加文档</value>
+  </data>
+  <data name="AddTemplate" xml:space="preserve">
+    <value>添加模板</value>
+  </data>
+  <data name="EditMetadata" xml:space="preserve">
+    <value>Edit Metadata</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="ShareDocument" xml:space="preserve">
+    <value>共享文档</value>
+  </data>
+  <data name="ShareTemplate" xml:space="preserve">
+    <value>Share Template</value>
+  </data>
+  <data name="FolderShare" xml:space="preserve">
+    <value>文件夹共享</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>标签</value>
+  </data>
+  <data name="EffectiveDate" xml:space="preserve">
+    <value>Effective Date</value>
+  </data>
+  <data name="ReviewDate" xml:space="preserve">
+    <value>Review Date</value>
+  </data>
+  <data name="ExpiryDate" xml:space="preserve">
+    <value>Expiry Date</value>
+  </data>
+  <data name="Controlled" xml:space="preserve">
+    <value>Controlled</value>
+  </data>
+  <data name="CollectionInstanceId" xml:space="preserve">
+    <value>Folder (Collection Instance)</value>
+  </data>
+  <data name="CompanyId" xml:space="preserve">
+    <value>Company Legal Entity</value>
+  </data>
+  <data name="SelectFile" xml:space="preserve">
+    <value>选择文件</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="VersionHistory" xml:space="preserve">
+    <value>版本历史</value>
+  </data>
+  <data name="UploadNewVersion" xml:space="preserve">
+    <value>上传新版本</value>
+  </data>
+  <data name="Upload" xml:space="preserve">
+    <value>上传</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="UploadedBy" xml:space="preserve">
+    <value>Uploaded By</value>
+  </data>
+  <data name="UploadedAt" xml:space="preserve">
+    <value>Uploaded At</value>
+  </data>
+  <data name="ChangeSummary" xml:space="preserve">
+    <value>Change Summary</value>
+  </data>
+  <data name="VersionStatusActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="VersionStatusSuperseded" xml:space="preserve">
+    <value>Superseded</value>
+  </data>
+  <data name="Reusable" xml:space="preserve">
+    <value>Reusable</value>
+  </data>
+  <data name="Shareable" xml:space="preserve">
+    <value>Shareable</value>
+  </data>
+  <data name="CopyableOnAdopt" xml:space="preserve">
+    <value>Copyable on Adopt</value>
+  </data>
+  <data name="ReferenceOnly" xml:space="preserve">
+    <value>Reference Only</value>
+  </data>
+  <data name="AccessControl" xml:space="preserve">
+    <value>Access Control</value>
+  </data>
+  <data name="ShareMode" xml:space="preserve">
+    <value>共享模式</value>
+  </data>
+  <data name="ShareModeReference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="ShareModeCopyOnAdopt" xml:space="preserve">
+    <value>Copy on Adopt</value>
+  </data>
+  <data name="TargetCompany" xml:space="preserve">
+    <value>目标公司</value>
+  </data>
+  <data name="DocumentContext" xml:space="preserve">
+    <value>文档上下文</value>
+  </data>
+  <data name="InternalLink" xml:space="preserve">
+    <value>内部链接</value>
+  </data>
+  <data name="RecipientEmail" xml:space="preserve">
+    <value>收件人邮箱</value>
+  </data>
+  <data name="SendEmail" xml:space="preserve">
+    <value>发送邮件</value>
+  </data>
+  <data name="CopyLink" xml:space="preserve">
+    <value>复制链接</value>
+  </data>
+  <data name="CompanyShare" xml:space="preserve">
+    <value>公司共享</value>
+  </data>
+  <data name="AccessLevel" xml:space="preserve">
+    <value>访问级别</value>
+  </data>
+  <data name="ViewOnly" xml:space="preserve">
+    <value>仅查看</value>
+  </data>
+  <data name="CopyAllowed" xml:space="preserve">
+    <value>允许复制</value>
+  </data>
+  <data name="ExpiryDateOptional" xml:space="preserve">
+    <value>到期日期（可选）</value>
+  </data>
+  <data name="PasswordProtectionOptional" xml:space="preserve">
+    <value>密码保护（可选）</value>
+  </data>
+  <data name="DirectUserShare" xml:space="preserve">
+    <value>直接用户共享</value>
+  </data>
+  <data name="TargetCompanyPlaceholder" xml:space="preserve">
+    <value>目标公司 Id</value>
+  </data>
+  <data name="UnsupportedShareOption" xml:space="preserve">
+    <value>邮件/链接助手不会创建访问授权。到期、密码保护和直接用户授权需要单独批准的后续范围。</value>
+  </data>
+  <data name="ShareNow" xml:space="preserve">
+    <value>立即共享</value>
+  </data>
+  <data name="LinkCopied" xml:space="preserve">
+    <value>链接已复制。</value>
+  </data>
+  <data name="IncludeTemplates" xml:space="preserve">
+    <value>Include Templates</value>
+  </data>
+  <data name="BranchToShare" xml:space="preserve">
+    <value>Branch to Share</value>
+  </data>
+  <data name="DryRun" xml:space="preserve">
+    <value>试运行</value>
+  </data>
+  <data name="Execute" xml:space="preserve">
+    <value>执行</value>
+  </data>
+  <data name="FoldersIncluded" xml:space="preserve">
+    <value>Folders Included</value>
+  </data>
+  <data name="TemplatesIncluded" xml:space="preserve">
+    <value>Templates Included</value>
+  </data>
+  <data name="TemplatesSkipped" xml:space="preserve">
+    <value>Templates Skipped</value>
+  </data>
+  <data name="DocumentCreated" xml:space="preserve">
+    <value>Document created.</value>
+  </data>
+  <data name="VersionUploaded" xml:space="preserve">
+    <value>New version uploaded.</value>
+  </data>
+  <data name="ShareSuccess" xml:space="preserve">
+    <value>Shared successfully.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>A file is required.</value>
+  </data>
+  <data name="TitleRequired" xml:space="preserve">
+    <value>Title is required.</value>
+  </data>
+  <data name="NoAccess" xml:space="preserve">
+    <value>No access.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>访问被拒绝</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>未找到</value>
+  </data>
+  <data name="CorrelationId" xml:space="preserve">
+    <value>Correlation ID</value>
+  </data>
+  <data name="ReasonValidationFailed" xml:space="preserve">
+    <value>Validation failed.</value>
+  </data>
+  <data name="ReasonConflict" xml:space="preserve">
+    <value>Conflict.</value>
+  </data>
+  <data name="ReasonPermDenied" xml:space="preserve">
+    <value>Permission denied.</value>
+  </data>
+  <data name="ReasonNotFound" xml:space="preserve">
+    <value>Not found.</value>
+  </data>
+  <data name="ReasonStorageUnavailable" xml:space="preserve">
+    <value>Content storage is unavailable.</value>
+  </data>
+  <data name="ReasonFeatureDisabled" xml:space="preserve">
+    <value>This capability is disabled.</value>
+  </data>
+  <data name="Preview" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="Favorite" xml:space="preserve">
+    <value>收藏</value>
+  </data>
+  <data name="Unfavorite" xml:space="preserve">
+    <value>取消收藏</value>
+  </data>
+  <data name="Favorited" xml:space="preserve">
+    <value>已加入收藏。</value>
+  </data>
+  <data name="Unfavorited" xml:space="preserve">
+    <value>已取消收藏。</value>
+  </data>
+  <data name="Move" xml:space="preserve">
+    <value>移动</value>
+  </data>
+  <data name="MoveTitle" xml:space="preserve">
+    <value>移动文档</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>文档已移动。</value>
+  </data>
+  <data name="TargetFolder" xml:space="preserve">
+    <value>目标文件夹</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>删除此文档？将被归档。</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>文档已删除。</value>
+  </data>
+  <data name="SoftDelete" xml:space="preserve">
+    <value>Soft delete</value>
+  </data>
+  <data name="Archived" xml:space="preserve">
+    <value>已归档</value>
+  </data>
+  <data name="RemoveFavorite" xml:space="preserve">
+    <value>Remove favorite</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="Paste" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="CopyToFolder" xml:space="preserve">
+    <value>复制到文件夹</value>
+  </data>
+  <data name="MoveToFolder" xml:space="preserve">
+    <value>移动到文件夹</value>
+  </data>
+  <data name="SelectTargetFolder" xml:space="preserve">
+    <value>选择目标文件夹</value>
+  </data>
+  <data name="OpenInNewTab" xml:space="preserve">
+    <value>在新标签页打开</value>
+  </data>
+  <data name="UploadDocument" xml:space="preserve">
+    <value>Upload document</value>
+  </data>
+  <data name="UploadTemplate" xml:space="preserve">
+    <value>Upload template</value>
+  </data>
+  <data name="AddFolder" xml:space="preserve">
+    <value>Add folder</value>
+  </data>
+  <data name="FolderActionsUnavailable" xml:space="preserve">
+    <value>Folder actions are not available here.</value>
+  </data>
+  <data name="FolderOperationsDeferred" xml:space="preserve">
+    <value>Folder operations are managed in Documentation Structures.</value>
+  </data>
+  <data name="PreviewUnavailable" xml:space="preserve">
+    <value>Preview is not available.</value>
+  </data>
+  <data name="UnsupportedPreviewType" xml:space="preserve">
+    <value>Preview is not supported for this file type; downloading instead.</value>
+  </data>
+  <data name="DocumentationStructure" xml:space="preserve">
+    <value>文档结构</value>
+  </data>
+  <data name="SelectStructure" xml:space="preserve">
+    <value>选择文档结构</value>
+  </data>
+  <data name="SearchIn" xml:space="preserve">
+    <value>搜索范围</value>
+  </data>
+  <data name="ThisFolder" xml:space="preserve">
+    <value>此文件夹</value>
+  </data>
+  <data name="ThisFolderAndSubfolders" xml:space="preserve">
+    <value>此文件夹及子文件夹</value>
+  </data>
+  <data name="EntireStructure" xml:space="preserve">
+    <value>整个结构</value>
+  </data>
+  <data name="SearchResults" xml:space="preserve">
+    <value>搜索结果</value>
+  </data>
+  <data name="FolderResult" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="DocumentResult" xml:space="preserve">
+    <value>Document</value>
+  </data>
+  <data name="TemplateResult" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>未找到结果。</value>
+  </data>
+  <data name="Path" xml:space="preserve">
+    <value>路径</value>
+  </data>
+  <data name="OpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>Open document</value>
+  </data>
+  <data name="OpenTemplate" xml:space="preserve">
+    <value>Open template</value>
+  </data>
+  <data name="ModifiedAt" xml:space="preserve">
+    <value>修改时间</value>
+  </data>
+  <data name="CurrentFolderDocuments" xml:space="preserve">
+    <value>当前文件夹文档</value>
+  </data>
+  <data name="SelectCompany" xml:space="preserve">
+    <value>选择公司</value>
+  </data>
+  <data name="SelectItemForDetails" xml:space="preserve">
+    <value>选择文档、模板或搜索结果以查看详细信息。</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>搜索文件夹、文档和模板</value>
+  </data>
+  <data name="FolderTree" xml:space="preserve">
+    <value>文件夹树</value>
+  </data>
+  <data name="AccessPanelDeferred" xml:space="preserve">
+    <value>完整访问管理界面已延后；权限仍在服务器端执行。</value>
+  </data>
+  <data name="NoFolderSelected" xml:space="preserve">
+    <value>选择公司和文档结构以浏览文件夹。</value>
+  </data>
+  <data name="NoStructures" xml:space="preserve">
+    <value>此公司没有可用的活动文档结构。</value>
+  </data>
+  <data name="EmptyExplorerHeading" xml:space="preserve">
+    <value>尚无预览</value>
+  </data>
+  <data name="EmptyExplorerText" xml:space="preserve">
+    <value>选择公司和文档结构以预览文件夹。</value>
+  </data>
+  <data name="ActiveStructure" xml:space="preserve">
+    <value>活动结构</value>
+  </data>
+  <data name="DetailsPanel" xml:space="preserve">
+    <value>详细信息 / 操作</value>
+  </data>
+  <data name="Collapse" xml:space="preserve">
+    <value>收起</value>
+  </data>
+  <data name="Expand" xml:space="preserve">
+    <value>展开</value>
+  </data>
+  <data name="ResizeHint" xml:space="preserve">
+    <value>拖动以调整大小</value>
+  </data>
+  <data name="SectionIdentity" xml:space="preserve">
+    <value>标识</value>
+  </data>
+  <data name="SectionClassification" xml:space="preserve">
+    <value>分类</value>
+  </data>
+  <data name="SectionLifecycle" xml:space="preserve">
+    <value>生命周期</value>
+  </data>
+  <data name="Checksum" xml:space="preserve">
+    <value>校验和 (SHA-256)</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>文件名</value>
+  </data>
+  <data name="FileSize" xml:space="preserve">
+    <value>大小</value>
+  </data>
+  <data name="Integrity" xml:space="preserve">
+    <value>完整性</value>
+  </data>
+  <data name="ContentUnchanged" xml:space="preserve">
+    <value>内容未更改</value>
+  </data>
+  <data name="ContentChanged" xml:space="preserve">
+    <value>新内容</value>
+  </data>
+  <data name="IdenticalToActiveWarning" xml:space="preserve">
+    <value>此文件与当前活动版本完全相同 — 没有实际更改。</value>
+  </data>
+  <data name="ForceNewVersion" xml:space="preserve">
+    <value>仍然添加为新版本（内容相同）</value>
+  </data>
+  <data name="ChangeSummaryRequired" xml:space="preserve">
+    <value>需要变更摘要。</value>
+  </data>
+  <data name="FileTypeChanged" xml:space="preserve">
+    <value>文件类型已更改</value>
+  </data>
+  <data name="ReasonNoContentChange" xml:space="preserve">
+    <value>上传的文件与当前活动版本相同；未检测到更改。</value>
+  </data>
+  <data name="SameAsPrevious" xml:space="preserve">
+    <value>与上一版本相同</value>
+  </data>
+  <data name="Computing" xml:space="preserve">
+    <value>计算中…</value>
+  </data></root>

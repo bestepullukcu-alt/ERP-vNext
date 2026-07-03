@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TemplateVariantsTitle" xml:space="preserve"><value>Template Variants</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Company, business unit and site scoped template variants derived from corporate masters</value></data>
+  <data name="CreateVariant" xml:space="preserve"><value>Create Variant</value></data>
+  <data name="EditVariant" xml:space="preserve"><value>Edit Variant</value></data>
+  <data name="Variant" xml:space="preserve"><value>Variant</value></data>
+  <data name="VariantCode" xml:space="preserve"><value>Variant Code</value></data>
+  <data name="VariantName" xml:space="preserve"><value>Variant Name</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="DerivedMaster" xml:space="preserve"><value>Derived Master</value></data>
+  <data name="TemplateMaster" xml:space="preserve"><value>Template Master</value></data>
+  <data name="LastRebased" xml:space="preserve"><value>Last Rebased</value></data>
+  <data name="DriftStatus" xml:space="preserve"><value>Drift Status</value></data>
+  <data name="Scope" xml:space="preserve"><value>Scope</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Scope Type</value></data>
+  <data name="ScopeId" xml:space="preserve"><value>Scope</value></data>
+  <data name="Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="OwnerCompanyId" xml:space="preserve"><value>Owner Company</value></data>
+  <data name="OwnerUserId" xml:space="preserve"><value>Owner User</value></data>
+  <data name="Approval" xml:space="preserve"><value>Approval</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Compare" xml:space="preserve"><value>Compare</value></data>
+  <data name="Rebase" xml:space="preserve"><value>Rebase</value></data>
+  <data name="RebaseConfirm" xml:space="preserve"><value>Rebase this variant onto the master's current version? Local changes will be cleared.</value></data>
+  <data name="Rebased" xml:space="preserve"><value>Variant rebased</value></data>
+  <data name="CompareTitle" xml:space="preserve"><value>Variant / Master Comparison</value></data>
+  <data name="CompareNote" xml:space="preserve"><value>Metadata-level comparison only — no binary or content diff is computed in this foundation.</value></data>
+  <data name="MasterCurrentVersion" xml:space="preserve"><value>Master Current Version</value></data>
+  <data name="VariantLastRebasedVersion" xml:space="preserve"><value>Variant Last Rebased Version</value></data>
+  <data name="MasterStatus" xml:space="preserve"><value>Master Status</value></data>
+  <data name="VariantStatus" xml:space="preserve"><value>Variant Status</value></data>
+  <data name="HasLocalChanges" xml:space="preserve"><value>Has Local Changes</value></data>
+  <data name="VariantIdentitySection" xml:space="preserve"><value>Variant Identity</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Scope</value></data>
+  <data name="OwnerSection" xml:space="preserve"><value>Owner</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Governance &amp; Lineage</value></data>
+  <data name="LineageSection" xml:space="preserve"><value>Lineage</value></data>
+  <data name="MetadataEditDeferred" xml:space="preserve"><value>Metadata editing is deferred for this foundation slice.</value></data>
+  <data name="ScopeCompany" xml:space="preserve"><value>Company</value></data>
+  <data name="ScopeBusinessUnit" xml:space="preserve"><value>Business Unit</value></data>
+  <data name="ScopeSite" xml:space="preserve"><value>Site</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Deprecated</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="DriftInSync" xml:space="preserve"><value>In Sync</value></data>
+  <data name="DriftRebaseRequired" xml:space="preserve"><value>Rebase Required</value></data>
+  <data name="DriftDrifted" xml:space="preserve"><value>Drifted</value></data>
+  <data name="DriftBlocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="ApprovalNotRequired" xml:space="preserve"><value>Not Required</value></data>
+  <data name="ApprovalPending" xml:space="preserve"><value>Pending</value></data>
+  <data name="ApprovalApproved" xml:space="preserve"><value>Approved</value></data>
+  <data name="ApprovalRejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="ApprovalBlocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="DocumentationStructure" xml:space="preserve"><value>Documentation Structure</value></data>
+  <data name="TargetFolder" xml:space="preserve"><value>Target Folder</value></data>
+  <data name="LinkedTemplateDocument" xml:space="preserve"><value>Linked Folder Template</value></data>
+  <data name="TemplateDocumentCurrentVersion" xml:space="preserve"><value>Folder Template Version</value></data>
+  <data name="ContentLinked" xml:space="preserve"><value>Content Linked</value></data>
+  <data name="VariantContentSection" xml:space="preserve"><value>Variant Content</value></data>
+  <data name="VariantContentSource" xml:space="preserve"><value>Variant Content Source</value></data>
+  <data name="UseMasterVersionContent" xml:space="preserve"><value>Use selected master version content</value></data>
+  <data name="UploadLocalVariantContent" xml:space="preserve"><value>Upload local variant content</value></data>
+  <data name="MasterContentHelp" xml:space="preserve"><value>This variant will initially use the selected master version file.</value></data>
+  <data name="LocalUploadHelp" xml:space="preserve"><value>This variant will start with locally uploaded content and will be marked as locally changed.</value></data>
+  <data name="LocalVariantFile" xml:space="preserve"><value>Local Variant File</value></data>
+  <data name="MasterVersionContent" xml:space="preserve"><value>Using master version content</value></data>
+  <data name="LocalVariantUpload" xml:space="preserve"><value>Using local variant content</value></data>
+</root>
