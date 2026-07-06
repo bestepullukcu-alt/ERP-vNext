@@ -49,9 +49,13 @@ public sealed class DocumentAccessPrincipalAccessor : IDocumentAccessPrincipalAc
 
         var actorType = user.FindFirst("actor_type")?.Value?.Trim();
         var isPlatformAdmin = string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase);
+        // "Admin" is the tenant administrator role provisioned for every tenant (RoleProvisioningService creates
+        // "Admin" + "Viewer"); recognize it alongside the explicit tenant_admin/TenantAdmin names so tenant admins
+        // get Layer-2 administrative document access without a separately-named role.
         var isTenantAdmin = string.Equals(actorType, "tenant_admin", StringComparison.OrdinalIgnoreCase)
             || roles.Any(r => string.Equals(r, "tenant_admin", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(r, "TenantAdmin", StringComparison.OrdinalIgnoreCase));
+                || string.Equals(r, "TenantAdmin", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(r, "Admin", StringComparison.OrdinalIgnoreCase));
 
         return new DocumentPrincipal(_currentUser.UserId, roles, companies, isPlatformAdmin, isTenantAdmin);
     }
