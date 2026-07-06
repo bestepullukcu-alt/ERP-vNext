@@ -15,4 +15,73 @@
   <data name="BadgeModule" xml:space="preserve"><value>Module</value></data>
   <data name="BadgeManual" xml:space="preserve"><value>Manual</value></data>
   <data name="LockedHint" xml:space="preserve"><value>Baseline and module-granted permissions cannot be changed here.</value></data>
+  <data name="LockedHintSystem" xml:space="preserve"><value>此权限属于系统基线，无法在此处更改。</value></data>
+  <data name="LockedHintModule" xml:space="preserve"><value>此权限由 {0} 模块自动授予，无法在此处更改。</value></data>
+  <data name="FilterModuleLabel" xml:space="preserve"><value>模块</value></data>
+  <data name="AllModulesOption" xml:space="preserve"><value>所有模块</value></data>
+  <data name="ModuleUngrouped" xml:space="preserve"><value>其他</value></data>
+  <data name="FilterStateGroupLabel" xml:space="preserve"><value>按分配状态筛选</value></data>
+  <data name="FilterAll" xml:space="preserve"><value>全部</value></data>
+  <data name="FilterAssigned" xml:space="preserve"><value>已分配</value></data>
+  <data name="FilterUnassigned" xml:space="preserve"><value>未分配</value></data>
+  <data name="PermissionSummary" xml:space="preserve"><value>已分配 {0}/{1}</value></data>
+  <data name="SelectedRoleTitle" xml:space="preserve"><value>已选角色</value></data>
+  <data name="CoverageLabel" xml:space="preserve"><value>权限覆盖率</value></data>
+  <data name="AssignedRemaining" xml:space="preserve"><value>{0} 已分配 · {1} 剩余</value></data>
+  <data name="StatTotal" xml:space="preserve"><value>权限总数</value></data>
+  <data name="StatAssigned" xml:space="preserve"><value>已分配</value></data>
+  <data name="StatBaselineLocked" xml:space="preserve"><value>基线锁定</value></data>
+  <data name="StatUnassigned" xml:space="preserve"><value>未分配</value></data>
+  <data name="ActionDistributionTitle" xml:space="preserve"><value>操作分布</value></data>
+  <data name="ActionRead" xml:space="preserve"><value>读取</value></data>
+  <data name="ActionCreate" xml:space="preserve"><value>创建</value></data>
+  <data name="ActionUpdate" xml:space="preserve"><value>更新</value></data>
+  <data name="ActionDelete" xml:space="preserve"><value>删除</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>归档</value></data>
+  <data name="ActionExport" xml:space="preserve"><value>导出</value></data>
+  <data name="ActionOther" xml:space="preserve"><value>其他</value></data>
+  <data name="BaselineRequiredNote" xml:space="preserve"><value>基线权限是角色必需的，无法移除。</value></data>
+  <data name="ShowingCount" xml:space="preserve"><value>显示 {0} 项权限</value></data>
+  <data name="CountBadge" xml:space="preserve"><value>{0}/{1}</value></data>
+  <!-- FEAT-ROLEPERMS-LABEL-DERIVE — action verbs (imperative) used to derive Role Permissions row labels from the permission KEY (verb · entity). Bridged to JS as window.L10n.ActionVerbs. -->
+  <data name="ActionVerb_Read" xml:space="preserve"><value>查看</value></data>
+  <data name="ActionVerb_View" xml:space="preserve"><value>查看</value></data>
+  <data name="ActionVerb_Create" xml:space="preserve"><value>创建</value></data>
+  <data name="ActionVerb_Update" xml:space="preserve"><value>更新</value></data>
+  <data name="ActionVerb_Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="ActionVerb_Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="ActionVerb_BulkDelete" xml:space="preserve"><value>批量删除</value></data>
+  <data name="ActionVerb_Manage" xml:space="preserve"><value>管理</value></data>
+  <data name="ActionVerb_Assign" xml:space="preserve"><value>分配</value></data>
+  <data name="ActionVerb_Revoke" xml:space="preserve"><value>撤销</value></data>
+  <data name="ActionVerb_AssignPermission" xml:space="preserve"><value>分配权限</value></data>
+  <data name="ActionVerb_AssignRole" xml:space="preserve"><value>分配角色</value></data>
+  <data name="ActionVerb_Delegate" xml:space="preserve"><value>委派</value></data>
+  <data name="ActionVerb_Register" xml:space="preserve"><value>注册</value></data>
+  <data name="ActionVerb_Export" xml:space="preserve"><value>导出</value></data>
+  <data name="ActionVerb_Import" xml:space="preserve"><value>导入</value></data>
+  <data name="ActionVerb_Upload" xml:space="preserve"><value>上传</value></data>
+  <data name="ActionVerb_List" xml:space="preserve"><value>列出</value></data>
+  <data name="ActionVerb_Preview" xml:space="preserve"><value>预览</value></data>
+  <data name="ActionVerb_Share" xml:space="preserve"><value>共享</value></data>
+  <data name="ActionVerb_Archive" xml:space="preserve"><value>归档</value></data>
+  <data name="ActionVerb_Activate" xml:space="preserve"><value>激活</value></data>
+  <data name="ActionVerb_Reactivate" xml:space="preserve"><value>重新激活</value></data>
+  <data name="ActionVerb_Suspend" xml:space="preserve"><value>暂停</value></data>
+  <data name="ActionVerb_Deprecate" xml:space="preserve"><value>弃用</value></data>
+  <data name="ActionVerb_Approve" xml:space="preserve"><value>批准</value></data>
+  <data name="ActionVerb_Reject" xml:space="preserve"><value>拒绝</value></data>
+  <data name="ActionVerb_Publish" xml:space="preserve"><value>发布</value></data>
+  <data name="ActionVerb_Submit" xml:space="preserve"><value>提交</value></data>
+  <data name="ActionVerb_Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="ActionVerb_Validate" xml:space="preserve"><value>验证</value></data>
+  <data name="ActionVerb_Run" xml:space="preserve"><value>运行</value></data>
+  <data name="ActionVerb_Execute" xml:space="preserve"><value>执行</value></data>
+  <data name="ActionVerb_Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="ActionVerb_Evaluate" xml:space="preserve"><value>评估</value></data>
+  <data name="ActionVerb_Initialize" xml:space="preserve"><value>初始化</value></data>
+  <data name="ActionVerb_Compare" xml:space="preserve"><value>比较</value></data>
+  <data name="ActionVerb_Move" xml:space="preserve"><value>移动</value></data>
+  <data name="ActionVerb_Start" xml:space="preserve"><value>启动</value></data>
+  <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>查看管理链</value></data>
 </root>

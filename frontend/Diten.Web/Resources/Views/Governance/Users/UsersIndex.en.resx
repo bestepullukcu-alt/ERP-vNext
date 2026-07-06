@@ -35,4 +35,8 @@
   <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
   <data name="EmailPlaceholder" xml:space="preserve"><value>e.g. user@example.com</value></data>
   <data name="EmailImmutableHint" xml:space="preserve"><value>The email cannot be changed after creation.</value></data>
+  <data name="KpiTotalUsers" xml:space="preserve"><value>Total Users</value></data>
+  <data name="KpiActiveUsers" xml:space="preserve"><value>Active</value></data>
+  <data name="KpiPassiveUsers" xml:space="preserve"><value>Passive</value></data>
+  <data name="KpiNoRoleUsers" xml:space="preserve"><value>No Role</value></data>
 </root>

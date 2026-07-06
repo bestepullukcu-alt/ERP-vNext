@@ -7,7 +7,11 @@
     Layout = "_LayoutTenantShell";
 }
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/tagify/tagify.css" />
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-4">
     <div class="d-flex flex-column justify-content-center">
         <h5 class="mb-0">@Localizer["Title"]</h5>
         <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
@@ -17,111 +21,338 @@
     </div>
 </div>
 
-<div class="alert alert-danger d-none" id="securityErrorSummary"></div>
+<div class="alert alert-danger d-none p-3" id="securityErrorSummary"></div>
 
 <div id="tenantSecurityRoot">
-    <form id="formTenantSecurity" novalidate>
-        <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="mb-0">@Localizer["LoginMethods"]</h6>
-            </div>
-            <div class="card-body row g-3">
-                <div class="col-12 col-md-6">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="twoFactorEnabled" name="twoFactorEnabled">
-                        <label class="form-check-label" for="twoFactorEnabled">@Localizer["TwoFactorEnabled"]</label>
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <form id="formTenantSecurity" novalidate>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="security-section-title mb-0"><i class="bx bx-key"></i>@Localizer["LoginMethods"]</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="security-method-list">
+                            <div class="security-method-item">
+                                <span class="security-method-icon"><i class="bx bx-envelope"></i></span>
+                                <div class="security-method-body">
+                                    <span class="security-method-title">@Localizer["EmailLoginEnabled"]</span>
+                                    <span class="security-method-desc">@Localizer["EmailLoginDesc"]</span>
+                                </div>
+                                <div class="form-check form-switch security-method-switch m-0">
+                                    <input class="form-check-input" type="checkbox" id="emailLoginEnabled" name="emailLoginEnabled">
+                                    <label class="form-check-label visually-hidden" for="emailLoginEnabled">@Localizer["EmailLoginEnabled"]</label>
+                                </div>
+                            </div>
+                            <div class="security-method-item">
+                                <span class="security-method-icon"><i class="bx bx-mobile-alt"></i></span>
+                                <div class="security-method-body">
+                                    <span class="security-method-title">@Localizer["PhoneLoginEnabled"]</span>
+                                    <span class="security-method-desc">@Localizer["PhoneLoginDesc"]</span>
+                                </div>
+                                <div class="form-check form-switch security-method-switch m-0">
+                                    <input class="form-check-input" type="checkbox" id="phoneLoginEnabled" name="phoneLoginEnabled">
+                                    <label class="form-check-label visually-hidden" for="phoneLoginEnabled">@Localizer["PhoneLoginEnabled"]</label>
+                                </div>
+                            </div>
+                            <div class="security-method-item">
+                                <span class="security-method-icon"><i class="bx bx-lock-open-alt"></i></span>
+                                <div class="security-method-body">
+                                    <span class="security-method-title">@Localizer["TwoFactorEnabled"]</span>
+                                    <span class="security-method-desc">@Localizer["TwoFactorDesc"]</span>
+                                </div>
+                                <div class="form-check form-switch security-method-switch m-0">
+                                    <input class="form-check-input" type="checkbox" id="twoFactorEnabled" name="twoFactorEnabled">
+                                    <label class="form-check-label visually-hidden" for="twoFactorEnabled">@Localizer["TwoFactorEnabled"]</label>
+                                </div>
+                            </div>
+                            <div class="security-method-item">
+                                <span class="security-method-icon"><i class="bx bx-lock-alt"></i></span>
+                                <div class="security-method-body">
+                                    <span class="security-method-title">@Localizer["MfaRequired"]</span>
+                                    <span class="security-method-desc">@Localizer["MfaRequiredDesc"]</span>
+                                </div>
+                                <div class="form-check form-switch security-method-switch m-0">
+                                    <input class="form-check-input" type="checkbox" id="mfaRequired" name="mfaRequired">
+                                    <label class="form-check-label visually-hidden" for="mfaRequired">@Localizer["MfaRequired"]</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-6">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="mfaRequired" name="mfaRequired">
-                        <label class="form-check-label" for="mfaRequired">@Localizer["MfaRequired"]</label>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="security-section-title mb-0"><i class="bx bx-lock"></i>@Localizer["PasswordPolicy"]</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="passwordMinLength">@Localizer["PasswordMinLength"] <span class="text-danger">*</span></label>
+                                <input type="number" id="passwordMinLength" name="passwordMinLength" class="form-control" min="8" max="128" required>
+                                <div class="form-text">@Localizer["PasswordMinLengthHint"]</div>
+                                <div class="invalid-feedback" data-valmsg-for="PasswordMinLength"></div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="passwordExpirationDays">@Localizer["PasswordExpirationDays"]</label>
+                                <input type="number" id="passwordExpirationDays" name="passwordExpirationDays" class="form-control" min="1" max="3650">
+                                <div class="form-text">@Localizer["PasswordExpirationDaysHint"]</div>
+                                <div class="invalid-feedback" data-valmsg-for="PasswordExpirationDays"></div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="loginAuditRetentionDays">@Localizer["LoginAuditRetentionDays"] <span class="text-danger">*</span></label>
+                                <input type="number" id="loginAuditRetentionDays" name="loginAuditRetentionDays" class="form-control" min="1" max="3650" required>
+                                <div class="invalid-feedback" data-valmsg-for="LoginAuditRetentionDays"></div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <span class="security-subsection-title d-block mb-3">@Localizer["ComplexityRequirements"]</span>
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <div class="security-method-item security-method-item--boxed">
+                                    <div class="security-method-body">
+                                        <span class="security-method-title">@Localizer["RequireUppercase"]</span>
+                                        <span class="security-method-desc">@Localizer["RequireUppercaseHint"]</span>
+                                    </div>
+                                    <div class="form-check form-switch security-method-switch m-0">
+                                        <input class="form-check-input" type="checkbox" id="passwordRequireUppercase" name="passwordRequireUppercase">
+                                        <label class="form-check-label visually-hidden" for="passwordRequireUppercase">@Localizer["RequireUppercase"]</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="security-method-item security-method-item--boxed">
+                                    <div class="security-method-body">
+                                        <span class="security-method-title">@Localizer["RequireLowercase"]</span>
+                                        <span class="security-method-desc">@Localizer["RequireLowercaseHint"]</span>
+                                    </div>
+                                    <div class="form-check form-switch security-method-switch m-0">
+                                        <input class="form-check-input" type="checkbox" id="passwordRequireLowercase" name="passwordRequireLowercase">
+                                        <label class="form-check-label visually-hidden" for="passwordRequireLowercase">@Localizer["RequireLowercase"]</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="security-method-item security-method-item--boxed">
+                                    <div class="security-method-body">
+                                        <span class="security-method-title">@Localizer["RequireDigit"]</span>
+                                        <span class="security-method-desc">@Localizer["RequireDigitHint"]</span>
+                                    </div>
+                                    <div class="form-check form-switch security-method-switch m-0">
+                                        <input class="form-check-input" type="checkbox" id="passwordRequireDigit" name="passwordRequireDigit">
+                                        <label class="form-check-label visually-hidden" for="passwordRequireDigit">@Localizer["RequireDigit"]</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="security-method-item security-method-item--boxed">
+                                    <div class="security-method-body">
+                                        <span class="security-method-title">@Localizer["RequireSpecialChar"]</span>
+                                        <span class="security-method-desc">@Localizer["RequireSpecialCharHint"]</span>
+                                    </div>
+                                    <div class="form-check form-switch security-method-switch m-0">
+                                        <input class="form-check-input" type="checkbox" id="passwordRequireSpecialChar" name="passwordRequireSpecialChar">
+                                        <label class="form-check-label visually-hidden" for="passwordRequireSpecialChar">@Localizer["RequireSpecialChar"]</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small">@Localizer["PolicyStrength"]</span>
+                                    <span class="small fw-medium"><span id="policyRuleCount" class="font-monospace">0</span>/4 @Localizer["RulesActiveSuffix"]</span>
+                                </div>
+                                <div class="policy-strength" id="policyStrength">
+                                    <span class="policy-strength-seg"></span>
+                                    <span class="policy-strength-seg"></span>
+                                    <span class="policy-strength-seg"></span>
+                                    <span class="policy-strength-seg"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-6">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="emailLoginEnabled" name="emailLoginEnabled">
-                        <label class="form-check-label" for="emailLoginEnabled">@Localizer["EmailLoginEnabled"]</label>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="security-section-title mb-0"><i class="bx bx-time-five"></i>@Localizer["SessionLockoutPolicy"]</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="sessionTimeoutMinutes">@Localizer["SessionTimeoutMinutes"] <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" id="sessionTimeoutMinutes" name="sessionTimeoutMinutes" class="form-control" min="5" max="1440" required>
+                                    <span class="input-group-text">@Localizer["UnitMinutes"]</span>
+                                </div>
+                                <div class="form-text">@Localizer["SessionTimeoutHint"]</div>
+                                <div class="invalid-feedback" data-valmsg-for="SessionTimeoutMinutes"></div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="refreshTokenLifetimeDays">@Localizer["RefreshTokenLifetimeDays"] <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" id="refreshTokenLifetimeDays" name="refreshTokenLifetimeDays" class="form-control" min="1" max="365" required>
+                                    <span class="input-group-text">@Localizer["UnitDays"]</span>
+                                </div>
+                                <div class="form-text">@Localizer["RefreshTokenHint"]</div>
+                                <div class="invalid-feedback" data-valmsg-for="RefreshTokenLifetimeDays"></div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="maxFailedLoginAttempts">@Localizer["MaxFailedLoginAttempts"] <span class="text-danger">*</span></label>
+                                <input type="number" id="maxFailedLoginAttempts" name="maxFailedLoginAttempts" class="form-control" min="1" max="20" required>
+                                <div class="form-text">@Localizer["MaxFailedHint"]</div>
+                                <div class="invalid-feedback" data-valmsg-for="MaxFailedLoginAttempts"></div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="lockoutDurationMinutes">@Localizer["LockoutDurationMinutes"] <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" id="lockoutDurationMinutes" name="lockoutDurationMinutes" class="form-control" min="1" max="1440" required>
+                                    <span class="input-group-text">@Localizer["UnitMinutes"]</span>
+                                </div>
+                                <div class="form-text">@Localizer["LockoutDurationHint"]</div>
+                                <div class="invalid-feedback" data-valmsg-for="LockoutDurationMinutes"></div>
+                            </div>
+                            <div class="col-12">
+                                <div class="session-summary">
+                                    <div class="session-summary-seg">
+                                        <span class="session-summary-value font-monospace"><span id="summarySession">-</span> @Localizer["UnitMinutes"]</span>
+                                        <span class="session-summary-label">@Localizer["SummarySession"]</span>
+                                    </div>
+                                    <div class="session-summary-seg">
+                                        <span class="session-summary-value font-monospace"><span id="summaryToken">-</span> @Localizer["UnitDays"]</span>
+                                        <span class="session-summary-label">@Localizer["SummaryToken"]</span>
+                                    </div>
+                                    <div class="session-summary-seg">
+                                        <span class="session-summary-value font-monospace"><span id="summaryLockout">-</span> @Localizer["UnitMinutes"]</span>
+                                        <span class="session-summary-label">@Localizer["SummaryLockout"]</span>
+                                    </div>
+                                    <div class="session-summary-seg session-summary-seg--danger">
+                                        <span class="session-summary-value font-monospace"><span id="summaryAttempts">-</span> @Localizer["UnitAttempts"]</span>
+                                        <span class="session-summary-label">@Localizer["SummaryAttempts"]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-6">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="phoneLoginEnabled" name="phoneLoginEnabled">
-                        <label class="form-check-label" for="phoneLoginEnabled">@Localizer["PhoneLoginEnabled"]</label>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="security-section-title mb-0"><i class="bx bx-sitemap"></i>@Localizer["AccessRestrictions"]</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="security-method-item security-method-item--boxed mb-4">
+                            <div class="security-method-body">
+                                <span class="security-method-title">@Localizer["IpWhitelistEnabled"]</span>
+                                <span class="security-method-desc">@Localizer["IpWhitelistDesc"]</span>
+                            </div>
+                            <div class="form-check form-switch security-method-switch m-0">
+                                <input class="form-check-input" type="checkbox" id="ipWhitelistEnabled" name="ipWhitelistEnabled">
+                                <label class="form-check-label visually-hidden" for="ipWhitelistEnabled">@Localizer["IpWhitelistEnabled"]</label>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="allowedIps">@Localizer["AllowedIps"]</label>
+                                <input id="allowedIps" name="allowedIps" class="form-control" placeholder="192.168.0.1">
+                                <div class="form-text">@Localizer["AllowedIpsHint"]</div>
+                                <div class="invalid-feedback" data-valmsg-for="AllowedIps"></div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="allowedCountries">@Localizer["AllowedCountries"]</label>
+                                <input id="allowedCountries" name="allowedCountries" class="form-control" placeholder="TR">
+                                <div class="form-text">@Localizer["AllowedCountriesHint"]</div>
+                                <div class="invalid-feedback" data-valmsg-for="AllowedCountries"></div>
+                            </div>
+                            <div class="col-12">
+                                <div class="alert alert-info mb-0 p-3 d-flex align-items-center" role="alert">
+                                    <i class="bx bx-info-circle fs-5 me-2"></i>
+                                    <span>@Localizer["AccessRestrictionsInfo"]</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="mb-0">@Localizer["PasswordPolicy"]</h6>
+        <div class="col-12 col-xl-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="security-section-title mb-0">@Localizer["SecurityScore"]</h6>
+                </div>
+                <div class="card-body">
+                    <div class="security-score" id="securityScore">
+                        <span class="security-score-icon"><i class="bx bx-shield"></i></span>
+                        <div>
+                            <div class="security-score-value font-monospace"><span id="scoreValue">0</span><span class="security-score-total">/10</span></div>
+                            <div class="security-score-level" id="scoreLevel">&nbsp;</div>
+                        </div>
+                    </div>
+                    <div class="progress security-score-progress mt-3">
+                        <div class="progress-bar" id="scoreBar" role="progressbar" aria-valuemin="0" aria-valuemax="10"></div>
+                    </div>
+                    <p class="text-muted small mt-3 mb-0">@Localizer["SecurityScoreHint"]</p>
+                </div>
             </div>
-            <div class="card-body row g-3">
-                <div class="col-12 col-md-4">
-                    <label class="form-label" for="passwordMinLength">@Localizer["PasswordMinLength"] <span class="text-danger">*</span></label>
-                    <input type="number" id="passwordMinLength" name="passwordMinLength" class="form-control" min="8" max="128" required>
-                    <div class="invalid-feedback" data-valmsg-for="PasswordMinLength"></div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <label class="form-label" for="passwordExpirationDays">@Localizer["PasswordExpirationDays"]</label>
-                    <input type="number" id="passwordExpirationDays" name="passwordExpirationDays" class="form-control" min="1" max="3650">
-                    <div class="form-text">@Localizer["PasswordExpirationDaysHint"]</div>
-                    <div class="invalid-feedback" data-valmsg-for="PasswordExpirationDays"></div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <label class="form-label" for="loginAuditRetentionDays">@Localizer["LoginAuditRetentionDays"] <span class="text-danger">*</span></label>
-                    <input type="number" id="loginAuditRetentionDays" name="loginAuditRetentionDays" class="form-control" min="1" max="3650" required>
-                    <div class="invalid-feedback" data-valmsg-for="LoginAuditRetentionDays"></div>
-                </div>
-                <div class="col-12 col-md-6 col-lg-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="passwordRequireUppercase" name="passwordRequireUppercase"><label class="form-check-label" for="passwordRequireUppercase">@Localizer["RequireUppercase"]</label></div></div>
-                <div class="col-12 col-md-6 col-lg-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="passwordRequireLowercase" name="passwordRequireLowercase"><label class="form-check-label" for="passwordRequireLowercase">@Localizer["RequireLowercase"]</label></div></div>
-                <div class="col-12 col-md-6 col-lg-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="passwordRequireDigit" name="passwordRequireDigit"><label class="form-check-label" for="passwordRequireDigit">@Localizer["RequireDigit"]</label></div></div>
-                <div class="col-12 col-md-6 col-lg-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="passwordRequireSpecialChar" name="passwordRequireSpecialChar"><label class="form-check-label" for="passwordRequireSpecialChar">@Localizer["RequireSpecialChar"]</label></div></div>
-            </div>
-        </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="mb-0">@Localizer["SessionLockoutPolicy"]</h6>
-            </div>
-            <div class="card-body row g-3">
-                <div class="col-12 col-md-3"><label class="form-label" for="sessionTimeoutMinutes">@Localizer["SessionTimeoutMinutes"] <span class="text-danger">*</span></label><input type="number" id="sessionTimeoutMinutes" name="sessionTimeoutMinutes" class="form-control" min="5" max="1440" required><div class="invalid-feedback" data-valmsg-for="SessionTimeoutMinutes"></div></div>
-                <div class="col-12 col-md-3"><label class="form-label" for="refreshTokenLifetimeDays">@Localizer["RefreshTokenLifetimeDays"] <span class="text-danger">*</span></label><input type="number" id="refreshTokenLifetimeDays" name="refreshTokenLifetimeDays" class="form-control" min="1" max="365" required><div class="invalid-feedback" data-valmsg-for="RefreshTokenLifetimeDays"></div></div>
-                <div class="col-12 col-md-3"><label class="form-label" for="maxFailedLoginAttempts">@Localizer["MaxFailedLoginAttempts"] <span class="text-danger">*</span></label><input type="number" id="maxFailedLoginAttempts" name="maxFailedLoginAttempts" class="form-control" min="1" max="20" required><div class="invalid-feedback" data-valmsg-for="MaxFailedLoginAttempts"></div></div>
-                <div class="col-12 col-md-3"><label class="form-label" for="lockoutDurationMinutes">@Localizer["LockoutDurationMinutes"] <span class="text-danger">*</span></label><input type="number" id="lockoutDurationMinutes" name="lockoutDurationMinutes" class="form-control" min="1" max="1440" required><div class="invalid-feedback" data-valmsg-for="LockoutDurationMinutes"></div></div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">@Localizer["AccessRestrictions"]</h6>
-            </div>
-            <div class="card-body row g-3">
-                <div class="col-12">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="ipWhitelistEnabled" name="ipWhitelistEnabled">
-                        <label class="form-check-label" for="ipWhitelistEnabled">@Localizer["IpWhitelistEnabled"]</label>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="security-section-title mb-0">@Localizer["ActiveProtections"]</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="protection-list">
+                        <div class="protection-item" data-protection="emailLoginEnabled">
+                            <span class="protection-label">@Localizer["ProtectionEmailLogin"]</span>
+                            <i class="protection-status bx bx-circle"></i>
+                        </div>
+                        <div class="protection-item" data-protection="phoneLoginEnabled">
+                            <span class="protection-label">@Localizer["ProtectionPhoneLogin"]</span>
+                            <i class="protection-status bx bx-circle"></i>
+                        </div>
+                        <div class="protection-item" data-protection="twoFactorEnabled">
+                            <span class="protection-label">@Localizer["Protection2FA"]</span>
+                            <i class="protection-status bx bx-circle"></i>
+                        </div>
+                        <div class="protection-item" data-protection="mfaRequired">
+                            <span class="protection-label">@Localizer["ProtectionMfa"]</span>
+                            <i class="protection-status bx bx-circle"></i>
+                        </div>
+                        <div class="protection-item" data-protection="passwordRequireUppercase">
+                            <span class="protection-label">@Localizer["ProtectionUppercase"]</span>
+                            <i class="protection-status bx bx-circle"></i>
+                        </div>
+                        <div class="protection-item" data-protection="passwordRequireLowercase">
+                            <span class="protection-label">@Localizer["ProtectionLowercase"]</span>
+                            <i class="protection-status bx bx-circle"></i>
+                        </div>
+                        <div class="protection-item" data-protection="passwordRequireDigit">
+                            <span class="protection-label">@Localizer["ProtectionDigit"]</span>
+                            <i class="protection-status bx bx-circle"></i>
+                        </div>
+                        <div class="protection-item" data-protection="passwordRequireSpecialChar">
+                            <span class="protection-label">@Localizer["ProtectionSpecial"]</span>
+                            <i class="protection-status bx bx-circle"></i>
+                        </div>
+                        <div class="protection-item" data-protection="ipWhitelistEnabled">
+                            <span class="protection-label">@Localizer["ProtectionIpRestriction"]</span>
+                            <i class="protection-status bx bx-circle"></i>
+                        </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-6">
-                    <label class="form-label" for="allowedIps">@Localizer["AllowedIps"]</label>
-                    <textarea id="allowedIps" name="allowedIps" class="form-control" rows="3" placeholder="192.168.0.1&#10;2001:db8::1"></textarea>
-                    <div class="form-text">@Localizer["AllowedIpsHint"]</div>
-                    <div class="invalid-feedback" data-valmsg-for="AllowedIps"></div>
-                </div>
-                <div class="col-12 col-md-6">
-                    <label class="form-label" for="allowedCountries">@Localizer["AllowedCountries"]</label>
-                    <textarea id="allowedCountries" name="allowedCountries" class="form-control" rows="3" placeholder="TR&#10;US&#10;DE"></textarea>
-                    <div class="form-text">@Localizer["AllowedCountriesHint"]</div>
-                    <div class="invalid-feedback" data-valmsg-for="AllowedCountries"></div>
-                </div>
+            </div>
+
+            <div class="alert alert-info p-3 d-flex align-items-center" role="alert">
+                <i class="bx bx-info-circle fs-5 me-2"></i>
+                <span>@Localizer["SettingsScopeInfo"]</span>
             </div>
         </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_IndexL10n" />
+    <script src="~/assets/vendor/libs/tagify/tagify.js"></script>
     <script src="~/assets/js/Governance/TenantSecuritySettings/index.js" asp-append-version="true"></script>
 }

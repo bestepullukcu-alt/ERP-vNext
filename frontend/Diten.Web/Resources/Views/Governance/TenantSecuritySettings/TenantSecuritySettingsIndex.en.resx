@@ -40,4 +40,45 @@
   <data name="InvalidCountry" xml:space="preserve"><value>Invalid country code (use ISO alpha-2): </value></data>
   <data name="TwoFactorAutoEnabled" xml:space="preserve"><value>Two-factor and email login were enabled automatically for MFA.</value></data>
   <data name="MfaAutoDisabled" xml:space="preserve"><value>MFA was disabled because two-factor authentication was turned off.</value></data>
+  <data name="EmailLoginDesc" xml:space="preserve"><value>Allow users to sign in with email and password.</value></data>
+  <data name="PhoneLoginDesc" xml:space="preserve"><value>Sign in with phone OTP. Disabled until an SMS provider is configured.</value></data>
+  <data name="TwoFactorDesc" xml:space="preserve"><value>Let users set up TOTP-based 2FA.</value></data>
+  <data name="MfaRequiredDesc" xml:space="preserve"><value>Require MFA setup for all users.</value></data>
+  <data name="PasswordMinLengthHint" xml:space="preserve"><value>Character count</value></data>
+  <data name="ComplexityRequirements" xml:space="preserve"><value>Complexity Requirements</value></data>
+  <data name="RequireUppercaseHint" xml:space="preserve"><value>At least one A–Z character</value></data>
+  <data name="RequireLowercaseHint" xml:space="preserve"><value>At least one a–z character</value></data>
+  <data name="RequireDigitHint" xml:space="preserve"><value>At least one 0–9 digit</value></data>
+  <data name="RequireSpecialCharHint" xml:space="preserve"><value>At least one !@#$%^&amp;* character</value></data>
+  <data name="PolicyStrength" xml:space="preserve"><value>Password policy strength</value></data>
+  <data name="RulesActiveSuffix" xml:space="preserve"><value>rules active</value></data>
+  <data name="UnitMinutes" xml:space="preserve"><value>min</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>days</value></data>
+  <data name="UnitAttempts" xml:space="preserve"><value>attempts</value></data>
+  <data name="SessionTimeoutHint" xml:space="preserve"><value>Session ends after inactivity.</value></data>
+  <data name="RefreshTokenHint" xml:space="preserve"><value>Validity period of the refresh token.</value></data>
+  <data name="MaxFailedHint" xml:space="preserve"><value>The account locks after this many failed attempts.</value></data>
+  <data name="LockoutDurationHint" xml:space="preserve"><value>The account stays locked for this duration.</value></data>
+  <data name="SummarySession" xml:space="preserve"><value>Session</value></data>
+  <data name="SummaryToken" xml:space="preserve"><value>Token life</value></data>
+  <data name="SummaryLockout" xml:space="preserve"><value>Lockout</value></data>
+  <data name="SummaryAttempts" xml:space="preserve"><value>Lockout threshold</value></data>
+  <data name="SecurityScore" xml:space="preserve"><value>Security Score</value></data>
+  <data name="SecurityScoreHint" xml:space="preserve"><value>Increase your score by enabling all recommended settings.</value></data>
+  <data name="ActiveProtections" xml:space="preserve"><value>Active Protections</value></data>
+  <data name="ProtectionEmailLogin" xml:space="preserve"><value>Email Login</value></data>
+  <data name="ProtectionPhoneLogin" xml:space="preserve"><value>Phone Login</value></data>
+  <data name="Protection2FA" xml:space="preserve"><value>2FA Enabled</value></data>
+  <data name="ProtectionMfa" xml:space="preserve"><value>MFA Required</value></data>
+  <data name="ProtectionUppercase" xml:space="preserve"><value>Uppercase</value></data>
+  <data name="ProtectionLowercase" xml:space="preserve"><value>Lowercase</value></data>
+  <data name="ProtectionDigit" xml:space="preserve"><value>Digit Required</value></data>
+  <data name="ProtectionSpecial" xml:space="preserve"><value>Special Character</value></data>
+  <data name="ProtectionIpRestriction" xml:space="preserve"><value>IP Restriction</value></data>
+  <data name="SettingsScopeInfo" xml:space="preserve"><value>These settings affect all tenant users. Changes take effect immediately after saving.</value></data>
+  <data name="IpWhitelistDesc" xml:space="preserve"><value>Only allow access from the specified IP addresses and countries.</value></data>
+  <data name="AccessRestrictionsInfo" xml:space="preserve"><value>When IP restrictions are enabled, access is only allowed from the listed IPs and countries.</value></data>
+  <data name="ScoreLevelWeak" xml:space="preserve"><value>Weak</value></data>
+  <data name="ScoreLevelMedium" xml:space="preserve"><value>Medium</value></data>
+  <data name="ScoreLevelStrong" xml:space="preserve"><value>Strong</value></data>
 </root>

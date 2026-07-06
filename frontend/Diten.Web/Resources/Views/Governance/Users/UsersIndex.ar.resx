@@ -35,4 +35,8 @@
   <data name="GeneralInformation" xml:space="preserve"><value>معلومات عامة</value></data>
   <data name="EmailPlaceholder" xml:space="preserve"><value>مثال: user@example.com</value></data>
   <data name="EmailImmutableHint" xml:space="preserve"><value>لا يمكن تغيير البريد الإلكتروني بعد الإنشاء.</value></data>
+  <data name="KpiTotalUsers" xml:space="preserve"><value>إجمالي المستخدمين</value></data>
+  <data name="KpiActiveUsers" xml:space="preserve"><value>نشط</value></data>
+  <data name="KpiPassiveUsers" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="KpiNoRoleUsers" xml:space="preserve"><value>بدون دور</value></data>
 </root>

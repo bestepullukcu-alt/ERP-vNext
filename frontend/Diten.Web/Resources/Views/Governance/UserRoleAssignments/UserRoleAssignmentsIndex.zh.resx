@@ -7,9 +7,26 @@
   <data name="Title" xml:space="preserve"><value>User Roles</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Assign or remove roles for a user.</value></data>
   <data name="SelectUser" xml:space="preserve"><value>User</value></data>
-  <data name="SearchRoles" xml:space="preserve"><value>Search roles…</value></data>
+  <data name="SearchRoles" xml:space="preserve"><value>角色名称或代码…</value></data>
   <data name="SelectUserPrompt" xml:space="preserve"><value>Select a user to manage their roles.</value></data>
   <data name="NoRoles" xml:space="preserve"><value>No roles are available.</value></data>
   <data name="Assign" xml:space="preserve"><value>Assign</value></data>
   <data name="Assigned" xml:space="preserve"><value>Assigned</value></data>
+  <data name="SearchRolesLabel" xml:space="preserve"><value>搜索角色</value></data>
+  <data name="FilterAll" xml:space="preserve"><value>全部</value></data>
+  <data name="FilterAssigned" xml:space="preserve"><value>已分配</value></data>
+  <data name="FilterUnassigned" xml:space="preserve"><value>未分配</value></data>
+  <data name="AssignedRolesSection" xml:space="preserve"><value>已分配的角色</value></data>
+  <data name="UnassignedRolesSection" xml:space="preserve"><value>未分配的角色</value></data>
+  <data name="SelectedUserTitle" xml:space="preserve"><value>选定的用户</value></data>
+  <data name="StatAssignedRoles" xml:space="preserve"><value>已分配角色</value></data>
+  <data name="StatTotalPermissions" xml:space="preserve"><value>权限总数</value></data>
+  <data name="ActiveRolesTitle" xml:space="preserve"><value>活动角色</value></data>
+  <data name="NoActiveRoles" xml:space="preserve"><value>尚未分配任何角色。</value></data>
+  <data name="MultiRoleNote" xml:space="preserve"><value>一个用户可以拥有多个角色。权限是所有已分配角色的并集。</value></data>
+  <data name="TypeSystem" xml:space="preserve"><value>系统</value></data>
+  <data name="TypeCustom" xml:space="preserve"><value>自定义</value></data>
+  <data name="Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="PermissionCountFormat" xml:space="preserve"><value>{0} 项权限</value></data>
+  <data name="RolesShownFormat" xml:space="preserve"><value>显示 {0} 个角色</value></data>
 </root>

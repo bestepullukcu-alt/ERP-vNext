@@ -393,6 +393,20 @@ const UsersList = (function () {
         false: { title: L.Passive, class: 'bg-label-secondary' }
     });
 
+    // ─── KPI cards ──────────────────────────────────────────────────────────
+    // Live counts from the full loaded dataset (rows().data() returns all rows, unaffected by search/filter).
+    const setKpi = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    const updateKpis = (api) => {
+        const rows = api.rows().data().toArray();
+        const total = rows.length;
+        const active = rows.filter((r) => r && r.isActive).length;
+        const noRole = rows.filter((r) => r && (!Array.isArray(r.roles) || r.roles.length === 0)).length;
+        setKpi('kpi-users-total', total);
+        setKpi('kpi-users-active', active);
+        setKpi('kpi-users-passive', total - active);
+        setKpi('kpi-users-norole', noRole);
+    };
+
     // ─── Role chips ───────────────────────────────────────────────────────────
     // One info chip per assigned role (ported from the golden-reference Slim chip pattern).
     //   • table (collapse:true)      → one nowrap line; overflow folds into a "+N" dropdown.
@@ -864,6 +878,7 @@ const UsersList = (function () {
                 },
                 drawCallback: function () {
                     window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount());
+                    updateKpis(this.api());
                 }
             }
         });

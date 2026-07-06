@@ -35,4 +35,8 @@
   <data name="GeneralInformation" xml:space="preserve"><value>Genel Bilgiler</value></data>
   <data name="EmailPlaceholder" xml:space="preserve"><value>örn. kullanici@ornek.com</value></data>
   <data name="EmailImmutableHint" xml:space="preserve"><value>E-posta oluşturulduktan sonra değiştirilemez.</value></data>
+  <data name="KpiTotalUsers" xml:space="preserve"><value>Toplam Kullanıcı</value></data>
+  <data name="KpiActiveUsers" xml:space="preserve"><value>Aktif</value></data>
+  <data name="KpiPassiveUsers" xml:space="preserve"><value>Pasif</value></data>
+  <data name="KpiNoRoleUsers" xml:space="preserve"><value>Rolsüz</value></data>
 </root>

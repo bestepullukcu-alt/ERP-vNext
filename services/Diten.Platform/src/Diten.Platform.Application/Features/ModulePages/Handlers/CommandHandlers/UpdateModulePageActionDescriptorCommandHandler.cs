@@ -59,7 +59,10 @@ public sealed class UpdateModulePageActionDescriptorCommandHandler
         await _repository.UpdateAsync(descriptor, ct);
 
         // Declarative permission sync (best-effort; never blocks the save). See create handler.
-        await _catalogPermissionSyncService.SyncPermissionAsync(descriptor.PermissionKey, descriptor.DisplayName, ct);
+        // Refresh Module; leave Scope null (no owning-page route here — an action metadata edit must not change the
+        // route-derived scope, so AuthService keeps the existing value).
+        await _catalogPermissionSyncService.SyncPermissionAsync(
+            descriptor.PermissionKey, descriptor.DisplayName, descriptor.ModuleCode, null, ct);
 
         return Response<NoContent>.Success(204);
     }

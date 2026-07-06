@@ -19,10 +19,10 @@ public sealed class RoleProvisioningServiceTests
 
     private static List<Permission> Catalog() =>
     [
-        new("auth", "users", "read", "Read User", null),
-        new("auth", "users", "create", "Create User", null),
-        new("mdm", "legal-entities", "read", "Read Legal Entity", null),
-        new("mdm", "legal-entities", "delete", "Delete Legal Entity", null),
+        new("auth", "users", "read", "Read User", null, moduleOverride: "access-governance"),
+        new("auth", "users", "create", "Create User", null, moduleOverride: "access-governance"),
+        new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
+        new("mdm", "legal-entities", "delete", "Delete Legal Entity", null, moduleOverride: "legal-entity"),
         new("platform", "tenants", "read", "Read Tenant", null)
     ];
 

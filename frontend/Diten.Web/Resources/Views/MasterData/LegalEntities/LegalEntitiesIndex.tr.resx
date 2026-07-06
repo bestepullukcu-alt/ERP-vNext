@@ -79,6 +79,14 @@
   <data name="Step7EvidenceSub" xml:space="preserve"><value>Belgeler</value></data>
   <data name="Step8Review" xml:space="preserve"><value>Gözden Geçir</value></data>
   <data name="Step8ReviewSub" xml:space="preserve"><value>Onayla &amp; Kaydet</value></data>
+  <data name="Step1IdentityDesc" xml:space="preserve"><value>Şirketin kodunu, yasal adını ve türünü girin.</value></data>
+  <data name="Step2StatutoryDesc" xml:space="preserve"><value>Kayıt, vergi ve yasal durum bilgileri.</value></data>
+  <data name="Step3StructureDesc" xml:space="preserve"><value>Üst kuruluş ilişkisini ve ortaklık payını tanımlayın.</value></data>
+  <data name="Step4FinanceDesc" xml:space="preserve"><value>Mali takvim, muhasebe standardı ve temel para birimi.</value></data>
+  <data name="Step5AddressesDesc" xml:space="preserve"><value>Kayıtlı adres ve resmi iletişim bilgileri.</value></data>
+  <data name="Step6GovernanceDesc" xml:space="preserve"><value>Onay süreci ve kaynak sistem takibi.</value></data>
+  <data name="Step7EvidenceDesc" xml:space="preserve"><value>Destekleyici belgeler ve tamamlanma durumu.</value></data>
+  <data name="Step8ReviewDesc" xml:space="preserve"><value>Kaydetmeden önce tüm bilgileri gözden geçirin.</value></data>
   <data name="RegistrationNumber" xml:space="preserve"><value>Tescil Numarası</value></data>
   <data name="TaxId" xml:space="preserve"><value>Vergi No</value></data>
   <data name="ParentLegalEntity" xml:space="preserve"><value>Üst Tüzel Kişilik</value></data>

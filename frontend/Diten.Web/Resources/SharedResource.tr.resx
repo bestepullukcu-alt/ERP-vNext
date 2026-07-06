@@ -528,4 +528,9 @@
   <data name="AccessMatrix" xml:space="preserve"><value>Erişim Matrisi</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>QMS Baseline'lari</value></data>
   <data name="Unauthorized" xml:space="preserve"><value>Yetkisiz</value></data>
+  <!-- FIX-ROLEPERMS-ROLENAME-L10N-STICKY — system role display names, keyed by role code (localized). -->
+  <data name="RoleName_SuperAdmin" xml:space="preserve"><value>Süper Yönetici</value></data>
+  <data name="RoleName_Admin" xml:space="preserve"><value>Yönetici</value></data>
+  <data name="RoleName_Viewer" xml:space="preserve"><value>İzleyici</value></data>
+  <data name="RoleName_ReadOnly" xml:space="preserve"><value>Salt Okunur</value></data>
 </root>

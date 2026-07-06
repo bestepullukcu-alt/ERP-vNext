@@ -12,6 +12,25 @@
         BadgeModule = Localizer["BadgeModule"].Value,
         BadgeManual = Localizer["BadgeManual"].Value,
         LockedHint = Localizer["LockedHint"].Value,
+        LockedHintSystem = Localizer["LockedHintSystem"].Value,
+        LockedHintModule = Localizer["LockedHintModule"].Value,
+        ModuleUngrouped = Localizer["ModuleUngrouped"].Value,
+        PermissionSummary = Localizer["PermissionSummary"].Value,
+        SelectedRoleTitle = Localizer["SelectedRoleTitle"].Value,
+        CoverageLabel = Localizer["CoverageLabel"].Value,
+        AssignedRemaining = Localizer["AssignedRemaining"].Value,
+        StatTotal = Localizer["StatTotal"].Value,
+        StatAssigned = Localizer["StatAssigned"].Value,
+        StatBaselineLocked = Localizer["StatBaselineLocked"].Value,
+        StatUnassigned = Localizer["StatUnassigned"].Value,
+        ActionDistributionTitle = Localizer["ActionDistributionTitle"].Value,
+        // FEAT-ROLEPERMS-ACTIONDIST-DYNAMIC — the Action Distribution panel is now built dynamically from the role's
+        // distinct actions using ActionVerbs (single source with the rows), so the old fixed-category labels
+        // (ActionRead/Create/Update/Delete/Archive/Export/Other) are no longer emitted. The resx keys remain for
+        // history but are unreferenced in code.
+        BaselineRequiredNote = Localizer["BaselineRequiredNote"].Value,
+        ShowingCount = Localizer["ShowingCount"].Value,
+        CountBadge = Localizer["CountBadge"].Value,
         SelectRolePrompt = Localizer["SelectRolePrompt"].Value,
         NoPermissions = Localizer["NoPermissions"].Value,
         AreYouSure = SharedLocalizer["AreYouSure"].Value,
@@ -19,6 +38,63 @@
         RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
         ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
         Cancel = SharedLocalizer["Cancel"].Value,
-        Delete = SharedLocalizer["Delete"].Value
+        Delete = SharedLocalizer["Delete"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        // FIX-ROLEPERMS-ROLENAME-L10N-STICKY — system role display names keyed by role CODE (role.name), localized to
+        // the UI language (used for isSystem roles; custom roles keep their stored DisplayName). → window.L10n.RoleNames.
+        RoleNames = new Dictionary<string, string>
+        {
+            ["SuperAdmin"] = SharedLocalizer["RoleName_SuperAdmin"].Value,
+            ["Admin"] = SharedLocalizer["RoleName_Admin"].Value,
+            ["Viewer"] = SharedLocalizer["RoleName_Viewer"].Value,
+            ["ReadOnly"] = SharedLocalizer["RoleName_ReadOnly"].Value
+        },
+        // FEAT-ROLEPERMS-LABEL-DERIVE — action-verb dictionary (keyed by the raw permission ACTION segment) that the
+        // frontend uses to derive each Role Permissions row label from the permission KEY ("{Verb} · {Entity}"),
+        // instead of the drifted stored DisplayName. Keys are the literal catalog action strings (incl. hyphenated);
+        // any action not present here falls back to a humanized segment client-side.
+        ActionVerbs = new Dictionary<string, string>
+        {
+            ["read"] = Localizer["ActionVerb_Read"].Value,
+            ["view"] = Localizer["ActionVerb_View"].Value,
+            ["create"] = Localizer["ActionVerb_Create"].Value,
+            ["update"] = Localizer["ActionVerb_Update"].Value,
+            ["edit"] = Localizer["ActionVerb_Edit"].Value,
+            ["delete"] = Localizer["ActionVerb_Delete"].Value,
+            ["bulk-delete"] = Localizer["ActionVerb_BulkDelete"].Value,
+            ["manage"] = Localizer["ActionVerb_Manage"].Value,
+            ["assign"] = Localizer["ActionVerb_Assign"].Value,
+            ["revoke"] = Localizer["ActionVerb_Revoke"].Value,
+            ["assign-permission"] = Localizer["ActionVerb_AssignPermission"].Value,
+            ["assign-role"] = Localizer["ActionVerb_AssignRole"].Value,
+            ["delegate"] = Localizer["ActionVerb_Delegate"].Value,
+            ["register"] = Localizer["ActionVerb_Register"].Value,
+            ["export"] = Localizer["ActionVerb_Export"].Value,
+            ["import"] = Localizer["ActionVerb_Import"].Value,
+            ["upload"] = Localizer["ActionVerb_Upload"].Value,
+            ["list"] = Localizer["ActionVerb_List"].Value,
+            ["preview"] = Localizer["ActionVerb_Preview"].Value,
+            ["share"] = Localizer["ActionVerb_Share"].Value,
+            ["archive"] = Localizer["ActionVerb_Archive"].Value,
+            ["activate"] = Localizer["ActionVerb_Activate"].Value,
+            ["reactivate"] = Localizer["ActionVerb_Reactivate"].Value,
+            ["suspend"] = Localizer["ActionVerb_Suspend"].Value,
+            ["deprecate"] = Localizer["ActionVerb_Deprecate"].Value,
+            ["approve"] = Localizer["ActionVerb_Approve"].Value,
+            ["reject"] = Localizer["ActionVerb_Reject"].Value,
+            ["publish"] = Localizer["ActionVerb_Publish"].Value,
+            ["submit"] = Localizer["ActionVerb_Submit"].Value,
+            ["cancel"] = Localizer["ActionVerb_Cancel"].Value,
+            ["validate"] = Localizer["ActionVerb_Validate"].Value,
+            ["run"] = Localizer["ActionVerb_Run"].Value,
+            ["execute"] = Localizer["ActionVerb_Execute"].Value,
+            ["retry"] = Localizer["ActionVerb_Retry"].Value,
+            ["evaluate"] = Localizer["ActionVerb_Evaluate"].Value,
+            ["initialize"] = Localizer["ActionVerb_Initialize"].Value,
+            ["compare"] = Localizer["ActionVerb_Compare"].Value,
+            ["move"] = Localizer["ActionVerb_Move"].Value,
+            ["start"] = Localizer["ActionVerb_Start"].Value,
+            ["read-manager-chain"] = Localizer["ActionVerb_ReadManagerChain"].Value
+        }
     })
 </script>

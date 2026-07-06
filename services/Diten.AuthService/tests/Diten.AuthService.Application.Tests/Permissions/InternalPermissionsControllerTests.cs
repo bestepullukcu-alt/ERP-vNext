@@ -76,6 +76,134 @@ public sealed class InternalPermissionsControllerTests
         Assert.Equal("desc", permission.Description);
     }
 
+    // ── İŞ3-FAZ1b — Module = manifest ModuleCode, Scope = route-derived ───────────────────────────
+
+    [Fact]
+    public async Task Create_sets_module_to_moduleCode_and_scope_from_request()
+    {
+        var repo = new FakePermissionRepository();
+        var controller = Build(repo, authorized: true);
+
+        // auth key + manifest ModuleCode "access-governance" + tenant route → Module flips, Key stays, Scope=Tenant.
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "auth.users.read", "Read User", null, "access-governance", "Tenant"), CancellationToken.None);
+
+        var p = Assert.Single(repo.Items);
+        Assert.Equal("auth.users.read", p.Key);           // Key immutable
+        Assert.Equal("access-governance", p.Module);      // Module = ModuleCode
+        Assert.Equal(PermissionScope.Tenant, p.Scope);
+    }
+
+    [Fact]
+    public async Task Create_platform_hosted_key_gets_platformadmin_scope()
+    {
+        var repo = new FakePermissionRepository();
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "platform.workflow.definitions.view", "View", null, "workflow", "PlatformAdmin"), CancellationToken.None);
+
+        var p = Assert.Single(repo.Items);
+        Assert.Equal("workflow", p.Module);
+        Assert.Equal(PermissionScope.PlatformAdmin, p.Scope);
+    }
+
+    [Fact]
+    public async Task Update_of_seeded_platform_permission_is_module_and_scope_locked()
+    {
+        // A seeded system permission still on Module=="platform" (e.g. document-management, excluded this phase, or
+        // the seeded-only tenants/administrators keys) must NOT be migrated by the sync — the boundary stays put.
+        var repo = new FakePermissionRepository();
+        repo.Items.Add(new Permission("platform", "document-management.controlled-documents", "view", "View", null));
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "platform.document-management.controlled-documents.view", "View", null, "document-management", "Tenant"),
+            CancellationToken.None);
+
+        var p = Assert.Single(repo.Items);
+        Assert.Equal("platform", p.Module);                     // NOT moved to "document-management"
+        Assert.Equal(PermissionScope.PlatformAdmin, p.Scope);   // NOT downgraded to Tenant
+    }
+
+    // FIX-PERM-MODULE-CASE-CONSISTENCY — the Platform sender upper-cases the catalog ModuleCode; the receiver stores
+    // Module lowercase so it matches the (lowercase) seed moduleOverride and the RoleAssignments grouping stays single-cased.
+    [Fact]
+    public async Task Create_lowercases_uppercase_moduleCode()
+    {
+        var repo = new FakePermissionRepository();
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "auth.users.read", "Read User", null, "ACCESS-GOVERNANCE", "Tenant"), CancellationToken.None);
+
+        Assert.Equal("access-governance", Assert.Single(repo.Items).Module);
+    }
+
+    [Fact]
+    public async Task Update_lowercases_uppercase_moduleCode()
+    {
+        var repo = new FakePermissionRepository();
+        var existing = new Permission("goldencompact", "records", "read", "Read", null);
+        existing.SetModule("GOLDENCOMPACT"); // simulate a pre-fix uppercase-synced row
+        repo.Items.Add(existing);
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "goldencompact.records.read", "Read", null, "GOLDENCOMPACT", "Tenant"), CancellationToken.None);
+
+        Assert.Equal("goldencompact", Assert.Single(repo.Items).Module);
+    }
+
+    [Fact]
+    public async Task Update_of_migrated_permission_refreshes_module_and_scope()
+    {
+        // An existing auth permission still on the OLD Module="auth" is refreshed to the manifest ModuleCode.
+        var repo = new FakePermissionRepository();
+        repo.Items.Add(new Permission("auth", "users", "read", "Read User", null)); // Module="auth" (≠ platform)
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "auth.users.read", "Read User", null, "access-governance", "Tenant"), CancellationToken.None);
+
+        var p = Assert.Single(repo.Items);
+        Assert.Equal("access-governance", p.Module);
+        Assert.Equal(PermissionScope.Tenant, p.Scope);
+    }
+
+    [Fact]
+    public async Task Update_tie_break_never_downgrades_platformadmin_to_tenant()
+    {
+        // Same key synced from a tenant-routed page after a platform-routed one: most restrictive wins → stays PlatformAdmin.
+        var repo = new FakePermissionRepository();
+        var existing = new Permission("platform", "workflow.tasks", "approve", "Approve", null, moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin);
+        repo.Items.Add(existing); // Module="workflow" (not locked), Scope=PlatformAdmin
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "platform.workflow.tasks.approve", "Approve", null, "workflow", "Tenant"), CancellationToken.None);
+
+        var p = Assert.Single(repo.Items);
+        Assert.Equal(PermissionScope.PlatformAdmin, p.Scope); // not downgraded
+    }
+
+    [Fact]
+    public async Task Update_from_old_sender_without_fields_leaves_module_and_scope_untouched()
+    {
+        var repo = new FakePermissionRepository();
+        repo.Items.Add(new Permission("auth", "users", "read", "Read User", null)); // Module="auth", Scope=Tenant
+        var controller = Build(repo, authorized: true);
+
+        // 3-arg request (no ModuleCode/Scope) — backward-compatible with an older sender.
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "auth.users.read", "Updated", null), CancellationToken.None);
+
+        var p = Assert.Single(repo.Items);
+        Assert.Equal("auth", p.Module);                 // untouched
+        Assert.Equal(PermissionScope.Tenant, p.Scope);  // untouched
+        Assert.Equal("Updated", p.DisplayName);         // display still refreshed
+    }
+
     [Fact]
     public async Task First_sync_grants_new_permission_to_full_catalog_role()
     {

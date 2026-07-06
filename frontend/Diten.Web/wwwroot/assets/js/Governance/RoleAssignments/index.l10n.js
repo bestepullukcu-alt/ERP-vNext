@@ -4,8 +4,16 @@
     const payload = document.getElementById('roleassignments-l10n');
     const requiredKeys = [
         'Assign', 'Remove', 'BadgeBaseline', 'BadgeModule', 'BadgeManual', 'LockedHint',
+        'LockedHintSystem', 'LockedHintModule', 'ModuleUngrouped', 'PermissionSummary',
+        'SelectedRoleTitle', 'CoverageLabel', 'AssignedRemaining', 'StatTotal', 'StatAssigned',
+        'StatBaselineLocked', 'StatUnassigned', 'ActionDistributionTitle',
+        'BaselineRequiredNote', 'ShowingCount', 'CountBadge',
         'SelectRolePrompt', 'NoPermissions', 'AreYouSure', 'RecordCreated', 'RecordDeleted',
-        'ErrorOccurred', 'Cancel', 'Delete'
+        'ErrorOccurred', 'Cancel', 'Delete', 'Reset',
+        // FEAT-ROLEPERMS-LABEL-DERIVE — nested { action: verb } map for key-derived row labels.
+        'ActionVerbs',
+        // FIX-ROLEPERMS-ROLENAME-L10N-STICKY — nested { roleCode: localizedName } map for system roles.
+        'RoleNames'
     ];
 
     const logMissingKeys = (dictionary) => {

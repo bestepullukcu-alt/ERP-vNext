@@ -1,5 +1,6 @@
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
+using Diten.AuthService.Persistence.Repositories;
 using MongoDB.Driver;
 
 namespace Diten.AuthService.Persistence.Seed;
@@ -54,6 +55,9 @@ public static class DataSeeder
             Console.WriteLine("Seeding default-tenant entitled-module grants (goldenslim + workflow)...");
             await SeedDefaultTenantEntitledModuleGrantsAsync(database);
 
+            Console.WriteLine("Reconciling tenant Admin self-service grants (backfill)...");
+            await ReconcileTenantAdminSelfServiceGrantsAsync(database);
+
             Console.WriteLine("Seeding completed successfully.");
         }
         catch (Exception ex)
@@ -68,57 +72,81 @@ public static class DataSeeder
         var col = database.GetCollection<Permission>("permissions");
         var permissions = new List<Permission>
         {
-            new("auth", "users", "create", "Create User", "Permission to create a new user"),
-            new("auth", "users", "read", "Read User", "Permission to view user lists and details"),
-            new("auth", "users", "update", "Update User", "Permission to edit user information"),
-            new("auth", "users", "delete", "Delete User", "Permission to delete users"),
-            new("auth", "users", "assign-role", "Assign Role", "Permission to assign roles to users"),
-            new("auth", "users", "lookup-validation", "Lookup Validation", "Permission to validate tenant user references"),
+            new("auth", "users", "create", "Create User", "Permission to create a new user", moduleOverride: "access-governance"),
+            new("auth", "users", "read", "Read User", "Permission to view user lists and details", moduleOverride: "access-governance"),
+            new("auth", "users", "update", "Update User", "Permission to edit user information", moduleOverride: "access-governance"),
+            new("auth", "users", "delete", "Delete User", "Permission to delete users", moduleOverride: "access-governance"),
+            new("auth", "users", "assign-role", "Assign Role", "Permission to assign roles to users", moduleOverride: "access-governance"),
+            new("auth", "users", "lookup-validation", "Lookup Validation", "Permission to validate tenant user references", moduleOverride: "access-governance"),
 
-            new("auth", "roles", "create", "Create Role", "Permission to create a new role"),
-            new("auth", "roles", "read", "Read Role", "Permission to view role lists"),
-            new("auth", "roles", "update", "Update Role", "Permission to edit roles"),
-            new("auth", "roles", "delete", "Delete Role", "Permission to delete roles"),
-            new("auth", "roles", "assign-permission", "Assign Permission", "Permission to assign permissions to roles"),
+            new("auth", "roles", "create", "Create Role", "Permission to create a new role", moduleOverride: "access-governance"),
+            new("auth", "roles", "read", "Read Role", "Permission to view role lists", moduleOverride: "access-governance"),
+            new("auth", "roles", "update", "Update Role", "Permission to edit roles", moduleOverride: "access-governance"),
+            new("auth", "roles", "delete", "Delete Role", "Permission to delete roles", moduleOverride: "access-governance"),
+            new("auth", "roles", "assign-permission", "Assign Permission", "Permission to assign permissions to roles", moduleOverride: "access-governance"),
 
-            new("mdm", "legal-entities", "create", "Create Legal Entity", null),
-            new("mdm", "legal-entities", "read", "Read Legal Entity", null),
-            new("mdm", "legal-entities", "update", "Update Legal Entity", null),
-            new("mdm", "legal-entities", "delete", "Delete Legal Entity", null),
-            new("mdm", "legal-entities", "bulk-delete", "Bulk Delete", null),
-            new("mdm", "legal-entities", "export", "Export", null),
+            new("mdm", "legal-entities", "create", "Create Legal Entity", null, moduleOverride: "legal-entity"),
+            new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
+            new("mdm", "legal-entities", "update", "Update Legal Entity", null, moduleOverride: "legal-entity"),
+            new("mdm", "legal-entities", "delete", "Delete Legal Entity", null, moduleOverride: "legal-entity"),
+            new("mdm", "legal-entities", "bulk-delete", "Bulk Delete", null, moduleOverride: "legal-entity"),
+            new("mdm", "legal-entities", "export", "Export", null, moduleOverride: "legal-entity"),
 
-            new("Platform", "BusinessReferenceData", "Read", "Read Business Reference Data", "Permission to view BusinessReferenceData stewardship screens and catalogs"),
-            new("Platform", "BusinessReferenceData", "Create", "Create Business Reference Data", "Permission to create BusinessReferenceData sets"),
-            new("Platform", "BusinessReferenceData", "Update", "Update Business Reference Data", "Permission to update BusinessReferenceData sets"),
-            new("Platform", "BusinessReferenceData.Version", "Create", "Create Business Reference Data Version", "Permission to create BusinessReferenceData versions"),
-            new("Platform", "BusinessReferenceData.Version", "Update", "Update Business Reference Data Version", "Permission to update BusinessReferenceData version content"),
-            new("Platform", "BusinessReferenceData.Version", "Validate", "Validate Business Reference Data Version", "Permission to validate BusinessReferenceData versions"),
-            new("Platform", "BusinessReferenceData.Version", "Submit", "Submit Business Reference Data Version", "Permission to submit BusinessReferenceData versions"),
-            new("Platform", "BusinessReferenceData.Version", "Approve", "Approve Business Reference Data Version", "Permission to approve BusinessReferenceData versions"),
-            new("Platform", "BusinessReferenceData.Version", "Publish", "Publish Business Reference Data Version", "Permission to publish BusinessReferenceData versions"),
-            new("Platform", "BusinessReferenceData.Version", "PublishOverride", "Override Business Reference Data Publish", "Permission to publish BusinessReferenceData versions with governance override"),
-            new("Platform", "BusinessReferenceData.Import", "Preview", "Preview Business Reference Data Import", "Permission to preview BusinessReferenceData imports"),
-            new("Platform", "BusinessReferenceData.Import", "Commit", "Commit Business Reference Data Import", "Permission to commit BusinessReferenceData imports"),
-            new("Platform", "BusinessReferenceData.Usage", "Register", "Register Business Reference Data Usage", "Permission to register BusinessReferenceData usage"),
-            new("Platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values"),
+            // FIX-PERM-MODULE-ATTRIBUTION — these are owned by the reference-data module (ReferenceDataManifestProvider,
+            // ModuleCode: "reference-data"), not "platform"/"Platform". Key stays platform.businessreferencedata.* via
+            // the first ctor arg; moduleOverride corrects only the Module attribution used for RoleAssignments grouping.
+            new("platform", "BusinessReferenceData", "Read", "Read Business Reference Data", "Permission to view BusinessReferenceData stewardship screens and catalogs", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData", "Create", "Create Business Reference Data", "Permission to create BusinessReferenceData sets", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData", "Update", "Update Business Reference Data", "Permission to update BusinessReferenceData sets", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData.Version", "Create", "Create Business Reference Data Version", "Permission to create BusinessReferenceData versions", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData.Version", "Update", "Update Business Reference Data Version", "Permission to update BusinessReferenceData version content", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData.Version", "Validate", "Validate Business Reference Data Version", "Permission to validate BusinessReferenceData versions", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData.Version", "Submit", "Submit Business Reference Data Version", "Permission to submit BusinessReferenceData versions", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData.Version", "Approve", "Approve Business Reference Data Version", "Permission to approve BusinessReferenceData versions", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData.Version", "Publish", "Publish Business Reference Data Version", "Permission to publish BusinessReferenceData versions", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData.Version", "PublishOverride", "Override Business Reference Data Publish", "Permission to publish BusinessReferenceData versions with governance override", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData.Import", "Preview", "Preview Business Reference Data Import", "Permission to preview BusinessReferenceData imports", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData.Import", "Commit", "Commit Business Reference Data Import", "Permission to commit BusinessReferenceData imports", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData.Usage", "Register", "Register Business Reference Data Usage", "Permission to register BusinessReferenceData usage", moduleOverride: "reference-data"),
+            new("platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values", moduleOverride: "reference-data"),
 
             // MOD-0288 — Organization, Person & Position Directory (platform-admin screens).
-            new("Platform", "organization-units", "read", "Read Organization Units", "Permission to view organization units"),
-            new("Platform", "organization-units", "create", "Create Organization Unit", "Permission to create organization units"),
-            new("Platform", "organization-units", "update", "Update Organization Unit", "Permission to edit organization units"),
-            new("Platform", "organization-units", "archive", "Archive Organization Unit", "Permission to archive organization units"),
-            new("Platform", "organization-units", "delete", "Delete Organization Unit", "Permission to delete organization units"),
-            new("Platform", "positions", "read", "Read Positions", "Permission to view positions"),
-            new("Platform", "positions", "create", "Create Position", "Permission to create positions"),
-            new("Platform", "positions", "update", "Update Position", "Permission to edit positions"),
-            new("Platform", "positions", "archive", "Archive Position", "Permission to archive positions"),
-            new("Platform", "positions", "delete", "Delete Position", "Permission to delete positions"),
-            new("Platform", "organization", "read-manager-chain", "Read Manager Chain", "Permission to view a position's manager chain"),
-            new("Platform", "position-assignments", "read", "Read Position Assignments", "Permission to view position assignments"),
-            new("Platform", "position-assignments", "create", "Create Position Assignment", "Permission to create position assignments"),
-            new("Platform", "position-assignments", "update", "Update Position Assignment", "Permission to edit position assignments"),
-            new("Platform", "position-assignments", "delete", "Delete Position Assignment", "Permission to delete position assignments"),
+            // FIX-PERM-MODULE-ATTRIBUTION — organization-units.* is owned by the organization module
+            // (OrganizationManifestProvider, ModuleCode: "organization"); Key stays platform.organization-units.*.
+            new("platform", "organization-units", "read", "Read Organization Units", "Permission to view organization units", moduleOverride: "organization"),
+            new("platform", "organization-units", "create", "Create Organization Unit", "Permission to create organization units", moduleOverride: "organization"),
+            new("platform", "organization-units", "update", "Update Organization Unit", "Permission to edit organization units", moduleOverride: "organization"),
+            new("platform", "organization-units", "archive", "Archive Organization Unit", "Permission to archive organization units", moduleOverride: "organization"),
+            new("platform", "organization-units", "delete", "Delete Organization Unit", "Permission to delete organization units", moduleOverride: "organization"),
+            // FIX-PERM-ATTRIBUTION-2 — positions.* and position-assignments.* are the same tenant-side
+            // Organization/Position Directory as organization-units.* (all served by /OrganizationUnits,
+            // /Positions, /PositionAssignments — none under /Platform/); Key stays platform.positions.* /
+            // platform.position-assignments.*.
+            new("platform", "positions", "read", "Read Positions", "Permission to view positions", moduleOverride: "organization"),
+            new("platform", "positions", "create", "Create Position", "Permission to create positions", moduleOverride: "organization"),
+            new("platform", "positions", "update", "Update Position", "Permission to edit positions", moduleOverride: "organization"),
+            new("platform", "positions", "archive", "Archive Position", "Permission to archive positions", moduleOverride: "organization"),
+            new("platform", "positions", "delete", "Delete Position", "Permission to delete positions", moduleOverride: "organization"),
+            new("platform", "organization", "read-manager-chain", "Read Manager Chain", "Permission to view a position's manager chain"),
+            new("platform", "position-assignments", "read", "Read Position Assignments", "Permission to view position assignments", moduleOverride: "organization"),
+            new("platform", "position-assignments", "create", "Create Position Assignment", "Permission to create position assignments", moduleOverride: "organization"),
+            new("platform", "position-assignments", "update", "Update Position Assignment", "Permission to edit position assignments", moduleOverride: "organization"),
+            new("platform", "position-assignments", "delete", "Delete Position Assignment", "Permission to delete position assignments", moduleOverride: "organization"),
+
+            // FEAT-ROLEPERMS-REDESIGN (Part A) — the tenant self-service Security/Menu Settings keys are owned by the
+            // tenant-settings BASELINE module (TenantSettingsManifestProvider, ModuleCode: "tenant-settings"), not the
+            // platform-admin umbrella. Key stays platform.tenant-security.* (immutable identity); only the Module
+            // attribution changes so they group under their own "Tenant Settings" group in Role Permissions. The
+            // catalog sync's UPDATE path refreshes DisplayName/Description only (Module is immutable there), so this
+            // override survives every Platform startup; idempotent ReconcilePermissionModulesAsync updates existing rows.
+            new("platform", "tenant-security", "read", "Read Tenant Security", "Permission to view tenant security settings", moduleOverride: "tenant-settings"),
+            new("platform", "tenant-security", "manage", "Manage Tenant Security", "Permission to manage tenant security settings", moduleOverride: "tenant-settings"),
+
+            // FIX-MENU-SETTINGS-ACCESS — tenant self-service Menu (navigation) Settings write. Same shape/pattern as
+            // platform.tenant-security.manage: a tenant-scoped platform.* self-service key (the backend forces the
+            // caller's tenant_id, so it is NOT an escalation) grouped under the "tenant-settings" BASELINE module.
+            // Gates GET/PUT navigation preferences (the tenant-wide sidebar), while GET menu stays open to every user.
+            new("platform", "tenant-navigation", "manage", "Manage Tenant Navigation", "Permission to manage tenant navigation (menu) settings", moduleOverride: "tenant-settings"),
 
             new("goldenslim", "records", "read",   "Read Golden Slim",   "View Golden Slim records"),
             new("goldenslim", "records", "create", "Create Golden Slim", null),
@@ -201,18 +229,18 @@ public static class DataSeeder
             // MOD-0023 — Workflow Config / Approval Templates permissions (13). Keys must match the
             // constants in Diten.Platform WorkflowPermissions (platform.workflow.*). Platform-scoped, so
             // the DefaultRolePermissionTemplate grants them to SuperAdmin (full catalog) only.
-            new("platform", "workflow.definitions", "view", "View Workflow Definitions", "Permission to view workflow approval templates and versions"),
-            new("platform", "workflow.definitions", "manage", "Manage Workflow Definitions", "Permission to create and edit workflow approval templates"),
-            new("platform", "workflow.definitions", "publish", "Publish Workflow Definition", "Permission to publish an immutable workflow template version"),
-            new("platform", "workflow.instances", "start", "Start Workflow Instance", "Permission to start a workflow approval instance"),
-            new("platform", "workflow.instances", "view", "View Workflow Instances", "Permission to view workflow instances and approval tasks"),
-            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", "Permission to approve a workflow approval task"),
-            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", "Permission to reject a workflow approval task"),
-            new("platform", "workflow.tasks", "delegate", "Delegate Workflow Task", "Permission to delegate a workflow approval task"),
-            new("platform", "workflow.tasks", "request-info", "Request Info on Workflow Task", "Permission to request additional information on a workflow approval task"),
-            new("platform", "workflow.tasks", "cancel", "Cancel Workflow Task", "Permission to cancel a workflow approval task"),
-            new("platform", "workflow.transitions", "evaluate", "Evaluate Workflow Transition Gate", "Permission to evaluate the workflow integration transition gate"),
-            new("platform", "workflow.escalations", "manage", "Manage Workflow SLA Rules", "Permission to create and view workflow SLA escalation rules"),
+            new("platform", "workflow.definitions", "view", "View Workflow Definitions", "Permission to view workflow approval templates and versions", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.definitions", "manage", "Manage Workflow Definitions", "Permission to create and edit workflow approval templates", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.definitions", "publish", "Publish Workflow Definition", "Permission to publish an immutable workflow template version", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.instances", "start", "Start Workflow Instance", "Permission to start a workflow approval instance", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.instances", "view", "View Workflow Instances", "Permission to view workflow instances and approval tasks", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", "Permission to approve a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", "Permission to reject a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.tasks", "delegate", "Delegate Workflow Task", "Permission to delegate a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.tasks", "request-info", "Request Info on Workflow Task", "Permission to request additional information on a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.tasks", "cancel", "Cancel Workflow Task", "Permission to cancel a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.transitions", "evaluate", "Evaluate Workflow Transition Gate", "Permission to evaluate the workflow integration transition gate", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.escalations", "manage", "Manage Workflow SLA Rules", "Permission to create and view workflow SLA escalation rules", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.escalations", "run", "Run Workflow Escalations", "Permission to run the workflow escalation/timeout processor")
         };
 
@@ -221,6 +249,98 @@ public static class DataSeeder
             var filter = Builders<Permission>.Filter.Eq(x => x.Key, p.Key);
             var exists = await col.Find(filter).AnyAsync();
             if (!exists) await col.InsertOneAsync(p);
+        }
+
+        await ReconcilePermissionModulesAsync(col, permissions);
+        await ReconcilePermissionScopesAsync(col, permissions);
+        await ReconcilePermissionModuleCasingAsync(col);
+    }
+
+    // FIX-PERM-MODULE-CASE-CONSISTENCY — the seed writes Module lowercase, but the catalog sync historically stored
+    // the Platform-uppercased ModuleCode (ACCESS-GOVERNANCE, GOLDENCOMPACT, WORKFLOW...), so the same module appeared
+    // under two casings and the RoleAssignments "Module" grouping split. Unlike the Module reconcile (seed-list based),
+    // this needs the WHOLE collection to reach self-registered/synced rows absent from the seed list, so it scans every
+    // permission and lowercases Module. Idempotent (already-lowercase rows are skipped); Module-case only — the Key,
+    // Scope and every other field are untouched, so the escalation boundary (Scope-based) cannot change.
+    private static async Task ReconcilePermissionModuleCasingAsync(IMongoCollection<Permission> col)
+    {
+        var all = await col.Find(_ => true).ToListAsync();
+
+        var writes = new List<WriteModel<Permission>>();
+        foreach (var p in all)
+        {
+            var lower = (p.Module ?? string.Empty).ToLowerInvariant();
+            if (string.Equals(p.Module, lower, StringComparison.Ordinal))
+            {
+                continue; // already lowercase
+            }
+
+            writes.Add(new UpdateOneModel<Permission>(
+                Builders<Permission>.Filter.Eq(x => x.Id, p.Id),
+                Builders<Permission>.Update.Set(x => x.Module, lower)));
+        }
+
+        if (writes.Count == 0) return;
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Reconciled Module casing (→ lowercase) for {result.ModifiedCount} existing permission(s).");
+        }
+    }
+
+    // FIX-PERM-MODULE-ATTRIBUTION — the seed list above is the single source of truth for each permission's
+    // Module attribution. A literal fix here (e.g. organization-units.* -> "organization") only affects rows
+    // inserted from a clean collection; rows already seeded in a running environment keep their old Module
+    // forever otherwise. This reconciles existing rows by Key on every startup so a corrected literal takes
+    // effect on restart without a DB wipe. Module-only — Key/DisplayName/Description/IsSystem untouched.
+    private static async Task ReconcilePermissionModulesAsync(IMongoCollection<Permission> col, List<Permission> permissions)
+    {
+        var writes = new List<WriteModel<Permission>>();
+        foreach (var p in permissions)
+        {
+            var filter = Builders<Permission>.Filter.And(
+                Builders<Permission>.Filter.Eq(x => x.Key, p.Key),
+                Builders<Permission>.Filter.Ne(x => x.Module, p.Module));
+            var update = Builders<Permission>.Update.Set(x => x.Module, p.Module);
+            writes.Add(new UpdateOneModel<Permission>(filter, update));
+        }
+
+        if (writes.Count == 0) return;
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Reconciled Module attribution for {result.ModifiedCount} existing permission(s).");
+        }
+    }
+
+    // İŞ3-FAZ1b — the Scope reconcile is SEED-LIST based (like the Module reconcile), using each seed literal's
+    // authoritative Scope by Key. This is REQUIRED now that Module is the manifest ModuleCode: a Module-derived
+    // ClassifyScope reconcile would wrongly force workflow (Module="workflow") to Tenant and leak a platform-admin
+    // module into tenant roles. The seed literals carry the correct Scope explicitly where it diverges from the
+    // Module classification (workflow → PlatformAdmin), so reconciling by Key keeps the boundary exact.
+    // Synced-only permissions (not in the seed list) are intentionally NOT touched — their Scope is route-derived and
+    // carried by the catalog sync (authoritative), so this reconcile must never overwrite it. Idempotent + Scope-only:
+    // the server-side $ne skips rows already correct (and matches rows where the field is absent → legacy backfill).
+    private static async Task ReconcilePermissionScopesAsync(IMongoCollection<Permission> col, List<Permission> permissions)
+    {
+        var writes = new List<WriteModel<Permission>>();
+        foreach (var p in permissions)
+        {
+            var filter = Builders<Permission>.Filter.And(
+                Builders<Permission>.Filter.Eq(x => x.Key, p.Key),
+                Builders<Permission>.Filter.Ne(x => x.Scope, p.Scope));
+            var update = Builders<Permission>.Update.Set(x => x.Scope, p.Scope);
+            writes.Add(new UpdateOneModel<Permission>(filter, update));
+        }
+
+        if (writes.Count == 0) return;
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Reconciled Scope for {result.ModifiedCount} existing permission(s).");
         }
     }
 
@@ -369,6 +489,53 @@ public static class DataSeeder
                 await rpCol.InsertOneAsync(RolePermission.SystemGrant(role.Id, p.Id, DefaultTenantId, SystemUser));
             }
         }
+    }
+
+    // FEAT-ROLE-GRANT-RECONCILE — a permission newly added to TenantSelfServicePermissions only reaches an Admin
+    // role at PROVISION time, so tenants provisioned BEFORE the key was added never receive it and their admins hit
+    // 403 on the new capability (e.g. Menu Settings / platform.tenant-navigation.manage). This backfills EVERY
+    // tenant's Admin role with any missing self-service permission on startup, mirroring the ReconcilePermission
+    // ModulesAsync idempotent-reconcile pattern at the role-grant level.
+    //   • Additive + idempotent: never revokes; grants already present are skipped (re-run adds 0).
+    //   • Scope-safe: reconciles ONLY the curated self-service subset, NOT the full Admin template, so a tenant's
+    //     customized Admin role is never clobbered. SuperAdmin (full catalog) and all other roles are untouched.
+    //   • Each affected tenant's role-assignment version is bumped so cached permission snapshots invalidate (FU13).
+    private static async Task ReconcileTenantAdminSelfServiceGrantsAsync(IMongoDatabase database)
+    {
+        var roleCol = database.GetCollection<Role>("roles");
+        var permCol = database.GetCollection<Permission>("permissions");
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+
+        // Every tenant's Admin role (Name == "Admin"); NOT SuperAdmin, NOT Viewer, NOT custom roles. The planner
+        // re-checks the name so it stays authoritative even though this query already narrows the feed.
+        var adminRoles = await roleCol.Find(r => r.Name == DefaultRolePermissionTemplate.AdminRole).ToListAsync();
+        if (adminRoles.Count == 0) return;
+
+        var catalog = await permCol.Find(_ => true).ToListAsync();
+        var roleIds = adminRoles.Select(r => r.Id).ToHashSet();
+        var existingGrants = (await rpCol.Find(rp => roleIds.Contains(rp.RoleId)).ToListAsync())
+            .Select(rp => (rp.RoleId, rp.PermissionId))
+            .ToHashSet();
+
+        var roleRefs = adminRoles.Select(r => new TenantAdminSelfServiceReconciler.RoleRef(r.Id, r.Name, r.TenantId));
+        var planned = TenantAdminSelfServiceReconciler.PlanMissingGrants(roleRefs, catalog, existingGrants);
+        if (planned.Count == 0) return;
+
+        foreach (var g in planned)
+        {
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(g.RoleId, g.PermissionId, g.TenantId, SystemUser));
+        }
+
+        // Bump each affected tenant's role-assignment version (reuses the atomic $inc upsert so cached authz
+        // snapshots invalidate exactly as a manual assign would).
+        var affectedTenants = planned.Select(g => g.TenantId).ToHashSet();
+        var versionService = new RoleAssignmentVersionRepository(database);
+        foreach (var tenantId in affectedTenants)
+        {
+            await versionService.IncrementAsync(tenantId, CancellationToken.None);
+        }
+
+        Console.WriteLine($"Reconciled {planned.Count} missing tenant self-service grant(s) across {affectedTenants.Count} tenant(s).");
     }
 
     private static async Task SeedTenant97c5BusinessReferenceDataConsumerGrantAsync(IMongoDatabase database)

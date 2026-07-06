@@ -35,4 +35,8 @@
   <data name="GeneralInformation" xml:space="preserve"><value>基本信息</value></data>
   <data name="EmailPlaceholder" xml:space="preserve"><value>例如 user@example.com</value></data>
   <data name="EmailImmutableHint" xml:space="preserve"><value>创建后无法更改电子邮件。</value></data>
+  <data name="KpiTotalUsers" xml:space="preserve"><value>用户总数</value></data>
+  <data name="KpiActiveUsers" xml:space="preserve"><value>活跃</value></data>
+  <data name="KpiPassiveUsers" xml:space="preserve"><value>停用</value></data>
+  <data name="KpiNoRoleUsers" xml:space="preserve"><value>无角色</value></data>
 </root>

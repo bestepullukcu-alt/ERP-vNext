@@ -363,6 +363,20 @@ const RolesList = (function () {
         });
     };
 
+    // ─── KPI cards ──────────────────────────────────────────────────────────
+    // Live counts from the full loaded dataset (unaffected by search/filter — rows().data() returns all rows).
+    const setKpi = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    const updateKpis = (api) => {
+        const rows = api.rows().data().toArray();
+        const total = rows.length;
+        const system = rows.filter((r) => r && r.isSystem).length;
+        const users = rows.reduce((sum, r) => sum + (Number(r && r.userCount) || 0), 0);
+        setKpi('kpi-roles-total', total);
+        setKpi('kpi-roles-system', system);
+        setKpi('kpi-roles-custom', total - system);
+        setKpi('kpi-roles-users', users);
+    };
+
     // ─── Type badge ─────────────────────────────────────────────────────────
     const getTypeBadge = (isSystem) => isSystem
         ? `<span class="badge bg-label-primary">${L.RoleTypeSystem || 'System'}</span>`
@@ -694,6 +708,10 @@ const RolesList = (function () {
                                 actions.push({ className: 'delete-record text-danger', icon: 'bx bx-trash', text: L.Delete, attrs: { 'data-json': rowJson } });
                             }
                             let html = window.DitenDataTable.renderActions(actions);
+                            // Manage Permissions — opens the Role-Permission screen pre-filtered to this role.
+                            const manageTitle = L.ManagePermissions || '';
+                            const manageBtn = `<a href="/RoleAssignments?roleId=${full.id}" class="btn btn-icon me-1 js-manage-perms" title="${manageTitle}" aria-label="${manageTitle}"><i class="bx bx-key icon-md"></i></a>`;
+                            html = html.replace('<div class="d-flex align-items-center">', '<div class="d-flex align-items-center">' + manageBtn);
                             // System roles are locked (no edit/delete) — surface a lock indicator beside View.
                             if (full.isSystem) {
                                 const lockTitle = L.SystemRoleLocked || '';
@@ -722,6 +740,7 @@ const RolesList = (function () {
                 },
                 drawCallback: function () {
                     window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount());
+                    updateKpis(this.api());
                 }
             }
         });

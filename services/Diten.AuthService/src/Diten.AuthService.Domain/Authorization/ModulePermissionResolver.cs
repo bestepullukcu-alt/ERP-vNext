@@ -75,21 +75,23 @@ public static class ModulePermissionResolver
         IEnumerable<Permission> catalog,
         IReadOnlyDictionary<string, string>? overrides = null)
     {
-        // Curated exception (tenant-scoped, platform-hosted module): resolve its platform.<module>.* permissions
-        // even though the broad platform.* exclusion below would otherwise block them.
+        // Curated exception (tenant-scoped, platform-hosted module): resolve its permissions even though the broad
+        // platform.* exclusion below would otherwise block them. İŞ3-FAZ1c — after the Faz-1b Module flip these live
+        // under Module=="workflow" (the manifest ModuleCode); the old Module=="platform" + workflow.* form is gone.
         var normalized = NormalizeModuleCode(moduleCode);
         if (PlatformHostedTenantModules.Contains(normalized))
         {
             return catalog
                 .Where(p => !p.IsDeleted
-                            && string.Equals(p.Module, PlatformModule, StringComparison.OrdinalIgnoreCase)
-                            && (string.Equals(p.Resource, normalized, StringComparison.OrdinalIgnoreCase)
-                                || p.Resource.StartsWith(normalized + ".", StringComparison.OrdinalIgnoreCase)))
+                            && string.Equals(p.Module, normalized, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
+        // İŞ3-FAZ1c — single match: Permission.Module IS the manifest ModuleCode now (the Faz-1a old/new dual-match
+        // bridge was removed once the catalog no longer carries any old service-name Module). Platform-scope
+        // permissions stay excluded (escalation boundary).
         var module = ResolvePermissionModule(moduleCode, overrides);
-        if (module.Length == 0 || string.Equals(module, PlatformModule, StringComparison.OrdinalIgnoreCase))
+        if (module.Length == 0)
         {
             return Array.Empty<Permission>();
         }

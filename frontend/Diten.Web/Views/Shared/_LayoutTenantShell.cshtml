@@ -3,8 +3,6 @@
 @using Diten.Web.Security
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
-@inject IHtmlLocalizer<Diten.Web.Views.Governance.TenantSecuritySettings.TenantSecuritySettingsIndex> TenantSecurityLocalizer
-@inject IHtmlLocalizer<Diten.Web.Views.Governance.TenantNavigationSettings.TenantNavigationSettingsIndex> TenantNavigationLocalizer
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     var currentUser = User?.Identity?.IsAuthenticated == true
@@ -238,21 +236,10 @@
                         </li>
                     }
 
-                    @* MERGE-DEDUPE (feature/phase-b-workcenter × main) — Access Governance (Users/Roles/
-                       Permissions/RoleAssignments/UserRoleAssignments) is now rendered DATA-DRIVEN by the
-                       DynamicModuleMenu below (ACCESS-GOVERNANCE baseline module), so main's hardcoded copy
-                       was removed to avoid a duplicated section. Security Settings stays hardcoded as a bridge
-                       because the TENANT-SETTINGS baseline is not yet emitting nav page-descriptors
-                       (TODO: register its /TenantSecurity + /TenantNavigation descriptors, then drop this too). *@
-                    @if (Perms.Has("platform.tenant-security.manage"))
-                    {
-                        <li class="menu-item @(activeController == "TenantSecuritySettings" ? "active" : "")">
-                            <a href="/TenantSecurity" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
-                                <div>@TenantSecurityLocalizer["Title"]</div>
-                            </a>
-                        </li>
-                    }
+                    @* FIX-CLEANUP-BATCH — Access Governance AND Tenant Settings (Security Settings /TenantSecurity +
+                       Menu Settings /TenantNavigation) are now rendered DATA-DRIVEN by the DynamicModuleMenu below
+                       (ACCESS-GOVERNANCE + TENANT-SETTINGS baseline modules, both permission-gated per descriptor).
+                       The hardcoded Tenant Settings bridge <li>s were removed to stop the menu showing them twice. *@
 
                     @* MOD-0285 — dynamic "Modules" section (AUGMENT). Self-registered/entitled modules whose page
                        descriptors are navigation-visible render here automatically — no hand-edited <li> above.

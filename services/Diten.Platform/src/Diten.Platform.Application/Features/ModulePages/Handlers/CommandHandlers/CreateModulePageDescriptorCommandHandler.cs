@@ -72,7 +72,9 @@ public sealed class CreateModulePageDescriptorCommandHandler : IRequestHandler<C
 
         // Declarative permission sync: a page's RequiredPermission is also declared into AuthService.
         // Best-effort — never blocks the save (null/empty RequiredPermission is skipped by the service).
-        await _catalogPermissionSyncService.SyncPermissionAsync(descriptor.RequiredPermission, descriptor.DisplayName, ct);
+        await _catalogPermissionSyncService.SyncPermissionAsync(
+            descriptor.RequiredPermission, descriptor.DisplayName, descriptor.ModuleCode,
+            ModulePageDescriptorNormalizer.ScopeFromRoute(descriptor.RoutePath), ct);
 
         return Response<Guid>.Success(descriptor.Id, 201);
     }

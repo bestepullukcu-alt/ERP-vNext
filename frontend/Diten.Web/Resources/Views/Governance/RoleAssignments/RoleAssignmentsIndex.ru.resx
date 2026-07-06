@@ -15,4 +15,73 @@
   <data name="BadgeModule" xml:space="preserve"><value>Module</value></data>
   <data name="BadgeManual" xml:space="preserve"><value>Manual</value></data>
   <data name="LockedHint" xml:space="preserve"><value>Baseline and module-granted permissions cannot be changed here.</value></data>
+  <data name="LockedHintSystem" xml:space="preserve"><value>Это разрешение является частью базового набора системы и не может быть изменено здесь.</value></data>
+  <data name="LockedHintModule" xml:space="preserve"><value>Это разрешение было автоматически предоставлено модулем {0} и не может быть изменено здесь.</value></data>
+  <data name="FilterModuleLabel" xml:space="preserve"><value>Модуль</value></data>
+  <data name="AllModulesOption" xml:space="preserve"><value>Все модули</value></data>
+  <data name="ModuleUngrouped" xml:space="preserve"><value>Прочее</value></data>
+  <data name="FilterStateGroupLabel" xml:space="preserve"><value>Фильтр по статусу назначения</value></data>
+  <data name="FilterAll" xml:space="preserve"><value>Все</value></data>
+  <data name="FilterAssigned" xml:space="preserve"><value>Назначено</value></data>
+  <data name="FilterUnassigned" xml:space="preserve"><value>Не назначено</value></data>
+  <data name="PermissionSummary" xml:space="preserve"><value>Назначено {0} из {1}</value></data>
+  <data name="SelectedRoleTitle" xml:space="preserve"><value>Выбранная роль</value></data>
+  <data name="CoverageLabel" xml:space="preserve"><value>Охват разрешений</value></data>
+  <data name="AssignedRemaining" xml:space="preserve"><value>{0} назначено · {1} осталось</value></data>
+  <data name="StatTotal" xml:space="preserve"><value>Всего разрешений</value></data>
+  <data name="StatAssigned" xml:space="preserve"><value>Назначено</value></data>
+  <data name="StatBaselineLocked" xml:space="preserve"><value>Базовые (заблокированы)</value></data>
+  <data name="StatUnassigned" xml:space="preserve"><value>Не назначено</value></data>
+  <data name="ActionDistributionTitle" xml:space="preserve"><value>Распределение действий</value></data>
+  <data name="ActionRead" xml:space="preserve"><value>Чтение</value></data>
+  <data name="ActionCreate" xml:space="preserve"><value>Создание</value></data>
+  <data name="ActionUpdate" xml:space="preserve"><value>Обновление</value></data>
+  <data name="ActionDelete" xml:space="preserve"><value>Удаление</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>Архивирование</value></data>
+  <data name="ActionExport" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="ActionOther" xml:space="preserve"><value>Другое</value></data>
+  <data name="BaselineRequiredNote" xml:space="preserve"><value>Базовые разрешения обязательны для роли и не могут быть удалены.</value></data>
+  <data name="ShowingCount" xml:space="preserve"><value>Показано разрешений: {0}</value></data>
+  <data name="CountBadge" xml:space="preserve"><value>{0}/{1}</value></data>
+  <!-- FEAT-ROLEPERMS-LABEL-DERIVE — action verbs (imperative) used to derive Role Permissions row labels from the permission KEY (verb · entity). Bridged to JS as window.L10n.ActionVerbs. -->
+  <data name="ActionVerb_Read" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="ActionVerb_View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="ActionVerb_Create" xml:space="preserve"><value>Создание</value></data>
+  <data name="ActionVerb_Update" xml:space="preserve"><value>Обновление</value></data>
+  <data name="ActionVerb_Edit" xml:space="preserve"><value>Редактирование</value></data>
+  <data name="ActionVerb_Delete" xml:space="preserve"><value>Удаление</value></data>
+  <data name="ActionVerb_BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="ActionVerb_Manage" xml:space="preserve"><value>Управление</value></data>
+  <data name="ActionVerb_Assign" xml:space="preserve"><value>Назначение</value></data>
+  <data name="ActionVerb_Revoke" xml:space="preserve"><value>Отзыв</value></data>
+  <data name="ActionVerb_AssignPermission" xml:space="preserve"><value>Назначение разрешения</value></data>
+  <data name="ActionVerb_AssignRole" xml:space="preserve"><value>Назначение роли</value></data>
+  <data name="ActionVerb_Delegate" xml:space="preserve"><value>Делегирование</value></data>
+  <data name="ActionVerb_Register" xml:space="preserve"><value>Регистрация</value></data>
+  <data name="ActionVerb_Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="ActionVerb_Import" xml:space="preserve"><value>Импорт</value></data>
+  <data name="ActionVerb_Upload" xml:space="preserve"><value>Загрузка</value></data>
+  <data name="ActionVerb_List" xml:space="preserve"><value>Список</value></data>
+  <data name="ActionVerb_Preview" xml:space="preserve"><value>Предпросмотр</value></data>
+  <data name="ActionVerb_Share" xml:space="preserve"><value>Общий доступ</value></data>
+  <data name="ActionVerb_Archive" xml:space="preserve"><value>Архивирование</value></data>
+  <data name="ActionVerb_Activate" xml:space="preserve"><value>Активация</value></data>
+  <data name="ActionVerb_Reactivate" xml:space="preserve"><value>Повторная активация</value></data>
+  <data name="ActionVerb_Suspend" xml:space="preserve"><value>Приостановка</value></data>
+  <data name="ActionVerb_Deprecate" xml:space="preserve"><value>Списание</value></data>
+  <data name="ActionVerb_Approve" xml:space="preserve"><value>Утверждение</value></data>
+  <data name="ActionVerb_Reject" xml:space="preserve"><value>Отклонение</value></data>
+  <data name="ActionVerb_Publish" xml:space="preserve"><value>Публикация</value></data>
+  <data name="ActionVerb_Submit" xml:space="preserve"><value>Отправка</value></data>
+  <data name="ActionVerb_Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="ActionVerb_Validate" xml:space="preserve"><value>Проверка</value></data>
+  <data name="ActionVerb_Run" xml:space="preserve"><value>Запуск</value></data>
+  <data name="ActionVerb_Execute" xml:space="preserve"><value>Выполнение</value></data>
+  <data name="ActionVerb_Retry" xml:space="preserve"><value>Повтор</value></data>
+  <data name="ActionVerb_Evaluate" xml:space="preserve"><value>Оценка</value></data>
+  <data name="ActionVerb_Initialize" xml:space="preserve"><value>Инициализация</value></data>
+  <data name="ActionVerb_Compare" xml:space="preserve"><value>Сравнение</value></data>
+  <data name="ActionVerb_Move" xml:space="preserve"><value>Перемещение</value></data>
+  <data name="ActionVerb_Start" xml:space="preserve"><value>Старт</value></data>
+  <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>Просмотр цепочки руководителей</value></data>
 </root>

@@ -79,6 +79,14 @@
   <data name="Step7EvidenceSub" xml:space="preserve"><value>Documentation</value></data>
   <data name="Step8Review" xml:space="preserve"><value>Review</value></data>
   <data name="Step8ReviewSub" xml:space="preserve"><value>Confirm &amp; Save</value></data>
+  <data name="Step1IdentityDesc" xml:space="preserve"><value>Enter the entity's code, legal name and legal form.</value></data>
+  <data name="Step2StatutoryDesc" xml:space="preserve"><value>Registration, tax and statutory status details.</value></data>
+  <data name="Step3StructureDesc" xml:space="preserve"><value>Define the parent relationship and ownership.</value></data>
+  <data name="Step4FinanceDesc" xml:space="preserve"><value>Fiscal calendar, accounting standard and base currency.</value></data>
+  <data name="Step5AddressesDesc" xml:space="preserve"><value>Registered address and official contact details.</value></data>
+  <data name="Step6GovernanceDesc" xml:space="preserve"><value>Approval workflow and source system tracking.</value></data>
+  <data name="Step7EvidenceDesc" xml:space="preserve"><value>Supporting documentation and completeness.</value></data>
+  <data name="Step8ReviewDesc" xml:space="preserve"><value>Review all details before saving the legal entity.</value></data>
   <data name="RegistrationNumber" xml:space="preserve"><value>Registration Number</value></data>
   <data name="TaxId" xml:space="preserve"><value>Tax ID</value></data>
   <data name="ParentLegalEntity" xml:space="preserve"><value>Parent Legal Entity</value></data>

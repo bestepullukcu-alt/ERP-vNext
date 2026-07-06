@@ -35,4 +35,8 @@
   <data name="GeneralInformation" xml:space="preserve"><value>Общая информация</value></data>
   <data name="EmailPlaceholder" xml:space="preserve"><value>напр. user@example.com</value></data>
   <data name="EmailImmutableHint" xml:space="preserve"><value>Эл. почту нельзя изменить после создания.</value></data>
+  <data name="KpiTotalUsers" xml:space="preserve"><value>Всего пользователей</value></data>
+  <data name="KpiActiveUsers" xml:space="preserve"><value>Активные</value></data>
+  <data name="KpiPassiveUsers" xml:space="preserve"><value>Неактивные</value></data>
+  <data name="KpiNoRoleUsers" xml:space="preserve"><value>Без роли</value></data>
 </root>

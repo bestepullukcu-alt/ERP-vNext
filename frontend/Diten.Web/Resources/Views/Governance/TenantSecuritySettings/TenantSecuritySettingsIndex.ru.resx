@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Настройки безопасности</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управляйте политиками входа и безопасности вашей организации.</value></data>
+  <data name="LoginMethods" xml:space="preserve"><value>Способы входа</value></data>
+  <data name="TwoFactorEnabled" xml:space="preserve"><value>Двухфакторная аутентификация</value></data>
+  <data name="MfaRequired" xml:space="preserve"><value>Требовать MFA</value></data>
+  <data name="EmailLoginEnabled" xml:space="preserve"><value>Вход по электронной почте</value></data>
+  <data name="PhoneLoginEnabled" xml:space="preserve"><value>Вход по телефону</value></data>
+  <data name="PasswordPolicy" xml:space="preserve"><value>Политика паролей</value></data>
+  <data name="PasswordMinLength" xml:space="preserve"><value>Минимальная длина</value></data>
+  <data name="PasswordExpirationDays" xml:space="preserve"><value>Срок действия пароля (дн.)</value></data>
+  <data name="PasswordExpirationDaysHint" xml:space="preserve"><value>Оставьте пустым, чтобы срок действия не истекал.</value></data>
+  <data name="LoginAuditRetentionDays" xml:space="preserve"><value>Хранение журнала входов (дн.)</value></data>
+  <data name="RequireUppercase" xml:space="preserve"><value>Требовать заглавную букву</value></data>
+  <data name="RequireLowercase" xml:space="preserve"><value>Требовать строчную букву</value></data>
+  <data name="RequireDigit" xml:space="preserve"><value>Требовать цифру</value></data>
+  <data name="RequireSpecialChar" xml:space="preserve"><value>Требовать специальный символ</value></data>
+  <data name="SessionLockoutPolicy" xml:space="preserve"><value>Сессия &amp; блокировка</value></data>
+  <data name="SessionTimeoutMinutes" xml:space="preserve"><value>Тайм-аут сессии (мин)</value></data>
+  <data name="RefreshTokenLifetimeDays" xml:space="preserve"><value>Срок действия токена обновления (дн.)</value></data>
+  <data name="MaxFailedLoginAttempts" xml:space="preserve"><value>Макс. число неудачных попыток входа</value></data>
+  <data name="LockoutDurationMinutes" xml:space="preserve"><value>Длительность блокировки (мин)</value></data>
+  <data name="AccessRestrictions" xml:space="preserve"><value>Ограничения доступа</value></data>
+  <data name="IpWhitelistEnabled" xml:space="preserve"><value>Включить белый список IP</value></data>
+  <data name="AllowedIps" xml:space="preserve"><value>Разрешённые IP-адреса</value></data>
+  <data name="AllowedIpsHint" xml:space="preserve"><value>Один адрес IPv4 или IPv6 в строке.</value></data>
+  <data name="AllowedCountries" xml:space="preserve"><value>Разрешённые страны</value></data>
+  <data name="AllowedCountriesHint" xml:space="preserve"><value>Один код страны в формате ISO alpha-2 в строке (например, TR, US).</value></data>
+  <data name="Saved" xml:space="preserve"><value>Настройки безопасности сохранены.</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>Пожалуйста, исправьте выделенные поля.</value></data>
+  <data name="MfaRequires2FA" xml:space="preserve"><value>Если MFA обязательна, должны быть включены как двухфакторная аутентификация, так и вход по электронной почте.</value></data>
+  <data name="AtLeastOneLoginMethod" xml:space="preserve"><value>Должен быть включён хотя бы один способ входа (электронная почта или телефон).</value></data>
+  <data name="IpWhitelistEmpty" xml:space="preserve"><value>Добавьте хотя бы один разрешённый IP-адрес при включённом белом списке IP.</value></data>
+  <data name="InvalidIp" xml:space="preserve"><value>Недействительный IP-адрес: </value></data>
+  <data name="InvalidCountry" xml:space="preserve"><value>Недействительный код страны (используйте ISO alpha-2): </value></data>
+  <data name="TwoFactorAutoEnabled" xml:space="preserve"><value>Двухфакторная аутентификация и вход по электронной почте были автоматически включены для MFA.</value></data>
+  <data name="MfaAutoDisabled" xml:space="preserve"><value>MFA была отключена, поскольку двухфакторная аутентификация была выключена.</value></data>
+  <data name="EmailLoginDesc" xml:space="preserve"><value>Разрешить пользователям входить с помощью электронной почты и пароля.</value></data>
+  <data name="PhoneLoginDesc" xml:space="preserve"><value>Вход по одноразовому коду (OTP) на телефон. Отключено, пока не настроен SMS-провайдер.</value></data>
+  <data name="TwoFactorDesc" xml:space="preserve"><value>Позволить пользователям настроить 2FA на основе TOTP.</value></data>
+  <data name="MfaRequiredDesc" xml:space="preserve"><value>Требовать настройку MFA для всех пользователей.</value></data>
+  <data name="PasswordMinLengthHint" xml:space="preserve"><value>Количество символов</value></data>
+  <data name="ComplexityRequirements" xml:space="preserve"><value>Требования к сложности</value></data>
+  <data name="RequireUppercaseHint" xml:space="preserve"><value>Хотя бы один символ A–Z</value></data>
+  <data name="RequireLowercaseHint" xml:space="preserve"><value>Хотя бы один символ a–z</value></data>
+  <data name="RequireDigitHint" xml:space="preserve"><value>Хотя бы одна цифра 0–9</value></data>
+  <data name="RequireSpecialCharHint" xml:space="preserve"><value>Хотя бы один символ !@#$%^&amp;*</value></data>
+  <data name="PolicyStrength" xml:space="preserve"><value>Надёжность политики паролей</value></data>
+  <data name="RulesActiveSuffix" xml:space="preserve"><value>правил активно</value></data>
+  <data name="UnitMinutes" xml:space="preserve"><value>мин</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>дн.</value></data>
+  <data name="UnitAttempts" xml:space="preserve"><value>попыток</value></data>
+  <data name="SessionTimeoutHint" xml:space="preserve"><value>Сессия завершается после периода бездействия.</value></data>
+  <data name="RefreshTokenHint" xml:space="preserve"><value>Срок действия токена обновления.</value></data>
+  <data name="MaxFailedHint" xml:space="preserve"><value>Учётная запись блокируется после указанного числа неудачных попыток.</value></data>
+  <data name="LockoutDurationHint" xml:space="preserve"><value>Учётная запись остаётся заблокированной в течение этого времени.</value></data>
+  <data name="SummarySession" xml:space="preserve"><value>Сессия</value></data>
+  <data name="SummaryToken" xml:space="preserve"><value>Срок токена</value></data>
+  <data name="SummaryLockout" xml:space="preserve"><value>Блокировка</value></data>
+  <data name="SummaryAttempts" xml:space="preserve"><value>Порог блокировки</value></data>
+  <data name="SecurityScore" xml:space="preserve"><value>Оценка безопасности</value></data>
+  <data name="SecurityScoreHint" xml:space="preserve"><value>Повысьте свою оценку, включив все рекомендуемые настройки.</value></data>
+  <data name="ActiveProtections" xml:space="preserve"><value>Активные средства защиты</value></data>
+  <data name="ProtectionEmailLogin" xml:space="preserve"><value>Вход по электронной почте</value></data>
+  <data name="ProtectionPhoneLogin" xml:space="preserve"><value>Вход по телефону</value></data>
+  <data name="Protection2FA" xml:space="preserve"><value>2FA включена</value></data>
+  <data name="ProtectionMfa" xml:space="preserve"><value>MFA обязательна</value></data>
+  <data name="ProtectionUppercase" xml:space="preserve"><value>Заглавная буква</value></data>
+  <data name="ProtectionLowercase" xml:space="preserve"><value>Строчная буква</value></data>
+  <data name="ProtectionDigit" xml:space="preserve"><value>Требуется цифра</value></data>
+  <data name="ProtectionSpecial" xml:space="preserve"><value>Специальный символ</value></data>
+  <data name="ProtectionIpRestriction" xml:space="preserve"><value>Ограничение по IP</value></data>
+  <data name="SettingsScopeInfo" xml:space="preserve"><value>Эти настройки затрагивают всех пользователей арендатора. Изменения вступают в силу сразу после сохранения.</value></data>
+  <data name="IpWhitelistDesc" xml:space="preserve"><value>Разрешать доступ только с указанных IP-адресов и из указанных стран.</value></data>
+  <data name="AccessRestrictionsInfo" xml:space="preserve"><value>При включённых ограничениях по IP доступ разрешён только с перечисленных IP-адресов и из перечисленных стран.</value></data>
+  <data name="ScoreLevelWeak" xml:space="preserve"><value>Слабая</value></data>
+  <data name="ScoreLevelMedium" xml:space="preserve"><value>Средняя</value></data>
+  <data name="ScoreLevelStrong" xml:space="preserve"><value>Надёжная</value></data>
+</root>

@@ -57,8 +57,10 @@ public sealed class RevokeRoleCommandHandlerTests
         Assert.NotEqual(Guid.NewGuid(), refreshTokens.RevokeAllCall!.Value.userId);
     }
 
+    // FIX-USERROLE-REVOKE-SYSTEMROLE — revoking a user↔role assignment on a SYSTEM role now succeeds (symmetric
+    // with the unguarded assign): it only narrows the user's permissions, so no 403 block. Full flow still runs.
     [Fact]
-    public async Task System_role_returns_403_and_revokes_nothing()
+    public async Task System_role_revoke_succeeds_and_runs_full_flow()
     {
         var systemRole = new Role("admin", "Admin", null, TenantId);
         systemRole.MarkAsSystem();
@@ -68,10 +70,10 @@ public sealed class RevokeRoleCommandHandlerTests
 
         var result = await handler.Handle(new RevokeRoleCommand(UserId, RoleId), CancellationToken.None);
 
-        Assert.False(result.IsSuccessful);
-        Assert.Equal(403, result.StatusCode);
-        Assert.Null(userRoles.RevokedCall);        // role revoke not reached
-        Assert.Null(refreshTokens.RevokeAllCall);  // refresh-token revoke not reached
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(204, result.StatusCode);
+        Assert.Equal((UserId, RoleId, TenantId), userRoles.RevokedCall);        // role revoke reached
+        Assert.Equal((UserId, TenantId), refreshTokens.RevokeAllCall);          // refresh-token revoke reached
     }
 
     [Fact]
@@ -114,8 +116,10 @@ public sealed class RevokeRoleCommandHandlerTests
         Assert.Contains(TenantId, version.IncrementedTenants);
     }
 
+    // FIX-USERROLE-REVOKE-SYSTEMROLE — system-role revoke is no longer blocked, so it bumps the version like any
+    // other revoke (cached authorization snapshots must invalidate).
     [Fact]
-    public async Task System_role_revoke_does_not_bump_version()
+    public async Task System_role_revoke_bumps_version()
     {
         var systemRole = new Role("admin", "Admin", null, TenantId);
         systemRole.MarkAsSystem();
@@ -124,7 +128,8 @@ public sealed class RevokeRoleCommandHandlerTests
 
         await handler.Handle(new RevokeRoleCommand(UserId, RoleId), CancellationToken.None);
 
-        Assert.Equal(0, version.IncrementCount);
+        Assert.Equal(1, version.IncrementCount);
+        Assert.Contains(TenantId, version.IncrementedTenants);
     }
 
     private static RevokeRoleCommandHandler CreateHandler(

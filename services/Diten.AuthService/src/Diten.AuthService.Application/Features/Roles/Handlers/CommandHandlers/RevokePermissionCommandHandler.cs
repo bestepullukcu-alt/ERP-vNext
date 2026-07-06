@@ -41,9 +41,12 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
     {
         var tenantId = _tenantContext.TenantId;
 
+        // Role lookup is kept for the audit roleName below. FIX-ROLEPERM-REVOKE-SYSTEMROLE — the blanket
+        // "cannot remove from a system role" 403 was removed: it was redundant with (and broader than) the S-GUARD
+        // below, wrongly blocking removal of MANUAL grants on a system role (assign was allowed but revoke was not —
+        // the same asymmetry fixed for user↔role in FIX-USERROLE-REVOKE-SYSTEMROLE). The S-GUARD is the authoritative
+        // protection: System/Module baseline grants stay locked (409) on ANY role, Manual grants are removable.
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, tenantId, ct);
-        if (role != null && role.IsSystem)
-            return Response<NoContent>.Fail("Permissions cannot be removed from system roles.", 403);
 
         // S-GUARD (bridge integrity): only Manual grants may be removed through the API. System
         // (baseline) and Module (entitlement-sourced) grants are provisioning-managed — a manual

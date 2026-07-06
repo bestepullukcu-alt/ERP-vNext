@@ -98,6 +98,13 @@
     var _notyfInstance = null;
 
     window.showToast = function (key, type) {
+        var TOAST_TYPES = ['success', 'error', 'warning', 'info'];
+
+        // Reversed-argument defense: showToast('warning', msg) works like showToast(msg, 'warning').
+        if (TOAST_TYPES.indexOf(key) !== -1 && TOAST_TYPES.indexOf(type) === -1) {
+            var _swapped = key; key = type; type = _swapped;
+        }
+
         type = type || 'success';
         console.log('[MOD-0013 showToast] Triggered - Key:', key, '| Type:', type);
 
@@ -115,6 +122,21 @@
         };
 
         var message = messages[key] || key;
+
+        // Empty-message guard: never render a blank coloured toast.
+        if (message === null || message === undefined || String(message).trim() === '') {
+            if (type === 'success') {
+                message = messages.Success;
+            } else if (type === 'error') {
+                message = messages.Error;
+            } else {
+                // warning/info with no resolvable message → stay silent.
+                return;
+            }
+            if (message === null || message === undefined || String(message).trim() === '') {
+                return;
+            }
+        }
 
         try {
             // Priority 1: Notyf (Theme Native)

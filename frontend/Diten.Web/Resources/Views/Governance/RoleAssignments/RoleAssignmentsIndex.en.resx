@@ -15,4 +15,73 @@
   <data name="BadgeModule" xml:space="preserve"><value>Module</value></data>
   <data name="BadgeManual" xml:space="preserve"><value>Manual</value></data>
   <data name="LockedHint" xml:space="preserve"><value>Baseline and module-granted permissions cannot be changed here.</value></data>
+  <data name="LockedHintSystem" xml:space="preserve"><value>This permission is part of the system baseline and cannot be changed here.</value></data>
+  <data name="LockedHintModule" xml:space="preserve"><value>This permission was granted automatically by the {0} module and cannot be changed here.</value></data>
+  <data name="FilterModuleLabel" xml:space="preserve"><value>Module</value></data>
+  <data name="AllModulesOption" xml:space="preserve"><value>All modules</value></data>
+  <data name="ModuleUngrouped" xml:space="preserve"><value>Other</value></data>
+  <data name="FilterStateGroupLabel" xml:space="preserve"><value>Filter by assignment state</value></data>
+  <data name="FilterAll" xml:space="preserve"><value>All</value></data>
+  <data name="FilterAssigned" xml:space="preserve"><value>Assigned</value></data>
+  <data name="FilterUnassigned" xml:space="preserve"><value>Unassigned</value></data>
+  <data name="PermissionSummary" xml:space="preserve"><value>{0} of {1} assigned</value></data>
+  <data name="SelectedRoleTitle" xml:space="preserve"><value>Selected Role</value></data>
+  <data name="CoverageLabel" xml:space="preserve"><value>Permission coverage</value></data>
+  <data name="AssignedRemaining" xml:space="preserve"><value>{0} assigned · {1} remaining</value></data>
+  <data name="StatTotal" xml:space="preserve"><value>Total Permissions</value></data>
+  <data name="StatAssigned" xml:space="preserve"><value>Assigned</value></data>
+  <data name="StatBaselineLocked" xml:space="preserve"><value>Baseline Locked</value></data>
+  <data name="StatUnassigned" xml:space="preserve"><value>Unassigned</value></data>
+  <data name="ActionDistributionTitle" xml:space="preserve"><value>Action Distribution</value></data>
+  <data name="ActionRead" xml:space="preserve"><value>Read</value></data>
+  <data name="ActionCreate" xml:space="preserve"><value>Create</value></data>
+  <data name="ActionUpdate" xml:space="preserve"><value>Update</value></data>
+  <data name="ActionDelete" xml:space="preserve"><value>Delete</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ActionExport" xml:space="preserve"><value>Export</value></data>
+  <data name="ActionOther" xml:space="preserve"><value>Other</value></data>
+  <data name="BaselineRequiredNote" xml:space="preserve"><value>Baseline permissions are required for the role and cannot be removed.</value></data>
+  <data name="ShowingCount" xml:space="preserve"><value>{0} permissions shown</value></data>
+  <data name="CountBadge" xml:space="preserve"><value>{0}/{1}</value></data>
+  <!-- FEAT-ROLEPERMS-LABEL-DERIVE — action verbs (imperative) used to derive Role Permissions row labels from the permission KEY (verb · entity). Bridged to JS as window.L10n.ActionVerbs. -->
+  <data name="ActionVerb_Read" xml:space="preserve"><value>View</value></data>
+  <data name="ActionVerb_View" xml:space="preserve"><value>View</value></data>
+  <data name="ActionVerb_Create" xml:space="preserve"><value>Create</value></data>
+  <data name="ActionVerb_Update" xml:space="preserve"><value>Update</value></data>
+  <data name="ActionVerb_Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="ActionVerb_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="ActionVerb_BulkDelete" xml:space="preserve"><value>Bulk Delete</value></data>
+  <data name="ActionVerb_Manage" xml:space="preserve"><value>Manage</value></data>
+  <data name="ActionVerb_Assign" xml:space="preserve"><value>Assign</value></data>
+  <data name="ActionVerb_Revoke" xml:space="preserve"><value>Revoke</value></data>
+  <data name="ActionVerb_AssignPermission" xml:space="preserve"><value>Assign Permission</value></data>
+  <data name="ActionVerb_AssignRole" xml:space="preserve"><value>Assign Role</value></data>
+  <data name="ActionVerb_Delegate" xml:space="preserve"><value>Delegate</value></data>
+  <data name="ActionVerb_Register" xml:space="preserve"><value>Register</value></data>
+  <data name="ActionVerb_Export" xml:space="preserve"><value>Export</value></data>
+  <data name="ActionVerb_Import" xml:space="preserve"><value>Import</value></data>
+  <data name="ActionVerb_Upload" xml:space="preserve"><value>Upload</value></data>
+  <data name="ActionVerb_List" xml:space="preserve"><value>List</value></data>
+  <data name="ActionVerb_Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="ActionVerb_Share" xml:space="preserve"><value>Share</value></data>
+  <data name="ActionVerb_Archive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ActionVerb_Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="ActionVerb_Reactivate" xml:space="preserve"><value>Reactivate</value></data>
+  <data name="ActionVerb_Suspend" xml:space="preserve"><value>Suspend</value></data>
+  <data name="ActionVerb_Deprecate" xml:space="preserve"><value>Deprecate</value></data>
+  <data name="ActionVerb_Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="ActionVerb_Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="ActionVerb_Publish" xml:space="preserve"><value>Publish</value></data>
+  <data name="ActionVerb_Submit" xml:space="preserve"><value>Submit</value></data>
+  <data name="ActionVerb_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="ActionVerb_Validate" xml:space="preserve"><value>Validate</value></data>
+  <data name="ActionVerb_Run" xml:space="preserve"><value>Run</value></data>
+  <data name="ActionVerb_Execute" xml:space="preserve"><value>Execute</value></data>
+  <data name="ActionVerb_Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="ActionVerb_Evaluate" xml:space="preserve"><value>Evaluate</value></data>
+  <data name="ActionVerb_Initialize" xml:space="preserve"><value>Initialize</value></data>
+  <data name="ActionVerb_Compare" xml:space="preserve"><value>Compare</value></data>
+  <data name="ActionVerb_Move" xml:space="preserve"><value>Move</value></data>
+  <data name="ActionVerb_Start" xml:space="preserve"><value>Start</value></data>
+  <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>View Manager Chain</value></data>
 </root>

@@ -90,6 +90,13 @@ public static class DependencyInjection
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
         });
+        // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part B) — S2S callback posting invited-admin activation to Platform.
+        services.AddHttpClient<ITenantAdminActivationClient, PlatformTenantAdminActivationClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
+            client.BaseAddress = new Uri(options.BaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
+        });
 
         // Tenant Context Registration
         services.AddScoped<TenantContext>();

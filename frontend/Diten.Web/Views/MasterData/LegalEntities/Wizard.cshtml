@@ -7,17 +7,27 @@
     var isEdit = !string.IsNullOrEmpty(legalEntityId);
     ViewData["Title"] = isEdit ? Localizer["WizardEditTitle"].Value : Localizer["WizardCreateTitle"].Value;
     Layout = "_LayoutTenantShell";
+    var pageTitle = isEdit ? Localizer["WizardEditTitle"].Value : Localizer["WizardCreateTitle"].Value;
 }
 
 <div id="le-wizard-page" data-le-id="@legalEntityId" data-le-mode="@(isEdit ? "edit" : "create")">
-    <div class="mb-3 d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
         <div>
-            <h5 class="mb-0" id="le-wizard-title">@(isEdit ? Localizer["WizardEditTitle"] : Localizer["WizardCreateTitle"])</h5>
-            <p class="mb-0 text-muted">@Localizer["WizardSubtitle"]</p>
+            <h5 class="mb-0" id="le-wizard-title">@pageTitle</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/LegalEntities">@Localizer["LegalEntitiesTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@pageTitle</li>
+                </ol>
+            </nav>
         </div>
-        <a href="/LegalEntities" class="btn btn-label-secondary btn-sm">
-            <i class="bx bx-chevron-left me-1"></i>@Localizer["BackToList"]
-        </a>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge bg-label-primary fs-6 px-3 py-2 d-flex align-items-center" id="le-required-counter">
+                <i class="bx bx-check-shield me-1 lh-1"></i><span id="le-required-counter-text">@Localizer["RequiredCounter"] 0/8</span>
+            </span>
+            <a href="/LegalEntities" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+            <button type="button" class="btn btn-primary" id="le-save-draft">@Localizer["SaveDraft"]</button>
+        </div>
     </div>
 
     <div id="le-wizard-alert" class="alert alert-danger d-none" role="alert"></div>
@@ -59,14 +69,12 @@
         </div>
 
         <div class="bs-stepper-content">
-            <form id="le-wizard-form" onsubmit="return false" novalidate>
-                <div class="d-flex justify-content-end mb-3">
-                    <span class="badge bg-label-primary" id="le-required-counter">@Localizer["RequiredCounter"] 0/8</span>
-                </div>
+            <form id="le-wizard-form" onsubmit="return false" novalidate data-no-tracker>
 
                 @* ── Step 1: Identity ───────────────────────────────────── *@
                 <div id="le-step-1" class="content active dstepper-block">
-                    <div class="content-header mb-3"><h6 class="mb-0">@Localizer["Step1Identity"]</h6></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step1Identity"]</h6>
+                    <p class="text-muted mb-4">@Localizer["Step1IdentityDesc"]</p>
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leCode">@Localizer["Code"] <span class="text-danger">*</span></label>
@@ -93,7 +101,8 @@
 
                 @* ── Step 2: Statutory & Tax ────────────────────────────── *@
                 <div id="le-step-2" class="content">
-                    <div class="content-header mb-3"><h6 class="mb-0">@Localizer["Step2Statutory"]</h6></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step2Statutory"]</h6>
+                    <p class="text-muted mb-4">@Localizer["Step2StatutoryDesc"]</p>
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leRegistrationNumber">@Localizer["RegistrationNumber"]</label>
@@ -121,7 +130,8 @@
 
                 @* ── Step 3: Structure ──────────────────────────────────── *@
                 <div id="le-step-3" class="content">
-                    <div class="content-header mb-3"><h6 class="mb-0">@Localizer["Step3Structure"]</h6></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step3Structure"]</h6>
+                    <p class="text-muted mb-4">@Localizer["Step3StructureDesc"]</p>
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leParentLegalEntityId">@Localizer["ParentLegalEntity"] <span class="text-danger" id="leParentRequiredStar" style="display:none;">*</span></label>
@@ -141,7 +151,8 @@
 
                 @* ── Step 4: Finance ────────────────────────────────────── *@
                 <div id="le-step-4" class="content">
-                    <div class="content-header mb-3"><h6 class="mb-0">@Localizer["Step4Finance"]</h6></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step4Finance"]</h6>
+                    <p class="text-muted mb-4">@Localizer["Step4FinanceDesc"]</p>
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leFiscalYearVariant">@Localizer["FiscalYearVariant"]</label>
@@ -164,7 +175,8 @@
 
                 @* ── Step 5: Addresses & Contacts ───────────────────────── *@
                 <div id="le-step-5" class="content">
-                    <div class="content-header mb-3"><h6 class="mb-0">@Localizer["Step5Addresses"]</h6></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step5Addresses"]</h6>
+                    <p class="text-muted mb-4">@Localizer["Step5AddressesDesc"]</p>
                     <div class="row g-4">
                         <div class="col-12">
                             <label class="form-label fw-medium" for="leRegisteredAddressJson">@Localizer["RegisteredAddress"] <span class="text-danger">*</span></label>
@@ -194,7 +206,8 @@
 
                 @* ── Step 6: Governance ─────────────────────────────────── *@
                 <div id="le-step-6" class="content">
-                    <div class="content-header mb-3"><h6 class="mb-0">@Localizer["Step6Governance"]</h6></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step6Governance"]</h6>
+                    <p class="text-muted mb-4">@Localizer["Step6GovernanceDesc"]</p>
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leApprovalStatus">@Localizer["ApprovalStatus"]</label>
@@ -222,7 +235,8 @@
 
                 @* ── Step 7: Evidence ───────────────────────────────────── *@
                 <div id="le-step-7" class="content">
-                    <div class="content-header mb-3"><h6 class="mb-0">@Localizer["Step7Evidence"]</h6></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step7Evidence"]</h6>
+                    <p class="text-muted mb-4">@Localizer["Step7EvidenceDesc"]</p>
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leEvidenceStatus">@Localizer["EvidenceStatus"]</label>
@@ -241,20 +255,20 @@
 
                 @* ── Step 8: Review ─────────────────────────────────────── *@
                 <div id="le-step-8" class="content">
-                    <div class="content-header mb-3"><h6 class="mb-0">@Localizer["Step8Review"]</h6></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step8Review"]</h6>
+                    <p class="text-muted mb-4">@Localizer["Step8ReviewDesc"]</p>
                     <div id="le-review-summary"></div>
                 </div>
-
-                @* ── Footer nav ─────────────────────────────────────────── *@
-                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top flex-wrap gap-2">
-                    <button type="button" class="btn btn-label-secondary" id="le-prev"><i class="bx bx-chevron-left me-1"></i>@Localizer["PreviousStep"]</button>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <button type="button" class="btn btn-label-primary" id="le-save-draft"><i class="bx bx-save me-1"></i>@Localizer["SaveDraft"]</button>
-                        <button type="button" class="btn btn-primary" id="le-next"><span class="me-1">@Localizer["NextStep"]</span><i class="bx bx-chevron-right"></i></button>
-                        <button type="button" class="btn btn-success d-none" id="le-submit"><i class="bx bx-check me-1"></i>@Localizer["Submit"]</button>
-                    </div>
-                </div>
             </form>
+        </div>
+    </div>
+
+    @* ── Footer nav (outside the stepper card) ───────────────────────── *@
+    <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+        <button type="button" class="btn btn-label-secondary" id="le-prev"><i class="bx bx-chevron-left me-1"></i>@Localizer["PreviousStep"]</button>
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-primary" id="le-next"><span class="me-1">@Localizer["NextStep"]</span><i class="bx bx-chevron-right"></i></button>
+            <button type="button" class="btn btn-success d-none" id="le-submit"><i class="bx bx-check me-1"></i>@Localizer["Submit"]</button>
         </div>
     </div>
 </div>

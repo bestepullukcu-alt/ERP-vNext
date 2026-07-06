@@ -88,6 +88,8 @@ public sealed class TenantAdminUser
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
     public DateTimeOffset? InvitedAt { get; set; }
+    // FIX-TENANT-ADMIN-INVITE-ACTIVATION — stamped when the invited admin completes its forced first-login change.
+    public DateTimeOffset? ActivatedAt { get; set; }
 }
 
 public sealed class TenantSettings

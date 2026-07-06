@@ -3205,7 +3205,7 @@
       if (allErrors.length) {
         showStepErrors(allErrors);
         if (window.showToast) {
-          window.showToast("warning", allErrors[0][1]);
+          window.showToast(allErrors[0][1], "warning");
         }
         return;
       }
@@ -3235,7 +3235,7 @@
         clearFieldValidation();
 
         if (window.showToast) {
-          window.showToast("success", "Goal draft saved successfully.");
+          window.showToast("Goal draft saved successfully.", "success");
         }
 
         if (savedIdentity.id) {
@@ -3257,7 +3257,7 @@
         });
 
         if (window.showToast) {
-          window.showToast("error", backendMessages[0] || "Goal draft could not be saved.");
+          window.showToast(backendMessages[0] || "Goal draft could not be saved.", "error");
         }
       } finally {
         submitButton.disabled = false;

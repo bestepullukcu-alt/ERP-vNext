@@ -121,6 +121,10 @@ public sealed class InternalEventsController : ControllerBase
         if (existingUser is null)
         {
             user.ConfirmEmail();
+            // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part A) — provisioned with a TEMPORARY password → force a change on
+            // first login (MustChangePassword=true drives the existing forced-change enforcement). Expiry null (no
+            // configured temp-password TTL), matching CreateUserCommandHandler/AdminResetPasswordCommandHandler.
+            user.RequirePasswordChange(null);
             await _userRepository.CreateAsync(user, ct);
         }
         else
@@ -128,6 +132,9 @@ public sealed class InternalEventsController : ControllerBase
             user.UpdatePassword(passwordHash);
             user.Activate();
             user.ConfirmEmail();
+            // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part A) — same on the re-provision (reset) path; set AFTER
+            // UpdatePassword so the temp password re-arms the forced change.
+            user.RequirePasswordChange(null);
             await _userRepository.UpdateForTenantAsync(user, request.TenantId, ct);
         }
 

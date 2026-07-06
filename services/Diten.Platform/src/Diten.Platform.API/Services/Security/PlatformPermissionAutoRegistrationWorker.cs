@@ -46,7 +46,11 @@ public sealed class PlatformPermissionAutoRegistrationWorker : BackgroundService
                 break;
             }
 
-            var status = await syncService.SyncPermissionAsync(key, DeriveDisplayName(key), stoppingToken);
+            // İŞ3-FAZ1b — this A1 worker only ensures the KEY exists (from [HasPermission] controller attributes); it
+            // does not own Module/Scope attribution (that comes from the manifest sync + seed). Pass null/null so an
+            // existing permission's Module/Scope is left untouched, and a brand-new platform.* key defaults to
+            // Module="platform" + PlatformAdmin via the ctor.
+            var status = await syncService.SyncPermissionAsync(key, DeriveDisplayName(key), null, null, stoppingToken);
             if (status == CatalogPermissionSyncStatus.Synced)
             {
                 synced++;

@@ -50,8 +50,8 @@ public sealed class ModulePermissionResolverTests
     {
         var catalog = new List<Permission>
         {
-            new("platform", "workflow.definitions", "view", "View Workflow", null),
-            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", null),
+            new("platform", "workflow.definitions", "view", "View Workflow", null, moduleOverride: "workflow"),
+            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", null, moduleOverride: "workflow"),
             new("platform", "tenants", "read", "Read Tenant", null) // platform-admin → must stay excluded
         };
 

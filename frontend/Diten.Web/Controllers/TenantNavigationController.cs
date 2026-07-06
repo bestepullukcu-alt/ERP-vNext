@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,18 +15,35 @@ namespace Diten.Web.Controllers;
 [Route("TenantNavigation")]
 public sealed class TenantNavigationController : Controller
 {
+    // FIX-MENU-SETTINGS-ACCESS — the manage permission that gates the tenant-WIDE menu editor + its preference
+    // read/write (mirrors the authoritative backend gate on GET/PUT navigation/preferences).
+    private const string ManagePermission = "platform.tenant-navigation.manage";
+
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
+    private readonly IPermissionSnapshot _permissions;
 
-    public TenantNavigationController(HttpClient httpClient, IConfiguration configuration)
+    public TenantNavigationController(HttpClient httpClient, IConfiguration configuration, IPermissionSnapshot permissions)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"] ?? "http://localhost:5000";
+        _permissions = permissions;
     }
 
     [HttpGet("")]
-    public IActionResult Index() => View("~/Views/Governance/TenantNavigationSettings/Index.cshtml");
+    public IActionResult Index()
+    {
+        // Defense-in-depth (backend authoritative): a user without manage cannot reach the tenant-wide editor.
+        // Bare 403 → UseStatusCodePagesWithReExecute renders the friendly /Home/Status/403 page.
+        if (!_permissions.Has(ManagePermission))
+        {
+            return StatusCode(403);
+        }
 
+        return View("~/Views/Governance/TenantNavigationSettings/Index.cshtml");
+    }
+
+    // GET menu stays OPEN (the editor renders the tenant's own menu tree); only the preference read/write is gated.
     [HttpGet("api/menu")]
     public Task<IActionResult> MenuProxy()
     {
@@ -35,12 +53,22 @@ public sealed class TenantNavigationController : Controller
     [HttpGet("api/preferences")]
     public Task<IActionResult> GetPreferencesProxy()
     {
+        if (!_permissions.Has(ManagePermission))
+        {
+            return Task.FromResult<IActionResult>(StatusCode(403));
+        }
+
         return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/navigation/preferences");
     }
 
     [HttpPut("api/preferences")]
     public async Task<IActionResult> ReplacePreferencesProxy()
     {
+        if (!_permissions.Has(ManagePermission))
+        {
+            return StatusCode(403);
+        }
+
         using var reader = new StreamReader(Request.Body, Encoding.UTF8);
         var body = await reader.ReadToEndAsync();
         return await ProxyGatewayAsync(HttpMethod.Put, $"{_gatewayUrl}/api/platform/navigation/preferences", body);

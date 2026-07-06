@@ -20,7 +20,7 @@ public sealed class CatalogPermissionSyncServiceTests
     {
         var (svc, handler) = Build(_ => throw new InvalidOperationException("must not be called"));
 
-        var status = await svc.SyncPermissionAsync(key, "x", CancellationToken.None);
+        var status = await svc.SyncPermissionAsync(key, "x", "goldenslim", "Tenant", CancellationToken.None);
 
         Assert.Equal(CatalogPermissionSyncStatus.SkippedEmpty, status);
         Assert.Equal(0, handler.Calls);
@@ -33,7 +33,7 @@ public sealed class CatalogPermissionSyncServiceTests
     {
         var (svc, handler) = Build(_ => throw new InvalidOperationException("must not be called"));
 
-        var status = await svc.SyncPermissionAsync(key, "x", CancellationToken.None);
+        var status = await svc.SyncPermissionAsync(key, "x", "goldenslim", "Tenant", CancellationToken.None);
 
         Assert.Equal(CatalogPermissionSyncStatus.InvalidFormat, status);
         Assert.Equal(0, handler.Calls);
@@ -44,7 +44,7 @@ public sealed class CatalogPermissionSyncServiceTests
     {
         var (svc, _) = Build(_ => throw new HttpRequestException("connection refused"));
 
-        var status = await svc.SyncPermissionAsync("goldenslim.records.read", "Read", CancellationToken.None);
+        var status = await svc.SyncPermissionAsync("goldenslim.records.read", "Read", "goldenslim", "Tenant", CancellationToken.None);
 
         Assert.Equal(CatalogPermissionSyncStatus.Failed, status);
     }
@@ -54,7 +54,7 @@ public sealed class CatalogPermissionSyncServiceTests
     {
         var (svc, _) = Build(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
 
-        var status = await svc.SyncPermissionAsync("goldenslim.records.read", "Read", CancellationToken.None);
+        var status = await svc.SyncPermissionAsync("goldenslim.records.read", "Read", "goldenslim", "Tenant", CancellationToken.None);
 
         Assert.Equal(CatalogPermissionSyncStatus.Failed, status);
     }
@@ -76,14 +76,17 @@ public sealed class CatalogPermissionSyncServiceTests
             return new HttpResponseMessage(HttpStatusCode.OK);
         });
 
-        // Mixed case / surrounding whitespace is normalized before sending.
-        var status = await svc.SyncPermissionAsync("  GOLDENSLIM.records.read  ", "Read Golden Slim", CancellationToken.None);
+        // Mixed case / surrounding whitespace is normalized before sending. İŞ3-FAZ1b — ModuleCode + Scope ride along.
+        var status = await svc.SyncPermissionAsync("  GOLDENSLIM.records.read  ", "Read Golden Slim", "goldenslim", "Tenant", CancellationToken.None);
 
         Assert.Equal(CatalogPermissionSyncStatus.Synced, status);
         Assert.Equal(HttpMethod.Post, method);
         Assert.Equal("http://auth.local/internal/permissions/sync", uri);
         Assert.Equal("test-internal-key", Assert.Single(keys!));
         Assert.Contains("goldenslim.records.read", body);
+        // İŞ3-FAZ1b — the request body carries the manifest ModuleCode and route-derived Scope.
+        Assert.Contains("goldenslim", body);
+        Assert.Contains("Tenant", body);
     }
 
     private static (CatalogPermissionSyncService svc, RecordingHandler handler) Build(Func<HttpRequestMessage, HttpResponseMessage> responder)

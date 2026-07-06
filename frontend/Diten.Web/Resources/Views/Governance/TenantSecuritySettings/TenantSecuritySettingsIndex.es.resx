@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Configuración de seguridad</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Administre las políticas de inicio de sesión y seguridad de su organización.</value></data>
+  <data name="LoginMethods" xml:space="preserve"><value>Métodos de inicio de sesión</value></data>
+  <data name="TwoFactorEnabled" xml:space="preserve"><value>Autenticación de dos factores</value></data>
+  <data name="MfaRequired" xml:space="preserve"><value>Requerir MFA</value></data>
+  <data name="EmailLoginEnabled" xml:space="preserve"><value>Inicio de sesión por correo electrónico</value></data>
+  <data name="PhoneLoginEnabled" xml:space="preserve"><value>Inicio de sesión por teléfono</value></data>
+  <data name="PasswordPolicy" xml:space="preserve"><value>Política de contraseñas</value></data>
+  <data name="PasswordMinLength" xml:space="preserve"><value>Longitud mínima</value></data>
+  <data name="PasswordExpirationDays" xml:space="preserve"><value>Caducidad de la contraseña (días)</value></data>
+  <data name="PasswordExpirationDaysHint" xml:space="preserve"><value>Deje vacío para que no caduque.</value></data>
+  <data name="LoginAuditRetentionDays" xml:space="preserve"><value>Retención de auditoría de inicio de sesión (días)</value></data>
+  <data name="RequireUppercase" xml:space="preserve"><value>Requerir mayúscula</value></data>
+  <data name="RequireLowercase" xml:space="preserve"><value>Requerir minúscula</value></data>
+  <data name="RequireDigit" xml:space="preserve"><value>Requerir dígito</value></data>
+  <data name="RequireSpecialChar" xml:space="preserve"><value>Requerir carácter especial</value></data>
+  <data name="SessionLockoutPolicy" xml:space="preserve"><value>Sesión &amp; bloqueo</value></data>
+  <data name="SessionTimeoutMinutes" xml:space="preserve"><value>Tiempo de espera de sesión (minutos)</value></data>
+  <data name="RefreshTokenLifetimeDays" xml:space="preserve"><value>Vigencia del token de actualización (días)</value></data>
+  <data name="MaxFailedLoginAttempts" xml:space="preserve"><value>Máximo de intentos fallidos de inicio de sesión</value></data>
+  <data name="LockoutDurationMinutes" xml:space="preserve"><value>Duración del bloqueo (minutos)</value></data>
+  <data name="AccessRestrictions" xml:space="preserve"><value>Restricciones de acceso</value></data>
+  <data name="IpWhitelistEnabled" xml:space="preserve"><value>Habilitar lista blanca de IP</value></data>
+  <data name="AllowedIps" xml:space="preserve"><value>Direcciones IP permitidas</value></data>
+  <data name="AllowedIpsHint" xml:space="preserve"><value>Una dirección IPv4 o IPv6 por línea.</value></data>
+  <data name="AllowedCountries" xml:space="preserve"><value>Países permitidos</value></data>
+  <data name="AllowedCountriesHint" xml:space="preserve"><value>Un código de país ISO alfa-2 por línea (p. ej. TR, US).</value></data>
+  <data name="Saved" xml:space="preserve"><value>Configuración de seguridad guardada.</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>Corrija los campos resaltados.</value></data>
+  <data name="MfaRequires2FA" xml:space="preserve"><value>Cuando se requiere MFA, la autenticación de dos factores y el inicio de sesión por correo electrónico deben estar ambos habilitados.</value></data>
+  <data name="AtLeastOneLoginMethod" xml:space="preserve"><value>Debe habilitarse al menos un método de inicio de sesión (correo electrónico o teléfono).</value></data>
+  <data name="IpWhitelistEmpty" xml:space="preserve"><value>Agregue al menos una dirección IP permitida cuando la lista blanca de IP esté habilitada.</value></data>
+  <data name="InvalidIp" xml:space="preserve"><value>Dirección IP no válida: </value></data>
+  <data name="InvalidCountry" xml:space="preserve"><value>Código de país no válido (use ISO alfa-2): </value></data>
+  <data name="TwoFactorAutoEnabled" xml:space="preserve"><value>La autenticación de dos factores y el inicio de sesión por correo electrónico se habilitaron automáticamente para MFA.</value></data>
+  <data name="MfaAutoDisabled" xml:space="preserve"><value>Se deshabilitó MFA porque se desactivó la autenticación de dos factores.</value></data>
+  <data name="EmailLoginDesc" xml:space="preserve"><value>Permita que los usuarios inicien sesión con correo electrónico y contraseña.</value></data>
+  <data name="PhoneLoginDesc" xml:space="preserve"><value>Inicio de sesión con OTP por teléfono. Deshabilitado hasta que se configure un proveedor de SMS.</value></data>
+  <data name="TwoFactorDesc" xml:space="preserve"><value>Permita que los usuarios configuren 2FA basado en TOTP.</value></data>
+  <data name="MfaRequiredDesc" xml:space="preserve"><value>Requiera la configuración de MFA para todos los usuarios.</value></data>
+  <data name="PasswordMinLengthHint" xml:space="preserve"><value>Número de caracteres</value></data>
+  <data name="ComplexityRequirements" xml:space="preserve"><value>Requisitos de complejidad</value></data>
+  <data name="RequireUppercaseHint" xml:space="preserve"><value>Al menos un carácter A–Z</value></data>
+  <data name="RequireLowercaseHint" xml:space="preserve"><value>Al menos un carácter a–z</value></data>
+  <data name="RequireDigitHint" xml:space="preserve"><value>Al menos un dígito 0–9</value></data>
+  <data name="RequireSpecialCharHint" xml:space="preserve"><value>Al menos un carácter !@#$%^&amp;*</value></data>
+  <data name="PolicyStrength" xml:space="preserve"><value>Fortaleza de la política de contraseñas</value></data>
+  <data name="RulesActiveSuffix" xml:space="preserve"><value>reglas activas</value></data>
+  <data name="UnitMinutes" xml:space="preserve"><value>min</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>días</value></data>
+  <data name="UnitAttempts" xml:space="preserve"><value>intentos</value></data>
+  <data name="SessionTimeoutHint" xml:space="preserve"><value>La sesión finaliza tras un período de inactividad.</value></data>
+  <data name="RefreshTokenHint" xml:space="preserve"><value>Período de validez del token de actualización.</value></data>
+  <data name="MaxFailedHint" xml:space="preserve"><value>La cuenta se bloquea tras este número de intentos fallidos.</value></data>
+  <data name="LockoutDurationHint" xml:space="preserve"><value>La cuenta permanece bloqueada durante este tiempo.</value></data>
+  <data name="SummarySession" xml:space="preserve"><value>Sesión</value></data>
+  <data name="SummaryToken" xml:space="preserve"><value>Vigencia del token</value></data>
+  <data name="SummaryLockout" xml:space="preserve"><value>Bloqueo</value></data>
+  <data name="SummaryAttempts" xml:space="preserve"><value>Umbral de bloqueo</value></data>
+  <data name="SecurityScore" xml:space="preserve"><value>Puntuación de seguridad</value></data>
+  <data name="SecurityScoreHint" xml:space="preserve"><value>Aumente su puntuación habilitando todas las configuraciones recomendadas.</value></data>
+  <data name="ActiveProtections" xml:space="preserve"><value>Protecciones activas</value></data>
+  <data name="ProtectionEmailLogin" xml:space="preserve"><value>Inicio de sesión por correo electrónico</value></data>
+  <data name="ProtectionPhoneLogin" xml:space="preserve"><value>Inicio de sesión por teléfono</value></data>
+  <data name="Protection2FA" xml:space="preserve"><value>2FA habilitado</value></data>
+  <data name="ProtectionMfa" xml:space="preserve"><value>MFA requerido</value></data>
+  <data name="ProtectionUppercase" xml:space="preserve"><value>Mayúscula</value></data>
+  <data name="ProtectionLowercase" xml:space="preserve"><value>Minúscula</value></data>
+  <data name="ProtectionDigit" xml:space="preserve"><value>Dígito requerido</value></data>
+  <data name="ProtectionSpecial" xml:space="preserve"><value>Carácter especial</value></data>
+  <data name="ProtectionIpRestriction" xml:space="preserve"><value>Restricción de IP</value></data>
+  <data name="SettingsScopeInfo" xml:space="preserve"><value>Esta configuración afecta a todos los usuarios del inquilino. Los cambios surten efecto inmediatamente después de guardar.</value></data>
+  <data name="IpWhitelistDesc" xml:space="preserve"><value>Permita el acceso únicamente desde las direcciones IP y los países especificados.</value></data>
+  <data name="AccessRestrictionsInfo" xml:space="preserve"><value>Cuando las restricciones de IP están habilitadas, solo se permite el acceso desde las IP y los países indicados.</value></data>
+  <data name="ScoreLevelWeak" xml:space="preserve"><value>Débil</value></data>
+  <data name="ScoreLevelMedium" xml:space="preserve"><value>Media</value></data>
+  <data name="ScoreLevelStrong" xml:space="preserve"><value>Fuerte</value></data>
+</root>

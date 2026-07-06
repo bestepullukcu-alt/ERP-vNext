@@ -26,4 +26,9 @@
   <data name="NamePlaceholder" xml:space="preserve"><value>مثال: المعتمِد</value></data>
   <data name="NameImmutableHint" xml:space="preserve"><value>لا يمكن تغيير اسم الدور بعد الإنشاء.</value></data>
   <data name="DisplayNamePlaceholder" xml:space="preserve"><value>مثال: المعتمِد</value></data>
+  <data name="ManagePermissions" xml:space="preserve"><value>إدارة الصلاحيات</value></data>
+  <data name="KpiTotalRoles" xml:space="preserve"><value>إجمالي الأدوار</value></data>
+  <data name="KpiSystemRoles" xml:space="preserve"><value>أدوار النظام</value></data>
+  <data name="KpiCustomRoles" xml:space="preserve"><value>أدوار مخصصة</value></data>
+  <data name="KpiAssignedUsers" xml:space="preserve"><value>المستخدمون المعيّنون</value></data>
 </root>

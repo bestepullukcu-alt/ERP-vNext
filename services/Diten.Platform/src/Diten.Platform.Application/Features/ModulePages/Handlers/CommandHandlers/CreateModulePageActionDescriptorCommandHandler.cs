@@ -71,7 +71,10 @@ public sealed class CreateModulePageActionDescriptorCommandHandler
 
         // Declarative permission sync: surface this action's permission into the AuthService catalogue.
         // Best-effort — the service never throws, so a sync failure cannot roll back the catalog save.
-        await _catalogPermissionSyncService.SyncPermissionAsync(descriptor.PermissionKey, descriptor.DisplayName, ct);
+        // The action's scope follows its owning PAGE's route (actions have no route of their own).
+        await _catalogPermissionSyncService.SyncPermissionAsync(
+            descriptor.PermissionKey, descriptor.DisplayName, page.ModuleCode,
+            ModulePageDescriptorNormalizer.ScopeFromRoute(page.RoutePath), ct);
 
         return Response<Guid>.Success(descriptor.Id, 201);
     }
