@@ -36,9 +36,10 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
 
     public async Task<Response<NoContent>> Handle(RevokeRoleCommand request, CancellationToken ct)
     {
+        // FIX-USERROLE-REVOKE-SYSTEMROLE — no system-role block: removing a user↔role assignment only NARROWS
+        // the user's effective permissions (no escalation), and AssignRoleCommandHandler is itself unguarded, so
+        // the revoke must be symmetric. The role is still loaded for the audit's roleName below.
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, _tenantContext.TenantId, ct);
-        if (role != null && role.IsSystem)
-            return Response<NoContent>.Fail("Cannot remove users from system roles.", 403);
 
         await _userRoleRepository.RevokeAsync(request.UserId, request.RoleId, _tenantContext.TenantId, ct);
 

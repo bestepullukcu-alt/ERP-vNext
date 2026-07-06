@@ -26,4 +26,9 @@
   <data name="NamePlaceholder" xml:space="preserve"><value>e.g. Approver</value></data>
   <data name="NameImmutableHint" xml:space="preserve"><value>The role name cannot be changed after creation.</value></data>
   <data name="DisplayNamePlaceholder" xml:space="preserve"><value>e.g. Approver</value></data>
+  <data name="ManagePermissions" xml:space="preserve"><value>Manage Permissions</value></data>
+  <data name="KpiTotalRoles" xml:space="preserve"><value>Total Roles</value></data>
+  <data name="KpiSystemRoles" xml:space="preserve"><value>System Roles</value></data>
+  <data name="KpiCustomRoles" xml:space="preserve"><value>Custom Roles</value></data>
+  <data name="KpiAssignedUsers" xml:space="preserve"><value>Assigned Users</value></data>
 </root>

@@ -7,9 +7,26 @@
   <data name="Title" xml:space="preserve"><value>User Roles</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Assign or remove roles for a user.</value></data>
   <data name="SelectUser" xml:space="preserve"><value>User</value></data>
-  <data name="SearchRoles" xml:space="preserve"><value>Search roles…</value></data>
+  <data name="SearchRoles" xml:space="preserve"><value>Nom ou code du rôle…</value></data>
   <data name="SelectUserPrompt" xml:space="preserve"><value>Select a user to manage their roles.</value></data>
   <data name="NoRoles" xml:space="preserve"><value>No roles are available.</value></data>
   <data name="Assign" xml:space="preserve"><value>Assign</value></data>
   <data name="Assigned" xml:space="preserve"><value>Assigned</value></data>
+  <data name="SearchRolesLabel" xml:space="preserve"><value>Rechercher des rôles</value></data>
+  <data name="FilterAll" xml:space="preserve"><value>Tous</value></data>
+  <data name="FilterAssigned" xml:space="preserve"><value>Attribués</value></data>
+  <data name="FilterUnassigned" xml:space="preserve"><value>Non attribués</value></data>
+  <data name="AssignedRolesSection" xml:space="preserve"><value>Rôles attribués</value></data>
+  <data name="UnassignedRolesSection" xml:space="preserve"><value>Rôles non attribués</value></data>
+  <data name="SelectedUserTitle" xml:space="preserve"><value>Utilisateur sélectionné</value></data>
+  <data name="StatAssignedRoles" xml:space="preserve"><value>Rôles attribués</value></data>
+  <data name="StatTotalPermissions" xml:space="preserve"><value>Total des autorisations</value></data>
+  <data name="ActiveRolesTitle" xml:space="preserve"><value>Rôles actifs</value></data>
+  <data name="NoActiveRoles" xml:space="preserve"><value>Aucun rôle attribué pour le moment.</value></data>
+  <data name="MultiRoleNote" xml:space="preserve"><value>Un utilisateur peut avoir plusieurs rôles. Les autorisations correspondent à l'union de tous les rôles attribués.</value></data>
+  <data name="TypeSystem" xml:space="preserve"><value>Système</value></data>
+  <data name="TypeCustom" xml:space="preserve"><value>Personnalisé</value></data>
+  <data name="Remove" xml:space="preserve"><value>Retirer</value></data>
+  <data name="PermissionCountFormat" xml:space="preserve"><value>{0} autorisations</value></data>
+  <data name="RolesShownFormat" xml:space="preserve"><value>{0} rôles affichés</value></data>
 </root>

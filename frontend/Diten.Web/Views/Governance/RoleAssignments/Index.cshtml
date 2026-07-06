@@ -1,10 +1,19 @@
 @using Diten.Web.Views.Governance.RoleAssignments
+@using Diten.Web.ViewModels.Shared
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<RoleAssignmentsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Localizer["Title"].Value;
     Layout = "_LayoutTenantShell";
+
+    // Reusable-component models built here so the <partial> tag helpers reference variables (nested double
+    // quotes inside a model="..." attribute would break Razor parsing). Values are live slots page JS updates.
+    var coverageModel = new CoverageBarModel(Localizer["CoverageLabel"].Value, "raCoveragePercent", "raCoverageBar");
+    var statTotal = new StatCardModel("bx-collection", Localizer["StatTotal"].Value, "primary", "0", "raStatTotal");
+    var statAssigned = new StatCardModel("bx-check-circle", Localizer["StatAssigned"].Value, "success", "0", "raStatAssigned");
+    var statLocked = new StatCardModel("bx-lock-alt", Localizer["StatBaselineLocked"].Value, "secondary", "0", "raStatLocked");
+    var statUnassigned = new StatCardModel("bx-minus-circle", Localizer["StatUnassigned"].Value, "warning", "0", "raStatUnassigned");
 }
 
 <div class="mb-3">
@@ -14,43 +23,202 @@
 
 <form id="raAntiForgery">@Html.AntiForgeryToken()</form>
 
-<div class="card">
-    <div class="card-header d-flex flex-wrap align-items-center gap-3">
-        <div class="flex-grow-1" style="min-width:14rem; max-width:24rem;">
-            <label for="raRoleSelect" class="form-label fw-medium mb-1">@Localizer["SelectRole"]</label>
-            <select id="raRoleSelect" class="form-select">
-                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
-            </select>
+<div class="row g-4">
+    @* ── LEFT: filters + state tabs + collapsible permission groups ───────────────────────────── *@
+    <div class="col-12 col-lg-8">
+        @* Filters card — role / module / search share one equal-width responsive grid (each col-md-4). *@
+        <div class="card mb-4">
+            <div class="card-body p-3">
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label for="raRoleSelect" class="form-label fw-medium mb-1">@Localizer["SelectRole"]</label>
+                        <select id="raRoleSelect" class="form-select ra-select2">
+                            <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="raModuleFilter" class="form-label fw-medium mb-1">@Localizer["FilterModuleLabel"]</label>
+                        @* FEAT-ROLEPERMS-TENANT-SCOPE — multi-select: empty = all modules (placeholder). *@
+                        <select id="raModuleFilter" class="form-select ra-select2" multiple data-placeholder="@Localizer["AllModulesOption"]">
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="raSearch" class="form-label fw-medium mb-1">@SharedLocalizer["Search"]</label>
+                        <input type="search" id="raSearch" class="form-control" placeholder="@Localizer["SearchPermissions"]" />
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="flex-grow-1" style="min-width:12rem; max-width:20rem;">
-            <label for="raSearch" class="form-label fw-medium mb-1">@SharedLocalizer["Search"]</label>
-            <input type="search" id="raSearch" class="form-control" placeholder="@Localizer["SearchPermissions"]" />
-        </div>
-    </div>
 
-    <div class="card-body">
+        @* State filter — WorkCenter-style pill tabs in their own card. JS toggles .active + data-state. *@
+        <div class="card mb-4">
+            <div class="card-header p-3">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <ul class="nav nav-pills d-inline-flex gap-2 mb-0" role="tablist" aria-label="@Localizer["FilterStateGroupLabel"]">
+                        <li class="nav-item" role="presentation">
+                            <button type="button" class="nav-link active small border shadow-none wc-tab-compact ra-state-tab" data-state="" aria-selected="true">@Localizer["FilterAll"]</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button type="button" class="nav-link small border shadow-none wc-tab-compact ra-state-tab" data-state="assigned" aria-selected="false">@Localizer["FilterAssigned"]</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button type="button" class="nav-link small border shadow-none wc-tab-compact ra-state-tab" data-state="unassigned" aria-selected="false">@Localizer["FilterUnassigned"]</button>
+                        </li>
+                    </ul>
+                    <span id="raSummary" class="text-muted small ms-auto"></span>
+                </div>
+            </div>
+        </div>
+
         <div id="raAlert" class="alert alert-danger d-none" role="alert"></div>
 
-        <div id="raEmpty" class="text-center text-muted py-6">@Localizer["SelectRolePrompt"]</div>
+        @* Skeleton loading — shown until the catalog + roles resolve, then removed by JS. *@
+        <div id="raSkeleton" class="placeholder-glow" aria-hidden="true">
+            @for (var s = 0; s < 3; s++)
+            {
+                <div class="card mb-3">
+                    <div class="card-header d-flex align-items-center gap-2 py-3">
+                        <span class="placeholder rounded ra-skeleton-avatar"></span>
+                        <span class="placeholder col-4 ra-skeleton-line"></span>
+                        <span class="placeholder col-1 ra-skeleton-line ms-auto"></span>
+                    </div>
+                    <div class="card-body">
+                        <span class="placeholder col-8 ra-skeleton-line d-block mb-3"></span>
+                        <span class="placeholder col-6 ra-skeleton-line d-block mb-3"></span>
+                        <span class="placeholder col-7 ra-skeleton-line d-block"></span>
+                    </div>
+                </div>
+            }
+        </div>
 
-        <div id="raList" class="list-group list-group-flush d-none"></div>
+        <div id="raEmpty" class="card d-none">
+            <div class="card-body text-center text-muted py-6">@Localizer["SelectRolePrompt"]</div>
+        </div>
+
+        @* Collapsible group cards render here (JS). aria-live keeps SR users informed of filter results. *@
+        <div id="raGroups" class="d-none" aria-live="polite"></div>
+    </div>
+
+    @* ── RIGHT: selected-role summary — each block is its own bordered card ───────────────────── *@
+    <div class="col-12 col-lg-4">
+        @* Right-side skeleton mirrors the panel while data loads. *@
+        <div id="raRightSkeleton" class="placeholder-glow" aria-hidden="true">
+            <div class="card mb-4">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="placeholder rounded ra-skeleton-avatar"></span>
+                        <span class="placeholder col-6 ra-skeleton-line"></span>
+                    </div>
+                    <span class="placeholder col-12 ra-skeleton-line d-block mb-2"></span>
+                    <span class="placeholder col-4 ra-skeleton-line d-block"></span>
+                </div>
+            </div>
+            <div class="row row-cols-2 g-3">
+                @for (var s = 0; s < 4; s++)
+                {
+                    <div class="col">
+                        <div class="card h-100"><div class="card-body p-3"><span class="placeholder col-10 ra-skeleton-line d-block"></span></div></div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div id="raRolePanel" class="ra-role-panel d-none">
+            @* 1) Selected Role card *@
+            <div class="card mb-4">
+                <div class="card-body p-3">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SelectedRoleTitle"]</h6>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="avatar flex-shrink-0">
+                            <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-shield-quarter"></i></span>
+                        </span>
+                        <div class="min-w-0">
+                            <h5 class="mb-0 text-truncate" id="raRoleName"></h5>
+                            <small class="text-muted text-truncate d-block" id="raRoleSubtitle"></small>
+                        </div>
+                    </div>
+                    <partial name="~/Views/Shared/Components/_CoverageBar.cshtml" model="coverageModel" />
+                    <p class="text-muted small mt-2 mb-0" id="raAssignedRemaining"></p>
+                </div>
+            </div>
+
+            @* 2-5) Four separate stat cards (each _StatCard is its own bordered card): Total / Assigned / Locked / Unassigned *@
+            <div class="row row-cols-2 g-3 mb-4">
+                <div class="col"><partial name="~/Views/Shared/Components/_StatCard.cshtml" model="statTotal" /></div>
+                <div class="col"><partial name="~/Views/Shared/Components/_StatCard.cshtml" model="statAssigned" /></div>
+                <div class="col"><partial name="~/Views/Shared/Components/_StatCard.cshtml" model="statLocked" /></div>
+                <div class="col"><partial name="~/Views/Shared/Components/_StatCard.cshtml" model="statUnassigned" /></div>
+            </div>
+
+            @* 6) Action Distribution card *@
+            <div class="card mb-4">
+                <div class="card-body p-3">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ActionDistributionTitle"]</h6>
+                    <div id="raActionDist" class="ra-action-dist"></div>
+                </div>
+            </div>
+
+            @* Baseline note — BELOW the action-distribution card (not inside it). *@
+            <div class="alert alert-info d-flex align-items-center mb-0 p-3" role="note">
+                <i class="bx bx-info-circle fs-5 me-2"></i>
+                <span>@Localizer["BaselineRequiredNote"]</span>
+            </div>
+        </div>
     </div>
 </div>
 
-@* Row template — cloned by JS per permission (no inline markup generation) *@
-<template id="raRowTemplate">
-    <div class="list-group-item d-flex align-items-center justify-content-between gap-3 ra-row">
-        <div class="min-w-0">
-            <div class="d-flex align-items-center gap-2">
-                <code class="ra-key text-heading"></code>
+@* ── Templates (cloned by JS; no inline markup generation) ────────────────────────────────────── *@
+<template id="raGroupCardTemplate">
+    <div class="card mb-3 entity-group-card ra-group">
+        <div class="card-header d-flex align-items-center gap-2 py-3 ra-group-toggle" role="button" tabindex="0" aria-expanded="true">
+            <span class="text-uppercase text-heading fw-semibold text-truncate ra-group-name"></span>
+            <span class="badge bg-label-secondary ra-group-locks d-none">
+                <i class="bx bx-lock-alt"></i> <span class="ra-group-locks-count"></span>
+            </span>
+            <span class="badge bg-label-primary ms-auto ra-group-count"></span>
+            <i class="bx bx-chevron-down ra-group-caret text-muted ms-2"></i>
+        </div>
+        <div class="ra-group-body"></div>
+    </div>
+</template>
+
+<template id="raRowCardTemplate">
+    <div class="d-flex align-items-center gap-3 entity-row-card ra-row">
+        <span class="avatar avatar-sm flex-shrink-0">
+            <span class="avatar-initial rounded ra-row-icon-wrap"><i class="bx ra-row-icon"></i></span>
+        </span>
+        <div class="min-w-0 flex-grow-1">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="ra-display fw-medium text-truncate"></span>
                 <span class="badge ra-badge d-none"></span>
             </div>
-            <small class="ra-display text-muted d-block text-truncate"></small>
+            <code class="ra-key text-muted small d-block text-truncate"></code>
         </div>
         <div class="flex-shrink-0 d-flex align-items-center gap-2">
-            <i class="bx bx-lock-alt text-muted ra-lock d-none" title="@Localizer["LockedHint"]"></i>
-            <button type="button" class="btn btn-sm btn-label-primary ra-assign d-none">@Localizer["Assign"]</button>
-            <button type="button" class="btn btn-sm btn-label-danger ra-remove d-none">@SharedLocalizer["Delete"]</button>
+            <i class="bx bx-lock-alt text-muted ra-lock d-none"></i>
+            <button type="button" class="btn btn-sm btn-label-primary ra-assign d-none">
+                <i class="bx bx-plus me-1"></i><span class="ra-assign-text"></span>
+            </button>
+            <button type="button" class="btn btn-sm btn-label-danger ra-remove d-none">
+                <i class="bx bx-x me-1"></i><span class="ra-remove-text"></span>
+            </button>
+        </div>
+    </div>
+</template>
+
+<template id="raActionDistTemplate">
+    <div class="ra-action-row d-flex align-items-center gap-3 mb-3">
+        <span class="avatar avatar-sm flex-shrink-0">
+            <span class="avatar-initial rounded ra-action-icon-wrap"><i class="bx ra-action-icon"></i></span>
+        </span>
+        <div class="flex-grow-1 min-w-0">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="small ra-action-label"></span>
+                <span class="small text-muted ra-action-count"></span>
+            </div>
+            <div class="progress ra-action-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar ra-action-fill"></div>
+            </div>
         </div>
     </div>
 </template>

@@ -140,7 +140,7 @@ public sealed class RegisterModuleManifestCommandHandler
             pagesUpserted++;
 
             if (!string.IsNullOrWhiteSpace(page.RequiredPermission)
-                && await TrySyncPermissionAsync(page.RequiredPermission, page.DisplayName, ct))
+                && await TrySyncPermissionAsync(page.RequiredPermission, page.DisplayName, moduleCode, page.RoutePath, ct))
             {
                 permissionsSynced++;
             }
@@ -173,8 +173,9 @@ public sealed class RegisterModuleManifestCommandHandler
                 }
 
                 actionsUpserted++;
+                // The action's scope follows its owning PAGE's route (actions have no route of their own).
                 if (!string.IsNullOrWhiteSpace(action.PermissionKey)
-                    && await TrySyncPermissionAsync(action.PermissionKey, action.DisplayName, ct))
+                    && await TrySyncPermissionAsync(action.PermissionKey, action.DisplayName, moduleCode, page.RoutePath, ct))
                 {
                     permissionsSynced++;
                 }
@@ -417,9 +418,11 @@ public sealed class RegisterModuleManifestCommandHandler
         return existing;
     }
 
-    private async Task<bool> TrySyncPermissionAsync(string? permissionKey, string displayName, CancellationToken ct)
+    private async Task<bool> TrySyncPermissionAsync(
+        string? permissionKey, string displayName, string moduleCode, string? routePath, CancellationToken ct)
     {
-        var status = await _permissionSyncService.SyncPermissionAsync(permissionKey, displayName, ct);
+        var status = await _permissionSyncService.SyncPermissionAsync(
+            permissionKey, displayName, moduleCode, ModulePageDescriptorNormalizer.ScopeFromRoute(routePath), ct);
         return status == CatalogPermissionSyncStatus.Synced;
     }
 

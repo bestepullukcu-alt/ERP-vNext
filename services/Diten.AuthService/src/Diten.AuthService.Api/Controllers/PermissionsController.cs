@@ -33,4 +33,14 @@ public sealed class PermissionsController : CustomBaseController
         var result = await _mediator.Send(new GetPermissionsByModuleQuery(module), ct);
         return CreateActionResultInstance(result);
     }
+
+    // FEAT-ROLEPERMS-TENANT-SCOPE — the catalog the Role Permissions screen offers for a tenant role: only
+    // tenant-assignable keys (platform-admin & reference-data permissions excluded), mirroring the assign guard.
+    [HttpGet("tenant-assignable")]
+    [HasPermission("auth.roles.read")]
+    public async Task<IActionResult> GetTenantAssignable(CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetTenantAssignablePermissionsQuery(), ct);
+        return CreateActionResultInstance(result);
+    }
 }

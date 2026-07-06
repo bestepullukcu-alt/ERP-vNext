@@ -17,6 +17,8 @@ const TenantSecuritySettings = (function () {
 
     let L = {};
     let loadedDto = null; // full DTO from the last successful GET/PUT
+    let tagifyIps = null; // Tagify instance over #allowedIps (chip input)
+    let tagifyCountries = null; // Tagify instance over #allowedCountries (chip input)
 
     const loadL10n = () => {
         try {
@@ -148,10 +150,22 @@ const TenantSecuritySettings = (function () {
         form.elements.maxFailedLoginAttempts.value = data.maxFailedLoginAttempts ?? 5;
         form.elements.lockoutDurationMinutes.value = data.lockoutDurationMinutes ?? 15;
         form.elements.ipWhitelistEnabled.checked = data.ipWhitelistEnabled === true;
-        form.elements.allowedIps.value = joinList(data.allowedIps);
-        form.elements.allowedCountries.value = joinList(data.allowedCountries);
+        setTags(tagifyIps, form.elements.allowedIps, data.allowedIps);
+        setTags(tagifyCountries, form.elements.allowedCountries, (data.allowedCountries || []).map((c) => String(c).toUpperCase()));
         form.elements.loginAuditRetentionDays.value = data.loginAuditRetentionDays ?? 90;
         updateIpWhitelistState();
+        updateDashboard();
+    };
+
+    // Load values into a Tagify chip input (or fall back to the raw field if Tagify failed to init).
+    const setTags = (tagify, input, values) => {
+        const list = Array.isArray(values) ? values : [];
+        if (tagify) {
+            tagify.removeAllTags();
+            if (list.length) tagify.addTags(list);
+        } else if (input) {
+            input.value = joinList(list);
+        }
     };
 
     // Build the full request payload: start from every request field of the loaded DTO so that
@@ -273,8 +287,102 @@ const TenantSecuritySettings = (function () {
 
     const updateIpWhitelistState = () => {
         const enabled = readBool('ipWhitelistEnabled');
+        [[tagifyIps, form?.elements.allowedIps], [tagifyCountries, form?.elements.allowedCountries]]
+            .forEach(([tagify, input]) => {
+                if (tagify) tagify.setDisabled(!enabled);
+                else if (input) input.disabled = !enabled;
+            });
+    };
+
+    // Recompute the read-only dashboard (score, protection checklist, policy strength, session summary)
+    // purely from the current form state. Presentation only — the backend remains authoritative.
+    const setNum = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = (value === null || value === undefined || value === '' || Number.isNaN(value)) ? '–' : value;
+    };
+
+    const updateDashboard = () => {
+        // Complexity rules → 4-segment strength meter.
+        const complexity = ['passwordRequireUppercase', 'passwordRequireLowercase', 'passwordRequireDigit', 'passwordRequireSpecialChar'];
+        const rulesActive = complexity.filter(readBool).length;
+        setNum('policyRuleCount', rulesActive);
+        document.querySelectorAll('#policyStrength .policy-strength-seg').forEach((seg, i) => {
+            seg.classList.toggle('is-active', i < rulesActive);
+        });
+
+        // Active-protections checklist (green check when on, muted circle when off).
+        document.querySelectorAll('.protection-item[data-protection]').forEach((item) => {
+            const on = readBool(item.dataset.protection);
+            const icon = item.querySelector('.protection-status');
+            if (icon) icon.className = 'protection-status bx ' + (on ? 'bx-check-circle text-success' : 'bx-circle');
+        });
+
+        // Login-method rows: tint the leading icon when the method is switched on.
+        document.querySelectorAll('.security-method-item .security-method-icon').forEach((icon) => {
+            const input = icon.closest('.security-method-item')?.querySelector('input[type="checkbox"]');
+            icon.classList.toggle('is-active', input?.checked === true);
+        });
+
+        // Session & lockout summary strip.
+        setNum('summarySession', readNumber('sessionTimeoutMinutes'));
+        setNum('summaryToken', readNumber('refreshTokenLifetimeDays'));
+        setNum('summaryLockout', readNumber('lockoutDurationMinutes'));
+        setNum('summaryAttempts', readNumber('maxFailedLoginAttempts'));
+
+        // Security score out of 10 (a real checklist, not a hard-coded value).
+        const minLength = readNumber('passwordMinLength') ?? 0;
+        const checks = [
+            readBool('emailLoginEnabled'),
+            readBool('twoFactorEnabled'),
+            readBool('mfaRequired'),
+            readBool('passwordRequireUppercase'),
+            readBool('passwordRequireLowercase'),
+            readBool('passwordRequireDigit'),
+            readBool('passwordRequireSpecialChar'),
+            minLength >= 10,
+            readBool('ipWhitelistEnabled'),
+            readNumber('maxFailedLoginAttempts') !== null && readNumber('maxFailedLoginAttempts') <= 5
+        ];
+        const score = checks.filter(Boolean).length;
+        setNum('scoreValue', score);
+
+        const bar = document.getElementById('scoreBar');
+        const level = document.getElementById('scoreLevel');
+        const icon = document.querySelector('.security-score-icon');
+        const isWeak = score <= 4;
+        const isMedium = score >= 5 && score <= 7;
+        const variant = isWeak ? 'danger' : (isMedium ? 'warning' : 'success');
+        if (bar) {
+            bar.className = 'progress-bar bg-' + variant;
+            bar.style.width = (score * 10) + '%';
+            bar.setAttribute('aria-valuenow', String(score));
+        }
+        // Icon box tint tracks the same variant as the progress bar.
+        if (icon) icon.className = 'security-score-icon is-' + variant;
+        if (level) {
+            level.textContent = isWeak ? (L.ScoreLevelWeak || '') : (isMedium ? (L.ScoreLevelMedium || '') : (L.ScoreLevelStrong || ''));
+            level.className = 'security-score-level text-' + variant;
+        }
+    };
+
+    const initTagify = () => {
+        if (typeof window.Tagify !== 'function') return;
+        // Keep the original <input> value comma-separated so the existing splitList() payload logic works.
+        const opts = { originalInputValueFormat: (values) => values.map((v) => v.value).join(',') };
         const ipInput = form?.elements.allowedIps;
-        if (ipInput) ipInput.disabled = !enabled;
+        const countryInput = form?.elements.allowedCountries;
+        if (ipInput) tagifyIps = new window.Tagify(ipInput, opts);
+        if (countryInput) {
+            tagifyCountries = new window.Tagify(countryInput, opts);
+            // Normalise country codes to upper-case ISO alpha-2 as the user types.
+            tagifyCountries.on('add', (e) => {
+                const raw = e.detail?.data?.value || '';
+                const upper = raw.toUpperCase();
+                if (raw !== upper) {
+                    tagifyCountries.replaceTag(e.detail.tag, { value: upper });
+                }
+            });
+        }
     };
 
     const bindEvents = () => {
@@ -288,14 +396,14 @@ const TenantSecuritySettings = (function () {
                 if (form.elements.emailLoginEnabled && !form.elements.emailLoginEnabled.checked) {
                     form.elements.emailLoginEnabled.checked = true; changed = true;
                 }
-                if (changed) window.showToast?.(L.TwoFactorAutoEnabled || '', 'info');
+                if (changed) window.showToast?.(L.TwoFactorAutoEnabled, 'info');
             }
         });
 
         form?.elements.twoFactorEnabled?.addEventListener('change', (e) => {
             if (!e.target.checked && form.elements.mfaRequired?.checked) {
                 form.elements.mfaRequired.checked = false;
-                window.showToast?.(L.MfaAutoDisabled || '', 'warning');
+                window.showToast?.(L.MfaAutoDisabled, 'warning');
             }
         });
 
@@ -308,14 +416,20 @@ const TenantSecuritySettings = (function () {
 
         form?.addEventListener('input', (event) => {
             event.target?.classList?.remove('is-invalid');
+            updateDashboard();
         });
+
+        // Switches fire 'change' (not 'input'); keep the dashboard in sync for those too.
+        form?.addEventListener('change', updateDashboard);
     };
 
     return {
         init: () => {
             loadL10n();
             if (!root || !form) return;
+            initTagify();
             bindEvents();
+            updateDashboard();
             load();
         }
     };

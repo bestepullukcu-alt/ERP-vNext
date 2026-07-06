@@ -8,13 +8,28 @@
     {
         Assign = Localizer["Assign"].Value,
         Assigned = Localizer["Assigned"].Value,
+        Remove = Localizer["Remove"].Value,
         SelectUserPrompt = Localizer["SelectUserPrompt"].Value,
         NoRoles = Localizer["NoRoles"].Value,
+        TypeSystem = Localizer["TypeSystem"].Value,
+        TypeCustom = Localizer["TypeCustom"].Value,
+        PermissionCountFormat = Localizer["PermissionCountFormat"].Value,
+        RolesShownFormat = Localizer["RolesShownFormat"].Value,
         AreYouSure = SharedLocalizer["AreYouSure"].Value,
         RecordCreated = SharedLocalizer["RecordCreated"].Value,
         RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
         ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
         Cancel = SharedLocalizer["Cancel"].Value,
-        Delete = SharedLocalizer["Delete"].Value
+        Delete = SharedLocalizer["Delete"].Value,
+        // FIX-ROLEPERMS-ROLENAME-L10N-STICKY — system role display names keyed by role CODE (role.name), localized to
+        // the UI language. Used for isSystem roles so the stored (single-language) DisplayName doesn't leak across UIs;
+        // custom roles keep their own DisplayName. Bridged to window.L10n.RoleNames.
+        RoleNames = new Dictionary<string, string>
+        {
+            ["SuperAdmin"] = SharedLocalizer["RoleName_SuperAdmin"].Value,
+            ["Admin"] = SharedLocalizer["RoleName_Admin"].Value,
+            ["Viewer"] = SharedLocalizer["RoleName_Viewer"].Value,
+            ["ReadOnly"] = SharedLocalizer["RoleName_ReadOnly"].Value
+        }
     })
 </script>

@@ -28,6 +28,7 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
     private readonly IPasswordHasher _passwordHasher;
     private readonly IPasswordPolicyService _passwordPolicyService;
     private readonly ITenantLoginSettingsClient _tenantLoginSettingsClient;
+    private readonly ITenantAdminActivationClient _tenantAdminActivationClient;
     private readonly IAuthAuditService _authAuditService;
     private readonly ILogger<ForcedChangeTenantPasswordCommandHandler> _logger;
 
@@ -42,6 +43,7 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
         IPasswordHasher passwordHasher,
         IPasswordPolicyService passwordPolicyService,
         ITenantLoginSettingsClient tenantLoginSettingsClient,
+        ITenantAdminActivationClient tenantAdminActivationClient,
         IAuthAuditService authAuditService,
         ILogger<ForcedChangeTenantPasswordCommandHandler> logger)
     {
@@ -55,6 +57,7 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
         _passwordHasher = passwordHasher;
         _passwordPolicyService = passwordPolicyService;
         _tenantLoginSettingsClient = tenantLoginSettingsClient;
+        _tenantAdminActivationClient = tenantAdminActivationClient;
         _authAuditService = authAuditService;
         _logger = logger;
     }
@@ -80,6 +83,18 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
         await _userRepository.UpdateForTenantAsync(user, request.TenantId, ct);
         await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, request.TenantId, ct);
         await _authAuditService.WriteAsync("tenant_forced_password_changed", user.Id, request.TenantId, "{}", ct);
+
+        // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part B) — the invited admin has now completed its forced first-login
+        // change; tell Platform to flip the matching TenantAdminUser Invited → Active. Best-effort: an unreachable
+        // Platform must NOT fail the password change (idempotent + no-op for non-admin tenant_users on the Platform side).
+        try
+        {
+            await _tenantAdminActivationClient.NotifyActivatedAsync(user.Email, request.TenantId, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Tenant admin activation callback failed (non-blocking). UserId={UserId} TenantId={TenantId}", user.Id, request.TenantId);
+        }
 
         var authResponse = await BuildAuthResponseAsync(user, request, ct);
         return Response<AuthResponse>.Success(authResponse);

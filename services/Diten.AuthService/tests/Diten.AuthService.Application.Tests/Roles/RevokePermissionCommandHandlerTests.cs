@@ -78,12 +78,33 @@ public sealed class RevokePermissionCommandHandlerTests
         Assert.Empty(refreshTokens.RevokedUsers);
     }
 
+    // FIX-ROLEPERM-REVOKE-SYSTEMROLE — a MANUAL grant on a SYSTEM role is removable (the blanket 403 is gone); the
+    // S-GUARD still protects System/Module baseline grants on any role.
     [Fact]
-    public async Task System_role_returns_403_and_revokes_nothing()
+    public async Task System_role_manual_grant_revoke_succeeds_204_and_revokes_holder_tokens()
     {
         var systemRole = new Role("admin", "Admin", null, TenantId);
         systemRole.MarkAsSystem();
-        var rolePerms = new FakeRolePermissionRepository();
+        var rolePerms = new FakeRolePermissionRepository { TargetGrantSource = GrantSource.Manual };
+        var userRoles = new FakeUserRoleRepository { Holders = [User1] };
+        var refreshTokens = new FakeRefreshTokenRepository();
+        var handler = CreateHandler(systemRole, rolePerms, userRoles, refreshTokens);
+
+        var result = await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(204, result.StatusCode);
+        Assert.Equal((RoleId, PermissionId, TenantId), rolePerms.RevokedCall);   // removal happened
+        Assert.Equal((RoleId, TenantId), userRoles.LookupCall);                  // holder lookup reached
+        Assert.Equal(new[] { User1 }, refreshTokens.RevokedUsers);              // token revoke reached
+    }
+
+    [Fact]
+    public async Task System_role_system_grant_revoke_is_rejected_409_and_removes_nothing()
+    {
+        var systemRole = new Role("admin", "Admin", null, TenantId);
+        systemRole.MarkAsSystem();
+        var rolePerms = new FakeRolePermissionRepository { TargetGrantSource = GrantSource.System };
         var userRoles = new FakeUserRoleRepository { Holders = [User1] };
         var refreshTokens = new FakeRefreshTokenRepository();
         var handler = CreateHandler(systemRole, rolePerms, userRoles, refreshTokens);
@@ -91,7 +112,7 @@ public sealed class RevokePermissionCommandHandlerTests
         var result = await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
-        Assert.Equal(403, result.StatusCode);
+        Assert.Equal(409, result.StatusCode);                 // baseline still protected on a system role
         Assert.Null(rolePerms.RevokedCall);
         Assert.Null(userRoles.LookupCall);
         Assert.Empty(refreshTokens.RevokedUsers);
@@ -251,16 +272,33 @@ public sealed class RevokePermissionCommandHandlerTests
     }
 
     [Fact]
-    public async Task System_role_revoke_does_not_bump_version()
+    public async Task System_role_manual_grant_revoke_bumps_version()
+    {
+        // FIX-ROLEPERM-REVOKE-SYSTEMROLE — a Manual grant removal on a system role is a real change → version bumps.
+        var systemRole = new Role("admin", "Admin", null, TenantId);
+        systemRole.MarkAsSystem();
+        var version = new FakeRoleAssignmentVersionService();
+        var rolePerms = new FakeRolePermissionRepository { TargetGrantSource = GrantSource.Manual };
+        var handler = CreateHandler(systemRole, rolePerms, new FakeUserRoleRepository { Holders = [User1] }, new FakeRefreshTokenRepository(), version);
+
+        await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.Equal(1, version.IncrementCount);
+        Assert.Contains(TenantId, version.IncrementedTenants);
+    }
+
+    [Fact]
+    public async Task System_role_system_grant_revoke_does_not_bump_version()
     {
         var systemRole = new Role("admin", "Admin", null, TenantId);
         systemRole.MarkAsSystem();
         var version = new FakeRoleAssignmentVersionService();
-        var handler = CreateHandler(systemRole, new FakeRolePermissionRepository(), new FakeUserRoleRepository(), new FakeRefreshTokenRepository(), version);
+        var rolePerms = new FakeRolePermissionRepository { TargetGrantSource = GrantSource.System };
+        var handler = CreateHandler(systemRole, rolePerms, new FakeUserRoleRepository(), new FakeRefreshTokenRepository(), version);
 
         await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
 
-        Assert.Equal(0, version.IncrementCount);
+        Assert.Equal(0, version.IncrementCount); // 409 baseline-protected → no change
     }
 
     private static RevokePermissionCommandHandler CreateHandler(

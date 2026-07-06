@@ -88,7 +88,7 @@ public sealed class CatalogPermissionDeleteSyncTests
             RemovedKey = permissionKey;
             return Task.FromResult(CatalogPermissionSyncStatus.Removed);
         }
-        public Task<CatalogPermissionSyncStatus> SyncPermissionAsync(string? permissionKey, string? displayName, CancellationToken ct)
+        public Task<CatalogPermissionSyncStatus> SyncPermissionAsync(string? permissionKey, string? displayName, string? moduleCode, string? scope, CancellationToken ct)
             => Task.FromResult(CatalogPermissionSyncStatus.Synced);
     }
 

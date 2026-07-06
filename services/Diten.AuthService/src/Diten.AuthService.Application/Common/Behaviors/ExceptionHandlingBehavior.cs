@@ -1,3 +1,4 @@
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
@@ -19,6 +20,26 @@ public sealed class ExceptionHandlingBehavior<TRequest, TResponse> : IPipelineBe
         try
         {
             return await next();
+        }
+        catch (ValidationException vex)
+        {
+            // FIX-PASSWORD-POLICY-ERROR-SURFACE — a handler-thrown FluentValidation failure (e.g. the tenant password
+            // policy) carries user-actionable messages. Surface them as a 400 with the joined messages, BEFORE the
+            // generic 500 below swaps them for "An unexpected error occurred." The AuthGateway reads errors[] into the
+            // response detail, so the specific reason reaches the UI.
+            var message = string.Join(" ", vex.Errors.Select(e => e.ErrorMessage).Where(m => !string.IsNullOrWhiteSpace(m)));
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                message = vex.Message;
+            }
+
+            var validationResponse = TryCreateFailureResponse(message, 400);
+            if (validationResponse is not null)
+            {
+                return validationResponse;
+            }
+
+            throw;
         }
         catch (Exception ex)
         {

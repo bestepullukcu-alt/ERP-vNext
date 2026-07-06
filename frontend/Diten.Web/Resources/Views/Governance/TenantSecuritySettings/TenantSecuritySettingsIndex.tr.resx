@@ -40,4 +40,45 @@
   <data name="InvalidCountry" xml:space="preserve"><value>Geçersiz ülke kodu (ISO alpha-2 kullanın): </value></data>
   <data name="TwoFactorAutoEnabled" xml:space="preserve"><value>MFA için iki adımlı doğrulama ve e-posta ile giriş otomatik olarak etkinleştirildi.</value></data>
   <data name="MfaAutoDisabled" xml:space="preserve"><value>İki adımlı doğrulama kapatıldığı için MFA devre dışı bırakıldı.</value></data>
+  <data name="EmailLoginDesc" xml:space="preserve"><value>Kullanıcıların e-posta ve şifre ile giriş yapmasına izin verir.</value></data>
+  <data name="PhoneLoginDesc" xml:space="preserve"><value>Telefon OTP ile giriş. SMS sağlayıcısı yapılandırılana kadar devre dışıdır.</value></data>
+  <data name="TwoFactorDesc" xml:space="preserve"><value>Kullanıcıların TOTP tabanlı 2FA kurmasına izin ver.</value></data>
+  <data name="MfaRequiredDesc" xml:space="preserve"><value>Tüm kullanıcılar için MFA kurulumunu zorunlu kıl.</value></data>
+  <data name="PasswordMinLengthHint" xml:space="preserve"><value>Karakter sayısı</value></data>
+  <data name="ComplexityRequirements" xml:space="preserve"><value>Karmaşıklık Gereksinimleri</value></data>
+  <data name="RequireUppercaseHint" xml:space="preserve"><value>En az bir A–Z karakteri</value></data>
+  <data name="RequireLowercaseHint" xml:space="preserve"><value>En az bir a–z karakteri</value></data>
+  <data name="RequireDigitHint" xml:space="preserve"><value>En az bir 0–9 rakamı</value></data>
+  <data name="RequireSpecialCharHint" xml:space="preserve"><value>En az bir !@#$%^&amp;* karakteri</value></data>
+  <data name="PolicyStrength" xml:space="preserve"><value>Parola politikası gücü</value></data>
+  <data name="RulesActiveSuffix" xml:space="preserve"><value>kural aktif</value></data>
+  <data name="UnitMinutes" xml:space="preserve"><value>dk</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>gün</value></data>
+  <data name="UnitAttempts" xml:space="preserve"><value>deneme</value></data>
+  <data name="SessionTimeoutHint" xml:space="preserve"><value>Hareketsizlik sonrası oturum sona erer.</value></data>
+  <data name="RefreshTokenHint" xml:space="preserve"><value>Yenileme token'ının geçerlilik süresi.</value></data>
+  <data name="MaxFailedHint" xml:space="preserve"><value>Bu kadar başarısız denemeden sonra hesap kilitlenir.</value></data>
+  <data name="LockoutDurationHint" xml:space="preserve"><value>Hesap bu süre boyunca kilitli kalır.</value></data>
+  <data name="SummarySession" xml:space="preserve"><value>Oturum</value></data>
+  <data name="SummaryToken" xml:space="preserve"><value>Token ömrü</value></data>
+  <data name="SummaryLockout" xml:space="preserve"><value>Kilitleme</value></data>
+  <data name="SummaryAttempts" xml:space="preserve"><value>Kilitleme denemesi</value></data>
+  <data name="SecurityScore" xml:space="preserve"><value>Güvenlik Skoru</value></data>
+  <data name="SecurityScoreHint" xml:space="preserve"><value>Tüm önerilen ayarları etkinleştirerek skoru artırın.</value></data>
+  <data name="ActiveProtections" xml:space="preserve"><value>Aktif Korumalar</value></data>
+  <data name="ProtectionEmailLogin" xml:space="preserve"><value>E-posta Girişi</value></data>
+  <data name="ProtectionPhoneLogin" xml:space="preserve"><value>Telefon Girişi</value></data>
+  <data name="Protection2FA" xml:space="preserve"><value>2FA Etkin</value></data>
+  <data name="ProtectionMfa" xml:space="preserve"><value>MFA Zorunlu</value></data>
+  <data name="ProtectionUppercase" xml:space="preserve"><value>Büyük Harf</value></data>
+  <data name="ProtectionLowercase" xml:space="preserve"><value>Küçük Harf</value></data>
+  <data name="ProtectionDigit" xml:space="preserve"><value>Rakam Zorunlu</value></data>
+  <data name="ProtectionSpecial" xml:space="preserve"><value>Özel Karakter</value></data>
+  <data name="ProtectionIpRestriction" xml:space="preserve"><value>IP Kısıtlaması</value></data>
+  <data name="SettingsScopeInfo" xml:space="preserve"><value>Bu ayarlar tüm kiracı kullanıcılarını etkiler. Değişiklikler kaydedildikten hemen sonra geçerli olur.</value></data>
+  <data name="IpWhitelistDesc" xml:space="preserve"><value>Sadece belirtilen IP adresleri ve ülkelerden erişime izin ver.</value></data>
+  <data name="AccessRestrictionsInfo" xml:space="preserve"><value>IP kısıtlamaları etkinleştirildiğinde yalnızca listedeki IP ve ülkelerden erişim sağlanır.</value></data>
+  <data name="ScoreLevelWeak" xml:space="preserve"><value>Zayıf</value></data>
+  <data name="ScoreLevelMedium" xml:space="preserve"><value>Orta</value></data>
+  <data name="ScoreLevelStrong" xml:space="preserve"><value>Güçlü</value></data>
 </root>

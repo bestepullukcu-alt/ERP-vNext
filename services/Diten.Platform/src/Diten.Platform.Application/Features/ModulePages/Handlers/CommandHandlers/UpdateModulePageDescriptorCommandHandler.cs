@@ -65,7 +65,9 @@ public sealed class UpdateModulePageDescriptorCommandHandler : IRequestHandler<U
         await _repository.UpdateAsync(descriptor, ct);
 
         // Declarative permission sync (best-effort; never blocks the save). See create handler.
-        await _catalogPermissionSyncService.SyncPermissionAsync(descriptor.RequiredPermission, descriptor.DisplayName, ct);
+        await _catalogPermissionSyncService.SyncPermissionAsync(
+            descriptor.RequiredPermission, descriptor.DisplayName, descriptor.ModuleCode,
+            ModulePageDescriptorNormalizer.ScopeFromRoute(descriptor.RoutePath), ct);
 
         return Response<NoContent>.Success(204);
     }

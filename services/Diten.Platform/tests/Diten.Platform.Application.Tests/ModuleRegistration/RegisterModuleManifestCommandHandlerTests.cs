@@ -381,12 +381,16 @@ public sealed class RegisterModuleManifestCommandHandlerTests
     private sealed class FakeSyncService : ICatalogPermissionSyncService
     {
         public List<string> SyncedKeys { get; } = [];
+        // İŞ3-FAZ1b — capture the ModuleCode + Scope carried per key so tests can assert the sync contract.
+        public List<(string Key, string? ModuleCode, string? Scope)> Synced { get; } = [];
 
-        public Task<CatalogPermissionSyncStatus> SyncPermissionAsync(string? permissionKey, string? displayName, CancellationToken ct)
+        public Task<CatalogPermissionSyncStatus> SyncPermissionAsync(
+            string? permissionKey, string? displayName, string? moduleCode, string? scope, CancellationToken ct)
         {
             if (!string.IsNullOrWhiteSpace(permissionKey))
             {
                 SyncedKeys.Add(permissionKey);
+                Synced.Add((permissionKey, moduleCode, scope));
             }
 
             return Task.FromResult(CatalogPermissionSyncStatus.Synced);

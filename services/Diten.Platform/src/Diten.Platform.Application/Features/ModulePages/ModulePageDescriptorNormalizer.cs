@@ -31,6 +31,17 @@ public static partial class ModulePageDescriptorNormalizer
         return route.Length > 1 ? route.TrimEnd('/') : route;
     }
 
+    // İŞ3-FAZ1b — derive the authz scope from a page route: a /Platform/... route (or the exact "/Platform") is
+    // platform-admin (tenant gets 403 via ShellAccessFilter), everything else is tenant-facing. Returned as the wire
+    // string the AuthService sync expects ("PlatformAdmin"/"Tenant"), so the Platform side needs no PermissionScope enum.
+    public static string ScopeFromRoute(string? routePath)
+    {
+        var r = (routePath ?? string.Empty).Trim();
+        var isPlatform = r.StartsWith("/Platform/", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(r, "/Platform", StringComparison.OrdinalIgnoreCase);
+        return isPlatform ? "PlatformAdmin" : "Tenant";
+    }
+
     public static string NormalizePermission(string? value)
     {
         var permission = PermissionWhitespaceRegex()

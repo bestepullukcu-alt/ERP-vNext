@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Diten.Platform.API.Controllers.Common;
+using Diten.Platform.API.Security;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Navigation;
 using Diten.Platform.Application.Features.Navigation.Commands;
@@ -14,8 +15,10 @@ namespace Diten.Platform.API.Controllers.Platform;
 /// <summary>
 /// MOD-0285 — runtime navigation loader. Tenant-scoped like the org directory (see TenantResolutionMiddleware
 /// IsTenantScopedOrgPath): the tenant is resolved from the JWT tenant_id and a tenant_user actor is required.
-/// No per-page <see cref="HasPermissionAttribute"/>: every tenant_user may fetch its own menu and the frontend
-/// applies the per-item permission filter (Perms.Has) — the existing AccessGovernance/Organization pattern.
+/// GET <c>menu</c> carries no <see cref="HasPermissionAttribute"/>: every tenant_user may fetch its OWN menu and the
+/// frontend applies the per-item permission filter (Perms.Has) — the existing AccessGovernance/Organization pattern.
+/// FIX-MENU-SETTINGS-ACCESS — but GET/PUT <c>preferences</c> mutate/read the tenant-WIDE sidebar, so those two are
+/// gated per-action behind <c>platform.tenant-navigation.manage</c> (broken-access-control fix).
 /// </summary>
 [Route("api/platform/navigation")]
 [Authorize]
@@ -46,7 +49,10 @@ public sealed class NavigationController : CustomBaseController
     }
 
     // FEAT-TENANT-NAV-PREFS — the tenant's current sidebar preferences (Stage-2 UI reads this to render editor state).
+    // FIX-MENU-SETTINGS-ACCESS — preferences READ/WRITE change the tenant-WIDE sidebar, so both are gated behind the
+    // tenant self-service manage permission; only GET menu (a user rendering its OWN menu) stays open.
     [HttpGet("preferences")]
+    [HasPermission("platform.tenant-navigation.manage")]
     public async Task<IActionResult> GetPreferences(CancellationToken ct)
     {
         if (!_tenantContext.IsResolved || _tenantContext.IsPlatformContext || _tenantContext.TenantId == Guid.Empty)
@@ -63,6 +69,7 @@ public sealed class NavigationController : CustomBaseController
     // { modules:[...], domains:[...] } shape AND the legacy module-only array (backward compatible). Non-entitled /
     // unknown modules are ignored.
     [HttpPut("preferences")]
+    [HasPermission("platform.tenant-navigation.manage")]
     public async Task<IActionResult> ReplacePreferences([FromBody] JsonElement body, CancellationToken ct)
     {
         if (!_tenantContext.IsResolved || _tenantContext.IsPlatformContext || _tenantContext.TenantId == Guid.Empty)

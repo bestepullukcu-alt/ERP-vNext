@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Title" xml:space="preserve"><value>إعدادات الأمان</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة سياسات تسجيل الدخول والأمان الخاصة بمؤسستك.</value></data>
+  <data name="LoginMethods" xml:space="preserve"><value>طرق تسجيل الدخول</value></data>
+  <data name="TwoFactorEnabled" xml:space="preserve"><value>المصادقة الثنائية</value></data>
+  <data name="MfaRequired" xml:space="preserve"><value>طلب المصادقة متعددة العوامل</value></data>
+  <data name="EmailLoginEnabled" xml:space="preserve"><value>تسجيل الدخول بالبريد الإلكتروني</value></data>
+  <data name="PhoneLoginEnabled" xml:space="preserve"><value>تسجيل الدخول بالهاتف</value></data>
+  <data name="PasswordPolicy" xml:space="preserve"><value>سياسة كلمة المرور</value></data>
+  <data name="PasswordMinLength" xml:space="preserve"><value>الحد الأدنى للطول</value></data>
+  <data name="PasswordExpirationDays" xml:space="preserve"><value>انتهاء صلاحية كلمة المرور (أيام)</value></data>
+  <data name="PasswordExpirationDaysHint" xml:space="preserve"><value>اتركه فارغًا لعدم انتهاء الصلاحية.</value></data>
+  <data name="LoginAuditRetentionDays" xml:space="preserve"><value>مدة الاحتفاظ بسجل تدقيق تسجيل الدخول (أيام)</value></data>
+  <data name="RequireUppercase" xml:space="preserve"><value>طلب أحرف كبيرة</value></data>
+  <data name="RequireLowercase" xml:space="preserve"><value>طلب أحرف صغيرة</value></data>
+  <data name="RequireDigit" xml:space="preserve"><value>طلب رقم</value></data>
+  <data name="RequireSpecialChar" xml:space="preserve"><value>طلب حرف خاص</value></data>
+  <data name="SessionLockoutPolicy" xml:space="preserve"><value>الجلسة &amp; القفل</value></data>
+  <data name="SessionTimeoutMinutes" xml:space="preserve"><value>مهلة انتهاء الجلسة (دقائق)</value></data>
+  <data name="RefreshTokenLifetimeDays" xml:space="preserve"><value>مدة صلاحية رمز التحديث (أيام)</value></data>
+  <data name="MaxFailedLoginAttempts" xml:space="preserve"><value>الحد الأقصى لمحاولات تسجيل الدخول الفاشلة</value></data>
+  <data name="LockoutDurationMinutes" xml:space="preserve"><value>مدة القفل (دقائق)</value></data>
+  <data name="AccessRestrictions" xml:space="preserve"><value>قيود الوصول</value></data>
+  <data name="IpWhitelistEnabled" xml:space="preserve"><value>تفعيل قائمة عناوين IP المسموح بها</value></data>
+  <data name="AllowedIps" xml:space="preserve"><value>عناوين IP المسموح بها</value></data>
+  <data name="AllowedIpsHint" xml:space="preserve"><value>عنوان IPv4 أو IPv6 واحد في كل سطر.</value></data>
+  <data name="AllowedCountries" xml:space="preserve"><value>الدول المسموح بها</value></data>
+  <data name="AllowedCountriesHint" xml:space="preserve"><value>رمز دولة واحد بصيغة ISO alpha-2 في كل سطر (مثال: TR، US).</value></data>
+  <data name="Saved" xml:space="preserve"><value>تم حفظ إعدادات الأمان.</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>يرجى تصحيح الحقول المميزة.</value></data>
+  <data name="MfaRequires2FA" xml:space="preserve"><value>عند طلب المصادقة متعددة العوامل، يجب تفعيل كل من المصادقة الثنائية وتسجيل الدخول بالبريد الإلكتروني.</value></data>
+  <data name="AtLeastOneLoginMethod" xml:space="preserve"><value>يجب تفعيل طريقة تسجيل دخول واحدة على الأقل (البريد الإلكتروني أو الهاتف).</value></data>
+  <data name="IpWhitelistEmpty" xml:space="preserve"><value>أضف عنوان IP مسموحًا به واحدًا على الأقل عند تفعيل قائمة عناوين IP المسموح بها.</value></data>
+  <data name="InvalidIp" xml:space="preserve"><value>عنوان IP غير صالح: </value></data>
+  <data name="InvalidCountry" xml:space="preserve"><value>رمز دولة غير صالح (استخدم ISO alpha-2): </value></data>
+  <data name="TwoFactorAutoEnabled" xml:space="preserve"><value>تم تفعيل المصادقة الثنائية وتسجيل الدخول بالبريد الإلكتروني تلقائيًا من أجل المصادقة متعددة العوامل.</value></data>
+  <data name="MfaAutoDisabled" xml:space="preserve"><value>تم تعطيل المصادقة متعددة العوامل لأنه تم إيقاف المصادقة الثنائية.</value></data>
+  <data name="EmailLoginDesc" xml:space="preserve"><value>السماح للمستخدمين بتسجيل الدخول بالبريد الإلكتروني وكلمة المرور.</value></data>
+  <data name="PhoneLoginDesc" xml:space="preserve"><value>تسجيل الدخول باستخدام رمز التحقق المرسل عبر الهاتف. معطّل حتى يتم تكوين مزود خدمة الرسائل النصية.</value></data>
+  <data name="TwoFactorDesc" xml:space="preserve"><value>السماح للمستخدمين بإعداد المصادقة الثنائية القائمة على TOTP.</value></data>
+  <data name="MfaRequiredDesc" xml:space="preserve"><value>طلب إعداد المصادقة متعددة العوامل لجميع المستخدمين.</value></data>
+  <data name="PasswordMinLengthHint" xml:space="preserve"><value>عدد الأحرف</value></data>
+  <data name="ComplexityRequirements" xml:space="preserve"><value>متطلبات التعقيد</value></data>
+  <data name="RequireUppercaseHint" xml:space="preserve"><value>حرف واحد على الأقل من A–Z</value></data>
+  <data name="RequireLowercaseHint" xml:space="preserve"><value>حرف واحد على الأقل من a–z</value></data>
+  <data name="RequireDigitHint" xml:space="preserve"><value>رقم واحد على الأقل من 0–9</value></data>
+  <data name="RequireSpecialCharHint" xml:space="preserve"><value>حرف خاص واحد على الأقل من !@#$%^&amp;*</value></data>
+  <data name="PolicyStrength" xml:space="preserve"><value>قوة سياسة كلمة المرور</value></data>
+  <data name="RulesActiveSuffix" xml:space="preserve"><value>قاعدة مفعّلة</value></data>
+  <data name="UnitMinutes" xml:space="preserve"><value>دقيقة</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>يوم</value></data>
+  <data name="UnitAttempts" xml:space="preserve"><value>محاولة</value></data>
+  <data name="SessionTimeoutHint" xml:space="preserve"><value>تنتهي الجلسة بعد فترة من عدم النشاط.</value></data>
+  <data name="RefreshTokenHint" xml:space="preserve"><value>مدة صلاحية رمز التحديث.</value></data>
+  <data name="MaxFailedHint" xml:space="preserve"><value>يُقفل الحساب بعد هذا العدد من المحاولات الفاشلة.</value></data>
+  <data name="LockoutDurationHint" xml:space="preserve"><value>يبقى الحساب مقفلاً طوال هذه المدة.</value></data>
+  <data name="SummarySession" xml:space="preserve"><value>الجلسة</value></data>
+  <data name="SummaryToken" xml:space="preserve"><value>مدة الرمز</value></data>
+  <data name="SummaryLockout" xml:space="preserve"><value>القفل</value></data>
+  <data name="SummaryAttempts" xml:space="preserve"><value>عتبة القفل</value></data>
+  <data name="SecurityScore" xml:space="preserve"><value>درجة الأمان</value></data>
+  <data name="SecurityScoreHint" xml:space="preserve"><value>ارفع درجتك بتفعيل جميع الإعدادات الموصى بها.</value></data>
+  <data name="ActiveProtections" xml:space="preserve"><value>وسائل الحماية المفعّلة</value></data>
+  <data name="ProtectionEmailLogin" xml:space="preserve"><value>تسجيل الدخول بالبريد الإلكتروني</value></data>
+  <data name="ProtectionPhoneLogin" xml:space="preserve"><value>تسجيل الدخول بالهاتف</value></data>
+  <data name="Protection2FA" xml:space="preserve"><value>المصادقة الثنائية مفعّلة</value></data>
+  <data name="ProtectionMfa" xml:space="preserve"><value>المصادقة متعددة العوامل مطلوبة</value></data>
+  <data name="ProtectionUppercase" xml:space="preserve"><value>أحرف كبيرة</value></data>
+  <data name="ProtectionLowercase" xml:space="preserve"><value>أحرف صغيرة</value></data>
+  <data name="ProtectionDigit" xml:space="preserve"><value>رقم مطلوب</value></data>
+  <data name="ProtectionSpecial" xml:space="preserve"><value>حرف خاص</value></data>
+  <data name="ProtectionIpRestriction" xml:space="preserve"><value>تقييد عناوين IP</value></data>
+  <data name="SettingsScopeInfo" xml:space="preserve"><value>تؤثر هذه الإعدادات على جميع مستخدمي المستأجر. تسري التغييرات فور الحفظ.</value></data>
+  <data name="IpWhitelistDesc" xml:space="preserve"><value>السماح بالوصول فقط من عناوين IP والدول المحددة.</value></data>
+  <data name="AccessRestrictionsInfo" xml:space="preserve"><value>عند تفعيل قيود عناوين IP، يُسمح بالوصول فقط من عناوين IP والدول المدرجة.</value></data>
+  <data name="ScoreLevelWeak" xml:space="preserve"><value>ضعيفة</value></data>
+  <data name="ScoreLevelMedium" xml:space="preserve"><value>متوسطة</value></data>
+  <data name="ScoreLevelStrong" xml:space="preserve"><value>قوية</value></data>
+</root>

@@ -528,4 +528,9 @@
   <data name="AccessMatrix" xml:space="preserve"><value>Access Matrix</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>QMS Baselines</value></data>
   <data name="Unauthorized" xml:space="preserve"><value>Unauthorized</value></data>
+  <!-- FIX-ROLEPERMS-ROLENAME-L10N-STICKY — system role display names, keyed by role code (localized). -->
+  <data name="RoleName_SuperAdmin" xml:space="preserve"><value>Super Administrator</value></data>
+  <data name="RoleName_Admin" xml:space="preserve"><value>Administrator</value></data>
+  <data name="RoleName_Viewer" xml:space="preserve"><value>Viewer</value></data>
+  <data name="RoleName_ReadOnly" xml:space="preserve"><value>Read Only</value></data>
 </root>

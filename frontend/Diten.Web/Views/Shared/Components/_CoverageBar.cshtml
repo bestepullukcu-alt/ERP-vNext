@@ -1,0 +1,12 @@
+@model Diten.Web.ViewModels.Shared.CoverageBarModel
+@* FEAT-ROLEPERMS-REDESIGN — reusable labelled percentage + progress bar. Theme-only (Bootstrap .progress).
+   The percent text and bar fill are live slots JS drives by id. *@
+<div class="coverage-bar">
+    <div class="d-flex align-items-end justify-content-between mb-1">
+        <span class="text-muted small">@Model.Label</span>
+        <span class="h4 mb-0 coverage-bar-percent font-monospace" id="@Model.PercentValueId">0%</span>
+    </div>
+    <div class="progress coverage-bar-track" role="progressbar" aria-label="@Model.Label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="progress-bar bg-@Model.Tone coverage-bar-fill" id="@Model.BarId"></div>
+    </div>
+</div>

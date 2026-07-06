@@ -136,7 +136,7 @@ public sealed class ModulePageDescriptorOriginGuardTests
 
     private sealed class NoopSync : ICatalogPermissionSyncService
     {
-        public Task<CatalogPermissionSyncStatus> SyncPermissionAsync(string? permissionKey, string? displayName, CancellationToken ct)
+        public Task<CatalogPermissionSyncStatus> SyncPermissionAsync(string? permissionKey, string? displayName, string? moduleCode, string? scope, CancellationToken ct)
             => Task.FromResult(CatalogPermissionSyncStatus.Synced);
         public Task<CatalogPermissionSyncStatus> RemovePermissionAsync(string? permissionKey, CancellationToken ct)
             => Task.FromResult(CatalogPermissionSyncStatus.Removed);

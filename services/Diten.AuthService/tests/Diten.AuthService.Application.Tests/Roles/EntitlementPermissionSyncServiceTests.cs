@@ -175,8 +175,8 @@ public sealed class EntitlementPermissionSyncServiceTests
     {
         var catalog = new List<Permission>
         {
-            new("platform", "workflow.definitions", "view", "", null),
-            new("platform", "workflow.tasks", "approve", "", null),
+            new("platform", "workflow.definitions", "view", "", null, moduleOverride: "workflow"),
+            new("platform", "workflow.tasks", "approve", "", null, moduleOverride: "workflow"),
             new("platform", "tenants", "read", "", null) // platform-admin umbrella → must stay blocked
         };
         var (svc, roles, rolePerms) = BuildWith(catalog);
@@ -201,7 +201,7 @@ public sealed class EntitlementPermissionSyncServiceTests
         {
             new("goldenslim", "records", "read", "", null),
             new("goldenslim", "records", "create", "", null),
-            new("platform", "workflow.definitions", "view", "", null)
+            new("platform", "workflow.definitions", "view", "", null, moduleOverride: "workflow")
         };
         var (svc, roles, rolePerms) = BuildWith(catalog);
         rolePerms.EnforceUniqueIndex = true; // behave like the real unique index
@@ -284,7 +284,7 @@ public sealed class EntitlementPermissionSyncServiceTests
         var catalog = new List<Permission>
         {
             new("goldenslim", "records", "read", "", null),
-            new("platform", "workflow.definitions", "view", "", null),
+            new("platform", "workflow.definitions", "view", "", null, moduleOverride: "workflow"),
             new("platform", "tenants", "read", "", null) // platform-admin umbrella → stays blocked
         };
         var (svc, roles, rolePerms) = BuildWith(catalog);

@@ -475,4 +475,9 @@
   <data name="AccessMatrix" xml:space="preserve"><value>Матрица доступа</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>Базовые линии QMS</value></data>
   <data name="Unauthorized" xml:space="preserve"><value>Не авторизовано</value></data>
+  <!-- FIX-ROLEPERMS-ROLENAME-L10N-STICKY — system role display names, keyed by role code (localized). -->
+  <data name="RoleName_SuperAdmin" xml:space="preserve"><value>Суперадминистратор</value></data>
+  <data name="RoleName_Admin" xml:space="preserve"><value>Администратор</value></data>
+  <data name="RoleName_Viewer" xml:space="preserve"><value>Наблюдатель</value></data>
+  <data name="RoleName_ReadOnly" xml:space="preserve"><value>Только чтение</value></data>
 </root>

@@ -36,7 +36,10 @@ public sealed class AccessGovernanceManifestProvider : IModuleManifestProvider
             [
                 new ModuleManifestPage("USERS", "Users", "/Users", UsersRead, null, true, "List", 10, []),
                 new ModuleManifestPage("ROLES", "Roles", "/Roles", RolesRead, null, true, "List", 20, []),
-                new ModuleManifestPage("PERMISSIONS", "Permissions", "/Permissions", RolesRead, null, true, "List", 30, []),
+                // Permissions is a READ-ONLY catalog view (permissions are code/module-owned, synced from
+                // the module catalog — tenants can't create/edit them). Hidden from tenant nav to declutter;
+                // the actual permission-picking happens on the Role Permissions screen. Route still reachable.
+                new ModuleManifestPage("PERMISSIONS", "Permissions", "/Permissions", RolesRead, null, false, "List", 30, []),
                 new ModuleManifestPage("ROLE_PERMISSIONS", "Role Permissions", "/RoleAssignments", RolesAssignPermission, null, true, "List", 40, []),
                 new ModuleManifestPage("USER_ROLES", "User Roles", "/UserRoleAssignments", UsersAssignRole, null, true, "List", 50, [])
             ]);

@@ -52,7 +52,10 @@ public sealed class AccessGovernanceManifestProviderTests
     [Fact]
     public void All_pages_are_co_equal_top_level_nav_entries_with_unique_codes()
     {
-        Assert.All(Manifest.Pages, p => Assert.True(p.IsNavigationVisible));
+        // PERMISSIONS is a read-only catalog view, deliberately hidden from the tenant nav (IsNavigationVisible=false);
+        // the other four (USERS/ROLES/ROLE_PERMISSIONS/USER_ROLES) are visible top-level entries.
+        Assert.All(Manifest.Pages, p => Assert.Equal(
+            !string.Equals(p.PageCode, "PERMISSIONS", StringComparison.OrdinalIgnoreCase), p.IsNavigationVisible));
         Assert.All(Manifest.Pages, p => Assert.Null(p.ParentPageCode));
         Assert.All(Manifest.Pages, p => Assert.Empty(p.Actions)); // read-only nav entries, no toolbar/row actions
 

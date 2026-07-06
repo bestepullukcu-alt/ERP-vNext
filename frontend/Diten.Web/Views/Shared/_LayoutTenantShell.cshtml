@@ -3,8 +3,6 @@
 @using Diten.Web.Security
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
-@inject IHtmlLocalizer<Diten.Web.Views.Governance.TenantSecuritySettings.TenantSecuritySettingsIndex> TenantSecurityLocalizer
-@inject IHtmlLocalizer<Diten.Web.Views.Governance.TenantNavigationSettings.TenantNavigationSettingsIndex> TenantNavigationLocalizer
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     var currentUser = User?.Identity?.IsAuthenticated == true
@@ -187,6 +185,61 @@
                        are now rendered DATA-DRIVEN by the DynamicModuleMenu below (the `tenant-settings` BASELINE module,
                        "Settings" domain — same routes + same platform.tenant-security.manage per-item gate). The Work
                        Center block above stays hardcoded (Phase B / MOD-0024 will self-register it, entitlement-gated). *@
+                    @* MOD-0029-FU01 — Controlled Documents (TenantShell). FE-B UX guard: shown only with the
+                       view permission; backend (FU01 Layer 1 + Layer 2) is authoritative. The folder-share
+                       wizard and add-document/template flows are reached from this page. *@
+                    @if (Perms.Has("platform.document-management.controlled-documents.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementControlledDocuments" ? "active" : "")">
+                            <a href="/DocumentManagementControlledDocuments" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-file"></i>
+                                <div>@SharedLocalizer["ControlledDocuments"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0029-FU02 — Corporate Template Masters (TenantShell). FE-B UX guard: shown only with
+                       the view permission; backend (FU02 Layer 1) is authoritative. Publish-version, deprecate
+                       and adoption-impact actions are reached from this page. *@
+                    @if (Perms.Has("platform.document-management.template-masters.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementTemplateMasters" ? "active" : "")">
+                            <a href="/DocumentManagementTemplateMasters" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-copy"></i>
+                                <div>@SharedLocalizer["TemplateMasters"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0029-FU03 — Template Variant Drift (TenantShell). FE-B UX guard: shown only with the
+                       view permission; backend (FU03 Layer 1) is authoritative. Compare and rebase actions are
+                       reached from this page. *@
+                    @if (Perms.Has("platform.document-management.template-variants.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementTemplateVariants" ? "active" : "")">
+                            <a href="/DocumentManagementTemplateVariants" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-git-branch"></i>
+                                <div>@SharedLocalizer["TemplateVariants"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0029-FU04 — Document Access Matrix (TenantShell). FE-B UX guard: shown only with the
+                       access view permission; backend (FU04 Layer 1) is authoritative. *@
+                    @if (Perms.Has("platform.document-management.access.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementAccessMatrix" ? "active" : "")">
+                            <a href="/DocumentManagementAccessMatrix" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-lock-alt"></i>
+                                <div>@SharedLocalizer["AccessMatrix"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* FIX-CLEANUP-BATCH — Access Governance AND Tenant Settings (Security Settings /TenantSecurity +
+                       Menu Settings /TenantNavigation) are now rendered DATA-DRIVEN by the DynamicModuleMenu below
+                       (ACCESS-GOVERNANCE + TENANT-SETTINGS baseline modules, both permission-gated per descriptor).
+                       The hardcoded Tenant Settings bridge <li>s were removed to stop the menu showing them twice. *@
                     @* Controlled Documents / Template Masters / Template Variants / Access Matrix (document-management),
                        plus Security Settings + Menu Settings (tenant-settings baseline) are now rendered DATA-DRIVEN by
                        the DynamicModuleMenu below — their nav page-descriptors are self-registered in the module catalog.

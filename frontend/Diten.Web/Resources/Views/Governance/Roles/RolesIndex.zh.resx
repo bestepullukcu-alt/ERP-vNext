@@ -26,4 +26,9 @@
   <data name="NamePlaceholder" xml:space="preserve"><value>例如 审批人</value></data>
   <data name="NameImmutableHint" xml:space="preserve"><value>创建后无法更改角色名称。</value></data>
   <data name="DisplayNamePlaceholder" xml:space="preserve"><value>例如 审批人</value></data>
+  <data name="ManagePermissions" xml:space="preserve"><value>管理权限</value></data>
+  <data name="KpiTotalRoles" xml:space="preserve"><value>角色总数</value></data>
+  <data name="KpiSystemRoles" xml:space="preserve"><value>系统角色</value></data>
+  <data name="KpiCustomRoles" xml:space="preserve"><value>自定义角色</value></data>
+  <data name="KpiAssignedUsers" xml:space="preserve"><value>已分配用户</value></data>
 </root>

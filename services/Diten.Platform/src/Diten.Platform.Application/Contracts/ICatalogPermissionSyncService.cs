@@ -8,7 +8,13 @@ namespace Diten.Platform.Application.Contracts;
 /// </summary>
 public interface ICatalogPermissionSyncService
 {
-    Task<CatalogPermissionSyncStatus> SyncPermissionAsync(string? permissionKey, string? displayName, CancellationToken ct);
+    /// <summary>
+    /// İŞ3-FAZ1b — carries the owning module's <paramref name="moduleCode"/> (becomes Permission.Module in AuthService,
+    /// replacing the key-prefix derivation) and the route-derived <paramref name="scope"/> ("Tenant"/"PlatformAdmin").
+    /// Both are optional; an AuthService that predates the fields ignores them (backward compatible).
+    /// </summary>
+    Task<CatalogPermissionSyncStatus> SyncPermissionAsync(
+        string? permissionKey, string? displayName, string? moduleCode, string? scope, CancellationToken ct);
 
     /// <summary>
     /// FEAT-CATALOG-PERM-DELETE-SYNC — Phase 1.5, the counterpart of <see cref="SyncPermissionAsync"/>: requests

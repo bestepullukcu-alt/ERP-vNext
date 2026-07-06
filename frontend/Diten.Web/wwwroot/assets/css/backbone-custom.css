@@ -3989,7 +3989,7 @@ div.dt-container div.dt-search input {
 .tnav-eye { font-size: 1.05rem; }
 
 /* Stat cards */
-.tnav-stat-value { font-size: 1.5rem; font-weight: 600; line-height: 1.2; }
+.tnav-stat-value { font-size: 1.5rem; font-weight: 500; line-height: 1.2; }
 
 /* Live mini-sidebar preview — brand strip and the menu body below it share ONE light background
    (same tint as the "Menu Name" column head), with dark/muted text for readability. */
@@ -4149,4 +4149,485 @@ div.dt-container div.dt-search input {
   .explorer-command-bar > .d-flex { width: 100%; }
   .explorer-content-row > .d-flex { flex-direction: column; }
   .explorer-content-row > .d-flex > .d-inline-flex { align-self: stretch; justify-content: space-between; }
+}
+
+/* FEAT-ROLEPERMS-UX — Role Permissions header filter fields (role / module / search) share one sizing
+   rule so the card-header row wraps consistently; ra-filter-field-lg is only wider for the role select
+   (longer display-name + code labels). Replaces the old per-field inline min/max-width styles. */
+.ra-filter-field-lg { flex: 1 1 auto; min-width: 14rem; max-width: 24rem; }
+.ra-filter-field { flex: 1 1 auto; min-width: 12rem; max-width: 20rem; }
+
+/* Module group header row inside the permission list-group — mirrors the small-uppercase-muted section
+   header look used elsewhere (e.g. .tnav-preview-group-title) so grouped permissions read as sections. */
+.ra-group-header {
+  font-size: .68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--bs-secondary-color);
+  pointer-events: none;
+}
+
+/* ================================================================
+   FEAT-ROLEPERMS-REDESIGN — reusable, theme-only components
+   Shared building blocks (stat card, coverage bar, collapsible entity
+   group card, entity row card) usable by any screen. Colors/spacing come
+   entirely from Bootstrap/Sneat CSS variables so dark-mode + skins follow.
+   ================================================================ */
+
+/* Reusable stat card (partial _StatCard) — number stays readable, label truncates. */
+.stat-card .stat-card-value { line-height: 1.1; }
+
+/* Reusable labelled coverage bar (partial _CoverageBar). */
+.coverage-bar-track { block-size: .5rem; }
+.coverage-bar-fill { transition: inline-size .3s ease; }
+
+/* Data-driven bar width WITHOUT inline styles — JS toggles a .ra-fill-N class (N in steps of 5) rather than
+   writing an inline `style="width"`, so the rendered DOM stays free of inline CSS. Exact percentages are shown
+   as text next to each bar; the fill itself quantizes to 5% steps (visually identical for a progress bar). */
+.ra-fill-0 { inline-size: 0%; }
+.ra-fill-5 { inline-size: 5%; }
+.ra-fill-10 { inline-size: 10%; }
+.ra-fill-15 { inline-size: 15%; }
+.ra-fill-20 { inline-size: 20%; }
+.ra-fill-25 { inline-size: 25%; }
+.ra-fill-30 { inline-size: 30%; }
+.ra-fill-35 { inline-size: 35%; }
+.ra-fill-40 { inline-size: 40%; }
+.ra-fill-45 { inline-size: 45%; }
+.ra-fill-50 { inline-size: 50%; }
+.ra-fill-55 { inline-size: 55%; }
+.ra-fill-60 { inline-size: 60%; }
+.ra-fill-65 { inline-size: 65%; }
+.ra-fill-70 { inline-size: 70%; }
+.ra-fill-75 { inline-size: 75%; }
+.ra-fill-80 { inline-size: 80%; }
+.ra-fill-85 { inline-size: 85%; }
+.ra-fill-90 { inline-size: 90%; }
+.ra-fill-95 { inline-size: 95%; }
+.ra-fill-100 { inline-size: 100%; }
+
+/* Collapsible entity group card. The header is the toggle; the caret rotates when collapsed and the
+   body is hidden via a class (no inline styles, keyboard + aria driven from JS). */
+.entity-group-card .ra-group-toggle { cursor: pointer; }
+.entity-group-card .ra-group-caret { transition: transform .2s ease; }
+.entity-group-card.ra-collapsed .ra-group-caret { transform: rotate(-90deg); }
+.entity-group-card.ra-collapsed .ra-group-body { display: none; }
+[dir="rtl"] .entity-group-card.ra-collapsed .ra-group-caret { transform: rotate(90deg); }
+.entity-group-card .ra-group-toggle:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: -2px;
+}
+
+/* Permission group body — stacks the row cards with breathing room instead of flush list rows. */
+.ra-group-body {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    padding: 0 1rem 1rem;
+}
+
+/* Entity row card — each permission is its own bordered, rounded card (see reference mock). */
+.entity-row-card {
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: .75rem;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+/* Hover mirrors the Golden Compact DataTable row hover tint. */
+.entity-row-card:hover { background-color: rgba(var(--bs-primary-rgb), .035); }
+/* Baseline / locked permissions read as muted, non-actionable rows (light tint, matches menu settings). */
+.ra-row[data-locked="1"] { background-color: rgba(0, 0, 0, .025); }
+[data-bs-theme="dark"] .ra-row[data-locked="1"] { background-color: rgba(255, 255, 255, .04); }
+
+/* Prevent the native <select> from flashing as a raw multi-row listbox before select2 upgrades it. */
+select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
+
+/* Action-distribution mini bars in the role panel. */
+.ra-action-dist .ra-action-track { block-size: .375rem; }
+.ra-action-dist .ra-action-fill { transition: inline-size .3s ease; }
+
+/* Role summary panel sticks alongside a long permission list on wide screens; flows inline below <lg.
+   Shared by Role Permissions (#raRolePanel) and User Roles (#uraUserPanel).
+   FIX-ROLEPERMS-ROLENAME-L10N-STICKY — the shell is layout-navbar-fixed, so top:1.5rem tucked the panel head
+   UNDER the fixed detached navbar. Pin it to the theme's own sticky offset (.layout-navbar-fixed .sticky-element
+   = 4.4375rem, i.e. just below the navbar) so the card top is never clipped. */
+@media (min-width: 992px) {
+  .ra-role-panel { position: sticky; top: 4.4375rem; }
+}
+
+/* FEAT-ROLEPERMS-REDESIGN (refine) — module filter as a full-size (NOT form-select-sm) multi-select in the
+   GoldenReferenceCompact "summary + count + chevron" style. Adapted from the inline-filter .dt-inline-filter-multi
+   look but at normal form-select height; every value is a Bootstrap/Sneat variable so dark-mode + RTL follow. */
+.select2-selection--multiple.ra-filter-multi {
+  position: relative;
+  padding: 0 .85rem;
+  display: flex;
+  align-items: center;
+  min-block-size: calc(2.2505001rem + calc(var(--bs-border-width) * 2));
+}
+.select2-selection--multiple.ra-filter-multi .select2-selection__rendered {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.select2-selection--multiple.ra-filter-multi .select2-selection__choice,
+.select2-selection--multiple.ra-filter-multi .select2-search--inline,
+.select2-selection--multiple.ra-filter-multi .select2-search__field { display: none !important; }
+.select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__summary {
+  display: block;
+  position: absolute;
+  inset-inline: .85rem 3.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: calc(2.2505001rem);
+  font-size: .9375rem;
+  color: var(--bs-secondary-color);
+}
+.select2-selection--multiple.ra-filter-multi.dt-inline-filter-multi--has-value .dt-inline-filter-multi__summary { color: var(--bs-body-color); }
+.select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__actions {
+  position: absolute;
+  inset-inline-end: 1.95rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  z-index: 3;
+  pointer-events: auto;
+}
+.select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__count {
+  min-width: 1.1rem;
+  padding: .1rem .35rem;
+  font-size: .65rem;
+  line-height: 1.1;
+  pointer-events: none;
+}
+.select2-selection--multiple.ra-filter-multi .dt-multi-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--bs-secondary-color);
+  opacity: .5;
+  cursor: pointer !important;
+  transition: opacity .12s ease;
+  user-select: none;
+  pointer-events: auto;
+}
+.select2-selection--multiple.ra-filter-multi .dt-multi-clear-btn:hover { opacity: 1; }
+.select2-selection--multiple.ra-filter-multi .select2-selection__arrow {
+  position: absolute;
+  inset-inline-end: .85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  block-size: .6rem;
+  inline-size: .6rem;
+  z-index: 5;
+}
+.select2-selection--multiple.ra-filter-multi .select2-selection__arrow b { display: none; }
+.select2-selection--multiple.ra-filter-multi .select2-selection__arrow::after {
+  content: "";
+  display: block;
+  inline-size: .5rem;
+  block-size: .5rem;
+  border-inline-end: 1.5px solid var(--bs-secondary-color);
+  border-block-end: 1.5px solid var(--bs-secondary-color);
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+.select2-container--open .select2-selection--multiple.ra-filter-multi,
+.select2-container--focus .select2-selection--multiple.ra-filter-multi {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 .15rem rgba(var(--bs-primary-rgb), .14);
+}
+
+/* Skeleton loading placeholders (Bootstrap .placeholder-glow) shown until the catalog + roles resolve. */
+.ra-skeleton-line { block-size: .75rem; border-radius: var(--bs-border-radius-sm); }
+.ra-skeleton-avatar { inline-size: 2.5rem; block-size: 2.5rem; }
+
+/* ==========================================================================
+   User-Role Assignment (UserRoleAssignments) — card redesign.
+   Reuses the shared .entity-row-card / .ra-role-panel building blocks; only the
+   screen-specific accents live here. Every value is a Sneat/Bootstrap variable
+   so light/dark + RTL follow automatically. No inline styles.
+   ========================================================================== */
+
+/* Small uppercase muted section header ("ASSIGNED ROLES" / "UNASSIGNED ROLES"). */
+.ura-section-title {
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--bs-secondary-color);
+}
+
+/* User-Roles role cards use a roomier p-3 (1rem) padding than the shared .entity-row-card default (.75rem);
+   scoped here so the RoleAssignments permission rows keep their own spacing. Placed after .entity-row-card
+   so equal-specificity source order wins (no !important). */
+.ura-role-card { padding: 1rem; }
+
+/* Assigned role card — subtle primary tint + border so it reads as active. */
+.ura-role-card--assigned {
+  background-color: rgba(var(--bs-primary-rgb), .04);
+  border-color: rgba(var(--bs-primary-rgb), .35);
+}
+.ura-role-card--assigned:hover { background-color: rgba(var(--bs-primary-rgb), .06); }
+
+/* Role code chip inside a card (e.g. "Admin", "Viewer") — plain monospace, no code background. */
+.ura-role-code { background-color: transparent; padding: 0; }
+
+/* Right-panel stat tiles (assigned roles / total permissions). */
+.ura-stat-tile {
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  padding: .75rem .5rem;
+}
+
+/* Compact active-role row in the right panel keeps the row-card look but tighter. */
+.ura-active-row { padding: .5rem .625rem; }
+
+/* Assigned-tab count suffix, e.g. "Assigned (1)". */
+.ura-tab-count { opacity: .75; }
+
+/* ==========================================================================
+   Tenant Security Settings — redesigned dashboard surface.
+   Theme-driven: colours/radii come from Sneat/Bootstrap CSS variables so the
+   page tracks the active theme (light/dark) instead of hard-coded values.
+   ========================================================================== */
+
+/* Section headers mirror the Golden Compact overview cards: upper-cased, heading colour,
+   semibold. Sections that carry an icon keep a primary-tinted leading glyph. */
+.security-section-title {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--bs-heading-color);
+}
+.security-section-title .bx {
+    font-size: 1.125rem;
+    color: var(--bs-primary);
+}
+.security-subsection-title {
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+
+/* Login-method / toggle rows: icon + title + description + right-aligned switch. */
+.security-method-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+}
+.security-method-list .security-method-item + .security-method-item {
+    border-block-start: 1px solid var(--bs-border-color);
+}
+.security-method-item--boxed {
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    block-size: 100%;
+}
+.security-method-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    flex: 0 0 auto;
+    border-radius: var(--bs-border-radius);
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
+    font-size: 1.25rem;
+    transition: background-color .15s ease-in-out, color .15s ease-in-out;
+}
+/* Active login method → primary-tinted icon box (matches Sneat `bg-label-primary`). */
+.security-method-icon.is-active {
+    background-color: rgba(var(--bs-primary-rgb), .16);
+    color: var(--bs-primary);
+}
+.security-method-body {
+    display: flex;
+    flex-direction: column;
+    gap: .125rem;
+    flex: 1 1 auto;
+    min-inline-size: 0;
+}
+.security-method-title {
+    font-weight: 500;
+    color: var(--bs-heading-color, var(--bs-body-color));
+}
+.security-method-desc {
+    font-size: .8125rem;
+    color: var(--bs-secondary-color);
+}
+.security-method-switch {
+    flex: 0 0 auto;
+    padding-inline-start: 0;
+    min-block-size: auto;
+}
+.security-method-switch .form-check-input {
+    margin-inline-start: 0;
+    float: none;
+}
+
+/* Password-policy strength meter: four segments that fill as rules activate. */
+.policy-strength {
+    display: flex;
+    gap: .5rem;
+}
+.policy-strength-seg {
+    flex: 1 1 0;
+    block-size: .375rem;
+    border-radius: var(--bs-border-radius-pill);
+    background-color: var(--bs-secondary-bg);
+    transition: background-color .15s ease-in-out;
+}
+.policy-strength-seg.is-active {
+    background-color: var(--bs-success);
+}
+
+/* Session & lockout summary strip. */
+.session-summary {
+    display: flex;
+    flex-wrap: wrap;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    overflow: hidden;
+}
+.session-summary-seg {
+    flex: 1 1 0;
+    min-inline-size: 7rem;
+    display: flex;
+    flex-direction: column;
+    gap: .125rem;
+    padding: .75rem 1rem;
+    background-color: rgba(0, 0, 0, .025);
+}
+[data-bs-theme="dark"] .session-summary-seg {
+    background-color: rgba(255, 255, 255, .04);
+}
+.session-summary-seg + .session-summary-seg {
+    border-inline-start: 1px solid var(--bs-border-color);
+}
+.session-summary-value {
+    font-weight: 500;
+    color: var(--bs-heading-color, var(--bs-body-color));
+}
+.session-summary-label {
+    font-size: .8125rem;
+    color: var(--bs-secondary-color);
+}
+.session-summary-seg--danger .session-summary-value {
+    color: var(--bs-danger);
+}
+
+/* Security score header — flush (no inner surface / padding). */
+.security-score {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+/* Icon box tint tracks the score level so it matches the progress bar underneath. */
+.security-score-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 3rem;
+    block-size: 3rem;
+    flex: 0 0 auto;
+    border-radius: var(--bs-border-radius);
+    font-size: 1.5rem;
+    background-color: rgba(var(--bs-primary-rgb), .16);
+    color: var(--bs-primary);
+}
+.security-score-icon.is-danger {
+    background-color: rgba(var(--bs-danger-rgb), .16);
+    color: var(--bs-danger);
+}
+.security-score-icon.is-warning {
+    background-color: rgba(var(--bs-warning-rgb), .16);
+    color: var(--bs-warning);
+}
+.security-score-icon.is-success {
+    background-color: rgba(var(--bs-success-rgb), .16);
+    color: var(--bs-success);
+}
+/* Numeric readouts (security score, session summary, nav stats, preview count) render monospace —
+   bound in CSS, not via a utility class, so JS text swaps can't drop the mono treatment and the whole
+   container (plus any child span) stays monospace regardless of markup. */
+.security-score-value,
+.security-score-value span,
+.session-summary-value,
+.session-summary-value span,
+.tnav-stat-value,
+#tnavPreviewCount,
+.stat-card-value,
+.coverage-bar-percent,
+.ra-group-count,
+.ra-action-count {
+    font-family: var(--bs-font-monospace) !important;
+}
+
+/* Numbers mirror the tenant-list storage cell: font-monospace + fw-medium + heading colour. */
+.security-score-value {
+    font-size: 1.75rem;
+    font-weight: 500;
+    line-height: 1.1;
+    color: var(--bs-heading-color, var(--bs-body-color));
+}
+.security-score-total {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+}
+.security-score-level {
+    font-size: .875rem;
+    font-weight: 600;
+}
+.security-score-progress {
+    block-size: .5rem;
+    background-color: var(--bs-secondary-bg);
+}
+
+/* Active-protections checklist. */
+.protection-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .75rem 1.25rem;
+}
+.protection-item + .protection-item {
+    border-block-start: 1px solid var(--bs-border-color);
+}
+.protection-label {
+    color: var(--bs-body-color);
+}
+.protection-status {
+    font-size: 1.25rem;
+    flex: 0 0 auto;
+    color: var(--bs-secondary-color);
+}
+.protection-status.text-success {
+    color: var(--bs-success) !important;
+}
+
+/* Tagify tag inputs align with Sneat form-control sizing. */
+#tenantSecurityRoot .tagify {
+    --tags-border-color: var(--bs-border-color);
+    --tag-bg: var(--bs-secondary-bg);
+    --tag-text-color: var(--bs-body-color);
+    border-radius: var(--bs-border-radius);
 }

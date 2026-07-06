@@ -145,8 +145,15 @@
     const updateRequiredCounter = () => {
         const ids = requiredFieldIds();
         const filled = ids.filter(isFilled).length;
-        const counter = byId('le-required-counter');
+        // Text lives in a dedicated span so the badge icon is preserved.
+        const counter = byId('le-required-counter-text') || byId('le-required-counter');
         if (counter) counter.textContent = `${L.RequiredCounter || 'Required'} ${filled}/${ids.length}`;
+        const badge = byId('le-required-counter');
+        if (badge) {
+            const done = filled === ids.length;
+            badge.classList.toggle('bg-label-success', done);
+            badge.classList.toggle('bg-label-primary', !done);
+        }
     };
 
     // ─── Address JSON validation ─────────────────────────────────────────────
@@ -312,30 +319,69 @@
     const buildReview = () => {
         const host = byId('le-review-summary');
         if (!host) return;
-        const row = (label, value) => `<dt class="col-sm-4 text-muted">${escapeHtml(label)}</dt><dd class="col-sm-8">${escapeHtml(value || '-')}</dd>`;
-        const section = (title, rows) => `<div class="card mb-3"><div class="card-body"><h6 class="mb-3">${escapeHtml(title)}</h6><dl class="row mb-0 small">${rows}</dl></div></div>`;
 
-        host.innerHTML = [
-            section(L.SectionIdentity || 'Identity',
-                row(L.Code, labelOf('leCode')) + row(L.LegalName, labelOf('leLegalName')) + row(L.DisplayName, labelOf('leDisplayName')) +
-                row(L.LegalForm, labelOf('leLegalFormCode')) + row(L.OrgRole, labelOf('leOrganizationRoleCode'))),
-            section(L.SectionStatutory || 'Statutory & Tax',
-                row(L.RegistrationNumber, labelOf('leRegistrationNumber')) + row(L.TaxId, labelOf('leTaxId')) +
-                row(L.Country, labelOf('leCountryCode')) + row(L.StatutoryStatus, labelOf('leStatutoryStatus'))),
-            section(L.SectionStructure || 'Structure',
-                row(L.ParentLegalEntity, labelOf('leParentLegalEntityId')) + row(L.OwnershipPercent, labelOf('leOwnershipPercent')) +
-                row(L.ControlType, labelOf('leControlTypeCode'))),
-            section(L.SectionFinance || 'Finance',
-                row(L.FiscalYearVariant, labelOf('leFiscalYearVariant')) + row(L.AccountingStandard, labelOf('leAccountingStandardCode')) +
-                row(L.TaxRegime, labelOf('leTaxRegimeCode')) + row(L.BaseCurrency, labelOf('leBaseCurrencyCode'))),
-            section(L.SectionAddresses || 'Addresses & Contacts',
-                row(L.RegisteredAddress, labelOf('leRegisteredAddressJson')) + row(L.CorrespondenceAddress, labelOf('leCorrespondenceAddressJson')) +
-                row(L.OfficialEmail, labelOf('leOfficialEmail')) + row(L.OfficialPhone, labelOf('leOfficialPhone')) + row(L.Website, labelOf('leWebsite'))),
-            section(L.SectionGovernance || 'Governance',
-                row(L.ApprovalStatus, labelOf('leApprovalStatus')) + row(L.ReviewDue, labelOf('leReviewDueUtc')) +
-                row(L.SourceSystem, labelOf('leSourceSystem')) + row(L.LegacyCode, labelOf('leLegacyCode'))),
-            section(L.SectionEvidence || 'Evidence', row(L.EvidenceStatus, labelOf('leEvidenceStatus')))
-        ].join('');
+        // Golden Reference Compact "view" design — backbone-preview-section cards.
+        const field = (icon, label, value, col) => `
+            <div class="${col || 'col-12 col-md-6'}">
+                <div class="backbone-preview-field">
+                    <i class="bx ${icon}"></i>
+                    <div>
+                        <div class="backbone-preview-label">${escapeHtml(label || '')}</div>
+                        <div class="backbone-preview-value mt-1">${escapeHtml(value || '-')}</div>
+                    </div>
+                </div>
+            </div>`;
+        const section = (title, fields) => `
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">${escapeHtml(title)}</h6>
+                <div class="row g-4">${fields}</div>
+            </section>`;
+
+        const identity = section(L.SectionIdentity || 'Identity',
+            field('bx-purchase-tag-alt', L.Code, labelOf('leCode')) +
+            field('bx-file', L.LegalName, labelOf('leLegalName')) +
+            field('bx-rename', L.DisplayName, labelOf('leDisplayName')) +
+            field('bx-been-here', L.LegalForm, labelOf('leLegalFormCode')) +
+            field('bx-been-here', L.OrgRole, labelOf('leOrganizationRoleCode')));
+
+        const statutory = section(L.SectionStatutory || 'Statutory & Tax',
+            field('bx-id-card', L.RegistrationNumber, labelOf('leRegistrationNumber')) +
+            field('bx-receipt', L.TaxId, labelOf('leTaxId')) +
+            field('bx-map', L.Country, labelOf('leCountryCode')) +
+            field('bx-check-shield', L.StatutoryStatus, labelOf('leStatutoryStatus')));
+
+        const finance = section(L.SectionFinance || 'Finance',
+            field('bx-calendar', L.FiscalYearVariant, labelOf('leFiscalYearVariant')) +
+            field('bx-calculator', L.AccountingStandard, labelOf('leAccountingStandardCode')) +
+            field('bx-receipt', L.TaxRegime, labelOf('leTaxRegimeCode')) +
+            field('bx-dollar-circle', L.BaseCurrency, labelOf('leBaseCurrencyCode')));
+
+        const addresses = section(L.SectionAddresses || 'Addresses & Contacts',
+            field('bx-map-pin', L.RegisteredAddress, labelOf('leRegisteredAddressJson'), 'col-12') +
+            field('bx-envelope-open', L.CorrespondenceAddress, labelOf('leCorrespondenceAddressJson'), 'col-12') +
+            field('bx-envelope', L.OfficialEmail, labelOf('leOfficialEmail')) +
+            field('bx-phone', L.OfficialPhone, labelOf('leOfficialPhone')) +
+            field('bx-globe', L.Website, labelOf('leWebsite')));
+
+        const structure = section(L.SectionStructure || 'Structure',
+            field('bx-sitemap', L.ParentLegalEntity, labelOf('leParentLegalEntityId'), 'col-12') +
+            field('bx-pie-chart-alt', L.OwnershipPercent, labelOf('leOwnershipPercent'), 'col-12') +
+            field('bx-slider-alt', L.ControlType, labelOf('leControlTypeCode'), 'col-12'));
+
+        const governance = section(L.SectionGovernance || 'Governance',
+            field('bx-check-shield', L.ApprovalStatus, labelOf('leApprovalStatus'), 'col-12') +
+            field('bx-calendar-event', L.ReviewDue, labelOf('leReviewDueUtc'), 'col-12') +
+            field('bx-data', L.SourceSystem, labelOf('leSourceSystem'), 'col-12') +
+            field('bx-code-alt', L.LegacyCode, labelOf('leLegacyCode'), 'col-12'));
+
+        const evidence = section(L.SectionEvidence || 'Evidence',
+            field('bx-file-find', L.EvidenceStatus, labelOf('leEvidenceStatus'), 'col-12'));
+
+        host.innerHTML = `
+            <div class="row g-4">
+                <div class="col-12 col-lg-8 d-flex flex-column gap-4">${identity}${statutory}${finance}${addresses}</div>
+                <div class="col-12 col-lg-4 d-flex flex-column gap-4">${structure}${governance}${evidence}</div>
+            </div>`;
     };
 
     // ─── Pre-populate on edit ────────────────────────────────────────────────

@@ -15,4 +15,73 @@
   <data name="BadgeModule" xml:space="preserve"><value>Module</value></data>
   <data name="BadgeManual" xml:space="preserve"><value>Manual</value></data>
   <data name="LockedHint" xml:space="preserve"><value>Baseline and module-granted permissions cannot be changed here.</value></data>
+  <data name="LockedHintSystem" xml:space="preserve"><value>هذا الإذن جزء من الأساس النظامي ولا يمكن تغييره من هنا.</value></data>
+  <data name="LockedHintModule" xml:space="preserve"><value>تم منح هذا الإذن تلقائيًا بواسطة وحدة {0} ولا يمكن تغييره من هنا.</value></data>
+  <data name="FilterModuleLabel" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="AllModulesOption" xml:space="preserve"><value>جميع الوحدات</value></data>
+  <data name="ModuleUngrouped" xml:space="preserve"><value>أخرى</value></data>
+  <data name="FilterStateGroupLabel" xml:space="preserve"><value>التصفية حسب حالة التخصيص</value></data>
+  <data name="FilterAll" xml:space="preserve"><value>الكل</value></data>
+  <data name="FilterAssigned" xml:space="preserve"><value>مخصص</value></data>
+  <data name="FilterUnassigned" xml:space="preserve"><value>غير مخصص</value></data>
+  <data name="PermissionSummary" xml:space="preserve"><value>{0} من {1} تم تخصيصها</value></data>
+  <data name="SelectedRoleTitle" xml:space="preserve"><value>الدور المحدد</value></data>
+  <data name="CoverageLabel" xml:space="preserve"><value>تغطية الأذونات</value></data>
+  <data name="AssignedRemaining" xml:space="preserve"><value>{0} مخصص · {1} متبق</value></data>
+  <data name="StatTotal" xml:space="preserve"><value>إجمالي الأذونات</value></data>
+  <data name="StatAssigned" xml:space="preserve"><value>مخصص</value></data>
+  <data name="StatBaselineLocked" xml:space="preserve"><value>أساسي مقفل</value></data>
+  <data name="StatUnassigned" xml:space="preserve"><value>غير مخصص</value></data>
+  <data name="ActionDistributionTitle" xml:space="preserve"><value>توزيع الإجراءات</value></data>
+  <data name="ActionRead" xml:space="preserve"><value>قراءة</value></data>
+  <data name="ActionCreate" xml:space="preserve"><value>إنشاء</value></data>
+  <data name="ActionUpdate" xml:space="preserve"><value>تحديث</value></data>
+  <data name="ActionDelete" xml:space="preserve"><value>حذف</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ActionExport" xml:space="preserve"><value>تصدير</value></data>
+  <data name="ActionOther" xml:space="preserve"><value>أخرى</value></data>
+  <data name="BaselineRequiredNote" xml:space="preserve"><value>الأذونات الأساسية مطلوبة للدور ولا يمكن إزالتها.</value></data>
+  <data name="ShowingCount" xml:space="preserve"><value>عرض {0} إذن</value></data>
+  <data name="CountBadge" xml:space="preserve"><value>{0}/{1}</value></data>
+  <!-- FEAT-ROLEPERMS-LABEL-DERIVE — action verbs (imperative) used to derive Role Permissions row labels from the permission KEY (verb · entity). Bridged to JS as window.L10n.ActionVerbs. -->
+  <data name="ActionVerb_Read" xml:space="preserve"><value>عرض</value></data>
+  <data name="ActionVerb_View" xml:space="preserve"><value>عرض</value></data>
+  <data name="ActionVerb_Create" xml:space="preserve"><value>إنشاء</value></data>
+  <data name="ActionVerb_Update" xml:space="preserve"><value>تحديث</value></data>
+  <data name="ActionVerb_Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="ActionVerb_Delete" xml:space="preserve"><value>حذف</value></data>
+  <data name="ActionVerb_BulkDelete" xml:space="preserve"><value>حذف جماعي</value></data>
+  <data name="ActionVerb_Manage" xml:space="preserve"><value>إدارة</value></data>
+  <data name="ActionVerb_Assign" xml:space="preserve"><value>تعيين</value></data>
+  <data name="ActionVerb_Revoke" xml:space="preserve"><value>إبطال</value></data>
+  <data name="ActionVerb_AssignPermission" xml:space="preserve"><value>تعيين إذن</value></data>
+  <data name="ActionVerb_AssignRole" xml:space="preserve"><value>تعيين دور</value></data>
+  <data name="ActionVerb_Delegate" xml:space="preserve"><value>تفويض</value></data>
+  <data name="ActionVerb_Register" xml:space="preserve"><value>تسجيل</value></data>
+  <data name="ActionVerb_Export" xml:space="preserve"><value>تصدير</value></data>
+  <data name="ActionVerb_Import" xml:space="preserve"><value>استيراد</value></data>
+  <data name="ActionVerb_Upload" xml:space="preserve"><value>رفع</value></data>
+  <data name="ActionVerb_List" xml:space="preserve"><value>عرض القائمة</value></data>
+  <data name="ActionVerb_Preview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="ActionVerb_Share" xml:space="preserve"><value>مشاركة</value></data>
+  <data name="ActionVerb_Archive" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ActionVerb_Activate" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="ActionVerb_Reactivate" xml:space="preserve"><value>إعادة تفعيل</value></data>
+  <data name="ActionVerb_Suspend" xml:space="preserve"><value>تعليق</value></data>
+  <data name="ActionVerb_Deprecate" xml:space="preserve"><value>إهمال</value></data>
+  <data name="ActionVerb_Approve" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="ActionVerb_Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="ActionVerb_Publish" xml:space="preserve"><value>نشر</value></data>
+  <data name="ActionVerb_Submit" xml:space="preserve"><value>إرسال</value></data>
+  <data name="ActionVerb_Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="ActionVerb_Validate" xml:space="preserve"><value>التحقق</value></data>
+  <data name="ActionVerb_Run" xml:space="preserve"><value>تشغيل</value></data>
+  <data name="ActionVerb_Execute" xml:space="preserve"><value>تنفيذ</value></data>
+  <data name="ActionVerb_Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="ActionVerb_Evaluate" xml:space="preserve"><value>تقييم</value></data>
+  <data name="ActionVerb_Initialize" xml:space="preserve"><value>تهيئة</value></data>
+  <data name="ActionVerb_Compare" xml:space="preserve"><value>مقارنة</value></data>
+  <data name="ActionVerb_Move" xml:space="preserve"><value>نقل</value></data>
+  <data name="ActionVerb_Start" xml:space="preserve"><value>بدء</value></data>
+  <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>عرض سلسلة الإدارة</value></data>
 </root>

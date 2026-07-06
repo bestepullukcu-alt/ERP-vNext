@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Title" xml:space="preserve"><value>安全设置</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理您组织的登录与安全策略。</value></data>
+  <data name="LoginMethods" xml:space="preserve"><value>登录方式</value></data>
+  <data name="TwoFactorEnabled" xml:space="preserve"><value>双因素认证</value></data>
+  <data name="MfaRequired" xml:space="preserve"><value>强制启用 MFA</value></data>
+  <data name="EmailLoginEnabled" xml:space="preserve"><value>邮箱登录</value></data>
+  <data name="PhoneLoginEnabled" xml:space="preserve"><value>手机登录</value></data>
+  <data name="PasswordPolicy" xml:space="preserve"><value>密码策略</value></data>
+  <data name="PasswordMinLength" xml:space="preserve"><value>最小长度</value></data>
+  <data name="PasswordExpirationDays" xml:space="preserve"><value>密码有效期（天）</value></data>
+  <data name="PasswordExpirationDaysHint" xml:space="preserve"><value>留空表示永不过期。</value></data>
+  <data name="LoginAuditRetentionDays" xml:space="preserve"><value>登录审计保留期（天）</value></data>
+  <data name="RequireUppercase" xml:space="preserve"><value>需包含大写字母</value></data>
+  <data name="RequireLowercase" xml:space="preserve"><value>需包含小写字母</value></data>
+  <data name="RequireDigit" xml:space="preserve"><value>需包含数字</value></data>
+  <data name="RequireSpecialChar" xml:space="preserve"><value>需包含特殊字符</value></data>
+  <data name="SessionLockoutPolicy" xml:space="preserve"><value>会话 &amp; 锁定</value></data>
+  <data name="SessionTimeoutMinutes" xml:space="preserve"><value>会话超时（分钟）</value></data>
+  <data name="RefreshTokenLifetimeDays" xml:space="preserve"><value>刷新令牌有效期（天）</value></data>
+  <data name="MaxFailedLoginAttempts" xml:space="preserve"><value>最大登录失败次数</value></data>
+  <data name="LockoutDurationMinutes" xml:space="preserve"><value>锁定时长（分钟）</value></data>
+  <data name="AccessRestrictions" xml:space="preserve"><value>访问限制</value></data>
+  <data name="IpWhitelistEnabled" xml:space="preserve"><value>启用 IP 白名单</value></data>
+  <data name="AllowedIps" xml:space="preserve"><value>允许的 IP 地址</value></data>
+  <data name="AllowedIpsHint" xml:space="preserve"><value>每行一个 IPv4 或 IPv6 地址。</value></data>
+  <data name="AllowedCountries" xml:space="preserve"><value>允许的国家/地区</value></data>
+  <data name="AllowedCountriesHint" xml:space="preserve"><value>每行一个 ISO alpha-2 国家/地区代码（例如 TR、US）。</value></data>
+  <data name="Saved" xml:space="preserve"><value>安全设置已保存。</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>请更正高亮显示的字段。</value></data>
+  <data name="MfaRequires2FA" xml:space="preserve"><value>强制启用 MFA 时，必须同时启用双因素认证和邮箱登录。</value></data>
+  <data name="AtLeastOneLoginMethod" xml:space="preserve"><value>必须至少启用一种登录方式（邮箱或手机）。</value></data>
+  <data name="IpWhitelistEmpty" xml:space="preserve"><value>启用 IP 白名单时，请至少添加一个允许的 IP 地址。</value></data>
+  <data name="InvalidIp" xml:space="preserve"><value>无效的 IP 地址： </value></data>
+  <data name="InvalidCountry" xml:space="preserve"><value>无效的国家/地区代码（请使用 ISO alpha-2）： </value></data>
+  <data name="TwoFactorAutoEnabled" xml:space="preserve"><value>已自动为 MFA 启用双因素认证和邮箱登录。</value></data>
+  <data name="MfaAutoDisabled" xml:space="preserve"><value>由于关闭了双因素认证，MFA 已被禁用。</value></data>
+  <data name="EmailLoginDesc" xml:space="preserve"><value>允许用户使用邮箱和密码登录。</value></data>
+  <data name="PhoneLoginDesc" xml:space="preserve"><value>使用手机 OTP 登录。在配置短信服务商之前不可用。</value></data>
+  <data name="TwoFactorDesc" xml:space="preserve"><value>允许用户设置基于 TOTP 的双因素认证。</value></data>
+  <data name="MfaRequiredDesc" xml:space="preserve"><value>要求所有用户设置 MFA。</value></data>
+  <data name="PasswordMinLengthHint" xml:space="preserve"><value>字符数</value></data>
+  <data name="ComplexityRequirements" xml:space="preserve"><value>复杂度要求</value></data>
+  <data name="RequireUppercaseHint" xml:space="preserve"><value>至少一个 A–Z 字符</value></data>
+  <data name="RequireLowercaseHint" xml:space="preserve"><value>至少一个 a–z 字符</value></data>
+  <data name="RequireDigitHint" xml:space="preserve"><value>至少一个 0–9 数字</value></data>
+  <data name="RequireSpecialCharHint" xml:space="preserve"><value>至少一个 !@#$%^&amp;* 字符</value></data>
+  <data name="PolicyStrength" xml:space="preserve"><value>密码策略强度</value></data>
+  <data name="RulesActiveSuffix" xml:space="preserve"><value>条规则已启用</value></data>
+  <data name="UnitMinutes" xml:space="preserve"><value>分钟</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>天</value></data>
+  <data name="UnitAttempts" xml:space="preserve"><value>次</value></data>
+  <data name="SessionTimeoutHint" xml:space="preserve"><value>会话在无操作一段时间后结束。</value></data>
+  <data name="RefreshTokenHint" xml:space="preserve"><value>刷新令牌的有效期。</value></data>
+  <data name="MaxFailedHint" xml:space="preserve"><value>达到此失败次数后账户将被锁定。</value></data>
+  <data name="LockoutDurationHint" xml:space="preserve"><value>账户将保持锁定此时长。</value></data>
+  <data name="SummarySession" xml:space="preserve"><value>会话</value></data>
+  <data name="SummaryToken" xml:space="preserve"><value>令牌有效期</value></data>
+  <data name="SummaryLockout" xml:space="preserve"><value>锁定</value></data>
+  <data name="SummaryAttempts" xml:space="preserve"><value>锁定阈值</value></data>
+  <data name="SecurityScore" xml:space="preserve"><value>安全评分</value></data>
+  <data name="SecurityScoreHint" xml:space="preserve"><value>启用所有推荐设置以提高您的评分。</value></data>
+  <data name="ActiveProtections" xml:space="preserve"><value>已启用的防护</value></data>
+  <data name="ProtectionEmailLogin" xml:space="preserve"><value>邮箱登录</value></data>
+  <data name="ProtectionPhoneLogin" xml:space="preserve"><value>手机登录</value></data>
+  <data name="Protection2FA" xml:space="preserve"><value>已启用 2FA</value></data>
+  <data name="ProtectionMfa" xml:space="preserve"><value>强制 MFA</value></data>
+  <data name="ProtectionUppercase" xml:space="preserve"><value>大写字母</value></data>
+  <data name="ProtectionLowercase" xml:space="preserve"><value>小写字母</value></data>
+  <data name="ProtectionDigit" xml:space="preserve"><value>需含数字</value></data>
+  <data name="ProtectionSpecial" xml:space="preserve"><value>特殊字符</value></data>
+  <data name="ProtectionIpRestriction" xml:space="preserve"><value>IP 限制</value></data>
+  <data name="SettingsScopeInfo" xml:space="preserve"><value>这些设置对所有租户用户生效。更改在保存后立即生效。</value></data>
+  <data name="IpWhitelistDesc" xml:space="preserve"><value>仅允许来自指定 IP 地址和国家/地区的访问。</value></data>
+  <data name="AccessRestrictionsInfo" xml:space="preserve"><value>启用 IP 限制后，仅允许来自所列 IP 和国家/地区的访问。</value></data>
+  <data name="ScoreLevelWeak" xml:space="preserve"><value>弱</value></data>
+  <data name="ScoreLevelMedium" xml:space="preserve"><value>中等</value></data>
+  <data name="ScoreLevelStrong" xml:space="preserve"><value>强</value></data>
+</root>

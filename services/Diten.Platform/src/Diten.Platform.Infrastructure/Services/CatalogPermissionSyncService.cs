@@ -31,7 +31,8 @@ public sealed class CatalogPermissionSyncService : ICatalogPermissionSyncService
         _logger = logger;
     }
 
-    public async Task<CatalogPermissionSyncStatus> SyncPermissionAsync(string? permissionKey, string? displayName, CancellationToken ct)
+    public async Task<CatalogPermissionSyncStatus> SyncPermissionAsync(
+        string? permissionKey, string? displayName, string? moduleCode, string? scope, CancellationToken ct)
     {
         var normalized = ModulePageDescriptorNormalizer.NormalizePermission(permissionKey);
         if (string.IsNullOrWhiteSpace(normalized))
@@ -64,7 +65,9 @@ public sealed class CatalogPermissionSyncService : ICatalogPermissionSyncService
                 Content = JsonContent.Create(new SyncPermissionRequest(
                     normalized,
                     string.IsNullOrWhiteSpace(displayName) ? null : displayName.Trim(),
-                    null))
+                    null,
+                    string.IsNullOrWhiteSpace(moduleCode) ? null : moduleCode.Trim(),
+                    string.IsNullOrWhiteSpace(scope) ? null : scope.Trim()))
             };
             request.Headers.Add(InternalApiKeyHeader, _authServiceOptions.InternalApiKey);
 
@@ -156,5 +159,6 @@ public sealed class CatalogPermissionSyncService : ICatalogPermissionSyncService
         }
     }
 
-    private sealed record SyncPermissionRequest(string PermissionKey, string? DisplayName, string? Description);
+    private sealed record SyncPermissionRequest(
+        string PermissionKey, string? DisplayName, string? Description, string? ModuleCode, string? Scope);
 }

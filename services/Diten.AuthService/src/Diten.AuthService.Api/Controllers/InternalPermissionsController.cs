@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -64,6 +65,15 @@ public sealed class InternalPermissionsController : ControllerBase
         }
 
         var normalizedKey = $"{module}.{resource}.{action}";
+        // İŞ3-FAZ1b — Module = the manifest ModuleCode (not the key's first segment); Scope = the route-derived value
+        // the sender computed. Both are optional so an OLD sender (no fields) falls back to the pre-1b behaviour
+        // (Module = key prefix, Scope derived from Module by the ctor).
+        // FIX-PERM-MODULE-CASE-CONSISTENCY — store Module LOWERCASE: the Platform sender upper-cases the catalog
+        // ModuleCode (ModuleCatalogCodeNormalizer), but the seed moduleOverride + manifest slugs are lowercase, so
+        // persist a single casing here to keep the RoleAssignments "Module" grouping from splitting per case.
+        var moduleOverride = string.IsNullOrWhiteSpace(request.ModuleCode) ? null : request.ModuleCode.Trim().ToLowerInvariant();
+        var incomingScope = ParseScope(request.Scope);
+
         // FIX-CATALOG-PERM-RESYNC-DUPKEY — look up INCLUDING soft-deleted rows: the unique key index still owns a
         // soft-deleted doc, so a CREATE (InsertOne) with the same key would hit E11000 → 500. Reactivate instead.
         var existing = await _permissionRepository.GetByKeyIncludingDeletedAsync(normalizedKey, ct);
@@ -72,7 +82,8 @@ public sealed class InternalPermissionsController : ControllerBase
             var displayName = string.IsNullOrWhiteSpace(request.DisplayName)
                 ? normalizedKey
                 : request.DisplayName.Trim();
-            var permission = new Permission(module, resource, action, displayName, NormalizeOptional(request.Description));
+            var permission = new Permission(module, resource, action, displayName, NormalizeOptional(request.Description),
+                moduleOverride: moduleOverride, scope: incomingScope);
             // FEAT-CATALOG-PERM-DELETE-SYNC — a catalog-CREATED permission is operator/catalog-owned, NOT a seeded
             // system permission. Mark it user-defined (IsSystem=false) so the DELETE-sync can later remove it when the
             // owning descriptor is deleted. Hand-seeded system permissions (auth.* etc.) keep IsSystem=true (protected).
@@ -114,12 +125,39 @@ public sealed class InternalPermissionsController : ControllerBase
 
         // Idempotent live update: same key never duplicates.
         existing.Update(newDisplayName, newDescription);
+
+        // İŞ3-FAZ1b — refresh Module (= manifest ModuleCode) and Scope (= route-derived) on the existing row so the
+        // catalog migration lands without a DB wipe (Key stays immutable). GUARD: a seeded SYSTEM permission still on
+        // Module=="platform" is a platform-admin key NOT migrated in this phase (e.g. document-management, which has
+        // platform.* keys but tenant routes, or the seeded-only tenants/administrators/audit keys). The sync must NOT
+        // move it off platform/PlatformAdmin — that would flip the escalation boundary. Migrated seed modules
+        // (auth→access-governance, mdm→legal-entity, workflow→workflow) already carry a non-"platform" Module, so they
+        // are refreshed normally. An old sender that sends neither field leaves both untouched.
+        var moduleLocked = existing.IsSystem
+            && string.Equals(existing.Module, DefaultRolePermissionTemplate.PlatformModule, StringComparison.OrdinalIgnoreCase);
+        if (!moduleLocked)
+        {
+            if (moduleOverride is not null)
+            {
+                existing.SetModule(moduleOverride);
+            }
+            if (incomingScope.HasValue)
+            {
+                // Tie-break (most restrictive wins): the same key can be synced from several pages with different
+                // routes. If ANY of them is platform-scoped the key stays PlatformAdmin — never downgrade to Tenant.
+                var effectiveScope = existing.Scope == PermissionScope.PlatformAdmin || incomingScope.Value == PermissionScope.PlatformAdmin
+                    ? PermissionScope.PlatformAdmin
+                    : PermissionScope.Tenant;
+                existing.SetScope(effectiveScope);
+            }
+        }
+
         await _permissionRepository.UpdateAsync(existing, ct);
 
         _logger.LogInformation(
             "Catalog permission synced (updated). Key={Key} Module={Module}",
             existing.Key,
-            module);
+            existing.Module);
 
         return Ok(new SyncPermissionResponse(existing.Key, "updated"));
     }
@@ -176,8 +214,10 @@ public sealed class InternalPermissionsController : ControllerBase
 
     /// <summary>
     /// Read-only S2S list of the DISTINCT <c>Module</c> values present in the permission catalogue, with each
-    /// module's live permission count. The Module string is returned verbatim (no case change), so a catalog
-    /// ModuleCode picked from this list maps 1:1 to <c>Permission.Module</c> and the entitlement bridge matches.
+    /// module's live permission count. FIX-PERM-MODULE-CASE-CONSISTENCY — <c>Permission.Module</c> is now persisted
+    /// lowercase, so this returns consistent lowercase module names. A catalog ModuleCode maps to it
+    /// CASE-INSENSITIVELY (the entitlement bridge already matches OrdinalIgnoreCase), so an upper-cased catalog code
+    /// still resolves 1:1.
     /// </summary>
     [HttpGet("modules")]
     public async Task<IActionResult> GetModules(CancellationToken ct)
@@ -201,7 +241,21 @@ public sealed class InternalPermissionsController : ControllerBase
     private static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    public sealed record SyncPermissionRequest(string PermissionKey, string? DisplayName, string? Description);
+    // İŞ3-FAZ1b — parse the wire Scope ("Tenant"/"PlatformAdmin", case-insensitive). Absent/unrecognised → null
+    // (fallback: the ctor derives Scope from Module, or an update leaves the existing Scope untouched).
+    private static PermissionScope? ParseScope(string? scope) =>
+        !string.IsNullOrWhiteSpace(scope) && Enum.TryParse<PermissionScope>(scope.Trim(), ignoreCase: true, out var parsed)
+            ? parsed
+            : null;
+
+    // İŞ3-FAZ1b — ModuleCode + Scope are OPTIONAL (nullable) so an older Platform sender still binds (fields default
+    // to null → pre-1b behaviour). ModuleCode becomes Permission.Module; Scope is the route-derived authz scope.
+    public sealed record SyncPermissionRequest(
+        string PermissionKey,
+        string? DisplayName,
+        string? Description,
+        string? ModuleCode = null,
+        string? Scope = null);
 
     public sealed record SyncPermissionResponse(string Key, string Status);
 

@@ -3,8 +3,11 @@
 (function () {
     const payload = document.getElementById('userroleassignments-l10n');
     const requiredKeys = [
-        'Assign', 'Assigned', 'SelectUserPrompt', 'NoRoles', 'AreYouSure', 'RecordCreated',
-        'RecordDeleted', 'ErrorOccurred', 'Cancel', 'Delete'
+        'Assign', 'Assigned', 'Remove', 'SelectUserPrompt', 'NoRoles', 'TypeSystem', 'TypeCustom',
+        'PermissionCountFormat', 'RolesShownFormat', 'AreYouSure', 'RecordCreated', 'RecordDeleted',
+        'ErrorOccurred', 'Cancel', 'Delete',
+        // FIX-ROLEPERMS-ROLENAME-L10N-STICKY — nested { roleCode: localizedName } map for system roles.
+        'RoleNames'
     ];
 
     const logMissingKeys = (dictionary) => {
