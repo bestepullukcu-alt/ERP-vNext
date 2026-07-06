@@ -86,7 +86,7 @@
         // publicly exposed), so use an empty (same-origin) base.
         window.ApiBaseUrl = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
             ? window.location.protocol + "//" + window.location.hostname + ":5000"
-            : "";
+            : window.location.origin;
         window.API = {
             mdm: window.ApiBaseUrl,
             deven: window.ApiBaseUrl,
@@ -240,6 +240,10 @@
                        Menu Settings /TenantNavigation) are now rendered DATA-DRIVEN by the DynamicModuleMenu below
                        (ACCESS-GOVERNANCE + TENANT-SETTINGS baseline modules, both permission-gated per descriptor).
                        The hardcoded Tenant Settings bridge <li>s were removed to stop the menu showing them twice. *@
+                    @* Controlled Documents / Template Masters / Template Variants / Access Matrix (document-management),
+                       plus Security Settings + Menu Settings (tenant-settings baseline) are now rendered DATA-DRIVEN by
+                       the DynamicModuleMenu below — their nav page-descriptors are self-registered in the module catalog.
+                       The previously-hardcoded copies were removed to avoid a duplicated menu section. *@
 
                     @* MOD-0285 — dynamic "Modules" section (AUGMENT). Self-registered/entitled modules whose page
                        descriptors are navigation-visible render here automatically — no hand-edited <li> above.

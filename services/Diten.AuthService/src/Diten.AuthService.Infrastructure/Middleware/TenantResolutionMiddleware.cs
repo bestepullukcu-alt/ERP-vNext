@@ -102,7 +102,10 @@ public sealed class TenantResolutionMiddleware
     {
         return path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase)
-               || path.StartsWithSegments("/internal/events", StringComparison.OrdinalIgnoreCase)
+               // All /internal/* endpoints are tenant-agnostic S2S surfaces (authenticated by the internal API key,
+               // not a tenant JWT) — e.g. /internal/events and /internal/permissions/sync (catalog permission sync).
+               // Requiring an X-Tenant-Id here silently broke module permission sync (400 Missing Tenant).
+               || path.StartsWithSegments("/internal", StringComparison.OrdinalIgnoreCase)
                || path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase);
     }
 
