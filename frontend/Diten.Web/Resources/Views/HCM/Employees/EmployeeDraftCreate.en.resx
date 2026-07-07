@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CreateEmployeeDraftTitle" xml:space="preserve"><value>Create Employee Draft</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>WorkCenter</value></data>
+  <data name="HcmBreadcrumb" xml:space="preserve"><value>HCM</value></data>
+  <data name="StartDraft" xml:space="preserve"><value>Start Draft</value></data>
+  <data name="Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="PermissionDeniedWorkspace" xml:space="preserve"><value>Permission denied. The draft workspace is read-only for this session.</value></data>
+  <data name="ProfileSection" xml:space="preserve"><value>Profile</value></data>
+  <data name="ProfileDescription" xml:space="preserve"><value>Identity and sensitivity fields for the employee draft.</value></data>
+  <data name="DraftOnly" xml:space="preserve"><value>Draft only</value></data>
+  <data name="PersonReference" xml:space="preserve"><value>Person reference</value></data>
+  <data name="LegalName" xml:space="preserve"><value>Legal name</value></data>
+  <data name="SensitivityLevel" xml:space="preserve"><value>Sensitivity level</value></data>
+  <data name="SensitivityStandard" xml:space="preserve"><value>Standard</value></data>
+  <data name="SensitivityRestricted" xml:space="preserve"><value>Restricted</value></data>
+  <data name="GovernmentIdentifierDisabled" xml:space="preserve"><value>Government identifier capture is disabled for this slice.</value></data>
+  <data name="EmploymentSection" xml:space="preserve"><value>Employment</value></data>
+  <data name="EmploymentDescription" xml:space="preserve"><value>Employment classification and reference links.</value></data>
+  <data name="WorkerType" xml:space="preserve"><value>Worker type</value></data>
+  <data name="Select" xml:space="preserve"><value>Select</value></data>
+  <data name="WorkerTypeEmployee" xml:space="preserve"><value>Employee</value></data>
+  <data name="WorkerTypeContingent" xml:space="preserve"><value>Contingent Worker</value></data>
+  <data name="EmploymentType" xml:space="preserve"><value>Employment type</value></data>
+  <data name="EmploymentTypeFullTime" xml:space="preserve"><value>Full Time</value></data>
+  <data name="EmploymentTypePartTime" xml:space="preserve"><value>Part Time</value></data>
+  <data name="EmploymentTypeFixedTerm" xml:space="preserve"><value>Fixed Term</value></data>
+  <data name="HireDate" xml:space="preserve"><value>Hire date</value></data>
+  <data name="OrganizationUnitReference" xml:space="preserve"><value>Organization unit reference</value></data>
+  <data name="PositionReference" xml:space="preserve"><value>Position reference</value></data>
+  <data name="LegalEntityReference" xml:space="preserve"><value>Legal entity reference</value></data>
+  <data name="EvidenceOutOfSlice" xml:space="preserve"><value>Evidence upload/link is not in this slice.</value></data>
+  <data name="ReferenceReviewSection" xml:space="preserve"><value>Reference Review</value></data>
+  <data name="ReferenceReviewDescription" xml:space="preserve"><value>Validate dependencies before marking the draft reviewed.</value></data>
+  <data name="ReviewOnly" xml:space="preserve"><value>Review only</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save Draft</value></data>
+  <data name="ValidateReferences" xml:space="preserve"><value>Validate References</value></data>
+  <data name="ReviewDraft" xml:space="preserve"><value>Review Draft</value></data>
+  <data name="DraftStatus" xml:space="preserve"><value>Draft Status</value></data>
+  <data name="DraftState" xml:space="preserve"><value>Draft State</value></data>
+  <data name="Session" xml:space="preserve"><value>Session</value></data>
+  <data name="NotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="ETag" xml:space="preserve"><value>ETag</value></data>
+  <data name="SliceBoundary" xml:space="preserve"><value>Slice Boundary</value></data>
+  <data name="SliceBoundaryDescription" xml:space="preserve"><value>Review only. Submit, approval, activation, evidence linking, and government identifier capture stay outside this MOD-0251 slice.</value></data>
+  <data name="AuthenticationRequired" xml:space="preserve"><value>Authentication is required.</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>A dependency is unavailable.</value></data>
+  <data name="DraftChangedReload" xml:space="preserve"><value>The draft has changed. Reload the draft and try again.</value></data>
+  <data name="DraftNotFound" xml:space="preserve"><value>Draft or reference was not found.</value></data>
+  <data name="DraftReloaded" xml:space="preserve"><value>Draft reloaded.</value></data>
+  <data name="DraftReviewHasBlockers" xml:space="preserve"><value>Draft review has blockers.</value></data>
+  <data name="DraftReviewed" xml:space="preserve"><value>Draft reviewed.</value></data>
+  <data name="DraftSaved" xml:space="preserve"><value>Draft saved.</value></data>
+  <data name="DraftStarted" xml:space="preserve"><value>Draft started.</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>Permission denied.</value></data>
+  <data name="ReferenceFallback" xml:space="preserve"><value>reference</value></data>
+  <data name="ReferencesNotValidated" xml:space="preserve"><value>References have not been validated.</value></data>
+  <data name="RequestFailed" xml:space="preserve"><value>Request failed.</value></data>
+  <data name="ReviewBlockersPrefix" xml:space="preserve"><value>Review blockers</value></data>
+  <data name="SearchSameTenantPerson" xml:space="preserve"><value>Search same-tenant person</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>Validation failed.</value></data>
+  <data name="Valid" xml:space="preserve"><value>Valid</value></data>
+</root>

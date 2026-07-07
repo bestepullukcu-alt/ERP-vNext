@@ -25,6 +25,8 @@
     var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
     var layoutDirection = string.Equals(currentCulture, "ar", StringComparison.OrdinalIgnoreCase) ? "rtl" : "ltr";
     var activeController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentPath = Context.Request.Path.Value ?? string.Empty;
+    var canAccessHcmEmployeeDraft = PermissionClaims.HasPermission(User, "mod0251.employee.create_draft");
 }
 <!DOCTYPE html>
 
@@ -244,6 +246,19 @@
                        plus Security Settings + Menu Settings (tenant-settings baseline) are now rendered DATA-DRIVEN by
                        the DynamicModuleMenu below — their nav page-descriptors are self-registered in the module catalog.
                        The previously-hardcoded copies were removed to avoid a duplicated menu section. *@
+
+                    @if (canAccessHcmEmployeeDraft)
+                    {
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text">@SharedLocalizer["HumanCapitalManagement"]</span>
+                        </li>
+                        <li class="menu-item @(currentPath.StartsWith("/HCM/Employees", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/HCM/Employees/Create" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-id-card"></i>
+                                <div>@SharedLocalizer["EmployeeDraftsMenu"]</div>
+                            </a>
+                        </li>
+                    }
 
                     @* MOD-0285 — dynamic "Modules" section (AUGMENT). Self-registered/entitled modules whose page
                        descriptors are navigation-visible render here automatically — no hand-edited <li> above.

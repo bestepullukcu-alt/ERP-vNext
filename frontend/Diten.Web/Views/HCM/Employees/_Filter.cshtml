@@ -1,0 +1,53 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeMasterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-status">
+                        <select id="filterEmployeeStatus" class="form-select form-select-sm select2" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="draft">@Localizer["StatusDraft"]</option>
+                            <option value="active">@Localizer["StatusActive"]</option>
+                            <option value="inactive">@Localizer["StatusInactive"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-worker-type">
+                        <select id="filterWorkerType" class="form-select form-select-sm select2" data-placeholder="@Localizer["WorkerType"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="employee">@Localizer["WorkerTypeEmployee"]</option>
+                            <option value="contingent">@Localizer["WorkerTypeContingent"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-employment-type">
+                        <select id="filterEmploymentType" class="form-select form-select-sm select2" data-placeholder="@Localizer["EmploymentType"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="full_time">@Localizer["EmploymentTypeFullTime"]</option>
+                            <option value="part_time">@Localizer["EmploymentTypePartTime"]</option>
+                            <option value="fixed_term">@Localizer["EmploymentTypeFixedTerm"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-legal-entity">
+                        <input id="filterLegalEntityId" class="form-control form-control-sm" type="text" inputmode="text" placeholder="@Localizer["LegalEntityId"]" autocomplete="off" />
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

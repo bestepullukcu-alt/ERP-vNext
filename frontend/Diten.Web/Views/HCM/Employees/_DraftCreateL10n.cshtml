@@ -1,0 +1,29 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeDraftCreate> Localizer
+
+<script id="hcm-employee-draft-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        AuthenticationRequired = Localizer["AuthenticationRequired"].Value,
+        Blocked = Localizer["Blocked"].Value,
+        DependencyUnavailable = Localizer["DependencyUnavailable"].Value,
+        DraftChangedReload = Localizer["DraftChangedReload"].Value,
+        DraftNotFound = Localizer["DraftNotFound"].Value,
+        DraftReloaded = Localizer["DraftReloaded"].Value,
+        DraftReviewHasBlockers = Localizer["DraftReviewHasBlockers"].Value,
+        DraftReviewed = Localizer["DraftReviewed"].Value,
+        DraftSaved = Localizer["DraftSaved"].Value,
+        DraftStarted = Localizer["DraftStarted"].Value,
+        PermissionDenied = Localizer["PermissionDenied"].Value,
+        PermissionDeniedWorkspace = Localizer["PermissionDeniedWorkspace"].Value,
+        ReferenceFallback = Localizer["ReferenceFallback"].Value,
+        ReferencesNotValidated = Localizer["ReferencesNotValidated"].Value,
+        RequestFailed = Localizer["RequestFailed"].Value,
+        ReviewBlockersPrefix = Localizer["ReviewBlockersPrefix"].Value,
+        SearchSameTenantPerson = Localizer["SearchSameTenantPerson"].Value,
+        NotStarted = Localizer["NotStarted"].Value,
+        ValidationFailed = Localizer["ValidationFailed"].Value,
+        Valid = Localizer["Valid"].Value
+    })
+</script>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="EmployeeDetailTitle" xml:space="preserve"><value>Employee Detail</value></data>
+  <data name="ForbiddenState" xml:space="preserve"><value>You do not have permission to view employee details.</value></data>
+  <data name="LoadingState" xml:space="preserve"><value>Loading employee detail...</value></data>
+  <data name="DependencyError" xml:space="preserve"><value>The employee detail dependency is unavailable.</value></data>
+  <data name="NotFoundState" xml:space="preserve"><value>Employee detail was not found.</value></data>
+  <data name="EmployeeNumber" xml:space="preserve"><value>Employee No.</value></data>
+  <data name="PersonId" xml:space="preserve"><value>Person ID</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="ETag" xml:space="preserve"><value>ETag</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated</value></data>
+  <data name="LegalProfile" xml:space="preserve"><value>Legal Profile</value></data>
+  <data name="LegalFirstName" xml:space="preserve"><value>Legal first name</value></data>
+  <data name="LegalMiddleName" xml:space="preserve"><value>Legal middle name</value></data>
+  <data name="LegalLastName" xml:space="preserve"><value>Legal last name</value></data>
+  <data name="PreferredName" xml:space="preserve"><value>Preferred name</value></data>
+  <data name="NationalityCode" xml:space="preserve"><value>Nationality</value></data>
+  <data name="WorkEmail" xml:space="preserve"><value>Work email</value></data>
+  <data name="SensitiveFields" xml:space="preserve"><value>Sensitive fields</value></data>
+  <data name="SensitiveFieldsMasked" xml:space="preserve"><value>Masked pending MOD-0314.</value></data>
+  <data name="SensitiveFieldsSafeOnly" xml:space="preserve"><value>Safe read-only fields only.</value></data>
+  <data name="GovernmentIdentifier" xml:space="preserve"><value>Government identifier</value></data>
+  <data name="GovernmentIdentifierAbsent" xml:space="preserve"><value>Not exposed in this slice.</value></data>
+  <data name="GovernmentIdentifierPresentMasked" xml:space="preserve"><value>Present but not exposed before MOD-0314.</value></data>
+  <data name="EmploymentRecords" xml:space="preserve"><value>Employment Records</value></data>
+  <data name="LegalEntityId" xml:space="preserve"><value>Legal entity ID</value></data>
+  <data name="OrganizationUnitId" xml:space="preserve"><value>Organization unit ID</value></data>
+  <data name="PositionId" xml:space="preserve"><value>Position ID</value></data>
+  <data name="StartDate" xml:space="preserve"><value>Start date</value></data>
+  <data name="EndDate" xml:space="preserve"><value>End date</value></data>
+  <data name="ContractType" xml:space="preserve"><value>Contract type</value></data>
+  <data name="EmploymentStatus" xml:space="preserve"><value>Employment status</value></data>
+  <data name="ApprovalStatus" xml:space="preserve"><value>Approval status</value></data>
+  <data name="NoEmploymentRecords" xml:space="preserve"><value>No employment records are available.</value></data>
+  <data name="StatusHistory" xml:space="preserve"><value>Status History</value></data>
+  <data name="StatusHistoryPlaceholder" xml:space="preserve"><value>Status history is linked in a later slice.</value></data>
+  <data name="EvidenceLinks" xml:space="preserve"><value>Evidence Links</value></data>
+  <data name="EvidencePlaceholder" xml:space="preserve"><value>Evidence links are linked in a later slice.</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="AuditPlaceholder" xml:space="preserve"><value>Audit metadata is linked in a later slice.</value></data>
+</root>

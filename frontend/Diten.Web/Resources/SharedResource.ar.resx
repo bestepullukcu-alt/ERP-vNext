@@ -460,6 +460,8 @@
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>البيانات المرجعية</value></data>
+  <data name="HumanCapitalManagement" xml:space="preserve"><value>إدارة رأس المال البشري</value></data>
+  <data name="EmployeeDraftsMenu" xml:space="preserve"><value>مسودات الموظفين</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>رمز الوحدة هذا مستخدم بالفعل.</value></data>
   <data name="Organization" xml:space="preserve"><value>المؤسسة</value></data>
   <data name="OrganizationUnits" xml:space="preserve"><value>الوحدات التنظيمية</value></data>

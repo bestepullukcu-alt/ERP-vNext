@@ -460,6 +460,8 @@
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Datos de referencia</value></data>
+  <data name="HumanCapitalManagement" xml:space="preserve"><value>Gestión del capital humano</value></data>
+  <data name="EmployeeDraftsMenu" xml:space="preserve"><value>Borradores de empleados</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>Este código de módulo ya está en uso.</value></data>
   <data name="Organization" xml:space="preserve"><value>Organización</value></data>
   <data name="OrganizationUnits" xml:space="preserve"><value>Unidades organizativas</value></data>

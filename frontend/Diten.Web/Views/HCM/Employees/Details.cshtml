@@ -1,0 +1,43 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeMasterDetail> Localizer
+@{
+    ViewData["Title"] = Localizer["EmployeeDetailTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var employeeId = ViewData["EmployeeId"] as string ?? string.Empty;
+    var canView = (ViewData["CanViewEmployees"] as bool?) == true;
+}
+
+<div id="hcm-employee-detail-page"
+     class="hcm-employee-details"
+     data-api-base="/HCM/Employees/api"
+     data-employee-id="@employeeId"
+     data-can-view="@canView.ToString().ToLowerInvariant()">
+    <div id="hcm-detail-forbidden" class="alert alert-warning @(canView ? "d-none" : "")" role="alert">
+        @Localizer["ForbiddenState"]
+    </div>
+
+    <div id="hcm-detail-error" class="alert alert-danger d-none" role="alert"></div>
+    <div id="hcm-detail-loading" class="alert alert-info @(canView ? "" : "d-none")" role="status">
+        @Localizer["LoadingState"]
+    </div>
+
+    <div id="hcm-detail-content" class="d-none">
+        <partial name="~/Views/HCM/Employees/_DetailHeader.cshtml" />
+
+        <div class="row g-4">
+            <div class="col-xl-5">
+                <partial name="~/Views/HCM/Employees/_DetailLegalProfile.cshtml" />
+            </div>
+            <div class="col-xl-7">
+                <partial name="~/Views/HCM/Employees/_DetailEmploymentRecords.cshtml" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/HCM/Employees/_DetailL10n.cshtml" />
+    <script src="~/assets/js/HCM/Employees/details.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HCM/Employees/details.js" asp-append-version="true"></script>
+}

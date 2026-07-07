@@ -1,0 +1,22 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeDraftCreate> Localizer
+
+<div class="card">
+    <div class="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <button type="button" id="hcm-save-draft" class="btn btn-outline-primary" disabled>
+            <i class="icon-base bx bx-save me-1"></i>
+            @Localizer["SaveDraft"]
+        </button>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" id="hcm-validate-references" class="btn btn-outline-secondary" disabled>
+                <i class="icon-base bx bx-check-shield me-1"></i>
+                @Localizer["ValidateReferences"]
+            </button>
+            <button type="button" id="hcm-review-draft" class="btn btn-primary" disabled>
+                <i class="icon-base bx bx-list-check me-1"></i>
+                @Localizer["ReviewDraft"]
+            </button>
+        </div>
+    </div>
+</div>

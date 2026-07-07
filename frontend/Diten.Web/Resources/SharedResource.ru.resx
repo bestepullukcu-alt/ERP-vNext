@@ -460,6 +460,8 @@
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Справочные данные</value></data>
+  <data name="HumanCapitalManagement" xml:space="preserve"><value>Управление человеческим капиталом</value></data>
+  <data name="EmployeeDraftsMenu" xml:space="preserve"><value>Черновики сотрудников</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>Этот код модуля уже используется.</value></data>
   <data name="Organization" xml:space="preserve"><value>Организация</value></data>
   <data name="OrganizationUnits" xml:space="preserve"><value>Организационные единицы</value></data>

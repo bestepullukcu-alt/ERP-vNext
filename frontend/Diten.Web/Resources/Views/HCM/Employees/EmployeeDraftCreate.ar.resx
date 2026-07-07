@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CreateEmployeeDraftTitle" xml:space="preserve"><value>إنشاء مسودة موظف</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>مركز العمل</value></data>
+  <data name="HcmBreadcrumb" xml:space="preserve"><value>إدارة رأس المال البشري</value></data>
+  <data name="StartDraft" xml:space="preserve"><value>بدء المسودة</value></data>
+  <data name="Reload" xml:space="preserve"><value>إعادة التحميل</value></data>
+  <data name="PermissionDeniedWorkspace" xml:space="preserve"><value>تم رفض الإذن. مساحة عمل المسودة للقراءة فقط في هذه الجلسة.</value></data>
+  <data name="ProfileSection" xml:space="preserve"><value>الملف الشخصي</value></data>
+  <data name="ProfileDescription" xml:space="preserve"><value>حقول الهوية والحساسية لمسودة الموظف.</value></data>
+  <data name="DraftOnly" xml:space="preserve"><value>مسودة فقط</value></data>
+  <data name="PersonReference" xml:space="preserve"><value>مرجع الشخص</value></data>
+  <data name="LegalName" xml:space="preserve"><value>الاسم القانوني</value></data>
+  <data name="SensitivityLevel" xml:space="preserve"><value>مستوى الحساسية</value></data>
+  <data name="SensitivityStandard" xml:space="preserve"><value>قياسي</value></data>
+  <data name="SensitivityRestricted" xml:space="preserve"><value>مقيد</value></data>
+  <data name="GovernmentIdentifierDisabled" xml:space="preserve"><value>تم تعطيل التقاط المعرّف الحكومي في هذا النطاق.</value></data>
+  <data name="EmploymentSection" xml:space="preserve"><value>التوظيف</value></data>
+  <data name="EmploymentDescription" xml:space="preserve"><value>تصنيف التوظيف وروابط المراجع.</value></data>
+  <data name="WorkerType" xml:space="preserve"><value>نوع العامل</value></data>
+  <data name="Select" xml:space="preserve"><value>اختر</value></data>
+  <data name="WorkerTypeEmployee" xml:space="preserve"><value>موظف</value></data>
+  <data name="WorkerTypeContingent" xml:space="preserve"><value>عامل مؤقت</value></data>
+  <data name="EmploymentType" xml:space="preserve"><value>نوع التوظيف</value></data>
+  <data name="EmploymentTypeFullTime" xml:space="preserve"><value>دوام كامل</value></data>
+  <data name="EmploymentTypePartTime" xml:space="preserve"><value>دوام جزئي</value></data>
+  <data name="EmploymentTypeFixedTerm" xml:space="preserve"><value>مدة محددة</value></data>
+  <data name="HireDate" xml:space="preserve"><value>تاريخ التعيين</value></data>
+  <data name="OrganizationUnitReference" xml:space="preserve"><value>مرجع الوحدة التنظيمية</value></data>
+  <data name="PositionReference" xml:space="preserve"><value>مرجع المنصب</value></data>
+  <data name="LegalEntityReference" xml:space="preserve"><value>مرجع الكيان القانوني</value></data>
+  <data name="EvidenceOutOfSlice" xml:space="preserve"><value>تحميل الأدلة أو ربطها غير مشمول في هذا النطاق.</value></data>
+  <data name="ReferenceReviewSection" xml:space="preserve"><value>مراجعة المراجع</value></data>
+  <data name="ReferenceReviewDescription" xml:space="preserve"><value>تحقق من الاعتمادات قبل وضع علامة تمت مراجعتها على المسودة.</value></data>
+  <data name="ReviewOnly" xml:space="preserve"><value>مراجعة فقط</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="ValidateReferences" xml:space="preserve"><value>التحقق من المراجع</value></data>
+  <data name="ReviewDraft" xml:space="preserve"><value>مراجعة المسودة</value></data>
+  <data name="DraftStatus" xml:space="preserve"><value>حالة المسودة</value></data>
+  <data name="DraftState" xml:space="preserve"><value>حالة المسودة</value></data>
+  <data name="Session" xml:space="preserve"><value>الجلسة</value></data>
+  <data name="NotStarted" xml:space="preserve"><value>لم يبدأ</value></data>
+  <data name="Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="ETag" xml:space="preserve"><value>ETag</value></data>
+  <data name="SliceBoundary" xml:space="preserve"><value>حدود النطاق</value></data>
+  <data name="SliceBoundaryDescription" xml:space="preserve"><value>مراجعة فقط. الإرسال والموافقة والتفعيل وربط الأدلة والتقاط المعرّف الحكومي تبقى خارج نطاق MOD-0251 هذا.</value></data>
+  <data name="AuthenticationRequired" xml:space="preserve"><value>المصادقة مطلوبة.</value></data>
+  <data name="Blocked" xml:space="preserve"><value>محظور</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>أحد الاعتمادات غير متاح.</value></data>
+  <data name="DraftChangedReload" xml:space="preserve"><value>تغيرت المسودة. أعد تحميل المسودة وحاول مرة أخرى.</value></data>
+  <data name="DraftNotFound" xml:space="preserve"><value>لم يتم العثور على المسودة أو المرجع.</value></data>
+  <data name="DraftReloaded" xml:space="preserve"><value>تمت إعادة تحميل المسودة.</value></data>
+  <data name="DraftReviewHasBlockers" xml:space="preserve"><value>تحتوي مراجعة المسودة على عوائق.</value></data>
+  <data name="DraftReviewed" xml:space="preserve"><value>تمت مراجعة المسودة.</value></data>
+  <data name="DraftSaved" xml:space="preserve"><value>تم حفظ المسودة.</value></data>
+  <data name="DraftStarted" xml:space="preserve"><value>تم بدء المسودة.</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>تم رفض الإذن.</value></data>
+  <data name="ReferenceFallback" xml:space="preserve"><value>مرجع</value></data>
+  <data name="ReferencesNotValidated" xml:space="preserve"><value>لم يتم التحقق من المراجع.</value></data>
+  <data name="RequestFailed" xml:space="preserve"><value>فشل الطلب.</value></data>
+  <data name="ReviewBlockersPrefix" xml:space="preserve"><value>عوائق المراجعة</value></data>
+  <data name="SearchSameTenantPerson" xml:space="preserve"><value>البحث عن شخص ضمن نفس المستأجر</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>فشل التحقق.</value></data>
+  <data name="Valid" xml:space="preserve"><value>صالح</value></data>
+</root>
