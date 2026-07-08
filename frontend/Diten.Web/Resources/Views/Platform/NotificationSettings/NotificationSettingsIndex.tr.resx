@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="NotificationSettingsTitle" xml:space="preserve"><value>Bildirim Ayarları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Tenant e-posta sağlayıcı ayarlarını yönetin ve etkin (resolved) fallback yapılandırmasını inceleyin.</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Detayları Gör</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Ayar Ekle</value></data>
+  <data name="TargetTenant" xml:space="preserve"><value>Hedef Tenant</value></data>
+  <data name="Provider" xml:space="preserve"><value>Sağlayıcı</value></data>
+  <data name="SenderEmail" xml:space="preserve"><value>Gönderen E-posta</value></data>
+  <data name="SenderName" xml:space="preserve"><value>Gönderen Adı</value></data>
+  <data name="ReplyToEmail" xml:space="preserve"><value>Yanıt Adresi</value></data>
+  <data name="FallbackPolicy" xml:space="preserve"><value>Fallback Politikası</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncelleme</value></data>
+  <data name="Host" xml:space="preserve"><value>SMTP Sunucusu</value></data>
+  <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="UseSsl" xml:space="preserve"><value>SSL Kullan</value></data>
+  <data name="ApiBaseUrl" xml:space="preserve"><value>API Taban Adresi</value></data>
+  <data name="CredentialSecretRef" xml:space="preserve"><value>Kimlik Bilgisi Secret Referansı</value></data>
+  <data name="CredentialSecretRefPlaceholder" xml:space="preserve"><value>secret://platform/smtp/tenant-x</value></data>
+  <data name="CredentialSecretRefHint" xml:space="preserve"><value>Vault secret referansı. Asla ham şifre veya API anahtarı girmeyin.</value></data>
+  <data name="IsEnabled" xml:space="preserve"><value>Gönderim aktif</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Tenant Mesajlaşma Ayarı Oluştur</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Tenant Mesajlaşma Ayarı Düzenle</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Mesajlaşma Ayarı Detayı</value></data>
+  <data name="ProviderSection" xml:space="preserve"><value>Sağlayıcı</value></data>
+  <data name="SenderSection" xml:space="preserve"><value>Gönderen</value></data>
+  <data name="DeliverySection" xml:space="preserve"><value>Teslimat</value></data>
+  <data name="ResolvedSection" xml:space="preserve"><value>Etkin Ayarlar</value></data>
+  <data name="LoadResolved" xml:space="preserve"><value>Yükle</value></data>
+  <data name="ResolvedSource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="ResolvedFromTenant" xml:space="preserve"><value>Tenant'a özel ayar</value></data>
+  <data name="ResolvedFromPlatformDefault" xml:space="preserve"><value>Platform varsayılan fallback</value></data>
+  <data name="ResolvedUnavailable" xml:space="preserve"><value>Çözümlenebilir ayar yok: ne tenant ayarı ne de platform varsayılanı mevcut.</value></data>
+  <data name="ResolvedSelectTenant" xml:space="preserve"><value>Etkin ayarları yüklemek için hedef tenant seçin.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Tenant mesajlaşma ayarı silinecek. Gönderim, platform varsayılan politikasına göre fallback yapar. Devam edilsin mi?</value></data>
+</root>

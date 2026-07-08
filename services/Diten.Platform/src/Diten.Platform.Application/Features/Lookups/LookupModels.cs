@@ -24,6 +24,10 @@ public static class PlatformLookupKeys
     public const string AuditCategories = "audit/categories";
     public const string AuditOperations = "audit/operations";
     public const string AuditOutcomes = "audit/outcomes";
+    public const string NotificationChannels = "notification-channels";
+    public const string MessagingProviders = "messaging-providers";
+    public const string NotificationTemplateStatuses = "notification-template-statuses";
+    public const string NotificationFallbackPolicies = "notification-fallback-policies";
 
     public static string Normalize(string lookupKey) =>
         lookupKey.Trim().Trim('/').ToLowerInvariant();

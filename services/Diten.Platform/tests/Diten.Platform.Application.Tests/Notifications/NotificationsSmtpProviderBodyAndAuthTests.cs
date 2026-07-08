@@ -364,6 +364,26 @@ public sealed class NotificationsSmtpProviderBodyAndAuthTests
         public Task<NotificationTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
             Task.FromResult(_items.FirstOrDefault(x => !x.IsDeleted && x.Id == id));
 
+        public Task<IReadOnlyList<NotificationTemplate>> ListAsync(
+            Guid? tenantId,
+            bool isPlatformDefault,
+            NotificationTemplateStatus? status = null,
+            string? locale = null,
+            NotificationChannelCode? channel = null,
+            string? templateKey = null,
+            int skip = 0,
+            int take = 50,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<NotificationTemplate>>(_items
+                .Where(x => !x.IsDeleted
+                    && x.TenantId == tenantId
+                    && x.IsPlatformDefault == isPlatformDefault
+                    && (status is null || x.Status == status)
+                    && (locale is null || x.Locale == locale)
+                    && (channel is null || x.Channel == channel)
+                    && (templateKey is null || x.TemplateKey == templateKey))
+                .Skip(skip).Take(take).ToArray());
+
         public Task<NotificationTemplate?> GetActiveByKeyAsync(
             Guid? tenantId,
             bool isPlatformDefault,
@@ -416,7 +436,7 @@ public sealed class NotificationsSmtpProviderBodyAndAuthTests
         public Task<NotificationDispatch?> GetByIdForTenantAsync(Guid tenantId, Guid id, CancellationToken ct = default) =>
             Task.FromResult(Items.FirstOrDefault(x => !x.IsDeleted && x.TenantId == tenantId && x.Id == id));
 
-        public Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(Guid tenantId, int skip = 0, int take = 50, CancellationToken ct = default) =>
+        public Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(Guid tenantId, int skip = 0, int take = 50, NotificationDispatchStatus? status = null, DateTimeOffset? queuedFrom = null, DateTimeOffset? queuedTo = null, string? templateKey = null, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<NotificationDispatch>>([]);
 
         public Task UpdateAsync(NotificationDispatch dispatch, CancellationToken ct = default) => Task.CompletedTask;

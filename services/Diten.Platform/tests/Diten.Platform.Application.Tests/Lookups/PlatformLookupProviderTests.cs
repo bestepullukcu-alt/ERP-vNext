@@ -92,6 +92,24 @@ public sealed class PlatformLookupProviderTests
         Assert.Equal("FeatureCategory", option.Group);
     }
 
+    [Theory]
+    [InlineData(PlatformLookupKeys.NotificationChannels, "Email")]
+    [InlineData(PlatformLookupKeys.MessagingProviders, "Smtp")]
+    [InlineData(PlatformLookupKeys.NotificationTemplateStatuses, "Active")]
+    [InlineData(PlatformLookupKeys.NotificationFallbackPolicies, "UsePlatformDefault")]
+    public async Task Notification_lookup_keys_return_canonical_enum_options(string lookupKey, string expectedCode)
+    {
+        var provider = CreateProvider();
+
+        var options = await provider.GetLookupOptionsAsync(lookupKey, CancellationToken.None);
+
+        Assert.NotNull(options);
+        Assert.NotEmpty(options);
+        AssertCanonicalShape(options!);
+        Assert.Contains(options!, option => option.Code == expectedCode && option.Value == expectedCode);
+        Assert.All(options!, option => Assert.Equal(option.Code, option.Value));
+    }
+
     [Fact]
     public async Task Unknown_lookup_key_returns_controlled_not_found_response()
     {

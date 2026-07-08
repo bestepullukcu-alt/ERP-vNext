@@ -1,0 +1,96 @@
+@using Diten.Web.Views.Platform.NotificationSettings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationSettingsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    var targetTenantId = ViewData["TargetTenantId"]?.ToString() ?? string.Empty;
+}
+
+<div class="notification-settings-details" data-target-tenant-id="@targetTenantId" id="settingsDetailsRoot">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
+        <div class="d-flex flex-column justify-content-center">
+            <h5 class="mb-0" id="detailsTitle">@Localizer["DetailsTitle"]</h5>
+            <nav aria-label="breadcrumb" class="text-muted">
+                <ol class="breadcrumb mb-0 py-0">
+                    <li class="breadcrumb-item"><a href="/Platform/NotificationSettings">@Localizer["NotificationSettingsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["DetailsTitle"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-content-center flex-wrap gap-3">
+            <a href="/Platform/NotificationSettings" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+            <a href="#" id="btnEditSettings" class="btn btn-label-primary d-none">@SharedLocalizer["EditRecord"]</a>
+            <button type="button" id="btnDeleteSettings" class="btn btn-label-danger d-none">@SharedLocalizer["Delete"]</button>
+        </div>
+    </div>
+
+    <div class="alert alert-danger d-none" id="detailsError"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ProviderSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6"><span class="text-muted small d-block">@Localizer["TargetTenant"]</span><span class="fw-medium" id="d-tenant">-</span></div>
+                        <div class="col-6 col-md-3"><span class="text-muted small d-block">@Localizer["Provider"]</span><span id="d-provider">-</span></div>
+                        <div class="col-6 col-md-3"><span class="text-muted small d-block">@Localizer["Host"]</span><span id="d-host">-</span></div>
+                        <div class="col-6 col-md-3"><span class="text-muted small d-block">@Localizer["Port"]</span><span id="d-port">-</span></div>
+                        <div class="col-6 col-md-3"><span class="text-muted small d-block">@Localizer["UseSsl"]</span><span id="d-useSsl">-</span></div>
+                        <div class="col-12 col-md-6"><span class="text-muted small d-block">@Localizer["CredentialSecretRef"]</span><span id="d-credentialSecretRef">-</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SenderSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4"><span class="text-muted small d-block">@Localizer["SenderEmail"]</span><span class="fw-medium" id="d-senderEmail">-</span></div>
+                        <div class="col-12 col-md-4"><span class="text-muted small d-block">@Localizer["SenderName"]</span><span id="d-senderName">-</span></div>
+                        <div class="col-12 col-md-4"><span class="text-muted small d-block">@Localizer["ReplyToEmail"]</span><span id="d-replyToEmail">-</span></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["DeliverySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-6"><span class="text-muted small d-block">@SharedLocalizer["Status"]</span><span class="badge bg-label-primary" id="d-isEnabled">-</span></div>
+                        <div class="col-6"><span class="text-muted small d-block">@Localizer["FallbackPolicy"]</span><span id="d-fallbackPolicy">-</span></div>
+                        <div class="col-12"><span class="text-muted small d-block">@Localizer["UpdatedAt"]</span><span id="d-updatedAt">-</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ResolvedSection"]</h6>
+                        <button type="button" class="btn btn-sm btn-label-info" id="btnLoadResolved">
+                            <i class="icon-base bx bx-refresh icon-sm"></i> @Localizer["LoadResolved"]
+                        </button>
+                    </div>
+                    <div class="alert alert-warning d-none mb-0" id="resolvedError"></div>
+                    <div class="d-none" id="resolvedResult">
+                        <div class="mb-1"><span class="text-muted small d-block">@Localizer["ResolvedSource"]</span><span class="fw-medium" id="resolvedSource">-</span></div>
+                        <div class="mb-1"><span class="text-muted small d-block">@Localizer["Provider"]</span><span id="resolvedProvider">-</span></div>
+                        <div class="mb-1"><span class="text-muted small d-block">@Localizer["SenderEmail"]</span><span id="resolvedSenderEmail">-</span></div>
+                        <div><span class="text-muted small d-block">@Localizer["FallbackPolicy"]</span><span id="resolvedFallbackPolicy">-</span></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Platform/NotificationSettings/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/NotificationSettings/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/NotificationSettings/details.js" asp-append-version="true"></script>
+}

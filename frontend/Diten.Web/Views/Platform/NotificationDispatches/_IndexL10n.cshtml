@@ -1,0 +1,51 @@
+@using Diten.Web.Views.Platform.NotificationDispatches
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationDispatchesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="notificationdispatches-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        TargetTenant = Localizer["TargetTenant"].Value,
+        SelectTenant = Localizer["SelectTenant"].Value,
+        SelectTenantPrompt = Localizer["SelectTenantPrompt"].Value,
+        TemplateKey = Localizer["TemplateKey"].Value,
+        Channel = Localizer["Channel"].Value,
+        Provider = Localizer["Provider"].Value,
+        Recipients = Localizer["Recipients"].Value,
+        QueuedAt = Localizer["QueuedAt"].Value,
+        SentAt = Localizer["SentAt"].Value,
+        FailedAt = Localizer["FailedAt"].Value,
+        StatusQueued = Localizer["StatusQueued"].Value,
+        StatusSent = Localizer["StatusSent"].Value,
+        StatusFailed = Localizer["StatusFailed"].Value,
+        StatusCancelled = Localizer["StatusCancelled"].Value,
+        CancelDispatch = Localizer["Cancel"].Value,
+        CancelConfirm = Localizer["CancelConfirm"].Value,
+        CancelNotAllowed = Localizer["CancelNotAllowed"].Value,
+        DispatchCancelled = Localizer["DispatchCancelled"].Value
+    })
+</script>

@@ -31,12 +31,43 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
         return await _collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(Guid tenantId, int skip = 0, int take = 50, CancellationToken ct = default)
+    public async Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(
+        Guid tenantId,
+        int skip = 0,
+        int take = 50,
+        NotificationDispatchStatus? status = null,
+        DateTimeOffset? queuedFrom = null,
+        DateTimeOffset? queuedTo = null,
+        string? templateKey = null,
+        CancellationToken ct = default)
     {
-        var filter = Builders<NotificationDispatch>.Filter.And(
+        var filters = new List<FilterDefinition<NotificationDispatch>>
+        {
             ActiveFilter,
-            Builders<NotificationDispatch>.Filter.Eq(x => x.TenantId, tenantId));
-        return await _collection.Find(filter)
+            Builders<NotificationDispatch>.Filter.Eq(x => x.TenantId, tenantId)
+        };
+
+        if (status is not null)
+        {
+            filters.Add(Builders<NotificationDispatch>.Filter.Eq(x => x.Status, status.Value));
+        }
+
+        if (queuedFrom is not null)
+        {
+            filters.Add(Builders<NotificationDispatch>.Filter.Gte(x => x.QueuedAt, queuedFrom.Value));
+        }
+
+        if (queuedTo is not null)
+        {
+            filters.Add(Builders<NotificationDispatch>.Filter.Lte(x => x.QueuedAt, queuedTo.Value));
+        }
+
+        if (!string.IsNullOrWhiteSpace(templateKey))
+        {
+            filters.Add(Builders<NotificationDispatch>.Filter.Eq(x => x.TemplateKey, templateKey));
+        }
+
+        return await _collection.Find(Builders<NotificationDispatch>.Filter.And(filters))
             .SortByDescending(x => x.QueuedAt)
             .Skip(skip)
             .Limit(take)

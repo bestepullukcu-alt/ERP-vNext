@@ -1,11 +1,10 @@
-using System.Net;
 using System.Net.Http.Json;
-using System.Net.Mail;
-using System.Text;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Notifications;
+using Diten.Platform.Application.Features.Notifications.Commands;
 using Diten.Platform.Domain.Entities;
-using Diten.Platform.Infrastructure.Services.EmailTemplates;
 using Diten.Platform.Infrastructure.Settings;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -15,19 +14,22 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
 {
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
 
+    // MOD-0027 platform-default template that carries the invite layout (subject/body/variables).
+    private const string InvitationTemplateKey = "tenant.invite.email";
+
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly SmtpOptions _smtpOptions;
+    private readonly IMediator _mediator;
     private readonly AuthServiceOptions _authServiceOptions;
     private readonly ILogger<AdminUserInvitationService> _logger;
 
     public AdminUserInvitationService(
         IHttpClientFactory httpClientFactory,
-        IOptions<SmtpOptions> smtpOptions,
+        IMediator mediator,
         IOptions<AuthServiceOptions> authServiceOptions,
         ILogger<AdminUserInvitationService> logger)
     {
         _httpClientFactory = httpClientFactory;
-        _smtpOptions = smtpOptions.Value;
+        _mediator = mediator;
         _authServiceOptions = authServiceOptions.Value;
         _logger = logger;
     }
@@ -37,28 +39,69 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         var provisioned = await ProvisionAdminUserAsync(tenant, adminUser, cancellationToken);
         var loginUrl = BuildLoginUrl(tenant);
 
-        // When SMTP is not configured (typical dev default), skip the email instead of throwing so the
-        // provisioned admin (already created with a temp password) is not lost behind a 502. The handler
-        // surfaces the login URL + temp password to the operator in Development.
-        var emailSent = false;
-        if (IsSmtpConfigured())
-        {
-            await SendInvitationEmailAsync(tenant, adminUser, loginUrl, provisioned.TemporaryPassword, cancellationToken);
-            emailSent = true;
-        }
-        else
-        {
-            _logger.LogWarning(
-                "SMTP is not configured; skipping admin invitation email. TenantId={TenantId} AdminUserId={AdminUserId}",
-                tenant.Id,
-                adminUser.Id);
-        }
+        // The invitation email is delivered through the MOD-0027 notification pipeline: it renders the
+        // tenant.invite.email template, resolves the tenant's messaging settings (tenant-specific -> platform
+        // default -> fallback policy) and records a dispatch for monitoring. If no provider/settings resolve
+        // (typical dev default), the send fails gracefully: the admin stays provisioned (with a temp password)
+        // and the handler surfaces the login URL + temp password to the operator in Development.
+        var emailSent = await TryQueueInvitationEmailAsync(tenant, adminUser, loginUrl, provisioned.TemporaryPassword, cancellationToken);
 
         return new AdminUserInvitationResult(
             loginUrl,
             provisioned.TemporaryPassword,
             provisioned.UserProvisioned,
             InvitationEmailSent: emailSent);
+    }
+
+    private async Task<bool> TryQueueInvitationEmailAsync(
+        Tenant tenant,
+        TenantAdminUser adminUser,
+        string loginUrl,
+        string temporaryPassword,
+        CancellationToken cancellationToken)
+    {
+        // TemporaryPassword is intentionally passed as a template variable: the notification handler renders it
+        // into the sent body but persists a redacted preview (sensitive keys/values are masked), so the secret
+        // never lands in the dispatch record or the monitoring UI.
+        var request = new QueueEmailNotificationRequest(
+            InvitationTemplateKey,
+            string.IsNullOrWhiteSpace(tenant.DefaultLanguage) ? "en" : tenant.DefaultLanguage,
+            new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["RecipientName"] = string.IsNullOrWhiteSpace(adminUser.Name) ? adminUser.Email : adminUser.Name,
+                ["TenantDisplayName"] = tenant.DisplayName ?? tenant.Name,
+                ["Email"] = adminUser.Email,
+                ["TemporaryPassword"] = temporaryPassword,
+                ["LoginUrl"] = loginUrl
+            },
+            new[] { new EmailRecipientDto(adminUser.Email, adminUser.Name) });
+
+        try
+        {
+            var response = await _mediator.Send(new QueueEmailNotificationCommand(tenant.Id, request), cancellationToken);
+            if (!response.IsSuccessful)
+            {
+                _logger.LogWarning(
+                    "Admin invitation notification was not delivered. TenantId={TenantId} AdminUserId={AdminUserId} StatusCode={StatusCode} Errors={Errors}",
+                    tenant.Id,
+                    adminUser.Id,
+                    response.StatusCode,
+                    string.Join("; ", response.Errors));
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // Provisioning already succeeded; a notification failure must not fail the whole invite.
+            _logger.LogWarning(
+                ex,
+                "Admin invitation notification queue failed. TenantId={TenantId} AdminUserId={AdminUserId}",
+                tenant.Id,
+                adminUser.Id);
+            return false;
+        }
     }
 
     private async Task<AdminProvisioningResponse> ProvisionAdminUserAsync(Tenant tenant, TenantAdminUser adminUser, CancellationToken cancellationToken)
@@ -104,42 +147,6 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
 
         return payload;
     }
-
-    private async Task SendInvitationEmailAsync(
-        Tenant tenant,
-        TenantAdminUser adminUser,
-        string loginUrl,
-        string temporaryPassword,
-        CancellationToken cancellationToken)
-    {
-        using var message = new MailMessage
-        {
-            From = new MailAddress(_smtpOptions.FromEmail, _smtpOptions.FromName),
-            Subject = AdminUserInvitationEmailTemplate.Subject(tenant),
-            BodyEncoding = Encoding.UTF8,
-            SubjectEncoding = Encoding.UTF8,
-            IsBodyHtml = true,
-            Body = AdminUserInvitationEmailTemplate.Render(tenant, adminUser, loginUrl, temporaryPassword)
-        };
-
-        message.To.Add(adminUser.Email);
-
-        using var client = new SmtpClient(_smtpOptions.Host, _smtpOptions.Port)
-        {
-            EnableSsl = _smtpOptions.EnableSsl,
-            Credentials = new NetworkCredential(_smtpOptions.Username, _smtpOptions.Password)
-        };
-
-        cancellationToken.ThrowIfCancellationRequested();
-        await client.SendMailAsync(message, cancellationToken);
-    }
-
-    private bool IsSmtpConfigured() =>
-        _smtpOptions.Enabled &&
-        !string.IsNullOrWhiteSpace(_smtpOptions.Host) &&
-        !string.IsNullOrWhiteSpace(_smtpOptions.Username) &&
-        !string.IsNullOrWhiteSpace(_smtpOptions.Password) &&
-        !string.IsNullOrWhiteSpace(_smtpOptions.FromEmail);
 
     private string BuildLoginUrl(Tenant tenant)
     {

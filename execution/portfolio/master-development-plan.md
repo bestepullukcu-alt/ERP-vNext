@@ -103,6 +103,7 @@ Below is the macro status catalog.
 | **MOD-0002** | Interface Registry | W3-E | Medium | in-progress | 80% | API routes mapping. |
 | **MOD-0003** | Data Contract Registry | W3-E | Medium | planned | 0% | Payload contracts schemas. |
 | **PSS-XCUT-SV** | SavedViews / Personalization | Cross-cutting | Medium | partial | 55% | User grid saving options. |
+| **MOD-0117** | Project & Portfolio Management (PPM) | — | Medium | planned / reserved | 0% | portfolio-delivery domain; reserved via DCP-003; ilk dilim "PPM Work Records Core"; wave ataması yapılmadı. FU çocukları henüz numaralanmadı. |
 
 ---
 

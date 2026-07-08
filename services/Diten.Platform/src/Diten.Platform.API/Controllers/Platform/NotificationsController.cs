@@ -60,6 +60,68 @@ public sealed class NotificationsController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    [HttpGet("tenant-settings")]
+    [HasPermission("platform.notifications.configure")]
+    public async Task<IActionResult> GetTenantSettingsList(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        CancellationToken ct = default)
+    {
+        var response = await _mediator.Send(new GetTenantMessagingSettingsListQuery(page, pageSize), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("templates")]
+    [HasPermission("platform.notifications.templates.read")]
+    public async Task<IActionResult> GetPlatformDefaultTemplates(
+        [FromQuery] string? status = null,
+        [FromQuery] string? locale = null,
+        [FromQuery] string? channel = null,
+        [FromQuery] string? templateKey = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        CancellationToken ct = default)
+    {
+        var response = await _mediator.Send(
+            new GetNotificationTemplateListQuery(null, true, status, locale, channel, templateKey, page, pageSize), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("tenant-settings/{tenantId:guid}/templates")]
+    [HasPermission("platform.notifications.templates.read")]
+    public async Task<IActionResult> GetTenantTemplates(
+        Guid tenantId,
+        [FromQuery] string? status = null,
+        [FromQuery] string? locale = null,
+        [FromQuery] string? channel = null,
+        [FromQuery] string? templateKey = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        CancellationToken ct = default)
+    {
+        var response = await _mediator.Send(
+            new GetNotificationTemplateListQuery(tenantId, false, status, locale, channel, templateKey, page, pageSize), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("templates/by-id/{id:guid}")]
+    [HasPermission("platform.notifications.templates.read")]
+    public async Task<IActionResult> GetTemplateById(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetNotificationTemplateByIdQuery(id), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("templates/render-preview")]
+    [HasPermission("platform.notifications.templates.read")]
+    public async Task<IActionResult> RenderTemplatePreview(
+        [FromBody] RenderTemplatePreviewRequest request,
+        CancellationToken ct)
+    {
+        var response = await _mediator.Send(new RenderNotificationTemplatePreviewQuery(request), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("templates/{templateKey}")]
     [HasPermission("platform.notifications.templates.read")]
     public async Task<IActionResult> GetPlatformDefaultTemplate(
@@ -156,9 +218,14 @@ public sealed class NotificationsController : CustomBaseController
         [FromQuery] Guid targetTenantId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50,
+        [FromQuery] string? status = null,
+        [FromQuery] DateTimeOffset? queuedFrom = null,
+        [FromQuery] DateTimeOffset? queuedTo = null,
+        [FromQuery] string? templateKey = null,
         CancellationToken ct = default)
     {
-        var response = await _mediator.Send(new GetNotificationDispatchListQuery(targetTenantId, page, pageSize), ct);
+        var response = await _mediator.Send(
+            new GetNotificationDispatchListQuery(targetTenantId, page, pageSize, status, queuedFrom, queuedTo, templateKey), ct);
         return CreateActionResultInstance(response);
     }
 

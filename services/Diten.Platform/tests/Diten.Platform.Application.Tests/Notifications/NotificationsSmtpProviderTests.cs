@@ -435,6 +435,11 @@ public sealed class NotificationsSmtpProviderTests
         public Task<TenantMessagingSettings?> GetPlatformDefaultByIdAsync(Guid id, CancellationToken ct = default) =>
             Task.FromResult(_items.FirstOrDefault(x => !x.IsDeleted && x.IsPlatformDefault && x.Id == id));
 
+        public Task<IReadOnlyList<TenantMessagingSettings>> ListTenantSettingsAsync(int skip = 0, int take = 50, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<TenantMessagingSettings>>(_items
+                .Where(x => !x.IsDeleted && !x.IsPlatformDefault)
+                .Skip(skip).Take(take).ToArray());
+
         public Task UpdateAsync(TenantMessagingSettings settings, CancellationToken ct = default) => Task.CompletedTask;
 
         public Task SoftDeleteTenantAsync(Guid tenantId, CancellationToken ct = default) => Task.CompletedTask;
