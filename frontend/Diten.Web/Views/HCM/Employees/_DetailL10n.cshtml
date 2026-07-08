@@ -1,0 +1,20 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeMasterDetail> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="employeemaster-detail-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        DependencyError = Localizer["DependencyError"].Value,
+        EmptyValue = SharedLocalizer["Unknown"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        ForbiddenState = Localizer["ForbiddenState"].Value,
+        GovernmentIdentifierAbsent = Localizer["GovernmentIdentifierAbsent"].Value,
+        GovernmentIdentifierPresentMasked = Localizer["GovernmentIdentifierPresentMasked"].Value,
+        Loading = Localizer["LoadingState"].Value,
+        NotFoundState = Localizer["NotFoundState"].Value,
+        SensitiveFieldsMasked = Localizer["SensitiveFieldsMasked"].Value,
+        SensitiveFieldsSafeOnly = Localizer["SensitiveFieldsSafeOnly"].Value
+    })
+</script>

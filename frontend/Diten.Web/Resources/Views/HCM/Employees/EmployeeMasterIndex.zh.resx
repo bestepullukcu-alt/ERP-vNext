@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="EmployeeMasterTitle" xml:space="preserve"><value>员工登记表</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>使用安全登记字段搜索当前租户的员工主数据。</value></data>
+  <data name="ForbiddenState" xml:space="preserve"><value>您没有权限搜索员工登记记录。</value></data>
+  <data name="DependencyError" xml:space="preserve"><value>员工登记依赖项不可用。</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>没有可用的员工登记记录。</value></data>
+  <data name="FilteredEmptyState" xml:space="preserve"><value>没有员工登记记录匹配当前筛选条件。</value></data>
+  <data name="LoadingState" xml:space="preserve"><value>正在加载员工登记表...</value></data>
+  <data name="NoViewPermission" xml:space="preserve"><value>无查看权限</value></data>
+  <data name="EmployeeNumber" xml:space="preserve"><value>员工编号</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>显示名称</value></data>
+  <data name="WorkerType" xml:space="preserve"><value>员工类型</value></data>
+  <data name="EmploymentType" xml:space="preserve"><value>雇佣类型</value></data>
+  <data name="SensitivityLevel" xml:space="preserve"><value>敏感级别</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>法人实体</value></data>
+  <data name="LegalEntityId" xml:space="preserve"><value>法人实体ID</value></data>
+  <data name="HireDate" xml:space="preserve"><value>入职日期</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>启用</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>停用</value></data>
+  <data name="WorkerTypeEmployee" xml:space="preserve"><value>员工</value></data>
+  <data name="WorkerTypeContingent" xml:space="preserve"><value>临时员工</value></data>
+  <data name="EmploymentTypeFullTime" xml:space="preserve"><value>全职</value></data>
+  <data name="EmploymentTypePartTime" xml:space="preserve"><value>兼职</value></data>
+  <data name="EmploymentTypeFixedTerm" xml:space="preserve"><value>固定期限</value></data>
+</root>

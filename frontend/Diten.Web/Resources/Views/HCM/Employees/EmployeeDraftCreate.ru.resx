@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CreateEmployeeDraftTitle" xml:space="preserve"><value>Создать черновик сотрудника</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>Рабочий центр</value></data>
+  <data name="HcmBreadcrumb" xml:space="preserve"><value>HCM</value></data>
+  <data name="StartDraft" xml:space="preserve"><value>Начать черновик</value></data>
+  <data name="Reload" xml:space="preserve"><value>Перезагрузить</value></data>
+  <data name="PermissionDeniedWorkspace" xml:space="preserve"><value>Доступ запрещен. Рабочая область черновика доступна только для чтения в этом сеансе.</value></data>
+  <data name="ProfileSection" xml:space="preserve"><value>Профиль</value></data>
+  <data name="ProfileDescription" xml:space="preserve"><value>Поля идентификации и чувствительности для черновика сотрудника.</value></data>
+  <data name="DraftOnly" xml:space="preserve"><value>Только черновик</value></data>
+  <data name="PersonReference" xml:space="preserve"><value>Ссылка на человека</value></data>
+  <data name="LegalName" xml:space="preserve"><value>Юридическое имя</value></data>
+  <data name="SensitivityLevel" xml:space="preserve"><value>Уровень чувствительности</value></data>
+  <data name="SensitivityStandard" xml:space="preserve"><value>Стандартный</value></data>
+  <data name="SensitivityRestricted" xml:space="preserve"><value>Ограниченный</value></data>
+  <data name="GovernmentIdentifierDisabled" xml:space="preserve"><value>Ввод государственного идентификатора отключен для этого среза.</value></data>
+  <data name="EmploymentSection" xml:space="preserve"><value>Занятость</value></data>
+  <data name="EmploymentDescription" xml:space="preserve"><value>Классификация занятости и ссылки на справочники.</value></data>
+  <data name="WorkerType" xml:space="preserve"><value>Тип работника</value></data>
+  <data name="Select" xml:space="preserve"><value>Выбрать</value></data>
+  <data name="WorkerTypeEmployee" xml:space="preserve"><value>Сотрудник</value></data>
+  <data name="WorkerTypeContingent" xml:space="preserve"><value>Временный работник</value></data>
+  <data name="EmploymentType" xml:space="preserve"><value>Тип занятости</value></data>
+  <data name="EmploymentTypeFullTime" xml:space="preserve"><value>Полная занятость</value></data>
+  <data name="EmploymentTypePartTime" xml:space="preserve"><value>Частичная занятость</value></data>
+  <data name="EmploymentTypeFixedTerm" xml:space="preserve"><value>Срочный договор</value></data>
+  <data name="HireDate" xml:space="preserve"><value>Дата приема</value></data>
+  <data name="OrganizationUnitReference" xml:space="preserve"><value>Ссылка на орг. единицу</value></data>
+  <data name="PositionReference" xml:space="preserve"><value>Ссылка на должность</value></data>
+  <data name="LegalEntityReference" xml:space="preserve"><value>Ссылка на юр. лицо</value></data>
+  <data name="EvidenceOutOfSlice" xml:space="preserve"><value>Загрузка или привязка доказательств не входит в этот срез.</value></data>
+  <data name="ReferenceReviewSection" xml:space="preserve"><value>Проверка ссылок</value></data>
+  <data name="ReferenceReviewDescription" xml:space="preserve"><value>Проверьте зависимости перед отметкой черновика как проверенного.</value></data>
+  <data name="ReviewOnly" xml:space="preserve"><value>Только проверка</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="ValidateReferences" xml:space="preserve"><value>Проверить ссылки</value></data>
+  <data name="ReviewDraft" xml:space="preserve"><value>Проверить черновик</value></data>
+  <data name="DraftStatus" xml:space="preserve"><value>Статус черновика</value></data>
+  <data name="DraftState" xml:space="preserve"><value>Состояние черновика</value></data>
+  <data name="Session" xml:space="preserve"><value>Сеанс</value></data>
+  <data name="NotStarted" xml:space="preserve"><value>Не начато</value></data>
+  <data name="Version" xml:space="preserve"><value>Версия</value></data>
+  <data name="ETag" xml:space="preserve"><value>ETag</value></data>
+  <data name="SliceBoundary" xml:space="preserve"><value>Граница среза</value></data>
+  <data name="SliceBoundaryDescription" xml:space="preserve"><value>Только проверка. Отправка, утверждение, активация, привязка доказательств и ввод государственного идентификатора остаются вне этого среза MOD-0251.</value></data>
+  <data name="AuthenticationRequired" xml:space="preserve"><value>Требуется аутентификация.</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>Зависимость недоступна.</value></data>
+  <data name="DraftChangedReload" xml:space="preserve"><value>Черновик изменился. Перезагрузите черновик и повторите попытку.</value></data>
+  <data name="DraftNotFound" xml:space="preserve"><value>Черновик или ссылка не найдены.</value></data>
+  <data name="DraftReloaded" xml:space="preserve"><value>Черновик перезагружен.</value></data>
+  <data name="DraftReviewHasBlockers" xml:space="preserve"><value>Проверка черновика содержит блокирующие причины.</value></data>
+  <data name="DraftReviewed" xml:space="preserve"><value>Черновик проверен.</value></data>
+  <data name="DraftSaved" xml:space="preserve"><value>Черновик сохранен.</value></data>
+  <data name="DraftStarted" xml:space="preserve"><value>Черновик начат.</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>Доступ запрещен.</value></data>
+  <data name="ReferenceFallback" xml:space="preserve"><value>ссылка</value></data>
+  <data name="ReferencesNotValidated" xml:space="preserve"><value>Ссылки не проверены.</value></data>
+  <data name="RequestFailed" xml:space="preserve"><value>Запрос не выполнен.</value></data>
+  <data name="ReviewBlockersPrefix" xml:space="preserve"><value>Блокировки проверки</value></data>
+  <data name="SearchSameTenantPerson" xml:space="preserve"><value>Поиск человека в том же tenant</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>Проверка не пройдена.</value></data>
+  <data name="Valid" xml:space="preserve"><value>Действительно</value></data>
+</root>

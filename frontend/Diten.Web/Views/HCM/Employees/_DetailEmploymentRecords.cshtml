@@ -1,0 +1,31 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeMasterDetail> Localizer
+
+<div class="card backbone-preview-section h-100">
+    <div class="card-header">
+        <h5 class="mb-0">@Localizer["EmploymentRecords"]</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>@Localizer["LegalEntityId"]</th>
+                        <th>@Localizer["OrganizationUnitId"]</th>
+                        <th>@Localizer["PositionId"]</th>
+                        <th>@Localizer["StartDate"]</th>
+                        <th>@Localizer["EndDate"]</th>
+                        <th>@Localizer["ContractType"]</th>
+                        <th>@Localizer["EmploymentStatus"]</th>
+                        <th>@Localizer["ApprovalStatus"]</th>
+                    </tr>
+                </thead>
+                <tbody id="hcm-employment-records-body"></tbody>
+            </table>
+        </div>
+        <div id="hcm-employment-records-empty" class="p-4 text-muted d-none">
+            @Localizer["NoEmploymentRecords"]
+        </div>
+    </div>
+</div>

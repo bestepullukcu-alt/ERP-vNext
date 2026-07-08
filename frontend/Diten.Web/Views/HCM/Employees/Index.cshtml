@@ -1,0 +1,38 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeMasterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["EmployeeMasterTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canSearch = (ViewData["CanSearchEmployees"] as bool?) == true;
+    var canView = (ViewData["CanViewEmployees"] as bool?) == true;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/HCM/Employees/_Filter.cshtml" />
+
+<div id="hcm-employee-registry-page"
+     data-api-base="/HCM/Employees/api"
+     data-can-search="@canSearch.ToString().ToLowerInvariant()"
+     data-can-view="@canView.ToString().ToLowerInvariant()">
+    <div class="mb-3">
+        <h5 class="mb-0">@Localizer["EmployeeMasterTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+
+    <div id="hcm-registry-forbidden" class="alert alert-warning @(canSearch ? "d-none" : "")" role="alert">
+        @Localizer["ForbiddenState"]
+    </div>
+
+    <div id="hcm-registry-error" class="alert alert-danger d-none" role="alert"></div>
+
+    <partial name="~/Views/HCM/Employees/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/HCM/Employees/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HCM/Employees/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HCM/Employees/index.js" asp-append-version="true"></script>
+}

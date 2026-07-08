@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CreateEmployeeDraftTitle" xml:space="preserve"><value>Crear borrador de empleado</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>Centro de trabajo</value></data>
+  <data name="HcmBreadcrumb" xml:space="preserve"><value>HCM</value></data>
+  <data name="StartDraft" xml:space="preserve"><value>Iniciar borrador</value></data>
+  <data name="Reload" xml:space="preserve"><value>Recargar</value></data>
+  <data name="PermissionDeniedWorkspace" xml:space="preserve"><value>Permiso denegado. El espacio de borrador es de solo lectura para esta sesión.</value></data>
+  <data name="ProfileSection" xml:space="preserve"><value>Perfil</value></data>
+  <data name="ProfileDescription" xml:space="preserve"><value>Campos de identidad y sensibilidad para el borrador de empleado.</value></data>
+  <data name="DraftOnly" xml:space="preserve"><value>Solo borrador</value></data>
+  <data name="PersonReference" xml:space="preserve"><value>Referencia de persona</value></data>
+  <data name="LegalName" xml:space="preserve"><value>Nombre legal</value></data>
+  <data name="SensitivityLevel" xml:space="preserve"><value>Nivel de sensibilidad</value></data>
+  <data name="SensitivityStandard" xml:space="preserve"><value>Estándar</value></data>
+  <data name="SensitivityRestricted" xml:space="preserve"><value>Restringido</value></data>
+  <data name="GovernmentIdentifierDisabled" xml:space="preserve"><value>La captura del identificador gubernamental está deshabilitada para este alcance.</value></data>
+  <data name="EmploymentSection" xml:space="preserve"><value>Empleo</value></data>
+  <data name="EmploymentDescription" xml:space="preserve"><value>Clasificación de empleo y enlaces de referencia.</value></data>
+  <data name="WorkerType" xml:space="preserve"><value>Tipo de trabajador</value></data>
+  <data name="Select" xml:space="preserve"><value>Seleccionar</value></data>
+  <data name="WorkerTypeEmployee" xml:space="preserve"><value>Empleado</value></data>
+  <data name="WorkerTypeContingent" xml:space="preserve"><value>Trabajador contingente</value></data>
+  <data name="EmploymentType" xml:space="preserve"><value>Tipo de empleo</value></data>
+  <data name="EmploymentTypeFullTime" xml:space="preserve"><value>Tiempo completo</value></data>
+  <data name="EmploymentTypePartTime" xml:space="preserve"><value>Tiempo parcial</value></data>
+  <data name="EmploymentTypeFixedTerm" xml:space="preserve"><value>Plazo fijo</value></data>
+  <data name="HireDate" xml:space="preserve"><value>Fecha de contratación</value></data>
+  <data name="OrganizationUnitReference" xml:space="preserve"><value>Referencia de unidad organizativa</value></data>
+  <data name="PositionReference" xml:space="preserve"><value>Referencia de puesto</value></data>
+  <data name="LegalEntityReference" xml:space="preserve"><value>Referencia de entidad legal</value></data>
+  <data name="EvidenceOutOfSlice" xml:space="preserve"><value>La carga o vinculación de evidencia no está incluida en este alcance.</value></data>
+  <data name="ReferenceReviewSection" xml:space="preserve"><value>Revisión de referencias</value></data>
+  <data name="ReferenceReviewDescription" xml:space="preserve"><value>Valide las dependencias antes de marcar el borrador como revisado.</value></data>
+  <data name="ReviewOnly" xml:space="preserve"><value>Solo revisión</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Guardar borrador</value></data>
+  <data name="ValidateReferences" xml:space="preserve"><value>Validar referencias</value></data>
+  <data name="ReviewDraft" xml:space="preserve"><value>Revisar borrador</value></data>
+  <data name="DraftStatus" xml:space="preserve"><value>Estado del borrador</value></data>
+  <data name="DraftState" xml:space="preserve"><value>Estado del borrador</value></data>
+  <data name="Session" xml:space="preserve"><value>Sesión</value></data>
+  <data name="NotStarted" xml:space="preserve"><value>No iniciado</value></data>
+  <data name="Version" xml:space="preserve"><value>Versión</value></data>
+  <data name="ETag" xml:space="preserve"><value>ETag</value></data>
+  <data name="SliceBoundary" xml:space="preserve"><value>Límite del alcance</value></data>
+  <data name="SliceBoundaryDescription" xml:space="preserve"><value>Solo revisión. Envío, aprobación, activación, vinculación de evidencia y captura de identificador gubernamental quedan fuera de este alcance MOD-0251.</value></data>
+  <data name="AuthenticationRequired" xml:space="preserve"><value>Se requiere autenticación.</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>Una dependencia no está disponible.</value></data>
+  <data name="DraftChangedReload" xml:space="preserve"><value>El borrador ha cambiado. Recargue el borrador e inténtelo de nuevo.</value></data>
+  <data name="DraftNotFound" xml:space="preserve"><value>No se encontró el borrador o la referencia.</value></data>
+  <data name="DraftReloaded" xml:space="preserve"><value>Borrador recargado.</value></data>
+  <data name="DraftReviewHasBlockers" xml:space="preserve"><value>La revisión del borrador tiene bloqueos.</value></data>
+  <data name="DraftReviewed" xml:space="preserve"><value>Borrador revisado.</value></data>
+  <data name="DraftSaved" xml:space="preserve"><value>Borrador guardado.</value></data>
+  <data name="DraftStarted" xml:space="preserve"><value>Borrador iniciado.</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>Permiso denegado.</value></data>
+  <data name="ReferenceFallback" xml:space="preserve"><value>referencia</value></data>
+  <data name="ReferencesNotValidated" xml:space="preserve"><value>Las referencias no se han validado.</value></data>
+  <data name="RequestFailed" xml:space="preserve"><value>La solicitud falló.</value></data>
+  <data name="ReviewBlockersPrefix" xml:space="preserve"><value>Bloqueos de revisión</value></data>
+  <data name="SearchSameTenantPerson" xml:space="preserve"><value>Buscar persona del mismo tenant</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>Error de validación.</value></data>
+  <data name="Valid" xml:space="preserve"><value>Válido</value></data>
+</root>

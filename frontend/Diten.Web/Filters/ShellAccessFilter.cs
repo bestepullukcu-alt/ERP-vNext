@@ -17,6 +17,7 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
     // MOD-0023 — Workflow admin is a tenant-scoped screen that lives under /Platform but is reached by
     // tenant_user actors (like ReferenceData). It must be exempt from the platform-actor-only gate.
     private const string WorkflowPath = "/Platform/Workflow";
+    private const string PersonReferencesPath = "/Platform/PersonReferences";
     private readonly IConfiguration _configuration;
 
     public ShellAccessFilter(IConfiguration configuration)
@@ -89,7 +90,8 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
     // Platform-hosted screens that are nonetheless tenant-scoped and reachable by tenant_user actors.
     private static bool IsTenantScopedPlatformPath(Microsoft.AspNetCore.Http.PathString path) =>
         IsReferenceDataPath(path) ||
-        path.StartsWithSegments(WorkflowPath, StringComparison.OrdinalIgnoreCase);
+        path.StartsWithSegments(WorkflowPath, StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWithSegments(PersonReferencesPath, StringComparison.OrdinalIgnoreCase);
 
     private static RedirectResult BuildLoginRedirect(string loginPath, Microsoft.AspNetCore.Http.HttpRequest request)
     {

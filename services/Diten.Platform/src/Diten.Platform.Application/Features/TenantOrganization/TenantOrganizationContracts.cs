@@ -1,3 +1,5 @@
+using Diten.Platform.Domain.Entities.Organization;
+
 namespace Diten.Platform.Application.Features.TenantOrganization;
 
 public sealed record OrganizationUnitRequest(
@@ -59,6 +61,35 @@ public sealed record ManagerChainNodeDto(
 
 public sealed record ManagerChainDto(Guid PositionId, IReadOnlyList<ManagerChainNodeDto> Chain);
 
+public sealed record PersonReferenceDto(
+    Guid PersonId,
+    Guid TenantId,
+    string DisplayName,
+    string? ReferenceCode,
+    string Status,
+    bool Referenceable,
+    string? ProfilePointer,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt);
+
+public sealed record PersonReferenceSearchResultDto(
+    IReadOnlyList<PersonReferenceDto> Items,
+    int Page,
+    int PageSize);
+
+public sealed record PersonReferenceLookupValidationRequest(IReadOnlyList<Guid> PersonIds);
+
+public sealed record PersonReferenceLookupValidationResultDto(
+    Guid PersonId,
+    bool Referenceable,
+    string? DisplayName,
+    string? ReferenceCode,
+    string? Status,
+    string? ProfilePointer);
+
+public sealed record PersonReferenceLookupValidationResponseDto(
+    IReadOnlyList<PersonReferenceLookupValidationResultDto> Results);
+
 public static class TenantOrganizationMapper
 {
     public static OrganizationUnitDto ToDto(Diten.Platform.Domain.Entities.Organization.OrganizationUnit entity) =>
@@ -72,4 +103,13 @@ public static class TenantOrganizationMapper
     public static PositionAssignmentDto ToDto(Diten.Platform.Domain.Entities.Organization.PositionAssignment entity) =>
         new(entity.Id, entity.TenantId, entity.PositionId, entity.UserId, entity.EffectiveFrom,
             entity.EffectiveTo, entity.CreatedAt, entity.UpdatedAt);
+
+    public static PersonReferenceDto ToDto(PersonReference entity) =>
+        new(entity.Id, entity.TenantId, entity.DisplayName, entity.ReferenceCode, entity.Status.ToString(),
+            entity.IsReferenceable, entity.ProfilePointer, entity.CreatedAt, entity.UpdatedAt);
+
+    public static PersonReferenceLookupValidationResultDto ToLookupValidationDto(PersonReference entity) =>
+        new(entity.Id, entity.IsReferenceable, entity.IsReferenceable ? entity.DisplayName : null,
+            entity.IsReferenceable ? entity.ReferenceCode : null, entity.Status.ToString(),
+            entity.IsReferenceable ? entity.ProfilePointer : null);
 }

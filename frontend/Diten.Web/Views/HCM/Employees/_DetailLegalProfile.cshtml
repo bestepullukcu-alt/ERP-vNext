@@ -1,0 +1,29 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeMasterDetail> Localizer
+
+<div class="card backbone-preview-section h-100">
+    <div class="card-header">
+        <h5 class="mb-0">@Localizer["LegalProfile"]</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-5 text-muted">@Localizer["LegalFirstName"]</dt>
+            <dd class="col-sm-7" data-field="legalFirstName"></dd>
+            <dt class="col-sm-5 text-muted">@Localizer["LegalMiddleName"]</dt>
+            <dd class="col-sm-7" data-field="legalMiddleName"></dd>
+            <dt class="col-sm-5 text-muted">@Localizer["LegalLastName"]</dt>
+            <dd class="col-sm-7" data-field="legalLastName"></dd>
+            <dt class="col-sm-5 text-muted">@Localizer["PreferredName"]</dt>
+            <dd class="col-sm-7" data-field="preferredName"></dd>
+            <dt class="col-sm-5 text-muted">@Localizer["NationalityCode"]</dt>
+            <dd class="col-sm-7" data-field="nationalityCode"></dd>
+            <dt class="col-sm-5 text-muted">@Localizer["WorkEmail"]</dt>
+            <dd class="col-sm-7 text-break" data-field="workEmail"></dd>
+            <dt class="col-sm-5 text-muted">@Localizer["SensitiveFields"]</dt>
+            <dd class="col-sm-7" data-field="sensitiveFieldsMasked"></dd>
+            <dt class="col-sm-5 text-muted">@Localizer["GovernmentIdentifier"]</dt>
+            <dd class="col-sm-7" data-field="governmentIdentifierPresent"></dd>
+        </dl>
+    </div>
+</div>

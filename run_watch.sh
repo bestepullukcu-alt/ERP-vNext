@@ -22,7 +22,7 @@ echo "========================================="
 echo ""
 
 # Terminate processes on our target ports
-lsof -ti :5000,5001,5056,5057,5058,5059 | xargs kill -9 2>/dev/null || true
+lsof -ti :5000,5001,5056,5057,5058,5059,5060 | xargs kill -9 2>/dev/null || true
 killall -9 dotnet 2>/dev/null || true
 
 # Watch mode commands
@@ -32,6 +32,7 @@ sleep 2 # Auth service needs more startup time for seeding
 prefix_logs "[DEVEN   ]" "dotnet watch run --non-interactive --project services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api/Diten.DevEnablementService.Api.csproj --urls http://0.0.0.0:5058" &
 prefix_logs "[PLATFORM]" "dotnet watch run --non-interactive --project services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj --urls http://0.0.0.0:5057" &
 prefix_logs "[MDM     ]" "dotnet watch run --non-interactive --project services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj --urls http://0.0.0.0:5059" &
+prefix_logs "[HCM     ]" "dotnet watch run --non-interactive --project services/Diten.HcmService/src/Diten.HcmService.Api/Diten.HcmService.Api.csproj --urls http://0.0.0.0:5060" &
 prefix_logs "[GATEWAY ]" "dotnet watch run --non-interactive --project gateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000" &
 prefix_logs "[FRONTEND]" "dotnet watch run --non-interactive --project frontend/Diten.Web/Diten.Web.csproj --urls http://0.0.0.0:5001" &
 

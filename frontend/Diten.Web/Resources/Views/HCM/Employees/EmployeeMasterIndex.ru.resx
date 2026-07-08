@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="EmployeeMasterTitle" xml:space="preserve"><value>Реестр сотрудников</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Поиск строк сотрудников арендатора с безопасными полями реестра.</value></data>
+  <data name="ForbiddenState" xml:space="preserve"><value>У вас нет разрешения на поиск строк реестра сотрудников.</value></data>
+  <data name="DependencyError" xml:space="preserve"><value>Зависимость реестра сотрудников недоступна.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Строки реестра сотрудников недоступны.</value></data>
+  <data name="FilteredEmptyState" xml:space="preserve"><value>Нет строк реестра сотрудников, соответствующих текущим фильтрам.</value></data>
+  <data name="LoadingState" xml:space="preserve"><value>Загрузка реестра сотрудников...</value></data>
+  <data name="NoViewPermission" xml:space="preserve"><value>Нет доступа к просмотру</value></data>
+  <data name="EmployeeNumber" xml:space="preserve"><value>Номер сотрудника</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Отображаемое имя</value></data>
+  <data name="WorkerType" xml:space="preserve"><value>Тип работника</value></data>
+  <data name="EmploymentType" xml:space="preserve"><value>Тип занятости</value></data>
+  <data name="SensitivityLevel" xml:space="preserve"><value>Чувствительность</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="LegalEntityId" xml:space="preserve"><value>ID юридического лица</value></data>
+  <data name="HireDate" xml:space="preserve"><value>Дата найма</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активен</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Неактивен</value></data>
+  <data name="WorkerTypeEmployee" xml:space="preserve"><value>Сотрудник</value></data>
+  <data name="WorkerTypeContingent" xml:space="preserve"><value>Временный работник</value></data>
+  <data name="EmploymentTypeFullTime" xml:space="preserve"><value>Полная занятость</value></data>
+  <data name="EmploymentTypePartTime" xml:space="preserve"><value>Частичная занятость</value></data>
+  <data name="EmploymentTypeFixedTerm" xml:space="preserve"><value>Срочный договор</value></data>
+</root>

@@ -511,6 +511,8 @@
   <data name="AddSubscriptionPlan" xml:space="preserve"><value>Abonelik Planı Ekle</value></data>
   <data name="AddModule" xml:space="preserve"><value>Modül Ekle</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Referans Veri</value></data>
+  <data name="HumanCapitalManagement" xml:space="preserve"><value>İnsan Sermayesi Yönetimi</value></data>
+  <data name="EmployeeDraftsMenu" xml:space="preserve"><value>Çalışan Taslakları</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>Bu modül kodu zaten kullanılıyor.</value></data>
   <data name="ModuleManagedByCode" xml:space="preserve"><value>Bu modül koddan yönetiliyor (otomatik kaydedildi); buradan değiştirilemez.</value></data>
   <data name="BaselineCannotBeDeactivated" xml:space="preserve"><value>Baseline modüller deaktive edilemez — her tenant'a otomatik gelir.</value></data>

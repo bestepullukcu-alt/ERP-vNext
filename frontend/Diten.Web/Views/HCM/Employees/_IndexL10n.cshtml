@@ -1,0 +1,46 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeMasterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="employeemaster-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        Active = SharedLocalizer["Active"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        DependencyError = Localizer["DependencyError"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        EmptyState = Localizer["EmptyState"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        FilteredEmptyState = Localizer["FilteredEmptyState"].Value,
+        ForbiddenState = Localizer["ForbiddenState"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Loading = Localizer["LoadingState"].Value,
+        NoViewPermission = Localizer["NoViewPermission"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        StatusDraft = Localizer["StatusDraft"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusInactive = Localizer["StatusInactive"].Value,
+        WorkerTypeEmployee = Localizer["WorkerTypeEmployee"].Value,
+        WorkerTypeContingent = Localizer["WorkerTypeContingent"].Value,
+        EmploymentTypeFullTime = Localizer["EmploymentTypeFullTime"].Value,
+        EmploymentTypePartTime = Localizer["EmploymentTypePartTime"].Value,
+        EmploymentTypeFixedTerm = Localizer["EmploymentTypeFixedTerm"].Value
+    })
+</script>

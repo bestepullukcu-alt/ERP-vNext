@@ -439,6 +439,186 @@ public sealed class TenantOrganizationRulesTests
         Assert.DoesNotContain(typeof(PositionAssignmentRequest).GetProperties(), x => x.Name == "TenantId");
     }
 
+
+    [Fact]
+    public async Task Person_reference_lookup_returns_same_tenant_active_reference()
+    {
+        var people = new InMemoryPersonReferenceRepository(TenantId);
+        var person = PersonReference("Ada Lovelace");
+        people.Add(person);
+        var handler = new GetPersonReferenceByIdQueryHandler(people);
+
+        var response = await handler.Handle(new GetPersonReferenceByIdQuery(person.Id), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(person.Id, response.Data!.PersonId);
+        Assert.Equal(TenantId, response.Data.TenantId);
+        Assert.True(response.Data.Referenceable);
+        Assert.Equal("Ada Lovelace", response.Data.DisplayName);
+    }
+
+    [Fact]
+    public async Task Person_reference_lookup_missing_returns_not_found()
+    {
+        var handler = new GetPersonReferenceByIdQueryHandler(new InMemoryPersonReferenceRepository(TenantId));
+
+        var response = await handler.Handle(new GetPersonReferenceByIdQuery(Guid.NewGuid()), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(404, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Person_reference_cross_tenant_is_not_disclosed()
+    {
+        var people = new InMemoryPersonReferenceRepository(TenantId);
+        var otherTenantPerson = new PersonReference
+        {
+            TenantId = OtherTenantId,
+            DisplayName = "Other Tenant",
+            ReferenceCode = "OTHER"
+        };
+        people.Add(otherTenantPerson);
+        var handler = new GetPersonReferenceByIdQueryHandler(people);
+
+        var response = await handler.Handle(new GetPersonReferenceByIdQuery(otherTenantPerson.Id), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(404, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(PersonReferenceStatus.Inactive)]
+    [InlineData(PersonReferenceStatus.Deprecated)]
+    [InlineData(PersonReferenceStatus.Deleted)]
+    public async Task Person_reference_lookup_validation_rejects_non_referenceable_status(PersonReferenceStatus status)
+    {
+        var people = new InMemoryPersonReferenceRepository(TenantId);
+        var person = PersonReference("Grace Hopper", status: status);
+        people.Add(person);
+        var handler = new ValidatePersonReferencesQueryHandler(people);
+
+        var response = await handler.Handle(
+            new ValidatePersonReferencesQuery(new PersonReferenceLookupValidationRequest([person.Id])),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        var result = Assert.Single(response.Data!.Results);
+        Assert.Equal(person.Id, result.PersonId);
+        Assert.False(result.Referenceable);
+        Assert.Null(result.DisplayName);
+    }
+
+    [Fact]
+    public async Task Person_reference_lookup_validation_treats_soft_deleted_as_missing()
+    {
+        var people = new InMemoryPersonReferenceRepository(TenantId);
+        var person = PersonReference("Deleted Person");
+        person.IsDeleted = true;
+        people.Add(person);
+        var handler = new ValidatePersonReferencesQueryHandler(people);
+
+        var response = await handler.Handle(
+            new ValidatePersonReferencesQuery(new PersonReferenceLookupValidationRequest([person.Id])),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        var result = Assert.Single(response.Data!.Results);
+        Assert.False(result.Referenceable);
+        Assert.Null(result.DisplayName);
+    }
+
+    [Fact]
+    public void Person_reference_malformed_empty_id_fails_validation()
+    {
+        var validator = new GetPersonReferenceByIdQueryValidator();
+
+        var result = validator.Validate(new GetPersonReferenceByIdQuery(Guid.Empty));
+
+        Assert.False(result.IsValid);
+    }
+
+    [Fact]
+    public async Task Auth_user_id_without_person_reference_does_not_bypass_lookup_validation()
+    {
+        var authUserId = Guid.NewGuid();
+        var handler = new ValidatePersonReferencesQueryHandler(new InMemoryPersonReferenceRepository(TenantId));
+
+        var response = await handler.Handle(
+            new ValidatePersonReferencesQuery(new PersonReferenceLookupValidationRequest([authUserId])),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        var result = Assert.Single(response.Data!.Results);
+        Assert.Equal(authUserId, result.PersonId);
+        Assert.False(result.Referenceable);
+        Assert.Null(result.DisplayName);
+    }
+
+    [Fact]
+    public void Person_reference_search_page_size_above_limit_fails_validation()
+    {
+        var validator = new SearchPersonReferencesQueryValidator();
+
+        var result = validator.Validate(new SearchPersonReferencesQuery(null, null, 1, SearchPersonReferencesQueryHandler.MaxPageSize + 1));
+
+        Assert.False(result.IsValid);
+    }
+
+    [Fact]
+    public async Task Person_reference_search_returns_bounded_page_and_safe_metadata()
+    {
+        var people = new InMemoryPersonReferenceRepository(TenantId);
+        for (var i = 0; i < 5; i++)
+        {
+            people.Add(PersonReference($"Person {i}", referenceCode: $"P{i}"));
+        }
+
+        var handler = new SearchPersonReferencesQueryHandler(people);
+
+        var response = await handler.Handle(new SearchPersonReferencesQuery("Person", null, 1, 2), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(1, response.Data!.Page);
+        Assert.Equal(2, response.Data.PageSize);
+        Assert.Equal(2, response.Data.Items.Count);
+        Assert.All(response.Data.Items, item =>
+        {
+            Assert.True(item.Referenceable);
+            Assert.DoesNotContain(item.GetType().GetProperties(), p => p.Name is "UserId" or "EmployeeId" or "GovernmentIdentifier");
+        });
+    }
+
+    [Fact]
+    public async Task Person_reference_lookup_validation_returns_safe_metadata_only()
+    {
+        var people = new InMemoryPersonReferenceRepository(TenantId);
+        var person = PersonReference("Safe Person", referenceCode: "SAFE-1");
+        people.Add(person);
+        var handler = new ValidatePersonReferencesQueryHandler(people);
+
+        var response = await handler.Handle(
+            new ValidatePersonReferencesQuery(new PersonReferenceLookupValidationRequest([person.Id])),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        var result = Assert.Single(response.Data!.Results);
+        Assert.True(result.Referenceable);
+        Assert.Equal("Safe Person", result.DisplayName);
+        Assert.DoesNotContain(result.GetType().GetProperties(), p => p.Name is "UserId" or "EmployeeId" or "GovernmentIdentifier");
+    }
+
+    [Fact]
+    public async Task Person_reference_repository_unavailable_returns_controlled_dependency_error()
+    {
+        var handler = new GetPersonReferenceByIdQueryHandler(new InMemoryPersonReferenceRepository(TenantId, throwOnRead: true));
+
+        var response = await handler.Handle(new GetPersonReferenceByIdQuery(Guid.NewGuid()), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(503, response.StatusCode);
+    }
+
     private static TenantContext TenantContext()
     {
         var context = new TenantContext();
@@ -464,6 +644,18 @@ public sealed class TenantOrganizationRulesTests
             Name = code,
             OrganizationUnitId = organizationUnitId,
             ReportsToPositionId = reportsToPositionId
+        };
+
+    private static PersonReference PersonReference(
+        string displayName,
+        string? referenceCode = null,
+        PersonReferenceStatus status = PersonReferenceStatus.Active) =>
+        new()
+        {
+            TenantId = TenantId,
+            DisplayName = displayName,
+            ReferenceCode = referenceCode,
+            Status = status
         };
 
     private sealed class FakeLegalEntityValidator : ILegalEntityReferenceValidator

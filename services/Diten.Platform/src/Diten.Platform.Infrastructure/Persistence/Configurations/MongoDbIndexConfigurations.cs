@@ -9,6 +9,7 @@ using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Models;
+using Diten.Platform.Infrastructure.Persistence.Repositories;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -61,6 +62,7 @@ public static class MongoDbIndexConfigurations
         var organizationUnitCollection = database.GetCollection<OrganizationUnit>("organization_units");
         var positionCollection = database.GetCollection<Position>("positions");
         var positionAssignmentCollection = database.GetCollection<PositionAssignment>("position_assignments");
+        var personReferenceCollection = database.GetCollection<PersonReference>(PersonReferenceRepository.CollectionName);
         var moduleCatalogDocuments = database.GetCollection<BsonDocument>("platform_module_catalog");
         var baselineReleaseCollection = database.GetCollection<BaselineRelease>("document_management_baseline_releases");
         var collectionDefinitionCollection = database.GetCollection<CollectionDefinition>("document_management_collection_definitions");
@@ -703,6 +705,39 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.EffectiveTo)
                     .Ascending(x => x.IsDeleted),
                 new CreateIndexOptions { Name = "ix_position_assignments_user_interval" })
+        });
+
+
+        await personReferenceCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<PersonReference>(
+                Builders<PersonReference>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Id),
+                new CreateIndexOptions<PersonReference>
+                {
+                    Unique = true,
+                    Name = "ux_person_references_tenant_person_id_active",
+                    PartialFilterExpression = Builders<PersonReference>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<PersonReference>(
+                Builders<PersonReference>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.DisplayName)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_person_references_tenant_display_name" }),
+            new CreateIndexModel<PersonReference>(
+                Builders<PersonReference>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_person_references_tenant_status" }),
+            new CreateIndexModel<PersonReference>(
+                Builders<PersonReference>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ReferenceCode)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_person_references_tenant_reference_code" })
         });
         await outboxEventCollection.Indexes.CreateManyAsync(new[]
         {
