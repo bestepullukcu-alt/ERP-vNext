@@ -1,0 +1,17 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeDraftCreate> Localizer
+
+<section class="card backbone-preview-section p-4">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-4">
+        <div>
+            <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["ReferenceReviewSection"]</h6>
+            <div class="text-muted small">@Localizer["ReferenceReviewDescription"]</div>
+        </div>
+        <span class="badge bg-label-info">@Localizer["ReviewOnly"]</span>
+    </div>
+    <div class="d-flex flex-column gap-3">
+        <div id="hcm-reference-results" class="list-group" aria-live="polite"></div>
+        <div id="hcm-review-blockers" class="alert alert-warning d-none mb-0" role="status"></div>
+    </div>
+</section>

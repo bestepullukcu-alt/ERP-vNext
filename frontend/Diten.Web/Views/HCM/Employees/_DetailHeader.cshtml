@@ -1,0 +1,36 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeMasterDetail> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="mb-4">
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+        <div>
+            <div class="text-muted small mb-1">@Localizer["EmployeeNumber"]</div>
+            <h4 class="mb-1" data-field="employeeNumber"></h4>
+            <div class="text-muted" data-field="displayName"></div>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="badge bg-label-primary" data-field="employeeStatus"></span>
+            <span class="badge bg-label-secondary" data-field="sensitivityLevel"></span>
+        </div>
+    </div>
+    <div class="row g-3 mt-2">
+        <div class="col-md-3">
+            <div class="text-muted small">@Localizer["PersonId"]</div>
+            <div class="text-break" data-field="personId"></div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-muted small">@Localizer["Version"]</div>
+            <div data-field="version"></div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-muted small">@Localizer["ETag"]</div>
+            <div data-field="etag"></div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-muted small">@Localizer["UpdatedAt"]</div>
+            <div data-field="updatedAt"></div>
+        </div>
+    </div>
+</div>

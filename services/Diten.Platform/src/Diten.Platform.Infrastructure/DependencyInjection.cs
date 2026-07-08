@@ -213,6 +213,7 @@ public static class DependencyInjection
         services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
+        services.AddScoped<IPersonReferenceRepository, PersonReferenceRepository>();
 
         // Workflow Repositories
         services.AddScoped<IWorkflowTemplateRepository, WorkflowTemplateRepository>();

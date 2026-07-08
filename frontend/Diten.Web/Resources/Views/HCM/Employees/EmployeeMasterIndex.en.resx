@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="EmployeeMasterTitle" xml:space="preserve"><value>Employee Registry</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Search tenant-scoped employee master rows with safe registry fields.</value></data>
+  <data name="ForbiddenState" xml:space="preserve"><value>You do not have permission to search employee registry rows.</value></data>
+  <data name="DependencyError" xml:space="preserve"><value>The employee registry dependency is unavailable.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No employee registry rows are available.</value></data>
+  <data name="FilteredEmptyState" xml:space="preserve"><value>No employee registry rows match the current filters.</value></data>
+  <data name="LoadingState" xml:space="preserve"><value>Loading employee registry...</value></data>
+  <data name="NoViewPermission" xml:space="preserve"><value>No view access</value></data>
+  <data name="EmployeeNumber" xml:space="preserve"><value>Employee No.</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="WorkerType" xml:space="preserve"><value>Worker Type</value></data>
+  <data name="EmploymentType" xml:space="preserve"><value>Employment Type</value></data>
+  <data name="SensitivityLevel" xml:space="preserve"><value>Sensitivity</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Legal Entity</value></data>
+  <data name="LegalEntityId" xml:space="preserve"><value>Legal entity ID</value></data>
+  <data name="HireDate" xml:space="preserve"><value>Hire Date</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="WorkerTypeEmployee" xml:space="preserve"><value>Employee</value></data>
+  <data name="WorkerTypeContingent" xml:space="preserve"><value>Contingent Worker</value></data>
+  <data name="EmploymentTypeFullTime" xml:space="preserve"><value>Full Time</value></data>
+  <data name="EmploymentTypePartTime" xml:space="preserve"><value>Part Time</value></data>
+  <data name="EmploymentTypeFixedTerm" xml:space="preserve"><value>Fixed Term</value></data>
+</root>

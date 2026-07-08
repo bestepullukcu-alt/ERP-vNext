@@ -1,0 +1,48 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeDraftCreate> Localizer
+
+<section class="card backbone-preview-section backbone-preview-status p-4 d-flex align-items-center justify-content-between">
+    <span class="fw-semibold text-heading">@Localizer["DraftStatus"]</span>
+    <span class="badge bg-label-secondary" id="hcm-state-review">not_reviewed</span>
+</section>
+
+<section class="card backbone-preview-section p-4">
+    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["DraftState"]</h6>
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="backbone-preview-field">
+                <i class="bx bx-fingerprint"></i>
+                <div>
+                    <div class="backbone-preview-label">@Localizer["Session"]</div>
+                    <div class="backbone-preview-value mt-1 text-break" id="hcm-state-session">@Localizer["NotStarted"]</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="backbone-preview-field">
+                <i class="bx bx-git-branch"></i>
+                <div>
+                    <div class="backbone-preview-label">@Localizer["Version"]</div>
+                    <div class="backbone-preview-value mt-1" id="hcm-state-version">-</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="backbone-preview-field">
+                <i class="bx bx-hash"></i>
+                <div>
+                    <div class="backbone-preview-label">@Localizer["ETag"]</div>
+                    <div class="backbone-preview-value mt-1 text-break" id="hcm-state-etag">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card backbone-preview-section p-4">
+    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SliceBoundary"]</h6>
+    <div class="backbone-preview-description">
+        @Localizer["SliceBoundaryDescription"]
+    </div>
+</section>

@@ -1,0 +1,54 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeDraftCreate> Localizer
+
+<section class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">@Localizer["EmploymentSection"]</h5>
+        <small class="text-muted">@Localizer["EmploymentDescription"]</small>
+    </div>
+    <div class="card-body row g-3">
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-medium" for="hcm-worker-type">@Localizer["WorkerType"] <span class="text-danger">*</span></label>
+            <select id="hcm-worker-type" class="form-select">
+                <option value="">@Localizer["Select"]</option>
+                <option value="employee">@Localizer["WorkerTypeEmployee"]</option>
+                <option value="contingent_worker">@Localizer["WorkerTypeContingent"]</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-medium" for="hcm-employment-type">@Localizer["EmploymentType"] <span class="text-danger">*</span></label>
+            <select id="hcm-employment-type" class="form-select">
+                <option value="">@Localizer["Select"]</option>
+                <option value="full_time">@Localizer["EmploymentTypeFullTime"]</option>
+                <option value="part_time">@Localizer["EmploymentTypePartTime"]</option>
+                <option value="fixed_term">@Localizer["EmploymentTypeFixedTerm"]</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-medium" for="hcm-hire-date">@Localizer["HireDate"] <span class="text-danger">*</span></label>
+            <input id="hcm-hire-date" class="form-control" type="date" />
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-medium" for="hcm-organization-unit-id">@Localizer["OrganizationUnitReference"] <span class="text-danger">*</span></label>
+            <input id="hcm-organization-unit-id" class="form-control" autocomplete="off" />
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-medium" for="hcm-position-id">@Localizer["PositionReference"] <span class="text-danger">*</span></label>
+            <input id="hcm-position-id" class="form-control" autocomplete="off" />
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-medium" for="hcm-legal-entity-picker">@Localizer["LegalEntityReference"] <span class="text-danger">*</span></label>
+            <input id="hcm-legal-entity-picker" class="form-control" autocomplete="off" list="hcm-legal-entity-options" />
+            <input id="hcm-legal-entity-id" type="hidden" />
+            <datalist id="hcm-legal-entity-options"></datalist>
+            <small id="hcm-legal-entity-status" class="text-muted d-block mt-1" aria-live="polite"></small>
+        </div>
+        <div class="col-12">
+            <div class="alert alert-secondary mb-0">
+                <i class="icon-base bx bx-paperclip me-1"></i>
+                @Localizer["EvidenceOutOfSlice"]
+            </div>
+        </div>
+    </div>
+</section>

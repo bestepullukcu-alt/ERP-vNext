@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CreateEmployeeDraftTitle" xml:space="preserve"><value>Créer un brouillon d'employé</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>Centre de travail</value></data>
+  <data name="HcmBreadcrumb" xml:space="preserve"><value>HCM</value></data>
+  <data name="StartDraft" xml:space="preserve"><value>Démarrer le brouillon</value></data>
+  <data name="Reload" xml:space="preserve"><value>Recharger</value></data>
+  <data name="PermissionDeniedWorkspace" xml:space="preserve"><value>Autorisation refusée. L'espace de brouillon est en lecture seule pour cette session.</value></data>
+  <data name="ProfileSection" xml:space="preserve"><value>Profil</value></data>
+  <data name="ProfileDescription" xml:space="preserve"><value>Champs d'identité et de sensibilité du brouillon d'employé.</value></data>
+  <data name="DraftOnly" xml:space="preserve"><value>Brouillon uniquement</value></data>
+  <data name="PersonReference" xml:space="preserve"><value>Référence personne</value></data>
+  <data name="LegalName" xml:space="preserve"><value>Nom légal</value></data>
+  <data name="SensitivityLevel" xml:space="preserve"><value>Niveau de sensibilité</value></data>
+  <data name="SensitivityStandard" xml:space="preserve"><value>Standard</value></data>
+  <data name="SensitivityRestricted" xml:space="preserve"><value>Restreint</value></data>
+  <data name="GovernmentIdentifierDisabled" xml:space="preserve"><value>La capture de l'identifiant gouvernemental est désactivée pour cette tranche.</value></data>
+  <data name="EmploymentSection" xml:space="preserve"><value>Emploi</value></data>
+  <data name="EmploymentDescription" xml:space="preserve"><value>Classification de l'emploi et liens de référence.</value></data>
+  <data name="WorkerType" xml:space="preserve"><value>Type de travailleur</value></data>
+  <data name="Select" xml:space="preserve"><value>Sélectionner</value></data>
+  <data name="WorkerTypeEmployee" xml:space="preserve"><value>Employé</value></data>
+  <data name="WorkerTypeContingent" xml:space="preserve"><value>Travailleur contingent</value></data>
+  <data name="EmploymentType" xml:space="preserve"><value>Type d'emploi</value></data>
+  <data name="EmploymentTypeFullTime" xml:space="preserve"><value>Temps plein</value></data>
+  <data name="EmploymentTypePartTime" xml:space="preserve"><value>Temps partiel</value></data>
+  <data name="EmploymentTypeFixedTerm" xml:space="preserve"><value>Durée déterminée</value></data>
+  <data name="HireDate" xml:space="preserve"><value>Date d'embauche</value></data>
+  <data name="OrganizationUnitReference" xml:space="preserve"><value>Référence d'unité organisationnelle</value></data>
+  <data name="PositionReference" xml:space="preserve"><value>Référence de poste</value></data>
+  <data name="LegalEntityReference" xml:space="preserve"><value>Référence d'entité légale</value></data>
+  <data name="EvidenceOutOfSlice" xml:space="preserve"><value>Le téléversement ou le lien de preuve n'est pas inclus dans cette tranche.</value></data>
+  <data name="ReferenceReviewSection" xml:space="preserve"><value>Revue des références</value></data>
+  <data name="ReferenceReviewDescription" xml:space="preserve"><value>Validez les dépendances avant de marquer le brouillon comme revu.</value></data>
+  <data name="ReviewOnly" xml:space="preserve"><value>Revue uniquement</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Enregistrer le brouillon</value></data>
+  <data name="ValidateReferences" xml:space="preserve"><value>Valider les références</value></data>
+  <data name="ReviewDraft" xml:space="preserve"><value>Revoir le brouillon</value></data>
+  <data name="DraftStatus" xml:space="preserve"><value>Statut du brouillon</value></data>
+  <data name="DraftState" xml:space="preserve"><value>État du brouillon</value></data>
+  <data name="Session" xml:space="preserve"><value>Session</value></data>
+  <data name="NotStarted" xml:space="preserve"><value>Non démarré</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="ETag" xml:space="preserve"><value>ETag</value></data>
+  <data name="SliceBoundary" xml:space="preserve"><value>Limite de tranche</value></data>
+  <data name="SliceBoundaryDescription" xml:space="preserve"><value>Revue uniquement. La soumission, l'approbation, l'activation, les liens de preuve et la capture d'identifiant gouvernemental restent hors de cette tranche MOD-0251.</value></data>
+  <data name="AuthenticationRequired" xml:space="preserve"><value>Authentification requise.</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>Une dépendance est indisponible.</value></data>
+  <data name="DraftChangedReload" xml:space="preserve"><value>Le brouillon a changé. Rechargez le brouillon et réessayez.</value></data>
+  <data name="DraftNotFound" xml:space="preserve"><value>Le brouillon ou la référence est introuvable.</value></data>
+  <data name="DraftReloaded" xml:space="preserve"><value>Brouillon rechargé.</value></data>
+  <data name="DraftReviewHasBlockers" xml:space="preserve"><value>La revue du brouillon comporte des blocages.</value></data>
+  <data name="DraftReviewed" xml:space="preserve"><value>Brouillon revu.</value></data>
+  <data name="DraftSaved" xml:space="preserve"><value>Brouillon enregistré.</value></data>
+  <data name="DraftStarted" xml:space="preserve"><value>Brouillon démarré.</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>Autorisation refusée.</value></data>
+  <data name="ReferenceFallback" xml:space="preserve"><value>référence</value></data>
+  <data name="ReferencesNotValidated" xml:space="preserve"><value>Les références n'ont pas été validées.</value></data>
+  <data name="RequestFailed" xml:space="preserve"><value>La requête a échoué.</value></data>
+  <data name="ReviewBlockersPrefix" xml:space="preserve"><value>Blocages de revue</value></data>
+  <data name="SearchSameTenantPerson" xml:space="preserve"><value>Rechercher une personne du même tenant</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>Échec de la validation.</value></data>
+  <data name="Valid" xml:space="preserve"><value>Valide</value></data>
+</root>

@@ -145,3 +145,69 @@ internal sealed class InMemoryPositionAssignmentRepository : IPositionAssignment
 
     public void Add(PositionAssignment item) => _items.Add(item);
 }
+
+internal sealed class InMemoryPersonReferenceRepository : IPersonReferenceRepository
+{
+    private readonly Guid _tenantId;
+    private readonly List<PersonReference> _items = [];
+    private readonly bool _throwOnRead;
+
+    public InMemoryPersonReferenceRepository(Guid tenantId, bool throwOnRead = false)
+    {
+        _tenantId = tenantId;
+        _throwOnRead = throwOnRead;
+    }
+
+    public Task<PersonReference?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        ThrowIfConfigured();
+        return Task.FromResult(_items.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantId && !x.IsDeleted));
+    }
+
+    public Task<IReadOnlyList<PersonReference>> SearchAsync(
+        string? query,
+        PersonReferenceStatus? status,
+        int skip,
+        int take,
+        CancellationToken ct = default)
+    {
+        ThrowIfConfigured();
+        var normalizedQuery = query?.Trim();
+        IEnumerable<PersonReference> result = _items.Where(x => x.TenantId == _tenantId && !x.IsDeleted);
+        if (status.HasValue)
+        {
+            result = result.Where(x => x.Status == status.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(normalizedQuery))
+        {
+            result = result.Where(x =>
+                x.DisplayName.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase)
+                || (x.ReferenceCode?.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase) ?? false));
+        }
+
+        return Task.FromResult<IReadOnlyList<PersonReference>>(result
+            .OrderBy(x => x.DisplayName)
+            .Skip(skip)
+            .Take(take)
+            .ToList());
+    }
+
+    public Task<IReadOnlyList<PersonReference>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+    {
+        ThrowIfConfigured();
+        return Task.FromResult<IReadOnlyList<PersonReference>>(_items
+            .Where(x => x.TenantId == _tenantId && !x.IsDeleted && ids.Contains(x.Id))
+            .ToList());
+    }
+
+    public void Add(PersonReference item) => _items.Add(item);
+
+    private void ThrowIfConfigured()
+    {
+        if (_throwOnRead)
+        {
+            throw new InvalidOperationException("Repository unavailable.");
+        }
+    }
+}

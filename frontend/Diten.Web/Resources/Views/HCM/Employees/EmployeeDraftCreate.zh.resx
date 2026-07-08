@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CreateEmployeeDraftTitle" xml:space="preserve"><value>创建员工草稿</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>工作中心</value></data>
+  <data name="HcmBreadcrumb" xml:space="preserve"><value>HCM</value></data>
+  <data name="StartDraft" xml:space="preserve"><value>开始草稿</value></data>
+  <data name="Reload" xml:space="preserve"><value>重新加载</value></data>
+  <data name="PermissionDeniedWorkspace" xml:space="preserve"><value>权限被拒绝。此会话中的草稿工作区为只读。</value></data>
+  <data name="ProfileSection" xml:space="preserve"><value>档案</value></data>
+  <data name="ProfileDescription" xml:space="preserve"><value>员工草稿的身份和敏感度字段。</value></data>
+  <data name="DraftOnly" xml:space="preserve"><value>仅草稿</value></data>
+  <data name="PersonReference" xml:space="preserve"><value>人员引用</value></data>
+  <data name="LegalName" xml:space="preserve"><value>法定姓名</value></data>
+  <data name="SensitivityLevel" xml:space="preserve"><value>敏感度级别</value></data>
+  <data name="SensitivityStandard" xml:space="preserve"><value>标准</value></data>
+  <data name="SensitivityRestricted" xml:space="preserve"><value>受限</value></data>
+  <data name="GovernmentIdentifierDisabled" xml:space="preserve"><value>此范围内已禁用政府标识采集。</value></data>
+  <data name="EmploymentSection" xml:space="preserve"><value>雇佣</value></data>
+  <data name="EmploymentDescription" xml:space="preserve"><value>雇佣分类和引用链接。</value></data>
+  <data name="WorkerType" xml:space="preserve"><value>员工类型</value></data>
+  <data name="Select" xml:space="preserve"><value>选择</value></data>
+  <data name="WorkerTypeEmployee" xml:space="preserve"><value>员工</value></data>
+  <data name="WorkerTypeContingent" xml:space="preserve"><value>临时员工</value></data>
+  <data name="EmploymentType" xml:space="preserve"><value>雇佣类型</value></data>
+  <data name="EmploymentTypeFullTime" xml:space="preserve"><value>全职</value></data>
+  <data name="EmploymentTypePartTime" xml:space="preserve"><value>兼职</value></data>
+  <data name="EmploymentTypeFixedTerm" xml:space="preserve"><value>固定期限</value></data>
+  <data name="HireDate" xml:space="preserve"><value>入职日期</value></data>
+  <data name="OrganizationUnitReference" xml:space="preserve"><value>组织单元引用</value></data>
+  <data name="PositionReference" xml:space="preserve"><value>职位引用</value></data>
+  <data name="LegalEntityReference" xml:space="preserve"><value>法人实体引用</value></data>
+  <data name="EvidenceOutOfSlice" xml:space="preserve"><value>此范围不包含证据上传或链接。</value></data>
+  <data name="ReferenceReviewSection" xml:space="preserve"><value>引用审核</value></data>
+  <data name="ReferenceReviewDescription" xml:space="preserve"><value>在将草稿标记为已审核前验证依赖项。</value></data>
+  <data name="ReviewOnly" xml:space="preserve"><value>仅审核</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>保存草稿</value></data>
+  <data name="ValidateReferences" xml:space="preserve"><value>验证引用</value></data>
+  <data name="ReviewDraft" xml:space="preserve"><value>审核草稿</value></data>
+  <data name="DraftStatus" xml:space="preserve"><value>草稿状态</value></data>
+  <data name="DraftState" xml:space="preserve"><value>草稿状态</value></data>
+  <data name="Session" xml:space="preserve"><value>会话</value></data>
+  <data name="NotStarted" xml:space="preserve"><value>未开始</value></data>
+  <data name="Version" xml:space="preserve"><value>版本</value></data>
+  <data name="ETag" xml:space="preserve"><value>ETag</value></data>
+  <data name="SliceBoundary" xml:space="preserve"><value>范围边界</value></data>
+  <data name="SliceBoundaryDescription" xml:space="preserve"><value>仅审核。提交、审批、激活、证据链接和政府标识采集均不属于此 MOD-0251 范围。</value></data>
+  <data name="AuthenticationRequired" xml:space="preserve"><value>需要身份验证。</value></data>
+  <data name="Blocked" xml:space="preserve"><value>已阻止</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>某个依赖项不可用。</value></data>
+  <data name="DraftChangedReload" xml:space="preserve"><value>草稿已更改。请重新加载草稿后重试。</value></data>
+  <data name="DraftNotFound" xml:space="preserve"><value>未找到草稿或引用。</value></data>
+  <data name="DraftReloaded" xml:space="preserve"><value>草稿已重新加载。</value></data>
+  <data name="DraftReviewHasBlockers" xml:space="preserve"><value>草稿审核存在阻塞项。</value></data>
+  <data name="DraftReviewed" xml:space="preserve"><value>草稿已审核。</value></data>
+  <data name="DraftSaved" xml:space="preserve"><value>草稿已保存。</value></data>
+  <data name="DraftStarted" xml:space="preserve"><value>草稿已开始。</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>权限被拒绝。</value></data>
+  <data name="ReferenceFallback" xml:space="preserve"><value>引用</value></data>
+  <data name="ReferencesNotValidated" xml:space="preserve"><value>引用尚未验证。</value></data>
+  <data name="RequestFailed" xml:space="preserve"><value>请求失败。</value></data>
+  <data name="ReviewBlockersPrefix" xml:space="preserve"><value>审核阻塞项</value></data>
+  <data name="SearchSameTenantPerson" xml:space="preserve"><value>搜索同一租户中的人员</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>验证失败。</value></data>
+  <data name="Valid" xml:space="preserve"><value>有效</value></data>
+</root>

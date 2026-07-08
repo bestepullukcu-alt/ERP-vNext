@@ -12,6 +12,7 @@ using Diten.Platform.Application.Features.Audit.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.Audit.Queries;
 using Diten.Platform.Application.Features.Audit.Services;
 using Diten.Platform.Application.Features.Audit.Validators;
+using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Audit;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -133,14 +134,163 @@ public sealed class AuditPhase5ApiSurfaceTests
         Assert.Equal("platform.audit.redact-actor", PermissionFor(nameof(PlatformAuditController.RedactActor)));
     }
 
-    private static string? PermissionFor(string methodName)
+
+    [Fact]
+    public void PlatformAuditAppendController_ShouldUseAuthenticatedPermissionedTenantRoute()
     {
-        var attribute = typeof(PlatformAuditController)
+        var controllerType = typeof(PlatformAuditAppendController);
+
+        Assert.Equal("api/v1/platform/audit/events", controllerType.GetCustomAttribute<RouteAttribute>()?.Template);
+        Assert.NotNull(controllerType.GetCustomAttribute<AuthorizeAttribute>());
+        Assert.Equal(
+            PlatformAuditAppendController.AppendPermission,
+            PermissionFor<PlatformAuditAppendController>(nameof(PlatformAuditAppendController.Append)));
+    }
+
+    [Fact]
+    public async Task PlatformAuditAppendController_AppendsSafeRequestToAuditService()
+    {
+        var tenantId = Guid.NewGuid();
+        var service = new CapturingAuditService(AuditAppendResult.Queued("audit:1"));
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(tenantId);
+        var controller = new PlatformAuditAppendController(service, tenantContext);
+        var request = CreateAppendRequest(tenantId) with
+        {
+            Metadata = new Dictionary<string, object?>
+            {
+                ["workflowInstanceId"] = Guid.NewGuid(),
+                ["metadataKeys"] = "draftSessionId,workflowInstanceId"
+            }
+        };
+
+        var action = await controller.Append(request, CancellationToken.None);
+
+        var created = Assert.IsType<CreatedResult>(action);
+        var response = Assert.IsType<Response<GovernedAuditAppendResponse>>(created.Value);
+        Assert.True(response.IsSuccessful);
+        Assert.Equal("Queued", response.Data!.Status);
+        Assert.True(response.Data.AuthoritativePersistenceAccepted);
+        var captured = Assert.Single(service.Requests);
+        Assert.Equal(tenantId, captured.TargetTenantId);
+        Assert.Equal(AuditCategory.System, captured.Category);
+        Assert.Equal(AuditOperation.Execute, captured.Operation);
+        Assert.Equal("Diten.HcmService", captured.SourceService);
+        Assert.Equal("MOD-0251", captured.SourceModule);
+        Assert.DoesNotContain(captured.Metadata.Keys, key => key.Contains("password", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task PlatformAuditAppendController_RejectsMissingRequiredFields()
+    {
+        var tenantId = Guid.NewGuid();
+        var service = new CapturingAuditService(AuditAppendResult.Queued("audit:missing"));
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(tenantId);
+        var controller = new PlatformAuditAppendController(service, tenantContext);
+
+        var action = await controller.Append(new GovernedAuditAppendRequest(), CancellationToken.None);
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(action);
+        var response = Assert.IsType<Response<GovernedAuditAppendResponse>>(badRequest.Value);
+        Assert.False(response.IsSuccessful);
+        Assert.Contains("correlation_id_required", response.Errors);
+        Assert.Contains("request_type_required", response.Errors);
+        Assert.Empty(service.Requests);
+    }
+
+    [Fact]
+    public async Task PlatformAuditAppendController_RejectsProhibitedMetadataKeys()
+    {
+        var tenantId = Guid.NewGuid();
+        var service = new CapturingAuditService(AuditAppendResult.Queued("audit:unsafe"));
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(tenantId);
+        var controller = new PlatformAuditAppendController(service, tenantContext);
+
+        var action = await controller.Append(CreateAppendRequest(tenantId) with
+        {
+            Metadata = new Dictionary<string, object?>
+            {
+                ["authorization"] = "redacted-test-value"
+            }
+        }, CancellationToken.None);
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(action);
+        var response = Assert.IsType<Response<GovernedAuditAppendResponse>>(badRequest.Value);
+        Assert.Contains("metadata_contains_prohibited_key", response.Errors);
+        Assert.Empty(service.Requests);
+    }
+
+    [Fact]
+    public async Task PlatformAuditAppendController_FailsClosedOnTenantMismatch()
+    {
+        var tenantId = Guid.NewGuid();
+        var service = new CapturingAuditService(AuditAppendResult.Queued("audit:tenant"));
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(tenantId);
+        var controller = new PlatformAuditAppendController(service, tenantContext);
+
+        var action = await controller.Append(CreateAppendRequest(Guid.NewGuid()), CancellationToken.None);
+
+        var forbidden = Assert.IsType<ObjectResult>(action);
+        Assert.Equal(403, forbidden.StatusCode);
+        var response = Assert.IsType<Response<GovernedAuditAppendResponse>>(forbidden.Value);
+        Assert.Contains("target_tenant_mismatch", response.Errors);
+        Assert.Empty(service.Requests);
+    }
+
+    [Fact]
+    public async Task PlatformAuditAppendController_ReportsAuditUnavailableAsBlockingFailure()
+    {
+        var tenantId = Guid.NewGuid();
+        var service = new CapturingAuditService(AuditAppendResult.EnqueueFailed("audit:failed", "Audit enqueue failed. ErrorType=TimeoutException"));
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(tenantId);
+        var controller = new PlatformAuditAppendController(service, tenantContext);
+
+        var action = await controller.Append(CreateAppendRequest(tenantId), CancellationToken.None);
+
+        var unavailable = Assert.IsType<ObjectResult>(action);
+        Assert.Equal(503, unavailable.StatusCode);
+        var response = Assert.IsType<Response<GovernedAuditAppendResponse>>(unavailable.Value);
+        Assert.True(response.IsSuccessful);
+        Assert.Equal("EnqueueFailed", response.Data!.Status);
+        Assert.True(response.Data.ShouldBlockBusinessCommand);
+    }
+
+    private static string? PermissionFor(string methodName)
+        => PermissionFor<PlatformAuditController>(methodName);
+
+    private static string? PermissionFor<TController>(string methodName)
+    {
+        var attribute = typeof(TController)
             .GetMethod(methodName)!
             .GetCustomAttribute<HasPermissionAttribute>();
         var field = typeof(HasPermissionAttribute).GetField("_permission", BindingFlags.Instance | BindingFlags.NonPublic);
         return field?.GetValue(attribute) as string;
     }
+
+    private static GovernedAuditAppendRequest CreateAppendRequest(Guid targetTenantId)
+        => new()
+        {
+            CorrelationId = Guid.NewGuid(),
+            RequestType = "employee.approved",
+            ActorType = AuditActorType.TenantUser.ToString(),
+            ActorId = Guid.NewGuid(),
+            TargetTenantId = targetTenantId,
+            Category = AuditCategory.System.ToString(),
+            EntityType = "Employee",
+            EntityId = Guid.NewGuid(),
+            Operation = AuditOperation.Execute.ToString(),
+            Outcome = AuditOutcome.Succeeded.ToString(),
+            SourceService = "Diten.HcmService",
+            SourceModule = "MOD-0251",
+            Metadata = new Dictionary<string, object?>
+            {
+                ["eventName"] = "employee.approved"
+            }
+        };
 
     private static SensitiveFieldRedactor CreateRedactor()
     {
@@ -191,6 +341,24 @@ public sealed class AuditPhase5ApiSurfaceTests
         {
             Requests.Add(request);
             return Task.FromResult(AuditAppendResult.Queued($"meta:{Requests.Count}"));
+        }
+    }
+
+    private sealed class CapturingAuditService : IAuditService
+    {
+        private readonly AuditAppendResult _result;
+
+        public CapturingAuditService(AuditAppendResult result)
+        {
+            _result = result;
+        }
+
+        public List<AuditAppendRequest> Requests { get; } = [];
+
+        public Task<AuditAppendResult> AppendAsync(AuditAppendRequest request, CancellationToken ct = default)
+        {
+            Requests.Add(request);
+            return Task.FromResult(_result);
         }
     }
 

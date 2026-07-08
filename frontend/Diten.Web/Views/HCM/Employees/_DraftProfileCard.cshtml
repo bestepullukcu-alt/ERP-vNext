@@ -1,0 +1,41 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeDraftCreate> Localizer
+
+<section class="card">
+    <div class="card-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+        <div>
+            <h5 class="card-title mb-0">@Localizer["ProfileSection"]</h5>
+            <small class="text-muted">@Localizer["ProfileDescription"]</small>
+        </div>
+        <span class="badge bg-label-warning">@Localizer["DraftOnly"]</span>
+    </div>
+    <div class="card-body row g-3">
+        <div class="col-12">
+            <label class="form-label fw-medium" for="hcm-person-id">@Localizer["PersonReference"] <span class="text-danger">*</span></label>
+            <select id="hcm-person-id"
+                    class="form-select"
+                    data-person-reference-picker
+                    data-person-reference-status-target="#hcm-person-status"
+                    aria-describedby="hcm-person-status"></select>
+            <div id="hcm-person-status" class="form-text text-muted"></div>
+        </div>
+        <div class="col-12 col-md-8">
+            <label class="form-label fw-medium" for="hcm-legal-name">@Localizer["LegalName"] <span class="text-danger">*</span></label>
+            <input id="hcm-legal-name" class="form-control" maxlength="180" autocomplete="off" />
+        </div>
+        <div class="col-12 col-md-4">
+            <label class="form-label fw-medium" for="hcm-sensitivity-level">@Localizer["SensitivityLevel"] <span class="text-danger">*</span></label>
+            <select id="hcm-sensitivity-level" class="form-select">
+                <option value="standard">@Localizer["SensitivityStandard"]</option>
+                <option value="restricted">@Localizer["SensitivityRestricted"]</option>
+            </select>
+        </div>
+        <div class="col-12">
+            <div class="alert alert-secondary mb-0">
+                <i class="icon-base bx bx-lock-alt me-1"></i>
+                @Localizer["GovernmentIdentifierDisabled"]
+            </div>
+        </div>
+    </div>
+</section>

@@ -23,6 +23,7 @@ dotnet build services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthServ
 dotnet build services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api/Diten.DevEnablementService.Api.csproj -v q
 dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -v q
 dotnet build services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -v q
+dotnet build services/Diten.HcmService/src/Diten.HcmService.Api/Diten.HcmService.Api.csproj -v q
 dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -v q
 dotnet build frontend/Diten.Web/Diten.Web.csproj -v q
 
@@ -30,13 +31,14 @@ echo "========================================="
 echo "🚀 Başlatılıyor: Auth (AuthService.Api)"
 echo "🚀 Başlatılıyor: DevEnablement (DevEnablementService.Api)"
 echo "🚀 Başlatılıyor: Platform (Diten.Platform.API)"
+echo "🚀 Başlatılıyor: HCM (Diten.HcmService.Api)"
 echo "🚀 Başlatılıyor: Gateway (ApiGateway)"
 echo "🚀 Başlatılıyor: Frontend (Diten.Web)"
 echo "========================================="
 echo ""
 
 # Terminate processes on our target ports
-lsof -ti :5000,5001,5056,5057,5058,5059 | xargs kill -9 2>/dev/null || true
+lsof -ti :5000,5001,5056,5057,5058,5059,5060 | xargs kill -9 2>/dev/null || true
 killall -9 dotnet 2>/dev/null || true
 
 prefix_logs "[AUTH    ]" "dotnet run --no-build --project services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj --urls http://0.0.0.0:5056" &
@@ -44,6 +46,7 @@ sleep 2 # Auth service needs more startup time for seeding
 prefix_logs "[DEVEN   ]" "dotnet run --no-build --project services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api/Diten.DevEnablementService.Api.csproj --urls http://0.0.0.0:5058" &
 prefix_logs "[PLATFORM]" "dotnet run --no-build --project services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj --urls http://0.0.0.0:5057" &
 prefix_logs "[MDM     ]" "dotnet run --no-build --project services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj --urls http://0.0.0.0:5059" &
+prefix_logs "[HCM     ]" "dotnet run --no-build --project services/Diten.HcmService/src/Diten.HcmService.Api/Diten.HcmService.Api.csproj --urls http://0.0.0.0:5060" &
 prefix_logs "[GATEWAY ]" "dotnet run --no-build --project gateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000" &
 prefix_logs "[FRONTEND]" "dotnet run --no-build --project frontend/Diten.Web/Diten.Web.csproj --urls http://0.0.0.0:5001" &
 

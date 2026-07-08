@@ -11,6 +11,39 @@ public static class DataSeeder
     private static readonly Guid Tenant97c5Id = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
     private const string SystemUser = "system";
     private const string BusinessReferenceDataConsumerReadKey = "platform.businessreferencedata.consumer.read";
+    private const string Mod0251ModuleCode = "mod0251";
+    private const string PersonLookupValidationPermissionKey = "platform.person.lookup_validation";
+    private const string AuditAppendPermissionKey = "platform.audit.events.append";
+    private static readonly IReadOnlySet<string> Mod0251AdminGrantKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "mod0251.employee.search",
+        "mod0251.employee.view",
+        "mod0251.employee.view_sensitive",
+        "mod0251.employee.create_draft",
+        "mod0251.employee.submit",
+        "mod0251.employee.approve",
+        "mod0251.employee.edit_legal",
+        "mod0251.employee.edit_employment",
+        "mod0251.employee.change_status",
+        "mod0251.employee.attach_evidence",
+        "mod0251.employee.export",
+        "mod0251.employee.view_status_history",
+        "mod0251.data_quality.view",
+        "mod0251.data_quality.resolve"
+    };
+
+    private static readonly IReadOnlySet<string> Mod0251ViewerGrantKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "mod0251.employee.search",
+        "mod0251.employee.view",
+        "mod0251.employee.view_status_history"
+    };
+
+    private static readonly IReadOnlySet<string> Mod0251PlatformIntegrationGrantKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        PersonLookupValidationPermissionKey,
+        AuditAppendPermissionKey
+    };
 
     // MOD-0023 Batch 09 — workflow admin is a tenant-scoped screen. The DefaultRolePermissionTemplate
     // never grants platform.* to tenant roles (escalation boundary), so the tenant operator must be
@@ -91,6 +124,23 @@ public static class DataSeeder
             new("mdm", "legal-entities", "delete", "Delete Legal Entity", null, moduleOverride: "legal-entity"),
             new("mdm", "legal-entities", "bulk-delete", "Bulk Delete", null, moduleOverride: "legal-entity"),
             new("mdm", "legal-entities", "export", "Export", null, moduleOverride: "legal-entity"),
+
+            new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
+            new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
+            new("mod0251", "employee", "view_sensitive", "View Sensitive Employee Fields", "Permission to view sensitive MOD-0251 employee fields when masking policy allows"),
+            new("mod0251", "employee", "create_draft", "Create Employee Draft", "Permission to create and save MOD-0251 employee draft sessions"),
+            new("mod0251", "employee", "submit", "Submit Employee Draft", "Permission to submit MOD-0251 employee drafts for approval when workflow is enabled"),
+            new("mod0251", "employee", "approve", "Approve Employee", "Permission to approve or reject MOD-0251 employee activation through MOD-0023 when enabled"),
+            new("mod0251", "employee", "edit_legal", "Edit Employee Legal Profile", "Permission to edit MOD-0251 employee legal profile fields"),
+            new("mod0251", "employee", "edit_employment", "Edit Employment Record", "Permission to edit MOD-0251 employment records"),
+            new("mod0251", "employee", "change_status", "Change Employee Status", "Permission to request MOD-0251 employee status changes when enabled"),
+            new("mod0251", "employee", "attach_evidence", "Attach Employee Evidence", "Permission to link evidence metadata to MOD-0251 employees when enabled"),
+            new("mod0251", "employee", "export", "Export Employees", "Permission to request governed MOD-0251 employee exports when enabled"),
+            new("mod0251", "employee", "view_status_history", "View Employee Status History", "Permission to view MOD-0251 employee status history"),
+            new("mod0251", "data_quality", "view", "View Employee Data Quality Cases", "Permission to view MOD-0251 employee data-quality cases"),
+            new("mod0251", "data_quality", "resolve", "Resolve Employee Data Quality Cases", "Permission to assign or resolve MOD-0251 employee data-quality cases"),
+            new("platform", "person", "lookup_validation", "Lookup Person Reference", "Permission to validate tenant person references"),
+            new("platform", "audit.events", "append", "Append Audit Event", "Permission to append governed MOD-0021 audit events through the cross-service boundary"),
 
             // FIX-PERM-MODULE-ATTRIBUTION — these are owned by the reference-data module (ReferenceDataManifestProvider,
             // ModuleCode: "reference-data"), not "platform"/"Platform". Key stays platform.businessreferencedata.* via
@@ -361,6 +411,9 @@ public static class DataSeeder
         // Viewer
         var viewer = await EnsureRole(roleCol, "Viewer", "Viewer", "Read-only permissions");
         await AssignBaselineAsync(permCol, rpCol, viewer);
+
+        await AssignMod0251ModuleGrantsAsync(permCol, rpCol, admin, viewer);
+        await AssignMod0251PlatformIntegrationGrantsAsync(permCol, rpCol, admin);
     }
 
     private static async Task SeedUsersAsync(IMongoDatabase database)
@@ -487,6 +540,63 @@ public static class DataSeeder
             if (!currentRPs.Any(rp => rp.PermissionId == p.Id))
             {
                 await rpCol.InsertOneAsync(RolePermission.SystemGrant(role.Id, p.Id, DefaultTenantId, SystemUser));
+            }
+        }
+    }
+
+    private static async Task AssignMod0251ModuleGrantsAsync(
+        IMongoCollection<Permission> pCol,
+        IMongoCollection<RolePermission> rpCol,
+        Role admin,
+        Role viewer)
+    {
+        var catalog = await pCol.Find(p =>
+            !p.IsDeleted &&
+            p.Module == Mod0251ModuleCode).ToListAsync();
+
+        await AssignModuleGrantsAsync(rpCol, admin, catalog, Mod0251AdminGrantKeys, Mod0251ModuleCode);
+        await AssignModuleGrantsAsync(rpCol, viewer, catalog, Mod0251ViewerGrantKeys, Mod0251ModuleCode);
+    }
+
+    private static async Task AssignMod0251PlatformIntegrationGrantsAsync(
+        IMongoCollection<Permission> pCol,
+        IMongoCollection<RolePermission> rpCol,
+        Role admin)
+    {
+        var catalog = await pCol.Find(p =>
+            !p.IsDeleted &&
+            Mod0251PlatformIntegrationGrantKeys.Contains(p.Key)).ToListAsync();
+
+        await AssignModuleGrantsAsync(rpCol, admin, catalog, Mod0251PlatformIntegrationGrantKeys, Mod0251ModuleCode);
+    }
+
+    private static async Task AssignModuleGrantsAsync(
+        IMongoCollection<RolePermission> rpCol,
+        Role role,
+        IReadOnlyCollection<Permission> catalog,
+        IReadOnlySet<string> allowedPermissionKeys,
+        string sourceModuleCode)
+    {
+        var selected = catalog
+            .Where(p => allowedPermissionKeys.Contains(p.Key))
+            .ToList();
+
+        if (selected.Count == 0)
+        {
+            return;
+        }
+
+        var currentRPs = await rpCol.Find(rp => rp.RoleId == role.Id && rp.TenantId == DefaultTenantId).ToListAsync();
+        foreach (var permission in selected)
+        {
+            var exists = currentRPs.Any(rp =>
+                rp.PermissionId == permission.Id &&
+                rp.GrantSource == GrantSource.Module &&
+                string.Equals(rp.SourceModuleCode, sourceModuleCode, StringComparison.OrdinalIgnoreCase));
+
+            if (!exists)
+            {
+                await rpCol.InsertOneAsync(RolePermission.ModuleGrant(role.Id, permission.Id, DefaultTenantId, SystemUser, sourceModuleCode));
             }
         }
     }

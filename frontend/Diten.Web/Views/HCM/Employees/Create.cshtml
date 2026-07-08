@@ -1,0 +1,63 @@
+@using Diten.Web.Views.HCM.Employees
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeDraftCreate> Localizer
+@{
+    ViewData["Title"] = Localizer["CreateEmployeeDraftTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canCreateDraft = ((bool?)ViewData["CanCreateDraft"] ?? false).ToString().ToLowerInvariant();
+}
+
+<div id="hcm-employee-draft-page"
+     data-can-create-draft="@canCreateDraft"
+     data-api-base="/HCM/Employees/drafts/api">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-3">
+        <div>
+            <h5 class="mb-0">@Localizer["CreateEmployeeDraftTitle"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/WorkCenter">@Localizer["WorkCenter"]</a>
+                    </li>
+                    <li class="breadcrumb-item">@Localizer["HcmBreadcrumb"]</li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["CreateEmployeeDraftTitle"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" id="hcm-start-draft" class="btn btn-primary">
+                <i class="icon-base bx bx-plus me-1"></i>
+                @Localizer["StartDraft"]
+            </button>
+            <button type="button" id="hcm-reload-draft" class="btn btn-label-secondary" disabled>
+                <i class="icon-base bx bx-refresh me-1"></i>
+                @Localizer["Reload"]
+            </button>
+        </div>
+    </div>
+
+    <div id="hcm-permission-state" class="alert alert-warning d-none" role="alert">
+        @Localizer["PermissionDeniedWorkspace"]
+    </div>
+    <div id="hcm-error-state" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+    <div id="hcm-success-state" class="alert alert-success d-none" role="status" aria-live="polite"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <partial name="~/Views/HCM/Employees/_DraftProfileCard.cshtml" />
+            <partial name="~/Views/HCM/Employees/_DraftEmploymentCard.cshtml" />
+            <partial name="~/Views/HCM/Employees/_DraftReferenceReviewCard.cshtml" />
+            <partial name="~/Views/HCM/Employees/_DraftActionBar.cshtml" />
+        </div>
+
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <partial name="~/Views/HCM/Employees/_DraftStatePanel.cshtml" />
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/Platform/PersonReferences/person-reference-picker.js" asp-append-version="true"></script>
+    <partial name="~/Views/HCM/Employees/_DraftCreateL10n.cshtml" />
+    <script src="~/assets/js/HCM/Employees/create-draft.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HCM/Employees/create-draft.js" asp-append-version="true"></script>
+}
