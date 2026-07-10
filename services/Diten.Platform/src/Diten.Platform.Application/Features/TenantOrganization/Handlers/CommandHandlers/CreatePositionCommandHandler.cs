@@ -49,6 +49,7 @@ public sealed class CreatePositionCommandHandler : IRequestHandler<CreatePositio
             OrganizationUnitId = request.Request.OrganizationUnitId,
             ReportsToPositionId = request.Request.ReportsToPositionId
         };
+        TenantOrganizationMapper.ApplyEnterpriseFields(entity, request.Request);
 
         await _positions.CreateAsync(entity, ct);
         return Response<Guid>.Success(entity.Id, 201);

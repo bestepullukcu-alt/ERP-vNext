@@ -1,10 +1,23 @@
+using Diten.Platform.Domain.Entities.Organization;
+
 namespace Diten.Platform.Application.Features.TenantOrganization;
 
+// MOD-0288 v1 — enterprise fields are additive and appended as trailing optional params so existing positional
+// construction (and JSON binding by name) keeps working. Enum-valued fields arrive as strings and are parsed
+// case-insensitively (fallback to the enum default), so no JSON enum-converter config is required.
 public sealed record OrganizationUnitRequest(
     string Code,
     string Name,
     Guid LegalEntityId,
-    Guid? ParentOrganizationUnitId);
+    Guid? ParentOrganizationUnitId,
+    string? OrgUnitType = null,
+    Guid? ManagerPositionId = null,
+    string? Description = null,
+    string? Status = null,
+    DateTimeOffset? EffectiveFrom = null,
+    DateTimeOffset? EffectiveTo = null,
+    string? LocationCode = null,
+    string? CostCenterCode = null);
 
 public sealed record OrganizationUnitDto(
     Guid Id,
@@ -15,13 +28,30 @@ public sealed record OrganizationUnitDto(
     Guid? ParentOrganizationUnitId,
     bool IsArchived,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    string OrgUnitType,
+    Guid? ManagerPositionId,
+    string? Description,
+    string Status,
+    DateTimeOffset? EffectiveFrom,
+    DateTimeOffset? EffectiveTo,
+    string? LocationCode,
+    string? CostCenterCode);
 
 public sealed record PositionRequest(
     string Code,
     string Name,
     Guid OrganizationUnitId,
-    Guid? ReportsToPositionId);
+    Guid? ReportsToPositionId,
+    string? JobTitle = null,
+    string? PositionType = null,
+    decimal? Fte = null,
+    string? Status = null,
+    DateTimeOffset? EffectiveFrom = null,
+    DateTimeOffset? EffectiveTo = null,
+    string? LocationCode = null,
+    string? CostCenterCode = null,
+    string? GradeCode = null);
 
 public sealed record PositionDto(
     Guid Id,
@@ -32,13 +62,30 @@ public sealed record PositionDto(
     Guid? ReportsToPositionId,
     bool IsArchived,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    string? JobTitle,
+    string PositionType,
+    decimal? Fte,
+    string Status,
+    DateTimeOffset? EffectiveFrom,
+    DateTimeOffset? EffectiveTo,
+    string? LocationCode,
+    string? CostCenterCode,
+    string? GradeCode,
+    // Derived (computed from active assignments) — never stored.
+    bool IsVacant,
+    int ActiveAssignmentCount);
 
 public sealed record PositionAssignmentRequest(
     Guid PositionId,
     Guid UserId,
     DateTimeOffset EffectiveFrom,
-    DateTimeOffset? EffectiveTo);
+    DateTimeOffset? EffectiveTo,
+    string? AssignmentType = null,
+    decimal? AllocationPercent = null,
+    string? Reason = null,
+    string? Notes = null,
+    bool IsCancelled = false);
 
 public sealed record PositionAssignmentDto(
     Guid Id,
@@ -48,7 +95,14 @@ public sealed record PositionAssignmentDto(
     DateTimeOffset EffectiveFrom,
     DateTimeOffset? EffectiveTo,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    string AssignmentType,
+    decimal? AllocationPercent,
+    string Reason,
+    string? Notes,
+    bool IsCancelled,
+    // Derived (Planned|Active|Ended) — never stored.
+    string DerivedStatus);
 
 public sealed record ManagerChainNodeDto(
     Guid PositionId,
@@ -61,15 +115,93 @@ public sealed record ManagerChainDto(Guid PositionId, IReadOnlyList<ManagerChain
 
 public static class TenantOrganizationMapper
 {
-    public static OrganizationUnitDto ToDto(Diten.Platform.Domain.Entities.Organization.OrganizationUnit entity) =>
-        new(entity.Id, entity.TenantId, entity.Code, entity.Name, entity.LegalEntityId,
-            entity.ParentOrganizationUnitId, entity.IsArchived, entity.CreatedAt, entity.UpdatedAt);
+    // ── Apply request → entity (new fields only; identity/parent/legal-entity handled by the command handlers) ──
 
-    public static PositionDto ToDto(Diten.Platform.Domain.Entities.Organization.Position entity) =>
-        new(entity.Id, entity.TenantId, entity.Code, entity.Name, entity.OrganizationUnitId,
-            entity.ReportsToPositionId, entity.IsArchived, entity.CreatedAt, entity.UpdatedAt);
+    public static void ApplyEnterpriseFields(OrganizationUnit entity, OrganizationUnitRequest r)
+    {
+        entity.OrgUnitType = ParseEnum(r.OrgUnitType, OrgUnitType.Department);
+        entity.ManagerPositionId = r.ManagerPositionId == Guid.Empty ? null : r.ManagerPositionId;
+        entity.Description = Clean(r.Description);
+        entity.Status = ParseEnum(r.Status, OrgUnitStatus.Active);
+        entity.EffectiveFrom = r.EffectiveFrom;
+        entity.EffectiveTo = r.EffectiveTo;
+        entity.LocationCode = Clean(r.LocationCode);
+        entity.CostCenterCode = Clean(r.CostCenterCode);
+    }
 
-    public static PositionAssignmentDto ToDto(Diten.Platform.Domain.Entities.Organization.PositionAssignment entity) =>
-        new(entity.Id, entity.TenantId, entity.PositionId, entity.UserId, entity.EffectiveFrom,
-            entity.EffectiveTo, entity.CreatedAt, entity.UpdatedAt);
+    public static void ApplyEnterpriseFields(Position entity, PositionRequest r)
+    {
+        entity.JobTitle = Clean(r.JobTitle);
+        entity.PositionType = ParseEnum(r.PositionType, PositionType.Permanent);
+        entity.Fte = r.Fte;
+        entity.Status = ParseEnum(r.Status, PositionStatus.Draft);
+        entity.EffectiveFrom = r.EffectiveFrom;
+        entity.EffectiveTo = r.EffectiveTo;
+        entity.LocationCode = Clean(r.LocationCode);
+        entity.CostCenterCode = Clean(r.CostCenterCode);
+        entity.GradeCode = Clean(r.GradeCode);
+    }
+
+    public static void ApplyEnterpriseFields(PositionAssignment entity, PositionAssignmentRequest r)
+    {
+        entity.AssignmentType = ParseEnum(r.AssignmentType, AssignmentType.Primary);
+        entity.AllocationPercent = r.AllocationPercent;
+        entity.Reason = ParseEnum(r.Reason, AssignmentReason.Hire);
+        entity.Notes = Clean(r.Notes);
+        entity.IsCancelled = r.IsCancelled;
+    }
+
+    // ── Derived status / occupancy ──────────────────────────────────────────────────────────────
+
+    public static AssignmentDerivedStatus DeriveStatus(PositionAssignment a, DateTimeOffset now)
+    {
+        if (a.IsCancelled)
+        {
+            return AssignmentDerivedStatus.Ended;
+        }
+
+        if (a.EffectiveFrom > now)
+        {
+            return AssignmentDerivedStatus.Planned;
+        }
+
+        if (a.EffectiveTo.HasValue && a.EffectiveTo.Value <= now)
+        {
+            return AssignmentDerivedStatus.Ended;
+        }
+
+        return AssignmentDerivedStatus.Active;
+    }
+
+    public static bool IsActiveNow(PositionAssignment a, DateTimeOffset now) =>
+        DeriveStatus(a, now) == AssignmentDerivedStatus.Active;
+
+    // ── Entity → DTO ─────────────────────────────────────────────────────────────────────────────
+
+    public static OrganizationUnitDto ToDto(OrganizationUnit e) =>
+        new(e.Id, e.TenantId, e.Code, e.Name, e.LegalEntityId, e.ParentOrganizationUnitId, e.IsArchived,
+            e.CreatedAt, e.UpdatedAt,
+            e.OrgUnitType.ToString(), e.ManagerPositionId, e.Description, e.Status.ToString(),
+            e.EffectiveFrom, e.EffectiveTo, e.LocationCode, e.CostCenterCode);
+
+    public static PositionDto ToDto(Position e, bool isVacant = true, int activeAssignmentCount = 0) =>
+        new(e.Id, e.TenantId, e.Code, e.Name, e.OrganizationUnitId, e.ReportsToPositionId, e.IsArchived,
+            e.CreatedAt, e.UpdatedAt,
+            e.JobTitle, e.PositionType.ToString(), e.Fte, e.Status.ToString(),
+            e.EffectiveFrom, e.EffectiveTo, e.LocationCode, e.CostCenterCode, e.GradeCode,
+            isVacant, activeAssignmentCount);
+
+    public static PositionAssignmentDto ToDto(PositionAssignment e) => ToDto(e, DateTimeOffset.UtcNow);
+
+    public static PositionAssignmentDto ToDto(PositionAssignment e, DateTimeOffset now) =>
+        new(e.Id, e.TenantId, e.PositionId, e.UserId, e.EffectiveFrom, e.EffectiveTo, e.CreatedAt, e.UpdatedAt,
+            e.AssignmentType.ToString(), e.AllocationPercent, e.Reason.ToString(), e.Notes, e.IsCancelled,
+            DeriveStatus(e, now).ToString());
+
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static TEnum ParseEnum<TEnum>(string? value, TEnum fallback) where TEnum : struct, Enum =>
+        !string.IsNullOrWhiteSpace(value) && Enum.TryParse<TEnum>(value.Trim(), ignoreCase: true, out var parsed)
+            ? parsed
+            : fallback;
 }

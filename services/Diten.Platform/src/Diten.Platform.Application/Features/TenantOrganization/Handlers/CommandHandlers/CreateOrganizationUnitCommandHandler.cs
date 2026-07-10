@@ -62,6 +62,7 @@ public sealed class CreateOrganizationUnitCommandHandler : IRequestHandler<Creat
             LegalEntityId = request.Request.LegalEntityId,
             ParentOrganizationUnitId = request.Request.ParentOrganizationUnitId
         };
+        TenantOrganizationMapper.ApplyEnterpriseFields(entity, request.Request);
 
         await _repository.CreateAsync(entity, ct);
         return Response<Guid>.Success(entity.Id, 201);

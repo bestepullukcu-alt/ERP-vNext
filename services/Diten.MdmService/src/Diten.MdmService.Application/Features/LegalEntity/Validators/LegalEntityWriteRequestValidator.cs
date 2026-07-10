@@ -13,10 +13,15 @@ public sealed class LegalEntityWriteRequestValidator : AbstractValidator<LegalEn
         RuleFor(x => x.LegalName).NotEmpty().MaximumLength(256);
         RuleFor(x => x.DisplayName).MaximumLength(256);
         RuleFor(x => x.LegalFormCode).NotEmpty().MaximumLength(64);
-        RuleFor(x => x.OrganizationRoleCode).NotEmpty().MaximumLength(64);
+        // MOD-0220 finish — OrganizationRole (Structure) is deferred from the UI; optional now (mapping defaults it
+        // to LEGALENTITY). Length-guarded only.
+        RuleFor(x => x.OrganizationRoleCode).MaximumLength(64);
 
         RuleFor(x => x.RegistrationNumber).MaximumLength(128);
         RuleFor(x => x.TaxId).MaximumLength(128);
+        // MOD-0220 finish — additive statutory fields. Free strings (no VIES/format validation), dates unconstrained.
+        RuleFor(x => x.VatNumber).MaximumLength(64);
+        RuleFor(x => x.PlaceOfIncorporation).MaximumLength(256);
         RuleFor(x => x.CountryCode).NotEmpty().MaximumLength(3);
 
         RuleFor(x => x.OwnershipPercent)
@@ -29,9 +34,11 @@ public sealed class LegalEntityWriteRequestValidator : AbstractValidator<LegalEn
         RuleFor(x => x.TaxRegimeCode).MaximumLength(64);
         RuleFor(x => x.BaseCurrencyCode).NotEmpty().MaximumLength(3);
 
+        // MOD-0220 finish — the registered-address sub-form is DEFERRED, so the address is optional now. When
+        // supplied it must still be well-formed (line1/city/country); when omitted it simply isn't captured yet.
         RuleFor(x => x.RegisteredAddressJson)
-            .NotEmpty()
             .Must(BeValidAddressJson)
+            .When(x => !string.IsNullOrWhiteSpace(x.RegisteredAddressJson))
             .WithMessage("Registered address must be valid JSON containing non-empty line1, city and country.");
         RuleFor(x => x.CorrespondenceAddressJson)
             .Must(json => BeValidJsonObject(json))

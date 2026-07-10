@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <Content Update="Seed\business-reference-data\document-management-qms.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="Seed\business-reference-data\legal-entity-reference.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

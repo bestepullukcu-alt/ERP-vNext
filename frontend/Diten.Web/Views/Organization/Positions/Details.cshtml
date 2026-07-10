@@ -1,0 +1,98 @@
+@using Diten.Web.Views.Organization.Positions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var positionId = ViewData["PositionId"]?.ToString() ?? string.Empty;
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* MOD-0288 — Position read-only Details. Mirrors the Legal Entity / Org Unit Details reference: static title +
+   breadcrumb, Back + Actions-dropdown + Edit header, occupancy/status/archived badges inside the Basic card
+   header, and read-only `card backbone-preview-section` cards laid out as a col-lg-8 main column + col-lg-4
+   sidebar (plus the read-only manager chain). Values populated client-side by details.js. *@
+<div class="position-details" id="p-details-page" data-p-id="@positionId">
+    @Html.AntiForgeryToken()
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div>
+            <h5 class="mb-0">@Localizer["DetailsTitle"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/Positions">@Localizer["PositionsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary" id="pDetailBreadcrumb">@Localizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        @* Button order: Back → Actions ▼ → Edit *@
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="/Positions" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+            <div class="dropdown d-none" id="p-detail-action-wrap">
+                <button type="button" class="btn btn-label-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bx bx-cog me-1"></i>@Localizer["Actions"]
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" id="p-detail-actions"></ul>
+            </div>
+            <a href="#" id="p-detail-edit" class="btn btn-primary">@Localizer["Edit"]</a>
+        </div>
+    </div>
+
+    <div id="p-details-alert" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="row g-4">
+        @* Main column *@
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                @* Section title on the left, occupancy + status + archived badges on the right. *@
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["SectionBasic"]</h6>
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <span id="p-detail-occupancy" class="badge bg-label-secondary"></span>
+                        <span id="pDetailStatusBadge"></span>
+                        <span id="pDetailArchivedBadge"></span>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-purchase-tag-alt"></i><div><div class="backbone-preview-label">@Localizer["Code"]</div><div class="backbone-preview-value mt-1" id="pDetailCode">-</div></div></div></div>
+                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-briefcase"></i><div><div class="backbone-preview-label">@Localizer["Name"]</div><div class="backbone-preview-value mt-1" id="pDetailName">-</div></div></div></div>
+                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-id-card"></i><div><div class="backbone-preview-label">@Localizer["JobTitle"]</div><div class="backbone-preview-value mt-1" id="pDetailJobTitle">-</div></div></div></div>
+                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-category"></i><div><div class="backbone-preview-label">@Localizer["PositionType"]</div><div class="backbone-preview-value mt-1" id="pDetailType">-</div></div></div></div>
+                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-sitemap"></i><div><div class="backbone-preview-label">@Localizer["OrgUnit"]</div><div class="backbone-preview-value mt-1" id="pDetailOrgUnit">-</div></div></div></div>
+                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-user-voice"></i><div><div class="backbone-preview-label">@Localizer["ReportsTo"]</div><div class="backbone-preview-value mt-1" id="pDetailReportsTo">-</div></div></div></div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ManagerChain"]</h6>
+                <div id="pDetailManagerChain" class="text-muted">-</div>
+            </section>
+        </div>
+
+        @* Sidebar column *@
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionAdvanced"]</h6>
+                <div class="row g-4">
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-pie-chart-alt-2"></i><div><div class="backbone-preview-label">@Localizer["Fte"]</div><div class="backbone-preview-value mt-1" id="pDetailFte">-</div></div></div></div>
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar-event"></i><div><div class="backbone-preview-label">@Localizer["EffectiveFrom"]</div><div class="backbone-preview-value mt-1" id="pDetailEffectiveFrom">-</div></div></div></div>
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar-x"></i><div><div class="backbone-preview-label">@Localizer["EffectiveTo"]</div><div class="backbone-preview-value mt-1" id="pDetailEffectiveTo">-</div></div></div></div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionSystem"]</h6>
+                <div class="row g-4">
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-archive"></i><div><div class="backbone-preview-label">@Localizer["Archived"]</div><div class="backbone-preview-value mt-1" id="pDetailArchived">-</div></div></div></div>
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar-plus"></i><div><div class="backbone-preview-label">@Localizer["CreatedAt"]</div><div class="backbone-preview-value mt-1" id="pDetailCreatedAt">-</div></div></div></div>
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar-edit"></i><div><div class="backbone-preview-label">@Localizer["UpdatedAt"]</div><div class="backbone-preview-value mt-1" id="pDetailUpdatedAt">-</div></div></div></div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="_DetailsL10n" />
+    <script src="~/assets/js/Organization/Positions/details.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OrganizationUnitsTitle" xml:space="preserve"><value>组织单元</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理组织单元、其所属法律实体及汇报层级。</value></data>
+  <data name="AddNewOrganizationUnit" xml:space="preserve"><value>添加组织单元</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>创建组织单元</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑组织单元</value></data>
+  <data name="Code" xml:space="preserve"><value>编码</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>例如 HQ-OPS</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>例如 Head Office Operations</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>法律实体</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>选择一个法律实体…</value></data>
+  <data name="LegalEntityIdPlaceholder" xml:space="preserve"><value>粘贴法律实体 ID（GUID）</value></data>
+  <data name="LegalEntityLookupUnavailable" xml:space="preserve"><value>法律实体查询不可用；请手动输入 ID。</value></data>
+  <data name="ParentOrgUnit" xml:space="preserve"><value>上级组织单元</value></data>
+  <data name="NoParent" xml:space="preserve"><value>（无上级 — 顶层）</value></data>
+  <data name="Archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>启用</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="Archive" xml:space="preserve"><value>归档</value></data>
+  <data name="Unarchive" xml:space="preserve"><value>取消归档</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>此组织单元将被归档。是否继续？</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>组织单元已归档。</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>请使用 2-80 个大写字母、数字和单个连字符。</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>此字段为必填项。</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>最终编码</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <!-- MOD-0288 Phase 2 — full-page form + details + tree -->
+  <data name="OrgUnitType" xml:space="preserve"><value>类型</value></data>
+  <data name="OrgUnitTypeDepartment" xml:space="preserve"><value>部门</value></data>
+  <data name="OrgUnitTypeDivision" xml:space="preserve"><value>事业部</value></data>
+  <data name="OrgUnitTypeBranch" xml:space="preserve"><value>分支机构</value></data>
+  <data name="OrgUnitTypeTeam" xml:space="preserve"><value>团队</value></data>
+  <data name="OrgUnitTypeHQ" xml:space="preserve"><value>总部</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>状态</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>停用</value></data>
+  <data name="ManagerPosition" xml:space="preserve"><value>主管职位</value></data>
+  <data name="NoManager" xml:space="preserve"><value>（无主管）</value></data>
+  <data name="Description" xml:space="preserve"><value>说明</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>生效起始</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>生效截止</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>基本</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>高级详情</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>可选的企业详情 — 类型、主管、说明、状态和生效日期。</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>查看详情</value></data>
+  <data name="Details" xml:space="preserve"><value>详情</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>组织单元详情</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>系统</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>创建时间</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回列表</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>无法加载组织单元。</value></data>
+  <data name="ViewFlat" xml:space="preserve"><value>表格</value></data>
+  <data name="ViewTree" xml:space="preserve"><value>树形</value></data>
+  <data name="TreeEmpty" xml:space="preserve"><value>没有可显示的组织单元。</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>选择…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>此组织单元将被永久删除。是否继续？</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>组织单元已删除。</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>例如 负责区域销售运营</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>选择日期…</value>
+  </data>
+  <data name="AddChild" xml:space="preserve">
+    <value>添加子单位</value>
+  </data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve">
+    <value>搜索单位（名称或代码）…</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>“{0}” 已移动</value>
+  </data>
+  <data name="MoveSameLegalEntityOnly" xml:space="preserve">
+    <value>单位只能在同一法律实体内移动。</value>
+  </data>
+  <data name="MoveArchivedBlocked" xml:space="preserve">
+    <value>已归档的单位无法移动。</value>
+  </data>
+  <data name="MoveCycleBlocked" xml:space="preserve">
+    <value>单位不能移动到其自身的子单位下。</value>
+  </data>
+</root>

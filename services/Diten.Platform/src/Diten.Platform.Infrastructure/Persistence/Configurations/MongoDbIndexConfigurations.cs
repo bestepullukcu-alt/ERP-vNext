@@ -999,18 +999,16 @@ public static class MongoDbIndexConfigurations
             Builders<BsonDocument>.Filter.Exists("Category"),
             Builders<BsonDocument>.Update.Unset("Category"));
 
+        // FIX-DOMAIN-DEDUP — uniqueness moves from the raw Code to the NORMALIZED CodeKey (UPPERCASE, no separators)
+        // so two live rows can never share a domain that differs only by separators/case
+        // (e.g. "MASTER-DATA-MANAGEMENT" vs "MASTERDATAMANAGEMENT"). ModuleDomainDeduplicationMigration runs BEFORE
+        // this (in DI startup) to collapse existing duplicates and backfill CodeKey, so the index builds cleanly.
+        // The old Code-based unique index is dropped.
         await DropIndexIfExistsAsync(moduleDomainCollection.Indexes, "ux_platform_module_domains_code");
+        await DropIndexIfExistsAsync(moduleDomainCollection.Indexes, "ux_platform_module_domains_code_key");
+        // Non-unique indexes first (always safe to (re)build).
         await moduleDomainCollection.Indexes.CreateManyAsync(new[]
         {
-            new CreateIndexModel<ModuleDomain>(
-                Builders<ModuleDomain>.IndexKeys.Ascending(x => x.Code),
-                new CreateIndexOptions<ModuleDomain>
-                {
-                    Unique = true,
-                    Name = "ux_platform_module_domains_code",
-                    // UI #C3e: uniqueness yalnız canlı kayıtlar arası — soft-deleted kod aynı kodla yeni insert'i bloke etmez.
-                    PartialFilterExpression = Builders<ModuleDomain>.Filter.Eq(x => x.IsDeleted, false)
-                }),
             new CreateIndexModel<ModuleDomain>(
                 Builders<ModuleDomain>.IndexKeys.Ascending(x => x.IsActive),
                 new CreateIndexOptions { Name = "ix_platform_module_domains_active" }),
@@ -1018,6 +1016,32 @@ public static class MongoDbIndexConfigurations
                 Builders<ModuleDomain>.IndexKeys.Ascending(x => x.SortOrder),
                 new CreateIndexOptions { Name = "ix_platform_module_domains_sort_order" })
         });
+
+        // The unique CodeKey index is built in its OWN call, AFTER ModuleDomainDeduplicationMigration has
+        // deduped + backfilled CodeKey on every live row. If it still fails (e.g. a null/empty CodeKey slipped
+        // through), surface it LOUDLY and rethrow — the OLD Code-based unique index was already dropped, so a
+        // swallowed failure here would leave platform_module_domains with NO uniqueness protection at all.
+        try
+        {
+            await moduleDomainCollection.Indexes.CreateOneAsync(
+                new CreateIndexModel<ModuleDomain>(
+                    Builders<ModuleDomain>.IndexKeys.Ascending(x => x.CodeKey),
+                    new CreateIndexOptions<ModuleDomain>
+                    {
+                        Unique = true,
+                        Name = "ux_platform_module_domains_code_key",
+                        // Uniqueness yalnız canlı kayıtlar arası — soft-deleted kod aynı normalized key ile yeni insert'i bloke etmez.
+                        PartialFilterExpression = Builders<ModuleDomain>.Filter.Eq(x => x.IsDeleted, false)
+                    }));
+        }
+        catch (MongoException ex)
+        {
+            Console.Error.WriteLine(
+                "[MongoDbIndexConfigurations] ERROR: failed to build unique index 'ux_platform_module_domains_code_key' on " +
+                $"platform_module_domains: {ex.Message}. The collection currently has NO domain-code uniqueness protection " +
+                "(likely a null/empty CodeKey — check the ModuleDomainDeduplicationMigration log).");
+            throw;
+        }
 
         await DropIndexIfExistsAsync(moduleServiceCollection.Indexes, "ux_platform_module_services_code");
         await moduleServiceCollection.Indexes.CreateManyAsync(new[]

@@ -10,9 +10,13 @@ internal static class LegalEntityTestData
     public static LegalEntityWriteRequest ValidRequest(
         string code = "LE-001",
         string legalName = "Contoso Legal Entity",
-        string organizationRoleCode = "LEGALENTITY",
+        string? organizationRoleCode = "LEGALENTITY",
         Guid? parentLegalEntityId = null,
-        string registeredAddressJson = ValidAddressJson)
+        string? registeredAddressJson = ValidAddressJson,
+        string? vatNumber = "VAT-EU-123",
+        string? placeOfIncorporation = "Istanbul, TR",
+        DateTimeOffset? incorporationDate = null,
+        DateTimeOffset? dissolutionDate = null)
         => new(
             Code: code,
             LegalName: legalName,
@@ -21,6 +25,10 @@ internal static class LegalEntityTestData
             OrganizationRoleCode: organizationRoleCode,
             RegistrationNumber: "REG-123",
             TaxId: "TAX-123",
+            VatNumber: vatNumber,
+            PlaceOfIncorporation: placeOfIncorporation,
+            IncorporationDate: incorporationDate,
+            DissolutionDate: dissolutionDate,
             CountryCode: "TR",
             StatutoryStatus: "Registered",
             ParentLegalEntityId: parentLegalEntityId,

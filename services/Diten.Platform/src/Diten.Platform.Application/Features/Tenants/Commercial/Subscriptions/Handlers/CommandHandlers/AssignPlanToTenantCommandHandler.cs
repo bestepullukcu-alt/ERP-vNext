@@ -50,10 +50,15 @@ public sealed class AssignPlanToTenantCommandHandler : IRequestHandler<AssignPla
             return response;
         }
 
-        var quotaResponse = await _quotaService.InitializeTenantQuotasAsync(
+        // FIX-QUOTA-PLAN-SYNC — assigning/changing a plan must RE-SYNC the stored quota LIMITS to the new plan, not
+        // just initialize-once. InitializeTenantQuotasAsync only creates missing usage rows and leaves an existing
+        // LimitValue frozen (Free=3 stayed 3 after a Free→Enterprise change). SyncTenantQuotaLimitsAsync upserts each
+        // limit (LimitValue + SubscriptionId + PlanId) while PRESERVING CurrentValue, and still creates rows for a
+        // fresh tenant — so it is a superset that both onboards and re-syncs correctly.
+        var quotaResponse = await _quotaService.SyncTenantQuotaLimitsAsync(
             request.TenantId,
             "SubscriptionActivation",
-            "Tenant subscription assigned; quota usage initialized.",
+            "Tenant subscription assigned; quota limits synced to the plan.",
             _currentUser.ActorName,
             Guid.NewGuid().ToString(),
             ct);

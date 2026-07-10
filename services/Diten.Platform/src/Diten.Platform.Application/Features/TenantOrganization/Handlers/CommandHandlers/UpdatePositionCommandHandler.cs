@@ -50,6 +50,7 @@ public sealed class UpdatePositionCommandHandler : IRequestHandler<UpdatePositio
         entity.Name = request.Request.Name.Trim();
         entity.OrganizationUnitId = request.Request.OrganizationUnitId;
         entity.ReportsToPositionId = request.Request.ReportsToPositionId;
+        TenantOrganizationMapper.ApplyEnterpriseFields(entity, request.Request);
         await _positions.UpdateAsync(entity, ct);
         return Response<NoContent>.Success(204);
     }

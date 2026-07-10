@@ -71,6 +71,8 @@
     <link rel="stylesheet" href="~/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" />
     <link rel="stylesheet" href="~/assets/vendor/libs/datatables-colreorder-bs5/colReorder.dataTables.min.css" />
     <link rel="stylesheet" href="~/assets/vendor/libs/select2/select2.css" />
+    @* MOD-0220 fix — flatpickr for culture-aware date pickers on tenant forms (Legal Entity wizard, Organization). *@
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
 
     <!-- Custom CSS (Loaded last to override vendors) -->
     <link rel="stylesheet" href="~/assets/css/backbone-custom.css" asp-append-version="true" />
@@ -123,16 +125,24 @@
     </script>
     <script src="~/assets/js/config.js" asp-append-version="true"></script>
 
-    <script>
-        window.L10n = {
-            RequiredProgressText: "@SharedLocalizer["RequiredStatus"].Value",
-            ValidationErrorsText: "@SharedLocalizer["ValidationErrors"].Value",
-            LoginErrorTitle: "@SharedLocalizer["Login.ErrorTitle"].Value",
-            LoginErrorRequired: "@SharedLocalizer["Login.ErrorRequired"].Value",
-            LoginSubmit: "@SharedLocalizer["Login.Submit"].Value",
-            User: "@SharedLocalizer["User"].Value",
-            AreYouSure: "@SharedLocalizer["AreYouSure"].Value"
+    @* Build window.L10n via JSON serialization, NOT inline "@("@")Value" — Razor's HTML encoder turns non-Latin
+       characters (Cyrillic / Arabic / CJK) into &#xNNNN; entities, which then render literally when the shared
+       required-fields tracker writes them via textContent. JSON emits \uXXXX escapes that the JS parser decodes
+       back to the real characters, so every language shows correctly. *@
+    @{
+        var l10nBridge = new System.Collections.Generic.Dictionary<string, string>
+        {
+            ["RequiredProgressText"] = SharedLocalizer["RequiredStatus"].Value,
+            ["ValidationErrorsText"] = SharedLocalizer["ValidationErrors"].Value,
+            ["LoginErrorTitle"] = SharedLocalizer["Login.ErrorTitle"].Value,
+            ["LoginErrorRequired"] = SharedLocalizer["Login.ErrorRequired"].Value,
+            ["LoginSubmit"] = SharedLocalizer["Login.Submit"].Value,
+            ["User"] = SharedLocalizer["User"].Value,
+            ["AreYouSure"] = SharedLocalizer["AreYouSure"].Value
         };
+    }
+    <script>
+        window.L10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(l10nBridge));
 
         // Template normalization
         window.L10n.RequiredProgressText = window.L10n.RequiredProgressText.replace("{{0}}", "{0}").replace("{{1}}", "{1}");
@@ -581,6 +591,8 @@
     <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
     <script src="~/assets/vendor/libs/select2/select2.js"></script>
     <script src="~/assets/vendor/libs/notyf/notyf.js"></script>
+    @* MOD-0220 fix — flatpickr loaded before page scripts so form date fields (.flatpickr-date) initialize. *@
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
 
     <!-- DataTable Vendor -->
     <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>

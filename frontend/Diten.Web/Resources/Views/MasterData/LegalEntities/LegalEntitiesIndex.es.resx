@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="LegalEntitiesTitle" xml:space="preserve"><value>Entidades jurídicas</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gestione las entidades jurídicas de su inquilino. Créelas como borrador y luego actívelas para que puedan ser referenciadas por las unidades organizativas.</value></data>
+  <data name="AddNewLegalEntity" xml:space="preserve"><value>Añadir entidad jurídica</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Crear entidad jurídica</value></data>
+  <data name="Code" xml:space="preserve"><value>Código</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>p. ej. ACME-TR</value></data>
+  <data name="LegalName" xml:space="preserve"><value>Razón social</value></data>
+  <data name="LegalNamePlaceholder" xml:space="preserve"><value>p. ej. Acme Manufacturing Inc.</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Nombre para mostrar</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>p. ej. Acme</value></data>
+  <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Activo</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="Activate" xml:space="preserve"><value>Activar</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archivar</value></data>
+  <data name="ActivateConfirm" xml:space="preserve"><value>Esta entidad jurídica se activará y podrá ser referenciada. ¿Continuar?</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Esta entidad jurídica se archivará. ¿Continuar?</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Entidad jurídica activada.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Entidad jurídica archivada.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
+  <data name="CreateDraftHint" xml:space="preserve"><value>La entidad jurídica se crea como borrador. Actívela después para usarla en las unidades organizativas.</value></data>
+
+  <!-- Tarea 4 — columnas de lista enriquecidas + filtros + acciones -->
+  <data name="LegalForm" xml:space="preserve"><value>Forma jurídica</value></data>
+  <data name="OrgRole" xml:space="preserve"><value>Rol organizativo</value></data>
+  <data name="Country" xml:space="preserve"><value>País</value></data>
+  <data name="BaseCurrency" xml:space="preserve"><value>Moneda base</value></data>
+  <data name="Parent" xml:space="preserve"><value>Matriz</value></data>
+  <data name="StatutoryStatus" xml:space="preserve"><value>Estado legal</value></data>
+  <data name="OperationalStatus" xml:space="preserve"><value>Estado operativo</value></data>
+  <data name="EvidenceStatus" xml:space="preserve"><value>Estado de la evidencia</value></data>
+  <data name="CreatedFrom" xml:space="preserve"><value>Creado desde</value></data>
+  <data name="CreatedTo" xml:space="preserve"><value>Creado hasta</value></data>
+  <data name="IncompleteOnly" xml:space="preserve"><value>Solo incompletas</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="Suspend" xml:space="preserve"><value>Suspender</value></data>
+  <data name="SuspendConfirm" xml:space="preserve"><value>Esta entidad jurídica se suspenderá. ¿Continuar?</value></data>
+  <data name="RecordSuspended" xml:space="preserve"><value>Entidad jurídica suspendida.</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>En revisión</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="StatusSuspended" xml:space="preserve"><value>Suspendido</value></data>
+  <data name="StatusRegistered" xml:space="preserve"><value>Registrado</value></data>
+  <data name="StatusPending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="StatusDissolved" xml:space="preserve"><value>Disuelto</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>Enviado</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="EvidenceNotStarted" xml:space="preserve"><value>No iniciado</value></data>
+  <data name="EvidenceComplete" xml:space="preserve"><value>Completo</value></data>
+  <data name="EvidenceVerified" xml:space="preserve"><value>Verificado</value></data>
+
+  <!-- Tarea 5 — asistente de 8 pasos -->
+  <data name="WizardCreateTitle" xml:space="preserve"><value>Crear entidad jurídica</value></data>
+  <data name="WizardEditTitle" xml:space="preserve"><value>Editar entidad jurídica</value></data>
+  <data name="WizardSubtitle" xml:space="preserve"><value>Capture el perfil completo de la entidad jurídica en ocho secciones.</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Guardar borrador</value></data>
+  <data name="Submit" xml:space="preserve"><value>Enviar</value></data>
+  <data name="PreviousStep" xml:space="preserve"><value>Anterior</value></data>
+  <data name="NextStep" xml:space="preserve"><value>Siguiente</value></data>
+  <data name="RequiredCounter" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="Step1Identity" xml:space="preserve"><value>Identidad</value></data>
+  <data name="Step1IdentitySub" xml:space="preserve"><value>Código / Nombre / Forma</value></data>
+  <data name="Step2Statutory" xml:space="preserve"><value>Legal &amp; Impuestos</value></data>
+  <data name="Step2StatutorySub" xml:space="preserve"><value>Registro / País</value></data>
+  <data name="Step3Structure" xml:space="preserve"><value>Estructura</value></data>
+  <data name="Step3StructureSub" xml:space="preserve"><value>Matriz / Propiedad</value></data>
+  <data name="Step4Finance" xml:space="preserve"><value>Finanzas</value></data>
+  <data name="Step4FinanceSub" xml:space="preserve"><value>Fiscal / Moneda</value></data>
+  <data name="Step5Addresses" xml:space="preserve"><value>Direcciones &amp; Contactos</value></data>
+  <data name="Step5AddressesSub" xml:space="preserve"><value>Dirección / Correo / Teléfono</value></data>
+  <data name="Step6Governance" xml:space="preserve"><value>Gobernanza</value></data>
+  <data name="Step6GovernanceSub" xml:space="preserve"><value>Aprobación / Origen</value></data>
+  <data name="Step7Evidence" xml:space="preserve"><value>Evidencia</value></data>
+  <data name="Step7EvidenceSub" xml:space="preserve"><value>Documentación</value></data>
+  <data name="Step8Review" xml:space="preserve"><value>Revisión</value></data>
+  <data name="Step8ReviewSub" xml:space="preserve"><value>Confirmar &amp; Guardar</value></data>
+  <data name="Step1IdentityDesc" xml:space="preserve"><value>Introduzca el código, la razón social y la forma jurídica de la entidad.</value></data>
+  <data name="Step2StatutoryDesc" xml:space="preserve"><value>Detalles de registro, fiscales y de estado legal.</value></data>
+  <data name="Step3StructureDesc" xml:space="preserve"><value>Defina la relación con la matriz y la propiedad.</value></data>
+  <data name="Step4FinanceDesc" xml:space="preserve"><value>Calendario fiscal, norma contable y moneda base.</value></data>
+  <data name="Step5AddressesDesc" xml:space="preserve"><value>Dirección registrada y datos de contacto oficiales.</value></data>
+  <data name="Step6GovernanceDesc" xml:space="preserve"><value>Flujo de aprobación y seguimiento del sistema de origen.</value></data>
+  <data name="Step7EvidenceDesc" xml:space="preserve"><value>Documentación justificativa e integridad.</value></data>
+  <data name="Step8ReviewDesc" xml:space="preserve"><value>Revise todos los detalles antes de guardar la entidad jurídica.</value></data>
+  <data name="RegistrationNumber" xml:space="preserve"><value>Número de registro</value></data>
+  <data name="TaxId" xml:space="preserve"><value>Identificación fiscal</value></data>
+  <data name="ParentLegalEntity" xml:space="preserve"><value>Entidad jurídica matriz</value></data>
+  <data name="NoParent" xml:space="preserve"><value>Ninguna</value></data>
+  <data name="OwnershipPercent" xml:space="preserve"><value>Propiedad %</value></data>
+  <data name="ControlType" xml:space="preserve"><value>Tipo de control</value></data>
+  <data name="FiscalYearVariant" xml:space="preserve"><value>Variante de ejercicio fiscal</value></data>
+  <data name="AccountingStandard" xml:space="preserve"><value>Norma contable</value></data>
+  <data name="TaxRegime" xml:space="preserve"><value>Régimen fiscal</value></data>
+  <data name="RegisteredAddress" xml:space="preserve"><value>Dirección registrada</value></data>
+  <data name="CorrespondenceAddress" xml:space="preserve"><value>Dirección de correspondencia</value></data>
+  <data name="AddressJsonHelp" xml:space="preserve"><value>La línea 1, la ciudad y el país son obligatorios cuando se indica una dirección.</value></data>
+  <data name="AddressLine1" xml:space="preserve"><value>Dirección línea 1</value></data>
+  <data name="AddressLine2" xml:space="preserve"><value>Dirección línea 2</value></data>
+  <data name="AddressCity" xml:space="preserve"><value>Ciudad</value></data>
+  <data name="AddressState" xml:space="preserve"><value>Estado / Provincia</value></data>
+  <data name="AddressPostalCode" xml:space="preserve"><value>Código postal</value></data>
+  <data name="OfficialEmail" xml:space="preserve"><value>Correo electrónico oficial</value></data>
+  <data name="OfficialPhone" xml:space="preserve"><value>Teléfono oficial</value></data>
+  <data name="Website" xml:space="preserve"><value>Sitio web</value></data>
+  <data name="ApprovalStatus" xml:space="preserve"><value>Estado de aprobación</value></data>
+  <data name="ReviewDue" xml:space="preserve"><value>Fecha de revisión</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Sistema de origen</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>Código heredado</value></data>
+  <data name="CompletenessScore" xml:space="preserve"><value>Puntuación de integridad</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seleccionar…</value></data>
+  <data name="ParentRequiredForBranch" xml:space="preserve"><value>Se requiere una entidad jurídica matriz para los roles de Sucursal / Oficina de representación.</value></data>
+  <data name="InvalidAddressJson" xml:space="preserve"><value>La dirección registrada debe ser un JSON válido con line1, city y country no vacíos.</value></data>
+
+  <!-- Tarea 6 — vista rápida + detalles -->
+  <data name="Referenceable" xml:space="preserve"><value>Referenciable</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Estado del ciclo de vida</value></data>
+  <data name="ApprovalStatusLabel" xml:space="preserve"><value>Aprobación</value></data>
+  <data name="Version" xml:space="preserve"><value>Versión</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Creado el</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Identidad</value></data>
+  <data name="SectionStatutory" xml:space="preserve"><value>Legal &amp; Impuestos</value></data>
+  <data name="SectionStructure" xml:space="preserve"><value>Estructura</value></data>
+  <data name="SectionFinance" xml:space="preserve"><value>Finanzas</value></data>
+  <data name="SectionAddresses" xml:space="preserve"><value>Direcciones &amp; Contactos</value></data>
+  <data name="SectionGovernance" xml:space="preserve"><value>Gobernanza</value></data>
+  <data name="SectionEvidence" xml:space="preserve"><value>Evidencia</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Sistema</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Volver a la lista</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>No se pudo cargar la entidad jurídica.</value></data>
+  <!-- MOD-0220 finish — nuevos campos legales + sección avanzada -->
+  <data name="VatNumber" xml:space="preserve"><value>Número de IVA</value></data>
+  <data name="PlaceOfIncorporation" xml:space="preserve"><value>Lugar de constitución</value></data>
+  <data name="IncorporationDate" xml:space="preserve"><value>Fecha de constitución</value></data>
+  <data name="DissolutionDate" xml:space="preserve"><value>Fecha de disolución</value></data>
+  <data name="SectionStatutoryAdvanced" xml:space="preserve"><value>Detalles legales / avanzados</value></data>
+  <data name="StatutoryAdvancedDesc" xml:space="preserve"><value>Detalles de registro, fiscales y legales — opcionales; expanda para completar el perfil.</value></data>
+  <!-- Statutory field placeholders (screenshot fix) -->
+  <data name="RegistrationNumberPlaceholder" xml:space="preserve"><value>p. ej. 0123456789</value></data>
+  <data name="TaxIdPlaceholder" xml:space="preserve"><value>p. ej. 1234567890</value></data>
+  <data name="VatNumberPlaceholder" xml:space="preserve"><value>p. ej. GB123456789</value></data>
+  <data name="PlaceOfIncorporationPlaceholder" xml:space="preserve"><value>p. ej. Estambul, TR</value></data>
+  <data name="DatePlaceholder" xml:space="preserve"><value>Seleccione una fecha…</value></data>
+  <data name="Step6Overview" xml:space="preserve"><value>Resumen</value></data>
+  <data name="Step6OverviewSub" xml:space="preserve"><value>Revisar &amp; guardar</value></data>
+  <data name="Step6OverviewDesc" xml:space="preserve"><value>Revise toda la información introducida antes de guardar.</value></data>
+  <data name="AddressFull" xml:space="preserve"><value>Dirección</value></data>
+  <data name="AddressFullPlaceholder" xml:space="preserve"><value>ej. Calle Mayor 12, Piso 3</value></data>
+  <data name="AddressCityPlaceholder" xml:space="preserve"><value>ej. Estambul</value></data>
+  <data name="AddressStatePlaceholder" xml:space="preserve"><value>ej. Marmara</value></data>
+  <data name="AddressPostalCodePlaceholder" xml:space="preserve"><value>ej. 34000</value></data>
+  <data name="AddressCountryPlaceholder" xml:space="preserve"><value>ej. Türkiye</value></data>
+  <data name="OfficialEmailPlaceholder" xml:space="preserve"><value>ej. info@acme.com</value></data>
+  <data name="OfficialPhonePlaceholder" xml:space="preserve"><value>ej. +90 212 000 0000</value></data>
+  <data name="WebsitePlaceholder" xml:space="preserve"><value>ej. https://acme.com</value></data>
+  <data name="FiscalYearVariantPlaceholder" xml:space="preserve"><value>ej. K4</value></data>
+  <data name="OwnershipPercentPlaceholder" xml:space="preserve"><value>ej. 100</value></data>
+</root>

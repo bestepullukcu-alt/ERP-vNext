@@ -8,15 +8,15 @@
         <div class="pt-0 pb-3">
             <form class="m-0" id="filterForm" data-no-tracker>
                 <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Country (multi-select; options loaded from platform lookups) *@
                     <div class="filter-chip filter-country">
-                        <select id="filterCountry" class="form-select form-select-sm select2" data-placeholder="@Localizer["Country"]">
-                            <option value="">@Localizer["Country"]</option>
-                        </select>
+                        <select id="filterCountry" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Country"]"></select>
                     </div>
 
+                    @* Operational Status (multi-select) *@
                     <div class="filter-chip filter-operational-status">
-                        <select id="filterOperationalStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["OperationalStatus"]">
-                            <option value="">@Localizer["OperationalStatus"]</option>
+                        <select id="filterOperationalStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["OperationalStatus"]">
                             <option value="DRAFT">@Localizer["StatusDraft"]</option>
                             <option value="INREVIEW">@Localizer["StatusInReview"]</option>
                             <option value="APPROVED">@Localizer["StatusApproved"]</option>
@@ -26,27 +26,26 @@
                         </select>
                     </div>
 
+                    @* Evidence Status (multi-select) *@
                     <div class="filter-chip filter-evidence-status">
-                        <select id="filterEvidenceStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["EvidenceStatus"]">
-                            <option value="">@Localizer["EvidenceStatus"]</option>
+                        <select id="filterEvidenceStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["EvidenceStatus"]">
                             <option value="NOTSTARTED">@Localizer["EvidenceNotStarted"]</option>
                             <option value="COMPLETE">@Localizer["EvidenceComplete"]</option>
                             <option value="VERIFIED">@Localizer["EvidenceVerified"]</option>
                         </select>
                     </div>
 
+                    @* Base Currency (multi-select; options loaded from platform lookups) *@
                     <div class="filter-chip filter-currency">
-                        <select id="filterBaseCurrency" class="form-select form-select-sm select2" data-placeholder="@Localizer["BaseCurrency"]">
-                            <option value="">@Localizer["BaseCurrency"]</option>
-                        </select>
+                        <select id="filterBaseCurrency" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["BaseCurrency"]"></select>
                     </div>
 
+                    @* Created From / To — Sneat (flatpickr) date pickers *@
                     <div class="filter-chip filter-created-from">
-                        <input type="date" id="filterCreatedFrom" class="form-control form-control-sm" title="@Localizer["CreatedFrom"]" placeholder="@Localizer["CreatedFrom"]" />
+                        <input type="text" id="filterCreatedFrom" class="form-control form-control-sm flatpickr-date" autocomplete="off" title="@Localizer["CreatedFrom"]" placeholder="@Localizer["CreatedFrom"]" />
                     </div>
-
                     <div class="filter-chip filter-created-to">
-                        <input type="date" id="filterCreatedTo" class="form-control form-control-sm" title="@Localizer["CreatedTo"]" placeholder="@Localizer["CreatedTo"]" />
+                        <input type="text" id="filterCreatedTo" class="form-control form-control-sm flatpickr-date" autocomplete="off" title="@Localizer["CreatedTo"]" placeholder="@Localizer["CreatedTo"]" />
                     </div>
 
                     <div class="filter-chip filter-incomplete d-flex align-items-center">

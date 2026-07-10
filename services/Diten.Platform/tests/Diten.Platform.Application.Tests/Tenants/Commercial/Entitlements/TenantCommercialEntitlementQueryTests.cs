@@ -53,8 +53,9 @@ public sealed class TenantCommercialEntitlementQueryTests
     [Fact]
     public async Task GetTenantAvailableModulesForAssignment_ExcludesAlreadyEntitledModules()
     {
-        // Arrange — catalog of three; "GOLDENCOMPACT" is plan-derived, "HR" is an active manual row,
-        // "hr-disabled" simulates a disabled row that must NOT be excluded (re-enable path stays selectable).
+        // Arrange — catalog of four; "GOLDENCOMPACT" is plan-derived, "HR" is an ENABLED manual row, "BILLING"
+        // is a DISABLED manual row. A disabled row is still an existing entitlement, so it must ALSO be excluded
+        // (re-enable is done via the row's Enable action, not by re-adding it); only "CRM" remains offerable.
         var mockContract = new Mock<IPlatformCatalogContract>();
         var items = new List<AssignableModuleInfo>
         {
@@ -71,7 +72,7 @@ public sealed class TenantCommercialEntitlementQueryTests
             .ReturnsAsync(new List<TenantModuleEntitlement>
             {
                 new() { TenantId = TenantId, ModuleCode = "HR", Source = EntitlementSource.ManualOverride, IsEnabled = true },
-                new() { TenantId = TenantId, ModuleCode = "BILLING", Source = EntitlementSource.ManualOverride, IsEnabled = false } // disabled → still offered
+                new() { TenantId = TenantId, ModuleCode = "BILLING", Source = EntitlementSource.ManualOverride, IsEnabled = false } // disabled → also excluded
             });
 
         var subscriptionRepo = new Mock<ITenantSubscriptionRepository>();
@@ -89,13 +90,42 @@ public sealed class TenantCommercialEntitlementQueryTests
         // Act
         var response = await handler.Handle(new GetTenantAvailableModulesForAssignmentQuery(TenantId), CancellationToken.None);
 
-        // Assert — plan-derived GOLDENCOMPACT and active HR are hidden; CRM and disabled BILLING remain.
+        // Assert — plan-derived GOLDENCOMPACT, enabled HR, and DISABLED BILLING are all hidden; only CRM remains.
         Assert.True(response.IsSuccessful);
         var codes = response.Data!.Select(x => x.ModuleCode).ToList();
         Assert.DoesNotContain("GOLDENCOMPACT", codes);
         Assert.DoesNotContain("HR", codes);
+        Assert.DoesNotContain("BILLING", codes); // disabled entitlement must NOT be re-offered
         Assert.Contains("CRM", codes);
-        Assert.Contains("BILLING", codes);
+        Assert.Single(codes);
+    }
+
+    // FEAT-BASELINE-MODULES — a baseline module is entitlement-free (every tenant auto-has it) and must NEVER appear
+    // in the grantable picker, even when it is not in the tenant's entitled set. The exclusion keys off IsBaseline,
+    // NOT a hardcoded code list: the synthetic "ZZZSYNTHETIC-BASELINE" code (no special-casing anywhere) is excluded
+    // purely because IsBaseline=true, while a normal product module with IsBaseline=false still appears.
+    [Fact]
+    public async Task GetTenantAvailableModulesForAssignment_ExcludesBaselineModules_KeyedOffIsBaseline_NotCodeList()
+    {
+        var mockContract = new Mock<IPlatformCatalogContract>();
+        var items = new List<AssignableModuleInfo>
+        {
+            // Baseline via arbitrary/synthetic code — excluded solely because IsBaseline == true.
+            new AssignableModuleInfo(Guid.NewGuid(), "ZZZSYNTHETIC-BASELINE", "Synthetic Baseline", "Synthetic Baseline", "Desc", "D", "S", "Active", "1.0", false, true, 1, DateTimeOffset.UtcNow, null, null, true),
+            // Normal product module — non-baseline, not entitled → must still be offered.
+            new AssignableModuleInfo(Guid.NewGuid(), "LEGALENTITY", "Legal Entity", "Legal Entity", "Desc", "D", "S", "Active", "1.0", false, true, 2, DateTimeOffset.UtcNow, null, null, false)
+        };
+        mockContract.Setup(x => x.GetAssignableModulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(items);
+
+        var handler = BuildHandler(mockContract);
+
+        var response = await handler.Handle(new GetTenantAvailableModulesForAssignmentQuery(TenantId), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        var codes = response.Data!.Select(x => x.ModuleCode).ToList();
+        Assert.DoesNotContain("ZZZSYNTHETIC-BASELINE", codes); // baseline excluded despite not being entitled
+        Assert.Contains("LEGALENTITY", codes);                 // normal product module still offered
     }
 
     private static GetTenantAvailableModulesForAssignmentQueryHandler BuildHandler(Mock<IPlatformCatalogContract> contract)

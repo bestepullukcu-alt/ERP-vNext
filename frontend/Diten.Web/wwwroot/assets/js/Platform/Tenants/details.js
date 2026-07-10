@@ -1234,9 +1234,12 @@ const TenantDetails = (function () {
         const isProjection = row.isProjectionRow === true;
         const id = row.physicalEntitlementId;
         const source = row.displaySource;
+        // Disable and Enable are mutually exclusive by state: only the state-appropriate toggle shows, and because
+        // it sits before Edit Expiry / Remove Override in this array it becomes the PRIMARY quick-action icon
+        // (enabled row → red Disable; disabled row → green Enable), the rest fall into the overflow menu.
         const actions = [
-            { key: 'disable-module-entitlement', visible: isProjection || id, buttonClass: 'text-danger', icon: 'bx bx-block', text: L.Disable || 'Disable' },
-            { key: 'enable-module-entitlement', visible: !isProjection && id && row.isEnabled === false, icon: 'bx bx-check-circle', text: L.Enable || 'Enable' },
+            { key: 'disable-module-entitlement', visible: (isProjection || id) && row.isEnabled !== false, buttonClass: 'text-danger', icon: 'bx bx-block', text: L.Disable || 'Disable' },
+            { key: 'enable-module-entitlement', visible: !isProjection && id && row.isEnabled === false, buttonClass: 'text-success', icon: 'bx bx-check-circle', text: L.Enable || 'Enable' },
             { key: 'edit-module-entitlement-expiry', visible: !isProjection && id, icon: 'bx bx-calendar-edit', text: L.EditExpiry || 'Edit Expiry' },
             { key: 'remove-module-entitlement-override', visible: !isProjection && id && source === 'ManualOverride', buttonClass: 'text-danger', icon: 'bx bx-trash', text: L.RemoveManualOverride || 'Remove Override' }
         ];
@@ -1523,19 +1526,39 @@ const TenantDetails = (function () {
         moduleEntitlementsDt?.ajax.reload(null, false);
     };
 
+    // FIX-ENTITLEMENT-REENABLE (frontend) — entitlement actions previously awaited fetchJson with NO catch, so a
+    // 4xx (e.g. a quota 409) was swallowed and the button looked dead. Surface it: map known backend error codes
+    // (the raw code arrives as error.message) to a friendly localized message, else fall back to the server detail.
+    const showEntitlementActionError = (error) => {
+        if (error?.authHandled) return; // auth refresh flow already handled it
+        const code = (error?.message || '').trim();
+        const friendly = {
+            QUOTA_LIMIT_EXCEEDED: L.QuotaLimitExceeded,
+            QUOTA_DUPLICATE_OPERATION: L.QuotaDuplicateOperation,
+            QUOTA_SUBSCRIPTION_INACTIVE: L.QuotaSubscriptionInactive,
+            QUOTA_USAGE_NOT_FOUND: L.QuotaUsageNotFound,
+            QUOTA_CONFIGURATION_MISSING: L.QuotaConfigurationMissing
+        }[code];
+        window.showToast?.(friendly || code || L.ErrorOccurred || 'Error occurred.', 'error');
+    };
+
     const disableModuleEntitlement = (row) => {
         const run = async (reason) => {
-            await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/disable`, {
-                method: 'POST',
-                headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    moduleCode: row.moduleCode,
-                    physicalEntitlementId: row.physicalEntitlementId,
-                    reason: reason || row.reason || L.ManualOverrideReason || 'Manual override',
-                    rowVersion: row.rowVersion || null
-                })
-            });
-            moduleEntitlementsDt?.ajax.reload(() => window.showToast?.(L.RecordSaved || 'Record saved.', 'success'), false);
+            try {
+                await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/disable`, {
+                    method: 'POST',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        moduleCode: row.moduleCode,
+                        physicalEntitlementId: row.physicalEntitlementId,
+                        reason: reason || row.reason || L.ManualOverrideReason || 'Manual override',
+                        rowVersion: row.rowVersion || null
+                    })
+                });
+                moduleEntitlementsDt?.ajax.reload(() => window.showToast?.(L.RecordSaved || 'Record saved.', 'success'), false);
+            } catch (error) {
+                showEntitlementActionError(error);
+            }
         };
 
         window.showConfirm?.(L.AreYouSure || 'Are you sure?', run, {
@@ -1549,12 +1572,16 @@ const TenantDetails = (function () {
 
     const enableModuleEntitlement = async (row) => {
         if (!row?.physicalEntitlementId) return;
-        await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/enable`, {
-            method: 'POST',
-            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-            body: JSON.stringify(row.rowVersion || null)
-        });
-        moduleEntitlementsDt?.ajax.reload(() => window.showToast?.(L.RecordSaved || 'Record saved.', 'success'), false);
+        try {
+            await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/enable`, {
+                method: 'POST',
+                headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                body: JSON.stringify(row.rowVersion || null)
+            });
+            moduleEntitlementsDt?.ajax.reload(() => window.showToast?.(L.RecordSaved || 'Record saved.', 'success'), false);
+        } catch (error) {
+            showEntitlementActionError(error);
+        }
     };
 
     const openModuleEntitlementExpiryEditor = (row) => {
@@ -1571,18 +1598,22 @@ const TenantDetails = (function () {
             })
         }).then(() => {
             moduleEntitlementsDt?.ajax.reload(() => window.showToast?.(L.RecordSaved || 'Record saved.', 'success'), false);
-        }).catch((error) => window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error'));
+        }).catch(showEntitlementActionError);
     };
 
     const removeModuleEntitlementOverride = (row) => {
         if (!row?.physicalEntitlementId) return;
         const run = async () => {
-            await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/manual-override`, {
-                method: 'DELETE',
-                headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rowVersion: row.rowVersion || null })
-            });
-            moduleEntitlementsDt?.ajax.reload(() => window.showToast?.(L.RecordDeleted || 'Record deleted.', 'success'), false);
+            try {
+                await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/manual-override`, {
+                    method: 'DELETE',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rowVersion: row.rowVersion || null })
+                });
+                moduleEntitlementsDt?.ajax.reload(() => window.showToast?.(L.RecordDeleted || 'Record deleted.', 'success'), false);
+            } catch (error) {
+                showEntitlementActionError(error);
+            }
         };
         window.showConfirm?.(L.AreYouSure || 'Are you sure?', run, {
             entityName: row.moduleName || row.moduleCode,

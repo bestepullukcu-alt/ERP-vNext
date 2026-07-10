@@ -16,4 +16,47 @@
   <data name="RequiredField" xml:space="preserve"><value>This field is required.</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
+  <!-- MOD-0288 Phase 4 — full-page form + details + derived status -->
+  <data name="AssignmentType" xml:space="preserve"><value>Assignment Type</value></data>
+  <data name="AssignmentTypePrimary" xml:space="preserve"><value>Primary</value></data>
+  <data name="AssignmentTypeSecondary" xml:space="preserve"><value>Secondary</value></data>
+  <data name="AssignmentTypeActing" xml:space="preserve"><value>Acting</value></data>
+  <data name="AssignmentTypeDelegated" xml:space="preserve"><value>Delegated</value></data>
+  <data name="Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="ReasonHire" xml:space="preserve"><value>Hire</value></data>
+  <data name="ReasonTransfer" xml:space="preserve"><value>Transfer</value></data>
+  <data name="ReasonPromotion" xml:space="preserve"><value>Promotion</value></data>
+  <data name="ReasonBackfill" xml:space="preserve"><value>Backfill</value></data>
+  <data name="AllocationPercent" xml:space="preserve"><value>Allocation %</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notes</value></data>
+  <data name="IsCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Status</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>Planned</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusEnded" xml:space="preserve"><value>Ended</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Basic</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Advanced Details</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>Optional details — allocation, reason, notes and cancellation.</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>View Details</value></data>
+  <data name="Details" xml:space="preserve"><value>Details</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Position Assignment Details</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>System</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Created At</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated At</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Back to list</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Could not load the assignment.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Select…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>This assignment will be permanently deleted. Continue?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Assignment deleted.</value></data>
+  <data name="OnePrimaryError" xml:space="preserve"><value>Another primary assignment already covers this period for the position.</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Select a date…</value>
+  </data>
+  <data name="AllocationPercentPlaceholder" xml:space="preserve">
+    <value>e.g. 100</value>
+  </data>
+  <data name="NotesPlaceholder" xml:space="preserve">
+    <value>e.g. Backfill for parental leave</value>
+  </data>
 </root>

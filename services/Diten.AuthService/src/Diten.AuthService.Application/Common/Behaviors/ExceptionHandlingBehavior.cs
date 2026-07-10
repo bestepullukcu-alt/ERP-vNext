@@ -1,4 +1,5 @@
 using FluentValidation;
+using FluentValidation.Results;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
@@ -33,7 +34,13 @@ public sealed class ExceptionHandlingBehavior<TRequest, TResponse> : IPipelineBe
                 message = vex.Message;
             }
 
-            var validationResponse = TryCreateFailureResponse(message, 400);
+            // Attach machine-readable codes for the coded (password.*) failures so the frontend can localize them.
+            // `message` (English) stays as the back-compat `detail`/logging fallback; non-coded failures carry no
+            // ErrorCodes and the frontend falls back to `detail`.
+            var errorCodes = ExtractPasswordErrorCodes(vex.Errors);
+            var validationResponse = errorCodes.Count > 0
+                ? TryCreateFailureResponse(message, errorCodes, 400) ?? TryCreateFailureResponse(message, 400)
+                : TryCreateFailureResponse(message, 400);
             if (validationResponse is not null)
             {
                 return validationResponse;
@@ -54,10 +61,36 @@ public sealed class ExceptionHandlingBehavior<TRequest, TResponse> : IPipelineBe
         }
     }
 
+    // Turn coded FluentValidation failures (password.*) into stable descriptors. Non-coded failures (FluentValidation
+    // defaults like "NotEmptyValidator", or other features' rules) are ignored here so only password paths carry codes.
+    private static IReadOnlyList<ResponseError> ExtractPasswordErrorCodes(IEnumerable<ValidationFailure> failures)
+    {
+        var codes = new List<ResponseError>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var failure in failures)
+        {
+            var code = failure.ErrorCode;
+            if (string.IsNullOrEmpty(code) || !code.StartsWith(PasswordErrorCodes.Prefix, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (!seen.Add(code))
+            {
+                continue;
+            }
+
+            var @params = failure.CustomState as IReadOnlyDictionary<string, string>;
+            codes.Add(new ResponseError(code, @params));
+        }
+
+        return codes;
+    }
+
     private static TResponse? TryCreateFailureResponse(string error, int statusCode)
     {
-        var responseType = typeof(TResponse);
-        if (!responseType.IsGenericType || responseType.GetGenericTypeDefinition().FullName != "Diten.AuthService.Application.Common.Response`1")
+        var responseType = ResolveResponseType();
+        if (responseType is null)
         {
             return default;
         }
@@ -67,5 +100,31 @@ public sealed class ExceptionHandlingBehavior<TRequest, TResponse> : IPipelineBe
             BindingFlags.Public | BindingFlags.Static,
             [typeof(string), typeof(int)]);
         return failMethod is null ? default : (TResponse?)failMethod.Invoke(null, [error, statusCode]);
+    }
+
+    private static TResponse? TryCreateFailureResponse(string error, IReadOnlyList<ResponseError> errorCodes, int statusCode)
+    {
+        var responseType = ResolveResponseType();
+        if (responseType is null)
+        {
+            return default;
+        }
+
+        var failMethod = responseType.GetMethod(
+            "Fail",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(string), typeof(IReadOnlyList<ResponseError>), typeof(int)]);
+        return failMethod is null ? default : (TResponse?)failMethod.Invoke(null, [error, errorCodes, statusCode]);
+    }
+
+    private static Type? ResolveResponseType()
+    {
+        var responseType = typeof(TResponse);
+        if (!responseType.IsGenericType || responseType.GetGenericTypeDefinition().FullName != "Diten.AuthService.Application.Common.Response`1")
+        {
+            return null;
+        }
+
+        return responseType;
     }
 }

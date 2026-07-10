@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PositionAssignmentsTitle" xml:space="preserve"><value>Affectations de poste</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Affectez des utilisateurs à des postes et gérez la période de validité de chaque affectation.</value></data>
+  <data name="AddNewAssignment" xml:space="preserve"><value>Ajouter une affectation</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Créer une affectation de poste</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier l'affectation de poste</value></data>
+  <data name="Position" xml:space="preserve"><value>Poste</value></data>
+  <data name="SelectPosition" xml:space="preserve"><value>Sélectionnez un poste…</value></data>
+  <data name="User" xml:space="preserve"><value>Utilisateur</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>Sélectionnez un utilisateur…</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Date de début</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Date de fin</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Edit" xml:space="preserve"><value>Modifier</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Ce champ est obligatoire.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <!-- MOD-0288 Phase 4 — full-page form + details + derived status -->
+  <data name="AssignmentType" xml:space="preserve"><value>Type d'affectation</value></data>
+  <data name="AssignmentTypePrimary" xml:space="preserve"><value>Principale</value></data>
+  <data name="AssignmentTypeSecondary" xml:space="preserve"><value>Secondaire</value></data>
+  <data name="AssignmentTypeActing" xml:space="preserve"><value>Par intérim</value></data>
+  <data name="AssignmentTypeDelegated" xml:space="preserve"><value>Déléguée</value></data>
+  <data name="Reason" xml:space="preserve"><value>Motif</value></data>
+  <data name="ReasonHire" xml:space="preserve"><value>Embauche</value></data>
+  <data name="ReasonTransfer" xml:space="preserve"><value>Mutation</value></data>
+  <data name="ReasonPromotion" xml:space="preserve"><value>Promotion</value></data>
+  <data name="ReasonBackfill" xml:space="preserve"><value>Remplacement</value></data>
+  <data name="AllocationPercent" xml:space="preserve"><value>Allocation %</value></data>
+  <data name="Notes" xml:space="preserve"><value>Remarques</value></data>
+  <data name="IsCancelled" xml:space="preserve"><value>Annulée</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Statut</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>Planifiée</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusEnded" xml:space="preserve"><value>Terminée</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Général</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Détails avancés</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>Détails facultatifs — allocation, motif, remarques et annulation.</value></data>
+  <data name="Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Afficher les détails</value></data>
+  <data name="Details" xml:space="preserve"><value>Détails</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Détails de l'affectation de poste</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Système</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Créé le</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Mis à jour le</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Retour à la liste</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Impossible de charger l'affectation.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Sélectionner…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Cette affectation sera définitivement supprimée. Continuer ?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Affectation supprimée.</value></data>
+  <data name="OnePrimaryError" xml:space="preserve"><value>Une autre affectation principale couvre déjà cette période pour ce poste.</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Sélectionnez une date…</value>
+  </data>
+  <data name="AllocationPercentPlaceholder" xml:space="preserve">
+    <value>ex. 100</value>
+  </data>
+  <data name="NotesPlaceholder" xml:space="preserve">
+    <value>ex. Remplacement pour congé parental</value>
+  </data>
+</root>

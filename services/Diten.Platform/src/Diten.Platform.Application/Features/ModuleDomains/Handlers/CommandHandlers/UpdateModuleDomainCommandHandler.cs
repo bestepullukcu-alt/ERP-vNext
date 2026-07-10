@@ -1,6 +1,6 @@
 using Diten.Platform.Application.Common;
-using Diten.Platform.Application.Features.ModuleCatalog;
 using Diten.Platform.Application.Features.ModuleDomains.Commands;
+using Diten.Platform.Domain.Catalog;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 using MongoDB.Driver;
@@ -24,7 +24,8 @@ public sealed class UpdateModuleDomainCommandHandler : IRequestHandler<UpdateMod
             return Response<NoContent>.Fail("Module domain not found.", 404);
         }
 
-        var canonicalCode = ModuleCatalogCodeNormalizer.Normalize(request.Request.Code);
+        // FIX-DOMAIN-DEDUP — same shared canonical normalizer as create/seed/manifest (see CreateModuleDomainCommandHandler).
+        var canonicalCode = ModuleTaxonomyCanonicalizer.NormalizeKey(request.Request.Code);
         if (string.IsNullOrWhiteSpace(canonicalCode))
         {
             return Response<NoContent>.Fail("Domain code is required.", 400);

@@ -57,6 +57,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
       Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Back" xml:space="preserve">
+    <value>Volver</value>
+  </data>
   <data name="Save" xml:space="preserve">
     <value>Guardar</value>
   </data>
@@ -480,4 +483,57 @@
   <data name="RoleName_Admin" xml:space="preserve"><value>Administrador</value></data>
   <data name="RoleName_Viewer" xml:space="preserve"><value>Visualizador</value></data>
   <data name="RoleName_ReadOnly" xml:space="preserve"><value>Solo lectura</value></data>
+  <!-- Password validation error messages (error-code bridge from AuthService PasswordErrorCodes) -->
+  <data name="Password.Error.Required" xml:space="preserve"><value>La contraseña es obligatoria.</value></data>
+  <data name="Password.Error.TooShort" xml:space="preserve"><value>La contraseña debe tener al menos {0} caracteres.</value></data>
+  <data name="Password.Error.TooLong" xml:space="preserve"><value>La contraseña no puede tener más de {0} caracteres.</value></data>
+  <data name="Password.Error.NeedsUppercase" xml:space="preserve"><value>La contraseña debe contener al menos una letra mayúscula.</value></data>
+  <data name="Password.Error.NeedsSpecial" xml:space="preserve"><value>La contraseña debe contener al menos un carácter especial.</value></data>
+  <data name="Password.Error.CurrentRequired" xml:space="preserve"><value>La contraseña actual es obligatoria.</value></data>
+  <data name="Password.Error.NewRequired" xml:space="preserve"><value>La nueva contraseña es obligatoria.</value></data>
+  <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>El correo electrónico es obligatorio.</value></data>
+  <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>El token de restablecimiento es obligatorio.</value></data>
+  <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
+  <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>Administración</value></data>
+  <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>Habilitación para desarrolladores</value></data>
+  <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Gestión documental</value></data>
+  <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>Gestión de datos maestros</value></data>
+  <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>Servicios compartidos de la plataforma</value></data>
+  <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>Gobernanza de accesos</value></data>
+  <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>Configuración del inquilino</value></data>
+  <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
+  <data name="Nav.Module.GOLDENCOMPACT" xml:space="preserve"><value>Golden Compact</value></data>
+  <data name="Nav.Module.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Gestión documental</value></data>
+  <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Entidad jurídica</value></data>
+  <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Datos de referencia</value></data>
+  <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organización</value></data>
+  <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Flujo de trabajo</value></data>
+  <data name="Nav.Page.USERS" xml:space="preserve"><value>Usuarios</value></data>
+  <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roles</value></data>
+  <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Permisos de rol</value></data>
+  <data name="Nav.Page.USERROLES" xml:space="preserve"><value>Roles de usuario</value></data>
+  <data name="Nav.Page.SECURITYSETTINGS" xml:space="preserve"><value>Configuración de seguridad</value></data>
+  <data name="Nav.Page.MENUSETTINGS" xml:space="preserve"><value>Configuración del menú</value></data>
+  <data name="Nav.Page.RECORDS" xml:space="preserve"><value>Registros</value></data>
+  <data name="Nav.Page.QMSBASELINES" xml:space="preserve"><value>Líneas base SGC</value></data>
+  <data name="Nav.Page.INSTANCES" xml:space="preserve"><value>Instancias de documento</value></data>
+  <data name="Nav.Page.CONTROLLEDDOCUMENTS" xml:space="preserve"><value>Documentos controlados</value></data>
+  <data name="Nav.Page.TEMPLATEMASTERS" xml:space="preserve"><value>Plantillas maestras corporativas</value></data>
+  <data name="Nav.Page.TEMPLATEVARIANTS" xml:space="preserve"><value>Variantes de plantilla</value></data>
+  <data name="Nav.Page.ACCESSMATRIX" xml:space="preserve"><value>Matriz de acceso a documentos</value></data>
+  <data name="Nav.Page.LEGALENTITIES" xml:space="preserve"><value>Entidades jurídicas</value></data>
+  <data name="Nav.Page.RDSETS" xml:space="preserve"><value>Conjuntos de datos de referencia</value></data>
+  <data name="Nav.Page.ORGANIZATIONUNITS" xml:space="preserve"><value>Unidades organizativas</value></data>
+  <data name="Nav.Page.POSITIONS" xml:space="preserve"><value>Puestos</value></data>
+  <data name="Nav.Page.POSITIONASSIGNMENTS" xml:space="preserve"><value>Asignaciones de puesto</value></data>
+  <data name="Nav.Page.DEFINITIONS" xml:space="preserve"><value>Definiciones de flujo de trabajo</value></data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>Expandir todo</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>Contraer todo</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>Sin registros</value>
+  </data>
 </root>

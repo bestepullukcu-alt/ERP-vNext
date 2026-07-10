@@ -57,6 +57,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
       Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Back" xml:space="preserve">
+    <value>رجوع</value>
+  </data>
   <data name="Save" xml:space="preserve">
     <value>حفظ</value>
   </data>
@@ -480,4 +483,57 @@
   <data name="RoleName_Admin" xml:space="preserve"><value>مسؤول</value></data>
   <data name="RoleName_Viewer" xml:space="preserve"><value>مشاهد</value></data>
   <data name="RoleName_ReadOnly" xml:space="preserve"><value>للقراءة فقط</value></data>
+  <!-- Password validation error messages (error-code bridge from AuthService PasswordErrorCodes) -->
+  <data name="Password.Error.Required" xml:space="preserve"><value>كلمة المرور مطلوبة.</value></data>
+  <data name="Password.Error.TooShort" xml:space="preserve"><value>يجب أن تتكون كلمة المرور من {0} أحرف على الأقل.</value></data>
+  <data name="Password.Error.TooLong" xml:space="preserve"><value>لا يمكن أن تتجاوز كلمة المرور {0} حرفًا.</value></data>
+  <data name="Password.Error.NeedsUppercase" xml:space="preserve"><value>يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل.</value></data>
+  <data name="Password.Error.NeedsSpecial" xml:space="preserve"><value>يجب أن تحتوي كلمة المرور على رمز خاص واحد على الأقل.</value></data>
+  <data name="Password.Error.CurrentRequired" xml:space="preserve"><value>كلمة المرور الحالية مطلوبة.</value></data>
+  <data name="Password.Error.NewRequired" xml:space="preserve"><value>كلمة المرور الجديدة مطلوبة.</value></data>
+  <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>البريد الإلكتروني مطلوب.</value></data>
+  <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>رمز إعادة التعيين مطلوب.</value></data>
+  <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
+  <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>الإدارة</value></data>
+  <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>تمكين المطورين</value></data>
+  <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>إدارة المستندات</value></data>
+  <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>إدارة البيانات الرئيسية</value></data>
+  <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>الخدمات المشتركة للمنصة</value></data>
+  <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>حوكمة الوصول</value></data>
+  <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>إعدادات المستأجر</value></data>
+  <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
+  <data name="Nav.Module.GOLDENCOMPACT" xml:space="preserve"><value>Golden Compact</value></data>
+  <data name="Nav.Module.DOCUMENTMANAGEMENT" xml:space="preserve"><value>إدارة المستندات</value></data>
+  <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>كيان قانوني</value></data>
+  <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>البيانات المرجعية</value></data>
+  <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>سير العمل</value></data>
+  <data name="Nav.Page.USERS" xml:space="preserve"><value>المستخدمون</value></data>
+  <data name="Nav.Page.ROLES" xml:space="preserve"><value>الأدوار</value></data>
+  <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>أذونات الأدوار</value></data>
+  <data name="Nav.Page.USERROLES" xml:space="preserve"><value>أدوار المستخدمين</value></data>
+  <data name="Nav.Page.SECURITYSETTINGS" xml:space="preserve"><value>إعدادات الأمان</value></data>
+  <data name="Nav.Page.MENUSETTINGS" xml:space="preserve"><value>إعدادات القائمة</value></data>
+  <data name="Nav.Page.RECORDS" xml:space="preserve"><value>السجلات</value></data>
+  <data name="Nav.Page.QMSBASELINES" xml:space="preserve"><value>خطوط أساس نظام إدارة الجودة</value></data>
+  <data name="Nav.Page.INSTANCES" xml:space="preserve"><value>نسخ المستندات</value></data>
+  <data name="Nav.Page.CONTROLLEDDOCUMENTS" xml:space="preserve"><value>المستندات الخاضعة للرقابة</value></data>
+  <data name="Nav.Page.TEMPLATEMASTERS" xml:space="preserve"><value>القوالب الرئيسية للشركة</value></data>
+  <data name="Nav.Page.TEMPLATEVARIANTS" xml:space="preserve"><value>متغيرات القوالب</value></data>
+  <data name="Nav.Page.ACCESSMATRIX" xml:space="preserve"><value>مصفوفة الوصول إلى المستندات</value></data>
+  <data name="Nav.Page.LEGALENTITIES" xml:space="preserve"><value>الكيانات القانونية</value></data>
+  <data name="Nav.Page.RDSETS" xml:space="preserve"><value>مجموعات البيانات المرجعية</value></data>
+  <data name="Nav.Page.ORGANIZATIONUNITS" xml:space="preserve"><value>الوحدات التنظيمية</value></data>
+  <data name="Nav.Page.POSITIONS" xml:space="preserve"><value>المناصب</value></data>
+  <data name="Nav.Page.POSITIONASSIGNMENTS" xml:space="preserve"><value>تعيينات المناصب</value></data>
+  <data name="Nav.Page.DEFINITIONS" xml:space="preserve"><value>تعريفات سير العمل</value></data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>توسيع الكل</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>طي الكل</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>لا توجد سجلات</value>
+  </data>
 </root>

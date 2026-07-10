@@ -90,6 +90,8 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<Diten.Web.Services.IPlatformProfileSnapshotProvider, Diten.Web.Services.PlatformProfileSnapshotProvider>();
 // FE-B (MOD-0018-FU9): UX-only permission snapshot for tenant RBAC screens. Not enforcement.
 builder.Services.AddScoped<Diten.Web.Services.IPermissionSnapshot, Diten.Web.Services.PermissionSnapshot>();
+// FEAT-NAV-L10N — generic code→resx localization for the tenant nav (sidebar + Ctrl+K).
+builder.Services.AddScoped<Diten.Web.Services.Navigation.INavNameLocalizer, Diten.Web.Services.Navigation.NavNameLocalizer>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
 builder.Services.AddSingleton<ITaskDetailService, TaskDetailService>();
 builder.Services.AddScoped<IManagementGovernanceFrontendAdapter, MockManagementGovernanceFrontendAdapter>();

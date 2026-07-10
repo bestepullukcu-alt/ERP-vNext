@@ -47,6 +47,13 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
             return Response<NoContent>.Fail("Core system modules cannot be disabled.", 409);
         }
 
+        // FEAT-BASELINE-MODULES — a baseline module is entitlement-free (every tenant auto-has it); disabling it via a
+        // manual override is meaningless (access checks bypass entitlements for baseline) and misleading, so reject.
+        if (module.IsBaseline)
+        {
+            return Response<NoContent>.Fail("Baseline modules are entitlement-free and cannot be disabled.", 409);
+        }
+
         try
         {
             if (request.Request.PhysicalEntitlementId.HasValue)
@@ -63,7 +70,9 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
                 await _repository.UpdateAsync(entitlement, request.Request.RowVersion, ct);
                 if (wasEnabled)
                 {
-                    var release = await ReleaseModuleQuotaAsync(request.TenantId, entitlement.Id, moduleCode, request.Request.Reason, ct);
+                    // entitlement.RowVersion is the POST-update version here (UpdateAsync minted a fresh one), so the
+                    // release key is distinct per disable event and a re-disable in a later cycle releases cleanly.
+                    var release = await ReleaseModuleQuotaAsync(request.TenantId, entitlement.Id, entitlement.RowVersion, moduleCode, request.Request.Reason, ct);
                     if (!release.IsSuccessful)
                     {
                         return Response<NoContent>.Fail(release.Errors, release.StatusCode);
@@ -83,7 +92,7 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
                 await _repository.UpdateAsync(existingOverride, request.Request.RowVersion, ct);
                 if (wasEnabled)
                 {
-                    var release = await ReleaseModuleQuotaAsync(request.TenantId, existingOverride.Id, moduleCode, request.Request.Reason, ct);
+                    var release = await ReleaseModuleQuotaAsync(request.TenantId, existingOverride.Id, existingOverride.RowVersion, moduleCode, request.Request.Reason, ct);
                     if (!release.IsSuccessful)
                     {
                         return Response<NoContent>.Fail(release.Errors, release.StatusCode);
@@ -104,13 +113,16 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
         }
     }
 
-    private Task<Response<QuotaMutationDto>> ReleaseModuleQuotaAsync(Guid tenantId, Guid entitlementId, string moduleCode, string? reason, CancellationToken ct) =>
+    private Task<Response<QuotaMutationDto>> ReleaseModuleQuotaAsync(Guid tenantId, Guid entitlementId, byte[] rowVersion, string moduleCode, string? reason, CancellationToken ct) =>
         _quotaService.ReleaseAsync(new ReleaseQuotaRequest(
             tenantId,
             QuotaKeys.ModulesMax,
             1,
             "ModuleEntitlement",
-            $"module-entitlement-disable:{entitlementId}",
+            // FIX-ENTITLEMENT-REENABLE — mirror the enable dedup fix: scope the release key to this disable EVENT
+            // (the row's RowVersion) so repeated enable→disable cycles each release cleanly instead of the second
+            // disable being rejected as a lifetime-duplicate operation.
+            $"module-entitlement-disable:{entitlementId}:{Convert.ToHexString(rowVersion)}",
             moduleCode,
             reason ?? "Tenant module entitlement disabled.",
             null,

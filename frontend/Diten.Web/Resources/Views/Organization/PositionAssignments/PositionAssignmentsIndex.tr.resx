@@ -16,4 +16,47 @@
   <data name="RequiredField" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
   <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <!-- MOD-0288 Phase 4 — full-page form + details + derived status -->
+  <data name="AssignmentType" xml:space="preserve"><value>Atama Türü</value></data>
+  <data name="AssignmentTypePrimary" xml:space="preserve"><value>Birincil</value></data>
+  <data name="AssignmentTypeSecondary" xml:space="preserve"><value>İkincil</value></data>
+  <data name="AssignmentTypeActing" xml:space="preserve"><value>Vekaleten</value></data>
+  <data name="AssignmentTypeDelegated" xml:space="preserve"><value>Devredilen</value></data>
+  <data name="Reason" xml:space="preserve"><value>Neden</value></data>
+  <data name="ReasonHire" xml:space="preserve"><value>İşe Alım</value></data>
+  <data name="ReasonTransfer" xml:space="preserve"><value>Transfer</value></data>
+  <data name="ReasonPromotion" xml:space="preserve"><value>Terfi</value></data>
+  <data name="ReasonBackfill" xml:space="preserve"><value>Yerine Alım</value></data>
+  <data name="AllocationPercent" xml:space="preserve"><value>Tahsis %</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="IsCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Durum</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>Planlandı</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusEnded" xml:space="preserve"><value>Sona Erdi</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Temel</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Gelişmiş Ayrıntılar</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>İsteğe bağlı ayrıntılar — tahsis, neden, notlar ve iptal.</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ayrıntıları Görüntüle</value></data>
+  <data name="Details" xml:space="preserve"><value>Ayrıntılar</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Pozisyon Ataması Ayrıntıları</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Sistem</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Atama yüklenemedi.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçin…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Bu atama kalıcı olarak silinecek. Devam edilsin mi?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Atama silindi.</value></data>
+  <data name="OnePrimaryError" xml:space="preserve"><value>Bu pozisyon için bu dönemi kapsayan başka bir birincil atama zaten var.</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Bir tarih seçin…</value>
+  </data>
+  <data name="AllocationPercentPlaceholder" xml:space="preserve">
+    <value>örn. 100</value>
+  </data>
+  <data name="NotesPlaceholder" xml:space="preserve">
+    <value>örn. Ebeveyn izni için yerine alım</value>
+  </data>
 </root>

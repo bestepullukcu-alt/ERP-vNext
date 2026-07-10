@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OrganizationUnitsTitle" xml:space="preserve"><value>الوحدات التنظيمية</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة الوحدات التنظيمية والكيان القانوني المالك لها والتسلسل الهرمي لرفع التقارير.</value></data>
+  <data name="AddNewOrganizationUnit" xml:space="preserve"><value>إضافة وحدة تنظيمية</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إنشاء وحدة تنظيمية</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل الوحدة التنظيمية</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>مثال: HQ-OPS</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>مثال: Head Office Operations</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>اختر كيانًا قانونيًا…</value></data>
+  <data name="LegalEntityIdPlaceholder" xml:space="preserve"><value>الصق معرّف الكيان القانوني (GUID)</value></data>
+  <data name="LegalEntityLookupUnavailable" xml:space="preserve"><value>البحث عن الكيان القانوني غير متاح؛ أدخل المعرّف يدويًا.</value></data>
+  <data name="ParentOrgUnit" xml:space="preserve"><value>الوحدة التنظيمية الأصل</value></data>
+  <data name="NoParent" xml:space="preserve"><value>(لا يوجد أصل — المستوى الأعلى)</value></data>
+  <data name="Archived" xml:space="preserve"><value>مؤرشفة</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشطة</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>مؤرشفة</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Archive" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="Unarchive" xml:space="preserve"><value>إلغاء الأرشفة</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>سيتم أرشفة هذه الوحدة التنظيمية. هل تريد المتابعة؟</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة الوحدة التنظيمية.</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>استخدم من 2 إلى 80 حرفًا كبيرًا وأرقامًا وشرطات مفردة.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>هذا الحقل مطلوب.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>الرمز النهائي</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <!-- MOD-0288 Phase 2 — full-page form + details + tree -->
+  <data name="OrgUnitType" xml:space="preserve"><value>النوع</value></data>
+  <data name="OrgUnitTypeDepartment" xml:space="preserve"><value>قسم</value></data>
+  <data name="OrgUnitTypeDivision" xml:space="preserve"><value>شعبة</value></data>
+  <data name="OrgUnitTypeBranch" xml:space="preserve"><value>فرع</value></data>
+  <data name="OrgUnitTypeTeam" xml:space="preserve"><value>فريق</value></data>
+  <data name="OrgUnitTypeHQ" xml:space="preserve"><value>المقر الرئيسي</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>الحالة</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>غير نشطة</value></data>
+  <data name="ManagerPosition" xml:space="preserve"><value>منصب المدير</value></data>
+  <data name="NoManager" xml:space="preserve"><value>(لا يوجد مدير)</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>أساسي</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>تفاصيل متقدمة</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>تفاصيل مؤسسية اختيارية — النوع والمدير والوصف والحالة وتواريخ السريان.</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="Details" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>تفاصيل الوحدة التنظيمية</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>النظام</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذّر تحميل الوحدة التنظيمية.</value></data>
+  <data name="ViewFlat" xml:space="preserve"><value>جدول</value></data>
+  <data name="ViewTree" xml:space="preserve"><value>شجرة</value></data>
+  <data name="TreeEmpty" xml:space="preserve"><value>لا توجد وحدات تنظيمية للعرض.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>سيتم حذف هذه الوحدة التنظيمية نهائيًا. هل تريد المتابعة؟</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>تم حذف الوحدة التنظيمية.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>مثال: تتولى عمليات المبيعات الإقليمية</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>اختر تاريخًا…</value>
+  </data>
+  <data name="AddChild" xml:space="preserve">
+    <value>إضافة وحدة فرعية</value>
+  </data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve">
+    <value>البحث عن وحدة (الاسم أو الرمز)…</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>تم نقل "{0}"</value>
+  </data>
+  <data name="MoveSameLegalEntityOnly" xml:space="preserve">
+    <value>لا يمكن نقل الوحدة إلا ضمن نفس الكيان القانوني.</value>
+  </data>
+  <data name="MoveArchivedBlocked" xml:space="preserve">
+    <value>لا يمكن نقل الوحدات المؤرشفة.</value>
+  </data>
+  <data name="MoveCycleBlocked" xml:space="preserve">
+    <value>لا يمكن نقل الوحدة أسفل وحدتها الفرعية.</value>
+  </data>
+</root>

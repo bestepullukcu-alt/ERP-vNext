@@ -57,6 +57,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
       Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
   <data name="Save" xml:space="preserve">
     <value>Save</value>
   </data>
@@ -533,4 +536,57 @@
   <data name="RoleName_Admin" xml:space="preserve"><value>Administrator</value></data>
   <data name="RoleName_Viewer" xml:space="preserve"><value>Viewer</value></data>
   <data name="RoleName_ReadOnly" xml:space="preserve"><value>Read Only</value></data>
+  <!-- Password validation error messages (error-code bridge from AuthService PasswordErrorCodes) -->
+  <data name="Password.Error.Required" xml:space="preserve"><value>Password is required.</value></data>
+  <data name="Password.Error.TooShort" xml:space="preserve"><value>Password must be at least {0} characters.</value></data>
+  <data name="Password.Error.TooLong" xml:space="preserve"><value>Password can be at most {0} characters.</value></data>
+  <data name="Password.Error.NeedsUppercase" xml:space="preserve"><value>Password must contain at least one uppercase letter.</value></data>
+  <data name="Password.Error.NeedsSpecial" xml:space="preserve"><value>Password must contain at least one special character.</value></data>
+  <data name="Password.Error.CurrentRequired" xml:space="preserve"><value>Current password is required.</value></data>
+  <data name="Password.Error.NewRequired" xml:space="preserve"><value>New password is required.</value></data>
+  <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>Email is required.</value></data>
+  <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>Reset token is required.</value></data>
+  <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
+  <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>Administration</value></data>
+  <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>Developer Enablement</value></data>
+  <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Document Management</value></data>
+  <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>Master Data Management</value></data>
+  <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>Platform Shared Services</value></data>
+  <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>Access Governance</value></data>
+  <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>Tenant Settings</value></data>
+  <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
+  <data name="Nav.Module.GOLDENCOMPACT" xml:space="preserve"><value>Golden Compact</value></data>
+  <data name="Nav.Module.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Document Management</value></data>
+  <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Legal Entity</value></data>
+  <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Reference Data</value></data>
+  <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organization</value></data>
+  <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Workflow</value></data>
+  <data name="Nav.Page.USERS" xml:space="preserve"><value>Users</value></data>
+  <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roles</value></data>
+  <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Role Permissions</value></data>
+  <data name="Nav.Page.USERROLES" xml:space="preserve"><value>User Roles</value></data>
+  <data name="Nav.Page.SECURITYSETTINGS" xml:space="preserve"><value>Security Settings</value></data>
+  <data name="Nav.Page.MENUSETTINGS" xml:space="preserve"><value>Menu Settings</value></data>
+  <data name="Nav.Page.RECORDS" xml:space="preserve"><value>Records</value></data>
+  <data name="Nav.Page.QMSBASELINES" xml:space="preserve"><value>QMS Baselines</value></data>
+  <data name="Nav.Page.INSTANCES" xml:space="preserve"><value>Document Instances</value></data>
+  <data name="Nav.Page.CONTROLLEDDOCUMENTS" xml:space="preserve"><value>Controlled Documents</value></data>
+  <data name="Nav.Page.TEMPLATEMASTERS" xml:space="preserve"><value>Corporate Template Masters</value></data>
+  <data name="Nav.Page.TEMPLATEVARIANTS" xml:space="preserve"><value>Template Variants</value></data>
+  <data name="Nav.Page.ACCESSMATRIX" xml:space="preserve"><value>Document Access Matrix</value></data>
+  <data name="Nav.Page.LEGALENTITIES" xml:space="preserve"><value>Legal Entities</value></data>
+  <data name="Nav.Page.RDSETS" xml:space="preserve"><value>Reference Data Sets</value></data>
+  <data name="Nav.Page.ORGANIZATIONUNITS" xml:space="preserve"><value>Organization Units</value></data>
+  <data name="Nav.Page.POSITIONS" xml:space="preserve"><value>Positions</value></data>
+  <data name="Nav.Page.POSITIONASSIGNMENTS" xml:space="preserve"><value>Position Assignments</value></data>
+  <data name="Nav.Page.DEFINITIONS" xml:space="preserve"><value>Workflow Definitions</value></data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>Expand all</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>Collapse all</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>No records</value>
+  </data>
 </root>

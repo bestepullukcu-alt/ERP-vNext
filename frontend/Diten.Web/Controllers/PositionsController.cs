@@ -22,6 +22,28 @@ public sealed class PositionsController : Controller
     [HttpGet("")]
     public IActionResult Index() => View("~/Views/Organization/Positions/Index.cshtml");
 
+    // MOD-0288 Phase 3 — full-page compact create/edit/details (two-level form; mirrors the Org Unit slice).
+    [HttpGet("Create")]
+    public IActionResult Create()
+    {
+        ViewData["PositionId"] = string.Empty;
+        return View("~/Views/Organization/Positions/Form.cshtml");
+    }
+
+    [HttpGet("Edit/{id:guid}")]
+    public IActionResult Edit(Guid id)
+    {
+        ViewData["PositionId"] = id.ToString();
+        return View("~/Views/Organization/Positions/Form.cshtml");
+    }
+
+    [HttpGet("Details/{id:guid}")]
+    public IActionResult Details(Guid id)
+    {
+        ViewData["PositionId"] = id.ToString();
+        return View("~/Views/Organization/Positions/Details.cshtml");
+    }
+
     [HttpGet("api")]
     public Task<IActionResult> ListProxy()
     {

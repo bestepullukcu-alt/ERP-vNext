@@ -9,9 +9,15 @@ namespace Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Ha
 /// <summary>
 /// FIX-ENTITLEMENT-DUP (Fix 1) — the Add-Module picker must offer ONLY modules the tenant is not already
 /// entitled to, otherwise an already-entitled module can be re-selected and a duplicate row written. We subtract
-/// the tenant's effective entitled set — plan-derived (computed) module codes ∪ active manual entitlement rows
-/// (IsEnabled &amp; !IsDeleted) — from the assignable catalog (case-insensitive on ModuleCode). Plan-derived
-/// modules are excluded too: the tenant already has them via the plan.
+/// the tenant's effective entitled set — plan-derived (computed) module codes ∪ every live manual entitlement row
+/// (!IsDeleted, ENABLED OR DISABLED) — from the assignable catalog (case-insensitive on ModuleCode). Plan-derived
+/// modules are excluded too: the tenant already has them via the plan. A disabled entitlement is still an existing
+/// entitlement, so it must not be re-offered (re-enable via the row action, not by re-adding).
+/// FEAT-BASELINE-MODULES — baseline modules (IsBaseline=true) are also excluded: they are entitlement-free (every
+/// tenant auto-has them), so offering them in the grantable picker is meaningless and lets an admin create a
+/// stray entitlement / later "remove" access to a baseline module. The exclusion keys off IsBaseline, never a
+/// hardcoded code list, so any future baseline module is auto-excluded. Nav/tenant access is unaffected — baseline
+/// modules still show in the sidebar via the entitlement-bypass in TenantModuleAccessService.
 /// </summary>
 public sealed class GetTenantAvailableModulesForAssignmentQueryHandler
     : IRequestHandler<GetTenantAvailableModulesForAssignmentQuery, Response<IReadOnlyList<TenantAvailableModuleDto>>>
@@ -40,12 +46,14 @@ public sealed class GetTenantAvailableModulesForAssignmentQueryHandler
         // Already-entitled module codes the picker must hide.
         var entitledCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        // Active manual entitlement rows. GetByTenantIdAsync already filters soft-deleted (IsDeleted=false), so
-        // here we only drop the disabled rows — a disabled/blocked module stays selectable (re-enable path).
+        // Every live manual entitlement row — ENABLED OR DISABLED. GetByTenantIdAsync already filters soft-deleted
+        // (IsDeleted=false), so any row returned here is an existing entitlement the tenant already has. A DISABLED
+        // row must NOT be re-offered in the picker (that let an admin re-add it and write a duplicate); re-enabling
+        // a disabled module is done via the row's Enable action, not by re-adding it.
         var physicalRows = await _entitlementRepository.GetByTenantIdAsync(request.TenantId, ct);
         foreach (var row in physicalRows)
         {
-            if (row.IsEnabled && !string.IsNullOrWhiteSpace(row.ModuleCode))
+            if (!string.IsNullOrWhiteSpace(row.ModuleCode))
             {
                 entitledCodes.Add(row.ModuleCode);
             }
@@ -61,7 +69,7 @@ public sealed class GetTenantAvailableModulesForAssignmentQueryHandler
         }
 
         var rows = modules
-            .Where(x => !entitledCodes.Contains(x.ModuleCode))
+            .Where(x => !x.IsBaseline && !entitledCodes.Contains(x.ModuleCode))
             .Select(x => new TenantAvailableModuleDto(x.ModuleCode, x.ModuleName, x.DisplayName))
             .ToList();
 

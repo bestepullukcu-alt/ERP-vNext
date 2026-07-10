@@ -8,15 +8,33 @@
     Layout = "_LayoutTenantShell";
 }
 
-<div id="le-details-page" data-le-id="@legalEntityId">
-    <div class="mb-3 d-flex justify-content-between align-items-start flex-wrap gap-2">
+@* MOD-0220 — Legal Entity read-only Details. Mirrors the GoldenReferenceCompact Details reference: static title +
+   breadcrumb, Back + Edit header buttons, and read-only `card backbone-preview-section` cards laid out as a
+   col-lg-8 main column + col-lg-4 sidebar. Sections match the create wizard's Overview step. Values are fetched
+   by id and populated client-side by details.js (No-ViewModel). *@
+<div class="legal-entity-details" id="le-details-page" data-le-id="@legalEntityId">
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
         <div>
-            <h5 class="mb-0" id="leDetailName">@Localizer["ViewDetails"]</h5>
-            <span class="fw-medium font-monospace text-primary" id="leDetailCode">-</span>
+            <h5 class="mb-0">@Localizer["ViewDetails"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/LegalEntities">@Localizer["LegalEntitiesTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary" id="leDetailBreadcrumb">@Localizer["ViewDetails"]</li>
+                </ol>
+            </nav>
         </div>
-        <div class="d-flex gap-2 flex-wrap">
-            <a href="/LegalEntities" class="btn btn-label-secondary btn-sm"><i class="bx bx-chevron-left me-1"></i>@Localizer["BackToList"]</a>
-            <a href="#" id="leDetailEditBtn" class="btn btn-primary btn-sm"><i class="bx bx-edit me-1"></i>@Localizer["Edit"]</a>
+        @* Button order: Back → Actions ▼ → Edit *@
+        <div class="d-flex align-items-center gap-2">
+            <a href="/LegalEntities" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+            @* Lifecycle actions (Activate / Suspend / Archive) live in this dropdown; JS fills the menu and reveals
+               the wrapper only when the current status offers at least one action. *@
+            <div class="dropdown d-none" id="leDetailActionWrap">
+                <button type="button" class="btn btn-label-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bx bx-cog me-1"></i>@Localizer["Actions"]
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" id="leDetailLifecycleActions"></ul>
+            </div>
+            <a href="/LegalEntities/Wizard/@legalEntityId" class="btn btn-primary" id="leDetailEditBtn">@Localizer["Edit"]</a>
         </div>
     </div>
 
@@ -27,50 +45,47 @@
     </div>
 
     <div id="le-details-content" class="d-none">
-        @* Status + completeness header card *@
-        <div class="card mb-4">
-            <div class="card-body d-flex flex-wrap align-items-center gap-3">
-                <div class="d-flex flex-wrap gap-2">
-                    <span id="leDetailOperational"></span>
-                    <span id="leDetailStatutory"></span>
-                    <span id="leDetailApproval"></span>
-                    <span id="leDetailEvidence"></span>
-                    <span id="leDetailReferenceable"></span>
-                    <span id="leDetailLifecycle"></span>
-                </div>
-                <div class="ms-auto" style="min-width: 220px;">
-                    <div class="d-flex justify-content-between">
-                        <small class="text-muted">@Localizer["CompletenessScore"]</small>
-                        <small class="fw-medium" id="leDetailCompletenessLabel">-</small>
-                    </div>
-                    <div class="progress mt-1" style="height: 6px;">
-                        <div id="leDetailCompletenessBar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer d-flex gap-2 flex-wrap" id="leDetailLifecycleActions"></div>
-        </div>
-
         <div class="row g-4">
-            @{
-                void Section(string id, string title)
-                {
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-header"><h6 class="mb-0">@title</h6></div>
-                            <div class="card-body"><dl class="row mb-0 small" id="@id"></dl></div>
+            @* Main column (left) *@
+            <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+                <section class="card backbone-preview-section p-4">
+                    @* Section title on the left, status badges on the right — inside the Identity card. *@
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["SectionIdentity"]</h6>
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                            <span id="leDetailOperational"></span>
+                            <span id="leDetailStatutory"></span>
+                            <span id="leDetailReferenceable"></span>
+                            <span id="leDetailLifecycle"></span>
                         </div>
                     </div>
-                }
-            }
-            @{ Section("leSecIdentity", Localizer["SectionIdentity"].Value); }
-            @{ Section("leSecStatutory", Localizer["SectionStatutory"].Value); }
-            @{ Section("leSecStructure", Localizer["SectionStructure"].Value); }
-            @{ Section("leSecFinance", Localizer["SectionFinance"].Value); }
-            @{ Section("leSecAddresses", Localizer["SectionAddresses"].Value); }
-            @{ Section("leSecGovernance", Localizer["SectionGovernance"].Value); }
-            @{ Section("leSecEvidence", Localizer["SectionEvidence"].Value); }
-            @{ Section("leSecSystem", Localizer["SectionSystem"].Value); }
+                    <div class="row g-4" id="leSecIdentity"></div>
+                </section>
+                <section class="card backbone-preview-section p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionStatutory"]</h6>
+                    <div class="row g-4" id="leSecStatutory"></div>
+                </section>
+                <section class="card backbone-preview-section p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionAddresses"]</h6>
+                    <div class="row g-4" id="leSecAddresses"></div>
+                </section>
+            </div>
+
+            @* Sidebar column (right) *@
+            <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+                <section class="card backbone-preview-section p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionStructure"]</h6>
+                    <div class="row g-4" id="leSecStructure"></div>
+                </section>
+                <section class="card backbone-preview-section p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionFinance"]</h6>
+                    <div class="row g-4" id="leSecFinance"></div>
+                </section>
+                <section class="card backbone-preview-section p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionSystem"]</h6>
+                    <div class="row g-4" id="leSecSystem"></div>
+                </section>
+            </div>
         </div>
     </div>
 </div>

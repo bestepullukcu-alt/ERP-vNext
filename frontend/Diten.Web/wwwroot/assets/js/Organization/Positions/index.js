@@ -1,23 +1,33 @@
 'use strict';
 
-// Positions (platform-admin, Slim pattern). Backend list endpoints return a plain array
+// Positions (platform-admin). Backend list endpoints return a plain array
 // (Response<IReadOnlyList<T>>), so the DataTable is client-side (serverSide:false): a single ajax
-// fetch loads the whole list, with paging/sort/search handled in the browser. Create/edit happen in an
-// in-page offcanvas; archive + delete are row actions. Org-unit options come from the Platform org-units
-// list (always reachable); Reports-To options come from the positions list itself. On edit, the manager
-// chain is fetched and rendered read-only at the bottom of the offcanvas.
+// fetch loads the whole list, with paging/sort/search handled in the browser. Phase 3: create/edit/details
+// live on full-page routes (/Positions/Create|Edit/{id}|Details/{id}); the list only navigates there.
+// Archive + delete stay as AJAX row actions. Org-unit + reports-to names are resolved client-side from the
+// loaded lists for the table renderers.
 const PositionsList = (function () {
     let dt;
-    let editingId = null;
     let L = {};
     const dtTableEl = document.querySelector('.datatables-positions');
     const endpoint = '/Positions/api';
     const orgUnitsEndpoint = '/Positions/api/org-units';
-    const saveViewColumnIndexes = [1, 2, 3, 4, 5];
+    const createUrl = '/Positions/Create';
+    const editUrl = '/Positions/Edit';
+    const detailsUrl = '/Positions/Details';
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6];
+    const defaultVisibleColumnIndexes = [1, 2, 3, 4, 5, 6];
+    const totalColumnCount = 8; // control(0) + code/name/orgUnit/reportsTo/isArchived/occupancy(1-6) + action(7)
     const baseOrder = [[1, 'asc']];
+    const filterCollapseId = 'inlineFilterCollapse';
+    const personalizationClient = window.personalizationClient;
+    const personalizationContext = { moduleKey: 'Organization', pageKey: 'Positions' };
     let appliedFilters = { archived: '' };
+    let defaultViewRecord = null;
+    let defaultViewState = null;
+    let saveFilterArmed = false;
 
-    // Loaded reference data + id→label maps used by the table renderers and offcanvas selects.
+    // Loaded reference data + id→label maps used by the table renderers.
     let positionsData = [];
     let orgUnitsData = [];
     const orgUnitMap = {};
@@ -37,11 +47,14 @@ const PositionsList = (function () {
 
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
-    const normalizeString = (value) => (typeof value === 'string' ? value.trim() : '');
 
     const archivedBadge = (value) => value
         ? `<span class="badge bg-label-secondary">${escapeHtml(L.StatusArchived || 'Archived')}</span>`
         : `<span class="badge bg-label-success">${escapeHtml(L.StatusActive || 'Active')}</span>`;
+
+    const occupancyBadge = (isVacant, activeAssignmentCount) => isVacant
+        ? `<span class="badge bg-label-secondary">${escapeHtml(L.Vacant || 'Vacant')}</span>`
+        : `<span class="badge bg-label-success">${escapeHtml(`${L.Occupied || 'Occupied'} (${activeAssignmentCount ?? 0})`)}</span>`;
 
     const orgUnitLabel = (unit) => {
         const id = unit.id || unit.Id;
@@ -55,9 +68,13 @@ const PositionsList = (function () {
     };
 
     const rowActionHandlers = {
+        details: ({ id, row }) => {
+            const rid = id || row?.id || row?.Id;
+            if (rid) window.location.href = `${detailsUrl}/${encodeURIComponent(rid)}`;
+        },
         edit: ({ id, row }) => {
-            const editId = id || row?.id || row?.Id;
-            if (editId) openEditOffcanvas(String(editId));
+            const rid = id || row?.id || row?.Id;
+            if (rid) window.location.href = `${editUrl}/${encodeURIComponent(rid)}`;
         },
         archive: ({ row, id }) => {
             const rowId = id || row?.id || row?.Id;
@@ -101,7 +118,7 @@ const PositionsList = (function () {
         .then((response) => response.ok ? response.json() : Promise.reject(response))
         .then(unwrapList);
 
-    // Org-units lookup feeds the required OrgUnit select. Platform org-units is always reachable, but a
+    // Org-units lookup feeds the OrgUnit column renderer. Platform org-units is always reachable, but a
     // failure resolves to [] so the table still renders.
     const fetchOrgUnits = () => fetch(orgUnitsEndpoint, { headers: getAuthHeaders() })
         .then((response) => response.ok ? response.json() : Promise.reject(response))
@@ -121,6 +138,156 @@ const PositionsList = (function () {
         return rows.filter((r) => Boolean(r.isArchived ?? r.IsArchived) === wantArchived);
     };
 
+    // ─── Save View: normalization + state capture / (de)serialization ────────
+    const normalizeString = (v) => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v).trim()));
+    const emptyFilters = () => ({ archived: '' });
+    const normalizeFilters = (f) => ({ archived: normalizeString((f || {}).archived) });
+    const hasFilterValue = (v) => normalizeString(v).length > 0;
+
+    const normalizeColVis = (colVis) => {
+        if (!colVis) return null;
+        const n = {};
+        if (Array.isArray(colVis)) {
+            saveViewColumnIndexes.forEach((ci, pos) => {
+                if (typeof colVis[ci] === 'boolean') n[ci] = colVis[ci];
+                else if (typeof colVis[pos] === 'boolean') n[ci] = colVis[pos];
+            });
+        } else if (typeof colVis === 'object') {
+            saveViewColumnIndexes.forEach((ci) => { if (typeof colVis[ci] === 'boolean') n[ci] = colVis[ci]; });
+        }
+        return Object.keys(n).length ? n : null;
+    };
+    const captureColVis = (api) => { const r = {}; saveViewColumnIndexes.forEach((ci) => { try { r[ci] = !!api.column(ci).visible(); } catch (e) { } }); return r; };
+    const defaultColVis = () => saveViewColumnIndexes.reduce((a, ci) => { a[ci] = defaultVisibleColumnIndexes.includes(ci); return a; }, {});
+    const applyColVis = (api, colVis) => {
+        const n = normalizeColVis(colVis);
+        if (!n) return;
+        saveViewColumnIndexes.forEach((ci) => { if (typeof n[ci] === 'boolean') { try { api.column(ci).visible(n[ci], false); } catch (e) { } } });
+    };
+    const normalizeColOrder = (order) => {
+        if (!Array.isArray(order) || order.length !== totalColumnCount) return null;
+        const n = order.map(Number).filter((i) => Number.isInteger(i) && i >= 0 && i < totalColumnCount);
+        return n.length === totalColumnCount && new Set(n).size === totalColumnCount ? n : null;
+    };
+    const captureColOrder = (api) => { try { return normalizeColOrder(api?.colReorder?.order?.()); } catch (e) { return null; } };
+    const applyColOrder = (api, order) => { const n = normalizeColOrder(order); if (n && typeof api?.colReorder?.order === 'function') api.colReorder.order(n, true); };
+    const identityColOrder = () => Array.from({ length: totalColumnCount }, (_, i) => i);
+
+    const getSearchVal = (api) => { try { return api.table().container().querySelector('.dt-search input')?.value || ''; } catch (e) { return ''; } };
+    const syncSearchInput = (api, v) => { try { const el = api.table().container().querySelector('.dt-search input'); if (el) el.value = v || ''; } catch (e) { } };
+    const getCurrentView = (api) => ({
+        filters: Object.assign({}, appliedFilters),
+        search: normalizeString(getSearchVal(api) || api.search()),
+        colVis: captureColVis(api),
+        columnOrder: captureColOrder(api),
+        order: api.order()
+    });
+    const serializeView = (v) => JSON.stringify({
+        filters: { archived: normalizeString((v?.filters || {}).archived) },
+        search: normalizeString(v?.search),
+        colVis: normalizeColVis(v?.colVis) || defaultColVis(),
+        columnOrder: normalizeColOrder(v?.columnOrder) || identityColOrder(),
+        order: Array.isArray(v?.order) ? v.order : baseOrder
+    });
+    const normalizeViewState = (view) => ({
+        filters: normalizeFilters(view?.filters || view || emptyFilters()),
+        search: normalizeString(view?.search),
+        colVis: normalizeColVis(view?.colVis) || defaultColVis(),
+        columnOrder: normalizeColOrder(view?.columnOrder) || identityColOrder(),
+        order: Array.isArray(view?.order) ? view.order : baseOrder
+    });
+    const getResetBaselineState = () => normalizeViewState({ filters: emptyFilters(), search: '', colVis: defaultColVis(), columnOrder: identityColOrder(), order: baseOrder });
+
+    const getSavedViewId = (sv) => sv?.id || sv?.Id || sv?._id || null;
+    const getSavedViewName = (sv) => sv?.viewName || sv?.ViewName || '';
+    const isSavedViewDefault = (sv) => sv?.isDefault === true || sv?.IsDefault === true;
+    const unwrapViewResponse = (response) => response?.data || response?.Data || response;
+    const getSavedViewDef = (sv) => {
+        const raw = sv?.viewDefinition ?? sv?.ViewDefinition ?? {};
+        if (typeof raw === 'string') { try { return JSON.parse(raw); } catch (e) { return {}; } }
+        return raw || {};
+    };
+    const mapSavedViewToState = (sv) => {
+        const d = getSavedViewDef(sv);
+        return { filters: normalizeFilters(d.filters || d), search: normalizeString(d.search), colVis: normalizeColVis(d.colVis), columnOrder: normalizeColOrder(d.columnOrder), order: Array.isArray(d.order) ? d.order : null };
+    };
+    const setSaveFilterVisible = (visible) => {
+        const btn = document.querySelector('.dt-save-filter-btn');
+        if (!btn) return;
+        btn.classList.toggle('d-none', !visible);
+        window.DtDefaults?.refreshButtonGroupRadii?.();
+    };
+    const isDirtyComparedToDefault = (api) => {
+        const baseline = defaultViewState || { filters: emptyFilters(), search: '', colVis: defaultColVis(), columnOrder: identityColOrder(), order: baseOrder };
+        return serializeView(getCurrentView(api)) !== serializeView(baseline);
+    };
+    const loadDefaultView = async () => {
+        defaultViewRecord = null; defaultViewState = null;
+        if (!personalizationClient?.getViews) return null;
+        try {
+            const views = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
+            const items = Array.isArray(views) ? views : (views?.data || views?.Data || []);
+            defaultViewRecord = Array.isArray(items) ? (items.find(isSavedViewDefault) || items[0] || null) : null;
+            defaultViewState = defaultViewRecord ? mapSavedViewToState(defaultViewRecord) : null;
+            return defaultViewState;
+        } catch (error) {
+            if (error?.authHandled) return null;
+            console.error('[Positions SaveView] Failed to load saved views.', error);
+            return null;
+        }
+    };
+    const saveDefaultView = async (view) => {
+        if (!personalizationClient?.saveView) return null;
+        const normalizedView = normalizeViewState(view);
+        const payload = {
+            moduleKey: personalizationContext.moduleKey,
+            pageKey: personalizationContext.pageKey,
+            viewName: (getSavedViewName(defaultViewRecord) || L.SaveView || 'Default').trim(),
+            viewDefinition: normalizedView,
+            isDefault: true,
+            visibility: 'private'
+        };
+        const existingId = getSavedViewId(defaultViewRecord);
+        const savedResponse = existingId ? await personalizationClient.updateView(existingId, payload) : await personalizationClient.saveView(payload);
+        const savedRecord = unwrapViewResponse(savedResponse);
+        defaultViewRecord = savedRecord && typeof savedRecord === 'object' ? savedRecord : Object.assign({}, defaultViewRecord || {}, payload);
+        defaultViewState = normalizedView;
+        return defaultViewState;
+    };
+    const syncFilterControls = (values) => {
+        const el = document.getElementById('filterArchived');
+        if (el) { el.value = values.archived || ''; if (window.jQuery?.fn?.select2) $(el).val(values.archived || '').trigger('change'); }
+    };
+    const applySavedTableState = (api, view) => {
+        if (!api || !view) return;
+        const s = normalizeViewState(view);
+        appliedFilters = s.filters;
+        syncFilterControls(appliedFilters);
+        applyColOrder(api, s.columnOrder);
+        applyColVis(api, s.colVis);
+        api.search(s.search);
+        syncSearchInput(api, s.search);
+        api.order(s.order);
+        dt?.ajax.reload(() => { window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount()); }, false);
+    };
+    const setupFilters = (api) => {
+        initSelect2Filters();
+        applySavedTableState(api, defaultViewState || { filters: appliedFilters });
+        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
+            appliedFilters = { archived: document.getElementById('filterArchived')?.value || '' };
+            dt?.ajax.reload();
+            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
+            const collapseEl = document.getElementById(filterCollapseId);
+            if (collapseEl) bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).hide();
+        });
+        document.getElementById('btnFilterReset')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            applySavedTableState(api, getResetBaselineState());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
+        });
+    };
+
     const initDataTable = () => {
         if (!dtTableEl || !window.DtDefaults) {
             console.error('[Positions] DataTable element or DtDefaults not found.');
@@ -132,6 +299,24 @@ const PositionsList = (function () {
             className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
             attr: { title: L.Filter, 'aria-controls': 'inlineFilterCollapse', 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },
             action: () => toggleInlineFilter()
+        };
+        const saveFilterBtn = {
+            text: '<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">' + (L.SaveView || '') + '</span>',
+            className: 'btn btn-label-primary d-none dt-save-filter-btn',
+            attr: { title: L.SaveView, 'data-bs-toggle': 'tooltip' },
+            action: async function (e, api) {
+                const tableApi = api || dt;
+                if (!tableApi) return;
+                try {
+                    await saveDefaultView(getCurrentView(tableApi));
+                    setSaveFilterVisible(false);
+                    window.showToast?.(L.RecordSaved || L.SaveView || '', 'success');
+                } catch (error) {
+                    if (error?.authHandled) return;
+                    console.error('[Positions SaveView] Failed to save default view.', error);
+                    window.showToast?.(L.ErrorOccurred || '', 'error');
+                }
+            }
         };
 
         const dtConfig = window.DtDefaults.create({
@@ -167,6 +352,13 @@ const PositionsList = (function () {
                 },
                 { data: 'isArchived', name: 'isArchived', render: (value) => archivedBadge(value) },
                 {
+                    data: 'isVacant', name: 'occupancy', orderable: false,
+                    render: (value, type, row) => occupancyBadge(
+                        Boolean(row.isVacant ?? row.IsVacant),
+                        row.activeAssignmentCount ?? row.ActiveAssignmentCount ?? 0
+                    )
+                },
+                {
                     data: null,
                     name: 'action',
                     orderable: false,
@@ -178,6 +370,7 @@ const PositionsList = (function () {
                         const isArchived = Boolean(row.isArchived ?? row.IsArchived);
 
                         const actions = [
+                            { key: 'details', icon: 'bx bx-show', text: L.ViewDetails || '', attrs: { 'data-id': id, 'data-json': rowJson } },
                             { key: 'edit', icon: 'bx bx-edit', className: 'js-edit-item', text: L.Edit || '', attrs: { 'data-id': id, 'data-json': rowJson } }
                         ];
                         if (!isArchived) {
@@ -194,15 +387,16 @@ const PositionsList = (function () {
                 { targets: 2, responsivePriority: 1 },
                 { targets: -1, title: L.Actions, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3' }
             ],
-            buttons: window.DtDefaults.exportButtons(L.AddNew || '', {}, { filterBtn }, {
+            buttons: window.DtDefaults.exportButtons(L.AddNew || '', {}, { filterBtn, saveFilterBtn }, {
                 exportColumns: saveViewColumnIndexes,
                 colvisColumns: saveViewColumnIndexes
             }),
             initComplete: function () {
                 const api = this.api();
                 mountInlineFilter();
-                initSelect2Filters();
+                setupFilters(api);
                 window.DtDefaults.updateVisualState(api, getAppliedFilterCount());
+                setTimeout(() => { saveFilterArmed = true; }, 0);
             },
             drawCallback: function () {
                 window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount());
@@ -220,6 +414,18 @@ const PositionsList = (function () {
             tableEl: dtTableEl,
             dt,
             onRowAction: rowActionHandlers
+        });
+
+        dt.on('column-visibility.dt', function () {
+            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+        });
+        dt.on('search.dt order.dt', function () {
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+        });
+        dt.on('column-reorder.dt columns-reordered.dt', function () {
+            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
     };
 
@@ -262,283 +468,32 @@ const PositionsList = (function () {
         });
     };
 
-    const bindFilters = () => {
-        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
-            appliedFilters = { archived: document.getElementById('filterArchived')?.value || '' };
-            dt?.ajax.reload();
-            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
-        });
-
-        document.getElementById('btnFilterReset')?.addEventListener('click', (event) => {
-            event.preventDefault();
-            appliedFilters = { archived: '' };
-            const element = document.getElementById('filterArchived');
-            if (element) {
-                element.value = '';
-                if (window.jQuery?.fn?.select2) $(element).val('').trigger('change');
-            }
-            dt?.ajax.reload();
-            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
-        });
-    };
-
     const getAppliedFilterCount = () => Object.values(appliedFilters).filter((value) => value !== '').length;
 
-    // ─── Create/Edit offcanvas (Slim pattern) ────────────────────────────────
-    const getOcInstance = () => {
-        const el = document.getElementById('offcanvasCreateEdit');
-        return el ? bootstrap.Offcanvas.getOrCreateInstance(el) : null;
-    };
-
-    const getAntiForgeryToken = () =>
-        document.querySelector('#formPosition input[name="__RequestVerificationToken"]')?.value || '';
-
-    const normalizeCode = (value) => (value || '')
-        .toUpperCase()
-        .replace(/[^A-Z0-9]+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 80)
-        .replace(/-+$/g, '');
-
-    const updateCodePreview = () => {
-        const input = document.getElementById('positionCode');
-        const preview = document.getElementById('positionCodePreview');
-        const span = preview?.querySelector('span');
-        if (!input || !preview || !span) return;
-        const normalized = normalizeCode(input.value);
-        if (normalized && normalized !== input.value) {
-            span.textContent = normalized;
-            preview.classList.remove('d-none');
-        } else {
-            preview.classList.add('d-none');
-        }
-    };
-
-    const populateOrgUnitSelect = (selectedId) => {
-        const select = document.getElementById('positionOrgUnit');
-        if (!select) return;
-        select.innerHTML = `<option value="">${escapeHtml(L.SelectOrgUnit || '')}</option>`;
-        orgUnitsData.forEach((u) => {
-            const { id, text } = orgUnitLabel(u);
-            if (!id) return;
-            const option = document.createElement('option');
-            option.value = id;
-            option.textContent = text;
-            if (selectedId && id === selectedId) option.selected = true;
-            select.appendChild(option);
-        });
-    };
-
-    const populateReportsToSelect = (selectedId, excludeId) => {
-        const select = document.getElementById('positionReportsTo');
-        if (!select) return;
-        select.innerHTML = `<option value="">${escapeHtml(L.NoReportsTo || '')}</option>`;
-        positionsData
-            .filter((p) => (p.id || p.Id) !== excludeId)
-            .forEach((p) => {
-                const id = p.id || p.Id;
-                const option = document.createElement('option');
-                option.value = id;
-                option.textContent = `${p.code || p.Code || ''} — ${p.name || p.Name || ''}`;
-                if (selectedId && id === selectedId) option.selected = true;
-                select.appendChild(option);
-            });
-    };
-
-    // Render the manager chain (read-only) into the offcanvas. Hidden on create.
-    const renderManagerChain = (chain) => {
-        const section = document.getElementById('positionManagerChainSection');
-        const host = document.getElementById('positionManagerChain');
-        if (!section || !host) return;
-        const nodes = (Array.isArray(chain) ? chain : [])
-            .slice()
-            .sort((a, b) => (a.depth ?? a.Depth ?? 0) - (b.depth ?? b.Depth ?? 0));
-        if (!nodes.length) {
-            host.innerHTML = `<span class="text-muted">-</span>`;
-            section.classList.remove('d-none');
-            return;
-        }
-        const items = nodes.map((n) => {
-            const code = n.positionCode || n.PositionCode || '';
-            const name = n.positionName || n.PositionName || '';
-            return `<li>${escapeHtml(code ? `${code} — ${name}` : name)}</li>`;
-        }).join('');
-        host.innerHTML = `<ol class="mb-0 ps-3">${items}</ol>`;
-        section.classList.remove('d-none');
-    };
-
-    const hideManagerChain = () => {
-        const section = document.getElementById('positionManagerChainSection');
-        const host = document.getElementById('positionManagerChain');
-        if (host) host.innerHTML = '';
-        section?.classList.add('d-none');
-    };
-
-    const readOrgUnitId = () => normalizeString(document.getElementById('positionOrgUnit')?.value);
-
-    const clearFormErrors = () => {
-        const alertEl = document.getElementById('formPositionAlert');
-        if (alertEl) { alertEl.classList.add('d-none'); alertEl.innerHTML = ''; }
-    };
-
-    const showFormErrors = (errors) => {
-        const alertEl = document.getElementById('formPositionAlert');
-        if (!alertEl) return;
-        const list = (Array.isArray(errors) ? errors : [errors]).filter(Boolean);
-        alertEl.innerHTML = list.length
-            ? list.map((message) => `<div>${escapeHtml(message)}</div>`).join('')
-            : escapeHtml(L.RequiredField || '');
-        alertEl.classList.remove('d-none');
-    };
-
-    const resetForm = () => {
-        const form = document.getElementById('formPosition');
-        if (!form) return;
-        form.classList.remove('was-validated');
-        form.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
-        document.getElementById('positionItemId').value = '';
-        document.getElementById('positionCode').value = '';
-        document.getElementById('positionName').value = '';
-        document.getElementById('positionCodePreview')?.classList.add('d-none');
-        hideManagerChain();
-        clearFormErrors();
-    };
-
-    const openCreateOffcanvas = () => {
-        const oc = getOcInstance();
-        if (!oc) {
-            console.error('[Positions] #offcanvasCreateEdit not found. Rebuild + restart the app so the partial renders.');
-            return;
-        }
-        editingId = null;
-        resetForm();
-        populateOrgUnitSelect('');
-        populateReportsToSelect('', null);
-        hideManagerChain();
-        const label = document.getElementById('offcanvasCreateEditLabel');
-        if (label) label.textContent = L.FormTitleCreate || L.AddNew || '';
-        const saveBtn = document.getElementById('btnSavePosition');
-        if (saveBtn) saveBtn.textContent = L.Save || '';
-        oc.show();
-    };
-
-    const openEditOffcanvas = async (id) => {
-        if (!id) return;
-        editingId = id;
-        resetForm();
-        const label = document.getElementById('offcanvasCreateEditLabel');
-        if (label) label.textContent = L.FormTitleEdit || L.Edit || '';
-        const saveBtn = document.getElementById('btnSavePosition');
-        if (saveBtn) saveBtn.textContent = L.Update || L.Save || '';
-
-        try {
-            const res = await fetch(`${endpoint}/${encodeURIComponent(id)}`, { headers: getAuthHeaders() });
-            if (!res.ok) throw new Error('Failed to load item.');
-            const payload = await res.json();
-            const d = payload.data || payload.Data || {};
-            document.getElementById('positionItemId').value = d.id || d.Id || '';
-            document.getElementById('positionCode').value = d.code || d.Code || '';
-            document.getElementById('positionName').value = d.name || d.Name || '';
-            populateOrgUnitSelect(d.organizationUnitId || d.OrganizationUnitId || '');
-            populateReportsToSelect(d.reportsToPositionId || d.ReportsToPositionId || '', d.id || d.Id);
-        } catch (error) {
-            console.error('[Positions] Failed to load item for edit.', error);
-            window.showToast?.(L.ErrorOccurred || '', 'error');
-            return;
-        }
-
-        // Manager chain is best-effort; a failure leaves the section hidden.
-        try {
-            const chainRes = await fetch(`${endpoint}/${encodeURIComponent(id)}/manager-chain`, { headers: getAuthHeaders() });
-            if (chainRes.ok) {
-                const chainPayload = await chainRes.json();
-                const chainData = chainPayload.data || chainPayload.Data || {};
-                renderManagerChain(chainData.chain || chainData.Chain || []);
-            } else {
-                hideManagerChain();
-            }
-        } catch (error) {
-            console.error('[Positions] Failed to load manager chain.', error);
-            hideManagerChain();
-        }
-
-        getOcInstance()?.show();
-    };
-
-    const submitForm = async () => {
-        const form = document.getElementById('formPosition');
-        if (!form) return;
-        clearFormErrors();
-        form.classList.add('was-validated');
-
-        const organizationUnitId = readOrgUnitId();
-        if (!form.checkValidity() || !organizationUnitId) {
-            showFormErrors([L.RequiredField || '']);
-            return;
-        }
-
-        const isEdit = !!editingId;
-        const reportsToValue = normalizeString(document.getElementById('positionReportsTo')?.value);
-        const payload = {
-            code: normalizeCode(document.getElementById('positionCode').value),
-            name: normalizeString(document.getElementById('positionName').value),
-            organizationUnitId: organizationUnitId,
-            reportsToPositionId: reportsToValue || null
-        };
-        const url = isEdit ? `${endpoint}/${encodeURIComponent(editingId)}` : endpoint;
-        const method = isEdit ? 'PUT' : 'POST';
-
-        const saveBtn = document.getElementById('btnSavePosition');
-        if (saveBtn) saveBtn.disabled = true;
-        try {
-            const res = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': getAntiForgeryToken(),
-                    ...getAuthHeaders()
-                },
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-                getOcInstance()?.hide();
-                reloadWithSuccessToast(isEdit ? 'RecordUpdated' : 'RecordCreated', payload.name);
-                return;
-            }
-            let errors = [];
-            try {
-                const json = await res.json();
-                errors = (json.errors || json.Errors || []);
-            } catch { /* non-JSON response */ }
-            showFormErrors(errors.length ? errors : [L.ErrorOccurred || '']);
-        } catch (error) {
-            console.error('[Positions] Form submit failed.', error);
-            showFormErrors([L.ErrorOccurred || '']);
-        } finally {
-            if (saveBtn) saveBtn.disabled = false;
-        }
-    };
-
-    const bindOffcanvas = () => {
+    // ─── Add New → full-page create route ────────────────────────────────────
+    const bindAddNew = () => {
         // Delegated: the Add New button is rendered by DataTables into the toolbar, so bind at document level.
         document.addEventListener('click', (event) => {
             if (event.target.closest('.add-new')) {
                 event.preventDefault();
-                openCreateOffcanvas();
+                window.location.href = createUrl;
             }
-        });
-        document.getElementById('btnSavePosition')?.addEventListener('click', submitForm);
-        document.getElementById('positionCode')?.addEventListener('input', function () {
-            this.value = this.value.toUpperCase();
-            updateCodePreview();
         });
     };
 
-    const init = () => {
+    // After a full-page create/edit/details save redirects back here, surface the toast it stashed.
+    const flushToast = () => {
+        try {
+            const msg = sessionStorage.getItem('p-toast');
+            if (msg) { sessionStorage.removeItem('p-toast'); window.showToast?.(msg, 'success'); }
+        } catch { /* ignore */ }
+    };
+
+    const init = async () => {
         loadL10n();
-        bindFilters();
-        bindOffcanvas();
+        flushToast();
+        bindAddNew();
+        await loadDefaultView();
         initDataTable();
     };
 

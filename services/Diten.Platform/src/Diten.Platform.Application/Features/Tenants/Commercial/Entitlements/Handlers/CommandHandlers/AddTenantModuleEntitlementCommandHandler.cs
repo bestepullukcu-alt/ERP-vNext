@@ -65,6 +65,20 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
 
         if (entitlement.IsEnabled)
         {
+            // FIX-QUOTA-DRIFT — reconcile modules.max CurrentValue to the REAL enabled-entitlement count
+            // (RecalculateAsync → ComputeCurrentUsageAsync) BEFORE the atomic consume, so a historically drifted
+            // counter self-heals and a legitimate add is not blocked by a phantom +1. Best-effort: the consume that
+            // follows is the authoritative limit check, so a genuine over-limit (e.g. 3/3 → 4th) still returns 409.
+            await _quotaService.RecalculateAsync(new RecalculateQuotaUsageRequest(
+                request.TenantId,
+                QuotaKeys.ModulesMax,
+                "ModuleEntitlement",
+                null,
+                moduleCode,
+                "Reconcile modules.max to the real enabled count before enforcing.",
+                null,
+                Guid.NewGuid().ToString()), ct);
+
             var consume = await _quotaService.TryConsumeAsync(new TryConsumeQuotaRequest(
                 request.TenantId,
                 QuotaKeys.ModulesMax,

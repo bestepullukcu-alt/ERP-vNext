@@ -1,11 +1,22 @@
+@using System.Globalization
 @using System.Text.Json
 @using Diten.Web.Views.MasterData.LegalEntities
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<LegalEntitiesIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
+    // Map the request culture's .NET short-date pattern to flatpickr tokens so the filter date pickers display in
+    // the user's locale format while the stored filter value stays ISO (Y-m-d).
+    static string ToFlatpickr(string net) =>
+        net.Replace("dd", "\x01").Replace("d", "\x02")
+           .Replace("MM", "\x03").Replace("M", "\x04")
+           .Replace("yyyy", "Y").Replace("yy", "y")
+           .Replace("\x01", "d").Replace("\x02", "j").Replace("\x03", "m").Replace("\x04", "n");
     var payload = new
     {
+        DateFormat = ToFlatpickr(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern),
+        SaveView = SharedLocalizer["SaveView"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
         LegalEntitiesTitle = Localizer["LegalEntitiesTitle"].Value,
         Actions = Localizer["Actions"].Value,
         AddNew = Localizer["AddNewLegalEntity"].Value,
@@ -26,7 +37,6 @@
         TaxId = Localizer["TaxId"].Value,
         OfficialEmail = Localizer["OfficialEmail"].Value,
         ViewDetails = Localizer["ViewDetails"].Value,
-        QuickView = Localizer["QuickView"].Value,
         Edit = Localizer["Edit"].Value,
         // Status labels (operational / lifecycle)
         StatusDraft = Localizer["StatusDraft"].Value,

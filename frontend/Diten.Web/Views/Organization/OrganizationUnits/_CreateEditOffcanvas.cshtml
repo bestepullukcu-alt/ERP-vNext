@@ -43,14 +43,11 @@
                     <label for="orgUnitLegalEntity" class="form-label fw-medium">
                         @Localizer["LegalEntity"] <span class="text-danger">*</span>
                     </label>
-                    @* Lookup feed (MDM). When the lookup is empty/unreachable, JS hides this select and
-                       reveals the manual-GUID input below so the screen stays usable. *@
+                    @* MOD-0288 #1 — searchable select2 of referenceable Legal Entities ("Code — Name"); the GUID is
+                       stored as the option value and never typed. No manual-GUID fallback. *@
                     <select id="orgUnitLegalEntity" name="LegalEntityId" class="form-select" required>
                         <option value="">@Localizer["SelectLegalEntity"]</option>
                     </select>
-                    <input type="text" id="orgUnitLegalEntityManual" name="LegalEntityIdManual" class="form-control d-none mt-2"
-                           placeholder="@Localizer["LegalEntityIdPlaceholder"]" />
-                    <div id="orgUnitLegalEntityHint" class="form-text mt-1 text-muted d-none">@Localizer["LegalEntityLookupUnavailable"]</div>
                     <div class="invalid-feedback">@Localizer["RequiredField"]</div>
                 </div>
 

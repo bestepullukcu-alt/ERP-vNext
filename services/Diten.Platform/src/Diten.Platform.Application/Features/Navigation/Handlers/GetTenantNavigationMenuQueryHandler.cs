@@ -66,10 +66,25 @@ public sealed class GetTenantNavigationMenuQueryHandler
         // ("MASTER-DATA-MANAGEMENT") differ only by separators/case, so normalize both sides (strip every
         // non-alphanumeric char + uppercase) before keying. Display-only; grouping/data is unaffected.
         var domains = await _domainRepository.GetActiveAsync(ct);
-        var domainNames = domains
+        var domainByKey = domains
             .Where(d => NormalizeDomainKey(d.Code).Length > 0)
             .GroupBy(d => NormalizeDomainKey(d.Code), StringComparer.Ordinal)
-            .ToDictionary(g => g.Key, g => g.First().DisplayName, StringComparer.Ordinal);
+            // FIX-DOMAIN-DEDUP (defense) — a normalized key should map to exactly ONE row (guaranteed by the
+            // dedup migration + the unique index on CodeKey), but pick DETERMINISTICALLY anyway so a stray
+            // duplicate can never randomize the domain's display name or SortOrder: active first, then lowest
+            // SortOrder, then Code. Without this an arbitrary .First() made the operator's ordering edits flaky.
+            .ToDictionary(
+                g => g.Key,
+                g => g.OrderByDescending(d => d.IsActive)
+                      .ThenBy(d => d.SortOrder)
+                      .ThenBy(d => d.Code, StringComparer.Ordinal)
+                      .First(),
+                StringComparer.Ordinal);
+        var domainNames = domainByKey.ToDictionary(kv => kv.Key, kv => kv.Value.DisplayName, StringComparer.Ordinal);
+        // FIX-DOMAIN-SORT — Domain Management's ModuleDomain.SortOrder is the authoritative BASE order of the
+        // domain groups in the sidebar. Keyed format-tolerantly like the display-name map; consumed in
+        // ApplyDomainPreferences as the primary sort with module first-appearance as the stable tiebreak.
+        var domainSortOrders = domainByKey.ToDictionary(kv => kv.Key, kv => kv.Value.SortOrder, StringComparer.Ordinal);
 
         var groups = new List<NavigationModuleGroupDto>();
 
@@ -136,30 +151,45 @@ public sealed class GetTenantNavigationMenuQueryHandler
         // FEAT-NAVPREFS-DOMAINS — stamp each group's effective DomainSortOrder (domain pref override else implicit
         // catalog rank) and apply any domain rename. The frontend orders domain groups by DomainSortOrder.
         var domainPreferences = await _navDomainPreferenceRepository.GetByTenantAsync(request.TenantId, ct);
-        var finalGroups = ApplyDomainPreferences(moduleGroups, domainPreferences);
+        var finalGroups = ApplyDomainPreferences(moduleGroups, domainPreferences, domainSortOrders);
 
         return Response<IReadOnlyList<NavigationModuleGroupDto>>.Success(finalGroups);
     }
 
     private static IReadOnlyList<NavigationModuleGroupDto> ApplyDomainPreferences(
         IReadOnlyList<NavigationModuleGroupDto> groups,
-        IReadOnlyList<Domain.Entities.TenantNavDomainPreference> domainPreferences)
+        IReadOnlyList<Domain.Entities.TenantNavDomainPreference> domainPreferences,
+        IReadOnlyDictionary<string, int> domainSortOrders)
     {
         if (groups.Count == 0)
         {
             return groups;
         }
 
-        // Implicit rank = first-appearance order of each domain key in the (module-ordered) groups. All modules of
-        // a domain share the same rank, so domains stay coherent when the frontend orders by DomainSortOrder.
-        var implicitRank = new Dictionary<string, int>(StringComparer.Ordinal);
+        // First-appearance order of each domain key in the (module-ordered) groups. Used only as a stable
+        // tiebreak below when two domains share the same platform SortOrder.
+        var firstAppearance = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var g in groups)
         {
             var key = NormalizeDomainKey(g.Domain);
-            if (!implicitRank.ContainsKey(key))
+            if (!firstAppearance.ContainsKey(key))
             {
-                implicitRank[key] = implicitRank.Count;
+                firstAppearance[key] = firstAppearance.Count;
             }
+        }
+
+        // FIX-DOMAIN-SORT — the base rank of each domain group is now driven by Domain Management's
+        // ModuleDomain.SortOrder (authoritative), with module first-appearance as the tiebreak. Sort the distinct
+        // domain keys by (platform SortOrder ASC, first-appearance ASC) and assign sequential ranks; the frontend's
+        // single-int DomainSortOrder then reflects that ordering. Domains with no platform row sort after those
+        // that have one (int.MaxValue), still tie-broken by first-appearance. Tenant prefs override below.
+        var implicitRank = new Dictionary<string, int>(StringComparer.Ordinal);
+        var rankIndex = 0;
+        foreach (var key in firstAppearance.Keys
+            .OrderBy(k => domainSortOrders.TryGetValue(k, out var so) ? so : int.MaxValue)
+            .ThenBy(k => firstAppearance[k]))
+        {
+            implicitRank[key] = rankIndex++;
         }
 
         var prefByKey = new Dictionary<string, Domain.Entities.TenantNavDomainPreference>(StringComparer.Ordinal);
@@ -177,6 +207,7 @@ public sealed class GetTenantNavigationMenuQueryHandler
             var key = NormalizeDomainKey(g.Domain);
             var sort = implicitRank.TryGetValue(key, out var rank) ? rank : 0;
             var display = g.DomainDisplayName;
+            var isOverride = false;
 
             if (prefByKey.TryGetValue(key, out var pref))
             {
@@ -187,10 +218,11 @@ public sealed class GetTenantNavigationMenuQueryHandler
                 if (!string.IsNullOrWhiteSpace(pref.DisplayNameOverride))
                 {
                     display = pref.DisplayNameOverride.Trim();
+                    isOverride = true; // FEAT-NAV-L10N — tenant free text; frontend must render it as-typed, not localize.
                 }
             }
 
-            return g with { DomainSortOrder = sort, DomainDisplayName = display };
+            return g with { DomainSortOrder = sort, DomainDisplayName = display, DomainDisplayNameIsOverride = isOverride };
         }).ToList();
     }
 
@@ -226,7 +258,8 @@ public sealed class GetTenantNavigationMenuQueryHandler
                 {
                     if (!string.IsNullOrWhiteSpace(pref.DisplayNameOverride))
                     {
-                        group = group with { ModuleDisplayName = pref.DisplayNameOverride.Trim() };
+                        // FEAT-NAV-L10N — tenant free text; frontend renders it as-typed, never localized.
+                        group = group with { ModuleDisplayName = pref.DisplayNameOverride.Trim(), ModuleDisplayNameIsOverride = true };
                     }
 
                     sortKey = pref.SortOrder ?? x.catalogRank;

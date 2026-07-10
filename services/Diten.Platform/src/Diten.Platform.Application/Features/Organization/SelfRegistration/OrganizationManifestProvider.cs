@@ -46,7 +46,9 @@ public sealed class OrganizationManifestProvider : IModuleManifestProvider
             Icon: "bx-sitemap", // FIX-MODULE-ICON — default sidebar icon (SOFT; operator can override in catalog).
             Pages:
             [
-                // Organization Units — slim list (toolbar Add + row Edit/Archive/Delete).
+                // MOD-0288 Phase 2 — Organization Units reshaped to full-page Create/Edit/Details (§2a: create &
+                // edit are distinct routes → one page each; Add/Edit on the list now NAVIGATE to those pages, so the
+                // list keeps only the AJAX row lifecycle actions). Positions/PositionAssignments remain slim (later slices).
                 new ModuleManifestPage(
                     PageCode: "ORGANIZATION_UNITS",
                     DisplayName: "Organization Units",
@@ -58,13 +60,58 @@ public sealed class OrganizationManifestProvider : IModuleManifestProvider
                     SortOrder: 10,
                     Actions:
                     [
-                        new ModuleManifestAction("CREATE", "Create Organization Unit", OrgUnitsCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
-                        new ModuleManifestAction("EDIT", "Edit", OrgUnitsUpdate, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("ARCHIVE", "Archive", OrgUnitsArchive, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("DELETE", "Delete", OrgUnitsDelete, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ]),
 
-                // Positions — slim list (toolbar Add + row Edit/Archive/Delete). manager-chain is a read-only
+                // Full-page CREATE form (compact two-level: basic + collapsible advanced).
+                new ModuleManifestPage(
+                    PageCode: "ORG_UNIT_CREATE",
+                    DisplayName: "Create Organization Unit",
+                    RoutePath: "/OrganizationUnits/Create",
+                    RequiredPermission: OrgUnitsCreate,
+                    ParentPageCode: "ORGANIZATION_UNITS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 11,
+                    Actions:
+                    [
+                        new ModuleManifestAction("SAVE", "Save Organization Unit", OrgUnitsCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                // Full-page EDIT form (distinct route; same view, edit mode).
+                new ModuleManifestPage(
+                    PageCode: "ORG_UNIT_EDIT",
+                    DisplayName: "Edit Organization Unit",
+                    RoutePath: "/OrganizationUnits/Edit/{id}",
+                    RequiredPermission: OrgUnitsUpdate,
+                    ParentPageCode: "ORGANIZATION_UNITS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 12,
+                    Actions:
+                    [
+                        new ModuleManifestAction("SAVE", "Save Organization Unit", OrgUnitsUpdate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                // Full details page (read view + lifecycle toolbar actions).
+                new ModuleManifestPage(
+                    PageCode: "ORG_UNIT_DETAILS",
+                    DisplayName: "Organization Unit Details",
+                    RoutePath: "/OrganizationUnits/Details/{id}",
+                    RequiredPermission: OrgUnitsRead,
+                    ParentPageCode: "ORGANIZATION_UNITS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 13,
+                    Actions:
+                    [
+                        new ModuleManifestAction("ARCHIVE", "Archive", OrgUnitsArchive, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("DELETE", "Delete", OrgUnitsDelete, "Toolbar", 20, IsDangerous: true, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                // MOD-0288 Phase 3 — Positions reshaped to full-page Create/Edit/Details (§2a). Add/Edit navigate to
+                // those pages, so the list keeps only the AJAX row lifecycle actions. manager-chain is a read-only
                 // lookup feed (no button), so it is NOT modeled as an action.
                 new ModuleManifestPage(
                     PageCode: "POSITIONS",
@@ -77,13 +124,59 @@ public sealed class OrganizationManifestProvider : IModuleManifestProvider
                     SortOrder: 20,
                     Actions:
                     [
-                        new ModuleManifestAction("CREATE", "Create Position", PositionsCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
-                        new ModuleManifestAction("EDIT", "Edit", PositionsUpdate, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("ARCHIVE", "Archive", PositionsArchive, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("DELETE", "Delete", PositionsDelete, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ]),
 
-                // Position Assignments — slim list. Unlike the others there is NO archive endpoint, so no Archive action.
+                // Full-page CREATE form (compact two-level).
+                new ModuleManifestPage(
+                    PageCode: "POSITION_CREATE",
+                    DisplayName: "Create Position",
+                    RoutePath: "/Positions/Create",
+                    RequiredPermission: PositionsCreate,
+                    ParentPageCode: "POSITIONS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 21,
+                    Actions:
+                    [
+                        new ModuleManifestAction("SAVE", "Save Position", PositionsCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                // Full-page EDIT form.
+                new ModuleManifestPage(
+                    PageCode: "POSITION_EDIT",
+                    DisplayName: "Edit Position",
+                    RoutePath: "/Positions/Edit/{id}",
+                    RequiredPermission: PositionsUpdate,
+                    ParentPageCode: "POSITIONS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 22,
+                    Actions:
+                    [
+                        new ModuleManifestAction("SAVE", "Save Position", PositionsUpdate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                // Full details page (read view + manager chain + lifecycle toolbar actions).
+                new ModuleManifestPage(
+                    PageCode: "POSITION_DETAILS",
+                    DisplayName: "Position Details",
+                    RoutePath: "/Positions/Details/{id}",
+                    RequiredPermission: PositionsRead,
+                    ParentPageCode: "POSITIONS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 23,
+                    Actions:
+                    [
+                        new ModuleManifestAction("ARCHIVE", "Archive", PositionsArchive, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("DELETE", "Delete", PositionsDelete, "Toolbar", 20, IsDangerous: true, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                // MOD-0288 Phase 4 — Position Assignments reshaped to full-page Create/Edit/Details (§2a). Add/Edit
+                // navigate to those pages; the list keeps only the AJAX delete row action. There is NO archive
+                // endpoint for assignments, so (unlike Org Unit / Position) no Archive action anywhere.
                 new ModuleManifestPage(
                     PageCode: "POSITION_ASSIGNMENTS",
                     DisplayName: "Position Assignments",
@@ -95,9 +188,52 @@ public sealed class OrganizationManifestProvider : IModuleManifestProvider
                     SortOrder: 30,
                     Actions:
                     [
-                        new ModuleManifestAction("CREATE", "Create Position Assignment", AssignmentsCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
-                        new ModuleManifestAction("EDIT", "Edit", AssignmentsUpdate, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("DELETE", "Delete", AssignmentsDelete, "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+
+                // Full-page CREATE form (compact two-level).
+                new ModuleManifestPage(
+                    PageCode: "ASSIGNMENT_CREATE",
+                    DisplayName: "Create Position Assignment",
+                    RoutePath: "/PositionAssignments/Create",
+                    RequiredPermission: AssignmentsCreate,
+                    ParentPageCode: "POSITION_ASSIGNMENTS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 31,
+                    Actions:
+                    [
+                        new ModuleManifestAction("SAVE", "Save Position Assignment", AssignmentsCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                // Full-page EDIT form.
+                new ModuleManifestPage(
+                    PageCode: "ASSIGNMENT_EDIT",
+                    DisplayName: "Edit Position Assignment",
+                    RoutePath: "/PositionAssignments/Edit/{id}",
+                    RequiredPermission: AssignmentsUpdate,
+                    ParentPageCode: "POSITION_ASSIGNMENTS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 32,
+                    Actions:
+                    [
+                        new ModuleManifestAction("SAVE", "Save Position Assignment", AssignmentsUpdate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                // Full details page (read view + derived status + delete). No archive endpoint for assignments.
+                new ModuleManifestPage(
+                    PageCode: "ASSIGNMENT_DETAILS",
+                    DisplayName: "Position Assignment Details",
+                    RoutePath: "/PositionAssignments/Details/{id}",
+                    RequiredPermission: AssignmentsRead,
+                    ParentPageCode: "POSITION_ASSIGNMENTS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 33,
+                    Actions:
+                    [
+                        new ModuleManifestAction("DELETE", "Delete", AssignmentsDelete, "Toolbar", 10, IsDangerous: true, IsToolbarAction: true, IsRowAction: false)
                     ])
             ]);
 }

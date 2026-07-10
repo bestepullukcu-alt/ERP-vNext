@@ -36,7 +36,6 @@
   <data name="CreatedFrom" xml:space="preserve"><value>Created From</value></data>
   <data name="CreatedTo" xml:space="preserve"><value>Created To</value></data>
   <data name="IncompleteOnly" xml:space="preserve"><value>Incomplete only</value></data>
-  <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>View Details</value></data>
   <data name="Edit" xml:space="preserve"><value>Edit</value></data>
   <data name="Suspend" xml:space="preserve"><value>Suspend</value></data>
@@ -96,9 +95,14 @@
   <data name="FiscalYearVariant" xml:space="preserve"><value>Fiscal Year Variant</value></data>
   <data name="AccountingStandard" xml:space="preserve"><value>Accounting Standard</value></data>
   <data name="TaxRegime" xml:space="preserve"><value>Tax Regime</value></data>
-  <data name="RegisteredAddress" xml:space="preserve"><value>Registered Address (JSON)</value></data>
-  <data name="CorrespondenceAddress" xml:space="preserve"><value>Correspondence Address (JSON)</value></data>
-  <data name="AddressJsonHelp" xml:space="preserve"><value>JSON object with line1, city, country (required), and optional line2, postalCode, state.</value></data>
+  <data name="RegisteredAddress" xml:space="preserve"><value>Registered Address</value></data>
+  <data name="CorrespondenceAddress" xml:space="preserve"><value>Correspondence Address</value></data>
+  <data name="AddressJsonHelp" xml:space="preserve"><value>Line 1, City and Country are required when an address is provided.</value></data>
+  <data name="AddressLine1" xml:space="preserve"><value>Address Line 1</value></data>
+  <data name="AddressLine2" xml:space="preserve"><value>Address Line 2</value></data>
+  <data name="AddressCity" xml:space="preserve"><value>City</value></data>
+  <data name="AddressState" xml:space="preserve"><value>State / Province</value></data>
+  <data name="AddressPostalCode" xml:space="preserve"><value>Postal Code</value></data>
   <data name="OfficialEmail" xml:space="preserve"><value>Official Email</value></data>
   <data name="OfficialPhone" xml:space="preserve"><value>Official Phone</value></data>
   <data name="Website" xml:space="preserve"><value>Website</value></data>
@@ -130,4 +134,31 @@
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="BackToList" xml:space="preserve"><value>Back to list</value></data>
   <data name="LoadFailed" xml:space="preserve"><value>Could not load the legal entity.</value></data>
+  <!-- MOD-0220 finish — new statutory fields + advanced section -->
+  <data name="VatNumber" xml:space="preserve"><value>VAT Number</value></data>
+  <data name="PlaceOfIncorporation" xml:space="preserve"><value>Place of Incorporation</value></data>
+  <data name="IncorporationDate" xml:space="preserve"><value>Incorporation Date</value></data>
+  <data name="DissolutionDate" xml:space="preserve"><value>Dissolution Date</value></data>
+  <data name="SectionStatutoryAdvanced" xml:space="preserve"><value>Statutory / Advanced Details</value></data>
+  <data name="StatutoryAdvancedDesc" xml:space="preserve"><value>Registration, tax and statutory details — optional; expand to complete the profile.</value></data>
+  <!-- Statutory field placeholders (screenshot fix) -->
+  <data name="RegistrationNumberPlaceholder" xml:space="preserve"><value>e.g. 0123456789</value></data>
+  <data name="TaxIdPlaceholder" xml:space="preserve"><value>e.g. 1234567890</value></data>
+  <data name="VatNumberPlaceholder" xml:space="preserve"><value>e.g. GB123456789</value></data>
+  <data name="PlaceOfIncorporationPlaceholder" xml:space="preserve"><value>e.g. Istanbul, TR</value></data>
+  <data name="DatePlaceholder" xml:space="preserve"><value>Select a date…</value></data>
+  <data name="Step6Overview" xml:space="preserve"><value>Overview</value></data>
+  <data name="Step6OverviewSub" xml:space="preserve"><value>Review &amp; Save</value></data>
+  <data name="Step6OverviewDesc" xml:space="preserve"><value>Review all the information you entered before saving.</value></data>
+  <data name="AddressFull" xml:space="preserve"><value>Address</value></data>
+  <data name="AddressFullPlaceholder" xml:space="preserve"><value>e.g. 12 Main St, Floor 3</value></data>
+  <data name="AddressCityPlaceholder" xml:space="preserve"><value>e.g. Istanbul</value></data>
+  <data name="AddressStatePlaceholder" xml:space="preserve"><value>e.g. Marmara</value></data>
+  <data name="AddressPostalCodePlaceholder" xml:space="preserve"><value>e.g. 34000</value></data>
+  <data name="AddressCountryPlaceholder" xml:space="preserve"><value>e.g. Türkiye</value></data>
+  <data name="OfficialEmailPlaceholder" xml:space="preserve"><value>e.g. info@acme.com</value></data>
+  <data name="OfficialPhonePlaceholder" xml:space="preserve"><value>e.g. +90 212 000 0000</value></data>
+  <data name="WebsitePlaceholder" xml:space="preserve"><value>e.g. https://acme.com</value></data>
+  <data name="FiscalYearVariantPlaceholder" xml:space="preserve"><value>e.g. K4</value></data>
+  <data name="OwnershipPercentPlaceholder" xml:space="preserve"><value>e.g. 100</value></data>
 </root>

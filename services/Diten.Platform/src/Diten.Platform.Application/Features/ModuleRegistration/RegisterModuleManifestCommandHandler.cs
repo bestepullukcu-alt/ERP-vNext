@@ -1,4 +1,3 @@
-using System.Text;
 using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
@@ -276,8 +275,10 @@ public sealed class RegisterModuleManifestCommandHandler
         }
 
         // Genuinely unknown → register it (SOFT: operator may rename/deactivate/delete later; a re-push finds it
-        // by the match above and never duplicates).
-        var code = ToDomainCode(trimmed);
+        // by the match above and never duplicates). FIX-DOMAIN-DEDUP — the Code is the SAME canonical normalized
+        // key used for lookup (and by the create/seed paths), so self-registration can never mint a second row in
+        // a different format (e.g. "ACCESS-GOVERNANCE") that collides with an existing "ACCESSGOVERNANCE".
+        var code = key;
         try
         {
             var created = await _domainRepository.CreateAsync(new ModuleDomain
@@ -297,33 +298,6 @@ public sealed class RegisterModuleManifestCommandHandler
             _logger.LogWarning(ex, "Module domain '{Code}' already exists (possibly soft-deleted); not recreating.", code);
             return code;
         }
-    }
-
-    // "Access Governance" → "ACCESS-GOVERNANCE": uppercase, collapse each run of non-alphanumerics to one dash.
-    private static string ToDomainCode(string displayName)
-    {
-        var upper = displayName.Trim().ToUpperInvariant();
-        var sb = new StringBuilder(upper.Length);
-        var pendingDash = false;
-        foreach (var ch in upper)
-        {
-            if (char.IsLetterOrDigit(ch))
-            {
-                if (pendingDash && sb.Length > 0)
-                {
-                    sb.Append('-');
-                }
-                pendingDash = false;
-                sb.Append(ch);
-            }
-            else
-            {
-                pendingDash = true;
-            }
-        }
-
-        var code = sb.ToString();
-        return code.Length == 0 ? upper : code;
     }
 
     private async Task<(ModulePageDescriptor Page, bool Created)> UpsertPageAsync(

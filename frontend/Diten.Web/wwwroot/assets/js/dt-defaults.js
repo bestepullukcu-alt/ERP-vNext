@@ -751,7 +751,7 @@ window.DtDefaults = (function () {
         if (addNewText) {
             features.push({
                 buttons: [{
-                    text: '<i class="icon-base bx bx-plus icon-sm me-0 me-sm-2"></i><span class="d-none d-sm-inline-block">' + addNewText + '</span>',
+                    text: '<span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-plus icon-sm"></i><span class="d-none d-sm-inline-block">' + addNewText + '</span></span>',
                     className: 'add-new btn btn-primary',
                     attr: addNewAttr || {}
                 }]

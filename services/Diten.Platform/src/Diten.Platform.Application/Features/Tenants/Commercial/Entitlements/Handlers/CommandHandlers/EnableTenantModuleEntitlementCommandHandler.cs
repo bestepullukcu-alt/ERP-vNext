@@ -42,12 +42,31 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
             var wasEnabled = entitlement.IsEnabled;
             if (!wasEnabled)
             {
+                // FIX-QUOTA-DRIFT — reconcile modules.max CurrentValue to the REAL enabled-entitlement count
+                // (RecalculateAsync → ComputeCurrentUsageAsync) BEFORE the atomic consume, so a historically drifted
+                // counter self-heals and a legitimate enable is not blocked by a phantom +1. Best-effort: the consume
+                // that follows is the authoritative limit check, so a genuine over-limit still returns 409.
+                await _quotaService.RecalculateAsync(new RecalculateQuotaUsageRequest(
+                    request.TenantId,
+                    QuotaKeys.ModulesMax,
+                    "ModuleEntitlement",
+                    null,
+                    entitlement.ModuleCode,
+                    "Reconcile modules.max to the real enabled count before enforcing.",
+                    null,
+                    Guid.NewGuid().ToString()), ct);
+
                 var consume = await _quotaService.TryConsumeAsync(new TryConsumeQuotaRequest(
                     request.TenantId,
                     QuotaKeys.ModulesMax,
                     1,
                     "ModuleEntitlement",
-                    $"module-entitlement-enable:{request.EntitlementId}",
+                    // FIX-ENTITLEMENT-REENABLE — the quota dedup key must scope to THIS enable event, not the
+                    // entitlement's lifetime. Including the row's current RowVersion (UpdateAsync mints a fresh one on
+                    // every transition) means a re-enable after a disable is a distinct operation that consumes cleanly,
+                    // while a genuine retry of the SAME enable (row not yet advanced) reuses the key and is still deduped
+                    // — so it never double-consumes. A deterministic lifetime key permanently blocked re-enable.
+                    $"module-entitlement-enable:{request.EntitlementId}:{Convert.ToHexString(entitlement.RowVersion)}",
                     entitlement.ModuleCode,
                     "Tenant module entitlement enabled.",
                     null,
