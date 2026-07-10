@@ -1,0 +1,130 @@
+@using Diten.Web.Views.Organization.PositionAssignments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionAssignmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var assignmentId = ViewData["AssignmentId"]?.ToString() ?? string.Empty;
+    var isEdit = !string.IsNullOrEmpty(assignmentId);
+    ViewData["Title"] = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+    var pageTitle = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+}
+
+@* MOD-0288 — Position Assignment create/edit (route-based, no wizard). Golden Reference compact create layout:
+   title + breadcrumb header with Cancel + Save, and cards laid out as a col-lg-8 main column + col-lg-4 sidebar,
+   each `card` with `card-body p-4` + an uppercase section heading. Position / User are searchable select2; dates
+   use flatpickr. The shared required-fields tracker renders the "Zorunlu: X / Y" badge into the header. *@
+<div id="a-form-page" data-a-id="@assignmentId" data-a-mode="@(isEdit ? "edit" : "create")">
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div>
+            <h5 class="mb-0">@pageTitle</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/PositionAssignments">@Localizer["PositionAssignmentsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@pageTitle</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            @* Shared required-fields tracker (required-fields-tracker.js) renders the "Zorunlu: X / Y" badge here. *@
+            <span id="a-required-tracker-host" class="d-flex align-items-center"></span>
+            <a href="/PositionAssignments" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+            <button type="button" class="btn btn-primary" id="a-submit">@Localizer["Save"]</button>
+        </div>
+    </div>
+
+    <div id="a-form-alert" class="alert alert-danger d-none" role="alert"></div>
+
+    @Html.AntiForgeryToken()
+
+    <form id="a-form" onsubmit="return false" novalidate
+          data-required-tracker-target="#a-required-tracker-host"
+          data-required-tracker-wrapper-class="d-flex align-items-center">
+        <div class="row g-4">
+            @* ── Main column ─────────────────────────────────────────────── *@
+            <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+                <section class="card">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionBasic"]</h6>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="aPositionId">@Localizer["Position"] <span class="text-danger">*</span></label>
+                                <select id="aPositionId" class="form-select" data-required required><option value="">@Localizer["SelectPosition"]</option></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="aUserId">@Localizer["User"] <span class="text-danger">*</span></label>
+                                <select id="aUserId" class="form-select" data-required required><option value="">@Localizer["SelectUser"]</option></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="aAssignmentType">@Localizer["AssignmentType"]</label>
+                                <select id="aAssignmentType" class="form-select">
+                                    <option value="Primary">@Localizer["AssignmentTypePrimary"]</option>
+                                    <option value="Secondary">@Localizer["AssignmentTypeSecondary"]</option>
+                                    <option value="Acting">@Localizer["AssignmentTypeActing"]</option>
+                                    <option value="Delegated">@Localizer["AssignmentTypeDelegated"]</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6"></div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="aEffectiveFrom">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                                <input type="text" id="aEffectiveFrom" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" data-required required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="aEffectiveTo">@Localizer["EffectiveTo"]</label>
+                                <input type="text" id="aEffectiveTo" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Notes"]</h6>
+                        <textarea id="aNotes" class="form-control" rows="5" maxlength="1024" placeholder="@Localizer["NotesPlaceholder"]"></textarea>
+                    </div>
+                </section>
+            </div>
+
+            @* ── Sidebar column ──────────────────────────────────────────── *@
+            <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+                <section class="card">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionAdvanced"]</h6>
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="aAllocationPercent">@Localizer["AllocationPercent"]</label>
+                                <input type="number" id="aAllocationPercent" class="form-control" min="0" max="100" step="1" placeholder="@Localizer["AllocationPercentPlaceholder"]" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="aReason">@Localizer["Reason"]</label>
+                                <select id="aReason" class="form-select">
+                                    <option value="Hire">@Localizer["ReasonHire"]</option>
+                                    <option value="Transfer">@Localizer["ReasonTransfer"]</option>
+                                    <option value="Promotion">@Localizer["ReasonPromotion"]</option>
+                                    <option value="Backfill">@Localizer["ReasonBackfill"]</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" id="aIsCancelled" />
+                                    <label class="form-check-label fw-medium" for="aIsCancelled">@Localizer["IsCancelled"]</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="_FormL10n" />
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <script src="~/assets/js/Organization/PositionAssignments/form.js" asp-append-version="true"></script>
+}

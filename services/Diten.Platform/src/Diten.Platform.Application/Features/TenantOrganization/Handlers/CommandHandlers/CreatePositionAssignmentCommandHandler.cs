@@ -39,11 +39,6 @@ public sealed class CreatePositionAssignmentCommandHandler : IRequestHandler<Cre
             return Response<Guid>.Fail("User is not referenceable.", 404);
         }
 
-        if (await _assignments.HasOverlapAsync(request.Request.PositionId, request.Request.EffectiveFrom, request.Request.EffectiveTo, null, ct))
-        {
-            return Response<Guid>.Fail("Position Assignment interval overlaps an existing assignment.", 409);
-        }
-
         var entity = new PositionAssignment
         {
             TenantId = tenantId,
@@ -52,6 +47,14 @@ public sealed class CreatePositionAssignmentCommandHandler : IRequestHandler<Cre
             EffectiveFrom = request.Request.EffectiveFrom,
             EffectiveTo = request.Request.EffectiveTo
         };
+        TenantOrganizationMapper.ApplyEnterpriseFields(entity, request.Request);
+
+        // One-primary-per-position rule (Secondary/Acting/Delegated may overlap).
+        if (entity.AssignmentType == AssignmentType.Primary && !entity.IsCancelled
+            && await PositionAssignmentPrimaryGuard.HasPrimaryOverlapAsync(_assignments, entity.PositionId, entity.EffectiveFrom, entity.EffectiveTo, null, ct))
+        {
+            return Response<Guid>.Fail("Another Primary assignment already covers this interval for the position.", 409);
+        }
 
         await _assignments.CreateAsync(entity, ct);
         return Response<Guid>.Success(entity.Id, 201);

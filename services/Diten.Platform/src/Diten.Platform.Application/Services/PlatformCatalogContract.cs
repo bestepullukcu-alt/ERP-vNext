@@ -39,5 +39,6 @@ public sealed class PlatformCatalogContract : IPlatformCatalogContract
             item.SortOrder,
             item.CreatedAt,
             item.UpdatedAt,
-            item.Icon);
+            item.Icon,
+            item.IsBaseline);
 }

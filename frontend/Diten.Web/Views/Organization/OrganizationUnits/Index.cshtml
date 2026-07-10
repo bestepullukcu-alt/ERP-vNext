@@ -9,18 +9,36 @@
 
 <partial name="_Filter" />
 
-<div class="mb-3">
-    <h5 class="mb-0">@Localizer["OrganizationUnitsTitle"]</h5>
-    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+<div class="mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["OrganizationUnitsTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    @* Phase 2 — Table/Tree view toggle. *@
+    <div class="btn-group diten-view-toggle" role="group" aria-label="@Localizer["ViewFlat"] / @Localizer["ViewTree"]">
+        <button type="button" id="btnViewFlat" class="btn btn-outline-primary active" data-view="flat">
+            <i class="icon-base bx bx-table me-1"></i>@Localizer["ViewFlat"]
+        </button>
+        <button type="button" id="btnViewTree" class="btn btn-outline-primary" data-view="tree">
+            <i class="icon-base bx bx-sitemap me-1"></i>@Localizer["ViewTree"]
+        </button>
+    </div>
 </div>
 
-<partial name="_DataTable.cshtml" />
+<div id="orgUnitsTableView">
+    <partial name="_DataTable.cshtml" />
+</div>
 
-@* Slim pattern: create/edit happen in an in-page offcanvas (no route navigation). *@
-<partial name="_CreateEditOffcanvas" />
+@* Phase 2 — Tree view (hidden by default); rendered client-side from the same list the DataTable fetches,
+   via the reusable DitenTree component (Views/Shared/_Tree.cshtml + assets/js/shared/diten-tree.js). *@
+<div id="orgUnitsTreeView" class="d-none">
+    @{ ViewData["DitenTreeId"] = "orgUnitsTree"; }
+    <partial name="~/Views/Shared/_Tree.cshtml" />
+</div>
 
 @section Scripts {
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_IndexL10n" />
+    <script src="~/assets/js/shared/diten-tree.js" asp-append-version="true"></script>
     <script src="~/assets/js/Organization/OrganizationUnits/index.js" asp-append-version="true"></script>
 }

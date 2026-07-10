@@ -27,4 +27,46 @@
   <data name="FinalCodePreview" xml:space="preserve"><value>Final Code</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
+  <!-- MOD-0288 Phase 3 — full-page form + details + occupancy -->
+  <data name="JobTitle" xml:space="preserve"><value>Job Title</value></data>
+  <data name="PositionType" xml:space="preserve"><value>Type</value></data>
+  <data name="PositionTypePermanent" xml:space="preserve"><value>Permanent</value></data>
+  <data name="PositionTypeTemporary" xml:space="preserve"><value>Temporary</value></data>
+  <data name="PositionTypeContractor" xml:space="preserve"><value>Contractor</value></data>
+  <data name="PositionTypeIntern" xml:space="preserve"><value>Intern</value></data>
+  <data name="Fte" xml:space="preserve"><value>FTE</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Status</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusFrozen" xml:space="preserve"><value>Frozen</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Effective From</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Effective To</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Basic</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Advanced Details</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>Optional details — FTE, status and effective dates.</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>View Details</value></data>
+  <data name="Details" xml:space="preserve"><value>Details</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Position Details</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>System</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Created At</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated At</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Back to list</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Could not load the position.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Select…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>This position will be permanently deleted. Continue?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Position deleted.</value></data>
+  <data name="Occupancy" xml:space="preserve"><value>Occupancy</value></data>
+  <data name="Vacant" xml:space="preserve"><value>Vacant</value></data>
+  <data name="Occupied" xml:space="preserve"><value>Occupied</value></data>
+  <data name="NoManagerChain" xml:space="preserve"><value>No reporting chain.</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Select a date…</value>
+  </data>
+  <data name="JobTitlePlaceholder" xml:space="preserve">
+    <value>e.g. Senior Software Engineer</value>
+  </data>
+  <data name="FtePlaceholder" xml:space="preserve">
+    <value>e.g. 1.0</value>
+  </data>
 </root>

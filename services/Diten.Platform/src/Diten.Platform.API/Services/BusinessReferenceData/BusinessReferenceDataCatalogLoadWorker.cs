@@ -48,49 +48,61 @@ public sealed class BusinessReferenceDataCatalogLoadWorker : BackgroundService
 
         try
         {
-            using var scope = _scopeFactory.CreateScope();
-            var loader = scope.ServiceProvider.GetRequiredService<IBusinessReferenceDataCatalogLoaderService>();
-            var summary = await loader.LoadFromFileAsync(
-                _options.CatalogPath,
-                tenantId,
-                string.IsNullOrWhiteSpace(_options.ActorId) ? "business-reference-data-seed-loader" : _options.ActorId.Trim(),
-                _options.RequiredSetCodes,
-                stoppingToken);
-
-            _logger.LogInformation(
-                "BusinessReferenceData catalog load completed. sets_processed={SetsProcessed}, sets_inserted={SetsInserted}, sets_updated={SetsUpdated}, sets_loaded={SetsLoaded}, sets_already_loaded={SetsAlreadyLoaded}, values_inserted={ValuesInserted}, values_updated={ValuesUpdated}, values_unchanged={ValuesUnchanged}, blocked_conflicts={BlockedConflictsCount}",
-                summary.SetsProcessed,
-                summary.SetsInserted,
-                summary.SetsUpdated,
-                summary.SetsLoaded,
-                summary.SetsAlreadyLoaded,
-                summary.ValuesInserted,
-                summary.ValuesUpdated,
-                summary.ValuesUnchanged,
-                summary.BlockedConflicts.Count);
-
-            foreach (var lookup in summary.LookupResults)
+            // MOD-0220 — auto-load EVERY *.json catalog in the seed directory (not just the configured file), so a
+            // new BRD seed file (e.g. legal-entity-reference.json) is picked up by dropping it beside the existing
+            // one — no config change. The directory is derived from CatalogPath (a file → its folder; a folder →
+            // itself). RequiredSetCodes verification runs per file but queries global DB state, so it never throws.
+            var catalogFiles = ResolveCatalogFiles(_options.CatalogPath);
+            if (catalogFiles.Count == 0)
             {
-                _logger.LogInformation(
-                    "BusinessReferenceData catalog lookup verification. set_code={SetCode}, sample_value_code={SampleValueCode}, set_found={SetFound}, value_found={ValueFound}, status={Status}",
-                    lookup.SetCode,
-                    lookup.SampleValueCode,
-                    lookup.SetFound,
-                    lookup.ValueFound,
-                    lookup.Status);
+                _logger.LogError("BusinessReferenceData catalog load failed: no catalog files found for path '{CatalogPath}'.", _options.CatalogPath);
+                return;
             }
 
-            if (summary.BlockedConflicts.Count > 0)
+            using var scope = _scopeFactory.CreateScope();
+            var loader = scope.ServiceProvider.GetRequiredService<IBusinessReferenceDataCatalogLoaderService>();
+            var actorId = string.IsNullOrWhiteSpace(_options.ActorId) ? "business-reference-data-seed-loader" : _options.ActorId.Trim();
+            var totalBlockedConflicts = 0;
+
+            foreach (var catalogFile in catalogFiles)
             {
+                var summary = await loader.LoadFromFileAsync(catalogFile, tenantId, actorId, _options.RequiredSetCodes, stoppingToken);
+
+                _logger.LogInformation(
+                    "BusinessReferenceData catalog load completed. file={File}, sets_processed={SetsProcessed}, sets_inserted={SetsInserted}, sets_updated={SetsUpdated}, sets_loaded={SetsLoaded}, sets_already_loaded={SetsAlreadyLoaded}, values_inserted={ValuesInserted}, values_updated={ValuesUpdated}, values_unchanged={ValuesUnchanged}, blocked_conflicts={BlockedConflictsCount}",
+                    Path.GetFileName(catalogFile),
+                    summary.SetsProcessed,
+                    summary.SetsInserted,
+                    summary.SetsUpdated,
+                    summary.SetsLoaded,
+                    summary.SetsAlreadyLoaded,
+                    summary.ValuesInserted,
+                    summary.ValuesUpdated,
+                    summary.ValuesUnchanged,
+                    summary.BlockedConflicts.Count);
+
+                foreach (var lookup in summary.LookupResults)
+                {
+                    _logger.LogInformation(
+                        "BusinessReferenceData catalog lookup verification. set_code={SetCode}, sample_value_code={SampleValueCode}, set_found={SetFound}, value_found={ValueFound}, status={Status}",
+                        lookup.SetCode,
+                        lookup.SampleValueCode,
+                        lookup.SetFound,
+                        lookup.ValueFound,
+                        lookup.Status);
+                }
+
                 foreach (var conflict in summary.BlockedConflicts)
                 {
                     _logger.LogWarning("BusinessReferenceData catalog load conflict: {Conflict}", conflict);
                 }
 
-                if (_options.FailOnBlockedConflicts)
-                {
-                    throw new InvalidOperationException("business_reference_data_catalog_load_blocked_conflicts");
-                }
+                totalBlockedConflicts += summary.BlockedConflicts.Count;
+            }
+
+            if (totalBlockedConflicts > 0 && _options.FailOnBlockedConflicts)
+            {
+                throw new InvalidOperationException("business_reference_data_catalog_load_blocked_conflicts");
             }
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -101,5 +113,22 @@ public sealed class BusinessReferenceDataCatalogLoadWorker : BackgroundService
         {
             _logger.LogError(ex, "BusinessReferenceData catalog load worker failed.");
         }
+    }
+
+    // A file path → every *.json in that file's directory (catalog files live side by side); a directory path →
+    // every *.json in it; deterministic ordinal order so load order is stable across runs.
+    private static List<string> ResolveCatalogFiles(string catalogPath)
+    {
+        var fullPath = Path.GetFullPath(catalogPath);
+        var directory = Directory.Exists(fullPath) ? fullPath : Path.GetDirectoryName(fullPath);
+
+        if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+        {
+            return Directory.EnumerateFiles(directory, "*.json")
+                .OrderBy(f => f, StringComparer.Ordinal)
+                .ToList();
+        }
+
+        return File.Exists(fullPath) ? [fullPath] : [];
     }
 }

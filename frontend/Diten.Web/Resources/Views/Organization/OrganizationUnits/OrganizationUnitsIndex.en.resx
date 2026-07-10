@@ -29,4 +29,60 @@
   <data name="FinalCodePreview" xml:space="preserve"><value>Final Code</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
+  <!-- MOD-0288 Phase 2 — full-page form + details + tree -->
+  <data name="OrgUnitType" xml:space="preserve"><value>Type</value></data>
+  <data name="OrgUnitTypeDepartment" xml:space="preserve"><value>Department</value></data>
+  <data name="OrgUnitTypeDivision" xml:space="preserve"><value>Division</value></data>
+  <data name="OrgUnitTypeBranch" xml:space="preserve"><value>Branch</value></data>
+  <data name="OrgUnitTypeTeam" xml:space="preserve"><value>Team</value></data>
+  <data name="OrgUnitTypeHQ" xml:space="preserve"><value>Headquarters</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Status</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="ManagerPosition" xml:space="preserve"><value>Manager Position</value></data>
+  <data name="NoManager" xml:space="preserve"><value>(No manager)</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Effective From</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Effective To</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Basic</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Advanced Details</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>Optional enterprise details — type, manager, description, status and effective dates.</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>View Details</value></data>
+  <data name="Details" xml:space="preserve"><value>Details</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Organization Unit Details</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>System</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Created At</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated At</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Back to list</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Could not load the organization unit.</value></data>
+  <data name="ViewFlat" xml:space="preserve"><value>Table</value></data>
+  <data name="ViewTree" xml:space="preserve"><value>Tree</value></data>
+  <data name="TreeEmpty" xml:space="preserve"><value>No organization units to display.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Select…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>This organization unit will be permanently deleted. Continue?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Organization unit deleted.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>e.g. Handles regional sales operations</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Select a date…</value>
+  </data>
+  <data name="AddChild" xml:space="preserve">
+    <value>Add sub-unit</value>
+  </data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve">
+    <value>Search units (name or code)…</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>"{0}" moved</value>
+  </data>
+  <data name="MoveSameLegalEntityOnly" xml:space="preserve">
+    <value>A unit can only be moved within the same Legal Entity.</value>
+  </data>
+  <data name="MoveArchivedBlocked" xml:space="preserve">
+    <value>Archived units cannot be moved.</value>
+  </data>
+  <data name="MoveCycleBlocked" xml:space="preserve">
+    <value>A unit cannot be moved under its own sub-unit.</value>
+  </data>
 </root>

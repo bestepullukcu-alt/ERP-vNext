@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PositionsTitle" xml:space="preserve"><value>المناصب</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة المناصب والوحدة التنظيمية التابعة لها وتسلسل التبعية الإداري.</value></data>
+  <data name="AddNewPosition" xml:space="preserve"><value>إضافة منصب</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إنشاء منصب</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل المنصب</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>مثال ENG-LEAD</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>مثال Engineering Lead</value></data>
+  <data name="OrgUnit" xml:space="preserve"><value>الوحدة التنظيمية</value></data>
+  <data name="SelectOrgUnit" xml:space="preserve"><value>اختر وحدة تنظيمية…</value></data>
+  <data name="ReportsTo" xml:space="preserve"><value>يتبع إلى</value></data>
+  <data name="NoReportsTo" xml:space="preserve"><value>(لا يوجد مدير — المستوى الأعلى)</value></data>
+  <data name="ManagerChain" xml:space="preserve"><value>سلسلة الإدارة</value></data>
+  <data name="Archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Archive" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>سيتم أرشفة هذا المنصب. هل تريد المتابعة؟</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة المنصب.</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>استخدم من 2 إلى 80 حرفًا كبيرًا وأرقامًا وشرطات مفردة.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>هذا الحقل مطلوب.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>الرمز النهائي</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <!-- MOD-0288 Phase 3 — full-page form + details + occupancy -->
+  <data name="JobTitle" xml:space="preserve"><value>المسمى الوظيفي</value></data>
+  <data name="PositionType" xml:space="preserve"><value>النوع</value></data>
+  <data name="PositionTypePermanent" xml:space="preserve"><value>دائم</value></data>
+  <data name="PositionTypeTemporary" xml:space="preserve"><value>مؤقت</value></data>
+  <data name="PositionTypeContractor" xml:space="preserve"><value>متعاقد</value></data>
+  <data name="PositionTypeIntern" xml:space="preserve"><value>متدرب</value></data>
+  <data name="Fte" xml:space="preserve"><value>المكافئ للدوام الكامل (FTE)</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>الحالة</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusFrozen" xml:space="preserve"><value>مجمّد</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>أساسي</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>تفاصيل متقدمة</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>تفاصيل اختيارية — المكافئ للدوام الكامل والحالة وتواريخ السريان.</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="Details" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>تفاصيل المنصب</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>النظام</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذّر تحميل المنصب.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>سيتم حذف هذا المنصب نهائيًا. هل تريد المتابعة؟</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>تم حذف المنصب.</value></data>
+  <data name="Occupancy" xml:space="preserve"><value>الإشغال</value></data>
+  <data name="Vacant" xml:space="preserve"><value>شاغر</value></data>
+  <data name="Occupied" xml:space="preserve"><value>مشغول</value></data>
+  <data name="NoManagerChain" xml:space="preserve"><value>لا توجد سلسلة تبعية.</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>اختر تاريخًا…</value>
+  </data>
+  <data name="JobTitlePlaceholder" xml:space="preserve">
+    <value>مثال: مهندس برمجيات أول</value>
+  </data>
+  <data name="FtePlaceholder" xml:space="preserve">
+    <value>مثال: 1.0</value>
+  </data>
+</root>

@@ -278,6 +278,9 @@ public static class DependencyInjection
         LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
         // MC-2 — drop duplicate live module-service rows before the unique partial index is (re)created.
         ModuleServiceDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+        // FIX-DOMAIN-DEDUP — collapse cross-format duplicate domain rows + backfill CodeKey BEFORE the unique
+        // partial index (ux_platform_module_domains_code_key) is (re)created, else the index build would fail.
+        ModuleDomainDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
         MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
         var auditRetentionSeedOptions = configuration
             .GetSection(AuditRetentionSeedOptions.SectionName)
@@ -385,6 +388,9 @@ public static class DependencyInjection
             LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
             // MC-2 — drop duplicate live module-service rows before the unique partial index is (re)created.
             ModuleServiceDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-DOMAIN-DEDUP — collapse cross-format duplicate domain rows + backfill CodeKey BEFORE the unique
+            // partial index (ux_platform_module_domains_code_key) is (re)created, else the index build would fail.
+            ModuleDomainDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
             MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
             SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();

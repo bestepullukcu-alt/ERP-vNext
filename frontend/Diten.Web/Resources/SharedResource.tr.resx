@@ -57,6 +57,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
       Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Back" xml:space="preserve">
+    <value>Geri</value>
+  </data>
   <data name="Save" xml:space="preserve">
     <value>Kaydet</value>
   </data>
@@ -545,6 +548,50 @@
   <data name="WorkCenterNextMenu" xml:space="preserve">
     <value>Görev Merkezi (Yeni)</value>
   </data>
+  <!-- Password validation error messages (error-code bridge from AuthService PasswordErrorCodes) -->
+  <data name="Password.Error.Required" xml:space="preserve"><value>Şifre gereklidir.</value></data>
+  <data name="Password.Error.TooShort" xml:space="preserve"><value>Şifre en az {0} karakter olmalıdır.</value></data>
+  <data name="Password.Error.TooLong" xml:space="preserve"><value>Şifre en fazla {0} karakter olabilir.</value></data>
+  <data name="Password.Error.NeedsUppercase" xml:space="preserve"><value>Şifre en az bir büyük harf içermelidir.</value></data>
+  <data name="Password.Error.NeedsSpecial" xml:space="preserve"><value>Şifre en az bir özel karakter içermelidir.</value></data>
+  <data name="Password.Error.CurrentRequired" xml:space="preserve"><value>Mevcut şifre gereklidir.</value></data>
+  <data name="Password.Error.NewRequired" xml:space="preserve"><value>Yeni şifre gereklidir.</value></data>
+  <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>E-posta adresi gereklidir.</value></data>
+  <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>Sıfırlama anahtarı gereklidir.</value></data>
+  <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
+  <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>Yönetim</value></data>
+  <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>Geliştirici Etkinleştirme</value></data>
+  <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Doküman Yönetimi</value></data>
+  <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>Ana Veri Yönetimi</value></data>
+  <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>Platform Paylaşılan Hizmetler</value></data>
+  <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>Erişim Yönetişimi</value></data>
+  <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>Kiracı Ayarları</value></data>
+  <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
+  <data name="Nav.Module.GOLDENCOMPACT" xml:space="preserve"><value>Golden Compact</value></data>
+  <data name="Nav.Module.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Doküman Yönetimi</value></data>
+  <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Tüzel Kişilik</value></data>
+  <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Referans Verileri</value></data>
+  <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organizasyon</value></data>
+  <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>İş Akışı</value></data>
+  <data name="Nav.Page.USERS" xml:space="preserve"><value>Kullanıcılar</value></data>
+  <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roller</value></data>
+  <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Rol İzinleri</value></data>
+  <data name="Nav.Page.USERROLES" xml:space="preserve"><value>Kullanıcı Rolleri</value></data>
+  <data name="Nav.Page.SECURITYSETTINGS" xml:space="preserve"><value>Güvenlik Ayarları</value></data>
+  <data name="Nav.Page.MENUSETTINGS" xml:space="preserve"><value>Menü Ayarları</value></data>
+  <data name="Nav.Page.RECORDS" xml:space="preserve"><value>Kayıtlar</value></data>
+  <data name="Nav.Page.QMSBASELINES" xml:space="preserve"><value>KYS Temel Çizgileri</value></data>
+  <data name="Nav.Page.INSTANCES" xml:space="preserve"><value>Doküman Örnekleri</value></data>
+  <data name="Nav.Page.CONTROLLEDDOCUMENTS" xml:space="preserve"><value>Kontrollü Dokümanlar</value></data>
+  <data name="Nav.Page.TEMPLATEMASTERS" xml:space="preserve"><value>Kurumsal Şablon Ana Kayıtları</value></data>
+  <data name="Nav.Page.TEMPLATEVARIANTS" xml:space="preserve"><value>Şablon Varyantları</value></data>
+  <data name="Nav.Page.ACCESSMATRIX" xml:space="preserve"><value>Doküman Erişim Matrisi</value></data>
+  <data name="Nav.Page.LEGALENTITIES" xml:space="preserve"><value>Tüzel Kişilikler</value></data>
+  <data name="Nav.Page.RDSETS" xml:space="preserve"><value>Referans Veri Kümeleri</value></data>
+  <data name="Nav.Page.ORGANIZATIONUNITS" xml:space="preserve"><value>Organizasyon Birimleri</value></data>
+  <data name="Nav.Page.POSITIONS" xml:space="preserve"><value>Pozisyonlar</value></data>
+  <data name="Nav.Page.POSITIONASSIGNMENTS" xml:space="preserve"><value>Pozisyon Atamaları</value></data>
+  <data name="Nav.Page.DEFINITIONS" xml:space="preserve"><value>İş Akışı Tanımları</value></data>
   <data name="ExpandAll" xml:space="preserve">
     <value>Tümünü aç</value>
   </data>

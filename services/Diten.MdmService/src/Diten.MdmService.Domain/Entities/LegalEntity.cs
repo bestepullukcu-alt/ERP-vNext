@@ -17,6 +17,13 @@ public sealed class LegalEntity : EntityBase
     // 2 — Statutory & Tax
     public string? RegistrationNumber { get; set; }
     public string? TaxId { get; set; }
+    // MOD-0220 finish — additive statutory fields. VatNumber is distinct from TaxId/RegistrationNumber
+    // (multi-jurisdiction, e.g. EU VAT ID); PlaceOfIncorporation may differ from CountryCode. Free strings /
+    // nullable dates — no VIES/format validation (seam only), no new lifecycle logic.
+    public string? VatNumber { get; set; }
+    public string? PlaceOfIncorporation { get; set; }
+    public DateTimeOffset? IncorporationDate { get; set; }
+    public DateTimeOffset? DissolutionDate { get; set; }
     public string CountryCode { get; set; } = string.Empty;
     public LegalEntityStatutoryStatus StatutoryStatus { get; set; } = LegalEntityStatutoryStatus.Registered;
 

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PositionsTitle" xml:space="preserve"><value>Puestos</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gestione los puestos, su unidad organizativa propietaria y la jerarquía de reporte.</value></data>
+  <data name="AddNewPosition" xml:space="preserve"><value>Agregar puesto</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Crear puesto</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar puesto</value></data>
+  <data name="Code" xml:space="preserve"><value>Código</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>p. ej. ENG-LEAD</value></data>
+  <data name="Name" xml:space="preserve"><value>Nombre</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>p. ej. Engineering Lead</value></data>
+  <data name="OrgUnit" xml:space="preserve"><value>Unidad organizativa</value></data>
+  <data name="SelectOrgUnit" xml:space="preserve"><value>Seleccione una unidad organizativa…</value></data>
+  <data name="ReportsTo" xml:space="preserve"><value>Depende de</value></data>
+  <data name="NoReportsTo" xml:space="preserve"><value>(Sin responsable — nivel superior)</value></data>
+  <data name="ManagerChain" xml:space="preserve"><value>Cadena de mando</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Activo</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archivar</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Este puesto será archivado. ¿Continuar?</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Puesto archivado.</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>Use de 2 a 80 letras mayúsculas, números y guiones simples.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>Código final</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <!-- MOD-0288 Phase 3 — full-page form + details + occupancy -->
+  <data name="JobTitle" xml:space="preserve"><value>Título del puesto</value></data>
+  <data name="PositionType" xml:space="preserve"><value>Tipo</value></data>
+  <data name="PositionTypePermanent" xml:space="preserve"><value>Permanente</value></data>
+  <data name="PositionTypeTemporary" xml:space="preserve"><value>Temporal</value></data>
+  <data name="PositionTypeContractor" xml:space="preserve"><value>Contratista</value></data>
+  <data name="PositionTypeIntern" xml:space="preserve"><value>Becario</value></data>
+  <data name="Fte" xml:space="preserve"><value>ETC (FTE)</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Estado</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusFrozen" xml:space="preserve"><value>Congelado</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Básico</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Detalles avanzados</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>Detalles opcionales — ETC, estado y fechas de vigencia.</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Details" xml:space="preserve"><value>Detalles</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Detalles del puesto</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Sistema</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Creado el</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Volver a la lista</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>No se pudo cargar el puesto.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seleccionar…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Este puesto se eliminará de forma permanente. ¿Continuar?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Puesto eliminado.</value></data>
+  <data name="Occupancy" xml:space="preserve"><value>Ocupación</value></data>
+  <data name="Vacant" xml:space="preserve"><value>Vacante</value></data>
+  <data name="Occupied" xml:space="preserve"><value>Ocupado</value></data>
+  <data name="NoManagerChain" xml:space="preserve"><value>Sin cadena de reporte.</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Seleccione una fecha…</value>
+  </data>
+  <data name="JobTitlePlaceholder" xml:space="preserve">
+    <value>ej. Ingeniero de Software Senior</value>
+  </data>
+  <data name="FtePlaceholder" xml:space="preserve">
+    <value>ej. 1.0</value>
+  </data>
+</root>

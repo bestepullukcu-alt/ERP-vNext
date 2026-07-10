@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using FluentValidation;
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Features.Users.Commands;
 
 namespace Diten.AuthService.Application.Features.Users.Validators;
@@ -7,15 +9,28 @@ public sealed class SetTenantPasswordCommandValidator : AbstractValidator<SetTen
 {
     public SetTenantPasswordCommandValidator()
     {
+        // Emit stable codes (+ English fallback text) only — never localized strings. The email/token here come
+        // from the emailed redemption link, so a malformed-email path is near-impossible; that one rule keeps an
+        // English fallback (no code) rather than expanding the approved code set.
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("E-posta adresi boş bırakılamaz.")
-            .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz.");
+            .NotEmpty()
+                .WithErrorCode(PasswordErrorCodes.ResetEmailRequired)
+                .WithMessage("Email is required.")
+            .EmailAddress()
+                .WithMessage("A valid email address is required.");
 
         RuleFor(x => x.Token)
-            .NotEmpty().WithMessage("Doğrulama anahtarı boş bırakılamaz.");
+            .NotEmpty()
+                .WithErrorCode(PasswordErrorCodes.ResetTokenRequired)
+                .WithMessage("Reset token is required.");
 
         RuleFor(x => x.NewPassword)
-            .NotEmpty().WithMessage("Şifre boş bırakılamaz.")
-            .MaximumLength(128).WithMessage("Şifre en fazla 128 karakter olabilir.");
+            .NotEmpty()
+                .WithErrorCode(PasswordErrorCodes.NewRequired)
+                .WithMessage("New password is required.")
+            .MaximumLength(128)
+                .WithErrorCode(PasswordErrorCodes.TooLong)
+                .WithState(_ => new Dictionary<string, string> { ["maxLength"] = "128" })
+                .WithMessage("Password can be at most 128 characters.");
     }
 }

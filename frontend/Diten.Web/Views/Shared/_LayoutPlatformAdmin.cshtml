@@ -148,14 +148,20 @@
     </script>
     <script src="~/assets/js/config.js" asp-append-version="true"></script>
 
-    <script>
-        window.L10n = {
-            RequiredProgressText: "@SharedLocalizer["RequiredStatus"].Value",
-            ValidationErrorsText: "@SharedLocalizer["ValidationErrors"].Value",
-            LoginErrorTitle: "@SharedLocalizer["Login.ErrorTitle"].Value",
-            LoginErrorRequired: "@SharedLocalizer["Login.ErrorRequired"].Value",
-            LoginSubmit: "@SharedLocalizer["Login.Submit"].Value"
+    @* JSON-serialized so non-Latin chars (e.g. tr "Kullanıcı") emit \uXXXX and decode correctly, instead of the
+       inline "@("@")Value" form which HTML-encodes them to &#xNNNN; entities that render literally. *@
+    @{
+        var l10nBridge = new System.Collections.Generic.Dictionary<string, string>
+        {
+            ["RequiredProgressText"] = SharedLocalizer["RequiredStatus"].Value,
+            ["ValidationErrorsText"] = SharedLocalizer["ValidationErrors"].Value,
+            ["LoginErrorTitle"] = SharedLocalizer["Login.ErrorTitle"].Value,
+            ["LoginErrorRequired"] = SharedLocalizer["Login.ErrorRequired"].Value,
+            ["LoginSubmit"] = SharedLocalizer["Login.Submit"].Value
         };
+    }
+    <script>
+        window.L10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(l10nBridge));
 
         // Template normalization
         window.L10n.RequiredProgressText = window.L10n.RequiredProgressText.replace("{{0}}", "{0}").replace("{{1}}", "{1}");

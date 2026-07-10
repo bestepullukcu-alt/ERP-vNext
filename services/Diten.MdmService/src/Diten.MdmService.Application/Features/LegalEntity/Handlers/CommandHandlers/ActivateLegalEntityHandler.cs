@@ -22,14 +22,13 @@ public sealed class ActivateLegalEntityHandler : IRequestHandler<Commands.Activa
             return Response<NoContent>.Fail("Legal Entity not found.", 404);
         }
 
-        // Faz 1 — MANUAL activation from any pre-active governance state. Evidence/approval gating
-        // (Approved→Active requires EvidenceStatus==Verified) is DEFERRED (MOD-0023/0031): STUB, manual allowed.
-        // TODO(MOD-0023): enforce evidence completion before activation.
-        if (entity.OperationalStatus is not (LegalEntityOperationalStatus.Draft
-            or LegalEntityOperationalStatus.InReview
-            or LegalEntityOperationalStatus.Approved))
+        // Faz 1 — MANUAL activation. Allowed from ANY non-active state: Draft/InReview/Approved (initial activation)
+        // AND Suspended (resume) AND Archived (restore) → all transition to Active. Only an already-Active entity is
+        // rejected. Evidence/approval gating (Approved→Active requires EvidenceStatus==Verified) is DEFERRED
+        // (MOD-0023/0031): STUB, manual allowed. TODO(MOD-0023): enforce evidence completion before activation.
+        if (entity.OperationalStatus == LegalEntityOperationalStatus.Active)
         {
-            return Response<NoContent>.Fail("Only draft, in-review or approved Legal Entities can be activated.", 409);
+            return Response<NoContent>.Fail("Legal Entity is already active.", 409);
         }
 
         entity.OperationalStatus = LegalEntityOperationalStatus.Active;

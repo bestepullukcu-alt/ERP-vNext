@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Diten.Web.Services.Auth;
+using Diten.Web.Services.Navigation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.Web.ViewComponents;
@@ -16,15 +17,18 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly ILogger<DynamicModuleMenuViewComponent> _logger;
+    private readonly INavNameLocalizer _navLocalizer;
 
     public DynamicModuleMenuViewComponent(
         HttpClient httpClient,
         IConfiguration configuration,
-        ILogger<DynamicModuleMenuViewComponent> logger)
+        ILogger<DynamicModuleMenuViewComponent> logger,
+        INavNameLocalizer navLocalizer)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"] ?? "http://localhost:5000";
         _logger = logger;
+        _navLocalizer = navLocalizer;
     }
 
     public async Task<IViewComponentResult> InvokeAsync()
@@ -71,18 +75,26 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
             // collapsible group. Grouping/order/visibility come entirely from the response (Domain, SortOrder,
             // IsNavigationVisible) — nothing hardcoded; operators manage it from the Module Catalog.
             var moduleEntries = groups
-                .Select(g => new
+                .Select(g =>
                 {
-                    Domain = g.Domain ?? string.Empty,
-                    DomainDisplay = !string.IsNullOrWhiteSpace(g.DomainDisplayName)
+                    var domainCode = g.Domain ?? string.Empty;
+                    var serverDomainName = !string.IsNullOrWhiteSpace(g.DomainDisplayName)
                         ? g.DomainDisplayName!
-                        : (!string.IsNullOrWhiteSpace(g.Domain) ? g.Domain! : "Modules"),
-                    // FEAT-NAVPREFS-DOMAINS — effective domain order (tenant override else implicit catalog rank).
-                    DomainSort = g.DomainSortOrder,
-                    Module = new NavModuleEntryView(
-                        g.ModuleDisplayName ?? g.ModuleCode ?? string.Empty,
-                        BuildTree(g.Items),
-                        g.Icon) // FIX-MODULE-ICON — module sidebar icon from the catalog (nav DTO carries the resolved value).
+                        : (!string.IsNullOrWhiteSpace(g.Domain) ? g.Domain! : "Modules");
+                    var serverModuleName = g.ModuleDisplayName ?? g.ModuleCode ?? string.Empty;
+
+                    // FEAT-NAV-L10N — localize DEFAULT names by stable code (overrides render as-typed via the flags).
+                    return new
+                    {
+                        Domain = domainCode,
+                        DomainDisplay = _navLocalizer.Domain(domainCode, serverDomainName, g.DomainDisplayNameIsOverride),
+                        // FEAT-NAVPREFS-DOMAINS — effective domain order (tenant override else implicit catalog rank).
+                        DomainSort = g.DomainSortOrder,
+                        Module = new NavModuleEntryView(
+                            _navLocalizer.Module(g.ModuleCode, serverModuleName, g.ModuleDisplayNameIsOverride),
+                            BuildTree(g.Items),
+                            g.Icon) // FIX-MODULE-ICON — module sidebar icon from the catalog (nav DTO carries the resolved value).
+                    };
                 })
                 .Where(x => x.Module.Nodes.Count > 0)
                 .ToList();
@@ -108,7 +120,7 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
 
     // Flat descriptors → one level of parent/child nesting via ParentPageCode. Items whose ParentPageCode
     // matches no in-scope parent are treated as top-level (best-effort; never drop an entitled page).
-    private static IReadOnlyList<NavNodeView> BuildTree(IReadOnlyList<NavigationItem>? items)
+    private IReadOnlyList<NavNodeView> BuildTree(IReadOnlyList<NavigationItem>? items)
     {
         if (items is null || items.Count == 0)
         {
@@ -130,14 +142,15 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
         return topLevel.Select(i => ToNode(i, byParent)).ToList();
     }
 
-    private static NavNodeView ToNode(NavigationItem item, IReadOnlyDictionary<string, List<NavigationItem>> byParent)
+    private NavNodeView ToNode(NavigationItem item, IReadOnlyDictionary<string, List<NavigationItem>> byParent)
     {
         var children = byParent.TryGetValue(item.PageCode, out var kids)
             ? kids.Select(k => ToNode(k, byParent)).ToList()
             : new List<NavNodeView>();
 
+        // FEAT-NAV-L10N — pages have no per-page override, so they're always localizable by PageCode (default fallback).
         return new NavNodeView(
-            item.DisplayName ?? item.PageCode ?? string.Empty,
+            _navLocalizer.Page(item.PageCode, item.DisplayName ?? item.PageCode ?? string.Empty),
             item.RoutePath ?? "#",
             item.RequiredPermission,
             item.IconHint,
@@ -159,7 +172,10 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
         string? DomainDisplayName,
         IReadOnlyList<NavigationItem>? Items,
         int DomainSortOrder = 0,
-        string? Icon = null); // FIX-MODULE-ICON — module sidebar icon (boxicons class) from the platform nav DTO.
+        string? Icon = null, // FIX-MODULE-ICON — module sidebar icon (boxicons class) from the platform nav DTO.
+        // FEAT-NAV-L10N — true when the name is a tenant override (render as-typed); false → localize by code.
+        bool ModuleDisplayNameIsOverride = false,
+        bool DomainDisplayNameIsOverride = false);
 
     private sealed record NavigationItem(
         string PageCode,

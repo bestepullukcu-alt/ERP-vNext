@@ -139,10 +139,13 @@ public sealed class RegisterModuleManifestCommandHandlerTests
         await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest() with { Domain = "Brand New Domain" }), CancellationToken.None);
 
         var created = Assert.Single(domains.Items, d => d.DisplayName == "Brand New Domain");
-        Assert.Equal("BRAND-NEW-DOMAIN", created.Code); // canonical dash-uppercase
+        // FIX-DOMAIN-DEDUP — canonical Code is now the SHARED normalizer's UPPERCASE-no-separator form (was
+        // "BRAND-NEW-DOMAIN"), identical to what the seed + create paths produce, so no cross-format duplicate.
+        Assert.Equal("BRANDNEWDOMAIN", created.Code);
+        Assert.Equal("BRANDNEWDOMAIN", created.CodeKey);
         Assert.True(created.IsActive);
         Assert.Equal(before + 1, domains.Items.Count);
-        Assert.Equal("BRAND-NEW-DOMAIN", Assert.Single(catalog.Items).Domain); // module domain = canonical Code
+        Assert.Equal("BRANDNEWDOMAIN", Assert.Single(catalog.Items).Domain); // module domain = canonical Code
     }
 
     [Fact]

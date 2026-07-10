@@ -1,25 +1,35 @@
 'use strict';
 
-// MOD-0288 — Organization Units (platform-admin, Slim pattern). Backend list endpoints return a plain
-// array (Response<IReadOnlyList<T>>), so the DataTable is client-side (serverSide:false): a single ajax
-// fetch loads the whole list, with paging/sort/search handled in the browser. Create/edit happen in an
-// in-page offcanvas; archive + delete are row actions. Legal-entity options come from an MDM lookup that
-// degrades to a manual GUID input when MDM is unreachable.
+// MOD-0288 — Organization Units (platform-admin). Backend list endpoints return a plain array
+// (Response<IReadOnlyList<T>>), so the DataTable is client-side (serverSide:false): a single ajax fetch
+// loads the whole list, with paging/sort/search handled in the browser. Phase 2: create/edit/details live
+// on full-page routes (/OrganizationUnits/Create|Edit/{id}|Details/{id}); the list only navigates there.
+// Archive + delete stay as AJAX row actions. A Table/Tree toggle renders the same loaded list either as the
+// DataTable or as an indented parent→child hierarchy.
 const OrganizationUnitsList = (function () {
     let dt;
-    let editingId = null;
     let L = {};
     const dtTableEl = document.querySelector('.datatables-organization-units');
     const endpoint = '/OrganizationUnits/api';
     const legalEntitiesEndpoint = '/OrganizationUnits/api/legal-entities';
+    const createUrl = '/OrganizationUnits/Create';
+    const editUrl = '/OrganizationUnits/Edit';
+    const detailsUrl = '/OrganizationUnits/Details';
     const saveViewColumnIndexes = [1, 2, 3, 4, 5];
+    const defaultVisibleColumnIndexes = [1, 2, 3, 4, 5];
+    const totalColumnCount = 7; // control(0) + code/name/legalEntity/parent/isArchived(1-5) + action(6)
     const baseOrder = [[1, 'asc']];
+    const filterCollapseId = 'inlineFilterCollapse';
+    const personalizationClient = window.personalizationClient;
+    const personalizationContext = { moduleKey: 'Organization', pageKey: 'OrganizationUnits' };
     let appliedFilters = { archived: '' };
+    let defaultViewRecord = null;
+    let defaultViewState = null;
+    let saveFilterArmed = false;
 
-    // Loaded reference data + id→label maps used by the table renderers and offcanvas selects.
+    // Loaded reference data + id→label maps used by the table renderers and the tree.
     let orgUnitsData = [];
     let legalEntitiesData = [];
-    let legalEntityLookupAvailable = false;
     const orgUnitMap = {};
     const legalEntityMap = {};
 
@@ -37,7 +47,6 @@ const OrganizationUnitsList = (function () {
 
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
-    const normalizeString = (value) => (typeof value === 'string' ? value.trim() : '');
 
     const archivedBadge = (value) => value
         ? `<span class="badge bg-label-secondary">${escapeHtml(L.StatusArchived || 'Archived')}</span>`
@@ -55,9 +64,13 @@ const OrganizationUnitsList = (function () {
     };
 
     const rowActionHandlers = {
+        details: ({ id, row }) => {
+            const rid = id || row?.id || row?.Id;
+            if (rid) window.location.href = `${detailsUrl}/${encodeURIComponent(rid)}`;
+        },
         edit: ({ id, row }) => {
-            const editId = id || row?.id || row?.Id;
-            if (editId) openEditOffcanvas(String(editId));
+            const rid = id || row?.id || row?.Id;
+            if (rid) window.location.href = `${editUrl}/${encodeURIComponent(rid)}`;
         },
         archive: ({ row, id }) => {
             const rowId = id || row?.id || row?.Id;
@@ -101,12 +114,12 @@ const OrganizationUnitsList = (function () {
         .then((response) => response.ok ? response.json() : Promise.reject(response))
         .then(unwrapList);
 
-    // Legal-entity lookup is best-effort: a failure (e.g. MDM offline) resolves to [] so the table still
-    // renders and the offcanvas falls back to a manual GUID input.
+    // Legal-entity lookup (referenceable-only) is best-effort: a failure (e.g. MDM offline) resolves to [] so the
+    // table still renders; the select just has no options to choose (no manual-GUID fallback).
     const fetchLegalEntities = () => fetch(legalEntitiesEndpoint, { headers: getAuthHeaders() })
         .then((response) => response.ok ? response.json() : Promise.reject(response))
-        .then((payload) => { legalEntityLookupAvailable = true; return unwrapList(payload); })
-        .catch(() => { legalEntityLookupAvailable = false; return []; });
+        .then((payload) => unwrapList(payload))
+        .catch(() => []);
 
     const rebuildMaps = () => {
         Object.keys(orgUnitMap).forEach((k) => delete orgUnitMap[k]);
@@ -121,6 +134,156 @@ const OrganizationUnitsList = (function () {
         return rows.filter((r) => Boolean(r.isArchived ?? r.IsArchived) === wantArchived);
     };
 
+    // ─── Save View: normalization + state capture / (de)serialization ────────
+    const normalizeString = (v) => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v).trim()));
+    const emptyFilters = () => ({ archived: '' });
+    const normalizeFilters = (f) => ({ archived: normalizeString((f || {}).archived) });
+    const hasFilterValue = (v) => normalizeString(v).length > 0;
+
+    const normalizeColVis = (colVis) => {
+        if (!colVis) return null;
+        const n = {};
+        if (Array.isArray(colVis)) {
+            saveViewColumnIndexes.forEach((ci, pos) => {
+                if (typeof colVis[ci] === 'boolean') n[ci] = colVis[ci];
+                else if (typeof colVis[pos] === 'boolean') n[ci] = colVis[pos];
+            });
+        } else if (typeof colVis === 'object') {
+            saveViewColumnIndexes.forEach((ci) => { if (typeof colVis[ci] === 'boolean') n[ci] = colVis[ci]; });
+        }
+        return Object.keys(n).length ? n : null;
+    };
+    const captureColVis = (api) => { const r = {}; saveViewColumnIndexes.forEach((ci) => { try { r[ci] = !!api.column(ci).visible(); } catch (e) { } }); return r; };
+    const defaultColVis = () => saveViewColumnIndexes.reduce((a, ci) => { a[ci] = defaultVisibleColumnIndexes.includes(ci); return a; }, {});
+    const applyColVis = (api, colVis) => {
+        const n = normalizeColVis(colVis);
+        if (!n) return;
+        saveViewColumnIndexes.forEach((ci) => { if (typeof n[ci] === 'boolean') { try { api.column(ci).visible(n[ci], false); } catch (e) { } } });
+    };
+    const normalizeColOrder = (order) => {
+        if (!Array.isArray(order) || order.length !== totalColumnCount) return null;
+        const n = order.map(Number).filter((i) => Number.isInteger(i) && i >= 0 && i < totalColumnCount);
+        return n.length === totalColumnCount && new Set(n).size === totalColumnCount ? n : null;
+    };
+    const captureColOrder = (api) => { try { return normalizeColOrder(api?.colReorder?.order?.()); } catch (e) { return null; } };
+    const applyColOrder = (api, order) => { const n = normalizeColOrder(order); if (n && typeof api?.colReorder?.order === 'function') api.colReorder.order(n, true); };
+    const identityColOrder = () => Array.from({ length: totalColumnCount }, (_, i) => i);
+
+    const getSearchVal = (api) => { try { return api.table().container().querySelector('.dt-search input')?.value || ''; } catch (e) { return ''; } };
+    const syncSearchInput = (api, v) => { try { const el = api.table().container().querySelector('.dt-search input'); if (el) el.value = v || ''; } catch (e) { } };
+    const getCurrentView = (api) => ({
+        filters: Object.assign({}, appliedFilters),
+        search: normalizeString(getSearchVal(api) || api.search()),
+        colVis: captureColVis(api),
+        columnOrder: captureColOrder(api),
+        order: api.order()
+    });
+    const serializeView = (v) => JSON.stringify({
+        filters: { archived: normalizeString((v?.filters || {}).archived) },
+        search: normalizeString(v?.search),
+        colVis: normalizeColVis(v?.colVis) || defaultColVis(),
+        columnOrder: normalizeColOrder(v?.columnOrder) || identityColOrder(),
+        order: Array.isArray(v?.order) ? v.order : baseOrder
+    });
+    const normalizeViewState = (view) => ({
+        filters: normalizeFilters(view?.filters || view || emptyFilters()),
+        search: normalizeString(view?.search),
+        colVis: normalizeColVis(view?.colVis) || defaultColVis(),
+        columnOrder: normalizeColOrder(view?.columnOrder) || identityColOrder(),
+        order: Array.isArray(view?.order) ? view.order : baseOrder
+    });
+    const getResetBaselineState = () => normalizeViewState({ filters: emptyFilters(), search: '', colVis: defaultColVis(), columnOrder: identityColOrder(), order: baseOrder });
+
+    const getSavedViewId = (sv) => sv?.id || sv?.Id || sv?._id || null;
+    const getSavedViewName = (sv) => sv?.viewName || sv?.ViewName || '';
+    const isSavedViewDefault = (sv) => sv?.isDefault === true || sv?.IsDefault === true;
+    const unwrapViewResponse = (response) => response?.data || response?.Data || response;
+    const getSavedViewDef = (sv) => {
+        const raw = sv?.viewDefinition ?? sv?.ViewDefinition ?? {};
+        if (typeof raw === 'string') { try { return JSON.parse(raw); } catch (e) { return {}; } }
+        return raw || {};
+    };
+    const mapSavedViewToState = (sv) => {
+        const d = getSavedViewDef(sv);
+        return { filters: normalizeFilters(d.filters || d), search: normalizeString(d.search), colVis: normalizeColVis(d.colVis), columnOrder: normalizeColOrder(d.columnOrder), order: Array.isArray(d.order) ? d.order : null };
+    };
+    const setSaveFilterVisible = (visible) => {
+        const btn = document.querySelector('.dt-save-filter-btn');
+        if (!btn) return;
+        btn.classList.toggle('d-none', !visible);
+        window.DtDefaults?.refreshButtonGroupRadii?.();
+    };
+    const isDirtyComparedToDefault = (api) => {
+        const baseline = defaultViewState || { filters: emptyFilters(), search: '', colVis: defaultColVis(), columnOrder: identityColOrder(), order: baseOrder };
+        return serializeView(getCurrentView(api)) !== serializeView(baseline);
+    };
+    const loadDefaultView = async () => {
+        defaultViewRecord = null; defaultViewState = null;
+        if (!personalizationClient?.getViews) return null;
+        try {
+            const views = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
+            const items = Array.isArray(views) ? views : (views?.data || views?.Data || []);
+            defaultViewRecord = Array.isArray(items) ? (items.find(isSavedViewDefault) || items[0] || null) : null;
+            defaultViewState = defaultViewRecord ? mapSavedViewToState(defaultViewRecord) : null;
+            return defaultViewState;
+        } catch (error) {
+            if (error?.authHandled) return null;
+            console.error('[OrganizationUnits SaveView] Failed to load saved views.', error);
+            return null;
+        }
+    };
+    const saveDefaultView = async (view) => {
+        if (!personalizationClient?.saveView) return null;
+        const normalizedView = normalizeViewState(view);
+        const payload = {
+            moduleKey: personalizationContext.moduleKey,
+            pageKey: personalizationContext.pageKey,
+            viewName: (getSavedViewName(defaultViewRecord) || L.SaveView || 'Default').trim(),
+            viewDefinition: normalizedView,
+            isDefault: true,
+            visibility: 'private'
+        };
+        const existingId = getSavedViewId(defaultViewRecord);
+        const savedResponse = existingId ? await personalizationClient.updateView(existingId, payload) : await personalizationClient.saveView(payload);
+        const savedRecord = unwrapViewResponse(savedResponse);
+        defaultViewRecord = savedRecord && typeof savedRecord === 'object' ? savedRecord : Object.assign({}, defaultViewRecord || {}, payload);
+        defaultViewState = normalizedView;
+        return defaultViewState;
+    };
+    const syncFilterControls = (values) => {
+        const el = document.getElementById('filterArchived');
+        if (el) { el.value = values.archived || ''; if (window.jQuery?.fn?.select2) $(el).val(values.archived || '').trigger('change'); }
+    };
+    const applySavedTableState = (api, view) => {
+        if (!api || !view) return;
+        const s = normalizeViewState(view);
+        appliedFilters = s.filters;
+        syncFilterControls(appliedFilters);
+        applyColOrder(api, s.columnOrder);
+        applyColVis(api, s.colVis);
+        api.search(s.search);
+        syncSearchInput(api, s.search);
+        api.order(s.order);
+        dt?.ajax.reload(() => { window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount()); }, false);
+    };
+    const setupFilters = (api) => {
+        initSelect2Filters();
+        applySavedTableState(api, defaultViewState || { filters: appliedFilters });
+        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
+            appliedFilters = { archived: document.getElementById('filterArchived')?.value || '' };
+            dt?.ajax.reload();
+            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
+            const collapseEl = document.getElementById(filterCollapseId);
+            if (collapseEl) bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).hide();
+        });
+        document.getElementById('btnFilterReset')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            applySavedTableState(api, getResetBaselineState());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
+        });
+    };
+
     const initDataTable = () => {
         if (!dtTableEl || !window.DtDefaults) {
             console.error('[OrganizationUnits] DataTable element or DtDefaults not found.');
@@ -132,6 +295,24 @@ const OrganizationUnitsList = (function () {
             className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
             attr: { title: L.Filter, 'aria-controls': 'inlineFilterCollapse', 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },
             action: () => toggleInlineFilter()
+        };
+        const saveFilterBtn = {
+            text: '<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">' + (L.SaveView || '') + '</span>',
+            className: 'btn btn-label-primary d-none dt-save-filter-btn',
+            attr: { title: L.SaveView, 'data-bs-toggle': 'tooltip' },
+            action: async function (e, api) {
+                const tableApi = api || dt;
+                if (!tableApi) return;
+                try {
+                    await saveDefaultView(getCurrentView(tableApi));
+                    setSaveFilterVisible(false);
+                    window.showToast?.(L.RecordSaved || L.SaveView || '', 'success');
+                } catch (error) {
+                    if (error?.authHandled) return;
+                    console.error('[OrganizationUnits SaveView] Failed to save default view.', error);
+                    window.showToast?.(L.ErrorOccurred || '', 'error');
+                }
+            }
         };
 
         const dtConfig = window.DtDefaults.create({
@@ -146,6 +327,7 @@ const OrganizationUnitsList = (function () {
                         orgUnitsData = units || [];
                         legalEntitiesData = legalEntities || [];
                         rebuildMaps();
+                        renderTree();
                         callback({ data: applyClientFilter(orgUnitsData) });
                     })
                     .catch(() => {
@@ -178,6 +360,7 @@ const OrganizationUnitsList = (function () {
                         const isArchived = Boolean(row.isArchived ?? row.IsArchived);
 
                         const actions = [
+                            { key: 'details', icon: 'bx bx-show', text: L.ViewDetails || '', attrs: { 'data-id': id, 'data-json': rowJson } },
                             { key: 'edit', icon: 'bx bx-edit', className: 'js-edit-item', text: L.Edit || '', attrs: { 'data-id': id, 'data-json': rowJson } }
                         ];
                         if (!isArchived) {
@@ -194,15 +377,16 @@ const OrganizationUnitsList = (function () {
                 { targets: 2, responsivePriority: 1 },
                 { targets: -1, title: L.Actions, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3' }
             ],
-            buttons: window.DtDefaults.exportButtons(L.AddNew || '', {}, { filterBtn }, {
+            buttons: window.DtDefaults.exportButtons(L.AddNew || '', {}, { filterBtn, saveFilterBtn }, {
                 exportColumns: saveViewColumnIndexes,
                 colvisColumns: saveViewColumnIndexes
             }),
             initComplete: function () {
                 const api = this.api();
                 mountInlineFilter();
-                initSelect2Filters();
+                setupFilters(api);
                 window.DtDefaults.updateVisualState(api, getAppliedFilterCount());
+                setTimeout(() => { saveFilterArmed = true; }, 0);
             },
             drawCallback: function () {
                 window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount());
@@ -220,6 +404,18 @@ const OrganizationUnitsList = (function () {
             tableEl: dtTableEl,
             dt,
             onRowAction: rowActionHandlers
+        });
+
+        dt.on('column-visibility.dt', function () {
+            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+        });
+        dt.on('search.dt order.dt', function () {
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+        });
+        dt.on('column-reorder.dt columns-reordered.dt', function () {
+            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
     };
 
@@ -262,259 +458,177 @@ const OrganizationUnitsList = (function () {
         });
     };
 
-    const bindFilters = () => {
-        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
-            appliedFilters = { archived: document.getElementById('filterArchived')?.value || '' };
-            dt?.ajax.reload();
-            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
-        });
-
-        document.getElementById('btnFilterReset')?.addEventListener('click', (event) => {
-            event.preventDefault();
-            appliedFilters = { archived: '' };
-            const element = document.getElementById('filterArchived');
-            if (element) {
-                element.value = '';
-                if (window.jQuery?.fn?.select2) $(element).val('').trigger('change');
-            }
-            dt?.ajax.reload();
-            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
-        });
-    };
-
     const getAppliedFilterCount = () => Object.values(appliedFilters).filter((value) => value !== '').length;
 
-    // ─── Create/Edit offcanvas (Slim pattern) ────────────────────────────────
-    const getOcInstance = () => {
-        const el = document.getElementById('offcanvasCreateEdit');
-        return el ? bootstrap.Offcanvas.getOrCreateInstance(el) : null;
-    };
-
-    const getAntiForgeryToken = () =>
-        document.querySelector('#formOrganizationUnit input[name="__RequestVerificationToken"]')?.value || '';
-
-    const normalizeCode = (value) => (value || '')
-        .toUpperCase()
-        .replace(/[^A-Z0-9]+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 80)
-        .replace(/-+$/g, '');
-
-    const updateCodePreview = () => {
-        const input = document.getElementById('orgUnitCode');
-        const preview = document.getElementById('orgUnitCodePreview');
-        const span = preview?.querySelector('span');
-        if (!input || !preview || !span) return;
-        const normalized = normalizeCode(input.value);
-        if (normalized && normalized !== input.value) {
-            span.textContent = normalized;
-            preview.classList.remove('d-none');
-        } else {
-            preview.classList.add('d-none');
-        }
-    };
-
-    const populateLegalEntitySelect = (selectedId) => {
-        const select = document.getElementById('orgUnitLegalEntity');
-        const manual = document.getElementById('orgUnitLegalEntityManual');
-        const hint = document.getElementById('orgUnitLegalEntityHint');
-        if (!select) return;
-
-        if (legalEntityLookupAvailable && legalEntitiesData.length > 0) {
-            // Dropdown mode.
-            select.classList.remove('d-none');
-            manual?.classList.add('d-none');
-            hint?.classList.add('d-none');
-            if (manual) manual.value = '';
-            select.innerHTML = `<option value="">${escapeHtml(L.SelectLegalEntity || '')}</option>`;
-            legalEntitiesData.forEach((e) => {
-                const { id, text } = legalEntityLabel(e);
-                if (!id) return;
-                const option = document.createElement('option');
-                option.value = id;
-                option.textContent = text;
-                if (selectedId && id === selectedId) option.selected = true;
-                select.appendChild(option);
-            });
-            select.required = true;
-        } else {
-            // Manual GUID fallback (MDM lookup unavailable).
-            select.classList.add('d-none');
-            select.required = false;
-            manual?.classList.remove('d-none');
-            hint?.classList.remove('d-none');
-            if (manual) manual.value = selectedId || '';
-        }
-    };
-
-    const populateParentSelect = (selectedId, excludeId) => {
-        const select = document.getElementById('orgUnitParent');
-        if (!select) return;
-        select.innerHTML = `<option value="">${escapeHtml(L.NoParent || '')}</option>`;
-        orgUnitsData
-            .filter((u) => (u.id || u.Id) !== excludeId)
-            .forEach((u) => {
-                const id = u.id || u.Id;
-                const option = document.createElement('option');
-                option.value = id;
-                option.textContent = `${u.code || u.Code || ''} — ${u.name || u.Name || ''}`;
-                if (selectedId && id === selectedId) option.selected = true;
-                select.appendChild(option);
-            });
-    };
-
-    const readLegalEntityId = () => {
-        const select = document.getElementById('orgUnitLegalEntity');
-        const manual = document.getElementById('orgUnitLegalEntityManual');
-        if (select && !select.classList.contains('d-none')) return normalizeString(select.value);
-        return normalizeString(manual?.value);
-    };
-
-    const clearFormErrors = () => {
-        const alertEl = document.getElementById('formOrganizationUnitAlert');
-        if (alertEl) { alertEl.classList.add('d-none'); alertEl.innerHTML = ''; }
-    };
-
-    const showFormErrors = (errors) => {
-        const alertEl = document.getElementById('formOrganizationUnitAlert');
-        if (!alertEl) return;
-        const list = (Array.isArray(errors) ? errors : [errors]).filter(Boolean);
-        alertEl.innerHTML = list.length
-            ? list.map((message) => `<div>${escapeHtml(message)}</div>`).join('')
-            : escapeHtml(L.RequiredField || '');
-        alertEl.classList.remove('d-none');
-    };
-
-    const resetForm = () => {
-        const form = document.getElementById('formOrganizationUnit');
-        if (!form) return;
-        form.classList.remove('was-validated');
-        form.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
-        document.getElementById('orgUnitItemId').value = '';
-        document.getElementById('orgUnitCode').value = '';
-        document.getElementById('orgUnitName').value = '';
-        document.getElementById('orgUnitCodePreview')?.classList.add('d-none');
-        clearFormErrors();
-    };
-
-    const openCreateOffcanvas = () => {
-        const oc = getOcInstance();
-        if (!oc) {
-            console.error('[OrganizationUnits] #offcanvasCreateEdit not found. Rebuild + restart the app so the partial renders.');
-            return;
-        }
-        editingId = null;
-        resetForm();
-        populateLegalEntitySelect('');
-        populateParentSelect('', null);
-        const label = document.getElementById('offcanvasCreateEditLabel');
-        if (label) label.textContent = L.FormTitleCreate || L.AddNew || '';
-        const saveBtn = document.getElementById('btnSaveOrgUnit');
-        if (saveBtn) saveBtn.textContent = L.Save || '';
-        oc.show();
-    };
-
-    const openEditOffcanvas = async (id) => {
-        if (!id) return;
-        editingId = id;
-        resetForm();
-        const label = document.getElementById('offcanvasCreateEditLabel');
-        if (label) label.textContent = L.FormTitleEdit || L.Edit || '';
-        const saveBtn = document.getElementById('btnSaveOrgUnit');
-        if (saveBtn) saveBtn.textContent = L.Update || L.Save || '';
-
-        try {
-            const res = await fetch(`${endpoint}/${encodeURIComponent(id)}`, { headers: getAuthHeaders() });
-            if (!res.ok) throw new Error('Failed to load item.');
-            const payload = await res.json();
-            const d = payload.data || payload.Data || {};
-            document.getElementById('orgUnitItemId').value = d.id || d.Id || '';
-            document.getElementById('orgUnitCode').value = d.code || d.Code || '';
-            document.getElementById('orgUnitName').value = d.name || d.Name || '';
-            populateLegalEntitySelect(d.legalEntityId || d.LegalEntityId || '');
-            populateParentSelect(d.parentOrganizationUnitId || d.ParentOrganizationUnitId || '', d.id || d.Id);
-        } catch (error) {
-            console.error('[OrganizationUnits] Failed to load item for edit.', error);
-            window.showToast?.(L.ErrorOccurred || '', 'error');
-            return;
-        }
-        getOcInstance()?.show();
-    };
-
-    const submitForm = async () => {
-        const form = document.getElementById('formOrganizationUnit');
-        if (!form) return;
-        clearFormErrors();
-        form.classList.add('was-validated');
-
-        const legalEntityId = readLegalEntityId();
-        if (!form.checkValidity() || !legalEntityId) {
-            showFormErrors([L.RequiredField || '']);
-            return;
-        }
-
-        const isEdit = !!editingId;
-        const parentValue = normalizeString(document.getElementById('orgUnitParent')?.value);
-        const payload = {
-            code: normalizeCode(document.getElementById('orgUnitCode').value),
-            name: normalizeString(document.getElementById('orgUnitName').value),
-            legalEntityId: legalEntityId,
-            parentOrganizationUnitId: parentValue || null
-        };
-        const url = isEdit ? `${endpoint}/${encodeURIComponent(editingId)}` : endpoint;
-        const method = isEdit ? 'PUT' : 'POST';
-
-        const saveBtn = document.getElementById('btnSaveOrgUnit');
-        if (saveBtn) saveBtn.disabled = true;
-        try {
-            const res = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': getAntiForgeryToken(),
-                    ...getAuthHeaders()
-                },
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-                getOcInstance()?.hide();
-                reloadWithSuccessToast(isEdit ? 'RecordUpdated' : 'RecordCreated', payload.name);
-                return;
-            }
-            let errors = [];
-            try {
-                const json = await res.json();
-                errors = (json.errors || json.Errors || []);
-            } catch { /* non-JSON response */ }
-            showFormErrors(errors.length ? errors : [L.ErrorOccurred || '']);
-        } catch (error) {
-            console.error('[OrganizationUnits] Form submit failed.', error);
-            showFormErrors([L.ErrorOccurred || '']);
-        } finally {
-            if (saveBtn) saveBtn.disabled = false;
-        }
-    };
-
-    const bindOffcanvas = () => {
+    // ─── Add New → full-page create route ────────────────────────────────────
+    const bindAddNew = () => {
         // Delegated: the Add New button is rendered by DataTables into the toolbar, so bind at document level.
         document.addEventListener('click', (event) => {
             if (event.target.closest('.add-new')) {
                 event.preventDefault();
-                openCreateOffcanvas();
+                window.location.href = createUrl;
             }
-        });
-        document.getElementById('btnSaveOrgUnit')?.addEventListener('click', submitForm);
-        document.getElementById('orgUnitCode')?.addEventListener('input', function () {
-            this.value = this.value.toUpperCase();
-            updateCodePreview();
         });
     };
 
-    const init = () => {
+    // ─── Table/Tree toggle ───────────────────────────────────────────────────
+    const setView = (view) => {
+        const tableView = document.getElementById('orgUnitsTableView');
+        const treeView = document.getElementById('orgUnitsTreeView');
+        const btnFlat = document.getElementById('btnViewFlat');
+        const btnTree = document.getElementById('btnViewTree');
+        const isTree = view === 'tree';
+
+        tableView?.classList.toggle('d-none', isTree);
+        treeView?.classList.toggle('d-none', !isTree);
+
+        // Clean segmented control: both buttons are btn-outline-primary; the active one is filled
+        // via Bootstrap's .active state, so the group joins without the outline/solid border clash.
+        btnFlat?.classList.toggle('active', !isTree);
+        btnTree?.classList.toggle('active', isTree);
+    };
+
+    const bindViewToggle = () => {
+        document.getElementById('btnViewFlat')?.addEventListener('click', () => setView('flat'));
+        document.getElementById('btnViewTree')?.addEventListener('click', () => setView('tree'));
+    };
+
+    // ─── Tree view — reusable DitenTree component ────────────────────────────
+    // The same loaded list is rendered as an expand/collapse hierarchy with row actions and
+    // drag-to-reparent. Node identity/parent come from the org-unit fields; drag moves reuse the
+    // Update endpoint (fetch full entity → change parent → PUT) so enterprise fields survive.
+    let orgTree = null;
+
+    const ouId = (n) => n.id ?? n.Id;
+    const ouParent = (n) => n.parentOrganizationUnitId ?? n.ParentOrganizationUnitId ?? null;
+    const ouLegalEntity = (n) => n.legalEntityId ?? n.LegalEntityId ?? null;
+    const ouArchived = (n) => Boolean(n.isArchived ?? n.IsArchived);
+
+    // Level-based node glyphs (HQ / division / department / team → deeper).
+    const TREE_ICONS = [
+        '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M10 6h4M10 10h4M10 14h4"/>',
+        '<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+        '<circle cx="9" cy="8" r="3"/><path d="M15 11a3 3 0 1 0 0-6M3 20a6 6 0 0 1 12 0M15.5 14A6 6 0 0 1 21 20"/>',
+        '<circle cx="12" cy="12" r="3"/><path d="M12 2v7M12 15v7M2 12h7M15 12h7"/>'
+    ];
+    const ACT_ICONS = {
+        addChild: '<path d="M12 5v14M5 12h14"/>',
+        edit: '<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+        details: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+        archive: '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>'
+    };
+
+    const goTo = (base, id) => { if (id) window.location.href = `${base}/${encodeURIComponent(id)}`; };
+    const addChild = (parentId) => { window.location.href = `${createUrl}?parentId=${encodeURIComponent(parentId)}`; };
+
+    // Map a full org-unit DTO back onto the Update request shape, changing only the parent.
+    const buildReparentPayload = (d, newParentId) => ({
+        code: d.code ?? d.Code ?? '',
+        name: d.name ?? d.Name ?? '',
+        legalEntityId: d.legalEntityId ?? d.LegalEntityId ?? null,
+        parentOrganizationUnitId: newParentId,
+        orgUnitType: d.orgUnitType ?? d.OrgUnitType ?? 'Department',
+        managerPositionId: d.managerPositionId ?? d.ManagerPositionId ?? null,
+        description: d.description ?? d.Description ?? null,
+        status: d.status ?? d.Status ?? 'Active',
+        effectiveFrom: d.effectiveFrom ?? d.EffectiveFrom ?? null,
+        effectiveTo: d.effectiveTo ?? d.EffectiveTo ?? null
+    });
+
+    // Backend rule: parent must be the same Legal Entity, not archived, and must not create a cycle
+    // (the component already blocks own-subtree drops). Return true or a localized reason to show.
+    const canReparent = (dragNode, targetNode) => {
+        if (ouArchived(dragNode) || (targetNode && ouArchived(targetNode))) return L.MoveArchivedBlocked || 'blocked';
+        if (targetNode && ouLegalEntity(dragNode) !== ouLegalEntity(targetNode)) return L.MoveSameLegalEntityOnly || 'blocked';
+        return true;
+    };
+
+    const reparent = async (dragNode, targetNode) => {
+        const id = ouId(dragNode);
+        const newParentId = targetNode ? ouId(targetNode) : null;
+        try {
+            const full = await fetch(`${endpoint}/${encodeURIComponent(id)}`, { headers: getAuthHeaders() })
+                .then((r) => r.ok ? r.json() : Promise.reject(r))
+                .then((p) => p?.data ?? p?.Data ?? {});
+            const res = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                body: JSON.stringify(buildReparentPayload(full, newParentId))
+            });
+            if (!res.ok) {
+                let msg = L.ErrorOccurred || '';
+                try { const j = await res.json(); const e = (j.errors || j.Errors || []); if (e.length) msg = e.join(' '); } catch { /* non-JSON */ }
+                window.showToast?.(msg, 'error');
+                dt?.ajax.reload(null, false); // snap the tree back to server truth
+                return;
+            }
+            reloadWithSuccessToast('MoveSuccess', full.name || full.Name || '');
+        } catch (error) {
+            console.error('[OrganizationUnits] Reparent failed.', error);
+            window.showToast?.(L.ErrorOccurred || '', 'error');
+            dt?.ajax.reload(null, false);
+        }
+    };
+
+    const treeConfig = () => ({
+        data: orgUnitsData,
+        idField: 'id',
+        parentField: 'parentOrganizationUnitId',
+        expandDepth: 1,
+        addLabel: L.AddNew || '',
+        onAdd: () => { window.location.href = createUrl; },
+        label: (node, level) => ({
+            title: node.name ?? node.Name ?? '',
+            code: node.code ?? node.Code ?? '',
+            subtitle: legalEntityMap[ouLegalEntity(node)] || '',
+            statusHtml: archivedBadge(ouArchived(node)),
+            icon: TREE_ICONS[Math.min(level, TREE_ICONS.length - 1)],
+            iconLevel: level
+        }),
+        actions: [
+            { key: 'addChild', icon: ACT_ICONS.addChild, title: L.AddChild || '', variant: 'primary', visible: (n) => !ouArchived(n), handler: (n) => addChild(ouId(n)) },
+            { key: 'details', icon: ACT_ICONS.details, title: L.ViewDetails || '', handler: (n) => goTo(detailsUrl, ouId(n)) },
+            { key: 'edit', icon: ACT_ICONS.edit, title: L.Edit || '', visible: (n) => !ouArchived(n), handler: (n) => goTo(editUrl, ouId(n)) },
+            { key: 'archive', icon: ACT_ICONS.archive, title: L.Archive || '', variant: 'danger', visible: (n) => !ouArchived(n), handler: (n) => rowActionHandlers.archive({ row: n, id: ouId(n) }) }
+        ],
+        drag: {
+            enabled: true,
+            canDrag: (n) => !ouArchived(n),
+            canDrop: canReparent,
+            onDrop: reparent,
+            onReject: (reason) => {
+                const msg = reason === 'cycle' ? (L.MoveCycleBlocked || '') : (typeof reason === 'string' ? reason : '');
+                if (msg) window.showToast?.(msg, 'warning');
+            }
+        },
+        l10n: {
+            expandAll: L.ExpandAll, collapseAll: L.CollapseAll,
+            searchPlaceholder: L.TreeSearchPlaceholder || L.Search,
+            empty: L.TreeEmpty, emptyHint: ''
+        }
+    });
+
+    const renderTree = () => {
+        const host = document.getElementById('orgUnitsTree');
+        if (!host || !window.DitenTree) return;
+        if (orgTree) orgTree.setData(orgUnitsData);
+        else orgTree = window.DitenTree.create('#orgUnitsTree', treeConfig());
+    };
+
+    // After a full-page create/edit/details save redirects back here, surface the toast it stashed.
+    const flushToast = () => {
+        try {
+            const msg = sessionStorage.getItem('ou-toast');
+            if (msg) { sessionStorage.removeItem('ou-toast'); window.showToast?.(msg, 'success'); }
+        } catch { /* ignore */ }
+    };
+
+    const init = async () => {
         loadL10n();
-        bindFilters();
-        bindOffcanvas();
+        flushToast();
+        bindAddNew();
+        bindViewToggle();
+        await loadDefaultView();
         initDataTable();
     };
 

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using Diten.Platform.Domain.Catalog;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using MongoDB.Driver;
@@ -33,7 +34,9 @@ public static class ModuleDomainSeed
             var values = Enum.GetValues<ModuleCatalogDomain>();
             var defaults = values.Select((value, index) => new ModuleDomain
             {
-                Code = value.ToString().ToUpperInvariant(),
+                // FIX-DOMAIN-DEDUP — same shared canonical normalizer as the create + manifest paths (enum names are
+                // already alphanumeric, so this equals the historical ToUpperInvariant, but ties every path to ONE rule).
+                Code = ModuleTaxonomyCanonicalizer.NormalizeKey(value.ToString()),
                 DisplayName = GetDisplayName(value),
                 SortOrder = (index + 1) * 10,
                 IsActive = true

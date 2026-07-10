@@ -1,28 +1,38 @@
 'use strict';
 
-// MOD-0220 — Legal Entities (tenant shell, Master Data). Rich list (Görev 4) + Quick View (Görev 6).
-// Backend list returns a plain array (Response<IReadOnlyList<T>>); the DataTable is client-side
-// (serverSide:false). Filters are pushed to the gateway via query params (country, operationalStatus,
-// evidenceStatus, baseCurrency, createdFrom, createdTo, incompleteOnly), then the list re-fetches.
+// MOD-0220 — Legal Entities (tenant shell, Master Data). Rich list + Quick View + inline filter + Save View.
+// Ports the GoldenReferenceCompact reference: the DataTable is client-side (serverSide:false) and loads the full
+// list once; enum filters are multi-select Select2 chips filtered in-browser (no backend multi-value change),
+// date filters use flatpickr, and the toolbar carries a personalization-backed Save View button.
 // Create/Edit live on the full-page wizard (/LegalEntities/Wizard); the list only navigates there.
 const LegalEntitiesList = (function () {
     let dt;
     let L = {};
+    let defaultViewRecord = null;
+    let defaultViewState = null;
+    let saveFilterArmed = false;
+
     const dtTableEl = document.querySelector('.datatables-legal-entities');
     const endpoint = '/LegalEntities/api';
     const wizardUrl = '/LegalEntities/Wizard';
     const detailsUrl = '/LegalEntities/Details';
+    const personalizationClient = window.personalizationClient;
+    const personalizationContext = { moduleKey: 'MasterData', pageKey: 'LegalEntities' };
+    const filterHostId = 'inlineFilterHost';
+    const filterCollapseId = 'inlineFilterCollapse';
+
+    const totalColumnCount = 11;                                   // control(0) + 9 data + action(10)
     const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const defaultVisibleColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     const baseOrder = [[1, 'asc']];
 
     let rowsData = [];
     const entityMap = {}; // legalEntityId -> { legalName, code } for parent resolution
     const lookupMaps = { legalForm: {}, organizationRole: {}, country: {}, currency: {} };
+    const datePickers = {};
 
-    let appliedFilters = {
-        country: '', operationalStatus: '', evidenceStatus: '',
-        baseCurrency: '', createdFrom: '', createdTo: '', incompleteOnly: false
-    };
+    const emptyFilters = () => ({ country: [], operationalStatus: [], evidenceStatus: [], baseCurrency: [], createdFrom: '', createdTo: '', incompleteOnly: false });
+    let appliedFilters = emptyFilters();
 
     const loadL10n = () => {
         const node = document.getElementById('legal-entities-l10n');
@@ -40,6 +50,61 @@ const LegalEntitiesList = (function () {
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const operationalOf = (row) => String(row.operationalStatus ?? row.OperationalStatus ?? row.lifecycleState ?? row.LifecycleState ?? '').toUpperCase();
 
+    // ─── Normalizers (shared with the Save View serialization) ───────────────
+    const normalizeString = (v) => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v).trim()));
+    const normalizeArray = (v) => {
+        if (Array.isArray(v)) return Array.from(new Set(v.map((i) => normalizeString(String(i))).filter(Boolean)));
+        const s = normalizeString(v);
+        return s ? [s] : [];
+    };
+    const sortNormalizedArray = (v) => normalizeArray(v).slice().sort((a, b) => a.localeCompare(b));
+    const normalizeBool = (v) => v === true || v === 'true';
+    const normalizeFilterValue = (v) => Array.isArray(v) ? sortNormalizedArray(v) : (typeof v === 'boolean' ? v : normalizeString(v));
+    const hasFilterValue = (v) => Array.isArray(v) ? normalizeArray(v).length > 0 : (typeof v === 'boolean' ? v : normalizeString(v).length > 0);
+    const normalizeFilters = (f) => {
+        const s = f || {};
+        return {
+            country: normalizeArray(s.country),
+            operationalStatus: normalizeArray(s.operationalStatus),
+            evidenceStatus: normalizeArray(s.evidenceStatus),
+            baseCurrency: normalizeArray(s.baseCurrency),
+            createdFrom: normalizeString(s.createdFrom),
+            createdTo: normalizeString(s.createdTo),
+            incompleteOnly: normalizeBool(s.incompleteOnly)
+        };
+    };
+
+    // ─── Client-side filter matchers ─────────────────────────────────────────
+    const matchesMulti = (selected, actual) => {
+        const norm = normalizeArray(selected).map((s) => s.toUpperCase());
+        return !norm.length || norm.includes(normalizeString(actual).toUpperCase());
+    };
+    const matchesDateRange = (from, to, value) => {
+        if (!from && !to) return true;
+        const d = normalizeString(value).slice(0, 10);
+        if (!d) return false;
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        return true;
+    };
+    const matchesIncomplete = (only, score) => !only || Number(score ?? 0) < 100;
+
+    const registerTableFilters = () => {
+        if (!window.jQuery?.fn?.dataTable?.ext?.search || dtTableEl?.dataset.leFilterBound === '1') return;
+        dtTableEl.dataset.leFilterBound = '1';
+        $.fn.dataTable.ext.search.push((settings, _searchData, dataIndex, rowData) => {
+            if (settings.nTable !== dtTableEl) return true;
+            const row = rowData || dt?.row(dataIndex)?.data?.() || null;
+            if (!row) return true;
+            return matchesMulti(appliedFilters.country, row.countryCode)
+                && matchesMulti(appliedFilters.operationalStatus, operationalOf(row))
+                && matchesMulti(appliedFilters.evidenceStatus, row.evidenceStatus)
+                && matchesMulti(appliedFilters.baseCurrency, row.baseCurrencyCode)
+                && matchesDateRange(appliedFilters.createdFrom, appliedFilters.createdTo, row.createdAt)
+                && matchesIncomplete(appliedFilters.incompleteOnly, row.completenessScore);
+        });
+    };
+
     // ─── Status badge palettes ───────────────────────────────────────────────
     const operationalBadge = (status) => {
         const s = String(status || '').toUpperCase();
@@ -54,7 +119,6 @@ const LegalEntitiesList = (function () {
         const m = map[s] || { cls: 'bg-label-info', txt: s || '-' };
         return `<span class="badge ${m.cls}">${escapeHtml(m.txt)}</span>`;
     };
-
     const statutoryBadge = (status) => {
         const s = String(status || '').toUpperCase();
         const map = {
@@ -62,17 +126,6 @@ const LegalEntitiesList = (function () {
             PENDING: { cls: 'bg-label-warning', txt: L.StatusPending || 'Pending' },
             SUSPENDED: { cls: 'bg-label-warning', txt: L.StatusSuspended || 'Suspended' },
             DISSOLVED: { cls: 'bg-label-secondary text-muted', txt: L.StatusDissolved || 'Dissolved' }
-        };
-        const m = map[s];
-        return m ? `<span class="badge ${m.cls}">${escapeHtml(m.txt)}</span>` : `<span class="text-muted">-</span>`;
-    };
-
-    const evidenceBadge = (status) => {
-        const s = String(status || '').toUpperCase();
-        const map = {
-            NOTSTARTED: { cls: 'bg-label-secondary', txt: L.EvidenceNotStarted || 'Not Started' },
-            COMPLETE: { cls: 'bg-label-info', txt: L.EvidenceComplete || 'Complete' },
-            VERIFIED: { cls: 'bg-label-success', txt: L.EvidenceVerified || 'Verified' }
         };
         const m = map[s];
         return m ? `<span class="badge ${m.cls}">${escapeHtml(m.txt)}</span>` : `<span class="text-muted">-</span>`;
@@ -110,8 +163,9 @@ const LegalEntitiesList = (function () {
         }, { entityName: name, type: 'danger', confirmButtonText: L.Delete });
     };
 
+    const nameOf = (row) => row?.legalName || row?.LegalName || row?.code || row?.Code || '';
+
     const rowActionHandlers = {
-        quickview: ({ id, row }) => { const rid = id || row?.id; if (rid) QuickView.open(rid); },
         details: ({ id, row }) => { const rid = id || row?.id; if (rid) window.location.href = `${detailsUrl}/${encodeURIComponent(rid)}`; },
         edit: ({ id, row }) => { const rid = id || row?.id; if (rid) window.location.href = `${wizardUrl}/${encodeURIComponent(rid)}`; },
         activate: ({ id, row }) => { const rid = id || row?.id; if (rid) patchLifecycle(rid, 'activate', 'ActivateConfirm', 'RecordActivated', nameOf(row)); },
@@ -120,38 +174,19 @@ const LegalEntitiesList = (function () {
         delete: ({ id, row }) => { const rid = id || row?.id; if (rid) deleteRow(rid, nameOf(row)); }
     };
 
-    const nameOf = (row) => row?.legalName || row?.LegalName || row?.code || row?.Code || '';
-
     const unwrapList = (payload) => {
         const data = payload?.data ?? payload?.Data ?? [];
         if (Array.isArray(data)) return data;
         return data.items || data.Items || [];
     };
-
     // Backend rows expose `legalEntityId` (not `id`); normalize so the shared dispatcher + renderers work.
     const normalizeRow = (row) => ({ ...row, id: row.id || row.Id || row.legalEntityId || row.LegalEntityId });
-
     const lookupLabel = (mapKey, code) => (code ? (lookupMaps[mapKey][String(code)] || code) : '-');
-
     const parentLabel = (parentId) => {
         if (!parentId) return '-';
         const p = entityMap[String(parentId)];
         return p ? (p.legalName ? `${p.code ? p.code + ' — ' : ''}${p.legalName}` : (p.code || parentId)) : parentId;
     };
-
-    const buildQuery = () => {
-        const params = new URLSearchParams();
-        if (appliedFilters.country) params.set('country', appliedFilters.country);
-        if (appliedFilters.operationalStatus) params.set('operationalStatus', appliedFilters.operationalStatus);
-        if (appliedFilters.evidenceStatus) params.set('evidenceStatus', appliedFilters.evidenceStatus);
-        if (appliedFilters.baseCurrency) params.set('baseCurrency', appliedFilters.baseCurrency);
-        if (appliedFilters.createdFrom) params.set('createdFrom', appliedFilters.createdFrom);
-        if (appliedFilters.createdTo) params.set('createdTo', appliedFilters.createdTo);
-        if (appliedFilters.incompleteOnly) params.set('incompleteOnly', 'true');
-        const qs = params.toString();
-        return qs ? `?${qs}` : '';
-    };
-
     const rebuildEntityMap = () => {
         Object.keys(entityMap).forEach((k) => delete entityMap[k]);
         rowsData.forEach((r) => {
@@ -161,7 +196,7 @@ const LegalEntitiesList = (function () {
     };
 
     // ─── Lookups for table labels + filter selects (best-effort) ─────────────
-    const fetchLookup = (mapKey, url, valueKey) => fetch(url, { headers: getAuthHeaders() })
+    const fetchLookup = (mapKey, url) => fetch(url, { headers: getAuthHeaders() })
         .then((r) => r.ok ? r.json() : Promise.reject(r))
         .then((payload) => {
             const items = unwrapList(payload);
@@ -174,20 +209,10 @@ const LegalEntitiesList = (function () {
         })
         .catch(() => []);
 
-    const loadReferenceData = () => Promise.all([
-        fetchLookup('legalForm', `${endpoint}/lookups/legal-form`),
-        fetchLookup('organizationRole', `${endpoint}/lookups/organization-role`),
-        fetchLookup('country', `${endpoint}/platform-lookups/countries`),
-        fetchLookup('currency', `${endpoint}/platform-lookups/currencies`)
-    ]).then(([, , countries, currencies]) => {
-        populateFilterSelect('filterCountry', countries, L.Country);
-        populateFilterSelect('filterBaseCurrency', currencies, L.BaseCurrency);
-    });
-
-    const populateFilterSelect = (selectId, items, placeholder) => {
+    const appendFilterOptions = (selectId, items) => {
         const select = document.getElementById(selectId);
         if (!select) return;
-        select.innerHTML = `<option value="">${escapeHtml(placeholder || '')}</option>`;
+        select.innerHTML = ''; // multi-select uses data-placeholder, so no empty option
         (items || []).forEach((it) => {
             const code = it.code ?? it.Code ?? it.value ?? it.Value;
             const name = it.name ?? it.Name ?? code;
@@ -196,6 +221,279 @@ const LegalEntitiesList = (function () {
             opt.value = code;
             opt.textContent = `${name}`;
             select.appendChild(opt);
+        });
+    };
+
+    const loadReferenceData = () => Promise.all([
+        fetchLookup('legalForm', `${endpoint}/lookups/legal-form`),
+        fetchLookup('organizationRole', `${endpoint}/lookups/organization-role`),
+        fetchLookup('country', `${endpoint}/platform-lookups/countries`),
+        fetchLookup('currency', `${endpoint}/platform-lookups/currencies`)
+    ]).then(([, , countries, currencies]) => {
+        appendFilterOptions('filterCountry', countries);
+        appendFilterOptions('filterBaseCurrency', currencies);
+    });
+
+    // ─── Save View: state capture / (de)serialization ────────────────────────
+    const normalizeColVis = (colVis) => {
+        if (!colVis) return null;
+        const n = {};
+        if (Array.isArray(colVis)) {
+            saveViewColumnIndexes.forEach((ci, pos) => {
+                if (typeof colVis[ci] === 'boolean') n[ci] = colVis[ci];
+                else if (typeof colVis[pos] === 'boolean') n[ci] = colVis[pos];
+            });
+        } else if (typeof colVis === 'object') {
+            saveViewColumnIndexes.forEach((ci) => { if (typeof colVis[ci] === 'boolean') n[ci] = colVis[ci]; });
+        }
+        return Object.keys(n).length ? n : null;
+    };
+    const captureColVis = (api) => { const r = {}; saveViewColumnIndexes.forEach((ci) => { try { r[ci] = !!api.column(ci).visible(); } catch (e) { } }); return r; };
+    const defaultColVis = () => saveViewColumnIndexes.reduce((a, ci) => { a[ci] = defaultVisibleColumnIndexes.includes(ci); return a; }, {});
+    const applyColVis = (api, colVis) => {
+        const n = normalizeColVis(colVis);
+        if (!n) return;
+        saveViewColumnIndexes.forEach((ci) => { if (typeof n[ci] === 'boolean') { try { api.column(ci).visible(n[ci], false); } catch (e) { } } });
+    };
+    const normalizeColOrder = (order) => {
+        if (!Array.isArray(order) || order.length !== totalColumnCount) return null;
+        const n = order.map(Number).filter((i) => Number.isInteger(i) && i >= 0 && i < totalColumnCount);
+        return n.length === totalColumnCount && new Set(n).size === totalColumnCount ? n : null;
+    };
+    const captureColOrder = (api) => { try { return normalizeColOrder(api?.colReorder?.order?.()); } catch (e) { return null; } };
+    const applyColOrder = (api, order) => { const n = normalizeColOrder(order); if (n && typeof api?.colReorder?.order === 'function') api.colReorder.order(n, true); };
+    const identityColOrder = () => Array.from({ length: totalColumnCount }, (_, i) => i);
+
+    const getSearchVal = (api) => { try { return api.table().container().querySelector('.dt-search input')?.value || ''; } catch (e) { return ''; } };
+    const syncSearchInput = (api, v) => { try { const el = api.table().container().querySelector('.dt-search input'); if (el) el.value = v || ''; } catch (e) { } };
+    const getCurrentView = (api) => ({
+        filters: Object.assign({}, appliedFilters),
+        search: normalizeString(getSearchVal(api) || api.search()),
+        colVis: captureColVis(api),
+        columnOrder: captureColOrder(api),
+        order: api.order()
+    });
+    const serializeView = (v) => JSON.stringify({
+        filters: Object.keys(v?.filters || {}).sort().reduce((acc, key) => { acc[key] = normalizeFilterValue(v.filters[key]); return acc; }, {}),
+        search: normalizeString(v?.search),
+        colVis: normalizeColVis(v?.colVis) || defaultColVis(),
+        columnOrder: normalizeColOrder(v?.columnOrder) || identityColOrder(),
+        order: Array.isArray(v?.order) ? v.order : baseOrder
+    });
+    const normalizeViewState = (view) => ({
+        filters: normalizeFilters(view?.filters || view || emptyFilters()),
+        search: normalizeString(view?.search),
+        colVis: normalizeColVis(view?.colVis) || defaultColVis(),
+        columnOrder: normalizeColOrder(view?.columnOrder) || identityColOrder(),
+        order: Array.isArray(view?.order) ? view.order : baseOrder
+    });
+    const getResetBaselineState = () => normalizeViewState({ filters: emptyFilters(), search: '', colVis: defaultColVis(), columnOrder: identityColOrder(), order: baseOrder });
+
+    const getSavedViewId = (sv) => sv?.id || sv?.Id || sv?._id || null;
+    const getSavedViewName = (sv) => sv?.viewName || sv?.ViewName || '';
+    const isSavedViewDefault = (sv) => sv?.isDefault === true || sv?.IsDefault === true;
+    const unwrapViewResponse = (response) => response?.data || response?.Data || response;
+    const getSavedViewDef = (sv) => {
+        const raw = sv?.viewDefinition ?? sv?.ViewDefinition ?? {};
+        if (typeof raw === 'string') { try { return JSON.parse(raw); } catch (e) { return {}; } }
+        return raw || {};
+    };
+    const mapSavedViewToState = (sv) => {
+        const d = getSavedViewDef(sv);
+        return {
+            filters: normalizeFilters(d.filters || d),
+            search: normalizeString(d.search),
+            colVis: normalizeColVis(d.colVis),
+            columnOrder: normalizeColOrder(d.columnOrder),
+            order: Array.isArray(d.order) ? d.order : null
+        };
+    };
+
+    const setSaveFilterVisible = (visible) => {
+        const btn = document.querySelector('.dt-save-filter-btn');
+        if (!btn) return;
+        btn.classList.toggle('d-none', !visible);
+        window.DtDefaults?.refreshButtonGroupRadii?.();
+    };
+    const isDirtyComparedToDefault = (api) => {
+        const baseline = defaultViewState || { filters: emptyFilters(), search: '', colVis: defaultColVis(), columnOrder: identityColOrder(), order: baseOrder };
+        return serializeView(getCurrentView(api)) !== serializeView(baseline);
+    };
+    const loadDefaultView = async () => {
+        defaultViewRecord = null; defaultViewState = null;
+        if (!personalizationClient?.getViews) return null;
+        try {
+            const views = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
+            const items = Array.isArray(views) ? views : (views?.data || views?.Data || []);
+            defaultViewRecord = Array.isArray(items) ? (items.find(isSavedViewDefault) || items[0] || null) : null;
+            defaultViewState = defaultViewRecord ? mapSavedViewToState(defaultViewRecord) : null;
+            return defaultViewState;
+        } catch (error) {
+            if (error?.authHandled) return null;
+            console.error('[LegalEntities SaveView] Failed to load saved views.', error);
+            return null;
+        }
+    };
+    const saveDefaultView = async (view) => {
+        if (!personalizationClient?.saveView) return null;
+        const normalizedView = normalizeViewState(view);
+        const payload = {
+            moduleKey: personalizationContext.moduleKey,
+            pageKey: personalizationContext.pageKey,
+            viewName: (getSavedViewName(defaultViewRecord) || L.SaveView || 'Default').trim(),
+            viewDefinition: normalizedView,
+            isDefault: true,
+            visibility: 'private'
+        };
+        const existingId = getSavedViewId(defaultViewRecord);
+        const savedResponse = existingId
+            ? await personalizationClient.updateView(existingId, payload)
+            : await personalizationClient.saveView(payload);
+        const savedRecord = unwrapViewResponse(savedResponse);
+        defaultViewRecord = savedRecord && typeof savedRecord === 'object' ? savedRecord : Object.assign({}, defaultViewRecord || {}, payload);
+        defaultViewState = normalizedView;
+        return defaultViewState;
+    };
+
+    // ─── Inline filter mount + Select2 (multi) + flatpickr dates ─────────────
+    const mountInlineFilter = () => {
+        const host = document.getElementById(filterHostId);
+        const filterBtn = document.querySelector('.dt-filter-btn');
+        const toolbarRow = filterBtn?.closest('.dt-layout-row') || filterBtn?.closest('.row') || filterBtn?.closest('.dt-layout-end')?.parentElement;
+        if (host && toolbarRow) {
+            toolbarRow.insertAdjacentElement('afterend', host);
+            host.classList.remove('px-6');
+            host.classList.add('px-3');
+        }
+    };
+    const toggleInlineFilter = () => {
+        const collapseEl = document.getElementById(filterCollapseId);
+        if (!collapseEl) return;
+        bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).toggle();
+    };
+    const bindInlineFilterA11y = () => {
+        const btn = document.querySelector('.dt-filter-btn');
+        const collapseEl = document.getElementById(filterCollapseId);
+        if (!btn || !collapseEl || btn.dataset.bound) return;
+        btn.dataset.bound = '1';
+        collapseEl.addEventListener('shown.bs.collapse', () => btn.setAttribute('aria-expanded', 'true'));
+        collapseEl.addEventListener('hidden.bs.collapse', () => btn.setAttribute('aria-expanded', 'false'));
+    };
+
+    const MULTI_FILTER_IDS = '#filterCountry, #filterOperationalStatus, #filterEvidenceStatus, #filterBaseCurrency';
+    const syncMultiSelectSummary = ($select) => {
+        const $container = $select.next('.select2-container');
+        const $rendered = $container.find('.select2-selection__rendered');
+        const $selection = $container.find('.select2-selection--multiple');
+        if (!$container.length || !$rendered.length || !$selection.length) return;
+        let $summary = $selection.find('.dt-inline-filter-multi__summary');
+        let $actions = $selection.find('.dt-inline-filter-multi__actions');
+        let $count = $selection.find('.dt-inline-filter-multi__count');
+        let $arrow = $selection.find('.select2-selection__arrow');
+        if (!$summary.length) { $summary = $('<span class="dt-inline-filter-multi__summary"></span>'); $selection.prepend($summary); }
+        if (!$actions.length) { $actions = $('<span class="dt-inline-filter-multi__actions"></span>'); $selection.append($actions); }
+        if (!$count.length) { $count = $('<span class="dt-inline-filter-multi__count badge rounded-pill bg-label-primary d-none"></span>'); $actions.append($count); }
+        if (!$arrow.length) { $arrow = $('<span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span>'); $selection.append($arrow); }
+        const placeholder = normalizeString($select.data('placeholder')) || '';
+        const selectedValues = normalizeArray($select.val());
+        const selectedTexts = ($select.select2('data') || []).map((i) => normalizeString(i.text)).filter(Boolean);
+        $summary.text(placeholder);
+        $rendered.attr('title', selectedTexts.join(', ') || placeholder);
+        $container.toggleClass('dt-inline-filter-multi--has-value', selectedValues.length > 0);
+        $count.toggleClass('d-none', selectedValues.length === 0).text(String(selectedValues.length));
+        $actions.find('.dt-multi-clear-btn').remove();
+        if (selectedValues.length > 0) {
+            const $clearBtn = $('<span class="dt-multi-clear-btn" role="button" aria-label="' + (L.Reset || '') + '" title="' + (L.Reset || '') + '">&times;</span>');
+            $clearBtn.on('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); $select.val(null).trigger('change'); });
+            $actions.append($clearBtn);
+        }
+    };
+    const initSelect2Filters = () => {
+        if (!window.jQuery || !$.fn.select2) return;
+        const $body = $(document.body);
+        $(MULTI_FILTER_IDS).each(function () {
+            const $s = $(this);
+            if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
+            $s.select2({
+                dropdownParent: $body,
+                dropdownCssClass: 'dt-inline-filter-dropdown',
+                containerCssClass: 'dt-inline-filter-multi',
+                selectionCssClass: 'form-select form-select-sm',
+                placeholder: $s.data('placeholder') || '',
+                minimumResultsForSearch: Infinity,
+                width: 'element',
+                closeOnSelect: false
+            });
+            $s.on('change.select2-summary', function () { syncMultiSelectSummary($s); });
+            requestAnimationFrame(() => syncMultiSelectSummary($s));
+        });
+    };
+    const initDatePickers = () => {
+        if (typeof window.flatpickr !== 'function') return;
+        ['filterCreatedFrom', 'filterCreatedTo'].forEach((id) => {
+            const el = document.getElementById(id);
+            if (!el || datePickers[id]) return;
+            datePickers[id] = window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: true });
+        });
+    };
+    const dateVal = (id) => normalizeString(document.getElementById(id)?.value);
+    const setDatePicker = (id, v) => { const fp = datePickers[id]; if (fp) fp.setDate(v || null, false); else { const el = document.getElementById(id); if (el) el.value = v || ''; } };
+
+    const syncFilterControls = (values) => {
+        $('#filterCountry').val(normalizeArray(values.country)).trigger('change');
+        $('#filterOperationalStatus').val(normalizeArray(values.operationalStatus)).trigger('change');
+        $('#filterEvidenceStatus').val(normalizeArray(values.evidenceStatus)).trigger('change');
+        $('#filterBaseCurrency').val(normalizeArray(values.baseCurrency)).trigger('change');
+        setDatePicker('filterCreatedFrom', values.createdFrom);
+        setDatePicker('filterCreatedTo', values.createdTo);
+        const inc = document.getElementById('filterIncompleteOnly');
+        if (inc) inc.checked = !!values.incompleteOnly;
+    };
+    const getAppliedFilterCount = () => [
+        appliedFilters.country, appliedFilters.operationalStatus, appliedFilters.evidenceStatus,
+        appliedFilters.baseCurrency, appliedFilters.createdFrom, appliedFilters.createdTo, appliedFilters.incompleteOnly
+    ].filter(hasFilterValue).length;
+
+    const applySavedTableState = (api, view) => {
+        if (!api || !view) return;
+        const s = normalizeViewState(view);
+        appliedFilters = s.filters;
+        syncFilterControls(appliedFilters);
+        applyColOrder(api, s.columnOrder);
+        applyColVis(api, s.colVis);
+        api.search(s.search);
+        syncSearchInput(api, s.search);
+        api.order(s.order);
+        try { api.columns.adjust(); } catch (e) { }
+        try { api.responsive?.recalc?.(); } catch (e) { }
+        api.draw(false);
+        window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount());
+    };
+
+    const setupFilters = (api) => {
+        initSelect2Filters();
+        initDatePickers();
+        applySavedTableState(api, defaultViewState || { filters: appliedFilters });
+        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
+            appliedFilters = {
+                country: $('#filterCountry').val() || [],
+                operationalStatus: $('#filterOperationalStatus').val() || [],
+                evidenceStatus: $('#filterEvidenceStatus').val() || [],
+                baseCurrency: $('#filterBaseCurrency').val() || [],
+                createdFrom: dateVal('filterCreatedFrom'),
+                createdTo: dateVal('filterCreatedTo'),
+                incompleteOnly: !!document.getElementById('filterIncompleteOnly')?.checked
+            };
+            api.draw();
+            window.DtDefaults.updateVisualState(api, getAppliedFilterCount());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
+            const collapseEl = document.getElementById(filterCollapseId);
+            if (collapseEl) bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).hide();
+        });
+        document.getElementById('btnFilterReset')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            applySavedTableState(api, getResetBaselineState());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
         });
     };
 
@@ -208,8 +506,26 @@ const LegalEntitiesList = (function () {
         const filterBtn = {
             text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
             className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
-            attr: { title: L.Filter, 'aria-controls': 'inlineFilterCollapse', 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },
+            attr: { title: L.Filter, 'aria-controls': filterCollapseId, 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },
             action: () => toggleInlineFilter()
+        };
+        const saveFilterBtn = {
+            text: '<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">' + (L.SaveView || '') + '</span>',
+            className: 'btn btn-label-primary d-none dt-save-filter-btn',
+            attr: { title: L.SaveView, 'data-bs-toggle': 'tooltip' },
+            action: async function (e, api) {
+                const tableApi = api || dt;
+                if (!tableApi) return;
+                try {
+                    await saveDefaultView(getCurrentView(tableApi));
+                    setSaveFilterVisible(false);
+                    window.showToast?.(L.RecordSaved || L.SaveView || '', 'success');
+                } catch (error) {
+                    if (error?.authHandled) return;
+                    console.error('[LegalEntities SaveView] Failed to save default view.', error);
+                    window.showToast?.(L.ErrorOccurred || '', 'error');
+                }
+            }
         };
 
         const dtConfig = window.DtDefaults.create({
@@ -219,7 +535,7 @@ const LegalEntitiesList = (function () {
             order: baseOrder,
             colReorder: { columns: ':gt(1):not(:last-child)' },
             ajax: function (data, callback) {
-                fetch(`${endpoint}${buildQuery()}`, { headers: getAuthHeaders() })
+                fetch(endpoint, { headers: getAuthHeaders() })
                     .then((response) => response.ok ? response.json() : Promise.reject(response))
                     .then((payload) => {
                         rowsData = unwrapList(payload).map(normalizeRow);
@@ -253,23 +569,14 @@ const LegalEntitiesList = (function () {
                         const rowJson = JSON.stringify(row);
                         const status = operationalOf(row);
                         const baseAttrs = { 'data-id': id, 'data-json': rowJson };
-
                         const actions = [
-                            { key: 'quickview', icon: 'bx bx-show', className: 'text-body', text: L.QuickView || '', attrs: baseAttrs },
-                            { key: 'details', icon: 'bx bx-detail', text: L.ViewDetails || '', attrs: baseAttrs },
+                            { key: 'details', icon: 'bx bx-show', text: L.ViewDetails || '', attrs: baseAttrs },
                             { key: 'edit', icon: 'bx bx-edit', className: 'js-edit-item', text: L.Edit || '', attrs: baseAttrs }
                         ];
-                        if (status === 'DRAFT' || status === 'INREVIEW' || status === 'APPROVED') {
-                            actions.push({ key: 'activate', icon: 'bx bx-check-circle', className: 'text-success', text: L.Activate || '', attrs: baseAttrs });
-                        }
-                        if (status === 'ACTIVE') {
-                            actions.push({ key: 'suspend', icon: 'bx bx-pause-circle', className: 'text-warning', text: L.Suspend || '', attrs: baseAttrs });
-                        }
-                        if (status === 'ACTIVE' || status === 'SUSPENDED') {
-                            actions.push({ key: 'archive', icon: 'bx bx-archive-in', className: 'text-warning', text: L.Archive || '', attrs: baseAttrs });
-                        }
+                        if (status && status !== 'ACTIVE') actions.push({ key: 'activate', icon: 'bx bx-check-circle', className: 'text-success', text: L.Activate || '', attrs: baseAttrs });
+                        if (status === 'ACTIVE') actions.push({ key: 'suspend', icon: 'bx bx-pause-circle', className: 'text-warning', text: L.Suspend || '', attrs: baseAttrs });
+                        if (status === 'ACTIVE' || status === 'SUSPENDED') actions.push({ key: 'archive', icon: 'bx bx-archive-in', className: 'text-warning', text: L.Archive || '', attrs: baseAttrs });
                         actions.push({ key: 'delete', icon: 'bx bx-trash', className: 'text-danger', text: L.Delete || '', attrs: baseAttrs });
-
                         return window.DitenDataTable ? window.DitenDataTable.renderActions(actions) : '';
                     }
                 }
@@ -279,15 +586,16 @@ const LegalEntitiesList = (function () {
                 { targets: 1, responsivePriority: 1 },
                 { targets: -1, title: L.Actions, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3' }
             ],
-            buttons: window.DtDefaults.exportButtons(L.AddNew || '', {}, { filterBtn }, {
+            buttons: window.DtDefaults.exportButtons(L.AddNew || '', {}, { filterBtn, saveFilterBtn }, {
                 exportColumns: saveViewColumnIndexes,
                 colvisColumns: saveViewColumnIndexes
             }),
             initComplete: function () {
                 const api = this.api();
                 mountInlineFilter();
-                initSelect2Filters();
-                window.DtDefaults.updateVisualState(api, getAppliedFilterCount());
+                bindInlineFilterA11y();
+                setupFilters(api);
+                setTimeout(() => { saveFilterArmed = true; }, 0);
             },
             drawCallback: function () {
                 window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount());
@@ -301,84 +609,20 @@ const LegalEntitiesList = (function () {
 
         dt = new DataTable(dtTableEl, dtConfig);
 
-        window.DitenDataTable?.bindActionDispatcher?.({
-            tableEl: dtTableEl,
-            dt,
-            onRowAction: rowActionHandlers
-        });
-    };
+        window.DitenDataTable?.bindActionDispatcher?.({ tableEl: dtTableEl, dt, onRowAction: rowActionHandlers });
 
-    const mountInlineFilter = () => {
-        const host = document.getElementById('inlineFilterHost');
-        const filterBtn = document.querySelector('.dt-filter-btn');
-        const toolbarRow =
-            filterBtn?.closest('.dt-layout-row') ||
-            filterBtn?.closest('.row') ||
-            filterBtn?.closest('.dt-layout-end')?.parentElement;
-
-        if (host && toolbarRow) {
-            toolbarRow.insertAdjacentElement('afterend', host);
-            host.classList.remove('px-6');
-            host.classList.add('px-3');
-        }
-    };
-
-    const toggleInlineFilter = () => {
-        const collapseEl = document.getElementById('inlineFilterCollapse');
-        if (!collapseEl) return;
-        bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).toggle();
-    };
-
-    const initSelect2Filters = () => {
-        if (!window.jQuery?.fn?.select2) return;
-        $('#inlineFilterHost select.select2').each(function () {
-            const $select = $(this);
-            if ($select.hasClass('select2-hidden-accessible')) $select.select2('destroy');
-            $select.select2({
-                dropdownParent: $(document.body),
-                dropdownCssClass: 'dt-inline-filter-dropdown',
-                selectionCssClass: 'form-select form-select-sm',
-                width: 'element',
-                placeholder: $select.data('placeholder') || '',
-                closeOnSelect: true,
-                allowClear: true
-            });
-        });
-    };
-
-    const readFilters = () => ({
-        country: document.getElementById('filterCountry')?.value || '',
-        operationalStatus: document.getElementById('filterOperationalStatus')?.value || '',
-        evidenceStatus: document.getElementById('filterEvidenceStatus')?.value || '',
-        baseCurrency: document.getElementById('filterBaseCurrency')?.value || '',
-        createdFrom: document.getElementById('filterCreatedFrom')?.value || '',
-        createdTo: document.getElementById('filterCreatedTo')?.value || '',
-        incompleteOnly: !!document.getElementById('filterIncompleteOnly')?.checked
-    });
-
-    const bindFilters = () => {
-        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
-            appliedFilters = readFilters();
-            dt?.ajax.reload();
+        dt.on('column-visibility.dt', function () {
             window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
-
-        document.getElementById('btnFilterReset')?.addEventListener('click', (event) => {
-            event.preventDefault();
-            appliedFilters = { country: '', operationalStatus: '', evidenceStatus: '', baseCurrency: '', createdFrom: '', createdTo: '', incompleteOnly: false };
-            ['filterCountry', 'filterOperationalStatus', 'filterEvidenceStatus', 'filterBaseCurrency'].forEach((id) => {
-                const el = document.getElementById(id);
-                if (el) { el.value = ''; if (window.jQuery?.fn?.select2) $(el).val('').trigger('change'); }
-            });
-            ['filterCreatedFrom', 'filterCreatedTo'].forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; });
-            const inc = document.getElementById('filterIncompleteOnly');
-            if (inc) inc.checked = false;
-            dt?.ajax.reload();
+        dt.on('search.dt order.dt', function () {
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+        });
+        dt.on('column-reorder.dt columns-reordered.dt', function () {
             window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
     };
-
-    const getAppliedFilterCount = () => Object.values(appliedFilters).filter((v) => v !== '' && v !== false).length;
 
     // ─── Add New → full-page wizard ──────────────────────────────────────────
     const bindAddNew = () => {
@@ -390,100 +634,6 @@ const LegalEntitiesList = (function () {
         });
     };
 
-    // ─── Quick View offcanvas (Görev 6) ──────────────────────────────────────
-    const QuickView = (function () {
-        const getOc = () => {
-            const el = document.getElementById('offcanvasQuickView');
-            return el ? bootstrap.Offcanvas.getOrCreateInstance(el) : null;
-        };
-        const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value ?? '-'; };
-        const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
-
-        const renderLifecycle = (id, status) => {
-            const host = document.getElementById('qvLifecycleActions');
-            if (!host) return;
-            const btns = [];
-            if (status === 'DRAFT' || status === 'INREVIEW' || status === 'APPROVED') {
-                btns.push(`<button type="button" class="btn btn-sm btn-success" data-qv-action="activate"><i class="bx bx-check-circle me-1"></i>${escapeHtml(L.Activate || '')}</button>`);
-            }
-            if (status === 'ACTIVE') {
-                btns.push(`<button type="button" class="btn btn-sm btn-warning" data-qv-action="suspend"><i class="bx bx-pause-circle me-1"></i>${escapeHtml(L.Suspend || '')}</button>`);
-            }
-            if (status === 'ACTIVE' || status === 'SUSPENDED') {
-                btns.push(`<button type="button" class="btn btn-sm btn-label-warning" data-qv-action="archive"><i class="bx bx-archive-in me-1"></i>${escapeHtml(L.Archive || '')}</button>`);
-            }
-            host.innerHTML = btns.join('');
-            host.querySelectorAll('[data-qv-action]').forEach((b) => {
-                b.addEventListener('click', () => {
-                    const action = b.getAttribute('data-qv-action');
-                    const name = document.getElementById('qvLegalName')?.textContent || '';
-                    const map = {
-                        activate: ['ActivateConfirm', 'RecordActivated'],
-                        suspend: ['SuspendConfirm', 'RecordSuspended'],
-                        archive: ['ArchiveConfirm', 'RecordArchived']
-                    };
-                    getOc()?.hide();
-                    patchLifecycle(id, action, map[action][0], map[action][1], name);
-                });
-            });
-        };
-
-        const open = async (id) => {
-            const oc = getOc();
-            if (!oc) return;
-            document.getElementById('quickViewLoading')?.classList.remove('d-none');
-            document.getElementById('quickViewContent')?.classList.add('d-none');
-            oc.show();
-            try {
-                const res = await fetch(`${endpoint}/${encodeURIComponent(id)}`, { headers: getAuthHeaders() });
-                if (!res.ok) throw new Error('load failed');
-                const payload = await res.json();
-                const d = payload.data || payload.Data || {};
-
-                setText('qvLegalName', d.legalName || '-');
-                setText('qvCode', d.code || '-');
-                setText('qvDisplayName', d.displayName || '-');
-                setText('qvLegalForm', lookupLabel('legalForm', d.legalFormCode));
-                setText('qvOrgRole', lookupLabel('organizationRole', d.organizationRoleCode));
-                setText('qvCountry', lookupLabel('country', d.countryCode));
-                setText('qvBaseCurrency', lookupLabel('currency', d.baseCurrencyCode));
-                setText('qvParent', parentLabel(d.parentLegalEntityId));
-                setText('qvRegistrationNumber', d.registrationNumber || '-');
-                setText('qvTaxId', d.taxId || '-');
-                setText('qvOfficialEmail', d.officialEmail || '-');
-
-                const status = String(d.operationalStatus || d.lifecycleState || '').toUpperCase();
-                setHtml('qvOperationalStatus', operationalBadge(status));
-                setHtml('qvStatutoryStatus', statutoryBadge(d.statutoryStatus));
-                setHtml('qvEvidenceStatus', evidenceBadge(d.evidenceStatus));
-                const refOk = d.referenceable === true || d.referenceable === 'true';
-                setHtml('qvReferenceable', `<span class="badge ${refOk ? 'bg-label-success' : 'bg-label-secondary'}">${escapeHtml(L.Referenceable || 'Referenceable')}: ${refOk ? (L.Yes || 'Yes') : (L.No || 'No')}</span>`);
-
-                const score = Number(d.completenessScore ?? 0);
-                const pct = Math.max(0, Math.min(100, score));
-                setText('qvCompletenessLabel', `${pct}%`);
-                const bar = document.getElementById('qvCompletenessBar');
-                if (bar) {
-                    bar.style.width = `${pct}%`;
-                    bar.className = `progress-bar ${pct >= 100 ? 'bg-success' : pct >= 50 ? 'bg-info' : 'bg-warning'}`;
-                }
-
-                const link = document.getElementById('qvViewDetailsLink');
-                if (link) link.href = `${detailsUrl}/${encodeURIComponent(id)}`;
-                renderLifecycle(id, status);
-
-                document.getElementById('quickViewLoading')?.classList.add('d-none');
-                document.getElementById('quickViewContent')?.classList.remove('d-none');
-            } catch (error) {
-                console.error('[LegalEntities] Quick view load failed.', error);
-                window.showToast?.(L.ErrorOccurred || '', 'error');
-                getOc()?.hide();
-            }
-        };
-
-        return { open };
-    })();
-
     // After a wizard save redirects back here, surface the success toast it stashed.
     const flushWizardToast = () => {
         try {
@@ -492,12 +642,14 @@ const LegalEntitiesList = (function () {
         } catch { /* ignore */ }
     };
 
-    const init = () => {
+    const init = async () => {
         loadL10n();
         flushWizardToast();
-        bindFilters();
         bindAddNew();
-        loadReferenceData().finally(() => initDataTable());
+        registerTableFilters();
+        await loadDefaultView();
+        await loadReferenceData();
+        initDataTable();
     };
 
     return { init };

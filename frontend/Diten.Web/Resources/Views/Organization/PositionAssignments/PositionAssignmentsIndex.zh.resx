@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PositionAssignmentsTitle" xml:space="preserve"><value>岗位分配</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>将用户分配到岗位，并管理每项分配的有效期。</value></data>
+  <data name="AddNewAssignment" xml:space="preserve"><value>添加分配</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>创建岗位分配</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑岗位分配</value></data>
+  <data name="Position" xml:space="preserve"><value>岗位</value></data>
+  <data name="SelectPosition" xml:space="preserve"><value>选择岗位…</value></data>
+  <data name="User" xml:space="preserve"><value>用户</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>选择用户…</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>生效日期</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>失效日期</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>此字段为必填项。</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <!-- MOD-0288 Phase 4 — full-page form + details + derived status -->
+  <data name="AssignmentType" xml:space="preserve"><value>分配类型</value></data>
+  <data name="AssignmentTypePrimary" xml:space="preserve"><value>主要</value></data>
+  <data name="AssignmentTypeSecondary" xml:space="preserve"><value>次要</value></data>
+  <data name="AssignmentTypeActing" xml:space="preserve"><value>代理</value></data>
+  <data name="AssignmentTypeDelegated" xml:space="preserve"><value>委派</value></data>
+  <data name="Reason" xml:space="preserve"><value>原因</value></data>
+  <data name="ReasonHire" xml:space="preserve"><value>入职</value></data>
+  <data name="ReasonTransfer" xml:space="preserve"><value>调动</value></data>
+  <data name="ReasonPromotion" xml:space="preserve"><value>晋升</value></data>
+  <data name="ReasonBackfill" xml:space="preserve"><value>补缺</value></data>
+  <data name="AllocationPercent" xml:space="preserve"><value>分配比例 %</value></data>
+  <data name="Notes" xml:space="preserve"><value>备注</value></data>
+  <data name="IsCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>状态</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>已计划</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>生效中</value></data>
+  <data name="StatusEnded" xml:space="preserve"><value>已结束</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>基本信息</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>高级详情</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>可选详情 — 分配比例、原因、备注和取消。</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>查看详情</value></data>
+  <data name="Details" xml:space="preserve"><value>详情</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>岗位分配详情</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>系统</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>创建时间</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回列表</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>无法加载分配。</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>选择…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>此分配将被永久删除。是否继续？</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>分配已删除。</value></data>
+  <data name="OnePrimaryError" xml:space="preserve"><value>该岗位在此期间已存在另一项主要分配。</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>选择日期…</value>
+  </data>
+  <data name="AllocationPercentPlaceholder" xml:space="preserve">
+    <value>例如 100</value>
+  </data>
+  <data name="NotesPlaceholder" xml:space="preserve">
+    <value>例如 育儿假期间补缺</value>
+  </data>
+</root>

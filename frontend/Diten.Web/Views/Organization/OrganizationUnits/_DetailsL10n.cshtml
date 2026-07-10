@@ -1,0 +1,36 @@
+@using System.Globalization
+@using System.Text.Json
+@using Diten.Web.Views.Organization.OrganizationUnits
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationUnitsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        // Locale for culture-formatted date display (new Date(x).toLocaleDateString(Locale)).
+        Locale = CultureInfo.CurrentCulture.Name,
+        TypeDepartment = Localizer["OrgUnitTypeDepartment"].Value,
+        TypeDivision = Localizer["OrgUnitTypeDivision"].Value,
+        TypeBranch = Localizer["OrgUnitTypeBranch"].Value,
+        TypeTeam = Localizer["OrgUnitTypeTeam"].Value,
+        TypeHQ = Localizer["OrgUnitTypeHQ"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusInactive = Localizer["StatusInactive"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        NoParent = Localizer["NoParent"].Value,
+        NoManager = Localizer["NoManager"].Value,
+        Archived = Localizer["Archived"].Value,
+        Archive = Localizer["Archive"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        ArchiveConfirm = Localizer["ArchiveConfirm"].Value,
+        DeleteConfirm = Localizer["DeleteConfirm"].Value,
+        RecordArchived = Localizer["RecordArchived"].Value,
+        RecordDeleted = Localizer["RecordDeleted"].Value,
+        LoadFailed = Localizer["LoadFailed"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
+    };
+}
+<script id="org-unit-details-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

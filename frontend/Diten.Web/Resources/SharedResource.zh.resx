@@ -57,6 +57,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
       Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Back" xml:space="preserve">
+    <value>返回</value>
+  </data>
   <data name="Save" xml:space="preserve">
     <value>保存</value>
   </data>
@@ -486,6 +489,50 @@
   <data name="WorkCenterNextMenu" xml:space="preserve">
     <value>工作中心（新版）</value>
   </data>
+  <!-- Password validation error messages (error-code bridge from AuthService PasswordErrorCodes) -->
+  <data name="Password.Error.Required" xml:space="preserve"><value>密码为必填项。</value></data>
+  <data name="Password.Error.TooShort" xml:space="preserve"><value>密码长度必须至少为 {0} 个字符。</value></data>
+  <data name="Password.Error.TooLong" xml:space="preserve"><value>密码长度不能超过 {0} 个字符。</value></data>
+  <data name="Password.Error.NeedsUppercase" xml:space="preserve"><value>密码必须包含至少一个大写字母。</value></data>
+  <data name="Password.Error.NeedsSpecial" xml:space="preserve"><value>密码必须包含至少一个特殊字符。</value></data>
+  <data name="Password.Error.CurrentRequired" xml:space="preserve"><value>当前密码为必填项。</value></data>
+  <data name="Password.Error.NewRequired" xml:space="preserve"><value>新密码为必填项。</value></data>
+  <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>电子邮件为必填项。</value></data>
+  <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>重置令牌为必填项。</value></data>
+  <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
+  <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>管理</value></data>
+  <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>开发者赋能</value></data>
+  <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>文档管理</value></data>
+  <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>主数据管理</value></data>
+  <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>平台共享服务</value></data>
+  <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>访问治理</value></data>
+  <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>租户设置</value></data>
+  <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
+  <data name="Nav.Module.GOLDENCOMPACT" xml:space="preserve"><value>Golden Compact</value></data>
+  <data name="Nav.Module.DOCUMENTMANAGEMENT" xml:space="preserve"><value>文档管理</value></data>
+  <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>法律实体</value></data>
+  <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>参考数据</value></data>
+  <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>组织</value></data>
+  <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>工作流</value></data>
+  <data name="Nav.Page.USERS" xml:space="preserve"><value>用户</value></data>
+  <data name="Nav.Page.ROLES" xml:space="preserve"><value>角色</value></data>
+  <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>角色权限</value></data>
+  <data name="Nav.Page.USERROLES" xml:space="preserve"><value>用户角色</value></data>
+  <data name="Nav.Page.SECURITYSETTINGS" xml:space="preserve"><value>安全设置</value></data>
+  <data name="Nav.Page.MENUSETTINGS" xml:space="preserve"><value>菜单设置</value></data>
+  <data name="Nav.Page.RECORDS" xml:space="preserve"><value>记录</value></data>
+  <data name="Nav.Page.QMSBASELINES" xml:space="preserve"><value>QMS 基线</value></data>
+  <data name="Nav.Page.INSTANCES" xml:space="preserve"><value>文档实例</value></data>
+  <data name="Nav.Page.CONTROLLEDDOCUMENTS" xml:space="preserve"><value>受控文档</value></data>
+  <data name="Nav.Page.TEMPLATEMASTERS" xml:space="preserve"><value>企业模板主文件</value></data>
+  <data name="Nav.Page.TEMPLATEVARIANTS" xml:space="preserve"><value>模板变体</value></data>
+  <data name="Nav.Page.ACCESSMATRIX" xml:space="preserve"><value>文档访问矩阵</value></data>
+  <data name="Nav.Page.LEGALENTITIES" xml:space="preserve"><value>法律实体</value></data>
+  <data name="Nav.Page.RDSETS" xml:space="preserve"><value>参考数据集</value></data>
+  <data name="Nav.Page.ORGANIZATIONUNITS" xml:space="preserve"><value>组织单位</value></data>
+  <data name="Nav.Page.POSITIONS" xml:space="preserve"><value>职位</value></data>
+  <data name="Nav.Page.POSITIONASSIGNMENTS" xml:space="preserve"><value>职位分配</value></data>
+  <data name="Nav.Page.DEFINITIONS" xml:space="preserve"><value>工作流定义</value></data>
   <data name="ExpandAll" xml:space="preserve">
     <value>全部展开</value>
   </data>

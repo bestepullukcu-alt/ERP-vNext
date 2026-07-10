@@ -10,6 +10,11 @@
     var pageTitle = isEdit ? Localizer["WizardEditTitle"].Value : Localizer["WizardCreateTitle"].Value;
 }
 
+@* MOD-0220 finish — Legal Entity create/edit. IDENTITY + CORE STATUTORY are required; Structure / Finance /
+   Addresses are optional detail steps; the final step is a read-only Overview. Rendered as a left-hand step
+   wizard (bs-stepper, vertical) — a step can only be reached once every step before it has passed validation
+   (see wizard.js maxReachedStep gating). Step nav card + content card are two separate cards; the Prev/Next/
+   Submit action bar sits BELOW the content card (not inside it). *@
 <div id="le-wizard-page" data-le-id="@legalEntityId" data-le-mode="@(isEdit ? "edit" : "create")">
     <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
         <div>
@@ -22,99 +27,159 @@
             </nav>
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="badge bg-label-primary fs-6 px-3 py-2 d-flex align-items-center" id="le-required-counter">
-                <i class="bx bx-check-shield me-1 lh-1"></i><span id="le-required-counter-text">@Localizer["RequiredCounter"] 0/8</span>
-            </span>
+            @* Shared required-fields tracker (required-fields-tracker.js) renders the "Zorunlu: X / Y" shield badge
+               into this host — same component the Golden Reference compact forms use. *@
+            <span id="le-required-tracker-host" class="d-flex align-items-center"></span>
             <a href="/LegalEntities" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
-            <button type="button" class="btn btn-primary" id="le-save-draft">@Localizer["SaveDraft"]</button>
+            @* Submit lives next to Cancel but stays disabled until the final Overview step (JS toggles it). *@
+            <button type="button" class="btn btn-primary" id="le-submit" disabled>@(isEdit ? Localizer["SaveDraft"].Value : Localizer["Submit"].Value)</button>
         </div>
     </div>
+
+    @if (!isEdit)
+    {
+        <div class="alert alert-info d-flex align-items-center" role="alert">
+            <i class="bx bx-info-circle me-2"></i><span>@Localizer["CreateDraftHint"]</span>
+        </div>
+    }
 
     <div id="le-wizard-alert" class="alert alert-danger d-none" role="alert"></div>
 
     @Html.AntiForgeryToken()
 
-    <div id="le-wizard-stepper" class="bs-stepper vertical mt-2">
-        <div class="bs-stepper-header border-end">
-            @{
-                var steps = new[]
-                {
-                    ("le-step-1", "1", Localizer["Step1Identity"].Value, Localizer["Step1IdentitySub"].Value, "bx-id-card"),
-                    ("le-step-2", "2", Localizer["Step2Statutory"].Value, Localizer["Step2StatutorySub"].Value, "bx-receipt"),
-                    ("le-step-3", "3", Localizer["Step3Structure"].Value, Localizer["Step3StructureSub"].Value, "bx-sitemap"),
-                    ("le-step-4", "4", Localizer["Step4Finance"].Value, Localizer["Step4FinanceSub"].Value, "bx-dollar-circle"),
-                    ("le-step-5", "5", Localizer["Step5Addresses"].Value, Localizer["Step5AddressesSub"].Value, "bx-map"),
-                    ("le-step-6", "6", Localizer["Step6Governance"].Value, Localizer["Step6GovernanceSub"].Value, "bx-shield-quarter"),
-                    ("le-step-7", "7", Localizer["Step7Evidence"].Value, Localizer["Step7EvidenceSub"].Value, "bx-file"),
-                    ("le-step-8", "8", Localizer["Step8Review"].Value, Localizer["Step8ReviewSub"].Value, "bx-check-double")
-                };
-            }
-            @for (var i = 0; i < steps.Length; i++)
-            {
-                var s = steps[i];
-                <div class="step @(i == 0 ? "active" : "")" data-target="#@s.Item1">
-                    <button type="button" class="step-trigger" aria-selected="@(i == 0 ? "true" : "false")">
-                        <span class="bs-stepper-circle"><i class="icon-base bx @s.Item5 icon-md"></i></span>
-                        <span class="bs-stepper-label">
-                            <span class="bs-stepper-title">@s.Item3</span>
-                            <span class="bs-stepper-subtitle">@s.Item4</span>
-                        </span>
-                    </button>
-                </div>
-                if (i < steps.Length - 1)
-                {
-                    <div class="line"></div>
-                }
-            }
+    @* Two-card layout: step navigation (left) + step content (right). Both stay inside the .bs-stepper element
+       so bs-stepper keeps finding .step + content panes; the theme's white .bs-stepper background is stripped in
+       backbone-custom.css so the gutter shows the page body colour. *@
+    <div id="le-wizard-stepper" class="bs-stepper vertical">
+        <div class="row g-4">
+        <div class="col-12 col-lg-4">
+        <div class="card">
+        <div class="card-body p-3">
+        <div class="bs-stepper-header">
+            <div class="step active" data-target="#le-step-1">
+                <button type="button" class="step-trigger" aria-selected="true">
+                    <span class="bs-stepper-circle">1</span>
+                    <span class="bs-stepper-label">
+                        <span class="bs-stepper-title">@Localizer["Step1Identity"]</span>
+                        <span class="bs-stepper-subtitle">@Localizer["Step1IdentitySub"]</span>
+                    </span>
+                </button>
+            </div>
+            <div class="line"></div>
+            <div class="step" data-target="#le-step-2">
+                <button type="button" class="step-trigger" aria-selected="false">
+                    <span class="bs-stepper-circle">2</span>
+                    <span class="bs-stepper-label">
+                        <span class="bs-stepper-title">@Localizer["Step2Statutory"]</span>
+                        <span class="bs-stepper-subtitle">@Localizer["Step2StatutorySub"]</span>
+                    </span>
+                </button>
+            </div>
+            <div class="line"></div>
+            <div class="step" data-target="#le-step-3">
+                <button type="button" class="step-trigger" aria-selected="false">
+                    <span class="bs-stepper-circle">3</span>
+                    <span class="bs-stepper-label">
+                        <span class="bs-stepper-title">@Localizer["Step3Structure"]</span>
+                        <span class="bs-stepper-subtitle">@Localizer["Step3StructureSub"]</span>
+                    </span>
+                </button>
+            </div>
+            <div class="line"></div>
+            <div class="step" data-target="#le-step-4">
+                <button type="button" class="step-trigger" aria-selected="false">
+                    <span class="bs-stepper-circle">4</span>
+                    <span class="bs-stepper-label">
+                        <span class="bs-stepper-title">@Localizer["Step4Finance"]</span>
+                        <span class="bs-stepper-subtitle">@Localizer["Step4FinanceSub"]</span>
+                    </span>
+                </button>
+            </div>
+            <div class="line"></div>
+            <div class="step" data-target="#le-step-5">
+                <button type="button" class="step-trigger" aria-selected="false">
+                    <span class="bs-stepper-circle">5</span>
+                    <span class="bs-stepper-label">
+                        <span class="bs-stepper-title">@Localizer["Step5Addresses"]</span>
+                        <span class="bs-stepper-subtitle">@Localizer["Step5AddressesSub"]</span>
+                    </span>
+                </button>
+            </div>
+            <div class="line"></div>
+            <div class="step" data-target="#le-step-6">
+                <button type="button" class="step-trigger" aria-selected="false">
+                    <span class="bs-stepper-circle">6</span>
+                    <span class="bs-stepper-label">
+                        <span class="bs-stepper-title">@Localizer["Step6Overview"]</span>
+                        <span class="bs-stepper-subtitle">@Localizer["Step6OverviewSub"]</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+        </div>
+        </div>
         </div>
 
-        <div class="bs-stepper-content">
-            <form id="le-wizard-form" onsubmit="return false" novalidate data-no-tracker>
-
-                @* ── Step 1: Identity ───────────────────────────────────── *@
+        <div class="col-12 col-lg-8">
+        <div class="card" id="le-content-card">
+        <div class="bs-stepper-content p-0">
+            @* The shared tracker renders its badge into #le-required-tracker-host (see header). It counts every
+               field whose label carries a visible .text-danger asterisk across all panes (inactive bs-stepper
+               panes are display:none via CSS, not .d-none, so the tracker still sees them). *@
+            <form id="le-wizard-form" onsubmit="return false" novalidate
+                  data-required-tracker-target="#le-required-tracker-host"
+                  data-required-tracker-wrapper-class="d-flex align-items-center">
+                @* ── Step 1: Identity ─────────────────────────────────────── *@
                 <div id="le-step-1" class="content active dstepper-block">
+                    <div class="card-body p-4">
                     <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step1Identity"]</h6>
-                    <p class="text-muted mb-4">@Localizer["Step1IdentityDesc"]</p>
-                    <div class="row g-4">
+                    <p class="text-muted small mb-4">@Localizer["Step1IdentityDesc"]</p>
+                    <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leCode">@Localizer["Code"] <span class="text-danger">*</span></label>
-                            <input type="text" id="leCode" class="form-control" maxlength="64" data-required required />
+                            <input type="text" id="leCode" class="form-control" maxlength="64" placeholder="@Localizer["CodePlaceholder"]" data-required required />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leLegalName">@Localizer["LegalName"] <span class="text-danger">*</span></label>
-                            <input type="text" id="leLegalName" class="form-control" maxlength="256" data-required required />
+                            <input type="text" id="leLegalName" class="form-control" maxlength="256" placeholder="@Localizer["LegalNamePlaceholder"]" data-required required />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leDisplayName">@Localizer["DisplayName"]</label>
-                            <input type="text" id="leDisplayName" class="form-control" maxlength="256" />
+                            <input type="text" id="leDisplayName" class="form-control" maxlength="256" placeholder="@Localizer["DisplayNamePlaceholder"]" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leLegalFormCode">@Localizer["LegalForm"] <span class="text-danger">*</span></label>
                             <select id="leLegalFormCode" class="form-select" data-required required data-lookup="legal-form"><option value="">@Localizer["SelectOption"]</option></select>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium" for="leOrganizationRoleCode">@Localizer["OrgRole"] <span class="text-danger">*</span></label>
-                            <select id="leOrganizationRoleCode" class="form-select" data-required required data-lookup="organization-role"><option value="">@Localizer["SelectOption"]</option></select>
-                        </div>
+                    </div>
                     </div>
                 </div>
 
-                @* ── Step 2: Statutory & Tax ────────────────────────────── *@
+                @* ── Step 2: Statutory / Advanced Details ───────────────────── *@
                 <div id="le-step-2" class="content">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step2Statutory"]</h6>
-                    <p class="text-muted mb-4">@Localizer["Step2StatutoryDesc"]</p>
-                    <div class="row g-4">
+                    <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["SectionStatutoryAdvanced"]</h6>
+                    <p class="text-muted small mb-4">@Localizer["StatutoryAdvancedDesc"]</p>
+                    <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leRegistrationNumber">@Localizer["RegistrationNumber"]</label>
-                            <input type="text" id="leRegistrationNumber" class="form-control" maxlength="128" />
+                            <input type="text" id="leRegistrationNumber" class="form-control" maxlength="128" placeholder="@Localizer["RegistrationNumberPlaceholder"]" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leTaxId">@Localizer["TaxId"]</label>
-                            <input type="text" id="leTaxId" class="form-control" maxlength="128" />
+                            <input type="text" id="leTaxId" class="form-control" maxlength="128" placeholder="@Localizer["TaxIdPlaceholder"]" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leVatNumber">@Localizer["VatNumber"]</label>
+                            <input type="text" id="leVatNumber" class="form-control" maxlength="64" placeholder="@Localizer["VatNumberPlaceholder"]" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leCountryCode">@Localizer["Country"] <span class="text-danger">*</span></label>
                             <select id="leCountryCode" class="form-select" data-required required><option value="">@Localizer["SelectOption"]</option></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="lePlaceOfIncorporation">@Localizer["PlaceOfIncorporation"]</label>
+                            <input type="text" id="lePlaceOfIncorporation" class="form-control" maxlength="256" placeholder="@Localizer["PlaceOfIncorporationPlaceholder"]" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leStatutoryStatus">@Localizer["StatutoryStatus"]</label>
@@ -125,150 +190,237 @@
                                 <option value="Dissolved">@Localizer["StatusDissolved"]</option>
                             </select>
                         </div>
-                    </div>
-                </div>
-
-                @* ── Step 3: Structure ──────────────────────────────────── *@
-                <div id="le-step-3" class="content">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step3Structure"]</h6>
-                    <p class="text-muted mb-4">@Localizer["Step3StructureDesc"]</p>
-                    <div class="row g-4">
                         <div class="col-md-6">
-                            <label class="form-label fw-medium" for="leParentLegalEntityId">@Localizer["ParentLegalEntity"] <span class="text-danger" id="leParentRequiredStar" style="display:none;">*</span></label>
-                            <select id="leParentLegalEntityId" class="form-select"><option value="">@Localizer["NoParent"]</option></select>
-                            <div class="form-text text-muted" id="leParentHint"></div>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-medium" for="leOwnershipPercent">@Localizer["OwnershipPercent"]</label>
-                            <input type="number" id="leOwnershipPercent" class="form-control" min="0" max="100" step="0.01" />
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-medium" for="leControlTypeCode">@Localizer["ControlType"]</label>
-                            <select id="leControlTypeCode" class="form-select" data-lookup="control-type"><option value="">@Localizer["SelectOption"]</option></select>
-                        </div>
-                    </div>
-                </div>
-
-                @* ── Step 4: Finance ────────────────────────────────────── *@
-                <div id="le-step-4" class="content">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step4Finance"]</h6>
-                    <p class="text-muted mb-4">@Localizer["Step4FinanceDesc"]</p>
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium" for="leFiscalYearVariant">@Localizer["FiscalYearVariant"]</label>
-                            <input type="text" id="leFiscalYearVariant" class="form-control" maxlength="64" />
+                            <label class="form-label fw-medium" for="leIncorporationDate">@Localizer["IncorporationDate"]</label>
+                            <input type="text" id="leIncorporationDate" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium" for="leAccountingStandardCode">@Localizer["AccountingStandard"]</label>
-                            <select id="leAccountingStandardCode" class="form-select" data-lookup="accounting-standard"><option value="">@Localizer["SelectOption"]</option></select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium" for="leTaxRegimeCode">@Localizer["TaxRegime"]</label>
-                            <select id="leTaxRegimeCode" class="form-select" data-lookup="tax-regime"><option value="">@Localizer["SelectOption"]</option></select>
+                            <label class="form-label fw-medium" for="leDissolutionDate">@Localizer["DissolutionDate"]</label>
+                            <input type="text" id="leDissolutionDate" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="leBaseCurrencyCode">@Localizer["BaseCurrency"] <span class="text-danger">*</span></label>
                             <select id="leBaseCurrencyCode" class="form-select" data-required required><option value="">@Localizer["SelectOption"]</option></select>
                         </div>
                     </div>
+                    </div>
                 </div>
 
-                @* ── Step 5: Addresses & Contacts ───────────────────────── *@
-                <div id="le-step-5" class="content">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step5Addresses"]</h6>
-                    <p class="text-muted mb-4">@Localizer["Step5AddressesDesc"]</p>
-                    <div class="row g-4">
-                        <div class="col-12">
-                            <label class="form-label fw-medium" for="leRegisteredAddressJson">@Localizer["RegisteredAddress"] <span class="text-danger">*</span></label>
-                            <textarea id="leRegisteredAddressJson" class="form-control font-monospace" rows="5" data-required required
-                                      placeholder='{"line1":"...","city":"...","country":"TR","line2":"...","postalCode":"...","state":"..."}'></textarea>
-                            <div class="form-text text-muted">@Localizer["AddressJsonHelp"]</div>
+                @* ── Step 3: Structure (all optional; Parent conditional) ───── *@
+                <div id="le-step-3" class="content">
+                    <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["SectionStructure"]</h6>
+                    <p class="text-muted small mb-4">@Localizer["Step3StructureDesc"]</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leOrganizationRoleCode">@Localizer["OrgRole"]</label>
+                            <select id="leOrganizationRoleCode" class="form-select"><option value="">@Localizer["SelectOption"]</option></select>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label fw-medium" for="leCorrespondenceAddressJson">@Localizer["CorrespondenceAddress"]</label>
-                            <textarea id="leCorrespondenceAddressJson" class="form-control font-monospace" rows="4"
-                                      placeholder='{"line1":"...","city":"...","country":"TR"}'></textarea>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leParentLegalEntityId">@Localizer["ParentLegalEntity"] <span class="text-danger d-none" id="le-parent-required-star">*</span></label>
+                            <select id="leParentLegalEntityId" class="form-select"><option value="">@Localizer["NoParent"]</option></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leOwnershipPercent">@Localizer["OwnershipPercent"]</label>
+                            <input type="number" id="leOwnershipPercent" class="form-control" min="0" max="100" step="0.01" placeholder="@Localizer["OwnershipPercentPlaceholder"]" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leControlTypeCode">@Localizer["ControlType"]</label>
+                            <select id="leControlTypeCode" class="form-select"><option value="">@Localizer["SelectOption"]</option></select>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                @* ── Step 4: Finance (all optional) ──────────────────────────  *@
+                <div id="le-step-4" class="content">
+                    <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["SectionFinance"]</h6>
+                    <p class="text-muted small mb-4">@Localizer["Step4FinanceDesc"]</p>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium" for="leFiscalYearVariant">@Localizer["FiscalYearVariant"]</label>
+                            <input type="text" id="leFiscalYearVariant" class="form-control" maxlength="64" placeholder="@Localizer["FiscalYearVariantPlaceholder"]" />
                         </div>
                         <div class="col-md-4">
+                            <label class="form-label fw-medium" for="leAccountingStandardCode">@Localizer["AccountingStandard"]</label>
+                            <select id="leAccountingStandardCode" class="form-select"><option value="">@Localizer["SelectOption"]</option></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium" for="leTaxRegimeCode">@Localizer["TaxRegime"]</label>
+                            <select id="leTaxRegimeCode" class="form-select"><option value="">@Localizer["SelectOption"]</option></select>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                @* ── Step 5: Addresses & Contacts (all optional) ─────────────  *@
+                <div id="le-step-5" class="content">
+                    <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["SectionAddresses"]</h6>
+                    <p class="text-muted small mb-4">@Localizer["Step5AddressesDesc"]</p>
+
+                    <h6 class="fw-semibold mb-3">@Localizer["RegisteredAddress"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="leRegAddrLine1">@Localizer["AddressFull"]</label>
+                            <textarea id="leRegAddrLine1" data-addr="registered" data-addr-field="line1" class="form-control" rows="2" maxlength="512" placeholder="@Localizer["AddressFullPlaceholder"]"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leRegAddrCity">@Localizer["AddressCity"]</label>
+                            <input type="text" id="leRegAddrCity" data-addr="registered" data-addr-field="city" class="form-control" maxlength="128" placeholder="@Localizer["AddressCityPlaceholder"]" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leRegAddrState">@Localizer["AddressState"]</label>
+                            <input type="text" id="leRegAddrState" data-addr="registered" data-addr-field="state" class="form-control" maxlength="128" placeholder="@Localizer["AddressStatePlaceholder"]" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leRegAddrCountry">@Localizer["Country"]</label>
+                            <input type="text" id="leRegAddrCountry" data-addr="registered" data-addr-field="country" class="form-control" maxlength="128" placeholder="@Localizer["AddressCountryPlaceholder"]" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leRegAddrPostalCode">@Localizer["AddressPostalCode"]</label>
+                            <input type="text" id="leRegAddrPostalCode" data-addr="registered" data-addr-field="postalCode" class="form-control" maxlength="32" placeholder="@Localizer["AddressPostalCodePlaceholder"]" />
+                        </div>
+                    </div>
+                    <div class="form-text mt-1 mb-4">@Localizer["AddressJsonHelp"]</div>
+
+                    <h6 class="fw-semibold mb-3">@Localizer["CorrespondenceAddress"]</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="leCorrAddrLine1">@Localizer["AddressFull"]</label>
+                            <textarea id="leCorrAddrLine1" data-addr="correspondence" data-addr-field="line1" class="form-control" rows="2" maxlength="512" placeholder="@Localizer["AddressFullPlaceholder"]"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leCorrAddrCity">@Localizer["AddressCity"]</label>
+                            <input type="text" id="leCorrAddrCity" data-addr="correspondence" data-addr-field="city" class="form-control" maxlength="128" placeholder="@Localizer["AddressCityPlaceholder"]" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leCorrAddrState">@Localizer["AddressState"]</label>
+                            <input type="text" id="leCorrAddrState" data-addr="correspondence" data-addr-field="state" class="form-control" maxlength="128" placeholder="@Localizer["AddressStatePlaceholder"]" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leCorrAddrCountry">@Localizer["Country"]</label>
+                            <input type="text" id="leCorrAddrCountry" data-addr="correspondence" data-addr-field="country" class="form-control" maxlength="128" placeholder="@Localizer["AddressCountryPlaceholder"]" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="leCorrAddrPostalCode">@Localizer["AddressPostalCode"]</label>
+                            <input type="text" id="leCorrAddrPostalCode" data-addr="correspondence" data-addr-field="postalCode" class="form-control" maxlength="32" placeholder="@Localizer["AddressPostalCodePlaceholder"]" />
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
                             <label class="form-label fw-medium" for="leOfficialEmail">@Localizer["OfficialEmail"]</label>
-                            <input type="email" id="leOfficialEmail" class="form-control" maxlength="256" />
+                            <input type="email" id="leOfficialEmail" class="form-control" maxlength="256" placeholder="@Localizer["OfficialEmailPlaceholder"]" />
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-medium" for="leOfficialPhone">@Localizer["OfficialPhone"]</label>
-                            <input type="text" id="leOfficialPhone" class="form-control" maxlength="64" />
+                            <input type="text" id="leOfficialPhone" class="form-control" maxlength="64" placeholder="@Localizer["OfficialPhonePlaceholder"]" />
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-medium" for="leWebsite">@Localizer["Website"]</label>
-                            <input type="text" id="leWebsite" class="form-control" maxlength="256" />
+                            <input type="text" id="leWebsite" class="form-control" maxlength="256" placeholder="@Localizer["WebsitePlaceholder"]" />
                         </div>
+                    </div>
                     </div>
                 </div>
 
-                @* ── Step 6: Governance ─────────────────────────────────── *@
+                @* ── Step 6: Overview (read-only summary; each section is its OWN card, golden-compact Details
+                       style). While this step is active, #le-content-card goes flush (transparent) via JS so these
+                       section cards float on the page body — no card-in-card. ── *@
                 <div id="le-step-6" class="content">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step6Governance"]</h6>
-                    <p class="text-muted mb-4">@Localizer["Step6GovernanceDesc"]</p>
+                    <div class="card-body p-0" id="le-overview">
                     <div class="row g-4">
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium" for="leApprovalStatus">@Localizer["ApprovalStatus"]</label>
-                            <select id="leApprovalStatus" class="form-select">
-                                <option value="Draft">@Localizer["StatusDraft"]</option>
-                                <option value="Submitted">@Localizer["StatusSubmitted"]</option>
-                                <option value="Approved">@Localizer["StatusApproved"]</option>
-                                <option value="Rejected">@Localizer["StatusRejected"]</option>
-                            </select>
+                        @* Identity *@
+                        <div class="col-12">
+                            <section class="card backbone-preview-section p-4 h-100">
+                                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionIdentity"]</h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-purchase-tag-alt"></i><div><div class="backbone-preview-label">@Localizer["Code"]</div><div class="backbone-preview-value mt-1" data-ov="leCode">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-file"></i><div><div class="backbone-preview-label">@Localizer["LegalName"]</div><div class="backbone-preview-value mt-1" data-ov="leLegalName">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-rename"></i><div><div class="backbone-preview-label">@Localizer["DisplayName"]</div><div class="backbone-preview-value mt-1" data-ov="leDisplayName">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-buildings"></i><div><div class="backbone-preview-label">@Localizer["LegalForm"]</div><div class="backbone-preview-value mt-1" data-ov="leLegalFormCode">—</div></div></div></div>
+                                </div>
+                            </section>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium" for="leReviewDueUtc">@Localizer["ReviewDue"]</label>
-                            <input type="date" id="leReviewDueUtc" class="form-control" />
+
+                        @* Statutory & Tax *@
+                        <div class="col-12">
+                            <section class="card backbone-preview-section p-4 h-100">
+                                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionStatutory"]</h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-receipt"></i><div><div class="backbone-preview-label">@Localizer["RegistrationNumber"]</div><div class="backbone-preview-value mt-1" data-ov="leRegistrationNumber">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-id-card"></i><div><div class="backbone-preview-label">@Localizer["TaxId"]</div><div class="backbone-preview-value mt-1" data-ov="leTaxId">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-barcode"></i><div><div class="backbone-preview-label">@Localizer["VatNumber"]</div><div class="backbone-preview-value mt-1" data-ov="leVatNumber">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-map-pin"></i><div><div class="backbone-preview-label">@Localizer["Country"]</div><div class="backbone-preview-value mt-1" data-ov="leCountryCode">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-buildings"></i><div><div class="backbone-preview-label">@Localizer["PlaceOfIncorporation"]</div><div class="backbone-preview-value mt-1" data-ov="lePlaceOfIncorporation">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-check-shield"></i><div><div class="backbone-preview-label">@Localizer["StatutoryStatus"]</div><div class="backbone-preview-value mt-1" data-ov="leStatutoryStatus">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-calendar"></i><div><div class="backbone-preview-label">@Localizer["IncorporationDate"]</div><div class="backbone-preview-value mt-1" data-ov="leIncorporationDate">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-calendar-x"></i><div><div class="backbone-preview-label">@Localizer["DissolutionDate"]</div><div class="backbone-preview-value mt-1" data-ov="leDissolutionDate">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-dollar-circle"></i><div><div class="backbone-preview-label">@Localizer["BaseCurrency"]</div><div class="backbone-preview-value mt-1" data-ov="leBaseCurrencyCode">—</div></div></div></div>
+                                </div>
+                            </section>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium" for="leSourceSystem">@Localizer["SourceSystem"]</label>
-                            <input type="text" id="leSourceSystem" class="form-control" maxlength="128" />
+
+                        @* Structure *@
+                        <div class="col-12">
+                            <section class="card backbone-preview-section p-4 h-100">
+                                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionStructure"]</h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-sitemap"></i><div><div class="backbone-preview-label">@Localizer["OrgRole"]</div><div class="backbone-preview-value mt-1" data-ov="leOrganizationRoleCode">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-network-chart"></i><div><div class="backbone-preview-label">@Localizer["ParentLegalEntity"]</div><div class="backbone-preview-value mt-1" data-ov="leParentLegalEntityId">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-pie-chart-alt-2"></i><div><div class="backbone-preview-label">@Localizer["OwnershipPercent"]</div><div class="backbone-preview-value mt-1" data-ov="leOwnershipPercent">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-slider"></i><div><div class="backbone-preview-label">@Localizer["ControlType"]</div><div class="backbone-preview-value mt-1" data-ov="leControlTypeCode">—</div></div></div></div>
+                                </div>
+                            </section>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium" for="leLegacyCode">@Localizer["LegacyCode"]</label>
-                            <input type="text" id="leLegacyCode" class="form-control" maxlength="128" />
+
+                        @* Finance *@
+                        <div class="col-12">
+                            <section class="card backbone-preview-section p-4 h-100">
+                                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionFinance"]</h6>
+                                <div class="row g-4">
+                                    <div class="col-md-4"><div class="backbone-preview-field"><i class="bx bx-calendar-check"></i><div><div class="backbone-preview-label">@Localizer["FiscalYearVariant"]</div><div class="backbone-preview-value mt-1" data-ov="leFiscalYearVariant">—</div></div></div></div>
+                                    <div class="col-md-4"><div class="backbone-preview-field"><i class="bx bx-book"></i><div><div class="backbone-preview-label">@Localizer["AccountingStandard"]</div><div class="backbone-preview-value mt-1" data-ov="leAccountingStandardCode">—</div></div></div></div>
+                                    <div class="col-md-4"><div class="backbone-preview-field"><i class="bx bx-landmark"></i><div><div class="backbone-preview-label">@Localizer["TaxRegime"]</div><div class="backbone-preview-value mt-1" data-ov="leTaxRegimeCode">—</div></div></div></div>
+                                </div>
+                            </section>
+                        </div>
+
+                        @* Addresses & Contacts *@
+                        <div class="col-12">
+                            <section class="card backbone-preview-section p-4 h-100">
+                                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionAddresses"]</h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-map"></i><div><div class="backbone-preview-label">@Localizer["RegisteredAddress"]</div><div class="backbone-preview-value mt-1" data-ov-addr="registered">—</div></div></div></div>
+                                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-envelope"></i><div><div class="backbone-preview-label">@Localizer["CorrespondenceAddress"]</div><div class="backbone-preview-value mt-1" data-ov-addr="correspondence">—</div></div></div></div>
+                                    <div class="col-md-4"><div class="backbone-preview-field"><i class="bx bx-at"></i><div><div class="backbone-preview-label">@Localizer["OfficialEmail"]</div><div class="backbone-preview-value mt-1" data-ov="leOfficialEmail">—</div></div></div></div>
+                                    <div class="col-md-4"><div class="backbone-preview-field"><i class="bx bx-phone"></i><div><div class="backbone-preview-label">@Localizer["OfficialPhone"]</div><div class="backbone-preview-value mt-1" data-ov="leOfficialPhone">—</div></div></div></div>
+                                    <div class="col-md-4"><div class="backbone-preview-field"><i class="bx bx-globe"></i><div><div class="backbone-preview-label">@Localizer["Website"]</div><div class="backbone-preview-value mt-1" data-ov="leWebsite">—</div></div></div></div>
+                                </div>
+                            </section>
                         </div>
                     </div>
-                </div>
-
-                @* ── Step 7: Evidence ───────────────────────────────────── *@
-                <div id="le-step-7" class="content">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step7Evidence"]</h6>
-                    <p class="text-muted mb-4">@Localizer["Step7EvidenceDesc"]</p>
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium" for="leEvidenceStatus">@Localizer["EvidenceStatus"]</label>
-                            <select id="leEvidenceStatus" class="form-select">
-                                <option value="NotStarted">@Localizer["EvidenceNotStarted"]</option>
-                                <option value="Complete">@Localizer["EvidenceComplete"]</option>
-                                <option value="Verified">@Localizer["EvidenceVerified"]</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6" id="leCompletenessWrap" style="display:none;">
-                            <label class="form-label fw-medium">@Localizer["CompletenessScore"]</label>
-                            <input type="text" id="leCompletenessScore" class="form-control" readonly />
-                        </div>
                     </div>
-                </div>
-
-                @* ── Step 8: Review ─────────────────────────────────────── *@
-                <div id="le-step-8" class="content">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["Step8Review"]</h6>
-                    <p class="text-muted mb-4">@Localizer["Step8ReviewDesc"]</p>
-                    <div id="le-review-summary"></div>
                 </div>
             </form>
         </div>
-    </div>
+        </div>
 
-    @* ── Footer nav (outside the stepper card) ───────────────────────── *@
-    <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-        <button type="button" class="btn btn-label-secondary" id="le-prev"><i class="bx bx-chevron-left me-1"></i>@Localizer["PreviousStep"]</button>
-        <div class="d-flex gap-2 flex-wrap">
-            <button type="button" class="btn btn-primary" id="le-next"><span class="me-1">@Localizer["NextStep"]</span><i class="bx bx-chevron-right"></i></button>
-            <button type="button" class="btn btn-success d-none" id="le-submit"><i class="bx bx-check me-1"></i>@Localizer["Submit"]</button>
+        @* Action bar — sits BELOW the content card (not inside it). JS toggles which buttons show per step. *@
+        <div id="le-wizard-actions" class="d-flex align-items-center justify-content-between mt-3">
+            <button type="button" class="btn btn-label-secondary" id="le-prev" style="display:none;">
+                <i class="bx bx-chevron-left me-1"></i>@Localizer["PreviousStep"]
+            </button>
+            <span></span>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-primary" id="le-next">
+                    <span class="align-middle me-1">@Localizer["NextStep"]</span><i class="bx bx-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+        </div>
         </div>
     </div>
 </div>

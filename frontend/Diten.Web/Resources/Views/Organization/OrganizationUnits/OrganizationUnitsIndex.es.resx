@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OrganizationUnitsTitle" xml:space="preserve"><value>Unidades organizativas</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gestione las unidades organizativas, su entidad jurídica propietaria y la jerarquía de reporte.</value></data>
+  <data name="AddNewOrganizationUnit" xml:space="preserve"><value>Agregar unidad organizativa</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Crear unidad organizativa</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar unidad organizativa</value></data>
+  <data name="Code" xml:space="preserve"><value>Código</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>p. ej. HQ-OPS</value></data>
+  <data name="Name" xml:space="preserve"><value>Nombre</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>p. ej. Head Office Operations</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Entidad jurídica</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Seleccione una entidad jurídica…</value></data>
+  <data name="LegalEntityIdPlaceholder" xml:space="preserve"><value>Pegue un identificador de entidad jurídica (GUID)</value></data>
+  <data name="LegalEntityLookupUnavailable" xml:space="preserve"><value>La búsqueda de entidad jurídica no está disponible; introduzca el identificador manualmente.</value></data>
+  <data name="ParentOrgUnit" xml:space="preserve"><value>Unidad organizativa superior</value></data>
+  <data name="NoParent" xml:space="preserve"><value>(Sin superior — nivel máximo)</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Activa</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archivar</value></data>
+  <data name="Unarchive" xml:space="preserve"><value>Desarchivar</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Esta unidad organizativa se archivará. ¿Continuar?</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Unidad organizativa archivada.</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>Use de 2 a 80 letras mayúsculas, números y guiones simples.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>Código final</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <!-- MOD-0288 Phase 2 — full-page form + details + tree -->
+  <data name="OrgUnitType" xml:space="preserve"><value>Tipo</value></data>
+  <data name="OrgUnitTypeDepartment" xml:space="preserve"><value>Departamento</value></data>
+  <data name="OrgUnitTypeDivision" xml:space="preserve"><value>División</value></data>
+  <data name="OrgUnitTypeBranch" xml:space="preserve"><value>Sucursal</value></data>
+  <data name="OrgUnitTypeTeam" xml:space="preserve"><value>Equipo</value></data>
+  <data name="OrgUnitTypeHQ" xml:space="preserve"><value>Sede central</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Estado</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactiva</value></data>
+  <data name="ManagerPosition" xml:space="preserve"><value>Puesto de responsable</value></data>
+  <data name="NoManager" xml:space="preserve"><value>(Sin responsable)</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Básico</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Detalles avanzados</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>Detalles empresariales opcionales — tipo, responsable, descripción, estado y fechas de vigencia.</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Details" xml:space="preserve"><value>Detalles</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Detalles de la unidad organizativa</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Sistema</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Creado el</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Volver a la lista</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>No se pudo cargar la unidad organizativa.</value></data>
+  <data name="ViewFlat" xml:space="preserve"><value>Tabla</value></data>
+  <data name="ViewTree" xml:space="preserve"><value>Árbol</value></data>
+  <data name="TreeEmpty" xml:space="preserve"><value>No hay unidades organizativas para mostrar.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seleccione…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Esta unidad organizativa se eliminará de forma permanente. ¿Continuar?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Unidad organizativa eliminada.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>ej. Gestiona las operaciones de ventas regionales</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Seleccione una fecha…</value>
+  </data>
+  <data name="AddChild" xml:space="preserve">
+    <value>Añadir subunidad</value>
+  </data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve">
+    <value>Buscar unidad (nombre o código)…</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>«{0}» movido</value>
+  </data>
+  <data name="MoveSameLegalEntityOnly" xml:space="preserve">
+    <value>Una unidad solo puede moverse dentro de la misma entidad jurídica.</value>
+  </data>
+  <data name="MoveArchivedBlocked" xml:space="preserve">
+    <value>Las unidades archivadas no se pueden mover.</value>
+  </data>
+  <data name="MoveCycleBlocked" xml:space="preserve">
+    <value>Una unidad no puede moverse bajo su propia subunidad.</value>
+  </data>
+</root>

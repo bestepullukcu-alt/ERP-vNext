@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OrganizationUnitsTitle" xml:space="preserve"><value>Организационные единицы</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управление организационными единицами, их владеющим юридическим лицом и иерархией подчинённости.</value></data>
+  <data name="AddNewOrganizationUnit" xml:space="preserve"><value>Добавить организационную единицу</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Создать организационную единицу</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Редактировать организационную единицу</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>напр. HQ-OPS</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>напр. Head Office Operations</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Выберите юридическое лицо…</value></data>
+  <data name="LegalEntityIdPlaceholder" xml:space="preserve"><value>Вставьте идентификатор юридического лица (GUID)</value></data>
+  <data name="LegalEntityLookupUnavailable" xml:space="preserve"><value>Поиск юридического лица недоступен; введите идентификатор вручную.</value></data>
+  <data name="ParentOrgUnit" xml:space="preserve"><value>Родительская организационная единица</value></data>
+  <data name="NoParent" xml:space="preserve"><value>(Без родителя — верхний уровень)</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активна</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Edit" xml:space="preserve"><value>Редактировать</value></data>
+  <data name="Archive" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="Unarchive" xml:space="preserve"><value>Извлечь из архива</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Эта организационная единица будет архивирована. Продолжить?</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Организационная единица архивирована.</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>Используйте от 2 до 80 заглавных букв, цифр и одиночных дефисов.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Это поле обязательно для заполнения.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>Итоговый код</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <!-- MOD-0288 Phase 2 — full-page form + details + tree -->
+  <data name="OrgUnitType" xml:space="preserve"><value>Тип</value></data>
+  <data name="OrgUnitTypeDepartment" xml:space="preserve"><value>Отдел</value></data>
+  <data name="OrgUnitTypeDivision" xml:space="preserve"><value>Подразделение</value></data>
+  <data name="OrgUnitTypeBranch" xml:space="preserve"><value>Филиал</value></data>
+  <data name="OrgUnitTypeTeam" xml:space="preserve"><value>Команда</value></data>
+  <data name="OrgUnitTypeHQ" xml:space="preserve"><value>Головной офис</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Статус</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Неактивна</value></data>
+  <data name="ManagerPosition" xml:space="preserve"><value>Должность руководителя</value></data>
+  <data name="NoManager" xml:space="preserve"><value>(Без руководителя)</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует по</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Основное</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Дополнительные сведения</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>Необязательные корпоративные сведения — тип, руководитель, описание, статус и даты действия.</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Просмотреть сведения</value></data>
+  <data name="Details" xml:space="preserve"><value>Сведения</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Сведения об организационной единице</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Система</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Создано</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить организационную единицу.</value></data>
+  <data name="ViewFlat" xml:space="preserve"><value>Таблица</value></data>
+  <data name="ViewTree" xml:space="preserve"><value>Дерево</value></data>
+  <data name="TreeEmpty" xml:space="preserve"><value>Нет организационных единиц для отображения.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Эта организационная единица будет удалена без возможности восстановления. Продолжить?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Организационная единица удалена.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>напр. Управляет региональными продажами</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Выберите дату…</value>
+  </data>
+  <data name="AddChild" xml:space="preserve">
+    <value>Добавить подразделение</value>
+  </data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve">
+    <value>Поиск подразделения (имя или код)…</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>«{0}» перемещено</value>
+  </data>
+  <data name="MoveSameLegalEntityOnly" xml:space="preserve">
+    <value>Подразделение можно перемещать только в пределах одного юридического лица.</value>
+  </data>
+  <data name="MoveArchivedBlocked" xml:space="preserve">
+    <value>Архивированные подразделения нельзя перемещать.</value>
+  </data>
+  <data name="MoveCycleBlocked" xml:space="preserve">
+    <value>Подразделение нельзя переместить в собственное подразделение.</value>
+  </data>
+</root>

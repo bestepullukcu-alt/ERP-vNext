@@ -86,18 +86,26 @@
     ]);
 
     const fmtDate = (iso) => { if (!iso) return '-'; const d = new Date(iso); return Number.isNaN(d.getTime()) ? '-' : d.toLocaleString(); };
+    const fmtShortDate = (iso) => { if (!iso) return '-'; const d = new Date(iso); return Number.isNaN(d.getTime()) ? '-' : d.toLocaleDateString(); };
     const fmtAddress = (raw) => {
         if (!raw) return '-';
         try { const o = typeof raw === 'string' ? JSON.parse(raw) : raw; return [o.line1, o.line2, [o.postalCode, o.city].filter(Boolean).join(' '), o.state, o.country].filter(Boolean).join(', '); }
         catch { return typeof raw === 'string' ? raw : '-'; }
     };
 
-    const renderSection = (hostId, rows) => {
+    // Golden-compact preview-field renderer: [label, value, icon] per row. Values are coerced to string first so
+    // numeric fields (e.g. `version`) don't throw on .startsWith(). Badge HTML (starts with "<") is passed through.
+    const renderSection = (hostId, rows, colClass) => {
         const host = byId(hostId);
         if (!host) return;
-        host.innerHTML = rows.map(([label, value]) =>
-            `<dt class="col-5 text-muted">${escapeHtml(label)}</dt><dd class="col-7">${value && value.startsWith('<') ? value : escapeHtml(value || '-')}</dd>`
-        ).join('');
+        const cc = colClass || 'col-12 col-md-6';
+        host.innerHTML = rows.map(([label, value, icon]) => {
+            const v = value == null ? '' : String(value);
+            const cell = v.startsWith('<') ? v : escapeHtml(v === '' ? '-' : v);
+            return `<div class="${cc}"><div class="backbone-preview-field"><i class="bx ${icon || 'bx-info-circle'}"></i>`
+                + `<div><div class="backbone-preview-label">${escapeHtml(label)}</div>`
+                + `<div class="backbone-preview-value mt-1">${cell}</div></div></div></div>`;
+        }).join('');
     };
 
     const patchLifecycle = (action, confirmKey, toastKey, name) => {
@@ -114,15 +122,18 @@
     };
 
     const renderLifecycleActions = (d) => {
-        const host = byId('leDetailLifecycleActions');
+        const host = byId('leDetailLifecycleActions'); // the dropdown <ul>
+        const wrap = byId('leDetailActionWrap');       // the dropdown wrapper (hidden when no actions)
         if (!host) return;
         const status = String(d.operationalStatus || d.lifecycleState || '').toUpperCase();
         const name = d.legalName || '';
-        const btns = [];
-        if (status === 'DRAFT' || status === 'INREVIEW' || status === 'APPROVED') btns.push(`<button type="button" class="btn btn-sm btn-success" data-act="activate"><i class="bx bx-check-circle me-1"></i>${escapeHtml(L.Activate || '')}</button>`);
-        if (status === 'ACTIVE') btns.push(`<button type="button" class="btn btn-sm btn-warning" data-act="suspend"><i class="bx bx-pause-circle me-1"></i>${escapeHtml(L.Suspend || '')}</button>`);
-        if (status === 'ACTIVE' || status === 'SUSPENDED') btns.push(`<button type="button" class="btn btn-sm btn-label-warning" data-act="archive"><i class="bx bx-archive-in me-1"></i>${escapeHtml(L.Archive || '')}</button>`);
-        host.innerHTML = btns.length ? btns.join('') : '<span class="text-muted small">—</span>';
+        const items = [];
+        // İŞB — activatable from ANY non-active state: Draft/InReview/Approved (activate), Suspended (resume), Archived (restore).
+        if (status && status !== 'ACTIVE') items.push(`<li><a class="dropdown-item text-success" href="javascript:void(0);" data-act="activate"><i class="bx bx-check-circle me-2"></i>${escapeHtml(L.Activate || '')}</a></li>`);
+        if (status === 'ACTIVE') items.push(`<li><a class="dropdown-item text-warning" href="javascript:void(0);" data-act="suspend"><i class="bx bx-pause-circle me-2"></i>${escapeHtml(L.Suspend || '')}</a></li>`);
+        if (status === 'ACTIVE' || status === 'SUSPENDED') items.push(`<li><a class="dropdown-item text-warning" href="javascript:void(0);" data-act="archive"><i class="bx bx-archive-in me-2"></i>${escapeHtml(L.Archive || '')}</a></li>`);
+        host.innerHTML = items.join('');
+        if (wrap) wrap.classList.toggle('d-none', items.length === 0);
         host.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => {
             const a = b.getAttribute('data-act');
             const map = { activate: ['ActivateConfirm', 'RecordActivated'], suspend: ['SuspendConfirm', 'RecordSuspended'], archive: ['ArchiveConfirm', 'RecordArchived'] };
@@ -131,55 +142,48 @@
     };
 
     const render = (d) => {
-        byId('leDetailName').textContent = d.legalName || '-';
-        byId('leDetailCode').textContent = d.code || '-';
+        const bc = byId('leDetailBreadcrumb');
+        if (bc) bc.textContent = d.legalName || d.code || (L.ViewDetails || bc.textContent);
         const editBtn = byId('leDetailEditBtn');
         if (editBtn) editBtn.href = `${wizardUrl}/${encodeURIComponent(id)}`;
 
         const status = String(d.operationalStatus || d.lifecycleState || '').toUpperCase();
         byId('leDetailOperational').innerHTML = operationalBadge(status);
         byId('leDetailStatutory').innerHTML = statutoryBadge(d.statutoryStatus);
-        byId('leDetailApproval').innerHTML = approvalBadge(d.approvalStatus);
-        byId('leDetailEvidence').innerHTML = evidenceBadge(d.evidenceStatus);
         const refOk = d.referenceable === true || d.referenceable === 'true';
         byId('leDetailReferenceable').innerHTML = `<span class="badge ${refOk ? 'bg-label-success' : 'bg-label-secondary'}">${escapeHtml(L.Referenceable || '')}: ${refOk ? (L.Yes || 'Yes') : (L.No || 'No')}</span>`;
         byId('leDetailLifecycle').innerHTML = `<span class="badge bg-label-secondary">${escapeHtml(L.LifecycleState || '')}: ${escapeHtml(d.lifecycleState || '-')}</span>`;
 
-        const score = Math.max(0, Math.min(100, Number(d.completenessScore ?? 0)));
-        byId('leDetailCompletenessLabel').textContent = `${score}%`;
-        const bar = byId('leDetailCompletenessBar');
-        if (bar) { bar.style.width = `${score}%`; bar.className = `progress-bar ${score >= 100 ? 'bg-success' : score >= 50 ? 'bg-info' : 'bg-warning'}`; }
-
+        // ── Main column: Identity / Statutory & Tax / Addresses & Contacts (2-up fields) ──
         renderSection('leSecIdentity', [
-            [L.Code, d.code], [L.LegalName, d.legalName], [L.DisplayName, d.displayName],
-            [L.LegalForm, lookupLabel('legalForm', d.legalFormCode)], [L.OrgRole, lookupLabel('organizationRole', d.organizationRoleCode)]
+            [L.Code, d.code, 'bx-purchase-tag-alt'], [L.LegalName, d.legalName, 'bx-file'],
+            [L.DisplayName, d.displayName, 'bx-rename'], [L.LegalForm, lookupLabel('legalForm', d.legalFormCode), 'bx-buildings']
         ]);
         renderSection('leSecStatutory', [
-            [L.RegistrationNumber, d.registrationNumber], [L.TaxId, d.taxId],
-            [L.Country, lookupLabel('country', d.countryCode)], [L.StatutoryStatus, statutoryBadge(d.statutoryStatus) || '-']
-        ]);
-        renderSection('leSecStructure', [
-            [L.Parent, parentLabel(d.parentLegalEntityId)], [L.OwnershipPercent, d.ownershipPercent != null ? `${d.ownershipPercent}%` : '-'],
-            [L.ControlType, lookupLabel('controlType', d.controlTypeCode)]
-        ]);
-        renderSection('leSecFinance', [
-            [L.FiscalYearVariant, d.fiscalYearVariant], [L.AccountingStandard, lookupLabel('accountingStandard', d.accountingStandardCode)],
-            [L.TaxRegime, lookupLabel('taxRegime', d.taxRegimeCode)], [L.BaseCurrency, lookupLabel('currency', d.baseCurrencyCode)]
+            [L.RegistrationNumber, d.registrationNumber, 'bx-receipt'], [L.TaxId, d.taxId, 'bx-id-card'],
+            [L.VatNumber, d.vatNumber, 'bx-barcode'], [L.Country, lookupLabel('country', d.countryCode), 'bx-map-pin'],
+            [L.PlaceOfIncorporation, d.placeOfIncorporation, 'bx-buildings'], [L.StatutoryStatus, statutoryBadge(d.statutoryStatus) || '-', 'bx-check-shield'],
+            [L.IncorporationDate, fmtShortDate(d.incorporationDate), 'bx-calendar'], [L.DissolutionDate, fmtShortDate(d.dissolutionDate), 'bx-calendar-x'],
+            [L.BaseCurrency, lookupLabel('currency', d.baseCurrencyCode), 'bx-dollar-circle']
         ]);
         renderSection('leSecAddresses', [
-            [L.RegisteredAddress, fmtAddress(d.registeredAddressJson)], [L.CorrespondenceAddress, fmtAddress(d.correspondenceAddressJson)],
-            [L.OfficialEmail, d.officialEmail], [L.OfficialPhone, d.officialPhone], [L.Website, d.website]
+            [L.RegisteredAddress, fmtAddress(d.registeredAddressJson), 'bx-map'], [L.CorrespondenceAddress, fmtAddress(d.correspondenceAddressJson), 'bx-envelope'],
+            [L.OfficialEmail, d.officialEmail, 'bx-at'], [L.OfficialPhone, d.officialPhone, 'bx-phone'], [L.Website, d.website, 'bx-globe']
         ]);
-        renderSection('leSecGovernance', [
-            [L.ApprovalStatus, approvalBadge(d.approvalStatus) || '-'], [L.ReviewDue, fmtDate(d.reviewDueUtc)],
-            [L.SourceSystem, d.sourceSystem], [L.LegacyCode, d.legacyCode]
-        ]);
-        renderSection('leSecEvidence', [
-            [L.EvidenceStatus, evidenceBadge(d.evidenceStatus) || '-'], [L.CompletenessScore, `${score}%`]
-        ]);
+
+        // ── Sidebar column: Structure / Finance / System (1-up fields) ──
+        renderSection('leSecStructure', [
+            [L.OrgRole, lookupLabel('organizationRole', d.organizationRoleCode), 'bx-sitemap'], [L.Parent, parentLabel(d.parentLegalEntityId), 'bx-network-chart'],
+            [L.OwnershipPercent, d.ownershipPercent, 'bx-pie-chart-alt-2'], [L.ControlType, lookupLabel('controlType', d.controlTypeCode), 'bx-slider']
+        ], 'col-12');
+        renderSection('leSecFinance', [
+            [L.FiscalYearVariant, d.fiscalYearVariant, 'bx-calendar-check'], [L.AccountingStandard, lookupLabel('accountingStandard', d.accountingStandardCode), 'bx-book'],
+            [L.TaxRegime, lookupLabel('taxRegime', d.taxRegimeCode), 'bx-coin-stack']
+        ], 'col-12');
         renderSection('leSecSystem', [
-            [L.Version, d.version], [L.CreatedAt, fmtDate(d.createdAt)], [L.UpdatedAt, fmtDate(d.updatedAt)]
-        ]);
+            [L.OperationalStatus, operationalBadge(status), 'bx-toggle-left'], [L.Referenceable, refOk ? (L.Yes || 'Yes') : (L.No || 'No'), 'bx-link'],
+            [L.Version, d.version, 'bx-git-branch'], [L.CreatedAt, fmtDate(d.createdAt), 'bx-calendar-plus'], [L.UpdatedAt, fmtDate(d.updatedAt), 'bx-calendar-edit']
+        ], 'col-12');
 
         renderLifecycleActions(d);
 

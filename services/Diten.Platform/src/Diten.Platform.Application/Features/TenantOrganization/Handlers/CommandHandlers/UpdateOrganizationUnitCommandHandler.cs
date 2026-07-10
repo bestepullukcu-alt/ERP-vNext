@@ -60,6 +60,7 @@ public sealed class UpdateOrganizationUnitCommandHandler : IRequestHandler<Updat
         entity.Name = request.Request.Name.Trim();
         entity.LegalEntityId = request.Request.LegalEntityId;
         entity.ParentOrganizationUnitId = request.Request.ParentOrganizationUnitId;
+        TenantOrganizationMapper.ApplyEnterpriseFields(entity, request.Request);
 
         await _repository.UpdateAsync(entity, ct);
         return Response<NoContent>.Success(204);

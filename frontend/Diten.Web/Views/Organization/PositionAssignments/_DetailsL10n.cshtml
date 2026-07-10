@@ -1,0 +1,35 @@
+@using System.Globalization
+@using System.Text.Json
+@using Diten.Web.Views.Organization.PositionAssignments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionAssignmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        Locale = CultureInfo.CurrentCulture.Name,
+        TypePrimary = Localizer["AssignmentTypePrimary"].Value,
+        TypeSecondary = Localizer["AssignmentTypeSecondary"].Value,
+        TypeActing = Localizer["AssignmentTypeActing"].Value,
+        TypeDelegated = Localizer["AssignmentTypeDelegated"].Value,
+        ReasonHire = Localizer["ReasonHire"].Value,
+        ReasonTransfer = Localizer["ReasonTransfer"].Value,
+        ReasonPromotion = Localizer["ReasonPromotion"].Value,
+        ReasonBackfill = Localizer["ReasonBackfill"].Value,
+        StatusPlanned = Localizer["StatusPlanned"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusEnded = Localizer["StatusEnded"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        IsCancelled = Localizer["IsCancelled"].Value,
+        Actions = Localizer["Actions"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        DeleteConfirm = Localizer["DeleteConfirm"].Value,
+        RecordDeleted = Localizer["RecordDeleted"].Value,
+        LoadFailed = Localizer["LoadFailed"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
+    };
+}
+<script id="assignment-details-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

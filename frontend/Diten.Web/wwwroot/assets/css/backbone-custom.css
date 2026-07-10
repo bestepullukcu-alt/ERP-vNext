@@ -250,9 +250,19 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 /* Removed hardcoded dark theme datatable background - rely on Sneat default */
 
 @media screen and (min-width: 992px) {
+    /* FIX-DT-TOOLBAR-INSET — vertical was an explicit 1rem but horizontal fell back to the
+       Bootstrap grid gutter (--bs-gutter-x .8125rem = 13px on .dt-layout-start/-end, the
+       .row negative margin clipped by .table-responsive overflow) → asymmetric 16 vs 13.
+       Normalize all four sides to a clean 1rem (16px): kill the row negative margin AND the
+       column gutter padding so the toolbar inset is symmetric on every DataTable page. */
     div.dt-container>.row:first-child {
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
+        padding: 1rem !important;
+        margin-inline: 0 !important;
+    }
+
+    div.dt-container>.row:first-child>.dt-layout-start,
+    div.dt-container>.row:first-child>.dt-layout-end {
+        padding-inline: 0 !important;
     }
 }
 
@@ -3709,6 +3719,50 @@ div.dt-container div.dt-search input {
     border-top: 1px solid var(--bs-border-color);
 }
 
+/* Legal Entity Wizard — two-card layout (step nav card + content card). The bs-stepper element only supplies
+   step/pane wiring; the visual columns come from a Bootstrap grid inside it, so neutralise bs-stepper's own
+   vertical flex on the container. Scoped to #le-wizard-page.
+
+   The Sneat theme styles .bs-stepper itself as a card (white paper background + radius). That made the element
+   read as an OUTER card wrapping both of our cards, so the gutter between them showed white instead of the page
+   body background. Strip that styling so the two real cards float on the body background with a transparent gap. */
+#le-wizard-page .bs-stepper.vertical {
+    display: block;
+    background-color: transparent;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* The nav card supplies its own padding via .card-body; drop the theme's header padding + bottom divider so it
+   doesn't double up or draw a stray line inside the nav card. */
+#le-wizard-page .bs-stepper-header {
+    padding: 0;
+    border-block-end: 0;
+}
+
+/* Two independent cards, each sized to its own content (natural height). The nav card (left) and the form
+   card (right) are separate boxes; the Prev/Next/Submit action bar (#le-wizard-actions) sits BELOW the content
+   card on the page body, not inside the card. */
+
+/* The select2 placeholder (unselected lookup) must read as a muted placeholder like the text inputs, not the
+   darker option-text colour. select2 already applies .select2-selection__placeholder; pin it to the theme's
+   muted colour in case a skin leaves it at the body text colour. */
+#le-wizard-page .select2-selection__placeholder,
+#ou-form-page .select2-selection__placeholder,
+#p-form-page .select2-selection__placeholder,
+#a-form-page .select2-selection__placeholder {
+    color: var(--bs-secondary-color) !important;
+}
+
+/* Overview step (step 6): the content card goes flush (transparent, no border/shadow/padding) so each of the
+   five preview sections renders as its OWN separate card floating on the page body — no card-in-card. Steps
+   1-5 keep the normal single form card. */
+#le-wizard-page #le-content-card.le-content-flush {
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
 /* Draft Wizard — Set Basics (step 2) professional field layout.
    Two titled sections (Identity / Versioning) made of labelled "field tiles":
    a small uppercase label over the value, in a subtly inset rounded box. */
@@ -4253,7 +4307,7 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
    UNDER the fixed detached navbar. Pin it to the theme's own sticky offset (.layout-navbar-fixed .sticky-element
    = 4.4375rem, i.e. just below the navbar) so the card top is never clipped. */
 @media (min-width: 992px) {
-  .ra-role-panel { position: sticky; top: 4.4375rem; }
+  .ra-role-panel { position: sticky; top: 6rem; }
 }
 
 /* FEAT-ROLEPERMS-REDESIGN (refine) — module filter as a full-size (NOT form-select-sm) multi-select in the
@@ -5280,4 +5334,260 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
     .wcn-row, .wcn-quick, .wcn-scopebtn, .wcn-viewbtn, .wcn-tr, .wcn-toast-item { transition: none; }
     .wcn-toast-item, .wcn-skeleton span { animation: none; }
+}
+/* ─────────────────────────────────────────────────────────────────────────────
+   DitenTree — reusable hierarchy component (Views/Shared/_Tree.cshtml +
+   assets/js/shared/diten-tree.js). Namespaced so any page can reuse it.
+   ───────────────────────────────────────────────────────────────────────────── */
+/* Card surface. The `.card` class alone is enough once the view recompiles, but the surface is ALSO
+   set here with ROOT-scoped tokens (--bs-paper-bg / --bs-box-shadow / --bs-border-*) so it renders
+   correctly as pure CSS — no dependency on the `.card` markup change reaching the running app. These
+   root tokens resolve to exactly the same values `.card` uses (--bs-card-bg = var(--bs-paper-bg),
+   --bs-card-box-shadow = var(--bs-box-shadow)), so the look is identical either way. */
+.diten-tree-wrap {
+    --diten-tree-indent: 1.5rem;
+    background: var(--bs-paper-bg);
+    /* No border — the Sneat .card is shadow-only (border-width 0). An extra 1px border reads as a
+       harder/darker edge than the DataTable card, so the card is defined by the shadow alone. */
+    border: 0;
+    border-radius: var(--bs-border-radius);
+    box-shadow: var(--bs-box-shadow);
+    overflow: hidden;
+}
+
+/* Table/Tree view toggle (heading right) — flat segmented control: no elevation shadow or
+   transform on hover/active, so the button doesn't appear to lift/jump. */
+.diten-view-toggle .btn,
+.diten-view-toggle .btn:hover,
+.diten-view-toggle .btn:focus,
+.diten-view-toggle .btn:active,
+.diten-view-toggle .btn.active {
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.diten-tree-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    /* 1rem all sides matches the DataTable toolbar row (px-3 + desktop padding-block:1rem),
+       so the toolbar height is identical when toggling Table <-> Tree. */
+    padding: 1rem;
+    background: transparent;
+    border-block-end: 1px solid var(--bs-border-color);
+}
+.diten-tree-search {
+    position: relative;
+    flex: 1 1 16rem;
+    min-width: 12rem;
+}
+.diten-tree-search > svg {
+    position: absolute;
+    inset-inline-start: .625rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    color: var(--bs-secondary-color);
+    pointer-events: none;
+}
+.diten-tree-search input {
+    width: 100%;
+    /* Match the DataTable search input (.form-control): transparent fill over the card, same
+       border token, same padding-block so both inputs are the exact same 38px height. */
+    padding-inline: 2.1rem calc(0.9375rem - var(--bs-border-width));
+    padding-block: calc(0.543rem - var(--bs-border-width));
+    font-size: .9375rem;
+    line-height: 1.375;
+    color: var(--bs-heading-color);
+    background: transparent;
+    border: var(--bs-border-width) solid var(--diten-input-border);
+    border-radius: var(--bs-border-radius);
+}
+.diten-tree-search input:focus {
+    outline: none;
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 .15rem rgba(var(--bs-primary-rgb), .15);
+}
+/* Placeholder colour matches the DataTable search (.form-control::placeholder). */
+.diten-tree-search input::placeholder {
+    color: var(--bs-secondary-color);
+    opacity: 1;
+}
+
+/* Add button + Table/Tree toggle glyphs use the same size as the DataTable "Add New" + icon,
+   which is `icon-base icon-sm` (var(--bs-icon-size-sm) = 1.125rem). */
+.diten-tree-toolbar [data-tree-add] .icon-base,
+.diten-view-toggle .btn .icon-base {
+    block-size: var(--bs-icon-size-sm);
+    inline-size: var(--bs-icon-size-sm);
+    font-size: var(--bs-icon-size-sm);
+}
+
+/* Tree toolbar Add button: no elevation shadow. .btn-primary sets --bs-btn-box-shadow-rgb to the
+   primary colour; resetting it to transparent (the plain .btn default) makes the shadow invisible,
+   so the button reads flat like the DataTable Add button above its table content. */
+.diten-tree-toolbar [data-tree-add] {
+    --bs-btn-box-shadow-rgb: transparent;
+}
+
+/* card body that hosts the actual tree */
+.diten-tree {
+    background: transparent;
+    min-height: 16rem;
+    padding: .5rem;
+}
+.diten-tree.is-drop-root { box-shadow: inset 0 0 0 2px rgba(var(--bs-primary-rgb), .5); border-radius: var(--bs-card-border-radius); }
+
+.diten-tree-host ul { list-style: none; margin: 0; padding: 0; }
+
+/* nested guide line — children are indented, with left padding so a row's hover/selection
+   background keeps a gap from the guide line instead of bleeding onto it. */
+.diten-tree-host ul ul {
+    position: relative;
+    margin-inline-start: calc(var(--diten-tree-indent) + .4rem);
+    padding-inline-start: .5rem;
+}
+.diten-tree-host ul ul::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -1px;
+    inset-block: 0 1rem;
+    inline-size: 1px;
+    background: var(--bs-border-color);
+}
+
+.diten-tree-row {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 2.5rem;
+    padding: .35rem .5rem;
+    border-radius: var(--bs-border-radius);
+    transition: background-color .12s ease;
+}
+/* Hover + selected match the golden DataTable row states (MOD-0018). The DataTable applies the tint to
+   BOTH the tr AND its td (tr:hover, tr:hover>td) — two stacked semi-transparent layers, so the effective
+   opacity is 1-(1-a)^2 of the single value (0.035 -> 0.0688, 0.08 -> 0.1536). A tree row is one element,
+   so it uses those composited values to render the SAME final color, not a lighter single-layer tint. */
+.diten-tree-row:hover { background: rgba(var(--bs-primary-rgb), 0.0688); }
+.diten-tree-row:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: -2px; }
+.diten-tree-row.is-selected { background: rgba(var(--bs-primary-rgb), 0.1536); }
+.diten-tree-row.is-selected:hover { background: rgba(var(--bs-primary-rgb), 0.1536); }
+.diten-tree-row.is-dragging { opacity: .5; }
+.diten-tree-row.is-drop-target {
+    background: rgba(var(--bs-primary-rgb), .12);
+    box-shadow: inset 0 0 0 1px var(--bs-primary);
+}
+
+.diten-tree-twisty {
+    flex: 0 0 auto;
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    border-radius: var(--bs-border-radius-sm);
+    cursor: pointer;
+}
+.diten-tree-twisty:hover { background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+.diten-tree-twisty svg { width: 1.1rem; height: 1.1rem; transition: transform .15s ease; }
+.diten-tree-twisty.is-leaf { visibility: hidden; cursor: default; }
+.diten-tree-node.is-collapsed > .diten-tree-row .diten-tree-twisty svg { transform: rotate(-90deg); }
+[dir="rtl"] .diten-tree-node.is-collapsed > .diten-tree-row .diten-tree-twisty svg { transform: rotate(90deg); }
+
+.diten-tree-icon {
+    flex: 0 0 auto;
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--bs-border-radius);
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-secondary-color);
+}
+.diten-tree-icon svg { width: 1rem; height: 1rem; }
+.diten-tree-icon.lvl-0 { background: rgba(var(--bs-primary-rgb), .16); color: var(--bs-primary); }
+.diten-tree-icon.lvl-1 { background: rgba(var(--bs-success-rgb), .16); color: var(--bs-success); }
+.diten-tree-icon.lvl-2 { background: rgba(var(--bs-warning-rgb), .18); color: var(--bs-warning); }
+.diten-tree-icon.lvl-3 { background: rgba(var(--bs-info-rgb), .16); color: var(--bs-info); }
+
+.diten-tree-main { flex: 1 1 auto; min-width: 0; }
+.diten-tree-title { display: flex; align-items: center; gap: .5rem; }
+.diten-tree-name {
+    font-weight: 500;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.diten-tree-name mark { background: rgba(var(--bs-warning-rgb), .35); color: inherit; padding: 0 .1em; border-radius: .2em; }
+.diten-tree-code {
+    flex: 0 0 auto;
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--bs-secondary-color);
+    background: var(--bs-tertiary-bg);
+    border-radius: var(--bs-border-radius-sm);
+    padding: .05rem .4rem;
+    font-variant-numeric: tabular-nums;
+}
+.diten-tree-count {
+    flex: 0 0 auto;
+    font-size: .75rem;
+    color: var(--bs-secondary-color);
+    background: var(--bs-secondary-bg);
+    border-radius: 1rem;
+    padding: .05rem .45rem;
+    min-width: 1.4rem;
+    text-align: center;
+}
+.diten-tree-sub {
+    font-size: .8125rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.diten-tree-actions {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: .1rem;
+    opacity: 0;
+    transition: opacity .12s ease;
+}
+.diten-tree-row:hover .diten-tree-actions,
+.diten-tree-row:focus-within .diten-tree-actions { opacity: 1; }
+@media (hover: none) { .diten-tree-actions { opacity: 1; } }
+.diten-tree-act {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    border-radius: var(--bs-border-radius-sm);
+    cursor: pointer;
+}
+.diten-tree-act svg { width: 1rem; height: 1rem; }
+.diten-tree-act:hover { background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+.diten-tree-act.act-primary:hover { background: rgba(var(--bs-primary-rgb), .12); color: var(--bs-primary); }
+.diten-tree-act.act-danger:hover { background: rgba(var(--bs-danger-rgb), .12); color: var(--bs-danger); }
+
+.diten-tree-empty { text-align: center; padding: 3rem 1.25rem; color: var(--bs-secondary-color); }
+.diten-tree-empty svg { width: 3rem; height: 3rem; color: var(--bs-border-color); margin-block-end: .5rem; }
+.diten-tree-empty [data-tree-empty-title] { display: block; font-size: .9375rem; font-weight: 600; color: var(--bs-body-color); margin-block-end: .25rem; }
+.diten-tree-empty [data-tree-empty-hint] { display: block; font-size: .8125rem; }
+
+@media (prefers-reduced-motion: reduce) {
+    .diten-tree-row, .diten-tree-twisty svg, .diten-tree-actions { transition: none; }
 }

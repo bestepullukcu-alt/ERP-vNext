@@ -50,10 +50,17 @@ public sealed class LegalEntityMongoRoundTripTests
             using var scope = provider.CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<ILegalEntityRepository>();
 
+            var incorporation = new DateTimeOffset(2018, 6, 1, 0, 0, 0, TimeSpan.Zero);
+            var dissolution = new DateTimeOffset(2025, 1, 15, 0, 0, 0, TimeSpan.Zero);
             var entity = new LegalEntity
             {
                 Code = "RT-" + Guid.NewGuid().ToString("N")[..10].ToUpperInvariant(),
-                LegalName = "Round Trip Test Entity"
+                LegalName = "Round Trip Test Entity",
+                // MOD-0220 finish — the 4 additive statutory fields must survive the real Mongo write↔read.
+                VatNumber = "EU-VAT-987654321",
+                PlaceOfIncorporation = "Istanbul, TR",
+                IncorporationDate = incorporation,
+                DissolutionDate = dissolution
             };
 
             await repository.CreateAsync(entity);
@@ -67,6 +74,11 @@ public sealed class LegalEntityMongoRoundTripTests
             Assert.NotNull(byId);
             Assert.Equal(tenantId, byId!.TenantId);
             Assert.Equal(entity.Code, byId.Code);
+            // New statutory fields round-trip intact.
+            Assert.Equal("EU-VAT-987654321", byId.VatNumber);
+            Assert.Equal("Istanbul, TR", byId.PlaceOfIncorporation);
+            Assert.Equal(incorporation, byId.IncorporationDate);
+            Assert.Equal(dissolution, byId.DissolutionDate);
         }
         finally
         {

@@ -24,7 +24,12 @@ public sealed record NavigationModuleGroupDto(
     // and carries no {id} placeholder — i.e. a compact-module "Add New" route). Null for slim/offcanvas modules
     // (no standalone create URL). CreatePermission is that create page's RequiredPermission (per-user gate).
     string? CreateRoute = null,
-    string? CreatePermission = null);
+    string? CreatePermission = null,
+    // FEAT-NAV-L10N — true when the display name is a TENANT OVERRIDE (free text) rather than the catalog/domain
+    // DEFAULT. The frontend localizes DEFAULTS by code (Nav.Module.{ModuleCode} / Nav.Domain.{Domain}) but renders
+    // an override AS-TYPED. Defaulted false so existing construction stays valid and the contract is back-compat.
+    bool ModuleDisplayNameIsOverride = false,
+    bool DomainDisplayNameIsOverride = false);
 
 public sealed record NavigationMenuItemDto(
     string PageCode,

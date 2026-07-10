@@ -1,5 +1,6 @@
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
+using Diten.Platform.Domain.Catalog;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using MongoDB.Bson;
@@ -24,10 +25,14 @@ public sealed class ModuleDomainRepository : GlobalRepository<ModuleDomain>, IMo
 
     public async Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default)
     {
+        // FIX-DOMAIN-DEDUP — gate on the NORMALIZED key, not the raw Code, so a differently-formatted but
+        // logically-identical code (e.g. "master-data-management" vs an existing "MASTERDATAMANAGEMENT") is
+        // reported as in-use with the friendly 409 rather than slipping past into the unique-index E11000 path.
+        var key = ModuleTaxonomyCanonicalizer.NormalizeKey(code);
         var filters = new List<FilterDefinition<ModuleDomain>>
         {
             ExecutionFilter,
-            Builders<ModuleDomain>.Filter.Eq(x => x.Code, code)
+            Builders<ModuleDomain>.Filter.Eq(x => x.CodeKey, key)
         };
 
         if (excludeId.HasValue)

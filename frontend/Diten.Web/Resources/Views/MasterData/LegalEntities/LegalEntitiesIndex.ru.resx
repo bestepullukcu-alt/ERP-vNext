@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="LegalEntitiesTitle" xml:space="preserve"><value>Юридические лица</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управляйте юридическими лицами вашего арендатора. Создавайте их как черновик, затем активируйте, чтобы на них могли ссылаться организационные единицы.</value></data>
+  <data name="AddNewLegalEntity" xml:space="preserve"><value>Добавить юридическое лицо</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Создать юридическое лицо</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>напр. ACME-TR</value></data>
+  <data name="LegalName" xml:space="preserve"><value>Юридическое наименование</value></data>
+  <data name="LegalNamePlaceholder" xml:space="preserve"><value>напр. Acme Manufacturing Inc.</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Отображаемое имя</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>напр. Acme</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активно</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Архивировано</value></data>
+  <data name="Activate" xml:space="preserve"><value>Активировать</value></data>
+  <data name="Archive" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="ActivateConfirm" xml:space="preserve"><value>Это юридическое лицо будет активировано и станет доступным для ссылок. Продолжить?</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Это юридическое лицо будет архивировано. Продолжить?</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Юридическое лицо активировано.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Юридическое лицо архивировано.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Это поле обязательно для заполнения.</value></data>
+  <data name="CreateDraftHint" xml:space="preserve"><value>Юридическое лицо создаётся как черновик. Активируйте его позже, чтобы использовать в организационных единицах.</value></data>
+
+  <!-- Задача 4 — расширенные столбцы списка + фильтры + действия -->
+  <data name="LegalForm" xml:space="preserve"><value>Организационно-правовая форма</value></data>
+  <data name="OrgRole" xml:space="preserve"><value>Организационная роль</value></data>
+  <data name="Country" xml:space="preserve"><value>Страна</value></data>
+  <data name="BaseCurrency" xml:space="preserve"><value>Базовая валюта</value></data>
+  <data name="Parent" xml:space="preserve"><value>Родитель</value></data>
+  <data name="StatutoryStatus" xml:space="preserve"><value>Уставный статус</value></data>
+  <data name="OperationalStatus" xml:space="preserve"><value>Операционный статус</value></data>
+  <data name="EvidenceStatus" xml:space="preserve"><value>Статус подтверждений</value></data>
+  <data name="CreatedFrom" xml:space="preserve"><value>Создано с</value></data>
+  <data name="CreatedTo" xml:space="preserve"><value>Создано по</value></data>
+  <data name="IncompleteOnly" xml:space="preserve"><value>Только незавершённые</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Просмотреть детали</value></data>
+  <data name="Edit" xml:space="preserve"><value>Редактировать</value></data>
+  <data name="Suspend" xml:space="preserve"><value>Приостановить</value></data>
+  <data name="SuspendConfirm" xml:space="preserve"><value>Это юридическое лицо будет приостановлено. Продолжить?</value></data>
+  <data name="RecordSuspended" xml:space="preserve"><value>Юридическое лицо приостановлено.</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>На рассмотрении</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="StatusSuspended" xml:space="preserve"><value>Приостановлено</value></data>
+  <data name="StatusRegistered" xml:space="preserve"><value>Зарегистрировано</value></data>
+  <data name="StatusPending" xml:space="preserve"><value>В ожидании</value></data>
+  <data name="StatusDissolved" xml:space="preserve"><value>Ликвидировано</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>Отправлено</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="EvidenceNotStarted" xml:space="preserve"><value>Не начато</value></data>
+  <data name="EvidenceComplete" xml:space="preserve"><value>Завершено</value></data>
+  <data name="EvidenceVerified" xml:space="preserve"><value>Проверено</value></data>
+
+  <!-- Задача 5 — мастер из 8 шагов -->
+  <data name="WizardCreateTitle" xml:space="preserve"><value>Создать юридическое лицо</value></data>
+  <data name="WizardEditTitle" xml:space="preserve"><value>Редактировать юридическое лицо</value></data>
+  <data name="WizardSubtitle" xml:space="preserve"><value>Заполните полный профиль юридического лица в восьми разделах.</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="Submit" xml:space="preserve"><value>Отправить</value></data>
+  <data name="PreviousStep" xml:space="preserve"><value>Назад</value></data>
+  <data name="NextStep" xml:space="preserve"><value>Далее</value></data>
+  <data name="RequiredCounter" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="Step1Identity" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="Step1IdentitySub" xml:space="preserve"><value>Код / Наименование / Форма</value></data>
+  <data name="Step2Statutory" xml:space="preserve"><value>Правовые &amp; налоговые данные</value></data>
+  <data name="Step2StatutorySub" xml:space="preserve"><value>Регистрация / Страна</value></data>
+  <data name="Step3Structure" xml:space="preserve"><value>Структура</value></data>
+  <data name="Step3StructureSub" xml:space="preserve"><value>Родитель / Владение</value></data>
+  <data name="Step4Finance" xml:space="preserve"><value>Финансы</value></data>
+  <data name="Step4FinanceSub" xml:space="preserve"><value>Фискальный / Валюта</value></data>
+  <data name="Step5Addresses" xml:space="preserve"><value>Адреса &amp; Контакты</value></data>
+  <data name="Step5AddressesSub" xml:space="preserve"><value>Адрес / Эл. почта / Телефон</value></data>
+  <data name="Step6Governance" xml:space="preserve"><value>Управление</value></data>
+  <data name="Step6GovernanceSub" xml:space="preserve"><value>Утверждение / Источник</value></data>
+  <data name="Step7Evidence" xml:space="preserve"><value>Подтверждения</value></data>
+  <data name="Step7EvidenceSub" xml:space="preserve"><value>Документация</value></data>
+  <data name="Step8Review" xml:space="preserve"><value>Проверка</value></data>
+  <data name="Step8ReviewSub" xml:space="preserve"><value>Подтвердить &amp; Сохранить</value></data>
+  <data name="Step1IdentityDesc" xml:space="preserve"><value>Введите код, юридическое наименование и организационно-правовую форму лица.</value></data>
+  <data name="Step2StatutoryDesc" xml:space="preserve"><value>Сведения о регистрации, налогах и уставном статусе.</value></data>
+  <data name="Step3StructureDesc" xml:space="preserve"><value>Определите родительскую связь и владение.</value></data>
+  <data name="Step4FinanceDesc" xml:space="preserve"><value>Финансовый календарь, стандарт учёта и базовая валюта.</value></data>
+  <data name="Step5AddressesDesc" xml:space="preserve"><value>Юридический адрес и официальные контактные данные.</value></data>
+  <data name="Step6GovernanceDesc" xml:space="preserve"><value>Процесс утверждения и отслеживание исходной системы.</value></data>
+  <data name="Step7EvidenceDesc" xml:space="preserve"><value>Подтверждающая документация и полнота.</value></data>
+  <data name="Step8ReviewDesc" xml:space="preserve"><value>Проверьте все сведения перед сохранением юридического лица.</value></data>
+  <data name="RegistrationNumber" xml:space="preserve"><value>Регистрационный номер</value></data>
+  <data name="TaxId" xml:space="preserve"><value>Налоговый идентификатор</value></data>
+  <data name="ParentLegalEntity" xml:space="preserve"><value>Родительское юридическое лицо</value></data>
+  <data name="NoParent" xml:space="preserve"><value>Нет</value></data>
+  <data name="OwnershipPercent" xml:space="preserve"><value>Доля владения %</value></data>
+  <data name="ControlType" xml:space="preserve"><value>Тип контроля</value></data>
+  <data name="FiscalYearVariant" xml:space="preserve"><value>Вариант финансового года</value></data>
+  <data name="AccountingStandard" xml:space="preserve"><value>Стандарт учёта</value></data>
+  <data name="TaxRegime" xml:space="preserve"><value>Налоговый режим</value></data>
+  <data name="RegisteredAddress" xml:space="preserve"><value>Юридический адрес</value></data>
+  <data name="CorrespondenceAddress" xml:space="preserve"><value>Почтовый адрес</value></data>
+  <data name="AddressJsonHelp" xml:space="preserve"><value>Строка 1, город и страна обязательны, если указан адрес.</value></data>
+  <data name="AddressLine1" xml:space="preserve"><value>Адресная строка 1</value></data>
+  <data name="AddressLine2" xml:space="preserve"><value>Адресная строка 2</value></data>
+  <data name="AddressCity" xml:space="preserve"><value>Город</value></data>
+  <data name="AddressState" xml:space="preserve"><value>Штат / Область</value></data>
+  <data name="AddressPostalCode" xml:space="preserve"><value>Почтовый индекс</value></data>
+  <data name="OfficialEmail" xml:space="preserve"><value>Официальная эл. почта</value></data>
+  <data name="OfficialPhone" xml:space="preserve"><value>Официальный телефон</value></data>
+  <data name="Website" xml:space="preserve"><value>Веб-сайт</value></data>
+  <data name="ApprovalStatus" xml:space="preserve"><value>Статус утверждения</value></data>
+  <data name="ReviewDue" xml:space="preserve"><value>Срок пересмотра</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Исходная система</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>Устаревший код</value></data>
+  <data name="CompletenessScore" xml:space="preserve"><value>Оценка полноты</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выбрать…</value></data>
+  <data name="ParentRequiredForBranch" xml:space="preserve"><value>Для ролей «Филиал» / «Представительство» требуется родительское юридическое лицо.</value></data>
+  <data name="InvalidAddressJson" xml:space="preserve"><value>Юридический адрес должен быть корректным JSON с непустыми полями line1, city и country.</value></data>
+
+  <!-- Задача 6 — быстрый просмотр + детали -->
+  <data name="Referenceable" xml:space="preserve"><value>Доступно для ссылок</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Состояние жизненного цикла</value></data>
+  <data name="ApprovalStatusLabel" xml:space="preserve"><value>Утверждение</value></data>
+  <data name="Version" xml:space="preserve"><value>Версия</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Создано</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="SectionStatutory" xml:space="preserve"><value>Правовые &amp; налоговые данные</value></data>
+  <data name="SectionStructure" xml:space="preserve"><value>Структура</value></data>
+  <data name="SectionFinance" xml:space="preserve"><value>Финансы</value></data>
+  <data name="SectionAddresses" xml:space="preserve"><value>Адреса &amp; Контакты</value></data>
+  <data name="SectionGovernance" xml:space="preserve"><value>Управление</value></data>
+  <data name="SectionEvidence" xml:space="preserve"><value>Подтверждения</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Система</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить юридическое лицо.</value></data>
+  <!-- MOD-0220 finish — новые уставные поля + расширенный раздел -->
+  <data name="VatNumber" xml:space="preserve"><value>Номер НДС</value></data>
+  <data name="PlaceOfIncorporation" xml:space="preserve"><value>Место регистрации</value></data>
+  <data name="IncorporationDate" xml:space="preserve"><value>Дата регистрации</value></data>
+  <data name="DissolutionDate" xml:space="preserve"><value>Дата ликвидации</value></data>
+  <data name="SectionStatutoryAdvanced" xml:space="preserve"><value>Уставные / расширенные сведения</value></data>
+  <data name="StatutoryAdvancedDesc" xml:space="preserve"><value>Сведения о регистрации, налогах и уставные данные — необязательно; разверните для завершения профиля.</value></data>
+  <!-- Statutory field placeholders (screenshot fix) -->
+  <data name="RegistrationNumberPlaceholder" xml:space="preserve"><value>напр. 0123456789</value></data>
+  <data name="TaxIdPlaceholder" xml:space="preserve"><value>напр. 1234567890</value></data>
+  <data name="VatNumberPlaceholder" xml:space="preserve"><value>напр. GB123456789</value></data>
+  <data name="PlaceOfIncorporationPlaceholder" xml:space="preserve"><value>напр. Стамбул, TR</value></data>
+  <data name="DatePlaceholder" xml:space="preserve"><value>Выберите дату…</value></data>
+  <data name="Step6Overview" xml:space="preserve"><value>Обзор</value></data>
+  <data name="Step6OverviewSub" xml:space="preserve"><value>Проверить &amp; сохранить</value></data>
+  <data name="Step6OverviewDesc" xml:space="preserve"><value>Проверьте все введённые данные перед сохранением.</value></data>
+  <data name="AddressFull" xml:space="preserve"><value>Адрес</value></data>
+  <data name="AddressFullPlaceholder" xml:space="preserve"><value>напр. ул. Главная, 12, этаж 3</value></data>
+  <data name="AddressCityPlaceholder" xml:space="preserve"><value>напр. Стамбул</value></data>
+  <data name="AddressStatePlaceholder" xml:space="preserve"><value>напр. Мармара</value></data>
+  <data name="AddressPostalCodePlaceholder" xml:space="preserve"><value>напр. 34000</value></data>
+  <data name="AddressCountryPlaceholder" xml:space="preserve"><value>напр. Türkiye</value></data>
+  <data name="OfficialEmailPlaceholder" xml:space="preserve"><value>напр. info@acme.com</value></data>
+  <data name="OfficialPhonePlaceholder" xml:space="preserve"><value>напр. +90 212 000 0000</value></data>
+  <data name="WebsitePlaceholder" xml:space="preserve"><value>напр. https://acme.com</value></data>
+  <data name="FiscalYearVariantPlaceholder" xml:space="preserve"><value>напр. K4</value></data>
+  <data name="OwnershipPercentPlaceholder" xml:space="preserve"><value>напр. 100</value></data>
+</root>

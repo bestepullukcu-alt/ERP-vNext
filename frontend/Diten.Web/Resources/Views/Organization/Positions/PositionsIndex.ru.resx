@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PositionsTitle" xml:space="preserve"><value>Должности</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управление должностями, их организационной единицей и иерархией подчинения.</value></data>
+  <data name="AddNewPosition" xml:space="preserve"><value>Добавить должность</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Создать должность</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Редактировать должность</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>напр. ENG-LEAD</value></data>
+  <data name="Name" xml:space="preserve"><value>Наименование</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>напр. Engineering Lead</value></data>
+  <data name="OrgUnit" xml:space="preserve"><value>Организационная единица</value></data>
+  <data name="SelectOrgUnit" xml:space="preserve"><value>Выберите организационную единицу…</value></data>
+  <data name="ReportsTo" xml:space="preserve"><value>Подчиняется</value></data>
+  <data name="NoReportsTo" xml:space="preserve"><value>(Нет руководителя — верхний уровень)</value></data>
+  <data name="ManagerChain" xml:space="preserve"><value>Цепочка подчинения</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активна</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Edit" xml:space="preserve"><value>Редактировать</value></data>
+  <data name="Archive" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Эта должность будет заархивирована. Продолжить?</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Должность заархивирована.</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>Используйте от 2 до 80 заглавных букв, цифр и одиночных дефисов.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Это поле обязательно для заполнения.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>Итоговый код</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <!-- MOD-0288 Phase 3 — full-page form + details + occupancy -->
+  <data name="JobTitle" xml:space="preserve"><value>Название должности</value></data>
+  <data name="PositionType" xml:space="preserve"><value>Тип</value></data>
+  <data name="PositionTypePermanent" xml:space="preserve"><value>Постоянная</value></data>
+  <data name="PositionTypeTemporary" xml:space="preserve"><value>Временная</value></data>
+  <data name="PositionTypeContractor" xml:space="preserve"><value>Подрядчик</value></data>
+  <data name="PositionTypeIntern" xml:space="preserve"><value>Стажёр</value></data>
+  <data name="Fte" xml:space="preserve"><value>Эквивалент полной занятости (FTE)</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Статус</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusFrozen" xml:space="preserve"><value>Заморожена</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Закрыта</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует по</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Основное</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Дополнительные сведения</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>Необязательные сведения — FTE, статус и даты действия.</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Просмотреть сведения</value></data>
+  <data name="Details" xml:space="preserve"><value>Сведения</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Сведения о должности</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Система</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Дата создания</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Дата обновления</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить должность.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Эта должность будет удалена без возможности восстановления. Продолжить?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Должность удалена.</value></data>
+  <data name="Occupancy" xml:space="preserve"><value>Заполненность</value></data>
+  <data name="Vacant" xml:space="preserve"><value>Вакантна</value></data>
+  <data name="Occupied" xml:space="preserve"><value>Занята</value></data>
+  <data name="NoManagerChain" xml:space="preserve"><value>Цепочка подчинения отсутствует.</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Выберите дату…</value>
+  </data>
+  <data name="JobTitlePlaceholder" xml:space="preserve">
+    <value>напр. Старший инженер-программист</value>
+  </data>
+  <data name="FtePlaceholder" xml:space="preserve">
+    <value>напр. 1.0</value>
+  </data>
+</root>

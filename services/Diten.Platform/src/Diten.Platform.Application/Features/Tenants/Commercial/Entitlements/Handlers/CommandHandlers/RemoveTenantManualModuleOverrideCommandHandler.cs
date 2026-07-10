@@ -14,17 +14,20 @@ namespace Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Ha
 public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHandler<RemoveTenantManualModuleOverrideCommand, Response<NoContent>>
 {
     private readonly ITenantModuleEntitlementRepository _repository;
+    private readonly IModuleCatalogRepository _moduleRepository;
     private readonly IQuotaService _quotaService;
     private readonly IEventBus _eventBus;
     private readonly ICurrentUserContext _currentUser;
 
     public RemoveTenantManualModuleOverrideCommandHandler(
         ITenantModuleEntitlementRepository repository,
+        IModuleCatalogRepository moduleRepository,
         IQuotaService quotaService,
         IEventBus eventBus,
         ICurrentUserContext currentUser)
     {
         _repository = repository;
+        _moduleRepository = moduleRepository;
         _quotaService = quotaService;
         _eventBus = eventBus;
         _currentUser = currentUser;
@@ -41,6 +44,16 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
         if (entitlement.Source != EntitlementSource.ManualOverride)
         {
             return Response<NoContent>.Fail("Only manual overrides can be removed.", 409);
+        }
+
+        // FEAT-BASELINE-MODULES — defense in depth: a baseline module is entitlement-free (every tenant auto-has it).
+        // A baseline override row should never exist (the add/disable paths reject it), but guard the remove path too
+        // so a stray/pre-existing row can't be deleted in a way that reads as "removing access" to a baseline module.
+        // Keys off IsBaseline, not a hardcoded code list.
+        var module = await _moduleRepository.GetByCodeAsync(entitlement.ModuleCode, ct);
+        if (module?.IsBaseline == true)
+        {
+            return Response<NoContent>.Fail("Baseline modules are entitlement-free and cannot be removed.", 409);
         }
 
         try

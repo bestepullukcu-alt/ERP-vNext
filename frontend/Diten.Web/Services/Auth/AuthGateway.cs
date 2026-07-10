@@ -1,13 +1,31 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Diten.Web.Services.Auth;
 
 public sealed class AuthGateway : IAuthGateway
 {
+    // Maps each backend password error code (AuthService PasswordErrorCodes) -> the SharedResource.*.resx key that
+    // holds its localized template. Keep this 1:1 with the backend codes and the resx keys (all 7 languages) — a
+    // guard test enforces it. An unknown code (not in this map) falls back to the English `detail`.
+    private static readonly IReadOnlyDictionary<string, string> ErrorCodeResourceKeys = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["password.required"] = "Password.Error.Required",
+        ["password.too_short"] = "Password.Error.TooShort",
+        ["password.too_long"] = "Password.Error.TooLong",
+        ["password.needs_uppercase"] = "Password.Error.NeedsUppercase",
+        ["password.needs_special"] = "Password.Error.NeedsSpecial",
+        ["password.current_required"] = "Password.Error.CurrentRequired",
+        ["password.new_required"] = "Password.Error.NewRequired",
+        ["password.reset_email_required"] = "Password.Error.ResetEmailRequired",
+        ["password.reset_token_required"] = "Password.Error.ResetTokenRequired",
+    };
+
     // User-facing message when the auth service / gateway is unreachable. Plain (non-localized) by design — the
     // raw transport exception / stack is NEVER surfaced; it is only logged.
     private const string AuthServiceUnavailableMessage =
@@ -21,12 +39,18 @@ public sealed class AuthGateway : IAuthGateway
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<AuthGateway> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
-    public AuthGateway(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, ILogger<AuthGateway> logger)
+    public AuthGateway(
+        HttpClient httpClient,
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<AuthGateway> logger,
+        IStringLocalizer<SharedResource> localizer)
     {
         _httpClient = httpClient;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
+        _localizer = localizer;
     }
 
     public Task<AuthBridgeResult> LoginTenantAsync(string email, string password, Guid tenantId, bool rememberMe = false, CancellationToken ct = default)
@@ -283,7 +307,7 @@ public sealed class AuthGateway : IAuthGateway
         return root.Deserialize<AuthBridgeResult>(JsonOptions);
     }
 
-    private static async Task<string?> TryReadErrorAsync(HttpResponseMessage response, CancellationToken ct)
+    private async Task<string?> TryReadErrorAsync(HttpResponseMessage response, CancellationToken ct)
     {
         var content = await response.Content.ReadAsStringAsync(ct);
         if (string.IsNullOrWhiteSpace(content))
@@ -294,6 +318,19 @@ public sealed class AuthGateway : IAuthGateway
         try
         {
             using var document = JsonDocument.Parse(content);
+
+            // Prefer the machine-readable, localizable codes when present: resolve each to a string in the request
+            // culture (already set by RequestLocalization) and substitute its param. Falls through to `detail`/
+            // `errors`/`title` (English fallback) when no code maps or the array is absent.
+            if (document.RootElement.TryGetProperty("errorCodes", out var errorCodes) && errorCodes.ValueKind == JsonValueKind.Array)
+            {
+                var localized = LocalizeErrorCodes(errorCodes);
+                if (!string.IsNullOrWhiteSpace(localized))
+                {
+                    return localized;
+                }
+            }
+
             if (document.RootElement.TryGetProperty("detail", out var detail) && detail.ValueKind == JsonValueKind.String)
             {
                 return NormalizeValidationError(detail.GetString());
@@ -347,6 +384,78 @@ public sealed class AuthGateway : IAuthGateway
         }
 
         return string.IsNullOrWhiteSpace(clean) ? message : clean;
+    }
+
+    // Resolve a backend `errorCodes` array (each item { "code": "password.x", "params": { "minLength": "10" } })
+    // into a single localized, space-joined message using the current request culture. Returns null when no code
+    // maps to a resx key (so the caller falls back to the English `detail`). A mapped-but-missing resx key is
+    // skipped rather than rendered as the raw key name — that would be a defect.
+    private string? LocalizeErrorCodes(JsonElement errorCodes)
+    {
+        var messages = new List<string>();
+        foreach (var item in errorCodes.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.Object
+                || !item.TryGetProperty("code", out var codeElement)
+                || codeElement.ValueKind != JsonValueKind.String)
+            {
+                continue;
+            }
+
+            var code = codeElement.GetString();
+            if (string.IsNullOrWhiteSpace(code) || !ErrorCodeResourceKeys.TryGetValue(code, out var resourceKey))
+            {
+                continue;
+            }
+
+            var localized = _localizer[resourceKey];
+            if (localized.ResourceNotFound)
+            {
+                continue;
+            }
+
+            var paramValue = ExtractFirstParam(item);
+            var message = paramValue is null ? localized.Value : SafeFormat(localized.Value, paramValue);
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                messages.Add(message);
+            }
+        }
+
+        return messages.Count > 0 ? string.Join(" ", messages) : null;
+    }
+
+    // Each password code carries at most one param (minLength / maxLength); take its value for the {0} placeholder.
+    private static string? ExtractFirstParam(JsonElement item)
+    {
+        if (!item.TryGetProperty("params", out var parameters) || parameters.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        foreach (var property in parameters.EnumerateObject())
+        {
+            return property.Value.ValueKind switch
+            {
+                JsonValueKind.String => property.Value.GetString(),
+                JsonValueKind.Number => property.Value.GetRawText(),
+                _ => property.Value.ToString()
+            };
+        }
+
+        return null;
+    }
+
+    private static string SafeFormat(string template, string arg)
+    {
+        try
+        {
+            return string.Format(CultureInfo.CurrentCulture, template, arg);
+        }
+        catch (FormatException)
+        {
+            return template;
+        }
     }
 
     private void AddClientMetadataHeaders(HttpRequestMessage request)
