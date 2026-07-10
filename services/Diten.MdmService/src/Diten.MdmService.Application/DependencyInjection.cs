@@ -15,6 +15,9 @@ public static class DependencyInjection
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.ExceptionHandlingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.PerformanceBehavior<,>));
+        // Registered last => innermost: only wraps real handler executions, so it audits the handler's actual outcome
+        // (validation/exception failures short-circuit before reaching it).
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.AuditForwardingBehavior<,>));
         services.AddValidatorsFromAssembly(assembly);
 
         return services;

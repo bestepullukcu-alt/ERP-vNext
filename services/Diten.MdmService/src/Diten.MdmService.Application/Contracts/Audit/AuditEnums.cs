@@ -1,4 +1,7 @@
-namespace Diten.Platform.Domain.Enums;
+namespace Diten.MdmService.Application.Contracts.Audit;
+
+// Minimal mirror of Diten.Platform.Domain.Enums.AuditCategory / AuditOperation. MDM does not own the central audit
+// store — it forwards events to Platform (S2S), which maps by the SAME integer values. Keep these aligned with Platform.
 
 public enum AuditCategory
 {
@@ -24,9 +27,6 @@ public enum AuditOperation
     Unknown = 0,
     Create = 1,
     Update = 2,
-    /// <summary>
-    /// Business entity lifecycle deletion. This never means audit event record deletion.
-    /// </summary>
     Delete = 3,
     Activate = 4,
     Deactivate = 5,
@@ -40,29 +40,4 @@ public enum AuditOperation
     Logout = 13,
     PermissionDenied = 14,
     Execute = 15
-}
-
-public enum AuditOutcome
-{
-    Unknown = 0,
-    Succeeded = 1,
-    Failed = 2,
-    Denied = 3
-}
-
-public enum AuditActorType
-{
-    Unknown = 0,
-    PlatformAdministrator = 1,
-    PartnerAdministrator = 2,
-    TenantUser = 3,
-    System = 4,
-    Service = 5
-}
-
-public enum AuditRedactionStatus
-{
-    None = 0,
-    ActorPiiRedacted = 1,
-    SensitiveFieldsRedacted = 2
 }

@@ -36,6 +36,13 @@
 - **Bilinen borç:** LE'nin `control-type` / `accounting-standard` / `tax-regime` listeleri MDM'de hardcoded (operatör düzenleyemiyor) → istenirse BRD'ye taşınır (opsiyonel, düşük öncelik). Ülke/para/legal-form zaten BRD'de.
 - **Regresyon:** Kural tutulursa yeni modüller 🟢 tek-kontrat; hardcode eklenirse 🔴 parçalanma birikir.
 
+### FG-005 — Audit gate (yeni modül audit'siz kapanmaz)
+- Write/mutation komutu olan **her yeni modül** audit ihtiyacını **değerlendirir** ve iş-kritik komutları auditable yapar. Modül "bitti" denmeden önce bu değerlendirme yapılmalı (l10n gate gibi).
+- **Platform komutu:** `IAuditableCommand` + `IAuditMetadataProvider` ekle → `AuditBehavior` merkezi `audit_events`'e otomatik yazar (handler'a dokunma). Örnek: CreateOrganizationUnitCommand.
+- **MDM / başka-servis komutu:** S2S audit-forwarding pattern'i kullan — `AuditForwardingBehavior` → Platform `/api/internal/audit/append` (X-Internal-Api-Key), `SourceService=<servis>` (merkezi store'da birleşir). Örnek: MDM Legal Entity (Faz 2).
+- **Muaf:** dev-only sandbox modüller (DevEnablement/Golden Reference).
+- **Amaç:** MDM'de yaşanan gibi bir daha audit boşluğu oluşmasın. Kapsam: mevcut boşluklar Faz 1-2'de kapatıldı; kalanlar (ModulePages/Navigation/SavedViews) düşük öncelik.
+
 ---
 
 ## Backlog maddeleri
@@ -119,6 +126,11 @@
 - **Neden ertelendi:** Faal footprint yeterli; tam ISO "someday" nicelik. Yeni ülke gerekince tek satır JSON + version bump ile eklenir (bkz. legal-entity-reference.json, catalog_version bump şart).
 - **Yapım tetikleyicisi:** Daha geniş coğrafya ihtiyacı doğunca.
 - **İlgili:** MOD-0048 Reference Data (BRD), FG-004.
+
+### BL-014 — MDM audit forward correlation-id threading
+- **Nedir:** MDM'in S2S audit forward'ı şu an her çağrıda **yeni CorrelationId** üretiyor (behavior'ın HttpContext'i yok). İstenirse forwarder gelen isteğin `X-Correlation-Id`'sini geçirerek MDM audit'lerini orijinal isteğe bağlayabilir.
+- **Neden ertelendi:** Kozmetik izlenebilirlik iyileştirmesi; audit doğru yazılıyor. Kolay eklenebilir.
+- **İlgili:** MOD-0021 Audit, MDM AuditForwardingBehavior/PlatformAuditForwarder.
 
 ---
 
