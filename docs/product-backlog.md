@@ -79,11 +79,8 @@
 - **Yapım tetikleyicisi:** **Blueprint'e (`docs/System Capability & Implementation Blueprint - master 7.xlsx`) bakılarak, org-model buna uygunsa yapılacak** — aksi halde mevcut tiplerle temsil devam.
 - **İlgili:** MOD-0288 Organization.
 
-### BL-006 — MDM / Position audit entegrasyonu
-- **Nedir:** Legal Entity (MDM servisi) ve Position/PositionAssignment (Platform) şu an platform audit'ine bağlı DEĞİL (yalnız OrganizationUnit auditable). Bu hareketleri de audit log'una bağlamak.
-- **Neden ertelendi:** MDM'de audit altyapısı yok; Position auditable değil (bilinçli ertelenmişti).
-- **Yapım tetikleyicisi:** **Blueprint'e bakılarak, audit kapsamı gerektiriyorsa yapılacak.**
-- **İlgili:** MOD-0220 Legal Entity, MOD-0288 Organization, MOD-0021 Audit.
+### ~~BL-006 — MDM / Position audit entegrasyonu~~ ✅ TAMAMLANDI (2026-07-11)
+- **TESLİM EDİLDİ:** Faz 1 (Platform: Position/PositionAssignment + Quotas + Subscriptions auditable) + Faz 2 (MDM/Legal Entity → S2S ile Platform merkezi audit_events, SourceService="Diten.MDM") + Faz 3 (FG-005 audit gate). Canlı doğrulandı, commit `c3a66794`. Kalan düşük-öncelik: BL-014 (correlation-id) + Platform biz-config/prefs (~50 cmd, ertelendi).
 
 ### BL-007 — Business Partner / Distributor master
 - **Nedir:** Grubun kendi tüzel kişisi olmayan 3. parti taraflar (distributor'lar, onların branch/filyaları, müşteriler) için ayrı bir iş-ortağı/müşteri master'ı. Bunlar Legal Entity değildir. Ayrıca intercompany ticaret akışı (Poland→Group→Monom→AZ satış zinciri) da bu/ilişkili ticari kapsamda.
@@ -127,10 +124,8 @@
 - **Yapım tetikleyicisi:** Daha geniş coğrafya ihtiyacı doğunca.
 - **İlgili:** MOD-0048 Reference Data (BRD), FG-004.
 
-### BL-014 — MDM audit forward correlation-id threading
-- **Nedir:** MDM'in S2S audit forward'ı şu an her çağrıda **yeni CorrelationId** üretiyor (behavior'ın HttpContext'i yok). İstenirse forwarder gelen isteğin `X-Correlation-Id`'sini geçirerek MDM audit'lerini orijinal isteğe bağlayabilir.
-- **Neden ertelendi:** Kozmetik izlenebilirlik iyileştirmesi; audit doğru yazılıyor. Kolay eklenebilir.
-- **İlgili:** MOD-0021 Audit, MDM AuditForwardingBehavior/PlatformAuditForwarder.
+### ~~BL-014 — MDM audit forward correlation-id threading~~ ✅ TAMAMLANDI (2026-07-11)
+- **TESLİM EDİLDİ:** `PlatformAuditForwarder` artık gelen isteğin `X-Correlation-Id`'sini (Guid ise) audit CorrelationId olarak kullanıyor; yoksa fresh id fallback. Canlı doğrulandı (gönderilen correlation audit kaydına birebir geçti). Commit BEKLİYOR (sabah commit+push).
 
 ---
 
