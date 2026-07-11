@@ -48,13 +48,21 @@ public sealed class PlatformAuditForwarder : IPlatformAuditForwarder
             return;
         }
 
-        var user = _httpContextAccessor.HttpContext?.User;
+        var httpContext = _httpContextAccessor.HttpContext;
+        var user = httpContext?.User;
         var (actorType, actorId) = ResolveActor(user);
         var tenantId = ReadGuid(user?.FindFirst("tenant_id")?.Value);
 
+        // BL-014 — thread the originating request's X-Correlation-Id so MDM audits correlate to the source request;
+        // fall back to a fresh id when the header is absent or not a Guid (AuditAppendRequest.CorrelationId is a Guid).
+        string? correlationHeader = httpContext?.Request.Headers["X-Correlation-Id"];
+        var correlationId = Guid.TryParse(correlationHeader, out var incomingCorrelation) && incomingCorrelation != Guid.Empty
+            ? incomingCorrelation
+            : Guid.NewGuid();
+
         var payload = new
         {
-            CorrelationId = Guid.NewGuid(),
+            CorrelationId = correlationId,
             RequestType = request.RequestType,
             ActorType = actorType,
             ActorId = actorId,
