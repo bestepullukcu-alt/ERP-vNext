@@ -52,6 +52,10 @@ public static class PlatformNavigationCatalog
             new[] { "notification", "notifications", "messaging", "smtp", "provider", "settings" }),
         new("NotificationDispatches", "NotificationDispatchesMenu", "/Platform/NotificationDispatches", "bx-send",
             null, null, new[] { "notification", "notifications", "dispatch", "dispatches", "delivery", "outbox" }),
+        // MOD-0027-FU03 — read-only Notification Event Catalog. Backend authorizes via platform.notifications.events.*;
+        // a restricted actor hitting the direct URL is fail-closed at the API.
+        new("NotificationEvents", "NotificationEventsMenu", "/Platform/NotificationEvents", "bx-broadcast",
+            null, null, new[] { "notification", "notifications", "event", "events", "catalog", "template", "binding", "manifest" }),
         new("SelfAccess", "SelfAccessMenu", "/Platform/SelfAccess", "bx-user-check",
             null, null, new[] { "access", "permissions", "self", "effective" }),
     };

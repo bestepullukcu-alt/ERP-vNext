@@ -61,7 +61,7 @@
     <value>1. اختر المصنّف وتحقّق</value>
   </data>
   <data name="WorkbookFile" xml:space="preserve">
-    <value>مصنّف (.xlsx)</value>
+    <value>ملف الاستيراد (‎.xlsx، ‎.csv، ‎.json)</value>
   </data>
   <data name="WorkbookFileHint" xml:space="preserve">
     <value>يُقرأ المصنّف كبيانات حوكمة فقط؛ ولا يُخزَّن كمستند أبدًا.</value>
@@ -94,7 +94,7 @@
     <value>يرجى اختيار مصنّف .xlsx.</value>
   </data>
   <data name="InvalidFileType" xml:space="preserve">
-    <value>يُقبل فقط مصنّفات .xlsx.</value>
+    <value>يُقبل فقط ملفات ‎.xlsx أو ‎.csv أو ‎.json.</value>
   </data>
   <data name="SourceKeyRequired" xml:space="preserve">
     <value>مفتاح خط الأساس المصدر مطلوب.</value>
@@ -326,4 +326,26 @@
   <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
   <data name="VariantAllowed" xml:space="preserve"><value>المتغير مسموح</value></data>
   <data name="VariantLocked" xml:space="preserve"><value>المتغير مقفل</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>معرّف السجل</value></data>
+  <data name="FolderType" xml:space="preserve"><value>نوع المجلد</value></data>
+  <data name="AccessProfile" xml:space="preserve"><value>ملف الوصول</value></data>
+  <data name="RetentionClass" xml:space="preserve"><value>فئة الاحتفاظ</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>الرمز القديم</value></data>
+  <data name="ProvisioningWave" xml:space="preserve"><value>موجة التزويد</value></data>
+  <data name="Approve" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>هل تريد اعتماد هذا الأساس؟ يتم تجميد بيان اللقطة وقت المراجعة؛ ولا يمكن إنشاء مثيل منه حتى يتم تفعيله.</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>تم اعتماد الأساس.</value></data>
+  <data name="MarkEffective" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="MarkEffectiveConfirm" xml:space="preserve"><value>هل تريد تفعيل هذا الأساس؟ سيصبح قابلاً لإنشاء المثيلات وسيحل محل أي أساس فعّال سابق يحمل نفس مفتاح المصدر.</value></data>
+  <data name="MarkEffectiveSuccess" xml:space="preserve"><value>تم تفعيل الأساس.</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>فعّال</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>مُستبدَل</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>الاعتماد</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>التفعيل</value></data>
+  <data name="ReasonPackageNotApproved" xml:space="preserve"><value>حزمة المصدر لا تزال مسودة (ليست للتنفيذ)؛ لا يمكن تفعيلها.</value></data>
+  <data name="SourceKey" xml:space="preserve"><value>مفتاح المصدر</value></data>
+  <data name="SourceKeyPlaceholder" xml:space="preserve"><value>مثال: GMG-QMS-LOG-0007</value></data>
+  <data name="SourceKeyHint" xml:space="preserve"><value>اختياري. الأسس التي تحمل نفس مفتاح المصدر تشكّل سلسلة واحدة — تفعيل أساس جديد يُلغي السابق. اتركه فارغًا ليُشتق من الاسم.</value></data>
+  <data name="NameLineageHint" xml:space="preserve"><value>نفس الاسم يشترك في نفس سلسلة الأساس؛ التفعيل الجديد يُلغي السابق.</value></data>
 </root>

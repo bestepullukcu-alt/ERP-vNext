@@ -1,4 +1,5 @@
 using Diten.Platform.Domain.Entities.DocumentManagement;
+using Diten.Platform.Domain.Enums.DocumentManagement;
 
 namespace Diten.Platform.Application.Features.DocumentManagementQmsBaseline;
 
@@ -33,7 +34,21 @@ public static class QmsBaselineMapping
         baseline.PublishedAt,
         baseline.ChangeSummary,
         baseline.EffectiveDate,
-        baseline.Version);
+        baseline.Version,
+        baseline.SourcePackageStatus,
+        baseline.ApprovedAt,
+        baseline.ApprovedBy,
+        baseline.ApprovalReference,
+        baseline.EffectiveAt,
+        baseline.EffectiveBy,
+        baseline.SupersededAt,
+        baseline.SupersedesBaselineReleaseId,
+        baseline.SupersededByBaselineReleaseId,
+        // MOD-0028-FU08 action affordances for the UI (backend is still the enforcement point).
+        CanApprove: baseline.Status == BaselineReleaseStatus.Draft && definitionCount > 0,
+        CanMarkEffective: baseline.Status == BaselineReleaseStatus.Approved
+            && BaselinePackageStatus.AllowsEffective(baseline.SourcePackageStatus),
+        CanInstantiate: baseline.Status.IsInstantiable());
 
     public static QmsCollectionDefinitionModel ToDefinitionModel(CollectionDefinition d) => new(
         d.Id,
@@ -56,5 +71,21 @@ public static class QmsBaselineMapping
         d.DisplayOrder,
         d.Status.ToString().ToUpperInvariant(),
         d.DefinitionHash,
-        d.Version);
+        d.Version,
+        d.RegisterFolderId,
+        d.RegisterParentFolderId,
+        d.DepartmentDomain,
+        d.FolderType,
+        d.ControlledByGqms,
+        d.SourceOfTruth,
+        d.OwnerFunction,
+        d.AccessProfile,
+        d.RetentionClass,
+        d.ChangeControlRequired,
+        d.GqmsScopeLink,
+        d.LegacyCode,
+        d.ProvisioningWave,
+        d.ProvisioningOrder,
+        d.ExampleDocuments,
+        d.OwningDepartments);
 }

@@ -104,7 +104,9 @@
     const validateInputs = () => {
         const file = fileInput.files?.[0];
         if (!file) { window.showToast?.(t('WorkbookRequired'), 'error'); return null; }
-        if (!file.name.toLowerCase().endsWith('.xlsx')) { window.showToast?.(t('InvalidFileType'), 'error'); return null; }
+        // MOD-0028-FU07 — accept register CSV / flat-JSON packages as well as the xlsx workbook.
+        const allowedExt = ['.xlsx', '.csv', '.json'];
+        if (!allowedExt.some((ext) => file.name.toLowerCase().endsWith(ext))) { window.showToast?.(t('InvalidFileType'), 'error'); return null; }
         if (!keyInput.value.trim()) { window.showToast?.(t('SourceKeyRequired'), 'error'); return null; }
         return file;
     };

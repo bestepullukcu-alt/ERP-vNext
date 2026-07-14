@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ReconciliationTitle" xml:space="preserve"><value>التسوية والأدلة والانحرافات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>تسوية القراءة الاسترجاعية واعتماد أدلة التزويد وسير عمل الانحرافات وجاهزية التأهيل لخط أساس نظام إدارة الجودة</value></data>
+  <data name="DeviationsTitle" xml:space="preserve"><value>الانحرافات</value></data>
+  <data name="DeviationsDescription" xml:space="preserve"><value>الفروق المكتشفة بين خط الأساس المستند إلى السجل وشجرة المجلدات المزودة</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>أدلة التزويد</value></data>
+  <data name="EvidenceDescription" xml:space="preserve"><value>أدلة المجلدات المزودة مع أذونات تقنية المعلومات واعتماد ضمان الجودة</value></data>
+  <data name="Baseline" xml:space="preserve"><value>خط الأساس</value></data>
+  <data name="SelectBaseline" xml:space="preserve"><value>حدد خط أساس</value></data>
+  <data name="Provider" xml:space="preserve"><value>المزود</value></data>
+  <data name="Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="DryRun" xml:space="preserve"><value>تشغيل تجريبي</value></data>
+  <data name="ApplyFindings" xml:space="preserve"><value>تطبيق النتائج</value></data>
+  <data name="RunReconciliation" xml:space="preserve"><value>تشغيل التسوية</value></data>
+  <data name="ProviderInHouse" xml:space="preserve"><value>داخلي</value></data>
+  <data name="ProviderGoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="ProviderNotAvailable" xml:space="preserve"><value>غير متاح</value></data>
+  <data name="ScopeDefinitionToInstance" xml:space="preserve"><value>من التعريف إلى المثيل</value></data>
+  <data name="ScopeDefinitionToProvider" xml:space="preserve"><value>من التعريف إلى المزود</value></data>
+  <data name="ScopeInstanceToProvider" xml:space="preserve"><value>من المثيل إلى المزود</value></data>
+  <data name="OpenDeviations" xml:space="preserve"><value>فتح الانحرافات</value></data>
+  <data name="OpenEvidence" xml:space="preserve"><value>فتح الأدلة</value></data>
+  <data name="SelectBaselineFirst" xml:space="preserve"><value>حدد خط أساس أولاً</value></data>
+  <data name="ApplyFindingsConfirm" xml:space="preserve"><value>سيؤدي تطبيق النتائج إلى حفظ الانحرافات المكتشفة لخط الأساس هذا بشكل دائم. هل تريد المتابعة؟</value></data>
+  <data name="ProviderUnavailableMessage" xml:space="preserve"><value>لم يتم بعد تكوين مزود القراءة الاسترجاعية لـ Google Drive</value></data>
+  <data name="DryRunComplete" xml:space="preserve"><value>اكتمل التشغيل التجريبي</value></data>
+  <data name="FindingsApplied" xml:space="preserve"><value>تم تطبيق النتائج</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>ملخص التسوية</value></data>
+  <data name="ExpectedCount" xml:space="preserve"><value>المتوقع</value></data>
+  <data name="ActualCount" xml:space="preserve"><value>الفعلي</value></data>
+  <data name="MatchedCount" xml:space="preserve"><value>مطابق</value></data>
+  <data name="MissingCount" xml:space="preserve"><value>مفقود</value></data>
+  <data name="ExtraCount" xml:space="preserve"><value>إضافي</value></data>
+  <data name="RenamedCount" xml:space="preserve"><value>أعيدت تسميته</value></data>
+  <data name="MovedCount" xml:space="preserve"><value>نُقل</value></data>
+  <data name="MetadataMismatchCount" xml:space="preserve"><value>عدم تطابق البيانات الوصفية</value></data>
+  <data name="DeviationCount" xml:space="preserve"><value>الانحرافات</value></data>
+  <data name="BlockingDeviationCount" xml:space="preserve"><value>معوِّق</value></data>
+  <data name="DryRunBadge" xml:space="preserve"><value>تجريبي</value></data>
+  <data name="AppliedBadge" xml:space="preserve"><value>مُطبَّق</value></data>
+  <data name="DetectedDeviations" xml:space="preserve"><value>الانحرافات المكتشفة</value></data>
+  <data name="NoDeviationsDetected" xml:space="preserve"><value>لم يتم اكتشاف انحرافات</value></data>
+  <data name="Recommendation" xml:space="preserve"><value>التوصية</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>جاهزية التأهيل</value></data>
+  <data name="Ready" xml:space="preserve"><value>جاهز</value></data>
+  <data name="NotReady" xml:space="preserve"><value>غير جاهز</value></data>
+  <data name="BaselineStatus" xml:space="preserve"><value>حالة خط الأساس</value></data>
+  <data name="ExpectedInstanceCount" xml:space="preserve"><value>المثيلات المتوقعة</value></data>
+  <data name="EvidenceCount" xml:space="preserve"><value>الأدلة</value></data>
+  <data name="MissingEvidenceCount" xml:space="preserve"><value>أدلة مفقودة</value></data>
+  <data name="PermissionsAppliedCount" xml:space="preserve"><value>الأذونات المطبقة</value></data>
+  <data name="QaVerifiedCount" xml:space="preserve"><value>تم التحقق من الجودة</value></data>
+  <data name="OpenBlockingDeviationCount" xml:space="preserve"><value>انحرافات معوِّقة مفتوحة</value></data>
+  <data name="Reasons" xml:space="preserve"><value>الأسباب</value></data>
+  <data name="DeviationType" xml:space="preserve"><value>نوع الانحراف</value></data>
+  <data name="Severity" xml:space="preserve"><value>الخطورة</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>معرف مجلد السجل</value></data>
+  <data name="ExpectedFullPath" xml:space="preserve"><value>المسار المتوقع</value></data>
+  <data name="ActualFullPath" xml:space="preserve"><value>المسار الفعلي</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="DetectedAt" xml:space="preserve"><value>تاريخ الاكتشاف</value></data>
+  <data name="Resolve" xml:space="preserve"><value>حل</value></data>
+  <data name="Accept" xml:space="preserve"><value>قبول</value></data>
+  <data name="ResolveComment" xml:space="preserve"><value>تعليق الحل</value></data>
+  <data name="AcceptComment" xml:space="preserve"><value>تعليق القبول</value></data>
+  <data name="CommentLabel" xml:space="preserve"><value>تعليق</value></data>
+  <data name="DeviationResolved" xml:space="preserve"><value>تم حل الانحراف</value></data>
+  <data name="DeviationAccepted" xml:space="preserve"><value>تم قبول الانحراف</value></data>
+  <data name="MissingFolder" xml:space="preserve"><value>مجلد مفقود</value></data>
+  <data name="ExtraFolder" xml:space="preserve"><value>مجلد إضافي</value></data>
+  <data name="RenameMismatch" xml:space="preserve"><value>عدم تطابق إعادة التسمية</value></data>
+  <data name="MoveMismatch" xml:space="preserve"><value>عدم تطابق النقل</value></data>
+  <data name="ParentMismatch" xml:space="preserve"><value>عدم تطابق العنصر الأصل</value></data>
+  <data name="DuplicateSibling" xml:space="preserve"><value>عنصر شقيق مكرر</value></data>
+  <data name="DuplicateFullPath" xml:space="preserve"><value>مسار مكرر</value></data>
+  <data name="OrphanFolder" xml:space="preserve"><value>مجلد يتيم</value></data>
+  <data name="MetadataMismatch" xml:space="preserve"><value>عدم تطابق البيانات الوصفية</value></data>
+  <data name="PermissionMismatch" xml:space="preserve"><value>عدم تطابق الأذونات</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>الأدلة مفقودة</value></data>
+  <data name="SeverityInfo" xml:space="preserve"><value>معلومة</value></data>
+  <data name="SeverityWarning" xml:space="preserve"><value>تحذير</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>كبير</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>حرج</value></data>
+  <data name="DeviationStatusOpen" xml:space="preserve"><value>مفتوح</value></data>
+  <data name="DeviationStatusAccepted" xml:space="preserve"><value>مقبول</value></data>
+  <data name="DeviationStatusResolved" xml:space="preserve"><value>محلول</value></data>
+  <data name="DeviationStatusClosed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="FullPath" xml:space="preserve"><value>المسار الكامل</value></data>
+  <data name="PlatformProvider" xml:space="preserve"><value>مزود المنصة</value></data>
+  <data name="PlatformFolderId" xml:space="preserve"><value>معرف مجلد المنصة</value></data>
+  <data name="ProvisioningStatus" xml:space="preserve"><value>حالة التزويد</value></data>
+  <data name="PermissionsApplied" xml:space="preserve"><value>تم تطبيق الأذونات</value></data>
+  <data name="QaVerified" xml:space="preserve"><value>تم التحقق من الجودة</value></data>
+  <data name="DeviationStatusColumn" xml:space="preserve"><value>حالة الانحراف</value></data>
+  <data name="LastReadBackAt" xml:space="preserve"><value>آخر قراءة استرجاعية</value></data>
+  <data name="MarkPermissionsApplied" xml:space="preserve"><value>وضع علامة تم تطبيق الأذونات</value></data>
+  <data name="MarkQaVerified" xml:space="preserve"><value>وضع علامة تم التحقق من الجودة</value></data>
+  <data name="PermissionsAppliedConfirm" xml:space="preserve"><value>هل تريد وضع علامة تم تطبيق الأذونات لهذا المجلد؟</value></data>
+  <data name="QaVerifyConfirm" xml:space="preserve"><value>هل تريد وضع علامة تم التحقق من الجودة لهذا المجلد؟</value></data>
+  <data name="PermissionsAppliedDone" xml:space="preserve"><value>تم وضع علامة تطبيق الأذونات</value></data>
+  <data name="QaVerifiedDone" xml:space="preserve"><value>تم وضع علامة التحقق من الجودة على المجلد</value></data>
+  <data name="ProvPending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="ProvCreated" xml:space="preserve"><value>تم الإنشاء</value></data>
+  <data name="ProvExistingMatched" xml:space="preserve"><value>مطابقة موجودة</value></data>
+  <data name="ProvFailed" xml:space="preserve"><value>فشل</value></data>
+  <data name="ProvSkipped" xml:space="preserve"><value>تم التخطي</value></data>
+  <data name="ProvDeviated" xml:space="preserve"><value>منحرف</value></data>
+  <data name="EvidenceDevNone" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="EvidenceDevOpen" xml:space="preserve"><value>مفتوح</value></data>
+  <data name="EvidenceDevClosed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="EvidenceDevAccepted" xml:space="preserve"><value>مقبول</value></data>
+  <data name="EvidenceEditFutureNote" xml:space="preserve"><value>تحرير البيانات الوصفية للأدلة غير متاح بعد. تدعم هذه الشاشة العرض واعتماد تقنية المعلومات/ضمان الجودة فقط.</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="RowActions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="Confirm" xml:space="preserve"><value>تأكيد</value></data>
+</root>

@@ -20,6 +20,9 @@ public static class DocumentManagementInstantiationReasonCodes
     public const string NotFoundNonLeakage = "NOT_FOUND_NON_LEAKAGE";
     public const string RetryUnavailable = "RETRY_UNAVAILABLE";
     public const string DependencyUnavailable = "DEPENDENCY_UNAVAILABLE";
+
+    /// <summary>MOD-0028-FU08 — baseline is not Effective (nor legacy Published), so it cannot be instantiated.</summary>
+    public const string BaselineNotEffective = "BASELINE_NOT_EFFECTIVE";
 }
 
 public sealed record InstantiationScopeRequest(

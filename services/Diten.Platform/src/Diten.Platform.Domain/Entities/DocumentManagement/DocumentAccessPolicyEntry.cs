@@ -37,5 +37,20 @@ public sealed class DocumentAccessPolicyEntry : TenantScopedEntity
     public string? Reason { get; set; }
     public string? CorrelationId { get; set; }
 
+    // ── MOD-0029-FU05 — access-profile template provenance (all additive; default Manual for legacy rows). ──
+    // Purely descriptive: the resolver never reads these. They let the template engine tell its own generated
+    // rows apart from manual ones so it stays idempotent and never overwrites a manually authored policy.
+    public DocumentAccessPolicySource PolicySource { get; set; } = DocumentAccessPolicySource.Manual;
+
+    /// <summary>Access profile that produced this row (e.g. "GQMS-Controlled"). Null for manual rows.</summary>
+    public string? PolicyTemplateKey { get; set; }
+
+    public Guid? SourceBaselineReleaseId { get; set; }
+    public Guid? SourceCollectionDefinitionId { get; set; }
+    public Guid? SourceCollectionInstanceId { get; set; }
+    public string? SourceRegisterFolderId { get; set; }
+    public DateTimeOffset? GeneratedAt { get; set; }
+    public string? GeneratedBy { get; set; }
+
     public DateTimeOffset? DeletedAt { get; set; }
 }

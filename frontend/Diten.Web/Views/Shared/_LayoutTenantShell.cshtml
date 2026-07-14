@@ -238,6 +238,18 @@
                         </li>
                     }
 
+                    @* MOD-0028-FU10 — Reconciliation, Evidence & Deviations (TenantShell). FE-B UX guard: shown only
+                       with the QMS baseline view permission; backend (FU09 Layer 1) is authoritative. *@
+                    @if (Perms.Has("platform.document-management.qms-baselines.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementReconciliation" ? "active" : "")">
+                            <a href="/DocumentManagementReconciliation" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-git-compare"></i>
+                                <div>@SharedLocalizer["Reconciliation"]</div>
+                            </a>
+                        </li>
+                    }
+
                     @* FIX-CLEANUP-BATCH — Access Governance AND Tenant Settings (Security Settings /TenantSecurity +
                        Menu Settings /TenantNavigation) are now rendered DATA-DRIVEN by the DynamicModuleMenu below
                        (ACCESS-GOVERNANCE + TENANT-SETTINGS baseline modules, both permission-gated per descriptor).

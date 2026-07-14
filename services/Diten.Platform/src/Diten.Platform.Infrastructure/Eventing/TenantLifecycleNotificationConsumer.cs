@@ -4,6 +4,7 @@ using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Features.Notifications;
 using Diten.Platform.Application.Features.Notifications.Commands;
+using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Application.Features.Tenants.Notifications;
 using Diten.Platform.Application.Services.Eventing;
 using Diten.Platform.Contracts.Events;
@@ -11,12 +12,18 @@ using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using MassTransit;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Infrastructure.Eventing;
 
 public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTransportMessage>
 {
     public const string ConsumerName = nameof(TenantLifecycleNotificationConsumer);
+
+    // MOD-0027-FU04C — suspended/reactivated dispatch by canonical eventCode (FU04A PlatformSeed events) via the
+    // FU04B adapter. The created branch is intentionally left on the templateKey path (no matching FU04A eventCode).
+    private const string SuspendedEventCode = "tenant.lifecycle.suspended";
+    private const string ReactivatedEventCode = "tenant.lifecycle.reactivated";
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly ConsumedEventStore _consumedEventStore;
@@ -25,6 +32,7 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
     private readonly TenantCreatedV1NotificationMapper _createdMapper;
     private readonly TenantSuspendedV1NotificationMapper _suspendedMapper;
     private readonly TenantReactivatedV1NotificationMapper _reactivatedMapper;
+    private readonly ILogger<TenantLifecycleNotificationConsumer> _logger;
 
     public TenantLifecycleNotificationConsumer(
         ConsumedEventStore consumedEventStore,
@@ -32,7 +40,8 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
         IMediator mediator,
         TenantCreatedV1NotificationMapper createdMapper,
         TenantSuspendedV1NotificationMapper suspendedMapper,
-        TenantReactivatedV1NotificationMapper reactivatedMapper)
+        TenantReactivatedV1NotificationMapper reactivatedMapper,
+        ILogger<TenantLifecycleNotificationConsumer> logger)
     {
         _consumedEventStore = consumedEventStore;
         _tenantRepository = tenantRepository;
@@ -40,6 +49,7 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
         _createdMapper = createdMapper;
         _suspendedMapper = suspendedMapper;
         _reactivatedMapper = reactivatedMapper;
+        _logger = logger;
     }
 
     public Task Consume(ConsumeContext<EventTransportMessage> context)
@@ -70,7 +80,7 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
                 {
                     var recipients = ResolveTenantAdminRecipients(tenant);
                     var request = _suspendedMapper.Map(envelope, recipients, tenant.DefaultLanguage);
-                    await QueueIfMappedAsync(envelope, request, ct);
+                    await DispatchByEventCodeIfMappedAsync(envelope, SuspendedEventCode, tenant, request, ct);
                 },
                 cancellationToken),
             TenantReactivatedV1.Name => ConsumeTenantEventAsync(
@@ -80,7 +90,7 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
                 {
                     var recipients = ResolveTenantAdminRecipients(tenant);
                     var request = _reactivatedMapper.Map(envelope, recipients, tenant.DefaultLanguage);
-                    await QueueIfMappedAsync(envelope, request, ct);
+                    await DispatchByEventCodeIfMappedAsync(envelope, ReactivatedEventCode, tenant, request, ct);
                 },
                 cancellationToken),
             _ => Task.FromResult<ConsumedEventExecutionResult?>(null)
@@ -134,6 +144,85 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
             throw new InvalidOperationException(
                 $"Tenant lifecycle notification queue failed. EventName={envelope.EventName} StatusCode={response.StatusCode}");
         }
+    }
+
+    // MOD-0027-FU04C — dispatch a lifecycle notification by canonical eventCode (FU04B adapter). Decision A: the
+    // consumer supplies TenantDisplayName (tenant.DisplayName -> Name -> Code -> Id) since the V1 payloads carry only
+    // TenantId and the mapper signature is not widened. Decision B: a controlled catalog/validation failure (the
+    // adapter sets Response.ReasonCode) is non-retryable -> log + swallow; a provider/transient failure (no
+    // ReasonCode) preserves the existing throw so the transport retries. Business state is never rolled back.
+    private async Task DispatchByEventCodeIfMappedAsync<TEvent>(
+        EventEnvelope<TEvent> envelope,
+        string eventCode,
+        Tenant tenant,
+        QueueEmailNotificationRequest? mapped,
+        CancellationToken cancellationToken)
+        where TEvent : IIntegrationEvent
+    {
+        if (mapped is null)
+        {
+            return;
+        }
+
+        var tenantId = ResolveTenantId(envelope);
+        var variables = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in mapped.Variables)
+        {
+            variables[pair.Key] = pair.Value;
+        }
+        variables["TenantDisplayName"] = ResolveTenantDisplayName(tenant);
+
+        var dispatchRequest = new NotificationEventDispatchRequest(
+            tenantId,
+            eventCode,
+            mapped.To,
+            variables,
+            mapped.Locale,
+            mapped.Cc,
+            mapped.Bcc,
+            envelope.CorrelationId.ToString("N"),
+            mapped.CausationId);
+
+        var response = await _mediator.Send(new DispatchNotificationByEventCodeCommand(dispatchRequest), cancellationToken);
+        if (response.IsSuccessful)
+        {
+            return;
+        }
+
+        // Controlled catalog/validation 4xx (EVENT_NOT_FOUND / EVENT_NOT_ACTIVE / REQUIRED_VARIABLE_MISSING /
+        // TEMPLATE_KEY_MISSING_OR_INVALID / INVALID_EVENT_CODE / RECIPIENT_MISSING): retrying will not fix config.
+        if (!string.IsNullOrEmpty(response.ReasonCode))
+        {
+            _logger.LogWarning(
+                "Tenant lifecycle notification skipped (non-retryable). EventName={EventName} EventCode={EventCode} ReasonCode={ReasonCode} StatusCode={StatusCode} Errors={Errors}",
+                envelope.EventName,
+                eventCode,
+                response.ReasonCode,
+                response.StatusCode,
+                string.Join("; ", response.Errors));
+            return;
+        }
+
+        // Provider/transient failure (no ReasonCode): preserve throw so the transport retries.
+        throw new InvalidOperationException(
+            $"Tenant lifecycle notification dispatch failed (retryable). EventName={envelope.EventName} EventCode={eventCode} StatusCode={response.StatusCode}");
+    }
+
+    private static string ResolveTenantDisplayName(Tenant tenant)
+    {
+        if (!string.IsNullOrWhiteSpace(tenant.DisplayName))
+        {
+            return tenant.DisplayName!.Trim();
+        }
+        if (!string.IsNullOrWhiteSpace(tenant.Name))
+        {
+            return tenant.Name.Trim();
+        }
+        if (!string.IsNullOrWhiteSpace(tenant.Code))
+        {
+            return tenant.Code.Trim();
+        }
+        return tenant.Id.ToString();
     }
 
     private static IReadOnlyList<EmailRecipientDto> ResolveInitialAdminRecipient(Tenant tenant, Guid? initialAdminUserId)

@@ -1,0 +1,48 @@
+@using Diten.Web.Views.DocumentManagement.Reconciliation
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReconciliationIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost" class="px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-platform-provider">
+                        <select id="filterPlatformProvider" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["PlatformProvider"]">
+                            <option value="InHouse">@Localizer["ProviderInHouse"]</option>
+                            <option value="GoogleDrive">@Localizer["ProviderGoogleDrive"]</option>
+                            <option value="Other">@SharedLocalizer["Unknown"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-provisioning-status">
+                        <select id="filterProvisioningStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ProvisioningStatus"]">
+                            <option value="Pending">@Localizer["ProvPending"]</option>
+                            <option value="Created">@Localizer["ProvCreated"]</option>
+                            <option value="ExistingMatched">@Localizer["ProvExistingMatched"]</option>
+                            <option value="Failed">@Localizer["ProvFailed"]</option>
+                            <option value="Skipped">@Localizer["ProvSkipped"]</option>
+                            <option value="Deviated">@Localizer["ProvDeviated"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-deviation-status">
+                        <select id="filterDeviationStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["DeviationStatusColumn"]">
+                            <option value="None">@Localizer["EvidenceDevNone"]</option>
+                            <option value="Open">@Localizer["EvidenceDevOpen"]</option>
+                            <option value="Closed">@Localizer["EvidenceDevClosed"]</option>
+                            <option value="Accepted">@Localizer["EvidenceDevAccepted"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

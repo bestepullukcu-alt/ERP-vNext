@@ -1,0 +1,63 @@
+@using Diten.Web.Views.Platform.NotificationEvents
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationEventsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost" class="px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-owner">
+                        <input type="text" id="filterOwnerModule" class="form-control form-control-sm"
+                               placeholder="@Localizer["OwnerModule"]" autocomplete="off" />
+                    </div>
+
+                    @* Channel is reference/lookup data -> notification-channels lookup (no hardcoded fallback). *@
+                    <div class="filter-chip filter-channel">
+                        <select id="filterChannel" class="form-select form-select-sm select2" data-placeholder="@Localizer["Channel"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    @* Status/UsageType/TenantOverride are fixed domain enums (localized in-view; NotificationSettings/Dispatches precedent). *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="Draft">@Localizer["StatusDraft"]</option>
+                            <option value="Active">@Localizer["StatusActive"]</option>
+                            <option value="Deprecated">@Localizer["StatusDeprecated"]</option>
+                            <option value="Archived">@Localizer["StatusArchived"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-usage">
+                        <select id="filterUsageType" class="form-select form-select-sm select2" data-placeholder="@Localizer["UsageType"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="SystemEvent">@Localizer["UsageSystemEvent"]</option>
+                            <option value="ManualSelection">@Localizer["UsageManualSelection"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-override">
+                        <select id="filterCanTenantOverride" class="form-select form-select-sm select2" data-placeholder="@Localizer["TenantOverride"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="true">@Localizer["Yes"]</option>
+                            <option value="false">@Localizer["No"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

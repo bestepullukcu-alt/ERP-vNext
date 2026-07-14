@@ -510,6 +510,7 @@
   <data name="NotificationTemplatesMenu" xml:space="preserve"><value>Bildirim Şablonları</value></data>
   <data name="NotificationSettingsMenu" xml:space="preserve"><value>Bildirim Ayarları</value></data>
   <data name="NotificationDispatchesMenu" xml:space="preserve"><value>Bildirim Gönderimleri</value></data>
+  <data name="NotificationEventsMenu" xml:space="preserve"><value>Bildirim Olayları</value></data>
   <data name="AddNotificationTemplate" xml:space="preserve"><value>Şablon Ekle</value></data>
   <data name="AddNotificationSettings" xml:space="preserve"><value>Ayar Ekle</value></data>
   <data name="AddTenant" xml:space="preserve"><value>Tenant Ekle</value></data>
@@ -533,6 +534,7 @@
   <data name="TemplateMasters" xml:space="preserve"><value>Kurumsal Şablonlar</value></data>
   <data name="TemplateVariants" xml:space="preserve"><value>Şablon Varyantları</value></data>
   <data name="AccessMatrix" xml:space="preserve"><value>Erişim Matrisi</value></data>
+  <data name="Reconciliation" xml:space="preserve"><value>Mutabakat</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>QMS Baseline'lari</value></data>
   <data name="Unauthorized" xml:space="preserve"><value>Yetkisiz</value></data>
   <!-- FIX-ROLEPERMS-ROLENAME-L10N-STICKY — system role display names, keyed by role code (localized). -->

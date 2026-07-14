@@ -47,8 +47,12 @@ const QmsBaselinesList = (function () {
     const shortHash = (v) => (v ? `${String(v).slice(0, 12)}…` : '-');
     const statusBadge = (status) => {
         const s = String(status || '').toUpperCase();
+        // MOD-0028-FU08 lifecycle — Draft → Approved → Effective → Superseded (plus legacy Published).
+        if (s === 'EFFECTIVE') return `<span class="badge bg-label-success">${text(L.StatusEffective, 'Effective')}</span>`;
         if (s === 'PUBLISHED') return `<span class="badge bg-label-success">${text(L.StatusPublished, 'Published')}</span>`;
+        if (s === 'APPROVED') return `<span class="badge bg-label-info">${text(L.StatusApproved, 'Approved')}</span>`;
         if (s === 'DRAFT') return `<span class="badge bg-label-warning">${text(L.StatusDraft, 'Draft')}</span>`;
+        if (s === 'SUPERSEDED') return `<span class="badge bg-label-secondary">${text(L.StatusSuperseded, 'Superseded')}</span>`;
         return `<span class="badge bg-label-secondary">${text(L.Unknown, status)}</span>`;
     };
 

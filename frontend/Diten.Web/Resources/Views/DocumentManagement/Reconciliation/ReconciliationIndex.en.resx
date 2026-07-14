@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ReconciliationTitle" xml:space="preserve"><value>Reconciliation, Evidence &amp; Deviations</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Read-back reconciliation, provisioning evidence sign-off, deviation workflow and qualification readiness for a QMS baseline</value></data>
+  <data name="DeviationsTitle" xml:space="preserve"><value>Deviations</value></data>
+  <data name="DeviationsDescription" xml:space="preserve"><value>Detected differences between the register-backed baseline and the provisioned folder tree</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Provisioning Evidence</value></data>
+  <data name="EvidenceDescription" xml:space="preserve"><value>Provisioned folder evidence with IT permissions and QA sign-off</value></data>
+  <data name="Baseline" xml:space="preserve"><value>Baseline</value></data>
+  <data name="SelectBaseline" xml:space="preserve"><value>Select a baseline</value></data>
+  <data name="Provider" xml:space="preserve"><value>Provider</value></data>
+  <data name="Scope" xml:space="preserve"><value>Scope</value></data>
+  <data name="DryRun" xml:space="preserve"><value>Dry-run</value></data>
+  <data name="ApplyFindings" xml:space="preserve"><value>Apply findings</value></data>
+  <data name="RunReconciliation" xml:space="preserve"><value>Run reconciliation</value></data>
+  <data name="ProviderInHouse" xml:space="preserve"><value>In-house</value></data>
+  <data name="ProviderGoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="ProviderNotAvailable" xml:space="preserve"><value>not available</value></data>
+  <data name="ScopeDefinitionToInstance" xml:space="preserve"><value>Definition to Instance</value></data>
+  <data name="ScopeDefinitionToProvider" xml:space="preserve"><value>Definition to Provider</value></data>
+  <data name="ScopeInstanceToProvider" xml:space="preserve"><value>Instance to Provider</value></data>
+  <data name="OpenDeviations" xml:space="preserve"><value>Open deviations</value></data>
+  <data name="OpenEvidence" xml:space="preserve"><value>Open evidence</value></data>
+  <data name="SelectBaselineFirst" xml:space="preserve"><value>Select a baseline first</value></data>
+  <data name="ApplyFindingsConfirm" xml:space="preserve"><value>Applying findings will persist detected deviations for this baseline. Continue?</value></data>
+  <data name="ProviderUnavailableMessage" xml:space="preserve"><value>Google Drive read-back provider is not configured yet</value></data>
+  <data name="DryRunComplete" xml:space="preserve"><value>Dry-run completed</value></data>
+  <data name="FindingsApplied" xml:space="preserve"><value>Findings applied</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Reconciliation Summary</value></data>
+  <data name="ExpectedCount" xml:space="preserve"><value>Expected</value></data>
+  <data name="ActualCount" xml:space="preserve"><value>Actual</value></data>
+  <data name="MatchedCount" xml:space="preserve"><value>Matched</value></data>
+  <data name="MissingCount" xml:space="preserve"><value>Missing</value></data>
+  <data name="ExtraCount" xml:space="preserve"><value>Extra</value></data>
+  <data name="RenamedCount" xml:space="preserve"><value>Renamed</value></data>
+  <data name="MovedCount" xml:space="preserve"><value>Moved</value></data>
+  <data name="MetadataMismatchCount" xml:space="preserve"><value>Metadata mismatch</value></data>
+  <data name="DeviationCount" xml:space="preserve"><value>Deviations</value></data>
+  <data name="BlockingDeviationCount" xml:space="preserve"><value>Blocking</value></data>
+  <data name="DryRunBadge" xml:space="preserve"><value>Dry-run</value></data>
+  <data name="AppliedBadge" xml:space="preserve"><value>Applied</value></data>
+  <data name="DetectedDeviations" xml:space="preserve"><value>Detected Deviations</value></data>
+  <data name="NoDeviationsDetected" xml:space="preserve"><value>No deviations detected</value></data>
+  <data name="Recommendation" xml:space="preserve"><value>Recommendation</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>Qualification Readiness</value></data>
+  <data name="Ready" xml:space="preserve"><value>Ready</value></data>
+  <data name="NotReady" xml:space="preserve"><value>Not ready</value></data>
+  <data name="BaselineStatus" xml:space="preserve"><value>Baseline status</value></data>
+  <data name="ExpectedInstanceCount" xml:space="preserve"><value>Expected instances</value></data>
+  <data name="EvidenceCount" xml:space="preserve"><value>Evidence</value></data>
+  <data name="MissingEvidenceCount" xml:space="preserve"><value>Missing evidence</value></data>
+  <data name="PermissionsAppliedCount" xml:space="preserve"><value>Permissions applied</value></data>
+  <data name="QaVerifiedCount" xml:space="preserve"><value>QA verified</value></data>
+  <data name="OpenBlockingDeviationCount" xml:space="preserve"><value>Open blocking deviations</value></data>
+  <data name="Reasons" xml:space="preserve"><value>Reasons</value></data>
+  <data name="DeviationType" xml:space="preserve"><value>Deviation type</value></data>
+  <data name="Severity" xml:space="preserve"><value>Severity</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>Register folder ID</value></data>
+  <data name="ExpectedFullPath" xml:space="preserve"><value>Expected path</value></data>
+  <data name="ActualFullPath" xml:space="preserve"><value>Actual path</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="DetectedAt" xml:space="preserve"><value>Detected at</value></data>
+  <data name="Resolve" xml:space="preserve"><value>Resolve</value></data>
+  <data name="Accept" xml:space="preserve"><value>Accept</value></data>
+  <data name="ResolveComment" xml:space="preserve"><value>Resolution comment</value></data>
+  <data name="AcceptComment" xml:space="preserve"><value>Acceptance comment</value></data>
+  <data name="CommentLabel" xml:space="preserve"><value>Comment</value></data>
+  <data name="DeviationResolved" xml:space="preserve"><value>Deviation resolved</value></data>
+  <data name="DeviationAccepted" xml:space="preserve"><value>Deviation accepted</value></data>
+  <data name="MissingFolder" xml:space="preserve"><value>Missing folder</value></data>
+  <data name="ExtraFolder" xml:space="preserve"><value>Extra folder</value></data>
+  <data name="RenameMismatch" xml:space="preserve"><value>Rename mismatch</value></data>
+  <data name="MoveMismatch" xml:space="preserve"><value>Move mismatch</value></data>
+  <data name="ParentMismatch" xml:space="preserve"><value>Parent mismatch</value></data>
+  <data name="DuplicateSibling" xml:space="preserve"><value>Duplicate sibling</value></data>
+  <data name="DuplicateFullPath" xml:space="preserve"><value>Duplicate path</value></data>
+  <data name="OrphanFolder" xml:space="preserve"><value>Orphan folder</value></data>
+  <data name="MetadataMismatch" xml:space="preserve"><value>Metadata mismatch</value></data>
+  <data name="PermissionMismatch" xml:space="preserve"><value>Permission mismatch</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>Evidence missing</value></data>
+  <data name="SeverityInfo" xml:space="preserve"><value>Info</value></data>
+  <data name="SeverityWarning" xml:space="preserve"><value>Warning</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>Major</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>Critical</value></data>
+  <data name="DeviationStatusOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="DeviationStatusAccepted" xml:space="preserve"><value>Accepted</value></data>
+  <data name="DeviationStatusResolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="DeviationStatusClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="FullPath" xml:space="preserve"><value>Full path</value></data>
+  <data name="PlatformProvider" xml:space="preserve"><value>Platform provider</value></data>
+  <data name="PlatformFolderId" xml:space="preserve"><value>Platform folder ID</value></data>
+  <data name="ProvisioningStatus" xml:space="preserve"><value>Provisioning status</value></data>
+  <data name="PermissionsApplied" xml:space="preserve"><value>Permissions applied</value></data>
+  <data name="QaVerified" xml:space="preserve"><value>QA verified</value></data>
+  <data name="DeviationStatusColumn" xml:space="preserve"><value>Deviation status</value></data>
+  <data name="LastReadBackAt" xml:space="preserve"><value>Last read-back</value></data>
+  <data name="MarkPermissionsApplied" xml:space="preserve"><value>Mark permissions applied</value></data>
+  <data name="MarkQaVerified" xml:space="preserve"><value>Mark QA verified</value></data>
+  <data name="PermissionsAppliedConfirm" xml:space="preserve"><value>Mark permissions as applied for this folder?</value></data>
+  <data name="QaVerifyConfirm" xml:space="preserve"><value>Mark this folder as QA verified?</value></data>
+  <data name="PermissionsAppliedDone" xml:space="preserve"><value>Permissions marked as applied</value></data>
+  <data name="QaVerifiedDone" xml:space="preserve"><value>Folder marked as QA verified</value></data>
+  <data name="ProvPending" xml:space="preserve"><value>Pending</value></data>
+  <data name="ProvCreated" xml:space="preserve"><value>Created</value></data>
+  <data name="ProvExistingMatched" xml:space="preserve"><value>Existing matched</value></data>
+  <data name="ProvFailed" xml:space="preserve"><value>Failed</value></data>
+  <data name="ProvSkipped" xml:space="preserve"><value>Skipped</value></data>
+  <data name="ProvDeviated" xml:space="preserve"><value>Deviated</value></data>
+  <data name="EvidenceDevNone" xml:space="preserve"><value>None</value></data>
+  <data name="EvidenceDevOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="EvidenceDevClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="EvidenceDevAccepted" xml:space="preserve"><value>Accepted</value></data>
+  <data name="EvidenceEditFutureNote" xml:space="preserve"><value>Evidence metadata editing is not available yet. This screen supports list and IT/QA sign-off only.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="RowActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Confirm</value></data>
+</root>

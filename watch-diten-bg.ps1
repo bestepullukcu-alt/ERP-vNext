@@ -5,9 +5,9 @@ $ErrorActionPreference = "Continue"
 Set-Location -Path $PSScriptRoot
 Write-Host "🚀 Starting Diten ERP Multi-Service Suite with WATCH (Hot Reload)..." -ForegroundColor Cyan
 
-# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058)
-Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058..." -ForegroundColor Yellow
-Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059 -ErrorAction SilentlyContinue |
+# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059, 5060)
+Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060..." -ForegroundColor Yellow
+Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060 -ErrorAction SilentlyContinue |
     Select-Object -ExpandProperty OwningProcess | 
     Unique | 
     ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
@@ -20,6 +20,7 @@ Start-Sleep -Seconds 1
 $services = @(
     @{ Name = "Auth"; Path = "services/Diten.AuthService/src/Diten.AuthService.Api"; Port = 5056 },
     @{ Name = "DevEnablement"; Path = "services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api"; Port = 5058 },
+    @{ Name = "Hcm"; Path = "services/Diten.HcmService/src/Diten.HcmService.Api"; Port = 5060 },
     @{ Name = "Mdm"; Path = "services/Diten.MdmService/src/Diten.MdmService.Api"; Port = 5059 },
     @{ Name = "Platform"; Path = "services/Diten.Platform/src/Diten.Platform.API"; Port = 5057 },
     @{ Name = "Gateway"; Path = "gateway/Diten.ApiGateway"; Port = 5000 },

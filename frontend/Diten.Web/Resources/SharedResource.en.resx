@@ -510,6 +510,7 @@
   <data name="NotificationTemplatesMenu" xml:space="preserve"><value>Notification Templates</value></data>
   <data name="NotificationSettingsMenu" xml:space="preserve"><value>Notification Settings</value></data>
   <data name="NotificationDispatchesMenu" xml:space="preserve"><value>Notification Dispatches</value></data>
+  <data name="NotificationEventsMenu" xml:space="preserve"><value>Notification Events</value></data>
   <data name="AddNotificationTemplate" xml:space="preserve"><value>Add Template</value></data>
   <data name="AddNotificationSettings" xml:space="preserve"><value>Add Settings</value></data>
   <data name="AddTenant" xml:space="preserve"><value>Add Tenant</value></data>
@@ -533,6 +534,7 @@
   <data name="TemplateMasters" xml:space="preserve"><value>Corporate Template Masters</value></data>
   <data name="TemplateVariants" xml:space="preserve"><value>Template Variants</value></data>
   <data name="AccessMatrix" xml:space="preserve"><value>Access Matrix</value></data>
+  <data name="Reconciliation" xml:space="preserve"><value>Reconciliation</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>QMS Baselines</value></data>
   <data name="Unauthorized" xml:space="preserve"><value>Unauthorized</value></data>
   <!-- FIX-ROLEPERMS-ROLENAME-L10N-STICKY — system role display names, keyed by role code (localized). -->

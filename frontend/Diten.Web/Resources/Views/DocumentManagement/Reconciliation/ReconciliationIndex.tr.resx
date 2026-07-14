@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ReconciliationTitle" xml:space="preserve"><value>Mutabakat, Kanıt ve Sapmalar</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Bir KYS taban çizgisi için geri okuma mutabakatı, tedarik kanıtı onayı, sapma iş akışı ve kalifikasyon hazırlığı</value></data>
+  <data name="DeviationsTitle" xml:space="preserve"><value>Sapmalar</value></data>
+  <data name="DeviationsDescription" xml:space="preserve"><value>Sicil temelli taban çizgisi ile tedarik edilen klasör ağacı arasında tespit edilen farklar</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Tedarik Kanıtı</value></data>
+  <data name="EvidenceDescription" xml:space="preserve"><value>BT izin ve KG onayı ile tedarik edilen klasör kanıtı</value></data>
+  <data name="Baseline" xml:space="preserve"><value>Taban çizgisi</value></data>
+  <data name="SelectBaseline" xml:space="preserve"><value>Bir taban çizgisi seçin</value></data>
+  <data name="Provider" xml:space="preserve"><value>Sağlayıcı</value></data>
+  <data name="Scope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="DryRun" xml:space="preserve"><value>Deneme çalıştırması</value></data>
+  <data name="ApplyFindings" xml:space="preserve"><value>Bulguları uygula</value></data>
+  <data name="RunReconciliation" xml:space="preserve"><value>Mutabakatı çalıştır</value></data>
+  <data name="ProviderInHouse" xml:space="preserve"><value>Kurum içi</value></data>
+  <data name="ProviderGoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="ProviderNotAvailable" xml:space="preserve"><value>kullanılamıyor</value></data>
+  <data name="ScopeDefinitionToInstance" xml:space="preserve"><value>Tanımdan Örneğe</value></data>
+  <data name="ScopeDefinitionToProvider" xml:space="preserve"><value>Tanımdan Sağlayıcıya</value></data>
+  <data name="ScopeInstanceToProvider" xml:space="preserve"><value>Örnekten Sağlayıcıya</value></data>
+  <data name="OpenDeviations" xml:space="preserve"><value>Sapmaları aç</value></data>
+  <data name="OpenEvidence" xml:space="preserve"><value>Kanıtları aç</value></data>
+  <data name="SelectBaselineFirst" xml:space="preserve"><value>Önce bir taban çizgisi seçin</value></data>
+  <data name="ApplyFindingsConfirm" xml:space="preserve"><value>Bulguları uygulamak, bu taban çizgisi için tespit edilen sapmaları kalıcı hale getirir. Devam edilsin mi?</value></data>
+  <data name="ProviderUnavailableMessage" xml:space="preserve"><value>Google Drive geri okuma sağlayıcısı henüz yapılandırılmadı</value></data>
+  <data name="DryRunComplete" xml:space="preserve"><value>Deneme çalıştırması tamamlandı</value></data>
+  <data name="FindingsApplied" xml:space="preserve"><value>Bulgular uygulandı</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Mutabakat Özeti</value></data>
+  <data name="ExpectedCount" xml:space="preserve"><value>Beklenen</value></data>
+  <data name="ActualCount" xml:space="preserve"><value>Gerçek</value></data>
+  <data name="MatchedCount" xml:space="preserve"><value>Eşleşen</value></data>
+  <data name="MissingCount" xml:space="preserve"><value>Eksik</value></data>
+  <data name="ExtraCount" xml:space="preserve"><value>Fazladan</value></data>
+  <data name="RenamedCount" xml:space="preserve"><value>Yeniden adlandırılan</value></data>
+  <data name="MovedCount" xml:space="preserve"><value>Taşınan</value></data>
+  <data name="MetadataMismatchCount" xml:space="preserve"><value>Meta veri uyuşmazlığı</value></data>
+  <data name="DeviationCount" xml:space="preserve"><value>Sapmalar</value></data>
+  <data name="BlockingDeviationCount" xml:space="preserve"><value>Engelleyici</value></data>
+  <data name="DryRunBadge" xml:space="preserve"><value>Deneme</value></data>
+  <data name="AppliedBadge" xml:space="preserve"><value>Uygulandı</value></data>
+  <data name="DetectedDeviations" xml:space="preserve"><value>Tespit Edilen Sapmalar</value></data>
+  <data name="NoDeviationsDetected" xml:space="preserve"><value>Sapma tespit edilmedi</value></data>
+  <data name="Recommendation" xml:space="preserve"><value>Öneri</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>Kalifikasyon Hazırlığı</value></data>
+  <data name="Ready" xml:space="preserve"><value>Hazır</value></data>
+  <data name="NotReady" xml:space="preserve"><value>Hazır değil</value></data>
+  <data name="BaselineStatus" xml:space="preserve"><value>Taban çizgisi durumu</value></data>
+  <data name="ExpectedInstanceCount" xml:space="preserve"><value>Beklenen örnekler</value></data>
+  <data name="EvidenceCount" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="MissingEvidenceCount" xml:space="preserve"><value>Eksik kanıt</value></data>
+  <data name="PermissionsAppliedCount" xml:space="preserve"><value>Uygulanan izinler</value></data>
+  <data name="QaVerifiedCount" xml:space="preserve"><value>KG doğrulandı</value></data>
+  <data name="OpenBlockingDeviationCount" xml:space="preserve"><value>Açık engelleyici sapmalar</value></data>
+  <data name="Reasons" xml:space="preserve"><value>Nedenler</value></data>
+  <data name="DeviationType" xml:space="preserve"><value>Sapma türü</value></data>
+  <data name="Severity" xml:space="preserve"><value>Önem derecesi</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>Sicil klasör kimliği</value></data>
+  <data name="ExpectedFullPath" xml:space="preserve"><value>Beklenen yol</value></data>
+  <data name="ActualFullPath" xml:space="preserve"><value>Gerçek yol</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="DetectedAt" xml:space="preserve"><value>Tespit tarihi</value></data>
+  <data name="Resolve" xml:space="preserve"><value>Çöz</value></data>
+  <data name="Accept" xml:space="preserve"><value>Kabul et</value></data>
+  <data name="ResolveComment" xml:space="preserve"><value>Çözüm yorumu</value></data>
+  <data name="AcceptComment" xml:space="preserve"><value>Kabul yorumu</value></data>
+  <data name="CommentLabel" xml:space="preserve"><value>Yorum</value></data>
+  <data name="DeviationResolved" xml:space="preserve"><value>Sapma çözüldü</value></data>
+  <data name="DeviationAccepted" xml:space="preserve"><value>Sapma kabul edildi</value></data>
+  <data name="MissingFolder" xml:space="preserve"><value>Eksik klasör</value></data>
+  <data name="ExtraFolder" xml:space="preserve"><value>Fazladan klasör</value></data>
+  <data name="RenameMismatch" xml:space="preserve"><value>Ad uyuşmazlığı</value></data>
+  <data name="MoveMismatch" xml:space="preserve"><value>Taşıma uyuşmazlığı</value></data>
+  <data name="ParentMismatch" xml:space="preserve"><value>Üst uyuşmazlığı</value></data>
+  <data name="DuplicateSibling" xml:space="preserve"><value>Yinelenen kardeş</value></data>
+  <data name="DuplicateFullPath" xml:space="preserve"><value>Yinelenen yol</value></data>
+  <data name="OrphanFolder" xml:space="preserve"><value>Sahipsiz klasör</value></data>
+  <data name="MetadataMismatch" xml:space="preserve"><value>Meta veri uyuşmazlığı</value></data>
+  <data name="PermissionMismatch" xml:space="preserve"><value>İzin uyuşmazlığı</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>Kanıt eksik</value></data>
+  <data name="SeverityInfo" xml:space="preserve"><value>Bilgi</value></data>
+  <data name="SeverityWarning" xml:space="preserve"><value>Uyarı</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>Yüksek</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>Kritik</value></data>
+  <data name="DeviationStatusOpen" xml:space="preserve"><value>Açık</value></data>
+  <data name="DeviationStatusAccepted" xml:space="preserve"><value>Kabul edildi</value></data>
+  <data name="DeviationStatusResolved" xml:space="preserve"><value>Çözüldü</value></data>
+  <data name="DeviationStatusClosed" xml:space="preserve"><value>Kapatıldı</value></data>
+  <data name="FullPath" xml:space="preserve"><value>Tam yol</value></data>
+  <data name="PlatformProvider" xml:space="preserve"><value>Platform sağlayıcısı</value></data>
+  <data name="PlatformFolderId" xml:space="preserve"><value>Platform klasör kimliği</value></data>
+  <data name="ProvisioningStatus" xml:space="preserve"><value>Tedarik durumu</value></data>
+  <data name="PermissionsApplied" xml:space="preserve"><value>İzinler uygulandı</value></data>
+  <data name="QaVerified" xml:space="preserve"><value>KG doğrulandı</value></data>
+  <data name="DeviationStatusColumn" xml:space="preserve"><value>Sapma durumu</value></data>
+  <data name="LastReadBackAt" xml:space="preserve"><value>Son geri okuma</value></data>
+  <data name="MarkPermissionsApplied" xml:space="preserve"><value>İzinleri uygulandı işaretle</value></data>
+  <data name="MarkQaVerified" xml:space="preserve"><value>KG doğrulandı işaretle</value></data>
+  <data name="PermissionsAppliedConfirm" xml:space="preserve"><value>Bu klasör için izinler uygulandı olarak işaretlensin mi?</value></data>
+  <data name="QaVerifyConfirm" xml:space="preserve"><value>Bu klasör KG doğrulandı olarak işaretlensin mi?</value></data>
+  <data name="PermissionsAppliedDone" xml:space="preserve"><value>İzinler uygulandı olarak işaretlendi</value></data>
+  <data name="QaVerifiedDone" xml:space="preserve"><value>Klasör KG doğrulandı olarak işaretlendi</value></data>
+  <data name="ProvPending" xml:space="preserve"><value>Beklemede</value></data>
+  <data name="ProvCreated" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="ProvExistingMatched" xml:space="preserve"><value>Mevcut eşleşti</value></data>
+  <data name="ProvFailed" xml:space="preserve"><value>Başarısız</value></data>
+  <data name="ProvSkipped" xml:space="preserve"><value>Atlandı</value></data>
+  <data name="ProvDeviated" xml:space="preserve"><value>Saptı</value></data>
+  <data name="EvidenceDevNone" xml:space="preserve"><value>Yok</value></data>
+  <data name="EvidenceDevOpen" xml:space="preserve"><value>Açık</value></data>
+  <data name="EvidenceDevClosed" xml:space="preserve"><value>Kapatıldı</value></data>
+  <data name="EvidenceDevAccepted" xml:space="preserve"><value>Kabul edildi</value></data>
+  <data name="EvidenceEditFutureNote" xml:space="preserve"><value>Kanıt meta verisi düzenleme henüz kullanılamıyor. Bu ekran yalnızca listeleme ve BT/KG onayını destekler.</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="RowActions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Onayla</value></data>
+</root>

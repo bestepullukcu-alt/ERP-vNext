@@ -1,0 +1,34 @@
+@using Diten.Web.Views.Platform.NotificationEvents
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationEventsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["NotificationEventsTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Platform/NotificationEvents/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["NotificationEventsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* Manifest sync result panel — populated only after a real sync-from-manifest call (no fake data). *@
+<div class="alert alert-info d-none mb-3" id="syncResultPanel">
+    <div class="fw-medium mb-1" id="syncResultSummary"></div>
+    <ul class="mb-0 ps-3 small" id="syncResultIssues"></ul>
+</div>
+
+@* ② DataTable Card — read-only monitoring subset (no BulkActionBar, no create/edit). *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-notificationevents" data-dt-standard="v2"> *@
+<partial name="~/Views/Platform/NotificationEvents/_DataTable.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Platform/NotificationEvents/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/NotificationEvents/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/NotificationEvents/index.js" asp-append-version="true"></script>
+}

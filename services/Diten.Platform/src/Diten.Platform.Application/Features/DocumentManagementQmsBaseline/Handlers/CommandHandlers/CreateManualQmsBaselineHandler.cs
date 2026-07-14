@@ -25,9 +25,14 @@ public sealed class CreateManualQmsBaselineHandler
     {
         var tenantId = TenantGuard.RequireTenant(_tenantContext);
         var baselineKey = $"BR-MAN-{Guid.NewGuid():N}"[..18].ToUpperInvariant();
-        var sourceKey = string.IsNullOrWhiteSpace(request.Request.Name)
-            ? baselineKey
-            : $"manual:{request.Request.Name.Trim()}";
+        // MOD-0028-FU08 — explicit source key wins (lets a manual baseline join an existing lineage, e.g. an
+        // imported register key, so MarkEffective supersedes the prior Effective). Otherwise fall back to the
+        // name-derived key, and finally to a unique per-baseline key when both are blank.
+        var sourceKey = !string.IsNullOrWhiteSpace(request.Request.SourceBaselineKey)
+            ? request.Request.SourceBaselineKey.Trim()
+            : string.IsNullOrWhiteSpace(request.Request.Name)
+                ? baselineKey
+                : $"manual:{request.Request.Name.Trim()}";
 
         var baseline = new BaselineRelease
         {

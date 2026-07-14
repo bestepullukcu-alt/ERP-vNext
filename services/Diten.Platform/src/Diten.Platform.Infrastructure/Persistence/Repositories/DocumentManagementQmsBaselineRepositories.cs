@@ -30,6 +30,8 @@ public sealed class BaselineReleaseRepository : TenantRepository<BaselineRelease
     }
 }
 
+// MOD-0028-FU09 provisioning-evidence + deviation repositories live in DocumentManagementProvisioningRepositories.cs.
+
 public sealed class CollectionDefinitionRepository : TenantRepository<CollectionDefinition>, ICollectionDefinitionRepository
 {
     public CollectionDefinitionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)

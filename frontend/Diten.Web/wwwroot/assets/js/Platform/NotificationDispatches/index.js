@@ -160,10 +160,14 @@ const NotificationDispatchesList = (function () {
         Failed: { title: L.StatusFailed || 'Failed', class: 'bg-label-danger' },
         Cancelled: { title: L.StatusCancelled || 'Cancelled', class: 'bg-label-secondary' }
     });
+    // Compact two-line stamp: "Jul 08, 26" over "02:42 PM".
     const formatDateTime = (v) => {
         if (!v) return '-';
         const d = new Date(v);
-        return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString(window.CurrentLanguage || undefined);
+        if (Number.isNaN(d.getTime())) return String(v);
+        const datePart = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: '2-digit' });
+        const timePart = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        return `<span class="d-block text-heading">${datePart}</span><span class="d-block text-muted small">${timePart}</span>`;
     };
 
     const cancelDispatch = (row) => {

@@ -100,6 +100,73 @@ public sealed class DocumentAccessMatrixTests
         Assert.DoesNotContain("UploadVersion", eff.AllowedActions);
     }
 
+    // ── MOD-0029-FU05 — generated (access-profile template) policies at runtime ────────────────
+
+    [Fact]
+    public async Task Generated_instance_allow_grants_runtime_access()
+    {
+        var f = Fixture();
+        f.Policies.Items.Add(new DocumentAccessPolicyEntry
+        {
+            Id = Guid.NewGuid(),
+            TenantId = TenantId,
+            TargetType = DocumentAccessTargetType.CollectionInstance,
+            TargetId = FolderId.ToString("D"),
+            PrincipalType = DocumentAccessPrincipalType.Role,
+            PrincipalId = RoleId.ToString("D"),
+            Actions = [DocumentAccessMatrixAction.View, DocumentAccessMatrixAction.Download],
+            Effect = DocumentAccessEffect.Allow,
+            InheritFromParent = true,
+            PolicySource = DocumentAccessPolicySource.AccessProfileTemplate,
+            PolicyTemplateKey = "GQMS-Controlled"
+        });
+
+        var eff = await f.Resolver.ResolveAsync(DocumentAccessTargetType.CollectionInstance, FolderId.ToString("D"),
+            DocumentAccessPrincipalType.Role, RoleId.ToString("D"), CancellationToken.None);
+
+        Assert.Contains("View", eff.AllowedActions);
+        Assert.Contains("Download", eff.AllowedActions);
+    }
+
+    [Fact]
+    public async Task Manual_deny_wins_over_generated_allow_on_same_target()
+    {
+        var f = Fixture();
+        // Generated Allow (from the template engine) …
+        f.Policies.Items.Add(new DocumentAccessPolicyEntry
+        {
+            Id = Guid.NewGuid(),
+            TenantId = TenantId,
+            TargetType = DocumentAccessTargetType.CollectionInstance,
+            TargetId = FolderId.ToString("D"),
+            PrincipalType = DocumentAccessPrincipalType.Role,
+            PrincipalId = RoleId.ToString("D"),
+            Actions = [DocumentAccessMatrixAction.UploadVersion],
+            Effect = DocumentAccessEffect.Allow,
+            InheritFromParent = true,
+            PolicySource = DocumentAccessPolicySource.AccessProfileTemplate
+        });
+        // … and a manual Deny on the same target/principal wins (deny precedence at the same distance).
+        f.Policies.Items.Add(new DocumentAccessPolicyEntry
+        {
+            Id = Guid.NewGuid(),
+            TenantId = TenantId,
+            TargetType = DocumentAccessTargetType.CollectionInstance,
+            TargetId = FolderId.ToString("D"),
+            PrincipalType = DocumentAccessPrincipalType.Role,
+            PrincipalId = RoleId.ToString("D"),
+            Actions = [DocumentAccessMatrixAction.UploadVersion],
+            Effect = DocumentAccessEffect.Deny,
+            InheritFromParent = true,
+            PolicySource = DocumentAccessPolicySource.Manual
+        });
+
+        var eff = await f.Resolver.ResolveAsync(DocumentAccessTargetType.CollectionInstance, FolderId.ToString("D"),
+            DocumentAccessPrincipalType.Role, RoleId.ToString("D"), CancellationToken.None);
+
+        Assert.DoesNotContain("UploadVersion", eff.AllowedActions);
+    }
+
     [Fact]
     public async Task Existing_folder_grant_is_bridged_by_compatibility_adapter()
     {

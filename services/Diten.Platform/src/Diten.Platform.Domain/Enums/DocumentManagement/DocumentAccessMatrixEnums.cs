@@ -64,3 +64,15 @@ public enum DocumentAccessPolicyStatus
     Disabled = 1,
     Archived = 2
 }
+
+/// <summary>
+/// MOD-0029-FU05 — provenance of an access policy row. Legacy/manually authored rows have no stored value and thus
+/// read as <see cref="Manual"/> (0), so existing policies are never mistaken for generated ones and are never
+/// overwritten by the access-profile template engine.
+/// </summary>
+public enum DocumentAccessPolicySource
+{
+    Manual = 0,
+    AccessProfileTemplate = 1,
+    SystemGenerated = 2
+}

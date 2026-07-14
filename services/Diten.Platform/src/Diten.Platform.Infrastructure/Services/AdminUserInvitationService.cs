@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Notifications;
 using Diten.Platform.Application.Features.Notifications.Commands;
+using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Infrastructure.Settings;
 using MediatR;
@@ -14,8 +15,9 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
 {
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
 
-    // MOD-0027 platform-default template that carries the invite layout (subject/body/variables).
-    private const string InvitationTemplateKey = "tenant.invite.email";
+    // MOD-0027-FU04C — the invite is dispatched by canonical eventCode (FU04A tenant.user.invited, bound to the
+    // tenant.invite.email template) through the FU04B EventCode Dispatch Adapter, not by a raw templateKey.
+    private const string InvitationEventCode = "tenant.user.invited";
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMediator _mediator;
@@ -62,10 +64,12 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
     {
         // TemporaryPassword is intentionally passed as a template variable: the notification handler renders it
         // into the sent body but persists a redacted preview (sensitive keys/values are masked), so the secret
-        // never lands in the dispatch record or the monitoring UI.
-        var request = new QueueEmailNotificationRequest(
-            InvitationTemplateKey,
-            string.IsNullOrWhiteSpace(tenant.DefaultLanguage) ? "en" : tenant.DefaultLanguage,
+        // never lands in the dispatch record or the monitoring UI. Variables are already aligned with the
+        // tenant.user.invited event's required contract (TenantDisplayName is present).
+        var dispatchRequest = new NotificationEventDispatchRequest(
+            tenant.Id,
+            InvitationEventCode,
+            new[] { new EmailRecipientDto(adminUser.Email, adminUser.Name) },
             new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
             {
                 ["RecipientName"] = string.IsNullOrWhiteSpace(adminUser.Name) ? adminUser.Email : adminUser.Name,
@@ -74,18 +78,21 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
                 ["TemporaryPassword"] = temporaryPassword,
                 ["LoginUrl"] = loginUrl
             },
-            new[] { new EmailRecipientDto(adminUser.Email, adminUser.Name) });
+            Locale: string.IsNullOrWhiteSpace(tenant.DefaultLanguage) ? "en" : tenant.DefaultLanguage);
 
         try
         {
-            var response = await _mediator.Send(new QueueEmailNotificationCommand(tenant.Id, request), cancellationToken);
+            // Fail-soft: provisioning already succeeded; a notification failure must NOT fail the invite.
+            var response = await _mediator.Send(new DispatchNotificationByEventCodeCommand(dispatchRequest), cancellationToken);
             if (!response.IsSuccessful)
             {
                 _logger.LogWarning(
-                    "Admin invitation notification was not delivered. TenantId={TenantId} AdminUserId={AdminUserId} StatusCode={StatusCode} Errors={Errors}",
+                    "Admin invitation notification was not delivered. TenantId={TenantId} AdminUserId={AdminUserId} EventCode={EventCode} StatusCode={StatusCode} ReasonCode={ReasonCode} Errors={Errors}",
                     tenant.Id,
                     adminUser.Id,
+                    InvitationEventCode,
                     response.StatusCode,
+                    response.ReasonCode,
                     string.Join("; ", response.Errors));
                 return false;
             }

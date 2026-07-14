@@ -61,7 +61,7 @@
     <value>1. 选择工作簿并验证</value>
   </data>
   <data name="WorkbookFile" xml:space="preserve">
-    <value>工作簿 (.xlsx)</value>
+    <value>导入文件 (.xlsx、.csv、.json)</value>
   </data>
   <data name="WorkbookFileHint" xml:space="preserve">
     <value>工作簿仅作为治理元数据读取，绝不作为文档存储。</value>
@@ -94,7 +94,7 @@
     <value>请选择 .xlsx 工作簿。</value>
   </data>
   <data name="InvalidFileType" xml:space="preserve">
-    <value>仅接受 .xlsx 工作簿。</value>
+    <value>仅接受 .xlsx、.csv 或 .json 文件。</value>
   </data>
   <data name="SourceKeyRequired" xml:space="preserve">
     <value>源基线键为必填项。</value>
@@ -326,4 +326,26 @@
   <data name="StatusArchived" xml:space="preserve"><value>已归档</value></data>
   <data name="VariantAllowed" xml:space="preserve"><value>允许变体</value></data>
   <data name="VariantLocked" xml:space="preserve"><value>变体锁定</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>登记编号</value></data>
+  <data name="FolderType" xml:space="preserve"><value>文件夹类型</value></data>
+  <data name="AccessProfile" xml:space="preserve"><value>访问配置</value></data>
+  <data name="RetentionClass" xml:space="preserve"><value>保留类别</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>旧编码</value></data>
+  <data name="ProvisioningWave" xml:space="preserve"><value>部署批次</value></data>
+  <data name="Approve" xml:space="preserve"><value>批准</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>批准此基线？快照清单将在审核时冻结；在标记为生效之前无法实例化。</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>基线已批准。</value></data>
+  <data name="MarkEffective" xml:space="preserve"><value>标记为生效</value></data>
+  <data name="MarkEffectiveConfirm" xml:space="preserve"><value>将此基线标记为生效？它将变为可实例化，并取代具有相同来源键的任何先前生效基线。</value></data>
+  <data name="MarkEffectiveSuccess" xml:space="preserve"><value>基线已标记为生效。</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>生效</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>已取代</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>批准时间</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>生效时间</value></data>
+  <data name="ReasonPackageNotApproved" xml:space="preserve"><value>来源包仍为草稿（不可执行）；无法标记为生效。</value></data>
+  <data name="SourceKey" xml:space="preserve"><value>来源键</value></data>
+  <data name="SourceKeyPlaceholder" xml:space="preserve"><value>例如 GMG-QMS-LOG-0007</value></data>
+  <data name="SourceKeyHint" xml:space="preserve"><value>可选。具有相同来源键的基线构成同一谱系——将新基线标记为生效会取代先前的基线。留空则从名称派生。</value></data>
+  <data name="NameLineageHint" xml:space="preserve"><value>相同名称共享同一基线谱系；新的生效基线会取代先前的。</value></data>
 </root>

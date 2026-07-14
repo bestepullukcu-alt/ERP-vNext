@@ -18,10 +18,27 @@ public sealed class QmsBaselineCommitRequest
     public string SourceBaselineKey { get; set; } = string.Empty;
     public string BaselineVersion { get; set; } = string.Empty;
     public string? ChangeSummary { get; set; }
+
+    /// <summary>MOD-0028-FU08 — optional source register/package status; gates MarkEffective downstream.</summary>
+    public string? SourcePackageStatus { get; set; }
 }
 
 /// <summary>MOD-0028-FU02 publish request. Optional optimistic-concurrency token (0 = unchecked).</summary>
 public sealed class QmsBaselinePublishRequest
+{
+    public int ExpectedVersion { get; set; }
+}
+
+/// <summary>MOD-0028-FU08 approve request. Optional optimistic-concurrency token + approval reference/comment.</summary>
+public sealed class QmsBaselineApproveRequest
+{
+    public int ExpectedVersion { get; set; }
+    public string? ApprovalReference { get; set; }
+    public string? ApprovalComment { get; set; }
+}
+
+/// <summary>MOD-0028-FU08 mark-effective request. Optional optimistic-concurrency token (0 = unchecked).</summary>
+public sealed class QmsBaselineMarkEffectiveRequest
 {
     public int ExpectedVersion { get; set; }
 }
@@ -33,6 +50,9 @@ public sealed class ManualQmsBaselineRequest
     public string? Name { get; set; }
     public string? ChangeSummary { get; set; }
     public DateTimeOffset? EffectiveDate { get; set; }
+
+    /// <summary>MOD-0028-FU08 — optional explicit source/lineage key; blank falls back to name-derived behaviour.</summary>
+    public string? SourceBaselineKey { get; set; }
 }
 
 /// <summary>MOD-0028-FU04 manual CollectionDefinition create/update request.</summary>

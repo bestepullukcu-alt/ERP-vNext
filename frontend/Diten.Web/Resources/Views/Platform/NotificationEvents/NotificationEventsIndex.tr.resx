@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="NotificationEventsTitle" xml:space="preserve"><value>Bildirim Olayları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Şablon slot'larına bağlı platform bildirim olaylarının salt-okunur kataloğu. Olaylar manifest-driven'dır; uzlaştırmak için modül manifest'lerinden senkronize edin. Olaylar her modülün kendi sayfa ve izinlerine karşı doğrulanır.</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Detayları Görüntüle</value></data>
+  <data name="EventCode" xml:space="preserve"><value>Olay Kodu</value></data>
+  <data name="OwnerModule" xml:space="preserve"><value>Sahip Modül</value></data>
+  <data name="OwnerDomain" xml:space="preserve"><value>Sahip Alan</value></data>
+  <data name="OwnerService" xml:space="preserve"><value>Sahip Servis</value></data>
+  <data name="Channel" xml:space="preserve"><value>Kanal</value></data>
+  <data name="DefaultTemplateKey" xml:space="preserve"><value>Varsayılan Şablon Anahtarı</value></data>
+  <data name="TenantOverride" xml:space="preserve"><value>Kiracı Override</value></data>
+  <data name="UsageType" xml:space="preserve"><value>Kullanım Tipi</value></data>
+  <data name="Severity" xml:space="preserve"><value>Varsayılan Önem</value></data>
+  <data name="LinkPolicy" xml:space="preserve"><value>Bağlantı Politikası</value></data>
+  <data name="TargetPage" xml:space="preserve"><value>Hedef Sayfa</value></data>
+  <data name="RequiredPermission" xml:space="preserve"><value>Gerekli İzin</value></data>
+  <data name="SourceType" xml:space="preserve"><value>Kaynak Tipi</value></data>
+  <data name="OwnerArea" xml:space="preserve"><value>Sahip Alanı</value></data>
+  <data name="TargetRoute" xml:space="preserve"><value>Hedef Rota</value></data>
+  <data name="LastSynced" xml:space="preserve"><value>Son Senkronizasyon</value></data>
+  <data name="ManifestSource" xml:space="preserve"><value>Manifest Kaynağı</value></data>
+  <data name="ManifestVersion" xml:space="preserve"><value>Manifest Sürümü</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Kullanımdan Kaldırıldı</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="UsageSystemEvent" xml:space="preserve"><value>Sistem Olayı</value></data>
+  <data name="UsageManualSelection" xml:space="preserve"><value>Manuel Seçim</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="SyncFromManifest" xml:space="preserve"><value>Manifest'ten Senkronize Et</value></data>
+  <data name="SyncResultTitle" xml:space="preserve"><value>Manifest Senkronizasyon Sonucu</value></data>
+  <data name="SyncSummary" xml:space="preserve"><value>{0} sağlayıcı tarandı, {1} olay bildirildi: {2} senkronize, {3} güncellendi, {4} sorunlu.</value></data>
+  <data name="NoEventsDeclared" xml:space="preserve"><value>Henüz hiçbir modül manifest'i bildirim olayı bildirmedi.</value></data>
+  <data name="Archive" xml:space="preserve"><value>Olayı Arşivle</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Bu olay arşivlenecek ve aktif şablon slot listesinden düşecek. Devam edilsin mi?</value></data>
+  <data name="EventArchived" xml:space="preserve"><value>Bildirim olayı arşivlendi.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Olay Detayları</value></data>
+  <data name="OwnershipSection" xml:space="preserve"><value>Sahiplik ve Bağlama</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>Şablon Sözleşmesi</value></data>
+  <data name="VariablesSection" xml:space="preserve"><value>Gerekli Değişkenler</value></data>
+  <data name="OptionalVariablesSection" xml:space="preserve"><value>İsteğe Bağlı Değişkenler</value></data>
+  <data name="ManifestSection" xml:space="preserve"><value>Manifest Kökeni</value></data>
+  <data name="ValidationSection" xml:space="preserve"><value>Doğrulama</value></data>
+  <data name="ValidationDraftNote" xml:space="preserve"><value>Bu olay Taslak durumunda: son senkronizasyonda manifest doğrulamasını geçemedi (çözülemeyen sayfa/izin/format). Güncel doğrulama sorunlarını görmek için Manifest'ten Senkronize Et'i çalıştırın, ardından sahip modülün manifest'ini düzeltin.</value></data>
+  <data name="ValidationActiveNote" xml:space="preserve"><value>Bu olay manifest doğrulamasını geçti ve aktif şablon slot listesinde mevcut.</value></data>
+  <data name="NoVariables" xml:space="preserve"><value>Değişken bildirilmedi.</value></data>
+  <data name="VarName" xml:space="preserve"><value>Ad</value></data>
+  <data name="VarType" xml:space="preserve"><value>Tip</value></data>
+  <data name="VarRequired" xml:space="preserve"><value>Gerekli</value></data>
+</root>
