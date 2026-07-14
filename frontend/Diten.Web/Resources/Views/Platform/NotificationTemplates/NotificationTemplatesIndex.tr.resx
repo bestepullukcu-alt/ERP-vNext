@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="NotificationTemplatesTitle" xml:space="preserve"><value>Bildirim Şablonları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Platform varsayılan ve tenant'a özel e-posta bildirim şablonlarını yönetin.</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Detayları Gör</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Şablon Ekle</value></data>
+  <data name="TemplateKey" xml:space="preserve"><value>Şablon Anahtarı</value></data>
+  <data name="Locale" xml:space="preserve"><value>Dil</value></data>
+  <data name="Channel" xml:space="preserve"><value>Kanal</value></data>
+  <data name="SemanticVersion" xml:space="preserve"><value>Şablon Sürümü</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncelleme</value></data>
+  <data name="Scope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="ScopeColumn" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="ScopePlatformDefaults" xml:space="preserve"><value>Platform Varsayılanları</value></data>
+  <data name="ScopeTenantOverrides" xml:space="preserve"><value>Tenant Özelleştirmeleri</value></data>
+  <data name="TargetTenant" xml:space="preserve"><value>Hedef Tenant</value></data>
+  <data name="SelectTenantFirst" xml:space="preserve"><value>Tenant özelleştirmelerini listelemek için bir hedef tenant seçin.</value></data>
+  <data name="Archive" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Şablon arşivlenecek ve aktif listeden kaldırılacak. Devam edilsin mi?</value></data>
+  <data name="TemplateArchived" xml:space="preserve"><value>Şablon arşivlendi.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Arşivlenmiş</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Bildirim Şablonu Oluştur</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Bildirim Şablonu Düzenle</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Şablon Detayı</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>İçerik</value></data>
+  <data name="VariablesSection" xml:space="preserve"><value>Değişkenler</value></data>
+  <data name="PreviewSection" xml:space="preserve"><value>Önizleme</value></data>
+  <data name="TemplateKeyPlaceholder" xml:space="preserve"><value>tenant.invite.email</value></data>
+  <data name="TemplateKeyHint" xml:space="preserve"><value>Küçük harf noktalı anahtar, örn. tenant.invite.email.</value></data>
+  <data name="SubjectTemplate" xml:space="preserve"><value>Konu Şablonu</value></data>
+  <data name="SubjectTemplatePlaceholder" xml:space="preserve"><value>Hoş geldiniz {{UserName}}</value></data>
+  <data name="BodyHtmlTemplate" xml:space="preserve"><value>HTML Gövde</value></data>
+  <data name="BodyHtmlPlaceholder" xml:space="preserve"><value>&lt;p&gt;Merhaba {{UserName}}&lt;/p&gt;</value></data>
+  <data name="BodyHint" xml:space="preserve"><value>HTML veya metin gövdesinden en az biri zorunludur. {{DegiskenAdi}} token'larını kullanın.</value></data>
+  <data name="BodyTextTemplate" xml:space="preserve"><value>Metin Gövde</value></data>
+  <data name="BodyTextPlaceholder" xml:space="preserve"><value>Merhaba {{UserName}}</value></data>
+  <data name="AddVariable" xml:space="preserve"><value>Ekle</value></data>
+  <data name="NoVariables" xml:space="preserve"><value>Tanımlı değişken yok.</value></data>
+  <data name="VariableNamePlaceholder" xml:space="preserve"><value>DegiskenAdi</value></data>
+  <data name="VariableTypeString" xml:space="preserve"><value>Metin</value></data>
+  <data name="VariableTypeNumber" xml:space="preserve"><value>Sayı</value></data>
+  <data name="VariableTypeBoolean" xml:space="preserve"><value>Mantıksal</value></data>
+  <data name="VariableTypeDate" xml:space="preserve"><value>Tarih</value></data>
+  <data name="VariableTypeUrl" xml:space="preserve"><value>Bağlantı</value></data>
+  <data name="VariableRequired" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="RenderPreview" xml:space="preserve"><value>Önizle</value></data>
+  <data name="PreviewSubject" xml:space="preserve"><value>Konu</value></data>
+</root>

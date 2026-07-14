@@ -51,6 +51,7 @@ public sealed class CommitQmsBaselineImportHandler
             BaselineVersion = request.BaselineVersion.Trim(),
             Status = BaselineReleaseStatus.Draft,
             ChangeSummary = request.ChangeSummary?.Trim(),
+            SourcePackageStatus = string.IsNullOrWhiteSpace(request.SourcePackageStatus) ? null : request.SourcePackageStatus.Trim(),
             DeprecationNoticeWindowDays = 0
         };
         await _baselineRepository.CreateAsync(baseline, ct);
@@ -76,7 +77,25 @@ public sealed class CommitQmsBaselineImportHandler
             FullPath = d.FullPath,
             DisplayOrder = d.DisplayOrder,
             Status = CollectionDefinitionStatus.Active,
-            DefinitionHash = d.DefinitionHash
+            DefinitionHash = d.DefinitionHash,
+            // MOD-0028-FU06 register-backed governance metadata (additive; null for legacy imports).
+            RegisterFolderId = d.RegisterFolderId,
+            RegisterParentFolderId = d.RegisterParentFolderId,
+            RegisterFullPath = d.RegisterFullPath,
+            DepartmentDomain = d.DepartmentDomain,
+            FolderType = d.FolderType,
+            ExampleDocuments = d.ExampleDocuments,
+            OwningDepartments = d.OwningDepartments,
+            ControlledByGqms = d.ControlledByGqms,
+            SourceOfTruth = d.SourceOfTruth,
+            OwnerFunction = d.OwnerFunction,
+            AccessProfile = d.AccessProfile,
+            RetentionClass = d.RetentionClass,
+            ChangeControlRequired = d.ChangeControlRequired,
+            GqmsScopeLink = d.GqmsScopeLink,
+            LegacyCode = d.LegacyCode,
+            ProvisioningWave = d.ProvisioningWave,
+            ProvisioningOrder = d.ProvisioningOrder
         }).ToList();
         await _definitionRepository.CreateManyAsync(definitions, ct);
 

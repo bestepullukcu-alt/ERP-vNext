@@ -34,13 +34,14 @@ public sealed class GetInstantiationPrerequisitesHandler
     {
         TenantGuard.RequireTenant(_tenantContext);
         var baselines = await _baselineRepository.GetAllAsync(ct);
-        var published = baselines
-            .Where(x => x.Status == BaselineReleaseStatus.Published)
-            .OrderByDescending(x => x.PublishedAt ?? x.CreatedAt)
+        // MOD-0028-FU08 — offer Effective (and legacy Published) baselines as instantiation sources.
+        var instantiable = baselines
+            .Where(x => x.Status.IsInstantiable())
+            .OrderByDescending(x => x.EffectiveAt ?? x.PublishedAt ?? x.CreatedAt)
             .ToList();
 
-        var options = new List<PublishedBaselineReleaseOptionModel>(published.Count);
-        foreach (var baseline in published)
+        var options = new List<PublishedBaselineReleaseOptionModel>(instantiable.Count);
+        foreach (var baseline in instantiable)
         {
             var definitions = await _definitionRepository.GetByBaselineAsync(baseline.Id, ct);
             options.Add(new PublishedBaselineReleaseOptionModel(

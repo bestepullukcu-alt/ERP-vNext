@@ -1,0 +1,53 @@
+@using Diten.Web.Views.Platform.NotificationTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="notificationtemplates-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        TemplateKey = Localizer["TemplateKey"].Value,
+        Locale = Localizer["Locale"].Value,
+        Channel = Localizer["Channel"].Value,
+        SemanticVersion = Localizer["SemanticVersion"].Value,
+        UpdatedAt = Localizer["UpdatedAt"].Value,
+        Scope = Localizer["Scope"].Value,
+        ScopePlatformDefaults = Localizer["ScopePlatformDefaults"].Value,
+        ScopeTenantOverrides = Localizer["ScopeTenantOverrides"].Value,
+        TargetTenant = Localizer["TargetTenant"].Value,
+        SelectTenantFirst = Localizer["SelectTenantFirst"].Value,
+        Archive = Localizer["Archive"].Value,
+        ArchiveConfirm = Localizer["ArchiveConfirm"].Value,
+        TemplateArchived = Localizer["TemplateArchived"].Value,
+        StatusDraft = Localizer["StatusDraft"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusArchived = Localizer["StatusArchived"].Value
+    })
+</script>

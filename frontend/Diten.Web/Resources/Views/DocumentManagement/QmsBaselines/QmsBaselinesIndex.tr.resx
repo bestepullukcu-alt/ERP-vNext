@@ -61,7 +61,7 @@
     <value>1. Calisma kitabi secin ve dogrulayin</value>
   </data>
   <data name="WorkbookFile" xml:space="preserve">
-    <value>Calisma kitabi (.xlsx)</value>
+    <value>Ice aktarma dosyasi (.xlsx, .csv, .json)</value>
   </data>
   <data name="WorkbookFileHint" xml:space="preserve">
     <value>Calisma kitabi yalnizca yonetisim meta verisi olarak okunur; belge olarak saklanmaz.</value>
@@ -94,7 +94,7 @@
     <value>Lutfen bir .xlsx calisma kitabi secin.</value>
   </data>
   <data name="InvalidFileType" xml:space="preserve">
-    <value>Yalnizca .xlsx calisma kitaplari kabul edilir.</value>
+    <value>Yalnizca .xlsx, .csv veya .json dosyalari kabul edilir.</value>
   </data>
   <data name="SourceKeyRequired" xml:space="preserve">
     <value>Kaynak baseline anahtari gereklidir.</value>
@@ -326,4 +326,26 @@
   <data name="StatusArchived" xml:space="preserve"><value>Arşivlendi</value></data>
   <data name="VariantAllowed" xml:space="preserve"><value>Varyanta İzin Verildi</value></data>
   <data name="VariantLocked" xml:space="preserve"><value>Varyant Kilitli</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>Kayit No</value></data>
+  <data name="FolderType" xml:space="preserve"><value>Klasor Turu</value></data>
+  <data name="AccessProfile" xml:space="preserve"><value>Erisim Profili</value></data>
+  <data name="RetentionClass" xml:space="preserve"><value>Saklama Sinifi</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>Eski Kod</value></data>
+  <data name="ProvisioningWave" xml:space="preserve"><value>Saglama Dalgasi</value></data>
+  <data name="Approve" xml:space="preserve"><value>Onayla</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>Bu baseline onaylansin mi? Anlik goruntu manifesti inceleme aninda dondurulur; yururluge alinana kadar ornekleme yapilamaz.</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>Baseline onaylandi.</value></data>
+  <data name="MarkEffective" xml:space="preserve"><value>Yururluge Al</value></data>
+  <data name="MarkEffectiveConfirm" xml:space="preserve"><value>Bu baseline yururluge alinsin mi? Ornekleme yapilabilir hale gelir ve ayni kaynak anahtarina ait onceki yururlukteki baseline gecersiz kilinir.</value></data>
+  <data name="MarkEffectiveSuccess" xml:space="preserve"><value>Baseline yururluge alindi.</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Onayli</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>Yururlukte</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>Gecersiz Kilindi</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>Onaylanma</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Yururluk</value></data>
+  <data name="ReasonPackageNotApproved" xml:space="preserve"><value>Kaynak paket hala taslak (yurutme icin degil); yururluge alinamaz.</value></data>
+  <data name="SourceKey" xml:space="preserve"><value>Kaynak anahtari</value></data>
+  <data name="SourceKeyPlaceholder" xml:space="preserve"><value>or. GMG-QMS-LOG-0007</value></data>
+  <data name="SourceKeyHint" xml:space="preserve"><value>Istege bagli. Ayni kaynak anahtarina sahip baseline'lar tek bir hat olusturur — yenisini yururluge almak oncekini gecersiz kilar. Bos birakirsan addan turetilir.</value></data>
+  <data name="NameLineageHint" xml:space="preserve"><value>Ayni ad, ayni baseline hattini paylasir; yeni Effective oncekini gecersiz kilar.</value></data>
 </root>

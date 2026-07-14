@@ -103,8 +103,9 @@ public sealed class PermissionAliasResolverTests
     [Fact]
     public void Map_has_the_expected_platform_enforced_entry_count()
     {
-        // §1.2 (32) + §1.1 Platform-owned (20) + §1.3 verb aliases (3) + MOD-0028-FU01 (5) + MOD-0028-FU02 (1) = 61.
-        Assert.Equal(61, PermissionAliasMap.CanonicalToAliases.Count);
+        // §1.2 (32) + §1.1 Platform-owned (20) + §1.3 verb aliases (3) + MOD-0028-FU01 (5) + MOD-0028-FU02 (1)
+        // + MOD-0027-FU03 notification events (2: events.read, events.manage) = 63.
+        Assert.Equal(63, PermissionAliasMap.CanonicalToAliases.Count);
     }
 
     [Fact]

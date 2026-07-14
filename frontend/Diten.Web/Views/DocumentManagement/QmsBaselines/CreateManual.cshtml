@@ -47,6 +47,12 @@
                     <div class="col-12 col-md-6">
                         <label for="name" class="form-label fw-medium">@Localizer["BaselineName"]</label>
                         <input id="name" name="name" class="form-control" maxlength="200" />
+                        <div class="form-text">@Localizer["NameLineageHint"]</div>
+                    </div>
+                    <div class="col-12">
+                        <label for="sourceBaselineKey" class="form-label fw-medium">@Localizer["SourceKey"]</label>
+                        <input id="sourceBaselineKey" name="sourceBaselineKey" class="form-control" maxlength="200" placeholder="@Localizer["SourceKeyPlaceholder"]" />
+                        <div class="form-text">@Localizer["SourceKeyHint"]</div>
                     </div>
                     <div class="col-12">
                         <label for="changeSummary" class="form-label fw-medium">@Localizer["ChangeSummary"]</label>

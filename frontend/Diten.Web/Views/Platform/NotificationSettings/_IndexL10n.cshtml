@@ -1,0 +1,46 @@
+@using Diten.Web.Views.Platform.NotificationSettings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationSettingsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="notificationsettings-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        TargetTenant = Localizer["TargetTenant"].Value,
+        Provider = Localizer["Provider"].Value,
+        SenderEmail = Localizer["SenderEmail"].Value,
+        FallbackPolicy = Localizer["FallbackPolicy"].Value,
+        UpdatedAt = Localizer["UpdatedAt"].Value,
+        DeleteConfirm = Localizer["DeleteConfirm"].Value,
+        ResolvedFromTenant = Localizer["ResolvedFromTenant"].Value,
+        ResolvedFromPlatformDefault = Localizer["ResolvedFromPlatformDefault"].Value,
+        ResolvedUnavailable = Localizer["ResolvedUnavailable"].Value
+    })
+</script>

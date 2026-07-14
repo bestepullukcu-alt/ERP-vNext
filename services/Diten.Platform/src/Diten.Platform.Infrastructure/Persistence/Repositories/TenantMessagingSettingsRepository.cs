@@ -61,6 +61,19 @@ public sealed class TenantMessagingSettingsRepository : ITenantMessagingSettings
         return await _collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
+    public async Task<IReadOnlyList<TenantMessagingSettings>> ListTenantSettingsAsync(int skip = 0, int take = 50, CancellationToken ct = default)
+    {
+        var filter = Builders<TenantMessagingSettings>.Filter.And(
+            ActiveFilter,
+            Builders<TenantMessagingSettings>.Filter.Eq(x => x.IsPlatformDefault, false));
+
+        return await _collection.Find(filter)
+            .SortByDescending(x => x.CreatedAt)
+            .Skip(skip)
+            .Limit(take)
+            .ToListAsync(ct);
+    }
+
     public async Task UpdateAsync(TenantMessagingSettings settings, CancellationToken ct = default)
     {
         settings.UpdatedAt = DateTimeOffset.UtcNow;

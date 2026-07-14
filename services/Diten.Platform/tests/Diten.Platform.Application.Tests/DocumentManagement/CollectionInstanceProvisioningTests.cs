@@ -38,7 +38,7 @@ public sealed class CollectionInstanceProvisioningTests
     }
 
     [Fact]
-    public async Task Draft_baseline_is_blocked_with_validation_failed()
+    public async Task Draft_baseline_is_blocked_as_not_effective()
     {
         var fixture = Fixture(referenceable: true);
         var baseline = PublishedBaseline();
@@ -49,7 +49,39 @@ public sealed class CollectionInstanceProvisioningTests
 
         Assert.False(response.IsSuccessful);
         Assert.Equal(400, response.StatusCode);
-        Assert.Equal(DocumentManagementInstantiationReasonCodes.ValidationFailed, response.ReasonCode);
+        // MOD-0028-FU08: Draft is no longer instantiable → BASELINE_NOT_EFFECTIVE (legacy Published stays instantiable).
+        Assert.Equal(DocumentManagementInstantiationReasonCodes.BaselineNotEffective, response.ReasonCode);
+    }
+
+    [Fact]
+    public async Task Effective_baseline_can_be_instantiated()
+    {
+        var fixture = Fixture(referenceable: true);
+        var baseline = PublishedBaseline();
+        baseline.Status = BaselineReleaseStatus.Effective; // MOD-0028-FU08 live canonical
+        fixture.Baselines.Items.Add(baseline);
+        fixture.Definitions.Items.AddRange(Definitions(baseline.Id));
+
+        var response = await fixture.Service.DryRunAsync(baseline.Id, Scope(), InstantiationSelectionRequest.Default, Correlation, CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(2, response.Data!.Diagnostics!.NodesToCreate);
+    }
+
+    [Fact]
+    public async Task Approved_baseline_cannot_be_instantiated()
+    {
+        var fixture = Fixture(referenceable: true);
+        var baseline = PublishedBaseline();
+        baseline.Status = BaselineReleaseStatus.Approved; // reviewed but not live
+        fixture.Baselines.Items.Add(baseline);
+        fixture.Definitions.Items.AddRange(Definitions(baseline.Id));
+
+        var response = await fixture.Service.DryRunAsync(baseline.Id, Scope(), InstantiationSelectionRequest.Default, Correlation, CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(400, response.StatusCode);
+        Assert.Equal(DocumentManagementInstantiationReasonCodes.BaselineNotEffective, response.ReasonCode);
     }
 
     [Fact]

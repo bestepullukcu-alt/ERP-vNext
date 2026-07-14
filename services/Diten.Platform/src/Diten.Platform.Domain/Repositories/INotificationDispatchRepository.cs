@@ -1,4 +1,5 @@
 using Diten.Platform.Domain.Entities.Notifications;
+using Diten.Platform.Domain.Enums;
 
 namespace Diten.Platform.Domain.Repositories;
 
@@ -6,7 +7,15 @@ public interface INotificationDispatchRepository
 {
     Task<NotificationDispatch> CreateAsync(NotificationDispatch dispatch, CancellationToken ct = default);
     Task<NotificationDispatch?> GetByIdForTenantAsync(Guid tenantId, Guid id, CancellationToken ct = default);
-    Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(Guid tenantId, int skip = 0, int take = 50, CancellationToken ct = default);
+    Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(
+        Guid tenantId,
+        int skip = 0,
+        int take = 50,
+        NotificationDispatchStatus? status = null,
+        DateTimeOffset? queuedFrom = null,
+        DateTimeOffset? queuedTo = null,
+        string? templateKey = null,
+        CancellationToken ct = default);
     Task UpdateAsync(NotificationDispatch dispatch, CancellationToken ct = default);
 
     /// <summary>

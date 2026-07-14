@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="NotificationDispatchesTitle" xml:space="preserve"><value>Bildirim Gönderimleri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kuyruğa alınan, gönderilen, başarısız ve iptal edilen bildirim gönderimlerinin salt-okunur izlenmesi. Tam mesaj gövdeleri ve Bcc alıcıları asla gösterilmez.</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Detayları Görüntüle</value></data>
+  <data name="TargetTenant" xml:space="preserve"><value>Hedef Kiracı</value></data>
+  <data name="SelectTenant" xml:space="preserve"><value>Bir hedef kiracı seçin</value></data>
+  <data name="SelectTenantPrompt" xml:space="preserve"><value>Bildirim gönderimlerini listelemek için bir hedef kiracı seçin.</value></data>
+  <data name="TemplateKey" xml:space="preserve"><value>Şablon Anahtarı</value></data>
+  <data name="TemplateKeyPlaceholder" xml:space="preserve"><value>örn. tenant.invite</value></data>
+  <data name="Channel" xml:space="preserve"><value>Kanal</value></data>
+  <data name="Provider" xml:space="preserve"><value>Sağlayıcı</value></data>
+  <data name="Recipients" xml:space="preserve"><value>Alıcılar</value></data>
+  <data name="QueuedAt" xml:space="preserve"><value>Kuyruğa Alındı</value></data>
+  <data name="SentAt" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="FailedAt" xml:space="preserve"><value>Başarısız</value></data>
+  <data name="DateFrom" xml:space="preserve"><value>Kuyruk Başlangıç</value></data>
+  <data name="DateTo" xml:space="preserve"><value>Kuyruk Bitiş</value></data>
+  <data name="StatusQueued" xml:space="preserve"><value>Kuyrukta</value></data>
+  <data name="StatusSent" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="StatusFailed" xml:space="preserve"><value>Başarısız</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Gönderimi İptal Et</value></data>
+  <data name="CancelConfirm" xml:space="preserve"><value>Kuyruktaki bu gönderim iptal edilecek ve gönderilmeyecek. Devam edilsin mi?</value></data>
+  <data name="CancelNotAllowed" xml:space="preserve"><value>Yalnızca kuyruktaki gönderimler iptal edilebilir.</value></data>
+  <data name="DispatchCancelled" xml:space="preserve"><value>Gönderim iptal edildi.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Gönderim Detayları</value></data>
+  <data name="MetadataSection" xml:space="preserve"><value>Gönderim Meta Verisi</value></data>
+  <data name="DeliverySection" xml:space="preserve"><value>Teslimat Durumu</value></data>
+  <data name="RecipientsSection" xml:space="preserve"><value>Alıcılar</value></data>
+  <data name="ErrorSection" xml:space="preserve"><value>Hata ve İlişki</value></data>
+  <data name="VariablesSection" xml:space="preserve"><value>Değişkenler (temizlenmiş)</value></data>
+  <data name="PreviewSection" xml:space="preserve"><value>Güvenli Önizleme (kısaltılmış)</value></data>
+  <data name="Subject" xml:space="preserve"><value>Konu</value></data>
+  <data name="Locale" xml:space="preserve"><value>Yerel Ayar</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="RetryCount" xml:space="preserve"><value>Yeniden Deneme Sayısı</value></data>
+  <data name="ToCount" xml:space="preserve"><value>Alıcı (To) sayısı</value></data>
+  <data name="CcCount" xml:space="preserve"><value>Cc alıcı sayısı</value></data>
+  <data name="BccCount" xml:space="preserve"><value>Bcc alıcı sayısı</value></data>
+  <data name="ErrorCode" xml:space="preserve"><value>Hata Kodu</value></data>
+  <data name="ErrorMessage" xml:space="preserve"><value>Hata Mesajı (maskelenmiş)</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>İlişki Kimliği</value></data>
+  <data name="ProviderMessageId" xml:space="preserve"><value>Sağlayıcı Mesaj Kimliği</value></data>
+  <data name="NoPreview" xml:space="preserve"><value>Bu gönderim için güvenli önizleme mevcut değil.</value></data>
+</root>

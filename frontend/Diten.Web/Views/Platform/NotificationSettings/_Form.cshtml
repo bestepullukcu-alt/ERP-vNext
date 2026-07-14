@@ -1,0 +1,143 @@
+@using Diten.Web.Views.Platform.NotificationSettings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationSettingsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var targetTenantId = ViewData["TargetTenantId"]?.ToString() ?? string.Empty;
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
+    <div class="d-flex flex-column justify-content-center">
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb" class="text-muted">
+            <ol class="breadcrumb mb-0 py-0">
+                <li class="breadcrumb-item"><a href="/Platform/NotificationSettings">@Localizer["NotificationSettingsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-content-center flex-wrap gap-3">
+        <a href="/Platform/NotificationSettings" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="notificationSettingsForm" id="btnSaveSettings" class="btn btn-primary">
+            @(isEdit ? SharedLocalizer["Update"].Value : SharedLocalizer["Save"].Value)
+        </button>
+    </div>
+</div>
+
+<div class="alert alert-danger d-none" id="formErrorSummary"></div>
+
+<form id="notificationSettingsForm" data-mode="@(isEdit ? "edit" : "create")" data-target-tenant-id="@targetTenantId" novalidate>
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ProviderSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="targetTenant">@Localizer["TargetTenant"] <span class="text-danger">*</span></label>
+                            <select id="targetTenant" class="form-select" required @(isEdit ? "disabled" : "")></select>
+                            <div class="invalid-feedback" data-valmsg-for="TargetTenant"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="providerCode">@Localizer["Provider"] <span class="text-danger">*</span></label>
+                            <select id="providerCode" name="providerCode" class="form-select" required></select>
+                            <div class="invalid-feedback" data-valmsg-for="ProviderCode"></div>
+                        </div>
+                        <div class="col-12 col-md-6 smtp-only d-none">
+                            <label class="form-label fw-medium" for="smtpHost">@Localizer["Host"] <span class="text-danger">*</span></label>
+                            <input type="text" id="smtpHost" name="host" class="form-control" maxlength="256" placeholder="smtp.example.com" />
+                            <div class="invalid-feedback" data-valmsg-for="Host"></div>
+                        </div>
+                        <div class="col-6 col-md-3 smtp-only d-none">
+                            <label class="form-label fw-medium" for="smtpPort">@Localizer["Port"] <span class="text-danger">*</span></label>
+                            <input type="number" id="smtpPort" name="port" class="form-control" min="1" max="65535" placeholder="587" />
+                            <div class="invalid-feedback" data-valmsg-for="Port"></div>
+                        </div>
+                        <div class="col-6 col-md-3 smtp-only d-none">
+                            <div class="form-check form-switch mt-4 pt-2">
+                                <input type="checkbox" id="useSsl" class="form-check-input" checked />
+                                <label class="form-check-label" for="useSsl">@Localizer["UseSsl"]</label>
+                            </div>
+                        </div>
+                        <div class="col-12 api-only d-none">
+                            <label class="form-label fw-medium" for="apiBaseUrl">@Localizer["ApiBaseUrl"]</label>
+                            <input type="url" id="apiBaseUrl" name="apiBaseUrl" class="form-control" maxlength="512" placeholder="https://api.sendgrid.com" />
+                            <div class="invalid-feedback" data-valmsg-for="ApiBaseUrl"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="credentialSecretRef">@Localizer["CredentialSecretRef"]</label>
+                            <input type="text" id="credentialSecretRef" name="credentialSecretRef" class="form-control" maxlength="512"
+                                   placeholder="@Localizer["CredentialSecretRefPlaceholder"]" autocomplete="off" />
+                            <div class="invalid-feedback" data-valmsg-for="CredentialSecretRef"></div>
+                            <small class="text-muted">@Localizer["CredentialSecretRefHint"]</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SenderSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="senderEmail">@Localizer["SenderEmail"] <span class="text-danger">*</span></label>
+                            <input type="email" id="senderEmail" name="senderEmail" class="form-control" required maxlength="256" placeholder="noreply@example.com" />
+                            <div class="invalid-feedback" data-valmsg-for="SenderEmail"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="senderName">@Localizer["SenderName"]</label>
+                            <input type="text" id="senderName" name="senderName" class="form-control" maxlength="160" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="replyToEmail">@Localizer["ReplyToEmail"]</label>
+                            <input type="email" id="replyToEmail" name="replyToEmail" class="form-control" maxlength="256" />
+                            <div class="invalid-feedback" data-valmsg-for="ReplyToEmail"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["DeliverySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="fallbackPolicy">@Localizer["FallbackPolicy"] <span class="text-danger">*</span></label>
+                            <select id="fallbackPolicy" name="fallbackPolicy" class="form-select" required></select>
+                            <div class="invalid-feedback" data-valmsg-for="FallbackPolicy"></div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" id="isEnabled" class="form-check-input" checked />
+                                <label class="form-check-label" for="isEnabled">@Localizer["IsEnabled"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ResolvedSection"]</h6>
+                        <button type="button" class="btn btn-sm btn-label-info" id="btnLoadResolved">
+                            <i class="icon-base bx bx-refresh icon-sm"></i> @Localizer["LoadResolved"]
+                        </button>
+                    </div>
+                    <div class="alert alert-warning d-none mb-0" id="resolvedError"></div>
+                    <div class="d-none" id="resolvedResult">
+                        <div class="mb-1"><span class="text-muted small d-block">@Localizer["ResolvedSource"]</span><span class="fw-medium" id="resolvedSource">-</span></div>
+                        <div class="mb-1"><span class="text-muted small d-block">@Localizer["Provider"]</span><span id="resolvedProvider">-</span></div>
+                        <div class="mb-1"><span class="text-muted small d-block">@Localizer["SenderEmail"]</span><span id="resolvedSenderEmail">-</span></div>
+                        <div><span class="text-muted small d-block">@Localizer["FallbackPolicy"]</span><span id="resolvedFallbackPolicy">-</span></div>
+                    </div>
+                    <div class="text-muted small d-none" id="resolvedEmptyState">@Localizer["ResolvedSelectTenant"]</div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

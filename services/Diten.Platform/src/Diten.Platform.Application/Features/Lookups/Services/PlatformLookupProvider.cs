@@ -112,6 +112,31 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
                 valueUsesDisplayName: false,
                 excludeUnknown: true,
                 ct)),
+            // MOD-0027-FU02: notification enum lookups consumed by the Platform Admin notification UI.
+            PlatformLookupKeys.NotificationChannels => Wrap(GetEnumLookupAsync<NotificationChannelCode>(
+                PlatformLookupKeys.NotificationChannels,
+                "NotificationChannel",
+                valueUsesDisplayName: false,
+                excludeUnknown: false,
+                ct)),
+            PlatformLookupKeys.MessagingProviders => Wrap(GetEnumLookupAsync<MessagingProviderCode>(
+                PlatformLookupKeys.MessagingProviders,
+                "MessagingProvider",
+                valueUsesDisplayName: false,
+                excludeUnknown: false,
+                ct)),
+            PlatformLookupKeys.NotificationTemplateStatuses => Wrap(GetEnumLookupAsync<NotificationTemplateStatus>(
+                PlatformLookupKeys.NotificationTemplateStatuses,
+                "NotificationTemplateStatus",
+                valueUsesDisplayName: false,
+                excludeUnknown: false,
+                ct)),
+            PlatformLookupKeys.NotificationFallbackPolicies => Wrap(GetEnumLookupAsync<NotificationFallbackPolicy>(
+                PlatformLookupKeys.NotificationFallbackPolicies,
+                "NotificationFallbackPolicy",
+                valueUsesDisplayName: false,
+                excludeUnknown: false,
+                ct)),
             _ => Task.FromResult<IReadOnlyList<LookupOptionDto>?>(null)
         };
     }

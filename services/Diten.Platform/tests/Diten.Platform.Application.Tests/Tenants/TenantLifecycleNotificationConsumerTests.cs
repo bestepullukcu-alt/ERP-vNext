@@ -92,14 +92,17 @@ public sealed class TenantLifecycleNotificationConsumerTests
 
         await consumer.ConsumeAsync(message);
 
-        var command = Assert.Single(mediator.Commands);
-        Assert.Equal("tenant.suspended.email", command.Request.TemplateKey);
-        Assert.Equal("tr-TR", command.Request.Locale);
-        Assert.Equal(2, command.Request.To.Count);
-        Assert.Contains(command.Request.To, recipient => recipient.Email == "active@example.com");
-        Assert.Contains(command.Request.To, recipient => recipient.Email == "invited@example.com");
-        Assert.DoesNotContain(command.Request.To, recipient => recipient.Email == "disabled@example.com");
-        Assert.Equal("policy hold", command.Request.Variables["Reason"]);
+        Assert.Empty(mediator.Commands); // no direct QueueEmailNotificationCommand
+        var dispatch = Assert.Single(mediator.DispatchCommands).Request;
+        Assert.Equal("tenant.lifecycle.suspended", dispatch.EventCode);
+        Assert.Equal("tr-TR", dispatch.Locale);
+        Assert.Equal(2, dispatch.To.Count);
+        Assert.Contains(dispatch.To, recipient => recipient.Email == "active@example.com");
+        Assert.Contains(dispatch.To, recipient => recipient.Email == "invited@example.com");
+        Assert.DoesNotContain(dispatch.To, recipient => recipient.Email == "disabled@example.com");
+        Assert.Equal("policy hold", dispatch.Variables["Reason"]);
+        Assert.True(dispatch.Variables.ContainsKey("SuspendedAtUtc"));
+        Assert.Equal("Tenant Display", dispatch.Variables["TenantDisplayName"]); // Decision A: consumer-supplied
     }
 
     [Fact]
@@ -122,8 +125,11 @@ public sealed class TenantLifecycleNotificationConsumerTests
 
         Assert.Equal(ConsumedEventExecutionResult.Consumed, first);
         Assert.Equal(ConsumedEventExecutionResult.Duplicate, duplicate);
-        Assert.Single(mediator.Commands);
-        Assert.Equal("tenant.reactivated.email", mediator.Commands[0].Request.TemplateKey);
+        Assert.Empty(mediator.Commands);
+        var dispatch = Assert.Single(mediator.DispatchCommands).Request;
+        Assert.Equal("tenant.lifecycle.reactivated", dispatch.EventCode);
+        Assert.True(dispatch.Variables.ContainsKey("ReactivatedAtUtc"));
+        Assert.Equal("Tenant Display", dispatch.Variables["TenantDisplayName"]);
     }
 
     [Fact]
@@ -142,11 +148,62 @@ public sealed class TenantLifecycleNotificationConsumerTests
             tenantId,
             new TenantSuspendedV1(tenantId, DateTimeOffset.UtcNow, "hold", Guid.NewGuid()));
 
+        // Provider/transient failure (no ReasonCode) -> preserve throw so the transport retries.
         await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(message)!);
 
         var consumed = await repository.GetAsync(message.EventId, TenantLifecycleNotificationConsumer.ConsumerName);
         Assert.NotNull(consumed);
         Assert.Equal(ConsumedEventStatus.Failed, consumed!.Status);
+    }
+
+    [Fact]
+    public async Task ControlledCatalogFailure_WithReasonCode_IsSwallowed_NotRetried()
+    {
+        var tenantId = Guid.NewGuid();
+        var tenant = CreateTenant(tenantId);
+        tenant.AdminUsers.Add(new TenantAdminUser { Name = "Active Admin", Email = "active@example.com", Status = TenantAdminUserStatus.Active });
+        // Controlled catalog/validation failure -> ReasonCode set (e.g. required variable missing / event not active).
+        var mediator = new RecordingMediator
+        {
+            Response = Response<NotificationDispatchDto>.Fail("event not active", 409, "EVENT_NOT_ACTIVE")
+        };
+        var repository = new InMemoryConsumedEventRepository();
+        var consumer = CreateConsumer(new InMemoryTenantRepository(tenant), mediator, repository);
+        var message = CreateMessage(
+            TenantSuspendedV1.Name, TenantSuspendedV1.Version, Guid.NewGuid(), tenantId,
+            new TenantSuspendedV1(tenantId, DateTimeOffset.UtcNow, "hold", Guid.NewGuid()));
+
+        // No throw: controlled failure is logged + swallowed (retry cannot fix a config/catalog error).
+        var result = await consumer.ConsumeAsync(message);
+
+        Assert.Equal(ConsumedEventExecutionResult.Consumed, result);
+        var consumed = await repository.GetAsync(message.EventId, TenantLifecycleNotificationConsumer.ConsumerName);
+        Assert.Equal(ConsumedEventStatus.Consumed, consumed!.Status);
+    }
+
+    [Theory]
+    [InlineData("Display Name", "Some Name", "CODE", "Display Name")] // DisplayName wins
+    [InlineData(null, "Some Name", "CODE", "Some Name")]              // fallback to Name
+    [InlineData(null, "", "CODE", "CODE")]                             // fallback to Code
+    public async Task TenantDisplayName_UsesFallbackChain(string? displayName, string? name, string code, string expected)
+    {
+        var tenantId = Guid.NewGuid();
+        var tenant = new Tenant
+        {
+            Id = tenantId, Code = code, Slug = "t", Name = name ?? string.Empty, DisplayName = displayName,
+            Domain = "t.example.com", Region = "EU", Environment = "Production"
+        };
+        tenant.AdminUsers.Add(new TenantAdminUser { Name = "Admin", Email = "a@example.com", Status = TenantAdminUserStatus.Active });
+        var mediator = new RecordingMediator();
+        var consumer = CreateConsumer(new InMemoryTenantRepository(tenant), mediator);
+        var message = CreateMessage(
+            TenantReactivatedV1.Name, TenantReactivatedV1.Version, Guid.NewGuid(), tenantId,
+            new TenantReactivatedV1(tenantId, DateTimeOffset.UtcNow, Guid.NewGuid()));
+
+        await consumer.ConsumeAsync(message);
+
+        var dispatch = Assert.Single(mediator.DispatchCommands).Request;
+        Assert.Equal(expected, dispatch.Variables["TenantDisplayName"]);
     }
 
     private static TenantLifecycleNotificationConsumer CreateConsumer(
@@ -160,7 +217,8 @@ public sealed class TenantLifecycleNotificationConsumerTests
             mediator,
             new TenantCreatedV1NotificationMapper(),
             new TenantSuspendedV1NotificationMapper(),
-            new TenantReactivatedV1NotificationMapper());
+            new TenantReactivatedV1NotificationMapper(),
+            NullLogger<TenantLifecycleNotificationConsumer>.Instance);
     }
 
     private static Tenant CreateTenant(Guid tenantId)
@@ -199,7 +257,9 @@ public sealed class TenantLifecycleNotificationConsumerTests
 
     private sealed class RecordingMediator : IMediator
     {
+        // Created branch still queues by templateKey; suspended/reactivated dispatch by eventCode (FU04C).
         public List<QueueEmailNotificationCommand> Commands { get; } = [];
+        public List<DispatchNotificationByEventCodeCommand> DispatchCommands { get; } = [];
         public Response<NotificationDispatchDto> Response { get; set; } = Response<NotificationDispatchDto>.Success(202);
 
         public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
@@ -207,6 +267,12 @@ public sealed class TenantLifecycleNotificationConsumerTests
             if (request is QueueEmailNotificationCommand command)
             {
                 Commands.Add(command);
+                return Task.FromResult((TResponse)(object)Response);
+            }
+
+            if (request is DispatchNotificationByEventCodeCommand dispatch)
+            {
+                DispatchCommands.Add(dispatch);
                 return Task.FromResult((TResponse)(object)Response);
             }
 

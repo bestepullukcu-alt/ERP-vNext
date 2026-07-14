@@ -1,0 +1,172 @@
+@using Diten.Web.Views.DocumentManagement.Reconciliation
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReconciliationIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="reconciliation-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        // Page shell
+        ReconciliationTitle = Localizer["ReconciliationTitle"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        DeviationsTitle = Localizer["DeviationsTitle"].Value,
+        DeviationsDescription = Localizer["DeviationsDescription"].Value,
+        EvidenceTitle = Localizer["EvidenceTitle"].Value,
+        EvidenceDescription = Localizer["EvidenceDescription"].Value,
+
+        // Selectors / actions
+        Baseline = Localizer["Baseline"].Value,
+        SelectBaseline = Localizer["SelectBaseline"].Value,
+        Provider = Localizer["Provider"].Value,
+        Scope = Localizer["Scope"].Value,
+        DryRun = Localizer["DryRun"].Value,
+        ApplyFindings = Localizer["ApplyFindings"].Value,
+        RunReconciliation = Localizer["RunReconciliation"].Value,
+        ProviderInHouse = Localizer["ProviderInHouse"].Value,
+        ProviderGoogleDrive = Localizer["ProviderGoogleDrive"].Value,
+        ProviderNotAvailable = Localizer["ProviderNotAvailable"].Value,
+        ScopeDefinitionToInstance = Localizer["ScopeDefinitionToInstance"].Value,
+        ScopeDefinitionToProvider = Localizer["ScopeDefinitionToProvider"].Value,
+        ScopeInstanceToProvider = Localizer["ScopeInstanceToProvider"].Value,
+        OpenDeviations = Localizer["OpenDeviations"].Value,
+        OpenEvidence = Localizer["OpenEvidence"].Value,
+        SelectBaselineFirst = Localizer["SelectBaselineFirst"].Value,
+        ApplyFindingsConfirm = Localizer["ApplyFindingsConfirm"].Value,
+        ProviderUnavailableMessage = Localizer["ProviderUnavailableMessage"].Value,
+        DryRunComplete = Localizer["DryRunComplete"].Value,
+        FindingsApplied = Localizer["FindingsApplied"].Value,
+
+        // Summary cards
+        SummaryTitle = Localizer["SummaryTitle"].Value,
+        ExpectedCount = Localizer["ExpectedCount"].Value,
+        ActualCount = Localizer["ActualCount"].Value,
+        MatchedCount = Localizer["MatchedCount"].Value,
+        MissingCount = Localizer["MissingCount"].Value,
+        ExtraCount = Localizer["ExtraCount"].Value,
+        RenamedCount = Localizer["RenamedCount"].Value,
+        MovedCount = Localizer["MovedCount"].Value,
+        MetadataMismatchCount = Localizer["MetadataMismatchCount"].Value,
+        DeviationCount = Localizer["DeviationCount"].Value,
+        BlockingDeviationCount = Localizer["BlockingDeviationCount"].Value,
+        DryRunBadge = Localizer["DryRunBadge"].Value,
+        AppliedBadge = Localizer["AppliedBadge"].Value,
+        DetectedDeviations = Localizer["DetectedDeviations"].Value,
+        NoDeviationsDetected = Localizer["NoDeviationsDetected"].Value,
+        Recommendation = Localizer["Recommendation"].Value,
+
+        // Readiness panel
+        ReadinessTitle = Localizer["ReadinessTitle"].Value,
+        Ready = Localizer["Ready"].Value,
+        NotReady = Localizer["NotReady"].Value,
+        BaselineStatus = Localizer["BaselineStatus"].Value,
+        ExpectedInstanceCount = Localizer["ExpectedInstanceCount"].Value,
+        EvidenceCount = Localizer["EvidenceCount"].Value,
+        MissingEvidenceCount = Localizer["MissingEvidenceCount"].Value,
+        PermissionsAppliedCount = Localizer["PermissionsAppliedCount"].Value,
+        QaVerifiedCount = Localizer["QaVerifiedCount"].Value,
+        OpenBlockingDeviationCount = Localizer["OpenBlockingDeviationCount"].Value,
+        Reasons = Localizer["Reasons"].Value,
+
+        // Deviation table columns
+        DeviationType = Localizer["DeviationType"].Value,
+        Severity = Localizer["Severity"].Value,
+        RegisterFolderId = Localizer["RegisterFolderId"].Value,
+        ExpectedFullPath = Localizer["ExpectedFullPath"].Value,
+        ActualFullPath = Localizer["ActualFullPath"].Value,
+        Description = Localizer["Description"].Value,
+        DetectedAt = Localizer["DetectedAt"].Value,
+        Resolve = Localizer["Resolve"].Value,
+        Accept = Localizer["Accept"].Value,
+        ResolveComment = Localizer["ResolveComment"].Value,
+        AcceptComment = Localizer["AcceptComment"].Value,
+        CommentLabel = Localizer["CommentLabel"].Value,
+        DeviationResolved = Localizer["DeviationResolved"].Value,
+        DeviationAccepted = Localizer["DeviationAccepted"].Value,
+
+        // Deviation type values
+        MissingFolder = Localizer["MissingFolder"].Value,
+        ExtraFolder = Localizer["ExtraFolder"].Value,
+        RenameMismatch = Localizer["RenameMismatch"].Value,
+        MoveMismatch = Localizer["MoveMismatch"].Value,
+        ParentMismatch = Localizer["ParentMismatch"].Value,
+        DuplicateSibling = Localizer["DuplicateSibling"].Value,
+        DuplicateFullPath = Localizer["DuplicateFullPath"].Value,
+        OrphanFolder = Localizer["OrphanFolder"].Value,
+        MetadataMismatch = Localizer["MetadataMismatch"].Value,
+        PermissionMismatch = Localizer["PermissionMismatch"].Value,
+        EvidenceMissing = Localizer["EvidenceMissing"].Value,
+
+        // Severity values
+        SeverityInfo = Localizer["SeverityInfo"].Value,
+        SeverityWarning = Localizer["SeverityWarning"].Value,
+        SeverityMajor = Localizer["SeverityMajor"].Value,
+        SeverityCritical = Localizer["SeverityCritical"].Value,
+
+        // Deviation status values
+        DeviationStatusOpen = Localizer["DeviationStatusOpen"].Value,
+        DeviationStatusAccepted = Localizer["DeviationStatusAccepted"].Value,
+        DeviationStatusResolved = Localizer["DeviationStatusResolved"].Value,
+        DeviationStatusClosed = Localizer["DeviationStatusClosed"].Value,
+
+        // Evidence table columns
+        FullPath = Localizer["FullPath"].Value,
+        PlatformProvider = Localizer["PlatformProvider"].Value,
+        PlatformFolderId = Localizer["PlatformFolderId"].Value,
+        ProvisioningStatus = Localizer["ProvisioningStatus"].Value,
+        PermissionsApplied = Localizer["PermissionsApplied"].Value,
+        QaVerified = Localizer["QaVerified"].Value,
+        DeviationStatusColumn = Localizer["DeviationStatusColumn"].Value,
+        LastReadBackAt = Localizer["LastReadBackAt"].Value,
+        MarkPermissionsApplied = Localizer["MarkPermissionsApplied"].Value,
+        MarkQaVerified = Localizer["MarkQaVerified"].Value,
+        PermissionsAppliedConfirm = Localizer["PermissionsAppliedConfirm"].Value,
+        QaVerifyConfirm = Localizer["QaVerifyConfirm"].Value,
+        PermissionsAppliedDone = Localizer["PermissionsAppliedDone"].Value,
+        QaVerifiedDone = Localizer["QaVerifiedDone"].Value,
+
+        // Provisioning status values
+        ProvPending = Localizer["ProvPending"].Value,
+        ProvCreated = Localizer["ProvCreated"].Value,
+        ProvExistingMatched = Localizer["ProvExistingMatched"].Value,
+        ProvFailed = Localizer["ProvFailed"].Value,
+        ProvSkipped = Localizer["ProvSkipped"].Value,
+        ProvDeviated = Localizer["ProvDeviated"].Value,
+
+        // Evidence deviation status values
+        EvidenceDevNone = Localizer["EvidenceDevNone"].Value,
+        EvidenceDevOpen = Localizer["EvidenceDevOpen"].Value,
+        EvidenceDevClosed = Localizer["EvidenceDevClosed"].Value,
+        EvidenceDevAccepted = Localizer["EvidenceDevAccepted"].Value,
+
+        EvidenceEditFutureNote = Localizer["EvidenceEditFutureNote"].Value,
+        Actions = Localizer["Actions"].Value,
+        RowActions = Localizer["RowActions"].Value,
+
+        // Shared vocabulary
+        Status = SharedLocalizer["Status"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        Confirm = Localizer["Confirm"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ColumnOrder = SharedLocalizer["ColumnOrder"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        ValidationFailed = SharedLocalizer["ValidationFailed"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        BackToList = SharedLocalizer["BackToList"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value
+    })
+</script>

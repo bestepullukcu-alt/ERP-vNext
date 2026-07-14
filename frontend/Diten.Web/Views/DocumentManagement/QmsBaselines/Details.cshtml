@@ -44,7 +44,17 @@
                     <span class="badge" id="qmsStatusBadge"></span>
                     @if (canPublish)
                     {
-                        <button type="button" id="btnPublish" class="btn btn-sm btn-success d-none">
+                        @* MOD-0028-FU08 lifecycle — DRAFT → Approve → APPROVED → Mark Effective → EFFECTIVE. *@
+                        <button type="button" id="btnApprove" class="btn btn-sm btn-primary d-none">
+                            <span class="spinner-border spinner-border-sm me-1 d-none" id="approveSpinner" role="status"></span>
+                            <i class="icon-base bx bx-check-shield me-1"></i>@Localizer["Approve"]
+                        </button>
+                        <button type="button" id="btnMarkEffective" class="btn btn-sm btn-success d-none">
+                            <span class="spinner-border spinner-border-sm me-1 d-none" id="markEffectiveSpinner" role="status"></span>
+                            <i class="icon-base bx bx-badge-check me-1"></i>@Localizer["MarkEffective"]
+                        </button>
+                        @* Legacy single-step publish (DRAFT → PUBLISHED); retained for backward compatibility. *@
+                        <button type="button" id="btnPublish" class="btn btn-sm btn-outline-secondary d-none">
                             <span class="spinner-border spinner-border-sm me-1 d-none" id="publishSpinner" role="status"></span>
                             <i class="icon-base bx bx-cloud-upload me-1"></i>@Localizer["Publish"]
                         </button>
@@ -58,6 +68,8 @@
                     <dt class="col-sm-3">@Localizer["DefinitionCount"]</dt><dd class="col-sm-9" id="md-definitionCount">-</dd>
                     <dt class="col-sm-3">@Localizer["SnapshotHash"]</dt><dd class="col-sm-9 text-break"><code id="md-snapshotHash">-</code></dd>
                     <dt class="col-sm-3">@Localizer["CreatedAt"]</dt><dd class="col-sm-9" id="md-createdAt">-</dd>
+                    <dt class="col-sm-3">@Localizer["ApprovedAt"]</dt><dd class="col-sm-9" id="md-approvedAt">-</dd>
+                    <dt class="col-sm-3">@Localizer["EffectiveAt"]</dt><dd class="col-sm-9" id="md-effectiveAt">-</dd>
                     <dt class="col-sm-3">@Localizer["PublishedAt"]</dt><dd class="col-sm-9" id="md-publishedAt">-</dd>
                 </dl>
             </div>

@@ -29,6 +29,51 @@ public sealed class NotificationTemplateRepository : INotificationTemplateReposi
         return await _collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
+    public async Task<IReadOnlyList<NotificationTemplate>> ListAsync(
+        Guid? tenantId,
+        bool isPlatformDefault,
+        NotificationTemplateStatus? status = null,
+        string? locale = null,
+        NotificationChannelCode? channel = null,
+        string? templateKey = null,
+        int skip = 0,
+        int take = 50,
+        CancellationToken ct = default)
+    {
+        var filters = new List<FilterDefinition<NotificationTemplate>>
+        {
+            ActiveFilter,
+            Builders<NotificationTemplate>.Filter.Eq(x => x.TenantId, tenantId),
+            Builders<NotificationTemplate>.Filter.Eq(x => x.IsPlatformDefault, isPlatformDefault)
+        };
+
+        if (status is not null)
+        {
+            filters.Add(Builders<NotificationTemplate>.Filter.Eq(x => x.Status, status.Value));
+        }
+
+        if (!string.IsNullOrWhiteSpace(locale))
+        {
+            filters.Add(Builders<NotificationTemplate>.Filter.Eq(x => x.Locale, locale));
+        }
+
+        if (channel is not null)
+        {
+            filters.Add(Builders<NotificationTemplate>.Filter.Eq(x => x.Channel, channel.Value));
+        }
+
+        if (!string.IsNullOrWhiteSpace(templateKey))
+        {
+            filters.Add(Builders<NotificationTemplate>.Filter.Eq(x => x.TemplateKey, templateKey));
+        }
+
+        return await _collection.Find(Builders<NotificationTemplate>.Filter.And(filters))
+            .SortByDescending(x => x.CreatedAt)
+            .Skip(skip)
+            .Limit(take)
+            .ToListAsync(ct);
+    }
+
     public async Task<NotificationTemplate?> GetActiveByKeyAsync(
         Guid? tenantId,
         bool isPlatformDefault,

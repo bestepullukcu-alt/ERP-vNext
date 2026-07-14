@@ -12,7 +12,10 @@ public sealed record CommitQmsBaselineImportCommand(
     string SourceBaselineKey,
     string BaselineVersion,
     string? ChangeSummary,
-    string CorrelationId) : IRequest<Response<QmsBaselineCommitResult>>, IAuditableCommand, IAuditMetadataProvider
+    string CorrelationId,
+    // MOD-0028-FU08 — source register/package status (e.g. "Draft — do not execute until approved"). Additive
+    // optional; recorded on the DRAFT baseline and later gates MarkEffective. Null for legacy/manual imports.
+    string? SourcePackageStatus = null) : IRequest<Response<QmsBaselineCommitResult>>, IAuditableCommand, IAuditMetadataProvider
 {
     public AuditRequestMetadata GetAuditMetadata() => new(
         AuditCategory.DocumentManagement, AuditOperation.Create, "QmsBaseline",

@@ -138,6 +138,13 @@ public sealed record NotificationDispatchDto(
     string? ErrorMessage,
     string? CorrelationId);
 
+public sealed record RenderTemplatePreviewRequest(
+    string SubjectTemplate,
+    string? BodyHtmlTemplate,
+    string? BodyTextTemplate,
+    IReadOnlyList<TemplateVariableDefinitionDto> Variables,
+    IReadOnlyDictionary<string, object?> SampleVariables);
+
 public sealed record NotificationDispatchListItemDto(
     Guid Id,
     Guid TenantId,

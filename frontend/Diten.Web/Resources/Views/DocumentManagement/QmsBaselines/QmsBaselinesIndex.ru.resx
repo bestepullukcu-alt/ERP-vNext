@@ -61,7 +61,7 @@
     <value>1. Выберите книгу и проверьте</value>
   </data>
   <data name="WorkbookFile" xml:space="preserve">
-    <value>Книга (.xlsx)</value>
+    <value>Файл импорта (.xlsx, .csv, .json)</value>
   </data>
   <data name="WorkbookFileHint" xml:space="preserve">
     <value>Книга читается только как метаданные управления; как документ она не хранится.</value>
@@ -94,7 +94,7 @@
     <value>Выберите книгу .xlsx.</value>
   </data>
   <data name="InvalidFileType" xml:space="preserve">
-    <value>Принимаются только книги .xlsx.</value>
+    <value>Принимаются только файлы .xlsx, .csv или .json.</value>
   </data>
   <data name="SourceKeyRequired" xml:space="preserve">
     <value>Требуется ключ исходной базовой линии.</value>
@@ -326,4 +326,26 @@
   <data name="StatusArchived" xml:space="preserve"><value>Архивировано</value></data>
   <data name="VariantAllowed" xml:space="preserve"><value>Вариант разрешён</value></data>
   <data name="VariantLocked" xml:space="preserve"><value>Вариант заблокирован</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>ID реестра</value></data>
+  <data name="FolderType" xml:space="preserve"><value>Тип папки</value></data>
+  <data name="AccessProfile" xml:space="preserve"><value>Профиль доступа</value></data>
+  <data name="RetentionClass" xml:space="preserve"><value>Класс хранения</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>Устаревший код</value></data>
+  <data name="ProvisioningWave" xml:space="preserve"><value>Волна подготовки</value></data>
+  <data name="Approve" xml:space="preserve"><value>Утвердить</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>Утвердить эту базовую линию? Манифест снимка фиксируется на момент проверки; её нельзя инстанцировать, пока она не станет действующей.</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>Базовая линия утверждена.</value></data>
+  <data name="MarkEffective" xml:space="preserve"><value>Сделать действующей</value></data>
+  <data name="MarkEffectiveConfirm" xml:space="preserve"><value>Сделать эту базовую линию действующей? Она станет доступной для инстанцирования и заменит любую предыдущую действующую базовую линию с тем же исходным ключом.</value></data>
+  <data name="MarkEffectiveSuccess" xml:space="preserve"><value>Базовая линия сделана действующей.</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Утверждена</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>Действующая</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>Заменена</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>Утверждена</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Действует</value></data>
+  <data name="ReasonPackageNotApproved" xml:space="preserve"><value>Исходный пакет всё ещё черновик (не для исполнения); его нельзя сделать действующим.</value></data>
+  <data name="SourceKey" xml:space="preserve"><value>Исходный ключ</value></data>
+  <data name="SourceKeyPlaceholder" xml:space="preserve"><value>напр. GMG-QMS-LOG-0007</value></data>
+  <data name="SourceKeyHint" xml:space="preserve"><value>Необязательно. Базовые линии с одинаковым исходным ключом образуют одну ветвь — новая действующая заменяет предыдущую. Оставьте пустым, чтобы вывести из имени.</value></data>
+  <data name="NameLineageHint" xml:space="preserve"><value>Одинаковое имя означает одну ветвь базовой линии; новая действующая заменяет предыдущую.</value></data>
 </root>

@@ -48,7 +48,7 @@ public sealed class DocumentManagementQmsBaselinesController : CustomBaseControl
         var response = await _mediator.Send(
             new CommitQmsBaselineImportCommand(
                 request.FileName, request.Format, request.ContentBase64, request.SourceBaselineKey,
-                request.BaselineVersion, request.ChangeSummary, CorrelationId), ct);
+                request.BaselineVersion, request.ChangeSummary, CorrelationId, request.SourcePackageStatus), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -62,7 +62,8 @@ public sealed class DocumentManagementQmsBaselinesController : CustomBaseControl
                     request.BaselineVersion,
                     request.Name,
                     request.ChangeSummary,
-                    request.EffectiveDate),
+                    request.EffectiveDate,
+                    request.SourceBaselineKey),
                 CorrelationId),
             ct);
         return CreateActionResultInstance(response);
@@ -90,6 +91,25 @@ public sealed class DocumentManagementQmsBaselinesController : CustomBaseControl
     {
         var response = await _mediator.Send(
             new PublishQmsBaselineCommand(id, request?.ExpectedVersion ?? 0, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("{id:guid}/approve")]
+    [HasPermission(QmsBaselinePermissions.Publish)]
+    public async Task<IActionResult> ApproveBaseline(Guid id, [FromBody] QmsBaselineApproveRequest? request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new ApproveQmsBaselineCommand(
+                id, request?.ExpectedVersion ?? 0, request?.ApprovalReference, request?.ApprovalComment, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("{id:guid}/mark-effective")]
+    [HasPermission(QmsBaselinePermissions.Publish)]
+    public async Task<IActionResult> MarkBaselineEffective(Guid id, [FromBody] QmsBaselineMarkEffectiveRequest? request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new MarkEffectiveQmsBaselineCommand(id, request?.ExpectedVersion ?? 0, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

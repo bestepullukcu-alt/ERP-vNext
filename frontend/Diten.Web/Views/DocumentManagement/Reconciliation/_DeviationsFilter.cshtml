@@ -1,0 +1,54 @@
+@using Diten.Web.Views.DocumentManagement.Reconciliation
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReconciliationIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost" class="px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-deviation-type">
+                        <select id="filterDeviationType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["DeviationType"]">
+                            <option value="MissingFolder">@Localizer["MissingFolder"]</option>
+                            <option value="ExtraFolder">@Localizer["ExtraFolder"]</option>
+                            <option value="RenameMismatch">@Localizer["RenameMismatch"]</option>
+                            <option value="MoveMismatch">@Localizer["MoveMismatch"]</option>
+                            <option value="ParentMismatch">@Localizer["ParentMismatch"]</option>
+                            <option value="DuplicateSibling">@Localizer["DuplicateSibling"]</option>
+                            <option value="DuplicateFullPath">@Localizer["DuplicateFullPath"]</option>
+                            <option value="OrphanFolder">@Localizer["OrphanFolder"]</option>
+                            <option value="MetadataMismatch">@Localizer["MetadataMismatch"]</option>
+                            <option value="PermissionMismatch">@Localizer["PermissionMismatch"]</option>
+                            <option value="EvidenceMissing">@Localizer["EvidenceMissing"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-severity">
+                        <select id="filterSeverity" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Severity"]">
+                            <option value="Info">@Localizer["SeverityInfo"]</option>
+                            <option value="Warning">@Localizer["SeverityWarning"]</option>
+                            <option value="Major">@Localizer["SeverityMajor"]</option>
+                            <option value="Critical">@Localizer["SeverityCritical"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="Open">@Localizer["DeviationStatusOpen"]</option>
+                            <option value="Accepted">@Localizer["DeviationStatusAccepted"]</option>
+                            <option value="Resolved">@Localizer["DeviationStatusResolved"]</option>
+                            <option value="Closed">@Localizer["DeviationStatusClosed"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

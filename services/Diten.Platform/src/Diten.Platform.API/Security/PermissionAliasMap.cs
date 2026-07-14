@@ -50,6 +50,8 @@ public static class PermissionAliasMap
             ["platform.notifications.templates.create"] = Aliases("Platform.Notifications.Templates.Create"),
             ["platform.notifications.templates.update"] = Aliases("Platform.Notifications.Templates.Update"),
             ["platform.notifications.templates.archive"] = Aliases("Platform.Notifications.Templates.Archive"),
+            ["platform.notifications.events.read"] = Aliases("Platform.Notifications.Events.Read"),
+            ["platform.notifications.events.manage"] = Aliases("Platform.Notifications.Events.Manage"),
             ["platform.subscription-features.read"] = Aliases("Platform.SubscriptionFeatures.Read"),
             ["platform.subscription-features.create"] = Aliases("Platform.SubscriptionFeatures.Create"),
             ["platform.subscription-features.update"] = Aliases("Platform.SubscriptionFeatures.Update"),

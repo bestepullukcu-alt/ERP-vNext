@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="NotificationSettingsTitle" xml:space="preserve"><value>Notification Settings</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage tenant email provider settings and inspect the resolved fallback configuration.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View Details</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add Settings</value></data>
+  <data name="TargetTenant" xml:space="preserve"><value>Target Tenant</value></data>
+  <data name="Provider" xml:space="preserve"><value>Provider</value></data>
+  <data name="SenderEmail" xml:space="preserve"><value>Sender Email</value></data>
+  <data name="SenderName" xml:space="preserve"><value>Sender Name</value></data>
+  <data name="ReplyToEmail" xml:space="preserve"><value>Reply-To Email</value></data>
+  <data name="FallbackPolicy" xml:space="preserve"><value>Fallback Policy</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated</value></data>
+  <data name="Host" xml:space="preserve"><value>SMTP Host</value></data>
+  <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="UseSsl" xml:space="preserve"><value>Use SSL</value></data>
+  <data name="ApiBaseUrl" xml:space="preserve"><value>API Base URL</value></data>
+  <data name="CredentialSecretRef" xml:space="preserve"><value>Credential Secret Reference</value></data>
+  <data name="CredentialSecretRefPlaceholder" xml:space="preserve"><value>secret://platform/smtp/tenant-x</value></data>
+  <data name="CredentialSecretRefHint" xml:space="preserve"><value>Reference to a vault secret. Never enter a raw password or API key.</value></data>
+  <data name="IsEnabled" xml:space="preserve"><value>Sending enabled</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Create Tenant Messaging Settings</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Tenant Messaging Settings</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Messaging Settings Details</value></data>
+  <data name="ProviderSection" xml:space="preserve"><value>Provider</value></data>
+  <data name="SenderSection" xml:space="preserve"><value>Sender</value></data>
+  <data name="DeliverySection" xml:space="preserve"><value>Delivery</value></data>
+  <data name="ResolvedSection" xml:space="preserve"><value>Resolved Settings</value></data>
+  <data name="LoadResolved" xml:space="preserve"><value>Load</value></data>
+  <data name="ResolvedSource" xml:space="preserve"><value>Source</value></data>
+  <data name="ResolvedFromTenant" xml:space="preserve"><value>Tenant-specific settings</value></data>
+  <data name="ResolvedFromPlatformDefault" xml:space="preserve"><value>Platform default fallback</value></data>
+  <data name="ResolvedUnavailable" xml:space="preserve"><value>No resolvable settings: neither tenant settings nor a platform default are available.</value></data>
+  <data name="ResolvedSelectTenant" xml:space="preserve"><value>Select a target tenant to load resolved settings.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>The tenant messaging settings will be deleted. Sending falls back according to the platform default policy. Continue?</value></data>
+</root>

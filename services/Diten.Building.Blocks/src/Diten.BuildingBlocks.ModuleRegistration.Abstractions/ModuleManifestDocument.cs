@@ -23,7 +23,12 @@ public sealed record ModuleManifestDocument(
     int SortOrder,
     IReadOnlyList<ModuleManifestPage> Pages,
     string? Icon = null,
-    bool IsBaseline = false);
+    bool IsBaseline = false,
+    // MOD-0027-FU03 — Notification Event Catalog. ADDITIVE + OPTIONAL, appended LAST so existing named/positional
+    // callers and existing serialized payloads are unaffected (default null → old JSON deserializes with no field,
+    // no exception). Consumers MUST coalesce null → empty (?? Array.Empty<ModuleManifestNotificationEvent>()).
+    // Do not reorder/retype existing params; do not remove Icon/IsBaseline.
+    IReadOnlyList<ModuleManifestNotificationEvent>? NotificationEvents = null);
 
 public sealed record ModuleManifestPage(
     string PageCode,
@@ -45,3 +50,33 @@ public sealed record ModuleManifestAction(
     bool IsDangerous,
     bool IsToolbarAction,
     bool IsRowAction);
+
+/// <summary>
+/// MOD-0027-FU03 — a producer module's declaration that it emits a notification event bound to a template slot.
+/// TOLERANT/default-heavy by design: only EventCode + Channel + DefaultTemplateKey are required identity; every other
+/// field is optional with a safe default so partial/older declarations deserialize without throwing. The Notification
+/// Event Catalog validates OwnerModuleId/TargetPageCode/RequiredPermissionKey against the Module Catalog / ModulePages /
+/// Permission Catalog at sync time; unresolved references keep the event Draft with a validation issue.
+/// </summary>
+public sealed record ModuleManifestNotificationEvent(
+    string EventCode,
+    string Channel,
+    string DefaultTemplateKey,
+    string? DisplayNameKey = null,
+    string? FallbackDisplayName = null,
+    string? Description = null,
+    IReadOnlyList<ModuleManifestNotificationVariable>? RequiredVariables = null,
+    IReadOnlyList<ModuleManifestNotificationVariable>? OptionalVariables = null,
+    string? TargetPageCode = null,
+    string? TargetRouteDescriptorId = null,
+    string? RequiredPermissionKey = null,
+    bool CanTenantOverride = false,
+    string UsageType = "SystemEvent",
+    string? SeverityDefault = null,
+    string? LinkPolicy = null,
+    string Status = "Draft");
+
+public sealed record ModuleManifestNotificationVariable(
+    string Name,
+    string Type = "String",
+    bool IsRequired = true);

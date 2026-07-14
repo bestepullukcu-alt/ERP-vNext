@@ -1,0 +1,54 @@
+@using Diten.Web.Views.Platform.NotificationEvents
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationEventsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="notificationevents-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        EventCode = Localizer["EventCode"].Value,
+        OwnerModule = Localizer["OwnerModule"].Value,
+        Channel = Localizer["Channel"].Value,
+        DefaultTemplateKey = Localizer["DefaultTemplateKey"].Value,
+        TenantOverride = Localizer["TenantOverride"].Value,
+        UsageType = Localizer["UsageType"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        StatusDraft = Localizer["StatusDraft"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusDeprecated = Localizer["StatusDeprecated"].Value,
+        StatusArchived = Localizer["StatusArchived"].Value,
+        UsageSystemEvent = Localizer["UsageSystemEvent"].Value,
+        UsageManualSelection = Localizer["UsageManualSelection"].Value,
+        SyncFromManifest = Localizer["SyncFromManifest"].Value,
+        SyncResultTitle = Localizer["SyncResultTitle"].Value,
+        SyncSummary = Localizer["SyncSummary"].Value,
+        NoEventsDeclared = Localizer["NoEventsDeclared"].Value,
+        Archive = Localizer["Archive"].Value,
+        ArchiveConfirm = Localizer["ArchiveConfirm"].Value,
+        EventArchived = Localizer["EventArchived"].Value
+    })
+</script>

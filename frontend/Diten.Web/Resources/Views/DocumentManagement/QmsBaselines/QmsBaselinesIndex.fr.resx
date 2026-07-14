@@ -61,7 +61,7 @@
     <value>1. Sélectionner le classeur et valider</value>
   </data>
   <data name="WorkbookFile" xml:space="preserve">
-    <value>Classeur (.xlsx)</value>
+    <value>Fichier d'import (.xlsx, .csv, .json)</value>
   </data>
   <data name="WorkbookFileHint" xml:space="preserve">
     <value>Le classeur est lu uniquement comme métadonnées de gouvernance ; il n'est jamais stocké comme document.</value>
@@ -94,7 +94,7 @@
     <value>Veuillez sélectionner un classeur .xlsx.</value>
   </data>
   <data name="InvalidFileType" xml:space="preserve">
-    <value>Seuls les classeurs .xlsx sont acceptés.</value>
+    <value>Seuls les fichiers .xlsx, .csv ou .json sont acceptés.</value>
   </data>
   <data name="SourceKeyRequired" xml:space="preserve">
     <value>La clé de référence source est requise.</value>
@@ -326,4 +326,26 @@
   <data name="StatusArchived" xml:space="preserve"><value>Archivé</value></data>
   <data name="VariantAllowed" xml:space="preserve"><value>Variante autorisée</value></data>
   <data name="VariantLocked" xml:space="preserve"><value>Variante verrouillée</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>ID de registre</value></data>
+  <data name="FolderType" xml:space="preserve"><value>Type de dossier</value></data>
+  <data name="AccessProfile" xml:space="preserve"><value>Profil d'accès</value></data>
+  <data name="RetentionClass" xml:space="preserve"><value>Classe de conservation</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>Code hérité</value></data>
+  <data name="ProvisioningWave" xml:space="preserve"><value>Vague de provisionnement</value></data>
+  <data name="Approve" xml:space="preserve"><value>Approuver</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>Approuver cette référence ? Le manifeste d'instantané est figé au moment de la revue ; elle reste non instanciable jusqu'à ce qu'elle soit rendue effective.</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>Référence approuvée.</value></data>
+  <data name="MarkEffective" xml:space="preserve"><value>Rendre effective</value></data>
+  <data name="MarkEffectiveConfirm" xml:space="preserve"><value>Rendre cette référence effective ? Elle devient instanciable et remplace toute référence effective précédente ayant la même clé source.</value></data>
+  <data name="MarkEffectiveSuccess" xml:space="preserve"><value>Référence rendue effective.</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>Effective</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>Remplacée</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Effective</value></data>
+  <data name="ReasonPackageNotApproved" xml:space="preserve"><value>Le paquet source est encore en brouillon (non exécutable) ; il ne peut pas être rendu effectif.</value></data>
+  <data name="SourceKey" xml:space="preserve"><value>Clé source</value></data>
+  <data name="SourceKeyPlaceholder" xml:space="preserve"><value>ex. GMG-QMS-LOG-0007</value></data>
+  <data name="SourceKeyHint" xml:space="preserve"><value>Facultatif. Les références ayant la même clé source forment une même lignée — rendre une nouvelle effective remplace la précédente. Laissez vide pour la dériver du nom.</value></data>
+  <data name="NameLineageHint" xml:space="preserve"><value>Un même nom partage la même lignée de référence ; une nouvelle effective remplace la précédente.</value></data>
 </root>

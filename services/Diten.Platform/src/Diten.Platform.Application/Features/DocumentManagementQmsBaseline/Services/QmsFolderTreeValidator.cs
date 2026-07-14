@@ -108,15 +108,29 @@ public sealed class QmsFolderTreeValidator
         var definitions = new List<QmsCollectionDefinitionDraft>(orderedNodes.Count);
         if (!hasBlockingFindings)
         {
+            // MOD-0028-FU06: resolve each node's CanonicalId up front so parent linkage reuses the child's own
+            // strategy. A node that carries a register folder_id gets a stable, path-independent id; every other
+            // node keeps the exact legacy path-hash id. Parent resolution stays path-based (unchanged); only the
+            // id VALUE changes, and only for register rows.
+            var canonicalByKey = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var node in nodes.Values)
+            {
+                canonicalByKey[node.Key] = ResolveCanonicalId(node.Row, node.FullPath, tenantId, sourceBaselineKey);
+            }
+
             var display = 0;
             foreach (var node in orderedNodes)
             {
-                var canonicalId = QmsCanonicalIdFactory.Create(tenantId, sourceBaselineKey, node.FullPath);
+                var canonicalId = canonicalByKey[node.Key];
                 string? parentCanonicalId = null;
+                string? parentKey = null;
                 if (node.Segments.Count > 1)
                 {
                     var parentFullPath = QmsFolderPathNormalizer.BuildFullPath(node.Segments.Take(node.Segments.Count - 1));
-                    parentCanonicalId = QmsCanonicalIdFactory.Create(tenantId, sourceBaselineKey, parentFullPath);
+                    parentKey = QmsFolderPathNormalizer.CaseInsensitiveKey(parentFullPath);
+                    parentCanonicalId = canonicalByKey.TryGetValue(parentKey, out var pc)
+                        ? pc
+                        : QmsCanonicalIdFactory.Create(tenantId, sourceBaselineKey, parentFullPath);
                 }
 
                 var draft = new QmsCollectionDefinitionDraft(
@@ -138,7 +152,29 @@ public sealed class QmsFolderTreeValidator
                     display++,
                     DefinitionHash: string.Empty);
 
-                definitions.Add(draft with { DefinitionHash = QmsStructuralHasher.HashDefinition(draft) });
+                // Structural hash first (register governance is deliberately excluded), then attach the
+                // register-backed governance metadata carried by the row.
+                definitions.Add((draft with { DefinitionHash = QmsStructuralHasher.HashDefinition(draft) })
+                    with
+                    {
+                        RegisterFolderId = Trimmed(node.Row.FolderId),
+                        RegisterParentFolderId = Trimmed(node.Row.ParentFolderId),
+                        RegisterFullPath = Trimmed(node.Row.RegisterFullPath) ?? node.FullPath,
+                        DepartmentDomain = Trimmed(node.Row.DepartmentDomain),
+                        FolderType = Trimmed(node.Row.FolderType),
+                        ExampleDocuments = Trimmed(node.Row.ExampleDocuments),
+                        OwningDepartments = Trimmed(node.Row.OwningDepartments),
+                        ControlledByGqms = Trimmed(node.Row.ControlledByGqms),
+                        SourceOfTruth = Trimmed(node.Row.SourceOfTruth),
+                        OwnerFunction = Trimmed(node.Row.OwnerFunction),
+                        AccessProfile = Trimmed(node.Row.AccessProfile),
+                        RetentionClass = Trimmed(node.Row.RetentionClass),
+                        ChangeControlRequired = Trimmed(node.Row.ChangeControlRequired),
+                        GqmsScopeLink = Trimmed(node.Row.GqmsScopeLink),
+                        LegacyCode = Trimmed(node.Row.LegacyCode),
+                        ProvisioningWave = Trimmed(node.Row.ProvisioningWave),
+                        ProvisioningOrder = node.Row.ProvisioningOrder
+                    });
             }
         }
 
@@ -155,6 +191,18 @@ public sealed class QmsFolderTreeValidator
 
         return new QmsBaselineImportPlan(summary, definitions);
     }
+
+    /// <summary>
+    /// Register-backed identity when the row carries a stable <c>folder_id</c>; otherwise the legacy path-hash id.
+    /// Keeps existing (folder_id-less) imports byte-for-byte identical.
+    /// </summary>
+    private static string ResolveCanonicalId(QmsFolderImportRow row, string fullPath, Guid tenantId, string sourceBaselineKey) =>
+        string.IsNullOrWhiteSpace(row.FolderId)
+            ? QmsCanonicalIdFactory.Create(tenantId, sourceBaselineKey, fullPath)
+            : QmsCanonicalIdFactory.CreateFromRegisterFolderId(tenantId, sourceBaselineKey, row.FolderId);
+
+    private static string? Trimmed(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<string> ResolveRawSegments(QmsFolderImportRow row)
     {

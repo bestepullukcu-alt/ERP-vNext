@@ -18,6 +18,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- MOD-0028-FU06 register import fixtures (GMG-QMS-LOG-0007 v0.8 package) copied to test output. -->
+    <Content Include="Fixtures\DocumentManagement\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Diten.Platform.Application\Diten.Platform.Application.csproj" />
     <ProjectReference Include="..\..\src\Diten.Platform.API\Diten.Platform.API.csproj" />
     <ProjectReference Include="..\..\src\Diten.Platform.Domain\Diten.Platform.Domain.csproj" />

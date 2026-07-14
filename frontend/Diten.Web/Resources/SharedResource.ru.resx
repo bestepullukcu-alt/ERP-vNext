@@ -475,6 +475,7 @@
   <data name="TemplateMasters" xml:space="preserve"><value>Корпоративные шаблоны</value></data>
   <data name="TemplateVariants" xml:space="preserve"><value>Варианты шаблонов</value></data>
   <data name="AccessMatrix" xml:space="preserve"><value>Матрица доступа</value></data>
+  <data name="Reconciliation" xml:space="preserve"><value>Сверка</value></data>
   <data name="QmsBaselines" xml:space="preserve"><value>Базовые линии QMS</value></data>
   <data name="Unauthorized" xml:space="preserve"><value>Не авторизовано</value></data>
   <!-- FIX-ROLEPERMS-ROLENAME-L10N-STICKY — system role display names, keyed by role code (localized). -->

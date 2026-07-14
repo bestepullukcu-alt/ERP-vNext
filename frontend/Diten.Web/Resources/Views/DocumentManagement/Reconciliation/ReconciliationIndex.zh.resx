@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ReconciliationTitle" xml:space="preserve"><value>核对、证据与偏差</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>针对 QMS 基线的回读核对、配置证据签署、偏差工作流和确认就绪度</value></data>
+  <data name="DeviationsTitle" xml:space="preserve"><value>偏差</value></data>
+  <data name="DeviationsDescription" xml:space="preserve"><value>基于登记册的基线与已配置文件夹树之间检测到的差异</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>配置证据</value></data>
+  <data name="EvidenceDescription" xml:space="preserve"><value>包含 IT 权限和 QA 签署的已配置文件夹证据</value></data>
+  <data name="Baseline" xml:space="preserve"><value>基线</value></data>
+  <data name="SelectBaseline" xml:space="preserve"><value>选择一个基线</value></data>
+  <data name="Provider" xml:space="preserve"><value>提供程序</value></data>
+  <data name="Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="DryRun" xml:space="preserve"><value>试运行</value></data>
+  <data name="ApplyFindings" xml:space="preserve"><value>应用结果</value></data>
+  <data name="RunReconciliation" xml:space="preserve"><value>运行核对</value></data>
+  <data name="ProviderInHouse" xml:space="preserve"><value>内部</value></data>
+  <data name="ProviderGoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="ProviderNotAvailable" xml:space="preserve"><value>不可用</value></data>
+  <data name="ScopeDefinitionToInstance" xml:space="preserve"><value>定义到实例</value></data>
+  <data name="ScopeDefinitionToProvider" xml:space="preserve"><value>定义到提供程序</value></data>
+  <data name="ScopeInstanceToProvider" xml:space="preserve"><value>实例到提供程序</value></data>
+  <data name="OpenDeviations" xml:space="preserve"><value>打开偏差</value></data>
+  <data name="OpenEvidence" xml:space="preserve"><value>打开证据</value></data>
+  <data name="SelectBaselineFirst" xml:space="preserve"><value>请先选择一个基线</value></data>
+  <data name="ApplyFindingsConfirm" xml:space="preserve"><value>应用结果将永久保存此基线检测到的偏差。是否继续？</value></data>
+  <data name="ProviderUnavailableMessage" xml:space="preserve"><value>Google Drive 回读提供程序尚未配置</value></data>
+  <data name="DryRunComplete" xml:space="preserve"><value>试运行已完成</value></data>
+  <data name="FindingsApplied" xml:space="preserve"><value>结果已应用</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>核对摘要</value></data>
+  <data name="ExpectedCount" xml:space="preserve"><value>预期</value></data>
+  <data name="ActualCount" xml:space="preserve"><value>实际</value></data>
+  <data name="MatchedCount" xml:space="preserve"><value>已匹配</value></data>
+  <data name="MissingCount" xml:space="preserve"><value>缺失</value></data>
+  <data name="ExtraCount" xml:space="preserve"><value>多余</value></data>
+  <data name="RenamedCount" xml:space="preserve"><value>已重命名</value></data>
+  <data name="MovedCount" xml:space="preserve"><value>已移动</value></data>
+  <data name="MetadataMismatchCount" xml:space="preserve"><value>元数据不匹配</value></data>
+  <data name="DeviationCount" xml:space="preserve"><value>偏差</value></data>
+  <data name="BlockingDeviationCount" xml:space="preserve"><value>阻断性</value></data>
+  <data name="DryRunBadge" xml:space="preserve"><value>试运行</value></data>
+  <data name="AppliedBadge" xml:space="preserve"><value>已应用</value></data>
+  <data name="DetectedDeviations" xml:space="preserve"><value>检测到的偏差</value></data>
+  <data name="NoDeviationsDetected" xml:space="preserve"><value>未检测到偏差</value></data>
+  <data name="Recommendation" xml:space="preserve"><value>建议</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>确认就绪度</value></data>
+  <data name="Ready" xml:space="preserve"><value>就绪</value></data>
+  <data name="NotReady" xml:space="preserve"><value>未就绪</value></data>
+  <data name="BaselineStatus" xml:space="preserve"><value>基线状态</value></data>
+  <data name="ExpectedInstanceCount" xml:space="preserve"><value>预期实例</value></data>
+  <data name="EvidenceCount" xml:space="preserve"><value>证据</value></data>
+  <data name="MissingEvidenceCount" xml:space="preserve"><value>缺失证据</value></data>
+  <data name="PermissionsAppliedCount" xml:space="preserve"><value>已应用权限</value></data>
+  <data name="QaVerifiedCount" xml:space="preserve"><value>QA 已验证</value></data>
+  <data name="OpenBlockingDeviationCount" xml:space="preserve"><value>未关闭的阻断性偏差</value></data>
+  <data name="Reasons" xml:space="preserve"><value>原因</value></data>
+  <data name="DeviationType" xml:space="preserve"><value>偏差类型</value></data>
+  <data name="Severity" xml:space="preserve"><value>严重程度</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>登记册文件夹 ID</value></data>
+  <data name="ExpectedFullPath" xml:space="preserve"><value>预期路径</value></data>
+  <data name="ActualFullPath" xml:space="preserve"><value>实际路径</value></data>
+  <data name="Description" xml:space="preserve"><value>说明</value></data>
+  <data name="DetectedAt" xml:space="preserve"><value>检测时间</value></data>
+  <data name="Resolve" xml:space="preserve"><value>解决</value></data>
+  <data name="Accept" xml:space="preserve"><value>接受</value></data>
+  <data name="ResolveComment" xml:space="preserve"><value>解决备注</value></data>
+  <data name="AcceptComment" xml:space="preserve"><value>接受备注</value></data>
+  <data name="CommentLabel" xml:space="preserve"><value>备注</value></data>
+  <data name="DeviationResolved" xml:space="preserve"><value>偏差已解决</value></data>
+  <data name="DeviationAccepted" xml:space="preserve"><value>偏差已接受</value></data>
+  <data name="MissingFolder" xml:space="preserve"><value>缺失文件夹</value></data>
+  <data name="ExtraFolder" xml:space="preserve"><value>多余文件夹</value></data>
+  <data name="RenameMismatch" xml:space="preserve"><value>重命名不匹配</value></data>
+  <data name="MoveMismatch" xml:space="preserve"><value>移动不匹配</value></data>
+  <data name="ParentMismatch" xml:space="preserve"><value>父级不匹配</value></data>
+  <data name="DuplicateSibling" xml:space="preserve"><value>重复同级</value></data>
+  <data name="DuplicateFullPath" xml:space="preserve"><value>重复路径</value></data>
+  <data name="OrphanFolder" xml:space="preserve"><value>孤立文件夹</value></data>
+  <data name="MetadataMismatch" xml:space="preserve"><value>元数据不匹配</value></data>
+  <data name="PermissionMismatch" xml:space="preserve"><value>权限不匹配</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>证据缺失</value></data>
+  <data name="SeverityInfo" xml:space="preserve"><value>信息</value></data>
+  <data name="SeverityWarning" xml:space="preserve"><value>警告</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>重大</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>严重</value></data>
+  <data name="DeviationStatusOpen" xml:space="preserve"><value>未关闭</value></data>
+  <data name="DeviationStatusAccepted" xml:space="preserve"><value>已接受</value></data>
+  <data name="DeviationStatusResolved" xml:space="preserve"><value>已解决</value></data>
+  <data name="DeviationStatusClosed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="FullPath" xml:space="preserve"><value>完整路径</value></data>
+  <data name="PlatformProvider" xml:space="preserve"><value>平台提供程序</value></data>
+  <data name="PlatformFolderId" xml:space="preserve"><value>平台文件夹 ID</value></data>
+  <data name="ProvisioningStatus" xml:space="preserve"><value>配置状态</value></data>
+  <data name="PermissionsApplied" xml:space="preserve"><value>已应用权限</value></data>
+  <data name="QaVerified" xml:space="preserve"><value>QA 已验证</value></data>
+  <data name="DeviationStatusColumn" xml:space="preserve"><value>偏差状态</value></data>
+  <data name="LastReadBackAt" xml:space="preserve"><value>上次回读</value></data>
+  <data name="MarkPermissionsApplied" xml:space="preserve"><value>标记为已应用权限</value></data>
+  <data name="MarkQaVerified" xml:space="preserve"><value>标记为 QA 已验证</value></data>
+  <data name="PermissionsAppliedConfirm" xml:space="preserve"><value>将此文件夹的权限标记为已应用？</value></data>
+  <data name="QaVerifyConfirm" xml:space="preserve"><value>将此文件夹标记为 QA 已验证？</value></data>
+  <data name="PermissionsAppliedDone" xml:space="preserve"><value>权限已标记为已应用</value></data>
+  <data name="QaVerifiedDone" xml:space="preserve"><value>文件夹已标记为 QA 已验证</value></data>
+  <data name="ProvPending" xml:space="preserve"><value>待处理</value></data>
+  <data name="ProvCreated" xml:space="preserve"><value>已创建</value></data>
+  <data name="ProvExistingMatched" xml:space="preserve"><value>已匹配现有项</value></data>
+  <data name="ProvFailed" xml:space="preserve"><value>失败</value></data>
+  <data name="ProvSkipped" xml:space="preserve"><value>已跳过</value></data>
+  <data name="ProvDeviated" xml:space="preserve"><value>已偏离</value></data>
+  <data name="EvidenceDevNone" xml:space="preserve"><value>无</value></data>
+  <data name="EvidenceDevOpen" xml:space="preserve"><value>未关闭</value></data>
+  <data name="EvidenceDevClosed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="EvidenceDevAccepted" xml:space="preserve"><value>已接受</value></data>
+  <data name="EvidenceEditFutureNote" xml:space="preserve"><value>证据元数据编辑尚不可用。此屏幕仅支持列表以及 IT/QA 签署。</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="RowActions" xml:space="preserve"><value>操作</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="Confirm" xml:space="preserve"><value>确认</value></data>
+</root>

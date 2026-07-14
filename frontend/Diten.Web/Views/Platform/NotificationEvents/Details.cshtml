@@ -1,0 +1,104 @@
+@using Diten.Web.Views.Platform.NotificationEvents
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationEventsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    var eventCode = ViewData["EventCode"]?.ToString() ?? string.Empty;
+}
+
+<div class="notification-event-details" data-event-code="@eventCode" id="eventDetailsRoot">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
+        <div class="d-flex flex-column justify-content-center">
+            <h5 class="mb-0" id="detailsTitle">@Localizer["DetailsTitle"]</h5>
+            <nav aria-label="breadcrumb" class="text-muted">
+                <ol class="breadcrumb mb-0 py-0">
+                    <li class="breadcrumb-item"><a href="/Platform/NotificationEvents">@Localizer["NotificationEventsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["DetailsTitle"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-content-center flex-wrap gap-3">
+            <a href="/Platform/NotificationEvents" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+            @* Archive is rendered by details.js only for a non-archived event, and only for events.manage actors. *@
+            <button type="button" id="btnArchiveEvent" class="btn btn-label-danger d-none">@Localizer["Archive"]</button>
+        </div>
+    </div>
+
+    <div class="alert alert-danger d-none" id="detailsError"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["OwnershipSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6"><span class="text-muted small d-block">@Localizer["EventCode"]</span><span class="fw-medium font-monospace" id="d-eventCode">-</span></div>
+                        <div class="col-6 col-md-3"><span class="text-muted small d-block">@SharedLocalizer["Status"]</span><span class="badge bg-label-primary" id="d-status">-</span></div>
+                        <div class="col-6 col-md-3"><span class="text-muted small d-block">@Localizer["Channel"]</span><span id="d-channel">-</span></div>
+                        <div class="col-6 col-md-4"><span class="text-muted small d-block">@Localizer["OwnerModule"]</span><span id="d-ownerModule">-</span></div>
+                        <div class="col-6 col-md-4"><span class="text-muted small d-block">@Localizer["OwnerDomain"]</span><span id="d-ownerDomain">-</span></div>
+                        <div class="col-6 col-md-4"><span class="text-muted small d-block">@Localizer["OwnerService"]</span><span id="d-ownerService">-</span></div>
+                        <div class="col-6 col-md-4"><span class="text-muted small d-block">@Localizer["TargetPage"]</span><span id="d-targetPage">-</span></div>
+                        <div class="col-6 col-md-8"><span class="text-muted small d-block">@Localizer["RequiredPermission"]</span><span class="font-monospace small" id="d-requiredPermission">-</span></div>
+                        @* MOD-0027-FU03A (Bridge) — read-only source model fields. *@
+                        <div class="col-6 col-md-4"><span class="text-muted small d-block">@Localizer["SourceType"]</span><span id="d-sourceType">-</span></div>
+                        <div class="col-6 col-md-4"><span class="text-muted small d-block">@Localizer["OwnerArea"]</span><span id="d-ownerArea">-</span></div>
+                        <div class="col-6 col-md-4"><span class="text-muted small d-block">@Localizer["TargetRoute"]</span><span class="font-monospace small" id="d-targetRoute">-</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ContractSection"]</h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6"><span class="text-muted small d-block">@Localizer["DefaultTemplateKey"]</span><span class="fw-medium font-monospace" id="d-defaultTemplateKey">-</span></div>
+                        <div class="col-6 col-md-3"><span class="text-muted small d-block">@Localizer["UsageType"]</span><span id="d-usageType">-</span></div>
+                        <div class="col-6 col-md-3"><span class="text-muted small d-block">@Localizer["TenantOverride"]</span><span id="d-canTenantOverride">-</span></div>
+                    </div>
+                    <h6 class="small text-muted mb-2">@Localizer["VariablesSection"]</h6>
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm mb-0"><thead><tr><th>@Localizer["VarName"]</th><th>@Localizer["VarType"]</th><th>@Localizer["VarRequired"]</th></tr></thead>
+                        <tbody id="d-requiredVars"></tbody></table>
+                    </div>
+                    <h6 class="small text-muted mb-2">@Localizer["OptionalVariablesSection"]</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0"><thead><tr><th>@Localizer["VarName"]</th><th>@Localizer["VarType"]</th><th>@Localizer["VarRequired"]</th></tr></thead>
+                        <tbody id="d-optionalVars"></tbody></table>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ValidationSection"]</h6>
+                    <div class="alert alert-warning d-none mb-0" id="d-validationDraft">@Localizer["ValidationDraftNote"]</div>
+                    <div class="alert alert-success d-none mb-0" id="d-validationActive">@Localizer["ValidationActiveNote"]</div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ManifestSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12"><span class="text-muted small d-block">@Localizer["ManifestSource"]</span><span id="d-manifestSource">-</span></div>
+                        <div class="col-6"><span class="text-muted small d-block">@Localizer["ManifestVersion"]</span><span id="d-manifestVersion">-</span></div>
+                        <div class="col-6"><span class="text-muted small d-block">@Localizer["Severity"]</span><span id="d-severity">-</span></div>
+                        <div class="col-12"><span class="text-muted small d-block">@Localizer["LastSynced"]</span><span id="d-lastSynced">-</span></div>
+                        <div class="col-12"><span class="text-muted small d-block">@Localizer["LinkPolicy"]</span><span id="d-linkPolicy">-</span></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Platform/NotificationEvents/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/NotificationEvents/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/NotificationEvents/details.js" asp-append-version="true"></script>
+}

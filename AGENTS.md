@@ -30,7 +30,8 @@ ERP-vNext/
 │   └── domains/
 │       ├── developer-enablement/        (DEVEN — mevcut; Diten.DevEnablementService golden references)
 │       ├── master-data-management/       (MDM — governance scaffold mevcut; production service yok)
-│       └── platform-shared-services/    (PSS — mevcut; Diten.Platform + Diten.AuthService)
+│       ├── platform-shared-services/    (PSS — mevcut; Diten.Platform + Diten.AuthService)
+│       └── portfolio-delivery/          (PPM — governance scaffold mevcut; MOD-0117; production service yok)
 │       # planned, not scaffolded yet:
 │       # enterprise-strategy-business-performance (ESBP)
 ├── services/                            .NET 8 mikroservisler
@@ -40,6 +41,7 @@ ERP-vNext/
 │   ├── Diten.Platform.Common/
 │   └── Diten.EnterpriseStrategyService/
 │   # Diten.MdmService/                   MDM service scaffold henüz oluşturulmadı
+│   # Diten.PpmService/                   PPM service henüz scaffold edilmedi; C1 "PPM Work Records Core" module pack onayı olmadan oluşturulmaz (DCP-003)
 ├── frontend/                            Razor MVC + Sneat PRO + DataTables v2
 │   └── Diten.Web/
 ├── gateway/                             Ocelot API Gateway
@@ -216,7 +218,7 @@ Fix/refactor işleri için: [.antigravity/rules/GEMINI.md](.antigravity/rules/GE
 feature/{domain-kısa}/{module-id}-{slug}
 ```
 
-- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp`
+- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `ppm`
 - `module-id`: `mdm-001`, `pss-002`, vb. (küçük harf)
 - `slug`: 2-4 kelimelik kısa isim
 
@@ -224,6 +226,7 @@ feature/{domain-kısa}/{module-id}-{slug}
 - `feature/mdm/mdm-001-product-management`
 - `feature/pss/pss-001-identity-access`
 - `feature/esbp/esbp-001-strategy-core`
+- `feature/ppm/mod-0117-work-records-core`
 
 Yedekleme branch'leri için ayrı kural: [.antigravity/rules/git-backup-policy.md](.antigravity/rules/git-backup-policy.md)
 

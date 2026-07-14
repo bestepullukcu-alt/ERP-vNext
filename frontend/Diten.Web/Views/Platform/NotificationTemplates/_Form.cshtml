@@ -1,0 +1,166 @@
+@using Diten.Web.Views.Platform.NotificationTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var templateId = ViewData["TemplateId"]?.ToString() ?? string.Empty;
+    var scopeTenantId = ViewData["ScopeTenantId"]?.ToString() ?? string.Empty;
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
+    <div class="d-flex flex-column justify-content-center">
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb" class="text-muted">
+            <ol class="breadcrumb mb-0 py-0">
+                <li class="breadcrumb-item"><a href="/Platform/NotificationTemplates">@Localizer["NotificationTemplatesTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-content-center flex-wrap gap-3">
+        <a href="/Platform/NotificationTemplates" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="notificationTemplateForm" id="btnSaveTemplate" class="btn btn-primary">
+            @(isEdit ? SharedLocalizer["Update"].Value : SharedLocalizer["Save"].Value)
+        </button>
+    </div>
+</div>
+
+<div class="alert alert-danger d-none" id="formErrorSummary"></div>
+<div class="alert alert-label-info d-none" id="scopeBanner"></div>
+
+<form id="notificationTemplateForm" data-mode="@(isEdit ? "edit" : "create")" data-template-id="@templateId" data-scope-tenant-id="@scopeTenantId" novalidate>
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="templateKey">@Localizer["TemplateKey"] <span class="text-danger">*</span></label>
+                            <input type="text" id="templateKey" name="templateKey" class="form-control" required maxlength="160"
+                                   placeholder="@Localizer["TemplateKeyPlaceholder"]" @(isEdit ? "readonly" : "") />
+                            <div class="invalid-feedback" data-valmsg-for="TemplateKey"></div>
+                            <small class="text-muted">@Localizer["TemplateKeyHint"]</small>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="templateLocale">@Localizer["Locale"] <span class="text-danger">*</span></label>
+                            <select id="templateLocale" name="locale" class="form-select" required></select>
+                            <div class="invalid-feedback" data-valmsg-for="Locale"></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-medium" for="templateChannel">@Localizer["Channel"] <span class="text-danger">*</span></label>
+                            <select id="templateChannel" name="channel" class="form-select" required></select>
+                            <div class="invalid-feedback" data-valmsg-for="Channel"></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-medium" for="templateStatus">@SharedLocalizer["Status"] <span class="text-danger">*</span></label>
+                            <select id="templateStatus" name="status" class="form-select" required></select>
+                            <div class="invalid-feedback" data-valmsg-for="Status"></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-medium" for="semanticVersion">@Localizer["SemanticVersion"]</label>
+                            <input type="text" id="semanticVersion" name="semanticVersion" class="form-control" maxlength="40"
+                                   placeholder="1.0.0" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ContentSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="subjectTemplate">@Localizer["SubjectTemplate"] <span class="text-danger">*</span></label>
+                            <input type="text" id="subjectTemplate" name="subjectTemplate" class="form-control" required maxlength="300"
+                                   placeholder="@Localizer["SubjectTemplatePlaceholder"]" />
+                            <div class="invalid-feedback" data-valmsg-for="SubjectTemplate"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="bodyHtmlTemplate">@Localizer["BodyHtmlTemplate"]</label>
+                            <textarea id="bodyHtmlTemplate" name="bodyHtmlTemplate" class="form-control font-monospace" rows="12"
+                                      placeholder="@Localizer["BodyHtmlPlaceholder"]"></textarea>
+                            <div class="invalid-feedback" data-valmsg-for="BodyHtmlTemplate"></div>
+                            <small class="text-muted">@Localizer["BodyHint"]</small>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="bodyTextTemplate">@Localizer["BodyTextTemplate"]</label>
+                            <textarea id="bodyTextTemplate" name="bodyTextTemplate" class="form-control font-monospace" rows="6"
+                                      placeholder="@Localizer["BodyTextPlaceholder"]"></textarea>
+                            <div class="invalid-feedback" data-valmsg-for="BodyTextTemplate"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["VariablesSection"]</h6>
+                        <button type="button" class="btn btn-sm btn-label-primary" id="btnAddVariable">
+                            <i class="icon-base bx bx-plus icon-sm"></i> @Localizer["AddVariable"]
+                        </button>
+                    </div>
+                    <div id="variablesEditor" class="d-flex flex-column gap-2"></div>
+                    <div class="text-muted small mt-2 d-none" id="variablesEmptyState">@Localizer["NoVariables"]</div>
+
+                    @* Server-rendered row template: variable type options come from Razor, not a JS array. *@
+                    <template id="variableRowTemplate">
+                        <div class="border rounded p-2 variable-row">
+                            <div class="d-flex gap-2 align-items-start">
+                                <div class="flex-grow-1">
+                                    <input type="text" class="form-control form-control-sm variable-name" maxlength="160"
+                                           placeholder="@Localizer["VariableNamePlaceholder"]" />
+                                </div>
+                                <div>
+                                    <select class="form-select form-select-sm variable-type">
+                                        <option value="String">@Localizer["VariableTypeString"]</option>
+                                        <option value="Number">@Localizer["VariableTypeNumber"]</option>
+                                        <option value="Boolean">@Localizer["VariableTypeBoolean"]</option>
+                                        <option value="Date">@Localizer["VariableTypeDate"]</option>
+                                        <option value="Url">@Localizer["VariableTypeUrl"]</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-icon btn-label-danger variable-remove" title="@SharedLocalizer["Delete"]">
+                                    <i class="icon-base bx bx-x icon-sm"></i>
+                                </button>
+                            </div>
+                            <div class="form-check form-switch mt-1 mb-0">
+                                <input type="checkbox" class="form-check-input variable-required" checked />
+                                <label class="form-check-label small">@Localizer["VariableRequired"]</label>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["PreviewSection"]</h6>
+                        <button type="button" class="btn btn-sm btn-label-info" id="btnRenderPreview">
+                            <i class="icon-base bx bx-show icon-sm"></i> @Localizer["RenderPreview"]
+                        </button>
+                    </div>
+                    <div id="previewSampleInputs" class="d-flex flex-column gap-2 mb-3"></div>
+                    <div class="alert alert-danger d-none" id="previewError"></div>
+                    <div class="d-none" id="previewResult">
+                        <div class="mb-2">
+                            <span class="fw-medium">@Localizer["PreviewSubject"]:</span>
+                            <span id="previewSubject"></span>
+                        </div>
+                        @* Sandboxed iframe: server-rendered preview HTML only; no scripts, no same-origin access. *@
+                        <iframe id="previewFrame" sandbox="" class="w-100 border rounded" style="min-height: 240px; background: #fff;"></iframe>
+                        <pre id="previewText" class="mt-2 mb-0 small text-muted d-none"></pre>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

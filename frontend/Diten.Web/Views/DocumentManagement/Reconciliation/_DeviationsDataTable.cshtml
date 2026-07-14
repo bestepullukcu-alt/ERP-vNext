@@ -1,0 +1,33 @@
+@using Diten.Web.Views.DocumentManagement.Reconciliation
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReconciliationIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-deviations" data-dt-standard="v2" class="datatables-deviations table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["DeviationType"]</th>
+                    <th>@Localizer["Severity"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["RegisterFolderId"]</th>
+                    <th>@Localizer["ExpectedFullPath"]</th>
+                    <th>@Localizer["ActualFullPath"]</th>
+                    <th>@Localizer["Description"]</th>
+                    <th>@Localizer["DetectedAt"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["RowActions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

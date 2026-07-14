@@ -41,6 +41,21 @@ public static class PlatformNavigationCatalog
             null, null, new[] { "audit", "log", "events", "trail" }),
         new("AuditRetention", "AuditRetentionMenu", "/Platform/AuditRetention", "bx-shield-quarter",
             null, null, new[] { "audit", "retention", "policy" }),
+        // MOD-0027-FU02 — Platform Admin notification management (templates / tenant messaging settings /
+        // read-only dispatch monitoring). Backend authorizes every action via [HasPermission] on
+        // platform.notifications.*; a restricted actor hitting a direct URL/action is fail-closed at the API.
+        new("NotificationTemplates", "NotificationTemplatesMenu", "/Platform/NotificationTemplates", "bx-envelope",
+            "/Platform/NotificationTemplates/Create", "AddNotificationTemplate",
+            new[] { "notification", "notifications", "template", "templates", "email", "mail" }),
+        new("NotificationSettings", "NotificationSettingsMenu", "/Platform/NotificationSettings", "bx-cog",
+            "/Platform/NotificationSettings/Create", "AddNotificationSettings",
+            new[] { "notification", "notifications", "messaging", "smtp", "provider", "settings" }),
+        new("NotificationDispatches", "NotificationDispatchesMenu", "/Platform/NotificationDispatches", "bx-send",
+            null, null, new[] { "notification", "notifications", "dispatch", "dispatches", "delivery", "outbox" }),
+        // MOD-0027-FU03 — read-only Notification Event Catalog. Backend authorizes via platform.notifications.events.*;
+        // a restricted actor hitting the direct URL is fail-closed at the API.
+        new("NotificationEvents", "NotificationEventsMenu", "/Platform/NotificationEvents", "bx-broadcast",
+            null, null, new[] { "notification", "notifications", "event", "events", "catalog", "template", "binding", "manifest" }),
         new("SelfAccess", "SelfAccessMenu", "/Platform/SelfAccess", "bx-user-check",
             null, null, new[] { "access", "permissions", "self", "effective" }),
     };

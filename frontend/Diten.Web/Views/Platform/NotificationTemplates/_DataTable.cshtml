@@ -1,0 +1,33 @@
+@using Diten.Web.Views.Platform.NotificationTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        @* MOD-0027 templates expose no delete/bulk-delete API (archive-only lifecycle), so this list has no
+           checkbox column or bulk action bar by design — rendering one would be a fake action (no-shell rule). *@
+        <table id="dt-notificationtemplates" data-dt-standard="v2" class="datatables-notificationtemplates table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["TemplateKey"]</th>
+                    <th>@Localizer["Locale"]</th>
+                    <th>@Localizer["Channel"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["SemanticVersion"]</th>
+                    <th>@Localizer["UpdatedAt"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

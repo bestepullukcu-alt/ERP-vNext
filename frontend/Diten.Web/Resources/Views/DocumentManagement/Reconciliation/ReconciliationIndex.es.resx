@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ReconciliationTitle" xml:space="preserve"><value>Conciliación, evidencias y desviaciones</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Conciliación por relectura, aprobación de evidencias de aprovisionamiento, flujo de trabajo de desviaciones y preparación para la cualificación de una línea base del SGC</value></data>
+  <data name="DeviationsTitle" xml:space="preserve"><value>Desviaciones</value></data>
+  <data name="DeviationsDescription" xml:space="preserve"><value>Diferencias detectadas entre la línea base respaldada por el registro y el árbol de carpetas aprovisionado</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Evidencia de aprovisionamiento</value></data>
+  <data name="EvidenceDescription" xml:space="preserve"><value>Evidencia de carpetas aprovisionadas con permisos de TI y aprobación de QA</value></data>
+  <data name="Baseline" xml:space="preserve"><value>Línea base</value></data>
+  <data name="SelectBaseline" xml:space="preserve"><value>Seleccione una línea base</value></data>
+  <data name="Provider" xml:space="preserve"><value>Proveedor</value></data>
+  <data name="Scope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="DryRun" xml:space="preserve"><value>Ejecución de prueba</value></data>
+  <data name="ApplyFindings" xml:space="preserve"><value>Aplicar hallazgos</value></data>
+  <data name="RunReconciliation" xml:space="preserve"><value>Ejecutar conciliación</value></data>
+  <data name="ProviderInHouse" xml:space="preserve"><value>Interno</value></data>
+  <data name="ProviderGoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="ProviderNotAvailable" xml:space="preserve"><value>no disponible</value></data>
+  <data name="ScopeDefinitionToInstance" xml:space="preserve"><value>De definición a instancia</value></data>
+  <data name="ScopeDefinitionToProvider" xml:space="preserve"><value>De definición a proveedor</value></data>
+  <data name="ScopeInstanceToProvider" xml:space="preserve"><value>De instancia a proveedor</value></data>
+  <data name="OpenDeviations" xml:space="preserve"><value>Abrir desviaciones</value></data>
+  <data name="OpenEvidence" xml:space="preserve"><value>Abrir evidencias</value></data>
+  <data name="SelectBaselineFirst" xml:space="preserve"><value>Seleccione primero una línea base</value></data>
+  <data name="ApplyFindingsConfirm" xml:space="preserve"><value>Aplicar los hallazgos persistirá las desviaciones detectadas para esta línea base. ¿Desea continuar?</value></data>
+  <data name="ProviderUnavailableMessage" xml:space="preserve"><value>El proveedor de relectura de Google Drive aún no está configurado</value></data>
+  <data name="DryRunComplete" xml:space="preserve"><value>Ejecución de prueba completada</value></data>
+  <data name="FindingsApplied" xml:space="preserve"><value>Hallazgos aplicados</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Resumen de conciliación</value></data>
+  <data name="ExpectedCount" xml:space="preserve"><value>Esperado</value></data>
+  <data name="ActualCount" xml:space="preserve"><value>Real</value></data>
+  <data name="MatchedCount" xml:space="preserve"><value>Coincidente</value></data>
+  <data name="MissingCount" xml:space="preserve"><value>Faltante</value></data>
+  <data name="ExtraCount" xml:space="preserve"><value>Adicional</value></data>
+  <data name="RenamedCount" xml:space="preserve"><value>Renombrado</value></data>
+  <data name="MovedCount" xml:space="preserve"><value>Movido</value></data>
+  <data name="MetadataMismatchCount" xml:space="preserve"><value>Discrepancia de metadatos</value></data>
+  <data name="DeviationCount" xml:space="preserve"><value>Desviaciones</value></data>
+  <data name="BlockingDeviationCount" xml:space="preserve"><value>Bloqueante</value></data>
+  <data name="DryRunBadge" xml:space="preserve"><value>Prueba</value></data>
+  <data name="AppliedBadge" xml:space="preserve"><value>Aplicado</value></data>
+  <data name="DetectedDeviations" xml:space="preserve"><value>Desviaciones detectadas</value></data>
+  <data name="NoDeviationsDetected" xml:space="preserve"><value>No se detectaron desviaciones</value></data>
+  <data name="Recommendation" xml:space="preserve"><value>Recomendación</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>Preparación para la cualificación</value></data>
+  <data name="Ready" xml:space="preserve"><value>Listo</value></data>
+  <data name="NotReady" xml:space="preserve"><value>No listo</value></data>
+  <data name="BaselineStatus" xml:space="preserve"><value>Estado de la línea base</value></data>
+  <data name="ExpectedInstanceCount" xml:space="preserve"><value>Instancias esperadas</value></data>
+  <data name="EvidenceCount" xml:space="preserve"><value>Evidencia</value></data>
+  <data name="MissingEvidenceCount" xml:space="preserve"><value>Evidencia faltante</value></data>
+  <data name="PermissionsAppliedCount" xml:space="preserve"><value>Permisos aplicados</value></data>
+  <data name="QaVerifiedCount" xml:space="preserve"><value>Verificado por QA</value></data>
+  <data name="OpenBlockingDeviationCount" xml:space="preserve"><value>Desviaciones bloqueantes abiertas</value></data>
+  <data name="Reasons" xml:space="preserve"><value>Motivos</value></data>
+  <data name="DeviationType" xml:space="preserve"><value>Tipo de desviación</value></data>
+  <data name="Severity" xml:space="preserve"><value>Gravedad</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>ID de carpeta del registro</value></data>
+  <data name="ExpectedFullPath" xml:space="preserve"><value>Ruta esperada</value></data>
+  <data name="ActualFullPath" xml:space="preserve"><value>Ruta real</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="DetectedAt" xml:space="preserve"><value>Detectado el</value></data>
+  <data name="Resolve" xml:space="preserve"><value>Resolver</value></data>
+  <data name="Accept" xml:space="preserve"><value>Aceptar</value></data>
+  <data name="ResolveComment" xml:space="preserve"><value>Comentario de resolución</value></data>
+  <data name="AcceptComment" xml:space="preserve"><value>Comentario de aceptación</value></data>
+  <data name="CommentLabel" xml:space="preserve"><value>Comentario</value></data>
+  <data name="DeviationResolved" xml:space="preserve"><value>Desviación resuelta</value></data>
+  <data name="DeviationAccepted" xml:space="preserve"><value>Desviación aceptada</value></data>
+  <data name="MissingFolder" xml:space="preserve"><value>Carpeta faltante</value></data>
+  <data name="ExtraFolder" xml:space="preserve"><value>Carpeta adicional</value></data>
+  <data name="RenameMismatch" xml:space="preserve"><value>Discrepancia de cambio de nombre</value></data>
+  <data name="MoveMismatch" xml:space="preserve"><value>Discrepancia de movimiento</value></data>
+  <data name="ParentMismatch" xml:space="preserve"><value>Discrepancia de elemento principal</value></data>
+  <data name="DuplicateSibling" xml:space="preserve"><value>Hermano duplicado</value></data>
+  <data name="DuplicateFullPath" xml:space="preserve"><value>Ruta duplicada</value></data>
+  <data name="OrphanFolder" xml:space="preserve"><value>Carpeta huérfana</value></data>
+  <data name="MetadataMismatch" xml:space="preserve"><value>Discrepancia de metadatos</value></data>
+  <data name="PermissionMismatch" xml:space="preserve"><value>Discrepancia de permisos</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>Evidencia faltante</value></data>
+  <data name="SeverityInfo" xml:space="preserve"><value>Información</value></data>
+  <data name="SeverityWarning" xml:space="preserve"><value>Advertencia</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>Mayor</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>Crítico</value></data>
+  <data name="DeviationStatusOpen" xml:space="preserve"><value>Abierto</value></data>
+  <data name="DeviationStatusAccepted" xml:space="preserve"><value>Aceptado</value></data>
+  <data name="DeviationStatusResolved" xml:space="preserve"><value>Resuelto</value></data>
+  <data name="DeviationStatusClosed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="FullPath" xml:space="preserve"><value>Ruta completa</value></data>
+  <data name="PlatformProvider" xml:space="preserve"><value>Proveedor de la plataforma</value></data>
+  <data name="PlatformFolderId" xml:space="preserve"><value>ID de carpeta de la plataforma</value></data>
+  <data name="ProvisioningStatus" xml:space="preserve"><value>Estado de aprovisionamiento</value></data>
+  <data name="PermissionsApplied" xml:space="preserve"><value>Permisos aplicados</value></data>
+  <data name="QaVerified" xml:space="preserve"><value>Verificado por QA</value></data>
+  <data name="DeviationStatusColumn" xml:space="preserve"><value>Estado de la desviación</value></data>
+  <data name="LastReadBackAt" xml:space="preserve"><value>Última relectura</value></data>
+  <data name="MarkPermissionsApplied" xml:space="preserve"><value>Marcar permisos aplicados</value></data>
+  <data name="MarkQaVerified" xml:space="preserve"><value>Marcar verificado por QA</value></data>
+  <data name="PermissionsAppliedConfirm" xml:space="preserve"><value>¿Marcar los permisos como aplicados para esta carpeta?</value></data>
+  <data name="QaVerifyConfirm" xml:space="preserve"><value>¿Marcar esta carpeta como verificada por QA?</value></data>
+  <data name="PermissionsAppliedDone" xml:space="preserve"><value>Permisos marcados como aplicados</value></data>
+  <data name="QaVerifiedDone" xml:space="preserve"><value>Carpeta marcada como verificada por QA</value></data>
+  <data name="ProvPending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="ProvCreated" xml:space="preserve"><value>Creado</value></data>
+  <data name="ProvExistingMatched" xml:space="preserve"><value>Coincidencia existente</value></data>
+  <data name="ProvFailed" xml:space="preserve"><value>Fallido</value></data>
+  <data name="ProvSkipped" xml:space="preserve"><value>Omitido</value></data>
+  <data name="ProvDeviated" xml:space="preserve"><value>Desviado</value></data>
+  <data name="EvidenceDevNone" xml:space="preserve"><value>Ninguno</value></data>
+  <data name="EvidenceDevOpen" xml:space="preserve"><value>Abierto</value></data>
+  <data name="EvidenceDevClosed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="EvidenceDevAccepted" xml:space="preserve"><value>Aceptado</value></data>
+  <data name="EvidenceEditFutureNote" xml:space="preserve"><value>La edición de metadatos de evidencia aún no está disponible. Esta pantalla solo admite el listado y la aprobación de TI/QA.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="RowActions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Confirmar</value></data>
+</root>

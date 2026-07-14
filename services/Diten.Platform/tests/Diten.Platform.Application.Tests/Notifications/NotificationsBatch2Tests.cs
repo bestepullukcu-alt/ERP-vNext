@@ -489,8 +489,12 @@ public sealed class NotificationsBatch2Tests
         public Task<NotificationDispatch?> GetByIdForTenantAsync(Guid tenantId, Guid id, CancellationToken ct = default) =>
             Task.FromResult(Items.FirstOrDefault(x => !x.IsDeleted && x.TenantId == tenantId && x.Id == id));
 
-        public Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(Guid tenantId, int skip = 0, int take = 50, CancellationToken ct = default) =>
-            Task.FromResult(Items.Where(x => !x.IsDeleted && x.TenantId == tenantId).Skip(skip).Take(take).ToArray() as IReadOnlyList<NotificationDispatch>);
+        public Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(Guid tenantId, int skip = 0, int take = 50, NotificationDispatchStatus? status = null, DateTimeOffset? queuedFrom = null, DateTimeOffset? queuedTo = null, string? templateKey = null, CancellationToken ct = default) =>
+            Task.FromResult(Items.Where(x => !x.IsDeleted && x.TenantId == tenantId
+                && (status is null || x.Status == status)
+                && (queuedFrom is null || x.QueuedAt >= queuedFrom)
+                && (queuedTo is null || x.QueuedAt <= queuedTo)
+                && (templateKey is null || x.TemplateKey == templateKey)).Skip(skip).Take(take).ToArray() as IReadOnlyList<NotificationDispatch>);
 
         public Task UpdateAsync(NotificationDispatch dispatch, CancellationToken ct = default) => Task.CompletedTask;
 

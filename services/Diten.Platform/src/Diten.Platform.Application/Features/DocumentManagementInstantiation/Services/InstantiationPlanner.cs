@@ -65,9 +65,10 @@ public sealed class InstantiationPlanner : IInstantiationPlanner
             return Fail("Baseline not found.", 404, DocumentManagementInstantiationReasonCodes.NotFoundNonLeakage, correlationId);
         }
 
-        if (baseline.Status != BaselineReleaseStatus.Published)
+        // MOD-0028-FU08 — only the live canonical (Effective) or a legacy Published baseline is instantiable.
+        if (!baseline.Status.IsInstantiable())
         {
-            return Fail("Only published baselines can be instantiated.", 400, DocumentManagementInstantiationReasonCodes.ValidationFailed, correlationId);
+            return Fail("Only effective baselines can be instantiated.", 400, DocumentManagementInstantiationReasonCodes.BaselineNotEffective, correlationId);
         }
 
         var companyValidation = await ValidateCompanyAsync(scope.CompanyId, correlationId, ct);

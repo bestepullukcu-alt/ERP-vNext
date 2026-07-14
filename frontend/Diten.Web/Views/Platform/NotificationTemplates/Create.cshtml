@@ -1,0 +1,16 @@
+@using Diten.Web.Views.Platform.NotificationTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationTemplatesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    ViewData["FormMode"] = "create";
+}
+
+<partial name="~/Views/Platform/NotificationTemplates/_Form.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Platform/NotificationTemplates/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/NotificationTemplates/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/NotificationTemplates/form.js" asp-append-version="true"></script>
+}

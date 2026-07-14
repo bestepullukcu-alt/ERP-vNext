@@ -154,6 +154,23 @@ public sealed class DocumentManagementQmsBaselinesController : Controller
     public Task<IActionResult> Publish(Guid id, [FromForm] int expectedVersion, CancellationToken ct) =>
         ProxyPostAsync($"{ApiBase}/{id}/publish", new { expectedVersion }, ct);
 
+    // MOD-0028-FU08 — DRAFT → APPROVED (freezes the immutable snapshot manifest; still non-instantiable).
+    [HttpPost("approve/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Approve(
+        Guid id,
+        [FromForm] int expectedVersion,
+        [FromForm] string? approvalReference,
+        [FromForm] string? approvalComment,
+        CancellationToken ct) =>
+        ProxyPostAsync($"{ApiBase}/{id}/approve", new { expectedVersion, approvalReference, approvalComment }, ct);
+
+    // MOD-0028-FU08 — APPROVED → EFFECTIVE (instantiable; supersedes the prior Effective of the same source key).
+    [HttpPost("mark-effective/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> MarkEffective(Guid id, [FromForm] int expectedVersion, CancellationToken ct) =>
+        ProxyPostAsync($"{ApiBase}/{id}/mark-effective", new { expectedVersion }, ct);
+
     [HttpPost("manual")]
     [ValidateAntiForgeryToken]
     public Task<IActionResult> CreateManualBaseline(
@@ -161,8 +178,9 @@ public sealed class DocumentManagementQmsBaselinesController : Controller
         [FromForm] string? name,
         [FromForm] string? changeSummary,
         [FromForm] DateTimeOffset? effectiveDate,
+        [FromForm] string? sourceBaselineKey,
         CancellationToken ct) =>
-        ProxyPostAsync($"{ApiBase}/manual", new { baselineVersion, name, changeSummary, effectiveDate }, ct);
+        ProxyPostAsync($"{ApiBase}/manual", new { baselineVersion, name, changeSummary, effectiveDate, sourceBaselineKey }, ct);
 
     [HttpPost("definitions/{id:guid}")]
     [ValidateAntiForgeryToken]
@@ -209,12 +227,17 @@ public sealed class DocumentManagementQmsBaselinesController : Controller
         await stream.CopyToAsync(buffer, ct);
         var contentBase64 = Convert.ToBase64String(buffer.ToArray());
 
+        // MOD-0028-FU07 — the import API resolves its parser by format/filename (xlsx, csv, flat-json). Derive the
+        // format from the uploaded file extension instead of hardcoding xlsx, so register CSV / flat-JSON packages
+        // import through the same wizard.
+        var format = ResolveImportFormat(file.FileName);
+
         if (baselineVersion is null)
         {
             return new
             {
                 fileName = file.FileName,
-                format = "xlsx",
+                format,
                 contentBase64,
                 sourceBaselineKey = sourceBaselineKey ?? string.Empty
             };
@@ -223,12 +246,20 @@ public sealed class DocumentManagementQmsBaselinesController : Controller
         return new
         {
             fileName = file.FileName,
-            format = "xlsx",
+            format,
             contentBase64,
             sourceBaselineKey = sourceBaselineKey ?? string.Empty,
             baselineVersion,
             changeSummary
         };
+    }
+
+    private static string ResolveImportFormat(string? fileName)
+    {
+        var name = (fileName ?? string.Empty).Trim().ToLowerInvariant();
+        if (name.EndsWith(".csv", StringComparison.Ordinal)) return "csv";
+        if (name.EndsWith(".json", StringComparison.Ordinal)) return "json";
+        return "xlsx";
     }
 
     private async Task<IActionResult> ProxyGetAsync(string path, CancellationToken ct)

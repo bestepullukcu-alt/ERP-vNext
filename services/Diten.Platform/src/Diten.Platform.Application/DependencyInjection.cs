@@ -69,6 +69,11 @@ public static class DependencyInjection
         // MOD-0028-FU02 QMS folder baseline import services (dependency-free xlsx parsing, deterministic build/hash).
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.IQmsFolderImportParser,
             Features.DocumentManagementQmsBaseline.Services.XlsxQmsFolderImportParser>();
+        // MOD-0028-FU06 register-backed CSV / flat-JSON parsers for the GMG-QMS-LOG-0007 package.
+        services.AddScoped<Features.DocumentManagementQmsBaseline.Services.IQmsFolderImportParser,
+            Features.DocumentManagementQmsBaseline.Services.CsvQmsFolderImportParser>();
+        services.AddScoped<Features.DocumentManagementQmsBaseline.Services.IQmsFolderImportParser,
+            Features.DocumentManagementQmsBaseline.Services.FlatJsonQmsFolderImportParser>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.QmsFolderTreeValidator>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.DottedOutlineTreeBuilder>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.QmsBaselineImportService>();
@@ -98,6 +103,17 @@ public static class DependencyInjection
         services.AddScoped<Features.DocumentManagementAccessMatrix.Services.DocumentAccessTargetResolver>();
         services.AddScoped<Features.DocumentManagementAccessMatrix.Services.DocumentAccessResolver>();
         services.AddScoped<Features.DocumentManagementAccessMatrix.Services.DocumentAccessMatrixService>();
+        // MOD-0029-FU05 access-profile → policy template engine (read-only over MOD-0028, idempotent apply).
+        services.AddScoped<Features.DocumentManagementAccessProfileTemplates.AccessProfilePolicyPlanner>();
+        // MOD-0028-FU09 read-back reconciliation + provisioning evidence (sidecar, non-destructive).
+        services.AddScoped<Features.DocumentManagementReconciliation.ICollectionTreeReadBackProvider,
+            Features.DocumentManagementReconciliation.InHouseCollectionTreeReadBackProvider>();
+        services.AddScoped<Features.DocumentManagementReconciliation.ICollectionTreeReadBackProvider,
+            Features.DocumentManagementReconciliation.GoogleDriveCollectionTreeReadBackProvider>();
+        services.AddScoped<Features.DocumentManagementReconciliation.CollectionTreeReconciliationService>();
+        services.AddScoped<Features.DocumentManagementReconciliation.ProvisioningEvidenceService>();
+        services.AddScoped<Features.DocumentManagementReconciliation.DeviationWorkflowService>();
+        services.AddScoped<Features.DocumentManagementReconciliation.BaselineQualificationReadinessService>();
         services.AddScoped<IBusinessReferenceDataGovernanceService, BusinessReferenceDataGovernanceService>();
         // PSS-012 governance adapters. MOD-0023 (workflow) / MOD-0031 (evidence) are not yet implemented.
         // Mock stubs are registered ONLY in Development/Local/Test (governance mode = Mock); every other
@@ -125,6 +141,10 @@ public static class DependencyInjection
         services.AddScoped<IBusinessReferenceDataActiveMembershipService, BusinessReferenceDataActiveMembershipService>();
         services.AddScoped<ITenantMessagingSettingsResolver, TenantMessagingSettingsResolver>();
         services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
+        services.AddScoped<Features.Notifications.Services.INotificationEventManifestSyncService, Features.Notifications.Services.NotificationEventManifestSyncService>();
+        // MOD-0027-FU04B — eventCode → dispatch adapter (resolves Active event + validates, delegates to the existing
+        // QueueEmailNotificationCommand). Producers wiring it is a separate follow-up (FU04B-Tenant / FU04D).
+        services.AddScoped<Features.Notifications.Services.INotificationEventDispatchAdapter, Features.Notifications.Services.NotificationEventDispatchAdapter>();
         services.AddScoped<TenantCreatedV1NotificationMapper>();
         services.AddScoped<TenantSuspendedV1NotificationMapper>();
         services.AddScoped<TenantReactivatedV1NotificationMapper>();

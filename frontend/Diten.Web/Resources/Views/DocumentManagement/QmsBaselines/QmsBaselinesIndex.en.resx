@@ -61,7 +61,7 @@
     <value>1. Select workbook and validate</value>
   </data>
   <data name="WorkbookFile" xml:space="preserve">
-    <value>Workbook (.xlsx)</value>
+    <value>Import file (.xlsx, .csv, .json)</value>
   </data>
   <data name="WorkbookFileHint" xml:space="preserve">
     <value>The workbook is read as governance metadata only; it is never stored as a document.</value>
@@ -94,7 +94,7 @@
     <value>Please select an .xlsx workbook.</value>
   </data>
   <data name="InvalidFileType" xml:space="preserve">
-    <value>Only .xlsx workbooks are accepted.</value>
+    <value>Only .xlsx, .csv or .json files are accepted.</value>
   </data>
   <data name="SourceKeyRequired" xml:space="preserve">
     <value>Source baseline key is required.</value>
@@ -158,6 +158,42 @@
   </data>
   <data name="Publish" xml:space="preserve">
     <value>Publish</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>Approve</value>
+  </data>
+  <data name="ApproveConfirm" xml:space="preserve">
+    <value>Approve this baseline? The snapshot manifest is frozen at review time; it stays non-instantiable until marked effective.</value>
+  </data>
+  <data name="ApproveSuccess" xml:space="preserve">
+    <value>Baseline approved.</value>
+  </data>
+  <data name="MarkEffective" xml:space="preserve">
+    <value>Mark Effective</value>
+  </data>
+  <data name="MarkEffectiveConfirm" xml:space="preserve">
+    <value>Mark this baseline effective? It becomes instantiable and supersedes any previous effective baseline with the same source key.</value>
+  </data>
+  <data name="MarkEffectiveSuccess" xml:space="preserve">
+    <value>Baseline marked effective.</value>
+  </data>
+  <data name="StatusApproved" xml:space="preserve">
+    <value>Approved</value>
+  </data>
+  <data name="StatusEffective" xml:space="preserve">
+    <value>Effective</value>
+  </data>
+  <data name="StatusSuperseded" xml:space="preserve">
+    <value>Superseded</value>
+  </data>
+  <data name="ApprovedAt" xml:space="preserve">
+    <value>Approved</value>
+  </data>
+  <data name="EffectiveAt" xml:space="preserve">
+    <value>Effective</value>
+  </data>
+  <data name="ReasonPackageNotApproved" xml:space="preserve">
+    <value>Source package is still draft (not for execution); it cannot be marked effective.</value>
   </data>
   <data name="PublishConfirm" xml:space="preserve">
     <value>Publish this draft baseline into an immutable snapshot? This cannot be undone.</value>
@@ -326,4 +362,22 @@
   <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
   <data name="VariantAllowed" xml:space="preserve"><value>Variant Allowed</value></data>
   <data name="VariantLocked" xml:space="preserve"><value>Variant Locked</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>Register ID</value></data>
+  <data name="FolderType" xml:space="preserve"><value>Folder Type</value></data>
+  <data name="AccessProfile" xml:space="preserve"><value>Access Profile</value></data>
+  <data name="RetentionClass" xml:space="preserve"><value>Retention Class</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>Legacy Code</value></data>
+  <data name="ProvisioningWave" xml:space="preserve"><value>Provisioning Wave</value></data>
+  <data name="SourceKey" xml:space="preserve">
+    <value>Source key</value>
+  </data>
+  <data name="SourceKeyPlaceholder" xml:space="preserve">
+    <value>e.g. GMG-QMS-LOG-0007</value>
+  </data>
+  <data name="SourceKeyHint" xml:space="preserve">
+    <value>Optional. Baselines with the same source key form one lineage — marking a new one effective supersedes the previous. Leave blank to derive it from the name.</value>
+  </data>
+  <data name="NameLineageHint" xml:space="preserve">
+    <value>Same name shares the same baseline lineage; a new effective supersedes the previous one.</value>
+  </data>
 </root>

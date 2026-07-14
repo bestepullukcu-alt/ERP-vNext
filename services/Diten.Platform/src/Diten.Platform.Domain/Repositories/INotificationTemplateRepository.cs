@@ -7,6 +7,16 @@ public interface INotificationTemplateRepository
 {
     Task<NotificationTemplate> CreateAsync(NotificationTemplate template, CancellationToken ct = default);
     Task<NotificationTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<IReadOnlyList<NotificationTemplate>> ListAsync(
+        Guid? tenantId,
+        bool isPlatformDefault,
+        NotificationTemplateStatus? status = null,
+        string? locale = null,
+        NotificationChannelCode? channel = null,
+        string? templateKey = null,
+        int skip = 0,
+        int take = 50,
+        CancellationToken ct = default);
     Task<NotificationTemplate?> GetActiveByKeyAsync(
         Guid? tenantId,
         bool isPlatformDefault,

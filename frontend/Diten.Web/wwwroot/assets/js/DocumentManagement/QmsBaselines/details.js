@@ -18,6 +18,10 @@
     const statusBadge = document.getElementById('qmsStatusBadge');
     const btnPublish = document.getElementById('btnPublish');
     const publishSpinner = document.getElementById('publishSpinner');
+    const btnApprove = document.getElementById('btnApprove');
+    const approveSpinner = document.getElementById('approveSpinner');
+    const btnMarkEffective = document.getElementById('btnMarkEffective');
+    const markEffectiveSpinner = document.getElementById('markEffectiveSpinner');
     const treeEl = document.getElementById('qmsDefinitionTree');
     const treeError = document.getElementById('qmsTreeError');
 
@@ -40,7 +44,8 @@
         VALIDATION_FAILED: t('ReasonValidationFailed'),
         CONFLICT: t('ReasonConflict'),
         PERM_DENIED: t('ReasonPermDenied'),
-        NOT_FOUND_NON_LEAKAGE: t('ReasonNotFound')
+        NOT_FOUND_NON_LEAKAGE: t('ReasonNotFound'),
+        PACKAGE_NOT_APPROVED: t('ReasonPackageNotApproved')
     }[rc] || t('ErrorOccurred'));
 
     const showError = (message, corr) => {
@@ -58,8 +63,22 @@
 
     const renderStatusBadge = (status) => {
         const s = String(status || '').toUpperCase();
-        statusBadge.className = 'badge ' + (s === 'PUBLISHED' ? 'bg-label-success' : s === 'DRAFT' ? 'bg-label-warning' : 'bg-label-secondary');
-        statusBadge.textContent = s === 'PUBLISHED' ? t('StatusPublished') : s === 'DRAFT' ? t('StatusDraft') : t('Unknown');
+        const color = {
+            DRAFT: 'bg-label-warning',
+            APPROVED: 'bg-label-info',
+            EFFECTIVE: 'bg-label-success',
+            PUBLISHED: 'bg-label-success',
+            SUPERSEDED: 'bg-label-secondary'
+        }[s] || 'bg-label-secondary';
+        const label = {
+            DRAFT: t('StatusDraft'),
+            APPROVED: t('StatusApproved'),
+            EFFECTIVE: t('StatusEffective'),
+            PUBLISHED: t('StatusPublished'),
+            SUPERSEDED: t('StatusSuperseded')
+        }[s] || t('Unknown');
+        statusBadge.className = 'badge ' + color;
+        statusBadge.textContent = label;
     };
 
     const renderDetail = (d) => {
@@ -68,13 +87,18 @@
         setText('md-definitionCount', d.definitionCount);
         setText('md-snapshotHash', d.snapshotHash);
         setHtml('md-createdAt', fmtDate(d.createdAt));
+        setHtml('md-approvedAt', fmtDate(d.approvedAt));
+        setHtml('md-effectiveAt', fmtDate(d.effectiveAt));
         setHtml('md-publishedAt', fmtDate(d.publishedAt));
         renderStatusBadge(d.status);
         const subtitle = document.getElementById('qmsBaselineSubtitle');
         if (subtitle) subtitle.textContent = d.baselineReleaseId || '';
-        if (btnPublish && canPublish && String(d.status).toUpperCase() === 'DRAFT') {
-            btnPublish.classList.remove('d-none');
-        }
+        // MOD-0028-FU08 — lifecycle affordances are computed by the backend (canApprove/canMarkEffective); the
+        // legacy single-step Publish stays available on DRAFT for backward compatibility. Enforcement is server-side.
+        const isDraft = String(d.status).toUpperCase() === 'DRAFT';
+        btnApprove?.classList.toggle('d-none', !(canPublish && d.canApprove));
+        btnMarkEffective?.classList.toggle('d-none', !(canPublish && d.canMarkEffective));
+        btnPublish?.classList.toggle('d-none', !(canPublish && isDraft));
         skeleton?.classList.add('d-none');
         content?.classList.remove('d-none');
     };
@@ -95,21 +119,45 @@
         return byParent;
     };
 
+    // MOD-0028-FU06 — access-profile → bootstrap label colour for the per-node governance badge.
+    const accessProfileColor = (profile) => ({
+        'GQMS-Controlled': 'primary',
+        'Enterprise-Restricted': 'secondary',
+        'Business-Controlled': 'info',
+        'Country-Controlled': 'success',
+        'Archive-Restricted': 'secondary',
+        'Confidential': 'danger',
+        'Controlled-Where-Regulated': 'warning',
+        'Site-Controlled': 'info'
+    }[String(profile || '')] || 'secondary');
+
     // jsTree node from the flat definition (parentCanonicalId hierarchy). Folder name is atomic (may contain '/'),
-    // shown verbatim and escaped. Extra metadata is surfaced via the node tooltip (a_attr.title).
+    // shown verbatim and escaped. Register governance metadata (FU06) is surfaced as inline badges on the node and
+    // in full via the node tooltip.
     const toJstreeNode = (node, byParent) => {
         const children = byParent.get(node.canonicalId) || [];
         const titleBits = [];
         if (node.fullPath) titleBits.push(`${t('FullPath')}: ${node.fullPath}`);
+        if (node.registerFolderId) titleBits.push(`${t('RegisterFolderId')}: ${node.registerFolderId}`);
+        if (node.folderType) titleBits.push(`${t('FolderType')}: ${node.folderType}`);
+        if (node.accessProfile) titleBits.push(`${t('AccessProfile')}: ${node.accessProfile}`);
+        if (node.retentionClass) titleBits.push(`${t('RetentionClass')}: ${node.retentionClass}`);
+        if (node.legacyCode) titleBits.push(`${t('LegacyCode')}: ${node.legacyCode}`);
+        if (node.provisioningWave) titleBits.push(`${t('ProvisioningWave')}: ${node.provisioningWave}`);
         if (node.requiredByScope) titleBits.push(node.requiredByScope);
-        if (node.defaultClassificationLevel) titleBits.push(node.defaultClassificationLevel);
+
+        // Inline governance badges next to the folder name: Register folder id (muted code) + access profile (chip).
+        const badges =
+            (node.registerFolderId ? ` <small class="text-muted ms-1"><code>${esc(node.registerFolderId)}</code></small>` : '') +
+            (node.accessProfile ? ` <span class="badge bg-label-${accessProfileColor(node.accessProfile)} ms-1" style="font-weight:500;">${esc(node.accessProfile)}</span>` : '');
+
         // Controlled, DOM-safe node id; canonicalId is unique per node within a baseline.
         const meta = { id: node.id, canonicalId: node.canonicalId, fullPath: node.fullPath, name: node.name };
         const nodeId = node.canonicalId ? `qnode-${node.canonicalId}` : undefined;
         if (nodeId) nodeMetaById.set(nodeId, meta);
         return {
             id: nodeId,
-            text: `<span class="fw-medium">${esc(node.name || '')}</span>`,
+            text: `<span class="fw-medium">${esc(node.name || '')}</span>${badges}`,
             type: 'folder', // every QMS definition node is a documentation folder
             state: { opened: true },
             a_attr: { title: titleBits.join('  ·  ') },
@@ -367,15 +415,19 @@
         }
     };
 
-    btnPublish?.addEventListener('click', () => {
-        const doPublish = async () => {
-            btnPublish.disabled = true; publishSpinner.classList.remove('d-none');
+    // MOD-0028-FU08 — shared lifecycle-transition runner (Approve / Mark Effective / legacy Publish).
+    // Same-origin proxy POST with anti-forgery; on success it toasts and does a full reload so the status badge
+    // and the action buttons re-render from the backend's fresh canApprove/canMarkEffective affordances.
+    const runLifecycle = ({ btn, spinner, url, confirmMsg, successMsg, confirmLabel, extraFields }) => {
+        const doRun = async () => {
+            btn.disabled = true; spinner?.classList.remove('d-none');
             try {
                 const token = antiForgeryToken();
                 const fd = new FormData();
                 fd.append('expectedVersion', '0'); // server still guards with the loaded version
+                Object.entries(extraFields || {}).forEach(([k, v]) => fd.append(k, v ?? ''));
                 if (token) fd.append('__RequestVerificationToken', token);
-                const res = await fetch(`/DocumentManagementQmsBaselines/publish/${baselineId}`, {
+                const res = await fetch(url, {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: { 'RequestVerificationToken': token },
@@ -383,27 +435,44 @@
                 });
                 let json = null; try { json = await res.json(); } catch (e) { /* ignore */ }
                 if (json && json.isSuccessful) {
-                    window.showToast?.(t('PublishSuccess'), 'success');
-                    btnPublish.classList.add('d-none');
-                    await load();
+                    window.showToast?.(successMsg, 'success');
+                    await load(); // re-renders badge + buttons from the new lifecycle state
                 } else {
                     window.showToast?.(mapReason(json?.reason_code || json?.reasonCode), 'error');
-                    btnPublish.disabled = false;
+                    btn.disabled = false;
                 }
             } catch (e) {
-                console.error('[QmsBaselines] publish failed', e);
+                console.error('[QmsBaselines] lifecycle transition failed', e);
                 window.showToast?.(t('ErrorOccurred'), 'error');
-                btnPublish.disabled = false;
+                btn.disabled = false;
             } finally {
-                publishSpinner.classList.add('d-none');
+                spinner?.classList.add('d-none');
             }
         };
         if (typeof window.showConfirm === 'function') {
-            window.showConfirm(t('PublishConfirm'), doPublish, { type: 'warning', confirmButtonText: t('Publish') });
-        } else if (window.confirm(t('PublishConfirm'))) {
-            doPublish();
+            window.showConfirm(confirmMsg, doRun, { type: 'warning', confirmButtonText: confirmLabel });
+        } else if (window.confirm(confirmMsg)) {
+            doRun();
         }
-    });
+    };
+
+    btnApprove?.addEventListener('click', () => runLifecycle({
+        btn: btnApprove, spinner: approveSpinner,
+        url: `/DocumentManagementQmsBaselines/approve/${baselineId}`,
+        confirmMsg: t('ApproveConfirm'), successMsg: t('ApproveSuccess'), confirmLabel: t('Approve')
+    }));
+
+    btnMarkEffective?.addEventListener('click', () => runLifecycle({
+        btn: btnMarkEffective, spinner: markEffectiveSpinner,
+        url: `/DocumentManagementQmsBaselines/mark-effective/${baselineId}`,
+        confirmMsg: t('MarkEffectiveConfirm'), successMsg: t('MarkEffectiveSuccess'), confirmLabel: t('MarkEffective')
+    }));
+
+    btnPublish?.addEventListener('click', () => runLifecycle({
+        btn: btnPublish, spinner: publishSpinner,
+        url: `/DocumentManagementQmsBaselines/publish/${baselineId}`,
+        confirmMsg: t('PublishConfirm'), successMsg: t('PublishSuccess'), confirmLabel: t('Publish')
+    }));
 
     setupTreeToolbar();
     document.addEventListener('DOMContentLoaded', load);

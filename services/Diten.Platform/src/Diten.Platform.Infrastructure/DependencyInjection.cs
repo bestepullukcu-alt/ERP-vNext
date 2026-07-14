@@ -137,6 +137,9 @@ public static class DependencyInjection
         // MOD-0029-FU04 — access matrix rollout/enforcement mode (defaults to Compatibility when unset).
         services.Configure<Diten.Platform.Application.Features.DocumentManagementAccessMatrix.Services.AccessMatrixOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementAccessMatrix.Services.AccessMatrixOptions.SectionName));
+        // MOD-0029-FU05 — access-profile template role mapping.
+        services.Configure<Diten.Platform.Application.Features.DocumentManagementAccessProfileTemplates.AccessProfileTemplateOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementAccessProfileTemplates.AccessProfileTemplateOptions.SectionName));
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
@@ -210,6 +213,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantMessagingSettingsRepository, TenantMessagingSettingsRepository>();
         services.AddScoped<INotificationTemplateRepository, NotificationTemplateRepository>();
         services.AddScoped<INotificationDispatchRepository, NotificationDispatchRepository>();
+        services.AddScoped<INotificationEventDefinitionRepository, NotificationEventDefinitionRepository>();
         services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
@@ -241,6 +245,9 @@ public static class DependencyInjection
         services.AddScoped<ITemplateMasterVersionRepository, TemplateMasterVersionRepository>();
         // MOD-0029-FU03 — tenant-scoped template variant governance + drift repository.
         services.AddScoped<ITemplateVariantRepository, TemplateVariantRepository>();
+        // MOD-0028-FU09 — provisioning evidence + read-back deviation repositories (sidecar).
+        services.AddScoped<IProvisioningEvidenceRepository, ProvisioningEvidenceRepository>();
+        services.AddScoped<IDocumentCollectionDeviationRepository, DocumentCollectionDeviationRepository>();
         // MOD-0029-FU04 — generalized document access matrix policy repository.
         services.AddScoped<IDocumentAccessPolicyRepository, DocumentAccessPolicyRepository>();
         services.AddScoped<IFolderDocumentAccessPolicyRepository, FolderDocumentAccessPolicyRepository>();
@@ -281,6 +288,9 @@ public static class DependencyInjection
         PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
+        // until FU04A adds seed content.
+        NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
@@ -380,6 +390,9 @@ public static class DependencyInjection
             PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
+            // until FU04A adds seed content.
+            NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();

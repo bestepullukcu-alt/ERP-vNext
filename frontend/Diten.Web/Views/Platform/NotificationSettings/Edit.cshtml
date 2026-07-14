@@ -1,0 +1,16 @@
+@using Diten.Web.Views.Platform.NotificationSettings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationSettingsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/Platform/NotificationSettings/_Form.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Platform/NotificationSettings/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/NotificationSettings/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/NotificationSettings/form.js" asp-append-version="true"></script>
+}

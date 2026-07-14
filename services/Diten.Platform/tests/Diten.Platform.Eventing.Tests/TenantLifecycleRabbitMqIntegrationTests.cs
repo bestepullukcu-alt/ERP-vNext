@@ -113,7 +113,8 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                         mediator,
                         new TenantCreatedV1NotificationMapper(),
                         new TenantSuspendedV1NotificationMapper(),
-                        new TenantReactivatedV1NotificationMapper()));
+                        new TenantReactivatedV1NotificationMapper(),
+                        NullLogger<TenantLifecycleNotificationConsumer>.Instance));
                 });
             });
 
@@ -482,17 +483,28 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
         private readonly int _targetCount;
         private readonly TaskCompletionSource _targetReached = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly object _gate = new();
+        // MOD-0027-FU04C — suspended/reactivated now dispatch by eventCode; route through the real FU04B adapter,
+        // which resolves the Active event and delegates back here as a QueueEmailNotificationCommand.
+        private readonly Diten.Platform.Application.Features.Notifications.Services.INotificationEventDispatchAdapter _adapter;
 
         public RecordingMediator(QueueEmailNotificationHandler handler, int targetCount)
         {
             _handler = handler;
             _targetCount = targetCount;
+            _adapter = new Diten.Platform.Application.Features.Notifications.Services.NotificationEventDispatchAdapter(
+                new SeededEventRepository(), this);
         }
 
         public List<QueueEmailNotificationCommand> Commands { get; } = [];
 
         public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         {
+            if (request is Diten.Platform.Application.Features.Notifications.Commands.DispatchNotificationByEventCodeCommand dispatch)
+            {
+                var dispatchResponse = await _adapter.DispatchByEventCodeAsync(dispatch.Request, cancellationToken);
+                return (TResponse)(object)dispatchResponse;
+            }
+
             if (request is not QueueEmailNotificationCommand command)
             {
                 throw new NotSupportedException($"RecordingMediator does not handle {request.GetType().Name}.");
@@ -534,6 +546,37 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
         public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task Publish(object notification, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification => throw new NotSupportedException();
+    }
+
+    // MOD-0027-FU04C — minimal Active event catalog for the FU04B adapter (suspended/reactivated eventCodes bound to
+    // their templates; empty RequiredVariables so the adapter passes validation and delegates to the real handler).
+    private sealed class SeededEventRepository : Diten.Platform.Domain.Repositories.INotificationEventDefinitionRepository
+    {
+        private static NotificationEventDefinition Event(string code, string templateKey) => new()
+        {
+            EventCode = code,
+            OwnerModuleId = "MOD-0009",
+            Channel = NotificationChannelCode.Email,
+            DefaultTemplateKey = templateKey,
+            FallbackDisplayName = code,
+            Status = NotificationEventStatus.Active
+        };
+
+        private readonly Dictionary<string, NotificationEventDefinition> _events = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["tenant.user.invited"] = Event("tenant.user.invited", "tenant.invite.email"),
+            ["tenant.lifecycle.suspended"] = Event("tenant.lifecycle.suspended", "tenant.suspended.email"),
+            ["tenant.lifecycle.reactivated"] = Event("tenant.lifecycle.reactivated", "tenant.reactivated.email")
+        };
+
+        public Task<NotificationEventDefinition?> GetByEventCodeAsync(string eventCode, CancellationToken ct = default) =>
+            Task.FromResult(_events.TryGetValue((eventCode ?? string.Empty).Trim().ToLowerInvariant(), out var e) ? e : null);
+
+        public Task<NotificationEventDefinition> CreateAsync(NotificationEventDefinition d, CancellationToken ct = default) => Task.FromResult(d);
+        public Task UpdateAsync(NotificationEventDefinition d, CancellationToken ct = default) => Task.CompletedTask;
+        public Task<NotificationEventDefinition?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult<NotificationEventDefinition?>(null);
+        public Task<IReadOnlyList<NotificationEventDefinition>> ListAsync(string? ownerModuleId = null, NotificationChannelCode? channel = null, NotificationEventStatus? status = null, bool? canTenantOverride = null, NotificationEventUsageType? usageType = null, int skip = 0, int take = 100, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<NotificationEventDefinition>>([]);
+        public Task<IReadOnlyList<NotificationEventDefinition>> ListActiveAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<NotificationEventDefinition>>(_events.Values.ToArray());
     }
 
     private sealed class TestHostEnvironment : IHostEnvironment

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
@@ -93,8 +94,12 @@ public sealed class QueueEmailNotificationHandler
             Cc = MapRecipients(request.Request.Cc ?? []),
             Bcc = MapRecipients(request.Request.Bcc ?? []),
             Subject = renderResponse.Data.Subject,
-            BodyHtmlPreview = renderResponse.Data.BodyHtmlPreview,
-            BodyTextPreview = renderResponse.Data.BodyTextPreview,
+            // The full rendered body (renderResponse.Data.BodyHtml) is sent to the provider below; the
+            // truncated preview is the only body form PERSISTED on the dispatch, so mask any sensitive
+            // variable values (e.g. temporary passwords) out of it to avoid leaking them into the record
+            // and the read-only dispatch monitoring UI.
+            BodyHtmlPreview = MaskSensitiveValues(renderResponse.Data.BodyHtmlPreview, request.Request.Variables),
+            BodyTextPreview = MaskSensitiveValues(renderResponse.Data.BodyTextPreview, request.Request.Variables),
             VariablesJson = JsonSerializer.Serialize(SanitizeVariables(request.Request.Variables)),
             QueuedAt = DateTimeOffset.UtcNow,
             RetryCount = 0,
@@ -192,6 +197,45 @@ public sealed class QueueEmailNotificationHandler
             pair => pair.Key,
             pair => IsSensitiveKey(pair.Key) || NotificationParsing.LooksLikeRawSecret(Convert.ToString(pair.Value)) ? "[REDACTED]" : pair.Value,
             StringComparer.OrdinalIgnoreCase);
+
+    private const string RedactedToken = "[REDACTED]";
+
+    // Replaces the concrete values of sensitive variables inside the persisted body preview, so a rendered
+    // secret (temporary password, token, API key) never lands in the dispatch record. The full body sent to
+    // the provider is untouched. Masking keys off sensitive variable NAMES only (not the raw-secret value
+    // heuristic, which flags ordinary spaced/`=` text like tenant names and login URLs). Both the raw and
+    // HTML-encoded forms are masked because the renderer may HTML-encode substituted values.
+    private static string? MaskSensitiveValues(string? preview, IReadOnlyDictionary<string, object?> variables)
+    {
+        if (string.IsNullOrEmpty(preview))
+        {
+            return preview;
+        }
+
+        var masked = preview;
+        foreach (var pair in variables)
+        {
+            if (!IsSensitiveKey(pair.Key))
+            {
+                continue;
+            }
+
+            var value = Convert.ToString(pair.Value);
+            if (string.IsNullOrEmpty(value))
+            {
+                continue;
+            }
+
+            masked = masked.Replace(value, RedactedToken, StringComparison.Ordinal);
+            var encoded = WebUtility.HtmlEncode(value);
+            if (!string.Equals(encoded, value, StringComparison.Ordinal))
+            {
+                masked = masked.Replace(encoded, RedactedToken, StringComparison.Ordinal);
+            }
+        }
+
+        return masked;
+    }
 
     private static string? Redact(string? value) =>
         NotificationParsing.LooksLikeRawSecret(value) ? "[REDACTED]" : value;

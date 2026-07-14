@@ -61,7 +61,7 @@
     <value>1. Seleccionar libro y validar</value>
   </data>
   <data name="WorkbookFile" xml:space="preserve">
-    <value>Libro (.xlsx)</value>
+    <value>Archivo de importación (.xlsx, .csv, .json)</value>
   </data>
   <data name="WorkbookFileHint" xml:space="preserve">
     <value>El libro se lee solo como metadatos de gobierno; nunca se almacena como documento.</value>
@@ -94,7 +94,7 @@
     <value>Selecciona un libro .xlsx.</value>
   </data>
   <data name="InvalidFileType" xml:space="preserve">
-    <value>Solo se aceptan libros .xlsx.</value>
+    <value>Solo se aceptan archivos .xlsx, .csv o .json.</value>
   </data>
   <data name="SourceKeyRequired" xml:space="preserve">
     <value>La clave de línea base de origen es obligatoria.</value>
@@ -326,4 +326,26 @@
   <data name="StatusArchived" xml:space="preserve"><value>Archivado</value></data>
   <data name="VariantAllowed" xml:space="preserve"><value>Variante permitida</value></data>
   <data name="VariantLocked" xml:space="preserve"><value>Variante bloqueada</value></data>
+  <data name="RegisterFolderId" xml:space="preserve"><value>ID de registro</value></data>
+  <data name="FolderType" xml:space="preserve"><value>Tipo de carpeta</value></data>
+  <data name="AccessProfile" xml:space="preserve"><value>Perfil de acceso</value></data>
+  <data name="RetentionClass" xml:space="preserve"><value>Clase de retención</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>Código heredado</value></data>
+  <data name="ProvisioningWave" xml:space="preserve"><value>Fase de aprovisionamiento</value></data>
+  <data name="Approve" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>¿Aprobar esta línea base? El manifiesto de instantánea se congela en el momento de la revisión; no se puede instanciar hasta marcarla como efectiva.</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>Línea base aprobada.</value></data>
+  <data name="MarkEffective" xml:space="preserve"><value>Marcar como efectiva</value></data>
+  <data name="MarkEffectiveConfirm" xml:space="preserve"><value>¿Marcar esta línea base como efectiva? Podrá instanciarse y reemplazará cualquier línea base efectiva anterior con la misma clave de origen.</value></data>
+  <data name="MarkEffectiveSuccess" xml:space="preserve"><value>Línea base marcada como efectiva.</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>Efectiva</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>Reemplazada</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Efectiva</value></data>
+  <data name="ReasonPackageNotApproved" xml:space="preserve"><value>El paquete de origen sigue en borrador (no ejecutable); no se puede marcar como efectiva.</value></data>
+  <data name="SourceKey" xml:space="preserve"><value>Clave de origen</value></data>
+  <data name="SourceKeyPlaceholder" xml:space="preserve"><value>p. ej. GMG-QMS-LOG-0007</value></data>
+  <data name="SourceKeyHint" xml:space="preserve"><value>Opcional. Las líneas base con la misma clave de origen forman un mismo linaje: marcar una nueva como efectiva reemplaza la anterior. Déjalo en blanco para derivarla del nombre.</value></data>
+  <data name="NameLineageHint" xml:space="preserve"><value>El mismo nombre comparte el mismo linaje de línea base; una nueva efectiva reemplaza la anterior.</value></data>
 </root>

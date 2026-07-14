@@ -1,0 +1,28 @@
+@using Diten.Web.Views.Platform.NotificationTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<NotificationTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["NotificationTemplatesTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Platform/NotificationTemplates/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["NotificationTemplatesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* ② DataTable Card *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-notificationtemplates" data-dt-standard="v2"> *@
+<partial name="~/Views/Platform/NotificationTemplates/_DataTable.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Platform/NotificationTemplates/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/NotificationTemplates/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/NotificationTemplates/index.js" asp-append-version="true"></script>
+}
