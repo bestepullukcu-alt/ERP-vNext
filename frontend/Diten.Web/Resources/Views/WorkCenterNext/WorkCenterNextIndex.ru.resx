@@ -1,0 +1,903 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Рабочий центр</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Согласования, задачи, проверки, проблемы и исключения из всех модулей — в одном личном ящике.</value>
+  </data>
+  <data name="ScopeLabel" xml:space="preserve">
+    <value>Область</value>
+  </data>
+  <data name="ScopeMine" xml:space="preserve">
+    <value>Сам</value>
+  </data>
+  <data name="ScopeOnBehalf" xml:space="preserve">
+    <value>По поручению</value>
+  </data>
+  <data name="ScopeCovering" xml:space="preserve">
+    <value>Замещение {0}</value>
+  </data>
+  <data name="ViewLabel" xml:space="preserve">
+    <value>Вид</value>
+  </data>
+  <data name="ViewList" xml:space="preserve">
+    <value>Список</value>
+  </data>
+  <data name="ViewSplit" xml:space="preserve">
+    <value>Разделённый</value>
+  </data>
+  <data name="ViewTable" xml:space="preserve">
+    <value>Таблица</value>
+  </data>
+  <data name="ViewFocus" xml:space="preserve">
+    <value>Сегодня</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Поиск рабочих элементов…</value>
+  </data>
+  <data name="FilterAllModules" xml:space="preserve">
+    <value>Все модули</value>
+  </data>
+  <data name="FilterAllTypes" xml:space="preserve">
+    <value>Все типы</value>
+  </data>
+  <data name="FilterModule" xml:space="preserve">
+    <value>Фильтр по модулю</value>
+  </data>
+  <data name="FilterType" xml:space="preserve">
+    <value>Фильтр по типу</value>
+  </data>
+  <data name="KeyboardHint" xml:space="preserve">
+    <value>j / k — переход · a — согласовать/принять · r — отклонить/вернуть · Enter — открыть</value>
+  </data>
+  <data name="GroupOverdue" xml:space="preserve">
+    <value>Просрочено</value>
+  </data>
+  <data name="GroupDueSoon" xml:space="preserve">
+    <value>Скоро срок</value>
+  </data>
+  <data name="GroupOnTrack" xml:space="preserve">
+    <value>В срок</value>
+  </data>
+  <data name="GroupNoDate" xml:space="preserve">
+    <value>Без даты</value>
+  </data>
+  <data name="SlaNoSla" xml:space="preserve">
+    <value>Нет SLA</value>
+  </data>
+  <data name="SlaDueToday" xml:space="preserve">
+    <value>Срок сегодня</value>
+  </data>
+  <data name="SlaDueTomorrow" xml:space="preserve">
+    <value>Срок завтра</value>
+  </data>
+  <data name="SlaDueInDays" xml:space="preserve">
+    <value>Через {0} дн.</value>
+  </data>
+  <data name="SlaOverdueByDays" xml:space="preserve">
+    <value>Просрочено на {0} дн.</value>
+  </data>
+  <data name="StatusPending" xml:space="preserve">
+    <value>Ожидает</value>
+  </data>
+  <data name="StatusInProgress" xml:space="preserve">
+    <value>В работе</value>
+  </data>
+  <data name="StatusWaiting" xml:space="preserve">
+    <value>Ожидание</value>
+  </data>
+  <data name="StatusDone" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="StatusCancelled" xml:space="preserve">
+    <value>Отменено</value>
+  </data>
+  <data name="PriorityHigh" xml:space="preserve">
+    <value>Высокий</value>
+  </data>
+  <data name="PriorityMedium" xml:space="preserve">
+    <value>Средний</value>
+  </data>
+  <data name="PriorityLow" xml:space="preserve">
+    <value>Низкий</value>
+  </data>
+  <data name="TypeApproval" xml:space="preserve">
+    <value>Согласование</value>
+  </data>
+  <data name="TypeTask" xml:space="preserve">
+    <value>Задача</value>
+  </data>
+  <data name="TypeReview" xml:space="preserve">
+    <value>Проверка</value>
+  </data>
+  <data name="TypeIssue" xml:space="preserve">
+    <value>Проблема</value>
+  </data>
+  <data name="TypeException" xml:space="preserve">
+    <value>Исключение</value>
+  </data>
+  <data name="RoleOwner" xml:space="preserve">
+    <value>Владелец</value>
+  </data>
+  <data name="RoleApprover" xml:space="preserve">
+    <value>Согласующий</value>
+  </data>
+  <data name="RoleReviewer" xml:space="preserve">
+    <value>Проверяющий</value>
+  </data>
+  <data name="RoleCreator" xml:space="preserve">
+    <value>Создатель</value>
+  </data>
+  <data name="ActApprove" xml:space="preserve">
+    <value>Согласовать</value>
+  </data>
+  <data name="ActReject" xml:space="preserve">
+    <value>Отклонить</value>
+  </data>
+  <data name="ActDelegate" xml:space="preserve">
+    <value>Делегировать</value>
+  </data>
+  <data name="ActAccept" xml:space="preserve">
+    <value>Принять</value>
+  </data>
+  <data name="ActStart" xml:space="preserve">
+    <value>Начать</value>
+  </data>
+  <data name="ActComplete" xml:space="preserve">
+    <value>Завершить</value>
+  </data>
+  <data name="ActReassign" xml:space="preserve">
+    <value>Переназначить</value>
+  </data>
+  <data name="ActSignOff" xml:space="preserve">
+    <value>Утвердить</value>
+  </data>
+  <data name="ActReturn" xml:space="preserve">
+    <value>Вернуть</value>
+  </data>
+  <data name="ActResolve" xml:space="preserve">
+    <value>Решить</value>
+  </data>
+  <data name="ActAcknowledge" xml:space="preserve">
+    <value>Подтвердить</value>
+  </data>
+  <data name="ActAct" xml:space="preserve">
+    <value>Действовать</value>
+  </data>
+  <data name="ActionsLabel" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="DetailSummary" xml:space="preserve">
+    <value>Сводка</value>
+  </data>
+  <data name="DetailContext" xml:space="preserve">
+    <value>Контекст источника</value>
+  </data>
+  <data name="DetailRequester" xml:space="preserve">
+    <value>Инициатор</value>
+  </data>
+  <data name="DetailAssignee" xml:space="preserve">
+    <value>Исполнитель</value>
+  </data>
+  <data name="DetailNativeStatus" xml:space="preserve">
+    <value>Статус источника</value>
+  </data>
+  <data name="DetailSourceId" xml:space="preserve">
+    <value>Запись источника</value>
+  </data>
+  <data name="DetailOpenSource" xml:space="preserve">
+    <value>Открыть запись источника</value>
+  </data>
+  <data name="DetailAuditTrail" xml:space="preserve">
+    <value>Журнал аудита</value>
+  </data>
+  <data name="SplitNoSelection" xml:space="preserve">
+    <value>Выберите элемент, чтобы увидеть подробности.</value>
+  </data>
+  <data name="Pinned" xml:space="preserve">
+    <value>Закреплено</value>
+  </data>
+  <data name="ColType" xml:space="preserve">
+    <value>Тип</value>
+  </data>
+  <data name="ColTitle" xml:space="preserve">
+    <value>Заголовок</value>
+  </data>
+  <data name="ColModule" xml:space="preserve">
+    <value>Модуль</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="ColPriority" xml:space="preserve">
+    <value>Приоритет</value>
+  </data>
+  <data name="ColSla" xml:space="preserve">
+    <value>SLA</value>
+  </data>
+  <data name="ColRequester" xml:space="preserve">
+    <value>Инициатор</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Выбрать все</value>
+  </data>
+  <data name="BulkSameType" xml:space="preserve">
+    <value>Массовые действия применяются только к элементам одного типа.</value>
+  </data>
+  <data name="BulkActionsLabel" xml:space="preserve">
+    <value>Массовые действия</value>
+  </data>
+  <data name="BulkSelected" xml:space="preserve">
+    <value>Выбрано: {0}</value>
+  </data>
+  <data name="BulkClear" xml:space="preserve">
+    <value>Очистить</value>
+  </data>
+  <data name="EmptyInboxZeroTitle" xml:space="preserve">
+    <value>Всё разобрано</value>
+  </data>
+  <data name="EmptyInboxZeroDesc" xml:space="preserve">
+    <value>Сейчас нет рабочих элементов, требующих вашего внимания.</value>
+  </data>
+  <data name="EmptyFilterTitle" xml:space="preserve">
+    <value>Нет подходящих элементов</value>
+  </data>
+  <data name="EmptyFilterDesc" xml:space="preserve">
+    <value>Попробуйте изменить область, фильтры или поиск.</value>
+  </data>
+  <data name="EmptyClearFilters" xml:space="preserve">
+    <value>Сбросить фильтры</value>
+  </data>
+  <data name="FocusDesc" xml:space="preserve">
+    <value>Просроченные и истекающие сегодня элементы, требующие действий сейчас, а также закреплённые вами.</value>
+  </data>
+  <data name="FocusOverdue" xml:space="preserve">
+    <value>Просрочено</value>
+  </data>
+  <data name="FocusDueToday" xml:space="preserve">
+    <value>Срок сегодня</value>
+  </data>
+  <data name="FocusPinned" xml:space="preserve">
+    <value>Закреплённые</value>
+  </data>
+  <data name="FocusEmptyTitle" xml:space="preserve">
+    <value>На сегодня ничего срочного</value>
+  </data>
+  <data name="FocusEmptyDesc" xml:space="preserve">
+    <value>В этой области нет просроченных, истекающих сегодня или закреплённых элементов.</value>
+  </data>
+  <data name="AuditSubmitted" xml:space="preserve">
+    <value>Отправил(а) запрос</value>
+  </data>
+  <data name="AuditRoutedTo" xml:space="preserve">
+    <value>Направлено вам для действия</value>
+  </data>
+  <data name="AuditEscalated" xml:space="preserve">
+    <value>Эскалировано после нарушения SLA</value>
+  </data>
+  <data name="AuditReviewRequested" xml:space="preserve">
+    <value>Запросил(а) вашу проверку</value>
+  </data>
+  <data name="AuditCommentAdded" xml:space="preserve">
+    <value>Добавил(а) комментарий</value>
+  </data>
+  <data name="AuditReminderSent" xml:space="preserve">
+    <value>Отправлено напоминание</value>
+  </data>
+  <data name="AuditActionStamp" xml:space="preserve">
+    <value>{0} — записано (демо)</value>
+  </data>
+  <data name="TimeToday" xml:space="preserve">
+    <value>Сегодня</value>
+  </data>
+  <data name="TimeYesterday" xml:space="preserve">
+    <value>Вчера</value>
+  </data>
+  <data name="TimeDaysAgo" xml:space="preserve">
+    <value>{0} дн. назад</value>
+  </data>
+  <data name="ReasonLabel" xml:space="preserve">
+    <value>Причина / комментарий</value>
+  </data>
+  <data name="ReasonPlaceholder" xml:space="preserve">
+    <value>Укажите обязательную причину для журнала аудита…</value>
+  </data>
+  <data name="ReasonConfirm" xml:space="preserve">
+    <value>Подтвердить</value>
+  </data>
+  <data name="ReasonCancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="ToastAction" xml:space="preserve">
+    <value>{0} — записано (демо)</value>
+  </data>
+  <data name="ToastActionReason" xml:space="preserve">
+    <value>{0} — записано с заметкой (демо)</value>
+  </data>
+  <data name="ToastBulk" xml:space="preserve">
+    <value>Обработано элементов: {0} (демо)</value>
+  </data>
+  <data name="ToastOpenSource" xml:space="preserve">
+    <value>Открыло бы {0} · {1} (демо-ссылка)</value>
+  </data>
+  <data name="TabsLabel" xml:space="preserve">
+    <value>Вкладки</value>
+  </data>
+  <data name="TabInbox" xml:space="preserve">
+    <value>Входящие</value>
+  </data>
+  <data name="TabWorkCenter" xml:space="preserve">
+    <value>Рабочий центр</value>
+  </data>
+  <data name="ActRequestInfo" xml:space="preserve">
+    <value>Запросить информацию</value>
+  </data>
+  <data name="ToastMovedToWorkCenter" xml:space="preserve">
+    <value>{0} · перемещено в «Мои задачи» (макет)</value>
+  </data>
+  <data name="ToastItemRemoved" xml:space="preserve">
+    <value>{0} · элемент удалён из вашего списка (макет)</value>
+  </data>
+  <data name="NoActionsAvailable" xml:space="preserve">
+    <value>Нет доступных действий</value>
+  </data>
+  <data name="EmptyWorkCenterTitle" xml:space="preserve">
+    <value>Нет принятой работы</value>
+  </data>
+  <data name="EmptyWorkCenterDesc" xml:space="preserve">
+    <value>Здесь появятся элементы, принятые из Входящих.</value>
+  </data>
+  <data name="ActPlan" xml:space="preserve">
+    <value>Запланировать</value>
+  </data>
+  <data name="ActReplan" xml:space="preserve">
+    <value>Перепланировать</value>
+  </data>
+  <data name="ActResume" xml:space="preserve">
+    <value>Продолжить</value>
+  </data>
+  <data name="ActPause" xml:space="preserve">
+    <value>Пауза</value>
+  </data>
+  <data name="ActLogTime" xml:space="preserve">
+    <value>Учесть время</value>
+  </data>
+  <data name="StepBarLabel" xml:space="preserve">
+    <value>Жизненный цикл</value>
+  </data>
+  <data name="StepAccepted" xml:space="preserve">
+    <value>Принято</value>
+  </data>
+  <data name="StepPlanned" xml:space="preserve">
+    <value>Запланировано</value>
+  </data>
+  <data name="StepInProgress" xml:space="preserve">
+    <value>В работе</value>
+  </data>
+  <data name="StepReview" xml:space="preserve">
+    <value>Проверка</value>
+  </data>
+  <data name="StepDone" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="TimesheetLabel" xml:space="preserve">
+    <value>Время</value>
+  </data>
+  <data name="TimeLoggedLabel" xml:space="preserve">
+    <value>учтено</value>
+  </data>
+  <data name="TimerRunning" xml:space="preserve">
+    <value>идёт</value>
+  </data>
+  <data name="AwaitingReview" xml:space="preserve">
+    <value>Ожидает проверки</value>
+  </data>
+  <data name="TimeHM" xml:space="preserve">
+    <value>{0}ч {1}м</value>
+  </data>
+  <data name="PlanDateLabel" xml:space="preserve">
+    <value>Выберите дату</value>
+  </data>
+  <data name="PlanConfirm" xml:space="preserve">
+    <value>Задать дату</value>
+  </data>
+  <data name="LogTimeLabel" xml:space="preserve">
+    <value>Минуты</value>
+  </data>
+  <data name="LogTimePlaceholder" xml:space="preserve">
+    <value>напр. 30</value>
+  </data>
+  <data name="LogTimeConfirm" xml:space="preserve">
+    <value>Учесть</value>
+  </data>
+  <data name="ToastPlanned" xml:space="preserve">
+    <value>{0} · запланировано на {1} (макет)</value>
+  </data>
+  <data name="ToastTimerStarted" xml:space="preserve">
+    <value>{0} · таймер запущен (макет)</value>
+  </data>
+  <data name="ToastTimerPaused" xml:space="preserve">
+    <value>Таймер на паузе · учтено {0} (макет)</value>
+  </data>
+  <data name="ToastTimeLogged" xml:space="preserve">
+    <value>учтено {0} (макет)</value>
+  </data>
+  <data name="ToastSentToReview" xml:space="preserve">
+    <value>{0} · отправлено на проверку (макет)</value>
+  </data>
+  <data name="TabMine" xml:space="preserve">
+    <value>Мои задачи</value>
+  </data>
+  <data name="TabPool" xml:space="preserve">
+    <value>Пул</value>
+  </data>
+  <data name="ActClaim" xml:space="preserve">
+    <value>Взять</value>
+  </data>
+  <data name="ActRelease" xml:space="preserve">
+    <value>Освободить</value>
+  </data>
+  <data name="ActDispute" xml:space="preserve">
+    <value>Оспорить</value>
+  </data>
+  <data name="BlockedLabel" xml:space="preserve">
+    <value>Заблокировано</value>
+  </data>
+  <data name="BlockedByLabel" xml:space="preserve">
+    <value>Блокируется</value>
+  </data>
+  <data name="BlockedBanner" xml:space="preserve">
+    <value>Эту задачу нельзя начать — сначала нужно завершить зависимости.</value>
+  </data>
+  <data name="BlockedReasonPredecessor" xml:space="preserve">
+    <value>Нельзя начать, пока не завершена предшествующая задача.</value>
+  </data>
+  <data name="BlockedReasonFreeze" xml:space="preserve">
+    <value>Нельзя начать, пока не откроется окно заморозки.</value>
+  </data>
+  <data name="ConfirmBody" xml:space="preserve">
+    <value>Вы собираетесь применить это действие к «{0}». Продолжить?</value>
+  </data>
+  <data name="ConfirmBulkBody" xml:space="preserve">
+    <value>Вы собираетесь применить это действие сразу к {0} элементам. Продолжить?</value>
+  </data>
+  <data name="ConfirmProceed" xml:space="preserve">
+    <value>Да, продолжить</value>
+  </data>
+  <data name="EmptyPoolTitle" xml:space="preserve">
+    <value>Нечего брать</value>
+  </data>
+  <data name="EmptyPoolDesc" xml:space="preserve">
+    <value>Нет элементов, ожидающих, что вы их возьмёте.</value>
+  </data>
+  <data name="ToastClaimed" xml:space="preserve">
+    <value>{0} · взято вами (макет)</value>
+  </data>
+  <data name="AuditAcknowledged" xml:space="preserve">
+    <value>Просмотрел элемент</value>
+  </data>
+  <data name="AuditOffered" xml:space="preserve">
+    <value>Предложено в пул</value>
+  </data>
+  <data name="AuditQueued" xml:space="preserve">
+    <value>Добавлено в групповую очередь</value>
+  </data>
+  <data name="AuditBlocked" xml:space="preserve">
+    <value>Заблокировано зависимостью</value>
+  </data>
+  <data name="TabWaiting" xml:space="preserve">
+    <value>Пул и ожидание</value>
+  </data>
+  <data name="TabHistory" xml:space="preserve">
+    <value>История</value>
+  </data>
+  <data name="EmptyHistoryTitle" xml:space="preserve">
+    <value>Пока пусто</value>
+  </data>
+  <data name="EmptyHistoryDesc" xml:space="preserve">
+    <value>Здесь появляются завершённые и одобренные вами элементы.</value>
+  </data>
+  <data name="OwnUrgentTip" xml:space="preserve">
+    <value>Ваши просроченные задачи, ожидающие, пока вы работаете по поручению</value>
+  </data>
+  <data name="DelegationBanner" xml:space="preserve">
+    <value>Режим делегирования — вы действуете от имени {0} ({1}). Каждое действие помечается «от имени {0}».</value>
+  </data>
+  <data name="OnBehalfOf" xml:space="preserve">
+    <value>От имени {0}</value>
+  </data>
+  <data name="OnBehalfShort" xml:space="preserve">
+    <value>за {0}</value>
+  </data>
+  <data name="Pin" xml:space="preserve">
+    <value>Закрепить</value>
+  </data>
+  <data name="Unpin" xml:space="preserve">
+    <value>Открепить</value>
+  </data>
+  <data name="Snooze" xml:space="preserve">
+    <value>Отложить</value>
+  </data>
+  <data name="Unsnooze" xml:space="preserve">
+    <value>Вернуть</value>
+  </data>
+  <data name="SnoozeConfirm" xml:space="preserve">
+    <value>Отложить</value>
+  </data>
+  <data name="SnoozeFuture" xml:space="preserve">
+    <value>Выберите будущую дату.</value>
+  </data>
+  <data name="WaitingOn" xml:space="preserve">
+    <value>Ожидание: {0}</value>
+  </data>
+  <data name="SnoozedUntil" xml:space="preserve">
+    <value>Отложено до {0}</value>
+  </data>
+  <data name="PersonalActionsLabel" xml:space="preserve">
+    <value>Личные действия</value>
+  </data>
+  <data name="DatesLabel" xml:space="preserve">
+    <value>Даты</value>
+  </data>
+  <data name="SourceDueLabel" xml:space="preserve">
+    <value>Срок (источник)</value>
+  </data>
+  <data name="PlannedDateLabel" xml:space="preserve">
+    <value>Личный план</value>
+  </data>
+  <data name="PlanConflict" xml:space="preserve">
+    <value>Ваш личный план позже срока источника — риск просрочки.</value>
+  </data>
+  <data name="ConfirmBodyOnBehalf" xml:space="preserve">
+    <value>Вы собираетесь применить это действие к «{0}» от имени {1}. Продолжить?</value>
+  </data>
+  <data name="ToastReleased" xml:space="preserve">
+    <value>{0} · возвращено в пул (макет)</value>
+  </data>
+  <data name="ToastPinned" xml:space="preserve">
+    <value>{0} · закреплено</value>
+  </data>
+  <data name="ToastUnpinned" xml:space="preserve">
+    <value>{0} · откреплено</value>
+  </data>
+  <data name="ToastSnoozed" xml:space="preserve">
+    <value>{0} · отложено до {1} (макет)</value>
+  </data>
+  <data name="ToastUnsnoozed" xml:space="preserve">
+    <value>{0} · возвращено (макет)</value>
+  </data>
+  <data name="BulkResultTitle" xml:space="preserve">
+    <value>Результат массового действия</value>
+  </data>
+  <data name="BulkResult" xml:space="preserve">
+    <value>Выбрано {0} · успешно {1} · с ошибкой {2}. Ошибочные строки остаются выбранными; запись источника изменилась — повторите.</value>
+  </data>
+  <data name="BulkRowFailed" xml:space="preserve">
+    <value>ошибка</value>
+  </data>
+  <data name="EmptyMineTitle" xml:space="preserve">
+    <value>Нет активной работы</value>
+  </data>
+  <data name="EmptyMineDesc" xml:space="preserve">
+    <value>Здесь появляется работа, которую вы приняли. Новые элементы — во «Входящих».</value>
+  </data>
+  <data name="SegmentsLabel" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="SegActive" xml:space="preserve">
+    <value>Активные</value>
+  </data>
+  <data name="SegWaiting" xml:space="preserve">
+    <value>Ожидание</value>
+  </data>
+  <data name="SegPlanned" xml:space="preserve">
+    <value>Запланир.</value>
+  </data>
+  <data name="SignalBlocked" xml:space="preserve">
+    <value>Заблок.</value>
+  </data>
+  <data name="SignalSlaRisk" xml:space="preserve">
+    <value>Риск SLA</value>
+  </data>
+  <data name="SignalEscalated" xml:space="preserve">
+    <value>Эскалир.</value>
+  </data>
+  <data name="ChipClear" xml:space="preserve">
+    <value>Сбросить</value>
+  </data>
+  <data name="BlockedByDependency" xml:space="preserve">
+    <value>Нельзя начать, пока не завершена зависимость.</value>
+  </data>
+  <data name="ChecklistLabel" xml:space="preserve">
+    <value>Чек-лист</value>
+  </data>
+  <data name="SubtasksLabel" xml:space="preserve">
+    <value>Подзадачи</value>
+  </data>
+  <data name="SubtaskAddPlaceholder" xml:space="preserve">
+    <value>Новая подзадача…</value>
+  </data>
+  <data name="SubtaskAdd" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="SubtasksReadonlyHint" xml:space="preserve">
+    <value>Иерархия редактируется в источнике</value>
+  </data>
+  <data name="DependenciesLabel" xml:space="preserve">
+    <value>Зависимости</value>
+  </data>
+  <data name="DepPredecessor" xml:space="preserve">
+    <value>Предшеств.</value>
+  </data>
+  <data name="DepSuccessor" xml:space="preserve">
+    <value>Последующ.</value>
+  </data>
+  <data name="DepTypeFS" xml:space="preserve">
+    <value>Финиш-Старт (FS)</value>
+  </data>
+  <data name="DepTypeFF" xml:space="preserve">
+    <value>Финиш-Финиш (FF)</value>
+  </data>
+  <data name="DepTypeSS" xml:space="preserve">
+    <value>Старт-Старт (SS)</value>
+  </data>
+  <data name="DepTypeSF" xml:space="preserve">
+    <value>Старт-Финиш (SF)</value>
+  </data>
+  <data name="DepDone" xml:space="preserve">
+    <value>готово</value>
+  </data>
+  <data name="DepInProgress" xml:space="preserve">
+    <value>в работе</value>
+  </data>
+  <data name="DepNotStarted" xml:space="preserve">
+    <value>не начато</value>
+  </data>
+  <data name="DepsReadonlyHint" xml:space="preserve">
+    <value>Связи зависимостей управляются в источнике</value>
+  </data>
+  <data name="AttachmentsLabel" xml:space="preserve">
+    <value>Вложения</value>
+  </data>
+  <data name="NoteLabel" xml:space="preserve">
+    <value>Личная заметка</value>
+  </data>
+  <data name="NotePlaceholder" xml:space="preserve">
+    <value>Заметка, видимая только вам…</value>
+  </data>
+  <data name="NoteSave" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="ToastNoteSaved" xml:space="preserve">
+    <value>Личная заметка сохранена (макет)</value>
+  </data>
+  <data name="ActivityLabel" xml:space="preserve">
+    <value>Активность и комментарии</value>
+  </data>
+  <data name="CommentPlaceholder" xml:space="preserve">
+    <value>Написать комментарий… (также в источник)</value>
+  </data>
+  <data name="CommentPost" xml:space="preserve">
+    <value>Отправить</value>
+  </data>
+  <data name="ToastCommentPosted" xml:space="preserve">
+    <value>Комментарий отправлен (макет)</value>
+  </data>
+  <data name="ToastAttachment" xml:space="preserve">
+    <value>{0} · открылось бы в источнике (макет)</value>
+  </data>
+  <data name="ViewKanban" xml:space="preserve">
+    <value>Канбан</value>
+  </data>
+  <data name="ViewCalendar" xml:space="preserve">
+    <value>Календарь</value>
+  </data>
+  <data name="KanbanReadonly" xml:space="preserve">
+    <value>Только чтение — статус меняется в источнике; здесь только личный план/закрепление.</value>
+  </data>
+  <data name="CalLegendDue" xml:space="preserve">
+    <value>Срок источника</value>
+  </data>
+  <data name="CalLegendPlan" xml:space="preserve">
+    <value>Личный план</value>
+  </data>
+  <data name="NewButton" xml:space="preserve">
+    <value>Создать</value>
+  </data>
+  <data name="NewSelfTask" xml:space="preserve">
+    <value>Задача себе</value>
+  </data>
+  <data name="NewSelfTaskDesc" xml:space="preserve">
+    <value>Личное дело — живёт в WorkCenter</value>
+  </data>
+  <data name="NewInSource" xml:space="preserve">
+    <value>Создать в источнике</value>
+  </data>
+  <data name="NewInSourceDesc" xml:space="preserve">
+    <value>Выберите модуль, создайте в его экране</value>
+  </data>
+  <data name="NewTaskTitlePlaceholder" xml:space="preserve">
+    <value>Название задачи…</value>
+  </data>
+  <data name="NewCreate" xml:space="preserve">
+    <value>Создать</value>
+  </data>
+  <data name="NewPickModule" xml:space="preserve">
+    <value>Выберите модуль</value>
+  </data>
+  <data name="NewOpenSource" xml:space="preserve">
+    <value>Открыть в источнике</value>
+  </data>
+  <data name="SelfSource" xml:space="preserve">
+    <value>Личное</value>
+  </data>
+  <data name="SelfTaskSummary" xml:space="preserve">
+    <value>Личная задача, созданная вами для себя.</value>
+  </data>
+  <data name="AuditSelfCreated" xml:space="preserve">
+    <value>Создал личную задачу</value>
+  </data>
+  <data name="ToastSelfTaskCreated" xml:space="preserve">
+    <value>{0} · добавлено в «Мои задачи» (макет)</value>
+  </data>
+  <data name="ToastCreateInSource" xml:space="preserve">
+    <value>Создание открылось бы в модуле {0} (макет)</value>
+  </data>
+  <data name="ScopeAll" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="ScopeAllSub" xml:space="preserve">
+    <value>Ваша работа + все делегирования</value>
+  </data>
+  <data name="DelegationCombined" xml:space="preserve">
+    <value>Объединённый вид — ваша работа и все делегирования вместе; в каждой строке указано, за кого.</value>
+  </data>
+  <data name="GroupLabel" xml:space="preserve">
+    <value>Группа</value>
+  </data>
+  <data name="GroupAll" xml:space="preserve">
+    <value>Все группы</value>
+  </data>
+  <data name="FilterPriority" xml:space="preserve">
+    <value>Фильтр приоритета</value>
+  </data>
+  <data name="FilterAllPriorities" xml:space="preserve">
+    <value>Все приоритеты</value>
+  </data>
+  <data name="FilterMode" xml:space="preserve">
+    <value>Фильтр режима назначения</value>
+  </data>
+  <data name="FilterAllModes" xml:space="preserve">
+    <value>Все режимы</value>
+  </data>
+  <data name="ModeDirect" xml:space="preserve">
+    <value>Прямое</value>
+  </data>
+  <data name="ModeApproval" xml:space="preserve">
+    <value>Согласование</value>
+  </data>
+  <data name="ModeGroupQueue" xml:space="preserve">
+    <value>Групповая очередь</value>
+  </data>
+  <data name="ModeOffered" xml:space="preserve">
+    <value>Предложено</value>
+  </data>
+  <data name="ApprovalBand" xml:space="preserve">
+    <value>Ожидает согласования — решите здесь</value>
+  </data>
+  <data name="SysRecordChanged" xml:space="preserve">
+    <value>Запись источника изменилась — обновите</value>
+  </data>
+  <data name="SysSourceUnreachable" xml:space="preserve">
+    <value>Модуль-источник сейчас недоступен</value>
+  </data>
+  <data name="SysAuthorityEnded" xml:space="preserve">
+    <value>Ваши полномочия по этому элементу закончились</value>
+  </data>
+  <data name="AgendaButton" xml:space="preserve"><value>Расписание</value></data>
+  <data name="NotesButton" xml:space="preserve"><value>Заметки</value></data>
+  <data name="AgendaTitle" xml:space="preserve"><value>Расписание на сегодня</value></data>
+  <data name="AgendaEmpty" xml:space="preserve"><value>На сегодня встреч не запланировано.</value></data>
+  <data name="AgendaAddMeeting" xml:space="preserve"><value>Добавить встречу</value></data>
+  <data name="MeetingFollowup" xml:space="preserve"><value>Создать задачу</value></data>
+  <data name="MeetingNewTitle" xml:space="preserve"><value>Новая встреча</value></data>
+  <data name="MeetingTitleLabel" xml:space="preserve"><value>Название встречи</value></data>
+  <data name="MeetingStartLabel" xml:space="preserve"><value>Начало</value></data>
+  <data name="MeetingEndLabel" xml:space="preserve"><value>Окончание</value></data>
+  <data name="MeetingLocationLabel" xml:space="preserve"><value>Место / ссылка</value></data>
+  <data name="MeetingAdd" xml:space="preserve"><value>Добавить в расписание</value></data>
+  <data name="MeetingValidation" xml:space="preserve"><value>Введите название и корректный диапазон времени.</value></data>
+  <data name="MeetingAdded" xml:space="preserve"><value>Встреча добавлена в расписание на сегодня.</value></data>
+  <data name="MeetingFollowupTitle" xml:space="preserve"><value>Продолжение: {0}</value></data>
+  <data name="MeetingSource" xml:space="preserve"><value>Встреча</value></data>
+  <data name="NotesPanelTitle" xml:space="preserve"><value>Личные заметки</value></data>
+  <data name="NotesEmpty" xml:space="preserve"><value>Личных заметок пока нет.</value></data>
+  <data name="NotesConvertTask" xml:space="preserve"><value>Преобразовать в задачу</value></data>
+  <data name="NotesAddPlaceholder" xml:space="preserve"><value>Добавить личную заметку…</value></data>
+  <data name="NotesAdd" xml:space="preserve"><value>Добавить</value></data>
+  <data name="NoteAdded" xml:space="preserve"><value>Личная заметка добавлена.</value></data>
+  <data name="NotesSource" xml:space="preserve"><value>Личные заметки</value></data>
+  <data name="PanelClose" xml:space="preserve"><value>Закрыть панель</value></data>
+  <data name="SourceActionsLocked" xml:space="preserve"><value>Действия источника заблокированы до обновления элемента.</value></data>
+  <data name="RefreshSource" xml:space="preserve"><value>Обновить источник</value></data>
+  <data name="RetrySource" xml:space="preserve"><value>Повторить подключение</value></data>
+  <data name="SourceRefreshed" xml:space="preserve"><value>Элемент источника обновлён; действия проверены повторно.</value></data>
+  <data name="SourceRetrySucceeded" xml:space="preserve"><value>Связь с источником восстановлена; действия проверены повторно.</value></data>
+  <data name="DetailModuleName" xml:space="preserve"><value>Канонический модуль</value></data>
+  <data name="DetailModuleId" xml:space="preserve"><value>ID модуля</value></data>
+  <data name="SourceIdentityPending" xml:space="preserve"><value>Канонический ID ожидается</value></data>
+  <data name="DetailSourceType" xml:space="preserve"><value>Тип объекта источника</value></data>
+  <data name="DetailActionDepth" xml:space="preserve"><value>Глубина действия</value></data>
+  <data name="ActionDepthInline" xml:space="preserve"><value>Завершить здесь</value></data>
+  <data name="ActionDepthDeeplink" xml:space="preserve"><value>Завершить в источнике</value></data>
+  <data name="DetailSourceVersion" xml:space="preserve"><value>Версия источника</value></data>
+  <data name="OpenSourceAria" xml:space="preserve"><value>Открыть элемент {1} модуля {0} в источнике</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Необходимо указать причину.</value></data>
+  <data name="Undo" xml:space="preserve"><value>Отменить</value></data>
+  <data name="UndoSuccess" xml:space="preserve"><value>Действие отменено.</value></data>
+  <data name="BulkNoCommonAction" xml:space="preserve"><value>Для выбранных элементов нет общего допустимого массового действия.</value></data>
+  <data name="SortBy" xml:space="preserve"><value>Сортировать по {0}</value></data>
+  <data name="TableOpenRow" xml:space="preserve"><value>Открыть {0}</value></data>
+  <data name="TableCaption" xml:space="preserve"><value>Рабочие элементы</value></data>
+  <data name="LoadingTitle" xml:space="preserve"><value>Загрузка вашей работы</value></data>
+  <data name="LoadingDesc" xml:space="preserve"><value>Собираются рабочие элементы и состояния источников.</value></data>
+  <data name="ErrorTitle" xml:space="preserve"><value>Не удалось загрузить Рабочий центр</value></data>
+  <data name="ErrorDesc" xml:space="preserve"><value>Ваши фильтры сохранены. Повторите загрузку рабочего пространства.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Повторить</value></data>
+</root>

@@ -354,6 +354,9 @@
   <data name="WorkCenterMenu" xml:space="preserve">
     <value>Рабочий центр</value>
   </data>
+  <data name="WorkCenterNextMenu" xml:space="preserve">
+    <value>Рабочий центр (новый)</value>
+  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>Справочник номенклатуры</value>
   </data>

@@ -375,6 +375,9 @@
   <data name="WorkCenterMenu" xml:space="preserve">
     <value>Work Center</value>
   </data>
+  <data name="WorkCenterNextMenu" xml:space="preserve">
+    <value>Work Center (Next)</value>
+  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>Item Master</value>
   </data>

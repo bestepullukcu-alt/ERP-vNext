@@ -354,6 +354,9 @@
   <data name="WorkCenterMenu" xml:space="preserve">
     <value>Centre de travail</value>
   </data>
+  <data name="WorkCenterNextMenu" xml:space="preserve">
+    <value>Centre de travail (Nouveau)</value>
+  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>Référentiel des articles</value>
   </data>

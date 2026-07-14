@@ -190,6 +190,15 @@
                             <div>@SharedLocalizer["WorkCenterMenu"]</div>
                         </a>
                     </li>
+                    @* WorkCenterNext — isolated mock-driven rebuild (docs/workcenter-rebuild-spec.md).
+                       Kept as a separate nav entry so the legacy /WorkCenter stays reachable for
+                       comparison + rollback until the swap. *@
+                    <li class="menu-item @(activeController == "WorkCenterNext" ? "active" : "")">
+                        <a href="/WorkCenterNext" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-been-here"></i>
+                            <div>@SharedLocalizer["WorkCenterNextMenu"]</div>
+                        </a>
+                    </li>
 
                     @* FEAT-BASELINE-MODULES-S2 — Security Settings (/TenantSecurity) and Menu Settings (/TenantNavigation)
                        are now rendered DATA-DRIVEN by the DynamicModuleMenu below (the `tenant-settings` BASELINE module,

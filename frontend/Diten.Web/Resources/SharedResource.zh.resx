@@ -354,6 +354,9 @@
   <data name="WorkCenterMenu" xml:space="preserve">
     <value>工作中心</value>
   </data>
+  <data name="WorkCenterNextMenu" xml:space="preserve">
+    <value>工作中心（新版）</value>
+  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>物料主数据</value>
   </data>
