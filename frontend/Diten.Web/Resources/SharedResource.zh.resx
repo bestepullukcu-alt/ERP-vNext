@@ -483,4 +483,16 @@
   <data name="RoleName_Admin" xml:space="preserve"><value>管理员</value></data>
   <data name="RoleName_Viewer" xml:space="preserve"><value>查看者</value></data>
   <data name="RoleName_ReadOnly" xml:space="preserve"><value>只读</value></data>
+  <data name="WorkCenterNextMenu" xml:space="preserve">
+    <value>工作中心（新版）</value>
+  </data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>全部展开</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>全部折叠</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>无记录</value>
+  </data>
 </root>

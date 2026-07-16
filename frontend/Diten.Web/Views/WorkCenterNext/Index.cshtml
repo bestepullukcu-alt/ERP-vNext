@@ -1,0 +1,21 @@
+@using Diten.Web.Views.WorkCenterNext
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterNextIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* WorkCenterNext — isolated mock-driven rebuild. The whole UI is rendered by
+   app.js into #wcnApp so every label resolves from a single source (the resx
+   via window.WCN.t). No backend / API calls. *@
+<div class="container-fluid wcn-container">
+    <div id="wcnApp" class="wcn-app"></div>
+</div>
+
+@section Scripts {
+    <partial name="_L10n" />
+    <script src="~/assets/js/WorkCenterNext/l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/mock-data.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/app.js" asp-append-version="true"></script>
+}

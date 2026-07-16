@@ -542,4 +542,16 @@
   <data name="RoleName_Admin" xml:space="preserve"><value>Administrator</value></data>
   <data name="RoleName_Viewer" xml:space="preserve"><value>Viewer</value></data>
   <data name="RoleName_ReadOnly" xml:space="preserve"><value>Read Only</value></data>
+  <data name="WorkCenterNextMenu" xml:space="preserve">
+    <value>Work Center (Next)</value>
+  </data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>Expand all</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>Collapse all</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>No records</value>
+  </data>
 </root>

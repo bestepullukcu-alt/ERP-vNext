@@ -1,0 +1,14 @@
+@using System.Linq
+@using Diten.Web.Views.WorkCenterNext
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterNextIndex> Localizer
+@*
+    Emit the ENTIRE resx (current culture, merged with parents) as a JSON blob.
+    Auto-enumerating keeps the client l10n dictionary in lock-step with the resx —
+    no hand-maintained key list to drift out of the 7-language gate. JSON emits
+    \uXXXX escapes so Cyrillic / Arabic / CJK decode correctly in the browser.
+*@
+<script id="workcenternext-l10n" type="application/json">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        Localizer.GetAllStrings(true).ToDictionary(s => s.Name, s => s.Value)))
+</script>

@@ -1,0 +1,903 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Görev Merkezi</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Tüm modüllerden gelen onaylar, görevler, incelemeler, sorunlar ve istisnalar — tek kişisel gelen kutusunda.</value>
+  </data>
+  <data name="ScopeLabel" xml:space="preserve">
+    <value>Kapsam</value>
+  </data>
+  <data name="ScopeMine" xml:space="preserve">
+    <value>Kendim</value>
+  </data>
+  <data name="ScopeOnBehalf" xml:space="preserve">
+    <value>Vekâleten</value>
+  </data>
+  <data name="ScopeCovering" xml:space="preserve">
+    <value>{0} adına vekâlet</value>
+  </data>
+  <data name="ViewLabel" xml:space="preserve">
+    <value>Görünüm</value>
+  </data>
+  <data name="ViewList" xml:space="preserve">
+    <value>Liste</value>
+  </data>
+  <data name="ViewSplit" xml:space="preserve">
+    <value>Bölünmüş</value>
+  </data>
+  <data name="ViewTable" xml:space="preserve">
+    <value>Tablo</value>
+  </data>
+  <data name="ViewFocus" xml:space="preserve">
+    <value>Bugün</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>İş öğelerinde ara…</value>
+  </data>
+  <data name="FilterAllModules" xml:space="preserve">
+    <value>Tüm modüller</value>
+  </data>
+  <data name="FilterAllTypes" xml:space="preserve">
+    <value>Tüm tipler</value>
+  </data>
+  <data name="FilterModule" xml:space="preserve">
+    <value>Modül filtresi</value>
+  </data>
+  <data name="FilterType" xml:space="preserve">
+    <value>Tip filtresi</value>
+  </data>
+  <data name="KeyboardHint" xml:space="preserve">
+    <value>Gezinmek için j / k · onayla/kabul et a · reddet/iade et r · aç Enter</value>
+  </data>
+  <data name="GroupOverdue" xml:space="preserve">
+    <value>Gecikmiş</value>
+  </data>
+  <data name="GroupDueSoon" xml:space="preserve">
+    <value>Yakında dolacak</value>
+  </data>
+  <data name="GroupOnTrack" xml:space="preserve">
+    <value>Zamanında</value>
+  </data>
+  <data name="GroupNoDate" xml:space="preserve">
+    <value>Tarihsiz</value>
+  </data>
+  <data name="SlaNoSla" xml:space="preserve">
+    <value>SLA yok</value>
+  </data>
+  <data name="SlaDueToday" xml:space="preserve">
+    <value>Bugün dolacak</value>
+  </data>
+  <data name="SlaDueTomorrow" xml:space="preserve">
+    <value>Yarın dolacak</value>
+  </data>
+  <data name="SlaDueInDays" xml:space="preserve">
+    <value>{0}g kaldı</value>
+  </data>
+  <data name="SlaOverdueByDays" xml:space="preserve">
+    <value>{0}g gecikmiş</value>
+  </data>
+  <data name="StatusPending" xml:space="preserve">
+    <value>Beklemede</value>
+  </data>
+  <data name="StatusInProgress" xml:space="preserve">
+    <value>Devam ediyor</value>
+  </data>
+  <data name="StatusWaiting" xml:space="preserve">
+    <value>Bekliyor</value>
+  </data>
+  <data name="StatusDone" xml:space="preserve">
+    <value>Tamamlandı</value>
+  </data>
+  <data name="StatusCancelled" xml:space="preserve">
+    <value>İptal edildi</value>
+  </data>
+  <data name="PriorityHigh" xml:space="preserve">
+    <value>Yüksek</value>
+  </data>
+  <data name="PriorityMedium" xml:space="preserve">
+    <value>Orta</value>
+  </data>
+  <data name="PriorityLow" xml:space="preserve">
+    <value>Düşük</value>
+  </data>
+  <data name="TypeApproval" xml:space="preserve">
+    <value>Onay</value>
+  </data>
+  <data name="TypeTask" xml:space="preserve">
+    <value>Görev</value>
+  </data>
+  <data name="TypeReview" xml:space="preserve">
+    <value>İnceleme</value>
+  </data>
+  <data name="TypeIssue" xml:space="preserve">
+    <value>Sorun</value>
+  </data>
+  <data name="TypeException" xml:space="preserve">
+    <value>İstisna</value>
+  </data>
+  <data name="RoleOwner" xml:space="preserve">
+    <value>Sahip</value>
+  </data>
+  <data name="RoleApprover" xml:space="preserve">
+    <value>Onaylayan</value>
+  </data>
+  <data name="RoleReviewer" xml:space="preserve">
+    <value>İnceleyen</value>
+  </data>
+  <data name="RoleCreator" xml:space="preserve">
+    <value>Oluşturan</value>
+  </data>
+  <data name="ActApprove" xml:space="preserve">
+    <value>Onayla</value>
+  </data>
+  <data name="ActReject" xml:space="preserve">
+    <value>Reddet</value>
+  </data>
+  <data name="ActDelegate" xml:space="preserve">
+    <value>Devret</value>
+  </data>
+  <data name="ActAccept" xml:space="preserve">
+    <value>Kabul et</value>
+  </data>
+  <data name="ActStart" xml:space="preserve">
+    <value>Başlat</value>
+  </data>
+  <data name="ActComplete" xml:space="preserve">
+    <value>Tamamla</value>
+  </data>
+  <data name="ActReassign" xml:space="preserve">
+    <value>Yeniden ata</value>
+  </data>
+  <data name="ActSignOff" xml:space="preserve">
+    <value>Onayla ve kapat</value>
+  </data>
+  <data name="ActReturn" xml:space="preserve">
+    <value>İade et</value>
+  </data>
+  <data name="ActResolve" xml:space="preserve">
+    <value>Çöz</value>
+  </data>
+  <data name="ActAcknowledge" xml:space="preserve">
+    <value>Onayla (bildim)</value>
+  </data>
+  <data name="ActAct" xml:space="preserve">
+    <value>Aksiyon al</value>
+  </data>
+  <data name="ActionsLabel" xml:space="preserve">
+    <value>İşlemler</value>
+  </data>
+  <data name="DetailSummary" xml:space="preserve">
+    <value>Özet</value>
+  </data>
+  <data name="DetailContext" xml:space="preserve">
+    <value>Kaynak bağlamı</value>
+  </data>
+  <data name="DetailRequester" xml:space="preserve">
+    <value>Talep eden</value>
+  </data>
+  <data name="DetailAssignee" xml:space="preserve">
+    <value>Atanan</value>
+  </data>
+  <data name="DetailNativeStatus" xml:space="preserve">
+    <value>Kaynak durumu</value>
+  </data>
+  <data name="DetailSourceId" xml:space="preserve">
+    <value>Kaynak kaydı</value>
+  </data>
+  <data name="DetailOpenSource" xml:space="preserve">
+    <value>Kaynak kaydını aç</value>
+  </data>
+  <data name="DetailAuditTrail" xml:space="preserve">
+    <value>Denetim izi</value>
+  </data>
+  <data name="SplitNoSelection" xml:space="preserve">
+    <value>Ayrıntıları görmek için bir öğe seçin.</value>
+  </data>
+  <data name="Pinned" xml:space="preserve">
+    <value>Sabitlendi</value>
+  </data>
+  <data name="ColType" xml:space="preserve">
+    <value>Tip</value>
+  </data>
+  <data name="ColTitle" xml:space="preserve">
+    <value>Başlık</value>
+  </data>
+  <data name="ColModule" xml:space="preserve">
+    <value>Modül</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="ColPriority" xml:space="preserve">
+    <value>Öncelik</value>
+  </data>
+  <data name="ColSla" xml:space="preserve">
+    <value>SLA</value>
+  </data>
+  <data name="ColRequester" xml:space="preserve">
+    <value>Talep eden</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Tümünü seç</value>
+  </data>
+  <data name="BulkSameType" xml:space="preserve">
+    <value>Toplu işlemler yalnızca aynı tipteki öğelere uygulanır.</value>
+  </data>
+  <data name="BulkActionsLabel" xml:space="preserve">
+    <value>Toplu işlemler</value>
+  </data>
+  <data name="BulkSelected" xml:space="preserve">
+    <value>{0} seçildi</value>
+  </data>
+  <data name="BulkClear" xml:space="preserve">
+    <value>Temizle</value>
+  </data>
+  <data name="EmptyInboxZeroTitle" xml:space="preserve">
+    <value>Her şey tamam</value>
+  </data>
+  <data name="EmptyInboxZeroDesc" xml:space="preserve">
+    <value>Şu anda ilgilenmeniz gereken bir iş öğesi yok.</value>
+  </data>
+  <data name="EmptyFilterTitle" xml:space="preserve">
+    <value>Eşleşen öğe yok</value>
+  </data>
+  <data name="EmptyFilterDesc" xml:space="preserve">
+    <value>Kapsamı, filtreleri veya aramayı değiştirmeyi deneyin.</value>
+  </data>
+  <data name="EmptyClearFilters" xml:space="preserve">
+    <value>Filtreleri temizle</value>
+  </data>
+  <data name="FocusDesc" xml:space="preserve">
+    <value>Şimdi aksiyon gerektiren gecikmiş ve bugün dolacak öğeler ile sabitledikleriniz.</value>
+  </data>
+  <data name="FocusOverdue" xml:space="preserve">
+    <value>Gecikmiş</value>
+  </data>
+  <data name="FocusDueToday" xml:space="preserve">
+    <value>Bugün dolacak</value>
+  </data>
+  <data name="FocusPinned" xml:space="preserve">
+    <value>Sabitlenmiş</value>
+  </data>
+  <data name="FocusEmptyTitle" xml:space="preserve">
+    <value>Bugün için acil bir şey yok</value>
+  </data>
+  <data name="FocusEmptyDesc" xml:space="preserve">
+    <value>Bu kapsamda gecikmiş, bugün dolacak veya sabitlenmiş öğe yok.</value>
+  </data>
+  <data name="AuditSubmitted" xml:space="preserve">
+    <value>Talebi gönderdi</value>
+  </data>
+  <data name="AuditRoutedTo" xml:space="preserve">
+    <value>Aksiyon için size yönlendirildi</value>
+  </data>
+  <data name="AuditEscalated" xml:space="preserve">
+    <value>SLA ihlali sonrası yükseltildi</value>
+  </data>
+  <data name="AuditReviewRequested" xml:space="preserve">
+    <value>İncelemenizi talep etti</value>
+  </data>
+  <data name="AuditCommentAdded" xml:space="preserve">
+    <value>Bir yorum ekledi</value>
+  </data>
+  <data name="AuditReminderSent" xml:space="preserve">
+    <value>Hatırlatma gönderildi</value>
+  </data>
+  <data name="AuditActionStamp" xml:space="preserve">
+    <value>{0} — kaydedildi (deneme)</value>
+  </data>
+  <data name="TimeToday" xml:space="preserve">
+    <value>Bugün</value>
+  </data>
+  <data name="TimeYesterday" xml:space="preserve">
+    <value>Dün</value>
+  </data>
+  <data name="TimeDaysAgo" xml:space="preserve">
+    <value>{0} gün önce</value>
+  </data>
+  <data name="ReasonLabel" xml:space="preserve">
+    <value>Neden / yorum</value>
+  </data>
+  <data name="ReasonPlaceholder" xml:space="preserve">
+    <value>Denetim izi için zorunlu gerekçeyi yazın…</value>
+  </data>
+  <data name="ReasonConfirm" xml:space="preserve">
+    <value>Onayla</value>
+  </data>
+  <data name="ReasonCancel" xml:space="preserve">
+    <value>İptal</value>
+  </data>
+  <data name="ToastAction" xml:space="preserve">
+    <value>{0} — kaydedildi (deneme)</value>
+  </data>
+  <data name="ToastActionReason" xml:space="preserve">
+    <value>{0} — notla kaydedildi (deneme)</value>
+  </data>
+  <data name="ToastBulk" xml:space="preserve">
+    <value>{0} öğe işlendi (deneme)</value>
+  </data>
+  <data name="ToastOpenSource" xml:space="preserve">
+    <value>{0} · {1} açılacaktı (deneme bağlantısı)</value>
+  </data>
+  <data name="TabsLabel" xml:space="preserve">
+    <value>Sekmeler</value>
+  </data>
+  <data name="TabInbox" xml:space="preserve">
+    <value>Gelen Kutusu</value>
+  </data>
+  <data name="TabWorkCenter" xml:space="preserve">
+    <value>Görev Merkezi</value>
+  </data>
+  <data name="ActRequestInfo" xml:space="preserve">
+    <value>Bilgi İste</value>
+  </data>
+  <data name="ToastMovedToWorkCenter" xml:space="preserve">
+    <value>{0} · İşlerim’e alındı (mock)</value>
+  </data>
+  <data name="ToastItemRemoved" xml:space="preserve">
+    <value>{0} · öğe listenizden kaldırıldı (mock)</value>
+  </data>
+  <data name="NoActionsAvailable" xml:space="preserve">
+    <value>Kullanılabilir işlem yok</value>
+  </data>
+  <data name="EmptyWorkCenterTitle" xml:space="preserve">
+    <value>Kabul edilmiş iş yok</value>
+  </data>
+  <data name="EmptyWorkCenterDesc" xml:space="preserve">
+    <value>Gelen Kutusu’ndan kabul ettiğiniz öğeler burada görünür.</value>
+  </data>
+  <data name="ActPlan" xml:space="preserve">
+    <value>Planla</value>
+  </data>
+  <data name="ActReplan" xml:space="preserve">
+    <value>Yeniden Planla</value>
+  </data>
+  <data name="ActResume" xml:space="preserve">
+    <value>Devam Et</value>
+  </data>
+  <data name="ActPause" xml:space="preserve">
+    <value>Duraklat</value>
+  </data>
+  <data name="ActLogTime" xml:space="preserve">
+    <value>Süre Gir</value>
+  </data>
+  <data name="StepBarLabel" xml:space="preserve">
+    <value>Yaşam Döngüsü</value>
+  </data>
+  <data name="StepAccepted" xml:space="preserve">
+    <value>Kabul</value>
+  </data>
+  <data name="StepPlanned" xml:space="preserve">
+    <value>Planlandı</value>
+  </data>
+  <data name="StepInProgress" xml:space="preserve">
+    <value>Devam</value>
+  </data>
+  <data name="StepReview" xml:space="preserve">
+    <value>İnceleme</value>
+  </data>
+  <data name="StepDone" xml:space="preserve">
+    <value>Tamam</value>
+  </data>
+  <data name="TimesheetLabel" xml:space="preserve">
+    <value>Süre</value>
+  </data>
+  <data name="TimeLoggedLabel" xml:space="preserve">
+    <value>girildi</value>
+  </data>
+  <data name="TimerRunning" xml:space="preserve">
+    <value>çalışıyor</value>
+  </data>
+  <data name="AwaitingReview" xml:space="preserve">
+    <value>İnceleme bekliyor</value>
+  </data>
+  <data name="TimeHM" xml:space="preserve">
+    <value>{0}sa {1}dk</value>
+  </data>
+  <data name="PlanDateLabel" xml:space="preserve">
+    <value>Bir tarih seçin</value>
+  </data>
+  <data name="PlanConfirm" xml:space="preserve">
+    <value>Tarihi Ayarla</value>
+  </data>
+  <data name="LogTimeLabel" xml:space="preserve">
+    <value>Dakika</value>
+  </data>
+  <data name="LogTimePlaceholder" xml:space="preserve">
+    <value>örn. 30</value>
+  </data>
+  <data name="LogTimeConfirm" xml:space="preserve">
+    <value>Ekle</value>
+  </data>
+  <data name="ToastPlanned" xml:space="preserve">
+    <value>{0} · {1} tarihine planlandı (mock)</value>
+  </data>
+  <data name="ToastTimerStarted" xml:space="preserve">
+    <value>{0} · zamanlayıcı başladı (mock)</value>
+  </data>
+  <data name="ToastTimerPaused" xml:space="preserve">
+    <value>Zamanlayıcı duraklatıldı · {0} girildi (mock)</value>
+  </data>
+  <data name="ToastTimeLogged" xml:space="preserve">
+    <value>{0} girildi (mock)</value>
+  </data>
+  <data name="ToastSentToReview" xml:space="preserve">
+    <value>{0} · incelemeye gönderildi (mock)</value>
+  </data>
+  <data name="TabMine" xml:space="preserve">
+    <value>İşlerim</value>
+  </data>
+  <data name="TabPool" xml:space="preserve">
+    <value>Havuz</value>
+  </data>
+  <data name="ActClaim" xml:space="preserve">
+    <value>Üzerime Al</value>
+  </data>
+  <data name="ActRelease" xml:space="preserve">
+    <value>Bırak</value>
+  </data>
+  <data name="ActDispute" xml:space="preserve">
+    <value>İtiraz Et</value>
+  </data>
+  <data name="BlockedLabel" xml:space="preserve">
+    <value>Bloke</value>
+  </data>
+  <data name="BlockedByLabel" xml:space="preserve">
+    <value>Bloke eden</value>
+  </data>
+  <data name="BlockedBanner" xml:space="preserve">
+    <value>Bu görev başlatılamıyor — önce bağımlı işler tamamlanmalı.</value>
+  </data>
+  <data name="BlockedReasonPredecessor" xml:space="preserve">
+    <value>Önceki iş tamamlanana kadar başlatılamaz.</value>
+  </data>
+  <data name="BlockedReasonFreeze" xml:space="preserve">
+    <value>Sayım donma penceresi açılana kadar başlatılamaz.</value>
+  </data>
+  <data name="ConfirmBody" xml:space="preserve">
+    <value>“{0}” için bu işlemi uygulamak üzeresiniz. Onaylıyor musunuz?</value>
+  </data>
+  <data name="ConfirmBulkBody" xml:space="preserve">
+    <value>{0} öğeye bu işlemi topluca uygulamak üzeresiniz. Onaylıyor musunuz?</value>
+  </data>
+  <data name="ConfirmProceed" xml:space="preserve">
+    <value>Evet, uygula</value>
+  </data>
+  <data name="EmptyPoolTitle" xml:space="preserve">
+    <value>Havuz boş</value>
+  </data>
+  <data name="EmptyPoolDesc" xml:space="preserve">
+    <value>Üzerinize alabileceğiniz bekleyen bir öğe yok.</value>
+  </data>
+  <data name="ToastClaimed" xml:space="preserve">
+    <value>{0} · üzerinize alındı (mock)</value>
+  </data>
+  <data name="AuditAcknowledged" xml:space="preserve">
+    <value>Öğeyi görüntüledi</value>
+  </data>
+  <data name="AuditOffered" xml:space="preserve">
+    <value>Havuza teklif edildi</value>
+  </data>
+  <data name="AuditQueued" xml:space="preserve">
+    <value>Grup kuyruğuna eklendi</value>
+  </data>
+  <data name="AuditBlocked" xml:space="preserve">
+    <value>Bağımlılık nedeniyle bloke edildi</value>
+  </data>
+  <data name="TabWaiting" xml:space="preserve">
+    <value>Havuz &amp; Bekleyen</value>
+  </data>
+  <data name="TabHistory" xml:space="preserve">
+    <value>Geçmiş</value>
+  </data>
+  <data name="EmptyHistoryTitle" xml:space="preserve">
+    <value>Geçmiş boş</value>
+  </data>
+  <data name="EmptyHistoryDesc" xml:space="preserve">
+    <value>Tamamladığınız ve onayladığınız öğeler burada görünür.</value>
+  </data>
+  <data name="OwnUrgentTip" xml:space="preserve">
+    <value>Vekâleten çalışırken bekleyen kendi gecikmiş işleriniz</value>
+  </data>
+  <data name="DelegationBanner" xml:space="preserve">
+    <value>Vekâlet modu — {0} ({1}) adına çalışıyorsunuz. Yaptığınız her işlem “{0} adına” kaydedilir.</value>
+  </data>
+  <data name="OnBehalfOf" xml:space="preserve">
+    <value>{0} adına</value>
+  </data>
+  <data name="OnBehalfShort" xml:space="preserve">
+    <value>{0} adına</value>
+  </data>
+  <data name="Pin" xml:space="preserve">
+    <value>Sabitle</value>
+  </data>
+  <data name="Unpin" xml:space="preserve">
+    <value>Sabitlemeyi kaldır</value>
+  </data>
+  <data name="Snooze" xml:space="preserve">
+    <value>Ertele</value>
+  </data>
+  <data name="Unsnooze" xml:space="preserve">
+    <value>Ertelemeyi kaldır</value>
+  </data>
+  <data name="SnoozeConfirm" xml:space="preserve">
+    <value>Ertele</value>
+  </data>
+  <data name="SnoozeFuture" xml:space="preserve">
+    <value>Gelecek bir tarih seçin.</value>
+  </data>
+  <data name="WaitingOn" xml:space="preserve">
+    <value>{0} bekleniyor</value>
+  </data>
+  <data name="SnoozedUntil" xml:space="preserve">
+    <value>{0} tarihine ertelendi</value>
+  </data>
+  <data name="PersonalActionsLabel" xml:space="preserve">
+    <value>Kişisel işlemler</value>
+  </data>
+  <data name="DatesLabel" xml:space="preserve">
+    <value>Tarihler</value>
+  </data>
+  <data name="SourceDueLabel" xml:space="preserve">
+    <value>Kaynak son tarih</value>
+  </data>
+  <data name="PlannedDateLabel" xml:space="preserve">
+    <value>Kişisel plan</value>
+  </data>
+  <data name="PlanConflict" xml:space="preserve">
+    <value>Kişisel planınız kaynak son tarihinden sonra — gecikme riski.</value>
+  </data>
+  <data name="ConfirmBodyOnBehalf" xml:space="preserve">
+    <value>Bu işlemi {1} adına “{0}” için uygulamak üzeresiniz. Onaylıyor musunuz?</value>
+  </data>
+  <data name="ToastReleased" xml:space="preserve">
+    <value>{0} · havuza bırakıldı (mock)</value>
+  </data>
+  <data name="ToastPinned" xml:space="preserve">
+    <value>{0} · sabitlendi</value>
+  </data>
+  <data name="ToastUnpinned" xml:space="preserve">
+    <value>{0} · sabitleme kaldırıldı</value>
+  </data>
+  <data name="ToastSnoozed" xml:space="preserve">
+    <value>{0} · {1} tarihine ertelendi (mock)</value>
+  </data>
+  <data name="ToastUnsnoozed" xml:space="preserve">
+    <value>{0} · erteleme kaldırıldı (mock)</value>
+  </data>
+  <data name="BulkResultTitle" xml:space="preserve">
+    <value>Toplu işlem sonucu</value>
+  </data>
+  <data name="BulkResult" xml:space="preserve">
+    <value>{0} seçildi · {1} başarılı · {2} hata. Başarısız satırlar seçili bırakıldı; kaynak kaydı değiştiği için tekrar deneyin.</value>
+  </data>
+  <data name="BulkRowFailed" xml:space="preserve">
+    <value>başarısız</value>
+  </data>
+  <data name="EmptyMineTitle" xml:space="preserve">
+    <value>İşlerim boş</value>
+  </data>
+  <data name="EmptyMineDesc" xml:space="preserve">
+    <value>Üstlendiğiniz işler burada görünür. Yeni işler Gelen Kutusu’nda.</value>
+  </data>
+  <data name="SegmentsLabel" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="SegActive" xml:space="preserve">
+    <value>Aktif</value>
+  </data>
+  <data name="SegWaiting" xml:space="preserve">
+    <value>Bekleyen</value>
+  </data>
+  <data name="SegPlanned" xml:space="preserve">
+    <value>Planlı</value>
+  </data>
+  <data name="SignalBlocked" xml:space="preserve">
+    <value>Bloke</value>
+  </data>
+  <data name="SignalSlaRisk" xml:space="preserve">
+    <value>SLA riski</value>
+  </data>
+  <data name="SignalEscalated" xml:space="preserve">
+    <value>Eskale</value>
+  </data>
+  <data name="ChipClear" xml:space="preserve">
+    <value>Filtreyi temizle</value>
+  </data>
+  <data name="BlockedByDependency" xml:space="preserve">
+    <value>Bağımlı iş tamamlanmadan başlatılamaz.</value>
+  </data>
+  <data name="ChecklistLabel" xml:space="preserve">
+    <value>Kontrol Listesi</value>
+  </data>
+  <data name="SubtasksLabel" xml:space="preserve">
+    <value>Alt Görevler</value>
+  </data>
+  <data name="SubtaskAddPlaceholder" xml:space="preserve">
+    <value>Yeni alt görev…</value>
+  </data>
+  <data name="SubtaskAdd" xml:space="preserve">
+    <value>Ekle</value>
+  </data>
+  <data name="SubtasksReadonlyHint" xml:space="preserve">
+    <value>Hiyerarşi kaynağında düzenlenir</value>
+  </data>
+  <data name="DependenciesLabel" xml:space="preserve">
+    <value>Bağımlılıklar</value>
+  </data>
+  <data name="DepPredecessor" xml:space="preserve">
+    <value>Öncül</value>
+  </data>
+  <data name="DepSuccessor" xml:space="preserve">
+    <value>Ardıl</value>
+  </data>
+  <data name="DepTypeFS" xml:space="preserve">
+    <value>Bitince başlar (FS)</value>
+  </data>
+  <data name="DepTypeFF" xml:space="preserve">
+    <value>Bitince biter (FF)</value>
+  </data>
+  <data name="DepTypeSS" xml:space="preserve">
+    <value>Başlayınca başlar (SS)</value>
+  </data>
+  <data name="DepTypeSF" xml:space="preserve">
+    <value>Başlayınca biter (SF)</value>
+  </data>
+  <data name="DepDone" xml:space="preserve">
+    <value>tamam</value>
+  </data>
+  <data name="DepInProgress" xml:space="preserve">
+    <value>devam</value>
+  </data>
+  <data name="DepNotStarted" xml:space="preserve">
+    <value>başlamadı</value>
+  </data>
+  <data name="DepsReadonlyHint" xml:space="preserve">
+    <value>Bağımlılık ilişkisi kaynağında yönetilir</value>
+  </data>
+  <data name="AttachmentsLabel" xml:space="preserve">
+    <value>Ekler</value>
+  </data>
+  <data name="NoteLabel" xml:space="preserve">
+    <value>Kişisel Not</value>
+  </data>
+  <data name="NotePlaceholder" xml:space="preserve">
+    <value>Sadece senin göreceğin bir not…</value>
+  </data>
+  <data name="NoteSave" xml:space="preserve">
+    <value>Kaydet</value>
+  </data>
+  <data name="ToastNoteSaved" xml:space="preserve">
+    <value>Kişisel not kaydedildi (mock)</value>
+  </data>
+  <data name="ActivityLabel" xml:space="preserve">
+    <value>Etkinlik &amp; Yorum</value>
+  </data>
+  <data name="CommentPlaceholder" xml:space="preserve">
+    <value>Yorum yaz… (kaynağa da yazılır)</value>
+  </data>
+  <data name="CommentPost" xml:space="preserve">
+    <value>Gönder</value>
+  </data>
+  <data name="ToastCommentPosted" xml:space="preserve">
+    <value>Yorum eklendi (mock)</value>
+  </data>
+  <data name="ToastAttachment" xml:space="preserve">
+    <value>{0} · kaynakta açılacaktı (mock)</value>
+  </data>
+  <data name="ViewKanban" xml:space="preserve">
+    <value>Kanban</value>
+  </data>
+  <data name="ViewCalendar" xml:space="preserve">
+    <value>Takvim</value>
+  </data>
+  <data name="KanbanReadonly" xml:space="preserve">
+    <value>Salt-okunur — durum kaynağında değişir; buradan yalnızca kişisel plan/sabitleme.</value>
+  </data>
+  <data name="CalLegendDue" xml:space="preserve">
+    <value>Kaynak son tarih</value>
+  </data>
+  <data name="CalLegendPlan" xml:space="preserve">
+    <value>Kişisel plan</value>
+  </data>
+  <data name="NewButton" xml:space="preserve">
+    <value>Yeni</value>
+  </data>
+  <data name="NewSelfTask" xml:space="preserve">
+    <value>Kendime görev</value>
+  </data>
+  <data name="NewSelfTaskDesc" xml:space="preserve">
+    <value>Kişisel yapılacak — WorkCenter'da yaşar</value>
+  </data>
+  <data name="NewInSource" xml:space="preserve">
+    <value>Kaynakta oluştur</value>
+  </data>
+  <data name="NewInSourceDesc" xml:space="preserve">
+    <value>Bir modül seç, kendi ekranında oluştur</value>
+  </data>
+  <data name="NewTaskTitlePlaceholder" xml:space="preserve">
+    <value>Görev başlığı…</value>
+  </data>
+  <data name="NewCreate" xml:space="preserve">
+    <value>Oluştur</value>
+  </data>
+  <data name="NewPickModule" xml:space="preserve">
+    <value>Modül seç</value>
+  </data>
+  <data name="NewOpenSource" xml:space="preserve">
+    <value>Kaynakta aç</value>
+  </data>
+  <data name="SelfSource" xml:space="preserve">
+    <value>Kişisel</value>
+  </data>
+  <data name="SelfTaskSummary" xml:space="preserve">
+    <value>Kendine oluşturduğun kişisel görev.</value>
+  </data>
+  <data name="AuditSelfCreated" xml:space="preserve">
+    <value>Kişisel görev oluşturdu</value>
+  </data>
+  <data name="ToastSelfTaskCreated" xml:space="preserve">
+    <value>{0} · İşlerim'e eklendi (mock)</value>
+  </data>
+  <data name="ToastCreateInSource" xml:space="preserve">
+    <value>{0} modülünde oluşturma açılacaktı (mock)</value>
+  </data>
+  <data name="ScopeAll" xml:space="preserve">
+    <value>Tümü</value>
+  </data>
+  <data name="ScopeAllSub" xml:space="preserve">
+    <value>Kendi işlerin + tüm vekâletler</value>
+  </data>
+  <data name="DelegationCombined" xml:space="preserve">
+    <value>Birleşik görünüm — kendi işlerin ve vekâletler bir arada; her satırda kimin adına olduğu görünür.</value>
+  </data>
+  <data name="GroupLabel" xml:space="preserve">
+    <value>Grup</value>
+  </data>
+  <data name="GroupAll" xml:space="preserve">
+    <value>Tüm gruplar</value>
+  </data>
+  <data name="FilterPriority" xml:space="preserve">
+    <value>Öncelik filtresi</value>
+  </data>
+  <data name="FilterAllPriorities" xml:space="preserve">
+    <value>Tüm öncelikler</value>
+  </data>
+  <data name="FilterMode" xml:space="preserve">
+    <value>Atama modu filtresi</value>
+  </data>
+  <data name="FilterAllModes" xml:space="preserve">
+    <value>Tüm atama modları</value>
+  </data>
+  <data name="ModeDirect" xml:space="preserve">
+    <value>Doğrudan</value>
+  </data>
+  <data name="ModeApproval" xml:space="preserve">
+    <value>Onay</value>
+  </data>
+  <data name="ModeGroupQueue" xml:space="preserve">
+    <value>Grup kuyruğu</value>
+  </data>
+  <data name="ModeOffered" xml:space="preserve">
+    <value>Teklif</value>
+  </data>
+  <data name="ApprovalBand" xml:space="preserve">
+    <value>Onay bekleyen — yerinde karar</value>
+  </data>
+  <data name="SysRecordChanged" xml:space="preserve">
+    <value>Kaynak kayıt değişti — tazele</value>
+  </data>
+  <data name="SysSourceUnreachable" xml:space="preserve">
+    <value>Kaynak modüle şu an erişilemiyor</value>
+  </data>
+  <data name="SysAuthorityEnded" xml:space="preserve">
+    <value>Bu iş için yetkiniz sona erdi</value>
+  </data>
+  <data name="AgendaButton" xml:space="preserve"><value>Ajanda</value></data>
+  <data name="NotesButton" xml:space="preserve"><value>Notlar</value></data>
+  <data name="AgendaTitle" xml:space="preserve"><value>Bugünün ajandası</value></data>
+  <data name="AgendaEmpty" xml:space="preserve"><value>Bugün için planlanmış toplantı yok.</value></data>
+  <data name="AgendaAddMeeting" xml:space="preserve"><value>Toplantı ekle</value></data>
+  <data name="MeetingFollowup" xml:space="preserve"><value>Takip görevi oluştur</value></data>
+  <data name="MeetingNewTitle" xml:space="preserve"><value>Yeni toplantı</value></data>
+  <data name="MeetingTitleLabel" xml:space="preserve"><value>Toplantı başlığı</value></data>
+  <data name="MeetingStartLabel" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="MeetingEndLabel" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="MeetingLocationLabel" xml:space="preserve"><value>Konum / bağlantı</value></data>
+  <data name="MeetingAdd" xml:space="preserve"><value>Ajandaya ekle</value></data>
+  <data name="MeetingValidation" xml:space="preserve"><value>Başlık ve geçerli bir saat aralığı girin.</value></data>
+  <data name="MeetingAdded" xml:space="preserve"><value>Toplantı bugünün ajandasına eklendi.</value></data>
+  <data name="MeetingFollowupTitle" xml:space="preserve"><value>Takip: {0}</value></data>
+  <data name="MeetingSource" xml:space="preserve"><value>Toplantı</value></data>
+  <data name="NotesPanelTitle" xml:space="preserve"><value>Kişisel notlar</value></data>
+  <data name="NotesEmpty" xml:space="preserve"><value>Henüz kişisel not yok.</value></data>
+  <data name="NotesConvertTask" xml:space="preserve"><value>Göreve dönüştür</value></data>
+  <data name="NotesAddPlaceholder" xml:space="preserve"><value>Kişisel not ekle…</value></data>
+  <data name="NotesAdd" xml:space="preserve"><value>Ekle</value></data>
+  <data name="NoteAdded" xml:space="preserve"><value>Kişisel not eklendi.</value></data>
+  <data name="NotesSource" xml:space="preserve"><value>Kişisel notlar</value></data>
+  <data name="PanelClose" xml:space="preserve"><value>Paneli kapat</value></data>
+  <data name="SourceActionsLocked" xml:space="preserve"><value>Öğe yenilenene kadar kaynak işlemleri kilitlidir.</value></data>
+  <data name="RefreshSource" xml:space="preserve"><value>Kaynağı yenile</value></data>
+  <data name="RetrySource" xml:space="preserve"><value>Bağlantıyı yeniden dene</value></data>
+  <data name="SourceRefreshed" xml:space="preserve"><value>Kaynak öğe yenilendi; işlemler yeniden değerlendirildi.</value></data>
+  <data name="SourceRetrySucceeded" xml:space="preserve"><value>Kaynak bağlantısı kuruldu; işlemler yeniden değerlendirildi.</value></data>
+  <data name="DetailModuleName" xml:space="preserve"><value>Canonical modül</value></data>
+  <data name="DetailModuleId" xml:space="preserve"><value>Modül kimliği</value></data>
+  <data name="SourceIdentityPending" xml:space="preserve"><value>Canonical kimlik bekleniyor</value></data>
+  <data name="DetailSourceType" xml:space="preserve"><value>Kaynak nesne türü</value></data>
+  <data name="DetailActionDepth" xml:space="preserve"><value>İşlem derinliği</value></data>
+  <data name="ActionDepthInline" xml:space="preserve"><value>Burada tamamlanır</value></data>
+  <data name="ActionDepthDeeplink" xml:space="preserve"><value>Kaynakta tamamlanır</value></data>
+  <data name="DetailSourceVersion" xml:space="preserve"><value>Kaynak sürümü</value></data>
+  <data name="OpenSourceAria" xml:space="preserve"><value>{0} içindeki {1} öğesini kaynağında aç</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Neden girilmesi zorunludur.</value></data>
+  <data name="Undo" xml:space="preserve"><value>Geri al</value></data>
+  <data name="UndoSuccess" xml:space="preserve"><value>İşlem geri alındı.</value></data>
+  <data name="BulkNoCommonAction" xml:space="preserve"><value>Seçili öğelerin ortak ve uygun bir toplu işlemi yok.</value></data>
+  <data name="SortBy" xml:space="preserve"><value>{0} alanına göre sırala</value></data>
+  <data name="TableOpenRow" xml:space="preserve"><value>{0} öğesini aç</value></data>
+  <data name="TableCaption" xml:space="preserve"><value>İş öğeleri</value></data>
+  <data name="LoadingTitle" xml:space="preserve"><value>İşleriniz yükleniyor</value></data>
+  <data name="LoadingDesc" xml:space="preserve"><value>İş öğeleri ve kaynak durumları toplanıyor.</value></data>
+  <data name="ErrorTitle" xml:space="preserve"><value>Görev Merkezi yüklenemedi</value></data>
+  <data name="ErrorDesc" xml:space="preserve"><value>Filtreleriniz korundu. Çalışma alanını yeniden yüklemek için tekrar deneyin.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Tekrar dene</value></data>
+</root>
