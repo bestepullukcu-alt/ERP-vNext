@@ -542,4 +542,16 @@
   <data name="RoleName_Admin" xml:space="preserve"><value>Yönetici</value></data>
   <data name="RoleName_Viewer" xml:space="preserve"><value>İzleyici</value></data>
   <data name="RoleName_ReadOnly" xml:space="preserve"><value>Salt Okunur</value></data>
+  <data name="WorkCenterNextMenu" xml:space="preserve">
+    <value>Görev Merkezi (Yeni)</value>
+  </data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>Tümünü aç</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>Tümünü kapat</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>Kayıt yok</value>
+  </data>
 </root>

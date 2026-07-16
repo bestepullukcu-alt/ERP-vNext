@@ -483,4 +483,16 @@
   <data name="RoleName_Admin" xml:space="preserve"><value>مسؤول</value></data>
   <data name="RoleName_Viewer" xml:space="preserve"><value>مشاهد</value></data>
   <data name="RoleName_ReadOnly" xml:space="preserve"><value>للقراءة فقط</value></data>
+  <data name="WorkCenterNextMenu" xml:space="preserve">
+    <value>مركز العمل (الجديد)</value>
+  </data>
+  <data name="ExpandAll" xml:space="preserve">
+    <value>توسيع الكل</value>
+  </data>
+  <data name="CollapseAll" xml:space="preserve">
+    <value>طي الكل</value>
+  </data>
+  <data name="NoRecords" xml:space="preserve">
+    <value>لا توجد سجلات</value>
+  </data>
 </root>
