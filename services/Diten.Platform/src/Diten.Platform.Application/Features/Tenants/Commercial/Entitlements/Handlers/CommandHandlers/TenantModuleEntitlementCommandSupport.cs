@@ -15,9 +15,20 @@ internal static class TenantModuleEntitlementCommandSupport
         CancellationToken ct)
     {
         var module = await moduleRepository.GetByCodeAsync(NormalizeModuleCode(moduleCode), ct);
-        return module is null
-            ? (false, "Module was not found.", 404)
-            : (true, null, 0);
+        if (module is null)
+        {
+            return (false, "Module was not found.", 404);
+        }
+
+        // FEAT-BASELINE-MODULES — defense in depth: a baseline module is entitlement-free (every tenant auto-has it),
+        // so it must never receive a manual entitlement row. Reject even a direct API call. Keys off IsBaseline, not
+        // a hardcoded code list, so any future baseline module is guarded automatically.
+        if (module.IsBaseline)
+        {
+            return (false, "Baseline modules are entitlement-free and cannot be manually entitled.", 409);
+        }
+
+        return (true, null, 0);
     }
 
     // FIX-ENTITLEMENT-DUP (Fix 2) — duplicate is decided PER MODULE, Source-independent. If the tenant already has

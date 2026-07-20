@@ -41,6 +41,7 @@ const TenantNavigationSettings = (function () {
         fallback('RenamePlaceholder', ds.lRenamePlaceholder);
         fallback('ShowHide', ds.lShowHide);
         fallback('NoModules', ds.lNoModules);
+        fallback('ResetConfirm', ds.lResetConfirm);
     };
 
     const setText = (id, value) => {
@@ -434,8 +435,9 @@ const TenantNavigationSettings = (function () {
     const save = () => putPreferences(buildPayload(), L.Saved);
 
     const resetToDefault = () => {
-        if (!window.confirm(L.ResetConfirm || 'Reset menu to default?')) return;
-        putPreferences({ modules: [], domains: [] }, L.ResetDone || L.Saved);
+        window.showConfirm?.(L.ResetConfirm, async () => {
+            await putPreferences({ modules: [], domains: [] }, L.ResetDone || L.Saved);
+        }, { type: 'warning' });
     };
 
     const bindEvents = () => {

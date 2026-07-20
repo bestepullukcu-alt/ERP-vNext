@@ -1,6 +1,6 @@
 using Diten.Platform.Application.Common;
-using Diten.Platform.Application.Features.ModuleCatalog;
 using Diten.Platform.Application.Features.ModuleDomains.Commands;
+using Diten.Platform.Domain.Catalog;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -19,8 +19,10 @@ public sealed class CreateModuleDomainCommandHandler : IRequestHandler<CreateMod
 
     public async Task<Response<Guid>> Handle(CreateModuleDomainCommand request, CancellationToken ct)
     {
-        // Reuse the catalog code normalizer: trim + UPPERCASE + collapse separators.
-        var canonicalCode = ModuleCatalogCodeNormalizer.Normalize(request.Request.Code);
+        // FIX-DOMAIN-DEDUP — canonical domain code = the SHARED normalizer used by every creation path (manifest
+        // self-registration + seed): trim + UPPERCASE + drop every separator. This is the same shape as CodeKey,
+        // so two logical-same codes in different formats can never both persist (unique index on CodeKey).
+        var canonicalCode = ModuleTaxonomyCanonicalizer.NormalizeKey(request.Request.Code);
         if (string.IsNullOrWhiteSpace(canonicalCode))
         {
             return Response<Guid>.Fail("Domain code is required.", 400);

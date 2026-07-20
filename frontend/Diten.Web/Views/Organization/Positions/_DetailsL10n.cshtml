@@ -1,0 +1,39 @@
+@using System.Globalization
+@using System.Text.Json
+@using Diten.Web.Views.Organization.Positions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        Locale = CultureInfo.CurrentCulture.Name,
+        TypePermanent = Localizer["PositionTypePermanent"].Value,
+        TypeTemporary = Localizer["PositionTypeTemporary"].Value,
+        TypeContractor = Localizer["PositionTypeContractor"].Value,
+        TypeIntern = Localizer["PositionTypeIntern"].Value,
+        StatusDraft = Localizer["StatusDraft"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusFrozen = Localizer["StatusFrozen"].Value,
+        StatusClosed = Localizer["StatusClosed"].Value,
+        Vacant = Localizer["Vacant"].Value,
+        Occupied = Localizer["Occupied"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        NoReportsTo = Localizer["NoReportsTo"].Value,
+        NoManagerChain = Localizer["NoManagerChain"].Value,
+        Archived = Localizer["Archived"].Value,
+        Archive = Localizer["Archive"].Value,
+        Actions = Localizer["Actions"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        ArchiveConfirm = Localizer["ArchiveConfirm"].Value,
+        DeleteConfirm = Localizer["DeleteConfirm"].Value,
+        RecordArchived = Localizer["RecordArchived"].Value,
+        RecordDeleted = Localizer["RecordDeleted"].Value,
+        LoadFailed = Localizer["LoadFailed"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
+    };
+}
+<script id="position-details-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

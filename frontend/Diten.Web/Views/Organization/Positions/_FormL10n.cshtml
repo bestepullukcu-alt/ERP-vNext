@@ -1,0 +1,26 @@
+@using System.Globalization
+@using System.Text.Json
+@using Diten.Web.Views.Organization.Positions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Map the request culture's .NET short-date pattern to flatpickr tokens (stored value stays ISO Y-m-d).
+    static string ToFlatpickr(string net) =>
+        net.Replace("dd", "\x01").Replace("d", "\x02")
+           .Replace("MM", "\x03").Replace("M", "\x04")
+           .Replace("yyyy", "Y").Replace("yy", "y")
+           .Replace("\x01", "d").Replace("\x02", "j").Replace("\x03", "m").Replace("\x04", "n");
+
+    var payload = new
+    {
+        RequiredField = Localizer["RequiredField"].Value,
+        DateFormat = ToFlatpickr(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern),
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
+    };
+}
+<script id="position-form-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

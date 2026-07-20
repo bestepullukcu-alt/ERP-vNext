@@ -142,6 +142,36 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         VerifyPublishNever(fixture.EventBus);
     }
 
+    // FEAT-BASELINE-MODULES — a baseline module is entitlement-free; disabling it via a manual override is
+    // meaningless (access bypasses entitlements for baseline) and must be rejected (409). Keys off IsBaseline.
+    [Fact]
+    public async Task DisableTenantModuleEntitlementCommandHandler_RejectsBaselineModule()
+    {
+        var fixture = CreateFixture(ActorId);
+        fixture.ModuleRepository
+            .Setup(x => x.GetByCodeAsync("HR", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ModuleCatalogItem
+            {
+                ModuleCode = "HR",
+                ModuleName = "HR",
+                DisplayName = "HR",
+                Status = ModuleCatalogStatus.Active,
+                IsBaseline = true
+            });
+        var handler = new DisableTenantModuleEntitlementCommandHandler(
+            fixture.Repository.Object,
+            fixture.ModuleRepository.Object,
+            fixture.QuotaService.Object,
+            fixture.EventBus.Object,
+            fixture.CurrentUser.Object);
+
+        var result = await handler.Handle(CreateDisableCommand(EntitlementId), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        VerifyPublishNever(fixture.EventBus);
+    }
+
     [Fact]
     public async Task UpdateTenantModuleEntitlementExpiryCommandHandler_PublishesExpiryUpdatedEventWhenExpiryChanges()
     {
@@ -227,6 +257,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         });
         var handler = new RemoveTenantManualModuleOverrideCommandHandler(
             fixture.Repository.Object,
+            fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
             fixture.EventBus.Object,
             fixture.CurrentUser.Object);
@@ -249,6 +280,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(CreateEntitlement(isEnabled: true, source: EntitlementSource.System));
         var handler = new RemoveTenantManualModuleOverrideCommandHandler(
             fixture.Repository.Object,
+            fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
             fixture.EventBus.Object,
             fixture.CurrentUser.Object);
@@ -264,6 +296,45 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         VerifyPublishNever(fixture.EventBus);
     }
 
+    // FEAT-BASELINE-MODULES — defense in depth: even a (stray/pre-existing) baseline override row cannot be removed
+    // via this path. Guard keys off the catalog's IsBaseline, not a hardcoded code list.
+    [Fact]
+    public async Task RemoveTenantManualModuleOverrideCommandHandler_RejectsBaselineModule()
+    {
+        var fixture = CreateFixture(ActorId);
+        fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(CreateEntitlement(isEnabled: true));
+        fixture.ModuleRepository
+            .Setup(x => x.GetByCodeAsync("HR", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ModuleCatalogItem
+            {
+                ModuleCode = "HR",
+                ModuleName = "HR",
+                DisplayName = "HR",
+                Status = ModuleCatalogStatus.Active,
+                IsBaseline = true
+            });
+        var handler = new RemoveTenantManualModuleOverrideCommandHandler(
+            fixture.Repository.Object,
+            fixture.ModuleRepository.Object,
+            fixture.QuotaService.Object,
+            fixture.EventBus.Object,
+            fixture.CurrentUser.Object);
+
+        var result = await handler.Handle(
+            new RemoveTenantManualModuleOverrideCommand(
+                TenantId,
+                EntitlementId,
+                new RemoveTenantManualModuleOverrideRequest(RowVersion)),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        VerifyPublishNever(fixture.EventBus);
+        fixture.Repository.Verify(
+            x => x.SoftDeleteAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
     [Fact]
     public async Task RemoveTenantManualModuleOverrideCommandHandler_DoesNotPublishWhenEntitlementMissing()
     {
@@ -271,6 +342,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync((TenantModuleEntitlement?)null);
         var handler = new RemoveTenantManualModuleOverrideCommandHandler(
             fixture.Repository.Object,
+            fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
             fixture.EventBus.Object,
             fixture.CurrentUser.Object);

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using Diten.AuthService.Application.Common.Interfaces;
 using FluentValidation;
@@ -74,26 +75,38 @@ public sealed class PasswordPolicyService : IPasswordPolicyService
     {
         if (string.IsNullOrWhiteSpace(password))
         {
-            yield return new ValidationFailure("Password", "Password is required.");
+            yield return Failure(PasswordErrorCodes.Required, "Password is required.");
             yield break;
         }
 
         var minLength = Math.Clamp(settings.PasswordMinLength, 8, 128);
         if (password.Length < minLength)
         {
-            yield return new ValidationFailure("Password", $"Password must be at least {minLength} characters.");
+            yield return Failure(
+                PasswordErrorCodes.TooShort,
+                $"Password must be at least {minLength} characters.",
+                new Dictionary<string, string> { ["minLength"] = minLength.ToString(CultureInfo.InvariantCulture) });
         }
 
         if (settings.PasswordRequireUppercase && !password.Any(char.IsUpper))
         {
-            yield return new ValidationFailure("Password", "Password must contain at least one uppercase letter.");
+            yield return Failure(PasswordErrorCodes.NeedsUppercase, "Password must contain at least one uppercase letter.");
         }
 
         if (settings.PasswordRequireSpecialChar && !password.Any(ch => !char.IsLetterOrDigit(ch)))
         {
-            yield return new ValidationFailure("Password", "Password must contain at least one special character.");
+            yield return Failure(PasswordErrorCodes.NeedsSpecial, "Password must contain at least one special character.");
         }
     }
+
+    // Carry the stable code (ErrorCode) and its params (CustomState) so ExceptionHandlingBehavior can serialize a
+    // machine-readable descriptor; ErrorMessage stays as the English fallback for `detail`/logging.
+    private static ValidationFailure Failure(string code, string englishFallback, IReadOnlyDictionary<string, string>? @params = null)
+        => new("Password", englishFallback)
+        {
+            ErrorCode = code,
+            CustomState = @params
+        };
 
     private static char Pick(string source)
     {

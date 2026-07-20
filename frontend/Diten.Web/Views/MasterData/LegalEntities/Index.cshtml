@@ -16,11 +16,13 @@
 
 <partial name="_DataTable.cshtml" />
 
-@* Görev 6 — Quick View offcanvas (read-only summary + lifecycle actions). Create/Edit live on the full-page wizard. *@
-<partial name="_QuickViewOffcanvas" />
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
 
 @section Scripts {
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_IndexL10n" />
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
     <script src="~/assets/js/MasterData/LegalEntities/index.js" asp-append-version="true"></script>
 }

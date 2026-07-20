@@ -158,6 +158,63 @@ public sealed class QuotaServiceTests
         Assert.Contains(QuotaErrorCodes.RecalculationNotSupported, response.Errors);
     }
 
+    // FIX-QUOTA-PLAN-SYNC — assigning/changing a plan must re-sync stored quota LIMITS to the new plan (upsert
+    // LimitValue) while PRESERVING CurrentValue. This is the path AssignPlanToTenantCommandHandler now calls
+    // (previously it used initialize-once, which left an existing LimitValue frozen — Free=3 stayed 3 after upgrade).
+    [Fact]
+    public async Task SyncTenantQuotaLimitsAsync_ResyncsStoredLimitsToNewPlan_PreservingCurrentValue()
+    {
+        var tenantId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var planId = Guid.NewGuid();
+        var fixture = CreateFixture();
+
+        fixture.Subscriptions
+            .Setup(x => x.GetCurrentByTenantIdAsync(tenantId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TenantSubscription { Id = subscriptionId, TenantId = tenantId, PlanId = planId, Status = TenantSubscriptionStatus.Active });
+
+        // New Enterprise plan: modules.max jumps 3 → 100, users 5 → 50.
+        fixture.Plans
+            .Setup(x => x.GetByIdAsync(planId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SubscriptionPlan
+            {
+                Id = planId,
+                Code = "ENT",
+                Name = "Enterprise",
+                DefaultQuotas = new Dictionary<string, decimal> { [QuotaKeys.ModulesMax] = 100, [QuotaKeys.UsersMax] = 50 }
+            });
+
+        // UpdateLimitAsync upserts the new limit and PRESERVES the existing usage (modules already at 2 used).
+        var capturedLimits = new Dictionary<string, decimal>();
+        fixture.Usages
+            .Setup(x => x.UpdateLimitAsync(tenantId, It.IsAny<string>(), It.IsAny<decimal>(), subscriptionId, planId, It.IsAny<string>(), null, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid t, string key, decimal limit, Guid sub, Guid plan, string src, string? ov, DateTimeOffset now, CancellationToken _) =>
+            {
+                capturedLimits[key] = limit;
+                return new QuotaUsage
+                {
+                    TenantId = t,
+                    QuotaKey = key,
+                    CurrentValue = key == QuotaKeys.ModulesMax ? 2 : 0, // existing usage preserved, not reset
+                    LimitValue = limit,
+                    SubscriptionId = sub,
+                    PlanId = plan,
+                    PeriodStart = DateTimeOffset.UtcNow.AddDays(-1),
+                    PeriodEnd = DateTimeOffset.UtcNow.AddDays(29)
+                };
+            });
+
+        var response = await fixture.Service.SyncTenantQuotaLimitsAsync(
+            tenantId, "SubscriptionActivation", "Plan assigned; limits synced.", "actor", "corr", CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(100, capturedLimits[QuotaKeys.ModulesMax]); // stored modules.max limit re-synced 3 → 100
+        Assert.Equal(50, capturedLimits[QuotaKeys.UsersMax]);    // users.max limit updated to the new plan too
+        var modules = Assert.Single(response.Data!, s => s.QuotaKey == QuotaKeys.ModulesMax);
+        Assert.Equal(100, modules.LimitValue);
+        Assert.Equal(2, modules.CurrentValue); // current usage preserved across the plan change
+    }
+
     private static QuotaUsage WithNotificationFlags(QuotaUsage usage)
     {
         usage.WarningNotificationSentForPeriod = true;

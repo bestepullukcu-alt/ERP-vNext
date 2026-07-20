@@ -56,4 +56,15 @@ public sealed class LegalEntityWriteRequestValidatorTests
             organizationRoleCode: "LEGALENTITY", parentLegalEntityId: null));
         Assert.True(result.IsValid);
     }
+
+    // İŞ1 — the wizard defers OrganizationRole and OMITS it (null). The request must validate (the mapping defaults
+    // it to LEGALENTITY). OrganizationRoleCode being non-nullable was making ASP.NET reject this with a 400 before
+    // it ever reached the validator; nullable + this test lock in that an omitted role is accepted.
+    [Fact]
+    public void Omitted_organization_role_passes()
+    {
+        var result = _validator.Validate(LegalEntityTestData.ValidRequest(
+            organizationRoleCode: null, parentLegalEntityId: null, registeredAddressJson: null));
+        Assert.True(result.IsValid);
+    }
 }

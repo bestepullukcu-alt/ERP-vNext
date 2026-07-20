@@ -18,6 +18,11 @@
   <data name="Created" xml:space="preserve"><value>Oluşturulma</value></data>
   <data name="Storage" xml:space="preserve"><value>Depolama</value></data>
   <data name="OverQuota" xml:space="preserve"><value>Kota Aşımı</value></data>
+  <data name="QuotaLimitExceeded" xml:space="preserve"><value>Bu kiracının planı için modül limitine ulaşıldı. Plan limitini artırın veya önce başka bir modülü devre dışı bırakın.</value></data>
+  <data name="QuotaDuplicateOperation" xml:space="preserve"><value>Bu işlem zaten kaydedilmişti ve tekrar uygulanamadı. Lütfen sayfayı yenileyip tekrar deneyin.</value></data>
+  <data name="QuotaSubscriptionInactive" xml:space="preserve"><value>Kiracının aboneliği aktif değil, bu nedenle modül kotası değiştirilemez.</value></data>
+  <data name="QuotaUsageNotFound" xml:space="preserve"><value>Bu kiracı için kota takibi başlatılmamış. Kotaları başlatıp tekrar deneyin.</value></data>
+  <data name="QuotaConfigurationMissing" xml:space="preserve"><value>Kiracının planı için kota yapılandırması eksik. Önce kota limitleri olan bir plan atayın.</value></data>
   <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
   <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>Genel Bilgiler</value></data>

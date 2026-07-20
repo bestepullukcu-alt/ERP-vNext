@@ -20,17 +20,20 @@ public sealed class TenantSearchController : Controller
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly Diten.Web.Services.IPermissionSnapshot _permissions;
+    private readonly Diten.Web.Services.Navigation.INavNameLocalizer _navLocalizer;
     private readonly ILogger<TenantSearchController> _logger;
 
     public TenantSearchController(
         HttpClient httpClient,
         IConfiguration configuration,
         Diten.Web.Services.IPermissionSnapshot permissions,
+        Diten.Web.Services.Navigation.INavNameLocalizer navLocalizer,
         ILogger<TenantSearchController> logger)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"] ?? "http://localhost:5000";
         _permissions = permissions;
+        _navLocalizer = navLocalizer;
         _logger = logger;
     }
 
@@ -130,8 +133,13 @@ public sealed class TenantSearchController : Controller
                 .Where(i => CanAccess(i.RequiredPermission)) // per-user gate — never surface a page the user can't reach
                 .ToList();
 
-            var moduleName = FirstNonEmpty(group.ModuleDisplayName, group.ModuleCode) ?? string.Empty;
-            var domainName = FirstNonEmpty(group.DomainDisplayName, group.Domain) ?? string.Empty;
+            // FEAT-NAV-L10N — localize labels the SAME way the sidebar does (override-aware, code→resx) so the
+            // Ctrl+K palette and the sidebar read identically. Server (default) names + code stay in the keyword
+            // set so search still matches the original English and the code regardless of the display culture.
+            var serverModuleName = FirstNonEmpty(group.ModuleDisplayName, group.ModuleCode) ?? string.Empty;
+            var serverDomainName = FirstNonEmpty(group.DomainDisplayName, group.Domain) ?? string.Empty;
+            var moduleName = _navLocalizer.Module(group.ModuleCode, serverModuleName, group.ModuleDisplayNameIsOverride);
+            var domainName = _navLocalizer.Domain(group.Domain, serverDomainName, group.DomainDisplayNameIsOverride);
             var icon = string.IsNullOrWhiteSpace(group.Icon) ? "bx-box" : group.Icon!;
             var section = string.IsNullOrWhiteSpace(domainName)
                 ? (string.IsNullOrWhiteSpace(moduleName) ? "Modules" : moduleName)
@@ -143,23 +151,25 @@ public sealed class TenantSearchController : Controller
                 if (pages.Count == 1)
                 {
                     var only = pages[0];
+                    var onlyName = _navLocalizer.Page(only.PageCode, only.DisplayName ?? string.Empty);
                     list.Add(new SearchItem(
-                        moduleName.Length > 0 ? moduleName : only.DisplayName ?? section,
+                        moduleName.Length > 0 ? moduleName : (onlyName.Length > 0 ? onlyName : section),
                         only.RoutePath!,
                         section,
                         icon,
-                        Keywords(group.ModuleCode, moduleName, domainName, only.DisplayName)));
+                        Keywords(group.ModuleCode, moduleName, serverModuleName, domainName, serverDomainName, onlyName, only.DisplayName)));
                 }
                 else
                 {
                     foreach (var page in pages)
                     {
+                        var pageName = _navLocalizer.Page(page.PageCode, page.DisplayName ?? page.PageCode ?? section);
                         list.Add(new SearchItem(
-                            page.DisplayName ?? page.PageCode ?? section,
+                            pageName,
                             page.RoutePath!,
                             section,
                             icon,
-                            Keywords(group.ModuleCode, moduleName, domainName, page.DisplayName)));
+                            Keywords(group.ModuleCode, moduleName, serverModuleName, domainName, serverDomainName, pageName, page.DisplayName)));
                     }
                 }
             }
@@ -169,7 +179,7 @@ public sealed class TenantSearchController : Controller
             {
                 var label = moduleName.Length > 0 ? $"Create {moduleName}" : "Create";
                 var keywords = new List<string> { "create", "add", "new", "yeni", "ekle" };
-                keywords.AddRange(Keywords(group.ModuleCode, moduleName, domainName, null));
+                keywords.AddRange(Keywords(group.ModuleCode, moduleName, serverModuleName, domainName, serverDomainName));
                 SectionFor(section).Add(new SearchItem(label, group.CreateRoute!, section, "bx-plus-circle", keywords));
             }
         }
@@ -185,7 +195,10 @@ public sealed class TenantSearchController : Controller
     private static string? FirstNonEmpty(params string?[] values) =>
         values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
 
-    private static IReadOnlyList<string> Keywords(string? moduleCode, string? moduleName, string? domain, string? pageName)
+    // Fold every supplied label/code (localized display name, server default name, and stable code) into the
+    // keyword set so Ctrl+K matches regardless of the display culture — a user typing English, their own language,
+    // or the raw code all surface the item.
+    private static IReadOnlyList<string> Keywords(params string?[] values)
     {
         var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         void Add(string? value)
@@ -198,10 +211,11 @@ public sealed class TenantSearchController : Controller
             }
         }
 
-        Add(moduleCode);
-        Add(moduleName);
-        Add(domain);
-        Add(pageName);
+        foreach (var value in values)
+        {
+            Add(value);
+        }
+
         return set.ToList();
     }
 
@@ -225,7 +239,10 @@ public sealed class TenantSearchController : Controller
         int DomainSortOrder = 0,
         string? Icon = null,
         string? CreateRoute = null,
-        string? CreatePermission = null);
+        string? CreatePermission = null,
+        // FEAT-NAV-L10N — true when the name is a tenant override (render as-typed); false → localize by code.
+        bool ModuleDisplayNameIsOverride = false,
+        bool DomainDisplayNameIsOverride = false);
 
     private sealed record NavigationItem(
         string? PageCode,

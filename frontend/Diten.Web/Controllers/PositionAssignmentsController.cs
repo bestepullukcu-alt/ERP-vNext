@@ -23,6 +23,29 @@ public sealed class PositionAssignmentsController : Controller
     [HttpGet("")]
     public IActionResult Index() => View("~/Views/Organization/PositionAssignments/Index.cshtml");
 
+    // MOD-0288 Phase 4 — full-page compact create/edit/details (two-level form; mirrors the Position slice).
+    // There is no backend GetById for assignments, so the Edit/Details views resolve the record from the list.
+    [HttpGet("Create")]
+    public IActionResult Create()
+    {
+        ViewData["AssignmentId"] = string.Empty;
+        return View("~/Views/Organization/PositionAssignments/Form.cshtml");
+    }
+
+    [HttpGet("Edit/{id:guid}")]
+    public IActionResult Edit(Guid id)
+    {
+        ViewData["AssignmentId"] = id.ToString();
+        return View("~/Views/Organization/PositionAssignments/Form.cshtml");
+    }
+
+    [HttpGet("Details/{id:guid}")]
+    public IActionResult Details(Guid id)
+    {
+        ViewData["AssignmentId"] = id.ToString();
+        return View("~/Views/Organization/PositionAssignments/Details.cshtml");
+    }
+
     [HttpGet("api")]
     public Task<IActionResult> ListProxy()
     {

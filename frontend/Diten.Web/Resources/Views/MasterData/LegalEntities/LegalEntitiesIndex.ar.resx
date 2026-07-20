@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="LegalEntitiesTitle" xml:space="preserve"><value>الكيانات القانونية</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>أدِر الكيانات القانونية للمستأجر الخاص بك. أنشئها كمسودة، ثم فعّلها لتصبح قابلة للإسناد من قِبل الوحدات التنظيمية.</value></data>
+  <data name="AddNewLegalEntity" xml:space="preserve"><value>إضافة كيان قانوني</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إنشاء كيان قانوني</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>مثال ACME-TR</value></data>
+  <data name="LegalName" xml:space="preserve"><value>الاسم القانوني</value></data>
+  <data name="LegalNamePlaceholder" xml:space="preserve"><value>مثال Acme Manufacturing Inc.</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>الاسم المعروض</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>مثال Acme</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Activate" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="Archive" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ActivateConfirm" xml:space="preserve"><value>سيتم تفعيل هذا الكيان القانوني وسيصبح قابلاً للإسناد. هل تريد المتابعة؟</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>سيتم أرشفة هذا الكيان القانوني. هل تريد المتابعة؟</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>تم تفعيل الكيان القانوني.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة الكيان القانوني.</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>هذا الحقل مطلوب.</value></data>
+  <data name="CreateDraftHint" xml:space="preserve"><value>يتم إنشاء الكيان القانوني كمسودة. فعّله لاحقاً لاستخدامه في الوحدات التنظيمية.</value></data>
+
+  <!-- المهمة 4 — أعمدة قائمة غنية + عوامل تصفية + إجراءات -->
+  <data name="LegalForm" xml:space="preserve"><value>الشكل القانوني</value></data>
+  <data name="OrgRole" xml:space="preserve"><value>الدور التنظيمي</value></data>
+  <data name="Country" xml:space="preserve"><value>الدولة</value></data>
+  <data name="BaseCurrency" xml:space="preserve"><value>العملة الأساسية</value></data>
+  <data name="Parent" xml:space="preserve"><value>الكيان الأصل</value></data>
+  <data name="StatutoryStatus" xml:space="preserve"><value>الحالة النظامية</value></data>
+  <data name="OperationalStatus" xml:space="preserve"><value>الحالة التشغيلية</value></data>
+  <data name="EvidenceStatus" xml:space="preserve"><value>حالة الأدلة</value></data>
+  <data name="CreatedFrom" xml:space="preserve"><value>تاريخ الإنشاء من</value></data>
+  <data name="CreatedTo" xml:space="preserve"><value>تاريخ الإنشاء إلى</value></data>
+  <data name="IncompleteOnly" xml:space="preserve"><value>غير المكتملة فقط</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Suspend" xml:space="preserve"><value>تعليق</value></data>
+  <data name="SuspendConfirm" xml:space="preserve"><value>سيتم تعليق هذا الكيان القانوني. هل تريد المتابعة؟</value></data>
+  <data name="RecordSuspended" xml:space="preserve"><value>تم تعليق الكيان القانوني.</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="StatusSuspended" xml:space="preserve"><value>معلّق</value></data>
+  <data name="StatusRegistered" xml:space="preserve"><value>مسجّل</value></data>
+  <data name="StatusPending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="StatusDissolved" xml:space="preserve"><value>منحلّ</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>مُرسَل</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="EvidenceNotStarted" xml:space="preserve"><value>لم يبدأ</value></data>
+  <data name="EvidenceComplete" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="EvidenceVerified" xml:space="preserve"><value>موثّق</value></data>
+
+  <!-- المهمة 5 — معالج من 8 خطوات -->
+  <data name="WizardCreateTitle" xml:space="preserve"><value>إنشاء كيان قانوني</value></data>
+  <data name="WizardEditTitle" xml:space="preserve"><value>تعديل كيان قانوني</value></data>
+  <data name="WizardSubtitle" xml:space="preserve"><value>سجّل الملف الكامل للكيان القانوني عبر ثمانية أقسام.</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="Submit" xml:space="preserve"><value>إرسال</value></data>
+  <data name="PreviousStep" xml:space="preserve"><value>السابق</value></data>
+  <data name="NextStep" xml:space="preserve"><value>التالي</value></data>
+  <data name="RequiredCounter" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="Step1Identity" xml:space="preserve"><value>الهوية</value></data>
+  <data name="Step1IdentitySub" xml:space="preserve"><value>الرمز / الاسم / الشكل</value></data>
+  <data name="Step2Statutory" xml:space="preserve"><value>القانوني &amp; الضريبي</value></data>
+  <data name="Step2StatutorySub" xml:space="preserve"><value>التسجيل / الدولة</value></data>
+  <data name="Step3Structure" xml:space="preserve"><value>الهيكل</value></data>
+  <data name="Step3StructureSub" xml:space="preserve"><value>الكيان الأصل / الملكية</value></data>
+  <data name="Step4Finance" xml:space="preserve"><value>المالية</value></data>
+  <data name="Step4FinanceSub" xml:space="preserve"><value>السنة المالية / العملة</value></data>
+  <data name="Step5Addresses" xml:space="preserve"><value>العناوين &amp; جهات الاتصال</value></data>
+  <data name="Step5AddressesSub" xml:space="preserve"><value>العنوان / البريد الإلكتروني / الهاتف</value></data>
+  <data name="Step6Governance" xml:space="preserve"><value>الحوكمة</value></data>
+  <data name="Step6GovernanceSub" xml:space="preserve"><value>الموافقة / المصدر</value></data>
+  <data name="Step7Evidence" xml:space="preserve"><value>الأدلة</value></data>
+  <data name="Step7EvidenceSub" xml:space="preserve"><value>التوثيق</value></data>
+  <data name="Step8Review" xml:space="preserve"><value>المراجعة</value></data>
+  <data name="Step8ReviewSub" xml:space="preserve"><value>تأكيد &amp; حفظ</value></data>
+  <data name="Step1IdentityDesc" xml:space="preserve"><value>أدخل رمز الكيان واسمه القانوني وشكله القانوني.</value></data>
+  <data name="Step2StatutoryDesc" xml:space="preserve"><value>تفاصيل التسجيل والضرائب والحالة النظامية.</value></data>
+  <data name="Step3StructureDesc" xml:space="preserve"><value>حدّد علاقة الكيان الأصل والملكية.</value></data>
+  <data name="Step4FinanceDesc" xml:space="preserve"><value>التقويم المالي ومعيار المحاسبة والعملة الأساسية.</value></data>
+  <data name="Step5AddressesDesc" xml:space="preserve"><value>العنوان المسجّل وبيانات الاتصال الرسمية.</value></data>
+  <data name="Step6GovernanceDesc" xml:space="preserve"><value>سير عمل الموافقة وتتبّع النظام المصدر.</value></data>
+  <data name="Step7EvidenceDesc" xml:space="preserve"><value>الوثائق الداعمة واكتمالها.</value></data>
+  <data name="Step8ReviewDesc" xml:space="preserve"><value>راجع جميع التفاصيل قبل حفظ الكيان القانوني.</value></data>
+  <data name="RegistrationNumber" xml:space="preserve"><value>رقم التسجيل</value></data>
+  <data name="TaxId" xml:space="preserve"><value>المعرّف الضريبي</value></data>
+  <data name="ParentLegalEntity" xml:space="preserve"><value>الكيان القانوني الأصل</value></data>
+  <data name="NoParent" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="OwnershipPercent" xml:space="preserve"><value>نسبة الملكية %</value></data>
+  <data name="ControlType" xml:space="preserve"><value>نوع السيطرة</value></data>
+  <data name="FiscalYearVariant" xml:space="preserve"><value>صيغة السنة المالية</value></data>
+  <data name="AccountingStandard" xml:space="preserve"><value>معيار المحاسبة</value></data>
+  <data name="TaxRegime" xml:space="preserve"><value>النظام الضريبي</value></data>
+  <data name="RegisteredAddress" xml:space="preserve"><value>العنوان المسجّل</value></data>
+  <data name="CorrespondenceAddress" xml:space="preserve"><value>عنوان المراسلات</value></data>
+  <data name="AddressJsonHelp" xml:space="preserve"><value>السطر 1 والمدينة والدولة مطلوبة عند إدخال عنوان.</value></data>
+  <data name="AddressLine1" xml:space="preserve"><value>سطر العنوان 1</value></data>
+  <data name="AddressLine2" xml:space="preserve"><value>سطر العنوان 2</value></data>
+  <data name="AddressCity" xml:space="preserve"><value>المدينة</value></data>
+  <data name="AddressState" xml:space="preserve"><value>الولاية / المقاطعة</value></data>
+  <data name="AddressPostalCode" xml:space="preserve"><value>الرمز البريدي</value></data>
+  <data name="OfficialEmail" xml:space="preserve"><value>البريد الإلكتروني الرسمي</value></data>
+  <data name="OfficialPhone" xml:space="preserve"><value>الهاتف الرسمي</value></data>
+  <data name="Website" xml:space="preserve"><value>الموقع الإلكتروني</value></data>
+  <data name="ApprovalStatus" xml:space="preserve"><value>حالة الموافقة</value></data>
+  <data name="ReviewDue" xml:space="preserve"><value>موعد المراجعة</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>النظام المصدر</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>الرمز القديم</value></data>
+  <data name="CompletenessScore" xml:space="preserve"><value>درجة الاكتمال</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
+  <data name="ParentRequiredForBranch" xml:space="preserve"><value>يلزم كيان قانوني أصل لأدوار الفرع / مكتب التمثيل.</value></data>
+  <data name="InvalidAddressJson" xml:space="preserve"><value>يجب أن يكون العنوان المسجّل بصيغة JSON صالحة مع قيم غير فارغة لـ line1 وcity وcountry.</value></data>
+
+  <!-- المهمة 6 — عرض سريع + تفاصيل -->
+  <data name="Referenceable" xml:space="preserve"><value>قابل للإسناد</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>حالة دورة الحياة</value></data>
+  <data name="ApprovalStatusLabel" xml:space="preserve"><value>الموافقة</value></data>
+  <data name="Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>الهوية</value></data>
+  <data name="SectionStatutory" xml:space="preserve"><value>القانوني &amp; الضريبي</value></data>
+  <data name="SectionStructure" xml:space="preserve"><value>الهيكل</value></data>
+  <data name="SectionFinance" xml:space="preserve"><value>المالية</value></data>
+  <data name="SectionAddresses" xml:space="preserve"><value>العناوين &amp; جهات الاتصال</value></data>
+  <data name="SectionGovernance" xml:space="preserve"><value>الحوكمة</value></data>
+  <data name="SectionEvidence" xml:space="preserve"><value>الأدلة</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>النظام</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذّر تحميل الكيان القانوني.</value></data>
+  <!-- MOD-0220 finish — حقول نظامية جديدة + قسم متقدم -->
+  <data name="VatNumber" xml:space="preserve"><value>رقم ضريبة القيمة المضافة (VAT)</value></data>
+  <data name="PlaceOfIncorporation" xml:space="preserve"><value>مكان التأسيس</value></data>
+  <data name="IncorporationDate" xml:space="preserve"><value>تاريخ التأسيس</value></data>
+  <data name="DissolutionDate" xml:space="preserve"><value>تاريخ الحل</value></data>
+  <data name="SectionStatutoryAdvanced" xml:space="preserve"><value>تفاصيل نظامية / متقدمة</value></data>
+  <data name="StatutoryAdvancedDesc" xml:space="preserve"><value>تفاصيل التسجيل والضرائب والحالة النظامية — اختيارية؛ وسّعها لإكمال الملف.</value></data>
+  <!-- Statutory field placeholders (screenshot fix) -->
+  <data name="RegistrationNumberPlaceholder" xml:space="preserve"><value>مثال: 0123456789</value></data>
+  <data name="TaxIdPlaceholder" xml:space="preserve"><value>مثال: 1234567890</value></data>
+  <data name="VatNumberPlaceholder" xml:space="preserve"><value>مثال: GB123456789</value></data>
+  <data name="PlaceOfIncorporationPlaceholder" xml:space="preserve"><value>مثال: إسطنبول، TR</value></data>
+  <data name="DatePlaceholder" xml:space="preserve"><value>اختر تاريخًا…</value></data>
+  <data name="Step6Overview" xml:space="preserve"><value>نظرة عامة</value></data>
+  <data name="Step6OverviewSub" xml:space="preserve"><value>مراجعة &amp; حفظ</value></data>
+  <data name="Step6OverviewDesc" xml:space="preserve"><value>راجع جميع المعلومات التي أدخلتها قبل الحفظ.</value></data>
+  <data name="AddressFull" xml:space="preserve"><value>العنوان</value></data>
+  <data name="AddressFullPlaceholder" xml:space="preserve"><value>مثال: 12 الشارع الرئيسي، الطابق 3</value></data>
+  <data name="AddressCityPlaceholder" xml:space="preserve"><value>مثال: إسطنبول</value></data>
+  <data name="AddressStatePlaceholder" xml:space="preserve"><value>مثال: مرمرة</value></data>
+  <data name="AddressPostalCodePlaceholder" xml:space="preserve"><value>مثال: 34000</value></data>
+  <data name="AddressCountryPlaceholder" xml:space="preserve"><value>مثال: Türkiye</value></data>
+  <data name="OfficialEmailPlaceholder" xml:space="preserve"><value>مثال: info@acme.com</value></data>
+  <data name="OfficialPhonePlaceholder" xml:space="preserve"><value>مثال: +90 212 000 0000</value></data>
+  <data name="WebsitePlaceholder" xml:space="preserve"><value>مثال: https://acme.com</value></data>
+  <data name="FiscalYearVariantPlaceholder" xml:space="preserve"><value>مثال: K4</value></data>
+  <data name="OwnershipPercentPlaceholder" xml:space="preserve"><value>مثال: 100</value></data>
+</root>

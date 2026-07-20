@@ -60,6 +60,28 @@ module's permission/entitlement** (Inbox tab shows iff the tenant is entitled to
 Do NOT model the aggregator's tabs as its own pages. The aggregator may be its own thin module (a `/WorkCenter` page)
 or a platform-shell feature — wired by entitlement, not by self-registering the borrowed content.
 
+### 2c. ⭐ RoutePath IS the escalation boundary — Permission Scope (security-load-bearing)
+Since İŞ3 (2026-07), every permission carries an explicit **`PermissionScope` (Tenant | PlatformAdmin)** that is the
+SINGLE authorization signal for the tenant-vs-platform-admin boundary — NOT the Module name. On self-registration the
+scope is **derived from each page's `RoutePath` at sync time** (`ModulePageDescriptorNormalizer.ScopeFromRoute`):
+`/Platform/…` → **PlatformAdmin** (tenants get 403 via the shell access filter, permission is NOT tenant-assignable);
+any other route → **Tenant** (permission IS assignable to tenant roles). So a correctly self-registering module gets the
+right boundary AUTOMATICALLY — no hand-classification. This makes **RoutePath security-load-bearing, not just navigation**:
+
+- A platform-admin-only page MUST have a `/Platform/…` route; a tenant-facing page MUST NOT. A wrong route silently
+  MIS-SCOPES the permission → either a platform-admin capability leaks as tenant-assignable, or a tenant capability
+  gets locked behind platform-admin. Double-check the route of any page whose data must not cross the boundary.
+- **Never hand-seed a permission with an implicit scope.** Self-registration is the correct path (scope auto-derives).
+  If a permission MUST be seeded in `DataSeeder`, pass an **explicit `scope:`** — do not rely on the legacy
+  name-based `ClassifyScope` fallback (a Faz-0 bridge being retired; it guesses from a hardcoded module-name list and
+  will mis-scope any module not in it).
+- **Self-service exception:** a handful of tenant-admin self-management permissions (tenant security settings, tenant
+  navigation/menu settings) are platform-namespaced yet must be tenant-assignable. These live in the explicit
+  `DefaultRolePermissionTemplate.TenantSelfServicePermissions` allow-list — the ONLY sanctioned way to make a
+  PlatformAdmin-routed key tenant-assignable. Do not widen the boundary any other way.
+- If a page's route genuinely can't express its scope (rare — e.g. a tenant-facing feature that must stay
+  platform-admin), that is a deliberate boundary decision: flag it to the owner, don't paper over it with a route hack.
+
 ## 3. Completeness test (MANDATORY)
 Tests must assert BOTH directions, else missing pages/actions slip through silently:
 1. **Every manifest page/action permission is a real `*Permissions` constant** (reflected). [already common]
@@ -108,11 +130,30 @@ plus forward-jumps (`Draft→Beta/Active`, `Preview→Active`). No demotion. Sel
 - (Future/optional) a manifest page MAY declare explicit search synonyms via a `SearchKeywords` field when it is
   added; until then keywords are derived from the names above.
 
+## 8. Tenant nav localization (MANDATORY for tenant modules) — FEAT-NAV-L10N
+- The tenant sidebar **and** Ctrl+K localize every nav node **generically, by its stable code** — there is NO
+  hardcoded per-module map. The frontend (`Services/Navigation/NavNameLocalizer`) resolves each node in the request
+  culture from `IStringLocalizer<SharedResource>`:
+  - **Domain header** → `Nav.Domain.{Domain}` (the manifest `Domain` string verbatim, e.g. `PlatformSharedServices`)
+  - **Module** → `Nav.Module.{ModuleCode}`
+  - **Page** → `Nav.Page.{PageCode}` (for each nav-visible page)
+- A tenant **rename** (Menu Settings `DisplayNameOverride`) is rendered **as-typed**, never localized (the nav DTO
+  flags `ModuleDisplayNameIsOverride` / `DomainDisplayNameIsOverride`); a **reset** reverts to the localized default.
+- Therefore **every self-registered TENANT module MUST ship its nav l10n keys** — `Nav.Module.{ModuleCode}`,
+  `Nav.Page.{PageCode}` for each nav-visible page, and `Nav.Domain.{Domain}` **if it introduces a new domain** — in
+  **all 7 tenant languages** (`en, tr, fr, es, zh, ar, ru`) in `frontend/Diten.Web/Resources/SharedResource.{lang}.resx`,
+  via the same **l10n gate**. This is what makes a new module localize automatically — the lookup stays generic.
+- **Graceful fallback (but a defect):** a missing key degrades to the English server default (never a raw key), so
+  the menu never breaks — but a tenant module shipping without its keys is incomplete. The guard test
+  `NavL10nContractTests` fails the build if a **current** nav code lacks a key in any of the 7 files.
+
 ## Ready-for-dev checklist (manifest)
 - [ ] ModuleManifestProvider exists, ModuleCode = clean slug.
 - [ ] Every frontend view-route → a page (incl. UI-only Designer/Versions/etc.).
 - [ ] Every toolbar+row button → an action, placed where the UI shows it, real permission key.
+- [ ] Route ↔ scope correct (§2c): platform-admin pages on `/Platform/…`, tenant pages not; no hand-seeded implicit scope; any self-service exception via `TenantSelfServicePermissions` only.
 - [ ] Wired (in-process for Platform, HTTP for other services).
 - [ ] Completeness tests (both directions) green.
 - [ ] Restart → module + pages + actions appear in catalog with no manual add; re-restart idempotent (no dup).
 - [ ] Nav-visible pages have meaningful DisplayName + RoutePath → auto-searchable in tenant Ctrl+K (§7); no JSON edit.
+- [ ] Tenant module: shipped `Nav.Module.{ModuleCode}` + `Nav.Page.{PageCode}` (+ `Nav.Domain.{Domain}` if new domain) in all 7 tenant resx (§8); `NavL10nContractTests` green.

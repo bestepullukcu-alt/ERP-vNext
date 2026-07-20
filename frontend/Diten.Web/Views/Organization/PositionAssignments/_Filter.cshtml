@@ -1,0 +1,28 @@
+@using Diten.Web.Views.Organization.PositionAssignments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionAssignmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["StatusLabel"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="Planned">@Localizer["StatusPlanned"]</option>
+                            <option value="Active">@Localizer["StatusActive"]</option>
+                            <option value="Ended">@Localizer["StatusEnded"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" id="btnFilterApply" class="btn btn-sm btn-primary">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" id="btnFilterReset" class="btn btn-sm btn-label-danger">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

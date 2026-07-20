@@ -27,4 +27,46 @@
   <data name="FinalCodePreview" xml:space="preserve"><value>Nihai Kod</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
   <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <!-- MOD-0288 Phase 3 — full-page form + details + occupancy -->
+  <data name="JobTitle" xml:space="preserve"><value>Görev Unvanı</value></data>
+  <data name="PositionType" xml:space="preserve"><value>Tür</value></data>
+  <data name="PositionTypePermanent" xml:space="preserve"><value>Kalıcı</value></data>
+  <data name="PositionTypeTemporary" xml:space="preserve"><value>Geçici</value></data>
+  <data name="PositionTypeContractor" xml:space="preserve"><value>Sözleşmeli</value></data>
+  <data name="PositionTypeIntern" xml:space="preserve"><value>Stajyer</value></data>
+  <data name="Fte" xml:space="preserve"><value>Tam Zaman Eşdeğeri (FTE)</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Durum</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusFrozen" xml:space="preserve"><value>Donduruldu</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Kapatıldı</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Temel</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Gelişmiş Ayrıntılar</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>İsteğe bağlı ayrıntılar — FTE, durum ve geçerlilik tarihleri.</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ayrıntıları Görüntüle</value></data>
+  <data name="Details" xml:space="preserve"><value>Ayrıntılar</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Pozisyon Ayrıntıları</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Sistem</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Pozisyon yüklenemedi.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçin…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Bu pozisyon kalıcı olarak silinecek. Devam edilsin mi?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Pozisyon silindi.</value></data>
+  <data name="Occupancy" xml:space="preserve"><value>Doluluk</value></data>
+  <data name="Vacant" xml:space="preserve"><value>Boş</value></data>
+  <data name="Occupied" xml:space="preserve"><value>Dolu</value></data>
+  <data name="NoManagerChain" xml:space="preserve"><value>Raporlama zinciri yok.</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Bir tarih seçin…</value>
+  </data>
+  <data name="JobTitlePlaceholder" xml:space="preserve">
+    <value>örn. Kıdemli Yazılım Mühendisi</value>
+  </data>
+  <data name="FtePlaceholder" xml:space="preserve">
+    <value>örn. 1.0</value>
+  </data>
 </root>

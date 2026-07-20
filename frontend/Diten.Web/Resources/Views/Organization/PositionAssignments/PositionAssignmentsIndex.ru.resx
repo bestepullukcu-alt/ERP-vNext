@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PositionAssignmentsTitle" xml:space="preserve"><value>Назначения на должности</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Назначайте пользователей на должности и управляйте периодом действия каждого назначения.</value></data>
+  <data name="AddNewAssignment" xml:space="preserve"><value>Добавить назначение</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Создать назначение на должность</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить назначение на должность</value></data>
+  <data name="Position" xml:space="preserve"><value>Должность</value></data>
+  <data name="SelectPosition" xml:space="preserve"><value>Выберите должность…</value></data>
+  <data name="User" xml:space="preserve"><value>Пользователь</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>Выберите пользователя…</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует по</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Это поле обязательно для заполнения.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <!-- MOD-0288 Phase 4 — full-page form + details + derived status -->
+  <data name="AssignmentType" xml:space="preserve"><value>Тип назначения</value></data>
+  <data name="AssignmentTypePrimary" xml:space="preserve"><value>Основное</value></data>
+  <data name="AssignmentTypeSecondary" xml:space="preserve"><value>Дополнительное</value></data>
+  <data name="AssignmentTypeActing" xml:space="preserve"><value>Исполняющий обязанности</value></data>
+  <data name="AssignmentTypeDelegated" xml:space="preserve"><value>Делегированное</value></data>
+  <data name="Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="ReasonHire" xml:space="preserve"><value>Приём на работу</value></data>
+  <data name="ReasonTransfer" xml:space="preserve"><value>Перевод</value></data>
+  <data name="ReasonPromotion" xml:space="preserve"><value>Повышение</value></data>
+  <data name="ReasonBackfill" xml:space="preserve"><value>Замещение</value></data>
+  <data name="AllocationPercent" xml:space="preserve"><value>Распределение %</value></data>
+  <data name="Notes" xml:space="preserve"><value>Примечания</value></data>
+  <data name="IsCancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Статус</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>Запланировано</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активно</value></data>
+  <data name="StatusEnded" xml:space="preserve"><value>Завершено</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Основное</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Дополнительные сведения</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>Необязательные сведения — распределение, причина, примечания и отмена.</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Просмотреть сведения</value></data>
+  <data name="Details" xml:space="preserve"><value>Сведения</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Сведения о назначении на должность</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Система</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Создано</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Вернуться к списку</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить назначение.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выбрать…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Это назначение будет удалено без возможности восстановления. Продолжить?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Назначение удалено.</value></data>
+  <data name="OnePrimaryError" xml:space="preserve"><value>Другое основное назначение уже охватывает этот период для данной должности.</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Выберите дату…</value>
+  </data>
+  <data name="AllocationPercentPlaceholder" xml:space="preserve">
+    <value>напр. 100</value>
+  </data>
+  <data name="NotesPlaceholder" xml:space="preserve">
+    <value>напр. Замещение на время отпуска по уходу за ребёнком</value>
+  </data>
+</root>

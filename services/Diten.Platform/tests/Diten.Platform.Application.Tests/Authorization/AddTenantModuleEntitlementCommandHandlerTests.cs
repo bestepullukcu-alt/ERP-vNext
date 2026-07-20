@@ -97,6 +97,33 @@ public sealed class AddTenantModuleEntitlementCommandHandlerTests
             Times.Never);
     }
 
+    // FEAT-BASELINE-MODULES — the write path rejects a baseline module (409): baseline modules are entitlement-free
+    // and must never receive a manual entitlement row, even via a direct API call. Guard keys off IsBaseline.
+    [Fact]
+    public async Task AddTenantModuleEntitlementCommandHandler_RejectsBaselineModule()
+    {
+        var fixture = CreateFixture(ActorId);
+        fixture.ModuleRepository
+            .Setup(x => x.GetByCodeAsync("HR", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ModuleCatalogItem
+            {
+                ModuleCode = "HR",
+                ModuleName = "HR",
+                DisplayName = "HR",
+                Status = ModuleCatalogStatus.Active,
+                IsBaseline = true
+            });
+
+        var result = await fixture.Handler.Handle(CreateCommand("HR"), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        VerifyPublishNever(fixture.EventBus);
+        fixture.Repository.Verify(
+            x => x.CreateAsync(It.IsAny<TenantModuleEntitlement>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
     // FIX-ENTITLEMENT-DUP — an active row under ANY source blocks a re-add, regardless of the incoming Source.
     [Fact]
     public async Task AddTenantModuleEntitlementCommandHandler_DoesNotPublishWhenDuplicateExists()

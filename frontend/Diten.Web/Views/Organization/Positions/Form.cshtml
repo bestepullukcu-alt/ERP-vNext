@@ -1,0 +1,128 @@
+@using Diten.Web.Views.Organization.Positions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var positionId = ViewData["PositionId"]?.ToString() ?? string.Empty;
+    var isEdit = !string.IsNullOrEmpty(positionId);
+    ViewData["Title"] = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+    var pageTitle = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+}
+
+@* MOD-0288 — Position create/edit (route-based, no wizard). Golden Reference compact create layout: title +
+   breadcrumb header with Cancel + Save, and cards laid out as a col-lg-8 main column + col-lg-4 sidebar, each
+   `card` with `card-body p-4` + an uppercase section heading. Org Unit / Reports-To are searchable select2;
+   dates use flatpickr. The shared required-fields tracker renders the "Zorunlu: X / Y" badge into the header. *@
+<div id="p-form-page" data-p-id="@positionId" data-p-mode="@(isEdit ? "edit" : "create")">
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div>
+            <h5 class="mb-0">@pageTitle</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/Positions">@Localizer["PositionsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@pageTitle</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            @* Shared required-fields tracker (required-fields-tracker.js) renders the "Zorunlu: X / Y" badge here. *@
+            <span id="p-required-tracker-host" class="d-flex align-items-center"></span>
+            <a href="/Positions" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+            <button type="button" class="btn btn-primary" id="p-submit">@Localizer["Save"]</button>
+        </div>
+    </div>
+
+    <div id="p-form-alert" class="alert alert-danger d-none" role="alert"></div>
+
+    @Html.AntiForgeryToken()
+
+    <form id="p-form" onsubmit="return false" novalidate
+          data-required-tracker-target="#p-required-tracker-host"
+          data-required-tracker-wrapper-class="d-flex align-items-center">
+        <div class="row g-4">
+            @* ── Main column ─────────────────────────────────────────────── *@
+            <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+                <section class="card">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionBasic"]</h6>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="pCode">@Localizer["Code"] <span class="text-danger">*</span></label>
+                                <input type="text" id="pCode" class="form-control" maxlength="80" placeholder="@Localizer["CodePlaceholder"]" data-required required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="pName">@Localizer["Name"] <span class="text-danger">*</span></label>
+                                <input type="text" id="pName" class="form-control" maxlength="160" placeholder="@Localizer["NamePlaceholder"]" data-required required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="pOrgUnitId">@Localizer["OrgUnit"] <span class="text-danger">*</span></label>
+                                <select id="pOrgUnitId" class="form-select" data-required required><option value="">@Localizer["SelectOrgUnit"]</option></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="pReportsToId">@Localizer["ReportsTo"]</label>
+                                <select id="pReportsToId" class="form-select"><option value="">@Localizer["NoReportsTo"]</option></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="pJobTitle">@Localizer["JobTitle"]</label>
+                                <input type="text" id="pJobTitle" class="form-control" maxlength="160" placeholder="@Localizer["JobTitlePlaceholder"]" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="pPositionType">@Localizer["PositionType"]</label>
+                                <select id="pPositionType" class="form-select">
+                                    <option value="Permanent">@Localizer["PositionTypePermanent"]</option>
+                                    <option value="Temporary">@Localizer["PositionTypeTemporary"]</option>
+                                    <option value="Contractor">@Localizer["PositionTypeContractor"]</option>
+                                    <option value="Intern">@Localizer["PositionTypeIntern"]</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            @* ── Sidebar column ──────────────────────────────────────────── *@
+            <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+                <section class="card">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionAdvanced"]</h6>
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="pStatus">@Localizer["StatusLabel"]</label>
+                                <select id="pStatus" class="form-select">
+                                    <option value="Draft">@Localizer["StatusDraft"]</option>
+                                    <option value="Active">@Localizer["StatusActive"]</option>
+                                    <option value="Frozen">@Localizer["StatusFrozen"]</option>
+                                    <option value="Closed">@Localizer["StatusClosed"]</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="pFte">@Localizer["Fte"]</label>
+                                <input type="number" id="pFte" class="form-control" min="0" step="0.1" placeholder="@Localizer["FtePlaceholder"]" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="pEffectiveFrom">@Localizer["EffectiveFrom"]</label>
+                                <input type="text" id="pEffectiveFrom" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="pEffectiveTo">@Localizer["EffectiveTo"]</label>
+                                <input type="text" id="pEffectiveTo" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="_FormL10n" />
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <script src="~/assets/js/Organization/Positions/form.js" asp-append-version="true"></script>
+}

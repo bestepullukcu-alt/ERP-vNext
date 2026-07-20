@@ -1,0 +1,40 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    Reusable hierarchy component chrome. Pair with assets/js/shared/diten-tree.js:
+        <div id="orgUnitsTree"></div>  ← lives inside [data-tree-host] below
+        DitenTree.create('#orgUnitsTree', { data, label, actions, drag, ... });
+
+    The consuming page controls the host id via ViewData["DitenTreeId"] (default "ditenTree"),
+    so several trees can coexist on one page. No inline CSS/JS — styles are in backbone-custom.css.
+*@
+@{
+    var treeId = (ViewData["DitenTreeId"] as string) ?? "ditenTree";
+}
+<div class="diten-tree-wrap card" data-diten-tree-wrap>
+    <div class="diten-tree-toolbar">
+        <label class="diten-tree-search mb-0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input type="search" data-tree-search autocomplete="off" placeholder="@SharedLocalizer["Search"]" aria-label="@SharedLocalizer["Search"]" />
+        </label>
+        <button type="button" class="btn btn-icon btn-label-secondary" data-tree-expand-all title="@SharedLocalizer["ExpandAll"]" aria-label="@SharedLocalizer["ExpandAll"]" data-bs-toggle="tooltip">
+            <i class="icon-base bx bx-expand-vertical"></i>
+        </button>
+        <button type="button" class="btn btn-icon btn-label-secondary" data-tree-collapse-all title="@SharedLocalizer["CollapseAll"]" aria-label="@SharedLocalizer["CollapseAll"]" data-bs-toggle="tooltip">
+            <i class="icon-base bx bx-collapse-vertical"></i>
+        </button>
+        <div class="flex-grow-1"></div>
+        <button type="button" class="btn btn-primary d-none" data-tree-add>
+            <span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-plus icon-sm"></i><span data-tree-add-label></span></span>
+        </button>
+    </div>
+
+    <div class="diten-tree">
+        <div id="@treeId" class="diten-tree-host" data-tree-host></div>
+        <div class="diten-tree-empty d-none" data-tree-empty>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7L9 4H5a2 2 0 0 0-2 2z"></path></svg>
+            <span data-tree-empty-title>@SharedLocalizer["NoRecords"]</span>
+            <span data-tree-empty-hint></span>
+        </div>
+    </div>
+</div>

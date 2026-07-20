@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PositionAssignmentsTitle" xml:space="preserve"><value>تعيينات المناصب</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>عيّن المستخدمين على المناصب وأدر فترة سريان كل تعيين.</value></data>
+  <data name="AddNewAssignment" xml:space="preserve"><value>إضافة تعيين</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إنشاء تعيين منصب</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل تعيين المنصب</value></data>
+  <data name="Position" xml:space="preserve"><value>المنصب</value></data>
+  <data name="SelectPosition" xml:space="preserve"><value>اختر منصبًا…</value></data>
+  <data name="User" xml:space="preserve"><value>المستخدم</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>اختر مستخدمًا…</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري إلى</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>هذا الحقل مطلوب.</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <!-- MOD-0288 Phase 4 — full-page form + details + derived status -->
+  <data name="AssignmentType" xml:space="preserve"><value>نوع التعيين</value></data>
+  <data name="AssignmentTypePrimary" xml:space="preserve"><value>أساسي</value></data>
+  <data name="AssignmentTypeSecondary" xml:space="preserve"><value>ثانوي</value></data>
+  <data name="AssignmentTypeActing" xml:space="preserve"><value>بالوكالة</value></data>
+  <data name="AssignmentTypeDelegated" xml:space="preserve"><value>مفوَّض</value></data>
+  <data name="Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="ReasonHire" xml:space="preserve"><value>توظيف</value></data>
+  <data name="ReasonTransfer" xml:space="preserve"><value>نقل</value></data>
+  <data name="ReasonPromotion" xml:space="preserve"><value>ترقية</value></data>
+  <data name="ReasonBackfill" xml:space="preserve"><value>إحلال</value></data>
+  <data name="AllocationPercent" xml:space="preserve"><value>نسبة التخصيص %</value></data>
+  <data name="Notes" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="IsCancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>الحالة</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>مخطط</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="StatusEnded" xml:space="preserve"><value>منتهٍ</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>أساسي</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>تفاصيل متقدمة</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>تفاصيل اختيارية — التخصيص والسبب والملاحظات والإلغاء.</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="Details" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>تفاصيل تعيين المنصب</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>النظام</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذر تحميل التعيين.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>سيتم حذف هذا التعيين نهائيًا. هل تريد المتابعة؟</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>تم حذف التعيين.</value></data>
+  <data name="OnePrimaryError" xml:space="preserve"><value>يوجد بالفعل تعيين أساسي آخر يغطي هذه الفترة لهذا المنصب.</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>اختر تاريخًا…</value>
+  </data>
+  <data name="AllocationPercentPlaceholder" xml:space="preserve">
+    <value>مثال: 100</value>
+  </data>
+  <data name="NotesPlaceholder" xml:space="preserve">
+    <value>مثال: إحلال لإجازة والدية</value>
+  </data>
+</root>

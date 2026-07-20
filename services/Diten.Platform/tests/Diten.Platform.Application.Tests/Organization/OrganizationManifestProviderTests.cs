@@ -26,8 +26,20 @@ public sealed class OrganizationManifestProviderTests
     private static readonly HashSet<string> FrontendViewRoutes = new(StringComparer.Ordinal)
     {
         "/OrganizationUnits",
+        // MOD-0288 Phase 2 — Org Unit reshaped to full-page create/edit/details (distinct routes → one page each).
+        "/OrganizationUnits/Create",
+        "/OrganizationUnits/Edit/{id}",
+        "/OrganizationUnits/Details/{id}",
         "/Positions",
-        "/PositionAssignments"
+        // MOD-0288 Phase 3 — Position reshaped to full-page create/edit/details.
+        "/Positions/Create",
+        "/Positions/Edit/{id}",
+        "/Positions/Details/{id}",
+        "/PositionAssignments",
+        // MOD-0288 Phase 4 — Position Assignment reshaped to full-page create/edit/details.
+        "/PositionAssignments/Create",
+        "/PositionAssignments/Edit/{id}",
+        "/PositionAssignments/Details/{id}"
     };
 
     [Fact]
@@ -75,10 +87,31 @@ public sealed class OrganizationManifestProviderTests
     }
 
     [Fact]
-    public void All_three_pages_are_co_equal_top_level_nav_entries()
+    public void Nav_visible_pages_are_co_equal_top_level_and_subpages_are_parented()
     {
-        Assert.All(Manifest.Pages, p => Assert.True(p.IsNavigationVisible));
-        Assert.All(Manifest.Pages, p => Assert.Null(p.ParentPageCode));
+        // The three LIST pages stay co-equal top-level nav entries.
+        var navPages = Manifest.Pages.Where(p => p.IsNavigationVisible).ToList();
+        Assert.Equal(3, navPages.Count);
+        Assert.All(navPages, p => Assert.Null(p.ParentPageCode));
+        Assert.Equal(
+            new[] { "ORGANIZATION_UNITS", "POSITIONS", "POSITION_ASSIGNMENTS" }.OrderBy(x => x),
+            navPages.Select(p => p.PageCode).OrderBy(x => x));
+
+        // The Org Unit + Position + Assignment full-page create/edit/details are non-nav sub-pages parented to
+        // their list.
+        var subPages = Manifest.Pages.Where(p => !p.IsNavigationVisible).ToList();
+        Assert.All(subPages, p => Assert.NotNull(p.ParentPageCode));
+        Assert.All(subPages.Where(p => p.PageCode.StartsWith("ORG_UNIT_")), p => Assert.Equal("ORGANIZATION_UNITS", p.ParentPageCode));
+        Assert.All(subPages.Where(p => p.PageCode.StartsWith("POSITION_")), p => Assert.Equal("POSITIONS", p.ParentPageCode));
+        Assert.All(subPages.Where(p => p.PageCode.StartsWith("ASSIGNMENT_")), p => Assert.Equal("POSITION_ASSIGNMENTS", p.ParentPageCode));
+        Assert.Equal(
+            new[]
+            {
+                "ORG_UNIT_CREATE", "ORG_UNIT_EDIT", "ORG_UNIT_DETAILS",
+                "POSITION_CREATE", "POSITION_EDIT", "POSITION_DETAILS",
+                "ASSIGNMENT_CREATE", "ASSIGNMENT_EDIT", "ASSIGNMENT_DETAILS"
+            }.OrderBy(x => x),
+            subPages.Select(p => p.PageCode).OrderBy(x => x));
     }
 
     [Fact]

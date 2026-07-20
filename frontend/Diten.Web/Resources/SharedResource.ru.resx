@@ -57,6 +57,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
       Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Back" xml:space="preserve">
+    <value>Назад</value>
+  </data>
   <data name="Save" xml:space="preserve">
     <value>Сохранить</value>
   </data>
@@ -486,6 +489,50 @@
   <data name="WorkCenterNextMenu" xml:space="preserve">
     <value>Рабочий центр (новый)</value>
   </data>
+  <!-- Password validation error messages (error-code bridge from AuthService PasswordErrorCodes) -->
+  <data name="Password.Error.Required" xml:space="preserve"><value>Пароль обязателен.</value></data>
+  <data name="Password.Error.TooShort" xml:space="preserve"><value>Пароль должен содержать не менее {0} символов.</value></data>
+  <data name="Password.Error.TooLong" xml:space="preserve"><value>Пароль не может превышать {0} символов.</value></data>
+  <data name="Password.Error.NeedsUppercase" xml:space="preserve"><value>Пароль должен содержать хотя бы одну заглавную букву.</value></data>
+  <data name="Password.Error.NeedsSpecial" xml:space="preserve"><value>Пароль должен содержать хотя бы один специальный символ.</value></data>
+  <data name="Password.Error.CurrentRequired" xml:space="preserve"><value>Текущий пароль обязателен.</value></data>
+  <data name="Password.Error.NewRequired" xml:space="preserve"><value>Новый пароль обязателен.</value></data>
+  <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>Электронная почта обязательна.</value></data>
+  <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>Токен сброса обязателен.</value></data>
+  <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
+  <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>Администрирование</value></data>
+  <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>Инструменты разработчика</value></data>
+  <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Управление документами</value></data>
+  <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>Управление основными данными</value></data>
+  <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>Общие сервисы платформы</value></data>
+  <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>Управление доступом</value></data>
+  <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>Настройки арендатора</value></data>
+  <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
+  <data name="Nav.Module.GOLDENCOMPACT" xml:space="preserve"><value>Golden Compact</value></data>
+  <data name="Nav.Module.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Управление документами</value></data>
+  <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Справочные данные</value></data>
+  <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Организация</value></data>
+  <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Рабочий процесс</value></data>
+  <data name="Nav.Page.USERS" xml:space="preserve"><value>Пользователи</value></data>
+  <data name="Nav.Page.ROLES" xml:space="preserve"><value>Роли</value></data>
+  <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Разрешения ролей</value></data>
+  <data name="Nav.Page.USERROLES" xml:space="preserve"><value>Роли пользователей</value></data>
+  <data name="Nav.Page.SECURITYSETTINGS" xml:space="preserve"><value>Настройки безопасности</value></data>
+  <data name="Nav.Page.MENUSETTINGS" xml:space="preserve"><value>Настройки меню</value></data>
+  <data name="Nav.Page.RECORDS" xml:space="preserve"><value>Записи</value></data>
+  <data name="Nav.Page.QMSBASELINES" xml:space="preserve"><value>Базовые линии СМК</value></data>
+  <data name="Nav.Page.INSTANCES" xml:space="preserve"><value>Экземпляры документов</value></data>
+  <data name="Nav.Page.CONTROLLEDDOCUMENTS" xml:space="preserve"><value>Контролируемые документы</value></data>
+  <data name="Nav.Page.TEMPLATEMASTERS" xml:space="preserve"><value>Корпоративные эталонные шаблоны</value></data>
+  <data name="Nav.Page.TEMPLATEVARIANTS" xml:space="preserve"><value>Варианты шаблонов</value></data>
+  <data name="Nav.Page.ACCESSMATRIX" xml:space="preserve"><value>Матрица доступа к документам</value></data>
+  <data name="Nav.Page.LEGALENTITIES" xml:space="preserve"><value>Юридические лица</value></data>
+  <data name="Nav.Page.RDSETS" xml:space="preserve"><value>Наборы справочных данных</value></data>
+  <data name="Nav.Page.ORGANIZATIONUNITS" xml:space="preserve"><value>Организационные единицы</value></data>
+  <data name="Nav.Page.POSITIONS" xml:space="preserve"><value>Должности</value></data>
+  <data name="Nav.Page.POSITIONASSIGNMENTS" xml:space="preserve"><value>Назначения на должности</value></data>
+  <data name="Nav.Page.DEFINITIONS" xml:space="preserve"><value>Определения рабочих процессов</value></data>
   <data name="ExpandAll" xml:space="preserve">
     <value>Развернуть все</value>
   </data>

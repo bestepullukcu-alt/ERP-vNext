@@ -70,4 +70,60 @@ public sealed class ExceptionHandlingBehaviorTests
         Assert.Equal(400, result.StatusCode);
         Assert.Contains(result.Errors, e => e.Contains("policy rejected"));
     }
+
+    [Fact]
+    public async Task Coded_password_failures_serialize_errorCodes_alongside_the_english_detail()
+    {
+        RequestHandlerDelegate<Response<string>> next = () => throw new ValidationException(new[]
+        {
+            new ValidationFailure("Password", "Password must be at least 10 characters.")
+            {
+                ErrorCode = PasswordErrorCodes.TooShort,
+                CustomState = new Dictionary<string, string> { ["minLength"] = "10" }
+            },
+            new ValidationFailure("Password", "Password must contain at least one uppercase letter.")
+            {
+                ErrorCode = PasswordErrorCodes.NeedsUppercase
+            }
+        });
+
+        var result = await Behavior().Handle(new TestRequest(), next, CancellationToken.None);
+
+        Assert.Equal(400, result.StatusCode);
+
+        // machine-readable codes + params
+        Assert.Collection(result.ErrorCodes,
+            e =>
+            {
+                Assert.Equal(PasswordErrorCodes.TooShort, e.Code);
+                Assert.NotNull(e.Params);
+                Assert.Equal("10", e.Params!["minLength"]);
+            },
+            e =>
+            {
+                Assert.Equal(PasswordErrorCodes.NeedsUppercase, e.Code);
+                Assert.True(e.Params is null || e.Params.Count == 0);
+            });
+
+        // English fallback `detail` still present for back-compat / logging
+        var joined = string.Join(" ", result.Errors);
+        Assert.Contains("at least 10 characters", joined);
+        Assert.Contains("uppercase letter", joined);
+    }
+
+    [Fact]
+    public async Task Non_password_validation_failures_carry_no_errorCodes()
+    {
+        RequestHandlerDelegate<Response<string>> next = () => throw new ValidationException(new[]
+        {
+            // FluentValidation default error code — must NOT leak as a machine-readable code.
+            new ValidationFailure("Email", "Email is required.") { ErrorCode = "NotEmptyValidator" }
+        });
+
+        var result = await Behavior().Handle(new TestRequest(), next, CancellationToken.None);
+
+        Assert.Equal(400, result.StatusCode);
+        Assert.Empty(result.ErrorCodes);
+        Assert.Contains(result.Errors, e => e.Contains("Email is required."));
+    }
 }

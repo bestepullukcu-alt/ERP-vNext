@@ -1,9 +1,11 @@
 'use strict';
 
-// MOD-0220 — Legal Entity 8-step create/edit wizard (Görev 5). Full-page bs-stepper. Plain fetch AJAX
-// (consistent with index.js). Lookups are fetched through the Diten.Web proxy (/LegalEntities/api/lookups
-// and /api/platform-lookups) so the HttpOnly token is attached server-side. Create POSTs to
-// /LegalEntities/api (operationalStatus is server-default Draft); Edit PUTs to /LegalEntities/api/{id}.
+// MOD-0220 finish — Legal Entity create/edit. Left-hand step wizard (bs-stepper, vertical, linear-gated):
+// Identity + Statutory/Advanced carry the required fields, Structure/Finance/Addresses are optional detail
+// steps. Lookups go through the Diten.Web proxy (legal-form via MDM; countries/currencies via Platform) so the
+// HttpOnly token is attached server-side. Create POSTs to /LegalEntities/api (server defaults
+// OperationalStatus=Draft, OrganizationRole=LEGALENTITY); Edit PUTs to /LegalEntities/api/{id}. Dates use
+// flatpickr in the request culture's format.
 (function () {
     const page = document.getElementById('le-wizard-page');
     if (!page) return;
@@ -13,21 +15,28 @@
     const isEdit = page.dataset.leMode === 'edit';
     let L = {};
     let stepper = null;
-    let currentIndex = 0;
-    let selfList = []; // for parent dropdown
+    const TOTAL_STEPS = 6; // Identity, Statutory, Structure, Finance, Addresses, Overview
+    let currentStep = 1;
+    let maxReachedStep = 1; // gates forward navigation — a step can't be entered until every step before it validates
+
+    // İŞ1 — required fields grouped by the wizard step they live on (step 3's Parent field is conditional,
+    // handled separately by isParentRequired/applyParentRequirement).
+    const STEP_REQUIRED = {
+        1: ['leCode', 'leLegalName', 'leLegalFormCode'],
+        2: ['leCountryCode', 'leBaseCurrencyCode']
+    };
+    const REQUIRED = [...STEP_REQUIRED[1], ...STEP_REQUIRED[2]];
+    const DATE_FIELDS = ['leIncorporationDate', 'leDissolutionDate'];
 
     const byId = (id) => document.getElementById(id);
+    const trim = (v) => (typeof v === 'string' ? v.trim() : '');
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
-    const trim = (v) => (typeof v === 'string' ? v.trim() : '');
 
     const loadL10n = () => {
         const node = byId('legal-entities-wizard-l10n');
         if (!node) return;
-        try {
-            const raw = JSON.parse(node.textContent || '{}');
-            Object.keys(raw).forEach((k) => { L[k] = raw[k]; });
-        } catch (e) { console.error('[LE Wizard] L10n parse failed.', e); }
+        try { L = JSON.parse(node.textContent || '{}'); } catch (e) { console.error('[LE Wizard] L10n parse failed.', e); }
     };
 
     const showAlert = (message, level) => {
@@ -43,6 +52,17 @@
     const getAntiForgeryToken = () =>
         document.querySelector('#le-wizard-page input[name="__RequestVerificationToken"]')?.value || '';
 
+    // İŞ1 — error surfacing must handle BOTH shapes: our Response envelope ({errors:[...]}) AND ASP.NET's
+    // ModelState 400 ({errors:{Field:["msg"]}}, possibly under {title,errors}). Flatten object value-arrays so the
+    // real validation message shows instead of the generic fallback.
+    const extractErrors = (json) => {
+        const raw = json?.errors ?? json?.Errors;
+        if (Array.isArray(raw)) return raw.filter(Boolean);
+        if (raw && typeof raw === 'object') return Object.values(raw).flat().filter(Boolean);
+        const single = json?.detail || json?.Detail || json?.title || json?.Title || json?.message || json?.Message;
+        return single ? [single] : [];
+    };
+
     const unwrapList = (payload) => {
         const data = payload?.data ?? payload?.Data ?? [];
         if (Array.isArray(data)) return data;
@@ -50,242 +70,223 @@
     };
 
     // ─── Lookups (all via Diten.Web proxy) ───────────────────────────────────
-    const fillSelect = (selectId, items, { keepFirst = true } = {}) => {
+    const fillSelect = (selectId, items) => {
         const select = byId(selectId);
         if (!select) return;
-        const first = keepFirst ? select.querySelector('option') : null;
+        const first = select.querySelector('option'); // keep the "Select…" placeholder
         select.innerHTML = '';
         if (first) select.appendChild(first);
         (items || []).forEach((it) => {
             const code = it.code ?? it.Code ?? it.value ?? it.Value;
-            const name = it.name ?? it.Name ?? code;
+            // BRD published values expose {code, label}; MDM/platform lookups expose {code, name}. Support both.
+            const name = it.name ?? it.Name ?? it.label ?? it.Label ?? code;
             if (code == null) return;
             const opt = document.createElement('option');
             opt.value = code;
-            opt.textContent = name;
+            opt.textContent = name; // label = name, code stored (no raw code entry)
             select.appendChild(opt);
         });
     };
 
+    // MOD-0220 — Legal Form / Country / Base Currency now come from governed Business Reference Data (BRD) sets
+    // (legal-form / country / base-currency) via the tenant-accessible published-values read. unwrapList yields the
+    // set's `items` ({code, label}); fillSelect maps them (label as display, code stored).
+    const fetchReferenceData = (setCode) => fetch(`${endpoint}/reference-data/${encodeURIComponent(setCode)}`, { headers: getAuthHeaders() })
+        .then((r) => r.ok ? r.json() : Promise.reject(r)).then(unwrapList).catch(() => []);
+
+    // İŞ3 — MDM-local lookups (control-type / accounting-standard / tax-regime) → {data:[{code,name}]}.
     const fetchLookup = (type) => fetch(`${endpoint}/lookups/${encodeURIComponent(type)}`, { headers: getAuthHeaders() })
-        .then((r) => r.ok ? r.json() : Promise.reject(r)).then(unwrapList).catch(() => []);
-    const fetchPlatformLookup = (key) => fetch(`${endpoint}/platform-lookups/${encodeURIComponent(key)}`, { headers: getAuthHeaders() })
-        .then((r) => r.ok ? r.json() : Promise.reject(r)).then(unwrapList).catch(() => []);
-    const fetchSelfList = () => fetch(endpoint, { headers: getAuthHeaders() })
-        .then((r) => r.ok ? r.json() : Promise.reject(r)).then(unwrapList).catch(() => []);
+        .then((r) => r.ok ? r.json() : Promise.reject(r)).then((p) => p?.data ?? p?.Data ?? []).catch(() => []);
+
+    // İŞ3 — Structure parent select: referenceable (ACTIVE) LE list, showing Code — Name, storing the GUID, and
+    // excluding the current entity in edit mode (an entity can't be its own parent).
+    const loadParentOptions = async () => {
+        const select = byId('leParentLegalEntityId');
+        if (!select) return;
+        const items = await fetch(`${endpoint}/lookup`, { headers: getAuthHeaders() })
+            .then((r) => r.ok ? r.json() : Promise.reject(r)).then(unwrapList).catch(() => []);
+        const placeholder = select.querySelector('option');
+        select.innerHTML = '';
+        if (placeholder) select.appendChild(placeholder);
+        items.forEach((it) => {
+            const id = it.legalEntityId ?? it.LegalEntityId;
+            if (!id || (isEdit && String(id) === String(entityId))) return;
+            const code = it.code ?? it.Code ?? '';
+            const name = it.legalName ?? it.LegalName ?? it.displayName ?? it.DisplayName ?? '';
+            const opt = document.createElement('option');
+            opt.value = id;
+            opt.textContent = code ? `${code} — ${name}` : name; // label only; GUID hidden
+            select.appendChild(opt);
+        });
+    };
 
     const loadLookups = async () => {
-        const [legalForm, orgRole, controlType, accStandard, taxRegime, countries, currencies, self] = await Promise.all([
-            fetchLookup('legal-form'),
-            fetchLookup('organization-role'),
+        const [legalForm, countries, currencies, organizationRole, controlType, accountingStandard, taxRegime] = await Promise.all([
+            fetchReferenceData('legal-form'),
+            fetchReferenceData('country'),
+            fetchReferenceData('base-currency'),
+            fetchLookup('organization-role'), // İŞA — LE legal-structural role (static MDM lookup, NOT OrgUnit data)
             fetchLookup('control-type'),
             fetchLookup('accounting-standard'),
-            fetchLookup('tax-regime'),
-            fetchPlatformLookup('countries'),
-            fetchPlatformLookup('currencies'),
-            fetchSelfList()
+            fetchLookup('tax-regime')
         ]);
-
         fillSelect('leLegalFormCode', legalForm);
-        fillSelect('leOrganizationRoleCode', orgRole);
-        fillSelect('leControlTypeCode', controlType);
-        fillSelect('leAccountingStandardCode', accStandard);
-        fillSelect('leTaxRegimeCode', taxRegime);
         fillSelect('leCountryCode', countries);
         fillSelect('leBaseCurrencyCode', currencies);
+        fillSelect('leOrganizationRoleCode', organizationRole);
+        fillSelect('leControlTypeCode', controlType);
+        fillSelect('leAccountingStandardCode', accountingStandard);
+        fillSelect('leTaxRegimeCode', taxRegime);
+        await loadParentOptions();
+    };
 
-        // Parent self list — exclude self when editing.
-        selfList = (self || []).filter((e) => {
-            const id = e.legalEntityId || e.LegalEntityId || e.id || e.Id;
-            return !(isEdit && String(id) === String(entityId));
+    // ─── Culture-aware date pickers ──────────────────────────────────────────
+    // Stored value stays ISO (Y-m-d); the visible altInput renders in the request culture's short-date format.
+    const initDatePickers = () => {
+        if (typeof window.flatpickr !== 'function') return;
+        DATE_FIELDS.forEach((id) => {
+            const el = byId(id);
+            if (el) window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: true });
         });
-        const parentSelect = byId('leParentLegalEntityId');
-        if (parentSelect) {
-            selfList.forEach((e) => {
-                const id = e.legalEntityId || e.LegalEntityId || e.id || e.Id;
-                const name = e.legalName || e.LegalName || '';
-                const code = e.code || e.Code || '';
-                if (!id) return;
-                const opt = document.createElement('option');
-                opt.value = id;
-                opt.textContent = code ? `${code} — ${name}` : name;
-                parentSelect.appendChild(opt);
-            });
-        }
     };
-
-    // ─── Branch/RepOffice → parent required ──────────────────────────────────
-    const roleNeedsParent = () => {
-        const role = String(byId('leOrganizationRoleCode')?.value || '').toUpperCase();
-        return role === 'BRANCH' || role === 'REPOFFICE';
-    };
-
-    const refreshParentRequirement = () => {
-        const needs = roleNeedsParent();
-        const star = byId('leParentRequiredStar');
-        const select = byId('leParentLegalEntityId');
-        const hint = byId('leParentHint');
-        if (star) star.style.display = needs ? '' : 'none';
-        if (select) { if (needs) select.setAttribute('data-required', ''); else select.removeAttribute('data-required'); }
-        if (hint) hint.textContent = needs ? (L.ParentRequiredForBranch || '') : '';
-        updateRequiredCounter();
+    const dateValue = (id) => trim(byId(id)?.value); // altInput keeps the original input's Y-m-d value
+    const setDate = (id, iso) => {
+        const el = byId(id);
+        if (!el || !iso) return;
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return;
+        const ymd = d.toISOString().slice(0, 10);
+        if (el._flatpickr) el._flatpickr.setDate(ymd, true); else el.value = ymd;
     };
 
     // ─── Required tracking ───────────────────────────────────────────────────
-    // Hard-required: code, legalName, legalFormCode, organizationRoleCode, countryCode,
-    // baseCurrencyCode, registeredAddressJson, + parentLegalEntityId when role is Branch/RepOffice.
-    const requiredFieldIds = () => {
-        const ids = ['leCode', 'leLegalName', 'leLegalFormCode', 'leOrganizationRoleCode', 'leCountryCode', 'leBaseCurrencyCode', 'leRegisteredAddressJson'];
-        if (roleNeedsParent()) ids.push('leParentLegalEntityId');
-        return ids;
-    };
-
     const isFilled = (id) => trim(byId(id)?.value).length > 0;
 
-    const updateRequiredCounter = () => {
-        const ids = requiredFieldIds();
-        const filled = ids.filter(isFilled).length;
-        // Text lives in a dedicated span so the badge icon is preserved.
-        const counter = byId('le-required-counter-text') || byId('le-required-counter');
-        if (counter) counter.textContent = `${L.RequiredCounter || 'Required'} ${filled}/${ids.length}`;
-        const badge = byId('le-required-counter');
-        if (badge) {
-            const done = filled === ids.length;
-            badge.classList.toggle('bg-label-success', done);
-            badge.classList.toggle('bg-label-primary', !done);
-        }
+    // İŞA — a Branch or Rep Office MUST declare an owning parent (mirrors backend LegalEntityRules.RequiresParent).
+    const PARENT_REQUIRED_ROLES = ['BRANCH', 'REPOFFICE'];
+    const isParentRequired = () => PARENT_REQUIRED_ROLES.includes((byId('leOrganizationRoleCode')?.value || '').trim().toUpperCase());
+
+    // Toggle the Parent field's red star + clear a stale invalid state when the role no longer requires a parent.
+    // The shared required-fields tracker (required-fields-tracker.js) counts a field as required when its label
+    // carries a visible `.text-danger` asterisk, so toggling BOTH `text-danger` and `d-none` on the star makes the
+    // "Zorunlu: X / Y" badge include the Parent field only while a Branch / Rep Office role is selected.
+    const applyParentRequirement = () => {
+        const required = isParentRequired();
+        const star = byId('le-parent-required-star');
+        if (star) { star.classList.toggle('d-none', !required); star.classList.toggle('text-danger', required); }
+        if (!required) byId('leParentLegalEntityId')?.classList.remove('is-invalid');
     };
 
-    // ─── Address JSON validation ─────────────────────────────────────────────
-    const parseAddressJson = (raw) => {
-        const text = trim(raw);
-        if (!text) return { ok: false };
-        try {
-            const obj = JSON.parse(text);
-            if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return { ok: false };
-            return { ok: true, obj };
-        } catch { return { ok: false }; }
-    };
-
-    const registeredAddressValid = () => {
-        const r = parseAddressJson(byId('leRegisteredAddressJson')?.value);
-        if (!r.ok) return false;
-        return !!(trim(r.obj.line1) && trim(r.obj.city) && trim(r.obj.country));
-    };
-
-    // ─── Per-step validation ─────────────────────────────────────────────────
-    // Map each step (index 0-7) to the required field ids it owns.
-    const stepRequired = {
-        0: ['leCode', 'leLegalName', 'leLegalFormCode', 'leOrganizationRoleCode'],
-        1: ['leCountryCode'],
-        2: [], // parent conditionally required — handled below
-        3: ['leBaseCurrencyCode'],
-        4: ['leRegisteredAddressJson'],
-        5: [], 6: [], 7: []
-    };
-
-    const validateStep = (index, surfaceErrors) => {
-        const ids = (stepRequired[index] || []).slice();
-        if (index === 2 && roleNeedsParent()) ids.push('leParentLegalEntityId');
+    // İŞ1 — per-step validation, used both by the wizard's per-step Next gating and by final Submit. Step 3 only
+    // validates the conditional Parent field (Structure is otherwise all-optional); steps 4/5 have nothing required.
+    const validateStep = (stepNum, surfaceErrors) => {
         let ok = true;
-        const errors = [];
-        ids.forEach((id) => {
+        (STEP_REQUIRED[stepNum] || []).forEach((id) => {
             const el = byId(id);
-            const filled = isFilled(id);
-            if (!filled) {
-                ok = false;
-                if (el && surfaceErrors) el.classList.add('is-invalid');
-            } else if (el) {
-                el.classList.remove('is-invalid');
-            }
+            if (!isFilled(id)) { ok = false; if (surfaceErrors && el) el.classList.add('is-invalid'); }
+            else if (el) { el.classList.remove('is-invalid'); }
         });
-        // Step 5 (index 4): registered address must be valid JSON with required keys.
-        if (index === 4 && isFilled('leRegisteredAddressJson') && !registeredAddressValid()) {
-            ok = false;
-            if (surfaceErrors) {
-                byId('leRegisteredAddressJson')?.classList.add('is-invalid');
-                errors.push(L.InvalidAddressJson || 'Invalid address JSON.');
-            }
-        }
-        if (index === 2 && roleNeedsParent() && !isFilled('leParentLegalEntityId') && surfaceErrors) {
-            errors.push(L.ParentRequiredForBranch || '');
-        }
-        if (surfaceErrors) {
-            if (!ok) showAlert(errors.length ? errors : [L.RequiredField || 'Required fields are missing.'], 'danger');
-            else showAlert(null);
+        if (stepNum === 3) {
+            const parentMissing = isParentRequired() && !isFilled('leParentLegalEntityId');
+            const parentEl = byId('leParentLegalEntityId');
+            if (parentMissing) { ok = false; if (surfaceErrors && parentEl) parentEl.classList.add('is-invalid'); }
+            else if (parentEl) { parentEl.classList.remove('is-invalid'); }
         }
         return ok;
+    };
+
+    const stepErrorMessage = () => {
+        const parentMissing = isParentRequired() && !isFilled('leParentLegalEntityId');
+        return parentMissing
+            ? (L.ParentRequiredForBranch || L.RequiredField || 'Required fields are missing.')
+            : (L.RequiredField || 'Required fields are missing.');
+    };
+
+    const validateAll = (surfaceErrors) => {
+        let ok = true;
+        [1, 2, 3].forEach((n) => { if (!validateStep(n, surfaceErrors)) ok = false; });
+        if (surfaceErrors && !ok) showAlert([stepErrorMessage()], 'danger');
+        return ok;
+    };
+
+    const firstInvalidStep = () => [1, 2, 3].find((n) => !validateStep(n, false)) || null;
+
+    // İŞ1 — forward navigation is gated: a step's trigger stays disabled until every step before it has been
+    // reached (bs-stepper's own click listener is left non-linear so completed steps can be revisited freely).
+    const updateStepGating = () => {
+        document.querySelectorAll('#le-wizard-stepper .step').forEach((stepEl, idx) => {
+            const trigger = stepEl.querySelector('.step-trigger');
+            if (trigger) trigger.disabled = idx + 1 > maxReachedStep;
+        });
     };
 
     // ─── Collect WriteRequest payload (flat, camelCase) ──────────────────────
+    // Only the surfaced identity + statutory fields are sent; deferred fields are omitted and the server applies
+    // its defaults (OrganizationRole=LEGALENTITY, no address). Dates go as ISO instants at UTC midnight.
     const valueOrNull = (id) => { const v = trim(byId(id)?.value); return v.length ? v : null; };
+    const dateOrNull = (id) => { const v = dateValue(id); return v.length ? `${v}T00:00:00Z` : null; };
+    const numberOrNull = (id) => { const v = trim(byId(id)?.value); if (!v.length) return null; const n = Number(v); return Number.isNaN(n) ? null : n; };
 
-    const collectPayload = () => {
-        const ownershipRaw = trim(byId('leOwnershipPercent')?.value);
-        const reviewRaw = trim(byId('leReviewDueUtc')?.value);
-        const corr = trim(byId('leCorrespondenceAddressJson')?.value);
-
-        return {
-            code: trim(byId('leCode')?.value),
-            legalName: trim(byId('leLegalName')?.value),
-            displayName: valueOrNull('leDisplayName'),
-            legalFormCode: valueOrNull('leLegalFormCode'),
-            organizationRoleCode: valueOrNull('leOrganizationRoleCode'),
-            registrationNumber: valueOrNull('leRegistrationNumber'),
-            taxId: valueOrNull('leTaxId'),
-            countryCode: valueOrNull('leCountryCode'),
-            statutoryStatus: byId('leStatutoryStatus')?.value || 'Registered',
-            parentLegalEntityId: valueOrNull('leParentLegalEntityId'),
-            ownershipPercent: ownershipRaw.length ? Number(ownershipRaw) : null,
-            controlTypeCode: valueOrNull('leControlTypeCode'),
-            fiscalYearVariant: valueOrNull('leFiscalYearVariant'),
-            accountingStandardCode: valueOrNull('leAccountingStandardCode'),
-            taxRegimeCode: valueOrNull('leTaxRegimeCode'),
-            baseCurrencyCode: valueOrNull('leBaseCurrencyCode'),
-            registeredAddressJson: trim(byId('leRegisteredAddressJson')?.value) || null,
-            correspondenceAddressJson: corr.length ? corr : null,
-            officialEmail: valueOrNull('leOfficialEmail'),
-            officialPhone: valueOrNull('leOfficialPhone'),
-            website: valueOrNull('leWebsite'),
-            approvalStatus: byId('leApprovalStatus')?.value || 'Draft',
-            reviewDueUtc: reviewRaw.length ? new Date(reviewRaw + 'T00:00:00Z').toISOString() : null,
-            sourceSystem: valueOrNull('leSourceSystem'),
-            legacyCode: valueOrNull('leLegacyCode'),
-            evidenceStatus: byId('leEvidenceStatus')?.value || 'NotStarted'
-        };
-    };
-
-    // Full validation across all hard-required fields (for Save Draft / Submit).
-    const validateAll = (surfaceErrors) => {
-        let ok = true;
-        const errors = [];
-        requiredFieldIds().forEach((id) => {
-            if (!isFilled(id)) {
-                ok = false;
-                if (surfaceErrors) byId(id)?.classList.add('is-invalid');
-            }
+    // İŞ3 — build an address JSON string from a subform's inputs (data-addr="<name>"). Returns null when EVERY field
+    // is empty, so an untouched optional address is omitted. Only non-empty keys are included; the backend validator
+    // enforces line1/city/country when a registered address IS supplied.
+    const ADDR_FIELDS = ['line1', 'city', 'state', 'postalCode', 'country']; // line1 is now a multi-line textarea
+    const buildAddressJson = (name) => {
+        const obj = {};
+        let any = false;
+        ADDR_FIELDS.forEach((f) => {
+            const el = document.querySelector(`[data-addr="${name}"][data-addr-field="${f}"]`);
+            const v = trim(el?.value);
+            if (v.length) { obj[f] = v; any = true; }
         });
-        if (isFilled('leRegisteredAddressJson') && !registeredAddressValid()) {
-            ok = false;
-            if (surfaceErrors) { byId('leRegisteredAddressJson')?.classList.add('is-invalid'); errors.push(L.InvalidAddressJson || ''); }
-        }
-        if (roleNeedsParent() && !isFilled('leParentLegalEntityId')) {
-            if (surfaceErrors) errors.push(L.ParentRequiredForBranch || '');
-        }
-        if (surfaceErrors && !ok) showAlert(errors.length ? errors : [L.RequiredField || 'Required fields are missing.'], 'danger');
-        return ok;
+        return any ? JSON.stringify(obj) : null;
     };
+
+    const collectPayload = () => ({
+        code: trim(byId('leCode')?.value),
+        legalName: trim(byId('leLegalName')?.value),
+        displayName: valueOrNull('leDisplayName'),
+        legalFormCode: valueOrNull('leLegalFormCode'),
+        registrationNumber: valueOrNull('leRegistrationNumber'),
+        taxId: valueOrNull('leTaxId'),
+        vatNumber: valueOrNull('leVatNumber'),
+        placeOfIncorporation: valueOrNull('lePlaceOfIncorporation'),
+        incorporationDate: dateOrNull('leIncorporationDate'),
+        dissolutionDate: dateOrNull('leDissolutionDate'),
+        countryCode: valueOrNull('leCountryCode'),
+        statutoryStatus: byId('leStatutoryStatus')?.value || 'Registered',
+        baseCurrencyCode: valueOrNull('leBaseCurrencyCode'),
+        // İŞ3 Structure (all optional); İŞA organizationRoleCode (blank → backend defaults LEGALENTITY)
+        organizationRoleCode: valueOrNull('leOrganizationRoleCode'),
+        parentLegalEntityId: valueOrNull('leParentLegalEntityId'),
+        ownershipPercent: numberOrNull('leOwnershipPercent'),
+        controlTypeCode: valueOrNull('leControlTypeCode'),
+        // İŞ3 Finance (all optional)
+        fiscalYearVariant: valueOrNull('leFiscalYearVariant'),
+        accountingStandardCode: valueOrNull('leAccountingStandardCode'),
+        taxRegimeCode: valueOrNull('leTaxRegimeCode'),
+        // İŞ3 Addresses & Contacts (all optional)
+        registeredAddressJson: buildAddressJson('registered'),
+        correspondenceAddressJson: buildAddressJson('correspondence'),
+        officialEmail: valueOrNull('leOfficialEmail'),
+        officialPhone: valueOrNull('leOfficialPhone'),
+        website: valueOrNull('leWebsite')
+    });
 
     // ─── Save (POST create / PUT edit) ───────────────────────────────────────
-    const save = async (triggerBtn) => {
-        if (!validateAll(true)) { stepper?.to(0); return; }
+    const save = async () => {
+        if (!validateAll(true)) {
+            const bad = firstInvalidStep();
+            if (bad) stepper?.to(bad); // jump the wizard back to the first step with a missing required field
+            return;
+        }
         showAlert(null);
         const payload = collectPayload();
         const url = isEdit ? `${endpoint}/${encodeURIComponent(entityId)}` : endpoint;
         const method = isEdit ? 'PUT' : 'POST';
 
-        const buttons = ['le-save-draft', 'le-submit', 'le-next'].map(byId).filter(Boolean);
-        buttons.forEach((b) => { b.disabled = true; });
+        const btn = byId('le-submit');
+        if (btn) btn.disabled = true;
         try {
             const res = await fetch(url, {
                 method,
@@ -298,140 +299,61 @@
                 return;
             }
             let errors = [];
-            try { const json = await res.json(); errors = (json.errors || json.Errors || []); } catch { /* non-JSON */ }
+            try { errors = extractErrors(await res.json()); } catch { /* non-JSON */ }
             showAlert(errors.length ? errors : [L.ErrorOccurred || 'An error occurred.'], 'danger');
         } catch (error) {
             console.error('[LE Wizard] Save failed.', error);
             showAlert([L.ErrorOccurred || 'An error occurred.'], 'danger');
         } finally {
-            buttons.forEach((b) => { b.disabled = false; });
+            if (btn) btn.disabled = false;
         }
     };
 
-    // ─── Review summary ──────────────────────────────────────────────────────
-    const labelOf = (selectId) => {
-        const el = byId(selectId);
-        if (!el) return '-';
-        if (el.tagName === 'SELECT') return el.options[el.selectedIndex]?.textContent?.trim() || '-';
-        return trim(el.value) || '-';
-    };
-
-    const buildReview = () => {
-        const host = byId('le-review-summary');
-        if (!host) return;
-
-        // Golden Reference Compact "view" design — backbone-preview-section cards.
-        const field = (icon, label, value, col) => `
-            <div class="${col || 'col-12 col-md-6'}">
-                <div class="backbone-preview-field">
-                    <i class="bx ${icon}"></i>
-                    <div>
-                        <div class="backbone-preview-label">${escapeHtml(label || '')}</div>
-                        <div class="backbone-preview-value mt-1">${escapeHtml(value || '-')}</div>
-                    </div>
-                </div>
-            </div>`;
-        const section = (title, fields) => `
-            <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">${escapeHtml(title)}</h6>
-                <div class="row g-4">${fields}</div>
-            </section>`;
-
-        const identity = section(L.SectionIdentity || 'Identity',
-            field('bx-purchase-tag-alt', L.Code, labelOf('leCode')) +
-            field('bx-file', L.LegalName, labelOf('leLegalName')) +
-            field('bx-rename', L.DisplayName, labelOf('leDisplayName')) +
-            field('bx-been-here', L.LegalForm, labelOf('leLegalFormCode')) +
-            field('bx-been-here', L.OrgRole, labelOf('leOrganizationRoleCode')));
-
-        const statutory = section(L.SectionStatutory || 'Statutory & Tax',
-            field('bx-id-card', L.RegistrationNumber, labelOf('leRegistrationNumber')) +
-            field('bx-receipt', L.TaxId, labelOf('leTaxId')) +
-            field('bx-map', L.Country, labelOf('leCountryCode')) +
-            field('bx-check-shield', L.StatutoryStatus, labelOf('leStatutoryStatus')));
-
-        const finance = section(L.SectionFinance || 'Finance',
-            field('bx-calendar', L.FiscalYearVariant, labelOf('leFiscalYearVariant')) +
-            field('bx-calculator', L.AccountingStandard, labelOf('leAccountingStandardCode')) +
-            field('bx-receipt', L.TaxRegime, labelOf('leTaxRegimeCode')) +
-            field('bx-dollar-circle', L.BaseCurrency, labelOf('leBaseCurrencyCode')));
-
-        const addresses = section(L.SectionAddresses || 'Addresses & Contacts',
-            field('bx-map-pin', L.RegisteredAddress, labelOf('leRegisteredAddressJson'), 'col-12') +
-            field('bx-envelope-open', L.CorrespondenceAddress, labelOf('leCorrespondenceAddressJson'), 'col-12') +
-            field('bx-envelope', L.OfficialEmail, labelOf('leOfficialEmail')) +
-            field('bx-phone', L.OfficialPhone, labelOf('leOfficialPhone')) +
-            field('bx-globe', L.Website, labelOf('leWebsite')));
-
-        const structure = section(L.SectionStructure || 'Structure',
-            field('bx-sitemap', L.ParentLegalEntity, labelOf('leParentLegalEntityId'), 'col-12') +
-            field('bx-pie-chart-alt', L.OwnershipPercent, labelOf('leOwnershipPercent'), 'col-12') +
-            field('bx-slider-alt', L.ControlType, labelOf('leControlTypeCode'), 'col-12'));
-
-        const governance = section(L.SectionGovernance || 'Governance',
-            field('bx-check-shield', L.ApprovalStatus, labelOf('leApprovalStatus'), 'col-12') +
-            field('bx-calendar-event', L.ReviewDue, labelOf('leReviewDueUtc'), 'col-12') +
-            field('bx-data', L.SourceSystem, labelOf('leSourceSystem'), 'col-12') +
-            field('bx-code-alt', L.LegacyCode, labelOf('leLegacyCode'), 'col-12'));
-
-        const evidence = section(L.SectionEvidence || 'Evidence',
-            field('bx-file-find', L.EvidenceStatus, labelOf('leEvidenceStatus'), 'col-12'));
-
-        host.innerHTML = `
-            <div class="row g-4">
-                <div class="col-12 col-lg-8 d-flex flex-column gap-4">${identity}${statutory}${finance}${addresses}</div>
-                <div class="col-12 col-lg-4 d-flex flex-column gap-4">${structure}${governance}${evidence}</div>
-            </div>`;
-    };
-
     // ─── Pre-populate on edit ────────────────────────────────────────────────
-    const toDateInput = (iso) => { if (!iso) return ''; const d = new Date(iso); return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10); };
     const setVal = (id, v) => { const el = byId(id); if (el && v != null) el.value = v; };
+    const titleCase = (s) => { const v = String(s || '').toLowerCase(); return v.charAt(0).toUpperCase() + v.slice(1); };
+
+    // İŞ3 — restore an address subform from its stored JSON (keys matched case-insensitively).
+    const fillAddressForm = (name, json) => {
+        if (!json) return;
+        let obj;
+        try { obj = JSON.parse(json); } catch { return; }
+        if (!obj || typeof obj !== 'object') return;
+        ADDR_FIELDS.forEach((f) => {
+            const el = document.querySelector(`[data-addr="${name}"][data-addr-field="${f}"]`);
+            const val = obj[f] ?? obj[f.charAt(0).toUpperCase() + f.slice(1)];
+            if (el && val != null) el.value = val;
+        });
+    };
 
     const populate = (d) => {
         setVal('leCode', d.code);
         setVal('leLegalName', d.legalName);
         setVal('leDisplayName', d.displayName);
         setVal('leLegalFormCode', d.legalFormCode);
-        setVal('leOrganizationRoleCode', d.organizationRoleCode);
         setVal('leRegistrationNumber', d.registrationNumber);
         setVal('leTaxId', d.taxId);
+        setVal('leVatNumber', d.vatNumber);
+        setVal('lePlaceOfIncorporation', d.placeOfIncorporation);
         setVal('leCountryCode', d.countryCode);
         if (d.statutoryStatus) byId('leStatutoryStatus').value = titleCase(d.statutoryStatus);
+        setDate('leIncorporationDate', d.incorporationDate);
+        setDate('leDissolutionDate', d.dissolutionDate);
+        setVal('leBaseCurrencyCode', d.baseCurrencyCode);
+        // İŞ3 — Structure / Finance / Addresses restore
+        setVal('leOrganizationRoleCode', d.organizationRoleCode);
         setVal('leParentLegalEntityId', d.parentLegalEntityId);
-        if (d.ownershipPercent != null) setVal('leOwnershipPercent', d.ownershipPercent);
+        setVal('leOwnershipPercent', d.ownershipPercent);
         setVal('leControlTypeCode', d.controlTypeCode);
         setVal('leFiscalYearVariant', d.fiscalYearVariant);
         setVal('leAccountingStandardCode', d.accountingStandardCode);
         setVal('leTaxRegimeCode', d.taxRegimeCode);
-        setVal('leBaseCurrencyCode', d.baseCurrencyCode);
-        setVal('leRegisteredAddressJson', prettyJson(d.registeredAddressJson));
-        setVal('leCorrespondenceAddressJson', prettyJson(d.correspondenceAddressJson));
+        fillAddressForm('registered', d.registeredAddressJson);
+        fillAddressForm('correspondence', d.correspondenceAddressJson);
         setVal('leOfficialEmail', d.officialEmail);
         setVal('leOfficialPhone', d.officialPhone);
         setVal('leWebsite', d.website);
-        if (d.approvalStatus) byId('leApprovalStatus').value = titleCase(d.approvalStatus);
-        setVal('leReviewDueUtc', toDateInput(d.reviewDueUtc));
-        setVal('leSourceSystem', d.sourceSystem);
-        setVal('leLegacyCode', d.legacyCode);
-        if (d.evidenceStatus) byId('leEvidenceStatus').value = evidenceTitleCase(d.evidenceStatus);
-        if (d.completenessScore != null) {
-            byId('leCompletenessWrap').style.display = '';
-            byId('leCompletenessScore').value = `${d.completenessScore}%`;
-        }
-        refreshParentRequirement();
-        updateRequiredCounter();
-    };
-
-    // Map UPPERCASE read enum → PascalCase select option value.
-    const titleCase = (s) => { const v = String(s || '').toLowerCase(); return v.charAt(0).toUpperCase() + v.slice(1); };
-    const evidenceTitleCase = (s) => {
-        const map = { NOTSTARTED: 'NotStarted', COMPLETE: 'Complete', VERIFIED: 'Verified' };
-        return map[String(s || '').toUpperCase()] || 'NotStarted';
-    };
-    const prettyJson = (raw) => {
-        if (!raw) return '';
-        try { return JSON.stringify(typeof raw === 'string' ? JSON.parse(raw) : raw, null, 2); } catch { return typeof raw === 'string' ? raw : ''; }
+        applyParentRequirement(); // İŞA — reflect the restored role's parent requirement
     };
 
     const loadForEdit = async () => {
@@ -446,51 +368,133 @@
         }
     };
 
-    // ─── Stepper wiring ──────────────────────────────────────────────────────
-    const totalSteps = 8;
+    // ─── Read-only Overview (step 6) ─────────────────────────────────────────
+    // Show the human-readable value for a field: select → selected option's label; date → the localized altInput
+    // text; everything else → the raw trimmed value.
+    const displayValue = (id) => {
+        const el = byId(id);
+        if (!el) return '';
+        if (el.tagName === 'SELECT') {
+            const opt = el.options[el.selectedIndex];
+            return opt && opt.value ? trim(opt.textContent) : '';
+        }
+        if (DATE_FIELDS.includes(id)) {
+            return el._flatpickr && el._flatpickr.altInput ? trim(el._flatpickr.altInput.value) : trim(el.value);
+        }
+        return trim(el.value);
+    };
 
-    const updateNavButtons = (index) => {
-        const isLast = index === totalSteps - 1;
-        byId('le-next')?.classList.toggle('d-none', isLast);
-        byId('le-submit')?.classList.toggle('d-none', !isLast);
+    // Build a one-line address string from a subform (line / city / state / postal / country), skipping blanks.
+    const formatAddress = (name) => {
+        const parts = ADDR_FIELDS.map((f) => {
+            const el = document.querySelector(`[data-addr="${name}"][data-addr-field="${f}"]`);
+            return trim(el?.value).replace(/\s*\n\s*/g, ' '); // flatten the textarea's newlines
+        }).filter(Boolean);
+        return parts.join(', ');
+    };
+
+    const populateOverview = () => {
+        const dash = '—';
+        document.querySelectorAll('#le-overview [data-ov]').forEach((node) => {
+            node.textContent = displayValue(node.dataset.ov) || dash;
+        });
+        document.querySelectorAll('#le-overview [data-ov-addr]').forEach((node) => {
+            node.textContent = formatAddress(node.dataset.ovAddr) || dash;
+        });
+    };
+
+    // ─── Buttons: Prev/Next sit BELOW the content card; Submit lives in the header next to Cancel and is only
+    // enabled on the final Overview step (disabled the rest of the time). ────────────────────────────────────
+    const updateActionButtons = () => {
+        const prev = byId('le-prev'), next = byId('le-next'), submit = byId('le-submit');
+        if (prev) prev.style.display = currentStep > 1 ? '' : 'none';
+        if (next) next.style.display = currentStep < TOTAL_STEPS ? '' : 'none';
+        if (submit) submit.disabled = currentStep !== TOTAL_STEPS;
+    };
+
+    // On the Overview step the content card goes flush (transparent) so each section renders as its own card on
+    // the page body — steps 1-5 keep the normal single form card.
+    const updateContentChrome = () => {
+        byId('le-content-card')?.classList.toggle('le-content-flush', currentStep === TOTAL_STEPS);
+    };
+
+    // İŞ1 — Next only advances once the step it's leaving validates; Previous is always allowed. Overview (step 6)
+    // is read-only, so entering it just refreshes the summary. bs-stepper step-trigger clicks are disabled per
+    // updateStepGating for steps beyond maxReachedStep.
+    const goNext = () => {
+        if (!validateStep(currentStep, true)) { showAlert([stepErrorMessage()], 'danger'); return; }
+        showAlert(null);
+        maxReachedStep = Math.max(maxReachedStep, currentStep + 1);
+        updateStepGating();
+        stepper?.next();
     };
 
     const initStepper = () => {
         const el = byId('le-wizard-stepper');
-        if (!el || !window.Stepper) return;
+        if (!el || typeof window.Stepper !== 'function') return;
         stepper = new window.Stepper(el, { linear: false, animation: false });
-        el.addEventListener('shown.bs-stepper', (event) => {
-            const to = event.detail?.to ?? 0;
-            currentIndex = to;
-            updateNavButtons(to);
-            if (to === totalSteps - 1) buildReview();
+        // Safety net: block any programmatic/-click jump past the furthest validated step.
+        el.addEventListener('show.bs-stepper', (event) => {
+            if (event.detail.indexStep + 1 > maxReachedStep) event.preventDefault();
         });
-        updateNavButtons(0);
+        // Keep currentStep + the action bar in sync, and refresh the overview whenever step 6 becomes visible.
+        el.addEventListener('shown.bs-stepper', (event) => {
+            currentStep = event.detail.indexStep + 1;
+            updateActionButtons();
+            updateContentChrome();
+            if (currentStep === TOTAL_STEPS) populateOverview();
+        });
+        updateStepGating();
+        updateActionButtons();
+        updateContentChrome();
     };
 
     const bindEvents = () => {
-        byId('le-next')?.addEventListener('click', () => {
-            if (!validateStep(currentIndex, true)) return;
-            stepper?.next();
-        });
+        byId('le-submit')?.addEventListener('click', () => save());
+        byId('le-next')?.addEventListener('click', () => goNext());
         byId('le-prev')?.addEventListener('click', () => stepper?.previous());
-        byId('le-submit')?.addEventListener('click', (e) => save(e.currentTarget));
-        byId('le-save-draft')?.addEventListener('click', (e) => save(e.currentTarget));
+        REQUIRED.forEach((id) => {
+            const el = byId(id);
+            if (el) ['input', 'change'].forEach((ev) => el.addEventListener(ev, () => el.classList.remove('is-invalid')));
+        });
+        // İŞA — re-evaluate the Parent requirement whenever the org role changes (native listener; select2 also calls it).
+        byId('leOrganizationRoleCode')?.addEventListener('change', applyParentRequirement);
+    };
 
-        byId('leOrganizationRoleCode')?.addEventListener('change', refreshParentRequirement);
-        // Live required-counter updates on any required input.
-        ['leCode', 'leLegalName', 'leLegalFormCode', 'leOrganizationRoleCode', 'leCountryCode', 'leBaseCurrencyCode', 'leRegisteredAddressJson', 'leParentLegalEntityId']
-            .forEach((id) => { const el = byId(id); if (el) ['input', 'change'].forEach((ev) => el.addEventListener(ev, () => { el.classList.remove('is-invalid'); updateRequiredCounter(); })); });
+    // MOD-0288 Faz-A #4 — make the identity/statutory lookups searchable (select2). Init AFTER options are filled
+    // and (on edit) values set, so the current selection renders. select2 keeps the native <select> value in sync,
+    // so validation/collectPayload keep reading `.value` unchanged.
+    const initSelect2 = () => {
+        const jq = window.jQuery;
+        if (!jq || !jq.fn || !jq.fn.select2) return;
+        // İŞ3/İŞA — the Structure/Finance lookups (incl. the searchable Parent + org-role selects) are select2 too.
+        const selects = '#leLegalFormCode, #leCountryCode, #leBaseCurrencyCode, #leOrganizationRoleCode, #leParentLegalEntityId, #leControlTypeCode, #leAccountingStandardCode, #leTaxRegimeCode';
+        // Pass each select's own empty first-option text as the select2 placeholder so the unselected state renders
+        // in the muted placeholder colour (matching the text inputs) instead of the darker option-text colour.
+        jq(selects).each(function () {
+            const ph = jq(this).find('option[value=""]').first().text() || (L.SelectOption || '');
+            jq(this).select2({ width: '100%', placeholder: ph, minimumResultsForSearch: 0 });
+        });
+        jq(selects).on('change', function () {
+            this.classList.remove('is-invalid');
+            applyParentRequirement(); // İŞA — role change may toggle the Parent requirement
+        });
     };
 
     const init = async () => {
         loadL10n();
         initStepper();
+        initDatePickers();
         bindEvents();
         await loadLookups();
-        if (isEdit) await loadForEdit();
-        refreshParentRequirement();
-        updateRequiredCounter();
+        if (isEdit) {
+            await loadForEdit();
+            maxReachedStep = TOTAL_STEPS; // editing an existing record — all steps already populated, don't re-force linear entry
+            updateStepGating();
+        }
+        initSelect2();
+        applyParentRequirement(); // reflect the current role's Parent requirement on the shared required tracker
+        updateActionButtons();
     };
 
     init();

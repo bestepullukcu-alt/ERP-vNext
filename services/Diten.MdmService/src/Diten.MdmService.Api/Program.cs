@@ -76,6 +76,11 @@ builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModuleManifestProvider, LegalEntityManifestProvider>();
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 
+// MOD-0021 Faz 2 — forward MDM audit events to Platform's central store (S2S), reusing the same Platform base URL +
+// internal key as module self-registration. Actor/tenant are read from the current request's JWT.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<Diten.MdmService.Application.Contracts.Audit.IPlatformAuditForwarder, Diten.MdmService.Api.Audit.PlatformAuditForwarder>();
+
 var app = builder.Build();
 
 app.UseSwagger();

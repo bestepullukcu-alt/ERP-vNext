@@ -1,6 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.TenantOrganization.Commands;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
+using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 
@@ -39,15 +40,19 @@ public sealed class UpdatePositionAssignmentCommandHandler : IRequestHandler<Upd
             return Response<NoContent>.Fail("User is not referenceable.", 404);
         }
 
-        if (await _assignments.HasOverlapAsync(request.Request.PositionId, request.Request.EffectiveFrom, request.Request.EffectiveTo, request.Id, ct))
-        {
-            return Response<NoContent>.Fail("Position Assignment interval overlaps an existing assignment.", 409);
-        }
-
         entity.PositionId = request.Request.PositionId;
         entity.UserId = request.Request.UserId;
         entity.EffectiveFrom = request.Request.EffectiveFrom;
         entity.EffectiveTo = request.Request.EffectiveTo;
+        TenantOrganizationMapper.ApplyEnterpriseFields(entity, request.Request);
+
+        // One-primary-per-position rule (Secondary/Acting/Delegated may overlap); exclude self on update.
+        if (entity.AssignmentType == AssignmentType.Primary && !entity.IsCancelled
+            && await PositionAssignmentPrimaryGuard.HasPrimaryOverlapAsync(_assignments, entity.PositionId, entity.EffectiveFrom, entity.EffectiveTo, entity.Id, ct))
+        {
+            return Response<NoContent>.Fail("Another Primary assignment already covers this interval for the position.", 409);
+        }
+
         await _assignments.UpdateAsync(entity, ct);
         return Response<NoContent>.Success(204);
     }

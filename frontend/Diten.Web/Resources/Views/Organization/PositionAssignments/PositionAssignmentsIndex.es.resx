@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PositionAssignmentsTitle" xml:space="preserve"><value>Asignaciones de puesto</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Asigne usuarios a puestos y gestione el período de vigencia de cada asignación.</value></data>
+  <data name="AddNewAssignment" xml:space="preserve"><value>Agregar asignación</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Crear asignación de puesto</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar asignación de puesto</value></data>
+  <data name="Position" xml:space="preserve"><value>Puesto</value></data>
+  <data name="SelectPosition" xml:space="preserve"><value>Seleccione un puesto…</value></data>
+  <data name="User" xml:space="preserve"><value>Usuario</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>Seleccione un usuario…</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <!-- MOD-0288 Phase 4 — full-page form + details + derived status -->
+  <data name="AssignmentType" xml:space="preserve"><value>Tipo de asignación</value></data>
+  <data name="AssignmentTypePrimary" xml:space="preserve"><value>Principal</value></data>
+  <data name="AssignmentTypeSecondary" xml:space="preserve"><value>Secundaria</value></data>
+  <data name="AssignmentTypeActing" xml:space="preserve"><value>Interina</value></data>
+  <data name="AssignmentTypeDelegated" xml:space="preserve"><value>Delegada</value></data>
+  <data name="Reason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="ReasonHire" xml:space="preserve"><value>Contratación</value></data>
+  <data name="ReasonTransfer" xml:space="preserve"><value>Traslado</value></data>
+  <data name="ReasonPromotion" xml:space="preserve"><value>Ascenso</value></data>
+  <data name="ReasonBackfill" xml:space="preserve"><value>Sustitución</value></data>
+  <data name="AllocationPercent" xml:space="preserve"><value>Asignación %</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notas</value></data>
+  <data name="IsCancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Estado</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>Planificada</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Activa</value></data>
+  <data name="StatusEnded" xml:space="preserve"><value>Finalizada</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Básico</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Detalles avanzados</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>Detalles opcionales — asignación, motivo, notas y cancelación.</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Details" xml:space="preserve"><value>Detalles</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Detalles de la asignación de puesto</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Sistema</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Creado el</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Volver a la lista</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>No se pudo cargar la asignación.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seleccionar…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Esta asignación se eliminará de forma permanente. ¿Continuar?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Asignación eliminada.</value></data>
+  <data name="OnePrimaryError" xml:space="preserve"><value>Otra asignación principal ya cubre este período para el puesto.</value></data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Seleccione una fecha…</value>
+  </data>
+  <data name="AllocationPercentPlaceholder" xml:space="preserve">
+    <value>ej. 100</value>
+  </data>
+  <data name="NotesPlaceholder" xml:space="preserve">
+    <value>ej. Sustitución por licencia parental</value>
+  </data>
+</root>

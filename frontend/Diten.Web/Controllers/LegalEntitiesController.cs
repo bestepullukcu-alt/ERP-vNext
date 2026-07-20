@@ -106,11 +106,28 @@ public sealed class LegalEntitiesController : Controller
         return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/legal-entities/lookups/{Uri.EscapeDataString(type)}");
     }
 
-    // Platform lookups: countries, currencies (and any other Platform-managed lookup key).
+    // İŞ3 — referenceable Legal Entity list feeding the Structure section's Parent select2 (Code + Name, GUID hidden).
+    // Returns only ACTIVE/referenceable entities; the wizard excludes the current entity in edit mode.
+    [HttpGet("api/lookup")]
+    public Task<IActionResult> LookupListProxy()
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/legal-entities/lookup");
+    }
+
+    // Universal ISO reference lookups (countries, currencies). Routed to the TENANT-accessible reference endpoint
+    // (/api/lookups/reference/*) — the main /api/lookups surface is platform-admin-only and 403s tenant users.
     [HttpGet("api/platform-lookups/{key}")]
     public Task<IActionResult> PlatformLookupProxy(string key)
     {
-        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/lookups/{Uri.EscapeDataString(key)}");
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/lookups/reference/{Uri.EscapeDataString(key)}");
+    }
+
+    // MOD-0220 — the wizard's Legal Form / Country / Base Currency now come from governed Business Reference Data
+    // (BRD) published values via the tenant-accessible read (allow-listed to these sets). Returns {data:{items:[…]}}.
+    [HttpGet("api/reference-data/{setCode}")]
+    public Task<IActionResult> ReferenceDataProxy(string setCode)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/lookups/reference-data/sets/{Uri.EscapeDataString(setCode)}/published-values");
     }
 
     private async Task<IActionResult> ProxyGatewayAsync(HttpMethod method, string targetUrl, string? jsonBody = null)

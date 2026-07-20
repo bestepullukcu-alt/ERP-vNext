@@ -29,4 +29,60 @@
   <data name="FinalCodePreview" xml:space="preserve"><value>Nihai Kod</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
   <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <!-- MOD-0288 Phase 2 — full-page form + details + tree -->
+  <data name="OrgUnitType" xml:space="preserve"><value>Tür</value></data>
+  <data name="OrgUnitTypeDepartment" xml:space="preserve"><value>Departman</value></data>
+  <data name="OrgUnitTypeDivision" xml:space="preserve"><value>Bölüm</value></data>
+  <data name="OrgUnitTypeBranch" xml:space="preserve"><value>Şube</value></data>
+  <data name="OrgUnitTypeTeam" xml:space="preserve"><value>Ekip</value></data>
+  <data name="OrgUnitTypeHQ" xml:space="preserve"><value>Genel Merkez</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Durum</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="ManagerPosition" xml:space="preserve"><value>Yönetici Pozisyonu</value></data>
+  <data name="NoManager" xml:space="preserve"><value>(Yönetici yok)</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="SectionBasic" xml:space="preserve"><value>Temel</value></data>
+  <data name="SectionAdvanced" xml:space="preserve"><value>Gelişmiş Ayrıntılar</value></data>
+  <data name="AdvancedDesc" xml:space="preserve"><value>İsteğe bağlı kurumsal ayrıntılar — tür, yönetici, açıklama, durum ve geçerlilik tarihleri.</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ayrıntıları Görüntüle</value></data>
+  <data name="Details" xml:space="preserve"><value>Ayrıntılar</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Organizasyon Birimi Ayrıntıları</value></data>
+  <data name="SectionSystem" xml:space="preserve"><value>Sistem</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Organizasyon birimi yüklenemedi.</value></data>
+  <data name="ViewFlat" xml:space="preserve"><value>Tablo</value></data>
+  <data name="ViewTree" xml:space="preserve"><value>Ağaç</value></data>
+  <data name="TreeEmpty" xml:space="preserve"><value>Görüntülenecek organizasyon birimi yok.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçin…</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Bu organizasyon birimi kalıcı olarak silinecek. Devam edilsin mi?</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>Organizasyon birimi silindi.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>örn. Bölgesel satış operasyonlarını yürütür</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>Bir tarih seçin…</value>
+  </data>
+  <data name="AddChild" xml:space="preserve">
+    <value>Alt birim ekle</value>
+  </data>
+  <data name="TreeSearchPlaceholder" xml:space="preserve">
+    <value>Birim ara (ad veya kod)…</value>
+  </data>
+  <data name="MoveSuccess" xml:space="preserve">
+    <value>"{0}" taşındı</value>
+  </data>
+  <data name="MoveSameLegalEntityOnly" xml:space="preserve">
+    <value>Bir birim yalnızca aynı Yasal Varlık içinde taşınabilir.</value>
+  </data>
+  <data name="MoveArchivedBlocked" xml:space="preserve">
+    <value>Arşivli birimler taşınamaz.</value>
+  </data>
+  <data name="MoveCycleBlocked" xml:space="preserve">
+    <value>Bir birim kendi alt biriminin altına taşınamaz.</value>
+  </data>
 </root>

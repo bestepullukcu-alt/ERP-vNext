@@ -22,6 +22,37 @@ public sealed class OrganizationUnitsController : Controller
     [HttpGet("")]
     public IActionResult Index() => View("~/Views/Organization/OrganizationUnits/Index.cshtml");
 
+    // MOD-0288 Phase 2 — full-page compact create/edit/details (two-level form; mirrors the Legal Entity pattern).
+    [HttpGet("Create")]
+    public IActionResult Create([FromQuery] Guid? parentId)
+    {
+        ViewData["OrgUnitId"] = string.Empty;
+        // "Add sub-unit" from the tree pre-selects this parent in the create form.
+        ViewData["ParentOrgUnitId"] = parentId?.ToString() ?? string.Empty;
+        return View("~/Views/Organization/OrganizationUnits/Form.cshtml");
+    }
+
+    [HttpGet("Edit/{id:guid}")]
+    public IActionResult Edit(Guid id)
+    {
+        ViewData["OrgUnitId"] = id.ToString();
+        return View("~/Views/Organization/OrganizationUnits/Form.cshtml");
+    }
+
+    [HttpGet("Details/{id:guid}")]
+    public IActionResult Details(Guid id)
+    {
+        ViewData["OrgUnitId"] = id.ToString();
+        return View("~/Views/Organization/OrganizationUnits/Details.cshtml");
+    }
+
+    // Position SELECT feed — for the Manager Position searchable select2 (a Position, not a free user).
+    [HttpGet("api/positions")]
+    public Task<IActionResult> PositionsProxy()
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/positions");
+    }
+
     [HttpGet("api")]
     public Task<IActionResult> ListProxy()
     {
@@ -35,12 +66,12 @@ public sealed class OrganizationUnitsController : Controller
         return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/organization-units/{id}");
     }
 
-    // Legal Entity lookup feed (MDM). Read-only; degrades gracefully on the client (manual GUID entry)
-    // when MDM is unreachable.
+    // Legal Entity SELECT feed (MDM) — the referenceable-only lookup (Code + Name + status), so the Org Unit form
+    // can only reference ACTIVE/referenceable entities. Feeds the searchable select2; there is no manual-GUID path.
     [HttpGet("api/legal-entities")]
     public Task<IActionResult> LegalEntitiesProxy()
     {
-        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/legal-entities");
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/legal-entities/lookup");
     }
 
     [HttpPost("api")]

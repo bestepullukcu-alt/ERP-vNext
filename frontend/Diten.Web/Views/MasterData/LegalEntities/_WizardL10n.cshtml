@@ -1,53 +1,26 @@
+@using System.Globalization
 @using System.Text.Json
 @using Diten.Web.Views.MasterData.LegalEntities
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<LegalEntitiesIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
+    // MOD-0220 finish — the reduced wizard renders every label server-side; the JS only needs a few runtime
+    // strings + the request culture's date format (mapped from the .NET short-date pattern to flatpickr tokens),
+    // so date pickers display in the user's locale format while the stored value stays ISO (Y-m-d).
+    static string ToFlatpickr(string net) =>
+        net.Replace("dd", "\x01").Replace("d", "\x02")
+           .Replace("MM", "\x03").Replace("M", "\x04")
+           .Replace("yyyy", "Y").Replace("yy", "y")
+           .Replace("\x01", "d").Replace("\x02", "j").Replace("\x03", "m").Replace("\x04", "n");
+
+    var dateFormat = ToFlatpickr(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern);
+
     var payload = new
     {
-        WizardCreateTitle = Localizer["WizardCreateTitle"].Value,
-        WizardEditTitle = Localizer["WizardEditTitle"].Value,
         RequiredCounter = Localizer["RequiredCounter"].Value,
-        Code = Localizer["Code"].Value,
-        LegalName = Localizer["LegalName"].Value,
-        DisplayName = Localizer["DisplayName"].Value,
-        LegalForm = Localizer["LegalForm"].Value,
-        OrgRole = Localizer["OrgRole"].Value,
-        RegistrationNumber = Localizer["RegistrationNumber"].Value,
-        TaxId = Localizer["TaxId"].Value,
-        Country = Localizer["Country"].Value,
-        StatutoryStatus = Localizer["StatutoryStatus"].Value,
-        ParentLegalEntity = Localizer["ParentLegalEntity"].Value,
-        OwnershipPercent = Localizer["OwnershipPercent"].Value,
-        ControlType = Localizer["ControlType"].Value,
-        FiscalYearVariant = Localizer["FiscalYearVariant"].Value,
-        AccountingStandard = Localizer["AccountingStandard"].Value,
-        TaxRegime = Localizer["TaxRegime"].Value,
-        BaseCurrency = Localizer["BaseCurrency"].Value,
-        RegisteredAddress = Localizer["RegisteredAddress"].Value,
-        CorrespondenceAddress = Localizer["CorrespondenceAddress"].Value,
-        OfficialEmail = Localizer["OfficialEmail"].Value,
-        OfficialPhone = Localizer["OfficialPhone"].Value,
-        Website = Localizer["Website"].Value,
-        ApprovalStatus = Localizer["ApprovalStatus"].Value,
-        ReviewDue = Localizer["ReviewDue"].Value,
-        SourceSystem = Localizer["SourceSystem"].Value,
-        LegacyCode = Localizer["LegacyCode"].Value,
-        EvidenceStatus = Localizer["EvidenceStatus"].Value,
-        SectionIdentity = Localizer["SectionIdentity"].Value,
-        SectionStatutory = Localizer["SectionStatutory"].Value,
-        SectionStructure = Localizer["SectionStructure"].Value,
-        SectionFinance = Localizer["SectionFinance"].Value,
-        SectionAddresses = Localizer["SectionAddresses"].Value,
-        SectionGovernance = Localizer["SectionGovernance"].Value,
-        SectionEvidence = Localizer["SectionEvidence"].Value,
-        SelectOption = Localizer["SelectOption"].Value,
-        NoParent = Localizer["NoParent"].Value,
-        ParentRequiredForBranch = Localizer["ParentRequiredForBranch"].Value,
-        InvalidAddressJson = Localizer["InvalidAddressJson"].Value,
         RequiredField = Localizer["RequiredField"].Value,
-        // Shared
+        DateFormat = dateFormat,
         RecordCreated = SharedLocalizer["RecordCreated"].Value,
         RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
         ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value

@@ -36,7 +36,6 @@
   <data name="CreatedFrom" xml:space="preserve"><value>Başlangıç Tarihi</value></data>
   <data name="CreatedTo" xml:space="preserve"><value>Bitiş Tarihi</value></data>
   <data name="IncompleteOnly" xml:space="preserve"><value>Yalnızca eksikler</value></data>
-  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Detayları Görüntüle</value></data>
   <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
   <data name="Suspend" xml:space="preserve"><value>Askıya Al</value></data>
@@ -96,9 +95,14 @@
   <data name="FiscalYearVariant" xml:space="preserve"><value>Mali Yıl Değişkeni</value></data>
   <data name="AccountingStandard" xml:space="preserve"><value>Muhasebe Standardı</value></data>
   <data name="TaxRegime" xml:space="preserve"><value>Vergi Rejimi</value></data>
-  <data name="RegisteredAddress" xml:space="preserve"><value>Tescilli Adres (JSON)</value></data>
-  <data name="CorrespondenceAddress" xml:space="preserve"><value>Yazışma Adresi (JSON)</value></data>
-  <data name="AddressJsonHelp" xml:space="preserve"><value>line1, city, country (zorunlu) ve isteğe bağlı line2, postalCode, state içeren JSON nesnesi.</value></data>
+  <data name="RegisteredAddress" xml:space="preserve"><value>Tescilli Adres</value></data>
+  <data name="CorrespondenceAddress" xml:space="preserve"><value>Yazışma Adresi</value></data>
+  <data name="AddressJsonHelp" xml:space="preserve"><value>Bir adres girildiğinde Satır 1, Şehir ve Ülke zorunludur.</value></data>
+  <data name="AddressLine1" xml:space="preserve"><value>Adres Satırı 1</value></data>
+  <data name="AddressLine2" xml:space="preserve"><value>Adres Satırı 2</value></data>
+  <data name="AddressCity" xml:space="preserve"><value>Şehir</value></data>
+  <data name="AddressState" xml:space="preserve"><value>Eyalet / İl</value></data>
+  <data name="AddressPostalCode" xml:space="preserve"><value>Posta Kodu</value></data>
   <data name="OfficialEmail" xml:space="preserve"><value>Resmi E-posta</value></data>
   <data name="OfficialPhone" xml:space="preserve"><value>Resmi Telefon</value></data>
   <data name="Website" xml:space="preserve"><value>Web Sitesi</value></data>
@@ -130,4 +134,31 @@
   <data name="No" xml:space="preserve"><value>Hayır</value></data>
   <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
   <data name="LoadFailed" xml:space="preserve"><value>Tüzel kişilik yüklenemedi.</value></data>
+  <!-- MOD-0220 finish — new statutory fields + advanced section -->
+  <data name="VatNumber" xml:space="preserve"><value>KDV Numarası</value></data>
+  <data name="PlaceOfIncorporation" xml:space="preserve"><value>Kuruluş Yeri</value></data>
+  <data name="IncorporationDate" xml:space="preserve"><value>Kuruluş Tarihi</value></data>
+  <data name="DissolutionDate" xml:space="preserve"><value>Fesih Tarihi</value></data>
+  <data name="SectionStatutoryAdvanced" xml:space="preserve"><value>Yasal / Gelişmiş Ayrıntılar</value></data>
+  <data name="StatutoryAdvancedDesc" xml:space="preserve"><value>Kayıt, vergi ve yasal ayrıntılar — isteğe bağlı; profili tamamlamak için genişletin.</value></data>
+  <!-- Statutory field placeholders (screenshot fix) -->
+  <data name="RegistrationNumberPlaceholder" xml:space="preserve"><value>örn. 0123456789</value></data>
+  <data name="TaxIdPlaceholder" xml:space="preserve"><value>örn. 1234567890</value></data>
+  <data name="VatNumberPlaceholder" xml:space="preserve"><value>örn. GB123456789</value></data>
+  <data name="PlaceOfIncorporationPlaceholder" xml:space="preserve"><value>örn. İstanbul, TR</value></data>
+  <data name="DatePlaceholder" xml:space="preserve"><value>Bir tarih seçin…</value></data>
+  <data name="Step6Overview" xml:space="preserve"><value>Özet</value></data>
+  <data name="Step6OverviewSub" xml:space="preserve"><value>Gözden Geçir &amp; Kaydet</value></data>
+  <data name="Step6OverviewDesc" xml:space="preserve"><value>Kaydetmeden önce girdiğiniz tüm bilgileri gözden geçirin.</value></data>
+  <data name="AddressFull" xml:space="preserve"><value>Adres</value></data>
+  <data name="AddressFullPlaceholder" xml:space="preserve"><value>örn. Atatürk Cad. No:12, Kat 3</value></data>
+  <data name="AddressCityPlaceholder" xml:space="preserve"><value>örn. İstanbul</value></data>
+  <data name="AddressStatePlaceholder" xml:space="preserve"><value>örn. Marmara</value></data>
+  <data name="AddressPostalCodePlaceholder" xml:space="preserve"><value>örn. 34000</value></data>
+  <data name="AddressCountryPlaceholder" xml:space="preserve"><value>örn. Türkiye</value></data>
+  <data name="OfficialEmailPlaceholder" xml:space="preserve"><value>örn. info@acme.com</value></data>
+  <data name="OfficialPhonePlaceholder" xml:space="preserve"><value>örn. +90 212 000 0000</value></data>
+  <data name="WebsitePlaceholder" xml:space="preserve"><value>örn. https://acme.com</value></data>
+  <data name="FiscalYearVariantPlaceholder" xml:space="preserve"><value>örn. K4</value></data>
+  <data name="OwnershipPercentPlaceholder" xml:space="preserve"><value>örn. 100</value></data>
 </root>

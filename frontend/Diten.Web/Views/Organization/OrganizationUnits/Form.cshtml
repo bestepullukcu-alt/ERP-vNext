@@ -1,0 +1,132 @@
+@using Diten.Web.Views.Organization.OrganizationUnits
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationUnitsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var orgUnitId = ViewData["OrgUnitId"]?.ToString() ?? string.Empty;
+    var parentOrgUnitId = ViewData["ParentOrgUnitId"]?.ToString() ?? string.Empty;
+    var isEdit = !string.IsNullOrEmpty(orgUnitId);
+    ViewData["Title"] = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+    var pageTitle = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+}
+
+@* MOD-0288 — Org Unit create/edit (route-based, no wizard). Golden Reference compact create layout: title +
+   breadcrumb header with Cancel + Save, and read/write cards laid out as a col-lg-8 main column + col-lg-4
+   sidebar, each `card` with `card-body p-4` + an uppercase section heading. Legal Entity / Parent / Manager are
+   searchable select2; dates use flatpickr. The shared required-fields tracker renders the "Zorunlu: X / Y" badge
+   into the header host. *@
+<div id="ou-form-page" data-ou-id="@orgUnitId" data-ou-parent-id="@parentOrgUnitId" data-ou-mode="@(isEdit ? "edit" : "create")">
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div>
+            <h5 class="mb-0">@pageTitle</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/OrganizationUnits">@Localizer["OrganizationUnitsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@pageTitle</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            @* Shared required-fields tracker (required-fields-tracker.js) renders the "Zorunlu: X / Y" badge here. *@
+            <span id="ou-required-tracker-host" class="d-flex align-items-center"></span>
+            <a href="/OrganizationUnits" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+            <button type="button" class="btn btn-primary" id="ou-submit">@Localizer["Save"]</button>
+        </div>
+    </div>
+
+    <div id="ou-form-alert" class="alert alert-danger d-none" role="alert"></div>
+
+    @Html.AntiForgeryToken()
+
+    <form id="ou-form" onsubmit="return false" novalidate
+          data-required-tracker-target="#ou-required-tracker-host"
+          data-required-tracker-wrapper-class="d-flex align-items-center">
+        <div class="row g-4">
+            @* ── Main column ─────────────────────────────────────────────── *@
+            <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+                <section class="card">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionBasic"]</h6>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="ouCode">@Localizer["Code"] <span class="text-danger">*</span></label>
+                                <input type="text" id="ouCode" class="form-control" maxlength="80" placeholder="@Localizer["CodePlaceholder"]" data-required required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="ouName">@Localizer["Name"] <span class="text-danger">*</span></label>
+                                <input type="text" id="ouName" class="form-control" maxlength="160" placeholder="@Localizer["NamePlaceholder"]" data-required required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="ouLegalEntityId">@Localizer["LegalEntity"] <span class="text-danger">*</span></label>
+                                <select id="ouLegalEntityId" class="form-select" data-required required><option value="">@Localizer["SelectLegalEntity"]</option></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="ouParentId">@Localizer["ParentOrgUnit"]</label>
+                                <select id="ouParentId" class="form-select"><option value="">@Localizer["NoParent"]</option></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="ouOrgUnitType">@Localizer["OrgUnitType"]</label>
+                                <select id="ouOrgUnitType" class="form-select">
+                                    <option value="Department">@Localizer["OrgUnitTypeDepartment"]</option>
+                                    <option value="Division">@Localizer["OrgUnitTypeDivision"]</option>
+                                    <option value="Branch">@Localizer["OrgUnitTypeBranch"]</option>
+                                    <option value="Team">@Localizer["OrgUnitTypeTeam"]</option>
+                                    <option value="HQ">@Localizer["OrgUnitTypeHQ"]</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Description"]</h6>
+                        <textarea id="ouDescription" class="form-control" rows="5" maxlength="1024" placeholder="@Localizer["DescriptionPlaceholder"]"></textarea>
+                    </div>
+                </section>
+            </div>
+
+            @* ── Sidebar column ──────────────────────────────────────────── *@
+            <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+                <section class="card">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionAdvanced"]</h6>
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="ouManagerPositionId">@Localizer["ManagerPosition"]</label>
+                                <select id="ouManagerPositionId" class="form-select"><option value="">@Localizer["NoManager"]</option></select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="ouStatus">@Localizer["StatusLabel"]</label>
+                                <select id="ouStatus" class="form-select">
+                                    <option value="Active">@Localizer["StatusActive"]</option>
+                                    <option value="Inactive">@Localizer["StatusInactive"]</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="ouEffectiveFrom">@Localizer["EffectiveFrom"]</label>
+                                <input type="text" id="ouEffectiveFrom" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="ouEffectiveTo">@Localizer["EffectiveTo"]</label>
+                                <input type="text" id="ouEffectiveTo" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="_FormL10n" />
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <script src="~/assets/js/Organization/OrganizationUnits/form.js" asp-append-version="true"></script>
+}

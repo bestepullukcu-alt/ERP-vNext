@@ -13,10 +13,19 @@ public sealed record LegalEntityWriteRequest(
     string LegalName,
     string? DisplayName,
     string LegalFormCode,
-    string OrganizationRoleCode,
+    // MOD-0220 finish — OrganizationRole (Structure) is deferred from the wizard, so it must be OPTIONAL. A
+    // non-nullable string here makes ASP.NET's implicit-required (NRT) reject the request with a 400 BEFORE it
+    // reaches FluentValidation, so the wizard (which omits it) can never create/update. Nullable → the mapping
+    // defaults it to LEGALENTITY. The genuinely-required identity fields (Code/LegalName/LegalFormCode/CountryCode/
+    // BaseCurrencyCode) stay non-nullable — the UI always sends them.
+    string? OrganizationRoleCode,
     // Statutory & Tax
     string? RegistrationNumber,
     string? TaxId,
+    string? VatNumber,
+    string? PlaceOfIncorporation,
+    DateTimeOffset? IncorporationDate,
+    DateTimeOffset? DissolutionDate,
     string CountryCode,
     string? StatutoryStatus,
     // Structure
@@ -28,8 +37,8 @@ public sealed record LegalEntityWriteRequest(
     string? AccountingStandardCode,
     string? TaxRegimeCode,
     string BaseCurrencyCode,
-    // Addresses & Contacts
-    string RegisteredAddressJson,
+    // Addresses & Contacts (registered-address sub-form DEFERRED → optional)
+    string? RegisteredAddressJson,
     string? CorrespondenceAddressJson,
     string? OfficialEmail,
     string? OfficialPhone,
@@ -51,6 +60,10 @@ public sealed record LegalEntityDetailDto(
     string OrganizationRoleCode,
     string? RegistrationNumber,
     string? TaxId,
+    string? VatNumber,
+    string? PlaceOfIncorporation,
+    DateTimeOffset? IncorporationDate,
+    DateTimeOffset? DissolutionDate,
     string CountryCode,
     string StatutoryStatus,
     Guid? ParentLegalEntityId,
@@ -79,10 +92,12 @@ public sealed record LegalEntityDetailDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt);
 
-// Minimal cross-service shape consumed by Platform's MdmLegalEntityReferenceValidator (OrgUnit FK).
+// Minimal cross-service shape consumed by Platform's MdmLegalEntityReferenceValidator (OrgUnit FK) and by the
+// Organization module's LegalEntityId select (renders Code + Name, hides the GUID). Code is additive.
 // LifecycleState MUST stay "ACTIVE" for referenceable entities — do not change without updating Platform.
 public sealed record LegalEntityLookupDto(
     Guid LegalEntityId,
+    string Code,
     string LegalName,
     string? DisplayName,
     string LifecycleState,
@@ -132,10 +147,17 @@ public static class LegalEntityMappings
         entity.LegalName = r.LegalName.Trim();
         entity.DisplayName = Clean(r.DisplayName);
         entity.LegalFormCode = r.LegalFormCode.Trim();
-        entity.OrganizationRoleCode = r.OrganizationRoleCode.Trim();
+        // MOD-0220 finish — OrganizationRole (Structure) is deferred from the UI; default the base role when the
+        // caller omits it so the entity stays coherent (LEGALENTITY never triggers the parent-required rule) and
+        // downstream selects still get a role. An explicit role (future Organization phase) is honored.
+        entity.OrganizationRoleCode = string.IsNullOrWhiteSpace(r.OrganizationRoleCode) ? "LEGALENTITY" : r.OrganizationRoleCode.Trim();
 
         entity.RegistrationNumber = Clean(r.RegistrationNumber);
         entity.TaxId = Clean(r.TaxId);
+        entity.VatNumber = Clean(r.VatNumber);
+        entity.PlaceOfIncorporation = Clean(r.PlaceOfIncorporation);
+        entity.IncorporationDate = r.IncorporationDate;
+        entity.DissolutionDate = r.DissolutionDate;
         entity.CountryCode = r.CountryCode.Trim();
         entity.StatutoryStatus = ParseEnum(r.StatutoryStatus, LegalEntityStatutoryStatus.Registered);
 
@@ -148,7 +170,7 @@ public static class LegalEntityMappings
         entity.TaxRegimeCode = Clean(r.TaxRegimeCode);
         entity.BaseCurrencyCode = r.BaseCurrencyCode.Trim();
 
-        entity.RegisteredAddressJson = r.RegisteredAddressJson.Trim();
+        entity.RegisteredAddressJson = r.RegisteredAddressJson?.Trim() ?? string.Empty;
         entity.CorrespondenceAddressJson = Clean(r.CorrespondenceAddressJson);
         entity.OfficialEmail = Clean(r.OfficialEmail);
         entity.OfficialPhone = Clean(r.OfficialPhone);
@@ -174,6 +196,10 @@ public static class LegalEntityMappings
             e.OrganizationRoleCode,
             e.RegistrationNumber,
             e.TaxId,
+            e.VatNumber,
+            e.PlaceOfIncorporation,
+            e.IncorporationDate,
+            e.DissolutionDate,
             e.CountryCode,
             e.StatutoryStatus.ToString().ToUpperInvariant(),
             e.ParentLegalEntityId,
@@ -204,6 +230,7 @@ public static class LegalEntityMappings
     public static LegalEntityLookupDto ToLookupDto(Domain.Entities.LegalEntity e)
         => new(
             e.Id,
+            e.Code,
             e.LegalName,
             e.DisplayName,
             e.OperationalStatus.ToString().ToUpperInvariant(),

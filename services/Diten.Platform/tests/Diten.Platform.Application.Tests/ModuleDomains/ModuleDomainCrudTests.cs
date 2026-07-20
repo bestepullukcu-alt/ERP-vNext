@@ -13,7 +13,7 @@ namespace Diten.Platform.Application.Tests.ModuleDomains;
 public sealed class ModuleDomainCrudTests
 {
     [Fact]
-    public async Task Create_normalizes_code_to_uppercase_and_persists()
+    public async Task Create_normalizes_code_to_canonical_uppercase_no_separator_and_persists()
     {
         var repo = new InMemoryModuleDomainRepository();
         var result = await new CreateModuleDomainCommandHandler(repo).Handle(
@@ -23,11 +23,32 @@ public sealed class ModuleDomainCrudTests
         Assert.True(result.IsSuccessful);
         Assert.Equal(201, result.StatusCode);
         var item = Assert.Single(repo.Items);
-        Assert.Equal("FINANCE-OPS", item.Code);
+        // FIX-DOMAIN-DEDUP — canonical Code is UPPERCASE with EVERY separator dropped (was "FINANCE-OPS"), and
+        // CodeKey mirrors it. This is the single shared shape all creation paths produce.
+        Assert.Equal("FINANCEOPS", item.Code);
+        Assert.Equal("FINANCEOPS", item.CodeKey);
         Assert.Equal("Finance Ops", item.DisplayName);
         Assert.Equal("core", item.Description);
         Assert.Equal(30, item.SortOrder);
         Assert.True(item.IsActive);
+    }
+
+    [Fact]
+    public async Task Create_rejects_differently_formatted_same_normalized_code_with_409()
+    {
+        var repo = new InMemoryModuleDomainRepository();
+        repo.Items.Add(new ModuleDomain { Code = "MASTERDATAMANAGEMENT", DisplayName = "Master Data Management" });
+
+        // A hyphenated code that normalizes to the SAME key as the existing no-separator row must be rejected —
+        // this is the cross-format duplicate the unique index on CodeKey forbids at the DB layer.
+        var result = await new CreateModuleDomainCommandHandler(repo).Handle(
+            new CreateModuleDomainCommand(new CreateModuleDomainRequest("master-data-management", "Dupe", null, null, true)),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Contains(ModuleDomainErrorCodes.DomainCodeInUse, result.Errors);
+        Assert.Single(repo.Items);
     }
 
     [Fact]

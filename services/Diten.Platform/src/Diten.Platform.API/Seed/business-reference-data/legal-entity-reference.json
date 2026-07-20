@@ -1,0 +1,88 @@
+{
+  "catalog_version": "2026.07.11-legal-entity-reference",
+  "module": "BusinessReferenceData",
+  "note": "MOD-0220 — Legal Entity wizard reference sets (legal-form, country, base-currency) moved into governed BRD. legal-form + country copied verbatim from MDM LegalEntityReferenceData / Platform PlatformLookupProvider; base-currency is a curated fixed set (the live currency list is OS-culture-generated and not statically seedable). English-only (per-culture l10n backlogged).",
+  "sets": [
+    {
+      "set_code": "legal-form",
+      "set_name": "Legal Form",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "Legal form / entity type values for the Legal Entity wizard.",
+      "values": [
+        { "value_code": "CORPORATION", "display_name": "Corporation", "is_active": true, "sort_order": 10 },
+        { "value_code": "LLC", "display_name": "Limited Liability Company", "is_active": true, "sort_order": 20 },
+        { "value_code": "PARTNERSHIP", "display_name": "Partnership", "is_active": true, "sort_order": 30 },
+        { "value_code": "SOLEPROP", "display_name": "Sole Proprietorship", "is_active": true, "sort_order": 40 },
+        { "value_code": "BRANCH", "display_name": "Branch", "is_active": true, "sort_order": 50 },
+        { "value_code": "REPOFFICE", "display_name": "Representative Office", "is_active": true, "sort_order": 60 }
+      ]
+    },
+    {
+      "set_code": "country",
+      "set_name": "Country",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "ISO country values for the Legal Entity wizard.",
+      "values": [
+        { "value_code": "TR", "display_name": "Turkey", "is_active": true, "sort_order": 10 },
+        { "value_code": "US", "display_name": "United States", "is_active": true, "sort_order": 20 },
+        { "value_code": "GB", "display_name": "United Kingdom", "is_active": true, "sort_order": 30 },
+        { "value_code": "DE", "display_name": "Germany", "is_active": true, "sort_order": 40 },
+        { "value_code": "FR", "display_name": "France", "is_active": true, "sort_order": 50 },
+        { "value_code": "ES", "display_name": "Spain", "is_active": true, "sort_order": 60 },
+        { "value_code": "IT", "display_name": "Italy", "is_active": true, "sort_order": 70 },
+        { "value_code": "RU", "display_name": "Russia", "is_active": true, "sort_order": 80 },
+        { "value_code": "CN", "display_name": "China", "is_active": true, "sort_order": 90 },
+        { "value_code": "JP", "display_name": "Japan", "is_active": true, "sort_order": 100 },
+        { "value_code": "AE", "display_name": "United Arab Emirates", "is_active": true, "sort_order": 110 },
+        { "value_code": "SA", "display_name": "Saudi Arabia", "is_active": true, "sort_order": 120 },
+        { "value_code": "NL", "display_name": "Netherlands", "is_active": true, "sort_order": 130 },
+        { "value_code": "BE", "display_name": "Belgium", "is_active": true, "sort_order": 140 },
+        { "value_code": "CH", "display_name": "Switzerland", "is_active": true, "sort_order": 150 },
+        { "value_code": "AT", "display_name": "Austria", "is_active": true, "sort_order": 160 },
+        { "value_code": "PL", "display_name": "Poland", "is_active": true, "sort_order": 170 },
+        { "value_code": "SE", "display_name": "Sweden", "is_active": true, "sort_order": 180 },
+        { "value_code": "NO", "display_name": "Norway", "is_active": true, "sort_order": 190 },
+        { "value_code": "DK", "display_name": "Denmark", "is_active": true, "sort_order": 200 },
+        { "value_code": "GE", "display_name": "Georgia", "is_active": true, "sort_order": 210 },
+        { "value_code": "AZ", "display_name": "Azerbaijan", "is_active": true, "sort_order": 220 }
+      ]
+    },
+    {
+      "set_code": "base-currency",
+      "set_name": "Base Currency",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "ISO currency values for the Legal Entity wizard (curated fixed set).",
+      "values": [
+        { "value_code": "USD", "display_name": "US Dollar", "is_active": true, "sort_order": 10 },
+        { "value_code": "EUR", "display_name": "Euro", "is_active": true, "sort_order": 20 },
+        { "value_code": "GBP", "display_name": "British Pound", "is_active": true, "sort_order": 30 },
+        { "value_code": "TRY", "display_name": "Turkish Lira", "is_active": true, "sort_order": 40 },
+        { "value_code": "JPY", "display_name": "Japanese Yen", "is_active": true, "sort_order": 50 },
+        { "value_code": "CNY", "display_name": "Chinese Yuan", "is_active": true, "sort_order": 60 },
+        { "value_code": "RUB", "display_name": "Russian Ruble", "is_active": true, "sort_order": 70 },
+        { "value_code": "AED", "display_name": "UAE Dirham", "is_active": true, "sort_order": 80 },
+        { "value_code": "SAR", "display_name": "Saudi Riyal", "is_active": true, "sort_order": 90 },
+        { "value_code": "CHF", "display_name": "Swiss Franc", "is_active": true, "sort_order": 100 },
+        { "value_code": "SEK", "display_name": "Swedish Krona", "is_active": true, "sort_order": 110 },
+        { "value_code": "NOK", "display_name": "Norwegian Krone", "is_active": true, "sort_order": 120 },
+        { "value_code": "DKK", "display_name": "Danish Krone", "is_active": true, "sort_order": 130 },
+        { "value_code": "PLN", "display_name": "Polish Zloty", "is_active": true, "sort_order": 140 },
+        { "value_code": "CAD", "display_name": "Canadian Dollar", "is_active": true, "sort_order": 150 },
+        { "value_code": "AUD", "display_name": "Australian Dollar", "is_active": true, "sort_order": 160 },
+        { "value_code": "INR", "display_name": "Indian Rupee", "is_active": true, "sort_order": 170 },
+        { "value_code": "BRL", "display_name": "Brazilian Real", "is_active": true, "sort_order": 180 },
+        { "value_code": "SGD", "display_name": "Singapore Dollar", "is_active": true, "sort_order": 190 },
+        { "value_code": "HKD", "display_name": "Hong Kong Dollar", "is_active": true, "sort_order": 200 },
+        { "value_code": "ZAR", "display_name": "South African Rand", "is_active": true, "sort_order": 210 },
+        { "value_code": "MXN", "display_name": "Mexican Peso", "is_active": true, "sort_order": 220 },
+        { "value_code": "KRW", "display_name": "South Korean Won", "is_active": true, "sort_order": 230 },
+        { "value_code": "NZD", "display_name": "New Zealand Dollar", "is_active": true, "sort_order": 240 },
+        { "value_code": "GEL", "display_name": "Georgian Lari", "is_active": true, "sort_order": 250 },
+        { "value_code": "AZN", "display_name": "Azerbaijani Manat", "is_active": true, "sort_order": 260 }
+      ]
+    }
+  ]
+}
