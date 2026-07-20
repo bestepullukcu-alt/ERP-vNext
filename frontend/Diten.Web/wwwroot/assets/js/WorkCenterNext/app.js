@@ -276,13 +276,18 @@
         const urgent = ownUrgentCount();
         const ownBadge = (state.scope !== 'mine' && urgent)
             ? `<span class="wcn-own-urgent" title="${esc(t('OwnUrgentTip'))}">${urgent}</span>` : '';
-        // N-way scope selector: Kendim · <each delegator> · Tümü.
-        const scopeBtn = (key, label) =>
-            `<button type="button" class="wcn-scopebtn${state.scope === key ? ' active' : ''}" data-wcn-scope="${esc(key)}">${esc(label)}${key === 'mine' ? ownBadge : ''}</button>`;
-        const delegatorBtns = data.delegators.map((d) => scopeBtn(d.name, d.name)).join('');
-        const sub = state.scope === 'mine' ? `${data.currentUser.name} · ${data.currentUser.title}`
-            : state.scope === 'all' ? t('ScopeAllSub')
-                : (delegatorByName(state.scope) ? tf('ScopeCovering', state.scope) : '');
+        // Identity / delegation as a SINGLE pill selector (spec v3) — not N side-by-side
+        // buttons. Neutral "Kendim" by default; a loud warning pill while acting for
+        // someone else so the accountability context is never missed.
+        const delegating = state.scope !== 'mine' && state.scope !== 'all';
+        const pillLabel = state.scope === 'mine' ? t('ScopeMine')
+            : state.scope === 'all' ? t('ScopeAll') : state.scope;
+        const idItem = (key, label, covering) =>
+            `<li><button type="button" class="dropdown-item${state.scope === key ? ' active' : ''}" data-wcn-scope="${esc(key)}">` +
+            `${covering ? '<i class="bx bx-user-voice"></i> ' : ''}${esc(label)}${key === 'mine' ? ownBadge : ''}</button></li>`;
+        const delegatorItems = data.delegators
+            .map((d) => idItem(d.name, tf('ScopeCovering', d.name), true)).join('');
+        const divider = data.delegators.length ? '<li><hr class="dropdown-divider"></li>' : '';
         return `<div class="wcn-header">
             <div class="wcn-header-title">
                 <span class="wcn-header-icon"><i class="bx bx-briefcase-alt-2"></i></span>
@@ -291,19 +296,20 @@
                     <p class="wcn-header-sub">${esc(t('Subtitle'))}</p>
                 </div>
             </div>
-            <div class="wcn-scope" role="group" aria-label="${esc(t('ScopeLabel'))}">
-                ${scopeBtn('mine', t('ScopeMine'))}
-                ${delegatorBtns}
-                ${scopeBtn('all', t('ScopeAll'))}
-                <span class="wcn-scope-who">${esc(sub)}</span>
-            </div>
-            <div class="wcn-global-tools">
-                <button type="button" class="btn btn-sm ${state.agendaOpen ? 'btn-primary' : 'btn-outline-primary'}" data-wcn-toggle="agenda" aria-expanded="${state.agendaOpen}" aria-controls="wcnSidePanel">
-                    <i class="bx bx-calendar-event"></i> <span>${esc(t('AgendaButton'))}</span>
-                </button>
-                <button type="button" class="btn btn-sm ${state.notesOpen ? 'btn-primary' : 'btn-outline-primary'}" data-wcn-toggle="notes" aria-expanded="${state.notesOpen}" aria-controls="wcnSidePanel">
-                    <i class="bx bx-note"></i> <span>${esc(t('NotesButton'))}</span>
-                </button>
+            <div class="wcn-header-actions">
+                <div class="dropdown">
+                    <button type="button" class="wcn-idpill${delegating ? ' wcn-idpill-active' : ''}" data-bs-toggle="dropdown" aria-expanded="false" aria-label="${esc(t('ScopeLabel'))}">
+                        ${delegating ? '<i class="bx bx-user-voice wcn-idpill-warn"></i>' : ''}<span>${esc(pillLabel)}</span>${state.scope !== 'mine' ? ownBadge : ''}<i class="bx bx-chevron-down wcn-idpill-caret"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end wcn-idmenu">
+                        ${idItem('mine', t('ScopeMine'))}
+                        ${divider}
+                        ${delegatorItems}
+                        ${divider}
+                        ${idItem('all', t('ScopeAll'))}
+                    </ul>
+                </div>
+                <button type="button" class="wcn-newbtn" data-wcn-new><i class="bx bx-plus"></i><span>${esc(t('NewButton'))}</span></button>
             </div>
         </div>`;
     };
@@ -400,7 +406,6 @@
                 ${viewBtn('calendar', 'bx-calendar', 'ViewCalendar')}
                 ${viewBtn('focus', 'bx-target-lock', 'ViewFocus')}
             </div>
-            <button type="button" class="wcn-newbtn" data-wcn-new><i class="bx bx-plus"></i><span>${esc(t('NewButton'))}</span></button>
             <div class="wcn-filters">
                 <div class="wcn-search">
                     <i class="bx bx-search"></i>

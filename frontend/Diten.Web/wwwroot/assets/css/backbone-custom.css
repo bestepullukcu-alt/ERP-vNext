@@ -4981,6 +4981,27 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .wcn-scopebtn.active { background: var(--bs-primary); border-color: var(--bs-primary); color: #fff; }
 .wcn-scope-who { font-size: .75rem; color: var(--bs-secondary-color); margin-inline-start: .5rem; }
 
+/* Header actions — identity/vekalet pill + create (spec v3) ---------------- */
+.wcn-header-actions { margin-inline-start: auto; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.wcn-idpill {
+    display: inline-flex; align-items: center; gap: .375rem;
+    border: 1px solid var(--bs-border-color); background: var(--bs-card-bg);
+    color: var(--bs-body-color); font-size: .8125rem; font-weight: 500;
+    padding: .375rem .625rem; border-radius: .375rem; cursor: pointer; transition: all .15s ease;
+}
+.wcn-idpill:hover { border-color: var(--bs-primary); }
+.wcn-idpill-caret { font-size: 1rem; opacity: .55; }
+/* Loud pill while acting on someone else's behalf — accountability must show. */
+.wcn-idpill-active {
+    background: color-mix(in sRGB, var(--bs-warning) 18%, var(--bs-card-bg));
+    border-color: var(--bs-warning);
+    color: color-mix(in sRGB, var(--bs-warning) 82%, var(--bs-body-color));
+    font-weight: 600;
+}
+.wcn-idpill-warn { color: var(--bs-warning); font-size: 1rem; }
+.wcn-idmenu { font-size: .8125rem; }
+.wcn-idmenu .dropdown-item { display: flex; align-items: center; gap: .375rem; }
+
 /* Top-tabs (Inbox / WorkCenter — the acceptance gate, spec §4) ------------- */
 .wcn-tabs {
     display: flex; gap: .25rem; align-items: stretch; border-block-end: 1px solid var(--bs-border-color);
@@ -5565,8 +5586,9 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 @media (max-width: 599.98px) {
     .wcn-container { padding-inline: .25rem; }
     .wcn-header { align-items: flex-start; }
-    .wcn-header-title, .wcn-scope, .wcn-global-tools, .wcn-toolbar, .wcn-filters { inline-size: 100%; }
+    .wcn-header-title, .wcn-scope, .wcn-global-tools, .wcn-header-actions, .wcn-toolbar, .wcn-filters { inline-size: 100%; }
     .wcn-global-tools { margin-inline-start: 0; }
+    .wcn-header-actions { margin-inline-start: 0; justify-content: space-between; }
     .wcn-tabs-secondary { margin-inline-start: 0; }
     .wcn-tab { padding-inline: .625rem; }
     .wcn-segments { max-inline-size: 100%; overflow-x: auto; }
