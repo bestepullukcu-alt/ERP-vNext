@@ -171,6 +171,14 @@ public static class DependencyInjection
         // BEFORE committing a state transition. Blocked ⇒ do not commit (not best-effort).
         services.AddScoped<Contracts.IWorkflowTransitionGate, Services.WorkflowTransitionGate>();
 
+        // WC-1 (DCP-004) — read-only work-item projection + provider abstraction. The
+        // projection service is pure; providers are registered as an IEnumerable so WC-5 adds more without
+        // rewrite. In WC-1 exactly one provider is bound (MOD-0023 approvals). No AuthService/seed touched.
+        services.AddScoped<Features.WorkAggregation.Services.IWorkItemProjectionService,
+            Features.WorkAggregation.Services.WorkItemProjectionService>();
+        services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
+            Features.WorkAggregation.Providers.WorkflowApprovalWorkItemProvider>();
+
         // MC-3b — Platform-internal modules that self-register their catalog manifest in-process. Collected by
         // PlatformModuleSelfRegistrationWorker at startup. Add a line here for each new self-registering module.
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Workflow.SelfRegistration.WorkflowManifestProvider>();

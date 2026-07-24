@@ -190,6 +190,7 @@ Fully migrated from the legacy location.
 | CAND-CAP-0003-FU02 | Platform Admin Password & MFA Security | platform-admin-password-mfa-security | Candidate Follow-up | candidate / pending-EA | PSS-010 | CAND-CAP-0003 | platform-shared-services | Child of CAND-CAP-0003; was PSS-010. per DCP-002. |
 | CAND-CAP-0004 | Tenant Impersonation / Support Tooling | tenant-impersonation-support-tooling | Candidate Capability | candidate / pending-EA | NEW-004 |  | platform-shared-services | TEMPORARY candidate pending EA; security model EA-gated. Was NEW-004. per DCP-002. |
 | CAND-CAP-0005 | SaaS Billing & Invoicing | saas-billing-invoicing | Candidate Capability | candidate / pending-EA | MOD-0299 |  | platform-shared-services | TEMPORARY candidate pending EA (distinct from Blueprint MOD-0169 ERP billing). RUNTIME COMPAT: Hangfire owner literal `MOD-0299` retained. Was MOD-0299. per DCP-002. |
+| CAND-CAP-0006 | Work Aggregation / Task Center (Görev Merkezi) | work-aggregation-task-center | Candidate Capability | candidate / pending-EA |  |  | platform-shared-services | RESERVATION — TEMPORARY candidate, NO Blueprint match (verified), pending EA MOD-xxxx per DCP-002. Governance charter: DCP-004. User-facing product name "Görev Merkezi / Task Center" (SAP Task Center line); code name `WorkCenterNext`. Cross-module personal work-aggregation surface (thin overlay + projection + effective-action render). Never written into runtime literals. |
 
 ---
 
