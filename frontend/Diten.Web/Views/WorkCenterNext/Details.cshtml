@@ -1,24 +1,39 @@
 @using Diten.Web.Views.WorkCenterNext
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<WorkCenterNextIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = Localizer["Title"].Value;
+    var workItemId = ViewData["WorkItemId"]?.ToString() ?? string.Empty;
+    ViewData["Title"] = Localizer["DetailPageTitle"].Value;
     Layout = "_LayoutTenantShell";
 }
 
-@* WorkCenterNext — isolated mock-driven rebuild. The whole UI is rendered by
-   app.js into #wcnApp so every label resolves from a single source (the resx
-   via window.WCN.t). No backend / API calls. No own container: the tenant shell
-   already wraps @RenderBody in `container-xxl container-p-y` (matches golden pages). *@
-<div id="wcnApp" class="wcn-app"></div>
+<div class="wcn-full-detail-page">
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div>
+            <h5 class="mb-0">@Localizer["DetailPageTitle"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/WorkCenterNext">@Localizer["Title"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["DetailPageTitle"]</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="/WorkCenterNext" class="btn btn-label-secondary">
+            <i class="bx bx-arrow-back me-1"></i>@SharedLocalizer["Back"]
+        </a>
+    </div>
+
+    <div id="wcnApp" class="wcn-app wcn-full-detail-app" data-wcn-page="detail" data-wcn-item-id="@workItemId"></div>
+</div>
 
 @section Scripts {
     <partial name="_L10n" />
     <script src="~/assets/js/WorkCenterNext/l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixture-contract.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixtures/canonical-fixtures.js" asp-append-version="true"></script>
-    <script src="~/assets/js/WorkCenterNext/fixtures/inbox-showcase-fixtures.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixtures/islerim-showcase-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/inbox-showcase-fixtures.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixtures/edge-case-fixtures.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixtures/provider-examples/enterprise-strategy-fixtures.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixtures/provider-examples/documentation-fixtures.js" asp-append-version="true"></script>

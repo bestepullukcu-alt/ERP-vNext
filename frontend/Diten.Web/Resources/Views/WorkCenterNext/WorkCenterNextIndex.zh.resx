@@ -76,6 +76,10 @@
   <data name="ViewLabel" xml:space="preserve">
     <value>视图</value>
   </data>
+  <data name="RowsPerPage" xml:space="preserve"><value>行数</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>列可见性</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>上一页</value></data>
+  <data name="NextPage" xml:space="preserve"><value>下一页</value></data>
   <data name="ViewList" xml:space="preserve">
     <value>列表</value>
   </data>
@@ -89,7 +93,7 @@
     <value>今天</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>搜索工作项…</value>
+    <value>搜索…</value>
   </data>
   <data name="FilterAllModules" xml:space="preserve">
     <value>所有模块</value>
@@ -102,6 +106,9 @@
   </data>
   <data name="FilterType" xml:space="preserve">
     <value>类型筛选</value>
+  </data>
+  <data name="FiltersLabel" xml:space="preserve">
+    <value>筛选</value>
   </data>
   <data name="KeyboardHint" xml:space="preserve">
     <value>j / k 移动 · a 审批/接受 · r 拒绝/退回 · Enter 打开</value>
@@ -220,6 +227,42 @@
   <data name="ActAct" xml:space="preserve">
     <value>处理</value>
   </data>
+  <data name="RowView" xml:space="preserve"><value>查看</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>安排审批会议</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>审批会议已安排：{0}</value></data>
+  <data name="IsTitleElimination" xml:space="preserve"><value>编制公司间抵销表</value></data>
+  <data name="IsSummaryElimination" xml:space="preserve"><value>合并前抵销公司间余额。</value></data>
+  <data name="IsTitlePricingRegression" xml:space="preserve"><value>排查定价规则回归问题</value></data>
+  <data name="IsSummaryPricingRegression" xml:space="preserve"><value>查明并解决补丁后价格偏差的根本原因。</value></data>
+  <data name="IsTitleOnboardingChecklist" xml:space="preserve"><value>为新员工完成经理入职清单</value></data>
+  <data name="IsSummaryOnboardingChecklist" xml:space="preserve"><value>在“已签署劳动合同”前置任务完成前无法开始。</value></data>
+  <data name="IsTitleVendorPrequal" xml:space="preserve"><value>完成供应商资格预审评估</value></data>
+  <data name="IsSummaryVendorPrequal" xml:space="preserve"><value>代表 Aylin Ersoy：审阅并评分候选供应商的文件。</value></data>
+  <data name="IsTitleRackAudit" xml:space="preserve"><value>执行 D 通道货架库位审计</value></data>
+  <data name="IsSummaryRackAudit" xml:space="preserve"><value>盘点后审计货架库位的准确性。</value></data>
+  <data name="IsTitleCapaEvidence" xml:space="preserve"><value>CAPA 证据包到达后关闭偏差</value></data>
+  <data name="IsSummaryCapaEvidence" xml:space="preserve"><value>等待纠正措施证据；到达后准备关闭。</value></data>
+  <data name="IsTitleNdaReview" xml:space="preserve"><value>保密协议审查 — 审批会议</value></data>
+  <data name="IsSummaryNdaReview" xml:space="preserve"><value>已安排评审会议；会议结束后签核。</value></data>
+  <data name="IsTitleDepreciation" xml:space="preserve"><value>编制折旧表</value></data>
+  <data name="IsSummaryDepreciation" xml:space="preserve"><value>在计划日期计算当期折旧并编制折旧表。</value></data>
+  <data name="IsChkMatchBalances" xml:space="preserve"><value>匹配余额</value></data>
+  <data name="IsChkEliminate" xml:space="preserve"><value>抵销差异</value></data>
+  <data name="IsChkClose" xml:space="preserve"><value>关闭表单</value></data>
+  <data name="IsDepSignedContract" xml:space="preserve"><value>已签署的劳动合同</value></data>
+  <data name="BusinessContextLabel" xml:space="preserve"><value>业务背景</value></data>
+  <data name="FilterSlaStatus" xml:space="preserve"><value>SLA 状态</value></data>
+  <data name="FilterPinned" xml:space="preserve"><value>仅置顶</value></data>
+  <data name="IsChkReconcileFx" xml:space="preserve"><value>核对汇兑差异</value></data>
+  <data name="IsDepLedgerClose" xml:space="preserve"><value>子分类账关闭</value></data>
+  <data name="IsDepConsolidation" xml:space="preserve"><value>合并运行</value></data>
+  <data name="IsAttachTrialBalance" xml:space="preserve"><value>试算平衡表</value></data>
+  <data name="IsAttachEliminationTemplate" xml:space="preserve"><value>抵销模板</value></data>
+  <data name="IsCtxFinancials" xml:space="preserve"><value>财务背景</value></data>
+  <data name="IsFactAmount" xml:space="preserve"><value>金额</value></data>
+  <data name="IsFactCurrency" xml:space="preserve"><value>货币</value></data>
+  <data name="IsFactCostCenter" xml:space="preserve"><value>成本中心</value></data>
+  <data name="IsFactPeriod" xml:space="preserve"><value>期间</value></data>
   <data name="ActionsLabel" xml:space="preserve">
     <value>操作</value>
   </data>
@@ -761,13 +804,13 @@
     <value>新建</value>
   </data>
   <data name="NewSelfTask" xml:space="preserve">
-    <value>给自己的任务</value>
+    <value>创建任务</value>
   </data>
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>个人待办——存于工作中心</value>
   </data>
   <data name="NewInSource" xml:space="preserve">
-    <value>在来源中创建</value>
+    <value>在源模块中创建</value>
   </data>
   <data name="NewInSourceDesc" xml:space="preserve">
     <value>选择模块，在其界面创建</value>
@@ -900,4 +943,157 @@
   <data name="ErrorTitle" xml:space="preserve"><value>无法加载工作中心</value></data>
   <data name="ErrorDesc" xml:space="preserve"><value>您的筛选条件已保留。请重试加载工作区。</value></data>
   <data name="Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="NewNote" xml:space="preserve">
+    <value>快速笔记</value>
+  </data>
+  <data name="NewMeeting" xml:space="preserve">
+    <value>安排会议</value>
+  </data>
+  <data name="ChipAll" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="ChipPendingAccept" xml:space="preserve">
+    <value>待接受</value>
+  </data>
+  <data name="ChipMeetingInvite" xml:space="preserve">
+    <value>会议邀请</value>
+  </data>
+  <data name="EmptyMeetingInviteTitle" xml:space="preserve">
+    <value>您没有待处理的会议邀请。</value>
+  </data>
+  <data name="EmptyMeetingInviteDesc" xml:space="preserve">
+    <value>新的会议邀请将显示在这里。</value>
+  </data>
+  <data name="FilterWorkType" xml:space="preserve">
+    <value>工作类型</value>
+  </data>
+  <data name="FilterAllWorkTypes" xml:space="preserve">
+    <value>所有工作类型</value>
+  </data>
+  <data name="SearchClear" xml:space="preserve">
+    <value>清除搜索</value>
+  </data>
+  <data name="Apply" xml:space="preserve"><value>应用</value></data>
+  <data name="Reset" xml:space="preserve"><value>重置</value></data>
+  <data name="SaveView" xml:space="preserve"><value>保存视图</value></data>
+  <data name="DefaultViewName" xml:space="preserve"><value>默认</value></data>
+  <data name="ViewSaved" xml:space="preserve"><value>视图已保存。</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>发生错误。</value></data>
+  <data name="ExportLabel" xml:space="preserve">
+    <value>导出</value>
+  </data>
+  <data name="ApprovalContextTitle" xml:space="preserve"><value>审批上下文</value></data>
+  <data name="ApprovalAmount" xml:space="preserve"><value>金额</value></data>
+  <data name="ApprovalThreshold" xml:space="preserve"><value>审批阈值</value></data>
+  <data name="BudgetImpact" xml:space="preserve"><value>预算影响</value></data>
+  <data name="LineItemsTitle" xml:space="preserve"><value>明细项目</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>说明 / 科目</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>数量</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>单价</value></data>
+  <data name="ReviewContextTitle" xml:space="preserve"><value>审核资料包</value></data>
+  <data name="ReviewVersion" xml:space="preserve"><value>版本</value></data>
+  <data name="ReviewChecklistTitle" xml:space="preserve"><value>审核清单</value></data>
+  <data name="ReviewCheckComplete" xml:space="preserve"><value>已完成</value></data>
+  <data name="ReviewCheckPending" xml:space="preserve"><value>待处理</value></data>
+  <data name="SignatureHistoryTitle" xml:space="preserve"><value>签署历史</value></data>
+  <data name="SignatureSigned" xml:space="preserve"><value>已签署</value></data>
+  <data name="SignaturePending" xml:space="preserve"><value>待签署</value></data>
+  <data name="ExceptionContextTitle" xml:space="preserve"><value>异常分析</value></data>
+  <data name="DiscrepancyField" xml:space="preserve"><value>差异字段</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>预期值</value></data>
+  <data name="ActualValue" xml:space="preserve"><value>实际值</value></data>
+  <data name="DeltaPercent" xml:space="preserve"><value>偏差</value></data>
+  <data name="RootCause" xml:space="preserve"><value>根本原因</value></data>
+  <data name="ResolutionOptions" xml:space="preserve"><value>解决方案</value></data>
+  <data name="TaskContextTitle" xml:space="preserve"><value>工作执行</value></data>
+  <data name="EffortSpent" xml:space="preserve"><value>已用工时</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>小时</value></data>
+  <data name="AssignmentHistoryTitle" xml:space="preserve"><value>分配历史</value></data>
+  <data name="MeetingContextTitle" xml:space="preserve"><value>会议详情</value></data>
+  <data name="MeetingAgendaTitle" xml:space="preserve"><value>议程</value></data>
+  <data name="MeetingParticipantsTitle" xml:space="preserve"><value>参与者</value></data>
+  <data name="AttendanceAccepted" xml:space="preserve"><value>已接受</value></data>
+  <data name="AttendancePending" xml:space="preserve"><value>等待回复</value></data>
+  <data name="AttendanceDeclined" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="ParticipantOrganizer" xml:space="preserve"><value>组织者</value></data>
+  <data name="ParticipantRequired" xml:space="preserve"><value>必需</value></data>
+  <data name="ParticipantOptional" xml:space="preserve"><value>可选</value></data>
+  <data name="ApprovalChainTitle" xml:space="preserve"><value>审批路径</value></data>
+  <data name="ApprovalLevelValue" xml:space="preserve"><value>第 {0} 级</value></data>
+  <data name="ApprovalStatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="ApprovalStatusPending" xml:space="preserve"><value>待审批</value></data>
+  <data name="ApprovalStatusRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="ConversationTitle" xml:space="preserve"><value>对话</value></data>
+  <data name="RelatedRecordsTitle" xml:space="preserve"><value>相关记录</value></data>
+  <data name="RelatedTypeParent" xml:space="preserve"><value>父级</value></data>
+  <data name="RelatedTypeChild" xml:space="preserve"><value>子级</value></data>
+  <data name="RelatedTypeTransaction" xml:space="preserve"><value>交易</value></data>
+  <data name="RelatedTypeDocument" xml:space="preserve"><value>文档</value></data>
+  <data name="ComplianceTitle" xml:space="preserve"><value>合规与控制</value></data>
+  <data name="CompliancePolicy" xml:space="preserve"><value>政策</value></data>
+  <data name="ComplianceLimit" xml:space="preserve"><value>审批限额</value></data>
+  <data name="ComplianceSoD" xml:space="preserve"><value>职责分离</value></data>
+  <data name="DelegationTitle" xml:space="preserve"><value>委托</value></data>
+  <data name="DelegationOnBehalf" xml:space="preserve"><value>代表 {0}</value></data>
+  <data name="DelegationDelegate" xml:space="preserve"><value>受托人</value></data>
+  <data name="DetailTabsLabel" xml:space="preserve"><value>工作项详细信息分区</value></data>
+  <data name="DetailTabOverview" xml:space="preserve"><value>详情</value></data>
+  <data name="DetailTabProcess" xml:space="preserve"><value>流程</value></data>
+  <data name="DetailTabCollaboration" xml:space="preserve"><value>协作与记录</value></data>
+  <data name="DetailPageTitle" xml:space="preserve"><value>工作项详情</value></data>
+  <data name="DetailItemNotFound" xml:space="preserve"><value>找不到请求的工作项。</value></data>
+  <data name="DetailBackToList" xml:space="preserve"><value>返回工作中心</value></data>
+  <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>您对此项目的权限已结束。</value></data>
+  <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>必需的依赖项尚未完成。</value></data>
+  <data name="ActionDisabledEvidenceIncomplete" xml:space="preserve"><value>所需证据不完整。</value></data>
+  <data name="ActionDisabledReconciliationRequired" xml:space="preserve"><value>需要与源系统进行核对。</value></data>
+  <data name="ActionDisabledSourceUnavailable" xml:space="preserve"><value>源系统不可用。</value></data>
+  <data name="ActionDisabledStaleProjection" xml:space="preserve"><value>请先刷新已更改的源记录。</value></data>
+  <data name="ContextControlledDocument" xml:space="preserve"><value>受控文档</value></data>
+  <data name="ContextDecomposition" xml:space="preserve"><value>战略分解</value></data>
+  <data name="ContextDemandIdea" xml:space="preserve"><value>需求构想</value></data>
+  <data name="ContextObjective" xml:space="preserve"><value>目标</value></data>
+  <data name="ContextPeriodicReview" xml:space="preserve"><value>定期审查</value></data>
+  <data name="DetailLifecycleOwner" xml:space="preserve"><value>生命周期负责人</value></data>
+  <data name="EmptyBusinessContext" xml:space="preserve"><value>未提供业务上下文。</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>缺少证据</value></data>
+  <data name="FixtureChecklistVerify" xml:space="preserve"><value>验证必需信息</value></data>
+  <data name="FixtureDependencyContract" xml:space="preserve"><value>合同依赖项</value></data>
+  <data name="FixtureDependencyValidation" xml:space="preserve"><value>验证依赖项</value></data>
+  <data name="FixtureInvalidDesc" xml:space="preserve"><value>此测试数据不符合规范合同。</value></data>
+  <data name="FixtureInvalidTitle" xml:space="preserve"><value>无效的工作项测试数据</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>开放</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>已计划</value></data>
+  <data name="MigrationAdaptedNotice" xml:space="preserve"><value>此旧版示例已适配用于迁移测试。</value></data>
+  <data name="MigrationLegacyBlocker" xml:space="preserve"><value>旧版阻塞项</value></data>
+  <data name="MigrationLegacyInformationRequest" xml:space="preserve"><value>旧版信息请求</value></data>
+  <data name="MigrationLegacyPendingApproval" xml:space="preserve"><value>旧版待审批</value></data>
+  <data name="NoticeChecklistNonBlocking" xml:space="preserve"><value>检查清单存在非阻塞问题。</value></data>
+  <data name="NoticeDueSoon" xml:space="preserve"><value>此项目即将到期。</value></data>
+  <data name="NoticePendingReview" xml:space="preserve"><value>此项目正在等待审查。</value></data>
+  <data name="NoticePlanConflict" xml:space="preserve"><value>个人计划与源截止日期冲突。</value></data>
+  <data name="NoticeSnoozed" xml:space="preserve"><value>您已暂缓此项目。</value></data>
+  <data name="NoticeWaiting" xml:space="preserve"><value>此项目正在等待外部输入。</value></data>
+  <data name="ProviderCommandRequired" xml:space="preserve"><value>此更改必须由源提供方执行。</value></data>
+  <data name="RedactedValue" xml:space="preserve"><value>受限</value></data>
+  <data name="RelatedRecordOpen" xml:space="preserve"><value>打开相关记录</value></data>
+  <data name="SourceProjectionRequested" xml:space="preserve"><value>已请求最新源投影。</value></data>
+  <data name="TriggerOnlyLabel" xml:space="preserve"><value>需要响应</value></data>
+  <data name="TriggerResponsesLabel" xml:space="preserve"><value>响应请求</value></data>
+  <data name="WaitingExpectedUntil" xml:space="preserve"><value>预计截止</value></data>
+  <data name="ActionDisabledReviewMeetingRequired" xml:space="preserve"><value>批准前必须召开评审会议。</value></data>
+  <data name="InboxTitleTaskVendorVerification" xml:space="preserve"><value>验证 Arven Medical 供应商主数据</value></data>
+  <data name="InboxTitleTaskVendorVerificationSummary" xml:space="preserve"><value>检查税务、银行和联系信息的准确性。</value></data>
+  <data name="InboxTitleApprovalBudgetRevision" xml:space="preserve"><value>批准第三季度销售预算修订</value></data>
+  <data name="InboxTitleApprovalBudgetRevisionSummary" xml:space="preserve"><value>审核销售团队追加 180 万里拉预算的申请。</value></data>
+  <data name="InboxTitleReviewOptionalMeeting" xml:space="preserve"><value>CAPA-2231 完成评审</value></data>
+  <data name="InboxTitleReviewOptionalMeetingSummary" xml:space="preserve"><value>可直接批准，或与任务负责人安排评审会议。</value></data>
+  <data name="InboxTitleReviewRequiredMeeting" xml:space="preserve"><value>Atlas 转型任务关闭审批</value></data>
+  <data name="InboxTitleReviewRequiredMeetingSummary" xml:space="preserve"><value>此任务仅能在完成强制评审会议后批准。</value></data>
+  <data name="InboxTitleIssueIntegrationFailure" xml:space="preserve"><value>解决 SAP 客户传输故障</value></data>
+  <data name="InboxTitleIssueIntegrationFailureSummary" xml:space="preserve"><value>47 条客户记录在传输验证时失败。</value></data>
+  <data name="InboxTitleExceptionVatMismatch" xml:space="preserve"><value>检查七月增值税对账差异</value></data>
+  <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>申报表与总账之间发现 84,750 里拉差异。</value></data>
+  <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>第三季度预算修订评审会议</value></data>
+  <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>2026年7月28日 14:00–15:00 · Teams · 组织者：Deniz Koç</value></data>
 </root>

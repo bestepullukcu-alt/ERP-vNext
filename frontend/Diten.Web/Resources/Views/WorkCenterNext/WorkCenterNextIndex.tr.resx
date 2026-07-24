@@ -76,6 +76,10 @@
   <data name="ViewLabel" xml:space="preserve">
     <value>Görünüm</value>
   </data>
+  <data name="RowsPerPage" xml:space="preserve"><value>Satır</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Kolon görünürlüğü</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>Önceki sayfa</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Sonraki sayfa</value></data>
   <data name="ViewList" xml:space="preserve">
     <value>Liste</value>
   </data>
@@ -89,7 +93,7 @@
     <value>Bugün</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>İş öğelerinde ara…</value>
+    <value>İşlerde ara…</value>
   </data>
   <data name="FilterAllModules" xml:space="preserve">
     <value>Tüm modüller</value>
@@ -102,6 +106,9 @@
   </data>
   <data name="FilterType" xml:space="preserve">
     <value>Tip filtresi</value>
+  </data>
+  <data name="FiltersLabel" xml:space="preserve">
+    <value>Filtreler</value>
   </data>
   <data name="KeyboardHint" xml:space="preserve">
     <value>Gezinmek için j / k · onayla/kabul et a · reddet/iade et r · aç Enter</value>
@@ -220,6 +227,42 @@
   <data name="ActAct" xml:space="preserve">
     <value>Aksiyon al</value>
   </data>
+  <data name="RowView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Onay toplantısı planla</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Onay toplantısı planlandı: {0}</value></data>
+  <data name="IsTitleElimination" xml:space="preserve"><value>Şirketler arası eliminasyon cetvelini hazırla</value></data>
+  <data name="IsSummaryElimination" xml:space="preserve"><value>Konsolidasyon öncesi şirketler arası bakiyeleri elimine et.</value></data>
+  <data name="IsTitlePricingRegression" xml:space="preserve"><value>Fiyatlandırma kuralı regresyonunu araştır</value></data>
+  <data name="IsSummaryPricingRegression" xml:space="preserve"><value>Yama sonrası fiyat hesaplama sapmasının kök nedenini bul ve çöz.</value></data>
+  <data name="IsTitleOnboardingChecklist" xml:space="preserve"><value>Yeni işe girecek için yönetici kontrol listesini tamamla</value></data>
+  <data name="IsSummaryOnboardingChecklist" xml:space="preserve"><value>İmzalı iş sözleşmesi öncülü bitmeden başlanamaz.</value></data>
+  <data name="IsTitleVendorPrequal" xml:space="preserve"><value>Tedarikçi ön yeterlilik değerlendirmesini tamamla</value></data>
+  <data name="IsSummaryVendorPrequal" xml:space="preserve"><value>Aylin Ersoy adına: aday tedarikçinin belgelerini incele ve puanla.</value></data>
+  <data name="IsTitleRackAudit" xml:space="preserve"><value>D koridoru raf-lokasyon denetimini yürüt</value></data>
+  <data name="IsSummaryRackAudit" xml:space="preserve"><value>Sayım sonrası raf-lokasyon doğruluğunu denetle.</value></data>
+  <data name="IsTitleCapaEvidence" xml:space="preserve"><value>CAPA kanıt paketi gelince sapmayı kapat</value></data>
+  <data name="IsSummaryCapaEvidence" xml:space="preserve"><value>Düzeltici faaliyet kanıtı bekleniyor; gelince kapanışa hazırla.</value></data>
+  <data name="IsTitleNdaReview" xml:space="preserve"><value>Gizlilik sözleşmesi incelemesi — onay toplantısı</value></data>
+  <data name="IsSummaryNdaReview" xml:space="preserve"><value>İnceleme toplantısı planlandı; toplantı sonrası imzala.</value></data>
+  <data name="IsTitleDepreciation" xml:space="preserve"><value>Amortisman cetvelini hazırla</value></data>
+  <data name="IsSummaryDepreciation" xml:space="preserve"><value>Planlanan tarihte dönem amortismanını hesapla ve cetveli hazırla.</value></data>
+  <data name="IsChkMatchBalances" xml:space="preserve"><value>Bakiyeleri eşleştir</value></data>
+  <data name="IsChkEliminate" xml:space="preserve"><value>Farkları elimine et</value></data>
+  <data name="IsChkClose" xml:space="preserve"><value>Cetveli kapat</value></data>
+  <data name="IsDepSignedContract" xml:space="preserve"><value>İmzalı iş sözleşmesi</value></data>
+  <data name="BusinessContextLabel" xml:space="preserve"><value>İş Bağlamı</value></data>
+  <data name="FilterSlaStatus" xml:space="preserve"><value>SLA durumu</value></data>
+  <data name="FilterPinned" xml:space="preserve"><value>Yalnız sabitli</value></data>
+  <data name="IsChkReconcileFx" xml:space="preserve"><value>Kur farklarını mutabakatla</value></data>
+  <data name="IsDepLedgerClose" xml:space="preserve"><value>Yardımcı defter kapanışı</value></data>
+  <data name="IsDepConsolidation" xml:space="preserve"><value>Konsolidasyon çalışması</value></data>
+  <data name="IsAttachTrialBalance" xml:space="preserve"><value>Mizan</value></data>
+  <data name="IsAttachEliminationTemplate" xml:space="preserve"><value>Eliminasyon şablonu</value></data>
+  <data name="IsCtxFinancials" xml:space="preserve"><value>Finansal bağlam</value></data>
+  <data name="IsFactAmount" xml:space="preserve"><value>Tutar</value></data>
+  <data name="IsFactCurrency" xml:space="preserve"><value>Para birimi</value></data>
+  <data name="IsFactCostCenter" xml:space="preserve"><value>Masraf merkezi</value></data>
+  <data name="IsFactPeriod" xml:space="preserve"><value>Dönem</value></data>
   <data name="ActionsLabel" xml:space="preserve">
     <value>İşlemler</value>
   </data>
@@ -386,7 +429,7 @@
     <value>Görev Merkezi</value>
   </data>
   <data name="ActRequestInfo" xml:space="preserve">
-    <value>Bilgi İste</value>
+    <value>Bilgi iste</value>
   </data>
   <data name="ToastMovedToWorkCenter" xml:space="preserve">
     <value>{0} · İşlerim’e alındı (mock)</value>
@@ -407,16 +450,16 @@
     <value>Planla</value>
   </data>
   <data name="ActReplan" xml:space="preserve">
-    <value>Yeniden Planla</value>
+    <value>Yeniden planla</value>
   </data>
   <data name="ActResume" xml:space="preserve">
-    <value>Devam Et</value>
+    <value>Devam et</value>
   </data>
   <data name="ActPause" xml:space="preserve">
     <value>Duraklat</value>
   </data>
   <data name="ActLogTime" xml:space="preserve">
-    <value>Süre Gir</value>
+    <value>Süre gir</value>
   </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>Yaşam Döngüsü</value>
@@ -488,13 +531,13 @@
     <value>Havuz</value>
   </data>
   <data name="ActClaim" xml:space="preserve">
-    <value>Üzerime Al</value>
+    <value>Üzerime al</value>
   </data>
   <data name="ActRelease" xml:space="preserve">
     <value>Bırak</value>
   </data>
   <data name="ActDispute" xml:space="preserve">
-    <value>İtiraz Et</value>
+    <value>İtiraz et</value>
   </data>
   <data name="BlockedLabel" xml:space="preserve">
     <value>Bloke</value>
@@ -761,13 +804,13 @@
     <value>Yeni</value>
   </data>
   <data name="NewSelfTask" xml:space="preserve">
-    <value>Kendime görev</value>
+    <value>Görev oluştur</value>
   </data>
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>Kişisel yapılacak — WorkCenter'da yaşar</value>
   </data>
   <data name="NewInSource" xml:space="preserve">
-    <value>Kaynakta oluştur</value>
+    <value>Kaynak modülde oluştur</value>
   </data>
   <data name="NewInSourceDesc" xml:space="preserve">
     <value>Bir modül seç, kendi ekranında oluştur</value>
@@ -900,4 +943,157 @@
   <data name="ErrorTitle" xml:space="preserve"><value>Görev Merkezi yüklenemedi</value></data>
   <data name="ErrorDesc" xml:space="preserve"><value>Filtreleriniz korundu. Çalışma alanını yeniden yüklemek için tekrar deneyin.</value></data>
   <data name="Retry" xml:space="preserve"><value>Tekrar dene</value></data>
+  <data name="NewNote" xml:space="preserve">
+    <value>Hızlı not</value>
+  </data>
+  <data name="NewMeeting" xml:space="preserve">
+    <value>Toplantı planla</value>
+  </data>
+  <data name="ChipAll" xml:space="preserve">
+    <value>Tümü</value>
+  </data>
+  <data name="ChipPendingAccept" xml:space="preserve">
+    <value>Kabul Bekleyen</value>
+  </data>
+  <data name="ChipMeetingInvite" xml:space="preserve">
+    <value>Toplantı Daveti</value>
+  </data>
+  <data name="EmptyMeetingInviteTitle" xml:space="preserve">
+    <value>Bekleyen toplantı davetiniz bulunmuyor.</value>
+  </data>
+  <data name="EmptyMeetingInviteDesc" xml:space="preserve">
+    <value>Yeni toplantı davetleri burada görünecek.</value>
+  </data>
+  <data name="FilterWorkType" xml:space="preserve">
+    <value>İş türü</value>
+  </data>
+  <data name="FilterAllWorkTypes" xml:space="preserve">
+    <value>Tüm iş türleri</value>
+  </data>
+  <data name="SearchClear" xml:space="preserve">
+    <value>Aramayı temizle</value>
+  </data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü kaydet</value></data>
+  <data name="DefaultViewName" xml:space="preserve"><value>Varsayılan</value></data>
+  <data name="ViewSaved" xml:space="preserve"><value>Görünüm kaydedildi.</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>Bir hata oluştu.</value></data>
+  <data name="ExportLabel" xml:space="preserve">
+    <value>Dışa Aktar</value>
+  </data>
+  <data name="ApprovalContextTitle" xml:space="preserve"><value>Onay bağlamı</value></data>
+  <data name="ApprovalAmount" xml:space="preserve"><value>Tutar</value></data>
+  <data name="ApprovalThreshold" xml:space="preserve"><value>Onay eşiği</value></data>
+  <data name="BudgetImpact" xml:space="preserve"><value>Bütçe etkisi</value></data>
+  <data name="LineItemsTitle" xml:space="preserve"><value>Talep kalemleri</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>Açıklama / hesap</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Adet</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Birim fiyat</value></data>
+  <data name="ReviewContextTitle" xml:space="preserve"><value>İnceleme paketi</value></data>
+  <data name="ReviewVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="ReviewChecklistTitle" xml:space="preserve"><value>İnceleme kontrol listesi</value></data>
+  <data name="ReviewCheckComplete" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="ReviewCheckPending" xml:space="preserve"><value>Bekliyor</value></data>
+  <data name="SignatureHistoryTitle" xml:space="preserve"><value>İmza geçmişi</value></data>
+  <data name="SignatureSigned" xml:space="preserve"><value>İmzalandı</value></data>
+  <data name="SignaturePending" xml:space="preserve"><value>İmza bekliyor</value></data>
+  <data name="ExceptionContextTitle" xml:space="preserve"><value>İstisna analizi</value></data>
+  <data name="DiscrepancyField" xml:space="preserve"><value>Fark alanı</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>Beklenen</value></data>
+  <data name="ActualValue" xml:space="preserve"><value>Gerçekleşen</value></data>
+  <data name="DeltaPercent" xml:space="preserve"><value>Sapma</value></data>
+  <data name="RootCause" xml:space="preserve"><value>Kök neden</value></data>
+  <data name="ResolutionOptions" xml:space="preserve"><value>Çözüm seçenekleri</value></data>
+  <data name="TaskContextTitle" xml:space="preserve"><value>İş yürütme</value></data>
+  <data name="EffortSpent" xml:space="preserve"><value>Harcanan efor</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>sa</value></data>
+  <data name="AssignmentHistoryTitle" xml:space="preserve"><value>Atama geçmişi</value></data>
+  <data name="MeetingContextTitle" xml:space="preserve"><value>Toplantı ayrıntıları</value></data>
+  <data name="MeetingAgendaTitle" xml:space="preserve"><value>Gündem</value></data>
+  <data name="MeetingParticipantsTitle" xml:space="preserve"><value>Katılımcılar</value></data>
+  <data name="AttendanceAccepted" xml:space="preserve"><value>Katılacak</value></data>
+  <data name="AttendancePending" xml:space="preserve"><value>Yanıt bekliyor</value></data>
+  <data name="AttendanceDeclined" xml:space="preserve"><value>Katılmayacak</value></data>
+  <data name="ParticipantOrganizer" xml:space="preserve"><value>Organizatör</value></data>
+  <data name="ParticipantRequired" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="ParticipantOptional" xml:space="preserve"><value>İsteğe bağlı</value></data>
+  <data name="ApprovalChainTitle" xml:space="preserve"><value>Onay yolu</value></data>
+  <data name="ApprovalLevelValue" xml:space="preserve"><value>Seviye {0}</value></data>
+  <data name="ApprovalStatusApproved" xml:space="preserve"><value>Onayladı</value></data>
+  <data name="ApprovalStatusPending" xml:space="preserve"><value>Bekliyor</value></data>
+  <data name="ApprovalStatusRejected" xml:space="preserve"><value>Reddetti</value></data>
+  <data name="ConversationTitle" xml:space="preserve"><value>Konuşma</value></data>
+  <data name="RelatedRecordsTitle" xml:space="preserve"><value>İlişkili kayıtlar</value></data>
+  <data name="RelatedTypeParent" xml:space="preserve"><value>Üst kayıt</value></data>
+  <data name="RelatedTypeChild" xml:space="preserve"><value>Alt kayıt</value></data>
+  <data name="RelatedTypeTransaction" xml:space="preserve"><value>İşlem</value></data>
+  <data name="RelatedTypeDocument" xml:space="preserve"><value>Belge</value></data>
+  <data name="ComplianceTitle" xml:space="preserve"><value>Uyum ve kontroller</value></data>
+  <data name="CompliancePolicy" xml:space="preserve"><value>Politika</value></data>
+  <data name="ComplianceLimit" xml:space="preserve"><value>Onay limiti</value></data>
+  <data name="ComplianceSoD" xml:space="preserve"><value>Görevler ayrılığı</value></data>
+  <data name="DelegationTitle" xml:space="preserve"><value>Vekâlet</value></data>
+  <data name="DelegationOnBehalf" xml:space="preserve"><value>{0} adına</value></data>
+  <data name="DelegationDelegate" xml:space="preserve"><value>Vekil</value></data>
+  <data name="DetailTabsLabel" xml:space="preserve"><value>İş öğesi detay bölümleri</value></data>
+  <data name="DetailTabOverview" xml:space="preserve"><value>Detay</value></data>
+  <data name="DetailTabProcess" xml:space="preserve"><value>Süreç</value></data>
+  <data name="DetailTabCollaboration" xml:space="preserve"><value>İşbirliği ve kayıtlar</value></data>
+  <data name="DetailPageTitle" xml:space="preserve"><value>Görev detayı</value></data>
+  <data name="DetailItemNotFound" xml:space="preserve"><value>İstenen iş öğesi bulunamadı.</value></data>
+  <data name="DetailBackToList" xml:space="preserve"><value>Görev Merkezi’ne dön</value></data>
+  <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Bu öğe için yetkiniz sona erdi.</value></data>
+  <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Zorunlu bir bağımlılık tamamlanmadı.</value></data>
+  <data name="ActionDisabledEvidenceIncomplete" xml:space="preserve"><value>Zorunlu kanıt eksik.</value></data>
+  <data name="ActionDisabledReconciliationRequired" xml:space="preserve"><value>Kaynak mutabakatı gerekiyor.</value></data>
+  <data name="ActionDisabledSourceUnavailable" xml:space="preserve"><value>Kaynak sistem kullanılamıyor.</value></data>
+  <data name="ActionDisabledStaleProjection" xml:space="preserve"><value>Önce değişen kaynak kaydını yenileyin.</value></data>
+  <data name="ContextControlledDocument" xml:space="preserve"><value>Kontrollü doküman</value></data>
+  <data name="ContextDecomposition" xml:space="preserve"><value>Strateji ayrıştırması</value></data>
+  <data name="ContextDemandIdea" xml:space="preserve"><value>Talep fikri</value></data>
+  <data name="ContextObjective" xml:space="preserve"><value>Hedef</value></data>
+  <data name="ContextPeriodicReview" xml:space="preserve"><value>Periyodik gözden geçirme</value></data>
+  <data name="DetailLifecycleOwner" xml:space="preserve"><value>Yaşam döngüsü sahibi</value></data>
+  <data name="EmptyBusinessContext" xml:space="preserve"><value>İş bağlamı sağlanmadı.</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>Kanıt eksik</value></data>
+  <data name="FixtureChecklistVerify" xml:space="preserve"><value>Zorunlu bilgileri doğrula</value></data>
+  <data name="FixtureDependencyContract" xml:space="preserve"><value>Sözleşme bağımlılığı</value></data>
+  <data name="FixtureDependencyValidation" xml:space="preserve"><value>Doğrulama bağımlılığı</value></data>
+  <data name="FixtureInvalidDesc" xml:space="preserve"><value>Bu fixture canonical kontratı karşılamıyor.</value></data>
+  <data name="FixtureInvalidTitle" xml:space="preserve"><value>Geçersiz iş öğesi fixture'ı</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>Açık</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Planlı</value></data>
+  <data name="MigrationAdaptedNotice" xml:space="preserve"><value>Bu eski örnek migration testi için uyarlandı.</value></data>
+  <data name="MigrationLegacyBlocker" xml:space="preserve"><value>Eski sistem engeli</value></data>
+  <data name="MigrationLegacyInformationRequest" xml:space="preserve"><value>Eski sistem bilgi talebi</value></data>
+  <data name="MigrationLegacyPendingApproval" xml:space="preserve"><value>Eski sistem bekleyen onayı</value></data>
+  <data name="NoticeChecklistNonBlocking" xml:space="preserve"><value>Kontrol listesinde engelleyici olmayan bir sorun var.</value></data>
+  <data name="NoticeDueSoon" xml:space="preserve"><value>Bu öğenin süresi yakında dolacak.</value></data>
+  <data name="NoticePendingReview" xml:space="preserve"><value>Bu öğe gözden geçirme bekliyor.</value></data>
+  <data name="NoticePlanConflict" xml:space="preserve"><value>Kişisel plan kaynak bitiş tarihiyle çakışıyor.</value></data>
+  <data name="NoticeSnoozed" xml:space="preserve"><value>Bu öğeyi ertelediniz.</value></data>
+  <data name="NoticeWaiting" xml:space="preserve"><value>Bu öğe dış girdiyi bekliyor.</value></data>
+  <data name="ProviderCommandRequired" xml:space="preserve"><value>Bu değişiklik kaynak sağlayıcıda yürütülmelidir.</value></data>
+  <data name="RedactedValue" xml:space="preserve"><value>Kısıtlı</value></data>
+  <data name="RelatedRecordOpen" xml:space="preserve"><value>İlgili kaydı aç</value></data>
+  <data name="SourceProjectionRequested" xml:space="preserve"><value>Güncel kaynak görünümü istendi.</value></data>
+  <data name="TriggerOnlyLabel" xml:space="preserve"><value>Yanıt gerekli</value></data>
+  <data name="TriggerResponsesLabel" xml:space="preserve"><value>Yanıt talepleri</value></data>
+  <data name="WaitingExpectedUntil" xml:space="preserve"><value>Beklenen bitiş</value></data>
+  <data name="ActionDisabledReviewMeetingRequired" xml:space="preserve"><value>Onaydan önce inceleme toplantısı yapılmalıdır.</value></data>
+  <data name="InboxTitleTaskVendorVerification" xml:space="preserve"><value>Arven Medikal tedarikçi ana verisini doğrula</value></data>
+  <data name="InboxTitleTaskVendorVerificationSummary" xml:space="preserve"><value>Vergi, banka ve iletişim bilgilerinin doğruluğunu kontrol edin.</value></data>
+  <data name="InboxTitleApprovalBudgetRevision" xml:space="preserve"><value>Q3 satış bütçesi revizyonunu onayla</value></data>
+  <data name="InboxTitleApprovalBudgetRevisionSummary" xml:space="preserve"><value>Satış ekibinin 1,8 milyon TL ek bütçe talebini değerlendirin.</value></data>
+  <data name="InboxTitleReviewOptionalMeeting" xml:space="preserve"><value>CAPA-2231 tamamlanma incelemesi</value></data>
+  <data name="InboxTitleReviewOptionalMeetingSummary" xml:space="preserve"><value>Doğrudan onaylayabilir veya işi tamamlayan kişiyle inceleme toplantısı planlayabilirsiniz.</value></data>
+  <data name="InboxTitleReviewRequiredMeeting" xml:space="preserve"><value>Atlas dönüşüm görevi kapanış onayı</value></data>
+  <data name="InboxTitleReviewRequiredMeetingSummary" xml:space="preserve"><value>Bu görev yalnız zorunlu inceleme toplantısı yapıldıktan sonra onaylanabilir.</value></data>
+  <data name="InboxTitleIssueIntegrationFailure" xml:space="preserve"><value>SAP müşteri aktarım hatasını çöz</value></data>
+  <data name="InboxTitleIssueIntegrationFailureSummary" xml:space="preserve"><value>47 müşteri kaydı doğrulama hatası nedeniyle aktarılamadı.</value></data>
+  <data name="InboxTitleExceptionVatMismatch" xml:space="preserve"><value>Temmuz KDV mutabakat farkını incele</value></data>
+  <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Beyanname ile genel muhasebe arasında 84.750 TL fark bulundu.</value></data>
+  <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Q3 bütçe revizyonu değerlendirme toplantısı</value></data>
+  <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 Temmuz 2026, 14:00–15:00 · Teams · Düzenleyen: Deniz Koç</value></data>
 </root>

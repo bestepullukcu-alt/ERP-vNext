@@ -76,6 +76,10 @@
   <data name="ViewLabel" xml:space="preserve">
     <value>Вид</value>
   </data>
+  <data name="RowsPerPage" xml:space="preserve"><value>Строки</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Видимость столбцов</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>Предыдущая страница</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Следующая страница</value></data>
   <data name="ViewList" xml:space="preserve">
     <value>Список</value>
   </data>
@@ -89,7 +93,7 @@
     <value>Сегодня</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>Поиск рабочих элементов…</value>
+    <value>Поиск…</value>
   </data>
   <data name="FilterAllModules" xml:space="preserve">
     <value>Все модули</value>
@@ -102,6 +106,9 @@
   </data>
   <data name="FilterType" xml:space="preserve">
     <value>Фильтр по типу</value>
+  </data>
+  <data name="FiltersLabel" xml:space="preserve">
+    <value>Фильтры</value>
   </data>
   <data name="KeyboardHint" xml:space="preserve">
     <value>j / k — переход · a — согласовать/принять · r — отклонить/вернуть · Enter — открыть</value>
@@ -220,6 +227,42 @@
   <data name="ActAct" xml:space="preserve">
     <value>Действовать</value>
   </data>
+  <data name="RowView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Назначить встречу для согласования</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Встреча для согласования назначена: {0}</value></data>
+  <data name="IsTitleElimination" xml:space="preserve"><value>Подготовить таблицу внутригрупповых исключений</value></data>
+  <data name="IsSummaryElimination" xml:space="preserve"><value>Исключить внутригрупповые остатки перед консолидацией.</value></data>
+  <data name="IsTitlePricingRegression" xml:space="preserve"><value>Расследовать регрессию правила ценообразования</value></data>
+  <data name="IsSummaryPricingRegression" xml:space="preserve"><value>Найти и устранить первопричину отклонения цены после патча.</value></data>
+  <data name="IsTitleOnboardingChecklist" xml:space="preserve"><value>Заполнить чек-лист руководителя по адаптации нового сотрудника</value></data>
+  <data name="IsSummaryOnboardingChecklist" xml:space="preserve"><value>Нельзя начать, пока не завершён предшественник «подписанный трудовой договор».</value></data>
+  <data name="IsTitleVendorPrequal" xml:space="preserve"><value>Завершить предквалификационную оценку поставщика</value></data>
+  <data name="IsSummaryVendorPrequal" xml:space="preserve"><value>От имени Aylin Ersoy: проверить и оценить документы кандидата-поставщика.</value></data>
+  <data name="IsTitleRackAudit" xml:space="preserve"><value>Провести аудит расположения стеллажей в проходе D</value></data>
+  <data name="IsSummaryRackAudit" xml:space="preserve"><value>Проверить точность расположения стеллажей после подсчёта.</value></data>
+  <data name="IsTitleCapaEvidence" xml:space="preserve"><value>Закрыть отклонение по получении пакета доказательств CAPA</value></data>
+  <data name="IsSummaryCapaEvidence" xml:space="preserve"><value>Ожидается доказательство корректирующего действия; подготовить закрытие по получении.</value></data>
+  <data name="IsTitleNdaReview" xml:space="preserve"><value>Проверка соглашения о неразглашении — встреча по согласованию</value></data>
+  <data name="IsSummaryNdaReview" xml:space="preserve"><value>Назначена встреча по проверке; утвердить после её проведения.</value></data>
+  <data name="IsTitleDepreciation" xml:space="preserve"><value>Подготовить график амортизации</value></data>
+  <data name="IsSummaryDepreciation" xml:space="preserve"><value>В запланированную дату рассчитать амортизацию за период и подготовить график.</value></data>
+  <data name="IsChkMatchBalances" xml:space="preserve"><value>Сопоставить остатки</value></data>
+  <data name="IsChkEliminate" xml:space="preserve"><value>Устранить расхождения</value></data>
+  <data name="IsChkClose" xml:space="preserve"><value>Закрыть таблицу</value></data>
+  <data name="IsDepSignedContract" xml:space="preserve"><value>Подписанный трудовой договор</value></data>
+  <data name="BusinessContextLabel" xml:space="preserve"><value>Бизнес-контекст</value></data>
+  <data name="FilterSlaStatus" xml:space="preserve"><value>Статус SLA</value></data>
+  <data name="FilterPinned" xml:space="preserve"><value>Только закреплённые</value></data>
+  <data name="IsChkReconcileFx" xml:space="preserve"><value>Сверить курсовые разницы</value></data>
+  <data name="IsDepLedgerClose" xml:space="preserve"><value>Закрытие вспомогательной книги</value></data>
+  <data name="IsDepConsolidation" xml:space="preserve"><value>Прогон консолидации</value></data>
+  <data name="IsAttachTrialBalance" xml:space="preserve"><value>Оборотная ведомость</value></data>
+  <data name="IsAttachEliminationTemplate" xml:space="preserve"><value>Шаблон исключений</value></data>
+  <data name="IsCtxFinancials" xml:space="preserve"><value>Финансовый контекст</value></data>
+  <data name="IsFactAmount" xml:space="preserve"><value>Сумма</value></data>
+  <data name="IsFactCurrency" xml:space="preserve"><value>Валюта</value></data>
+  <data name="IsFactCostCenter" xml:space="preserve"><value>Центр затрат</value></data>
+  <data name="IsFactPeriod" xml:space="preserve"><value>Период</value></data>
   <data name="ActionsLabel" xml:space="preserve">
     <value>Действия</value>
   </data>
@@ -761,13 +804,13 @@
     <value>Создать</value>
   </data>
   <data name="NewSelfTask" xml:space="preserve">
-    <value>Задача себе</value>
+    <value>Создать задачу</value>
   </data>
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>Личное дело — живёт в WorkCenter</value>
   </data>
   <data name="NewInSource" xml:space="preserve">
-    <value>Создать в источнике</value>
+    <value>Создать в исходном модуле</value>
   </data>
   <data name="NewInSourceDesc" xml:space="preserve">
     <value>Выберите модуль, создайте в его экране</value>
@@ -900,4 +943,157 @@
   <data name="ErrorTitle" xml:space="preserve"><value>Не удалось загрузить Рабочий центр</value></data>
   <data name="ErrorDesc" xml:space="preserve"><value>Ваши фильтры сохранены. Повторите загрузку рабочего пространства.</value></data>
   <data name="Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="NewNote" xml:space="preserve">
+    <value>Быстрая заметка</value>
+  </data>
+  <data name="NewMeeting" xml:space="preserve">
+    <value>Запланировать встречу</value>
+  </data>
+  <data name="ChipAll" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="ChipPendingAccept" xml:space="preserve">
+    <value>Ожидает принятия</value>
+  </data>
+  <data name="ChipMeetingInvite" xml:space="preserve">
+    <value>Приглашение на встречу</value>
+  </data>
+  <data name="EmptyMeetingInviteTitle" xml:space="preserve">
+    <value>У вас нет ожидающих приглашений на встречу.</value>
+  </data>
+  <data name="EmptyMeetingInviteDesc" xml:space="preserve">
+    <value>Новые приглашения появятся здесь.</value>
+  </data>
+  <data name="FilterWorkType" xml:space="preserve">
+    <value>Тип работы</value>
+  </data>
+  <data name="FilterAllWorkTypes" xml:space="preserve">
+    <value>Все типы работ</value>
+  </data>
+  <data name="SearchClear" xml:space="preserve">
+    <value>Очистить поиск</value>
+  </data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить представление</value></data>
+  <data name="DefaultViewName" xml:space="preserve"><value>По умолчанию</value></data>
+  <data name="ViewSaved" xml:space="preserve"><value>Представление сохранено.</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>Произошла ошибка.</value></data>
+  <data name="ExportLabel" xml:space="preserve">
+    <value>Экспорт</value>
+  </data>
+  <data name="ApprovalContextTitle" xml:space="preserve"><value>Контекст согласования</value></data>
+  <data name="ApprovalAmount" xml:space="preserve"><value>Сумма</value></data>
+  <data name="ApprovalThreshold" xml:space="preserve"><value>Порог согласования</value></data>
+  <data name="BudgetImpact" xml:space="preserve"><value>Влияние на бюджет</value></data>
+  <data name="LineItemsTitle" xml:space="preserve"><value>Позиции</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>Описание / счёт</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Кол-во</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Цена за единицу</value></data>
+  <data name="ReviewContextTitle" xml:space="preserve"><value>Пакет проверки</value></data>
+  <data name="ReviewVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="ReviewChecklistTitle" xml:space="preserve"><value>Контрольный список</value></data>
+  <data name="ReviewCheckComplete" xml:space="preserve"><value>Выполнено</value></data>
+  <data name="ReviewCheckPending" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="SignatureHistoryTitle" xml:space="preserve"><value>История подписей</value></data>
+  <data name="SignatureSigned" xml:space="preserve"><value>Подписано</value></data>
+  <data name="SignaturePending" xml:space="preserve"><value>Ожидает подписи</value></data>
+  <data name="ExceptionContextTitle" xml:space="preserve"><value>Анализ исключения</value></data>
+  <data name="DiscrepancyField" xml:space="preserve"><value>Поле расхождения</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>Ожидалось</value></data>
+  <data name="ActualValue" xml:space="preserve"><value>Фактически</value></data>
+  <data name="DeltaPercent" xml:space="preserve"><value>Отклонение</value></data>
+  <data name="RootCause" xml:space="preserve"><value>Коренная причина</value></data>
+  <data name="ResolutionOptions" xml:space="preserve"><value>Варианты решения</value></data>
+  <data name="TaskContextTitle" xml:space="preserve"><value>Выполнение работы</value></data>
+  <data name="EffortSpent" xml:space="preserve"><value>Затрачено</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>ч</value></data>
+  <data name="AssignmentHistoryTitle" xml:space="preserve"><value>История назначений</value></data>
+  <data name="MeetingContextTitle" xml:space="preserve"><value>Сведения о встрече</value></data>
+  <data name="MeetingAgendaTitle" xml:space="preserve"><value>Повестка</value></data>
+  <data name="MeetingParticipantsTitle" xml:space="preserve"><value>Участники</value></data>
+  <data name="AttendanceAccepted" xml:space="preserve"><value>Принято</value></data>
+  <data name="AttendancePending" xml:space="preserve"><value>Ожидается ответ</value></data>
+  <data name="AttendanceDeclined" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="ParticipantOrganizer" xml:space="preserve"><value>Организатор</value></data>
+  <data name="ParticipantRequired" xml:space="preserve"><value>Обязательный</value></data>
+  <data name="ParticipantOptional" xml:space="preserve"><value>Необязательный</value></data>
+  <data name="ApprovalChainTitle" xml:space="preserve"><value>Маршрут согласования</value></data>
+  <data name="ApprovalLevelValue" xml:space="preserve"><value>Уровень {0}</value></data>
+  <data name="ApprovalStatusApproved" xml:space="preserve"><value>Согласовано</value></data>
+  <data name="ApprovalStatusPending" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="ApprovalStatusRejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="ConversationTitle" xml:space="preserve"><value>Обсуждение</value></data>
+  <data name="RelatedRecordsTitle" xml:space="preserve"><value>Связанные записи</value></data>
+  <data name="RelatedTypeParent" xml:space="preserve"><value>Родительская</value></data>
+  <data name="RelatedTypeChild" xml:space="preserve"><value>Дочерняя</value></data>
+  <data name="RelatedTypeTransaction" xml:space="preserve"><value>Операция</value></data>
+  <data name="RelatedTypeDocument" xml:space="preserve"><value>Документ</value></data>
+  <data name="ComplianceTitle" xml:space="preserve"><value>Соответствие и контроль</value></data>
+  <data name="CompliancePolicy" xml:space="preserve"><value>Политика</value></data>
+  <data name="ComplianceLimit" xml:space="preserve"><value>Лимит согласования</value></data>
+  <data name="ComplianceSoD" xml:space="preserve"><value>Разделение обязанностей</value></data>
+  <data name="DelegationTitle" xml:space="preserve"><value>Делегирование</value></data>
+  <data name="DelegationOnBehalf" xml:space="preserve"><value>От имени {0}</value></data>
+  <data name="DelegationDelegate" xml:space="preserve"><value>Делегат</value></data>
+  <data name="DetailTabsLabel" xml:space="preserve"><value>Разделы сведений о рабочем элементе</value></data>
+  <data name="DetailTabOverview" xml:space="preserve"><value>Сведения</value></data>
+  <data name="DetailTabProcess" xml:space="preserve"><value>Процесс</value></data>
+  <data name="DetailTabCollaboration" xml:space="preserve"><value>Совместная работа и записи</value></data>
+  <data name="DetailPageTitle" xml:space="preserve"><value>Сведения о рабочем элементе</value></data>
+  <data name="DetailItemNotFound" xml:space="preserve"><value>Запрошенный рабочий элемент не найден.</value></data>
+  <data name="DetailBackToList" xml:space="preserve"><value>Вернуться в рабочий центр</value></data>
+  <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Ваши полномочия по этому элементу завершены.</value></data>
+  <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Обязательная зависимость не завершена.</value></data>
+  <data name="ActionDisabledEvidenceIncomplete" xml:space="preserve"><value>Обязательные доказательства неполны.</value></data>
+  <data name="ActionDisabledReconciliationRequired" xml:space="preserve"><value>Требуется сверка с источником.</value></data>
+  <data name="ActionDisabledSourceUnavailable" xml:space="preserve"><value>Система-источник недоступна.</value></data>
+  <data name="ActionDisabledStaleProjection" xml:space="preserve"><value>Сначала обновите изменённую запись источника.</value></data>
+  <data name="ContextControlledDocument" xml:space="preserve"><value>Управляемый документ</value></data>
+  <data name="ContextDecomposition" xml:space="preserve"><value>Декомпозиция стратегии</value></data>
+  <data name="ContextDemandIdea" xml:space="preserve"><value>Идея запроса</value></data>
+  <data name="ContextObjective" xml:space="preserve"><value>Цель</value></data>
+  <data name="ContextPeriodicReview" xml:space="preserve"><value>Периодический обзор</value></data>
+  <data name="DetailLifecycleOwner" xml:space="preserve"><value>Владелец жизненного цикла</value></data>
+  <data name="EmptyBusinessContext" xml:space="preserve"><value>Бизнес-контекст не предоставлен.</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>Доказательства отсутствуют</value></data>
+  <data name="FixtureChecklistVerify" xml:space="preserve"><value>Проверить обязательную информацию</value></data>
+  <data name="FixtureDependencyContract" xml:space="preserve"><value>Зависимость договора</value></data>
+  <data name="FixtureDependencyValidation" xml:space="preserve"><value>Зависимость проверки</value></data>
+  <data name="FixtureInvalidDesc" xml:space="preserve"><value>Эти тестовые данные не соответствуют каноническому контракту.</value></data>
+  <data name="FixtureInvalidTitle" xml:space="preserve"><value>Недопустимые данные рабочего элемента</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>Открыто</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Запланировано</value></data>
+  <data name="MigrationAdaptedNotice" xml:space="preserve"><value>Этот устаревший пример адаптирован для тестирования миграции.</value></data>
+  <data name="MigrationLegacyBlocker" xml:space="preserve"><value>Устаревшая блокировка</value></data>
+  <data name="MigrationLegacyInformationRequest" xml:space="preserve"><value>Устаревший запрос информации</value></data>
+  <data name="MigrationLegacyPendingApproval" xml:space="preserve"><value>Устаревшее ожидающее согласование</value></data>
+  <data name="NoticeChecklistNonBlocking" xml:space="preserve"><value>В контрольном списке есть неблокирующая проблема.</value></data>
+  <data name="NoticeDueSoon" xml:space="preserve"><value>Срок этого элемента скоро наступит.</value></data>
+  <data name="NoticePendingReview" xml:space="preserve"><value>Этот элемент ожидает проверки.</value></data>
+  <data name="NoticePlanConflict" xml:space="preserve"><value>Личный план конфликтует со сроком источника.</value></data>
+  <data name="NoticeSnoozed" xml:space="preserve"><value>Вы отложили этот элемент.</value></data>
+  <data name="NoticeWaiting" xml:space="preserve"><value>Этот элемент ожидает внешних данных.</value></data>
+  <data name="ProviderCommandRequired" xml:space="preserve"><value>Это изменение должно выполняться поставщиком источника.</value></data>
+  <data name="RedactedValue" xml:space="preserve"><value>Ограничено</value></data>
+  <data name="RelatedRecordOpen" xml:space="preserve"><value>Открыть связанную запись</value></data>
+  <data name="SourceProjectionRequested" xml:space="preserve"><value>Запрошена свежая проекция источника.</value></data>
+  <data name="TriggerOnlyLabel" xml:space="preserve"><value>Требуется ответ</value></data>
+  <data name="TriggerResponsesLabel" xml:space="preserve"><value>Запросы ответа</value></data>
+  <data name="WaitingExpectedUntil" xml:space="preserve"><value>Ожидается до</value></data>
+  <data name="ActionDisabledReviewMeetingRequired" xml:space="preserve"><value>Перед утверждением требуется встреча для проверки.</value></data>
+  <data name="InboxTitleTaskVendorVerification" xml:space="preserve"><value>Проверить основные данные поставщика Arven Medical</value></data>
+  <data name="InboxTitleTaskVendorVerificationSummary" xml:space="preserve"><value>Проверьте налоговые, банковские и контактные данные.</value></data>
+  <data name="InboxTitleApprovalBudgetRevision" xml:space="preserve"><value>Утвердить корректировку бюджета продаж за 3 квартал</value></data>
+  <data name="InboxTitleApprovalBudgetRevisionSummary" xml:space="preserve"><value>Рассмотрите запрос на дополнительные 1,8 млн турецких лир.</value></data>
+  <data name="InboxTitleReviewOptionalMeeting" xml:space="preserve"><value>Проверка завершения CAPA-2231</value></data>
+  <data name="InboxTitleReviewOptionalMeetingSummary" xml:space="preserve"><value>Утвердите напрямую или назначьте встречу с владельцем задачи.</value></data>
+  <data name="InboxTitleReviewRequiredMeeting" xml:space="preserve"><value>Утверждение закрытия задачи трансформации Atlas</value></data>
+  <data name="InboxTitleReviewRequiredMeetingSummary" xml:space="preserve"><value>Задачу можно утвердить только после обязательной встречи.</value></data>
+  <data name="InboxTitleIssueIntegrationFailure" xml:space="preserve"><value>Устранить сбой передачи клиентов SAP</value></data>
+  <data name="InboxTitleIssueIntegrationFailureSummary" xml:space="preserve"><value>47 клиентских записей не прошли проверку при передаче.</value></data>
+  <data name="InboxTitleExceptionVatMismatch" xml:space="preserve"><value>Проверить расхождение сверки НДС за июль</value></data>
+  <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Обнаружено расхождение 84 750 лир с главной книгой.</value></data>
+  <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Встреча по корректировке бюджета за 3 квартал</value></data>
+  <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 июля 2026, 14:00–15:00 · Teams · Организатор: Deniz Koç</value></data>
 </root>

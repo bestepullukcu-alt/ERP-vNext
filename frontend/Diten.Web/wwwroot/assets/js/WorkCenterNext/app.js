@@ -16,6 +16,17 @@
     const data = global.WorkCenterNextData;
     const t = (global.WCN && global.WCN.t) || ((k) => k);
     const tf = (global.WCN && global.WCN.tf) || ((k) => k);
+    const SEEN_STORAGE_KEY = 'workcenter-next.seen-items';
+    const readSeenIds = () => {
+        try { return new Set(JSON.parse(global.sessionStorage?.getItem(SEEN_STORAGE_KEY) || '[]')); }
+        catch (_) { return new Set(); }
+    };
+    const persistSeenIds = (ids) => {
+        try { global.sessionStorage?.setItem(SEEN_STORAGE_KEY, JSON.stringify(Array.from(ids))); }
+        catch (_) { /* Session persistence is best-effort in the frontend-only slice. */ }
+    };
+    const seenIds = readSeenIds();
+    let workCenterDt = null;
 
     if (!data) {
         return;
@@ -29,11 +40,16 @@
     const PRIORITY_KEY = { high: 'PriorityHigh', medium: 'PriorityMedium', low: 'PriorityLow' };
     const STATUS_KIND = { 'Pending': 'primary', 'In Progress': 'info', 'Waiting': 'warning', 'Done': 'success', 'Cancelled': 'secondary' };
     const STATUS_KEY = { 'Pending': 'StatusPending', 'In Progress': 'StatusInProgress', 'Waiting': 'StatusWaiting', 'Done': 'StatusDone', 'Cancelled': 'StatusCancelled' };
-    const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException' };
-    const TYPE_ICON_MAP = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt' };
+    const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite' };
+    const TYPE_ICON_MAP = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt', meetingInvite: 'bx-calendar-event' };
     const SIGNAL_ICON = { blocked: 'bx-lock-alt', 'sla-risk': 'bx-time-five', escalated: 'bx-up-arrow-alt' };
     const MODE_KEY = { direct: 'ModeDirect', approval: 'ModeApproval', groupQueue: 'ModeGroupQueue', offered: 'ModeOffered' };
-    const SYSSTATE = { 'record-changed': { key: 'SysRecordChanged', icon: 'bx-refresh', kind: 'warning' }, 'source-unreachable': { key: 'SysSourceUnreachable', icon: 'bx-wifi-off', kind: 'danger' }, 'authority-ended': { key: 'SysAuthorityEnded', icon: 'bx-user-x', kind: 'danger' } };
+    const SYSSTATE = {
+        stale: { key: 'BannerStale', icon: 'bx-refresh', kind: 'warning' },
+        sourceUnavailable: { key: 'BannerSourceUnavailable', icon: 'bx-wifi-off', kind: 'danger' },
+        authorityEnded: { key: 'BannerAuthorityEnded', icon: 'bx-user-x', kind: 'danger' },
+        reconciliationRequired: { key: 'BannerReconciliationRequired', icon: 'bx-error-alt', kind: 'danger' }
+    };
     const ROLE_KEY = { Owner: 'RoleOwner', Approver: 'RoleApprover', Reviewer: 'RoleReviewer', Creator: 'RoleCreator' };
 
     // Axis law (spec v3): OWNERSHIP→tab · STATUS→segment · TYPE→chip.
@@ -51,31 +67,49 @@
         notesOpen: false,
         segment: 'aktif',        // meaningful within İşlerim
         view: 'list',
+        viewsByTab: { inbox: 'list', islerim: 'list', havuz: 'list', history: 'list' },
         scope: 'mine',           // 'mine' | 'all' | <delegator name> (N-way delegation)
         group: 'all',            // Havuz group-queue filter
         priorityFilter: 'all',
         modeFilter: 'all',
-        moduleFilter: 'all',
+        moduleFilter: [],
+        slaFilter: [],           // multi-select SLA state (empty = all) — replaces headings
+        pinnedFilter: false,     // show only pinned
         typeFilter: new Set(),   // multi-select type chips (empty = all)
         signalFilter: new Set(), // multi-select signal chips (empty = all)
+        filtersOpen: false,      // collapsible filter panel under the chip bar
         search: '',
         selectedId: null,
         tableSelected: new Set(),
         bulkFailedIds: new Set(),
         sortKey: 'sla',
         sortDir: 'asc',
+        pageLength: 10,
+        listPage: 0,
+        tableColumnVisibility: [true, true, true, true, true, true, true, true],
         loadState: 'loading',
         loadError: null,
+        submittingActionCode: null,
+        submittingItemId: null,
+        submittingTriggerId: null,
+        triggers: data.buildTriggers ? data.buildTriggers() : [],
         items: data.buildItems(),
         meetings: data.buildMeetings ? data.buildMeetings() : [],
         notes: data.buildNotes ? data.buildNotes() : [],
         visibleOrder: []
     };
+    state.items.forEach((item) => {
+        if (seenIds.has(item.id)) {
+            item.isUnread = false;
+            if (item.personal) { item.personal.seen = true; }
+        }
+    });
+    state.triggers.forEach((trigger) => { trigger.isUnread = !seenIds.has(trigger.id); });
 
     const STATE_VALUES = {
         tab: ['inbox', 'islerim', 'havuz', 'history'],
         segment: ['aktif', 'bekleyen', 'planli'],
-        view: ['list', 'split', 'table', 'kanban', 'calendar', 'focus'],
+        view: ['list', 'table', 'focus'],
         priority: ['all', 'high', 'medium', 'low'],
         mode: ['all', 'direct', 'approval', 'groupQueue', 'offered'],
         panel: ['', 'agenda', 'notes']
@@ -92,8 +126,8 @@
         setIfAllowed('view', 'view', 'view');
         setIfAllowed('priority', 'priority', 'priorityFilter');
         setIfAllowed('mode', 'mode', 'modeFilter');
-        const module = params.get('module');
-        if (module && (module === 'all' || state.items.some((i) => i.sourceModule === module))) { state.moduleFilter = module; }
+        const modules = (params.get('module') || '').split(',').filter((module) => state.items.some((i) => i.sourceModule === module));
+        state.moduleFilter = Array.from(new Set(modules));
         const scope = params.get('scope');
         if (scope && (scope === 'mine' || scope === 'all' || data.delegators.some((d) => d.name === scope))) { state.scope = scope; }
         state.group = params.get('group') || 'all';
@@ -119,7 +153,7 @@
         put('view', state.view, 'list');
         put('scope', state.scope, 'mine');
         put('group', state.group, 'all');
-        put('module', state.moduleFilter, 'all');
+        put('module', state.moduleFilter.slice().sort().join(','), '');
         put('priority', state.priorityFilter, 'all');
         put('mode', state.modeFilter, 'all');
         put('types', Array.from(state.typeFilter).sort().join(','), '');
@@ -147,7 +181,9 @@
         `<i class="bx ${icon}"></i><span>${esc(text)}</span></span>`;
 
     const typeLabel = (item) => t(TYPE_KEY[item.itemType] || item.itemType);
-    const statusLabel = (item) => t(STATUS_KEY[item.status] || item.status);
+    // normalizedStatus is already resolved by the provider/aggregation projection.
+    const displayStatus = (item) => item.status;
+    const statusLabel = (item) => { const s = displayStatus(item); return t(STATUS_KEY[s] || s); };
     const priorityLabel = (item) => t(PRIORITY_KEY[item.priority] || item.priority);
 
     const slaLabel = (item) => {
@@ -169,20 +205,30 @@
         return tf('TimeDaysAgo', ago);
     };
 
-    // Actions are derived on demand from (itemType, lifecycle, timesheet) — never
-    // baked onto the item — so the acceptance gate + lifecycle transitions stay
-    // authoritative (spec §4 action matrix).
-    const itemActions = (item) => data.getActions(item).map((action) => item.systemState
-        ? { ...action, disabled: true, disabledReasonKey: 'SourceActionsLocked' }
-        : action);
-    // The row quick-action skips disabled actions (e.g. a blocked Start), so a
-    // blocked task never offers a dead primary button.
+    // actions[] is the single effective command projection. The browser never
+    // derives eligibility from lifecycle, permission, blockers or system state.
+    const itemActions = (item) => data.getActions(item);
     const primaryAction = (item) => {
-        const a = itemActions(item).filter((x) => !x.disabled);
-        return a.find((x) => x.role === 'accept') || a.find((x) => x.primary) || a[0] || null;
+        const actions = itemActions(item);
+        const primaryCode = item._fixture?.primaryActionCode || item.primaryActionCode || null;
+        return actions.find((candidate) => candidate.code === primaryCode) || actions[0] || null;
     };
     const actionByKey = (item, key) => itemActions(item).find((a) => a.key === key) || null;
     const actionByRole = (item, role) => itemActions(item).find((a) => a.role === role) || null;
+    const actionLabel = (action) => action?.displayLabel || (action?.labelKey ? t(action.labelKey) : '');
+    const markSeen = (item) => {
+        if (!item) { return; }
+        item.isUnread = false;
+        if (item.personal) { item.personal.seen = true; }
+        seenIds.add(item.id);
+        persistSeenIds(seenIds);
+    };
+    const markTriggerSeen = (trigger) => {
+        if (!trigger) { return; }
+        trigger.isUnread = false;
+        seenIds.add(trigger.id);
+        persistSeenIds(seenIds);
+    };
 
     // ── Timesheet helpers (task work loop, live browser clock) ────────────────
     const foldTimer = (item) => {
@@ -210,17 +256,20 @@
         state.scope === 'all' ? true
             : state.scope === 'mine' ? !item.delegator
                 : item.delegator === state.scope;
-    const isTerminal = (item) => item.lifecycle === 'Done' || item.lifecycle === 'Cancelled';
-    const inTab = (item, tab) => !item.dismissed && itemInScope(item)
+    const isTerminal = (item) => ['Done', 'Cancelled'].includes(item.normalizedStatus)
+        || item.lifecycle === 'Done' || item.lifecycle === 'Cancelled';
+    const inTab = (item, tab) => item.catalogVisible !== false && !item.dismissed && itemInScope(item)
         && (tab === 'history' ? isTerminal(item) : item.tab === tab && !isTerminal(item));
     // Tab counters ignore in-tab filters so they reflect the true load per scope.
-    const tabCount = (tab) => state.items.filter((item) => inTab(item, tab)).length;
+    const tabCount = (tab) => state.items.filter((item) => inTab(item, tab)).length
+        + (tab === 'inbox' ? state.triggers.length : 0);
 
     // Items in the current tab (before segment/chip filters) — used for segment
     // and chip counts so those reflect what the tab really holds.
     const tabItems = () => state.items.filter((item) => inTab(item, state.tab));
     const segmentCount = (seg) => tabItems().filter((i) => data.segmentFor(i) === seg).length;
-    const typeCount = (ty) => tabItems().filter((i) => i.itemType === ty).length;
+    const typeCount = (ty) => tabItems().filter((i) => i.itemType === ty).length
+        + (state.tab === 'inbox' && ty === 'meetingInvite' ? state.triggers.length : 0);
     const signalCount = (sig) => tabItems().filter((i) => SIGNAL_TEST[sig](i)).length;
 
     // Advanced filters shared by list + kanban + calendar (priority, mode, group,
@@ -230,13 +279,16 @@
         if (state.signalFilter.size) {
             for (const sig of state.signalFilter) { if (!SIGNAL_TEST[sig](item)) { return false; } }
         }
-        if (state.moduleFilter !== 'all' && item.sourceModule !== state.moduleFilter) { return false; }
+        if (state.moduleFilter.length && !state.moduleFilter.includes(item.sourceModule)) { return false; }
         if (state.priorityFilter !== 'all' && item.priority !== state.priorityFilter) { return false; }
         if (state.modeFilter !== 'all' && item.assignmentMode !== state.modeFilter) { return false; }
+        if (state.slaFilter.length && !state.slaFilter.includes(item.slaState)) { return false; }
+        if (state.pinnedFilter && !item.pinned) { return false; }
         if (state.tab === 'havuz' && state.group !== 'all' && item.group !== state.group) { return false; }
-        if (state.search) {
+        const q = state.search.trim().toLowerCase();   // ignore leading/trailing space
+        if (q) {
             const hay = (item.title + ' ' + item.summary + ' ' + item.sourceModule + ' ' + item.sourceId + ' ' + item.requester).toLowerCase();
-            if (!hay.includes(state.search.toLowerCase())) { return false; }
+            if (!hay.includes(q)) { return false; }
         }
         return true;
     };
@@ -247,6 +299,21 @@
         return passesFilters(item);
     });
 
+    const activeTriggers = () => {
+        if (state.tab !== 'inbox' || state.signalFilter.size) { return []; }
+        if (state.typeFilter.size && !state.typeFilter.has('meetingInvite')) { return []; }
+        // Trigger-only invitations do not carry task priority or assignment mode.
+        if (state.priorityFilter !== 'all' || state.modeFilter !== 'all') { return []; }
+        const query = state.search.trim().toLowerCase();
+        return state.triggers.filter((trigger) => {
+            const provider = trigger.source?.providerCode || '';
+            if (state.moduleFilter.length && !state.moduleFilter.includes(provider)) { return false; }
+            const title = data.resolveLabel(trigger.title);
+            const summary = data.resolveLabel(trigger.summary);
+            return !query || `${title} ${summary} ${provider}`.toLowerCase().includes(query);
+        });
+    };
+
     const bySla = (a, b) => {
         if (a.escalated && !b.escalated) return -1;
         if (!a.escalated && b.escalated) return 1;
@@ -255,14 +322,24 @@
 
     const moduleOptions = () => {
         const set = [];
-        state.items.forEach((item) => { if (set.indexOf(item.sourceModule) < 0) { set.push(item.sourceModule); } });
+        tabItems().forEach((item) => { if (set.indexOf(item.sourceModule) < 0) { set.push(item.sourceModule); } });
+        if (state.tab === 'inbox') {
+            state.triggers.forEach((trigger) => {
+                const provider = trigger.source?.providerCode;
+                if (provider && set.indexOf(provider) < 0) { set.push(provider); }
+            });
+        }
         return set.sort();
     };
 
     // ── Toolbar ───────────────────────────────────────────────────────────────
-    const viewBtn = (view, icon, labelKey) =>
-        `<button type="button" class="wcn-viewbtn${state.view === view ? ' active' : ''}" data-wcn-view="${view}">` +
-        `<i class="bx ${icon}"></i><span>${esc(t(labelKey))}</span></button>`;
+    // Icon-only view button (like the legacy WorkCenter view-switch): tooltip via
+    // title, no text label. Active = filled primary; inactive = outline.
+    const viewBtn = (view, icon, labelKey) => {
+        const active = state.view === view;
+        return `<button type="button" class="btn btn-icon ${active ? 'btn-primary' : 'btn-outline-secondary'} wcn-viewbtn" data-wcn-view="${view}" aria-label="${esc(t(labelKey))}" aria-pressed="${active}">` +
+            `<i class="icon-base bx ${icon}"></i></button>`;
+    };
 
     // My own items still needing action (overdue) — surfaced even while acting on
     // someone else's behalf so urgent personal work is never hidden (spec v3 §6).
@@ -274,36 +351,52 @@
 
     const buildHeader = () => {
         const urgent = ownUrgentCount();
+        // Current scope → the person/delegation dropdown label.
+        const scopeLabel = state.scope === 'mine' ? t('ScopeMine')
+            : state.scope === 'all' ? t('ScopeAll')
+                : tf('OnBehalfShort', state.scope);
+        const scopeIcon = (k) => k === 'mine' ? 'bx-user' : k === 'all' ? 'bx-layer' : 'bx-user-voice';
         const ownBadge = (state.scope !== 'mine' && urgent)
             ? `<span class="wcn-own-urgent" title="${esc(t('OwnUrgentTip'))}">${urgent}</span>` : '';
-        // N-way scope selector: Kendim · <each delegator> · Tümü.
-        const scopeBtn = (key, label) =>
-            `<button type="button" class="wcn-scopebtn${state.scope === key ? ' active' : ''}" data-wcn-scope="${esc(key)}">${esc(label)}${key === 'mine' ? ownBadge : ''}</button>`;
-        const delegatorBtns = data.delegators.map((d) => scopeBtn(d.name, d.name)).join('');
-        const sub = state.scope === 'mine' ? `${data.currentUser.name} · ${data.currentUser.title}`
-            : state.scope === 'all' ? t('ScopeAllSub')
-                : (delegatorByName(state.scope) ? tf('ScopeCovering', state.scope) : '');
-        return `<div class="wcn-header">
+        const scopeItem = (key, label, sub) =>
+            `<li><button type="button" class="dropdown-item wcn-dd-item${state.scope === key ? ' active' : ''}" data-wcn-scope="${esc(key)}">
+                <i class="bx ${scopeIcon(key)}"></i><span>${esc(label)}</span>${sub ? `<small class="wcn-dd-sub">${esc(sub)}</small>` : ''}
+            </button></li>`;
+        const delegatorItems = data.delegators.map((d) => scopeItem(d.name, tf('OnBehalfShort', d.name), d.title)).join('');
+        // "+ Yeni" create menu — WorkCenter owns task/note/meeting; module items
+        // (issue/approval) are born in the source (spec v3 §5, note/meeting rule).
+        const createItem = (val, icon, label) =>
+            `<li><button type="button" class="dropdown-item wcn-dd-item" data-wcn-new="${val}"><i class="bx ${icon}"></i><span>${esc(label)}</span></button></li>`;
+
+        return `<div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center gap-3 mb-3 wcn-header">
             <div class="wcn-header-title">
-                <span class="wcn-header-icon"><i class="bx bx-briefcase-alt-2"></i></span>
-                <div>
-                    <h4 class="wcn-header-heading">${esc(t('Title'))}</h4>
-                    <p class="wcn-header-sub">${esc(t('Subtitle'))}</p>
+                <h5 class="mb-0">${esc(t('Title'))}</h5>
+                <p class="mb-0 text-muted">${esc(t('Subtitle'))}</p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-shrink-0 wcn-header-actions">
+                <div class="dropdown">
+                    <button type="button" class="btn btn-label-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="${esc(t('ScopeLabel'))}">
+                        <i class="icon-base bx ${scopeIcon(state.scope === 'mine' || state.scope === 'all' ? state.scope : 'delegator')} icon-sm me-1"></i><span>${esc(scopeLabel)}</span>${ownBadge}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
+                        ${scopeItem('mine', t('ScopeMine'), data.currentUser.title)}
+                        ${delegatorItems}
+                        <li><hr class="dropdown-divider"></li>
+                        ${scopeItem('all', t('ScopeAll'), t('ScopeAllSub'))}
+                    </ul>
                 </div>
-            </div>
-            <div class="wcn-scope" role="group" aria-label="${esc(t('ScopeLabel'))}">
-                ${scopeBtn('mine', t('ScopeMine'))}
-                ${delegatorBtns}
-                ${scopeBtn('all', t('ScopeAll'))}
-                <span class="wcn-scope-who">${esc(sub)}</span>
-            </div>
-            <div class="wcn-global-tools">
-                <button type="button" class="btn btn-sm ${state.agendaOpen ? 'btn-primary' : 'btn-outline-primary'}" data-wcn-toggle="agenda" aria-expanded="${state.agendaOpen}" aria-controls="wcnSidePanel">
-                    <i class="bx bx-calendar-event"></i> <span>${esc(t('AgendaButton'))}</span>
-                </button>
-                <button type="button" class="btn btn-sm ${state.notesOpen ? 'btn-primary' : 'btn-outline-primary'}" data-wcn-toggle="notes" aria-expanded="${state.notesOpen}" aria-controls="wcnSidePanel">
-                    <i class="bx bx-note"></i> <span>${esc(t('NotesButton'))}</span>
-                </button>
+                <div class="dropdown">
+                    <button type="button" class="btn btn-primary shadow-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="icon-base bx bx-plus icon-sm me-1"></i><span>${esc(t('NewButton'))}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
+                        ${createItem('task', 'bx-task', t('NewSelfTask'))}
+                        ${createItem('note', 'bx-note', t('NewNote'))}
+                        ${createItem('meeting', 'bx-calendar-event', t('NewMeeting'))}
+                        <li><hr class="dropdown-divider"></li>
+                        ${createItem('source', 'bx-link-external', t('NewInSource'))}
+                    </ul>
+                </div>
             </div>
         </div>`;
     };
@@ -338,16 +431,48 @@
         </div>`;
     };
 
-    // Top-tabs = OWNERSHIP (spec v3): primary (Gelen Kutusu · İşlerim) + secondary
-    // (Havuz · Geçmiş, lighter). Havuz always shows its count — even 0 — so group
-    // work is discoverable. Inbox is default so new work is seen on open.
+    // Top-tabs = OWNERSHIP (spec v3): Gelen Kutusu · İşlerim · Havuz · Geçmiş.
+    // Standard Sneat `nav nav-pills` (like the legacy WorkCenter), with icon +
+    // count. Inbox is default so new work is seen on open. Click drives state
+    // (data-wcn-tab) + re-render — not Bootstrap tab-panes.
+    const TAB_ICON = { inbox: 'bx-envelope', islerim: 'bx-briefcase-alt-2', havuz: 'bx-collection', history: 'bx-history' };
+    // Views are tab-appropriate, not all six everywhere: Inbox = triage (list/
+    // split/table), İşlerim = full work management, Havuz = claim list, Geçmiş =
+    // read-only archive. Kanban/Calendar/Bugün only make sense for active work.
+    const VIEW_META = { list: 'bx-list-ul', split: 'bx-columns', table: 'bx-table', kanban: 'bx-grid-alt', calendar: 'bx-calendar', focus: 'bx-target-lock' };
+    const VIEW_KEY = { list: 'ViewList', split: 'ViewSplit', table: 'ViewTable', kanban: 'ViewKanban', calendar: 'ViewCalendar', focus: 'ViewFocus' };
+    // Split / Kanban / Calendar are deferred to the backlog (BL-*) — the row detail is
+    // now its own page (openDetailPage → /WorkCenterNext/Details/{id}), so the in-app
+    // split panel is retired. Remaining views: List · Table · (Focus in İşlerim).
+    const TAB_VIEWS = {
+        inbox: ['list', 'table'],
+        islerim: ['list', 'table', 'focus'],
+        havuz: ['list', 'table'],
+        history: ['list', 'table']
+    };
     const buildTabs = () => {
-        const tab = (key, cls) =>
-            `<button type="button" id="wcn-tab-${key}" class="wcn-tab ${cls}${state.tab === key ? ' active' : ''}" data-wcn-tab="${key}" role="tab" aria-selected="${state.tab === key}" aria-controls="wcn-main-panel" tabindex="${state.tab === key ? '0' : '-1'}">` +
-            `<span>${esc(t(TAB_KEY[key]))}</span><span class="wcn-tab-count">${tabCount(key)}</span></button>`;
-        return `<div class="wcn-tabs" role="tablist" aria-label="${esc(t('TabsLabel'))}">
-            <div class="wcn-tabs-primary">${TABS_PRIMARY.map((k) => tab(k, 'wcn-tab-primary')).join('')}</div>
-            <div class="wcn-tabs-secondary">${TABS_SECONDARY.map((k) => tab(k, 'wcn-tab-secondary')).join('')}</div>
+        const tab = (key) => {
+            const active = state.tab === key;
+            const cnt = tabCount(key);
+            const countBadge = cnt > 0
+                ? `<span class="badge rounded-pill bg-danger wcn-tab-count position-absolute top-0 start-100 translate-middle">${cnt}</span>`
+                : '';
+            return `<li class="nav-item" role="presentation">
+                <button type="button" id="wcn-tab-${key}" class="nav-link border shadow-none wc-tab-compact d-inline-flex align-items-center${active ? ' active' : ''}" data-wcn-tab="${key}" role="tab" aria-selected="${active}" aria-controls="wcn-main-panel" tabindex="${active ? '0' : '-1'}">
+                    <i class="bx ${TAB_ICON[key]} wc-tab-icon me-md-1"></i><span class="d-none d-md-inline">${esc(t(TAB_KEY[key]))}</span>
+                    ${countBadge}
+                </button>
+            </li>`;
+        };
+        const allowedViews = TAB_VIEWS[state.tab] || TAB_VIEWS.islerim;
+        const views = `<div class="d-flex align-items-center gap-2 ms-auto wcn-view-tools"><div class="btn-group btn-group-sm wcn-views" role="group" aria-label="${esc(t('ViewLabel'))}">${allowedViews.map((v) => viewBtn(v, VIEW_META[v], VIEW_KEY[v])).join('')}</div><div class="dropdown d-none d-lg-block"><button type="button" class="btn btn-icon btn-sm btn-label-secondary wcn-keyboard-help" data-bs-toggle="dropdown" aria-expanded="false" aria-label="${esc(t('KeyboardHint'))}"><i class="bx bx-bxs-keyboard"></i></button><div class="dropdown-menu dropdown-menu-end wcn-keyboard-menu"><span>${esc(t('KeyboardHint'))}</span></div></div></div>`;
+        return `<div class="card mb-3 wcn-tabcard">
+            <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
+                <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" aria-label="${esc(t('TabsLabel'))}">
+                    ${['inbox', 'islerim', 'havuz', 'history'].map(tab).join('')}
+                </ul>
+                ${views}
+            </div>
         </div>`;
     };
 
@@ -362,61 +487,224 @@
         return `<div class="wcn-segments" role="group" aria-label="${esc(t('SegmentsLabel'))}">${segs.map(btn).join('')}</div>`;
     };
 
-    // Chip bar = TYPE + SIGNAL (spec v3). Counted, multi-select; empty = all.
-    const buildChips = () => {
+    // ✕ affordance on a selected chip (click removes it — the chip is one button).
+    const CHIP_X = '<i class="bx bx-x wcn-fchip-x" aria-hidden="true"></i>';
+    // Inbox curated set (Task Center archetype): only first-decision categories.
+    // task → "Kabul Bekleyen" (in the inbox every task awaits accept). Meeting
+    // invitations share the triage surface but remain outside the task lifecycle:
+    // accepting adds them to the agenda; declining removes the invitation.
+    const INBOX_MAIN = [
+        { key: 'approval', labelKey: 'TypeApproval', icon: TYPE_ICON_MAP.approval },
+        { key: 'task', labelKey: 'ChipPendingAccept', icon: TYPE_ICON_MAP.task },
+        { key: 'review', labelKey: 'TypeReview', icon: TYPE_ICON_MAP.review },
+        { key: 'issue', labelKey: 'TypeIssue', icon: TYPE_ICON_MAP.issue },
+        { key: 'exception', labelKey: 'TypeException', icon: TYPE_ICON_MAP.exception },
+        { key: 'meetingInvite', labelKey: 'ChipMeetingInvite', icon: 'bx-calendar-event' }
+    ];
+    const INBOX_RISK = ['sla-risk', 'escalated'];   // "Bloke" is post-acceptance → not here
+
+    // Inbox chips: single-select main types (Tümü clears), multi risk signals that
+    // combine with a type ("Onay + SLA Riski"). Counts use the unfiltered inbox set.
+    const buildInboxChips = () => {
+        const allActive = state.typeFilter.size === 0;
+        const allChip = `<button type="button" class="wcn-fchip${allActive ? ' active' : ''}" data-wcn-inbox-all aria-pressed="${allActive}">` +
+            `<i class="bx bx-collection"></i><span>${esc(t('ChipAll'))}</span><span class="wcn-fchip-count">${tabItems().length + state.triggers.length}</span></button>`;
+        const mainChips = INBOX_MAIN.map((cfg) => {
+            const on = state.typeFilter.has(cfg.key);
+            const c = typeCount(cfg.key);
+            // Inbox main chips are never dimmed at 0 (spec: no perpetual grey chips).
+            return `<button type="button" class="wcn-fchip${on ? ' active' : ''}" data-wcn-inbox-type="${cfg.key}" aria-pressed="${on}">` +
+                `<i class="bx ${cfg.icon}"></i><span>${esc(t(cfg.labelKey))}</span><span class="wcn-fchip-count">${c}</span>${on ? CHIP_X : ''}</button>`;
+        }).join('');
+        const riskChips = INBOX_RISK.map((sig) => {
+            const c = signalCount(sig);
+            const on = state.signalFilter.has(sig);
+            if (!c && !on) { return ''; }   // secondary: hidden at 0 unless active
+            return `<button type="button" class="wcn-fchip wcn-fchip-signal${on ? ' active' : ''}" data-wcn-sigchip="${sig}" aria-pressed="${on}">` +
+                `<i class="bx ${SIGNAL_ICON[sig]}"></i><span>${esc(t(SIGNAL_KEY[sig]))}</span><span class="wcn-fchip-count">${c}</span>${on ? CHIP_X : ''}</button>`;
+        }).join('');
+        return `<div class="wcn-chips-types">${allChip}${mainChips}</div>` +
+            (riskChips ? `<span class="wcn-chips-sep"></span><div class="wcn-chips-signals">${riskChips}</div>` : '');
+    };
+
+    // Default chips for İşlerim / Havuz / Geçmiş — unchanged multi-select type+signal.
+    const buildDefaultChips = () => {
         const typeChip = (ty) => {
             const c = typeCount(ty);
-            return `<button type="button" class="wcn-fchip${state.typeFilter.has(ty) ? ' active' : ''}${c ? '' : ' empty'}" data-wcn-typechip="${ty}" aria-pressed="${state.typeFilter.has(ty)}">` +
-                `<i class="bx ${TYPE_ICON_MAP[ty]}"></i><span>${esc(t(TYPE_KEY[ty]))}</span><span class="wcn-fchip-count">${c}</span></button>`;
+            const on = state.typeFilter.has(ty);
+            return `<button type="button" class="wcn-fchip${on ? ' active' : ''}${c ? '' : ' empty'}" data-wcn-typechip="${ty}" aria-pressed="${on}">` +
+                `<i class="bx ${TYPE_ICON_MAP[ty]}"></i><span>${esc(t(TYPE_KEY[ty]))}</span><span class="wcn-fchip-count">${c}</span>${on ? CHIP_X : ''}</button>`;
         };
         const sigChip = (sig) => {
             const c = signalCount(sig);
-            if (!c && !state.signalFilter.has(sig)) { return ''; }
-            return `<button type="button" class="wcn-fchip wcn-fchip-signal${state.signalFilter.has(sig) ? ' active' : ''}" data-wcn-sigchip="${sig}" aria-pressed="${state.signalFilter.has(sig)}">` +
-                `<i class="bx ${SIGNAL_ICON[sig]}"></i><span>${esc(t(SIGNAL_KEY[sig]))}</span><span class="wcn-fchip-count">${c}</span></button>`;
+            const on = state.signalFilter.has(sig);
+            if (!c && !on) { return ''; }
+            return `<button type="button" class="wcn-fchip wcn-fchip-signal${on ? ' active' : ''}" data-wcn-sigchip="${sig}" aria-pressed="${on}">` +
+                `<i class="bx ${SIGNAL_ICON[sig]}"></i><span>${esc(t(SIGNAL_KEY[sig]))}</span><span class="wcn-fchip-count">${c}</span>${on ? CHIP_X : ''}</button>`;
         };
-        const types = Object.keys(TYPE_KEY).map(typeChip).join('');
+        // Only surface types actually present in this tab (or an active filter) — a row
+        // of perpetual "0" type chips (İşlerim is task-dominant) is pure noise. The
+        // segment bar already splits by state; chips here carry type + risk signals.
+        const types = Object.keys(TYPE_KEY)
+            .filter((ty) => typeCount(ty) > 0 || state.typeFilter.has(ty))
+            .map(typeChip).join('');
         const signals = SIGNALS.map(sigChip).join('');
-        const anyFilter = state.typeFilter.size || state.signalFilter.size;
-        const clear = anyFilter ? `<button type="button" class="wcn-fchip-clear" data-wcn-chip-clear>${esc(t('ChipClear'))}</button>` : '';
-        return `<div class="wcn-chips" role="group" aria-label="${esc(t('FilterType'))}">
-            <div class="wcn-chips-types">${types}</div>
-            ${signals ? `<span class="wcn-chips-sep"></span><div class="wcn-chips-signals">${signals}</div>` : ''}
-            ${clear}
+        return `<div class="wcn-chips-types">${types}</div>` +
+            (signals ? `<span class="wcn-chips-sep"></span><div class="wcn-chips-signals">${signals}</div>` : '');
+    };
+
+    // Chips markup (Tümü/type/risk). Shared: List/Split render it inside the toolbar
+    // band (chips left, search+filter right); Table renders it as a strip above the
+    // grid (the grid owns its own toolbar), so chips never vanish on view switch.
+    const chipsMarkup = () => {
+        const chipsInner = state.tab === 'inbox' ? buildInboxChips() : buildDefaultChips();
+        return `<div class="wcn-chips" role="group" aria-label="${esc(t('FilterType'))}">${chipsInner}</div>`;
+    };
+    const buildQuickFilters = () => {
+        // Chips are a full-width strip above every view's toolbar — one clean line,
+        // consistent across List/Split/Table, and actually shorter than folding 7
+        // chips next to the search box (which wraps to 3 lines).
+        return `<div class="wcn-quickfilters">${chipsMarkup()}</div>`;
+    };
+    // One filter row: the segmented control (status, single-select) + the type/signal
+    // chips (multi-select) side by side — segment in its own white pill-box, chips
+    // OUTSIDE it (a gap, not inside). Saves a header row so the list sits higher; the
+    // tab row (view-switcher) and the Table's own toolbar are untouched.
+    const buildFilterRow = () => {
+        return `<div class="wcn-filterbar">${buildSegments()}${buildGroupSelector()}${chipsMarkup()}</div>`;
+    };
+
+    const activeAdvancedFilterCount = () => {
+        return (state.moduleFilter.length ? 1 : 0)
+            + (state.priorityFilter !== 'all' ? 1 : 0)
+            + (state.modeFilter !== 'all' ? 1 : 0)
+            + (state.slaFilter.length ? 1 : 0)
+            + (state.pinnedFilter ? 1 : 0);
+    };
+
+    const toggleTableFilter = () => {
+        const panel = document.getElementById('wcnFilterCollapse');
+        if (!panel) { return; }
+        state.filtersOpen = !panel.classList.contains('show');
+        if (state.filtersOpen) {
+            mountPanelSelect2();
+        }
+        const button = document.querySelector('.dt-filter-btn');
+        if (button) { button.setAttribute('aria-expanded', String(state.filtersOpen)); }
+        if (global.bootstrap?.Collapse) {
+            global.bootstrap.Collapse.getOrCreateInstance(panel, { toggle: false }).toggle();
+        } else {
+            panel.classList.toggle('show', state.filtersOpen);
+        }
+    };
+
+    const mountTableFilterHost = () => {
+        const host = document.getElementById('wcnTableFilterHost');
+        const filterButton = document.querySelector('.wcn-datatable-card .dt-filter-btn');
+        const toolbarRow = filterButton?.closest('.dt-layout-row') || filterButton?.closest('.row');
+        if (host && toolbarRow) { toolbarRow.insertAdjacentElement('afterend', host); }
+    };
+
+    const buildChips = () => {
+        if (state.view === 'table') {
+            return `<div id="wcnTableFilterHost" class="px-3"><div class="collapse${state.filtersOpen ? ' show' : ''}" id="wcnFilterCollapse"><div class="pt-0 pb-3 wcn-filter-panel dt-filter-host">${filterPanel()}</div></div></div>`;
+        }
+        // Persistent search (page-level, not per-view) with a clear affordance.
+        const searchBox = `<div class="wcn-search wcn-search-inline">
+            <i class="bx bx-search"></i>
+            <input type="text" class="form-control shadow-none" data-wcn-search
+                value="${esc(state.search)}" placeholder="${esc(t('SearchPlaceholder'))}" aria-label="${esc(t('SearchPlaceholder'))}">
+            ${state.search ? `<button type="button" class="wcn-search-clear" data-wcn-search-clear aria-label="${esc(t('SearchClear'))}"><i class="bx bx-x"></i></button>` : ''}
+        </div>`;
+        // Type selection is already visible in the chip strip. The advanced-filter
+        // badge therefore counts only module, priority and assignment mode.
+        const filterCount = activeAdvancedFilterCount();
+        const filterBtn = `<button type="button" class="btn btn-icon ${filterCount > 0 ? 'btn-label-primary' : 'btn-label-secondary'} dt-filter-btn position-relative wcn-filter-toggle" data-wcn-filter-toggle aria-controls="wcnFilterCollapse" aria-expanded="${state.filtersOpen}" title="${esc(t('FiltersLabel'))}" aria-label="${esc(t('FiltersLabel'))}">` +
+            `<i class="icon-base bx bx-filter-alt icon-sm"></i>` +
+            `${filterCount > 0 ? `<span class="badge badge-center rounded-pill bg-primary position-absolute top-0 end-0 translate-middle">${filterCount}</span>` : ''}</button>`;
+        const pageLength = state.view === 'table'
+            ? `<div class="dt-length"><label><span class="visually-hidden">${esc(t('RowsPerPage'))}</span><select class="form-select ms-0" data-wcn-page-length aria-label="${esc(t('RowsPerPage'))}">${[10, 25, 50, 100].map((size) => `<option value="${size}"${state.pageLength === size ? ' selected' : ''}>${size}</option>`).join('')}</select></label></div>`
+            : '';
+        const colVis = state.view === 'table' ? `<div class="dropdown">
+            <button type="button" class="btn btn-icon btn-label-secondary dt-colvis-btn position-relative d-none d-md-inline-flex wcn-colvis" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ColumnVisibility'))}" aria-label="${esc(t('ColumnVisibility'))}"><i class="icon-base bx bx-show icon-sm"></i></button>
+            <div class="dropdown-menu dropdown-menu-end wcn-colvis-menu">${[{ key: 'ColType', col: 1 }, { key: 'ColTitle', col: 2 }, { key: 'ColModule', col: 3 }, { key: 'ColStatus', col: 4 }, { key: 'ColPriority', col: 5 }, { key: 'ColSla', col: 6 }, { key: 'ColRequester', col: 7 }].map((c) => `<label class="dropdown-item"><input type="checkbox" class="form-check-input me-2" data-wcn-column="${c.col}"${state.tableColumnVisibility[c.col] ? ' checked' : ''}>${esc(t(c.key))}</label>`).join('')}</div>
+        </div>` : '';
+        return `<div class="wcn-workspace-toolbar">
+                <div class="dt-layout-row row my-0 justify-content-between wcn-toolbar-row">
+                    <div class="dt-layout-start col-md-auto me-auto">${pageLength}</div>
+                    <div class="dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-4 flex-wrap mt-0">
+                        <div class="dt-search">${searchBox}</div>
+                        <div class="dt-buttons dt-buttons-actions btn-group">${colVis}${filterBtn}</div>
+                    </div>
+                </div>
+                <div class="collapse${state.filtersOpen ? ' show' : ''}" id="wcnFilterCollapse">
+                    <div class="px-3 pt-0 pb-3 wcn-filter-panel dt-filter-host">${filterPanel()}</div>
+                </div>
         </div>`;
     };
 
-    const buildToolbar = () => {
-        const modOpts = ['<option value="all">' + esc(t('FilterAllModules')) + '</option>']
-            .concat(moduleOptions().map((m) =>
-                `<option value="${esc(m)}"${state.moduleFilter === m ? ' selected' : ''}>${esc(m)}</option>`)).join('');
+    // Every view applies filters immediately. WorkCenter is a triage surface; a
+    // second Apply step adds weight without protecting a destructive operation.
+    const applyFilterValue = (which, value) => {
+        if (which === 'module') { state.moduleFilter = Array.isArray(value) ? value.slice() : (value && value !== 'all' ? [value] : []); }
+        else if (which === 'priority') { state.priorityFilter = value || 'all'; }
+        else if (which === 'mode') { state.modeFilter = value || 'all'; }
+        else if (which === 'worktype') { state.typeFilter = new Set(Array.isArray(value) ? value : (value && value !== 'all' ? [value] : [])); }
+        else if (which === 'sla') { state.slaFilter = Array.isArray(value) ? value.slice() : (value && value !== 'all' ? [value] : []); }
+        else if (which === 'pinned') { state.pinnedFilter = !!value; }
+        state.listPage = 0;
+    };
 
-        return `<div class="wcn-toolbar">
-            <div class="wcn-views" role="group" aria-label="${esc(t('ViewLabel'))}">
-                ${viewBtn('list', 'bx-list-ul', 'ViewList')}
-                ${viewBtn('split', 'bx-columns', 'ViewSplit')}
-                ${viewBtn('table', 'bx-table', 'ViewTable')}
-                ${viewBtn('kanban', 'bx-grid-alt', 'ViewKanban')}
-                ${viewBtn('calendar', 'bx-calendar', 'ViewCalendar')}
-                ${viewBtn('focus', 'bx-target-lock', 'ViewFocus')}
+    // Inbox type filtering belongs to the visible single-select chips. Other tabs
+    // retain the multi-select work-type filter for their broader work lists.
+    const filterPanel = () => {
+        const draft = {
+            module: state.moduleFilter.slice(),
+            priority: state.priorityFilter,
+            mode: state.modeFilter,
+            worktype: Array.from(state.typeFilter)
+        };
+        const selectedModules = Array.isArray(draft.module) ? draft.module : [];
+        const modOpts = moduleOptions().map((m) =>
+            `<option value="${esc(m)}"${selectedModules.includes(m) ? ' selected' : ''}>${esc(m)}</option>`).join('');
+        const wtSel = Array.isArray(draft.worktype) ? draft.worktype : (draft.worktype && draft.worktype !== 'all' ? [draft.worktype] : []);
+        const wtLabel = (k) => k === 'meetingInvite' ? t('ChipMeetingInvite') : t(TYPE_KEY[k]);
+        const wtOpts = ['task', 'approval', 'review', 'meetingInvite', 'issue', 'exception'].map((k) =>
+                `<option value="${k}"${wtSel.includes(k) ? ' selected' : ''}>${esc(wtLabel(k))}</option>`).join('');
+        // İş türü duplicates the visible type chips → hidden in İşlerim (kept in Havuz/Geçmiş
+        // where the chips curate differently). Atama modu is dead in İşlerim (everything is
+        // already owned) → hidden. SLA-durumu (replaces the removed headings) + Sabitli added.
+        const hideWorktype = state.tab === 'inbox' || state.tab === 'islerim';
+        const hideMode = state.tab === 'inbox' || state.tab === 'islerim';
+        const slaSel = state.slaFilter.slice();
+        const slaOpts = SLA_ORDER.map((k) => `<option value="${k}"${slaSel.includes(k) ? ' selected' : ''}>${esc(t(SLA_GROUP_KEY[k]))}</option>`).join('');
+
+        return `<div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3" id="wcnFilterPanel">
+            ${hideWorktype ? '' : `<div class="filter-chip">
+                <select class="form-select form-select-sm select2 wcn-select" multiple="multiple" data-wcn-filter="worktype" data-placeholder="${esc(t('FilterWorkType'))}" aria-label="${esc(t('FilterWorkType'))}">${wtOpts}</select>
+            </div>`}
+            <div class="filter-chip">
+                <select class="form-select form-select-sm select2 wcn-select" multiple="multiple" data-wcn-filter="module" data-placeholder="${esc(t('FilterAllModules'))}" aria-label="${esc(t('FilterModule'))}">${modOpts}</select>
             </div>
-            <button type="button" class="wcn-newbtn" data-wcn-new><i class="bx bx-plus"></i><span>${esc(t('NewButton'))}</span></button>
-            <div class="wcn-filters">
-                <div class="wcn-search">
-                    <i class="bx bx-search"></i>
-                    <input type="search" class="form-control form-control-sm" data-wcn-search
-                        value="${esc(state.search)}" placeholder="${esc(t('SearchPlaceholder'))}" aria-label="${esc(t('SearchPlaceholder'))}">
-                </div>
-                <select class="form-select form-select-sm wcn-select" data-wcn-filter="module" aria-label="${esc(t('FilterModule'))}">${modOpts}</select>
-                <select class="form-select form-select-sm wcn-select" data-wcn-filter="priority" aria-label="${esc(t('FilterPriority'))}">
-                    <option value="all">${esc(t('FilterAllPriorities'))}</option>
-                    ${['high', 'medium', 'low'].map((p) => `<option value="${p}"${state.priorityFilter === p ? ' selected' : ''}>${esc(t(PRIORITY_KEY[p]))}</option>`).join('')}
-                </select>
-                <select class="form-select form-select-sm wcn-select" data-wcn-filter="mode" aria-label="${esc(t('FilterMode'))}">
-                    <option value="all">${esc(t('FilterAllModes'))}</option>
-                    ${['direct', 'approval', 'groupQueue', 'offered'].map((m) => `<option value="${m}"${state.modeFilter === m ? ' selected' : ''}>${esc(t(MODE_KEY[m]))}</option>`).join('')}
+            <div class="filter-chip">
+                <select class="form-select form-select-sm select2 wcn-select" data-wcn-filter="priority" data-placeholder="${esc(t('FilterAllPriorities'))}" aria-label="${esc(t('FilterPriority'))}">
+                    <option value=""></option>
+                    ${['high', 'medium', 'low'].map((p) => `<option value="${p}"${draft.priority === p ? ' selected' : ''}>${esc(t(PRIORITY_KEY[p]))}</option>`).join('')}
                 </select>
             </div>
+            ${state.tab === 'inbox' ? '' : `<div class="filter-chip">
+                <select class="form-select form-select-sm select2 wcn-select" multiple="multiple" data-wcn-filter="sla" data-placeholder="${esc(t('FilterSlaStatus'))}" aria-label="${esc(t('FilterSlaStatus'))}">${slaOpts}</select>
+            </div>`}
+            ${hideMode ? '' : `<div class="filter-chip">
+                <select class="form-select form-select-sm select2 wcn-select" data-wcn-filter="mode" data-placeholder="${esc(t('FilterAllModes'))}" aria-label="${esc(t('FilterMode'))}">
+                    <option value=""></option>
+                    ${['direct', 'approval', 'groupQueue', 'offered'].map((m) => `<option value="${m}"${draft.mode === m ? ' selected' : ''}>${esc(t(MODE_KEY[m]))}</option>`).join('')}
+                </select>
+            </div>`}
+            ${state.tab === 'inbox' ? '' : `<label class="filter-chip d-inline-flex align-items-center gap-2 mb-0">
+                <input type="checkbox" class="form-check-input mt-0" data-wcn-filter="pinned"${state.pinnedFilter ? ' checked' : ''} aria-label="${esc(t('FilterPinned'))}">
+                <span>${esc(t('FilterPinned'))}</span>
+            </label>`}
         </div>`;
     };
 
@@ -431,94 +719,265 @@
         chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item)),
         chip(PRIORITY_KIND[item.priority], 'bx-flag', priorityLabel(item)),
         isBlocked(item) ? chip('danger', 'bx-lock-alt', t('BlockedLabel'), t(item.blockedState.reasonKey || 'BlockedBanner')) : '',
+        item.waitingOn ? chip('warning', 'bx-time-five', tf('WaitingOn', item.waitingOn)) : '',
+        (item.snoozedUntil && item.snoozedUntil > data.todayIso) ? chip('secondary', 'bx-moon', tf('SnoozedUntil', item.snoozedUntil)) : '',
         (item.systemState && SYSSTATE[item.systemState]) ? chip(SYSSTATE[item.systemState].kind, SYSSTATE[item.systemState].icon, t(SYSSTATE[item.systemState].key)) : '',
         item.requester ? chip('requester', 'bx-user', item.requester) : ''
     ].join('');
 
     const rowHtml = (item, opts) => {
         const compact = opts && opts.compact;
+        const inbox = opts && opts.inbox;
         const selected = item.id === state.selectedId;
-        const prim = primaryAction(item);
-        const quick = prim
-            ? `<button type="button" class="wcn-quick btn btn-sm btn-label-${prim.kind}" data-wcn-action="${prim.key}" data-wcn-id="${item.id}">` +
-              `${esc(t(prim.labelKey))}</button>`
-            : '';
-        const terminal = item.lifecycle === 'Done' || item.lifecycle === 'Cancelled';
-        const pinBtn = terminal ? '' : `<button type="button" class="wcn-pin${item.pinned ? ' pinned' : ''}" data-wcn-pin="${item.id}" title="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-label="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-pressed="${item.pinned}"><i class="bx ${item.pinned ? 'bxs-pin' : 'bx-pin'}"></i></button>`;
+        const terminal = isTerminal(item);
+        const pinBtn = inbox || terminal ? '' : `<button type="button" class="wcn-pin${item.pinned ? ' pinned' : ''}" data-wcn-pin="${item.id}" title="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-label="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-pressed="${item.pinned}"><i class="bx ${item.pinned ? 'bxs-pin' : 'bx-pin'}"></i></button>`;
         const onBehalfBadge = item.delegator
             ? `<span class="wcn-badge wcn-badge-delegation" title="${esc(tf('OnBehalfOf', item.delegator))}"><i class="bx bx-user-voice"></i>${esc(tf('OnBehalfShort', item.delegator))}</span>`
             : '';
+        const summary = item.itemType === 'meetingInvite'
+            ? [item.meetingStart && item.meetingEnd ? `${item.meetingStart}–${item.meetingEnd}` : '', item.meetingLocation, item.requester].filter(Boolean).join(' · ')
+            : item.summary;
         return `<div class="wcn-row${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0">
-            <span class="wcn-row-unread" aria-hidden="true"></span>
+            <span class="wcn-row-accent wcn-row-accent-${SLA_KIND[item.slaState] || 'secondary'}" aria-hidden="true"></span>
             <div class="wcn-row-body">
                 <div class="wcn-row-top">
+                    ${item.isUnread ? '<span class="wcn-row-unread-dot" aria-hidden="true"></span>' : ''}
                     <span class="wcn-row-title">${esc(item.title)}</span>
                     ${onBehalfBadge}
-                    <span class="wcn-badge wcn-badge-${STATUS_KIND[item.status]}">${esc(statusLabel(item))}</span>
+                    ${inbox ? '' : `<span class="wcn-badge wcn-badge-${STATUS_KIND[displayStatus(item)]}">${esc(statusLabel(item))}</span>`}
                 </div>
-                ${compact ? '' : `<p class="wcn-row-summary">${esc(item.summary)}</p>`}
+                ${compact ? '' : `<p class="wcn-row-summary">${esc(summary)}</p>`}
                 <div class="wcn-row-chips">${rowChips(item)}</div>
             </div>
-            <div class="wcn-row-actions">${pinBtn}${quick}</div>
+            <div class="wcn-row-actions">${pinBtn}${actionCluster(item)}</div>
         </div>`;
+    };
+
+    const inboxActionIcon = (action) => ({
+        accept: 'bx-check', approve: 'bx-check-shield', signoff: 'bx-check-circle',
+        reject: 'bx-x-circle', decline: 'bx-x-circle', return: 'bx-undo',
+        inquire: 'bx-question-mark', reassign: 'bx-user-pin', plan: 'bx-calendar-plus',
+        reviewMeeting: 'bx-calendar-event', scheduleReviewMeeting: 'bx-calendar-event'
+    }[action.key] || 'bx-right-arrow-alt');
+
+    const actionMenuTone = (action) => {
+        if (action.kind === 'danger' || action.role === 'reject' || action.semanticType === 'dispute') { return ' text-danger'; }
+        if (action.kind === 'success') { return ' text-success'; }
+        if (action.kind === 'warning') { return ' text-warning'; }
+        return '';
+    };
+
+    // A single overflow-menu row. Destructive, constructive and attention actions
+    // receive semantic text colours. Icon + label sit in a flex
+    // row (see .wcn-menu-item CSS) so the glyph is vertically centred with the text,
+    // not baseline-dropped like a raw Sneat dropdown-item.
+    const actionMenuLi = (item, action) => {
+        const interactionLocked = state.submittingItemId === item.id;
+        const disabled = action.disabled || interactionLocked ? ' disabled aria-disabled="true"' : '';
+        // Disabled reason sits on its own muted line under the label — never mashed onto
+        // the end of the label text (e.g. "Onayla ve kapat" + why-it's-locked).
+        const reason = action.disabled ? `<small class="wcn-menu-reason">${esc(action.disabledReason || t(action.disabledReasonKey))}</small>` : '';
+        return `<li><button type="button" class="dropdown-item wcn-menu-item${actionMenuTone(action)}" data-wcn-action="${action.key}" data-wcn-id="${item.id}"${disabled}><i class="bx ${inboxActionIcon(action)}"></i><span class="wcn-menu-text"><span class="wcn-menu-label">${esc(actionLabel(action))}</span>${reason}</span></button></li>`;
+    };
+
+    // Grouped menu body: neutral/constructive actions first, then — separated by a
+    // divider — the refuse/push-back family (Reddet/İade et/İtiraz), so accept and
+    // refuse never sit adjacent. `leadHtml` lets the Table cell put Görüntüle on top.
+    const isNegativeAction = (action) => action.role === 'reject' || action.semanticType === 'dispute';
+    const actionMenuBody = (item, actions, leadHtml) => {
+        const negative = actions.filter(isNegativeAction);
+        const positive = actions.filter((action) => !isNegativeAction(action));
+        const pos = (leadHtml || '') + positive.map((action) => actionMenuLi(item, action)).join('');
+        const neg = negative.map((action) => actionMenuLi(item, action)).join('');
+        return pos + (neg ? `<li><hr class="dropdown-divider m-0"></li>${neg}` : '');
+    };
+
+    // When the source record changed / is unreachable, itemActions locks every real
+    // action. The row must not go dead: the required next step IS the refresh, so it
+    // becomes the visible primary. Clearing systemState re-renders the real actions.
+    const refreshSourceBtn = (item) => {
+        const unreachable = item.systemState === 'sourceUnavailable';
+        const label = t(unreachable ? 'RetrySource' : 'RefreshSource');
+        const icon = unreachable ? 'bx-wifi-off' : 'bx-refresh';
+        return `<button type="button" class="btn btn-sm btn-label-warning wcn-inbox-action-primary" data-wcn-refresh-source="${item.id}" title="${esc(label)}"><i class="bx ${icon} me-1"></i>${esc(label)}</button>`;
+    };
+    const needsSourceRecovery = (item) =>
+        ['stale', 'sourceUnavailable', 'reconciliationRequired'].includes(item.systemState);
+
+    // Inbox is a decision queue, not a second task-detail surface. Each row answers
+    // what needs attention, why it is here and when it matters. The primary action
+    // appears once; less frequent actions stay behind a compact overflow menu.
+    // Stage-appropriate action cluster (primary + secondary icon + overflow ···),
+    // shared by the inbox rows and the Table view's "İşlemler" column. Actions come
+    // from getActions, so each row shows exactly what its lifecycle stage allows.
+    const actionCluster = (item) => {
+        if (needsSourceRecovery(item)) { return `<span class="wcn-inbox-actions">${refreshSourceBtn(item)}</span>`; }
+        const actions = itemActions(item);
+        if (!actions.length) {
+            return item.deepLink
+                ? `<span class="wcn-inbox-actions"><button type="button" class="btn btn-sm btn-label-secondary" data-wcn-open="${item.id}"><i class="bx bx-link-external me-1"></i>${esc(t('DetailOpenSource'))}</button></span>`
+                : '<span class="wcn-inbox-actions"></span>';
+        }
+        // One decision, one button. The primary action stays visible (Onayla/Kabul
+        // et…); every other action — including reject — lives behind the ··· overflow,
+        // so a destructive choice takes a deliberate second click. Same shape in the
+        // inbox rows and the Table view's İşlemler column.
+        const primary = actions.find((action) => action.primary && !action.disabled)
+            || actions.find((action) => !action.disabled)
+            || null;
+        const overflow = actions.filter((action) => !primary || action.key !== primary.key);
+        const interactionLocked = state.submittingItemId === item.id;
+        const primaryButton = primary
+            ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked ? ' disabled' : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
+            : '';
+        const overflowMenu = overflow.length
+            ? `<div class="dropdown"><button type="button" class="btn btn-icon wcn-inbox-action-more dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end">${actionMenuBody(item, overflow)}</ul></div>`
+            : '';
+        return `<span class="wcn-inbox-actions">${primaryButton}${overflowMenu}</span>`;
+    };
+
+    // Table view "İşlemler" cell — same decision-queue shape as the list rows: the
+    // primary action stays visible (Onayla/Kabul et…), everything else lives behind a
+    // borderless vertical kebab (golden's icon style). Görüntüle leads the menu, since
+    // a stray cell click does not open detail in the grid.
+    const tableActionCell = (item) => {
+        if (item.fixtureKind === 'triggerOnly') {
+            const trigger = item.trigger;
+            const surface = global.WorkCenterNextTriggerResponseResolver?.resolveTriggerResponse(trigger, {
+                submittingActionCode: state.submittingTriggerId === trigger.id ? state.submittingActionCode : null
+            });
+            if (!surface || surface.invalid) { return ''; }
+            const byCode = new Map((trigger.actions || []).map((action) => [action.code, action]));
+            const primary = byCode.get(surface.primaryActionCode);
+            const primaryButton = primary
+                ? `<button type="button" class="btn btn-sm btn-primary wcn-inbox-action-primary" data-wcn-trigger-action="${esc(primary.code)}" data-wcn-trigger-id="${esc(trigger.id)}"${primary.enabled === false || (state.submittingTriggerId === trigger.id && state.submittingActionCode === primary.code) ? ' disabled' : ''}>${esc(data.resolveLabel(primary.label))}</button>`
+                : '';
+            const overflowCodes = [...surface.secondaryActionCodes, ...surface.overflowActionCodes].filter(Boolean);
+            const overflowItems = overflowCodes.map((code) => {
+                const action = byCode.get(code);
+                return action
+                    ? `<li><button type="button" class="dropdown-item wcn-menu-item${['declineMeeting', 'reject', 'cancel'].includes(code) ? ' text-danger' : ''}" data-wcn-trigger-action="${esc(code)}" data-wcn-trigger-id="${esc(trigger.id)}"${action.enabled === false || state.submittingTriggerId === trigger.id ? ' disabled' : ''}><i class="bx ${['declineMeeting', 'reject', 'cancel'].includes(code) ? 'bx-x-circle' : 'bx-right-arrow-alt'}"></i><span>${esc(data.resolveLabel(action.label))}</span></button></li>`
+                    : '';
+            }).join('');
+            const calendarItem = trigger.source?.deepLink
+                ? `<li><button type="button" class="dropdown-item wcn-menu-item" data-wcn-trigger-open="${esc(trigger.id)}"><i class="bx bx-calendar-event"></i><span>${esc(t('ViewCalendar'))}</span></button></li>`
+                : '';
+            const kebab = overflowItems || calendarItem
+                ? `<div class="dropdown"><button type="button" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end m-0">${overflowItems}${calendarItem}</ul></div>`
+                : '';
+            return `<div class="d-flex align-items-center justify-content-end wcn-table-actions">${primaryButton}${kebab}</div>`;
+        }
+        const actions = itemActions(item);
+        const primary = actions.find((action) => action.primary && !action.disabled)
+            || actions.find((action) => !action.disabled)
+            || null;
+        const rest = actions.filter((action) => !primary || action.key !== primary.key);
+        const interactionLocked = state.submittingItemId === item.id;
+        // Stale source → refresh is the primary; real actions come back after it clears.
+        const primaryButton = needsSourceRecovery(item)
+            ? refreshSourceBtn(item)
+            : (primary
+                ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked ? ' disabled' : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
+                : '');
+        const viewItem = `<li><button type="button" class="dropdown-item wcn-menu-item" data-wcn-detail="${item.id}"><i class="bx bx-show"></i><span>${esc(t('RowView'))}</span></button></li>`;
+        const kebab = `<div class="dropdown"><button type="button" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end m-0">${actionMenuBody(item, needsSourceRecovery(item) ? [] : rest, viewItem)}</ul></div>`;
+        return `<div class="d-flex align-items-center justify-content-end wcn-table-actions">${primaryButton}${kebab}</div>`;
+    };
+
+    const inboxRowHtml = (item) => {
+        return rowHtml(item, { inbox: true });
+    };
+
+    const paginateList = (items) => {
+        const pages = Math.max(1, Math.ceil(items.length / state.pageLength));
+        state.listPage = Math.min(state.listPage, pages - 1);
+        const start = state.listPage * state.pageLength;
+        return { pageItems: items.slice(start, start + state.pageLength), pages, start };
+    };
+
+    const listPager = (total, pages, start) => {
+        if (total <= state.pageLength) { return ''; }
+        const end = Math.min(start + state.pageLength, total);
+        return `<div class="wcn-list-pager"><span>${start + 1}–${end} / ${total}</span><div class="btn-group btn-group-sm"><button type="button" class="btn btn-label-secondary btn-icon" data-wcn-list-page="prev"${state.listPage === 0 ? ' disabled' : ''} aria-label="${esc(t('PreviousPage'))}"><i class="bx bx-chevron-left"></i></button><button type="button" class="btn btn-label-secondary btn-icon" data-wcn-list-page="next"${state.listPage >= pages - 1 ? ' disabled' : ''} aria-label="${esc(t('NextPage'))}"><i class="bx bx-chevron-right"></i></button></div></div>`;
     };
 
     // ── List view (grouped by SLA) ────────────────────────────────────────────
     const renderList = (items) => {
-        if (!items.length) { return emptyState(); }
         state.visibleOrder = [];
-        // Inbox: approvals ride a distinct top band — they need a decision in
-        // place, not triage, so mixing them with accept-mode items blurs the two
-        // modes (spec v3 §4, Fable). The rest keeps the SLA grouping.
-        let approvalBand = '';
-        let rest = items;
         if (state.tab === 'inbox') {
-            const approvals = items.filter((i) => i.itemType === 'approval');
-            rest = items.filter((i) => i.itemType !== 'approval');
-            if (approvals.length) {
-                const rows = approvals.slice().sort(bySla).map((item) => { state.visibleOrder.push(item.id); return rowHtml(item); }).join('');
-                approvalBand = `<section class="wcn-group wcn-approval-band">
-                    <header class="wcn-group-head wcn-group-primary">
-                        <span class="wcn-group-dot"></span>
-                        <span class="wcn-group-name">${esc(t('ApprovalBand'))}</span>
-                        <span class="wcn-group-count">${approvals.length}</span>
-                    </header>
-                    <div class="wcn-group-rows">${rows}</div>
-                </section>`;
-            }
+            const sorted = items.slice().sort((a, b) => {
+                if (a.itemType === 'approval' && b.itemType !== 'approval') { return -1; }
+                if (a.itemType !== 'approval' && b.itemType === 'approval') { return 1; }
+                return bySla(a, b);
+            });
+            const entries = [
+                ...activeTriggers().map((trigger) => ({ kind: 'trigger', trigger })),
+                ...sorted.map((item) => ({ kind: 'item', item }))
+            ];
+            if (!entries.length) { return emptyState(); }
+            const paged = paginateList(entries);
+            const rows = paged.pageItems.map((entry) => {
+                if (entry.kind === 'trigger') { return renderTriggerResponses([entry.trigger]); }
+                state.visibleOrder.push(entry.item.id);
+                return inboxRowHtml(entry.item);
+            }).join('');
+            return `<div class="wcn-group-rows">${rows}</div>${listPager(entries.length, paged.pages, paged.start)}`;
         }
-        const groups = {};
-        rest.slice().sort(bySla).forEach((item) => {
-            (groups[item.slaState] = groups[item.slaState] || []).push(item);
-        });
-        const html = SLA_ORDER.filter((k) => groups[k] && groups[k].length).map((k) => {
-            const rows = groups[k].map((item) => { state.visibleOrder.push(item.id); return rowHtml(item); }).join('');
-            return `<section class="wcn-group">
-                <header class="wcn-group-head wcn-group-${SLA_KIND[k]}">
-                    <span class="wcn-group-dot"></span>
-                    <span class="wcn-group-name">${esc(t(SLA_GROUP_KEY[k]))}</span>
-                    <span class="wcn-group-count">${groups[k].length}</span>
-                </header>
-                <div class="wcn-group-rows">${rows}</div>
-            </section>`;
-        }).join('');
-        return `<div class="wcn-list">${approvalBand}${html}</div>`;
+        if (!items.length) { return emptyState(); }
+        // Flat, SLA-sorted (most urgent first) — the SLA-state group headings are
+        // replaced by the per-row left colour accent (wcn-row-accent), so urgency reads
+        // at a glance without the heading weight. Order preserved via bySla.
+        const sortedItems = items.slice().sort(bySla);
+        const paged = paginateList(sortedItems);
+        const rows = paged.pageItems.map((item) => { state.visibleOrder.push(item.id); return rowHtml(item); }).join('');
+        return `<div class="wcn-list wcn-group-rows">${rows}</div>${listPager(sortedItems.length, paged.pages, paged.start)}`;
     };
 
     // ── Split-detail view ─────────────────────────────────────────────────────
+    // Compact, self-contained card for the Split master list — and the future
+    // Calendar view's "unplanned work" rail (drag onto the calendar to schedule).
+    // Vertical layout so it never truncates like the wide list row did in a narrow
+    // column: a priority accent stripe, type, 2-line title, SLA/blocked chips, source.
+    const splitCard = (item) => {
+        const selected = item.id === state.selectedId;
+        const terminal = item.lifecycle === 'Done' || item.lifecycle === 'Cancelled';
+        const typeKind = item.itemType === 'meetingInvite' ? 'meeting' : item.itemType;
+        const isMeeting = item.itemType === 'meetingInvite';
+        const metaLine = isMeeting
+            ? [item.meetingStart && item.meetingEnd ? `${item.meetingStart}–${item.meetingEnd}` : '', item.meetingLocation].filter(Boolean).join(' · ')
+            : [item.sourceModule, item.requester].filter(Boolean).join(' · ');
+        const pinBtn = terminal ? '' : `<button type="button" class="wcn-splitcard-pin${item.pinned ? ' pinned' : ''}" data-wcn-pin="${item.id}" title="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-label="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-pressed="${item.pinned}"><i class="bx ${item.pinned ? 'bxs-pin' : 'bx-pin'}"></i></button>`;
+        return `<article class="card wcn-splitcard wcn-splitcard-p-${PRIORITY_KIND[item.priority]}${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" draggable="true" aria-label="${esc(tf('TableOpenRow', item.title))}">
+            <div class="wcn-splitcard-head">
+                <span class="wcn-inbox-type wcn-inbox-type-${typeKind}">${esc(typeLabel(item))}</span>
+                <span class="wcn-splitcard-head-end">
+                    <span class="wcn-chip wcn-chip-${PRIORITY_KIND[item.priority]} wcn-splitcard-prio"><i class="bx bx-flag"></i>${esc(priorityLabel(item))}</span>
+                    ${pinBtn}
+                </span>
+            </div>
+            <div class="wcn-splitcard-title">${esc(item.title)}</div>
+            <div class="wcn-splitcard-meta">
+                <span class="wcn-chip wcn-chip-${SLA_KIND[item.slaState]}"><i class="bx bx-time-five"></i>${esc(slaLabel(item))}</span>
+                ${isBlocked(item) ? `<span class="wcn-chip wcn-chip-danger"><i class="bx bx-lock-alt"></i>${esc(t('BlockedLabel'))}</span>` : ''}
+                ${item.delegator ? `<span class="wcn-chip wcn-chip-delegation"><i class="bx bx-user-voice"></i>${esc(tf('OnBehalfShort', item.delegator))}</span>` : ''}
+            </div>
+            <div class="wcn-splitcard-foot"><i class="bx bx-cube"></i><span>${esc(metaLine)}</span></div>
+        </article>`;
+    };
+
     const renderSplit = (items) => {
         if (!items.length) { return emptyState(); }
         state.visibleOrder = [];
         const rows = items.slice().sort(bySla).map((item) => {
             state.visibleOrder.push(item.id);
-            return rowHtml(item, { compact: true });
+            return splitCard(item);
         }).join('');
         if (!state.selectedId || state.visibleOrder.indexOf(state.selectedId) < 0) {
             state.selectedId = state.visibleOrder[0] || null;
         }
         return `<div class="wcn-split">
-            <div class="wcn-split-list">${rows}</div>
-            <div class="wcn-split-detail">${detailHtml(itemById(state.selectedId))}</div>
+            <nav class="wcn-split-list" aria-label="${esc(t('ViewList'))}">${rows}</nav>
+            <section class="card wcn-split-detail" aria-label="${esc(t('DetailTabsLabel'))}">${detailHtml(itemById(state.selectedId))}</section>
         </div>`;
     };
 
@@ -564,7 +1023,7 @@
 
     // ── Capability-driven depth blocks (spec v3 §5) — do-the-work in the
     // aggregator; define-the-work stays in the source (deep-link). ─────────────
-    const hasCap = (item, cap) => Array.isArray(item.capabilities) && item.capabilities.indexOf(cap) >= 0;
+    const hasCap = (item, cap) => Array.isArray(item.workItemCapabilities) && item.workItemCapabilities.indexOf(cap) >= 0;
 
     // Checklist — interactive (checking is "doing the work", stays here).
     const renderChecklist = (item) => {
@@ -581,7 +1040,7 @@
             </li>`).join('');
         return `<div class="wcn-detail-section">
             <h6 class="wcn-detail-h6">${esc(t('ChecklistLabel'))} <span class="wcn-count-inline">${done}/${items.length}</span></h6>
-            <div class="wcn-progress"><div class="wcn-progress-bar" style="inline-size:${Math.round(done / items.length * 100)}%"></div></div>
+            <progress class="wcn-progress" value="${done}" max="${items.length}" aria-label="${esc(t('ChecklistLabel'))}"></progress>
             <ul class="wcn-checks">${rows}</ul>
         </div>`;
     };
@@ -642,6 +1101,17 @@
         </div>`;
     };
 
+    const renderEvidence = (item) => {
+        if (!hasCap(item, 'evidence') || !item.evidence) { return ''; }
+        const entries = (item.evidence.items || []).map((entry) =>
+            `<li class="wcn-attach"><i class="bx bx-shield-quarter"></i><span class="wcn-attach-name">${esc(data.resolveLabel(entry.label) || entry.id)}</span></li>`
+        ).join('');
+        return `<div class="wcn-detail-section">
+            <h6 class="wcn-detail-h6">${esc(t('EvidenceMissing'))}</h6>
+            ${entries ? `<ul class="wcn-attachments">${entries}</ul>` : `<p class="text-muted mb-0">${esc(t('ActionDisabledEvidenceIncomplete'))}</p>`}
+        </div>`;
+    };
+
     // Personal note — the thin overlay WorkCenter owns (only I see it).
     const renderNote = (item) => {
         if (isTerminal(item)) { return ''; }
@@ -681,6 +1151,195 @@
         </div>`;
     };
 
+    const formatMoney = (value, currency) => {
+        const amount = Number(value);
+        if (!Number.isFinite(amount)) { return '—'; }
+        try {
+            return new Intl.NumberFormat(global.CurrentLanguage || undefined, {
+                style: 'currency',
+                currency: currency || 'TRY',
+                maximumFractionDigits: 2
+            }).format(amount);
+        } catch (error) {
+            return `${amount.toLocaleString()} ${currency || ''}`.trim();
+        }
+    };
+
+    const sectionHead = (icon, titleKey) =>
+        `<div class="wcn-business-head"><span class="wcn-business-icon"><i class="bx ${icon}"></i></span><h6 class="wcn-detail-h6">${esc(t(titleKey))}</h6></div>`;
+
+    const renderApprovalContext = (item) => {
+        if (item.itemType !== 'approval' || !hasCap(item, 'approvalContext') || item.amount == null) { return ''; }
+        const lines = (item.lineItems || []).map((line) => `<tr>
+            <td><span class="wcn-line-desc">${esc(line.desc)}</span><span class="wcn-line-code">${esc(line.gl || '—')} · ${esc(line.costCenter || '—')}</span></td>
+            <td class="text-end">${esc(String(line.qty))}</td>
+            <td class="text-end">${esc(formatMoney(line.unitPrice, item.currency))}</td>
+            <td class="text-end wcn-line-total">${esc(formatMoney(Number(line.qty) * Number(line.unitPrice), item.currency))}</td>
+        </tr>`).join('');
+        return `<section class="wcn-detail-section wcn-business-section">
+            ${sectionHead('bx-wallet-alt', 'ApprovalContextTitle')}
+            <div class="wcn-kpi-grid">
+                <div class="wcn-kpi wcn-kpi-primary"><span>${esc(t('ApprovalAmount'))}</span><strong>${esc(formatMoney(item.amount, item.currency))}</strong></div>
+                <div class="wcn-kpi"><span>${esc(t('ApprovalThreshold'))}</span><strong>${esc(formatMoney(item.threshold, item.currency))}</strong></div>
+                <div class="wcn-kpi"><span>${esc(t('BudgetImpact'))}</span><strong>${esc(item.budgetImpact)}</strong></div>
+            </div>
+            ${lines ? `<div class="wcn-subsection-title">${esc(t('LineItemsTitle'))}</div>
+                <div class="table-responsive wcn-line-table-wrap"><table class="table table-sm wcn-line-table">
+                    <thead><tr><th>${esc(t('LineDescription'))}</th><th class="text-end">${esc(t('LineQuantity'))}</th><th class="text-end">${esc(t('LineUnitPrice'))}</th><th class="text-end">${esc(t('ApprovalAmount'))}</th></tr></thead>
+                    <tbody>${lines}</tbody>
+                </table></div>` : ''}
+        </section>`;
+    };
+
+    const renderReviewContext = (item) => {
+        if (item.itemType !== 'review' || !hasCap(item, 'reviewContext') || !item.artifact) { return ''; }
+        const checks = (item.reviewChecklist || []).map((check) =>
+            `<li class="wcn-review-check ${check.done ? 'is-done' : ''}"><i class="bx ${check.done ? 'bx-check-circle' : 'bx-circle'}"></i><span>${esc(check.label)}</span><small>${esc(t(check.done ? 'ReviewCheckComplete' : 'ReviewCheckPending'))}</small></li>`
+        ).join('');
+        const signatures = (item.signatureHistory || []).map((signature) =>
+            `<li class="wcn-process-row"><span class="wcn-process-marker is-${esc(signature.status)}"><i class="bx bx-pen"></i></span><div><strong>${esc(signature.actor)}</strong><span>${esc(t(signature.status === 'signed' ? 'SignatureSigned' : 'SignaturePending'))}${signature.at ? ` · ${esc(signature.at)}` : ''}</span></div></li>`
+        ).join('');
+        return `<section class="wcn-detail-section wcn-business-section">
+            ${sectionHead('bx-file-find', 'ReviewContextTitle')}
+            <a class="wcn-artifact-card" href="${esc(item.artifact.url)}">
+                <span class="wcn-business-icon"><i class="bx bx-file"></i></span>
+                <span><strong>${esc(item.artifact.name)}</strong><small>${esc(t('ReviewVersion'))}: ${esc(item.artifact.version)}</small></span>
+                <i class="bx bx-link-external"></i>
+            </a>
+            ${checks ? `<div class="wcn-subsection-title">${esc(t('ReviewChecklistTitle'))}</div><ul class="wcn-review-checks">${checks}</ul>` : ''}
+            ${signatures ? `<div class="wcn-subsection-title">${esc(t('SignatureHistoryTitle'))}</div><ol class="wcn-process-list">${signatures}</ol>` : ''}
+        </section>`;
+    };
+
+    const renderExceptionContext = (item) => {
+        if (item.itemType !== 'exception' || !hasCap(item, 'exceptionContext') || !item.discrepancy) { return ''; }
+        const d = item.discrepancy;
+        const options = (item.resolutionOptions || []).map((option) => `<li><i class="bx bx-chevron-right"></i><span>${esc(option)}</span></li>`).join('');
+        return `<section class="wcn-detail-section wcn-business-section">
+            ${sectionHead('bx-error-alt', 'ExceptionContextTitle')}
+            <div class="wcn-discrepancy">
+                <div><span>${esc(t('DiscrepancyField'))}</span><strong>${esc(d.field)}</strong></div>
+                <div><span>${esc(t('ExpectedValue'))}</span><strong>${esc(String(d.expected))}</strong></div>
+                <div><span>${esc(t('ActualValue'))}</span><strong>${esc(String(d.actual))}</strong></div>
+                <div class="is-alert"><span>${esc(t('DeltaPercent'))}</span><strong>${esc(String(d.deltaPct))}%</strong></div>
+            </div>
+            ${item.rootCause ? `<div class="wcn-callout"><i class="bx bx-search-alt"></i><div><span>${esc(t('RootCause'))}</span><strong>${esc(item.rootCause)}</strong></div></div>` : ''}
+            ${options ? `<div class="wcn-subsection-title">${esc(t('ResolutionOptions'))}</div><ul class="wcn-option-list">${options}</ul>` : ''}
+        </section>`;
+    };
+
+    const renderTaskContext = (item) => {
+        if (item.itemType !== 'task' || !hasCap(item, 'taskContext') || !item.effort) { return ''; }
+        const estimate = Number(item.effort.estimate) || 0;
+        const spent = Number(item.effort.spent) || 0;
+        const progress = estimate ? Math.min(100, Math.round((spent / estimate) * 100)) : 0;
+        const history = (item.assignmentHistory || []).map((entry) =>
+            `<li class="wcn-process-row"><span class="wcn-process-marker"><i class="bx bx-user"></i></span><div><strong>${esc(entry.assignee)}</strong><span>${esc(entry.action)} · ${esc(entry.at)}</span></div></li>`
+        ).join('');
+        return `<section class="wcn-detail-section wcn-business-section">
+            ${sectionHead('bx-timer', 'TaskContextTitle')}
+            <div class="wcn-effort-head"><div><span>${esc(t('EffortSpent'))}</span><strong>${esc(String(spent))} / ${esc(String(estimate))} ${esc(t('HoursShort'))}</strong></div><span>${progress}%</span></div>
+            <div class="progress wcn-effort-progress" role="progressbar" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar wcn-progress-${Math.round(progress / 10) * 10}"></div></div>
+            ${history ? `<div class="wcn-subsection-title">${esc(t('AssignmentHistoryTitle'))}</div><ol class="wcn-process-list">${history}</ol>` : ''}
+        </section>`;
+    };
+
+    const renderMeetingContext = (item) => {
+        if (item.itemType !== 'meetingInvite' || !hasCap(item, 'meetingContext')) { return ''; }
+        const agenda = (item.agenda || []).map((entry) => `<li>${esc(entry)}</li>`).join('');
+        const participants = (item.participants || []).map((person) =>
+            `<li class="wcn-participant"><span class="avatar avatar-sm"><span class="avatar-initial rounded-circle bg-label-primary">${esc(person.name.charAt(0))}</span></span><div><strong>${esc(person.name)}</strong><span>${esc(t(person.role === 'organizer' ? 'ParticipantOrganizer' : person.role === 'optional' ? 'ParticipantOptional' : 'ParticipantRequired'))}</span></div><small class="is-${esc(person.status)}">${esc(t(person.status === 'accepted' ? 'AttendanceAccepted' : person.status === 'declined' ? 'AttendanceDeclined' : 'AttendancePending'))}</small></li>`
+        ).join('');
+        return `<section class="wcn-detail-section wcn-business-section">
+            ${sectionHead('bx-calendar-event', 'MeetingContextTitle')}
+            <div class="wcn-meeting-facts"><span><i class="bx bx-time"></i>${esc(item.meetingStart)}–${esc(item.meetingEnd)}</span><span><i class="bx bx-map"></i>${esc(item.meetingLocation)}</span><span><i class="bx bx-user-check"></i>${esc(t(item.attendanceStatus === 'accepted' ? 'AttendanceAccepted' : item.attendanceStatus === 'declined' ? 'AttendanceDeclined' : 'AttendancePending'))}</span></div>
+            ${agenda ? `<div class="wcn-subsection-title">${esc(t('MeetingAgendaTitle'))}</div><ol class="wcn-agenda-list">${agenda}</ol>` : ''}
+            ${participants ? `<div class="wcn-subsection-title">${esc(t('MeetingParticipantsTitle'))}</div><ul class="wcn-participants">${participants}</ul>` : ''}
+        </section>`;
+    };
+
+    const renderBusinessContext = (item) => {
+        if (!hasCap(item, 'businessContext')) { return ''; }
+        const sections = item.businessContext?.sections || [];
+        if (!sections.length) {
+            return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-grid-alt', 'BusinessContextLabel')}<p class="text-muted mb-0">${esc(t('EmptyBusinessContext'))}</p></section>`;
+        }
+        const renderValue = (field) => {
+            if (field.restricted || field.redacted) { return `<span class="text-muted">${esc(t('RedactedValue'))}</span>`; }
+            if (field.kind === 'boolean') { return esc(t(field.value ? 'Yes' : 'No')); }
+            if (field.kind === 'link' && field.href) {
+                return `<a href="${esc(field.href)}" target="_blank" rel="noopener noreferrer">${esc(data.resolveLabel(field.value) || t('RelatedRecordOpen'))}</a>`;
+            }
+            return esc(data.resolveLabel(field.value) || field.value || '—');
+        };
+        return sections.map((section) => {
+            const rows = (section.fields || []).map((field) =>
+                `<div class="wcn-fact"><span>${esc(data.resolveLabel(field.label))}</span><strong>${renderValue(field)}</strong></div>`
+            ).join('');
+            return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-grid-alt', section.title?.key || 'BusinessContextLabel')}<div class="wcn-facts-grid">${rows}</div></section>`;
+        }).join('');
+    };
+
+    const renderApprovalChain = (item) => {
+        if (!hasCap(item, 'approvalChain') || !(item.approvalChain || []).length) { return ''; }
+        const rows = item.approvalChain.map((step) => {
+            const key = step.status === 'approved' ? 'ApprovalStatusApproved' : step.status === 'rejected' ? 'ApprovalStatusRejected' : 'ApprovalStatusPending';
+            return `<li class="wcn-process-row"><span class="wcn-process-marker is-${esc(step.status)}"><i class="bx ${step.status === 'approved' ? 'bx-check' : step.status === 'rejected' ? 'bx-x' : 'bx-time-five'}"></i></span><div><strong>${esc(step.approver)}</strong><span>${esc(tf('ApprovalLevelValue', step.level))} · ${esc(t(key))}${step.at ? ` · ${esc(step.at)}` : ''}</span></div></li>`;
+        }).join('');
+        return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-git-branch', 'ApprovalChainTitle')}<ol class="wcn-process-list">${rows}</ol></section>`;
+    };
+
+    const renderThread = (item) => {
+        if (!hasCap(item, 'thread') || !(item.thread || []).length) { return ''; }
+        const messages = item.thread.map((message) => {
+            const mine = message.actor === data.currentUser.name;
+            return `<li class="wcn-thread-message${mine ? ' is-mine' : ''}"><div class="wcn-thread-bubble"><strong>${esc(message.actor)}</strong><p>${esc(message.text)}</p><time>${esc(message.at)}</time></div></li>`;
+        }).join('');
+        return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-conversation', 'ConversationTitle')}<ul class="wcn-thread">${messages}</ul></section>`;
+    };
+
+    const renderRelated = (item) => {
+        if (!hasCap(item, 'related') || !(item.related || []).length) { return ''; }
+        const typeKeys = { parent: 'RelatedTypeParent', child: 'RelatedTypeChild', transaction: 'RelatedTypeTransaction', document: 'RelatedTypeDocument' };
+        const rows = item.related.map((record) => `<a class="wcn-related-row" href="${esc(record.link)}"><span class="wcn-related-type">${esc(t(typeKeys[record.type] || 'RelatedTypeDocument'))}</span><span><strong>${esc(record.title)}</strong><small>${esc(record.id)}</small></span><i class="bx bx-chevron-right"></i></a>`).join('');
+        return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-link', 'RelatedRecordsTitle')}<div class="wcn-related-list">${rows}</div></section>`;
+    };
+
+    const renderCompliance = (item) => {
+        if (!hasCap(item, 'compliance') || !(item.complianceFlags || []).length) { return ''; }
+        const kindKeys = { policy: 'CompliancePolicy', limit: 'ComplianceLimit', sod: 'ComplianceSoD' };
+        const flags = item.complianceFlags.map((flag) => `<li class="wcn-compliance-flag is-${esc(flag.severity)}"><i class="bx ${flag.severity === 'high' ? 'bx-error-circle' : 'bx-info-circle'}"></i><div><strong>${esc(t(kindKeys[flag.kind] || 'CompliancePolicy'))}</strong><span>${esc(flag.message)}</span></div></li>`).join('');
+        return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-shield-quarter', 'ComplianceTitle')}<ul class="wcn-compliance-list">${flags}</ul></section>`;
+    };
+
+    const renderDelegation = (item) => {
+        if (!item.delegator) { return ''; }
+        return `<section class="wcn-detail-section wcn-business-section">
+            ${sectionHead('bx-user-pin', 'DelegationTitle')}
+            <div class="wcn-delegation-card"><i class="bx bx-transfer-alt"></i><div><strong>${esc(tf('DelegationOnBehalf', item.delegator))}</strong><span>${esc(t('DelegationDelegate'))}: ${esc(item.assignee || data.currentUser.name)}</span></div></div>
+        </section>`;
+    };
+
+    // Source/system context block — the "where this came from" meta grid + open-source jump.
+    const renderSourceContext = (item, meta) => `<div class="wcn-detail-section">
+            <h6 class="wcn-detail-h6">${esc(t('DetailContext'))}</h6>
+            <div class="wcn-meta-grid">
+                ${meta('DetailRequester', item.requester)}
+                ${meta('DetailAssignee', item.assignee || '—')}
+                ${meta('DetailNativeStatus', item.nativeStatusText)}
+                ${meta('DetailSourceId', item.sourceId)}
+                ${meta('DetailModuleName', item.sourceModuleName || item.sourceModule)}
+                ${meta('DetailModuleId', item.sourceModuleId || t('SourceIdentityPending'))}
+                ${meta('DetailSourceType', item.sourceObjectType || item.sourceType)}
+                ${meta('DetailActionDepth', t(item.actionDepth === 'deeplink' ? 'ActionDepthDeeplink' : 'ActionDepthInline'))}
+                ${meta('DetailSourceVersion', item.concurrency ? `${item.concurrency.kind}: ${item.concurrency.token}` : '—')}
+                ${item.lifecycleOwner ? meta('DetailLifecycleOwner', item.lifecycleOwner.providerCode) : ''}
+            </div>
+            <button type="button" class="btn btn-sm btn-label-primary wcn-opensource" data-wcn-open="${item.id}" aria-label="${esc(tf('OpenSourceAria', item.sourceModuleName || item.sourceModule, item.sourceId))}">
+                <i class="bx bx-link-external"></i><span>${esc(t('DetailOpenSource'))}</span>
+            </button>
+        </div>`;
+
     const detailHtml = (item) => {
         if (!item) {
             return `<div class="wcn-detail-empty">
@@ -688,13 +1347,28 @@
                 <p>${esc(t('SplitNoSelection'))}</p>
             </div>`;
         }
-        const acts = itemActions(item);
+        const surface = global.WorkCenterNextTaskDetailResolver?.resolveTaskDetailSurface(item._fixture || item, {
+            submittingActionCode: state.submittingActionCode || null
+        });
+        if (!surface || surface.invalid) {
+            return `<div class="wcn-detail-empty" role="alert">
+                <i class="bx bx-error-circle"></i>
+                <h5>${esc(t('FixtureInvalidTitle'))}</h5>
+                <p>${esc(t('FixtureInvalidDesc'))}</p>
+            </div>`;
+        }
+        const byCode = new Map(itemActions(item).map((candidate) => [candidate.code, candidate]));
+        const placedCodes = [surface.primaryActionCode, ...surface.secondaryActionCodes, ...surface.overflowActionCodes].filter(Boolean);
+        const acts = placedCodes.map((code) => byCode.get(code)).filter(Boolean);
         const actions = acts.length
             ? acts.map((a) => {
                 const dis = a.disabled ? ' disabled' : '';
                 const title = a.disabled ? ` title="${esc(t(a.disabledReasonKey || 'BlockedBanner'))}"` : '';
-                return `<button type="button" class="btn btn-sm btn-${a.primary ? '' : 'label-'}${a.kind}"${dis}${title} data-wcn-action="${a.key}" data-wcn-id="${item.id}">` +
-                    `${esc(t(a.labelKey))}</button>`;
+                const reason = a.disabled
+                    ? `<small class="wcn-action-disabled-reason">${esc(a.disabledReason || t(a.disabledReasonKey || 'BlockedBanner'))}</small>`
+                    : '';
+                return `<span class="wcn-action-wrap"><button type="button" class="btn btn-sm btn-${a.primary ? '' : 'label-'}${a.kind}"${dis}${title} data-wcn-action="${a.key}" data-wcn-id="${item.id}">` +
+                    `${esc(t(a.labelKey))}</button>${reason}</span>`;
             }).join('')
             : `<span class="wcn-noactions">${esc(t('NoActionsAvailable'))}</span>`;
         // Dependency banner (spec v2 §5): source-computed block, read-only here.
@@ -711,10 +1385,11 @@
             : '';
         // System/stale state (spec v3 §3) — "record changed", "source unreachable",
         // "your authority ended". Mock representation; the source resolves the truth.
-        const sys = item.systemState && SYSSTATE[item.systemState];
-        const sysAction = item.systemState === 'record-changed'
+        const bannerCode = surface.criticalBanner?.code || null;
+        const sys = bannerCode && SYSSTATE[bannerCode];
+        const sysAction = bannerCode === 'stale'
             ? `<button type="button" class="btn btn-sm btn-label-warning" data-wcn-refresh-source="${item.id}">${esc(t('RefreshSource'))}</button>`
-            : item.systemState === 'source-unreachable'
+            : bannerCode === 'sourceUnavailable'
                 ? `<button type="button" class="btn btn-sm btn-label-danger" data-wcn-refresh-source="${item.id}">${esc(t('RetrySource'))}</button>`
                 : '';
         const sysBanner = sys
@@ -728,6 +1403,9 @@
         const snoozeNote = (item.snoozedUntil && item.snoozedUntil > data.todayIso)
             ? `<div class="wcn-parked wcn-parked-snooze" role="note"><i class="bx bx-moon"></i><span>${esc(tf('SnoozedUntil', item.snoozedUntil))}</span></div>`
             : '';
+        const notices = surface.notices.map((notice) =>
+            `<div class="wcn-parked wcn-parked-info" role="note"><i class="bx bx-info-circle"></i><span>${esc(t(notice.labelKey))}</span></div>`
+        ).join('');
         // Personal actions (pin / snooze) — the thin overlay WorkCenter owns.
         const isSnoozed = item.snoozedUntil && item.snoozedUntil > data.todayIso;
         const personal = (item.lifecycle === 'Done' || item.lifecycle === 'Cancelled') ? '' :
@@ -756,71 +1434,78 @@
         const meta = (labelKey, value) =>
             `<div class="wcn-meta-cell"><span class="wcn-meta-label">${esc(t(labelKey))}</span><span class="wcn-meta-value">${esc(value)}</span></div>`;
 
-        return `<div class="wcn-detail" data-wcn-detail="${item.id}">
-            <div class="wcn-detail-head">
-                <div class="wcn-detail-source">
-                    ${chip('module', 'bx-cube', item.sourceModule, sourceTitle(item))}
-                    ${item.sourceModuleId ? chip('secondary', 'bx-hash', item.sourceModuleId, item.sourceModuleName) : ''}
-                    ${chip('type', item.typeIcon, typeLabel(item))}
-                    <span class="wcn-badge wcn-badge-${STATUS_KIND[item.status]}">${esc(statusLabel(item))}</span>
-                </div>
-                <h5 class="wcn-detail-title">${esc(item.title)}</h5>
-                <div class="wcn-detail-chips">
-                    ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
-                    ${chip(PRIORITY_KIND[item.priority], 'bx-flag', priorityLabel(item))}
-                    ${chip('role', 'bx-user-check', t(ROLE_KEY[item.viewerRole] || item.viewerRole))}
-                </div>
+        // Card-grid detail (golden reference parity): a command card on top, then a
+        // main column (work content, wide) beside a sidebar (source/status meta,
+        // narrow), and a full-width activity feed. Widths are driven by content:
+        // wide work → col-lg-8, compact meta → col-lg-4, conversation → col-12.
+        const card = (inner) => inner
+            ? `<section class="card backbone-preview-section wcn-detail-card p-4">${inner}</section>`
+            : '';
+        const reviewNote = (item.itemType === 'task' && item.lifecycle === 'PendingReview')
+            ? `<div class="wcn-review-note"><i class="bx bx-hourglass"></i><span>${esc(t('AwaitingReview'))}</span></div>`
+            : '';
+        const summarySection = `<div class="wcn-detail-section">
+            <h6 class="wcn-detail-h6">${esc(t('DetailSummary'))}</h6>
+            <p class="wcn-detail-summary">${esc(item.summary)}</p>
+        </div>`;
+        const activitySection = `<div class="wcn-detail-section">
+            <h6 class="wcn-detail-h6">${esc(t('ActivityLabel'))}</h6>
+            ${renderComposer(item)}
+            <ul class="wcn-audit">${auditRows}</ul>
+        </div>`;
+
+        // Command card — identity, status, actions and personal overlay. Everything
+        // the viewer decides on lives here, above the read-only detail cards.
+        const commandCard = `<section class="card backbone-preview-section wcn-detail-card wcn-detail-command p-4">
+            <div class="wcn-detail-source">
+                ${chip('module', 'bx-cube', item.sourceModule, sourceTitle(item))}
+                ${item.sourceModuleId ? chip('secondary', 'bx-hash', item.sourceModuleId, item.sourceModuleName) : ''}
+                ${chip('type', item.typeIcon, typeLabel(item))}
+                <span class="wcn-badge wcn-badge-${STATUS_KIND[displayStatus(item)]}">${esc(statusLabel(item))}</span>
             </div>
-
+            <h5 class="wcn-detail-title">${esc(item.title)}</h5>
+            <div class="wcn-detail-chips">
+                ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
+                ${chip(PRIORITY_KIND[item.priority], 'bx-flag', priorityLabel(item))}
+                ${chip('role', 'bx-user-check', t(ROLE_KEY[item.viewerRole] || item.viewerRole))}
+            </div>
             ${renderStepBar(item)}
-
-            ${(item.itemType === 'task' && item.lifecycle === 'PendingReview')
-                ? `<div class="wcn-review-note"><i class="bx bx-hourglass"></i><span>${esc(t('AwaitingReview'))}</span></div>`
-                : ''}
-            ${sysBanner}
-            ${blockedBanner}
-            ${waitingNote}
-            ${snoozeNote}
+            ${reviewNote}
+            ${sysBanner}${blockedBanner}${notices}${waitingNote}${snoozeNote}
             <div class="wcn-detail-actions" role="group" aria-label="${esc(t('ActionsLabel'))}">${actions}</div>
             ${personal}
+        </section>`;
 
-            ${renderPlanDates(item)}
+        // Flowing bento — each card carries its own width, and the deck is ordered so
+        // cards pair up to a full 12-column line (8+4, 6+6, 4+4+4). A wide "work" card
+        // sits beside a compact "meta" card, so no single fixed column can run tall and
+        // leave the other side a void. Absent capabilities simply drop out and the rest
+        // compacts upward. Widths are chosen by content weight, not category.
+        const cell = (inner, col) => inner
+            ? `<div class="col-12 ${col}"><section class="card backbone-preview-section wcn-detail-card p-4">${inner}</section></div>`
+            : '';
+        const bento = [
+            cell(summarySection, 'col-lg-8'),
+            cell(renderPlanDates(item), 'col-lg-4'),
+            cell(renderBusinessContext(item), 'col-lg-8'),
+            cell(renderTimesheet(item), 'col-lg-4'),
+            cell(renderChecklist(item), 'col-lg-6'),
+            cell(renderSubtasks(item), 'col-lg-6'),
+            cell(renderDependencies(item), 'col-lg-6'),
+            cell(renderSourceContext(item, meta), 'col-lg-6'),
+            cell(`${renderDelegation(item)}${renderApprovalChain(item)}`, 'col-lg-6'),
+            cell(renderCompliance(item), 'col-lg-6'),
+            cell(renderNote(item), 'col-lg-4'),
+            cell(renderAttachments(item), 'col-lg-4'),
+            cell(renderEvidence(item), 'col-lg-4'),
+            cell(renderRelated(item), 'col-lg-8')
+        ].filter(Boolean).join('');
 
-            <div class="wcn-detail-section">
-                <h6 class="wcn-detail-h6">${esc(t('DetailSummary'))}</h6>
-                <p class="wcn-detail-summary">${esc(item.summary)}</p>
-            </div>
-
-            ${renderChecklist(item)}
-            ${renderSubtasks(item)}
-            ${renderTimesheet(item)}
-            ${renderDependencies(item)}
-            ${renderAttachments(item)}
-
-            <div class="wcn-detail-section">
-                <h6 class="wcn-detail-h6">${esc(t('DetailContext'))}</h6>
-                <div class="wcn-meta-grid">
-                    ${meta('DetailRequester', item.requester)}
-                    ${meta('DetailAssignee', item.assignee || '—')}
-                    ${meta('DetailNativeStatus', item.nativeStatus)}
-                    ${meta('DetailSourceId', item.sourceId)}
-                    ${meta('DetailModuleName', item.sourceModuleName || item.sourceModule)}
-                    ${meta('DetailModuleId', item.sourceModuleId || t('SourceIdentityPending'))}
-                    ${meta('DetailSourceType', item.sourceObjectType || item.sourceType)}
-                    ${meta('DetailActionDepth', t(item.actionDepth === 'deeplink' ? 'ActionDepthDeeplink' : 'ActionDepthInline'))}
-                    ${meta('DetailSourceVersion', item.sourceVersion || '—')}
-                </div>
-                <button type="button" class="btn btn-sm btn-label-primary wcn-opensource" data-wcn-open="${item.id}" aria-label="${esc(tf('OpenSourceAria', item.sourceModuleName || item.sourceModule, item.sourceId))}">
-                    <i class="bx bx-link-external"></i><span>${esc(t('DetailOpenSource'))}</span>
-                </button>
-            </div>
-
-            ${renderNote(item)}
-
-            <div class="wcn-detail-section">
-                <h6 class="wcn-detail-h6">${esc(t('ActivityLabel'))}</h6>
-                ${renderComposer(item)}
-                <ul class="wcn-audit">${auditRows}</ul>
+        return `<div class="wcn-detail wcn-details-page">
+            <div class="row g-4 wcn-detail-grid">
+                <div class="col-12">${commandCard}</div>
+                ${bento}
+                <div class="col-12">${card(activitySection)}</div>
             </div>
         </div>`;
     };
@@ -836,15 +1521,22 @@
         requester: (a, b) => a.requester.localeCompare(b.requester)
     };
 
-    const sortIndicator = (key) => state.sortKey === key
-        ? `<i class="bx ${state.sortDir === 'asc' ? 'bx-chevron-up' : 'bx-chevron-down'}"></i>` : '';
-
-    const th = (key, labelKey) => {
-        const sorted = state.sortKey === key;
-        const ariaSort = sorted ? (state.sortDir === 'asc' ? 'ascending' : 'descending') : 'none';
-        return `<th class="wcn-th${sorted ? ' sorted' : ''}" aria-sort="${ariaSort}">
-            <button type="button" class="wcn-thbtn" data-wcn-sort="${key}" aria-label="${esc(tf('SortBy', t(labelKey)))}">${esc(t(labelKey))} ${sortIndicator(key)}</button>
-        </th>`;
+    const triggerTableRows = () => {
+        return activeTriggers().map((trigger) => ({
+            fixtureKind: 'triggerOnly',
+            trigger,
+            id: trigger.id,
+            itemType: 'meetingInvite',
+            typeIcon: 'bx-calendar-event',
+            title: data.resolveLabel(trigger.title),
+            summary: data.resolveLabel(trigger.summary),
+            sourceModule: trigger.source?.providerCode || 'calendar',
+            status: 'AttendancePending',
+            priority: null,
+            slaState: 'none',
+            slaDiffDays: null,
+            requester: ''
+        }));
     };
 
     const renderTable = (items) => {
@@ -854,38 +1546,102 @@
         if (state.sortDir === 'desc') { sorted.reverse(); }
         state.visibleOrder = sorted.map((i) => i.id);
 
-        // Prune selection to what's visible.
-        Array.from(state.tableSelected).forEach((id) => { if (state.visibleOrder.indexOf(id) < 0) { state.tableSelected.delete(id); } });
-        const allSel = sorted.length > 0 && sorted.every((i) => state.tableSelected.has(i.id));
-
-        const body = sorted.map((item) => `<tr class="wcn-tr${state.tableSelected.has(item.id) ? ' selected' : ''}${state.bulkFailedIds.has(item.id) ? ' wcn-tr-failed' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
-            <td class="wcn-td-check"><input type="checkbox" class="form-check-input" data-wcn-check="${item.id}"${state.tableSelected.has(item.id) ? ' checked' : ''} aria-label="${esc(item.title)}"></td>
-            <td>${chip('type', item.typeIcon, typeLabel(item))}</td>
-            <td class="wcn-td-title">${esc(item.title)}${state.bulkFailedIds.has(item.id) ? ` <span class="wcn-fail-tag"><i class="bx bx-x-circle"></i>${esc(t('BulkRowFailed'))}</span>` : ''}</td>
-            <td>${esc(item.sourceModule)}</td>
-            <td><span class="wcn-badge wcn-badge-${STATUS_KIND[item.status]}">${esc(statusLabel(item))}</span></td>
-            <td>${chip(PRIORITY_KIND[item.priority], 'bx-flag', priorityLabel(item))}</td>
-            <td>${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}</td>
-            <td>${esc(item.requester)}</td>
-        </tr>`).join('');
-
-        return `<div class="wcn-tablewrap">
-            <table class="wcn-table">
+        return `<div class="card wcn-datatable-card">
+            <div class="card-datatable table-responsive">
+            <table id="wcnDataTable" data-dt-standard="v2" class="datatables-workcenter table border-top">
                 <caption class="visually-hidden">${esc(t('TableCaption'))}</caption>
                 <thead><tr>
-                    <th class="wcn-td-check"><input type="checkbox" class="form-check-input" data-wcn-check-all${allSel ? ' checked' : ''} aria-label="${esc(t('SelectAll'))}"></th>
-                    ${th('type', 'ColType')}
-                    ${th('title', 'ColTitle')}
-                    ${th('module', 'ColModule')}
-                    ${th('status', 'ColStatus')}
-                    ${th('priority', 'ColPriority')}
-                    ${th('sla', 'ColSla')}
-                    ${th('requester', 'ColRequester')}
+                    <th class="control"></th>
+                    <th>${esc(t('ColType'))}</th>
+                    <th class="all">${esc(t('ColTitle'))}</th>
+                    <th>${esc(t('ColModule'))}</th>
+                    <th>${esc(t('ColStatus'))}</th>
+                    <th>${esc(t('ColPriority'))}</th>
+                    <th>${esc(t('ColSla'))}</th>
+                    <th>${esc(t('ColRequester'))}</th>
+                    <th class="cell-fit">${esc(t('ActionsLabel'))}</th>
                 </tr></thead>
-                <tbody>${body}</tbody>
             </table>
-            ${bulkBar(sorted)}
+            </div>
         </div>`;
+    };
+
+    const destroyWorkCenterDataTable = () => {
+        if (!workCenterDt) { return; }
+        try { workCenterDt.destroy(); } catch (error) { /* DOM is about to be replaced. */ }
+        workCenterDt = null;
+    };
+
+    const mountWorkCenterDataTable = (items) => {
+        const tableEl = document.getElementById('wcnDataTable');
+        if (!tableEl || !global.DataTable || !global.DtDefaults?.create) { return; }
+        // DtDefaults reads window.L10n for the grid's own search placeholder + the
+        // export "Action" menu label; WorkCenter localises via window.WCN.t, so seed
+        // them. The export menu is "Dışa Aktar" (not "İşlemler" — that's our column).
+        global.L10n = global.L10n || {};
+        global.L10n.Search = t('SearchPlaceholder');
+        global.L10n.Action = t('ExportLabel');
+        const tableFilterButton = {
+            text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
+            className: `btn btn-icon ${activeAdvancedFilterCount() ? 'btn-label-primary' : 'btn-label-secondary'} dt-filter-btn position-relative`,
+            attr: { title: t('FiltersLabel'), 'aria-controls': 'wcnFilterCollapse', 'aria-expanded': String(state.filtersOpen) },
+            action: () => toggleTableFilter()
+        };
+        const config = global.DtDefaults.create({
+            data: items,
+            processing: false,
+            serverSide: false,
+            stateSave: false,
+            pageLength: state.pageLength,
+            order: [[6, 'asc']],
+            colReorder: { columns: ':gt(0):not(:last-child)' },
+            search: { search: state.search },
+            // WorkCenter localises via window.WCN.t, not the shared window.L10n that
+            // DtDefaults reads — so set the grid's own search placeholder explicitly.
+            language: { searchPlaceholder: t('SearchPlaceholder') },
+            buttons: global.DtDefaults.exportButtons(
+                null,
+                {},
+                { filterBtn: tableFilterButton },
+                { exportColumns: [1, 2, 3, 4, 5, 6, 7], colvisColumns: [1, 2, 3, 4, 5, 6, 7], showAllColumns: [1, 2, 3, 4, 5, 6, 7] }
+            ),
+            columns: [
+                { data: 'id', name: 'control' },
+                { data: 'itemType', name: 'type', visible: state.tableColumnVisibility[1], render: (value, type, row) => type === 'display' ? chip('type', row.typeIcon, typeLabel(row)) : value },
+                { data: 'title', name: 'title', visible: state.tableColumnVisibility[2], className: 'fw-medium text-heading', render: (value) => esc(value) },
+                { data: 'sourceModule', name: 'module', visible: state.tableColumnVisibility[3], render: (value) => esc(value) },
+                { data: 'status', name: 'status', visible: state.tableColumnVisibility[4], render: (value, type, row) => type === 'display' ? `<span class="wcn-badge wcn-badge-${row.fixtureKind === 'triggerOnly' ? 'info' : STATUS_KIND[displayStatus(row)]}">${esc(statusLabel(row))}</span>` : value },
+                { data: 'priority', name: 'priority', visible: state.tableColumnVisibility[5], render: (value, type, row) => type === 'display' ? (row.fixtureKind === 'triggerOnly' ? '—' : chip(PRIORITY_KIND[row.priority], 'bx-flag', priorityLabel(row))) : ['high', 'medium', 'low'].indexOf(value) },
+                { data: 'slaDiffDays', name: 'sla', visible: state.tableColumnVisibility[6], render: (value, type, row) => type === 'display' ? (row.fixtureKind === 'triggerOnly' ? '—' : chip(SLA_KIND[row.slaState], 'bx-time-five', slaLabel(row))) : (value == null ? Number.MAX_SAFE_INTEGER : value) },
+                { data: 'requester', name: 'requester', visible: state.tableColumnVisibility[7], render: (value) => esc(value) },
+                { data: 'id', name: 'action', orderable: false, searchable: false, className: 'cell-fit', render: (id, type, row) => type === 'display' ? tableActionCell(row) : '' }
+            ],
+            columnDefs: [
+                // A dedicated empty column holds the Responsive collapse toggle (+),
+                // matching GoldenReferenceCompact. Without it, Responsive collapses
+                // but has nowhere to render the control. Title stays highest priority.
+                { targets: 0, className: 'control', orderable: false, searchable: false, responsivePriority: 2, render: () => '' },
+                { targets: 2, responsivePriority: 1 },
+                { targets: -1, responsivePriority: 2 }
+            ],
+            createdRow: (row, item) => {
+                // Table rows no longer open on click (act via the İşlemler column /
+                // + modal), so no button role/tabindex that would imply it.
+                row.setAttribute('data-wcn-row', item.id);
+                row.classList.toggle('selected', state.tableSelected.has(item.id));
+                row.classList.toggle('wcn-tr-failed', state.bulkFailedIds.has(item.id));
+            },
+            drawCallback: function () {
+                global.DtDefaults.updateVisualState?.(this.api(), activeAdvancedFilterCount());
+            }
+        });
+        workCenterDt = new global.DataTable(tableEl, config);
+        mountTableFilterHost();
+        workCenterDt.on('search.dt', () => { state.search = workCenterDt.search() || ''; });
+        workCenterDt.on('length.dt', (_event, _settings, length) => { state.pageLength = Number(length) || 10; });
+        workCenterDt.on('column-visibility.dt', (_event, _settings, column, visible) => {
+            if (column > 0 && column < state.tableColumnVisibility.length) { state.tableColumnVisibility[column] = !!visible; }
+        });
     };
 
     const bulkBar = (visible) => {
@@ -1037,7 +1793,16 @@
 
     // ── Empty states ──────────────────────────────────────────────────────────
     const emptyState = () => {
-        const filtered = state.moduleFilter !== 'all' || state.priorityFilter !== 'all' || state.modeFilter !== 'all'
+        // Meeting invitations are trigger-only projections. They use a dedicated
+        // empty state but never enter the task-detail resolver or task lifecycle.
+        if (state.typeFilter.has('meetingInvite')) {
+            return `<div class="wcn-empty">
+                <i class="bx bx-calendar-event"></i>
+                <h5>${esc(t('EmptyMeetingInviteTitle'))}</h5>
+                <p>${esc(t('EmptyMeetingInviteDesc'))}</p>
+            </div>`;
+        }
+        const filtered = state.moduleFilter.length || state.priorityFilter !== 'all' || state.modeFilter !== 'all'
             || state.typeFilter.size || state.signalFilter.size || state.search || (state.tab === 'havuz' && state.group !== 'all');
         if (filtered) {
             return `<div class="wcn-empty">
@@ -1171,38 +1936,174 @@
         <div class="wcn-skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>`;
 
+    const renderTriggerResponses = (triggerOverride) => {
+        const triggers = triggerOverride || activeTriggers();
+        if (!triggers.length) { return ''; }
+        const cards = triggers.map((trigger) => {
+            const titleText = data.resolveLabel(trigger.title);
+            const summaryText = data.resolveLabel(trigger.summary);
+            const surface = global.WorkCenterNextTriggerResponseResolver?.resolveTriggerResponse(trigger, {
+                submittingActionCode: state.submittingTriggerId === trigger.id ? state.submittingActionCode : null
+            });
+            if (!surface || surface.invalid) { return ''; }
+            const byCode = new Map((trigger.actions || []).map((action) => [action.code, action]));
+            const primary = byCode.get(surface.primaryActionCode);
+            const primaryButton = primary
+                ? `<button type="button" class="btn btn-sm btn-primary wcn-inbox-action-primary" data-wcn-trigger-action="${esc(primary.code)}" data-wcn-trigger-id="${esc(trigger.id)}"${primary.enabled === false || (state.submittingTriggerId === trigger.id && state.submittingActionCode === primary.code) ? ' disabled' : ''}>${esc(data.resolveLabel(primary.label))}</button>`
+                : '';
+            const overflowCodes = [...surface.secondaryActionCodes, ...surface.overflowActionCodes].filter(Boolean);
+            const overflowItems = overflowCodes.map((code) => {
+                const action = byCode.get(code);
+                if (!action) { return ''; }
+                const label = data.resolveLabel(action.label);
+                const disabled = action.enabled === false || state.submittingTriggerId === trigger.id;
+                const danger = ['declineMeeting', 'reject', 'cancel'].includes(code);
+                return `<li><button type="button" class="dropdown-item wcn-menu-item${danger ? ' text-danger' : ''}" data-wcn-trigger-action="${esc(code)}" data-wcn-trigger-id="${esc(trigger.id)}"${disabled ? ' disabled' : ''}><i class="bx ${danger ? 'bx-x-circle' : 'bx-right-arrow-alt'}"></i><span>${esc(label)}</span></button></li>`;
+            }).join('');
+            const calendarItem = trigger.source?.deepLink
+                ? `<li><button type="button" class="dropdown-item wcn-menu-item" data-wcn-trigger-open="${esc(trigger.id)}"><i class="bx bx-calendar-event"></i><span>${esc(t('ViewCalendar'))}</span></button></li>`
+                : '';
+            const overflowMenu = overflowItems || calendarItem
+                ? `<div class="dropdown"><button type="button" class="btn btn-icon wcn-inbox-action-more dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end m-0">${overflowItems}${calendarItem}</ul></div>`
+                : '';
+            return `<article class="wcn-row wcn-row-meeting${trigger.isUnread ? ' unread' : ''}" data-wcn-trigger="${esc(trigger.id)}">
+                <span class="wcn-row-unread" aria-hidden="true"></span>
+                <div class="wcn-row-body">
+                    <div class="wcn-row-top">
+                        <i class="bx bx-calendar-event text-info" aria-hidden="true"></i>
+                        <span class="wcn-row-title">${esc(titleText)}</span>
+                    </div>
+                    <p class="wcn-row-summary">${esc(summaryText)}</p>
+                    <div class="wcn-row-chips">${chip('meeting', 'bx-calendar-event', t('ChipMeetingInvite'))}${chip('info', 'bx-reply', t('TriggerOnlyLabel'))}</div>
+                </div>
+                <div class="wcn-trigger-actions">${primaryButton}${overflowMenu}</div>
+            </article>`;
+        }).join('');
+        return cards;
+    };
+
     const renderErrorState = () => `<div class="wcn-system-page wcn-system-error" role="alert">
         <i class="bx bx-error-circle"></i><h5>${esc(t('ErrorTitle'))}</h5><p>${esc(t('ErrorDesc'))}</p>
         <button type="button" class="btn btn-sm btn-primary" data-wcn-retry>${esc(t('Retry'))}</button>
     </div>`;
 
+    // The whole app re-renders via innerHTML, which would orphan select2's
+    // document-level handlers — tear instances down before the wipe, re-init the
+    // panel selects after (golden DataTable single-select config).
+    const teardownPanelSelect2 = () => {
+        const jq = global.jQuery;
+        if (!jq || !jq.fn || !jq.fn.select2) { return; }
+        jq('#wcnApp select.select2-hidden-accessible').each(function () {
+            try { jq(this).select2('destroy'); } catch (e) { /* noop */ }
+        });
+    };
+    const syncPanelMultiSummary = ($select) => {
+        const $container = $select.next('.select2-container');
+        const $selection = $container.find('.select2-selection--multiple');
+        const $rendered = $container.find('.select2-selection__rendered');
+        if (!$selection.length) { return; }
+        let $summary = $selection.find('.dt-inline-filter-multi__summary');
+        let $actions = $selection.find('.dt-inline-filter-multi__actions');
+        let $count = $selection.find('.dt-inline-filter-multi__count');
+        let $arrow = $selection.find('.select2-selection__arrow');
+        if (!$summary.length) { $summary = global.jQuery('<span class="dt-inline-filter-multi__summary"></span>'); $selection.prepend($summary); }
+        if (!$actions.length) { $actions = global.jQuery('<span class="dt-inline-filter-multi__actions"></span>'); $selection.append($actions); }
+        if (!$count.length) { $count = global.jQuery('<span class="dt-inline-filter-multi__count badge rounded-pill bg-label-primary d-none"></span>'); $actions.append($count); }
+        if (!$arrow.length) { $arrow = global.jQuery('<span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span>'); $selection.append($arrow); }
+        const values = Array.isArray($select.val()) ? $select.val() : [];
+        const placeholder = String($select.data('placeholder') || '');
+        $summary.text(placeholder);
+        $rendered.attr('title', ($select.select2('data') || []).map((entry) => entry.text).join(', ') || placeholder);
+        $container.toggleClass('dt-inline-filter-multi--has-value', values.length > 0);
+        $count.toggleClass('d-none', values.length === 0).text(String(values.length));
+        $actions.find('.dt-multi-clear-btn').remove();
+        if (values.length) {
+            const $clear = global.jQuery(`<span class="dt-multi-clear-btn" role="button" aria-label="${esc(t('Reset'))}" title="${esc(t('Reset'))}">&times;</span>`);
+            $clear.on('mousedown', (event) => { event.preventDefault(); event.stopPropagation(); $select.val(null).trigger('change'); });
+            $actions.append($clear);
+        }
+    };
+    const mountPanelSelect2 = () => {
+        if (!state.filtersOpen) { return; }
+        const jq = global.jQuery;
+        if (!jq || !jq.fn || !jq.fn.select2) { return; }
+        jq('#wcnApp .wcn-filter-panel select.select2').each(function () {
+            const $s = jq(this);
+            if ($s.hasClass('select2-hidden-accessible')) { return; }
+            $s.select2({
+                dropdownParent: jq(document.body),
+                dropdownCssClass: 'dt-inline-filter-dropdown',
+                selectionCssClass: 'form-select form-select-sm',
+                containerCssClass: $s.prop('multiple') ? 'dt-inline-filter-multi' : '',
+                placeholder: $s.data('placeholder') || '',
+                minimumResultsForSearch: Infinity,
+                width: 'element',
+                allowClear: !$s.prop('multiple'),
+                closeOnSelect: !$s.prop('multiple')
+            });
+            if ($s.prop('multiple')) {
+                global.requestAnimationFrame(() => syncPanelMultiSummary($s));
+            }
+            // select2 emits its change via jQuery.trigger('change'), which does NOT
+            // reach the native document 'change' listener — so wire state here.
+            $s.on('change.wcn', function () {
+                const which = this.getAttribute('data-wcn-filter');
+                const value = this.multiple ? ($s.val() || []) : (this.value || 'all');
+                if (this.multiple) {
+                    global.requestAnimationFrame(() => syncPanelMultiSummary($s));
+                }
+                applyFilterValue(which, value);
+                render();
+            });
+        });
+    };
+
     const renderUnsafe = () => {
         const root = document.getElementById('wcnApp');
         if (!root) { return; }
         const snap = captureFocus();
+        teardownPanelSelect2();
+        destroyWorkCenterDataTable();
+        if (root.dataset.wcnPage === 'detail') {
+            const item = itemById(root.dataset.wcnItemId || '');
+            state.selectedId = item ? item.id : null;
+            if (item) { markSeen(item); }
+            root.innerHTML = item
+                ? detailHtml(item)
+                : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t('DetailItemNotFound'))}</p><a class="btn btn-label-secondary" href="/WorkCenterNext">${esc(t('DetailBackToList'))}</a></div></section>`;
+            setupTimerTick();
+            restoreFocus(snap);
+            return;
+        }
         if (state.loadState === 'loading') { root.innerHTML = renderLoadingState(); return; }
         if (state.loadState === 'error') { root.innerHTML = renderErrorState(); return; }
         const items = activeItems();
+        let renderedItems = items;
         let main;
         switch (state.view) {
-            case 'split': main = renderSplit(items); break;
-            case 'table': main = renderTable(items); break;
-            case 'kanban': main = renderKanban(); break;
-            case 'calendar': main = renderCalendar(); break;
+            case 'table':
+                renderedItems = items.concat(triggerTableRows());
+                main = renderTable(renderedItems);
+                break;
             case 'focus': main = renderFocus(items); break;
             default: main = renderList(items);
         }
         const sidePanel = state.agendaOpen ? `<aside id="wcnSidePanel" class="wcn-sidepanel" aria-label="${esc(t('AgendaTitle'))}">${renderAgenda()}</aside>`
                         : state.notesOpen ? `<aside id="wcnSidePanel" class="wcn-sidepanel" aria-label="${esc(t('NotesPanelTitle'))}">${renderNotes()}</aside>`
                         : '';
-                        
-        root.innerHTML = buildHeader() + buildDelegationBanner() + buildTabs() + buildSegments() + buildGroupSelector() + buildChips() + buildToolbar()
-            + `<div class="wcn-hint"><i class="bx bx-keyboard"></i><span>${esc(t('KeyboardHint'))}</span></div>`
-            + `<div class="wcn-layout-wrap">`
-            + `<div id="wcn-main-panel" class="wcn-main" role="tabpanel" aria-labelledby="wcn-tab-${state.tab}" tabindex="0">${main}</div>`
-            + sidePanel
-            + `</div>`;
+
+        const mainPanel = `<div id="wcn-main-panel" class="wcn-main${state.view === 'table' ? '' : ' wcn-main-open'}" role="tabpanel" aria-labelledby="wcn-tab-${state.tab}" tabindex="0">${main}</div>`;
+        const workspaceToolbar = state.view === 'table'
+            ? buildChips()
+            : `<section class="card wcn-workspace-card wcn-workspace-toolbar-card">${buildChips()}</section>`;
+        const workspace = workspaceToolbar
+            + `<div class="wcn-layout-wrap">${mainPanel}${sidePanel}</div>`;
+
+        root.innerHTML = buildHeader() + buildDelegationBanner() + buildTabs() + buildFilterRow()
+            + workspace;
         setupTimerTick();
+        mountPanelSelect2();
+        if (state.view === 'table') { mountWorkCenterDataTable(renderedItems); }
         restoreFocus(snap);
         syncUrl();
     };
@@ -1219,37 +2120,21 @@
         }
     };
 
-    // ── Toast (self-contained, a11y live region) ──────────────────────────────
-    const toast = (message, options) => {
-        let region = document.getElementById('wcnToast');
-        if (!region) {
-            region = document.createElement('div');
-            region.id = 'wcnToast';
-            region.className = 'wcn-toast';
-            region.setAttribute('role', 'status');
-            region.setAttribute('aria-live', 'polite');
-            document.body.appendChild(region);
-        }
-        const node = document.createElement('div');
-        node.className = 'wcn-toast-item';
-        node.innerHTML = `<i class="bx bx-check"></i><span>${esc(message)}</span>` +
-            (options && options.actionLabel ? `<button type="button" class="wcn-toast-action">${esc(options.actionLabel)}</button>` : '');
-        region.appendChild(node);
-        const dismiss = () => { node.classList.add('leaving'); global.setTimeout(() => node.remove(), 300); };
-        const actionButton = node.querySelector('.wcn-toast-action');
-        if (actionButton && options && typeof options.onAction === 'function') {
-            actionButton.addEventListener('click', () => { options.onAction(); dismiss(); }, { once: true });
-        }
-        global.setTimeout(dismiss, options && options.duration ? options.duration : 5000);
-    };
+    // WorkCenter uses the shared MOD-0013 Notyf surface. A page-local toast would
+    // introduce a second position, colour system and accessibility lifecycle.
+    const toast = (message, type) => global.showToast?.(message, type || 'success');
 
     // ── Lifecycle state machine (mock, spec v2 §4/§5) ─────────────────────────
     // Tab membership is derived from assignmentMode + claimed (data.tabFor), never
     // hard-coded from lifecycle — so a claimed pool item lands in "İşlerim".
-    const setLifecycle = (item, lifecycle, native) => {
-        item.lifecycle = lifecycle;
-        item.status = data.statusFor(lifecycle);
-        if (native) { item.nativeStatus = native; }
+    const setProjectionState = (item, normalizedStatus, taskLifecycle, nativeStatusText) => {
+        item.normalizedStatus = normalizedStatus;
+        item.status = normalizedStatus === 'InProgress' ? 'In Progress' : normalizedStatus;
+        if (taskLifecycle) {
+            item.taskLifecycle = taskLifecycle;
+            item.lifecycle = taskLifecycle;
+        }
+        if (nativeStatusText) { item.nativeStatusText = nativeStatusText; }
         item.tab = data.tabFor(item);
     };
 
@@ -1259,7 +2144,21 @@
             // Triage-inbox admission — take on a directly-assigned item; it moves
             // from the Inbox to İşlerim but stays at its current lifecycle stage.
             case 'accept':
+                if (item.itemType === 'meetingInvite') {
+                    item.dismissed = true;
+                    state.meetings.push({
+                        id: item.sourceId,
+                        title: item.title,
+                        start: item.meetingStart || '09:00',
+                        end: item.meetingEnd || '10:00',
+                        location: item.meetingLocation || '—',
+                        owner: item.requester
+                    });
+                    return 'removed';
+                }
                 item.accepted = true;
+                item.admissionState = 'admitted';
+                item.ownershipState = 'owned';
                 item.assignee = item.assignee || data.currentUser.name;
                 item.tab = data.tabFor(item);
                 return 'moved';
@@ -1267,37 +2166,60 @@
             case 'claim':
             case 'acceptOffer':
                 item.claimed = true;
+                item.admissionState = 'admitted';
+                item.ownershipState = 'owned';
                 item.assignee = data.currentUser.name;
-                if (item.itemType === 'review') { setLifecycle(item, 'InProgress', 'In Review'); }
-                else if (item.itemType === 'task') { setLifecycle(item, 'Open', 'Open'); }
-                else { setLifecycle(item, 'InProgress', 'In Progress'); }   // issue / exception
+                if (item.itemType === 'task') { setProjectionState(item, 'Pending', 'Open', 'Open'); }
+                else { setProjectionState(item, 'InProgress', null, item.itemType === 'review' ? 'In Review' : 'In Progress'); }
                 return key === 'claim' ? 'claimed' : 'moved';
             case 'decline':
                 item.dismissed = true; return 'removed';
             case 'release':
                 // Drop a claimed group-queue item back to the pool for others.
                 item.claimed = false; item.assignee = null;
-                setLifecycle(item, 'PendingAcceptance', 'Unassigned — Ops Queue');
+                item.admissionState = 'pendingClaim';
+                item.ownershipState = 'unowned';
+                setProjectionState(item, 'Pending', item.itemType === 'task' ? 'Open' : null, 'Atanmadı — Operasyon Kuyruğu');
                 return 'released';
-            case 'approve': setLifecycle(item, 'Done', 'Approved'); return 'resolved';
-            case 'signoff': setLifecycle(item, 'Done', 'Signed off'); return 'resolved';
-            case 'resolve': setLifecycle(item, 'Done', 'Resolved'); return 'resolved';
+            case 'approve': setProjectionState(item, 'Done', null, 'Onaylandı'); return 'resolved';
+            case 'signoff': setProjectionState(item, 'Done', null, 'İmzalandı'); return 'resolved';
+            case 'resolve': setProjectionState(item, 'Done', null, 'Çözüldü'); return 'resolved';
             case 'start':
             case 'resume':
-                setLifecycle(item, 'InProgress', 'In Progress');
+                // Resuming closes any wait/snooze reason so the item leaves the
+                // "Bekleyen" segment (segmentFor keys off waitingOn/snoozedUntil).
+                item.waitingOn = null; item.snoozedUntil = null;
+                setProjectionState(item, 'InProgress', 'InProgress', 'Devam ediyor');
+                item.executionState = 'active';
+                item.timerState = 'running';
                 item.timesheet = item.timesheet || { running: false, startedAt: null, loggedMinutes: 0 };
                 item.timesheet.running = true; item.timesheet.startedAt = Date.now();
                 return 'timerStart';
             case 'pause':
                 foldTimer(item);
+                item.executionState = 'paused';
+                item.timerState = 'paused';
                 return 'timerPause';
             case 'complete':
                 foldTimer(item);
-                if (item.reviewRequired) { setLifecycle(item, 'PendingReview', 'Pending Review'); return 'toReview'; }
-                setLifecycle(item, 'Done', 'Closed'); return 'resolved';
+                item.waitingOn = null; item.snoozedUntil = null;
+                item.executionState = 'notStarted';
+                item.timerState = 'inactive';
+                if (item.reviewRequired) { setProjectionState(item, 'Pending', 'PendingReview', 'İnceleme bekliyor'); return 'toReview'; }
+                setProjectionState(item, 'Done', 'Done', 'Kapandı'); return 'resolved';
             case 'inquire':
-                // Information request round-trip — item parks in Waiting (waiting-on).
-                setLifecycle(item, 'Waiting', 'Waiting for Information'); return 'updated';
+            case 'requestInfo':
+                // Information request round-trip — park in Waiting and record who we're
+                // waiting on (the requester) so the "Bekleyen" note is meaningful.
+                item.waitingOn = item.waitingOn || item.requester;
+                item.waitingContext = item.waitingContext || {
+                    type: 'information',
+                    waitingOn: { displayName: item.waitingOn },
+                    since: new Date().toISOString(),
+                    expectedUntil: null
+                };
+                setProjectionState(item, 'Waiting', item.itemType === 'task' ? 'Waiting' : null, 'Bilgi bekleniyor');
+                return 'updated';
             case 'reject':
             case 'return':
             case 'delegate':
@@ -1324,56 +2246,41 @@
     };
 
     const applyAction = (item, action, reason) => {
-        const label = t(action.labelKey);
-        const snapshot = typeof global.structuredClone === 'function'
-            ? global.structuredClone(item) : JSON.parse(JSON.stringify(item));
-        const prevOrder = state.visibleOrder.slice();
-        const prevIdx = prevOrder.indexOf(item.id);
-        const outcome = applyTransition(item, action.key);
-        const sla = data.computeSla(item.dueAt);
-        item.slaState = sla.state; item.slaDiffDays = sla.diffDays;
-        item.isUnread = false;
-        item.activity = item.activity || [];
-        item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, ago: 0 });
-        state.tableSelected.delete(item.id);
-
-        // a/r loop: if the acted item leaves the current tab's list, pre-select a
-        // neighbour so the split view advances instead of jumping to the top.
-        if (state.view === 'split' && (outcome === 'moved' || outcome === 'claimed' || outcome === 'released' || outcome === 'removed' || outcome === 'toReview' || outcome === 'updated')) {
-            state.selectedId = prevOrder[prevIdx + 1] || prevOrder[prevIdx - 1] || null;
-        }
+        const label = actionLabel(action);
+        state.submittingItemId = item.id;
+        state.submittingActionCode = action.code;
         render();
-        const undoable = action.confirm || action.reason || ['approve', 'signoff', 'resolve', 'complete'].indexOf(action.key) >= 0;
-        if (undoable) {
-            toast(reason ? tf('ToastActionReason', label, reason) : tf('ToastAction', label), {
-                actionLabel: t('Undo'),
-                duration: 8000,
-                onAction: () => {
-                    Object.keys(item).forEach((key) => { delete item[key]; });
-                    Object.assign(item, snapshot);
-                    state.selectedId = item.id;
-                    render();
-                    toast(t('UndoSuccess'));
-                }
+        global.setTimeout(() => {
+            const outcome = applyTransition(item, action.key);
+            markSeen(item);
+            item.activity = item.activity || [];
+            item.activity.push({
+                actor: data.currentUser.name,
+                kind: 'event',
+                eventKey: 'AuditActionStamp',
+                actionLabel: label,
+                ago: 0
             });
-        } else {
+            state.submittingItemId = null;
+            state.submittingActionCode = null;
+            render();
             toastForOutcome(outcome, label, reason, item);
-        }
+        }, 350);
     };
 
     // Plan / re-plan — sets the PERSONAL planned date (spec v2 §4), which is
     // distinct from the source due date; SLA (source) is never overwritten.
     const applyPlan = (item, dateStr, label) => {
         item.plannedDate = dateStr;
-        if (item.lifecycle === 'Open') { setLifecycle(item, 'Planned', item.nativeStatus); }
-        item.isUnread = false;
+        if (item.lifecycle === 'Open') { setProjectionState(item, item.normalizedStatus, 'Planned', item.nativeStatusText); }
+        markSeen(item);
         item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, ago: 0 });
         render();
         toast(tf('ToastPlanned', item.sourceId, dateStr));
     };
 
     const openDatePicker = (item, action) => {
-        const label = t(action.labelKey);
+        const label = actionLabel(action);
         if (!global.Swal) { applyPlan(item, item.dueAt || data.todayIso, label); return; }
         global.Swal.fire({
             title: label,
@@ -1397,9 +2304,68 @@
         }).then((res) => { if (res.isConfirmed && res.value) { applyPlan(item, res.value, label); } });
     };
 
+    // Review meeting is a collaboration command, not a lifecycle transition. The
+    // mock applies an explicit replacement projection after Calendar returns.
+    const applyReviewMeeting = (item, whenStr, label) => {
+        const [date, time] = String(whenStr).split(' ');
+        const startTime = time || '09:00';
+        const endHour = String(Math.min(23, parseInt(startTime, 10) + 1)).padStart(2, '0');
+        const endTime = `${endHour}:${startTime.slice(3) || '00'}`;
+        state.meetings.push({
+            id: `MTG-${item.id}`, title: item.title, start: startTime, end: endTime,
+            location: 'Teams', owner: data.currentUser.name, date: date
+        });
+        const replacement = global.structuredClone
+            ? global.structuredClone(item._fixture)
+            : JSON.parse(JSON.stringify(item._fixture));
+        replacement.reviewMeetingPolicy = {
+            ...(replacement.reviewMeetingPolicy || { requirement: 'optional' }),
+            meetingId: `MTG-${item.id}`,
+            scheduledAt: `${date}T${startTime}:00+03:00`
+        };
+        if (replacement.reviewMeetingPolicy.requirement === 'required') {
+            replacement.actions = replacement.actions.map((candidate) => candidate.code === 'signoff'
+                ? { ...candidate, enabled: true, disabledReasonCode: undefined, disabledReason: undefined }
+                : candidate);
+            replacement.primaryActionCode = 'signoff';
+            replacement.secondaryActionCodes = ['scheduleReviewMeeting'];
+            replacement.overflowActionCodes = ['requestInfo', 'return'];
+        }
+        replacement.personal = { ...replacement.personal, seen: true };
+        const projected = data.toPresentation(replacement);
+        const index = state.items.findIndex((candidate) => candidate.id === item.id);
+        if (index >= 0) { state.items[index] = projected; }
+        render();
+        toast(tf('ToastReviewMeeting', `${date} ${startTime}`));
+    };
+
+    const openMeetingScheduler = (item, action) => {
+        const label = actionLabel(action);
+        if (!global.Swal) { applyReviewMeeting(item, `${item.dueAt || data.todayIso} 09:00`, label); return; }
+        global.Swal.fire({
+            title: label,
+            html: '<input id="wcnMeetWhen" class="form-control" autocomplete="off">',
+            showCancelButton: true, confirmButtonText: t('PlanConfirm'), cancelButtonText: t('ReasonCancel'),
+            didOpen: () => {
+                const input = document.getElementById('wcnMeetWhen');
+                const seed = item.dueAt || data.todayIso;
+                if (global.flatpickr) {
+                    global.flatpickr(input, { enableTime: true, dateFormat: 'Y-m-d H:i', defaultDate: seed, disableMobile: true });
+                } else {
+                    input.type = 'datetime-local';
+                }
+            },
+            preConfirm: () => {
+                const v = document.getElementById('wcnMeetWhen').value;
+                if (!v) { global.Swal.showValidationMessage(t('PlanDateLabel')); return false; }
+                return v.replace('T', ' ');
+            }
+        }).then((res) => { if (res.isConfirmed && res.value) { applyReviewMeeting(item, res.value, label); } });
+    };
+
     // Log time — manual minutes entry into the timesheet (task only).
     const openLogTime = (item, action) => {
-        const label = t(action.labelKey);
+        const label = actionLabel(action);
         if (!global.Swal) { return; }
         global.Swal.fire({
             title: label, input: 'number', inputLabel: t('LogTimeLabel'),
@@ -1418,13 +2384,13 @@
         });
     };
 
-    // Snooze — park an item until a personal date (moves it to "Bekleyen"); the
-    // same button un-snoozes. Pure personal overlay; no source state changes.
+    // Snooze is a personal filter signal. It never changes the canonical
+    // lifecycle, normalized status, tab or lifecycle segment.
     const toggleSnooze = (item) => {
         if (!item) { return; }
         if (item.snoozedUntil && item.snoozedUntil > data.todayIso) {
             item.snoozedUntil = null;
-            item.tab = data.tabFor(item);
+            item.personal.snoozedUntil = null;
             item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: t('Unsnooze'), ago: 0 });
             render();
             toast(tf('ToastUnsnoozed', item.sourceId));
@@ -1432,7 +2398,7 @@
         }
         const apply = (dateStr) => {
             item.snoozedUntil = dateStr;
-            item.tab = data.tabFor(item);
+            item.personal.snoozedUntil = dateStr;
             item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: t('Snooze'), ago: 0 });
             const prevOrder = state.visibleOrder.slice();
             const prevIdx = prevOrder.indexOf(item.id);
@@ -1497,29 +2463,28 @@
 
     const createSelfTask = (v, origin) => {
         const id = 'WC-SELF-' + (state.items.length + 1);
-        const sla = data.computeSla(v.date || null);
-        const provider = data.sourceProviders && data.sourceProviders.PersonalTask;
-        const item = {
-            id, sourceModule: origin && origin.sourceModule ? origin.sourceModule : t('SelfSource'), sourceType: 'PersonalTask', sourceObjectType: 'PersonalTask', sourceId: id,
-            sourceModuleId: provider ? provider.moduleId : 'MOD-0024', sourceModuleName: provider ? provider.moduleName : 'Task & Checklist Engine',
-            sourceVersion: 'v1', etag: `mock-${id}`, actionDepth: 'inline',
-            itemType: 'task', assignmentMode: 'direct', claimed: true, accepted: true, startedOnce: false,
-            lifecycle: 'Open', nativeStatus: t('SelfSource'), status: data.status.IN_PROGRESS,
-            capabilities: ['planning', 'execution', 'timeTracking', 'checklist', 'activity', 'informationRequest'],
-            title: v.title, summary: t('SelfTaskSummary'),
-            priority: v.priority, requester: data.currentUser.name, assignee: data.currentUser.name, viewerRole: 'Owner',
-            dueAt: v.date || null, plannedDate: null, scope: 'mine', delegator: null, group: null, systemState: null,
-            slaState: sla.state, slaDiffDays: sla.diffDays, typeIcon: 'bx-task',
-            isUnread: false, pinned: false, escalated: false, reviewRequired: false,
-            snoozedUntil: null, waitingOn: null, note: null, blockedState: null,
-            dependencies: null, checklist: null, subtasks: null, stages: null, attachments: null,
-            activity: [{ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditSelfCreated', ago: 0 }],
-            timesheet: { running: false, startedAt: null, loggedMinutes: 0 },
-            deepLink: '#', dismissed: false
-        };
-        item.tab = data.tabFor(item);
+        const f = global.WorkCenterNextFixtureFactory;
+        const fixture = f.base(id, 'task', 'TypeTask', {
+            title: { kind: 'display', text: v.title, locale: global.CurrentLanguage || 'tr-TR', source: 'workcenter' },
+            summary: f.resource('SelfTaskSummary'),
+            source: f.source('workcenter', 'PersonalTask', id, { moduleId: 'MOD-0024', deepLink: `/WorkCenterNext/Details/${id}` }),
+            nativeStatus: { code: 'OPEN', label: f.resource('LifecycleOpen') },
+            taskLifecycle: 'Open',
+            normalizedStatus: 'InProgress',
+            workItemCapabilities: ['planning', 'execution', 'timeTracking', 'activity', 'businessContext', 'relatedRecords'],
+            concurrency: { kind: 'version', token: '1' },
+            actions: [f.action('plan'), f.action('start')],
+            primaryActionCode: 'start',
+            secondaryActionCodes: ['plan'],
+            priority: v.priority,
+            dueAt: v.date || null,
+            requester: { id: data.currentUser.id, displayName: data.currentUser.name },
+            assignee: { id: data.currentUser.id, displayName: data.currentUser.name },
+            activity: [{ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditSelfCreated', ago: 0 }]
+        });
+        const item = data.toPresentation(fixture);
         state.items.push(item);
-        state.tab = 'islerim'; state.segment = 'aktif'; state.selectedId = id; state.view = 'split';
+        state.tab = 'islerim'; state.segment = 'aktif'; state.selectedId = id; state.view = 'list';
         state.agendaOpen = false; state.notesOpen = false;
         render();
         toast(tf('ToastSelfTaskCreated', v.title));
@@ -1536,7 +2501,7 @@
             if (res.isConfirmed && res.value) {
                 const target = state.items.find((item) => item.sourceModule === res.value);
                 if (target && target.deepLink) { global.open(target.deepLink, '_blank', 'noopener,noreferrer'); }
-                toast(tf('ToastCreateInSource', res.value));
+                toast(tf('ToastCreateInSource', res.value), 'info');
             }
         });
     };
@@ -1578,6 +2543,30 @@
         render(); toast(t('NoteAdded'));
     };
 
+    // "+ Yeni → Hızlı not": a light capture modal, not the heavy task form. The
+    // in-panel input (addGlobalNote) only exists when the notes panel is open, so
+    // the menu needs its own lightweight entry point. No backend — pushes to the
+    // existing personal-notes layer (state.notes).
+    const openQuickNote = () => {
+        if (!global.Swal) { return; }
+        global.Swal.fire({
+            title: t('NewNote'),
+            input: 'textarea',
+            inputPlaceholder: t('NotePlaceholder'),
+            inputAttributes: { 'aria-label': t('NewNote') },
+            showCancelButton: true, confirmButtonText: t('NewCreate'), cancelButtonText: t('ReasonCancel'),
+            preConfirm: (val) => {
+                const text = (val || '').trim();
+                if (!text) { global.Swal.showValidationMessage(t('NotePlaceholder')); return false; }
+                return text;
+            }
+        }).then((res) => {
+            if (!res.isConfirmed || !res.value) { return; }
+            state.notes.unshift({ id: `NOTE-${Date.now()}`, text: res.value, ageKey: 'TimeToday', converted: false });
+            render(); toast(t('NoteAdded'));
+        });
+    };
+
     const convertGlobalNote = (note) => {
         if (!note || note.converted) { return; }
         note.converted = true;
@@ -1586,8 +2575,9 @@
 
     const performAction = (item, actionKey) => {
         const action = actionByKey(item, actionKey);
-        if (!item || !action || action.disabled) { return; }
+        if (!item || !action || action.disabled || state.submittingItemId === item.id) { return; }
         if (action.input === 'date') { openDatePicker(item, action); return; }
+        if (action.input === 'meeting') { openMeetingScheduler(item, action); return; }
         if (action.input === 'minutes') { openLogTime(item, action); return; }
 
         // Reason-capturing action (reject/return/inquire/dispute/delegate/reassign):
@@ -1595,7 +2585,7 @@
         if (action.reason) {
             if (!global.Swal) { return; }
             global.Swal.fire({
-                title: t(action.labelKey),
+                title: actionLabel(action),
                 input: 'textarea',
                 inputLabel: t('ReasonLabel'),
                 inputPlaceholder: t('ReasonPlaceholder'),
@@ -1620,7 +2610,7 @@
                 ? tf('ConfirmBodyOnBehalf', item.title, item.delegator)
                 : tf('ConfirmBody', item.title);
             global.Swal.fire({
-                title: t(action.labelKey),
+                title: actionLabel(action),
                 html: `<div class="wcn-confirm-body">${esc(body)}</div>`,
                 icon: 'question',
                 showCancelButton: true,
@@ -1631,6 +2621,47 @@
         }
 
         applyAction(item, action);
+    };
+
+    const executeTriggerAction = (trigger, action, reason) => {
+        state.submittingTriggerId = trigger.id;
+        state.submittingActionCode = action.code;
+        render();
+        global.setTimeout(() => {
+            state.submittingTriggerId = null;
+            state.submittingActionCode = null;
+            if (trigger.responseBehavior === 'remove') {
+                state.triggers = state.triggers.filter((candidate) => candidate.id !== trigger.id);
+            }
+            render();
+            const label = data.resolveLabel(action.label);
+            toast(reason ? tf('ToastActionReason', label, reason) : tf('ToastAction', label));
+        }, 350);
+    };
+
+    const performTriggerAction = (trigger, action) => {
+        if (!trigger || !action || action.enabled === false || state.submittingTriggerId === trigger.id) { return; }
+        if (action.requiresReason) {
+            if (!global.Swal) { return; }
+            global.Swal.fire({
+                title: data.resolveLabel(action.label),
+                input: 'textarea',
+                inputLabel: t('ReasonLabel'),
+                inputPlaceholder: t('ReasonPlaceholder'),
+                showCancelButton: true,
+                confirmButtonText: t('ReasonConfirm'),
+                cancelButtonText: t('ReasonCancel'),
+                preConfirm: (value) => {
+                    const reason = String(value || '').trim();
+                    if (!reason) { global.Swal.showValidationMessage(t('ReasonRequired')); return false; }
+                    return reason;
+                }
+            }).then((result) => {
+                if (result.isConfirmed && result.value) { executeTriggerAction(trigger, action, result.value); }
+            });
+            return;
+        }
+        executeTriggerAction(trigger, action);
     };
 
     // Bulk apply with a partial-failure model (spec v2 §6): some items fail (mock:
@@ -1644,8 +2675,8 @@
             if (!action || !action.bulk || action.disabled) { failed.push(item); return; }
             if (item.bulkConflict) { failed.push(item); return; }
             applyTransition(item, action.key);
-            item.isUnread = false;
-            item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: t(action.labelKey), ago: 0 });
+            markSeen(item);
+            item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: actionLabel(action), ago: 0 });
             ok += 1;
         });
         state.tableSelected.clear();
@@ -1679,7 +2710,7 @@
                 const txt = document.getElementById('wcnBulkPct');
                 const step = () => {
                     pct = Math.min(100, pct + 20);
-                    if (bar) { bar.style.width = pct + '%'; }
+                    if (bar) { bar.className = `wcn-bulk-progress-bar wcn-progress-${pct}`; }
                     if (txt) { txt.textContent = pct + '%'; }
                     if (pct >= 100) { global.setTimeout(() => { global.Swal.close(); runBulk(selected, actionKey, label); }, 150); }
                     else { global.setTimeout(step, 90); }
@@ -1696,8 +2727,8 @@
         if (!sample || !sample.bulk || sample.disabled || !selected.every((item) => {
             const action = actionByKey(item, actionKey);
             return !!(action && action.bulk && !action.disabled);
-        })) { toast(t('BulkNoCommonAction')); return; }
-        const label = sample ? t(sample.labelKey) : '';
+        })) { toast(t('BulkNoCommonAction'), 'warning'); return; }
+        const label = sample ? actionLabel(sample) : '';
         if (sample.reason && global.Swal) {
             global.Swal.fire({
                 title: label, input: 'textarea', inputLabel: t('ReasonLabel'), inputPlaceholder: t('ReasonPlaceholder'),
@@ -1743,6 +2774,11 @@
         }
     };
 
+    const openDetailPage = (id) => {
+        if (!id) { return; }
+        global.location.assign(`/WorkCenterNext/Details/${encodeURIComponent(id)}`);
+    };
+
     const highlightRow = () => {
         document.querySelectorAll('#wcnApp .wcn-row.selected').forEach((n) => n.classList.remove('selected'));
         const node = document.querySelector(`#wcnApp .wcn-row[data-wcn-row="${state.selectedId}"]`);
@@ -1755,6 +2791,11 @@
     };
 
     const onKeydown = (event) => {
+        // Escape in the search box clears the current query (before the typing guard).
+        if (event.key === 'Escape' && event.target.matches && event.target.matches('[data-wcn-search]')) {
+            if (state.search) { event.preventDefault(); state.search = ''; render(); }
+            return;
+        }
         if (isTyping(event.target) || event.metaKey || event.ctrlKey || event.altKey) { return; }
         const key = event.key.toLowerCase();
         const activeTab = event.target.closest && event.target.closest('[role="tab"][data-wcn-tab]');
@@ -1774,15 +2815,15 @@
             event.preventDefault();
             state.selectedId = focusedRow.getAttribute('data-wcn-row');
             const focusedItem = itemById(state.selectedId);
-            if (focusedItem) { focusedItem.isUnread = false; }
-            state.view = 'split'; render(); return;
+            if (focusedItem) { markSeen(focusedItem); }
+            openDetailPage(state.selectedId); return;
         }
 
         const item = itemById(state.selectedId);
         if (!item) { return; }
         if (key === 'enter' || key === 'o') {
             event.preventDefault();
-            if (state.view !== 'split') { state.view = 'split'; render(); }
+            openDetailPage(state.selectedId);
             return;
         }
         if (key === 'a') { const a = actionByRole(item, 'accept'); if (a) { event.preventDefault(); performAction(item, a.key); } return; }
@@ -1790,7 +2831,7 @@
     };
 
     // ── Event delegation ──────────────────────────────────────────────────────
-    const onClick = (event) => {
+    const onClick = async (event) => {
         const root = event.target.closest('#wcnApp');
         if (!root && !event.target.closest('.wcn-bulkbar')) { /* still allow bulkbar inside app */ }
 
@@ -1817,9 +2858,14 @@
 
         const tabEl = event.target.closest('[data-wcn-tab]');
         if (tabEl) {
+            state.viewsByTab[state.tab] = state.view;
             state.tab = tabEl.getAttribute('data-wcn-tab');
             state.segment = (SEGMENTS[state.tab] || ['aktif'])[0];   // reset to first segment
+            const allowed = TAB_VIEWS[state.tab] || TAB_VIEWS.islerim;
+            state.view = state.viewsByTab[state.tab] || allowed[0];
+            if (allowed.indexOf(state.view) === -1) { state.view = allowed[0]; }   // view not valid for this tab
             state.group = 'all';
+            state.listPage = 0;
             state.selectedId = null; state.tableSelected.clear(); state.bulkFailedIds.clear();
             render(); return;
         }
@@ -1849,7 +2895,17 @@
         const groupEl = event.target.closest('[data-wcn-group]');
         if (groupEl) { state.group = groupEl.getAttribute('data-wcn-group'); state.selectedId = null; render(); return; }
 
-        // Type / signal filter chips — multi-select toggle.
+        // Inbox chips — "Tümü" clears types; main type chips are single-select.
+        if (event.target.closest('[data-wcn-inbox-all]')) { state.typeFilter.clear(); state.selectedId = null; render(); return; }
+        const inboxTypeEl = event.target.closest('[data-wcn-inbox-type]');
+        if (inboxTypeEl) {
+            const ty = inboxTypeEl.getAttribute('data-wcn-inbox-type');
+            const only = state.typeFilter.size === 1 && state.typeFilter.has(ty);
+            state.typeFilter = only ? new Set() : new Set([ty]);   // toggle-off → Tümü
+            state.selectedId = null;
+            render(); return;
+        }
+        // Type / signal filter chips — multi-select toggle (İşlerim/Havuz/Geçmiş).
         const typeChipEl = event.target.closest('[data-wcn-typechip]');
         if (typeChipEl) {
             const ty = typeChipEl.getAttribute('data-wcn-typechip');
@@ -1863,11 +2919,52 @@
             render(); return;
         }
         if (event.target.closest('[data-wcn-chip-clear]')) { state.typeFilter.clear(); state.signalFilter.clear(); render(); return; }
-
-        if (event.target.closest('[data-wcn-new]')) { openNew(); return; }
+        if (event.target.closest('[data-wcn-search-clear]')) { state.search = ''; render(); return; }
+        const listPageEl = event.target.closest('[data-wcn-list-page]');
+        if (listPageEl) {
+            state.listPage = Math.max(0, state.listPage + (listPageEl.getAttribute('data-wcn-list-page') === 'next' ? 1 : -1));
+            render(); return;
+        }
+        const filterToggle = event.target.closest('[data-wcn-filter-toggle]');
+        if (filterToggle) {
+            const panel = document.getElementById('wcnFilterCollapse');
+            if (!panel) { return; }
+            state.filtersOpen = !panel.classList.contains('show');
+            filterToggle.setAttribute('aria-expanded', String(state.filtersOpen));
+            if (state.filtersOpen) { mountPanelSelect2(); }
+            if (global.bootstrap?.Collapse) {
+                global.bootstrap.Collapse.getOrCreateInstance(panel, { toggle: false }).toggle();
+            } else {
+                panel.classList.toggle('show', state.filtersOpen);
+            }
+            return;
+        }
+        if (event.target.closest('[data-wcn-filter-reset]')) {
+            state.moduleFilter = []; state.priorityFilter = 'all'; state.modeFilter = 'all';
+            state.typeFilter.clear(); state.signalFilter.clear(); state.search = '';
+            state.sortKey = 'sla'; state.sortDir = 'asc';
+            state.tableColumnVisibility = [true, true, true, true, true, true, true, true];
+            state.listPage = 0;
+            render();
+            return;
+        }
+        const newEl = event.target.closest('[data-wcn-new]');
+        if (newEl) {
+            const kind = newEl.getAttribute('data-wcn-new');
+            if (kind === 'task') { openSelfTask(); }
+            else if (kind === 'note') { openQuickNote(); }
+            else if (kind === 'meeting') { openMeetingForm(); }
+            else if (kind === 'source') { openCreateInSource(); }
+            else { openNew(); }
+            return;
+        }
 
         const viewEl = event.target.closest('[data-wcn-view]');
-        if (viewEl) { state.view = viewEl.getAttribute('data-wcn-view'); render(); return; }
+        if (viewEl) {
+            state.view = viewEl.getAttribute('data-wcn-view');
+            state.viewsByTab[state.tab] = state.view;
+            render(); return;
+        }
 
         const scopeEl = event.target.closest('[data-wcn-scope]');
         if (scopeEl) { state.scope = scopeEl.getAttribute('data-wcn-scope'); state.selectedId = null; state.tableSelected.clear(); state.bulkFailedIds.clear(); render(); return; }
@@ -1897,26 +2994,17 @@
         // ── Depth-block interactions (Faz 2) ──────────────────────────────────
         const checkItemEl = event.target.closest('[data-wcn-check-item]');
         if (checkItemEl) {
-            const [id, cid] = checkItemEl.getAttribute('data-wcn-check-item').split(':');
-            const it = itemById(id);
-            const c = it && it.checklist && it.checklist.items.find((x) => x.id === cid);
-            if (c) { c.done = !c.done; render(); }
+            toast(t('ProviderCommandRequired'), 'info');
             return;
         }
         const subEl = event.target.closest('[data-wcn-subtask]');
         if (subEl) {
-            const [id, sid] = subEl.getAttribute('data-wcn-subtask').split(':');
-            const it = itemById(id);
-            const s = it && it.subtasks && it.subtasks.items.find((x) => x.id === sid);
-            if (s) { s.status = s.status === 'done' ? 'not-started' : 'done'; render(); }
+            toast(t('ProviderCommandRequired'), 'info');
             return;
         }
         const subAddEl = event.target.closest('[data-wcn-subtask-add]');
         if (subAddEl) {
-            const it = itemById(subAddEl.getAttribute('data-wcn-subtask-add'));
-            const inp = document.querySelector('#wcnApp [data-wcn-subtask-input]');
-            const val = inp && inp.value.trim();
-            if (it && val) { it.subtasks.items.push({ id: 'S' + (it.subtasks.items.length + 1), title: val, status: 'not-started' }); render(); }
+            toast(t('ProviderCommandRequired'), 'info');
             return;
         }
         const noteSaveEl = event.target.closest('[data-wcn-note-save]');
@@ -1935,30 +3023,58 @@
             return;
         }
         const attachEl = event.target.closest('[data-wcn-attach]');
-        if (attachEl) { toast(tf('ToastAttachment', attachEl.getAttribute('data-wcn-attach'))); return; }
+        if (attachEl) { toast(tf('ToastAttachment', attachEl.getAttribute('data-wcn-attach')), 'info'); return; }
+
+        // Table quick-view (eye): a deliberate "view detail" — open the split panel
+        // for this row. Unlike a stray cell click (which the grid ignores), this is an
+        // explicit affordance, so leaving the grid for the detail is expected.
+        const detailEl = event.target.closest('[data-wcn-detail]');
+        if (detailEl) {
+            state.selectedId = detailEl.getAttribute('data-wcn-detail');
+            const it = itemById(state.selectedId);
+            if (it) { markSeen(it); }
+            openDetailPage(state.selectedId);
+            return;
+        }
 
         const openEl = event.target.closest('[data-wcn-open]');
         if (openEl) {
             const item = itemById(openEl.getAttribute('data-wcn-open'));
             if (item && item.deepLink) {
                 global.open(item.deepLink, '_blank', 'noopener,noreferrer');
-                toast(tf('ToastOpenSource', item.sourceModule, item.sourceId));
+                toast(tf('ToastOpenSource', item.sourceModule, item.sourceId), 'info');
             }
             return;
         }
 
         const refreshSourceEl = event.target.closest('[data-wcn-refresh-source]');
         if (refreshSourceEl) {
-            const item = itemById(refreshSourceEl.getAttribute('data-wcn-refresh-source'));
-            if (!item) { return; }
-            const was = item.systemState;
             refreshSourceEl.setAttribute('disabled', 'disabled');
             global.setTimeout(() => {
-                item.systemState = null;
-                item.sourceVersion = 'v' + (parseInt(String(item.sourceVersion || 'v1').replace(/\D/g, ''), 10) + 1);
-                item.etag = `mock-${item.id}-${Date.now()}`;
-                render(); toast(t(was === 'source-unreachable' ? 'SourceRetrySucceeded' : 'SourceRefreshed'));
+                render();
+                toast(t('SourceProjectionRequested'), 'info');
             }, 350);
+            return;
+        }
+
+        const triggerActionEl = event.target.closest('[data-wcn-trigger-action]');
+        if (triggerActionEl) {
+            const triggerId = triggerActionEl.getAttribute('data-wcn-trigger-id');
+            const actionCode = triggerActionEl.getAttribute('data-wcn-trigger-action');
+            const trigger = state.triggers.find((candidate) => candidate.id === triggerId);
+            const action = trigger?.actions?.find((candidate) => candidate.code === actionCode);
+            performTriggerAction(trigger, action);
+            return;
+        }
+
+        const triggerOpenEl = event.target.closest('[data-wcn-trigger-open]');
+        if (triggerOpenEl) {
+            const trigger = state.triggers.find((candidate) => candidate.id === triggerOpenEl.getAttribute('data-wcn-trigger-open'));
+            if (trigger?.source?.deepLink) {
+                markTriggerSeen(trigger);
+                render();
+                global.open(trigger.source.deepLink, '_blank', 'noopener,noreferrer');
+            }
             return;
         }
 
@@ -1976,28 +3092,55 @@
         }
 
         if (event.target.closest('[data-wcn-clear-filters]')) {
-            state.moduleFilter = 'all'; state.priorityFilter = 'all'; state.modeFilter = 'all';
+            state.moduleFilter = []; state.priorityFilter = 'all'; state.modeFilter = 'all';
             state.typeFilter.clear(); state.signalFilter.clear(); state.search = ''; render(); return;
         }
 
-        // Row selection (skip when clicking the checkbox cell in table).
+        // List cards open the dedicated Golden Compact-style detail route. Split
+        // keeps master-detail selection in place. Table remains a power-grid and is
+        // opened through its own actions / Responsive modal.
+        // power-grid: acting happens via the "İşlemler" column / bulk, and detail via
+        // the responsive + modal. Yanking the user to split on any cell click would
+        // break the "stay in the grid" model.
         const rowEl = event.target.closest('[data-wcn-row]');
-        if (rowEl && !event.target.closest('[data-wcn-check]') && !event.target.closest('.wcn-td-check')) {
+        // Any interactive control inside the row (action buttons, the ··· overflow
+        // toggle + its menu items, pin, checkbox) handles its own click — never hijack
+        // it into the split-detail navigation, which would re-render and kill the
+        // dropdown before Bootstrap can open it.
+        const onControl = event.target.closest('button, a, [data-bs-toggle], .dropdown-menu, [data-wcn-check], .wcn-td-check');
+        if (rowEl && state.view !== 'table' && !onControl) {
             state.selectedId = rowEl.getAttribute('data-wcn-row');
             const it = itemById(state.selectedId);
-            if (it) { it.isUnread = false; }
-            if (state.view !== 'split') { state.view = 'split'; }
-            render();
+            if (it) { markSeen(it); }
+            openDetailPage(state.selectedId);   // detail is its own page now (no split)
         }
     };
 
     const onChange = (event) => {
+        const pageLengthEl = event.target.closest('[data-wcn-page-length]');
+        if (pageLengthEl) {
+            state.pageLength = [10, 25, 50, 100].includes(Number(pageLengthEl.value)) ? Number(pageLengthEl.value) : 10;
+            state.listPage = 0;
+            render();
+            return;
+        }
+        const columnEl = event.target.closest('[data-wcn-column]');
+        if (columnEl) {
+            const index = Number(columnEl.getAttribute('data-wcn-column'));
+            if (index > 0 && index < state.tableColumnVisibility.length) {
+                state.tableColumnVisibility[index] = columnEl.checked;
+                render();
+            }
+            return;
+        }
         const filterEl = event.target.closest('[data-wcn-filter]');
         if (filterEl) {
             const which = filterEl.getAttribute('data-wcn-filter');
-            if (which === 'module') { state.moduleFilter = filterEl.value; }
-            else if (which === 'priority') { state.priorityFilter = filterEl.value; }
-            else if (which === 'mode') { state.modeFilter = filterEl.value; }
+            const value = filterEl.type === 'checkbox' ? filterEl.checked
+                : filterEl.multiple
+                    ? Array.from(filterEl.selectedOptions).map((option) => option.value)
+                    : (filterEl.value || 'all');
+            applyFilterValue(which, value);
             render();
             return;
         }
@@ -2024,6 +3167,7 @@
         global.clearTimeout(searchTimer);
         searchTimer = global.setTimeout(() => {
             state.search = value;
+            state.listPage = 0;
             render();
             const again = document.querySelector('#wcnApp [data-wcn-search]');
             if (again) { again.focus(); again.setSelectionRange(value.length, value.length); }
@@ -2031,15 +3175,32 @@
     };
 
     // ── Boot ──────────────────────────────────────────────────────────────────
-    const boot = () => {
+    let booted = false;
+    const boot = async () => {
         const root = document.getElementById('wcnApp');
-        if (!root) { return; }
-        hydrateStateFromUrl();
+        if (!root || booted) { return; }   // guard: a second bundle load / hot reload
+        booted = true;                     // must not double-bind document listeners
+        if (root.dataset.wcnPage !== 'detail') {
+            hydrateStateFromUrl();
+            state.viewsByTab[state.tab] = state.view;
+        } else {
+            state.loadState = 'ready';
+        }
         document.addEventListener('click', onClick);
         document.addEventListener('change', onChange);
         document.addEventListener('input', onInput);
         document.addEventListener('keydown', onKeydown);
+        // Move focus to the first menu item when a header dropdown opens (mouse or
+        // keyboard) — Bootstrap only auto-focuses on keyboard-open. Delegated so it
+        // survives the innerHTML re-render.
+        document.addEventListener('shown.bs.dropdown', (event) => {
+            const container = event.target && event.target.closest ? event.target.closest('.dropdown') : null;
+            const menu = container && container.querySelector('.wcn-dd-menu');
+            const first = menu && menu.querySelector('.dropdown-item:not(:disabled)');
+            if (first) { first.focus(); }
+        });
         render();
+        if (root.dataset.wcnPage === 'detail') { return; }
         global.setTimeout(() => {
             state.loadState = 'ready';
             render();

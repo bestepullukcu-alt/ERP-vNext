@@ -76,6 +76,10 @@
   <data name="ViewLabel" xml:space="preserve">
     <value>Vista</value>
   </data>
+  <data name="RowsPerPage" xml:space="preserve"><value>Filas</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Visibilidad de columnas</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>Página anterior</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Página siguiente</value></data>
   <data name="ViewList" xml:space="preserve">
     <value>Lista</value>
   </data>
@@ -89,7 +93,7 @@
     <value>Hoy</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>Buscar elementos de trabajo…</value>
+    <value>Buscar…</value>
   </data>
   <data name="FilterAllModules" xml:space="preserve">
     <value>Todos los módulos</value>
@@ -102,6 +106,9 @@
   </data>
   <data name="FilterType" xml:space="preserve">
     <value>Filtro de tipo</value>
+  </data>
+  <data name="FiltersLabel" xml:space="preserve">
+    <value>Filtros</value>
   </data>
   <data name="KeyboardHint" xml:space="preserve">
     <value>j / k para moverse · a para aprobar/aceptar · r para rechazar/devolver · Enter para abrir</value>
@@ -220,6 +227,42 @@
   <data name="ActAct" xml:space="preserve">
     <value>Actuar</value>
   </data>
+  <data name="RowView" xml:space="preserve"><value>Ver</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Programar reunión de aprobación</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Reunión de aprobación programada: {0}</value></data>
+  <data name="IsTitleElimination" xml:space="preserve"><value>Preparar la cédula de eliminación intercompañía</value></data>
+  <data name="IsSummaryElimination" xml:space="preserve"><value>Eliminar los saldos intercompañía antes de la consolidación.</value></data>
+  <data name="IsTitlePricingRegression" xml:space="preserve"><value>Investigar la regresión de la regla de precios</value></data>
+  <data name="IsSummaryPricingRegression" xml:space="preserve"><value>Encontrar y resolver la causa raíz de la desviación de precios tras el parche.</value></data>
+  <data name="IsTitleOnboardingChecklist" xml:space="preserve"><value>Completar la lista de verificación de incorporación del gerente para el nuevo empleado</value></data>
+  <data name="IsSummaryOnboardingChecklist" xml:space="preserve"><value>No se puede iniciar hasta que se complete el predecesor «contrato de trabajo firmado».</value></data>
+  <data name="IsTitleVendorPrequal" xml:space="preserve"><value>Completar la evaluación de precalificación del proveedor</value></data>
+  <data name="IsSummaryVendorPrequal" xml:space="preserve"><value>En nombre de Aylin Ersoy: revisar y puntuar los documentos del proveedor candidato.</value></data>
+  <data name="IsTitleRackAudit" xml:space="preserve"><value>Ejecutar la auditoría de ubicación de estanterías del pasillo D</value></data>
+  <data name="IsSummaryRackAudit" xml:space="preserve"><value>Auditar la exactitud de la ubicación de estanterías tras el conteo.</value></data>
+  <data name="IsTitleCapaEvidence" xml:space="preserve"><value>Cerrar la desviación cuando llegue el paquete de evidencias CAPA</value></data>
+  <data name="IsSummaryCapaEvidence" xml:space="preserve"><value>A la espera de la evidencia de la acción correctiva; preparar el cierre cuando llegue.</value></data>
+  <data name="IsTitleNdaReview" xml:space="preserve"><value>Revisión del acuerdo de confidencialidad — reunión de aprobación</value></data>
+  <data name="IsSummaryNdaReview" xml:space="preserve"><value>Hay una reunión de revisión programada; aprobar tras celebrar la reunión.</value></data>
+  <data name="IsTitleDepreciation" xml:space="preserve"><value>Preparar la cédula de depreciación</value></data>
+  <data name="IsSummaryDepreciation" xml:space="preserve"><value>En la fecha planificada, calcular la depreciación del período y preparar la cédula.</value></data>
+  <data name="IsChkMatchBalances" xml:space="preserve"><value>Conciliar saldos</value></data>
+  <data name="IsChkEliminate" xml:space="preserve"><value>Eliminar diferencias</value></data>
+  <data name="IsChkClose" xml:space="preserve"><value>Cerrar la cédula</value></data>
+  <data name="IsDepSignedContract" xml:space="preserve"><value>Contrato de trabajo firmado</value></data>
+  <data name="BusinessContextLabel" xml:space="preserve"><value>Contexto de negocio</value></data>
+  <data name="FilterSlaStatus" xml:space="preserve"><value>Estado SLA</value></data>
+  <data name="FilterPinned" xml:space="preserve"><value>Solo fijados</value></data>
+  <data name="IsChkReconcileFx" xml:space="preserve"><value>Conciliar diferencias de cambio</value></data>
+  <data name="IsDepLedgerClose" xml:space="preserve"><value>Cierre del libro auxiliar</value></data>
+  <data name="IsDepConsolidation" xml:space="preserve"><value>Ejecución de consolidación</value></data>
+  <data name="IsAttachTrialBalance" xml:space="preserve"><value>Balance de comprobación</value></data>
+  <data name="IsAttachEliminationTemplate" xml:space="preserve"><value>Plantilla de eliminación</value></data>
+  <data name="IsCtxFinancials" xml:space="preserve"><value>Contexto financiero</value></data>
+  <data name="IsFactAmount" xml:space="preserve"><value>Importe</value></data>
+  <data name="IsFactCurrency" xml:space="preserve"><value>Moneda</value></data>
+  <data name="IsFactCostCenter" xml:space="preserve"><value>Centro de costos</value></data>
+  <data name="IsFactPeriod" xml:space="preserve"><value>Período</value></data>
   <data name="ActionsLabel" xml:space="preserve">
     <value>Acciones</value>
   </data>
@@ -761,13 +804,13 @@
     <value>Nuevo</value>
   </data>
   <data name="NewSelfTask" xml:space="preserve">
-    <value>Tarea para mí</value>
+    <value>Crear tarea</value>
   </data>
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>Un pendiente personal — vive en WorkCenter</value>
   </data>
   <data name="NewInSource" xml:space="preserve">
-    <value>Crear en un origen</value>
+    <value>Crear en el módulo de origen</value>
   </data>
   <data name="NewInSourceDesc" xml:space="preserve">
     <value>Elige un módulo, crea en su pantalla</value>
@@ -900,4 +943,157 @@
   <data name="ErrorTitle" xml:space="preserve"><value>No se pudo cargar el Centro de trabajo</value></data>
   <data name="ErrorDesc" xml:space="preserve"><value>Sus filtros se conservaron. Vuelva a intentarlo para cargar el espacio de trabajo.</value></data>
   <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="NewNote" xml:space="preserve">
+    <value>Nota rápida</value>
+  </data>
+  <data name="NewMeeting" xml:space="preserve">
+    <value>Programar reunión</value>
+  </data>
+  <data name="ChipAll" xml:space="preserve">
+    <value>Todos</value>
+  </data>
+  <data name="ChipPendingAccept" xml:space="preserve">
+    <value>Pendiente de aceptación</value>
+  </data>
+  <data name="ChipMeetingInvite" xml:space="preserve">
+    <value>Invitación a reunión</value>
+  </data>
+  <data name="EmptyMeetingInviteTitle" xml:space="preserve">
+    <value>No tienes invitaciones a reuniones pendientes.</value>
+  </data>
+  <data name="EmptyMeetingInviteDesc" xml:space="preserve">
+    <value>Las nuevas invitaciones aparecerán aquí.</value>
+  </data>
+  <data name="FilterWorkType" xml:space="preserve">
+    <value>Tipo de trabajo</value>
+  </data>
+  <data name="FilterAllWorkTypes" xml:space="preserve">
+    <value>Todos los tipos</value>
+  </data>
+  <data name="SearchClear" xml:space="preserve">
+    <value>Borrar búsqueda</value>
+  </data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Guardar vista</value></data>
+  <data name="DefaultViewName" xml:space="preserve"><value>Predeterminada</value></data>
+  <data name="ViewSaved" xml:space="preserve"><value>Vista guardada.</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>Se produjo un error.</value></data>
+  <data name="ExportLabel" xml:space="preserve">
+    <value>Exportar</value>
+  </data>
+  <data name="ApprovalContextTitle" xml:space="preserve"><value>Contexto de aprobación</value></data>
+  <data name="ApprovalAmount" xml:space="preserve"><value>Importe</value></data>
+  <data name="ApprovalThreshold" xml:space="preserve"><value>Umbral de aprobación</value></data>
+  <data name="BudgetImpact" xml:space="preserve"><value>Impacto presupuestario</value></data>
+  <data name="LineItemsTitle" xml:space="preserve"><value>Partidas</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>Descripción / cuenta</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Cant.</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Precio unitario</value></data>
+  <data name="ReviewContextTitle" xml:space="preserve"><value>Paquete de revisión</value></data>
+  <data name="ReviewVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="ReviewChecklistTitle" xml:space="preserve"><value>Lista de revisión</value></data>
+  <data name="ReviewCheckComplete" xml:space="preserve"><value>Completado</value></data>
+  <data name="ReviewCheckPending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="SignatureHistoryTitle" xml:space="preserve"><value>Historial de firmas</value></data>
+  <data name="SignatureSigned" xml:space="preserve"><value>Firmado</value></data>
+  <data name="SignaturePending" xml:space="preserve"><value>Firma pendiente</value></data>
+  <data name="ExceptionContextTitle" xml:space="preserve"><value>Análisis de excepción</value></data>
+  <data name="DiscrepancyField" xml:space="preserve"><value>Campo discrepante</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>Esperado</value></data>
+  <data name="ActualValue" xml:space="preserve"><value>Real</value></data>
+  <data name="DeltaPercent" xml:space="preserve"><value>Variación</value></data>
+  <data name="RootCause" xml:space="preserve"><value>Causa raíz</value></data>
+  <data name="ResolutionOptions" xml:space="preserve"><value>Opciones de resolución</value></data>
+  <data name="TaskContextTitle" xml:space="preserve"><value>Ejecución del trabajo</value></data>
+  <data name="EffortSpent" xml:space="preserve"><value>Esfuerzo consumido</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>h</value></data>
+  <data name="AssignmentHistoryTitle" xml:space="preserve"><value>Historial de asignaciones</value></data>
+  <data name="MeetingContextTitle" xml:space="preserve"><value>Detalles de la reunión</value></data>
+  <data name="MeetingAgendaTitle" xml:space="preserve"><value>Agenda</value></data>
+  <data name="MeetingParticipantsTitle" xml:space="preserve"><value>Participantes</value></data>
+  <data name="AttendanceAccepted" xml:space="preserve"><value>Aceptada</value></data>
+  <data name="AttendancePending" xml:space="preserve"><value>Esperando respuesta</value></data>
+  <data name="AttendanceDeclined" xml:space="preserve"><value>Rechazada</value></data>
+  <data name="ParticipantOrganizer" xml:space="preserve"><value>Organizador</value></data>
+  <data name="ParticipantRequired" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="ParticipantOptional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="ApprovalChainTitle" xml:space="preserve"><value>Ruta de aprobación</value></data>
+  <data name="ApprovalLevelValue" xml:space="preserve"><value>Nivel {0}</value></data>
+  <data name="ApprovalStatusApproved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="ApprovalStatusPending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="ApprovalStatusRejected" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="ConversationTitle" xml:space="preserve"><value>Conversación</value></data>
+  <data name="RelatedRecordsTitle" xml:space="preserve"><value>Registros relacionados</value></data>
+  <data name="RelatedTypeParent" xml:space="preserve"><value>Principal</value></data>
+  <data name="RelatedTypeChild" xml:space="preserve"><value>Secundario</value></data>
+  <data name="RelatedTypeTransaction" xml:space="preserve"><value>Transacción</value></data>
+  <data name="RelatedTypeDocument" xml:space="preserve"><value>Documento</value></data>
+  <data name="ComplianceTitle" xml:space="preserve"><value>Cumplimiento y controles</value></data>
+  <data name="CompliancePolicy" xml:space="preserve"><value>Política</value></data>
+  <data name="ComplianceLimit" xml:space="preserve"><value>Límite de aprobación</value></data>
+  <data name="ComplianceSoD" xml:space="preserve"><value>Segregación de funciones</value></data>
+  <data name="DelegationTitle" xml:space="preserve"><value>Delegación</value></data>
+  <data name="DelegationOnBehalf" xml:space="preserve"><value>En nombre de {0}</value></data>
+  <data name="DelegationDelegate" xml:space="preserve"><value>Delegado</value></data>
+  <data name="DetailTabsLabel" xml:space="preserve"><value>Secciones de detalle del elemento de trabajo</value></data>
+  <data name="DetailTabOverview" xml:space="preserve"><value>Detalles</value></data>
+  <data name="DetailTabProcess" xml:space="preserve"><value>Proceso</value></data>
+  <data name="DetailTabCollaboration" xml:space="preserve"><value>Colaboración y registros</value></data>
+  <data name="DetailPageTitle" xml:space="preserve"><value>Detalles del elemento de trabajo</value></data>
+  <data name="DetailItemNotFound" xml:space="preserve"><value>No se encontró el elemento de trabajo solicitado.</value></data>
+  <data name="DetailBackToList" xml:space="preserve"><value>Volver al centro de trabajo</value></data>
+  <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Su autoridad sobre este elemento ha finalizado.</value></data>
+  <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Una dependencia requerida está incompleta.</value></data>
+  <data name="ActionDisabledEvidenceIncomplete" xml:space="preserve"><value>La evidencia requerida está incompleta.</value></data>
+  <data name="ActionDisabledReconciliationRequired" xml:space="preserve"><value>Se requiere conciliación con el origen.</value></data>
+  <data name="ActionDisabledSourceUnavailable" xml:space="preserve"><value>El sistema de origen no está disponible.</value></data>
+  <data name="ActionDisabledStaleProjection" xml:space="preserve"><value>Actualice primero el registro de origen modificado.</value></data>
+  <data name="ContextControlledDocument" xml:space="preserve"><value>Documento controlado</value></data>
+  <data name="ContextDecomposition" xml:space="preserve"><value>Descomposición estratégica</value></data>
+  <data name="ContextDemandIdea" xml:space="preserve"><value>Idea de demanda</value></data>
+  <data name="ContextObjective" xml:space="preserve"><value>Objetivo</value></data>
+  <data name="ContextPeriodicReview" xml:space="preserve"><value>Revisión periódica</value></data>
+  <data name="DetailLifecycleOwner" xml:space="preserve"><value>Responsable del ciclo de vida</value></data>
+  <data name="EmptyBusinessContext" xml:space="preserve"><value>No se proporcionó contexto de negocio.</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>Falta evidencia</value></data>
+  <data name="FixtureChecklistVerify" xml:space="preserve"><value>Verificar la información requerida</value></data>
+  <data name="FixtureDependencyContract" xml:space="preserve"><value>Dependencia contractual</value></data>
+  <data name="FixtureDependencyValidation" xml:space="preserve"><value>Dependencia de validación</value></data>
+  <data name="FixtureInvalidDesc" xml:space="preserve"><value>Este conjunto de prueba no cumple el contrato canónico.</value></data>
+  <data name="FixtureInvalidTitle" xml:space="preserve"><value>Conjunto de prueba no válido</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>Abierto</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Planificado</value></data>
+  <data name="MigrationAdaptedNotice" xml:space="preserve"><value>Este ejemplo heredado se adaptó para pruebas de migración.</value></data>
+  <data name="MigrationLegacyBlocker" xml:space="preserve"><value>Bloqueo heredado</value></data>
+  <data name="MigrationLegacyInformationRequest" xml:space="preserve"><value>Solicitud de información heredada</value></data>
+  <data name="MigrationLegacyPendingApproval" xml:space="preserve"><value>Aprobación heredada pendiente</value></data>
+  <data name="NoticeChecklistNonBlocking" xml:space="preserve"><value>La lista tiene un problema no bloqueante.</value></data>
+  <data name="NoticeDueSoon" xml:space="preserve"><value>Este elemento vence pronto.</value></data>
+  <data name="NoticePendingReview" xml:space="preserve"><value>Este elemento espera revisión.</value></data>
+  <data name="NoticePlanConflict" xml:space="preserve"><value>El plan personal entra en conflicto con la fecha de origen.</value></data>
+  <data name="NoticeSnoozed" xml:space="preserve"><value>Ha pospuesto este elemento.</value></data>
+  <data name="NoticeWaiting" xml:space="preserve"><value>Este elemento espera información externa.</value></data>
+  <data name="ProviderCommandRequired" xml:space="preserve"><value>Este cambio debe ejecutarse en el proveedor de origen.</value></data>
+  <data name="RedactedValue" xml:space="preserve"><value>Restringido</value></data>
+  <data name="RelatedRecordOpen" xml:space="preserve"><value>Abrir registro relacionado</value></data>
+  <data name="SourceProjectionRequested" xml:space="preserve"><value>Se solicitó una proyección de origen actualizada.</value></data>
+  <data name="TriggerOnlyLabel" xml:space="preserve"><value>Respuesta requerida</value></data>
+  <data name="TriggerResponsesLabel" xml:space="preserve"><value>Solicitudes de respuesta</value></data>
+  <data name="WaitingExpectedUntil" xml:space="preserve"><value>Previsto hasta</value></data>
+  <data name="ActionDisabledReviewMeetingRequired" xml:space="preserve"><value>Se requiere una reunión de revisión antes de aprobar.</value></data>
+  <data name="InboxTitleTaskVendorVerification" xml:space="preserve"><value>Verificar los datos maestros del proveedor Arven Medical</value></data>
+  <data name="InboxTitleTaskVendorVerificationSummary" xml:space="preserve"><value>Compruebe la información fiscal, bancaria y de contacto.</value></data>
+  <data name="InboxTitleApprovalBudgetRevision" xml:space="preserve"><value>Aprobar la revisión del presupuesto de ventas del T3</value></data>
+  <data name="InboxTitleApprovalBudgetRevisionSummary" xml:space="preserve"><value>Evalúe la solicitud adicional de 1,8 millones de TRY.</value></data>
+  <data name="InboxTitleReviewOptionalMeeting" xml:space="preserve"><value>Revisión de finalización CAPA-2231</value></data>
+  <data name="InboxTitleReviewOptionalMeetingSummary" xml:space="preserve"><value>Apruebe directamente o programe una reunión con el responsable.</value></data>
+  <data name="InboxTitleReviewRequiredMeeting" xml:space="preserve"><value>Aprobación de cierre de la transformación Atlas</value></data>
+  <data name="InboxTitleReviewRequiredMeetingSummary" xml:space="preserve"><value>Esta tarea solo puede aprobarse después de la reunión obligatoria.</value></data>
+  <data name="InboxTitleIssueIntegrationFailure" xml:space="preserve"><value>Resolver el fallo de transferencia de clientes SAP</value></data>
+  <data name="InboxTitleIssueIntegrationFailureSummary" xml:space="preserve"><value>47 registros de clientes fallaron durante la validación.</value></data>
+  <data name="InboxTitleExceptionVatMismatch" xml:space="preserve"><value>Revisar la diferencia de conciliación de IVA de julio</value></data>
+  <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Se detectó una diferencia de 84.750 TRY con el libro mayor.</value></data>
+  <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Reunión de revisión del presupuesto del T3</value></data>
+  <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 de julio de 2026, 14:00–15:00 · Teams · Organiza: Deniz Koç</value></data>
 </root>

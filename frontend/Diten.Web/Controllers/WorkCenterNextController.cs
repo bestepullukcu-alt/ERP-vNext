@@ -13,4 +13,12 @@ public class WorkCenterNextController : Controller
         ViewBag.ActiveMenu = "workcenternext";
         return View();
     }
+
+    [HttpGet]
+    public IActionResult Details(string id)
+    {
+        ViewBag.ActiveMenu = "workcenternext";
+        ViewData["WorkItemId"] = id ?? string.Empty;
+        return View();
+    }
 }

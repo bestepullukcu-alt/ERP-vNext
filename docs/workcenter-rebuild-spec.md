@@ -68,7 +68,7 @@ flags[]                                              // Blocked|Waiting|Review|A
 - **Geçmiş** (ikincil, salt-okunur, son 90 gün) — Tamamladıklarım/Onayladıklarım/Devrettiklerim.
 - Sağ üst: vekâlet seçici (N-yönlü, "X adına" bandı) · (Bugün = İşlerim'in zaman-kesiti → v1.5).
 
-**FABLE YASASI (kritik):** *Sekme YALNIZCA sahiplik değişince değişir* — kabul→İşlerim, tamamla→Geçmiş, bırak→Havuz. **Durum değişimi (snooze/inquire/blocked) öğeyi sekmede TUTAR** (segment değişir, sekme değil). Öğelerin sekmeler arası "ışınlanması" güven kaybettirir. *(v2'deki "Havuz & Bekleyen" birleşik sekmesi bu yüzden KALDIRILDI: Bekleyen artık İşlerim içinde segment.)*
+**FABLE YASASI (kritik):** *Sekme YALNIZCA sahiplik değişince değişir* — kabul→İşlerim, tamamla→Geçmiş, bırak→Havuz. Lifecycle kaynaklı `inquire/external waiting` Bekleyen segmentine, planning Planlı segmentine gider. **Kişisel/sinyal durumları segmenti değiştirmez:** snooze→Snoozed filtresi, blocked→Bloke filtresi/sinyali, delegation→Vekâlet filtresi. Örneğin `InProgress + snoozed` İşlerim/Aktif; `Planned + snoozed` İşlerim/Planlı kalır.
 
 ### Segmentler = DURUM (tab-içi, ≤3 — segment obezitesine hayır)
 - **Gelen Kutusu:** Tümü · Kabul bekleyen · Karar bekleyen (onaylar üst bant).
@@ -100,10 +100,11 @@ Evrensel Plan→Start→Timer→Complete→Review KALDIRILDI. Item `capabilities
 - **Tipli dependency:** salt-okunur gösterilir **+ `blockedState`'i besler** (FS+öncül bitmemiş → hard-blocked/aksiyon kilitli; SS+öncül başlamış → ready). Editör kaynakta.
 - **subtasks:** `full` beyan eden kaynak (basit görev modülleri) → aggregator'da CRUD; WBS'i olan kaynak → yalnız `readonly` (ilerleme + link).
 
-### Tek detay şablonu (split-detail sağ panel = tam ekranın aynısı)
+### Tek detay şablonu (MOD-0024 onayı sonrası standalone Details canonical)
+Canonical yüzey `/WorkCenterNext/Details/{id}` route'udur. Split-detail kararı sonraki faza ertelenmiştir; aşağıdaki bilgi mimarisi standalone yüzeye uygulanır.
 1. **Başlık bandı:** tip rozeti · başlık · kaynak modül + deep-link · SLA · blocked rozeti (tipli "FS: X bitmeden başlayamaz") · sahiplik/"X adına".
 2. **Step-bar:** yalnız `stages` capability varsa (kaynağın aşamaları).
-3. **Aksiyon barı:** capability + durum + assignmentMode'dan türetilir (tek satır, koşullu).
+3. **Aksiyon barı:** aggregation/backend tarafından çözülmüş tek authoritative `actions[]` projection'ını sunar; browser capability/status üzerinden aksiyon veya eligibility türetmez.
 4. **Özet + bağlam:** açıklama · requester · kaynak alanları (readonly) · kişisel plan-tarihi.
 5. **Yürütme blokları (capability-koşullu):** checklist · subtask · time-entry · ekler.
 6. **Bağımlılık + engel:** tipli dependency listesi (readonly) · blocked nedeni · önceki/sonraki.
@@ -142,7 +143,6 @@ Bir öğenin tip olması için: **atanabilir + durum makinesi + aksiyon barı** 
 
 ## 7. Ortak görünümler (v1)
 - **List (VARSAYILAN)** — SLA-state gruplu (Overdue/Due-soon/On-track/No-date), sticky başlık + canlı sayaç, satır: title + 4-6 chip, hover quick-action.
-- **Split-detail** — approval inbox'ın kalbi: kaynak bağlamı + tip-özel aksiyon barı + audit izi + "Kaynağında Aç". Klavye j/k gez, a/r onayla/reddet **(teyitli)**.
 - **Table** — sıralanabilir kolon, multi-select, footer bulk-action barı. **Klavye tabloda da çalışır** (v1 a11y şartı).
 - **Focus / Today** — overdue + due-today + pinned.
 - **Snooze / follow-up / pin** — kişisel katman etkileşimleri.
@@ -165,4 +165,4 @@ tenant/global id · version/etag/concurrency · idempotency · reconciliation/re
 Yeni route `/WorkCenterNext`, yeni Views/`WorkCenterNext/` + js/`WorkCenterNext/`. Eski `/WorkCenter` **HİÇ değişmez**. Mock-driven; **sıfır backend/API çağrısı.**
 
 ## 10. "Bitti" tanımı (bu faz)
-İşlerim/Havuz/Geçmiş sekmeleri (mode-driven) · assignmentMode'a göre kabul akışları (direct/approval/groupQueue/offered) · capability-based aksiyon barı (inline vs deeplink iki mock akış) · blocked-signal · vekâlet (banner+rozet+dialog) · onayda teyit + geri-al · bilgi-iste/geri-gönder + waiting-on · snooze/pin/plan-tarihi (sourceDueDate çelişki uyarısı) · bulk kısmi-başarısızlık UX · minimal outbox · List+Split+Table+Focus · normalize SLA/status + **7-dil** etiket · empty/loading/stale states · klavye loop (tabloda dahil). **Sonraki faz:** bu frontend'den kontratı çıkar → MOD-0024 backend.
+İşlerim/Havuz/Geçmiş sekmeleri · assignment/admission projection'ı · authoritative `actions[]` · blocked-signal · vekâlet görünümü · waiting context · snooze/pin/plan-tarihi · List+Table+Focus · standalone canonical Details · normalized status + **7-dil** etiket · empty/loading/stale states. Split/Kanban/Calendar bu slice'ta yoktur. **Sonraki faz:** ayrı onaylı kapsamla gerçek aggregation/backend ve provider entegrasyonu.

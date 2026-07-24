@@ -76,6 +76,10 @@
   <data name="ViewLabel" xml:space="preserve">
     <value>View</value>
   </data>
+  <data name="RowsPerPage" xml:space="preserve"><value>Rows</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Column visibility</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>Previous page</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Next page</value></data>
   <data name="ViewList" xml:space="preserve">
     <value>List</value>
   </data>
@@ -89,7 +93,7 @@
     <value>Today</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>Search work items…</value>
+    <value>Search work…</value>
   </data>
   <data name="FilterAllModules" xml:space="preserve">
     <value>All modules</value>
@@ -102,6 +106,9 @@
   </data>
   <data name="FilterType" xml:space="preserve">
     <value>Type filter</value>
+  </data>
+  <data name="FiltersLabel" xml:space="preserve">
+    <value>Filters</value>
   </data>
   <data name="KeyboardHint" xml:space="preserve">
     <value>j / k to move · a to approve/accept · r to reject/return · Enter to open</value>
@@ -220,6 +227,42 @@
   <data name="ActAct" xml:space="preserve">
     <value>Act</value>
   </data>
+  <data name="RowView" xml:space="preserve"><value>View</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Schedule review meeting</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Review meeting scheduled: {0}</value></data>
+  <data name="IsTitleElimination" xml:space="preserve"><value>Prepare the intercompany elimination schedule</value></data>
+  <data name="IsSummaryElimination" xml:space="preserve"><value>Eliminate intercompany balances before consolidation.</value></data>
+  <data name="IsTitlePricingRegression" xml:space="preserve"><value>Investigate the pricing rule regression</value></data>
+  <data name="IsSummaryPricingRegression" xml:space="preserve"><value>Find and resolve the root cause of the post-patch price deviation.</value></data>
+  <data name="IsTitleOnboardingChecklist" xml:space="preserve"><value>Complete the manager onboarding checklist for the new hire</value></data>
+  <data name="IsSummaryOnboardingChecklist" xml:space="preserve"><value>Cannot start until the signed employment contract predecessor is complete.</value></data>
+  <data name="IsTitleVendorPrequal" xml:space="preserve"><value>Complete the vendor pre-qualification assessment</value></data>
+  <data name="IsSummaryVendorPrequal" xml:space="preserve"><value>On behalf of Aylin Ersoy: review and score the candidate vendor’s documents.</value></data>
+  <data name="IsTitleRackAudit" xml:space="preserve"><value>Run the aisle D rack-location audit</value></data>
+  <data name="IsSummaryRackAudit" xml:space="preserve"><value>Audit rack-location accuracy after the count.</value></data>
+  <data name="IsTitleCapaEvidence" xml:space="preserve"><value>Close the deviation once the CAPA evidence pack arrives</value></data>
+  <data name="IsSummaryCapaEvidence" xml:space="preserve"><value>Waiting for the corrective-action evidence; prepare for closure when it arrives.</value></data>
+  <data name="IsTitleNdaReview" xml:space="preserve"><value>NDA review — approval meeting</value></data>
+  <data name="IsSummaryNdaReview" xml:space="preserve"><value>A review meeting is scheduled; sign off after the meeting is held.</value></data>
+  <data name="IsTitleDepreciation" xml:space="preserve"><value>Prepare the depreciation schedule</value></data>
+  <data name="IsSummaryDepreciation" xml:space="preserve"><value>On the planned date, compute period depreciation and prepare the schedule.</value></data>
+  <data name="IsChkMatchBalances" xml:space="preserve"><value>Match balances</value></data>
+  <data name="IsChkEliminate" xml:space="preserve"><value>Eliminate differences</value></data>
+  <data name="IsChkClose" xml:space="preserve"><value>Close the schedule</value></data>
+  <data name="IsDepSignedContract" xml:space="preserve"><value>Signed employment contract</value></data>
+  <data name="BusinessContextLabel" xml:space="preserve"><value>Business context</value></data>
+  <data name="FilterSlaStatus" xml:space="preserve"><value>SLA status</value></data>
+  <data name="FilterPinned" xml:space="preserve"><value>Pinned only</value></data>
+  <data name="IsChkReconcileFx" xml:space="preserve"><value>Reconcile FX differences</value></data>
+  <data name="IsDepLedgerClose" xml:space="preserve"><value>Subledger close</value></data>
+  <data name="IsDepConsolidation" xml:space="preserve"><value>Consolidation run</value></data>
+  <data name="IsAttachTrialBalance" xml:space="preserve"><value>Trial balance</value></data>
+  <data name="IsAttachEliminationTemplate" xml:space="preserve"><value>Elimination template</value></data>
+  <data name="IsCtxFinancials" xml:space="preserve"><value>Financial context</value></data>
+  <data name="IsFactAmount" xml:space="preserve"><value>Amount</value></data>
+  <data name="IsFactCurrency" xml:space="preserve"><value>Currency</value></data>
+  <data name="IsFactCostCenter" xml:space="preserve"><value>Cost center</value></data>
+  <data name="IsFactPeriod" xml:space="preserve"><value>Period</value></data>
   <data name="ActionsLabel" xml:space="preserve">
     <value>Actions</value>
   </data>
@@ -761,13 +804,13 @@
     <value>New</value>
   </data>
   <data name="NewSelfTask" xml:space="preserve">
-    <value>Task for myself</value>
+    <value>Create task</value>
   </data>
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>A personal to-do — lives in WorkCenter</value>
   </data>
   <data name="NewInSource" xml:space="preserve">
-    <value>Create in a source</value>
+    <value>Create in source module</value>
   </data>
   <data name="NewInSourceDesc" xml:space="preserve">
     <value>Pick a module, create in its own screen</value>
@@ -900,4 +943,157 @@
   <data name="ErrorTitle" xml:space="preserve"><value>Work Center could not be loaded</value></data>
   <data name="ErrorDesc" xml:space="preserve"><value>Your filters are preserved. Retry to load the workspace again.</value></data>
   <data name="Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="NewNote" xml:space="preserve">
+    <value>Quick note</value>
+  </data>
+  <data name="NewMeeting" xml:space="preserve">
+    <value>Schedule meeting</value>
+  </data>
+  <data name="ChipAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="ChipPendingAccept" xml:space="preserve">
+    <value>Pending acceptance</value>
+  </data>
+  <data name="ChipMeetingInvite" xml:space="preserve">
+    <value>Meeting invite</value>
+  </data>
+  <data name="EmptyMeetingInviteTitle" xml:space="preserve">
+    <value>You have no pending meeting invitations.</value>
+  </data>
+  <data name="EmptyMeetingInviteDesc" xml:space="preserve">
+    <value>New meeting invitations will appear here.</value>
+  </data>
+  <data name="FilterWorkType" xml:space="preserve">
+    <value>Work type</value>
+  </data>
+  <data name="FilterAllWorkTypes" xml:space="preserve">
+    <value>All work types</value>
+  </data>
+  <data name="SearchClear" xml:space="preserve">
+    <value>Clear search</value>
+  </data>
+  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Save view</value></data>
+  <data name="DefaultViewName" xml:space="preserve"><value>Default</value></data>
+  <data name="ViewSaved" xml:space="preserve"><value>View saved.</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>An error occurred.</value></data>
+  <data name="ExportLabel" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="ApprovalContextTitle" xml:space="preserve"><value>Approval context</value></data>
+  <data name="ApprovalAmount" xml:space="preserve"><value>Amount</value></data>
+  <data name="ApprovalThreshold" xml:space="preserve"><value>Approval threshold</value></data>
+  <data name="BudgetImpact" xml:space="preserve"><value>Budget impact</value></data>
+  <data name="LineItemsTitle" xml:space="preserve"><value>Line items</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>Description / account</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Qty</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Unit price</value></data>
+  <data name="ReviewContextTitle" xml:space="preserve"><value>Review package</value></data>
+  <data name="ReviewVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="ReviewChecklistTitle" xml:space="preserve"><value>Review checklist</value></data>
+  <data name="ReviewCheckComplete" xml:space="preserve"><value>Complete</value></data>
+  <data name="ReviewCheckPending" xml:space="preserve"><value>Pending</value></data>
+  <data name="SignatureHistoryTitle" xml:space="preserve"><value>Signature history</value></data>
+  <data name="SignatureSigned" xml:space="preserve"><value>Signed</value></data>
+  <data name="SignaturePending" xml:space="preserve"><value>Signature pending</value></data>
+  <data name="ExceptionContextTitle" xml:space="preserve"><value>Exception analysis</value></data>
+  <data name="DiscrepancyField" xml:space="preserve"><value>Discrepancy field</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>Expected</value></data>
+  <data name="ActualValue" xml:space="preserve"><value>Actual</value></data>
+  <data name="DeltaPercent" xml:space="preserve"><value>Variance</value></data>
+  <data name="RootCause" xml:space="preserve"><value>Root cause</value></data>
+  <data name="ResolutionOptions" xml:space="preserve"><value>Resolution options</value></data>
+  <data name="TaskContextTitle" xml:space="preserve"><value>Work execution</value></data>
+  <data name="EffortSpent" xml:space="preserve"><value>Effort used</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>h</value></data>
+  <data name="AssignmentHistoryTitle" xml:space="preserve"><value>Assignment history</value></data>
+  <data name="MeetingContextTitle" xml:space="preserve"><value>Meeting details</value></data>
+  <data name="MeetingAgendaTitle" xml:space="preserve"><value>Agenda</value></data>
+  <data name="MeetingParticipantsTitle" xml:space="preserve"><value>Participants</value></data>
+  <data name="AttendanceAccepted" xml:space="preserve"><value>Accepted</value></data>
+  <data name="AttendancePending" xml:space="preserve"><value>Awaiting response</value></data>
+  <data name="AttendanceDeclined" xml:space="preserve"><value>Declined</value></data>
+  <data name="ParticipantOrganizer" xml:space="preserve"><value>Organizer</value></data>
+  <data name="ParticipantRequired" xml:space="preserve"><value>Required</value></data>
+  <data name="ParticipantOptional" xml:space="preserve"><value>Optional</value></data>
+  <data name="ApprovalChainTitle" xml:space="preserve"><value>Approval path</value></data>
+  <data name="ApprovalLevelValue" xml:space="preserve"><value>Level {0}</value></data>
+  <data name="ApprovalStatusApproved" xml:space="preserve"><value>Approved</value></data>
+  <data name="ApprovalStatusPending" xml:space="preserve"><value>Pending</value></data>
+  <data name="ApprovalStatusRejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="ConversationTitle" xml:space="preserve"><value>Conversation</value></data>
+  <data name="RelatedRecordsTitle" xml:space="preserve"><value>Related records</value></data>
+  <data name="RelatedTypeParent" xml:space="preserve"><value>Parent</value></data>
+  <data name="RelatedTypeChild" xml:space="preserve"><value>Child</value></data>
+  <data name="RelatedTypeTransaction" xml:space="preserve"><value>Transaction</value></data>
+  <data name="RelatedTypeDocument" xml:space="preserve"><value>Document</value></data>
+  <data name="ComplianceTitle" xml:space="preserve"><value>Compliance and controls</value></data>
+  <data name="CompliancePolicy" xml:space="preserve"><value>Policy</value></data>
+  <data name="ComplianceLimit" xml:space="preserve"><value>Approval limit</value></data>
+  <data name="ComplianceSoD" xml:space="preserve"><value>Segregation of duties</value></data>
+  <data name="DelegationTitle" xml:space="preserve"><value>Delegation</value></data>
+  <data name="DelegationOnBehalf" xml:space="preserve"><value>On behalf of {0}</value></data>
+  <data name="DelegationDelegate" xml:space="preserve"><value>Delegate</value></data>
+  <data name="DetailTabsLabel" xml:space="preserve"><value>Work item detail sections</value></data>
+  <data name="DetailTabOverview" xml:space="preserve"><value>Details</value></data>
+  <data name="DetailTabProcess" xml:space="preserve"><value>Process</value></data>
+  <data name="DetailTabCollaboration" xml:space="preserve"><value>Collaboration and records</value></data>
+  <data name="DetailPageTitle" xml:space="preserve"><value>Work item details</value></data>
+  <data name="DetailItemNotFound" xml:space="preserve"><value>The requested work item could not be found.</value></data>
+  <data name="DetailBackToList" xml:space="preserve"><value>Back to Work Center</value></data>
+  <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Your authority for this item has ended.</value></data>
+  <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>A required dependency is incomplete.</value></data>
+  <data name="ActionDisabledEvidenceIncomplete" xml:space="preserve"><value>Required evidence is incomplete.</value></data>
+  <data name="ActionDisabledReconciliationRequired" xml:space="preserve"><value>Source reconciliation is required.</value></data>
+  <data name="ActionDisabledSourceUnavailable" xml:space="preserve"><value>The source system is unavailable.</value></data>
+  <data name="ActionDisabledStaleProjection" xml:space="preserve"><value>Refresh the changed source record first.</value></data>
+  <data name="ContextControlledDocument" xml:space="preserve"><value>Controlled document</value></data>
+  <data name="ContextDecomposition" xml:space="preserve"><value>Strategy decomposition</value></data>
+  <data name="ContextDemandIdea" xml:space="preserve"><value>Demand idea</value></data>
+  <data name="ContextObjective" xml:space="preserve"><value>Objective</value></data>
+  <data name="ContextPeriodicReview" xml:space="preserve"><value>Periodic review</value></data>
+  <data name="DetailLifecycleOwner" xml:space="preserve"><value>Lifecycle owner</value></data>
+  <data name="EmptyBusinessContext" xml:space="preserve"><value>No business context was provided.</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>Evidence is missing</value></data>
+  <data name="FixtureChecklistVerify" xml:space="preserve"><value>Verify required information</value></data>
+  <data name="FixtureDependencyContract" xml:space="preserve"><value>Contract dependency</value></data>
+  <data name="FixtureDependencyValidation" xml:space="preserve"><value>Validation dependency</value></data>
+  <data name="FixtureInvalidDesc" xml:space="preserve"><value>This fixture does not satisfy the canonical contract.</value></data>
+  <data name="FixtureInvalidTitle" xml:space="preserve"><value>Invalid work-item fixture</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Planned</value></data>
+  <data name="MigrationAdaptedNotice" xml:space="preserve"><value>This legacy sample was adapted for migration testing.</value></data>
+  <data name="MigrationLegacyBlocker" xml:space="preserve"><value>Legacy blocker</value></data>
+  <data name="MigrationLegacyInformationRequest" xml:space="preserve"><value>Legacy information request</value></data>
+  <data name="MigrationLegacyPendingApproval" xml:space="preserve"><value>Legacy pending approval</value></data>
+  <data name="NoticeChecklistNonBlocking" xml:space="preserve"><value>The checklist has a non-blocking issue.</value></data>
+  <data name="NoticeDueSoon" xml:space="preserve"><value>This item is due soon.</value></data>
+  <data name="NoticePendingReview" xml:space="preserve"><value>This item is waiting for review.</value></data>
+  <data name="NoticePlanConflict" xml:space="preserve"><value>The personal plan conflicts with the source due date.</value></data>
+  <data name="NoticeSnoozed" xml:space="preserve"><value>This item is snoozed by you.</value></data>
+  <data name="NoticeWaiting" xml:space="preserve"><value>This item is waiting on external input.</value></data>
+  <data name="ProviderCommandRequired" xml:space="preserve"><value>This change must be executed by the source provider.</value></data>
+  <data name="RedactedValue" xml:space="preserve"><value>Restricted</value></data>
+  <data name="RelatedRecordOpen" xml:space="preserve"><value>Open related record</value></data>
+  <data name="SourceProjectionRequested" xml:space="preserve"><value>A fresh source projection was requested.</value></data>
+  <data name="TriggerOnlyLabel" xml:space="preserve"><value>Response required</value></data>
+  <data name="TriggerResponsesLabel" xml:space="preserve"><value>Response requests</value></data>
+  <data name="WaitingExpectedUntil" xml:space="preserve"><value>Expected until</value></data>
+  <data name="ActionDisabledReviewMeetingRequired" xml:space="preserve"><value>A review meeting is required before approval.</value></data>
+  <data name="InboxTitleTaskVendorVerification" xml:space="preserve"><value>Verify Arven Medical vendor master data</value></data>
+  <data name="InboxTitleTaskVendorVerificationSummary" xml:space="preserve"><value>Check the accuracy of tax, bank and contact information.</value></data>
+  <data name="InboxTitleApprovalBudgetRevision" xml:space="preserve"><value>Approve the Q3 sales budget revision</value></data>
+  <data name="InboxTitleApprovalBudgetRevisionSummary" xml:space="preserve"><value>Review the sales team's additional TRY 1.8 million budget request.</value></data>
+  <data name="InboxTitleReviewOptionalMeeting" xml:space="preserve"><value>CAPA-2231 completion review</value></data>
+  <data name="InboxTitleReviewOptionalMeetingSummary" xml:space="preserve"><value>Approve directly or schedule a review meeting with the task owner.</value></data>
+  <data name="InboxTitleReviewRequiredMeeting" xml:space="preserve"><value>Atlas transformation task closure approval</value></data>
+  <data name="InboxTitleReviewRequiredMeetingSummary" xml:space="preserve"><value>This task can be approved only after the required review meeting.</value></data>
+  <data name="InboxTitleIssueIntegrationFailure" xml:space="preserve"><value>Resolve the SAP customer transfer failure</value></data>
+  <data name="InboxTitleIssueIntegrationFailureSummary" xml:space="preserve"><value>47 customer records failed validation during transfer.</value></data>
+  <data name="InboxTitleExceptionVatMismatch" xml:space="preserve"><value>Review the July VAT reconciliation difference</value></data>
+  <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>A TRY 84,750 difference was found between the return and general ledger.</value></data>
+  <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Q3 budget revision review meeting</value></data>
+  <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 July 2026, 14:00–15:00 · Teams · Organizer: Deniz Koç</value></data>
 </root>

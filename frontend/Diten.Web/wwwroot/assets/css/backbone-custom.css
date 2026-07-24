@@ -694,6 +694,35 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     font-size: 1.125rem;
 }
 
+/* WorkCenter overflow-menu rows (list + Table İşlemler) — same flex alignment as
+   .dt-action-item so the icon is vertically centred with the label instead of
+   baseline-dropped, with matching icon↔label spacing. */
+.dropdown-menu .wcn-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    line-height: 1.5;
+}
+.dropdown-menu .wcn-menu-item > .bx {
+    flex: 0 0 auto;
+    font-size: 1.125rem;
+}
+/* Two-line menu item: label + optional disabled-reason on its own muted line, so the
+   reason never mashes onto the label (e.g. "Onayla ve kapat" + why-locked). */
+.dropdown-menu .wcn-menu-item .wcn-menu-text {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+}
+.dropdown-menu .wcn-menu-item .wcn-menu-reason {
+    font-size: 0.75rem;
+    line-height: 1.25;
+    color: var(--bs-secondary-color);
+    white-space: normal;
+    max-inline-size: 15rem;
+    margin-block-start: 0.1rem;
+}
+
 /* MOD-0018: DataTable Row Selection & Hover (Sneat Aesthetic - Dynamic Theme Support) */
 [class*="datatables-"] tbody tr.selected,
 [class*="datatables-"] tbody tr.selected>td,
@@ -4694,68 +4723,89 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
    keep it correct under RTL (Arabic) and both themes. Every colour is paired
    with text (never colour-only) for the SLA/status/priority language gate.
    ========================================================================== */
-.wcn-container { padding-block: 1rem; }
 .wcn-app { display: block; min-inline-size: 0; max-inline-size: 100%; }
 
-/* Header ------------------------------------------------------------------- */
-.wcn-header {
-    display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
-    justify-content: space-between; margin-block-end: 1rem;
-}
-.wcn-header-title { display: flex; align-items: center; gap: .75rem; min-width: 0; }
-.wcn-header-icon {
-    display: inline-flex; align-items: center; justify-content: center;
-    inline-size: 2.75rem; block-size: 2.75rem; border-radius: .5rem; flex: 0 0 auto;
-    background: color-mix(in sRGB, var(--bs-primary) 14%, var(--bs-card-bg));
-    color: var(--bs-primary); font-size: 1.375rem;
-}
-.wcn-header-heading { margin: 0; font-weight: 600; color: var(--bs-heading-color); }
-.wcn-header-sub { margin: .125rem 0 0; font-size: .8125rem; color: var(--bs-secondary-color); }
-.wcn-global-tools { margin-inline-start: auto; display: flex; gap: .5rem; flex-wrap: wrap; }
+/* Header — layout is standard Bootstrap utilities (d-flex/gap/mb) in markup.
+   Only the two header dropdown menus (person/scope + create) need styling. ---- */
+.wcn-header-title { min-inline-size: 0; }   /* let the description wrap, keep actions right */
+/* Keep the two header buttons the exact same height & baseline. The create
+   button hides its label on small screens (icon-only) and its icon is a block
+   element, which would otherwise collapse it shorter than the scope button — pin
+   both to the standard button height with centred content so they always align. */
+.wcn-header-actions .btn { display: inline-flex; align-items: center; justify-content: center; min-block-size: 2.375rem; }
+.wcn-dd-menu { min-inline-size: 13rem; padding: .375rem; }
+.wcn-dd-item { display: flex; align-items: center; gap: .5rem; border-radius: .375rem; padding: .5rem .625rem; white-space: nowrap; }
+/* Higher-contrast icons than the muted secondary colour (spec: icons more legible). */
+.wcn-dd-item > i { font-size: 1.125rem; color: var(--bs-body-color); flex: 0 0 auto; }
+/* Accessible hover / keyboard-focus states that follow the item's rounded shape. */
+.wcn-dd-item:hover, .wcn-dd-item:focus { background: color-mix(in sRGB, var(--bs-primary) 10%, transparent); color: var(--bs-primary); }
+.wcn-dd-item:hover > i, .wcn-dd-item:focus > i { color: var(--bs-primary); }
+.wcn-dd-item:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: -2px; }
+.wcn-dd-item.active { background: color-mix(in sRGB, var(--bs-primary) 12%, transparent); color: var(--bs-primary); }
+.wcn-dd-item.active > i { color: var(--bs-primary); }
+.wcn-dd-sub { margin-inline-start: auto; padding-inline-start: 1.5rem; font-size: .6875rem; color: var(--bs-secondary-color); }
 
-.wcn-scope { display: inline-flex; align-items: center; gap: .375rem; flex-wrap: wrap; }
-.wcn-scopebtn {
-    border: 1px solid var(--bs-border-color); background: var(--bs-card-bg);
-    color: var(--bs-body-color); font-size: .8125rem; font-weight: 500;
-    padding: .375rem .75rem; border-radius: .375rem; cursor: pointer; transition: all .15s ease;
+/* Top-tabs — standard Sneat `nav nav-pills` (styling from the theme); only the
+   count badge sizing is nudged so it sits tight inside the pill. -------------- */
+/* Compact pills like the legacy WorkCenter — scoped to beat Sneat's
+   `.nav-pills .nav-link` padding (equal specificity, loaded later). */
+/* Same sizing as the legacy WorkCenter: Sneat's default `.nav-pills .nav-link`
+   padding (don't override it — that made the pills smaller than the old page),
+   just the compact font + relative positioning for the corner badge. */
+.wcn-tabs .nav-link {
+    position: relative; font-size: .8125rem; font-weight: 500;
+    min-block-size: 2.375rem; block-size: 2.375rem; box-sizing: border-box;
 }
-.wcn-scopebtn:first-of-type { border-start-end-radius: 0; border-end-end-radius: 0; }
-.wcn-scopebtn:nth-of-type(2) { border-start-start-radius: 0; border-end-start-radius: 0; margin-inline-start: -1px; }
-.wcn-scopebtn.active { background: var(--bs-primary); border-color: var(--bs-primary); color: #fff; }
-.wcn-scope-who { font-size: .75rem; color: var(--bs-secondary-color); margin-inline-start: .5rem; }
-
-/* Top-tabs (Inbox / WorkCenter — the acceptance gate, spec §4) ------------- */
-.wcn-tabs {
-    display: flex; gap: .25rem; align-items: stretch; border-block-end: 1px solid var(--bs-border-color);
-    margin-block-end: .875rem; max-inline-size: 100%; overflow-x: auto; scrollbar-width: thin;
-}
-/* Ownership tabs: primary (Gelen Kutusu/İşlerim) + secondary (Havuz/Geçmiş) --- */
-.wcn-tabs-primary { display: flex; gap: .25rem; flex: 0 0 auto; }
-.wcn-tabs-secondary { display: flex; gap: .25rem; margin-inline-start: auto; flex: 0 0 auto; }
-.wcn-tab-secondary { font-size: .875rem; font-weight: 500; color: var(--bs-secondary-color); opacity: .9; }
-.wcn-tab-secondary .wcn-tab-count { background: transparent; }
+.wcn-tabs .nav-link .wc-tab-icon { font-size: 1.1rem; }
+/* Sneat's `.nav-pills … :hover` drops the bottom border — pin it back so hover
+   only tints and the border never flickers (padding already matches, no resize). */
+.wcn-tabs .nav-item .nav-link:not(.active):hover { border-block-end: 1px solid var(--bs-border-color); }
+/* Count = notification badge pinned to the top-right corner, not inline. */
+.wcn-tabs .wcn-tab-count { font-size: .625rem; font-weight: 600; padding-inline: .35rem; line-height: 1.1; box-shadow: 0 0 0 1.5px var(--bs-card-bg); }
 
 /* Status segments (in-tab) ------------------------------------------------- */
-.wcn-segments { display: inline-flex; gap: .25rem; padding: .25rem; margin-block-end: .75rem;
-    background: var(--bs-body-bg); border-radius: .5rem; }
-.wcn-seg { display: inline-flex; align-items: center; gap: .375rem; border: 0; background: transparent;
-    color: var(--bs-secondary-color); font-size: .8125rem; font-weight: 600; padding: .375rem .75rem;
-    border-radius: .375rem; cursor: pointer; transition: all .12s ease; }
-.wcn-seg:hover { color: var(--bs-body-color); }
-.wcn-seg.active { background: var(--bs-card-bg); color: var(--bs-primary); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
-.wcn-seg-count { font-size: .6875rem; opacity: .8; }
+/* Segmented control (status switch) — one connected track, active segment FILLED with
+   primary. Deliberately different from the outlined multi-select filter chips so the
+   single-select "which state am I in" reads instantly. Theme-aware (light + dark). */
+/* One filter row: segmented control (status) sits in its own white pill-box on the
+   left, the multi-select chips sit to its right — a gap separates them (chips never
+   inside the box). Wraps on narrow screens with the segment box kept whole. */
+.wcn-filterbar { display: flex; align-items: center; gap: .875rem; flex-wrap: wrap; margin-block-end: .75rem; }
+.wcn-filterbar .wcn-segments { margin-block-end: 0; flex: 0 0 auto; }
+.wcn-filterbar .wcn-quickfilters, .wcn-filterbar .wcn-chips { margin-block-end: 0; }
+.wcn-segments { display: inline-flex; gap: .125rem; padding: .25rem; margin-block-end: .75rem;
+    background: var(--bs-paper-bg); border: 1px solid var(--bs-border-color); border-radius: .625rem; }
+.wcn-seg { display: inline-flex; align-items: center; gap: .4rem; border: 0; background: transparent;
+    color: var(--bs-secondary-color); font-size: .8125rem; font-weight: 600; padding: .4rem .85rem;
+    border-radius: .5rem; cursor: pointer; transition: background .12s ease, color .12s ease; }
+.wcn-seg:hover:not(.active) { color: var(--bs-body-color); background: rgba(var(--bs-primary-rgb), .07); }
+.wcn-seg.active { background: var(--bs-primary); color: #fff; box-shadow: 0 1px 3px rgba(var(--bs-primary-rgb), .4); }
+.wcn-seg-count { font-size: .6875rem; font-weight: 700; line-height: 1; padding: .1rem .4rem;
+    border-radius: 1rem; background: var(--bs-secondary-bg, rgba(0,0,0,.06)); color: var(--bs-secondary-color); }
+.wcn-seg.active .wcn-seg-count { background: rgba(255,255,255,.25); color: #fff; }
 
 /* Type + signal filter chips ----------------------------------------------- */
 .wcn-chips { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin-block-end: .75rem; }
 .wcn-chips-types, .wcn-chips-signals { display: flex; flex-wrap: wrap; gap: .375rem; }
 .wcn-chips-sep { inline-size: 1px; block-size: 1.25rem; background: var(--bs-border-color); margin-inline: .25rem; }
 .wcn-fchip { display: inline-flex; align-items: center; gap: .375rem; padding: .3125rem .625rem;
-    border: 1px solid var(--bs-border-color); border-radius: 1rem; background: transparent;
-    color: var(--bs-body-color); font-size: .8125rem; cursor: pointer; transition: all .12s ease; }
-.wcn-fchip:hover { border-color: var(--bs-primary); }
+    border: 1px solid var(--bs-border-color); border-radius: 1rem;
+    background: transparent; color: var(--bs-body-color); font-size: .8125rem;
+    cursor: pointer; white-space: nowrap;
+    transition: border-color .12s ease, color .12s ease, background-color .12s ease; }
+.wcn-fchip:hover { border-color: color-mix(in sRGB, var(--bs-primary) 55%, var(--bs-border-color)); color: var(--bs-primary); }
+.wcn-fchip:focus-visible { outline: 2px solid color-mix(in sRGB, var(--bs-primary) 35%, transparent); outline-offset: 2px; }
 .wcn-fchip.active { border-color: var(--bs-primary); background: color-mix(in sRGB, var(--bs-primary) 12%, transparent); color: var(--bs-primary); }
 .wcn-fchip.empty { opacity: .45; }
 .wcn-fchip-count { font-size: .6875rem; font-weight: 700; opacity: .85; }
+/* Remove affordance on a selected chip: a small ✕ after the count. Always
+   readable; a neutral (colour-independent) circle appears on ✕ hover so it never
+   washes out against the chip's own tint. */
+.wcn-fchip-x { font-size: .9375rem; line-height: 1; margin-inline-start: .125rem; margin-inline-end: -.125rem;
+    border-radius: 50%; opacity: .65; transition: opacity .12s ease, background-color .12s ease; }
+.wcn-fchip.active .wcn-fchip-x { opacity: .85; }
+.wcn-fchip:hover .wcn-fchip-x { opacity: 1; }
+.wcn-fchip-x:hover { opacity: 1; background: color-mix(in sRGB, var(--bs-body-color) 16%, transparent); }
 .wcn-fchip-signal.active { border-color: var(--bs-danger); background: color-mix(in sRGB, var(--bs-danger) 12%, transparent); color: var(--bs-danger); }
 .wcn-fchip-clear { border: 0; background: transparent; color: var(--bs-secondary-color); font-size: .8125rem;
     text-decoration: underline; cursor: pointer; padding: .3125rem .5rem; }
@@ -4816,52 +4866,176 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .wcn-cal-item:hover { outline: 1px solid var(--bs-primary); }
 .wcn-cal-dot { inline-size: .375rem; block-size: .375rem; border-radius: 50%; flex: 0 0 auto; }
 .wcn-cal-item-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wcn-tab {
-    display: inline-flex; align-items: center; gap: .5rem; border: 0; background: transparent;
-    color: var(--bs-secondary-color); font-size: .9375rem; font-weight: 600;
-    padding: .625rem .875rem; cursor: pointer; position: relative;
-    border-block-end: 2px solid transparent; margin-block-end: -1px; transition: color .15s ease;
-}
-.wcn-tab:hover { color: var(--bs-body-color); }
-.wcn-tab.active { color: var(--bs-primary); border-block-end-color: var(--bs-primary); }
-.wcn-tab-count {
-    font-size: .75rem; font-weight: 600; min-inline-size: 1.375rem; text-align: center;
-    padding: .0625rem .375rem; border-radius: 1rem; background: var(--bs-body-bg); color: var(--bs-secondary-color);
-}
-.wcn-tab.active .wcn-tab-count { background: color-mix(in sRGB, var(--bs-primary) 16%, var(--bs-card-bg)); color: var(--bs-primary); }
-
 /* Toolbar ------------------------------------------------------------------ */
 .wcn-toolbar {
     display: flex; flex-wrap: wrap; gap: .75rem; align-items: center;
     justify-content: space-between; margin-block-end: .75rem;
 }
-.wcn-views { display: inline-flex; gap: .25rem; background: var(--bs-card-bg);
-    border: 1px solid var(--bs-border-color); border-radius: .5rem; padding: .25rem;
-    max-inline-size: 100%; overflow-x: auto; }
-.wcn-viewbtn {
-    display: inline-flex; align-items: center; gap: .375rem; border: 0; background: transparent;
-    color: var(--bs-secondary-color); font-size: .8125rem; font-weight: 500;
-    padding: .375rem .625rem; border-radius: .375rem; cursor: pointer; transition: all .15s ease;
+/* Views = btn-group of icon buttons. Uniform square size, no elevation, and all
+   borders share the tab border colour (var(--bs-border-color)) so the switch reads
+   as one calm segmented control — not a primary button glued to two grey ones. */
+.wcn-views .wcn-viewbtn,
+.wcn-views .wcn-viewbtn:hover,
+.wcn-views .wcn-viewbtn:focus,
+.wcn-views .wcn-viewbtn:active,
+.wcn-views .wcn-viewbtn.active {
+    box-shadow: none !important;
+    transform: none !important;
+    translate: none !important;
+    top: 0 !important;
+    border-color: var(--bs-border-color) !important;
+    inline-size: 2.375rem; min-inline-size: 2.375rem;
+    min-block-size: 2.375rem; block-size: 2.375rem; box-sizing: border-box;
+    display: inline-flex; align-items: center; justify-content: center;
 }
-.wcn-viewbtn i { font-size: 1rem; }
-.wcn-viewbtn:hover { color: var(--bs-body-color); background: var(--bs-body-bg); }
-.wcn-viewbtn.active { color: var(--bs-primary); background: color-mix(in sRGB, var(--bs-primary) 12%, var(--bs-card-bg)); }
+.wcn-views .wcn-viewbtn.btn-outline-secondary:hover,
+.wcn-views .wcn-viewbtn.btn-outline-secondary:focus {
+    color: var(--bs-primary) !important;
+    background: color-mix(in sRGB, var(--bs-primary) 8%, var(--bs-paper-bg)) !important;
+}
+.wcn-views .wcn-viewbtn.btn-primary:hover,
+.wcn-views .wcn-viewbtn.btn-primary:focus {
+    color: var(--bs-white) !important;
+    background: var(--bs-primary) !important;
+}
+.wcn-keyboard-help,
+.wcn-keyboard-help:hover,
+.wcn-keyboard-help:focus,
+.wcn-keyboard-help:active {
+    display: inline-flex; align-items: center; justify-content: center;
+    inline-size: 2.375rem; min-inline-size: 2.375rem;
+    block-size: 2.375rem; min-block-size: 2.375rem; box-sizing: border-box; padding: 0;
+    border: 1px solid var(--bs-border-color) !important; box-shadow: none !important;
+    transform: none !important; translate: none !important;
+}
+.wcn-keyboard-menu { min-inline-size: 17rem; max-inline-size: 22rem; padding: .625rem .75rem; color: var(--bs-secondary-color); font-size: .75rem; line-height: 1.45; white-space: normal; }
 
 .wcn-filters { display: inline-flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+/* Inside the collapsible panel: reuse the golden `.dt-filter-host` select2 look;
+   search takes its own full-width row, the select2 chips flow beneath it. */
+.wcn-filter-panel .wcn-search { flex: 1 1 100%; }
+.wcn-filter-panel .wcn-search .form-control { inline-size: 100%; min-inline-size: 0; }
 .wcn-search { position: relative; display: inline-flex; align-items: center; }
 .wcn-search i {
     position: absolute; inset-inline-start: .625rem; color: var(--bs-secondary-color);
     font-size: 1rem; pointer-events: none;
 }
-.wcn-search .form-control { padding-inline-start: 2rem; min-inline-size: 15rem; }
+.wcn-search .form-control {
+    min-block-size: 2.375rem; padding-inline-start: 2.1rem; min-inline-size: 15rem;
+    color: var(--bs-heading-color); background: var(--bs-paper-bg);
+    border-color: var(--diten-input-border); border-radius: var(--bs-border-radius);
+}
+.wcn-search .form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 .15rem rgba(var(--bs-primary-rgb), .15);
+}
+.wcn-search .form-control::placeholder { color: var(--bs-secondary-color); opacity: 1; }
+/* Persistent inline search in the chip/filter bar (right side, next to Filtreler).
+   Narrower + flexible than the old panel search, with a trailing clear button. */
+.wcn-search-inline .form-control { min-inline-size: 0; inline-size: clamp(9rem, 24vw, 18rem); padding-inline-end: 1.9rem; }
+/* Single, controllable clear button (input is type=text so there is no native ✕). */
+.wcn-search-clear { position: absolute; inset-inline-end: .25rem; inline-size: 1.5rem; block-size: 1.5rem;
+    display: inline-flex; align-items: center; justify-content: center; border: 0; background: transparent;
+    color: var(--bs-secondary-color); border-radius: 50%; cursor: pointer; padding: 0; }
+.wcn-search-clear:hover { color: var(--bs-body-color); background: color-mix(in sRGB, var(--bs-body-color) 14%, transparent); }
+.wcn-search-clear i {
+    position: static;
+    inset: auto;
+    color: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    pointer-events: none;
+}
+/* Multi-select search field renders its placeholder in the dark input colour;
+   match it to the single-select placeholder (muted grey) so both read as hints. */
+.wcn-filter-panel .select2-selection--multiple .select2-search__field::placeholder { color: var(--bs-secondary-color); opacity: 1; }
+/* Chip row uses the same standard Sneat card surface as the Inbox/My Work tabs.
+   Chips remain visually separate white controls; search and advanced filters
+   read as a paired action group. */
+.wcn-chiprow { overflow: visible; }
+.wcn-chiprow-bar { align-items: center; }
+.wcn-chiprow-bar .wcn-chips { flex: 1 1 auto; min-inline-size: 0; margin-block-end: 0; }
+.wcn-searchfilter { flex-wrap: nowrap; padding-inline-start: .25rem; }
+.wcn-filter-toggle {
+    box-shadow: none !important;
+    transform: none !important;
+}
+.wcn-filter-toggle:hover,
+.wcn-filter-toggle:focus,
+.wcn-filter-toggle[aria-expanded="true"] {
+    color: var(--bs-primary) !important;
+}
+.wcn-filter-toggle:focus-visible { outline: 2px solid color-mix(in sRGB, var(--bs-primary) 35%, transparent); outline-offset: 2px; }
+.wcn-filter-toggle .badge { min-inline-size: 1.25rem; padding: .25rem .375rem; }
 .wcn-select { min-inline-size: 9rem; }
 
-/* Keyboard hint ------------------------------------------------------------ */
-.wcn-hint {
-    display: flex; align-items: center; gap: .375rem; font-size: .75rem;
-    color: var(--bs-secondary-color); margin-block-end: .75rem;
+/* Work Center uses one Golden Compact-style toolbar for every renderer. Search,
+   filters, saved view and view mode therefore stay fixed when list/table changes. */
+.wcn-workspace-card { overflow: visible; }
+.wcn-workspace-toolbar-card { margin-block-end: .75rem; }
+.wcn-workspace-toolbar-card .wcn-workspace-toolbar { border-block-end: 0; }
+.wcn-workspace-toolbar { border-block-end: 1px solid var(--bs-border-color); }
+.wcn-toolbar-row { min-block-size: 4.25rem; padding: 1rem; margin-inline: 0; }
+.wcn-workspace-toolbar .dt-layout-start,
+.wcn-workspace-toolbar .dt-layout-end { padding-inline: 0; }
+.wcn-workspace-toolbar .dt-length label { margin: 0; }
+.wcn-workspace-toolbar .dt-length .form-select { inline-size: auto; min-inline-size: 4.5rem; }
+/* Chips folded into the toolbar band (List/Split): no own bottom margin, allowed to
+   shrink/wrap; on narrow widths the start column stacks above search+filter. */
+.wcn-colvis { box-shadow: none !important; transform: none !important; }
+.wcn-colvis-menu { min-inline-size: 13rem; padding: .375rem; }
+.wcn-colvis-menu .dropdown-item { display: flex; align-items: center; margin: 0; border-radius: var(--bs-border-radius-sm); cursor: pointer; }
+.wcn-filter-panel .dt-filter-bar .filter-chip {
+    flex: 0 0 11rem;
+    min-inline-size: 11rem;
+    max-inline-size: 11rem;
 }
-.wcn-hint i { font-size: .9375rem; }
+.wcn-filter-panel .filter-chip .select2-container:not(.dt-inline-filter-multi--has-value) .dt-inline-filter-multi__summary {
+    color: var(--bs-secondary-color) !important;
+    opacity: 1;
+}
+.wcn-filter-panel .filter-chip .select2-container.dt-inline-filter-multi--has-value .dt-inline-filter-multi__summary {
+    color: var(--bs-body-color) !important;
+    opacity: 1;
+}
+/* List/Split has no ColVis button. Restore the left edge only in that toolbar;
+   DataTable keeps the shared Golden Compact ColVis→Filter→Save grouping. */
+.wcn-workspace-toolbar .dt-buttons-actions:not(:has(.dt-colvis-btn)) .dt-filter-btn {
+    border-top-left-radius: var(--bs-border-radius) !important;
+    border-bottom-left-radius: var(--bs-border-radius) !important;
+    border-left: 0 !important;
+}
+.wcn-workspace-toolbar .dt-buttons-actions:not(:has(.dt-colvis-btn)):has(.dt-save-filter-btn.d-none) .dt-filter-btn {
+    border-radius: var(--bs-border-radius) !important;
+}
+/* Chip strip: always a single line that scrolls horizontally when it overflows —
+   consistent at every width (no wrap-to-3-rows in the tablet dead zone). */
+.wcn-quickfilters { margin-block-end: .75rem; padding: 0; border: 0; background: transparent; overflow-x: auto; }
+.wcn-quickfilters .wcn-chips { margin: 0; flex-wrap: nowrap; inline-size: max-content; }
+.wcn-workspace-card .wcn-layout-wrap { padding: 0; }
+.wcn-workspace-card .wcn-main { border: 0; border-radius: 0 0 var(--bs-card-border-radius) var(--bs-card-border-radius); }
+.wcn-list-pager { display: flex; align-items: center; justify-content: flex-end; gap: .75rem; padding-block-start: .875rem; color: var(--bs-secondary-color); font-size: .8125rem; }
+.wcn-list-pager .btn { inline-size: 2.25rem; block-size: 2.25rem; box-shadow: none !important; transform: none !important; }
+
+@media screen and (max-width: 991.98px) {
+    .wcn-workspace-toolbar .wcn-toolbar-row {
+        display: flex; flex-direction: row; flex-wrap: wrap; align-items: center;
+        padding: 1rem; gap: .25rem;
+    }
+    .wcn-workspace-toolbar .dt-layout-start { flex: 0 0 auto; inline-size: auto; margin: 0 !important; }
+    .wcn-workspace-toolbar .dt-layout-end { display: contents !important; }
+    .wcn-workspace-toolbar .dt-search { flex: 1 1 0%; margin: 0; }
+    .wcn-workspace-toolbar .dt-search .wcn-search,
+    .wcn-workspace-toolbar .dt-search input { inline-size: 100%; max-inline-size: 100%; margin: 0; }
+    .wcn-workspace-toolbar .dt-buttons { flex: 0 0 auto; inline-size: auto; flex-wrap: nowrap; margin: 0; gap: 0; }
+}
+@media screen and (max-width: 575.98px) {
+    .wcn-filter-panel .dt-filter-bar .filter-chip {
+        flex: 0 0 100%;
+        min-inline-size: 0;
+        max-inline-size: none;
+    }
+}
 
 /* Content surface — WHITE panel so thin-bordered cards read cleanly on it
    (Notion / Linear style). Controls (tabs/toolbar/hint) stay on the app bg. */
@@ -4870,6 +5044,12 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
     border: 1px solid var(--bs-border-color);
     border-radius: .625rem;
     padding: 1rem; min-inline-size: 0; max-inline-size: 100%;
+}
+.wcn-main.wcn-main-open {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
 }
 .wcn-layout-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; align-items: start; min-inline-size: 0; max-inline-size: 100%; }
 .wcn-layout-wrap:has(.wcn-sidepanel) { grid-template-columns: minmax(0, 1fr) minmax(18rem, 20rem); }
@@ -4953,11 +5133,19 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 /* Row ---------------------------------------------------------------------- */
 .wcn-row {
     display: flex; align-items: stretch; gap: .625rem; padding: .75rem .875rem;
-    background: var(--bs-card-bg); border: 1px solid var(--bs-border-color);
+    background: var(--bs-paper-bg); border: 1px solid transparent;
     border-radius: .5rem; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+    box-shadow: var(--bs-box-shadow);
 }
-.wcn-row:hover { border-color: color-mix(in sRGB, var(--bs-primary) 45%, var(--bs-border-color)); box-shadow: 0 2px 6px rgba(0, 0, 0, .07); }
+/* Respect the Sneat skin toggle exactly like .card: default skin = drop shadow, no
+   border; bordered skin = border, no shadow. Without this the row carried BOTH. */
+:root[data-skin=bordered] .wcn-row { border-color: var(--bs-border-color); box-shadow: none; }
+:root[data-skin=bordered] .wcn-row:hover { box-shadow: none; }
+.wcn-row:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.035);
+    border-color: color-mix(in sRGB, var(--bs-primary) 45%, var(--bs-border-color));
+    box-shadow: var(--bs-box-shadow);
+}
 .wcn-row:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 1px; }
 .wcn-row.selected {
     border-color: var(--bs-primary);
@@ -4965,6 +5153,15 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 }
 .wcn-row-unread { inline-size: .375rem; border-radius: 1rem; background: transparent; flex: 0 0 auto; }
 .wcn-row.unread .wcn-row-unread { background: var(--bs-primary); }
+/* Left SLA-urgency accent (replaces the removed SLA group headings) — a full-height
+   colour bar keyed off slaState, so urgency reads at a glance per row. */
+.wcn-row-accent { inline-size: 4px; align-self: stretch; border-radius: 4px; flex: 0 0 auto; background: var(--bs-border-color); }
+.wcn-row-accent-danger { background: var(--bs-danger); }
+.wcn-row-accent-warning { background: var(--bs-warning); }
+.wcn-row-accent-success { background: var(--bs-success); }
+.wcn-row-accent-secondary { background: var(--bs-border-color); }
+/* Unread now shown as a small dot before the title (the left bar carries SLA colour). */
+.wcn-row-unread-dot { inline-size: .45rem; block-size: .45rem; border-radius: 50%; background: var(--bs-primary); flex: 0 0 auto; }
 .wcn-row-body { flex: 1 1 auto; min-width: 0; }
 .wcn-row-top { display: flex; align-items: center; gap: .5rem; }
 .wcn-row-title {
@@ -4986,13 +5183,94 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .wcn-row:focus-within .wcn-quick { opacity: 1; }
 @media (hover: none) { .wcn-quick { opacity: 1; } }
 
-/* Split-detail ------------------------------------------------------------- */
-.wcn-split { display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); gap: 1rem; align-items: start; }
-.wcn-split-list { display: flex; flex-direction: column; gap: .5rem; max-block-size: calc(100vh - 16rem); overflow-y: auto; padding-inline-end: .25rem; }
+/* Inbox uses the shared compact row; only its decision actions are specialized. */
+.wcn-inbox-actions { display: flex; align-items: center; gap: .375rem; flex: 0 0 auto; }
+.wcn-inbox-actions .btn { transform: none !important; box-shadow: none !important; }
+.wcn-inbox-action-primary { white-space: nowrap; font-weight: 600; }
+
+/* Split-detail: the master rail stays pinned below Sneat's fixed navbar while
+   the detail surface follows the page. Long master lists scroll inside the rail. */
+.wcn-main:has(.wcn-split) {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+.wcn-layout-wrap-split { align-items: start; }
+.wcn-split {
+    display: grid;
+    grid-template-columns: clamp(19rem, 27vw, 23rem) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+.wcn-split-list {
+    position: sticky;
+    inset-block-start: 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    min-inline-size: 0;
+    max-block-size: calc(100vh - 7.25rem);
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in sRGB, var(--bs-secondary-color) 35%, transparent) transparent;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+.wcn-split-list::-webkit-scrollbar { inline-size: .375rem; }
+.wcn-split-list::-webkit-scrollbar-track { background: transparent; }
+.wcn-split-list::-webkit-scrollbar-thumb {
+    border-radius: 1rem;
+    background: color-mix(in sRGB, var(--bs-secondary-color) 35%, transparent);
+}
 .wcn-split-list .wcn-row { padding: .625rem .75rem; }
+/* Compact vertical card for the Split master list + future Calendar backlog rail.
+   Priority accent stripe on the inline-start; drag-ready. */
+.wcn-splitcard { position: relative; display: flex; flex-direction: column; gap: .375rem;
+    padding: .75rem; border: 1px solid var(--bs-border-color);
+    border-inline-start: 3px solid var(--bs-border-color); border-radius: .625rem; background: var(--bs-white, #fff); cursor: pointer;
+    transition: border-color .12s ease, background-color .12s ease; }
+.wcn-splitcard:last-child { border-block-end: 1px solid var(--bs-border-color); }
+.wcn-splitcard:hover {
+    border-color: color-mix(in sRGB, var(--bs-primary) 42%, var(--bs-border-color));
+    background: color-mix(in sRGB, var(--bs-primary) 3%, var(--bs-white, #fff));
+}
+.wcn-splitcard.selected {
+    border-color: var(--bs-border-color);
+    border-inline-start-color: var(--bs-primary);
+    background: var(--bs-white, #fff);
+}
+.wcn-splitcard:focus-visible { z-index: 1; outline: 2px solid var(--bs-primary); outline-offset: -2px; }
+.wcn-splitcard[draggable="true"] { cursor: grab; }
+.wcn-splitcard[draggable="true"]:active { cursor: grabbing; }
+.wcn-splitcard-p-danger,
+.wcn-splitcard-p-warning,
+.wcn-splitcard-p-secondary { border-inline-start-color: var(--bs-border-color); }
+.wcn-splitcard-p-danger.selected,
+.wcn-splitcard-p-warning.selected,
+.wcn-splitcard-p-secondary.selected { border-inline-start-color: var(--bs-primary); }
+.wcn-splitcard-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.wcn-splitcard-head-end { display: inline-flex; align-items: center; gap: .25rem; flex-shrink: 0; }
+.wcn-splitcard-prio { flex-shrink: 0; }
+.wcn-splitcard-title { font-weight: 600; font-size: .8125rem; line-height: 1.3; color: var(--bs-heading-color, var(--bs-body-color));
+    display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.wcn-splitcard-meta { display: flex; flex-wrap: wrap; gap: .25rem; }
+.wcn-splitcard-foot { display: flex; align-items: center; gap: .3125rem; min-inline-size: 0; font-size: .6875rem; color: var(--bs-secondary-color); }
+.wcn-splitcard-foot i { font-size: .875rem; flex-shrink: 0; }
+.wcn-splitcard-foot span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wcn-splitcard-pin { border: 0; background: transparent; color: var(--bs-secondary-color); cursor: pointer; padding: .125rem; line-height: 1; border-radius: .25rem; }
+.wcn-splitcard-pin:hover, .wcn-splitcard-pin.pinned { color: var(--bs-primary); }
+.wcn-splitcard.unread .wcn-splitcard-title::before { content: ''; display: inline-block; inline-size: .4375rem; block-size: .4375rem; margin-inline-end: .375rem; border-radius: 50%; background: var(--bs-primary); vertical-align: middle; }
 .wcn-split-detail {
-    position: sticky; inset-block-start: 1rem; background: var(--bs-card-bg);
-    border: 1px solid var(--bs-border-color); border-radius: .625rem; min-block-size: 20rem;
+    min-inline-size: 0;
+    background: var(--bs-white, #fff);
+    border: 1px solid var(--bs-border-color);
+    border-radius: .625rem;
+    min-block-size: 20rem;
+    overflow: clip;
 }
 .wcn-detail { padding: 1.25rem; }
 .wcn-detail-empty {
@@ -5020,6 +5298,207 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .wcn-meta-label { font-size: .6875rem; color: var(--bs-secondary-color); text-transform: uppercase; letter-spacing: .02em; }
 .wcn-meta-value { font-size: .8125rem; font-weight: 500; color: var(--bs-body-color); overflow: hidden; text-overflow: ellipsis; }
 .wcn-opensource { display: inline-flex; align-items: center; gap: .375rem; }
+
+/* WorkCenter detail — decision context, process and collaboration ------------ */
+.wcn-detail-tabs {
+    position: sticky; inset-block-start: 0; z-index: 3;
+    display: flex; align-items: center; gap: .25rem; margin-block-start: 1rem;
+    padding: .25rem; border: 1px solid var(--bs-border-color); border-radius: .625rem;
+    background: color-mix(in sRGB, var(--bs-card-bg) 94%, transparent);
+    backdrop-filter: blur(8px);
+}
+.wcn-split-detail .wcn-detail-tabs {
+    margin-inline: -1.25rem;
+    padding: .375rem 1.25rem;
+    border: 0;
+    border-block: 1px solid var(--bs-border-color);
+    border-radius: 0;
+    background: transparent;
+}
+.wcn-split-detail .wcn-detail-tab { flex: 0 1 auto; justify-content: flex-start; }
+.wcn-full-detail-grid { align-items: start; }
+.wcn-full-detail-surface {
+    overflow: clip;
+    border: 0;
+    background: var(--bs-white, #fff);
+}
+.wcn-full-detail-surface .wcn-detail { padding: 1.5rem; }
+.wcn-full-detail-surface .wcn-detail-title { font-size: 1.25rem; }
+.wcn-full-detail-surface .wcn-detail-tabs {
+    position: sticky;
+    inset-block-start: 4.75rem;
+    background: color-mix(in sRGB, var(--bs-white, #fff) 96%, transparent);
+}
+.wcn-detail-tab {
+    display: inline-flex; flex: 1 1 0; align-items: center; justify-content: center; gap: .375rem;
+    min-inline-size: 0; min-block-size: 2.25rem; padding: .375rem .625rem;
+    border: 0; border-radius: .4375rem; background: transparent; color: var(--bs-secondary-color);
+    font-size: .75rem; font-weight: 600; cursor: pointer; transition: color .15s ease, background-color .15s ease;
+}
+.wcn-detail-tab:hover { color: var(--bs-primary); background: color-mix(in sRGB, var(--bs-primary) 6%, transparent); }
+.wcn-detail-tab.active { color: var(--bs-primary); background: color-mix(in sRGB, var(--bs-primary) 12%, var(--bs-card-bg)); }
+.wcn-detail-tab:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 1px; }
+.wcn-detail-tab i { flex: 0 0 auto; font-size: 1rem; }
+.wcn-detail-tab span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wcn-detail-tabpanel { min-inline-size: 0; }
+.wcn-detail-tabpanel[hidden] { display: none; }
+.wcn-business-section { display: flex; flex-direction: column; gap: .75rem; }
+.wcn-business-head { display: flex; align-items: center; gap: .5rem; }
+.wcn-business-head .wcn-detail-h6 { margin: 0; }
+
+/* WorkCenter full detail — golden-parity card grid (detail page only) --------- */
+.wcn-details-page { padding: 0; }
+.wcn-detail-grid { align-items: start; }
+/* A detail card owns its outer padding via .p-4; the sections it wraps drop
+   their own vertical padding/border. Stacked sections keep a hairline divider. */
+.wcn-detail-card > .wcn-detail-section,
+.wcn-detail-card > .wcn-business-section { padding-block: 0; border-block-end: 0; }
+.wcn-detail-card > .wcn-detail-section + .wcn-detail-section,
+.wcn-detail-card > .wcn-detail-section + .wcn-business-section,
+.wcn-detail-card > .wcn-business-section + .wcn-detail-section,
+.wcn-detail-card > .wcn-business-section + .wcn-business-section {
+    margin-block-start: 1.25rem; padding-block-start: 1.25rem;
+    border-block-start: 1px solid var(--bs-border-color);
+}
+/* Command card — identity, status, actions, personal overlay. */
+.wcn-detail-command .wcn-detail-source { margin: 0 0 .5rem; }
+.wcn-detail-command .wcn-detail-title { margin: 0 0 .625rem; }
+.wcn-detail-command .wcn-detail-chips { margin: 0; }
+.wcn-detail-command .wcn-detail-section { margin-block-start: 1rem; }
+.wcn-detail-command .wcn-detail-actions { margin-block-start: 1rem; padding: 0; border: 0; }
+.wcn-detail-command .wcn-personal { margin-block-start: .75rem; }
+.wcn-detail-command .wcn-review-note,
+.wcn-detail-command .wcn-sysstate,
+.wcn-detail-command .wcn-blocked,
+.wcn-detail-command .wcn-parked { margin-block-start: 1rem; }
+.wcn-business-icon {
+    display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+    inline-size: 2rem; block-size: 2rem; border-radius: .5rem;
+    background: color-mix(in sRGB, var(--bs-primary) 11%, var(--bs-card-bg)); color: var(--bs-primary);
+}
+.wcn-business-icon i { font-size: 1rem; }
+/* Business-context facts — stacked label/value pairs (matches .wcn-meta-cell). */
+.wcn-facts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .875rem; }
+.wcn-fact { display: flex; flex-direction: column; gap: .125rem; min-inline-size: 0; }
+.wcn-fact span { font-size: .6875rem; color: var(--bs-secondary-color); text-transform: uppercase; letter-spacing: .02em; }
+.wcn-fact strong { font-size: .8125rem; font-weight: 600; color: var(--bs-heading-color); overflow-wrap: anywhere; }
+.wcn-subsection-title {
+    margin-block-start: .125rem; font-size: .6875rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .035em; color: var(--bs-secondary-color);
+}
+.wcn-kpi-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.wcn-kpi {
+    display: flex; flex-direction: column; gap: .25rem; min-inline-size: 0;
+    padding: .75rem; border: 1px solid var(--bs-border-color); border-radius: .5rem;
+    background: var(--bs-card-bg);
+}
+.wcn-kpi span { font-size: .6875rem; color: var(--bs-secondary-color); }
+.wcn-kpi strong { font-size: .875rem; color: var(--bs-heading-color); overflow-wrap: anywhere; }
+.wcn-kpi-primary { border-color: color-mix(in sRGB, var(--bs-primary) 40%, var(--bs-border-color)); background: color-mix(in sRGB, var(--bs-primary) 5%, var(--bs-card-bg)); }
+.wcn-kpi-primary strong { color: var(--bs-primary); font-size: 1rem; }
+.wcn-line-table-wrap { border: 1px solid var(--bs-border-color); border-radius: .5rem; }
+.wcn-line-table { margin: 0; font-size: .75rem; }
+.wcn-line-table th { font-size: .6875rem; color: var(--bs-secondary-color); white-space: nowrap; }
+.wcn-line-table td { vertical-align: middle; }
+.wcn-line-desc, .wcn-line-code { display: block; }
+.wcn-line-desc { color: var(--bs-body-color); font-weight: 500; }
+.wcn-line-code { margin-block-start: .125rem; font-size: .625rem; color: var(--bs-secondary-color); }
+.wcn-line-total { font-weight: 600; color: var(--bs-heading-color); }
+.wcn-artifact-card {
+    display: flex; align-items: center; gap: .625rem; padding: .625rem .75rem;
+    border: 1px solid var(--bs-border-color); border-radius: .5rem; color: inherit;
+    text-decoration: none; transition: border-color .15s ease, background-color .15s ease;
+}
+.wcn-artifact-card:hover { border-color: var(--bs-primary); background: color-mix(in sRGB, var(--bs-primary) 4%, var(--bs-card-bg)); }
+.wcn-artifact-card > span:nth-child(2) { display: flex; flex: 1; flex-direction: column; min-inline-size: 0; }
+.wcn-artifact-card strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .8125rem; }
+.wcn-artifact-card small { color: var(--bs-secondary-color); font-size: .6875rem; }
+.wcn-review-checks, .wcn-process-list, .wcn-option-list, .wcn-thread, .wcn-compliance-list, .wcn-participants {
+    display: flex; flex-direction: column; gap: .5rem; margin: 0; padding: 0; list-style: none;
+}
+.wcn-review-check { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .5rem; align-items: center; font-size: .8125rem; }
+.wcn-review-check i { color: var(--bs-secondary-color); font-size: 1rem; }
+.wcn-review-check small { color: var(--bs-secondary-color); font-size: .6875rem; }
+.wcn-review-check.is-done i { color: var(--bs-success); }
+.wcn-process-row { position: relative; display: flex; align-items: flex-start; gap: .625rem; min-inline-size: 0; }
+.wcn-process-row:not(:last-child)::after {
+    content: ''; position: absolute; inset-block-start: 1.5rem; inset-block-end: -.5rem;
+    inset-inline-start: .6875rem; inline-size: 1px; background: var(--bs-border-color);
+}
+.wcn-process-marker {
+    z-index: 1; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+    inline-size: 1.375rem; block-size: 1.375rem; border: 1px solid var(--bs-border-color);
+    border-radius: 50%; background: var(--bs-card-bg); color: var(--bs-secondary-color);
+}
+.wcn-process-marker i { font-size: .75rem; }
+.wcn-process-marker.is-approved, .wcn-process-marker.is-signed { border-color: var(--bs-success); color: var(--bs-success); }
+.wcn-process-marker.is-rejected { border-color: var(--bs-danger); color: var(--bs-danger); }
+.wcn-process-marker.is-pending { border-color: var(--bs-warning); color: var(--bs-warning); }
+.wcn-process-row > div { display: flex; flex-direction: column; min-inline-size: 0; }
+.wcn-process-row strong { font-size: .8125rem; color: var(--bs-body-color); }
+.wcn-process-row span { font-size: .6875rem; color: var(--bs-secondary-color); }
+.wcn-discrepancy { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; }
+.wcn-discrepancy > div { display: flex; flex-direction: column; gap: .1875rem; padding: .625rem; border: 1px solid var(--bs-border-color); border-radius: .5rem; }
+.wcn-discrepancy span { font-size: .6875rem; color: var(--bs-secondary-color); }
+.wcn-discrepancy strong { font-size: .8125rem; color: var(--bs-heading-color); overflow-wrap: anywhere; }
+.wcn-discrepancy .is-alert { border-color: color-mix(in sRGB, var(--bs-danger) 45%, var(--bs-border-color)); background: color-mix(in sRGB, var(--bs-danger) 7%, var(--bs-card-bg)); }
+.wcn-discrepancy .is-alert strong { color: var(--bs-danger); }
+.wcn-callout, .wcn-delegation-card {
+    display: flex; align-items: flex-start; gap: .625rem; padding: .625rem .75rem;
+    border-inline-start: 3px solid var(--bs-warning); border-radius: .375rem;
+    background: color-mix(in sRGB, var(--bs-warning) 9%, var(--bs-card-bg));
+}
+.wcn-callout > i, .wcn-delegation-card > i { margin-block-start: .125rem; color: var(--bs-warning); font-size: 1.125rem; }
+.wcn-callout > div, .wcn-delegation-card > div { display: flex; flex-direction: column; gap: .125rem; }
+.wcn-callout span, .wcn-delegation-card span { color: var(--bs-secondary-color); font-size: .6875rem; }
+.wcn-callout strong, .wcn-delegation-card strong { color: var(--bs-body-color); font-size: .8125rem; }
+.wcn-option-list li { display: flex; align-items: flex-start; gap: .375rem; font-size: .8125rem; }
+.wcn-option-list i { margin-block-start: .125rem; color: var(--bs-primary); }
+.wcn-effort-head { display: flex; align-items: flex-end; justify-content: space-between; gap: .75rem; }
+.wcn-effort-head > div { display: flex; flex-direction: column; }
+.wcn-effort-head span { color: var(--bs-secondary-color); font-size: .6875rem; }
+.wcn-effort-head strong { color: var(--bs-heading-color); font-size: .875rem; }
+.wcn-effort-progress { block-size: .4375rem; }
+.wcn-progress-0 { inline-size: 0; } .wcn-progress-10 { inline-size: 10%; } .wcn-progress-20 { inline-size: 20%; }
+.wcn-progress-30 { inline-size: 30%; } .wcn-progress-40 { inline-size: 40%; } .wcn-progress-50 { inline-size: 50%; }
+.wcn-progress-60 { inline-size: 60%; } .wcn-progress-70 { inline-size: 70%; } .wcn-progress-80 { inline-size: 80%; }
+.wcn-progress-90 { inline-size: 90%; } .wcn-progress-100 { inline-size: 100%; }
+.wcn-meeting-facts { display: flex; flex-wrap: wrap; gap: .5rem; }
+.wcn-meeting-facts span { display: inline-flex; align-items: center; gap: .3125rem; padding: .3125rem .5rem; border: 1px solid var(--bs-border-color); border-radius: 1rem; color: var(--bs-secondary-color); font-size: .75rem; }
+.wcn-meeting-facts i { color: var(--bs-primary); }
+.wcn-agenda-list { display: flex; flex-direction: column; gap: .375rem; margin: 0; padding-inline-start: 1.25rem; font-size: .8125rem; }
+.wcn-participant { display: flex; align-items: center; gap: .5rem; }
+.wcn-participant > div { display: flex; flex: 1; flex-direction: column; min-inline-size: 0; }
+.wcn-participant strong { color: var(--bs-body-color); font-size: .8125rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wcn-participant span, .wcn-participant small { color: var(--bs-secondary-color); font-size: .6875rem; }
+.wcn-participant small.is-accepted { color: var(--bs-success); }
+.wcn-participant small.is-declined { color: var(--bs-danger); }
+.wcn-thread { gap: .625rem; }
+.wcn-thread-message { display: flex; justify-content: flex-start; }
+.wcn-thread-message.is-mine { justify-content: flex-end; }
+.wcn-thread-bubble { max-inline-size: 85%; padding: .5rem .625rem; border-radius: .625rem .625rem .625rem .125rem; background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); }
+.wcn-thread-message.is-mine .wcn-thread-bubble { border-color: color-mix(in sRGB, var(--bs-primary) 30%, var(--bs-border-color)); border-radius: .625rem .625rem .125rem .625rem; background: color-mix(in sRGB, var(--bs-primary) 7%, var(--bs-card-bg)); }
+.wcn-thread-bubble strong, .wcn-thread-bubble time { display: block; font-size: .6875rem; }
+.wcn-thread-bubble strong { color: var(--bs-heading-color); }
+.wcn-thread-bubble p { margin: .125rem 0; color: var(--bs-body-color); font-size: .8125rem; line-height: 1.45; }
+.wcn-thread-bubble time { color: var(--bs-secondary-color); }
+.wcn-related-list { display: flex; flex-direction: column; border: 1px solid var(--bs-border-color); border-radius: .5rem; overflow: hidden; }
+.wcn-related-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .625rem; padding: .5rem .625rem; color: inherit; text-decoration: none; }
+.wcn-related-row + .wcn-related-row { border-block-start: 1px solid var(--bs-border-color); }
+.wcn-related-row:hover { background: color-mix(in sRGB, var(--bs-primary) 5%, var(--bs-card-bg)); }
+.wcn-related-type { padding: .125rem .375rem; border-radius: .25rem; background: var(--bs-body-bg); color: var(--bs-secondary-color); font-size: .625rem; text-transform: uppercase; }
+.wcn-related-row > span:nth-child(2) { display: flex; flex-direction: column; min-inline-size: 0; }
+.wcn-related-row strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .8125rem; }
+.wcn-related-row small { color: var(--bs-secondary-color); font-size: .6875rem; }
+.wcn-compliance-flag { display: flex; align-items: flex-start; gap: .5rem; padding: .5rem .625rem; border: 1px solid var(--bs-border-color); border-radius: .375rem; }
+.wcn-compliance-flag > i { margin-block-start: .125rem; color: var(--bs-warning); }
+.wcn-compliance-flag.is-high { border-color: color-mix(in sRGB, var(--bs-danger) 38%, var(--bs-border-color)); background: color-mix(in sRGB, var(--bs-danger) 5%, var(--bs-card-bg)); }
+.wcn-compliance-flag.is-high > i { color: var(--bs-danger); }
+.wcn-compliance-flag > div { display: flex; flex-direction: column; gap: .125rem; }
+.wcn-compliance-flag strong { font-size: .75rem; color: var(--bs-heading-color); }
+.wcn-compliance-flag span { font-size: .75rem; color: var(--bs-body-color); line-height: 1.4; }
+.wcn-delegation-card { border-inline-start-color: var(--bs-info); background: color-mix(in sRGB, var(--bs-info) 8%, var(--bs-card-bg)); }
+.wcn-delegation-card > i { color: var(--bs-info); }
 
 /* Task lifecycle step-bar (Accept → Plan → Progress → Review → Done) --------- */
 .wcn-steps { list-style: none; display: flex; margin: 0; padding: 0; gap: 0; }
@@ -5127,9 +5606,6 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
     background: color-mix(in sRGB, var(--bs-danger) 10%, var(--bs-card-bg)); color: color-mix(in sRGB, var(--bs-danger) 85%, var(--bs-body-color)); }
 
 /* Approvals top band (Inbox) ----------------------------------------------- */
-.wcn-approval-band .wcn-group-head.wcn-group-primary { color: var(--bs-primary); }
-.wcn-approval-band .wcn-group-primary .wcn-group-dot { background: var(--bs-primary); }
-.wcn-approval-band { padding: .25rem; border-radius: .5rem; background: color-mix(in sRGB, var(--bs-primary) 5%, transparent); }
 
 /* Source-due vs personal-plan dates ----------------------------------------- */
 .wcn-dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
@@ -5187,8 +5663,10 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 
 /* Capability depth blocks (Faz 2) ------------------------------------------ */
 .wcn-count-inline { font-weight: 600; color: var(--bs-primary); margin-inline-start: .25rem; }
-.wcn-progress { inline-size: 100%; block-size: .375rem; border-radius: 1rem; background: var(--bs-border-color); overflow: hidden; margin-block-end: .625rem; }
-.wcn-progress-bar { block-size: 100%; background: var(--bs-success); border-radius: 1rem; transition: inline-size .2s ease; }
+.wcn-progress { display: block; inline-size: 100%; block-size: .375rem; border: 0; border-radius: 1rem; background: var(--bs-border-color); overflow: hidden; margin-block-end: .625rem; appearance: none; }
+.wcn-progress::-webkit-progress-bar { background: var(--bs-border-color); border-radius: 1rem; }
+.wcn-progress::-webkit-progress-value { background: var(--bs-success); border-radius: 1rem; }
+.wcn-progress::-moz-progress-bar { background: var(--bs-success); border-radius: 1rem; }
 .wcn-checks, .wcn-subtasks, .wcn-deps, .wcn-attachments { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .375rem; }
 .wcn-check, .wcn-subtask { display: flex; align-items: center; gap: .5rem; font-size: .8125rem; }
 .wcn-check-box, .wcn-subtask-toggle { border: 0; background: transparent; cursor: pointer; padding: 0; display: inline-flex; font-size: 1.125rem; color: var(--bs-secondary-color); }
@@ -5212,32 +5690,12 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .wcn-composer { display: flex; gap: .5rem; margin-block-end: .875rem; }
 .wcn-composer input { flex: 1; }
 
-/* Table -------------------------------------------------------------------- */
-/* Table sits flush on the white .wcn-main surface (no double-card border). */
-.wcn-tablewrap {
-    background: transparent; border: 0; border-radius: 0; overflow-x: auto; overflow-y: hidden;
-    max-inline-size: 100%; -webkit-overflow-scrolling: touch;
-}
-.wcn-table { inline-size: 100%; min-inline-size: 58rem; border-collapse: collapse; }
-.wcn-table thead th {
-    text-align: start; font-size: .6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
-    color: var(--bs-secondary-color); padding: .75rem .75rem; border-block-end: 1px solid var(--bs-border-color);
-    white-space: nowrap; background: var(--bs-body-bg);
-}
-.wcn-th { user-select: none; }
-.wcn-th:hover { color: var(--bs-body-color); }
-.wcn-th.sorted { color: var(--bs-primary); }
-.wcn-th i { font-size: .875rem; vertical-align: middle; }
-.wcn-thbtn { display: inline-flex; align-items: center; gap: .125rem; padding: 0; border: 0; background: transparent;
-    color: inherit; font: inherit; text-transform: inherit; letter-spacing: inherit; cursor: pointer; }
-.wcn-thbtn:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; border-radius: .125rem; }
-.wcn-table tbody td { padding: .625rem .75rem; font-size: .8125rem; color: var(--bs-body-color); border-block-end: 1px solid var(--bs-border-color); vertical-align: middle; }
-.wcn-table tbody tr:last-child td { border-block-end: 0; }
-.wcn-tr { cursor: pointer; transition: background .12s ease; }
-.wcn-tr:hover { background: var(--bs-body-bg); }
-.wcn-tr.selected { background: color-mix(in sRGB, var(--bs-primary) 8%, var(--bs-card-bg)); }
-.wcn-td-check { inline-size: 2.5rem; text-align: center; }
-.wcn-td-title { font-weight: 500; color: var(--bs-heading-color); max-inline-size: 22rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Table — real DataTables v2 + shared Sneat/Golden Reference defaults. */
+.wcn-main:has(.wcn-datatable-card) { padding: 0; border: 0; background: transparent; }
+.wcn-datatable-card { overflow: visible; }
+.wcn-datatable-card .dt-container > .row:last-child { padding-inline: 1rem; }
+.wcn-datatable-card table.dataTable tbody tr { cursor: pointer; }
+.wcn-datatable-card table.dataTable tbody tr.selected > * { background: color-mix(in sRGB, var(--bs-primary) 8%, var(--bs-card-bg)); }
 
 /* Bulk action bar (Fiori-style footer) ------------------------------------- */
 .wcn-bulkbar {
@@ -5268,24 +5726,6 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .wcn-empty p { margin: 0; font-size: .8125rem; max-inline-size: 26rem; }
 .wcn-empty .btn { margin-block-start: .75rem; }
 
-/* Toast -------------------------------------------------------------------- */
-.wcn-toast {
-    position: fixed; inset-block-end: 1.5rem; inset-inline-end: 1.5rem; z-index: 1090;
-    display: flex; flex-direction: column; gap: .5rem; pointer-events: none; max-inline-size: calc(100vw - 2rem);
-}
-.wcn-toast-item {
-    display: flex; align-items: center; gap: .5rem; padding: .625rem .875rem;
-    background: var(--bs-heading-color); color: var(--bs-card-bg); border-radius: .5rem;
-    font-size: .8125rem; box-shadow: 0 6px 18px rgba(0, 0, 0, .18); max-inline-size: 22rem;
-    animation: wcn-toast-in .18s ease; opacity: 1; transition: opacity .3s ease;
-}
-.wcn-toast-item.leaving { opacity: 0; }
-.wcn-toast-item i { font-size: 1rem; color: var(--bs-success); }
-.wcn-toast-action { pointer-events: auto; margin-inline-start: auto; padding: .125rem .375rem; border: 0;
-    border-radius: .25rem; background: color-mix(in sRGB, var(--bs-card-bg) 16%, transparent); color: inherit;
-    font-size: .75rem; font-weight: 700; text-decoration: underline; cursor: pointer; }
-@keyframes wcn-toast-in { from { transform: translateY(.5rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
 /* Loading/error boundary --------------------------------------------------- */
 .wcn-system-page { display: flex; min-block-size: 20rem; flex-direction: column; align-items: center; justify-content: center;
     gap: .5rem; padding: 2rem; text-align: center; color: var(--bs-secondary-color); }
@@ -5300,13 +5740,16 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 /* Responsive: collapse split to a single column on narrow viewports -------- */
 @media (max-width: 1099.98px) {
     .wcn-split { grid-template-columns: minmax(0, 1fr); }
-    .wcn-split-list { max-block-size: none; }
-    .wcn-split-detail { position: static; }
+    .wcn-split-list {
+        position: static;
+        max-block-size: none;
+        overflow-y: visible;
+        padding-inline-end: 0;
+    }
     .wcn-layout-wrap:has(.wcn-sidepanel) { grid-template-columns: minmax(0, 1fr); }
     .wcn-sidepanel { grid-row: 1; }
 }
 @media (max-width: 599.98px) {
-    .wcn-container { padding-inline: .25rem; }
     .wcn-header { align-items: flex-start; }
     .wcn-header-title, .wcn-scope, .wcn-global-tools, .wcn-toolbar, .wcn-filters { inline-size: 100%; }
     .wcn-global-tools { margin-inline-start: 0; }
@@ -5324,16 +5767,38 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
     .wcn-row-summary { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
     .wcn-detail-actions, .wcn-personal { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
     .wcn-detail-actions .btn, .wcn-personal-btn { justify-content: center; }
+    .wcn-inbox-actions { inline-size: 100%; justify-content: flex-end; padding-inline-start: 1rem; }
     .wcn-dates { grid-template-columns: minmax(0, 1fr); }
-    .wcn-toast { inset-inline: 1rem; inset-block-end: 1rem; }
-    .wcn-toast-item { max-inline-size: none; }
     .wcn-meta-grid { grid-template-columns: minmax(0, 1fr); }
+    .wcn-kpi-grid { grid-template-columns: minmax(0, 1fr); }
+    .wcn-discrepancy { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .wcn-detail-tabs { overflow-x: auto; scrollbar-width: thin; }
+    .wcn-detail-tab { flex: 0 0 auto; min-inline-size: max-content; }
     .wcn-search .form-control { min-inline-size: 0; }
+    .wcn-chiprow .card-body { padding: .625rem !important; }
+    .wcn-chiprow-bar { align-items: stretch !important; }
+    .wcn-chiprow-bar .wcn-chips {
+        inline-size: 100%; flex-wrap: nowrap; overflow-x: auto;
+        padding-block-end: .25rem; scrollbar-width: thin;
+    }
+    .wcn-chiprow-bar .wcn-chips-types,
+    .wcn-chiprow-bar .wcn-chips-signals { flex-wrap: nowrap; }
+    .wcn-searchfilter { inline-size: 100%; padding-inline-start: 0; }
+    .wcn-searchfilter .wcn-search { flex: 1 1 auto; }
+    .wcn-filter-toggle span:not(.badge) { display: none; }
+    .wcn-toolbar-row { align-items: stretch !important; padding: .75rem; }
+    .wcn-page-length { inline-size: 100%; justify-content: space-between; }
+    .wcn-searchfilter { justify-content: flex-start !important; }
+    .wcn-searchfilter .wcn-search { flex: 1 1 100%; }
+    .wcn-search-inline .form-control { inline-size: 100%; }
+    .wcn-views { inline-size: auto; }
+    .wcn-quickfilters { padding-inline: .75rem; overflow-x: auto; }
+    .wcn-quickfilters .wcn-chips { flex-wrap: nowrap; inline-size: max-content; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .wcn-row, .wcn-quick, .wcn-scopebtn, .wcn-viewbtn, .wcn-tr, .wcn-toast-item { transition: none; }
-    .wcn-toast-item, .wcn-skeleton span { animation: none; }
+    .wcn-row, .wcn-quick, .wcn-scopebtn, .wcn-viewbtn, .wcn-tr { transition: none; }
+    .wcn-skeleton span { animation: none; }
 }
 /* ─────────────────────────────────────────────────────────────────────────────
    DitenTree — reusable hierarchy component (Views/Shared/_Tree.cshtml +
@@ -5590,4 +6055,16 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
     .diten-tree-row, .diten-tree-twisty svg, .diten-tree-actions { transition: none; }
+}
+.wcn-trigger-stack { display: grid; gap: .75rem; margin-bottom: 1rem; }
+.wcn-trigger-card { align-items: center; display: flex; flex-direction: row; gap: 1rem; justify-content: space-between; padding: 1rem 1.25rem; }
+.wcn-trigger-card h6 { margin: .45rem 0 .2rem; }
+.wcn-trigger-card p { color: var(--bs-secondary-color); margin: 0; }
+.wcn-trigger-actions { display: flex; flex: 0 0 auto; gap: .5rem; }
+.wcn-row-meeting .wcn-trigger-actions { align-items: center; display: flex; flex: 0 0 auto; gap: .375rem; }
+.wcn-action-wrap { align-items: flex-start; display: inline-flex; flex-direction: column; gap: .25rem; }
+.wcn-action-disabled-reason { color: var(--bs-danger); max-width: 18rem; }
+@media (max-width: 767.98px) {
+  .wcn-trigger-card { align-items: stretch; flex-direction: column; }
+  .wcn-row-meeting .wcn-trigger-actions { justify-content: flex-end; inline-size: 100%; }
 }
