@@ -189,7 +189,13 @@ public sealed record WorkItemProjectionDto(
     WorkItemConcurrencyDto Concurrency,
     WorkItemWaitingContextDto? WaitingContext,
     WorkItemEscalationDto? Escalation,
-    DateTimeOffset? DueAt);
+    DateTimeOffset? DueAt,
+    // Action PLACEMENT: which of actions[] is the row's primary button and which sit behind the ··· overflow.
+    // Optional and trailing, so providers that do not express placement (MOD-0023 today) compile and serialize
+    // unchanged and the shell keeps deriving it. Both must reference codes present in actions[] — the executable
+    // contract rejects a dangling reference.
+    string? PrimaryActionCode = null,
+    IReadOnlyList<string>? OverflowActionCodes = null);
 
 // The caller's effective context, assembled by the API layer from the authenticated principal. UserId is
 // resolved server-side (never from the client payload); permission flags are evaluated from the principal's

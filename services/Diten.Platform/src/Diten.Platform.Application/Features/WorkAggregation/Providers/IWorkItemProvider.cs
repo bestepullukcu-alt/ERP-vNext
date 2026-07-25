@@ -14,5 +14,18 @@ public interface IWorkItemProvider
 
     string ProviderContractVersion { get; }
 
+    /// <summary>
+    /// Every permission key this provider consults through <see cref="WorkItemActor.Has"/> when deciding whether
+    /// an action is enabled.
+    ///
+    /// <para>The API layer evaluates ONLY the keys collected here against the caller's claims and hands the granted
+    /// set to the read query. A key the provider checks but does not declare is therefore never evaluated, so
+    /// <c>actor.Has(key)</c> silently returns false and the action is projected as PERMISSION_DENIED even for a
+    /// caller who genuinely holds it — which is exactly what happened when the key list lived hardcoded in
+    /// WorkItemsController and MOD-0024 was added. Declaring it here keeps the two in step by construction, so a
+    /// third provider cannot repeat the mistake.</para>
+    /// </summary>
+    IReadOnlyCollection<string> RequiredActionPermissions { get; }
+
     Task<IReadOnlyList<WorkItemProjectionDto>> GetWorkItemsAsync(WorkItemActor actor, CancellationToken ct = default);
 }

@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Features.WorkAggregation.Services;
+using Diten.Platform.Application.Features.Workflow;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
@@ -43,6 +44,18 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
     public string ProviderCode => WorkItemContract.ProviderCodeWorkflow;
 
     public string ProviderContractVersion => "1.0";
+
+    /// <summary>
+    /// The four approval-action permissions WorkItemProjectionService consults. These are exactly the keys the
+    /// API layer used to hardcode, moved to their owner — MOD-0023's behaviour is unchanged.
+    /// </summary>
+    public IReadOnlyCollection<string> RequiredActionPermissions { get; } =
+    [
+        WorkflowPermissions.TasksApprove,
+        WorkflowPermissions.TasksReject,
+        WorkflowPermissions.TasksRequestInfo,
+        WorkflowPermissions.TasksDelegate
+    ];
 
     public async Task<IReadOnlyList<WorkItemProjectionDto>> GetWorkItemsAsync(
         WorkItemActor actor,

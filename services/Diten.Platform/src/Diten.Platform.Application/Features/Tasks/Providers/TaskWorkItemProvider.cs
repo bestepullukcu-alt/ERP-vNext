@@ -27,6 +27,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string ActionClaimKey = "WorkAggregation_Action_Claim";
     private const string ActionStartKey = "WorkAggregation_Action_Start";
     private const string ActionCompleteKey = "WorkAggregation_Action_Complete";
+    private const string ActionPlanKey = "WorkAggregation_Action_Plan";
+    private const string ActionReleaseKey = "WorkAggregation_Action_Release";
+    private const string ActionCancelKey = "WorkAggregation_Action_Cancel";
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
 
@@ -51,6 +54,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
     public string ProviderContractVersion => "1.0";
 
+    /// <summary>
+    /// The permissions BuildActions consults. Omitting one here makes its action unconditionally
+    /// PERMISSION_DENIED, so this list and the actor.Has(...) calls must stay in step — TaskWorkItemProviderTests
+    /// asserts exactly that.
+    /// </summary>
+    public IReadOnlyCollection<string> RequiredActionPermissions { get; } =
+    [
+        TaskPermissions.Update,     // accept + start
+        TaskPermissions.Claim,      // claim a pooled task
+        TaskPermissions.Complete,   // complete
+        TaskPermissions.Cancel      // cancel
+    ];
+
     public async Task<IReadOnlyList<WorkItemProjectionDto>> GetWorkItemsAsync(
         WorkItemActor actor,
         CancellationToken ct = default)
@@ -74,6 +90,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         var normalized = _lifecycle.ToNormalizedStatus(task);
         var waiting = _lifecycle.ResolveWaitingContext(task);
         var terminal = _lifecycle.IsTerminal(task);
+
+        // A terminal task exposes NO state-changing action (contract rule), so placement is empty too.
+        var (actions, primaryActionCode, overflowActionCodes) = terminal
+            ? ([], null, (IReadOnlyList<string>)[])
+            : BuildActions(task, actor);
 
         return new WorkItemProjectionDto(
             FixtureKind: WorkItemContract.FixtureKindWorkItem,
@@ -107,13 +128,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // MOD-0024 IS the lifecycle owner here (unlike a workflow-gated business object).
             LifecycleOwner: TaskProviderCode,
             WorkItemCapabilities: ResolveCapabilities(task),
-            Actions: terminal ? [] : BuildActions(task, actor),
+            Actions: actions,
             Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
             WaitingContext: waiting is null
                 ? null
                 : new WorkItemWaitingContextDto(waiting.Type, waiting.WaitingOn, waiting.Since, waiting.ExpectedUntil),
             Escalation: null,
-            DueAt: task.DueAt);
+            DueAt: task.DueAt,
+            PrimaryActionCode: primaryActionCode,
+            OverflowActionCodes: overflowActionCodes);
     }
 
     /// <summary>
@@ -143,54 +166,94 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// The single authoritative actions[] for this task. Eligibility is resolved HERE (server-side): the browser
     /// renders what it is given and invents nothing.
     /// </summary>
-    private static IReadOnlyList<WorkItemActionDto> BuildActions(TaskItem task, WorkItemActor actor)
+    /// <remarks>
+    /// Covers every Phase-1 command the API exposes (accept · claim · release · plan · start · complete · cancel)
+    /// so the row's overflow menu is not empty. Each entry is gated on BOTH the lifecycle/ownership rule the server
+    /// enforces (TaskLifecycleService.CanTransition) and the permission its endpoint requires, so a projected
+    /// action cannot be one the server would refuse.
+    ///
+    /// <para>Phase 2+ commands (pause/resume/logTime) and Phase 3 (requestInfo/signoff/return) are deliberately
+    /// absent: projecting an action with no endpoint behind it is how the mock era misled users.</para>
+    /// </remarks>
+    private static (IReadOnlyList<WorkItemActionDto> Actions, string? Primary, IReadOnlyList<string> Overflow)
+        BuildActions(TaskItem task, WorkItemActor actor)
     {
         var actions = new List<WorkItemActionDto>();
+        string? primary = null;
 
-        // Unclaimed pool work → claim is the only meaningful move.
-        if (task.AssignmentTarget == TaskAssignmentTarget.PositionPool && task.AssigneeUserId is null)
-        {
-            actions.Add(Build("claim", ActionClaimKey, actor.Has(TaskPermissions.Claim)));
-            return actions;
-        }
-
-        // Assigned but not yet accepted → the acceptance gate.
-        if (task.AssignmentTarget == TaskAssignmentTarget.Person
-            && task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned)
-        {
-            actions.Add(Build("accept", ActionAcceptKey, actor.Has(TaskPermissions.Update)));
-            return actions;
-        }
-
+        var isPool = task.AssignmentTarget == TaskAssignmentTarget.PositionPool;
+        var unclaimed = isPool && task.AssigneeUserId is null;
+        var openOrPlanned = task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned;
         // An approval-gated task is visible but not startable — MOD-0023 must release it first (pack §12 K2).
-        var approvalPending = task.ApprovalRequired
-                              && task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned;
-        if (approvalPending)
+        var approvalPending = task.ApprovalRequired && openOrPlanned;
+
+        if (unclaimed)
         {
-            actions.Add(Disabled("start", ActionStartKey,
-                TaskReasonCodes.InvalidState, DisabledApprovalKey));
-            return actions;
+            // Nobody holds it yet, so claiming is the only way to move it forward.
+            actions.Add(Build("claim", ActionClaimKey, actor.Has(TaskPermissions.Claim)));
+            primary = "claim";
+        }
+        else if (task.AssignmentTarget == TaskAssignmentTarget.Person && openOrPlanned)
+        {
+            // The acceptance gate: an assignee decides whether to take the work on.
+            actions.Add(Build("accept", ActionAcceptKey, actor.Has(TaskPermissions.Update)));
+            primary = "accept";
+        }
+        else if (approvalPending)
+        {
+            // Shown DISABLED rather than hidden, so the reason is visible instead of the button vanishing.
+            actions.Add(Disabled("start", ActionStartKey, TaskReasonCodes.InvalidState, DisabledApprovalKey));
+            primary = "start";
+        }
+        else
+        {
+            if (openOrPlanned)
+            {
+                actions.Add(Build("start", ActionStartKey, actor.Has(TaskPermissions.Update)));
+                primary = "start";
+            }
+
+            if (task.Lifecycle is TaskLifecycle.InProgress)
+            {
+                actions.Add(Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
+                    requiresConfirmation: true));
+                primary = "complete";
+            }
         }
 
-        if (task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned)
+        // Planning a personal date is available while the work has not started (Open ⇄ Planned on the server).
+        if (openOrPlanned && !unclaimed)
         {
-            actions.Add(Build("start", ActionStartKey, actor.Has(TaskPermissions.Update)));
+            actions.Add(Build("plan", ActionPlanKey, actor.Has(TaskPermissions.Update)));
         }
 
-        if (task.Lifecycle is TaskLifecycle.InProgress)
+        // Only a pooled task that someone has taken can be handed back to the pool.
+        if (isPool && !unclaimed)
         {
-            actions.Add(Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
+            actions.Add(Build("release", ActionReleaseKey, actor.Has(TaskPermissions.Claim),
                 requiresConfirmation: true));
         }
 
-        return actions;
+        // Cancellation is allowed from every non-terminal state (CanTransition), and this method is only reached
+        // for non-terminal tasks — see the call site.
+        actions.Add(Build("cancel", ActionCancelKey, actor.Has(TaskPermissions.Cancel),
+            requiresConfirmation: true, riskLevel: "destructive"));
+
+        // Everything that is not the primary belongs in the overflow menu, in the order built above.
+        var overflow = actions
+            .Select(action => action.Code)
+            .Where(code => code != primary)
+            .ToList();
+
+        return (actions, primary, overflow);
     }
 
     private static WorkItemActionDto Build(
         string code,
         string labelKey,
         bool permitted,
-        bool requiresConfirmation = false)
+        bool requiresConfirmation = false,
+        string riskLevel = "normal")
         => permitted
             ? new WorkItemActionDto(
                 Code: code,
@@ -204,7 +267,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 RequiresReason: false,
                 RequiresEvidence: false,
                 SupportsBulk: false,
-                RiskLevel: "normal")
+                RiskLevel: riskLevel)
             : Disabled(code, labelKey, WorkAggregationReasonCodes.PermissionDenied, DisabledPermissionKey);
 
     private static WorkItemActionDto Disabled(string code, string labelKey, string reasonCode, string reasonKey)

@@ -51,8 +51,11 @@ public sealed class TaskWorkItemProviderTests
         Assert.Equal("groupQueue", item.AssignmentMode);
         Assert.Equal("unowned", item.OwnershipState);
         Assert.Equal("pendingClaim", item.AdmissionState);
-        var action = Assert.Single(item.Actions);
-        Assert.Equal("claim", action.Code);
+        Assert.Equal("claim", item.PrimaryActionCode);
+        var action = Assert.Single(item.Actions, a => a.Code == "claim");
+        Assert.True(action.Enabled);
+        // Cancel is offered too (allowed from every non-terminal state) — but claim stays the primary.
+        Assert.Contains(item.Actions, a => a.Code == "cancel");
     }
 
     [Fact]
@@ -66,7 +69,10 @@ public sealed class TaskWorkItemProviderTests
 
         var item = Assert.Single(items);
         Assert.Equal("pendingAcceptance", item.AdmissionState);
-        Assert.Equal("accept", Assert.Single(item.Actions).Code);
+        // Acceptance is the primary decision; planning/cancelling remain available behind it.
+        Assert.Equal("accept", item.PrimaryActionCode);
+        Assert.Contains(item.Actions, a => a.Code == "accept");
+        Assert.DoesNotContain(item.Actions, a => a.Code == "start");
     }
 
     [Fact]
@@ -83,11 +89,15 @@ public sealed class TaskWorkItemProviderTests
         Assert.Equal("Waiting", item.NormalizedStatus);
         Assert.NotNull(item.WaitingContext);
 
-        var action = Assert.Single(item.Actions);
-        Assert.Equal("start", action.Code);
+        // START is shown but blocked, with the reason visible — MOD-0023 must release the approval first.
+        var action = Assert.Single(item.Actions, a => a.Code == "start");
         Assert.False(action.Enabled);
         Assert.NotNull(action.DisabledReasonCode);
         Assert.NotNull(action.DisabledReason);
+        Assert.Equal("start", item.PrimaryActionCode);
+        // Planning and cancelling are unaffected by a pending approval (the server allows both from Open).
+        Assert.Contains(item.Actions, a => a.Code == "plan" && a.Enabled);
+        Assert.Contains(item.Actions, a => a.Code == "cancel" && a.Enabled);
         AssertContractConformant(item);
     }
 
@@ -98,9 +108,15 @@ public sealed class TaskWorkItemProviderTests
         var items = await Provider(new FakeTaskItemRepository(task))
             .GetWorkItemsAsync(ActorWithoutPermissions(), CancellationToken.None);
 
-        var action = Assert.Single(Assert.Single(items).Actions);
-        Assert.False(action.Enabled);
-        Assert.Equal(WorkAggregationReasonCodes.PermissionDenied, action.DisabledReasonCode);
+        // EVERY projected action is disabled for an actor holding nothing, and each says why rather than
+        // silently disappearing.
+        var actions = Assert.Single(items).Actions;
+        Assert.NotEmpty(actions);
+        Assert.All(actions, action =>
+        {
+            Assert.False(action.Enabled);
+            Assert.Equal(WorkAggregationReasonCodes.PermissionDenied, action.DisabledReasonCode);
+        });
     }
 
     [Theory]

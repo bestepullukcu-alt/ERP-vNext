@@ -1159,4 +1159,55 @@
   <data name="UnavailableDesc" xml:space="preserve">
     <value>No se pudo contactar con el servicio. Sus filtros se conservan: inténtelo de nuevo.</value>
   </data>
+  <data name="WorkAggregation_Action_Accept" xml:space="preserve">
+    <value>Aceptar</value>
+  </data>
+  <data name="WorkAggregation_Action_Claim" xml:space="preserve">
+    <value>Asignarme</value>
+  </data>
+  <data name="WorkAggregation_Action_Start" xml:space="preserve">
+    <value>Iniciar</value>
+  </data>
+  <data name="WorkAggregation_Action_Complete" xml:space="preserve">
+    <value>Completar</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPending" xml:space="preserve">
+    <value>Pendiente de aprobación: aún no se puede iniciar.</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Open" xml:space="preserve">
+    <value>Abierto</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Planned" xml:space="preserve">
+    <value>Planificado</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_InProgress" xml:space="preserve">
+    <value>En curso</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Waiting" xml:space="preserve">
+    <value>En espera</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_PendingReview" xml:space="preserve">
+    <value>Pendiente de revisión</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Done" xml:space="preserve">
+    <value>Completado</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Cancelled" xml:space="preserve">
+    <value>Cancelado</value>
+  </data>
+  <data name="WorkAggregation_Action_Plan" xml:space="preserve">
+    <value>Planificar</value>
+  </data>
+  <data name="WorkAggregation_Action_Release" xml:space="preserve">
+    <value>Liberar</value>
+  </data>
+  <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
+    <value>Cancelar tarea</value>
+  </data>
+  <data name="ToastActionApplied" xml:space="preserve">
+    <value>{1} — '{0}' completado</value>
+  </data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve">
+    <value>Esta tarea cambió mientras trabajaba en ella. La lista se ha actualizado: inténtelo de nuevo.</value>
+  </data>
 </root>

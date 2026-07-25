@@ -56,9 +56,37 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
     }
 
     // Mirrors the tenant + IsDeleted execution filter: another tenant's row is invisible, not an error.
+    //
+    // Returns a DETACHED copy, like the real repository: Mongo deserializes a fresh document per read, so a
+    // handler that mutates the entity and then loses the expected-version write leaves the stored state
+    // untouched. Handing out the stored reference instead made a REJECTED write still appear to take effect —
+    // a false green that hid exactly the concurrency behaviour these tests exist to prove.
     public Task<TaskItem?> GetByIdAsync(Guid id, CancellationToken ct = default)
-        => Task.FromResult(_items.FirstOrDefault(
-            x => x.Id == id && x.TenantId == TaskTestData.Tenant && !x.IsDeleted));
+    {
+        var stored = _items.FirstOrDefault(
+            x => x.Id == id && x.TenantId == TaskTestData.Tenant && !x.IsDeleted);
+        return Task.FromResult(stored is null ? null : Detach(stored));
+    }
+
+    private static TaskItem Detach(TaskItem source)
+    {
+        var copy = new TaskItem
+        {
+            TenantId = source.TenantId,
+            Title = source.Title,
+            AssignmentTarget = source.AssignmentTarget,
+            OrganizationUnitId = source.OrganizationUnitId
+        };
+
+        foreach (var property in typeof(TaskItem)
+                     .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                     .Where(p => p.CanRead && p.CanWrite))
+        {
+            property.SetValue(copy, property.GetValue(source));
+        }
+
+        return copy;
+    }
 
     public Task<IReadOnlyList<TaskItem>> GetAllForTenantAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<TaskItem>>(

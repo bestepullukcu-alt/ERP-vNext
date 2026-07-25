@@ -1159,4 +1159,55 @@
   <data name="UnavailableDesc" xml:space="preserve">
     <value>Servise ulaşılamadı. Filtreleriniz korundu — tekrar deneyin.</value>
   </data>
+  <data name="WorkAggregation_Action_Accept" xml:space="preserve">
+    <value>Kabul et</value>
+  </data>
+  <data name="WorkAggregation_Action_Claim" xml:space="preserve">
+    <value>Üzerime al</value>
+  </data>
+  <data name="WorkAggregation_Action_Start" xml:space="preserve">
+    <value>Başlat</value>
+  </data>
+  <data name="WorkAggregation_Action_Complete" xml:space="preserve">
+    <value>Tamamla</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPending" xml:space="preserve">
+    <value>Onay bekleniyor — henüz başlatılamaz.</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Open" xml:space="preserve">
+    <value>Açık</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Planned" xml:space="preserve">
+    <value>Planlandı</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_InProgress" xml:space="preserve">
+    <value>Devam ediyor</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Waiting" xml:space="preserve">
+    <value>Bekliyor</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_PendingReview" xml:space="preserve">
+    <value>İncelemede</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Done" xml:space="preserve">
+    <value>Tamamlandı</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Cancelled" xml:space="preserve">
+    <value>İptal edildi</value>
+  </data>
+  <data name="WorkAggregation_Action_Plan" xml:space="preserve">
+    <value>Planla</value>
+  </data>
+  <data name="WorkAggregation_Action_Release" xml:space="preserve">
+    <value>Bırak</value>
+  </data>
+  <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
+    <value>Görevi iptal et</value>
+  </data>
+  <data name="ToastActionApplied" xml:space="preserve">
+    <value>{1} — '{0}' işlemi tamamlandı</value>
+  </data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve">
+    <value>Bu görev siz işlem yaparken değişti. Liste yenilendi — lütfen tekrar deneyin.</value>
+  </data>
 </root>

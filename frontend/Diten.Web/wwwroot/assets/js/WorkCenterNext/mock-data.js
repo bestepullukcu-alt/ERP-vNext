@@ -202,6 +202,7 @@
         // Showcase curation applies to showcase fixtures ONLY. A real projection item is visible because the
         // backend already decided the actor may see it — re-filtering it here against a list of demo ids removed
         // every genuinely created task from the surface.
+        item.provenance = provenance;   // real vs showcase — decides whether ACTIONS hit the server
         item.catalogVisible = provenance === 'fixture' ? VISIBLE_CATALOG_IDS.has(item.id) : true;
         if (item.catalogVisible === false) {
             // NEVER filter silently: this exact hidden exclusion turned a working backend into an invisible one

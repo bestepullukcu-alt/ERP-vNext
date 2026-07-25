@@ -155,6 +155,7 @@ public sealed class GetMyWorkItemsHandlerTests
     {
         public string ProviderCode => "future";
         public string ProviderContractVersion => "9.9";
+        public IReadOnlyCollection<string> RequiredActionPermissions => [];
         public Task<IReadOnlyList<WorkItemProjectionDto>> GetWorkItemsAsync(WorkItemActor actor, CancellationToken ct = default)
             => throw new InvalidOperationException("An unsupported-version provider must be skipped, never invoked.");
     }

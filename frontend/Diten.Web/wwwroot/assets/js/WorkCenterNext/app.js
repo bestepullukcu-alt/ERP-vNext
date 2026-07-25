@@ -2250,19 +2250,78 @@
 
     const toastForOutcome = (outcome, label, reason, item) => {
         switch (outcome) {
-            case 'claimed': toast(tf('ToastClaimed', item.sourceId)); break;
-            case 'released': toast(tf('ToastReleased', item.sourceId)); break;
+            case 'claimed': toast(tf('ToastClaimed', item.title)); break;
+            case 'released': toast(tf('ToastReleased', item.title)); break;
             case 'moved': toast(tf('ToastMovedToWorkCenter', label)); break;
             case 'removed': toast(tf('ToastItemRemoved', label)); break;
-            case 'toReview': toast(tf('ToastSentToReview', item.sourceId)); break;
-            case 'timerStart': toast(tf('ToastTimerStarted', item.sourceId)); break;
+            case 'toReview': toast(tf('ToastSentToReview', item.title)); break;
+            case 'timerStart': toast(tf('ToastTimerStarted', item.title)); break;
             case 'timerPause': toast(tf('ToastTimerPaused', formatMinutes(item.timesheet.loggedMinutes))); break;
             case 'resolved': toast(tf('ToastAction', label)); break;
             default: toast(reason ? tf('ToastActionReason', label, reason) : tf('ToastAction', label));
         }
     };
 
+    /*
+     * A REAL work item owned by MOD-0024. Its actions must go to the engine; the browser-side transitions below
+     * are a fixture-era demonstration and would otherwise change the screen while the database keeps the old
+     * state — exactly what happened when "Başlat" moved a row to "Devam ediyor" while GET still returned Open.
+     */
+    const isRealTaskItem = (item) =>
+        item && item.provenance !== 'fixture' && item.source?.providerCode === 'tasks';
+
+    /*
+     * Send the transition to the engine and re-read the projection. Nothing is applied optimistically: the server
+     * decides, and the refreshed projection is the only source of the new state.
+     */
+    const submitRealTransition = async (item, action, reason) => {
+        const label = actionLabel(action);
+        state.submittingItemId = item.id;
+        state.submittingActionCode = action.code;
+        render();
+
+        // The concurrency token from the projection — an expected-version write, so a stale screen loses cleanly.
+        const expectedVersion = Number(item.concurrency?.token ?? 0);
+        const result = await global.TasksApi.transition(item.id, action.code, {
+            expectedVersion,
+            reasonCode: null,
+            note: reason || null
+        });
+
+        state.submittingItemId = null;
+        state.submittingActionCode = null;
+
+        if (result.ok) {
+            await loadWorkItems();
+            render();
+            // The task's TITLE, never its id — a GUID means nothing to the person reading the toast.
+            toast(tf('ToastActionApplied', label, item.title));
+            return;
+        }
+
+        if (result.status === 409 || result.reasonCode === 'TASK_CONCURRENCY_CONFLICT') {
+            // Someone else changed it first. Refresh so the screen shows the truth, then say so.
+            await loadWorkItems();
+            render();
+            toast(t('ErrorConcurrencyRefreshed'), 'error');
+            return;
+        }
+
+        render();
+        toast(global.TasksApi.failureMessage(result), 'error');
+    };
+
     const applyAction = (item, action, reason) => {
+        if (isRealTaskItem(item)) { submitRealTransition(item, action, reason); return; }
+
+        // Everything below only ever simulates. Real items from other providers still land here (their engines
+        // are not wired yet) — say so rather than letting a fake transition look real.
+        if (item && item.provenance !== 'fixture') {
+            console.warn(`[WorkCenterNext] "${action.code}" on item ${item.id} `
+                + `(provider="${item.source?.providerCode || 'unknown'}") is a MOCK transition — no backend call is `
+                + 'made and the change will disappear on refresh.');
+        }
+
         const label = actionLabel(action);
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
@@ -2293,7 +2352,7 @@
         markSeen(item);
         item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, ago: 0 });
         render();
-        toast(tf('ToastPlanned', item.sourceId, dateStr));
+        toast(tf('ToastPlanned', item.title, dateStr));
     };
 
     const openDatePicker = (item, action) => {
@@ -2410,7 +2469,7 @@
             item.personal.snoozedUntil = null;
             item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: t('Unsnooze'), ago: 0 });
             render();
-            toast(tf('ToastUnsnoozed', item.sourceId));
+            toast(tf('ToastUnsnoozed', item.title));
             return;
         }
         const apply = (dateStr) => {
@@ -2421,7 +2480,7 @@
             const prevIdx = prevOrder.indexOf(item.id);
             if (state.view === 'split') { state.selectedId = prevOrder[prevIdx + 1] || prevOrder[prevIdx - 1] || null; }
             render();
-            toast(tf('ToastSnoozed', item.sourceId, dateStr));
+            toast(tf('ToastSnoozed', item.title, dateStr));
         };
         if (!global.Swal) { apply(data.todayIso); return; }
         global.Swal.fire({
@@ -2639,7 +2698,10 @@
     const performAction = (item, actionKey) => {
         const action = actionByKey(item, actionKey);
         if (!item || !action || action.disabled || state.submittingItemId === item.id) { return; }
-        if (action.input === 'date') { openDatePicker(item, action); return; }
+        // The date picker feeds a PERSONAL planned date that only the fixture path stores; the engine's /plan
+        // endpoint accepts no date (it moves the lifecycle Open→Planned). Asking a real user for a date we then
+        // discard would be a new lie, so a real task goes straight to the transition.
+        if (action.input === 'date' && !isRealTaskItem(item)) { openDatePicker(item, action); return; }
         if (action.input === 'meeting') { openMeetingScheduler(item, action); return; }
         if (action.input === 'minutes') { openLogTime(item, action); return; }
 
@@ -3042,7 +3104,7 @@
         if (pinEl) {
             event.stopPropagation();
             const item = itemById(pinEl.getAttribute('data-wcn-pin'));
-            if (item) { item.pinned = !item.pinned; render(); toast(tf(item.pinned ? 'ToastPinned' : 'ToastUnpinned', item.sourceId)); }
+            if (item) { item.pinned = !item.pinned; render(); toast(tf(item.pinned ? 'ToastPinned' : 'ToastUnpinned', item.title)); }
             return;
         }
 
@@ -3104,7 +3166,7 @@
             const item = itemById(openEl.getAttribute('data-wcn-open'));
             if (item && item.deepLink) {
                 global.open(item.deepLink, '_blank', 'noopener,noreferrer');
-                toast(tf('ToastOpenSource', item.sourceModule, item.sourceId), 'info');
+                toast(tf('ToastOpenSource', item.sourceModule, item.title), 'info');
             }
             return;
         }

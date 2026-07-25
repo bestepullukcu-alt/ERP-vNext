@@ -3,8 +3,8 @@ using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.API.Observability;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.WorkAggregation;
+using Diten.Platform.Application.Features.WorkAggregation.Providers;
 using Diten.Platform.Application.Features.WorkAggregation.Queries;
-using Diten.Platform.Application.Features.Workflow;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,24 +19,27 @@ namespace Diten.Platform.API.Controllers;
 [Authorize]
 public sealed class WorkItemsController : CustomBaseController
 {
-    // The workflow-task permissions whose grant state gates the projected approval actions[]. Evaluated from
-    // the caller's claims here (API layer) via the existing PermissionClaimEvaluator seam and passed as data
-    // into the read query, so the Application handler stays pure and the browser is never an authority.
-    private static readonly string[] ActionPermissionKeys =
-    [
-        WorkflowPermissions.TasksApprove,
-        WorkflowPermissions.TasksReject,
-        WorkflowPermissions.TasksRequestInfo,
-        WorkflowPermissions.TasksDelegate
-    ];
-
+    // The permission keys that gate projected actions[] are NOT listed here: every provider declares its own
+    // (IWorkItemProvider.RequiredActionPermissions) and this controller evaluates the union against the caller's
+    // claims via the existing PermissionClaimEvaluator seam, passing the granted set as data into the read query.
+    // The Application handler stays pure and the browser is never an authority.
+    //
+    // A hardcoded list here is what broke MOD-0024: it collected only the four workflow keys, so every
+    // platform.tasks.* check returned false and every task action was projected as PERMISSION_DENIED even though
+    // the caller held the permission (proven live — the same action returned 409, not 403, when invoked).
+    // Deriving the set from the providers means adding a third provider cannot reintroduce that.
     private readonly IMediator _mediator;
     private readonly ICorrelationContext _correlationContext;
+    private readonly IEnumerable<IWorkItemProvider> _providers;
 
-    public WorkItemsController(IMediator mediator, ICorrelationContext correlationContext)
+    public WorkItemsController(
+        IMediator mediator,
+        ICorrelationContext correlationContext,
+        IEnumerable<IWorkItemProvider> providers)
     {
         _mediator = mediator;
         _correlationContext = correlationContext;
+        _providers = providers;
     }
 
     [HttpGet("mine")]
@@ -50,7 +53,7 @@ public sealed class WorkItemsController : CustomBaseController
         var granted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         if (!isPlatformActor)
         {
-            foreach (var key in ActionPermissionKeys)
+            foreach (var key in RequiredActionPermissions())
             {
                 if (PermissionClaimEvaluator.Evaluate(User.Claims, key).IsSatisfied)
                 {
@@ -64,6 +67,15 @@ public sealed class WorkItemsController : CustomBaseController
             ct);
         return CreateActionResultInstance(response);
     }
+
+    /// <summary>
+    /// The union of every bound provider's declared action permissions, de-duplicated case-insensitively.
+    /// </summary>
+    private IEnumerable<string> RequiredActionPermissions()
+        => _providers
+            .SelectMany(provider => provider.RequiredActionPermissions ?? [])
+            .Where(key => !string.IsNullOrWhiteSpace(key))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
 
     private static bool IsPlatformActor(ClaimsPrincipal user)
     {

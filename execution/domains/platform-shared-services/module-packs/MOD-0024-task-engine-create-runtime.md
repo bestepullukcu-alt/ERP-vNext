@@ -363,6 +363,25 @@ out of the wrong site.
 If an explicit "default organization unit" marker is ever added to the tenant, tiers 3(a)/(b) should be replaced
 by it — that would be a behaviour change and belongs in a pack revision, not an ad-hoc edit.
 
+**K6.2 — A provider declares the permissions that gate its actions (WC-1 contract addition, EA 2026-07-25).**
+`IWorkItemProvider` gains `IReadOnlyCollection<string> RequiredActionPermissions`. `WorkItemsController` evaluates
+the **union across all bound providers** against the caller's claims and passes the granted set into the read
+query; the Application handler stays pure.
+
+Additive to WC-1: MOD-0023's provider now declares the four `platform.workflow.tasks.*` keys the controller
+previously hardcoded, unchanged. MOD-0024 declares `platform.tasks.{update,claim,complete}`.
+
+Why the seam exists: the key list used to live in the controller, which collected only MOD-0023's keys. When
+MOD-0024 was bound, every `actor.Has("platform.tasks.…")` consulted a set that could not contain those keys, so
+each task action was projected `enabled:false / PERMISSION_DENIED` for callers who genuinely held the permission —
+the endpoint accepted the same call (409, not 403). Declaring the keys next to the `actor.Has` calls that consume
+them makes the two impossible to desynchronise, so a **third** provider cannot repeat it.
+
+> Test obligation: a provider given exactly its declared permissions must produce **no** action disabled with
+> `PERMISSION_DENIED`. That single assertion catches an under-declared list without naming individual keys, and it
+> is the positive case whose absence let this ship (every prior provider test used `IsPlatformActor: true`, which
+> bypasses permission evaluation entirely).
+
 **K7 — Email only.** Events are declared in the module manifest (`NotificationEvents`) and dispatched via
 `INotificationEventDispatchAdapter`. The header bell is **out of scope** — no in-app channel exists
 (`NotificationChannelCode { Email = 0 }`) and the bell is a static theme ornament → **BL-025**.
