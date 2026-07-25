@@ -13,18 +13,46 @@ namespace Diten.Platform.API.Services.Security;
 public sealed class PlatformPermissionAutoRegistrationWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly Diten.Platform.API.Services.ModuleRegistration.ModuleSelfRegistrationGate _selfRegistrationGate;
     private readonly ILogger<PlatformPermissionAutoRegistrationWorker> _logger;
 
     public PlatformPermissionAutoRegistrationWorker(
         IServiceScopeFactory scopeFactory,
+        Diten.Platform.API.Services.ModuleRegistration.ModuleSelfRegistrationGate selfRegistrationGate,
         ILogger<PlatformPermissionAutoRegistrationWorker> logger)
     {
         _scopeFactory = scopeFactory;
+        _selfRegistrationGate = selfRegistrationGate;
         _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // ORDERING GUARANTEE — wait for module self-registration to FINISH before syncing anything. The manifest
+        // reconcile owns permission attribution (ModuleCode + route-derived Scope); this worker deliberately sends
+        // null/null, so if it reached a key first the key would be stamped Module="platform" + Scope=PlatformAdmin,
+        // which AuthService can never downgrade back to Tenant. A real completion signal is used rather than a
+        // delay, because a delay is just a slower race. See ModuleSelfRegistrationGate.
+        var selfRegistrationCompleted = await _selfRegistrationGate.WaitForCompletionAsync(
+            Diten.Platform.API.Services.ModuleRegistration.ModuleSelfRegistrationGate.DefaultWaitTimeout,
+            stoppingToken);
+
+        if (stoppingToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        if (!selfRegistrationCompleted)
+        {
+            // Fail-safe: never block permission registration forever. A key that exists with imperfect attribution
+            // still beats a missing key (a missing key means the endpoint 403s for everyone).
+            _logger.LogWarning(
+                "Module self-registration did not signal completion within {Timeout}; proceeding with permission "
+                + "auto-registration anyway. Newly created keys may be attributed to Module=\"platform\" with "
+                + "PlatformAdmin scope and need manual reconciliation.",
+                Diten.Platform.API.Services.ModuleRegistration.ModuleSelfRegistrationGate.DefaultWaitTimeout);
+        }
+
         var keys = HasPermissionReflector.CollectPermissionKeys(typeof(HasPermissionAttribute).Assembly);
         if (keys.Count == 0)
         {

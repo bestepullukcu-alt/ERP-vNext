@@ -91,10 +91,16 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();
 builder.Services.AddScoped<Diten.Platform.API.Authorization.Explain.ISelfAccessExplainService, Diten.Platform.API.Authorization.Explain.SelfAccessExplainService>();
 builder.Services.AddHostedService<BusinessReferenceDataCatalogLoadWorker>();
-// A1 — auto-register every controller [HasPermission] key into AuthService at startup (best-effort, idempotent).
-builder.Services.AddHostedService<Diten.Platform.API.Services.Security.PlatformPermissionAutoRegistrationWorker>();
+// Startup ordering gate: the A1 permission worker must not sync until module self-registration has FINISHED,
+// otherwise A1 (which syncs moduleCode/scope = null) can create a key first and permanently stamp it
+// Module="platform" + Scope=PlatformAdmin — a scope AuthService cannot downgrade. Registration order alone is
+// NOT sufficient (the manifest walk is slower than the flat key sweep), so a real completion signal is used.
+builder.Services.AddSingleton<Diten.Platform.API.Services.ModuleRegistration.ModuleSelfRegistrationGate>();
 // MC-3b — self-register Platform-internal module manifests (workflow, …) into the catalog in-process at startup.
 builder.Services.AddHostedService<Diten.Platform.API.Services.ModuleRegistration.PlatformModuleSelfRegistrationWorker>();
+// A1 — auto-register every controller [HasPermission] key into AuthService at startup (best-effort, idempotent).
+// Gated on the signal above; falls back after a bounded timeout so a manifest failure cannot block it forever.
+builder.Services.AddHostedService<Diten.Platform.API.Services.Security.PlatformPermissionAutoRegistrationWorker>();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<Diten.Platform.API.Middleware.GlobalExceptionHandler>();
 

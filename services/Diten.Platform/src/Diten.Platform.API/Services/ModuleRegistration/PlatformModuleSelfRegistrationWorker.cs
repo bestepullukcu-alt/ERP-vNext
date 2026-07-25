@@ -17,19 +17,37 @@ public sealed class PlatformModuleSelfRegistrationWorker : BackgroundService
 {
     private readonly IEnumerable<IModuleManifestProvider> _providers;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ModuleSelfRegistrationGate _gate;
     private readonly ILogger<PlatformModuleSelfRegistrationWorker> _logger;
 
     public PlatformModuleSelfRegistrationWorker(
         IEnumerable<IModuleManifestProvider> providers,
         IServiceScopeFactory scopeFactory,
+        ModuleSelfRegistrationGate gate,
         ILogger<PlatformModuleSelfRegistrationWorker> logger)
     {
         _providers = providers;
         _scopeFactory = scopeFactory;
+        _gate = gate;
         _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        try
+        {
+            await ReconcileAllAsync(stoppingToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            // Release the A1 permission worker in EVERY outcome (success, per-module failure, cancellation,
+            // unexpected throw) so a problem here can never hang startup permission registration.
+            _gate.MarkCompleted();
+            _logger.LogInformation("Module self-registration finished; permission auto-registration released.");
+        }
+    }
+
+    private async Task ReconcileAllAsync(CancellationToken stoppingToken)
     {
         foreach (var provider in _providers)
         {
