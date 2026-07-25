@@ -1,0 +1,109 @@
+@using Diten.Web.Views.Tasks
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TasksIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0024 — the single localization bridge. Every user-facing string in the Tasks JS resolves through this
+   payload, so nothing is hard-coded in English and all 7 tenant languages work from one source. *@
+<script id="tasks-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Title = Localizer["TasksTitle"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        AddNewTask = Localizer["AddNewTask"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+
+        FieldTitle = Localizer["FieldTitle"].Value,
+        FieldTitlePlaceholder = Localizer["FieldTitlePlaceholder"].Value,
+        FieldDescription = Localizer["FieldDescription"].Value,
+        FieldPriority = Localizer["FieldPriority"].Value,
+        PriorityLow = Localizer["PriorityLow"].Value,
+        PriorityMedium = Localizer["PriorityMedium"].Value,
+        PriorityHigh = Localizer["PriorityHigh"].Value,
+
+        FieldAssignmentTarget = Localizer["FieldAssignmentTarget"].Value,
+        TargetSelf = Localizer["TargetSelf"].Value,
+        TargetPerson = Localizer["TargetPerson"].Value,
+        TargetPool = Localizer["TargetPool"].Value,
+        FieldAssignee = Localizer["FieldAssignee"].Value,
+        FieldPoolPosition = Localizer["FieldPoolPosition"].Value,
+        PoolPositionHint = Localizer["PoolPositionHint"].Value,
+        FieldOrganizationUnit = Localizer["FieldOrganizationUnit"].Value,
+
+        FieldDueAt = Localizer["FieldDueAt"].Value,
+        FieldStartAt = Localizer["FieldStartAt"].Value,
+        FieldPlannedDate = Localizer["FieldPlannedDate"].Value,
+        FieldEstimateHours = Localizer["FieldEstimateHours"].Value,
+        FieldRemainingHours = Localizer["FieldRemainingHours"].Value,
+        FieldSpentHours = Localizer["FieldSpentHours"].Value,
+        SpentHoursReadOnlyHint = Localizer["SpentHoursReadOnlyHint"].Value,
+        FieldTags = Localizer["FieldTags"].Value,
+
+        FieldReviewRequired = Localizer["FieldReviewRequired"].Value,
+        FieldApprovalRequired = Localizer["FieldApprovalRequired"].Value,
+        FieldApprovalManager = Localizer["FieldApprovalManager"].Value,
+        ApprovalHint = Localizer["ApprovalHint"].Value,
+        FieldEmailNotifications = Localizer["FieldEmailNotifications"].Value,
+        FieldDelegationAllowed = Localizer["FieldDelegationAllowed"].Value,
+        FieldWatchers = Localizer["FieldWatchers"].Value,
+        WatchersHint = Localizer["WatchersHint"].Value,
+
+        SectionBasics = Localizer["SectionBasics"].Value,
+        SectionAssignment = Localizer["SectionAssignment"].Value,
+        SectionPlanning = Localizer["SectionPlanning"].Value,
+        SectionGovernance = Localizer["SectionGovernance"].Value,
+        SectionCustomFields = Localizer["SectionCustomFields"].Value,
+
+        ColumnTitle = Localizer["ColumnTitle"].Value,
+        ColumnStatus = Localizer["ColumnStatus"].Value,
+        ColumnPriority = Localizer["ColumnPriority"].Value,
+        ColumnAssignment = Localizer["ColumnAssignment"].Value,
+        ColumnDueAt = Localizer["ColumnDueAt"].Value,
+        ColumnActions = Localizer["ColumnActions"].Value,
+
+        LifecycleOpen = Localizer["LifecycleOpen"].Value,
+        LifecyclePlanned = Localizer["LifecyclePlanned"].Value,
+        LifecycleInProgress = Localizer["LifecycleInProgress"].Value,
+        LifecycleWaiting = Localizer["LifecycleWaiting"].Value,
+        LifecyclePendingReview = Localizer["LifecyclePendingReview"].Value,
+        LifecycleDone = Localizer["LifecycleDone"].Value,
+        LifecycleCancelled = Localizer["LifecycleCancelled"].Value,
+
+        ActionCreate = Localizer["ActionCreate"].Value,
+        ActionSave = Localizer["ActionSave"].Value,
+        ActionCancel = Localizer["ActionCancel"].Value,
+        ActionOpenDetailed = Localizer["ActionOpenDetailed"].Value,
+        ActionClaim = Localizer["ActionClaim"].Value,
+        ActionAccept = Localizer["ActionAccept"].Value,
+        ActionStart = Localizer["ActionStart"].Value,
+        ActionComplete = Localizer["ActionComplete"].Value,
+        QuickCreateTitle = Localizer["QuickCreateTitle"].Value,
+
+        ToastCreated = Localizer["ToastCreated"].Value,
+        ToastSaved = Localizer["ToastSaved"].Value,
+        ToastClaimed = Localizer["ToastClaimed"].Value,
+        ErrorAlreadyClaimed = Localizer["ErrorAlreadyClaimed"].Value,
+        ErrorNoAccess = Localizer["ErrorNoAccess"].Value,
+        ErrorUnavailable = Localizer["ErrorUnavailable"].Value,
+        EmptyTitle = Localizer["EmptyTitle"].Value,
+        EmptyDescription = Localizer["EmptyDescription"].Value,
+        RequiredFieldHint = Localizer["RequiredFieldHint"].Value,
+
+        Save = SharedLocalizer["Save"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Actions = Localizer["ColumnActions"].Value,
+
+        // Owned by the Tasks resource, not SharedResource: these two are rendered by the Tasks JS itself, and a
+        // surface should not depend on another resource file for its own copy (that indirection is how
+        // "ErrorOccurred" reached the screen as a raw key).
+        ErrorOccurred = Localizer["ErrorOccurred"].Value,
+        ActionOk = Localizer["ActionOk"].Value,
+
+        // Keyed by the API's stable reason code, not by server-side text: the message is chosen in the browser so
+        // it lands in the user's language (the same code→resx bridge used for password validation).
+        ErrorOrganizationUnitUnresolved = Localizer["ErrorOrganizationUnitUnresolved"].Value,
+        ErrorPositionNotAssignable = Localizer["ErrorPositionNotAssignable"].Value
+    })
+</script>

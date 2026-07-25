@@ -1,0 +1,63 @@
+@using Diten.Web.Views.Tasks
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TasksIndex> Localizer
+
+@* MOD-0024 DEV-1 (EA-approved deviation from the Compact prohibition on create/edit offcanvases).
+   This is a SHORTCUT that creates a task in four fields, or hands its draft to the full compact form via
+   "More options" — it is never an alternative EDIT surface (edit is always the full page), and it shares one
+   draft with that form so switching depth loses nothing. Named _QuickCreateOffcanvas so the forbidden
+   _CreateEditOffcanvas filename stays unused. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="taskQuickCreate" aria-labelledby="taskQuickCreateLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="taskQuickCreateLabel">@Localizer["QuickCreateTitle"]</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["ActionCancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="mb-3">
+            <label class="form-label" for="quickTitle">
+                @Localizer["FieldTitle"] <span class="text-danger">*</span>
+            </label>
+            <input type="text" class="form-control" id="quickTitle" maxlength="200"
+                   placeholder="@Localizer["FieldTitlePlaceholder"]" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="quickTarget">@Localizer["FieldAssignmentTarget"]</label>
+            <select class="form-select" id="quickTarget">
+                <option value="SelfAssigned" selected>@Localizer["TargetSelf"]</option>
+                <option value="Person">@Localizer["TargetPerson"]</option>
+                <option value="PositionPool">@Localizer["TargetPool"]</option>
+            </select>
+        </div>
+        <div class="mb-3 d-none" data-task-field="assignee">
+            <label class="form-label" for="quickAssignee">@Localizer["FieldAssignee"]</label>
+            <input type="text" class="form-control" id="quickAssignee" autocomplete="off" />
+        </div>
+        <div class="mb-3 d-none" data-task-field="poolPosition">
+            <label class="form-label" for="quickPoolPosition">@Localizer["FieldPoolPosition"]</label>
+            <select class="form-select" id="quickPoolPosition"></select>
+            <div class="form-text">@Localizer["PoolPositionHint"]</div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="quickDueAt">
+                @Localizer["FieldDueAt"] <span class="text-danger">*</span>
+            </label>
+            <input type="date" class="form-control" id="quickDueAt" />
+        </div>
+        <div class="mb-4">
+            <label class="form-label" for="quickPriority">@Localizer["FieldPriority"]</label>
+            <select class="form-select" id="quickPriority">
+                <option value="Low">@Localizer["PriorityLow"]</option>
+                <option value="Medium" selected>@Localizer["PriorityMedium"]</option>
+                <option value="High">@Localizer["PriorityHigh"]</option>
+            </select>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-primary" id="quickSubmit">@Localizer["ActionCreate"]</button>
+            @* Hands the current draft to the detailed form — nothing typed is lost. *@
+            <button type="button" class="btn btn-label-secondary" id="quickMoreOptions">
+                @Localizer["ActionOpenDetailed"]
+            </button>
+        </div>
+    </div>
+</div>

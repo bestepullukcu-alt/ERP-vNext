@@ -1,0 +1,24 @@
+@using Diten.Web.Views.Tasks
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TasksIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["TasksTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var taskId = ViewData["TaskId"] as string ?? string.Empty;
+}
+
+@* MOD-0024 — read-only detail. The Task Center remains the personal action surface; this page is the module's
+   own record view, reached from the list or a work-item deep link. *@
+<div id="taskDetails" class="card" data-task-id="@taskId">
+    <div class="card-body">
+        <div class="text-muted" id="taskDetailsLoading">@Localizer["TasksTitle"]</div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/details-page.js" asp-append-version="true"></script>
+}

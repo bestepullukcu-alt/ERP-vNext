@@ -1,0 +1,22 @@
+@using Diten.Web.Views.Tasks
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TasksIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["FormTitleEdit"]</h5>
+</div>
+
+<partial name="~/Views/Tasks/_Form.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/form-page.js" asp-append-version="true"></script>
+}

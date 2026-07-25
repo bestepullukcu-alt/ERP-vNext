@@ -178,6 +178,17 @@ public static class DependencyInjection
             Features.WorkAggregation.Services.WorkItemProjectionService>();
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
             Features.WorkAggregation.Providers.WorkflowApprovalWorkItemProvider>();
+        // MOD-0024 — the SECOND work-item provider. This single line is the only WorkAggregation touch point:
+        // WC-1's own code is untouched, which is exactly what the IWorkItemProvider seam exists for.
+        services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
+            Features.Tasks.Providers.TaskWorkItemProvider>();
+
+        // MOD-0024 Task Engine services. The lifecycle service is the SINGLE owner of the lifecycle→normalized
+        // map, so the API and the Task Center projection can never disagree.
+        services.AddScoped<Features.Tasks.Services.ITaskLifecycleService, Features.Tasks.Services.TaskLifecycleService>();
+        services.AddScoped<Features.Tasks.Services.ITaskAssignmentResolver, Features.Tasks.Services.TaskAssignmentResolver>();
+        services.AddScoped<Features.Tasks.Services.ITaskFieldDefinitionService,
+            Features.Tasks.Services.TaskFieldDefinitionService>();
 
         // MC-3b — Platform-internal modules that self-register their catalog manifest in-process. Collected by
         // PlatformModuleSelfRegistrationWorker at startup. Add a line here for each new self-registering module.
@@ -191,6 +202,9 @@ public static class DependencyInjection
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.TenantSettingsModule.SelfRegistration.TenantSettingsManifestProvider>();
         // WC-1b (DCP-004) — Görev Merkezi / Task Center tenant module (entitlement-gated, NOT baseline).
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkAggregation.SelfRegistration.WorkAggregationManifestProvider>();
+        // MOD-0024 — Task Engine. Declares its permission keys (so the manifest, not the A1 reflection worker,
+        // owns their Module/Scope attribution) and its email notification events.
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.Tasks.SelfRegistration.TaskManifestProvider>();
 
         return services;
     }

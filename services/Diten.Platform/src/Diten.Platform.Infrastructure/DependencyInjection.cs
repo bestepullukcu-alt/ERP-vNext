@@ -228,6 +228,17 @@ public static class DependencyInjection
         services.AddScoped<IWorkflowTransitionLogRepository, WorkflowTransitionLogRepository>();
         services.AddScoped<ISlaEscalationRuleRepository, SlaEscalationRuleRepository>();
 
+        // MOD-0024 Task Engine Repositories (Phase 1 uses the first five; the rest exist so Phases 2–5 are additive)
+        services.AddScoped<ITaskItemRepository, TaskItemRepository>();
+        services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
+        services.AddScoped<ITaskDependencyRepository, TaskDependencyRepository>();
+        services.AddScoped<ITaskWatcherRepository, TaskWatcherRepository>();
+        services.AddScoped<ITaskFieldDefinitionRepository, TaskFieldDefinitionRepository>();
+        services.AddScoped<IChecklistTemplateRepository, ChecklistTemplateRepository>();
+        services.AddScoped<IChecklistRunRepository, ChecklistRunRepository>();
+        services.AddScoped<ITaskTemplateRepository, TaskTemplateRepository>();
+        services.AddScoped<ITaskRecurrenceRuleRepository, TaskRecurrenceRuleRepository>();
+
         // Document Management Repositories
         services.AddScoped<IBaselineReleaseRepository, BaselineReleaseRepository>();
         services.AddScoped<ICollectionDefinitionRepository, CollectionDefinitionRepository>();

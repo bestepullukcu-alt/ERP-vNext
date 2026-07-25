@@ -2459,26 +2459,72 @@
         });
     };
 
+    /*
+     * "+ Yeni ▸ Görev" opens the ONE quick-create surface (quick-create.js drives the offcanvas). It owns the
+     * fields, validation and the POST; this module only reacts to `wcn:task-created`. Falls back to the detailed
+     * form if the offcanvas is unavailable, so the action is never a dead end.
+     */
     const openSelfTask = () => {
-        global.Swal.fire({
-            title: t('NewSelfTask'),
-            html: `<input id="wcnNewTitle" class="form-control mb-2" placeholder="${esc(t('NewTaskTitlePlaceholder'))}">
-                <input id="wcnNewDate" class="form-control mb-2" type="date">
-                <select id="wcnNewPriority" class="form-select">
-                    <option value="high">${esc(t('PriorityHigh'))}</option>
-                    <option value="medium" selected>${esc(t('PriorityMedium'))}</option>
-                    <option value="low">${esc(t('PriorityLow'))}</option>
-                </select>`,
-            showCancelButton: true, confirmButtonText: t('NewCreate'), cancelButtonText: t('ReasonCancel'),
-            preConfirm: () => {
-                const title = document.getElementById('wcnNewTitle').value.trim();
-                if (!title) { global.Swal.showValidationMessage(t('NewTaskTitlePlaceholder')); return false; }
-                return { title, date: document.getElementById('wcnNewDate').value, priority: document.getElementById('wcnNewPriority').value };
-            }
-        }).then((res) => { if (res.isConfirmed && res.value) { createSelfTask(res.value); } });
+        if (global.WcnQuickCreate?.open()) { return; }
+
+        // The fallback keeps the action usable, but it must NEVER be silent: dropping to the full page looks like
+        // a deliberate design choice, so a broken offcanvas (script not loaded, JS error, markup missing) hides
+        // itself and costs hours to diagnose. Say exactly which precondition failed.
+        const reason = !global.WcnQuickCreate
+            ? 'quick-create.js did not load (window.WcnQuickCreate is undefined)'
+            : !document.getElementById('taskQuickCreate')
+                ? 'the #taskQuickCreate markup is missing from the page'
+                : !global.bootstrap?.Offcanvas
+                    ? 'bootstrap.Offcanvas is unavailable'
+                    : 'WcnQuickCreate.open() returned false';
+        console.error(`[WorkCenterNext] Quick create unavailable — falling back to /Tasks/Create. Reason: ${reason}.`);
+
+        global.location.href = '/Tasks/Create';
+    };
+
+    /*
+     * MOD-0024 — a real task, created through the Task Engine; the new work item then arrives via the Task Center
+     * projection (MOD-0024 is a registered work-item provider) rather than being pushed into local state.
+     * Used by the agenda/notes "create a follow-up task" paths; the offcanvas posts through quick-create.js.
+     * The fixture path in createSelfTask below is kept only for the Development-gated showcase catalog.
+     */
+    const createSelfTaskViaApi = async (v) => {
+        const priorityMap = { high: 'High', medium: 'Medium', low: 'Low' };
+        // Built by TaskForm so this path and the offcanvas cannot drift into two different payload shapes.
+        const payload = global.TaskForm.buildCreatePayload({
+            title: v.title,
+            priority: priorityMap[v.priority] || 'Medium',
+            assignmentTarget: 'SelfAssigned',
+            dueAt: v.date || null
+        });
+
+        const result = await global.TasksApi.create(payload);
+        if (!result.ok) {
+            // 403 until the tasks permissions are granted; a due date is required by the engine.
+            toast(result.status === 403 ? t('NoAccessTitle') : t('ErrorTitle'), 'error');
+            return null;
+        }
+
+        await refreshAfterTaskCreated(v.title);
+        return null;
+    };
+
+    /** Re-reads the projection so a new task appears exactly as the Task Center sees it. */
+    const refreshAfterTaskCreated = async (title) => {
+        await loadWorkItems();
+        state.tab = 'islerim';
+        state.segment = 'aktif';
+        state.view = 'list';
+        render();
+        toast(title ? tf('ToastSelfTaskCreated', title) : tf('ToastSelfTaskCreated', ''));
     };
 
     const createSelfTask = (v, origin) => {
+        // Real engine unless the Development showcase catalog is driving the surface.
+        if (!(data.showcaseFixturesEnabled && data.showcaseFixturesEnabled())) {
+            return createSelfTaskViaApi(v);
+        }
+
         const id = 'WC-SELF-' + (state.items.length + 1);
         const f = global.WorkCenterNextFixtureFactory;
         const fixture = f.base(id, 'task', 'TypeTask', {
@@ -3255,6 +3301,11 @@
         document.addEventListener('change', onChange);
         document.addEventListener('input', onInput);
         document.addEventListener('keydown', onKeydown);
+        // The quick-create offcanvas announces a new task instead of touching state directly, so this module
+        // stays the only owner of the work-item list.
+        document.addEventListener('wcn:task-created', (event) => {
+            refreshAfterTaskCreated(event.detail?.title);
+        });
         // Move focus to the first menu item when a header dropdown opens (mouse or
         // keyboard) — Bootstrap only auto-focuses on keyboard-open. Delegated so it
         // survives the innerHTML re-render.

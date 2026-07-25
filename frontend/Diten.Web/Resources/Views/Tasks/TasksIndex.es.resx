@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TasksTitle" xml:space="preserve"><value>Tareas</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Cree y siga tareas para usted, un colega o un grupo por puesto.</value></data>
+  <data name="AddNewTask" xml:space="preserve"><value>Nueva tarea</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nueva tarea</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar tarea</value></data>
+  <data name="FieldTitle" xml:space="preserve"><value>Título de la tarea</value></data>
+  <data name="FieldTitlePlaceholder" xml:space="preserve"><value>p. ej. Preparar la declaración trimestral</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Descripción</value></data>
+  <data name="FieldPriority" xml:space="preserve"><value>Prioridad</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Baja</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Media</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Alta</value></data>
+  <data name="FieldAssignmentTarget" xml:space="preserve"><value>Asignar a</value></data>
+  <data name="TargetSelf" xml:space="preserve"><value>A mí</value></data>
+  <data name="TargetPerson" xml:space="preserve"><value>Una persona</value></data>
+  <data name="TargetPool" xml:space="preserve"><value>Un grupo por puesto</value></data>
+  <data name="FieldAssignee" xml:space="preserve"><value>Persona asignada</value></data>
+  <data name="FieldPoolPosition" xml:space="preserve"><value>Puesto</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>La unidad se muestra junto a cada puesto para que el trabajo no llegue al centro equivocado.</value></data>
+  <data name="FieldOrganizationUnit" xml:space="preserve"><value>Unidad organizativa</value></data>
+  <data name="FieldDueAt" xml:space="preserve"><value>Fecha de vencimiento</value></data>
+  <data name="FieldStartAt" xml:space="preserve"><value>Fecha de inicio</value></data>
+  <data name="FieldPlannedDate" xml:space="preserve"><value>Fecha planificada</value></data>
+  <data name="FieldEstimateHours" xml:space="preserve"><value>Estimación (horas)</value></data>
+  <data name="FieldRemainingHours" xml:space="preserve"><value>Restante (horas)</value></data>
+  <data name="FieldSpentHours" xml:space="preserve"><value>Dedicado (horas)</value></data>
+  <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>Se registra durante la ejecución: siempre es cero en una tarea nueva.</value></data>
+  <data name="FieldTags" xml:space="preserve"><value>Etiquetas</value></data>
+  <data name="FieldReviewRequired" xml:space="preserve"><value>Requiere revisión</value></data>
+  <data name="FieldApprovalRequired" xml:space="preserve"><value>Requiere aprobación del responsable</value></data>
+  <data name="FieldApprovalManager" xml:space="preserve"><value>Responsable de aprobación</value></data>
+  <data name="ApprovalHint" xml:space="preserve"><value>La aprobación se ejecuta en el motor de flujo de trabajo; la tarea no puede iniciarse hasta concederse.</value></data>
+  <data name="FieldEmailNotifications" xml:space="preserve"><value>Notificaciones por correo</value></data>
+  <data name="FieldDelegationAllowed" xml:space="preserve"><value>Permitir delegación</value></data>
+  <data name="FieldWatchers" xml:space="preserve"><value>Observadores</value></data>
+  <data name="WatchersHint" xml:space="preserve"><value>Los observadores pueden ver la tarea pero no realizan acciones en ella.</value></data>
+  <data name="SectionBasics" xml:space="preserve"><value>Datos básicos</value></data>
+  <data name="SectionAssignment" xml:space="preserve"><value>Asignación</value></data>
+  <data name="SectionPlanning" xml:space="preserve"><value>Planificación</value></data>
+  <data name="SectionGovernance" xml:space="preserve"><value>Gobernanza</value></data>
+  <data name="SectionCustomFields" xml:space="preserve"><value>Campos adicionales</value></data>
+  <data name="ColumnTitle" xml:space="preserve"><value>Título</value></data>
+  <data name="ColumnStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="ColumnPriority" xml:space="preserve"><value>Prioridad</value></data>
+  <data name="ColumnAssignment" xml:space="preserve"><value>Asignación</value></data>
+  <data name="ColumnDueAt" xml:space="preserve"><value>Vencimiento</value></data>
+  <data name="ColumnActions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>Abierta</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Planificada</value></data>
+  <data name="LifecycleInProgress" xml:space="preserve"><value>En curso</value></data>
+  <data name="LifecycleWaiting" xml:space="preserve"><value>En espera</value></data>
+  <data name="LifecyclePendingReview" xml:space="preserve"><value>Pendiente de revisión</value></data>
+  <data name="LifecycleDone" xml:space="preserve"><value>Completada</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="ActionCreate" xml:space="preserve"><value>Crear</value></data>
+  <data name="ActionSave" xml:space="preserve"><value>Guardar</value></data>
+  <data name="ActionCancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="ActionOpenDetailed" xml:space="preserve"><value>Más opciones</value></data>
+  <data name="ActionClaim" xml:space="preserve"><value>Asumir</value></data>
+  <data name="ActionAccept" xml:space="preserve"><value>Aceptar</value></data>
+  <data name="ActionStart" xml:space="preserve"><value>Iniciar</value></data>
+  <data name="ActionComplete" xml:space="preserve"><value>Completar</value></data>
+  <data name="QuickCreateTitle" xml:space="preserve"><value>Tarea rápida</value></data>
+  <data name="ToastCreated" xml:space="preserve"><value>Tarea creada.</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Tarea guardada.</value></data>
+  <data name="ToastClaimed" xml:space="preserve"><value>La tarea es suya.</value></data>
+  <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Otra persona tomó esta tarea antes.</value></data>
+  <data name="ErrorNoAccess" xml:space="preserve"><value>No tiene permiso para hacer esto.</value></data>
+  <data name="ErrorUnavailable" xml:space="preserve"><value>No se pudo contactar con el servicio de tareas. Inténtelo de nuevo.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Aún no hay tareas</value></data>
+  <data name="EmptyDescription" xml:space="preserve"><value>Cree su primera tarea para verla aquí y en el Centro de tareas.</value></data>
+  <data name="RequiredFieldHint" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>Se produjo un error al procesar su solicitud.</value></data>
+  <data name="ActionOk" xml:space="preserve"><value>Aceptar</value></data>
+  <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>No se pudo determinar una unidad organizativa para esta tarea. Pida a un administrador que le asigne un puesto o que defina una unidad organizativa raíz.</value></data>
+  <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>El puesto seleccionado no puede recibir tareas. Elija un puesto activo.</value></data>
+</root>

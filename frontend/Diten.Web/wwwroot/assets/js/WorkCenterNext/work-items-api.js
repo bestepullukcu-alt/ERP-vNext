@@ -69,7 +69,10 @@
         const adapted = source.map(adaptProjection);
         const { valid, errors } = validateItems(adapted);
         const mapper = global.WorkCenterNextData && global.WorkCenterNextData.toPresentation;
-        const items = typeof mapper === 'function' ? valid.map((item) => mapper(item)) : valid;
+        // Provenance is stated explicitly: these are REAL projection items, never showcase fixtures.
+        const items = typeof mapper === 'function'
+            ? valid.map((item) => mapper(item, { provenance: 'api' }))
+            : valid;
         return { items, errors };
     };
 

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Diten.Platform.Application.Features.WorkAggregation;
 
 // WC-1 (DCP-004) — Unified Work-Item Provider Contract & Projection.
@@ -54,6 +56,13 @@ public static class WorkItemContract
     // label kind
     public const string LabelResource = "resource";
 
+    // A label whose text is already final — user-entered content that needs no translation. The executable
+    // contract requires `text` + `locale` and FORBIDS `key` on this form.
+    public const string LabelDisplay = "display";
+
+    // BCP-47 "undetermined": correct for content typed by a user, whose language we do not record.
+    public const string LocaleUndetermined = "und";
+
     // action source
     public const string ActionSourceProvider = "provider";
 
@@ -63,19 +72,49 @@ public static class WorkItemContract
     // source provider code (MOD-0023 provider)
     public const string ProviderCodeWorkflow = "workflow";
 
+    // source provider code (MOD-0024 provider). Deliberately identical to the module manifest's ModuleCode
+    // ("tasks") and to the permission namespace (platform.tasks.*) so provider, catalog and permissions cannot
+    // drift apart — the workflow provider holds the same property.
+    public const string ProviderCodeTasks = "tasks";
+
     public static readonly string[] NormalizedStatuses =
         [StatusPending, StatusInProgress, StatusWaiting, StatusDone, StatusCancelled];
 }
 
-// A discriminated resource label: { kind: "resource", key, args }. The projection always uses the resource
-// form so the same payload localizes in all seven tenant languages (wiring is WC-1b).
+/// <summary>
+/// A discriminated label, in one of two forms the executable contract accepts:
+/// <list type="bullet">
+///   <item><c>{ kind: "resource", key, args? }</c> — translated client-side; <c>text</c> must be ABSENT.</item>
+///   <item><c>{ kind: "display", text, locale }</c> — already-final text; <c>key</c> must be ABSENT.</item>
+/// </list>
+///
+/// <para>The absences are load-bearing: <c>fixture-contract.js</c> checks <c>label.text === undefined</c> for a
+/// resource label and <c>label.key === undefined</c> for a display one, and an item failing validation is dropped
+/// from the Task Center. A serialized <c>"text": null</c> is NOT undefined, so every optional member is omitted
+/// when null rather than written as null.</para>
+/// </summary>
 public sealed record WorkItemLabelDto(
     string Kind,
-    string Key,
-    IReadOnlyDictionary<string, string>? Args)
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Key = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyDictionary<string, string>? Args = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Text = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Locale = null)
 {
     public static WorkItemLabelDto Resource(string key, IReadOnlyDictionary<string, string>? args = null)
-        => new(WorkItemContract.LabelResource, key, args);
+        => new(WorkItemContract.LabelResource, Key: key, Args: args);
+
+    /// <summary>
+    /// Text that is already what the user should read — a title they typed themselves. Wrapping such text in a
+    /// resource key would demand a translation entry per provider and render the raw key when one is missing.
+    /// </summary>
+    public static WorkItemLabelDto Display(string text, string? locale = null)
+        => new(WorkItemContract.LabelDisplay,
+            Text: text,
+            Locale: string.IsNullOrWhiteSpace(locale) ? WorkItemContract.LocaleUndetermined : locale);
 }
 
 // nativeStatus { code, label } — the provider's raw status code plus a localizable label. The raw code is

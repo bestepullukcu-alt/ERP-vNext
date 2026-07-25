@@ -5,6 +5,7 @@ using Diten.Platform.Domain.Entities.Audit;
 using Diten.Platform.Domain.Entities.DocumentManagement;
 using Diten.Platform.Domain.Entities.InterfaceRegistry;
 using Diten.Platform.Domain.Entities.Organization;
+using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
@@ -642,6 +643,160 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.IsActive),
                 new CreateIndexOptions { Name = "ix_workflow_sla_rules_tenant_active" })
         });
+
+        // MOD-0024 Task Engine — every index is TENANT-FIRST. The pool index is the load-bearing one: it backs
+        // "unclaimed work offered to the positions I hold", which is the query the Havuz tab runs per user.
+        var taskItemCollection = database.GetCollection<TaskItem>("task_items");
+        var taskAssignmentCollection = database.GetCollection<TaskAssignment>("task_assignments");
+        var taskDependencyCollection = database.GetCollection<TaskDependency>("task_dependencies");
+        var taskWatcherCollection = database.GetCollection<TaskWatcher>("task_watchers");
+        var taskFieldDefinitionCollection = database.GetCollection<TaskFieldDefinition>("task_field_definitions");
+        var checklistTemplateCollection = database.GetCollection<ChecklistTemplate>("checklist_templates");
+        var checklistRunCollection = database.GetCollection<ChecklistRun>("checklist_runs");
+        var taskTemplateCollection = database.GetCollection<TaskTemplate>("task_templates");
+        var taskRecurrenceRuleCollection = database.GetCollection<TaskRecurrenceRule>("task_recurrence_rules");
+
+        await taskItemCollection.Indexes.CreateManyAsync(new[]
+        {
+            // "My work": tasks I hold, ordered by deadline.
+            new CreateIndexModel<TaskItem>(
+                Builders<TaskItem>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.AssigneeUserId)
+                    .Ascending(x => x.Lifecycle)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_task_items_tenant_assignee_lifecycle" }),
+            // "Pool": unclaimed work offered to a position (AssigneeUserId == null).
+            new CreateIndexModel<TaskItem>(
+                Builders<TaskItem>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.PoolPositionId)
+                    .Ascending(x => x.AssigneeUserId)
+                    .Ascending(x => x.Lifecycle)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_task_items_tenant_pool_position_unclaimed" }),
+            // Organization-scoped filtering/reporting (pack §12 K6).
+            new CreateIndexModel<TaskItem>(
+                Builders<TaskItem>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.OrganizationUnitId)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_task_items_tenant_org_unit" }),
+            // Creator scope (feeds the later Outbox surface) + due-date sweeps.
+            new CreateIndexModel<TaskItem>(
+                Builders<TaskItem>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.CreatedByUserId)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_task_items_tenant_creator" }),
+            new CreateIndexModel<TaskItem>(
+                Builders<TaskItem>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.DueAt)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_task_items_tenant_due_at" })
+        });
+
+        await taskAssignmentCollection.Indexes.CreateOneAsync(
+            new CreateIndexModel<TaskAssignment>(
+                Builders<TaskAssignment>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.TaskItemId)
+                    .Ascending(x => x.OccurredAt),
+                new CreateIndexOptions { Name = "ix_task_assignments_tenant_task_occurred" }));
+
+        await taskDependencyCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TaskDependency>(
+                Builders<TaskDependency>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.TaskItemId)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_task_dependencies_tenant_task" }),
+            new CreateIndexModel<TaskDependency>(
+                Builders<TaskDependency>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.DependsOnTaskItemId)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_task_dependencies_tenant_predecessor" })
+        });
+
+        await taskWatcherCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TaskWatcher>(
+                Builders<TaskWatcher>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.TaskItemId)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_task_watchers_tenant_task" }),
+            // Backs the later "İzlediklerim" filter (pack §12 K3).
+            new CreateIndexModel<TaskWatcher>(
+                Builders<TaskWatcher>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.UserId)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_task_watchers_tenant_user" })
+        });
+
+        await taskFieldDefinitionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TaskFieldDefinition>(
+                Builders<TaskFieldDefinition>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Code),
+                new CreateIndexOptions<TaskFieldDefinition>
+                {
+                    Unique = true,
+                    Name = "ux_task_field_definitions_tenant_code_active",
+                    PartialFilterExpression = Builders<TaskFieldDefinition>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<TaskFieldDefinition>(
+                Builders<TaskFieldDefinition>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.IsActive)
+                    .Ascending(x => x.SortOrder),
+                new CreateIndexOptions { Name = "ix_task_field_definitions_tenant_active_order" })
+        });
+
+        await checklistTemplateCollection.Indexes.CreateOneAsync(
+            new CreateIndexModel<ChecklistTemplate>(
+                Builders<ChecklistTemplate>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Code),
+                new CreateIndexOptions<ChecklistTemplate>
+                {
+                    Unique = true,
+                    Name = "ux_checklist_templates_tenant_code_active",
+                    PartialFilterExpression = Builders<ChecklistTemplate>.Filter.Eq(x => x.IsDeleted, false)
+                }));
+
+        await checklistRunCollection.Indexes.CreateOneAsync(
+            new CreateIndexModel<ChecklistRun>(
+                Builders<ChecklistRun>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.TaskItemId)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_checklist_runs_tenant_task" }));
+
+        await taskTemplateCollection.Indexes.CreateOneAsync(
+            new CreateIndexModel<TaskTemplate>(
+                Builders<TaskTemplate>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Code),
+                new CreateIndexOptions<TaskTemplate>
+                {
+                    Unique = true,
+                    Name = "ux_task_templates_tenant_code_active",
+                    PartialFilterExpression = Builders<TaskTemplate>.Filter.Eq(x => x.IsDeleted, false)
+                }));
+
+        await taskRecurrenceRuleCollection.Indexes.CreateOneAsync(
+            new CreateIndexModel<TaskRecurrenceRule>(
+                Builders<TaskRecurrenceRule>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.IsActive)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_task_recurrence_rules_tenant_active" }));
 
         await organizationUnitCollection.Indexes.CreateManyAsync(new[]
         {

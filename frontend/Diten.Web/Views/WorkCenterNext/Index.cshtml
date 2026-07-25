@@ -15,8 +15,18 @@
 <div id="wcnApp" class="wcn-app"
      data-wcn-fixtures="@((ViewData["FixturesToggleAllowed"] as bool? == true && Context.Request.Query["fixtures"] == "showcase") ? "showcase" : "")"></div>
 
+@* MOD-0024 — the app's ONLY quick task creation surface, opened by "+ Yeni ▸ Görev". It lives on the Task
+   Center because that is the single personal entry point; /Tasks deliberately has no second one. *@
+<partial name="~/Views/Tasks/_QuickCreateOffcanvas.cshtml" />
+
 @section Scripts {
     <partial name="_L10n" />
+    @* Tasks strings + engine client, needed by the quick-create offcanvas above. *@
+    <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixture-contract.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixtures/canonical-fixtures.js" asp-append-version="true"></script>
@@ -32,5 +42,6 @@
     <script src="~/assets/js/WorkCenterNext/trigger-response-resolver.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/mock-data.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/work-items-api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/quick-create.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/app.js" asp-append-version="true"></script>
 }

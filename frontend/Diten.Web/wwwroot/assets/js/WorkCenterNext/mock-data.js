@@ -28,10 +28,18 @@
         finance: 'Finans', tax: 'Vergi', quality: 'Kalite', 'master-data': 'Ana Veri',
         'integration-monitoring': 'Entegrasyon İzleme', 'project-governance': 'Proje Yönetişimi',
         workflow: 'İş Akışı', incident: 'Olay Yönetimi', workcenter: 'Görev Merkezi',
+        // MOD-0024 — matches the provider code, the manifest ModuleCode and platform.tasks.*
+        tasks: 'Görevler',
         'enterprise-strategy': 'Kurumsal Strateji', documentation: 'Doküman Yönetimi',
         procurement: 'Satınalma', sales: 'Satış', treasury: 'Hazine', hr: 'İnsan Kaynakları', legal: 'Hukuk'
     };
     const moduleLabel = (code) => MODULE_LABELS[code] || code || '';
+    /*
+     * Curation for the DEVELOPMENT showcase catalog only: which demo fixtures are "in the catalogue" and which are
+     * parked. It is an allowlist of FIXTURE IDS, so it can only ever be applied to fixtures — a real work item has
+     * a GUID that is by definition absent here, and gating real items on it hides every one of them.
+     * See toPresentation: provenance decides whether this list is consulted at all.
+     */
     const VISIBLE_CATALOG_IDS = new Set([
         'INBOX-TASK-01', 'INBOX-APPROVAL-01', 'INBOX-REVIEW-OPTIONAL-MEETING',
         'INBOX-REVIEW-REQUIRED-MEETING', 'INBOX-ISSUE-01', 'INBOX-EXCEPTION-01',
@@ -44,14 +52,38 @@
     const clone = (value) => (typeof global.structuredClone === 'function')
         ? global.structuredClone(value)
         : JSON.parse(JSON.stringify(value));
+    /*
+     * Resolve a contract label to text.
+     *   { kind: 'resource', key, args? } → looked up in the WorkCenterNext resx
+     *   { kind: 'display',  text, locale } → already final; used for content a user typed
+     *
+     * A resource key with no resx entry falls back to the key itself, which renders as visible gibberish
+     * ("WorkAggregation_Title_Task"). That fallback is now announced, once per key, so the next provider to
+     * introduce a label without a translation finds out immediately instead of shipping it.
+     */
+    const reportedMissingLabelKeys = new Set();
     const resolveLabel = (label) => {
         if (!label) { return ''; }
         if (label.kind === 'resource') {
             // WC-1b DEC-3 — a backend label carries NAMED args ({objectType}/{objectId}); render them through
             // the named-token helper so the title never shows literal placeholders. Mock labels have no args
             // and fall through to the plain lookup unchanged.
-            if (label.args && global.WCN?.tn) { return global.WCN.tn(label.key, label.args) || label.key; }
-            return global.WCN?.t?.(label.key) || label.key;
+            const resolved = (label.args && global.WCN?.tn)
+                ? global.WCN.tn(label.key, label.args)
+                : global.WCN?.t?.(label.key);
+
+            if (!resolved || resolved === label.key) {
+                if (!reportedMissingLabelKeys.has(label.key)) {
+                    reportedMissingLabelKeys.add(label.key);
+                    console.warn(
+                        `[WorkCenterNext] Missing resource label "${label.key}" — rendering the raw key. `
+                        + 'Add it to the WorkCenterNext resx (7 languages), or have the provider send '
+                        + '{ kind: "display", text, locale } if the text is user-entered and needs no translation.');
+                }
+                return label.key;
+            }
+
+            return resolved;
         }
         return label.text || '';
     };
@@ -116,7 +148,16 @@
             ...adaptedMigration
         ];
     };
-    const toPresentation = (fixture) => {
+    /*
+     * Map a contract-shaped work item to the shape the shell renders.
+     *
+     * `options.provenance` says where the item came from: 'fixture' for the Development showcase catalog, 'api'
+     * for the real projection. It defaults to 'api' ON PURPOSE — the failure mode of guessing wrong in that
+     * direction is a parked demo fixture appearing, whereas guessing 'fixture' hides genuine work, which is
+     * exactly the bug this argument fixes.
+     */
+    const toPresentation = (fixture, options) => {
+        const provenance = (options && options.provenance) || 'api';
         const item = clone(fixture);
         const sla = computeSla(item.dueAt);
         item.itemType = item.workIntent;
@@ -158,7 +199,19 @@
         });
         item.tab = tabFor(item);
         item.dismissed = false;
-        item.catalogVisible = VISIBLE_CATALOG_IDS.has(item.id);
+        // Showcase curation applies to showcase fixtures ONLY. A real projection item is visible because the
+        // backend already decided the actor may see it — re-filtering it here against a list of demo ids removed
+        // every genuinely created task from the surface.
+        item.catalogVisible = provenance === 'fixture' ? VISIBLE_CATALOG_IDS.has(item.id) : true;
+        if (item.catalogVisible === false) {
+            // NEVER filter silently: this exact hidden exclusion turned a working backend into an invisible one
+            // and cost hours of diagnosis.
+            console.warn(
+                `[WorkCenterNext] Work item "${item.id}" hidden by the showcase catalog filter `
+                + `(sourceModule="${item.sourceModule || item.source?.providerCode || 'unknown'}", `
+                + `provenance="${provenance}"): its id is not in VISIBLE_CATALOG_IDS. `
+                + 'Real projection items must never reach this branch — if this is one, its provenance is wrong.');
+        }
         // WC-1b DEC-2 — the projection's additive `escalation` object (unmodelled by the contract) folds onto the
         // boolean signal the shell already renders as the "Eskale" chip. No contract/backend change.
         item.escalated = !!(item.escalated || item.escalation?.escalated);
@@ -217,7 +270,10 @@
         const host = global.document?.getElementById('wcnApp');
         return host?.dataset?.wcnFixtures === 'showcase';
     };
-    const buildItems = () => (showcaseFixturesEnabled() ? allFixtureGroups().map(toPresentation) : []);
+    const buildItems = () => (showcaseFixturesEnabled()
+        // Showcase fixtures declare their provenance so the curated allowlist applies to them alone.
+        ? allFixtureGroups().map((fixture) => toPresentation(fixture, { provenance: 'fixture' }))
+        : []);
     const getActions = (item) => clone(item?.actions || []);
     const buildTriggers = () => (showcaseFixturesEnabled()
         ? clone(global.WorkCenterNextFixtures?.triggerOnly || [])
