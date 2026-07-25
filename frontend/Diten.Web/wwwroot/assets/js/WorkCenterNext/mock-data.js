@@ -46,7 +46,13 @@
         : JSON.parse(JSON.stringify(value));
     const resolveLabel = (label) => {
         if (!label) { return ''; }
-        if (label.kind === 'resource') { return global.WCN?.t?.(label.key) || label.key; }
+        if (label.kind === 'resource') {
+            // WC-1b DEC-3 — a backend label carries NAMED args ({objectType}/{objectId}); render them through
+            // the named-token helper so the title never shows literal placeholders. Mock labels have no args
+            // and fall through to the plain lookup unchanged.
+            if (label.args && global.WCN?.tn) { return global.WCN.tn(label.key, label.args) || label.key; }
+            return global.WCN?.t?.(label.key) || label.key;
+        }
         return label.text || '';
     };
     const computeSla = (dueAt) => {
@@ -153,7 +159,9 @@
         item.tab = tabFor(item);
         item.dismissed = false;
         item.catalogVisible = VISIBLE_CATALOG_IDS.has(item.id);
-        item.escalated = !!item.escalated;
+        // WC-1b DEC-2 — the projection's additive `escalation` object (unmodelled by the contract) folds onto the
+        // boolean signal the shell already renders as the "Eskale" chip. No contract/backend change.
+        item.escalated = !!(item.escalated || item.escalation?.escalated);
         item.reviewRequired = item.taskLifecycle === 'PendingReview';
         item.checklist = item.checklist ? {
             ...item.checklist,
@@ -195,9 +203,25 @@
         item._fixture = fixture;
         return item;
     };
-    const buildItems = () => allFixtureGroups().map(toPresentation);
+    /*
+     * WC-1b DEC-1 — FIXTURE SOURCE vs PRESENTATION MAPPER.
+     * The mapper (toPresentation + tabFor/segmentFor/computeSla/computeBlocked/getActions/resolveLabel) is NOT
+     * mock-specific: the real API path maps canonical work items through exactly the same code. Only the fixture
+     * SOURCE below is showcase data, and it is reachable ONLY when the server says so.
+     *
+     * The switch is decided SERVER-side (IWebHostEnvironment → data-wcn-fixtures on #wcnApp) and re-read on each
+     * call, so production has no client-reachable path to fixture data — a hand-typed query string alone does
+     * nothing because the attribute is only emitted in Development.
+     */
+    const showcaseFixturesEnabled = () => {
+        const host = global.document?.getElementById('wcnApp');
+        return host?.dataset?.wcnFixtures === 'showcase';
+    };
+    const buildItems = () => (showcaseFixturesEnabled() ? allFixtureGroups().map(toPresentation) : []);
     const getActions = (item) => clone(item?.actions || []);
-    const buildTriggers = () => clone(global.WorkCenterNextFixtures?.triggerOnly || []);
+    const buildTriggers = () => (showcaseFixturesEnabled()
+        ? clone(global.WorkCenterNextFixtures?.triggerOnly || [])
+        : []);
 
     global.WorkCenterNextData = {
         todayIso: TODAY_ISO,
@@ -215,8 +239,9 @@
         toPresentation,
         buildItems,
         buildTriggers,
-        buildMeetings: () => clone(MEETINGS),
-        buildNotes: () => clone(NOTES),
+        showcaseFixturesEnabled,
+        buildMeetings: () => (showcaseFixturesEnabled() ? clone(MEETINGS) : []),
+        buildNotes: () => (showcaseFixturesEnabled() ? clone(NOTES) : []),
         resolveLabel
     };
 })(typeof window !== 'undefined' ? window : globalThis);

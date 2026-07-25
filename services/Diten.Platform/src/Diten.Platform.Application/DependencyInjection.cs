@@ -189,6 +189,8 @@ public static class DependencyInjection
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.AccessGovernance.SelfRegistration.AccessGovernanceManifestProvider>();
         // FEAT-BASELINE-MODULES-S2 — Tenant Settings baseline module (Security Settings / Menu Settings; entitlement-free).
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.TenantSettingsModule.SelfRegistration.TenantSettingsManifestProvider>();
+        // WC-1b (DCP-004) — Görev Merkezi / Task Center tenant module (entitlement-gated, NOT baseline).
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkAggregation.SelfRegistration.WorkAggregationManifestProvider>();
 
         return services;
     }

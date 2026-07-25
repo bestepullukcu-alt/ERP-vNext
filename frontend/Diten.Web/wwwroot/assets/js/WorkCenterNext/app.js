@@ -92,10 +92,12 @@
         submittingActionCode: null,
         submittingItemId: null,
         submittingTriggerId: null,
-        triggers: data.buildTriggers ? data.buildTriggers() : [],
-        items: data.buildItems(),
-        meetings: data.buildMeetings ? data.buildMeetings() : [],
-        notes: data.buildNotes ? data.buildNotes() : [],
+        // WC-1b — the data source is no longer synchronous mock fixtures. State starts EMPTY and is populated by
+        // loadWorkItems() during boot (real API by default; Development-gated showcase fixtures per DEC-1).
+        triggers: [],
+        items: [],
+        meetings: [],
+        notes: [],
         visibleOrder: []
     };
     state.items.forEach((item) => {
@@ -1982,10 +1984,25 @@
         return cards;
     };
 
-    const renderErrorState = () => `<div class="wcn-system-page wcn-system-error" role="alert">
-        <i class="bx bx-error-circle"></i><h5>${esc(t('ErrorTitle'))}</h5><p>${esc(t('ErrorDesc'))}</p>
-        <button type="button" class="btn btn-sm btn-primary" data-wcn-retry>${esc(t('Retry'))}</button>
+    // WC-1b — a degraded load state must read as itself, not as a generic failure: no permission, expired
+    // session and dependency-down are distinct situations with distinct guidance. Retry is only offered where
+    // retrying can actually help (a permission grant will not appear by pressing a button).
+    const LOAD_ERROR_STATES = {
+        forbidden: { icon: 'bx-lock-alt', title: 'NoAccessTitle', desc: 'NoAccessDesc', retry: false },
+        unauthorized: { icon: 'bx-log-in-circle', title: 'SessionExpiredTitle', desc: 'SessionExpiredDesc', retry: false },
+        unavailable: { icon: 'bx-cloud-off', title: 'UnavailableTitle', desc: 'UnavailableDesc', retry: true }
+    };
+    const renderErrorState = () => {
+        const conf = LOAD_ERROR_STATES[state.loadError]
+            || { icon: 'bx-error-circle', title: 'ErrorTitle', desc: 'ErrorDesc', retry: true };
+        const retry = conf.retry
+            ? `<button type="button" class="btn btn-sm btn-primary" data-wcn-retry>${esc(t('Retry'))}</button>`
+            : '';
+        return `<div class="wcn-system-page wcn-system-error" role="alert">
+        <i class="bx ${conf.icon}"></i><h5>${esc(t(conf.title))}</h5><p>${esc(t(conf.desc))}</p>
+        ${retry}
     </div>`;
+    };
 
     // The whole app re-renders via innerHTML, which would orphan select2's
     // document-level handlers — tear instances down before the wipe, re-init the
@@ -2871,8 +2888,7 @@
         }
 
         if (event.target.closest('[data-wcn-retry]')) {
-            state.loadState = 'loading'; state.loadError = null; render();
-            global.setTimeout(() => { state.loadState = 'ready'; render(); }, 250);
+            loadWorkItems();   // WC-1b — re-issue the real request instead of faking success
             return;
         }
 
@@ -3174,6 +3190,55 @@
         }, 180);
     };
 
+    // ── Data source (WC-1b) ───────────────────────────────────────────────────
+    // The REAL work-item projection is canonical. Showcase fixtures remain available for UX demos/QA but only
+    // when the SERVER enabled them (Development), so production has no path to fixture data (DEC-1).
+    const applySeenState = () => {
+        state.items.forEach((item) => {
+            if (seenIds.has(item.id)) {
+                item.isUnread = false;
+                if (item.personal) { item.personal.seen = true; }
+            }
+        });
+        state.triggers.forEach((trigger) => { trigger.isUnread = !seenIds.has(trigger.id); });
+    };
+
+    const loadWorkItems = async () => {
+        state.loadState = 'loading';
+        state.loadError = null;
+        render();
+
+        if (data.showcaseFixturesEnabled && data.showcaseFixturesEnabled()) {
+            state.items = data.buildItems();
+            state.triggers = data.buildTriggers ? data.buildTriggers() : [];
+            state.meetings = data.buildMeetings ? data.buildMeetings() : [];
+            state.notes = data.buildNotes ? data.buildNotes() : [];
+            applySeenState();
+            state.loadState = 'ready';
+            render();
+            return;
+        }
+
+        const api = global.WorkCenterNextApi;
+        if (!api) { state.loadState = 'error'; state.loadError = 'error'; render(); return; }
+
+        const result = await api.fetchWorkItems();
+        if (result.status === api.STATUS.OK) {
+            state.items = result.items;
+            // Triggers/meetings/notes have no provider yet — they stay empty until one lands (DEC-1).
+            state.triggers = [];
+            state.meetings = [];
+            state.notes = [];
+            applySeenState();
+            state.loadState = 'ready';
+        } else {
+            state.items = [];
+            state.loadState = 'error';
+            state.loadError = result.status; // forbidden | unauthorized | unavailable | error
+        }
+        render();
+    };
+
     // ── Boot ──────────────────────────────────────────────────────────────────
     let booted = false;
     const boot = async () => {
@@ -3200,11 +3265,9 @@
             if (first) { first.focus(); }
         });
         render();
-        if (root.dataset.wcnPage === 'detail') { return; }
-        global.setTimeout(() => {
-            state.loadState = 'ready';
-            render();
-        }, 180);
+        // WC-1b — the detail page resolves its item out of state.items too, so it must load the projection as
+        // well (previously the fixtures were loaded synchronously at state-init and both pages got them free).
+        await loadWorkItems();
     };
 
     if (document.readyState === 'loading') {

@@ -6,11 +6,14 @@
     Layout = "_LayoutTenantShell";
 }
 
-@* WorkCenterNext — isolated mock-driven rebuild. The whole UI is rendered by
-   app.js into #wcnApp so every label resolves from a single source (the resx
-   via window.WCN.t). No backend / API calls. No own container: the tenant shell
-   already wraps @RenderBody in `container-xxl container-p-y` (matches golden pages). *@
-<div id="wcnApp" class="wcn-app"></div>
+@* WorkCenterNext — the whole UI is rendered by app.js into #wcnApp so every label resolves from a single
+   source (the resx via window.WCN.t). WC-1b: data comes from the REAL work-item projection through the
+   same-origin proxy. No own container: the tenant shell already wraps @RenderBody in
+   `container-xxl container-p-y` (matches golden pages).
+   DEC-1: the showcase fixture catalog is opt-in and DEVELOPMENT-ONLY — the attribute below is emitted only
+   when the server allows it, so production has no client-reachable path to fixture data. *@
+<div id="wcnApp" class="wcn-app"
+     data-wcn-fixtures="@((ViewData["FixturesToggleAllowed"] as bool? == true && Context.Request.Query["fixtures"] == "showcase") ? "showcase" : "")"></div>
 
 @section Scripts {
     <partial name="_L10n" />
@@ -28,5 +31,6 @@
     <script src="~/assets/js/WorkCenterNext/task-detail-resolver.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/trigger-response-resolver.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/mock-data.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/work-items-api.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/app.js" asp-append-version="true"></script>
 }

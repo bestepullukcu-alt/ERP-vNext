@@ -1096,4 +1096,67 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>تم العثور على فرق قدره 84,750 ليرة مع دفتر الأستاذ العام.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>اجتماع مراجعة ميزانية الربع الثالث</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 يوليو 2026، 14:00–15:00 · Teams · المنظم: Deniz Koç</value></data>
+  <data name="WorkAggregation_Title_Approval" xml:space="preserve">
+    <value>موافقة: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
+    <value>بانتظار الموافقة</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingEvidence" xml:space="preserve">
+    <value>بانتظار الإثبات</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Escalated" xml:space="preserve">
+    <value>تمت التصعيد</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Approved" xml:space="preserve">
+    <value>تمت الموافقة</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Rejected" xml:space="preserve">
+    <value>مرفوض</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Cancelled" xml:space="preserve">
+    <value>ملغى</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_TimedOut" xml:space="preserve">
+    <value>انتهت المهلة</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Delegated" xml:space="preserve">
+    <value>تم التفويض</value>
+  </data>
+  <data name="WorkAggregation_Action_Approve" xml:space="preserve">
+    <value>موافقة</value>
+  </data>
+  <data name="WorkAggregation_Action_Reject" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+  <data name="WorkAggregation_Action_RequestInfo" xml:space="preserve">
+    <value>طلب معلومات</value>
+  </data>
+  <data name="WorkAggregation_Action_Delegate" xml:space="preserve">
+    <value>تفويض</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_PermissionDenied" xml:space="preserve">
+    <value>ليس لديك إذن لتنفيذ هذا الإجراء.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
+    <value>الإثبات المطلوب غير متوفر.</value>
+  </data>
+  <data name="NoAccessTitle" xml:space="preserve">
+    <value>ليس لديك حق الوصول إلى مركز المهام</value>
+  </data>
+  <data name="NoAccessDesc" xml:space="preserve">
+    <value>اطلب من المسؤول منحك حق الوصول إلى هذه الوحدة.</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>انتهت صلاحية جلستك</value>
+  </data>
+  <data name="SessionExpiredDesc" xml:space="preserve">
+    <value>يرجى تسجيل الدخول مرة أخرى للمتابعة.</value>
+  </data>
+  <data name="UnavailableTitle" xml:space="preserve">
+    <value>مركز المهام غير متاح مؤقتًا</value>
+  </data>
+  <data name="UnavailableDesc" xml:space="preserve">
+    <value>تعذّر الوصول إلى الخدمة. تم الاحتفاظ بعوامل التصفية — حاول مرة أخرى.</value>
+  </data>
 </root>

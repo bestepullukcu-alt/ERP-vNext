@@ -4,6 +4,9 @@ const scriptRoot = "wwwroot/assets/js/WorkCenterNext/";
 
 describe("WorkCenterNext canonical fixture contract", () => {
   beforeEach(() => {
+    // WC-1b DEC-1 — the showcase fixture catalog is now gated by a SERVER-set flag. These contract tests are
+    // explicitly about that catalog, so they opt in the same way Development does.
+    document.body.innerHTML = '<div id="wcnApp" data-wcn-fixtures="showcase"></div>';
     delete global.WorkCenterNextContract;
     delete global.WorkCenterNextFixtureFactory;
     delete global.WorkCenterNextFixtures;

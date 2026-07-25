@@ -186,21 +186,15 @@
                     <li class="menu-header small text-uppercase">
                         <span class="menu-header-text">@SharedLocalizer["Workspace"]</span>
                     </li>
-                    <li class="menu-item @(activeController == "WorkCenter" ? "active" : "")">
-                        <a href="/WorkCenter" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
-                            <div>@SharedLocalizer["WorkCenterMenu"]</div>
-                        </a>
-                    </li>
-                    @* WorkCenterNext — isolated mock-driven rebuild (docs/workcenter-rebuild-spec.md).
-                       Kept as a separate nav entry so the legacy /WorkCenter stays reachable for
-                       comparison + rollback until the swap. *@
-                    <li class="menu-item @(activeController == "WorkCenterNext" ? "active" : "")">
-                        <a href="/WorkCenterNext" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-been-here"></i>
-                            <div>@SharedLocalizer["WorkCenterNextMenu"]</div>
-                        </a>
-                    </li>
+                    @* WC-1b — the Task Center (Görev Merkezi) is rendered DATA-DRIVEN by the DynamicModuleMenu
+                       below, from the `work-aggregation` module catalog entry (page WORKCENTER → /WorkCenterNext,
+                       gated on platform.work-aggregation.inbox.view) — same migration Access Governance and
+                       Tenant Settings went through, so the sidebar shows exactly ONE Görev Merkezi link.
+                       The LEGACY /WorkCenter link was also removed from the menu by explicit decision
+                       (2026-07-25): the page, controller and views remain FROZEN and reachable by direct URL for
+                       comparison/rollback — only its navigation entry is gone. Its `WorkCenterMenu` /
+                       `WorkCenterNextMenu` resx keys are intentionally left in place (harmless).
+                       This "Workspace" header still labels the Document Management items below. *@
 
                     @* FEAT-BASELINE-MODULES-S2 — Security Settings (/TenantSecurity) and Menu Settings (/TenantNavigation)
                        are now rendered DATA-DRIVEN by the DynamicModuleMenu below (the `tenant-settings` BASELINE module,

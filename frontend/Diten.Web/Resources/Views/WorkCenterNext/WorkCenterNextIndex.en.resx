@@ -1096,4 +1096,67 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>A TRY 84,750 difference was found between the return and general ledger.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Q3 budget revision review meeting</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 July 2026, 14:00–15:00 · Teams · Organizer: Deniz Koç</value></data>
+  <data name="WorkAggregation_Title_Approval" xml:space="preserve">
+    <value>Approval: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
+    <value>Waiting for approval</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingEvidence" xml:space="preserve">
+    <value>Waiting for evidence</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Escalated" xml:space="preserve">
+    <value>Escalated</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Approved" xml:space="preserve">
+    <value>Approved</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Rejected" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_TimedOut" xml:space="preserve">
+    <value>Timed out</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Delegated" xml:space="preserve">
+    <value>Delegated</value>
+  </data>
+  <data name="WorkAggregation_Action_Approve" xml:space="preserve">
+    <value>Approve</value>
+  </data>
+  <data name="WorkAggregation_Action_Reject" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+  <data name="WorkAggregation_Action_RequestInfo" xml:space="preserve">
+    <value>Request information</value>
+  </data>
+  <data name="WorkAggregation_Action_Delegate" xml:space="preserve">
+    <value>Delegate</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_PermissionDenied" xml:space="preserve">
+    <value>You do not have permission for this action.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
+    <value>Required evidence is missing.</value>
+  </data>
+  <data name="NoAccessTitle" xml:space="preserve">
+    <value>You do not have access to the Task Center</value>
+  </data>
+  <data name="NoAccessDesc" xml:space="preserve">
+    <value>Ask your administrator to grant you access to this module.</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>Your session has expired</value>
+  </data>
+  <data name="SessionExpiredDesc" xml:space="preserve">
+    <value>Please sign in again to continue.</value>
+  </data>
+  <data name="UnavailableTitle" xml:space="preserve">
+    <value>Task Center is temporarily unavailable</value>
+  </data>
+  <data name="UnavailableDesc" xml:space="preserve">
+    <value>The service could not be reached. Your filters are preserved — try again.</value>
+  </data>
 </root>

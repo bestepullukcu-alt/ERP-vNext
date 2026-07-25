@@ -542,4 +542,13 @@
   <data name="NoRecords" xml:space="preserve">
     <value>无记录</value>
   </data>
+  <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
+    <value>工作区</value>
+  </data>
+  <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
+    <value>任务中心</value>
+  </data>
+  <data name="Nav.Page.WORKCENTER" xml:space="preserve">
+    <value>任务中心</value>
+  </data>
 </root>

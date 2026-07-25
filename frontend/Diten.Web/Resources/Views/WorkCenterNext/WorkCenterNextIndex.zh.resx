@@ -1096,4 +1096,67 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>申报表与总账之间发现 84,750 里拉差异。</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>第三季度预算修订评审会议</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>2026年7月28日 14:00–15:00 · Teams · 组织者：Deniz Koç</value></data>
+  <data name="WorkAggregation_Title_Approval" xml:space="preserve">
+    <value>审批：{objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
+    <value>等待审批</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingEvidence" xml:space="preserve">
+    <value>等待证明材料</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Escalated" xml:space="preserve">
+    <value>已升级</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Approved" xml:space="preserve">
+    <value>已批准</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Rejected" xml:space="preserve">
+    <value>已拒绝</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Cancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_TimedOut" xml:space="preserve">
+    <value>已超时</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Delegated" xml:space="preserve">
+    <value>已委派</value>
+  </data>
+  <data name="WorkAggregation_Action_Approve" xml:space="preserve">
+    <value>批准</value>
+  </data>
+  <data name="WorkAggregation_Action_Reject" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+  <data name="WorkAggregation_Action_RequestInfo" xml:space="preserve">
+    <value>请求信息</value>
+  </data>
+  <data name="WorkAggregation_Action_Delegate" xml:space="preserve">
+    <value>委派</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_PermissionDenied" xml:space="preserve">
+    <value>您没有执行此操作的权限。</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
+    <value>缺少必需的证明材料。</value>
+  </data>
+  <data name="NoAccessTitle" xml:space="preserve">
+    <value>您无权访问任务中心</value>
+  </data>
+  <data name="NoAccessDesc" xml:space="preserve">
+    <value>请联系管理员为您开通该模块的访问权限。</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>您的会话已过期</value>
+  </data>
+  <data name="SessionExpiredDesc" xml:space="preserve">
+    <value>请重新登录以继续。</value>
+  </data>
+  <data name="UnavailableTitle" xml:space="preserve">
+    <value>任务中心暂时不可用</value>
+  </data>
+  <data name="UnavailableDesc" xml:space="preserve">
+    <value>无法连接到服务。已保留您的筛选条件，请重试。</value>
+  </data>
 </root>

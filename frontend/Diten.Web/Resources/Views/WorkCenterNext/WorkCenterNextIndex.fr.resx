@@ -1096,4 +1096,67 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Un écart de 84 750 TRY a été détecté avec le grand livre.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Réunion de revue du budget T3</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 juillet 2026, 14:00–15:00 · Teams · Organisateur : Deniz Koç</value></data>
+  <data name="WorkAggregation_Title_Approval" xml:space="preserve">
+    <value>Approbation : {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
+    <value>En attente d'approbation</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingEvidence" xml:space="preserve">
+    <value>En attente de justificatif</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Escalated" xml:space="preserve">
+    <value>Escaladé</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Approved" xml:space="preserve">
+    <value>Approuvé</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Rejected" xml:space="preserve">
+    <value>Rejeté</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Cancelled" xml:space="preserve">
+    <value>Annulé</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_TimedOut" xml:space="preserve">
+    <value>Délai dépassé</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Delegated" xml:space="preserve">
+    <value>Délégué</value>
+  </data>
+  <data name="WorkAggregation_Action_Approve" xml:space="preserve">
+    <value>Approuver</value>
+  </data>
+  <data name="WorkAggregation_Action_Reject" xml:space="preserve">
+    <value>Rejeter</value>
+  </data>
+  <data name="WorkAggregation_Action_RequestInfo" xml:space="preserve">
+    <value>Demander des informations</value>
+  </data>
+  <data name="WorkAggregation_Action_Delegate" xml:space="preserve">
+    <value>Déléguer</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_PermissionDenied" xml:space="preserve">
+    <value>Vous n'avez pas l'autorisation d'effectuer cette action.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
+    <value>Le justificatif requis est manquant.</value>
+  </data>
+  <data name="NoAccessTitle" xml:space="preserve">
+    <value>Vous n'avez pas accès au Centre des tâches</value>
+  </data>
+  <data name="NoAccessDesc" xml:space="preserve">
+    <value>Demandez à votre administrateur de vous accorder l'accès à ce module.</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>Votre session a expiré</value>
+  </data>
+  <data name="SessionExpiredDesc" xml:space="preserve">
+    <value>Veuillez vous reconnecter pour continuer.</value>
+  </data>
+  <data name="UnavailableTitle" xml:space="preserve">
+    <value>Le Centre des tâches est temporairement indisponible</value>
+  </data>
+  <data name="UnavailableDesc" xml:space="preserve">
+    <value>Le service est injoignable. Vos filtres sont conservés — réessayez.</value>
+  </data>
 </root>

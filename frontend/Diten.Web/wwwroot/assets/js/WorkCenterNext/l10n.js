@@ -31,8 +31,20 @@
         return text;
     };
 
+    // tn(key, args): NAMED token replacement — {objectType}, {objectId} … (WC-1b DEC-3).
+    // A backend-supplied resource label carries its arguments as a NAMED map, not a positional list, so the
+    // positional tf() above cannot render it. Additive and independent: tf() is untouched.
+    const tn = (key, args) => {
+        const text = t(key);
+        if (!args || typeof args !== 'object') { return text; }
+        return Object.keys(args).reduce(
+            (acc, name) => acc.split('{' + name + '}').join(String(args[name])),
+            text);
+    };
+
     global.WCN = global.WCN || {};
     global.WCN.L10n = store;
     global.WCN.t = t;
     global.WCN.tf = tf;
+    global.WCN.tn = tn;
 })(window);

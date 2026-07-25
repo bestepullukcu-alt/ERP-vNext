@@ -142,10 +142,24 @@ This is **not** a CRUD/DataTable module. `golden_reference: none`, `shell: none`
   cross-provider and outlives workflow-only scope, so a dedicated read key is cleaner than reusing
   `platform.workflow.instances.view`. Defined as a `[HasPermission]` constant in `Diten.Platform`; the
   **seed/grant lives in MOD-0018 / `Diten.AuthService`** (separate task — this pack does not edit AuthService).
-- **Seed path (clarified 2026-07-24):** the seed is most likely handled by the **WorkCenter tenant manifest
-  self-registration + catalog→auth permission sync** (WC-1b — DCP-004 §8, [BL-022](../../../../docs/product-backlog.md)),
-  **not** a bespoke MOD-0018 task. WC-1 backend only **defines** the `[HasPermission]` constant; it does not
-  seed and does not register a manifest (WC-1b owns that). Confirm the seed path at WC-1b.
+- **Seed path (CORRECTED 2026-07-25 — verified in code at WC-1b pack authoring; the earlier
+  "manifest sync covers the seed" note was WRONG):**
+  - **Key creation is automatic.** `PlatformPermissionAutoRegistrationWorker` reflects every
+    `[HasPermission]` key at Platform.API startup and syncs it, so WC-1 alone already creates the key.
+  - **Grant to a tenant user is NOT automatic.** Auto-grant on creation reaches only the default-tenant
+    SuperAdmin (`FullCatalogPermissionGrantService`); the tenant-Admin baseline is a curated allow-list that
+    does not include `work-aggregation`. A separate access step is therefore REQUIRED.
+  - **Decision (EA 2026-07-25): entitlement, not baseline.** The module ships `IsTenantAssignable: true`
+    (non-baseline); the entitlement→permission bridge grants the key to tenant Admin when the module is
+    entitled to a tenant — no edit to the protected `Diten.AuthService` / `DefaultRolePermissionTemplate`.
+    Trade-off accepted: WorkCenter stays invisible until an operator entitles the module.
+  - **⚠ HAZARD (B2) — permission scope poisoning.** The A1 worker syncs with `moduleCode: null, scope: null`,
+    so a key it creates first may land as `Module="platform"`, `Scope=PlatformAdmin`. A later manifest sync
+    can repair `Module` but can NEVER downgrade `Scope`
+    (`InternalPermissionsController.cs:146-151`, "most restrictive wins — never downgrade to Tenant"), and a
+    `PlatformAdmin`-scoped key can never be assigned to a tenant role. WC-1 already shipped the attribute
+    (commit `866bcbf3`), so the stored `Module`/`Scope` of this key MUST be verified (and repaired if needed)
+    in WC-1b — this is a hard acceptance criterion there, not an assumption.
 - **Consumed for `actions[]` eligibility (not defined here):** `platform.workflow.tasks.approve` /
   `.reject` / `.delegate` / `.request-info` / `.cancel` (MOD-0023 §8) — used to enable/disable each projected
   action; the seed already belongs to MOD-0023/MOD-0018.

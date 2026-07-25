@@ -1096,4 +1096,67 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Beyanname ile genel muhasebe arasında 84.750 TL fark bulundu.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Q3 bütçe revizyonu değerlendirme toplantısı</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 Temmuz 2026, 14:00–15:00 · Teams · Düzenleyen: Deniz Koç</value></data>
+  <data name="WorkAggregation_Title_Approval" xml:space="preserve">
+    <value>Onay: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
+    <value>Onay bekliyor</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingEvidence" xml:space="preserve">
+    <value>Kanıt bekliyor</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Escalated" xml:space="preserve">
+    <value>Eskale edildi</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Approved" xml:space="preserve">
+    <value>Onaylandı</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Rejected" xml:space="preserve">
+    <value>Reddedildi</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Cancelled" xml:space="preserve">
+    <value>İptal edildi</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_TimedOut" xml:space="preserve">
+    <value>Süresi doldu</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Delegated" xml:space="preserve">
+    <value>Devredildi</value>
+  </data>
+  <data name="WorkAggregation_Action_Approve" xml:space="preserve">
+    <value>Onayla</value>
+  </data>
+  <data name="WorkAggregation_Action_Reject" xml:space="preserve">
+    <value>Reddet</value>
+  </data>
+  <data name="WorkAggregation_Action_RequestInfo" xml:space="preserve">
+    <value>Bilgi iste</value>
+  </data>
+  <data name="WorkAggregation_Action_Delegate" xml:space="preserve">
+    <value>Devret</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_PermissionDenied" xml:space="preserve">
+    <value>Bu işlem için yetkiniz yok.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
+    <value>Gerekli kanıt eksik.</value>
+  </data>
+  <data name="NoAccessTitle" xml:space="preserve">
+    <value>Görev Merkezi'ne erişiminiz yok</value>
+  </data>
+  <data name="NoAccessDesc" xml:space="preserve">
+    <value>Bu modüle erişim için yöneticinizden yetki isteyin.</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>Oturumunuz sona erdi</value>
+  </data>
+  <data name="SessionExpiredDesc" xml:space="preserve">
+    <value>Devam etmek için lütfen yeniden giriş yapın.</value>
+  </data>
+  <data name="UnavailableTitle" xml:space="preserve">
+    <value>Görev Merkezi geçici olarak kullanılamıyor</value>
+  </data>
+  <data name="UnavailableDesc" xml:space="preserve">
+    <value>Servise ulaşılamadı. Filtreleriniz korundu — tekrar deneyin.</value>
+  </data>
 </root>

@@ -24,7 +24,9 @@
         </a>
     </div>
 
-    <div id="wcnApp" class="wcn-app wcn-full-detail-app" data-wcn-page="detail" data-wcn-item-id="@workItemId"></div>
+    @* DEC-1 — showcase fixtures are opt-in and DEVELOPMENT-ONLY (server-decided; no client-only switch). *@
+    <div id="wcnApp" class="wcn-app wcn-full-detail-app" data-wcn-page="detail" data-wcn-item-id="@workItemId"
+         data-wcn-fixtures="@((ViewData["FixturesToggleAllowed"] as bool? == true && Context.Request.Query["fixtures"] == "showcase") ? "showcase" : "")"></div>
 </div>
 
 @section Scripts {
@@ -43,5 +45,6 @@
     <script src="~/assets/js/WorkCenterNext/task-detail-resolver.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/trigger-response-resolver.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/mock-data.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/work-items-api.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/app.js" asp-append-version="true"></script>
 }

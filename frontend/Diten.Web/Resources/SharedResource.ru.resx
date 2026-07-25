@@ -542,4 +542,13 @@
   <data name="NoRecords" xml:space="preserve">
     <value>Нет записей</value>
   </data>
+  <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
+    <value>Рабочая область</value>
+  </data>
+  <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
+    <value>Центр задач</value>
+  </data>
+  <data name="Nav.Page.WORKCENTER" xml:space="preserve">
+    <value>Центр задач</value>
+  </data>
 </root>

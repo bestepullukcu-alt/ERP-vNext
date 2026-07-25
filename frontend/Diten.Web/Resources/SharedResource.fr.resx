@@ -542,4 +542,13 @@
   <data name="NoRecords" xml:space="preserve">
     <value>Aucun enregistrement</value>
   </data>
+  <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
+    <value>Espace de travail</value>
+  </data>
+  <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
+    <value>Centre des tâches</value>
+  </data>
+  <data name="Nav.Page.WORKCENTER" xml:space="preserve">
+    <value>Centre des tâches</value>
+  </data>
 </root>

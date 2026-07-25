@@ -1096,4 +1096,67 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Обнаружено расхождение 84 750 лир с главной книгой.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Встреча по корректировке бюджета за 3 квартал</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 июля 2026, 14:00–15:00 · Teams · Организатор: Deniz Koç</value></data>
+  <data name="WorkAggregation_Title_Approval" xml:space="preserve">
+    <value>Согласование: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
+    <value>Ожидает согласования</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingEvidence" xml:space="preserve">
+    <value>Ожидает подтверждения</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Escalated" xml:space="preserve">
+    <value>Эскалировано</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Approved" xml:space="preserve">
+    <value>Согласовано</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Rejected" xml:space="preserve">
+    <value>Отклонено</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Cancelled" xml:space="preserve">
+    <value>Отменено</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_TimedOut" xml:space="preserve">
+    <value>Истёк срок</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Delegated" xml:space="preserve">
+    <value>Делегировано</value>
+  </data>
+  <data name="WorkAggregation_Action_Approve" xml:space="preserve">
+    <value>Согласовать</value>
+  </data>
+  <data name="WorkAggregation_Action_Reject" xml:space="preserve">
+    <value>Отклонить</value>
+  </data>
+  <data name="WorkAggregation_Action_RequestInfo" xml:space="preserve">
+    <value>Запросить информацию</value>
+  </data>
+  <data name="WorkAggregation_Action_Delegate" xml:space="preserve">
+    <value>Делегировать</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_PermissionDenied" xml:space="preserve">
+    <value>У вас нет прав на это действие.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
+    <value>Отсутствует обязательное подтверждение.</value>
+  </data>
+  <data name="NoAccessTitle" xml:space="preserve">
+    <value>У вас нет доступа к Центру задач</value>
+  </data>
+  <data name="NoAccessDesc" xml:space="preserve">
+    <value>Обратитесь к администратору за доступом к этому модулю.</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>Сеанс завершён</value>
+  </data>
+  <data name="SessionExpiredDesc" xml:space="preserve">
+    <value>Войдите снова, чтобы продолжить.</value>
+  </data>
+  <data name="UnavailableTitle" xml:space="preserve">
+    <value>Центр задач временно недоступен</value>
+  </data>
+  <data name="UnavailableDesc" xml:space="preserve">
+    <value>Служба недоступна. Фильтры сохранены — повторите попытку.</value>
+  </data>
 </root>

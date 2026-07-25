@@ -542,4 +542,13 @@
   <data name="NoRecords" xml:space="preserve">
     <value>لا توجد سجلات</value>
   </data>
+  <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
+    <value>مساحة العمل</value>
+  </data>
+  <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
+    <value>مركز المهام</value>
+  </data>
+  <data name="Nav.Page.WORKCENTER" xml:space="preserve">
+    <value>مركز المهام</value>
+  </data>
 </root>

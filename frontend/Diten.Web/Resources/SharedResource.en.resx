@@ -601,4 +601,13 @@
   <data name="NoRecords" xml:space="preserve">
     <value>No records</value>
   </data>
+  <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
+    <value>Workspace</value>
+  </data>
+  <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
+    <value>Task Center</value>
+  </data>
+  <data name="Nav.Page.WORKCENTER" xml:space="preserve">
+    <value>Task Center</value>
+  </data>
 </root>

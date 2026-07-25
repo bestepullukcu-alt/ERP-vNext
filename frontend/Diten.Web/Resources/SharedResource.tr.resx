@@ -601,4 +601,13 @@
   <data name="NoRecords" xml:space="preserve">
     <value>Kayıt yok</value>
   </data>
+  <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
+    <value>Çalışma Alanı</value>
+  </data>
+  <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
+    <value>Görev Merkezi</value>
+  </data>
+  <data name="Nav.Page.WORKCENTER" xml:space="preserve">
+    <value>Görev Merkezi</value>
+  </data>
 </root>
