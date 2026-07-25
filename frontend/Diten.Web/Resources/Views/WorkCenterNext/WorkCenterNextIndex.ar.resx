@@ -1210,4 +1210,13 @@
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve">
     <value>تغيّرت هذه المهمة أثناء عملك عليها. تم تحديث القائمة — يرجى المحاولة مرة أخرى.</value>
   </data>
+  <data name="PersonSelf" xml:space="preserve">
+    <value>أنا</value>
+  </data>
+  <data name="PersonNameUnavailable" xml:space="preserve">
+    <value>الاسم غير متوفر</value>
+  </data>
+  <data name="PlannedDateNone" xml:space="preserve">
+    <value>غير مُخطط</value>
+  </data>
 </root>

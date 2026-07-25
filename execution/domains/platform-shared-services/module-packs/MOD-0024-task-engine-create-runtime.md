@@ -382,6 +382,19 @@ them makes the two impossible to desynchronise, so a **third** provider cannot r
 > is the positive case whose absence let this ship (every prior provider test used `IsPlatformActor: true`, which
 > bypasses permission evaluation entirely).
 
+**K6.3 — The projection carries WHO the work belongs to (EA 2026-07-25).** `WorkItemProjectionDto` gains optional
+`Assignee` / `Requester` of shape `{ id, displayName?, isCurrentUser }` — the same shape the fixtures already use,
+because mock and real items share one client mapper. Both are omitted when null (`JsonIgnore(WhenWritingNull)`), so
+MOD-0023 is unaffected and an unclaimed pool task reports **no** assignee rather than an empty one.
+
+> ⚠️ **OPEN — display names are not resolvable yet.** `AssigneeUserId` / `CreatedByUserId` are **AuthService**
+> identities, and Platform has **no user-directory seam** (MOD-0288's `PersonReference` has no `UserId`, so it
+> cannot supply the name either). `DisplayName` is therefore emitted as null today. The client renders
+> `PersonSelf` ("Ben") for the caller — `isCurrentUser` is the one identity fact the server can state without
+> shipping the caller's id to the browser or holding localized text — and `PersonNameUnavailable` for anyone else.
+> A raw GUID is never shown as a person. **This completes with the person-picker work**, which needs the same
+> user-lookup seam: once it exists, populate `DisplayName` and both fallbacks stop being reachable.
+
 **K7 — Email only.** Events are declared in the module manifest (`NotificationEvents`) and dispatched via
 `INotificationEventDispatchAdapter`. The header bell is **out of scope** — no in-app channel exists
 (`NotificationChannelCode { Email = 0 }`) and the bell is a static theme ornament → **BL-025**.

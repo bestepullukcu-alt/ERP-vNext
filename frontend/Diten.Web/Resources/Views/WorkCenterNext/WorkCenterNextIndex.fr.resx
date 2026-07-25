@@ -1210,4 +1210,13 @@
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve">
     <value>Cette tâche a changé pendant que vous y travailliez. La liste a été actualisée — veuillez réessayer.</value>
   </data>
+  <data name="PersonSelf" xml:space="preserve">
+    <value>Moi</value>
+  </data>
+  <data name="PersonNameUnavailable" xml:space="preserve">
+    <value>Nom indisponible</value>
+  </data>
+  <data name="PlannedDateNone" xml:space="preserve">
+    <value>Non planifié</value>
+  </data>
 </root>

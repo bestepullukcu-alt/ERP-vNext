@@ -1011,13 +1011,15 @@
     const renderPlanDates = (item) => {
         if (!item.dueAt && !item.plannedDate) { return ''; }
         const conflict = item.dueAt && item.plannedDate && item.plannedDate > item.dueAt;
-        const cell = (labelKey, value, cls) =>
-            `<div class="wcn-date-cell${cls ? ' ' + cls : ''}"><span class="wcn-date-label">${esc(t(labelKey))}</span><span class="wcn-date-value">${esc(value || t('SlaNoSla'))}</span></div>`;
+        // The empty text is PER CELL: "SLA yok" answers "is there a deadline?", which says nothing about whether
+        // the user has planned the work. One shared placeholder made a missing personal plan read as "SLA yok".
+        const cell = (labelKey, value, emptyKey, cls) =>
+            `<div class="wcn-date-cell${cls ? ' ' + cls : ''}"><span class="wcn-date-label">${esc(t(labelKey))}</span><span class="wcn-date-value">${esc(value || t(emptyKey))}</span></div>`;
         return `<div class="wcn-detail-section">
             <h6 class="wcn-detail-h6">${esc(t('DatesLabel'))}</h6>
             <div class="wcn-dates">
-                ${cell('SourceDueLabel', item.dueAt, item.slaState === 'overdue' ? 'wcn-date-overdue' : '')}
-                ${cell('PlannedDateLabel', item.plannedDate, conflict ? 'wcn-date-conflict' : '')}
+                ${cell('SourceDueLabel', item.dueAt, 'SlaNoSla', item.slaState === 'overdue' ? 'wcn-date-overdue' : '')}
+                ${cell('PlannedDateLabel', item.plannedDate, 'PlannedDateNone', conflict ? 'wcn-date-conflict' : '')}
             </div>
             ${conflict ? `<div class="wcn-date-warn" role="note"><i class="bx bx-error-circle"></i><span>${esc(t('PlanConflict'))}</span></div>` : ''}
         </div>`;

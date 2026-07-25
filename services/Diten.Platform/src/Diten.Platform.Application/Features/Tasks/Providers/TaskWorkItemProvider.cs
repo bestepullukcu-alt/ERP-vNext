@@ -136,8 +136,23 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             Escalation: null,
             DueAt: task.DueAt,
             PrimaryActionCode: primaryActionCode,
-            OverflowActionCodes: overflowActionCodes);
+            OverflowActionCodes: overflowActionCodes,
+            // An unclaimed pool task genuinely has no assignee — omit rather than invent one.
+            Assignee: Person(task.AssigneeUserId, actor),
+            Requester: Person(task.CreatedByUserId, actor));
     }
+
+    /// <summary>
+    /// A person reference for the projection. The id is always real; the display NAME is left null because Platform
+    /// has no user-directory seam to resolve an AuthService user (the task's AssigneeUserId/CreatedByUserId are
+    /// AuthService identities — MOD-0288's PersonReference has no UserId, so it cannot supply the name either).
+    /// <c>IsCurrentUser</c> is the one thing the server can state for certain, letting the client render "Me"
+    /// without any localized text crossing the wire.
+    /// </summary>
+    private static WorkItemPersonDto? Person(Guid? userId, WorkItemActor actor)
+        => userId is null || userId == Guid.Empty
+            ? null
+            : new WorkItemPersonDto(userId.Value.ToString(), DisplayName: null, IsCurrentUser: userId == actor.UserId);
 
     /// <summary>
     /// Declared capabilities gate which detail blocks render. Phase 1 declares only what actually exists:

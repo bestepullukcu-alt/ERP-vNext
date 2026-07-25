@@ -1210,4 +1210,13 @@
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve">
     <value>此任务在您操作期间已被更改。列表已刷新 — 请重试。</value>
   </data>
+  <data name="PersonSelf" xml:space="preserve">
+    <value>我</value>
+  </data>
+  <data name="PersonNameUnavailable" xml:space="preserve">
+    <value>姓名不可用</value>
+  </data>
+  <data name="PlannedDateNone" xml:space="preserve">
+    <value>未计划</value>
+  </data>
 </root>

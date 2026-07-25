@@ -89,6 +89,84 @@ public sealed class TaskWorkItemProviderWireContractTests
         Assert.Equal("<b>hi</b> & bye", element.GetProperty("title").GetProperty("text").GetString());
     }
 
+
+    // ── WHO the work belongs to (the detail pane showed "ATANAN —" without these) ──
+
+    [Fact]
+    public async Task The_assignee_and_requester_reach_the_wire()
+    {
+        var task = SelfTask("CT probe");
+        task.CreatedByUserId = TaskTestData.Me;
+
+        var element = await ProjectAndSerializeAsync(task);
+
+        var assignee = element.GetProperty("assignee");
+        Assert.Equal(TaskTestData.Me.ToString(), assignee.GetProperty("id").GetString());
+        var requester = element.GetProperty("requester");
+        Assert.Equal(TaskTestData.Me.ToString(), requester.GetProperty("id").GetString());
+    }
+
+    [Fact]
+    public async Task A_person_who_is_the_caller_is_flagged_so_the_client_can_say_Me()
+    {
+        var task = SelfTask("CT probe");
+        task.CreatedByUserId = TaskTestData.Rival;
+
+        var element = await ProjectAndSerializeAsync(task);
+
+        Assert.True(element.GetProperty("assignee").GetProperty("isCurrentUser").GetBoolean());
+        Assert.False(element.GetProperty("requester").GetProperty("isCurrentUser").GetBoolean());
+    }
+
+    [Fact]
+    public async Task An_unresolvable_display_name_is_OMITTED_not_written_as_null()
+    {
+        // Platform has no user-directory seam yet. A serialized "displayName": null would reach the client as a
+        // present-but-empty value; omission keeps `person.displayName || fallback` working.
+        var element = await ProjectAndSerializeAsync(SelfTask("CT probe"));
+
+        Assert.False(element.GetProperty("assignee").TryGetProperty("displayName", out _));
+    }
+
+    [Fact]
+    public async Task An_unclaimed_pool_task_reports_NO_assignee_rather_than_an_empty_one()
+    {
+        var task = SelfTask("Pooled work");
+        task.AssignmentTarget = TaskAssignmentTarget.PositionPool;
+        task.AssigneeUserId = null;
+        task.PoolPositionId = Guid.Parse("99999999-9999-9999-9999-999999999999");
+
+        var provider = new TaskWorkItemProvider(
+            new FakeTaskItemRepository(task),
+            new FakePositionAssignmentRepository(new Domain.Entities.Organization.PositionAssignment
+            {
+                TenantId = TaskTestData.Tenant,
+                PositionId = task.PoolPositionId.Value,
+                UserId = TaskTestData.Me,
+                EffectiveFrom = DateTimeOffset.UtcNow.AddDays(-1)
+            }),
+            new TaskLifecycleService(),
+            new TaskAssignmentResolver());
+
+        var items = await provider.GetWorkItemsAsync(
+            new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()));
+        var element = JsonDocument.Parse(JsonSerializer.Serialize(Assert.Single(items), WebOptions)).RootElement;
+
+        // Nobody holds it — the field is absent, not an object with a blank id.
+        Assert.False(element.TryGetProperty("assignee", out _));
+    }
+
+    [Fact]
+    public async Task A_task_with_no_recorded_creator_omits_the_requester()
+    {
+        var task = SelfTask("CT probe");
+        task.CreatedByUserId = null;
+
+        var element = await ProjectAndSerializeAsync(task);
+
+        Assert.False(element.TryGetProperty("requester", out _));
+    }
+
     private static TaskItem SelfTask(string title) => new()
     {
         TenantId = TaskTestData.Tenant,

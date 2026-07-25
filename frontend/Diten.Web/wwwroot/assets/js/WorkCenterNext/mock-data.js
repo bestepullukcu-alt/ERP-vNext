@@ -87,6 +87,14 @@
         }
         return label.text || '';
     };
+    const personName = (person) => {
+        if (!person) { return ''; }
+        if (person.displayName) { return person.displayName; }
+        if (person.isCurrentUser) { return global.WCN?.t?.('PersonSelf') || ''; }
+        // An id is not a name: showing the GUID would be worse than admitting the name is unknown.
+        return global.WCN?.t?.('PersonNameUnavailable') || '';
+    };
+
     const computeSla = (dueAt) => {
         if (!dueAt) { return { state: 'no-sla', diffDays: null }; }
         const due = new Date(`${dueAt}T00:00:00`);
@@ -179,8 +187,11 @@
         item.accepted = item.admissionState === 'admitted';
         item.claimed = item.ownershipState === 'owned';
         item.startedOnce = item.executionState === 'active' || item.executionState === 'paused';
-        item.requester = item.requester?.displayName || '';
-        item.assignee = item.assignee?.displayName || '';
+        // A person is { id, displayName } — fixtures carry the name, the real projection cannot yet resolve it
+        // (no user-directory seam in Platform), so fall back to "Me" for the caller and to a plain
+        // name-unavailable label for anyone else. Never render a raw user GUID.
+        item.requester = personName(item.requester);
+        item.assignee = personName(item.assignee);
         item.scope = item.delegationContext ? 'onBehalf' : 'mine';
         item.delegator = item.delegationContext?.displayName || null;
         item.group = item.assignmentMode === 'groupQueue' ? 'Operasyon Kuyruğu' : null;

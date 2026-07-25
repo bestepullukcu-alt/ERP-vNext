@@ -1210,4 +1210,13 @@
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve">
     <value>Bu görev siz işlem yaparken değişti. Liste yenilendi — lütfen tekrar deneyin.</value>
   </data>
+  <data name="PersonSelf" xml:space="preserve">
+    <value>Ben</value>
+  </data>
+  <data name="PersonNameUnavailable" xml:space="preserve">
+    <value>Ad bilgisi yok</value>
+  </data>
+  <data name="PlannedDateNone" xml:space="preserve">
+    <value>Plan tarihi yok</value>
+  </data>
 </root>

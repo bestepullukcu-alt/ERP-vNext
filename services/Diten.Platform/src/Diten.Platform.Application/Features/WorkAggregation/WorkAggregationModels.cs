@@ -117,6 +117,23 @@ public sealed record WorkItemLabelDto(
             Locale: string.IsNullOrWhiteSpace(locale) ? WorkItemContract.LocaleUndetermined : locale);
 }
 
+/// <summary>
+/// A person on a work item — who it is assigned to, and who requested (created) it.
+///
+/// <para>Shape matches what the fixtures already carry (<c>{ id, displayName }</c>) because mock and real items go
+/// through the SAME client mapper; a different shape there would render blank or drop the item.</para>
+///
+/// <para><c>DisplayName</c> is nullable and omitted when null: Platform has no user-directory seam, so it cannot
+/// resolve an AuthService user's name yet (see the pack — it lands with the person-picker work). Until then
+/// <c>IsCurrentUser</c> lets the client say "Me" without the server holding localized text, and without shipping
+/// the caller's user id to the browser just to compare it.</para>
+/// </summary>
+public sealed record WorkItemPersonDto(
+    string Id,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? DisplayName = null,
+    bool IsCurrentUser = false);
+
 // nativeStatus { code, label } — the provider's raw status code plus a localizable label. The raw code is
 // never parsed to infer normalized lifecycle/eligibility.
 public sealed record WorkItemNativeStatusDto(string Code, WorkItemLabelDto Label);
@@ -195,7 +212,13 @@ public sealed record WorkItemProjectionDto(
     // unchanged and the shell keeps deriving it. Both must reference codes present in actions[] — the executable
     // contract rejects a dangling reference.
     string? PrimaryActionCode = null,
-    IReadOnlyList<string>? OverflowActionCodes = null);
+    IReadOnlyList<string>? OverflowActionCodes = null,
+    // WHO the work belongs to. Optional so a provider that cannot supply them (MOD-0023 today) is unchanged, and
+    // omitted when null — a serialized "assignee": null would reach the client as a present-but-empty object.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPersonDto? Assignee = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPersonDto? Requester = null);
 
 // The caller's effective context, assembled by the API layer from the authenticated principal. UserId is
 // resolved server-side (never from the client payload); permission flags are evaluated from the principal's

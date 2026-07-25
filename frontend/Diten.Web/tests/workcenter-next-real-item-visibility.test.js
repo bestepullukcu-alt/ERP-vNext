@@ -33,6 +33,8 @@ const REAL_PROJECTION_ITEM = {
     objectId: "ac65ce1d-7d3a-46c3-a3e9-fd8c54f6b2b0",
     deepLink: "/Tasks/ac65ce1d-7d3a-46c3-a3e9-fd8c54f6b2b0"
   },
+  assignee: { id: "dddddddd-dddd-dddd-dddd-dddddddddddd", isCurrentUser: true },
+  requester: { id: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee", isCurrentUser: false },
   lifecycleOwner: "tasks",
   workItemCapabilities: ["planning", "execution"],
   actions: [{
@@ -163,6 +165,48 @@ describe("a real task reaches the Task Center", () => {
       const warning = warnings.find((w) => w.includes('"WorkAggregation_Title_Task"'));
       expect(warning).toBeDefined();
       expect(warning).toContain("display");
+    });
+  });
+  describe("who the work belongs to", () => {
+    it("still passes the executable contract with the person fields present", () => {
+      const result = global.WorkCenterNextContract.validateWorkItem(REAL_PROJECTION_ITEM);
+      expect(result.errors).toEqual([]);
+      expect(result.valid).toBe(true);
+    });
+
+    it("shows 'Me' for the caller instead of leaving the assignee blank", () => {
+      // The detail pane rendered "ATANAN —" because the projection carried no assignee at all.
+      const [item] = global.WorkCenterNextApi.mapPayload([REAL_PROJECTION_ITEM]).items;
+
+      expect(item.assignee).toBe("PersonSelf");
+      expect(item.assignee).not.toBe("");
+    });
+
+    it("never renders a raw user id", () => {
+      const [item] = global.WorkCenterNextApi.mapPayload([REAL_PROJECTION_ITEM]).items;
+
+      // Someone else's name is not resolvable yet, but a GUID must never be shown as a person.
+      expect(item.requester).toBe("PersonNameUnavailable");
+      expect(item.requester).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}/);
+      expect(item.assignee).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}/);
+    });
+
+    it("prefers a real display name when the provider can supply one", () => {
+      const named = {
+        ...REAL_PROJECTION_ITEM,
+        assignee: { id: "dddddddd-dddd-dddd-dddd-dddddddddddd", displayName: "Selin Aras", isCurrentUser: true }
+      };
+
+      const [item] = global.WorkCenterNextApi.mapPayload([named]).items;
+      expect(item.assignee).toBe("Selin Aras");
+    });
+
+    it("leaves the field empty when there is genuinely no person (unclaimed pool)", () => {
+      const pooled = { ...REAL_PROJECTION_ITEM };
+      delete pooled.assignee;
+
+      const [item] = global.WorkCenterNextApi.mapPayload([pooled]).items;
+      expect(item.assignee).toBe("");
     });
   });
 });

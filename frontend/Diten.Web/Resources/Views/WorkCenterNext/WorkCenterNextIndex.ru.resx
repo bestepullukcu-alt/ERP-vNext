@@ -1210,4 +1210,13 @@
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve">
     <value>Эта задача изменилась, пока вы с ней работали. Список обновлён — попробуйте ещё раз.</value>
   </data>
+  <data name="PersonSelf" xml:space="preserve">
+    <value>Я</value>
+  </data>
+  <data name="PersonNameUnavailable" xml:space="preserve">
+    <value>Имя недоступно</value>
+  </data>
+  <data name="PlannedDateNone" xml:space="preserve">
+    <value>Не запланировано</value>
+  </data>
 </root>
