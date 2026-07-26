@@ -33,6 +33,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     private readonly IPositionAssignmentRepository _positionAssignments;
     private readonly ITaskFieldDefinitionService _fieldDefinitions;
     private readonly ITaskLifecycleService _lifecycle;
+    private readonly ITaskApprovalService _approvals;
     private readonly IChecklistTemplateRepository _checklistTemplates;
     private readonly IChecklistRunRepository _checklistRuns;
     private readonly ITaskChecklistService _checklistService;
@@ -50,6 +51,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         IPositionAssignmentRepository positionAssignments,
         ITaskFieldDefinitionService fieldDefinitions,
         ITaskLifecycleService lifecycle,
+        ITaskApprovalService approvals,
         IChecklistTemplateRepository checklistTemplates,
         IChecklistRunRepository checklistRuns,
         ITaskChecklistService checklistService,
@@ -66,6 +68,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         _positionAssignments = positionAssignments;
         _fieldDefinitions = fieldDefinitions;
         _lifecycle = lifecycle;
+        _approvals = approvals;
         _checklistTemplates = checklistTemplates;
         _checklistRuns = checklistRuns;
         _checklistService = checklistService;
@@ -225,6 +228,20 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         };
 
         await _tasks.CreateAsync(task, ct);
+
+        // ── Approval handoff to MOD-0023 (pack §12 K2) ───────────────────────
+        // Started after creation because the instance references the task id. If it cannot start, the TASK IS
+        // KEPT with ApprovalRequired still true and no instance id: the fail-closed gate then holds `start` shut
+        // until it is retried, so the user's work survives without ever becoming startable un-approved.
+        if (task.ApprovalRequired)
+        {
+            var instanceId = await _approvals.TryStartApprovalAsync(task, ct);
+            if (instanceId is not null)
+            {
+                task.WorkflowInstanceId = instanceId;
+                await _tasks.UpdateAsync(task, task.Version, ct);
+            }
+        }
 
         // A checklist template becomes a live run on the new task (pack §12 E1/E5). After creation so the run can
         // carry the task's id; a missing or inactive template is logged and skipped rather than failing the

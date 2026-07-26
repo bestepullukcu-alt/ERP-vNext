@@ -120,6 +120,10 @@ public static class DependencyInjection
         services.Configure<BusinessReferenceDataCatalogLoadOptions>(configuration.GetSection(BusinessReferenceDataCatalogLoadOptions.SectionName));
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         services.Configure<AuthServiceOptions>(configuration.GetSection(AuthServiceOptions.SectionName));
+        // MOD-0024 §12 K2 — which workflow template task approval starts. A tenant that designs its own flow in
+        // the Workflow Designer overrides Tasks:Approval:TemplateCode; the built-in default is only a fallback.
+        services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskApprovalOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskApprovalOptions.SectionName));
         services.Configure<MdmServiceOptions>(configuration.GetSection(MdmServiceOptions.SectionName));
         services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
         services.AddOptions<SmtpProviderOptions>()

@@ -70,13 +70,30 @@ public sealed class TaskLifecycleServiceTests
     }
 
     [Fact]
-    public void An_approval_gated_task_cannot_be_started_until_the_approval_clears()
+    public void The_lifecycle_service_does_NOT_judge_approval_the_workflow_gate_does()
     {
+        // Phase 3 moved this decision to MOD-0023 (pack §12 K2 / charter Binding A). Deciding it here — from a
+        // FLAG on the task rather than the workflow's real state — was a second approval engine: it could not
+        // tell "pending" from "approved", so an approved task could never have started.
+        //
+        // Removing it opens no hole: TransitionTaskItemHandler consults IWorkflowTransitionGate before committing
+        // and is fail-closed. TaskApprovalGateTests covers blocked / allowed / evaluation-failed.
         var task = MakeTask(TaskLifecycle.Open);
         task.ApprovalRequired = true;
 
-        Assert.False(_sut.CanTransition(task, TaskLifecycle.InProgress, out var reason));
-        Assert.NotNull(reason);
+        Assert.True(_sut.CanTransition(task, TaskLifecycle.InProgress, out var reason));
+        Assert.Null(reason);
+    }
+
+    [Fact]
+    public void Approval_still_drives_the_PROJECTION_even_though_it_no_longer_drives_the_transition()
+    {
+        // Reporting a state is not deciding a transition: the Task Center must still show Waiting + waitingContext.
+        var task = MakeTask(TaskLifecycle.Open);
+        task.ApprovalRequired = true;
+
+        Assert.Equal("Waiting", _sut.ToNormalizedStatus(task));
+        Assert.Equal(TaskWaitingTypes.Approval, _sut.ResolveWaitingContext(task)!.Type);
     }
 
     [Fact]

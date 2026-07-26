@@ -192,6 +192,10 @@ public static class DependencyInjection
         // Phase 2 — the single owner of "may this task be completed?" (blocking checklist items).
         services.AddScoped<Features.Tasks.Services.ITaskChecklistService,
             Features.Tasks.Services.TaskChecklistService>();
+        // Phase 3 — the approval handoff to MOD-0023 (charter Binding A). MOD-0024 starts and reads; it never
+        // owns approval state.
+        services.AddScoped<Features.Tasks.Services.ITaskApprovalService,
+            Features.Tasks.Services.TaskApprovalService>();
 
         // MC-3b — Platform-internal modules that self-register their catalog manifest in-process. Collected by
         // PlatformModuleSelfRegistrationWorker at startup. Add a line here for each new self-registering module.

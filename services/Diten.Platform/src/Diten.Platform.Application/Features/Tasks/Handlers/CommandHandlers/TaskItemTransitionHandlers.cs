@@ -163,19 +163,22 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     private readonly ICurrentUserContext _currentUser;
     private readonly IChecklistRunRepository _checklists;
     private readonly ITaskChecklistService _checklistService;
+    private readonly IWorkflowTransitionGate _workflowGate;
 
     public TransitionTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
         ICurrentUserContext currentUser,
         IChecklistRunRepository checklists,
-        ITaskChecklistService checklistService)
+        ITaskChecklistService checklistService,
+        IWorkflowTransitionGate workflowGate)
     {
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
         _checklists = checklists;
         _checklistService = checklistService;
+        _workflowGate = workflowGate;
     }
 
     public async Task<Response<NoContent>> Handle(TransitionTaskItemCommand command, CancellationToken ct)
@@ -208,6 +211,35 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                 return Response<NoContent>.Fail(
                     "A blocking checklist item is still open.",
                     409, TaskReasonCodes.ChecklistIncomplete, command.CorrelationId);
+            }
+        }
+
+        // ── Workflow gate (pack §12 K2, charter Binding A) ────────────────────
+        // Asked ONLY for approval-gated tasks, and only for the two transitions that mean "this work proceeds".
+        // A task with no approval requirement never pays for the gate and never depends on it.
+        //
+        // FAIL-CLOSED by contract: a failed evaluation counts as blocked, so a workflow outage cannot let
+        // unapproved work start. The commit below is skipped entirely when the gate says no.
+        if (task.ApprovalRequired &&
+            command.Target is TaskLifecycle.InProgress or TaskLifecycle.Done)
+        {
+            var gate = await _workflowGate.EvaluateAsync(new WorkflowGateRequest(
+                ObjectType: TaskApprovalService.ApprovalObjectType,
+                ObjectId: task.Id.ToString(),
+                ObjectRef: TaskApprovalService.BuildObjectRef(task.Id),
+                RequestedTransition: command.Target == TaskLifecycle.InProgress ? "start" : "complete",
+                RequestedTargetState: command.Target.ToString(),
+                ActorId: _currentUser.UserId.ToString(),
+                ReasonCode: command.Request.ReasonCode,
+                CorrelationId: command.CorrelationId), ct);
+
+            if (gate.IsBlocked)
+            {
+                return Response<NoContent>.Fail(
+                    gate.BlockingMessage ?? "This transition is blocked pending approval.",
+                    409,
+                    gate.BlockingReasonCode ?? TaskReasonCodes.ApprovalPending,
+                    command.CorrelationId);
             }
         }
 

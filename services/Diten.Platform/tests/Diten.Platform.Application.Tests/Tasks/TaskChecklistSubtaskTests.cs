@@ -402,7 +402,7 @@ public sealed class TaskChecklistSubtaskTests
             }),
             new FakePositionAssignmentRepository(),
             new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository()),
-            new TaskLifecycleService(), templates, runs, new TaskChecklistService(),
+            new TaskLifecycleService(), new FakeTaskApprovalService(), templates, runs, new TaskChecklistService(),
             new NoOpNotificationDispatchAdapter(),
             new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<CreateTaskItemHandler>.Instance);
@@ -437,7 +437,7 @@ public sealed class TaskChecklistSubtaskTests
         int expectedVersion)
         => new TransitionTaskItemHandler(
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
-                runs, new TaskChecklistService())
+                runs, new TaskChecklistService(), new FakeWorkflowTransitionGate())
             .Handle(
                 new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
                 CancellationToken.None);
@@ -461,6 +461,7 @@ public sealed class TaskChecklistSubtaskTests
             new FakePositionAssignmentRepository(),
             new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository()),
             new TaskLifecycleService(),
+            new FakeTaskApprovalService(),
             new FakeChecklistTemplateRepository(),
             new FakeChecklistRunRepository(),
             new TaskChecklistService(),

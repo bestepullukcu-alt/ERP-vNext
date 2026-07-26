@@ -103,12 +103,19 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
             return false;
         }
 
-        // Work cannot begin while an approval is outstanding — MOD-0023 owns that release (pack §12 K2).
-        if (target is TaskLifecycle.InProgress && IsAwaitingApproval(task))
-        {
-            reasonCode = TaskReasonCodes.InvalidState;
-            return false;
-        }
+        // NOTE — approval is deliberately NOT judged here (Phase 3, pack §12 K2 / charter Binding A).
+        //
+        // Phase 1 blocked `start` locally whenever ApprovalRequired was set, because no real approval existed yet.
+        // That local rule IS a second approval engine, which the charter forbids: it decided from a flag on the
+        // task instead of from the workflow's actual state, so it could never tell "pending" from "approved" and
+        // an approved task could never start.
+        //
+        // The decision now belongs to MOD-0023 via IWorkflowTransitionGate, consulted by
+        // TransitionTaskItemHandler before it commits — fail-closed, so removing the check here does not open a
+        // hole. What remains below are MOD-0024's OWN rules (terminal states, pool claiming, legal transitions).
+        //
+        // The approval-derived PROJECTION is unchanged: ToNormalizedStatus/ResolveWaitingContext still report
+        // Waiting + waitingContext while approval is outstanding. Reporting a state is not deciding a transition.
 
         // A pool task with no holder cannot progress: it must be claimed first.
         if (target is TaskLifecycle.InProgress or TaskLifecycle.PendingReview or TaskLifecycle.Done

@@ -375,3 +375,74 @@ internal sealed class FakeChecklistTemplateRepository(params ChecklistTemplate[]
         => Task.FromResult<IReadOnlyList<ChecklistTemplate>>(
             seed.Where(x => x.TenantId == TaskTestData.Tenant && x.IsActive).ToList());
 }
+
+/// <summary>
+/// Workflow gate double. Defaults to ALLOW so Phase 1/2 tests are unaffected; a Phase 3 test flips it to blocked
+/// or makes it throw, which must be treated as blocked (fail-closed).
+/// </summary>
+internal sealed class FakeWorkflowTransitionGate : Diten.Platform.Application.Contracts.IWorkflowTransitionGate
+{
+    public bool Blocked { get; set; }
+    public bool Throws { get; set; }
+    public List<Diten.Platform.Application.Contracts.WorkflowGateRequest> Calls { get; } = [];
+
+    public Task<Diten.Platform.Application.Contracts.WorkflowGateResult> EvaluateAsync(
+        Diten.Platform.Application.Contracts.WorkflowGateRequest request, CancellationToken ct = default)
+    {
+        Calls.Add(request);
+
+        // The REAL gate is fail-closed: an evaluation that cannot complete is a block, never an allow. The double
+        // mirrors that rather than propagating the exception, which is what the production seam does.
+        if (Throws)
+        {
+            return Task.FromResult(new Diten.Platform.Application.Contracts.WorkflowGateResult(
+                IsAllowed: false, Decision: "blocked", GateStatus: "evaluationFailed",
+                BlockingReasonCode: "GATE_EVALUATION_FAILED",
+                BlockingMessage: "The workflow gate could not be evaluated.", CorrelationId: null));
+        }
+
+        return Task.FromResult(new Diten.Platform.Application.Contracts.WorkflowGateResult(
+            IsAllowed: !Blocked,
+            Decision: Blocked ? "blocked" : "allowed",
+            GateStatus: Blocked ? "pendingApproval" : "noWorkflow",
+            BlockingReasonCode: Blocked ? "APPROVAL_PENDING" : null,
+            BlockingMessage: Blocked ? "Approval is still pending." : null,
+            CorrelationId: null));
+    }
+
+    public async Task EnsureAllowedOrThrowAsync(
+        Diten.Platform.Application.Contracts.WorkflowGateRequest request, CancellationToken ct = default)
+    {
+        var result = await EvaluateAsync(request, ct);
+        if (result.IsBlocked)
+        {
+            throw new Diten.Platform.Application.Contracts.WorkflowTransitionBlockedException(result);
+        }
+    }
+}
+
+/// <summary>Approval-service double: records starts/cancels and can simulate a workflow that will not start.</summary>
+internal sealed class FakeTaskApprovalService : Diten.Platform.Application.Features.Tasks.Services.ITaskApprovalService
+{
+    public bool CannotStart { get; set; }
+    public List<Guid> Started { get; } = [];
+    public List<Guid> Cancelled { get; } = [];
+    public Guid InstanceId { get; } = Guid.Parse("abcdabcd-abcd-abcd-abcd-abcdabcdabcd");
+
+    public Task<Guid?> TryStartApprovalAsync(TaskItem task, CancellationToken ct)
+    {
+        Started.Add(task.Id);
+        return Task.FromResult<Guid?>(CannotStart ? null : InstanceId);
+    }
+
+    public Task CancelApprovalAsync(TaskItem task, CancellationToken ct)
+    {
+        Cancelled.Add(task.Id);
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyDictionary<Guid, Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState>>
+        GetStatesAsync(IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct)
+        => Task.FromResult<IReadOnlyDictionary<Guid, Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState>>(
+            new Dictionary<Guid, Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState>());
+}

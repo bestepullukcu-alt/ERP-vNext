@@ -40,6 +40,9 @@ public static class TaskReasonCodes
     public const string FieldLimitExceeded = "TASK_FIELD_LIMIT_EXCEEDED";
     public const string ChecklistIncomplete = "CHECKLIST_INCOMPLETE";
 
+    /// <summary>The workflow gate refused: approval is outstanding (MOD-0023 owns the decision).</summary>
+    public const string ApprovalPending = "APPROVAL_PENDING";
+
     /// <summary>A subtask may not itself have subtasks — one level only (pack §12 E2).</summary>
     public const string SubtaskDepthExceeded = "SUBTASK_DEPTH_EXCEEDED";
 
