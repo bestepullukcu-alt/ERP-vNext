@@ -232,8 +232,14 @@ public sealed record WorkItemProjectionDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? ParentTaskItemId = null);
 
-/// <summary>The task's live checklist. An empty <c>items</c> list is valid when the capability is declared.</summary>
-public sealed record WorkItemChecklistDto(IReadOnlyList<WorkItemChecklistItemDto> Items);
+/// <summary>
+/// The task's live checklist. An empty <c>items</c> list is valid when the capability is declared.
+///
+/// <para><c>Version</c> is the RUN's concurrency token, not the task's: ticking an item is an expected-version
+/// write against the checklist. Without it on the wire the client cannot make that conditional write at all, so
+/// two people ticking at once would silently overwrite each other.</para>
+/// </summary>
+public sealed record WorkItemChecklistDto(IReadOnlyList<WorkItemChecklistItemDto> Items, int Version);
 
 public sealed record WorkItemChecklistItemDto(
     string Id,

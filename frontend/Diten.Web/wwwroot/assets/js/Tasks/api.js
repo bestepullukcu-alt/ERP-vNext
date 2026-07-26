@@ -63,6 +63,13 @@
         update: (id, payload) => request('PUT', `/${id}`, payload),
         transition: (id, action, payload) => request('POST', `/${id}/${action}`, payload || {}),
         assignablePositions: () => request('GET', '/assignable-positions'),
-        assignablePeople: () => request('GET', '/assignable-people')
+        assignablePeople: () => request('GET', '/assignable-people'),
+
+        // ── Phase 2 ──────────────────────────────────────────────────────────
+        // expectedVersion guards the checklist RUN, which has its own version separate from the task's.
+        setChecklistItemState: (taskId, payload) =>
+            request('POST', `/${taskId}/checklist/items/state`, payload),
+        addChecklistItem: (taskId, payload) => request('POST', `/${taskId}/checklist/items`, payload),
+        createFromTemplate: (payload) => request('POST', '/from-template', payload)
     };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -589,12 +589,21 @@ proxy returns 503 — a release blocker.
 > **Reads are batched** (`ListByTaskIdsAsync`, `ListByParentsAsync`): the projection renders a page, so per-task
 > reads would be an N+1.
 >
-> ⏳ **Outstanding for this slice:** the WorkCenterNext `renderChecklist`/`renderSubtasks` blocks still render from
-> the mock shape and are not yet wired to the new endpoints
-> (`POST {id}/checklist/items`, `POST {id}/checklist/items/state`, `POST /from-template`, and subtask creation via
-> `POST /` with `parentTaskItemId`), together with their Diten.Web proxy routes, the camelCase Tasks resx keys for
-> the subtask adder, and the frontend tests. No gateway change is needed — `/api/v1/tasks/{everything}` already
-> covers every new route.
+> ✅ **Frontend wired (2026-07-26).** `renderChecklist`/`renderSubtasks` consume the real projection; ticking an
+> item, completing a subtask and adding a subtask all reach the engine and then RE-READ the projection (no
+> optimistic state, no mock transition, 409 → refresh + explain). Proxy routes added to Diten.Web; no gateway
+> change was needed. 9 keys × 7 languages (537/file).
+>
+> Two decisions worth recording:
+> - **The checklist container had to carry the RUN's `version`.** A tick is an expected-version write against the
+>   checklist run, which is a separate document from the task, so without that token on the wire the client could
+>   not make the conditional write at all and two people ticking at once would overwrite each other. Added to
+>   `WorkItemChecklistDto` — a backend gap this wiring exposed.
+> - **A subtask is completed and created through the ORDINARY task endpoints** (`POST {id}/complete`,
+>   `POST /` + `parentTaskItemId`), never a child-only path — the same reason it is a full `TaskItem`.
+>
+> The blocked reason is rendered **in the page** (`role="note"`), not only as a tooltip on a disabled button: a
+> keyboard or touch user gets no tooltip. Open subtasks render a notice and never disable anything.
 
 ### Phase 3 — approval/review via MOD-0023
 - [ ] Toggling approval starts a MOD-0023 instance; MOD-0024 stores no approval state.

@@ -1,8 +1,10 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Tasks;
@@ -122,6 +124,22 @@ public class TaskJsonContractTests
         Assert.Equal(TaskFieldValueType.Text, Assert.Single(request.FieldValues!).ValueType);
     }
 
+    [Theory]
+    [InlineData("Optional", ChecklistItemRequirement.Optional)]
+    [InlineData("Required", ChecklistItemRequirement.Required)]
+    [InlineData("Blocking", ChecklistItemRequirement.Blocking)]
+    public void Every_checklist_requirement_the_UI_can_send_deserializes(
+        string wire, ChecklistItemRequirement expected)
+    {
+        // The live 400: the browser sends requirement:"Blocking" when adding an ad-hoc checklist item.
+        var json = $$"""{"text":"Ring the auditor","requirement":"{{wire}}","expectedVersion":3}""";
+
+        var request = JsonSerializer.Deserialize<AddChecklistItemRequest>(json, WebOptions)!;
+
+        Assert.Equal(expected, request.Requirement);
+        Assert.Equal("Ring the auditor", request.Text);
+    }
+
     // ── Outbound: the browser compares these against strings ──────────────────
 
     [Fact]
@@ -153,21 +171,7 @@ public class TaskJsonContractTests
     [Fact]
     public void Every_enum_reachable_from_a_request_or_response_type_is_string_serializable()
     {
-        var rootTypes = new[]
-        {
-            typeof(CreateTaskItemRequest),
-            typeof(UpdateTaskItemRequest),
-            typeof(TaskWatcherRequest),
-            typeof(TaskFieldValueDto),
-            typeof(BulkDeleteTaskItemRequest),
-            typeof(ClaimTaskItemRequest),
-            typeof(TaskTransitionRequest),
-            typeof(TaskItemListItemDto),
-            typeof(TaskItemDetailDto),
-            typeof(TaskWatcherDto),
-            typeof(TaskDependencyDto),
-            typeof(AssignablePositionDto)
-        };
+        var rootTypes = WireTypes();
 
         var offenders = new List<string>();
         var reached = new List<Type>();
@@ -184,9 +188,54 @@ public class TaskJsonContractTests
         Assert.Contains(typeof(TaskAssignmentTarget), reached);
         Assert.Contains(typeof(TaskWatcherRole), reached);
         Assert.Contains(typeof(TaskFieldValueType), reached);
+        // Phase 2's request type, reached WITHOUT being named here — the derivation is what covers it.
+        Assert.Contains(typeof(Domain.Enums.Tasks.ChecklistItemRequirement), reached);
 
         // An enum on the wire without JsonStringEnumConverter is a 400 on input and an opaque integer on output.
         Assert.Empty(offenders);
+    }
+
+
+    /// <summary>
+    /// Every type that crosses the HTTP boundary for MOD-0024, DERIVED rather than listed.
+    ///
+    /// <para>This is the fix for the miss that let <c>ChecklistItemRequirement</c> ship without a converter: the
+    /// previous version of this test enumerated root types by hand, so Phase 2's new request type was simply not
+    /// examined and the guard passed while the endpoint returned 400. A hand-counted scope silently skips the
+    /// NEXT type too.</para>
+    ///
+    /// <list type="bullet">
+    /// <item><b>Requests</b> come from the controller's own <c>[FromBody]</c> parameters — add an endpoint and it
+    /// is covered automatically.</item>
+    /// <item><b>Responses</b> come from the <c>T</c> in every <c>IRequest&lt;Response&lt;T&gt;&gt;</c> declared in
+    /// the Tasks feature — add a command or query and it is covered automatically.</item>
+    /// </list>
+    /// </summary>
+    private static Type[] WireTypes()
+    {
+        var requests = typeof(Diten.Platform.API.Controllers.TasksController)
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .SelectMany(method => method.GetParameters())
+            .Where(parameter => parameter.GetCustomAttribute<FromBodyAttribute>() is not null)
+            .Select(parameter => parameter.ParameterType);
+
+        var responses = typeof(CreateTaskItemRequest).Assembly
+            .GetTypes()
+            .Where(type => type.Namespace?.StartsWith("Diten.Platform.Application.Features.Tasks", StringComparison.Ordinal) == true)
+            .SelectMany(type => type.GetInterfaces())
+            .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(MediatR.IRequest<>))
+            .Select(i => i.GetGenericArguments()[0])
+            .Where(r => r.IsGenericType && r.GetGenericTypeDefinition() == typeof(Response<>))
+            .Select(r => r.GetGenericArguments()[0]);
+
+        // The Task Center projection is emitted by the provider rather than a controller, so it is named
+        // explicitly — the one root the derivation above cannot see.
+        return requests
+            .Concat(responses)
+            .Append(typeof(Application.Features.WorkAggregation.WorkItemProjectionDto))
+            .Where(type => type != typeof(Guid) && type != typeof(Application.Common.NoContent))
+            .Distinct()
+            .ToArray();
     }
 
     private static void Walk(Type type, HashSet<Type> visited, List<string> offenders, List<Type> reached)

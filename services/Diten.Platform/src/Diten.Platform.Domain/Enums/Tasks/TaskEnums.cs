@@ -140,7 +140,11 @@ public enum TaskFieldAccessState
     Hidden = 2
 }
 
-/// <summary>Checklist item semantics (Phase 2 behaviour; Phase 1 only lays the schema down).</summary>
+/// <summary>
+/// Checklist item semantics. Crosses the wire in AddChecklistItemRequest (Phase 2), so it carries the string
+/// converter — without it the browser's <c>"Blocking"</c> is a 400 before the handler runs.
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
 public enum ChecklistItemRequirement
 {
     Optional = 0,

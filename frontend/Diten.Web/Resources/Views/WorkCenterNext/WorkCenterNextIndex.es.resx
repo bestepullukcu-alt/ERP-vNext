@@ -1231,4 +1231,25 @@
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Aún no hay subtareas.</value>
   </data>
+  <data name="ToastChecklistUpdated" xml:space="preserve">
+    <value>Lista de verificación actualizada.</value>
+  </data>
+  <data name="ToastSubtaskAdded" xml:space="preserve">
+    <value>Subtarea '{0}' añadida.</value>
+  </data>
+  <data name="SubtaskTitleRequired" xml:space="preserve">
+    <value>Introduzca un título para la subtarea.</value>
+  </data>
+  <data name="SubtaskOfNamed" xml:space="preserve">
+    <value>Subtarea de '{0}'</value>
+  </data>
+  <data name="SubtaskOfUnnamed" xml:space="preserve">
+    <value>Subtarea de otra tarea</value>
+  </data>
+  <data name="SubtaskOpenAria" xml:space="preserve">
+    <value>Abrir la subtarea '{0}'</value>
+  </data>
+  <data name="SubtaskToggleAria" xml:space="preserve">
+    <value>Completar la subtarea '{0}'</value>
+  </data>
 </root>

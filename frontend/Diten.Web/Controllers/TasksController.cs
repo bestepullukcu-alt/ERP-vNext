@@ -115,6 +115,23 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiAssignablePositions()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/assignable-positions", readBody: false);
 
+    // ── Phase 2: checklist + subtasks ────────────────────────────────────────
+
+    /// <summary>Tick/untick a checklist item. Expected-version write against the checklist RUN.</summary>
+    [HttpPost("api/{id:guid}/checklist/items/state")]
+    public Task<IActionResult> ApiSetChecklistItemState(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/checklist/items/state", readBody: true);
+
+    /// <summary>Add an ad-hoc checklist item (the user's own text — never a resource key).</summary>
+    [HttpPost("api/{id:guid}/checklist/items")]
+    public Task<IActionResult> ApiAddChecklistItem(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/checklist/items", readBody: true);
+
+    /// <summary>Create a task from a template; its checklist is instantiated server-side.</summary>
+    [HttpPost("api/from-template")]
+    public Task<IActionResult> ApiCreateFromTemplate()
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/from-template", readBody: true);
+
     /// <summary>
     /// People a task may be assigned to (whoever holds a position). Carries the display name, position and
     /// organization unit so the picker never has to show a user GUID.

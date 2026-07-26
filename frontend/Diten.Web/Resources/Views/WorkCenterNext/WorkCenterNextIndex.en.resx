@@ -1231,4 +1231,25 @@
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>No subtasks yet.</value>
   </data>
+  <data name="ToastChecklistUpdated" xml:space="preserve">
+    <value>Checklist updated.</value>
+  </data>
+  <data name="ToastSubtaskAdded" xml:space="preserve">
+    <value>Subtask '{0}' added.</value>
+  </data>
+  <data name="SubtaskTitleRequired" xml:space="preserve">
+    <value>Enter a title for the subtask.</value>
+  </data>
+  <data name="SubtaskOfNamed" xml:space="preserve">
+    <value>Subtask of '{0}'</value>
+  </data>
+  <data name="SubtaskOfUnnamed" xml:space="preserve">
+    <value>Subtask of another task</value>
+  </data>
+  <data name="SubtaskOpenAria" xml:space="preserve">
+    <value>Open subtask '{0}'</value>
+  </data>
+  <data name="SubtaskToggleAria" xml:space="preserve">
+    <value>Complete subtask '{0}'</value>
+  </data>
 </root>

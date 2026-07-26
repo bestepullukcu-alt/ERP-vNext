@@ -1231,4 +1231,25 @@
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>لا توجد مهام فرعية بعد.</value>
   </data>
+  <data name="ToastChecklistUpdated" xml:space="preserve">
+    <value>تم تحديث قائمة التحقق.</value>
+  </data>
+  <data name="ToastSubtaskAdded" xml:space="preserve">
+    <value>تمت إضافة المهمة الفرعية «{0}».</value>
+  </data>
+  <data name="SubtaskTitleRequired" xml:space="preserve">
+    <value>أدخل عنوانًا للمهمة الفرعية.</value>
+  </data>
+  <data name="SubtaskOfNamed" xml:space="preserve">
+    <value>مهمة فرعية لـ «{0}»</value>
+  </data>
+  <data name="SubtaskOfUnnamed" xml:space="preserve">
+    <value>مهمة فرعية لمهمة أخرى</value>
+  </data>
+  <data name="SubtaskOpenAria" xml:space="preserve">
+    <value>فتح المهمة الفرعية «{0}»</value>
+  </data>
+  <data name="SubtaskToggleAria" xml:space="preserve">
+    <value>إكمال المهمة الفرعية «{0}»</value>
+  </data>
 </root>

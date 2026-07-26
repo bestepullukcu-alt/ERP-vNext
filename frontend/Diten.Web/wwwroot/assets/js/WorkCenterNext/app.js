@@ -1031,8 +1031,16 @@
 
     // Checklist — interactive (checking is "doing the work", stays here).
     const renderChecklist = (item) => {
-        if (!hasCap(item, 'checklist') || !item.checklist || !item.checklist.items.length) { return ''; }
-        const items = item.checklist.items;
+        // Capability present but empty is a VALID state (the contract requires the container), so an empty
+        // checklist gets an explanation instead of the block silently vanishing.
+        if (!hasCap(item, 'checklist') || !item.checklist) { return ''; }
+        const items = item.checklist.items || [];
+        if (!items.length) {
+            return `<div class="wcn-detail-section">
+                <h6 class="wcn-detail-h6">${esc(t('ChecklistLabel'))}</h6>
+                <p class="wcn-block-hint">${esc(t('ChecklistEmpty'))}</p>
+            </div>`;
+        }
         const done = items.filter((c) => c.done).length;
         const ro = isTerminal(item);
         const rows = items.map((c) =>
@@ -1042,24 +1050,51 @@
                 </button>
                 <span class="wcn-check-text">${esc(c.text)}</span>
             </li>`).join('');
+        // The reason completion is unavailable must be READABLE on the page — a disabled button with only a
+        // tooltip leaves a keyboard or touch user with no explanation at all.
+        const blocked = items.some((c) => c.blocking && !c.done);
+        const notice = blocked
+            ? `<p class="wcn-block-hint" role="note"><i class="bx bx-error-circle"></i>${esc(t('WorkAggregation_ActionDisabled_ChecklistIncomplete'))}</p>`
+            : '';
         return `<div class="wcn-detail-section">
             <h6 class="wcn-detail-h6">${esc(t('ChecklistLabel'))} <span class="wcn-count-inline">${done}/${items.length}</span></h6>
             <progress class="wcn-progress" value="${done}" max="${items.length}" aria-label="${esc(t('ChecklistLabel'))}"></progress>
             <ul class="wcn-checks">${rows}</ul>
+            ${notice}
         </div>`;
     };
 
     // Subtasks — full: complete/add here; readonly: progress + "edit in source".
     const SUBTASK_ICON = { done: 'bxs-check-circle', 'in-progress': 'bx-loader-circle', 'not-started': 'bx-circle' };
+    /*
+     * A subtask appears as its OWN row in İşlerim (it is assigned to someone and has its own lifecycle), so that
+     * row has to say what it belongs to — otherwise it reads as unexplained standalone work. The parent title is
+     * resolved from state when the parent is also visible to this user; otherwise the link alone is shown.
+     */
+    const renderParentContext = (item) => {
+        if (!item.parentTaskItemId) { return ''; }
+        const parent = itemById(item.parentTaskItemId);
+        const label = parent ? tf('SubtaskOfNamed', parent.title) : t('SubtaskOfUnnamed');
+        return `<div class="wcn-detail-section">
+            <p class="wcn-block-hint" role="note"><i class="bx bx-subdirectory-right"></i>
+                <a href="?id=${esc(item.parentTaskItemId)}">${esc(label)}</a></p>
+        </div>`;
+    };
+
     const renderSubtasks = (item) => {
-        if (!hasCap(item, 'subtasks') || !item.subtasks || !item.subtasks.items.length) { return ''; }
+        // Same capability rule as the checklist: declared-but-empty is valid and must explain itself, because a
+        // parent with no children yet is exactly where "add a subtask" belongs.
+        if (!hasCap(item, 'subtasks') || !item.subtasks) { return ''; }
+        const subtaskItems = item.subtasks.items || [];
         const full = item.subtasks.mode === 'full' && !isTerminal(item);
-        const rows = item.subtasks.items.map((s) =>
+        const rows = subtaskItems.map((s) =>
             `<li class="wcn-subtask wcn-subtask-${s.status}">
-                <button type="button" class="wcn-subtask-toggle" ${full ? `data-wcn-subtask="${item.id}:${s.id}"` : 'disabled'}>
+                <button type="button" class="wcn-subtask-toggle" ${full ? `data-wcn-subtask="${item.id}:${s.id}"` : 'disabled'}
+                        aria-label="${esc(tf('SubtaskToggleAria', s.title))}">
                     <i class="bx ${SUBTASK_ICON[s.status] || 'bx-circle'}"></i>
                 </button>
-                <span class="wcn-subtask-title">${esc(s.title)}</span>
+                <button type="button" class="wcn-subtask-title wcn-linklike" data-wcn-open-task="${esc(s.id)}"
+                        aria-label="${esc(tf('SubtaskOpenAria', s.title))}">${esc(s.title)}</button>
             </li>`).join('');
         const adder = full
             ? `<div class="wcn-subtask-add">
@@ -1067,9 +1102,17 @@
                 <button type="button" class="btn btn-sm btn-label-primary" data-wcn-subtask-add="${item.id}">${esc(t('SubtaskAdd'))}</button>
                </div>`
             : `<p class="wcn-block-hint"><i class="bx bx-link-external"></i>${esc(t('SubtasksReadonlyHint'))}</p>`;
+        // Open subtasks NEVER block the parent — they are reported, not enforced. Blocking belongs to the
+        // checklist alone; two mechanisms would make "why can't I finish this?" unanswerable.
+        const openNotice = subtaskItems.some((s) => s.status !== 'done')
+            ? `<p class="wcn-block-hint" role="note">${esc(t('SubtasksOpenNotice'))}</p>`
+            : '';
+        const body = subtaskItems.length
+            ? `<ul class="wcn-subtasks">${rows}</ul>${openNotice}`
+            : `<p class="wcn-block-hint">${esc(t('SubtasksEmpty'))}</p>`;
         return `<div class="wcn-detail-section">
             <h6 class="wcn-detail-h6">${esc(t('SubtasksLabel'))}</h6>
-            <ul class="wcn-subtasks">${rows}</ul>
+            ${body}
             ${adder}
         </div>`;
     };
@@ -1494,6 +1537,7 @@
             cell(renderBusinessContext(item), 'col-lg-8'),
             cell(renderTimesheet(item), 'col-lg-4'),
             cell(renderChecklist(item), 'col-lg-6'),
+            cell(renderParentContext(item), 'col-12'),
             cell(renderSubtasks(item), 'col-lg-6'),
             cell(renderDependencies(item), 'col-lg-6'),
             cell(renderSourceContext(item, meta), 'col-lg-6'),
@@ -2313,6 +2357,108 @@
         toast(global.TasksApi.failureMessage(result), 'error');
     };
 
+    /*
+     * ── Phase 2 writes ────────────────────────────────────────────────────────
+     * Same shape as submitRealTransition: send the concurrency token, then RE-READ the projection. The checklist
+     * carries its OWN version (the run is a separate document from the task), so a tick is an expected-version
+     * write against the checklist, not against the task.
+     */
+    const afterPhase2Write = async (result, successKey, successArg) => {
+        if (result.ok) {
+            await loadWorkItems();
+            render();
+            toast(successArg ? tf(successKey, successArg) : t(successKey));
+            return true;
+        }
+
+        if (result.status === 409 || result.reasonCode === 'TASK_CONCURRENCY_CONFLICT') {
+            // Someone changed it first — show the truth, then say so.
+            await loadWorkItems();
+            render();
+            toast(t('ErrorConcurrencyRefreshed'), 'error');
+            return false;
+        }
+
+        render();
+        toast(global.TasksApi.failureMessage(result), 'error');
+        return false;
+    };
+
+    const toggleChecklistItem = async (taskId, itemCode, completed) => {
+        const item = itemById(taskId);
+        if (!isRealTaskItem(item)) {
+            console.warn(`[WorkCenterNext] Checklist toggle ignored for non-engine item ${taskId} `
+                + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
+            return;
+        }
+
+        const result = await global.TasksApi.setChecklistItemState(taskId, {
+            itemCode,
+            completed,
+            expectedVersion: Number(item.checklist?.version ?? 0)
+        });
+        await afterPhase2Write(result, 'ToastChecklistUpdated');
+    };
+
+    const completeSubtask = async (subtaskId) => {
+        // The subtask is its own row in state, so it carries its own concurrency token.
+        const subtask = itemById(subtaskId);
+        if (!isRealTaskItem(subtask)) {
+            console.warn(`[WorkCenterNext] Subtask completion ignored: ${subtaskId} is not an engine task, `
+                + 'or is not present as its own row (it may not be assigned to you).');
+            return;
+        }
+
+        const result = await global.TasksApi.transition(subtaskId, 'complete', {
+            expectedVersion: Number(subtask.concurrency?.token ?? 0)
+        });
+        await afterPhase2Write(result, 'ToastActionApplied', subtask.title);
+    };
+
+    const addSubtask = async (parentId, title) => {
+        const text = String(title || '').trim();
+        if (!text) { toast(t('SubtaskTitleRequired'), 'error'); return; }
+
+        const parent = itemById(parentId);
+        if (!isRealTaskItem(parent)) {
+            console.warn(`[WorkCenterNext] Subtask add ignored for non-engine item ${parentId}.`);
+            return;
+        }
+
+        /*
+         * Defaults are INHERITED from the parent rather than guessed: a subtask of a High-priority task is not
+         * suddenly Medium, and the person doing the parent work is a better default owner than whoever happened
+         * to type the subtask. Everything stays editable afterwards — the row opens its own detail page.
+         *
+         * The work-item projection carries no priority, so the parent's own task record is read for it. If that
+         * read fails the subtask is still created, with stated fallbacks and a warning rather than a silent guess.
+         */
+        let priority = 'Medium';
+        let assigneeUserId = parent.assignee?.id || null;
+
+        const parentTask = await global.TasksApi.get(parentId);
+        if (parentTask.ok && parentTask.data) {
+            priority = parentTask.data.priority || priority;
+            assigneeUserId = parentTask.data.assigneeUserId || assigneeUserId;
+        } else {
+            console.warn(`[WorkCenterNext] Could not read parent ${parentId} for subtask defaults `
+                + `(status ${parentTask.status}); falling back to priority=Medium and the parent's projected assignee.`);
+        }
+
+        // A subtask IS a task: the ordinary create endpoint, with a parent link. The server enforces one level.
+        const payload = global.TaskForm.buildCreatePayload({
+            title: text,
+            // A pooled parent has no holder to inherit, so the creator takes it and reassigns from the detail.
+            assignmentTarget: assigneeUserId ? 'Person' : 'SelfAssigned',
+            assigneeUserId,
+            dueAt: parent.dueAt || null,
+            priority
+        });
+        payload.parentTaskItemId = parentId;
+
+        await afterPhase2Write(await global.TasksApi.create(payload), 'ToastSubtaskAdded', text);
+    };
+
     const applyAction = (item, action, reason) => {
         if (isRealTaskItem(item)) { submitRealTransition(item, action, reason); return; }
 
@@ -3118,19 +3264,33 @@
         }
 
         // ── Depth-block interactions (Faz 2) ──────────────────────────────────
+        // All three go to the ENGINE and then re-read the projection. Nothing is applied optimistically: the
+        // server decides, and the refreshed projection is the only source of the new state.
         const checkItemEl = event.target.closest('[data-wcn-check-item]');
         if (checkItemEl) {
-            toast(t('ProviderCommandRequired'), 'info');
+            const [taskId, itemCode] = checkItemEl.getAttribute('data-wcn-check-item').split(':');
+            toggleChecklistItem(taskId, itemCode, checkItemEl.getAttribute('aria-pressed') !== 'true');
+            return;
+        }
+        // Opening a subtask's own detail. Checked BEFORE the toggle so the two never compete for the same click;
+        // they are distinct controls inside the same row.
+        const openTaskEl = event.target.closest('[data-wcn-open-task]');
+        if (openTaskEl) {
+            openDetailPage(openTaskEl.getAttribute('data-wcn-open-task'));
             return;
         }
         const subEl = event.target.closest('[data-wcn-subtask]');
         if (subEl) {
-            toast(t('ProviderCommandRequired'), 'info');
+            const [, subtaskId] = subEl.getAttribute('data-wcn-subtask').split(':');
+            // A subtask is a FULL task, so "tick it" means completing that task through the same endpoint any
+            // other task uses — there is no separate half-lifecycle for children.
+            completeSubtask(subtaskId);
             return;
         }
         const subAddEl = event.target.closest('[data-wcn-subtask-add]');
         if (subAddEl) {
-            toast(t('ProviderCommandRequired'), 'info');
+            const input = document.querySelector('#wcnApp [data-wcn-subtask-input]');
+            addSubtask(subAddEl.getAttribute('data-wcn-subtask-add'), input ? input.value : '');
             return;
         }
         const noteSaveEl = event.target.closest('[data-wcn-note-save]');

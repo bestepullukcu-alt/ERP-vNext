@@ -1231,4 +1231,25 @@
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Подзадач пока нет.</value>
   </data>
+  <data name="ToastChecklistUpdated" xml:space="preserve">
+    <value>Чек-лист обновлён.</value>
+  </data>
+  <data name="ToastSubtaskAdded" xml:space="preserve">
+    <value>Подзадача «{0}» добавлена.</value>
+  </data>
+  <data name="SubtaskTitleRequired" xml:space="preserve">
+    <value>Введите название подзадачи.</value>
+  </data>
+  <data name="SubtaskOfNamed" xml:space="preserve">
+    <value>Подзадача задачи «{0}»</value>
+  </data>
+  <data name="SubtaskOfUnnamed" xml:space="preserve">
+    <value>Подзадача другой задачи</value>
+  </data>
+  <data name="SubtaskOpenAria" xml:space="preserve">
+    <value>Открыть подзадачу «{0}»</value>
+  </data>
+  <data name="SubtaskToggleAria" xml:space="preserve">
+    <value>Завершить подзадачу «{0}»</value>
+  </data>
 </root>

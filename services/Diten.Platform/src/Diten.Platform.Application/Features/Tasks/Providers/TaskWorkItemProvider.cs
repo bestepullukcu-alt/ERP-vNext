@@ -273,7 +273,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 Required: item.Requirement != ChecklistItemRequirement.Optional,
                 Blocking: item.Requirement == ChecklistItemRequirement.Blocking,
                 EvidenceRequired: item.EvidenceRequired))
-            .ToList());
+            .ToList(),
+            Version: run.Version);
 
     /// <summary>
     /// Subtasks in the contract's own vocabulary. MOD-0024 is their source, so the mode is `full`: they are

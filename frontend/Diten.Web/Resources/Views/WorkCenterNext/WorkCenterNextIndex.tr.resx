@@ -1231,4 +1231,25 @@
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Henüz alt görev yok.</value>
   </data>
+  <data name="ToastChecklistUpdated" xml:space="preserve">
+    <value>Kontrol listesi güncellendi.</value>
+  </data>
+  <data name="ToastSubtaskAdded" xml:space="preserve">
+    <value>'{0}' alt görevi eklendi.</value>
+  </data>
+  <data name="SubtaskTitleRequired" xml:space="preserve">
+    <value>Alt görev için bir başlık girin.</value>
+  </data>
+  <data name="SubtaskOfNamed" xml:space="preserve">
+    <value>'{0}' görevinin alt görevi</value>
+  </data>
+  <data name="SubtaskOfUnnamed" xml:space="preserve">
+    <value>Başka bir görevin alt görevi</value>
+  </data>
+  <data name="SubtaskOpenAria" xml:space="preserve">
+    <value>'{0}' alt görevini aç</value>
+  </data>
+  <data name="SubtaskToggleAria" xml:space="preserve">
+    <value>'{0}' alt görevini tamamla</value>
+  </data>
 </root>

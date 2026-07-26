@@ -5674,6 +5674,11 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .wcn-check.done .wcn-check-text { text-decoration: line-through; color: var(--bs-secondary-color); }
 .wcn-check.done .wcn-check-box { color: var(--bs-success); }
 .wcn-subtask-done .wcn-subtask-toggle, .wcn-subtask .bxs-check-circle { color: var(--bs-success); }
+/* A subtask title is a real BUTTON (it opens that task's own detail, and must be keyboard-reachable), so the
+   button chrome is stripped back to link-like text. FG-003: styled here, never inline. */
+.wcn-linklike { border: 0; background: transparent; padding: 0; text-align: inherit; font: inherit;
+    color: inherit; cursor: pointer; }
+.wcn-linklike:hover, .wcn-linklike:focus-visible { text-decoration: underline; color: var(--bs-primary); }
 .wcn-subtask-in-progress .wcn-subtask-toggle { color: var(--bs-info); }
 .wcn-subtask-add { display: flex; gap: .5rem; margin-block-start: .5rem; }
 .wcn-subtask-add input { flex: 1; }
