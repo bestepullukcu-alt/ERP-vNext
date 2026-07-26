@@ -857,6 +857,9 @@
   <data name="GroupAll" xml:space="preserve">
     <value>Tüm gruplar</value>
   </data>
+  <data name="PoolUnassigned" xml:space="preserve">
+    <value>Atanmadı — havuzda</value>
+  </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>Öncelik filtresi</value>
   </data>

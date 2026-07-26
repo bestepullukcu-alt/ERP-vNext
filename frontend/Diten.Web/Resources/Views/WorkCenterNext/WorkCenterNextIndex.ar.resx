@@ -857,6 +857,9 @@
   <data name="GroupAll" xml:space="preserve">
     <value>كل المجموعات</value>
   </data>
+  <data name="PoolUnassigned" xml:space="preserve">
+    <value>غير مُسند — في قائمة الانتظار</value>
+  </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>مرشح الأولوية</value>
   </data>

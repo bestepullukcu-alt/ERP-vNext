@@ -857,6 +857,9 @@
   <data name="GroupAll" xml:space="preserve">
     <value>Все группы</value>
   </data>
+  <data name="PoolUnassigned" xml:space="preserve">
+    <value>Не назначено — в пуле</value>
+  </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>Фильтр приоритета</value>
   </data>

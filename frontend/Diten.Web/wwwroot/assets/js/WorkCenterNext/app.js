@@ -2242,7 +2242,10 @@
                 item.claimed = false; item.assignee = null;
                 item.admissionState = 'pendingClaim';
                 item.ownershipState = 'unowned';
-                setProjectionState(item, 'Pending', item.itemType === 'task' ? 'Open' : null, 'Atanmadı — Operasyon Kuyruğu');
+                // No queue name here: the projection never says WHICH pool an item belongs to, and inventing one
+                // ("Operasyon Kuyruğu") put a non-existent team's name on real work. The ungrouped state gets its
+                // own translated label instead. Naming the queue is WC-3 contract work (BL-031 a/b).
+                setProjectionState(item, 'Pending', item.itemType === 'task' ? 'Open' : null, t('PoolUnassigned'));
                 return 'released';
             case 'approve': setProjectionState(item, 'Done', null, 'Onaylandı'); return 'resolved';
             case 'signoff': setProjectionState(item, 'Done', null, 'İmzalandı'); return 'resolved';

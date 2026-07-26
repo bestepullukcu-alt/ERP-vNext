@@ -857,6 +857,9 @@
   <data name="GroupAll" xml:space="preserve">
     <value>Todos los grupos</value>
   </data>
+  <data name="PoolUnassigned" xml:space="preserve">
+    <value>Sin asignar — en la bandeja común</value>
+  </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>Filtro de prioridad</value>
   </data>

@@ -857,6 +857,9 @@
   <data name="GroupAll" xml:space="preserve">
     <value>所有群组</value>
   </data>
+  <data name="PoolUnassigned" xml:space="preserve">
+    <value>未分配 — 在任务池中</value>
+  </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>优先级筛选</value>
   </data>
