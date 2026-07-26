@@ -7,15 +7,6 @@ using Microsoft.Extensions.Logging;
 namespace Diten.Platform.Application.Services;
 
 /// <summary>
-/// A3 — in-process workflow gate. Delegates to the existing <see cref="EvaluateWorkflowTransitionGateQuery"/> and
-/// reduces its rich response to a simple allow/block decision. NotApplicable (no workflow attached) ⇒ allowed.
-/// A non-successful evaluation ⇒ blocked (fail-closed) — and so is a THROWN one. That second half was missing:
-/// only <c>!IsSuccessful</c> was handled, so any exception from the evaluation (a repository fault, a validation
-/// failure, a workflow module outage) escaped the gate and surfaced to the caller as an unhandled HTTP 500 while
-/// the transition itself was correctly not committed. Fail-closed has to mean "answer blocked", not "crash and
-/// happen to block" — the caller cannot turn a crash into a business message for the user.
-/// </summary>
-/// <summary>
 /// Reason codes the GATE itself produces (as opposed to <see cref="WorkflowReasonCodes"/>, which MOD-0023 produces).
 /// Named so the frontend code→message bridge can translate them instead of falling back to a generic error.
 /// </summary>
@@ -26,6 +17,15 @@ public static class WorkflowGateReasonCodes
     public const string EvaluationFailed = "WorkflowGateEvaluationFailed";
 }
 
+/// <summary>
+/// A3 — in-process workflow gate. Delegates to the existing <see cref="EvaluateWorkflowTransitionGateQuery"/> and
+/// reduces its rich response to a simple allow/block decision. NotApplicable (no workflow attached) ⇒ allowed.
+/// A non-successful evaluation ⇒ blocked (fail-closed) — and so is a THROWN one. That second half was missing:
+/// only <c>!IsSuccessful</c> was handled, so any exception from the evaluation (a repository fault, a validation
+/// failure, a workflow module outage) escaped the gate and surfaced to the caller as an unhandled HTTP 500 while
+/// the transition itself was correctly not committed. Fail-closed has to mean "answer blocked", not "crash and
+/// happen to block" — the caller cannot turn a crash into a business message for the user.
+/// </summary>
 public sealed class WorkflowTransitionGate : IWorkflowTransitionGate
 {
     private readonly IMediator _mediator;
