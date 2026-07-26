@@ -33,6 +33,9 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     private readonly IPositionAssignmentRepository _positionAssignments;
     private readonly ITaskFieldDefinitionService _fieldDefinitions;
     private readonly ITaskLifecycleService _lifecycle;
+    private readonly IChecklistTemplateRepository _checklistTemplates;
+    private readonly IChecklistRunRepository _checklistRuns;
+    private readonly ITaskChecklistService _checklistService;
     private readonly INotificationEventDispatchAdapter _notifications;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
@@ -47,6 +50,9 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         IPositionAssignmentRepository positionAssignments,
         ITaskFieldDefinitionService fieldDefinitions,
         ITaskLifecycleService lifecycle,
+        IChecklistTemplateRepository checklistTemplates,
+        IChecklistRunRepository checklistRuns,
+        ITaskChecklistService checklistService,
         INotificationEventDispatchAdapter notifications,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
@@ -60,6 +66,9 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         _positionAssignments = positionAssignments;
         _fieldDefinitions = fieldDefinitions;
         _lifecycle = lifecycle;
+        _checklistTemplates = checklistTemplates;
+        _checklistRuns = checklistRuns;
+        _checklistService = checklistService;
         _notifications = notifications;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
@@ -164,9 +173,31 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
                 TaskReasonCodes.ValidationFailed, command.CorrelationId);
         }
 
+        // ── Subtask link (pack §12 E2): validated before anything is written ──
+        if (request.ParentTaskItemId is { } parentId && parentId != Guid.Empty)
+        {
+            // The tenant-scoped repository makes this a cross-tenant check too: another tenant's parent simply
+            // does not resolve.
+            var parent = await _tasks.GetByIdAsync(parentId, ct);
+            if (parent is null)
+            {
+                return Fail("The parent task could not be found.",
+                    TaskReasonCodes.ParentTaskNotFound, command.CorrelationId);
+            }
+
+            // ONE LEVEL ONLY. Enforced on the server because the rule is the model's, not the form's: deeper
+            // hierarchies belong to the source system the Task Center deep-links to.
+            if (parent.ParentTaskItemId is not null)
+            {
+                return Fail("A subtask cannot itself have subtasks.",
+                    TaskReasonCodes.SubtaskDepthExceeded, command.CorrelationId);
+            }
+        }
+
         var task = new TaskItem
         {
             TenantId = _tenantContext.TenantId,
+            ParentTaskItemId = request.ParentTaskItemId is { } p && p != Guid.Empty ? p : null,
             Title = request.Title.Trim(),
             Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
             // SYSTEM decides the initial lifecycle; the request has no say (pack §12 Y2).
@@ -194,6 +225,26 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         };
 
         await _tasks.CreateAsync(task, ct);
+
+        // A checklist template becomes a live run on the new task (pack §12 E1/E5). After creation so the run can
+        // carry the task's id; a missing or inactive template is logged and skipped rather than failing the
+        // creation — losing the task because a template vanished is the worse outcome.
+        if (request.ChecklistTemplateId is { } checklistTemplateId && checklistTemplateId != Guid.Empty)
+        {
+            var checklistTemplate = await _checklistTemplates.GetByIdAsync(checklistTemplateId, ct);
+            if (checklistTemplate is not null && checklistTemplate.IsActive)
+            {
+                await _checklistRuns.CreateAsync(
+                    _checklistService.Instantiate(_tenantContext.TenantId, task.Id, checklistTemplate), ct);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Checklist template {TemplateId} requested for task {TaskId} is missing or inactive; "
+                    + "the task was created WITHOUT a checklist.",
+                    checklistTemplateId, task.Id);
+            }
+        }
 
         await _assignments.CreateAsync(new TaskAssignment
         {

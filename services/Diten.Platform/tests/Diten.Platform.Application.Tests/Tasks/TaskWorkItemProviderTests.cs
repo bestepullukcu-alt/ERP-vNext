@@ -156,9 +156,14 @@ public sealed class TaskWorkItemProviderTests
         // Declaring a capability with no data renders an empty block, so it must not be declared.
         Assert.DoesNotContain("businessContext", bareItem.WorkItemCapabilities);
         Assert.Contains("businessContext", fieldItem.WorkItemCapabilities);
-        // Checklist/subtasks arrive in Phase 2 and must not be claimed yet.
+
+        // Phase 2: `checklist` follows the DATA (no run → not declared), but `subtasks` follows the task's
+        // POSITION in the hierarchy — a top-level task can always be given children, so the container is offered
+        // even while empty. Both directions are asserted in TaskChecklistSubtaskTests.
         Assert.DoesNotContain("checklist", fieldItem.WorkItemCapabilities);
-        Assert.DoesNotContain("subtasks", fieldItem.WorkItemCapabilities);
+        Assert.Null(fieldItem.Checklist);
+        Assert.Contains("subtasks", fieldItem.WorkItemCapabilities);
+        Assert.NotNull(fieldItem.Subtasks);
     }
 
     [Fact]
@@ -193,7 +198,8 @@ public sealed class TaskWorkItemProviderTests
             positionAssignments ?? new FakePositionAssignmentRepository(),
             new TaskLifecycleService(),
             new TaskAssignmentResolver(),
-            new FakeUserDisplayNameResolver());
+            new FakeUserDisplayNameResolver(),
+            new FakeChecklistRunRepository());
 
     private static WorkItemActor Actor() => new(
         TaskTestData.Me,

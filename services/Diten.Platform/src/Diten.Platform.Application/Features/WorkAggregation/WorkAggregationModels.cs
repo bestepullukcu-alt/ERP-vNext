@@ -218,7 +218,45 @@ public sealed record WorkItemProjectionDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     WorkItemPersonDto? Assignee = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemPersonDto? Requester = null);
+    WorkItemPersonDto? Requester = null,
+    // ── Phase 2 containers ───────────────────────────────────────────────────
+    // The contract couples capability and container BOTH ways: data present without its capability is
+    // CAPABILITY_REQUIRED_FOR_DATA, and a declared capability with the field absent is
+    // CAPABILITY_CONTAINER_REQUIRED. So these stay null (omitted) unless the capability is declared, and are
+    // then emitted even when empty.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemChecklistDto? Checklist = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemSubtasksDto? Subtasks = null,
+    /// <summary>Set when this item IS a subtask, so the shell can show whose subtask it is.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? ParentTaskItemId = null);
+
+/// <summary>The task's live checklist. An empty <c>items</c> list is valid when the capability is declared.</summary>
+public sealed record WorkItemChecklistDto(IReadOnlyList<WorkItemChecklistItemDto> Items);
+
+public sealed record WorkItemChecklistItemDto(
+    string Id,
+    WorkItemLabelDto Label,
+    bool Completed,
+    bool Required,
+    /// <summary>Blocking items are the ONLY ones that gate completion; `required` alone does not.</summary>
+    bool Blocking,
+    /// <summary>MOD-0031 owns evidence itself; this is the flag only (pack §12 E1).</summary>
+    bool EvidenceRequired);
+
+/// <summary>
+/// Subtasks. <c>mode: "full"</c> because MOD-0024 IS their source and may create/complete them here; a consumer
+/// that merely mirrors someone else's subtasks would send "readonly" and deep-link instead.
+/// </summary>
+public sealed record WorkItemSubtasksDto(string Mode, IReadOnlyList<WorkItemSubtaskDto> Items);
+
+public sealed record WorkItemSubtaskDto(
+    string Id,
+    /// <summary>Plain text: a subtask title is a real user-typed title, never a resource key.</summary>
+    string Title,
+    /// <summary>Contract vocabulary: done | in-progress | not-started.</summary>
+    string Status);
 
 // The caller's effective context, assembled by the API layer from the authenticated principal. UserId is
 // resolved server-side (never from the client payload); permission flags are evaluated from the principal's

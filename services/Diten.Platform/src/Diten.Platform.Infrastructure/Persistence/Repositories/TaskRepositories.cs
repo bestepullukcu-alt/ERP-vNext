@@ -29,6 +29,31 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
         return await Collection.Find(filter).SortBy(x => x.DueAt).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<TaskItem>> ListByParentAsync(
+        Guid parentTaskItemId,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<TaskItem>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskItem>.Filter.Eq(x => x.ParentTaskItemId, parentTaskItemId));
+        return await Collection.Find(filter).SortBy(x => x.CreatedAt).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TaskItem>> ListByParentsAsync(
+        IReadOnlyCollection<Guid> parentTaskItemIds,
+        CancellationToken ct = default)
+    {
+        if (parentTaskItemIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<TaskItem>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskItem>.Filter.In(x => x.ParentTaskItemId, parentTaskItemIds.Cast<Guid?>()));
+        return await Collection.Find(filter).SortBy(x => x.CreatedAt).ToListAsync(ct);
+    }
+
     public async Task<IReadOnlyList<TaskItem>> ListUnclaimedByPositionsAsync(
         IReadOnlyCollection<Guid> positionIds,
         CancellationToken ct = default)
@@ -174,6 +199,21 @@ public sealed class ChecklistRunRepository : TenantRepository<ChecklistRun>, ICh
             ExecutionFilter,
             Builders<ChecklistRun>.Filter.Eq(x => x.TaskItemId, taskItemId));
         return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<IReadOnlyList<ChecklistRun>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default)
+    {
+        if (taskItemIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<ChecklistRun>.Filter.And(
+            ExecutionFilter,
+            Builders<ChecklistRun>.Filter.In(x => x.TaskItemId, taskItemIds));
+        return await Collection.Find(filter).ToListAsync(ct);
     }
 
     public async Task<bool> UpdateAsync(ChecklistRun run, int expectedVersion, CancellationToken ct = default)

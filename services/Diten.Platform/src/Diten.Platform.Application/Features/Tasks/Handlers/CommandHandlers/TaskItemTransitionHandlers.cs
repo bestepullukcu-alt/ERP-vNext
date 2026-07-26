@@ -161,15 +161,21 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IChecklistRunRepository _checklists;
+    private readonly ITaskChecklistService _checklistService;
 
     public TransitionTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        IChecklistRunRepository checklists,
+        ITaskChecklistService checklistService)
     {
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
+        _checklists = checklists;
+        _checklistService = checklistService;
     }
 
     public async Task<Response<NoContent>> Handle(TransitionTaskItemCommand command, CancellationToken ct)
@@ -185,6 +191,24 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             return Response<NoContent>.Fail(
                 "This transition is not allowed in the task's current state.",
                 409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        // Checklist gate, enforced HERE and not only in the projection: the projection disables the button, but a
+        // caller can post straight to this endpoint. Hiding a control is presentation; refusing the write is the
+        // rule (pack §12 E1).
+        //
+        // Only Blocking items gate completion. An unfinished `Required` item is an expectation, not a barrier —
+        // and open SUBTASKS never gate it at all, because two competing blocking mechanisms make "why can't I
+        // finish this?" unanswerable.
+        if (command.Target == TaskLifecycle.Done)
+        {
+            var checklist = await _checklists.GetByTaskIdAsync(task.Id, ct);
+            if (_checklistService.BlocksCompletion(checklist))
+            {
+                return Response<NoContent>.Fail(
+                    "A blocking checklist item is still open.",
+                    409, TaskReasonCodes.ChecklistIncomplete, command.CorrelationId);
+            }
         }
 
         task.Lifecycle = command.Target;
@@ -212,6 +236,40 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                 409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
 
+        if (command.Target == TaskLifecycle.Cancelled)
+        {
+            await CancelOpenSubtasksAsync(task, command, ct);
+        }
+
         return Response<NoContent>.Success(204, command.CorrelationId);
+    }
+
+    /// <summary>
+    /// Cancelling a parent cancels its still-open subtasks.
+    ///
+    /// <para>A subtask exists to serve its parent, so leaving it open would strand work in someone's İşlerim with
+    /// no remaining reason to do it — and the person holding it has no way to discover the parent was called off.
+    /// Subtasks already FINISHED (Done) or already Cancelled are left untouched: history is not rewritten.</para>
+    ///
+    /// <para>Best effort per child: one child losing an expected-version race must not fail the parent's
+    /// cancellation, which already committed above.</para>
+    /// </summary>
+    private async Task CancelOpenSubtasksAsync(TaskItem parent, TransitionTaskItemCommand command, CancellationToken ct)
+    {
+        var children = await _tasks.ListByParentAsync(parent.Id, ct);
+        foreach (var child in children)
+        {
+            if (child.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+            {
+                continue;
+            }
+
+            child.Lifecycle = TaskLifecycle.Cancelled;
+            child.CancelledAt = DateTimeOffset.UtcNow;
+            child.ClosureReasonCode = command.Request.ReasonCode;
+            child.UpdatedBy = _currentUser.ActorName;
+
+            await _tasks.UpdateAsync(child, child.Version, ct);
+        }
     }
 }

@@ -1219,4 +1219,16 @@
   <data name="PlannedDateNone" xml:space="preserve">
     <value>Plan tarihi yok</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
+    <value>Tamamlanmamış zorunlu bir kontrol listesi maddesi var.</value>
+  </data>
+  <data name="SubtasksOpenNotice" xml:space="preserve">
+    <value>Bu görevin açık alt görevleri var. Tamamlamayı engellemezler.</value>
+  </data>
+  <data name="ChecklistEmpty" xml:space="preserve">
+    <value>Henüz kontrol listesi maddesi yok.</value>
+  </data>
+  <data name="SubtasksEmpty" xml:space="preserve">
+    <value>Henüz alt görev yok.</value>
+  </data>
 </root>

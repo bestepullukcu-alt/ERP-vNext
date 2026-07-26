@@ -553,8 +553,48 @@ proxy returns 503 — a release blocker.
 - [ ] All 7 resx files share one key set; no raw key rendered.
 
 ### Phase 2 — checklist / subtask / template
-- [ ] Required+blocking checklist item disables `complete` with `CHECKLIST_INCOMPLETE`.
-- [ ] Subtasks behave as `full`; a task template instantiates its checklist.
+- [x] Required+blocking checklist item disables `complete` with `CHECKLIST_INCOMPLETE`.
+- [x] Subtasks behave as `full`; a task template instantiates its checklist.
+
+> **As built (2026-07-26) — BACKEND COMPLETE, frontend wiring outstanding (see below).**
+>
+> **E2 — a subtask IS a `TaskItem`** carrying `ParentTaskItemId`, not a lighter sibling entity. It therefore gets
+> its own lifecycle, assignment (self/person/pool), dates and projected actions from the same code path; a
+> separate type would mean a second, half-featured engine that would need assignment, then dates, then actions.
+> **One level only**, enforced server-side (`SUBTASK_DEPTH_EXCEEDED`) — deeper hierarchies belong to the source
+> system the Task Center deep-links to. A subtask appears BOTH as its own row (it is assigned to someone) and
+> inside its parent's `subtasks` container, which carries `parentTaskItemId` so the shell can show the context.
+>
+> **Open subtasks do NOT block the parent.** Blocking belongs to the checklist alone; two competing mechanisms
+> make "why can't I finish this?" unanswerable. Guarded by a regression test.
+>
+> **Parent cancellation cascades to OPEN children** (Open/Planned/InProgress/Waiting/PendingReview → Cancelled),
+> and leaves `Done`/`Cancelled` children untouched — a subtask exists to serve its parent, so leaving it open
+> strands work nobody can contextualize, but cancellation never rewrites finished history. Per-child best effort:
+> one child losing a version race cannot fail the parent's already-committed cancellation.
+>
+> **E1 — the checklist gate is enforced on the SERVER** (`TransitionTaskItemHandler`, target `Done` →
+> 409 `CHECKLIST_INCOMPLETE`), with the projection disabling `complete` as a *hint*. Disabling a control is
+> presentation; refusing the write is the rule. Only `Blocking` gates — `Required` is an expectation.
+>
+> **Label duality.** `ChecklistTemplateItem`/`ChecklistRunItem` now carry `LabelResourceKey` **or** `LabelText`,
+> exactly one set. System/tenant template text keeps a resource key so it localizes; text a user typed is stored
+> and projected as a **display** label. Routing user text through a resource key is what put a raw key on screen
+> for task titles, and it is precluded here by construction.
+>
+> **Capability ⇔ container.** `checklist` is declared only when a run exists (data-driven); `subtasks` is declared
+> for every top-level task even with no children, because the shell needs the container to offer "add a subtask" —
+> and a subtask never declares it. Both directions are tested.
+>
+> **Reads are batched** (`ListByTaskIdsAsync`, `ListByParentsAsync`): the projection renders a page, so per-task
+> reads would be an N+1.
+>
+> ⏳ **Outstanding for this slice:** the WorkCenterNext `renderChecklist`/`renderSubtasks` blocks still render from
+> the mock shape and are not yet wired to the new endpoints
+> (`POST {id}/checklist/items`, `POST {id}/checklist/items/state`, `POST /from-template`, and subtask creation via
+> `POST /` with `parentTaskItemId`), together with their Diten.Web proxy routes, the camelCase Tasks resx keys for
+> the subtask adder, and the frontend tests. No gateway change is needed — `/api/v1/tasks/{everything}` already
+> covers every new route.
 
 ### Phase 3 — approval/review via MOD-0023
 - [ ] Toggling approval starts a MOD-0023 instance; MOD-0024 stores no approval state.

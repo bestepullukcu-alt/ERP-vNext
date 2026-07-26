@@ -1219,4 +1219,16 @@
   <data name="PlannedDateNone" xml:space="preserve">
     <value>Non planifié</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
+    <value>Un élément bloquant de la liste de contrôle est encore ouvert.</value>
+  </data>
+  <data name="SubtasksOpenNotice" xml:space="preserve">
+    <value>Cette tâche a encore des sous-tâches ouvertes. Elles ne bloquent pas l'achèvement.</value>
+  </data>
+  <data name="ChecklistEmpty" xml:space="preserve">
+    <value>Aucun élément de liste de contrôle.</value>
+  </data>
+  <data name="SubtasksEmpty" xml:space="preserve">
+    <value>Aucune sous-tâche.</value>
+  </data>
 </root>

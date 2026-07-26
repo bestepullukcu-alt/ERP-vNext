@@ -184,7 +184,8 @@ public sealed class TaskActionRoundTripTests
         // The expected version comes from the PROJECTION's concurrency token, exactly as the browser sends it.
         var expectedVersion = int.Parse(projection.Concurrency.Token);
         var handler = new TransitionTaskItemHandler(
-            repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me));
+            repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
+            new FakeChecklistRunRepository(), new TaskChecklistService());
 
         return handler.Handle(
             new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
@@ -199,7 +200,8 @@ public sealed class TaskActionRoundTripTests
             holder is null ? new FakePositionAssignmentRepository() : new FakePositionAssignmentRepository(holder),
             new TaskLifecycleService(),
             new TaskAssignmentResolver(),
-            new FakeUserDisplayNameResolver());
+            new FakeUserDisplayNameResolver(),
+            new FakeChecklistRunRepository());
 
     /// <summary>An actor holding everything the provider declares, so permissions never mask a placement bug.</summary>
     private static WorkItemActor FullyPermittedActor()

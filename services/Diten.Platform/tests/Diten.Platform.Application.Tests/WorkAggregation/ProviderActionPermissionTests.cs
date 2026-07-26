@@ -188,7 +188,8 @@ public sealed class ProviderActionPermissionTests
             positionAssignments ?? new FakePositionAssignmentRepository(),
             new Application.Features.Tasks.Services.TaskLifecycleService(),
             new Application.Features.Tasks.Services.TaskAssignmentResolver(),
-            new Tasks.FakeUserDisplayNameResolver());
+            new Tasks.FakeUserDisplayNameResolver(),
+            new Tasks.FakeChecklistRunRepository());
 
     private static WorkItemActor GrantedActor(IEnumerable<string> permissions)
         => new(TaskTestData.Me, IsPlatformActor: false,

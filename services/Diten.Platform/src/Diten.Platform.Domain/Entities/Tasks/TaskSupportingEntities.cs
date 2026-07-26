@@ -114,10 +114,26 @@ public sealed class ChecklistTemplate : TenantScopedEntity
     public DateTimeOffset? DeletedAt { get; set; }
 }
 
+/// <summary>
+/// A checklist item's text comes from exactly ONE of two sources, and conflating them is how a raw resource key
+/// reaches the screen (it already happened once with task titles):
+/// <list type="bullet">
+/// <item><see cref="LabelResourceKey"/> — a SYSTEM or tenant template item. The text is ours, it is the same for
+/// every tenant, and it must localize into all seven languages.</item>
+/// <item><see cref="LabelText"/> — an AD-HOC item a user typed on this task. It is the user's own words in the
+/// language they chose; there is no resource key and inventing one would render the key itself.</item>
+/// </list>
+/// Exactly one is set. The projection emits the matching contract label form (resource vs display).
+/// </summary>
 public sealed class ChecklistTemplateItem
 {
     public required string Code { get; set; }
-    public required string LabelResourceKey { get; set; }
+
+    /// <summary>Set for system/tenant template text that must localize. Null when <see cref="LabelText"/> is used.</summary>
+    public string? LabelResourceKey { get; set; }
+
+    /// <summary>Set for text an author typed. Null when <see cref="LabelResourceKey"/> is used.</summary>
+    public string? LabelText { get; set; }
     public ChecklistItemRequirement Requirement { get; set; } = ChecklistItemRequirement.Optional;
     public int SortOrder { get; set; }
 
@@ -135,10 +151,16 @@ public sealed class ChecklistRun : TenantScopedEntity
     public DateTimeOffset? DeletedAt { get; set; }
 }
 
+/// <summary>An item on a task's live checklist. Label rules mirror <see cref="ChecklistTemplateItem"/>.</summary>
 public sealed class ChecklistRunItem
 {
     public required string Code { get; set; }
-    public required string LabelResourceKey { get; set; }
+
+    /// <summary>Localizable text from a template. Null for an ad-hoc item.</summary>
+    public string? LabelResourceKey { get; set; }
+
+    /// <summary>Text the user typed on this task. Null for a template item.</summary>
+    public string? LabelText { get; set; }
     public ChecklistItemRequirement Requirement { get; set; } = ChecklistItemRequirement.Optional;
     public int SortOrder { get; set; }
     public bool EvidenceRequired { get; set; }

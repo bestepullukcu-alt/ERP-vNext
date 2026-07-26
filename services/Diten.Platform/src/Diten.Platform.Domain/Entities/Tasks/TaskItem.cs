@@ -77,6 +77,24 @@ public sealed class TaskItem : TenantScopedEntity
     /// <summary>Policy flag only. Delegation ELIGIBILITY remains MOD-0018's decision (pack §12 Y5).</summary>
     public bool DelegationAllowed { get; set; }
 
+    // ── Subtasks (Phase 2 — pack §12 E2) ─────────────────────────────────────
+
+    /// <summary>
+    /// The parent this task is a subtask of, or null for a top-level task.
+    ///
+    /// <para>A subtask is a FULL <see cref="TaskItem"/>, not a lighter sibling type: it keeps its own lifecycle,
+    /// its own assignment (self / person / pool), its own dates and its own projected actions, all through the
+    /// same code path. A separate lightweight entity would mean writing a second, half-featured engine —
+    /// and then discovering it needs assignment, then dates, then actions.</para>
+    ///
+    /// <para><b>One level only.</b> A task carrying a parent may not itself be a parent; the server enforces it.
+    /// Deeper hierarchies are the source system's business, which the Task Center deep-links to.</para>
+    ///
+    /// <para>Open subtasks do NOT block the parent's <c>complete</c> — blocking semantics belong to the
+    /// checklist, and two competing blocking mechanisms would make "why can't I finish this?" unanswerable.</para>
+    /// </summary>
+    public Guid? ParentTaskItemId { get; set; }
+
     // ── Recurrence (Phase 4 behaviour; schema now) ───────────────────────────
     public Guid? RecurrenceRuleId { get; set; }
 

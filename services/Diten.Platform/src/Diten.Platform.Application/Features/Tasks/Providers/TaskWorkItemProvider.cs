@@ -33,25 +33,29 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string ActionCancelKey = "WorkAggregation_Action_Cancel";
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
+    private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
 
     private readonly ITaskItemRepository _tasks;
     private readonly IPositionAssignmentRepository _positionAssignments;
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ITaskAssignmentResolver _assignmentResolver;
     private readonly IUserDisplayNameResolver _displayNames;
+    private readonly IChecklistRunRepository _checklistRuns;
 
     public TaskWorkItemProvider(
         ITaskItemRepository tasks,
         IPositionAssignmentRepository positionAssignments,
         ITaskLifecycleService lifecycle,
         ITaskAssignmentResolver assignmentResolver,
-        IUserDisplayNameResolver displayNames)
+        IUserDisplayNameResolver displayNames,
+        IChecklistRunRepository checklistRuns)
     {
         _tasks = tasks;
         _positionAssignments = positionAssignments;
         _lifecycle = lifecycle;
         _assignmentResolver = assignmentResolver;
         _displayNames = displayNames;
+        _checklistRuns = checklistRuns;
     }
 
     public string ProviderCode => TaskProviderCode;
@@ -96,15 +100,36 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .ToList();
         var displayNames = await _displayNames.ResolveAsync(userIds, ct);
 
+        // Phase 2 containers, both batched: one read for every task's checklist and one for every task's
+        // children. Per-task reads here would be an N+1 over the whole page.
+        var taskIds = tasks.Select(t => t.Id).ToList();
+        var checklistByTask = (await _checklistRuns.ListByTaskIdsAsync(taskIds, ct))
+            .GroupBy(run => run.TaskItemId)
+            .ToDictionary(group => group.Key, group => group.First());
+
+        // Only TOP-LEVEL tasks can have children (one level only), so nothing else needs asking about.
+        var parentIds = tasks.Where(t => t.ParentTaskItemId is null).Select(t => t.Id).ToList();
+        var childrenByParent = (await _tasks.ListByParentsAsync(parentIds, ct))
+            .Where(child => child.ParentTaskItemId is not null)
+            .GroupBy(child => child.ParentTaskItemId!.Value)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskItem>)group.ToList());
+
         return tasks
-            .Select(t => Project(t, actor, displayNames))
+            .Select(t => Project(
+                t,
+                actor,
+                displayNames,
+                checklistByTask.GetValueOrDefault(t.Id),
+                childrenByParent.GetValueOrDefault(t.Id, [])))
             .ToList();
     }
 
     private WorkItemProjectionDto Project(
         TaskItem task,
         WorkItemActor actor,
-        IReadOnlyDictionary<Guid, string> displayNames)
+        IReadOnlyDictionary<Guid, string> displayNames,
+        ChecklistRun? checklist,
+        IReadOnlyList<TaskItem> children)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(task);
@@ -112,9 +137,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         var terminal = _lifecycle.IsTerminal(task);
 
         // A terminal task exposes NO state-changing action (contract rule), so placement is empty too.
+        // A blocking checklist item makes completion unavailable. Shown DISABLED with the reason rather than
+        // hidden — and the server refuses the write too, so this is a hint, never the enforcement.
+        var checklistBlocks = ChecklistBlocksCompletion(checklist);
+
         var (actions, primaryActionCode, overflowActionCodes) = terminal
             ? ([], null, (IReadOnlyList<string>)[])
-            : BuildActions(task, actor);
+            : BuildActions(task, actor, checklistBlocks);
 
         return new WorkItemProjectionDto(
             FixtureKind: WorkItemContract.FixtureKindWorkItem,
@@ -147,7 +176,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 DeepLink: $"/Tasks/{task.Id}"),
             // MOD-0024 IS the lifecycle owner here (unlike a workflow-gated business object).
             LifecycleOwner: TaskProviderCode,
-            WorkItemCapabilities: ResolveCapabilities(task),
+            WorkItemCapabilities: ResolveCapabilities(task, checklist, children),
             Actions: actions,
             Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
             WaitingContext: waiting is null
@@ -159,7 +188,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             OverflowActionCodes: overflowActionCodes,
             // An unclaimed pool task genuinely has no assignee — omit rather than invent one.
             Assignee: Person(task.AssigneeUserId, actor, displayNames),
-            Requester: Person(task.CreatedByUserId, actor, displayNames));
+            Requester: Person(task.CreatedByUserId, actor, displayNames),
+            // Container ⇔ capability, both directions: emitted only when declared, and then even if empty.
+            Checklist: checklist is null ? null : ToChecklist(checklist),
+            Subtasks: task.ParentTaskItemId is null ? ToSubtasks(children) : null,
+            ParentTaskItemId: task.ParentTaskItemId?.ToString());
     }
 
     /// <summary>
@@ -196,7 +229,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// planning/execution plus businessContext when configurable values are present. Checklist/subtasks arrive
     /// with Phase 2 — declaring them now would render empty blocks.
     /// </summary>
-    private static IReadOnlyList<string> ResolveCapabilities(TaskItem task)
+    private static IReadOnlyList<string> ResolveCapabilities(
+        TaskItem task,
+        ChecklistRun? checklist,
+        IReadOnlyList<TaskItem> children)
     {
         var capabilities = new List<string> { "planning", "execution" };
         if (task.FieldValues.Count > 0)
@@ -204,8 +240,57 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             capabilities.Add("businessContext");
         }
 
+        // Declared only when the container will be emitted — the contract rejects either half alone.
+        if (checklist is not null)
+        {
+            capabilities.Add("checklist");
+        }
+
+        // A subtask cannot have subtasks, so it never declares the capability; a parent always may, even with
+        // no children yet, because the shell offers "add a subtask" there.
+        if (task.ParentTaskItemId is null)
+        {
+            capabilities.Add("subtasks");
+        }
+
         return capabilities;
     }
+
+    /// <summary>
+    /// Checklist items keep the label FORM they were authored with: a template item stays a resource key so it
+    /// localizes, an ad-hoc item the user typed becomes display text. Emitting a resource label for typed text is
+    /// what puts a raw key on screen.
+    /// </summary>
+    private static WorkItemChecklistDto ToChecklist(ChecklistRun run)
+        => new(run.Items
+            .OrderBy(item => item.SortOrder)
+            .Select(item => new WorkItemChecklistItemDto(
+                Id: item.Code,
+                Label: item.LabelResourceKey is { Length: > 0 } key
+                    ? WorkItemLabelDto.Resource(key)
+                    : WorkItemLabelDto.Display(item.LabelText ?? string.Empty),
+                Completed: item.Completed,
+                Required: item.Requirement != ChecklistItemRequirement.Optional,
+                Blocking: item.Requirement == ChecklistItemRequirement.Blocking,
+                EvidenceRequired: item.EvidenceRequired))
+            .ToList());
+
+    /// <summary>
+    /// Subtasks in the contract's own vocabulary. MOD-0024 is their source, so the mode is `full`: they are
+    /// created and completed here rather than deep-linked elsewhere.
+    /// </summary>
+    private static WorkItemSubtasksDto ToSubtasks(IReadOnlyList<TaskItem> children)
+        => new("full", children
+            .Select(child => new WorkItemSubtaskDto(
+                Id: child.Id.ToString(),
+                Title: child.Title,
+                Status: child.Lifecycle switch
+                {
+                    TaskLifecycle.Done => "done",
+                    TaskLifecycle.InProgress or TaskLifecycle.PendingReview or TaskLifecycle.Waiting => "in-progress",
+                    _ => "not-started"
+                }))
+            .ToList());
 
     private static string ResolveExecutionState(TaskItem task) => task.Lifecycle switch
     {
@@ -227,8 +312,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <para>Phase 2+ commands (pause/resume/logTime) and Phase 3 (requestInfo/signoff/return) are deliberately
     /// absent: projecting an action with no endpoint behind it is how the mock era misled users.</para>
     /// </remarks>
+    /// <summary>
+    /// Mirrors <c>ITaskChecklistService.BlocksCompletion</c>. Only <c>Blocking</c> items gate completion; a
+    /// <c>Required</c> item is an expectation.
+    /// </summary>
+    private static bool ChecklistBlocksCompletion(ChecklistRun? checklist)
+        => checklist is not null
+           && checklist.Items.Any(i => i.Requirement == ChecklistItemRequirement.Blocking && !i.Completed);
+
     private static (IReadOnlyList<WorkItemActionDto> Actions, string? Primary, IReadOnlyList<string> Overflow)
-        BuildActions(TaskItem task, WorkItemActor actor)
+        BuildActions(TaskItem task, WorkItemActor actor, bool checklistBlocks)
     {
         var actions = new List<WorkItemActionDto>();
         string? primary = null;
@@ -267,8 +360,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
             if (task.Lifecycle is TaskLifecycle.InProgress)
             {
-                actions.Add(Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
-                    requiresConfirmation: true));
+                actions.Add(checklistBlocks
+                    ? Disabled("complete", ActionCompleteKey,
+                        TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                    : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
+                        requiresConfirmation: true));
                 primary = "complete";
             }
         }

@@ -97,6 +97,21 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
             .Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted && x.AssigneeUserId == userId)
             .ToList());
 
+    public Task<IReadOnlyList<TaskItem>> ListByParentAsync(Guid parentTaskItemId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskItem>>(_items
+            .Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted && x.ParentTaskItemId == parentTaskItemId)
+            .Select(Detach)
+            .ToList());
+
+    public Task<IReadOnlyList<TaskItem>> ListByParentsAsync(
+        IReadOnlyCollection<Guid> parentTaskItemIds,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskItem>>(_items
+            .Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted
+                        && x.ParentTaskItemId is not null && parentTaskItemIds.Contains(x.ParentTaskItemId.Value))
+            .Select(Detach)
+            .ToList());
+
     public Task<IReadOnlyList<TaskItem>> ListUnclaimedByPositionsAsync(
         IReadOnlyCollection<Guid> positionIds,
         CancellationToken ct = default)
@@ -301,4 +316,62 @@ internal sealed class FakeUserDisplayNameResolver(params (Guid Id, string Name)[
 
         return Task.FromResult(result);
     }
+}
+
+/// <summary>Checklist runs, with the tenant filter and the conditional write the real repository performs.</summary>
+internal sealed class FakeChecklistRunRepository(params ChecklistRun[] seed) : IChecklistRunRepository
+{
+    private readonly List<ChecklistRun> _runs = [.. seed];
+
+    public IReadOnlyList<ChecklistRun> Runs => _runs;
+
+    public Task<ChecklistRun> CreateAsync(ChecklistRun run, CancellationToken ct = default)
+    {
+        _runs.Add(run);
+        return Task.FromResult(run);
+    }
+
+    public Task<ChecklistRun?> GetByTaskIdAsync(Guid taskItemId, CancellationToken ct = default)
+        => Task.FromResult(_runs.FirstOrDefault(
+            x => x.TaskItemId == taskItemId && x.TenantId == TaskTestData.Tenant && !x.IsDeleted));
+
+    public Task<IReadOnlyList<ChecklistRun>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default)
+    {
+        CallCount++;
+        return Task.FromResult<IReadOnlyList<ChecklistRun>>(_runs
+            .Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted && taskItemIds.Contains(x.TaskItemId))
+            .ToList());
+    }
+
+    /// <summary>Batch reads issued — the N+1 assertion reads this.</summary>
+    public int CallCount { get; private set; }
+
+    public Task<bool> UpdateAsync(ChecklistRun run, int expectedVersion, CancellationToken ct = default)
+    {
+        var stored = _runs.FirstOrDefault(x => x.Id == run.Id && x.TenantId == TaskTestData.Tenant);
+        if (stored is null || stored.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
+        stored.Version = expectedVersion + 1;
+        stored.Items = run.Items;
+        stored.Status = run.Status;
+        return Task.FromResult(true);
+    }
+}
+
+internal sealed class FakeChecklistTemplateRepository(params ChecklistTemplate[] seed) : IChecklistTemplateRepository
+{
+    public Task<ChecklistTemplate> CreateAsync(ChecklistTemplate template, CancellationToken ct = default)
+        => Task.FromResult(template);
+
+    public Task<ChecklistTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(seed.FirstOrDefault(x => x.Id == id && x.TenantId == TaskTestData.Tenant));
+
+    public Task<IReadOnlyList<ChecklistTemplate>> ListActiveAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ChecklistTemplate>>(
+            seed.Where(x => x.TenantId == TaskTestData.Tenant && x.IsActive).ToList());
 }

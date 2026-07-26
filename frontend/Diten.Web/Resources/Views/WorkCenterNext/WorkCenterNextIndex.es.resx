@@ -1219,4 +1219,16 @@
   <data name="PlannedDateNone" xml:space="preserve">
     <value>Sin planificar</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
+    <value>Queda un elemento bloqueante de la lista de verificación.</value>
+  </data>
+  <data name="SubtasksOpenNotice" xml:space="preserve">
+    <value>Esta tarea todavía tiene subtareas abiertas. No impiden completarla.</value>
+  </data>
+  <data name="ChecklistEmpty" xml:space="preserve">
+    <value>Aún no hay elementos de verificación.</value>
+  </data>
+  <data name="SubtasksEmpty" xml:space="preserve">
+    <value>Aún no hay subtareas.</value>
+  </data>
 </root>

@@ -40,3 +40,25 @@ public sealed record TransitionTaskItemCommand(
     TaskLifecycle Target,
     TaskTransitionRequest Request,
     string CorrelationId) : IRequest<Response<NoContent>>;
+
+// ── Phase 2: checklist (pack §12 E1) ─────────────────────────────────────────
+
+/// <summary>Tick or untick one checklist item on a task.</summary>
+public sealed record SetChecklistItemStateCommand(
+    Guid TaskItemId,
+    SetChecklistItemStateRequest Request,
+    string CorrelationId) : IRequest<Response<NoContent>>;
+
+/// <summary>
+/// Add an AD-HOC item to a task's checklist — text the user typed, so it carries display text and never a
+/// resource key (a key would render as itself).
+/// </summary>
+public sealed record AddChecklistItemCommand(
+    Guid TaskItemId,
+    AddChecklistItemRequest Request,
+    string CorrelationId) : IRequest<Response<NoContent>>;
+
+/// <summary>Create a task from a reusable template, instantiating its checklist too (pack §12 E5).</summary>
+public sealed record CreateTaskItemFromTemplateCommand(
+    CreateTaskFromTemplateRequest Request,
+    string CorrelationId) : IRequest<Response<Guid>>;

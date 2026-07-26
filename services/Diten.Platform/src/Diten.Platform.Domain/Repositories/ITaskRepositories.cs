@@ -15,6 +15,17 @@ public interface ITaskItemRepository
     /// <summary>Tasks the user holds (assignee), regardless of lifecycle.</summary>
     Task<IReadOnlyList<TaskItem>> ListByAssigneeAsync(Guid userId, CancellationToken ct = default);
 
+    /// <summary>Subtasks of a parent task (Phase 2 — pack §12 E2). One level only, so this never recurses.</summary>
+    Task<IReadOnlyList<TaskItem>> ListByParentAsync(Guid parentTaskItemId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Subtasks of MANY parents in one read. The projection renders a page of tasks, and fetching children per
+    /// task would be an N+1 against Mongo.
+    /// </summary>
+    Task<IReadOnlyList<TaskItem>> ListByParentsAsync(
+        IReadOnlyCollection<Guid> parentTaskItemIds,
+        CancellationToken ct = default);
+
     /// <summary>Unclaimed pool tasks offered to any of the supplied positions.</summary>
     Task<IReadOnlyList<TaskItem>> ListUnclaimedByPositionsAsync(
         IReadOnlyCollection<Guid> positionIds,
@@ -71,6 +82,11 @@ public interface IChecklistRunRepository
 {
     Task<ChecklistRun> CreateAsync(ChecklistRun run, CancellationToken ct = default);
     Task<ChecklistRun?> GetByTaskIdAsync(Guid taskItemId, CancellationToken ct = default);
+
+    /// <summary>Runs for MANY tasks in one read — same N+1 reason as ListByParentsAsync.</summary>
+    Task<IReadOnlyList<ChecklistRun>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default);
     Task<bool> UpdateAsync(ChecklistRun run, int expectedVersion, CancellationToken ct = default);
 }
 

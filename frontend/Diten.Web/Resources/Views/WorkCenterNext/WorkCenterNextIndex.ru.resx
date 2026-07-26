@@ -1219,4 +1219,16 @@
   <data name="PlannedDateNone" xml:space="preserve">
     <value>Не запланировано</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
+    <value>Остался незавершённый обязательный пункт чек-листа.</value>
+  </data>
+  <data name="SubtasksOpenNotice" xml:space="preserve">
+    <value>У задачи есть незавершённые подзадачи. Они не мешают её завершить.</value>
+  </data>
+  <data name="ChecklistEmpty" xml:space="preserve">
+    <value>Пунктов чек-листа пока нет.</value>
+  </data>
+  <data name="SubtasksEmpty" xml:space="preserve">
+    <value>Подзадач пока нет.</value>
+  </data>
 </root>

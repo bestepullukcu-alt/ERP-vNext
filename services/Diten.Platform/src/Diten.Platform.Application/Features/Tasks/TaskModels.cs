@@ -39,6 +39,18 @@ public static class TaskReasonCodes
     public const string FieldValueInvalid = "TASK_FIELD_VALUE_INVALID";
     public const string FieldLimitExceeded = "TASK_FIELD_LIMIT_EXCEEDED";
     public const string ChecklistIncomplete = "CHECKLIST_INCOMPLETE";
+
+    /// <summary>A subtask may not itself have subtasks — one level only (pack §12 E2).</summary>
+    public const string SubtaskDepthExceeded = "SUBTASK_DEPTH_EXCEEDED";
+
+    /// <summary>The parent task does not exist, or belongs to another tenant.</summary>
+    public const string ParentTaskNotFound = "PARENT_TASK_NOT_FOUND";
+
+    /// <summary>The referenced checklist or task template is missing/inactive.</summary>
+    public const string TemplateNotFound = "TASK_TEMPLATE_NOT_FOUND";
+
+    /// <summary>The checklist item code does not exist on this task's run.</summary>
+    public const string ChecklistItemNotFound = "CHECKLIST_ITEM_NOT_FOUND";
     public const string DependencyInvalid = "TASK_DEPENDENCY_INVALID";
 }
 
@@ -97,7 +109,12 @@ public sealed record CreateTaskItemRequest(
     bool EmailNotificationsEnabled,
     bool DelegationAllowed,
     IReadOnlyList<TaskFieldValueDto>? FieldValues,
-    IReadOnlyList<TaskWatcherRequest>? Watchers);
+    IReadOnlyList<TaskWatcherRequest>? Watchers,
+    // Phase 2: present when this task is created AS a subtask of another. Optional and trailing so every
+    // Phase-1 caller and payload stays valid.
+    Guid? ParentTaskItemId = null,
+    /// <summary>Instantiate this checklist template onto the new task (pack §12 E1/E5).</summary>
+    Guid? ChecklistTemplateId = null);
 
 public sealed record UpdateTaskItemRequest(
     string Title,
@@ -124,6 +141,27 @@ public sealed record BulkDeleteTaskItemRequest(IReadOnlyList<Guid> Ids);
 public sealed record ClaimTaskItemRequest(int ExpectedVersion);
 
 public sealed record TaskTransitionRequest(int ExpectedVersion, string? ReasonCode, string? Note);
+
+/// <summary>Tick/untick one checklist item. ExpectedVersion guards the RUN, not the task.</summary>
+public sealed record SetChecklistItemStateRequest(string ItemCode, bool Completed, int ExpectedVersion);
+
+/// <summary>
+/// Add an item the user typed. There is no resource key here on purpose: user text is not translatable content,
+/// and routing it through a key is what puts the key itself on screen.
+/// </summary>
+public sealed record AddChecklistItemRequest(
+    string Text,
+    ChecklistItemRequirement Requirement,
+    int ExpectedVersion);
+
+/// <summary>Create from a template; the template supplies the shape and (optionally) the checklist.</summary>
+public sealed record CreateTaskFromTemplateRequest(
+    Guid TaskTemplateId,
+    string? TitleOverride,
+    DateTimeOffset? DueAt,
+    TaskAssignmentTarget? AssignmentTargetOverride,
+    Guid? AssigneeUserId,
+    Guid? PoolPositionId);
 
 // ── Responses ────────────────────────────────────────────────────────────────
 

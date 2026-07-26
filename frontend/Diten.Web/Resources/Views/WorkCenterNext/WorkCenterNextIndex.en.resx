@@ -1219,4 +1219,16 @@
   <data name="PlannedDateNone" xml:space="preserve">
     <value>Not planned</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
+    <value>A blocking checklist item is still open.</value>
+  </data>
+  <data name="SubtasksOpenNotice" xml:space="preserve">
+    <value>This task still has open subtasks. They do not block completion.</value>
+  </data>
+  <data name="ChecklistEmpty" xml:space="preserve">
+    <value>No checklist items yet.</value>
+  </data>
+  <data name="SubtasksEmpty" xml:space="preserve">
+    <value>No subtasks yet.</value>
+  </data>
 </root>

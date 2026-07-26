@@ -150,6 +150,41 @@ public sealed class TasksController : CustomBaseController
     /// Positions a task may be pooled to. Carries the organization unit code+name so the picker can render
     /// "QA Specialist — Facility A"; without that label pooled work silently reaches the wrong facility.
     /// </summary>
+    /// <summary>Create a task from a reusable template; its checklist is instantiated too (pack §12 E5).</summary>
+    [HttpPost("from-template")]
+    [HasPermission(TaskPermissions.Create)]
+    public async Task<IActionResult> CreateFromTemplate(
+        [FromBody] CreateTaskFromTemplateRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new CreateTaskItemFromTemplateCommand(request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    // ── Phase 2: checklist (pack §12 E1) ─────────────────────────────────────
+
+    /// <summary>
+    /// Tick or untick a checklist item. Guarded by UPDATE, not COMPLETE: ticking an item is progress on the
+    /// task, not the act of finishing it.
+    /// </summary>
+    [HttpPost("{id:guid}/checklist/items/state")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> SetChecklistItemState(
+        Guid id, [FromBody] SetChecklistItemStateRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new SetChecklistItemStateCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>Add an ad-hoc checklist item (the user's own words — stored as text, never a resource key).</summary>
+    [HttpPost("{id:guid}/checklist/items")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> AddChecklistItem(
+        Guid id, [FromBody] AddChecklistItemRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new AddChecklistItemCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("lookups/assignable-positions")]
     [HasPermission(TaskPermissions.Create)]
     public async Task<IActionResult> GetAssignablePositions(CancellationToken ct)

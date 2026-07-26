@@ -1219,4 +1219,16 @@
   <data name="PlannedDateNone" xml:space="preserve">
     <value>未计划</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
+    <value>仍有未完成的必办清单项。</value>
+  </data>
+  <data name="SubtasksOpenNotice" xml:space="preserve">
+    <value>此任务仍有未完成的子任务，但不会阻止完成。</value>
+  </data>
+  <data name="ChecklistEmpty" xml:space="preserve">
+    <value>暂无清单项。</value>
+  </data>
+  <data name="SubtasksEmpty" xml:space="preserve">
+    <value>暂无子任务。</value>
+  </data>
 </root>
