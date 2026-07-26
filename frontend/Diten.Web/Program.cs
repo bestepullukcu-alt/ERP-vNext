@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -198,90 +197,25 @@ var validatedTokenParameters = new TokenValidationParameters
     ClockSkew = TimeSpan.FromSeconds(30)
 };
 
-// FE-A-harden (A3): single-flight the eager refresh. Concurrent requests from the same browser carry
-// the SAME (expired access, rotating refresh) cookies; without this, each would call refresh, the
-// first rotates the refresh token, and the others fail with a now-invalid token and log the user out.
-// Keyed by the old refresh token: all concurrent callers await ONE refresh task, then each writes the
-// resulting new tokens to its own response. (Cookie writes stay per-request; only the gateway call is shared.)
-var refreshInFlight = new ConcurrentDictionary<string, Lazy<Task<AuthBridgeResult>>>();
+// FE-A-harden (A3): single-flight the eager refresh, and MOD-0014's token→User bridge. Both live in
+// Services/Auth/TokenBridge.cs so they can be tested — see that file for why the second pass must never
+// re-read the request token (it undid the refresh and logged the session out).
+// One instance per app: the in-flight refresh map has to be shared across requests to be single-flight at all.
+var tokenBridge = new TokenBridge();
 
-// MOD-0014: Validated Token-to-User State Bridge
+// MOD-0014 pass 1: validate, and refresh an expired token. Owns every cookie decision.
 app.Use(async (context, next) =>
 {
-    var accessToken = AuthTokenCookies.GetAccessToken(context.Request);
-    if (!string.IsNullOrEmpty(accessToken) && !ShouldSkipTokenBridgeRefresh(context.Request.Path))
+    if (!ShouldSkipTokenBridgeRefresh(context.Request.Path))
     {
-        var handler = new JwtSecurityTokenHandler();
-        try
-        {
-            var principal = handler.ValidateToken(accessToken, validatedTokenParameters, out _);
-            context.User = principal;
-        }
-        catch (SecurityTokenExpiredException)
-        {
-            var refreshToken = AuthTokenCookies.GetRefreshToken(context.Request);
-            if (string.IsNullOrWhiteSpace(refreshToken))
-            {
-                AuthTokenCookies.ClearTokens(context.Response);
-            }
-            else
-            {
-                var authGateway = context.RequestServices.GetRequiredService<IAuthGateway>();
-                var authCookieService = context.RequestServices.GetRequiredService<IAuthCookieService>();
-                var tenantId = TryReadTenantId(accessToken);
-                try
-                {
-                    // Single-flight: one shared refresh call per old refresh token (CancellationToken.None
-                    // so one request's cancellation does not abort the shared refresh); each caller then
-                    // writes the resulting tokens to its own response below.
-                    var refreshTask = refreshInFlight
-                        .GetOrAdd(refreshToken, _ => new Lazy<Task<AuthBridgeResult>>(
-                            () => authGateway.RefreshAsync(accessToken, refreshToken, tenantId, CancellationToken.None)))
-                        .Value;
-
-                    AuthBridgeResult refreshResult;
-                    try
-                    {
-                        refreshResult = await refreshTask;
-                    }
-                    finally
-                    {
-                        refreshInFlight.TryRemove(refreshToken, out _);
-                    }
-
-                    if (!refreshResult.Success ||
-                        string.IsNullOrWhiteSpace(refreshResult.AccessToken) ||
-                        string.IsNullOrWhiteSpace(refreshResult.RefreshToken) ||
-                        !refreshResult.ExpiresAt.HasValue)
-                    {
-                        if (refreshResult.ReauthRequired)
-                        {
-                            authCookieService.ClearTokens(context.Response);
-                        }
-                    }
-                    else
-                    {
-                        authCookieService.WriteTokens(
-                            context.Response,
-                            refreshResult.AccessToken,
-                            refreshResult.RefreshToken,
-                            refreshResult.ExpiresAt.Value);
-
-                        var principal = handler.ValidateToken(refreshResult.AccessToken, validatedTokenParameters, out _);
-                        context.User = principal;
-                    }
-                }
-                catch
-                {
-                    // Soft failure: do not clear tokens on transient exceptions
-                }
-            }
-        }
-        catch
-        {
-            AuthTokenCookies.ClearTokens(context.Response);
-        }
+        await tokenBridge.AuthenticateAsync(
+            context,
+            validatedTokenParameters,
+            context.RequestServices.GetRequiredService<IAuthGateway>(),
+            context.RequestServices.GetRequiredService<IAuthCookieService>(),
+            TryReadTenantId);
     }
+
     await next();
 });
 
@@ -305,24 +239,13 @@ app.UseRouting();
 
 app.UseAuthentication();
 
-// Keep JWT cookie based platform/tenant identity available after cookie auth runs.
+// MOD-0014 pass 2: cookie auth may have replaced context.User, so re-apply the principal pass 1 computed.
+// It re-applies ONLY — no re-validation, no cookie clearing. The request still carries the PRE-refresh token,
+// so any decision taken from it here would undo a refresh that just succeeded (which is exactly what happened:
+// the page rendered while every following API call was logged out).
 app.Use(async (context, next) =>
 {
-    var accessToken = AuthTokenCookies.GetAccessToken(context.Request);
-    if (!string.IsNullOrEmpty(accessToken) && !ShouldSkipTokenBridgeRefresh(context.Request.Path))
-    {
-        var handler = new JwtSecurityTokenHandler();
-        try
-        {
-            var principal = handler.ValidateToken(accessToken, validatedTokenParameters, out _);
-            context.User = principal;
-        }
-        catch
-        {
-            AuthTokenCookies.ClearTokens(context.Response);
-        }
-    }
-
+    tokenBridge.ReapplyPrincipal(context);
     await next();
 });
 

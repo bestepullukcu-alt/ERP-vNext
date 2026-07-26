@@ -1,0 +1,193 @@
+using System.Collections.Concurrent;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
+
+namespace Diten.Web.Services.Auth;
+
+/// <summary>
+/// MOD-0014 — the cookie-JWT → <see cref="HttpContext.User"/> bridge, and its eager refresh.
+///
+/// <para>Extracted from Program.cs so the behaviour can be tested: this is authentication, and the failure mode it
+/// fixes was silent — the page rendered while every subsequent API call was logged out.</para>
+///
+/// <para><b>The bug this class exists to prevent.</b> The bridge runs in TWO passes: <see cref="AuthenticateAsync"/>
+/// before <c>UseAuthentication()</c>, and <see cref="ReapplyPrincipal"/> after it (cookie auth can replace
+/// <c>context.User</c>). When the first pass REFRESHED an expired token it wrote the new cookies to the RESPONSE —
+/// <c>context.Request.Cookies</c> still held the expired one. The second pass re-read the request, saw the expired
+/// token, and cleared the cookies it had just been given. The browser kept a logged-out session while the page it
+/// was looking at rendered fine.</para>
+///
+/// <para><b>The rule that prevents its return:</b> the second pass never re-validates and never clears. The first
+/// pass is the single owner of every cookie decision; the second only re-applies the principal it already
+/// computed, handed over through <see cref="PrincipalItemKey"/>.</para>
+/// </summary>
+public sealed class TokenBridge
+{
+    /// <summary>Where pass 1 leaves the principal for pass 2. Also the signal that pass 1 already decided.</summary>
+    internal const string PrincipalItemKey = "Diten.TokenBridge.Principal";
+
+    /// <summary>
+    /// How long a COMPLETED refresh stays shareable.
+    ///
+    /// <para>AuthService rotates refresh tokens and treats reuse of a rotated one as theft — it revokes every
+    /// session the user has. Dropping the in-flight entry the instant the first caller finished meant a request
+    /// arriving milliseconds later (the browser still holding the old cookie, because the new one is only on a
+    /// response in flight) started a SECOND refresh with the same, now-rotated token — tripping reuse detection
+    /// and killing all sessions. Keeping the finished result briefly lets those stragglers reuse it instead.</para>
+    /// </summary>
+    internal static readonly TimeSpan CompletedRefreshGrace = TimeSpan.FromSeconds(30);
+
+    private readonly ConcurrentDictionary<string, Lazy<Task<AuthBridgeResult>>> _refreshInFlight = new();
+    private readonly TimeProvider _timeProvider;
+    private readonly ConcurrentDictionary<string, DateTimeOffset> _completedAt = new();
+
+    public TokenBridge(TimeProvider? timeProvider = null) => _timeProvider = timeProvider ?? TimeProvider.System;
+
+    /// <summary>Refresh calls actually issued — the single-flight and no-double-refresh assertions read this.</summary>
+    internal int RefreshCallCount;
+
+    /// <summary>
+    /// Pass 1: validate the access token, and if it has merely EXPIRED, refresh it once and adopt the new tokens.
+    /// This pass owns every cookie write and every cookie clear.
+    /// </summary>
+    public async Task AuthenticateAsync(
+        HttpContext context,
+        TokenValidationParameters validationParameters,
+        IAuthGateway authGateway,
+        IAuthCookieService authCookieService,
+        Func<string, Guid?> readTenantId)
+    {
+        var accessToken = AuthTokenCookies.GetAccessToken(context.Request);
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            return;
+        }
+
+        var handler = new JwtSecurityTokenHandler();
+        try
+        {
+            SetPrincipal(context, handler.ValidateToken(accessToken, validationParameters, out _));
+            return;
+        }
+        catch (SecurityTokenExpiredException)
+        {
+            // Fall through: expiry is the one failure that is recoverable.
+        }
+        catch (Exception)
+        {
+            // Malformed, wrong signature, wrong issuer/audience — not recoverable, and not a session we should
+            // keep. Deliberately narrow: this branch is NOT reached for expiry.
+            authCookieService.ClearTokens(context.Response);
+            return;
+        }
+
+        var refreshToken = AuthTokenCookies.GetRefreshToken(context.Request);
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            // Expired with nothing to refresh from: end the session cleanly rather than leaving a dead cookie.
+            authCookieService.ClearTokens(context.Response);
+            return;
+        }
+
+        try
+        {
+            var refreshResult = await RefreshOnceAsync(accessToken, refreshToken, readTenantId(accessToken), authGateway);
+
+            if (!refreshResult.Success ||
+                string.IsNullOrWhiteSpace(refreshResult.AccessToken) ||
+                string.IsNullOrWhiteSpace(refreshResult.RefreshToken) ||
+                !refreshResult.ExpiresAt.HasValue)
+            {
+                // Only a definitive "re-authenticate" ends the session. A transient failure leaves the cookies
+                // alone so the next request can try again.
+                if (refreshResult.ReauthRequired)
+                {
+                    authCookieService.ClearTokens(context.Response);
+                }
+
+                return;
+            }
+
+            authCookieService.WriteTokens(
+                context.Response,
+                refreshResult.AccessToken,
+                refreshResult.RefreshToken,
+                refreshResult.ExpiresAt.Value);
+
+            SetPrincipal(context, handler.ValidateToken(refreshResult.AccessToken, validationParameters, out _));
+        }
+        catch (Exception)
+        {
+            // Soft failure (network, gateway down): keep the cookies so the session survives a blip.
+        }
+    }
+
+    /// <summary>
+    /// Pass 2, after <c>UseAuthentication()</c>: restore the principal pass 1 computed.
+    ///
+    /// <para>It NEVER re-reads the request token and NEVER clears cookies. Both were the bug: the request still
+    /// carries the pre-refresh token, so any decision made from it undoes the refresh that just succeeded.</para>
+    /// </summary>
+    public void ReapplyPrincipal(HttpContext context)
+    {
+        if (context.Items.TryGetValue(PrincipalItemKey, out var stored) && stored is ClaimsPrincipal principal)
+        {
+            context.User = principal;
+        }
+    }
+
+    /// <summary>
+    /// One refresh per refresh-token, shared by concurrent callers and by stragglers inside the grace window.
+    /// </summary>
+    private async Task<AuthBridgeResult> RefreshOnceAsync(
+        string accessToken,
+        string refreshToken,
+        Guid? tenantId,
+        IAuthGateway authGateway)
+    {
+        EvictExpiredEntries();
+
+        var task = _refreshInFlight.GetOrAdd(refreshToken, _ => new Lazy<Task<AuthBridgeResult>>(() =>
+        {
+            Interlocked.Increment(ref RefreshCallCount);
+            // CancellationToken.None: one caller giving up must not abort a refresh others are awaiting.
+            return authGateway.RefreshAsync(accessToken, refreshToken, tenantId, CancellationToken.None);
+        })).Value;
+
+        try
+        {
+            return await task;
+        }
+        finally
+        {
+            // Stamp completion instead of removing: the entry stays reusable for the grace window above.
+            _completedAt[refreshToken] = _timeProvider.GetUtcNow();
+        }
+    }
+
+    private void EvictExpiredEntries()
+    {
+        if (_completedAt.IsEmpty)
+        {
+            return;
+        }
+
+        var now = _timeProvider.GetUtcNow();
+        foreach (var entry in _completedAt)
+        {
+            if (now - entry.Value >= CompletedRefreshGrace)
+            {
+                _completedAt.TryRemove(entry.Key, out _);
+                _refreshInFlight.TryRemove(entry.Key, out _);
+            }
+        }
+    }
+
+    private static void SetPrincipal(HttpContext context, ClaimsPrincipal principal)
+    {
+        context.User = principal;
+        context.Items[PrincipalItemKey] = principal;
+    }
+}
