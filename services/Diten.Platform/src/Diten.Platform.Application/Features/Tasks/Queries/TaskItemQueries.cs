@@ -20,3 +20,15 @@ public sealed record GetTaskItemByIdQuery(Guid Id, string CorrelationId)
 /// </summary>
 public sealed record GetTaskAssignmentPositionLookupQuery(string CorrelationId)
     : IRequest<Response<IReadOnlyList<AssignablePositionDto>>>;
+
+/// <summary>
+/// People a task may be assigned to (pack §12 K6.4). Assignability comes from holding a POSITION: the source is
+/// the active <c>PositionAssignment</c> set, which keeps the list consistent with the organization context (K6)
+/// and avoids exposing the whole employee directory. A person with no position is therefore absent — the UI must
+/// say so plainly rather than render a silent empty list.
+///
+/// <para>Each row carries the position AND its organization unit, for the same reason the position lookup does:
+/// two people holding "QA Specialist" in different facilities are otherwise indistinguishable.</para>
+/// </summary>
+public sealed record GetTaskAssignmentPersonLookupQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<AssignablePersonDto>>>;

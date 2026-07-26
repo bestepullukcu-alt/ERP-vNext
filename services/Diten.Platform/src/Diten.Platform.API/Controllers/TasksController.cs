@@ -158,6 +158,23 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// People a task may be assigned to — whoever currently holds a position (pack §12 K6.4). Carries the
+    /// position and its organization unit for the same reason as above: two people holding "QA Specialist" in
+    /// different facilities are otherwise indistinguishable.
+    ///
+    /// <para>Guarded by the ASSIGN permission, not Create: reading who can receive work is exactly the act of
+    /// assigning it. AuthService's <c>auth.users.read</c> is granted to nobody for this — Platform resolves the
+    /// names service-to-service.</para>
+    /// </summary>
+    [HttpGet("lookups/assignable-people")]
+    [HasPermission(TaskPermissions.Assign)]
+    public async Task<IActionResult> GetAssignablePeople(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskAssignmentPersonLookupQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     private string CorrelationId =>
         string.IsNullOrWhiteSpace(_correlationContext.CorrelationId)
             ? HttpContext.TraceIdentifier

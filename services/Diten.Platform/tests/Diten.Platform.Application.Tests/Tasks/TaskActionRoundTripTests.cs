@@ -198,7 +198,8 @@ public sealed class TaskActionRoundTripTests
             repository,
             holder is null ? new FakePositionAssignmentRepository() : new FakePositionAssignmentRepository(holder),
             new TaskLifecycleService(),
-            new TaskAssignmentResolver());
+            new TaskAssignmentResolver(),
+            new FakeUserDisplayNameResolver());
 
     /// <summary>An actor holding everything the provider declares, so permissions never mask a placement bug.</summary>
     private static WorkItemActor FullyPermittedActor()

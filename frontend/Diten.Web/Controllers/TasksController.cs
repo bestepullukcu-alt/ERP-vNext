@@ -115,6 +115,14 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiAssignablePositions()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/assignable-positions", readBody: false);
 
+    /// <summary>
+    /// People a task may be assigned to (whoever holds a position). Carries the display name, position and
+    /// organization unit so the picker never has to show a user GUID.
+    /// </summary>
+    [HttpGet("api/assignable-people")]
+    public Task<IActionResult> ApiAssignablePeople()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/assignable-people", readBody: false);
+
     private async Task<IActionResult> ProxyAsync(HttpMethod method, string targetUrl, bool readBody)
     {
         if (!TryCreateTenantRequest(method, targetUrl, out var request))

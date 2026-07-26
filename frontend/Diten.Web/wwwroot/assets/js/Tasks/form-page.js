@@ -78,6 +78,15 @@
             global.TaskForm.renderPositionOptions(el('taskPoolPosition'), positions.data || []);
         }
 
+        // People who currently hold a position (pack §12 K6.4). Loaded before any draft is written back, so a
+        // handed-over assignee id can select its option.
+        const people = await global.TasksApi.assignablePeople();
+        global.TaskForm.renderPersonOptions(el('taskAssignee'), people.ok ? people.data || [] : [], {
+            placeholder: t('assigneeSelectPlaceholder'),
+            empty: t('assigneeEmpty'),
+            nameUnavailable: t('personNameUnavailable')
+        });
+
         if (mode === 'create') {
             // Continue the quick-create draft if one was handed over.
             const draft = global.TaskForm.readDraft();

@@ -20,6 +20,13 @@
     const t = (key) => global.TasksL10n?.t?.(key) ?? key;
     const el = (id) => document.getElementById(id);
 
+    // Keys are camelCase: the bridge serializes the C# property names through MVC's camelCase policy.
+    const personLabels = () => ({
+        placeholder: t('assigneeSelectPlaceholder'),
+        empty: t('assigneeEmpty'),
+        nameUnavailable: t('personNameUnavailable')
+    });
+
     const readDraft = () => ({
         title: el('quickTitle')?.value,
         assignmentTarget: el('quickTarget')?.value,
@@ -111,6 +118,10 @@
         if (positions.ok) {
             global.TaskForm.renderPositionOptions(el('quickPoolPosition'), positions.data || []);
         }
+
+        // People who currently hold a position. An empty list is explained, not left blank.
+        const people = await global.TasksApi.assignablePeople();
+        global.TaskForm.renderPersonOptions(el('quickAssignee'), people.ok ? people.data || [] : [], personLabels());
     };
 
     global.WcnQuickCreate = { TASK_CREATED_EVENT, open, close, submit, readDraft, openDetailed, wire };

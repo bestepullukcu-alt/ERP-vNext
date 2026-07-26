@@ -80,4 +80,8 @@
   <data name="ActionOk" xml:space="preserve"><value>确定</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>无法为此任务确定组织单位。请让管理员为您分配职位或定义根组织单位。</value></data>
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>所选职位无法接收任务。请选择一个有效职位。</value></data>
+  <data name="AssigneeHint" xml:space="preserve"><value>只能将工作分配给当前担任职位的人员。</value></data>
+  <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>选择人员…</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>目前无人担任职位，因此没有可分配的人员。请先让管理员分配职位。</value></data>
+  <data name="PersonNameUnavailable" xml:space="preserve"><value>姓名不可用</value></data>
 </root>

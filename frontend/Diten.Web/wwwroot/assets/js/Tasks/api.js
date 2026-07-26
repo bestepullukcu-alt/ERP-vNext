@@ -62,6 +62,7 @@
         create: (payload) => request('POST', '', payload),
         update: (id, payload) => request('PUT', `/${id}`, payload),
         transition: (id, action, payload) => request('POST', `/${id}/${action}`, payload || {}),
-        assignablePositions: () => request('GET', '/assignable-positions')
+        assignablePositions: () => request('GET', '/assignable-positions'),
+        assignablePeople: () => request('GET', '/assignable-people')
     };
 })(typeof window !== 'undefined' ? window : globalThis);

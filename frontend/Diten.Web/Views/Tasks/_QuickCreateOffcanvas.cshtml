@@ -28,9 +28,12 @@
                 <option value="PositionPool">@Localizer["TargetPool"]</option>
             </select>
         </div>
+        @* A picker, not a text box: the field used to demand a raw user GUID. Options are "Name — Position —
+           Unit" so two people in the same position are distinguishable (pack §12 K6.4). *@
         <div class="mb-3 d-none" data-task-field="assignee">
             <label class="form-label" for="quickAssignee">@Localizer["FieldAssignee"]</label>
-            <input type="text" class="form-control" id="quickAssignee" autocomplete="off" />
+            <select class="form-select" id="quickAssignee"></select>
+            <div class="form-text">@Localizer["AssigneeHint"]</div>
         </div>
         <div class="mb-3 d-none" data-task-field="poolPosition">
             <label class="form-label" for="quickPoolPosition">@Localizer["FieldPoolPosition"]</label>

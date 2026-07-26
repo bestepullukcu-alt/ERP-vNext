@@ -158,8 +158,10 @@ internal sealed class FakeTaskAssignmentRepository : ITaskAssignmentRepository
 
 internal sealed class FakePositionAssignmentRepository(params PositionAssignment[] seed) : IPositionAssignmentRepository
 {
+    // Mirrors the tenant execution filter: another tenant's row is invisible, exactly as TenantRepository<T> makes it.
     public Task<IReadOnlyList<PositionAssignment>> GetAllAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<PositionAssignment>>(seed.ToList());
+        => Task.FromResult<IReadOnlyList<PositionAssignment>>(
+            seed.Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted).ToList());
 
     public Task<PositionAssignment> CreateAsync(PositionAssignment a, CancellationToken ct = default)
         => throw new NotSupportedException("MOD-0024 must not write MOD-0288 assignments.");
@@ -183,8 +185,10 @@ internal sealed class FakePositionRepository(params Position[] seed) : IPosition
     public Task<Position?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(seed.FirstOrDefault(x => x.Id == id));
 
+    // Tenant execution filter, as above.
     public Task<IReadOnlyList<Position>> GetAllAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<Position>>(seed.ToList());
+        => Task.FromResult<IReadOnlyList<Position>>(
+            seed.Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted).ToList());
 
     public Task<Position> CreateAsync(Position p, CancellationToken ct = default)
         => throw new NotSupportedException("MOD-0024 must not write MOD-0288 positions.");
@@ -204,8 +208,10 @@ internal sealed class FakeOrganizationUnitRepository(params OrganizationUnit[] s
     public Task<OrganizationUnit?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(seed.FirstOrDefault(x => x.Id == id));
 
+    // Tenant execution filter, as above.
     public Task<IReadOnlyList<OrganizationUnit>> GetAllAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<OrganizationUnit>>(seed.ToList());
+        => Task.FromResult<IReadOnlyList<OrganizationUnit>>(
+            seed.Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted).ToList());
 
     public Task<OrganizationUnit> CreateAsync(OrganizationUnit u, CancellationToken ct = default)
         => throw new NotSupportedException("MOD-0024 must not write MOD-0288 units.");
@@ -267,4 +273,32 @@ internal sealed class FakeTaskFieldDefinitionRepository(params TaskFieldDefiniti
 
     public Task<IReadOnlyList<TaskFieldDefinition>> ListActiveAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<TaskFieldDefinition>>(seed.Where(x => x.IsActive).ToList());
+}
+
+/// <summary>
+/// Display-name resolver double. Records every call so a test can prove resolution is BATCHED (one call for a
+/// page of tasks, not one per user), and can play "AuthService unreachable" by resolving nothing.
+/// </summary>
+internal sealed class FakeUserDisplayNameResolver(params (Guid Id, string Name)[] known)
+    : Diten.Platform.Application.Contracts.IUserDisplayNameResolver
+{
+    private readonly Dictionary<Guid, string> _known = known.ToDictionary(k => k.Id, k => k.Name);
+
+    /// <summary>One entry per ResolveAsync invocation, holding the ids that call asked about.</summary>
+    public List<IReadOnlyCollection<Guid>> Calls { get; } = [];
+
+    /// <summary>When true the resolver returns nothing, as it does when AuthService is down.</summary>
+    public bool Unavailable { get; set; }
+
+    public Task<IReadOnlyDictionary<Guid, string>> ResolveAsync(
+        IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+    {
+        Calls.Add(userIds.ToList());
+
+        IReadOnlyDictionary<Guid, string> result = Unavailable
+            ? new Dictionary<Guid, string>()
+            : userIds.Where(_known.ContainsKey).ToDictionary(id => id, id => _known[id]);
+
+        return Task.FromResult(result);
+    }
 }

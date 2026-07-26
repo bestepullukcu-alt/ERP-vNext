@@ -151,6 +151,8 @@ public static class DependencyInjection
         services.AddScoped<ITenantActivationNotifier, AuthServiceTenantActivationNotifier>();
         services.AddScoped<ICatalogPermissionSyncService, CatalogPermissionSyncService>();
         services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();
+        // MOD-0024 §K6.4 — display-name resolution for task assignees/requesters (best-effort S2S).
+        services.AddScoped<IUserDisplayNameResolver, AuthUserDisplayNameClient>();
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();

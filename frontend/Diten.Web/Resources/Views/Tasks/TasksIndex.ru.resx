@@ -80,4 +80,8 @@
   <data name="ActionOk" xml:space="preserve"><value>ОК</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>Не удалось определить организационную единицу для этой задачи. Попросите администратора назначить вам должность или создать корневую организационную единицу.</value></data>
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Выбранная должность не может получать задачи. Выберите активную должность.</value></data>
+  <data name="AssigneeHint" xml:space="preserve"><value>Работу можно назначить только сотрудникам, занимающим должность.</value></data>
+  <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Выберите сотрудника…</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>Пока никто не занимает должность, назначить работу некому. Попросите администратора сначала назначить должности.</value></data>
+  <data name="PersonNameUnavailable" xml:space="preserve"><value>Имя недоступно</value></data>
 </root>

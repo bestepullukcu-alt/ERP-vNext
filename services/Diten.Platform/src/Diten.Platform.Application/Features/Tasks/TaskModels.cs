@@ -189,6 +189,21 @@ public sealed record TaskDependencyDto(Guid Id, Guid DependsOnTaskItemId, string
 /// distinguish "QA Specialist — Facility A" from "QA Specialist — Facility B" and work lands in the wrong pool.
 /// Joined server-side rather than reassembled client-side.
 /// </summary>
+/// <summary>
+/// A person who may receive a task. <c>DisplayName</c> is nullable on purpose: it is resolved best-effort through
+/// <c>IUserDisplayNameResolver</c>, so an AuthService outage leaves the row usable (position + unit) instead of
+/// failing the whole lookup. The client renders a name-unavailable label — never the raw user id.
+/// </summary>
+public sealed record AssignablePersonDto(
+    Guid UserId,
+    string? DisplayName,
+    Guid PositionId,
+    string PositionCode,
+    string PositionName,
+    Guid OrganizationUnitId,
+    string OrganizationUnitCode,
+    string OrganizationUnitName);
+
 public sealed record AssignablePositionDto(
     Guid PositionId,
     string PositionCode,

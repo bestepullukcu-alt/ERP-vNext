@@ -80,4 +80,8 @@
   <data name="ActionOk" xml:space="preserve"><value>OK</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>No organization unit could be determined for this task. Ask an administrator to assign you a position or define a root organization unit.</value></data>
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>The selected position cannot receive tasks. Choose an active position.</value></data>
+  <data name="AssigneeHint" xml:space="preserve"><value>Only people who currently hold a position can be assigned work.</value></data>
+  <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Select a person…</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>No one holds a position yet, so there is nobody to assign to. Ask an administrator to assign positions first.</value></data>
+  <data name="PersonNameUnavailable" xml:space="preserve"><value>Name unavailable</value></data>
 </root>

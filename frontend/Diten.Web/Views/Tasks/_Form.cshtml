@@ -49,13 +49,15 @@
                 </select>
             </div>
 
-            @* Shown only for the Person target — a pool task has no assignee until it is claimed. *@
+            @* Shown only for the Person target — a pool task has no assignee until it is claimed.
+               A picker, not a text box: each option reads "Name — Position — Unit", and a user GUID is never
+               shown or typed (pack §12 K6.4). *@
             <div class="col-md-4 d-none" data-task-field="assignee">
                 <label class="form-label" for="taskAssignee">
                     @Localizer["FieldAssignee"] <span class="text-danger">*</span>
                 </label>
-                <input type="text" class="form-control" id="taskAssignee" name="assigneeUserId"
-                       autocomplete="off" />
+                <select class="form-select" id="taskAssignee" name="assigneeUserId"></select>
+                <div class="form-text">@Localizer["AssigneeHint"]</div>
             </div>
 
             @* Shown only for the Pool target. Each option carries its unit so work cannot be pooled to the

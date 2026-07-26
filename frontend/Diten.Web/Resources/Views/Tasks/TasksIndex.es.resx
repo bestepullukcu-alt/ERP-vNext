@@ -80,4 +80,8 @@
   <data name="ActionOk" xml:space="preserve"><value>Aceptar</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>No se pudo determinar una unidad organizativa para esta tarea. Pida a un administrador que le asigne un puesto o que defina una unidad organizativa raíz.</value></data>
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>El puesto seleccionado no puede recibir tareas. Elija un puesto activo.</value></data>
+  <data name="AssigneeHint" xml:space="preserve"><value>Solo se puede asignar trabajo a personas que ocupan un puesto actualmente.</value></data>
+  <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Seleccione una persona…</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>Todavía nadie ocupa un puesto, por lo que no hay a quién asignar. Pida primero a un administrador que asigne puestos.</value></data>
+  <data name="PersonNameUnavailable" xml:space="preserve"><value>Nombre no disponible</value></data>
 </root>

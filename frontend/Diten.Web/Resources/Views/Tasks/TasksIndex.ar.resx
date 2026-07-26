@@ -80,4 +80,8 @@
   <data name="ActionOk" xml:space="preserve"><value>حسنًا</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>لم يتم تحديد وحدة تنظيمية لهذه المهمة. اطلب من المسؤول تعيين وظيفة لك أو تحديد وحدة تنظيمية جذرية.</value></data>
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>لا يمكن للوظيفة المحددة استلام المهام. اختر وظيفة نشطة.</value></data>
+  <data name="AssigneeHint" xml:space="preserve"><value>لا يمكن إسناد العمل إلا للأشخاص الذين يشغلون وظيفة حاليًا.</value></data>
+  <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>اختر شخصًا…</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>لا يشغل أحد وظيفة بعد، لذا لا يوجد من يمكن الإسناد إليه. اطلب من المسؤول تعيين الوظائف أولاً.</value></data>
+  <data name="PersonNameUnavailable" xml:space="preserve"><value>الاسم غير متوفر</value></data>
 </root>

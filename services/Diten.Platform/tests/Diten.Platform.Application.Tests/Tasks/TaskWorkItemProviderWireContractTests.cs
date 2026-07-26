@@ -24,7 +24,8 @@ public sealed class TaskWorkItemProviderWireContractTests
             new FakeTaskItemRepository(task),
             new FakePositionAssignmentRepository(),
             new TaskLifecycleService(),
-            new TaskAssignmentResolver());
+            new TaskAssignmentResolver(),
+            new FakeUserDisplayNameResolver());
 
         var items = await provider.GetWorkItemsAsync(
             new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()));
@@ -146,7 +147,8 @@ public sealed class TaskWorkItemProviderWireContractTests
                 EffectiveFrom = DateTimeOffset.UtcNow.AddDays(-1)
             }),
             new TaskLifecycleService(),
-            new TaskAssignmentResolver());
+            new TaskAssignmentResolver(),
+            new FakeUserDisplayNameResolver());
 
         var items = await provider.GetWorkItemsAsync(
             new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()));

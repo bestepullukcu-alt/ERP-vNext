@@ -387,13 +387,56 @@ them makes the two impossible to desynchronise, so a **third** provider cannot r
 because mock and real items share one client mapper. Both are omitted when null (`JsonIgnore(WhenWritingNull)`), so
 MOD-0023 is unaffected and an unclaimed pool task reports **no** assignee rather than an empty one.
 
-> ⚠️ **OPEN — display names are not resolvable yet.** `AssigneeUserId` / `CreatedByUserId` are **AuthService**
-> identities, and Platform has **no user-directory seam** (MOD-0288's `PersonReference` has no `UserId`, so it
-> cannot supply the name either). `DisplayName` is therefore emitted as null today. The client renders
-> `PersonSelf` ("Ben") for the caller — `isCurrentUser` is the one identity fact the server can state without
-> shipping the caller's id to the browser or holding localized text — and `PersonNameUnavailable` for anyone else.
-> A raw GUID is never shown as a person. **This completes with the person-picker work**, which needs the same
-> user-lookup seam: once it exists, populate `DisplayName` and both fallbacks stop being reachable.
+> ✅ **CLOSED 2026-07-26 by K6.4.** `DisplayName` is now populated through `IUserDisplayNameResolver`, resolved in
+> ONE batched S2S call per request and cached for 10 minutes. The fallbacks remain and are still reachable, by
+> design: `PersonSelf` ("Ben") for the caller (`isCurrentUser` stays the mechanism — no localized text crosses the
+> wire and the caller's id is never shipped to the browser), and `PersonNameUnavailable` when a name cannot be
+> resolved — an unknown user, or AuthService being unreachable. A raw GUID is never shown as a person.
+
+**K6.4 — Assignable-people lookup + the user-directory seam (EA 2026-07-25).** Resolves K6.3 and makes
+"assign to a person" usable (today the form is a bare text input demanding a GUID).
+
+- **Who is assignable = whoever holds a position.** Source is `PositionAssignment` (active half-open interval,
+  not cancelled/deleted, tenant-scoped) → distinct `UserId`. Rationale: the data already lives in Platform, it
+  does not expose the whole employee directory, and it stays consistent with the K6 organization context.
+  Accepted cost: a person with no position cannot be assigned work — the UI must say so plainly rather than
+  render a silent empty list.
+- **Who may read the list = whoever may assign.** The endpoint lives in Platform and is guarded by the task
+  assignment permission. AuthService's `auth.users.read` (an administrator permission) is granted to **nobody**
+  for this feature; Platform makes the call service-to-service.
+- **Labels must carry position *and* organization unit.** Two people in the same position are otherwise
+  indistinguishable — the K4 wrong-facility trap transposed onto people.
+
+> **DEV-2 — documented deviation from a protected path (EA-approved 2026-07-25).** `AGENTS.md` §4 lists
+> `services/Diten.AuthService/**` as protected. Resolving display names requires **one additive, internal-key
+> guarded read endpoint there**, because it was proven that no existing route can serve it: Platform's only
+> AuthService credential is `InternalApiKey`; the three controllers accepting that key expose tenant activation,
+> admin invitation, permission sync and module lists — no user names; and the only user-listing route is
+> JWT-gated behind `auth.users.read`, which K6.4 forbids granting. Forwarding the caller's JWT was rejected for
+> the same reason. Scope of the deviation: **one GET endpoint returning `{ id, displayName }` for a supplied set
+> of ids, tenant-scoped, following the existing `internal/permissions/modules` pattern verbatim.** No new
+> permission, no write path, no other AuthService file. Mandatory conditions: tenant scoping is enforced
+> server-side (one tenant's Platform must never resolve another tenant's names), the response carries **only**
+> id and display name (no email, phone, role or status), and cross-tenant isolation is proven by test.
+> Alternatives considered and rejected: linking `PersonReference` to a user id (a MOD-0288 data-model change
+> plus backfill, and users without a linked record stay nameless), and shipping without names (leaves two
+> same-position people indistinguishable — worse than the current input, which at least does not pretend to
+> identify anyone).
+>
+> **As built (2026-07-26).** One new AuthService file, nothing else there modified:
+> `Api/Controllers/InternalUsersController.cs` → `GET internal/users/display-names?tenantId={guid}&ids=a,b,c`
+> returning `[{ id, displayName }]`. It reuses the existing `IUserRepository.GetAllByTenantAsync` — no new query
+> or repository — and sweeps that tenant's users once per page rather than reading per id.
+>
+> *Deliberate reading of "reuse the existing user query":* `GetAllUsersQuery` was **not** reused. It scopes the
+> tenant from the JWT `ITenantContext` (there is no JWT on an S2S call), and it returns email, roles and
+> last-login plus an N+1 role read per user — three things this endpoint must not do. Reusing the repository
+> method it sits on honours "no new query/repository" while keeping the response to id + name.
+>
+> Enforced boundaries, each with a test: tenant scoping comes from the caller-supplied `tenantId` and the sweep
+> runs against that tenant only, so asking for a foreign id simply returns nothing for it; the DTO has exactly
+> two properties (asserted by reflection, so adding a field fails the build's test run); the key gate rejects a
+> missing/incorrect key; an empty id set is refused so the route cannot become a directory dump.
 
 **K7 — Email only.** Events are declared in the module manifest (`NotificationEvents`) and dispatched via
 `INotificationEventDispatchAdapter`. The header bell is **out of scope** — no in-app channel exists

@@ -192,7 +192,8 @@ public sealed class TaskWorkItemProviderTests
         => new(tasks,
             positionAssignments ?? new FakePositionAssignmentRepository(),
             new TaskLifecycleService(),
-            new TaskAssignmentResolver());
+            new TaskAssignmentResolver(),
+            new FakeUserDisplayNameResolver());
 
     private static WorkItemActor Actor() => new(
         TaskTestData.Me,

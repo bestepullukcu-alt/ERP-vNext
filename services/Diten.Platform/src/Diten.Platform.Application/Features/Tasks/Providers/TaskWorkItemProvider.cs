@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Application.Features.WorkAggregation.Providers;
@@ -37,17 +38,20 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private readonly IPositionAssignmentRepository _positionAssignments;
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ITaskAssignmentResolver _assignmentResolver;
+    private readonly IUserDisplayNameResolver _displayNames;
 
     public TaskWorkItemProvider(
         ITaskItemRepository tasks,
         IPositionAssignmentRepository positionAssignments,
         ITaskLifecycleService lifecycle,
-        ITaskAssignmentResolver assignmentResolver)
+        ITaskAssignmentResolver assignmentResolver,
+        IUserDisplayNameResolver displayNames)
     {
         _tasks = tasks;
         _positionAssignments = positionAssignments;
         _lifecycle = lifecycle;
         _assignmentResolver = assignmentResolver;
+        _displayNames = displayNames;
     }
 
     public string ProviderCode => TaskProviderCode;
@@ -77,14 +81,30 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         var positionIds = await ResolveActivePositionIdsAsync(actor.UserId, ct);
         var pooled = await _tasks.ListUnclaimedByPositionsAsync(positionIds, ct);
 
-        return mine
+        var tasks = mine
             .Concat(pooled)
             .DistinctBy(t => t.Id)
-            .Select(t => Project(t, actor))
+            .ToList();
+
+        // ONE batched resolve for the whole page — never one call per task, and cached between requests.
+        // Best effort: if AuthService is down this comes back empty and names are simply omitted.
+        var userIds = tasks
+            .SelectMany(t => new[] { t.AssigneeUserId, t.CreatedByUserId })
+            .Where(id => id is not null && id != Guid.Empty)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+        var displayNames = await _displayNames.ResolveAsync(userIds, ct);
+
+        return tasks
+            .Select(t => Project(t, actor, displayNames))
             .ToList();
     }
 
-    private WorkItemProjectionDto Project(TaskItem task, WorkItemActor actor)
+    private WorkItemProjectionDto Project(
+        TaskItem task,
+        WorkItemActor actor,
+        IReadOnlyDictionary<Guid, string> displayNames)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(task);
@@ -138,8 +158,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             PrimaryActionCode: primaryActionCode,
             OverflowActionCodes: overflowActionCodes,
             // An unclaimed pool task genuinely has no assignee — omit rather than invent one.
-            Assignee: Person(task.AssigneeUserId, actor),
-            Requester: Person(task.CreatedByUserId, actor));
+            Assignee: Person(task.AssigneeUserId, actor, displayNames),
+            Requester: Person(task.CreatedByUserId, actor, displayNames));
     }
 
     /// <summary>
@@ -149,10 +169,27 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <c>IsCurrentUser</c> is the one thing the server can state for certain, letting the client render "Me"
     /// without any localized text crossing the wire.
     /// </summary>
-    private static WorkItemPersonDto? Person(Guid? userId, WorkItemActor actor)
-        => userId is null || userId == Guid.Empty
-            ? null
-            : new WorkItemPersonDto(userId.Value.ToString(), DisplayName: null, IsCurrentUser: userId == actor.UserId);
+    private static WorkItemPersonDto? Person(
+        Guid? userId,
+        WorkItemActor actor,
+        IReadOnlyDictionary<Guid, string> displayNames)
+    {
+        if (userId is null || userId == Guid.Empty)
+        {
+            return null;
+        }
+
+        // An unresolved name stays NULL (and is omitted on the wire) rather than falling back to the id: a GUID
+        // is not a person's name. The client shows "Me" for the caller and a name-unavailable label otherwise.
+        var resolved = displayNames.TryGetValue(userId.Value, out var name) && !string.IsNullOrWhiteSpace(name)
+            ? name
+            : null;
+
+        return new WorkItemPersonDto(
+            userId.Value.ToString(),
+            DisplayName: resolved,
+            IsCurrentUser: userId == actor.UserId);
+    }
 
     /// <summary>
     /// Declared capabilities gate which detail blocks render. Phase 1 declares only what actually exists:

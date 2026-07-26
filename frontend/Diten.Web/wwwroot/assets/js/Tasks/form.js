@@ -175,17 +175,65 @@
         });
     };
 
+    /*
+     * A person label MUST carry position AND unit: two people holding "QA Specialist" in different facilities are
+     * otherwise indistinguishable — the position picker's trap, transposed onto people.
+     * The user id is NEVER shown; when the name cannot be resolved the caller supplies a fallback label.
+     */
+    const formatPersonLabel = (row, nameUnavailableLabel) => {
+        if (!row) { return ''; }
+        const name = row.displayName || nameUnavailableLabel || '';
+        const parts = [name, row.positionName || row.positionCode, row.organizationUnitName || row.organizationUnitCode];
+        return parts.filter((part) => part && String(part).trim().length > 0).join(' — ');
+    };
+
+    /*
+     * Fill a person <select>. An empty list is a REAL state — nobody in the tenant holds a position — and gets an
+     * explanation rather than a silently empty dropdown the user cannot interpret.
+     */
+    const renderPersonOptions = (selectEl, rows, labels) => {
+        if (!selectEl) { return; }
+        const text = labels || {};
+        selectEl.innerHTML = '';
+
+        if (!rows || rows.length === 0) {
+            const empty = global.document.createElement('option');
+            empty.value = '';
+            empty.textContent = text.empty || '';
+            empty.disabled = true;
+            empty.selected = true;
+            selectEl.appendChild(empty);
+            selectEl.disabled = true;
+            return;
+        }
+
+        selectEl.disabled = false;
+        const placeholder = global.document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = text.placeholder || '';
+        selectEl.appendChild(placeholder);
+
+        rows.forEach((row) => {
+            const option = global.document.createElement('option');
+            option.value = row.userId;
+            option.textContent = formatPersonLabel(row, text.nameUnavailable);
+            selectEl.appendChild(option);
+        });
+    };
+
     global.TaskForm = {
         DRAFT_STORAGE_KEY,
         TARGET,
         visibleFieldsFor,
         formatPositionLabel,
+        formatPersonLabel,
         buildCreatePayload,
         validateDraft,
         readDraft,
         writeDraft,
         clearDraft,
         applyTargetVisibility,
-        renderPositionOptions
+        renderPositionOptions,
+        renderPersonOptions
     };
 })(typeof window !== 'undefined' ? window : globalThis);
