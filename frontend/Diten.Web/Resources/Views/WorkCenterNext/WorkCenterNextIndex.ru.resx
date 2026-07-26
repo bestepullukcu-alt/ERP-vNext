@@ -860,6 +860,66 @@
   <data name="PoolUnassigned" xml:space="preserve">
     <value>Не назначено — в пуле</value>
   </data>
+  <data name="ModuleFinance" xml:space="preserve">
+    <value>Финансы</value>
+  </data>
+  <data name="ModuleTax" xml:space="preserve">
+    <value>Налоги</value>
+  </data>
+  <data name="ModuleQuality" xml:space="preserve">
+    <value>Качество</value>
+  </data>
+  <data name="ModuleMasterData" xml:space="preserve">
+    <value>Мастер-данные</value>
+  </data>
+  <data name="ModuleIntegrationMonitoring" xml:space="preserve">
+    <value>Мониторинг интеграций</value>
+  </data>
+  <data name="ModuleProjectGovernance" xml:space="preserve">
+    <value>Управление проектами</value>
+  </data>
+  <data name="ModuleWorkflow" xml:space="preserve">
+    <value>Рабочий процесс</value>
+  </data>
+  <data name="ModuleIncident" xml:space="preserve">
+    <value>Управление инцидентами</value>
+  </data>
+  <data name="ModuleWorkcenter" xml:space="preserve">
+    <value>Центр задач</value>
+  </data>
+  <data name="ModuleTasks" xml:space="preserve">
+    <value>Задачи</value>
+  </data>
+  <data name="ModuleEnterpriseStrategy" xml:space="preserve">
+    <value>Корпоративная стратегия</value>
+  </data>
+  <data name="ModuleDocumentation" xml:space="preserve">
+    <value>Управление документами</value>
+  </data>
+  <data name="ModuleControlledDocuments" xml:space="preserve">
+    <value>Контролируемые документы</value>
+  </data>
+  <data name="ModuleProcurement" xml:space="preserve">
+    <value>Закупки</value>
+  </data>
+  <data name="ModuleSales" xml:space="preserve">
+    <value>Продажи</value>
+  </data>
+  <data name="ModuleTreasury" xml:space="preserve">
+    <value>Казначейство</value>
+  </data>
+  <data name="ModuleHr" xml:space="preserve">
+    <value>Кадры</value>
+  </data>
+  <data name="ModuleLegal" xml:space="preserve">
+    <value>Юридический отдел</value>
+  </data>
+  <data name="ModuleCalendar" xml:space="preserve">
+    <value>Календарь</value>
+  </data>
+  <data name="ModuleLegacyAdapter" xml:space="preserve">
+    <value>Адаптер устаревшей системы</value>
+  </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>Фильтр приоритета</value>
   </data>

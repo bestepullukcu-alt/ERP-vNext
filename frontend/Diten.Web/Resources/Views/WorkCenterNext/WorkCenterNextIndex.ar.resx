@@ -860,6 +860,66 @@
   <data name="PoolUnassigned" xml:space="preserve">
     <value>غير مُسند — في قائمة الانتظار</value>
   </data>
+  <data name="ModuleFinance" xml:space="preserve">
+    <value>المالية</value>
+  </data>
+  <data name="ModuleTax" xml:space="preserve">
+    <value>الضرائب</value>
+  </data>
+  <data name="ModuleQuality" xml:space="preserve">
+    <value>الجودة</value>
+  </data>
+  <data name="ModuleMasterData" xml:space="preserve">
+    <value>البيانات الرئيسية</value>
+  </data>
+  <data name="ModuleIntegrationMonitoring" xml:space="preserve">
+    <value>مراقبة التكامل</value>
+  </data>
+  <data name="ModuleProjectGovernance" xml:space="preserve">
+    <value>حوكمة المشاريع</value>
+  </data>
+  <data name="ModuleWorkflow" xml:space="preserve">
+    <value>سير العمل</value>
+  </data>
+  <data name="ModuleIncident" xml:space="preserve">
+    <value>إدارة الحوادث</value>
+  </data>
+  <data name="ModuleWorkcenter" xml:space="preserve">
+    <value>مركز المهام</value>
+  </data>
+  <data name="ModuleTasks" xml:space="preserve">
+    <value>المهام</value>
+  </data>
+  <data name="ModuleEnterpriseStrategy" xml:space="preserve">
+    <value>الاستراتيجية المؤسسية</value>
+  </data>
+  <data name="ModuleDocumentation" xml:space="preserve">
+    <value>إدارة المستندات</value>
+  </data>
+  <data name="ModuleControlledDocuments" xml:space="preserve">
+    <value>المستندات الخاضعة للرقابة</value>
+  </data>
+  <data name="ModuleProcurement" xml:space="preserve">
+    <value>المشتريات</value>
+  </data>
+  <data name="ModuleSales" xml:space="preserve">
+    <value>المبيعات</value>
+  </data>
+  <data name="ModuleTreasury" xml:space="preserve">
+    <value>الخزينة</value>
+  </data>
+  <data name="ModuleHr" xml:space="preserve">
+    <value>الموارد البشرية</value>
+  </data>
+  <data name="ModuleLegal" xml:space="preserve">
+    <value>الشؤون القانونية</value>
+  </data>
+  <data name="ModuleCalendar" xml:space="preserve">
+    <value>التقويم</value>
+  </data>
+  <data name="ModuleLegacyAdapter" xml:space="preserve">
+    <value>محول الأنظمة القديمة</value>
+  </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>مرشح الأولوية</value>
   </data>

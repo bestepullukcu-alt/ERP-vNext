@@ -114,11 +114,16 @@ describe("a real task reaches the Task Center", () => {
   });
 
   it("names its owning module instead of leaking a provider code", () => {
+    // The module name comes from the resx now, not a hardcoded Turkish map, so the l10n stub has to answer for
+    // the derived key (tasks → ModuleTasks). The rest of this file leaves t() as identity on purpose.
+    global.WCN = { t: (key) => (key === "ModuleTasks" ? "Görevler" : key), tn: (key) => key };
+
     const [item] = global.WorkCenterNextApi.mapPayload([REAL_PROJECTION_ITEM]).items;
 
     // providerCode "tasks" matches the manifest ModuleCode, so the shell can label it.
     expect(item.sourceModule).toBe("Görevler");
     expect(item.sourceModule).not.toBe("task-engine");
+    expect(item.sourceModule).not.toBe("tasks");
   });
 
   it("is not warned about — a real item must never hit the showcase filter", () => {

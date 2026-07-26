@@ -860,6 +860,66 @@
   <data name="PoolUnassigned" xml:space="preserve">
     <value>Unassigned — in the pool</value>
   </data>
+  <data name="ModuleFinance" xml:space="preserve">
+    <value>Finance</value>
+  </data>
+  <data name="ModuleTax" xml:space="preserve">
+    <value>Tax</value>
+  </data>
+  <data name="ModuleQuality" xml:space="preserve">
+    <value>Quality</value>
+  </data>
+  <data name="ModuleMasterData" xml:space="preserve">
+    <value>Master Data</value>
+  </data>
+  <data name="ModuleIntegrationMonitoring" xml:space="preserve">
+    <value>Integration Monitoring</value>
+  </data>
+  <data name="ModuleProjectGovernance" xml:space="preserve">
+    <value>Project Governance</value>
+  </data>
+  <data name="ModuleWorkflow" xml:space="preserve">
+    <value>Workflow</value>
+  </data>
+  <data name="ModuleIncident" xml:space="preserve">
+    <value>Incident Management</value>
+  </data>
+  <data name="ModuleWorkcenter" xml:space="preserve">
+    <value>Task Center</value>
+  </data>
+  <data name="ModuleTasks" xml:space="preserve">
+    <value>Tasks</value>
+  </data>
+  <data name="ModuleEnterpriseStrategy" xml:space="preserve">
+    <value>Enterprise Strategy</value>
+  </data>
+  <data name="ModuleDocumentation" xml:space="preserve">
+    <value>Document Management</value>
+  </data>
+  <data name="ModuleControlledDocuments" xml:space="preserve">
+    <value>Controlled Documents</value>
+  </data>
+  <data name="ModuleProcurement" xml:space="preserve">
+    <value>Procurement</value>
+  </data>
+  <data name="ModuleSales" xml:space="preserve">
+    <value>Sales</value>
+  </data>
+  <data name="ModuleTreasury" xml:space="preserve">
+    <value>Treasury</value>
+  </data>
+  <data name="ModuleHr" xml:space="preserve">
+    <value>Human Resources</value>
+  </data>
+  <data name="ModuleLegal" xml:space="preserve">
+    <value>Legal</value>
+  </data>
+  <data name="ModuleCalendar" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="ModuleLegacyAdapter" xml:space="preserve">
+    <value>Legacy Adapter</value>
+  </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>Priority filter</value>
   </data>

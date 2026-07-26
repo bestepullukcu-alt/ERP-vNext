@@ -6,14 +6,52 @@
  * presentation fields required by the existing WorkCenterNext shell.
  */
 (function (global) {
-    const TODAY_ISO = '2026-07-24';
-    const TODAY = new Date(TODAY_ISO + 'T09:00:00+03:00');
+    // The day the SHOWCASE fixtures are authored against. Their due dates are written relative to it, so the demo
+    // catalogue only reads correctly when measured from here. It is NOT the clock for real work — see referenceDate.
+    const SHOWCASE_TODAY_ISO = '2026-07-24';
+    const SHOWCASE_TODAY = new Date(SHOWCASE_TODAY_ISO + 'T09:00:00+03:00');
+    /*
+     * The clock, split by provenance.
+     *
+     * Real items must be measured from the REAL today. Measuring them from the fixture reference day is what made
+     * every real due date read two days optimistic — an item due in 4 days showed "6g kaldı" — with the error
+     * growing by one day every day, and an already-late item reported as merely due soon.
+     *
+     * `nowProvider` is the injection seam: a test pins "now" so it asserts a fixed answer instead of starting to
+     * fail tomorrow. Production never sets it and reads the wall clock.
+     */
+    let nowProvider = () => new Date();
+    const setNowProvider = (provider) => {
+        nowProvider = typeof provider === 'function' ? provider : () => new Date();
+    };
+    const localIsoDate = (date) => {
+        const pad = (value) => String(value).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    };
+    const referenceDate = (provenance) => (provenance === 'fixture' ? SHOWCASE_TODAY : nowProvider());
+    /*
+     * Showcase-only identities. The real session user comes from the SERVER (window.CurrentUser, rendered by the
+     * tenant shell from the JWT claims) — see sessionUser. Handing these to a real user showed them someone else's
+     * name and job title in the scope selector.
+     */
     const CURRENT_USER = { id: 'USR-OWN', name: 'Selin Aras', title: 'Operasyon PMO Lideri' };
-    const ON_BEHALF_OF = { id: 'USR-103', name: 'Deniz Koç', title: 'Finans Kontrolörü' };
     const DELEGATORS = [
         { id: 'USR-103', name: 'Deniz Koç', title: 'Finans Kontrolörü' },
         { id: 'USR-104', name: 'Aylin Ersoy', title: 'Satınalma Lideri' }
     ];
+    /*
+     * The signed-in user, from the claims the shell already serialized — no new endpoint, no invented data.
+     * `title` is deliberately null: there is NO source for a position/title on the client today, and an absent
+     * title renders as nothing at all, which is the honest answer. Do not substitute a role, an email or a
+     * placeholder here — that is exactly the habit this slice removes.
+     */
+    const sessionUser = () => {
+        const claims = global.CurrentUser || {};
+        const name = [claims.firstName, claims.lastName].filter(Boolean).join(' ').trim()
+            || claims.email
+            || '';
+        return { id: claims.id || null, name, title: null };
+    };
     const MEETINGS = [
         { id: 'MTG-1001', title: 'Haftalık Operasyon Toplantısı', start: '14:00', end: '15:00', location: 'Teams', owner: 'Selin Aras' }
     ];
@@ -21,19 +59,36 @@
         { id: 'NOTE-1001', text: 'Q3 bütçe revizyonları için departman onaylarını topla.', ageKey: 'TimeToday', converted: false }
     ];
     const TYPE_ICON = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt' };
-    // Friendly module names — the raw provider code (finance, master-data…) must never
-    // surface in the UI. The real backend supplies localized module names; the mock
-    // maps here. Unknown codes fall back to the code (visible = "fix the map").
-    const MODULE_LABELS = {
-        finance: 'Finans', tax: 'Vergi', quality: 'Kalite', 'master-data': 'Ana Veri',
-        'integration-monitoring': 'Entegrasyon İzleme', 'project-governance': 'Proje Yönetişimi',
-        workflow: 'İş Akışı', incident: 'Olay Yönetimi', workcenter: 'Görev Merkezi',
-        // MOD-0024 — matches the provider code, the manifest ModuleCode and platform.tasks.*
-        tasks: 'Görevler',
-        'enterprise-strategy': 'Kurumsal Strateji', documentation: 'Doküman Yönetimi',
-        procurement: 'Satınalma', sales: 'Satış', treasury: 'Hazine', hr: 'İnsan Kaynakları', legal: 'Hukuk'
+    /*
+     * Friendly module name for a provider code, from the resx (7 languages).
+     *
+     * This used to be a hardcoded Turkish map, and moduleLabel is called for REAL items too — so the "Görevler"
+     * chip on genuine work was single-language presentation data invented on the client. The key is derived from
+     * the code (master-data → ModuleMasterData) so adding a provider means adding one resx entry, not editing JS.
+     *
+     * An unmapped code renders as the raw code and warns once: a new provider shows up as a visible, explained
+     * gap instead of silently borrowing someone else's name.
+     */
+    const reportedMissingModuleCodes = new Set();
+    const moduleResourceKey = (code) => 'Module' + String(code).split(/[-_]/)
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('');
+    const moduleLabel = (code) => {
+        if (!code) { return ''; }
+        const key = moduleResourceKey(code);
+        const resolved = global.WCN?.t?.(key);
+        if (!resolved || resolved === key) {
+            if (!reportedMissingModuleCodes.has(code)) {
+                reportedMissingModuleCodes.add(code);
+                console.warn(
+                    `[WorkCenterNext] No module name for provider code "${code}" — rendering the raw code. `
+                    + `Add "${key}" to the WorkCenterNext resx (7 languages).`);
+            }
+            return code;
+        }
+        return resolved;
     };
-    const moduleLabel = (code) => MODULE_LABELS[code] || code || '';
     /*
      * Curation for the DEVELOPMENT showcase catalog only: which demo fixtures are "in the catalogue" and which are
      * parked. It is an allowlist of FIXTURE IDS, so it can only ever be applied to fixtures — a real work item has
@@ -95,10 +150,14 @@
         return global.WCN?.t?.('PersonNameUnavailable') || '';
     };
 
-    const computeSla = (dueAt) => {
+    // `provenance` picks the reference day: the authored one for showcase fixtures, the real one for real work.
+    // The projection carries no slaState of its own (WC-2 seam), so this is the only thing deciding whether a
+    // genuine item reads as overdue — which is why it must not be measured from a frozen day.
+    const computeSla = (dueAt, provenance) => {
         if (!dueAt) { return { state: 'no-sla', diffDays: null }; }
         const due = new Date(`${dueAt}T00:00:00`);
-        const base = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+        const reference = referenceDate(provenance);
+        const base = new Date(reference.getFullYear(), reference.getMonth(), reference.getDate());
         const diffDays = Math.round((due - base) / 86400000);
         return { state: diffDays < 0 ? 'overdue' : diffDays <= 2 ? 'due-soon' : 'on-track', diffDays };
     };
@@ -166,8 +225,18 @@
      */
     const toPresentation = (fixture, options) => {
         const provenance = (options && options.provenance) || 'api';
+        // Re-projecting an already-presented item must not RE-STAMP its origin. The default above is right for a
+        // raw contract item but wrong for one that already knows what it is, and a silent 'fixture' → 'api' slide
+        // turns the showcase catalogue's own curation off for that item. Callers pass provenance explicitly; this
+        // says so out loud if one ever stops.
+        if (fixture && fixture.provenance && fixture.provenance !== provenance) {
+            console.warn(
+                `[WorkCenterNext] Work item "${fixture.id}" is being re-projected as provenance="${provenance}" `
+                + `but it was "${fixture.provenance}". Pass { provenance } explicitly at the call site — an item `
+                + 'that changes origin also changes which guards apply to it.');
+        }
         const item = clone(fixture);
-        const sla = computeSla(item.dueAt);
+        const sla = computeSla(item.dueAt, provenance);
         item.itemType = item.workIntent;
         item.lifecycle = item.taskLifecycle;
         item.status = item.normalizedStatus === 'InProgress' ? 'In Progress' : item.normalizedStatus;
@@ -258,7 +327,8 @@
         item.activity = (item.activity || []).map((entry) => {
             if (entry.ago != null) { return entry; }
             const at = entry.at ? new Date(String(entry.at).replace(' ', 'T')) : null;
-            const ago = (at && !isNaN(at)) ? Math.max(0, Math.round((TODAY - at) / 86400000)) : 0;
+            const reference = referenceDate(provenance);
+            const ago = (at && !isNaN(at)) ? Math.max(0, Math.round((reference - at) / 86400000)) : 0;
             return { ...entry, ago };
         });
         item.stages = item.processStages || null;
@@ -297,19 +367,39 @@
         ? clone(global.WorkCenterNextFixtures?.triggerOnly || [])
         : []);
 
+    /*
+     * `onBehalfOf`, `status`, `computeSla` and `computeBlocked` used to be exported here and were read from
+     * nowhere (0 references in app.js and in the tests). They are gone rather than kept "just in case": a mock
+     * export nobody consumes is a standing invitation to consume it.
+     *
+     * The three getters below are evaluated per access, not frozen at load, because each answers "what is real
+     * right now" — the showcase flag is a runtime attribute and the clock moves.
+     */
     global.WorkCenterNextData = {
-        todayIso: TODAY_ISO,
-        currentUser: CURRENT_USER,
-        onBehalfOf: ON_BEHALF_OF,
-        delegators: DELEGATORS,
-        status: { PENDING: 'Pending', IN_PROGRESS: 'In Progress', WAITING: 'Waiting', DONE: 'Done', CANCELLED: 'Cancelled' },
+        // Snooze bounds and the calendar's today-highlight are about the USER's clock, so outside the showcase
+        // they must read the real day, not the day the fixtures were written against.
+        get todayIso() {
+            return showcaseFixturesEnabled() ? SHOWCASE_TODAY_ISO : localIsoDate(nowProvider());
+        },
+        // Showcase keeps its demo persona so the catalogue stays coherent; real sessions get the real user, with
+        // no title, because there is no source for one.
+        get currentUser() {
+            return showcaseFixturesEnabled() ? CURRENT_USER : sessionUser();
+        },
+        /*
+         * Delegation scopes. There is NO delegation data for a real session — Platform exposes no "who delegated
+         * to me" seam yet — so outside the showcase this is empty and the scope selector collapses to "Kendim".
+         * The code path is intentionally left intact: the day a real provider lands, it fills this array and the
+         * selector comes back on its own. Listing the showcase's people to a real user offered them delegation
+         * from colleagues who do not exist.
+         */
+        get delegators() {
+            return showcaseFixturesEnabled() ? DELEGATORS : [];
+        },
         tabFor,
         segmentFor,
-        computeSla,
-        computeBlocked: (dependencies) => dependencies?.some((dependency) => dependency.blocking)
-            ? { blocked: true, blockedBy: dependencies.filter((dependency) => dependency.blocking), reasonKey: 'ActionDisabledDependencyBlocked' }
-            : null,
         getActions,
+        setNowProvider,
         toPresentation,
         buildItems,
         buildTriggers,

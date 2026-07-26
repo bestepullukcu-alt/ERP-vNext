@@ -860,6 +860,66 @@
   <data name="PoolUnassigned" xml:space="preserve">
     <value>未分配 — 在任务池中</value>
   </data>
+  <data name="ModuleFinance" xml:space="preserve">
+    <value>财务</value>
+  </data>
+  <data name="ModuleTax" xml:space="preserve">
+    <value>税务</value>
+  </data>
+  <data name="ModuleQuality" xml:space="preserve">
+    <value>质量</value>
+  </data>
+  <data name="ModuleMasterData" xml:space="preserve">
+    <value>主数据</value>
+  </data>
+  <data name="ModuleIntegrationMonitoring" xml:space="preserve">
+    <value>集成监控</value>
+  </data>
+  <data name="ModuleProjectGovernance" xml:space="preserve">
+    <value>项目治理</value>
+  </data>
+  <data name="ModuleWorkflow" xml:space="preserve">
+    <value>工作流</value>
+  </data>
+  <data name="ModuleIncident" xml:space="preserve">
+    <value>事件管理</value>
+  </data>
+  <data name="ModuleWorkcenter" xml:space="preserve">
+    <value>任务中心</value>
+  </data>
+  <data name="ModuleTasks" xml:space="preserve">
+    <value>任务</value>
+  </data>
+  <data name="ModuleEnterpriseStrategy" xml:space="preserve">
+    <value>企业战略</value>
+  </data>
+  <data name="ModuleDocumentation" xml:space="preserve">
+    <value>文档管理</value>
+  </data>
+  <data name="ModuleControlledDocuments" xml:space="preserve">
+    <value>受控文件</value>
+  </data>
+  <data name="ModuleProcurement" xml:space="preserve">
+    <value>采购</value>
+  </data>
+  <data name="ModuleSales" xml:space="preserve">
+    <value>销售</value>
+  </data>
+  <data name="ModuleTreasury" xml:space="preserve">
+    <value>资金管理</value>
+  </data>
+  <data name="ModuleHr" xml:space="preserve">
+    <value>人力资源</value>
+  </data>
+  <data name="ModuleLegal" xml:space="preserve">
+    <value>法务</value>
+  </data>
+  <data name="ModuleCalendar" xml:space="preserve">
+    <value>日历</value>
+  </data>
+  <data name="ModuleLegacyAdapter" xml:space="preserve">
+    <value>旧系统适配器</value>
+  </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>优先级筛选</value>
   </data>

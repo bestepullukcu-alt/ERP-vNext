@@ -131,7 +131,11 @@
         const modules = (params.get('module') || '').split(',').filter((module) => state.items.some((i) => i.sourceModule === module));
         state.moduleFilter = Array.from(new Set(modules));
         const scope = params.get('scope');
-        if (scope && (scope === 'mine' || scope === 'all' || data.delegators.some((d) => d.name === scope))) { state.scope = scope; }
+        // "all" only means something when there is delegated work to include, and the selector does not offer it
+        // otherwise — so a hand-typed ?scope=all must not strand the surface in a state with no visible control.
+        const scopeAllowed = scope === 'mine'
+            || (data.delegators.length > 0 && (scope === 'all' || data.delegators.some((d) => d.name === scope)));
+        if (scope && scopeAllowed) { state.scope = scope; }
         state.group = params.get('group') || 'all';
         state.search = params.get('q') || '';
         state.selectedId = params.get('item') || null;
@@ -187,6 +191,20 @@
     const displayStatus = (item) => item.status;
     const statusLabel = (item) => { const s = displayStatus(item); return t(STATUS_KEY[s] || s); };
     const priorityLabel = (item) => t(PRIORITY_KEY[item.priority] || item.priority);
+
+    /*
+     * A real work item has NO priority: the field is absent from the projection and is not even declared in the
+     * executable contract, so every real row rendered an empty flag chip in an undefined colour. Show it only
+     * where it exists (showcase fixtures carry one).
+     *
+     * Giving the provider a priority field is a contract change with a casing decision attached — fixtures use
+     * 'high', the MOD-0024 enum uses 'High' — and is tracked as BL-032. Do NOT add the field here to make the
+     * chip come back.
+     */
+    const hasPriority = (item) => !!item && PRIORITY_KIND[item.priority] !== undefined;
+    const priorityChip = (item) => (hasPriority(item)
+        ? chip(PRIORITY_KIND[item.priority], 'bx-flag', priorityLabel(item))
+        : '');
 
     const slaLabel = (item) => {
         const d = item.slaDiffDays;
@@ -364,7 +382,14 @@
             `<li><button type="button" class="dropdown-item wcn-dd-item${state.scope === key ? ' active' : ''}" data-wcn-scope="${esc(key)}">
                 <i class="bx ${scopeIcon(key)}"></i><span>${esc(label)}</span>${sub ? `<small class="wcn-dd-sub">${esc(sub)}</small>` : ''}
             </button></li>`;
-        const delegatorItems = data.delegators.map((d) => scopeItem(d.name, tf('OnBehalfShort', d.name), d.title)).join('');
+        /*
+         * With no delegation data there is nothing to scope BETWEEN: "Tümü" would differ from "Kendim" only by
+         * including work that cannot exist, and the delegator entries named people who are not the user's
+         * colleagues. So the menu collapses to the one honest option. The branch below stays wired on purpose —
+         * the day a provider fills data.delegators, the full selector returns with no further change here.
+         */
+        const delegations = data.delegators;
+        const delegatorItems = delegations.map((d) => scopeItem(d.name, tf('OnBehalfShort', d.name), d.title)).join('');
         // "+ Yeni" create menu — WorkCenter owns task/note/meeting; module items
         // (issue/approval) are born in the source (spec v3 §5, note/meeting rule).
         const createItem = (val, icon, label) =>
@@ -382,9 +407,9 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
                         ${scopeItem('mine', t('ScopeMine'), data.currentUser.title)}
-                        ${delegatorItems}
+                        ${delegations.length ? `${delegatorItems}
                         <li><hr class="dropdown-divider"></li>
-                        ${scopeItem('all', t('ScopeAll'), t('ScopeAllSub'))}
+                        ${scopeItem('all', t('ScopeAll'), t('ScopeAllSub'))}` : ''}
                     </ul>
                 </div>
                 <div class="dropdown">
@@ -688,12 +713,12 @@
             <div class="filter-chip">
                 <select class="form-select form-select-sm select2 wcn-select" multiple="multiple" data-wcn-filter="module" data-placeholder="${esc(t('FilterAllModules'))}" aria-label="${esc(t('FilterModule'))}">${modOpts}</select>
             </div>
-            <div class="filter-chip">
+            ${state.items.some(hasPriority) ? `<div class="filter-chip">
                 <select class="form-select form-select-sm select2 wcn-select" data-wcn-filter="priority" data-placeholder="${esc(t('FilterAllPriorities'))}" aria-label="${esc(t('FilterPriority'))}">
                     <option value=""></option>
                     ${['high', 'medium', 'low'].map((p) => `<option value="${p}"${draft.priority === p ? ' selected' : ''}>${esc(t(PRIORITY_KEY[p]))}</option>`).join('')}
                 </select>
-            </div>
+            </div>` : ''}
             ${state.tab === 'inbox' ? '' : `<div class="filter-chip">
                 <select class="form-select form-select-sm select2 wcn-select" multiple="multiple" data-wcn-filter="sla" data-placeholder="${esc(t('FilterSlaStatus'))}" aria-label="${esc(t('FilterSlaStatus'))}">${slaOpts}</select>
             </div>`}
@@ -719,7 +744,7 @@
         chip('module', 'bx-cube', item.sourceModule, sourceTitle(item)),
         chip('type', item.typeIcon, typeLabel(item)),
         chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item)),
-        chip(PRIORITY_KIND[item.priority], 'bx-flag', priorityLabel(item)),
+        priorityChip(item),
         isBlocked(item) ? chip('danger', 'bx-lock-alt', t('BlockedLabel'), t(item.blockedState.reasonKey || 'BlockedBanner')) : '',
         item.waitingOn ? chip('warning', 'bx-time-five', tf('WaitingOn', item.waitingOn)) : '',
         (item.snoozedUntil && item.snoozedUntil > data.todayIso) ? chip('secondary', 'bx-moon', tf('SnoozedUntil', item.snoozedUntil)) : '',
@@ -949,11 +974,11 @@
             ? [item.meetingStart && item.meetingEnd ? `${item.meetingStart}–${item.meetingEnd}` : '', item.meetingLocation].filter(Boolean).join(' · ')
             : [item.sourceModule, item.requester].filter(Boolean).join(' · ');
         const pinBtn = terminal ? '' : `<button type="button" class="wcn-splitcard-pin${item.pinned ? ' pinned' : ''}" data-wcn-pin="${item.id}" title="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-label="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-pressed="${item.pinned}"><i class="bx ${item.pinned ? 'bxs-pin' : 'bx-pin'}"></i></button>`;
-        return `<article class="card wcn-splitcard wcn-splitcard-p-${PRIORITY_KIND[item.priority]}${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" draggable="true" aria-label="${esc(tf('TableOpenRow', item.title))}">
+        return `<article class="card wcn-splitcard${hasPriority(item) ? ` wcn-splitcard-p-${PRIORITY_KIND[item.priority]}` : ''}${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" draggable="true" aria-label="${esc(tf('TableOpenRow', item.title))}">
             <div class="wcn-splitcard-head">
                 <span class="wcn-inbox-type wcn-inbox-type-${typeKind}">${esc(typeLabel(item))}</span>
                 <span class="wcn-splitcard-head-end">
-                    <span class="wcn-chip wcn-chip-${PRIORITY_KIND[item.priority]} wcn-splitcard-prio"><i class="bx bx-flag"></i>${esc(priorityLabel(item))}</span>
+                    ${hasPriority(item) ? `<span class="wcn-chip wcn-chip-${PRIORITY_KIND[item.priority]} wcn-splitcard-prio"><i class="bx bx-flag"></i>${esc(priorityLabel(item))}</span>` : ''}
                     ${pinBtn}
                 </span>
             </div>
@@ -1513,7 +1538,7 @@
             <h5 class="wcn-detail-title">${esc(item.title)}</h5>
             <div class="wcn-detail-chips">
                 ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
-                ${chip(PRIORITY_KIND[item.priority], 'bx-flag', priorityLabel(item))}
+                ${priorityChip(item)}
                 ${chip('role', 'bx-user-check', t(ROLE_KEY[item.viewerRole] || item.viewerRole))}
             </div>
             ${renderStepBar(item)}
@@ -1659,7 +1684,9 @@
                 { data: 'title', name: 'title', visible: state.tableColumnVisibility[2], className: 'fw-medium text-heading', render: (value) => esc(value) },
                 { data: 'sourceModule', name: 'module', visible: state.tableColumnVisibility[3], render: (value) => esc(value) },
                 { data: 'status', name: 'status', visible: state.tableColumnVisibility[4], render: (value, type, row) => type === 'display' ? `<span class="wcn-badge wcn-badge-${row.fixtureKind === 'triggerOnly' ? 'info' : STATUS_KIND[displayStatus(row)]}">${esc(statusLabel(row))}</span>` : value },
-                { data: 'priority', name: 'priority', visible: state.tableColumnVisibility[5], render: (value, type, row) => type === 'display' ? (row.fixtureKind === 'triggerOnly' ? '—' : chip(PRIORITY_KIND[row.priority], 'bx-flag', priorityLabel(row))) : ['high', 'medium', 'low'].indexOf(value) },
+                // Hidden outright when nothing on the surface has a priority — otherwise every real row shows an
+                // empty flag chip under a column header promising data the projection does not carry (BL-032).
+                { data: 'priority', name: 'priority', visible: state.tableColumnVisibility[5] && items.some(hasPriority), render: (value, type, row) => type === 'display' ? (row.fixtureKind === 'triggerOnly' ? '—' : priorityChip(row)) : ['high', 'medium', 'low'].indexOf(value) },
                 { data: 'slaDiffDays', name: 'sla', visible: state.tableColumnVisibility[6], render: (value, type, row) => type === 'display' ? (row.fixtureKind === 'triggerOnly' ? '—' : chip(SLA_KIND[row.slaState], 'bx-time-five', slaLabel(row))) : (value == null ? Number.MAX_SAFE_INTEGER : value) },
                 { data: 'requester', name: 'requester', visible: state.tableColumnVisibility[7], render: (value) => esc(value) },
                 { data: 'id', name: 'action', orderable: false, searchable: false, className: 'cell-fit', render: (id, type, row) => type === 'display' ? tableActionCell(row) : '' }
@@ -1722,7 +1749,7 @@
             <div class="wcn-kcard-chips">
                 ${chip('module', 'bx-cube', item.sourceModule)}
                 ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
-                ${chip(PRIORITY_KIND[item.priority], 'bx-flag', priorityLabel(item))}
+                ${priorityChip(item)}
             </div>
             ${quick ? `<div class="wcn-kcard-actions">${quick}</div>` : ''}
         </div>`;
@@ -2579,7 +2606,9 @@
             replacement.overflowActionCodes = ['requestInfo', 'return'];
         }
         replacement.personal = { ...replacement.personal, seen: true };
-        const projected = data.toPresentation(replacement);
+        // Re-projecting must PRESERVE where the item came from. Letting it default silently re-stamped a showcase
+        // fixture as a real item, which quietly turned off the curation that applies to fixtures alone.
+        const projected = data.toPresentation(replacement, { provenance: item.provenance });
         const index = state.items.findIndex((candidate) => candidate.id === item.id);
         if (index >= 0) { state.items[index] = projected; }
         render();
@@ -2775,7 +2804,9 @@
             assignee: { id: data.currentUser.id, displayName: data.currentUser.name },
             activity: [{ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditSelfCreated', ago: 0 }]
         });
-        const item = data.toPresentation(fixture);
+        // This branch only runs with the showcase catalogue on (see the guard at the top of createSelfTask), so
+        // the item IS a fixture and says so rather than inheriting the 'api' default.
+        const item = data.toPresentation(fixture, { provenance: 'fixture' });
         state.items.push(item);
         state.tab = 'islerim'; state.segment = 'aktif'; state.selectedId = id; state.view = 'list';
         state.agendaOpen = false; state.notesOpen = false;
@@ -2970,6 +3001,21 @@
             const action = actionByKey(item, actionKey);
             if (!action || !action.bulk || action.disabled) { failed.push(item); return; }
             if (item.bulkConflict) { failed.push(item); return; }
+            /*
+             * Symmetry with the single-action path (applyAction): a real item NEVER goes through
+             * applyTransition, which only simulates. Without this, the moment a provider ships
+             * providerCode:"tasks" together with supportsBulk:true, a bulk approve would change the screen and
+             * leave the database untouched — the same defect already fixed once for single actions, silently
+             * reintroduced. Bulk writes against the real engine are a separate slice; until then a real item is
+             * reported as failed rather than faked.
+             */
+            if (isRealTaskItem(item)) {
+                console.warn(`[WorkCenterNext] Bulk "${actionKey}" skipped for real item ${item.id}: bulk `
+                    + 'transitions are not wired to the engine, and simulating one would show a change that '
+                    + 'was never persisted.');
+                failed.push(item);
+                return;
+            }
             applyTransition(item, action.key);
             markSeen(item);
             item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: actionLabel(action), ago: 0 });
