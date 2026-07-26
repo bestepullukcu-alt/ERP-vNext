@@ -26,12 +26,22 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         // this — the system does (pack §12 Y2).
         => TaskLifecycle.Open;
 
-    public string ToNormalizedStatus(TaskItem task)
+    public string ToNormalizedStatus(TaskItem task, bool approvalOutstanding, bool approvalRejected = false)
     {
         ArgumentNullException.ThrowIfNull(task);
 
-        // An approval still pending outranks the native lifecycle: the task is genuinely waiting on someone else.
-        if (IsAwaitingApproval(task))
+        // A REJECTED approval is the one approval outcome that lands in MOD-0024's own lifecycle: the work was
+        // refused, so the task is dead (pack §12 K2). It outranks the native lifecycle and the outstanding flag —
+        // a refused task is neither waiting nor workable.
+        if (approvalRejected && !IsTerminal(task))
+        {
+            return Cancelled;
+        }
+
+        // An approval still OUTSTANDING outranks the native lifecycle: the task is genuinely waiting on someone
+        // else. The caller supplies this from MOD-0023's instance state — it is not inferable from the task,
+        // because ApprovalRequired only records that approval was asked for, never whether it has been given.
+        if (approvalOutstanding)
         {
             return Waiting;
         }
@@ -51,11 +61,17 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         };
     }
 
-    public TaskWaitingContext? ResolveWaitingContext(TaskItem task)
+    public TaskWaitingContext? ResolveWaitingContext(TaskItem task, bool approvalOutstanding, bool approvalRejected = false)
     {
         ArgumentNullException.ThrowIfNull(task);
 
-        if (IsAwaitingApproval(task))
+        // Rejected reads as Cancelled, and the contract forbids a waitingContext on a non-Waiting item.
+        if (approvalRejected && !IsTerminal(task))
+        {
+            return null;
+        }
+
+        if (approvalOutstanding)
         {
             return new TaskWaitingContext(
                 TaskWaitingTypes.Approval,
@@ -148,13 +164,4 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         return allowed;
     }
 
-    /// <summary>
-    /// True while an approval was requested and MOD-0023 has not released the task. Phase 1 stores the flags and
-    /// the instance reference; Phase 3 wires the actual handoff. MOD-0024 never stores an approval STATE.
-    /// </summary>
-    private static bool IsAwaitingApproval(TaskItem task)
-        => task.ApprovalRequired
-           && task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned
-           && task.CompletedAt is null
-           && task.CancelledAt is null;
 }

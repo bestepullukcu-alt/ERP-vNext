@@ -34,6 +34,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
     private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
+    // `complete` needs its OWN wording: "waiting for approval, cannot be started" is wrong on a task already
+    // in progress, and the server refuses Done for the same reason it refuses InProgress.
+    private const string DisabledApprovalCompleteKey = "WorkAggregation_ActionDisabled_ApprovalPendingComplete";
+    // An approval that never STARTED is a different fact from one that is running, and the user can act on it
+    // (retry the save) instead of waiting for an approver who was never asked.
+    private const string DisabledApprovalStartFailedKey = "WorkAggregation_ApprovalError_StartFailed";
 
     private readonly ITaskItemRepository _tasks;
     private readonly IPositionAssignmentRepository _positionAssignments;
@@ -41,6 +47,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private readonly ITaskAssignmentResolver _assignmentResolver;
     private readonly IUserDisplayNameResolver _displayNames;
     private readonly IChecklistRunRepository _checklistRuns;
+    private readonly ITaskApprovalService _approvals;
 
     public TaskWorkItemProvider(
         ITaskItemRepository tasks,
@@ -48,7 +55,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         ITaskLifecycleService lifecycle,
         ITaskAssignmentResolver assignmentResolver,
         IUserDisplayNameResolver displayNames,
-        IChecklistRunRepository checklistRuns)
+        IChecklistRunRepository checklistRuns,
+        ITaskApprovalService approvals)
     {
         _tasks = tasks;
         _positionAssignments = positionAssignments;
@@ -56,6 +64,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         _assignmentResolver = assignmentResolver;
         _displayNames = displayNames;
         _checklistRuns = checklistRuns;
+        _approvals = approvals;
     }
 
     public string ProviderCode => TaskProviderCode;
@@ -114,27 +123,55 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .GroupBy(child => child.ParentTaskItemId!.Value)
             .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskItem>)group.ToList());
 
+        // Approval state comes from MOD-0023, in ONE read for the whole page. It must be READ, never inferred:
+        // ApprovalRequired records that approval was asked for, not whether it has been given, so deriving from
+        // the flag left an APPROVED task still showing Waiting with `start` disabled.
+        var instanceIds = tasks
+            .Where(t => t.ApprovalRequired && t.WorkflowInstanceId is not null)
+            .Select(t => t.WorkflowInstanceId!.Value)
+            .Distinct()
+            .ToList();
+        var approvalStates = await _approvals.GetStatesAsync(instanceIds, ct);
+
         return tasks
-            .Select(t => Project(
-                t,
-                actor,
-                displayNames,
-                checklistByTask.GetValueOrDefault(t.Id),
-                childrenByParent.GetValueOrDefault(t.Id, [])))
+            .Select(t =>
+            {
+                var (outstanding, rejected) = ApprovalView(t, approvalStates);
+                return Project(
+                    t,
+                    actor,
+                    displayNames,
+                    checklistByTask.GetValueOrDefault(t.Id),
+                    childrenByParent.GetValueOrDefault(t.Id, []),
+                    outstanding,
+                    rejected);
+            })
             .ToList();
     }
+
+    /// <summary>
+    /// Both flags come from ONE shared rule (TaskApprovalView) so the Task Center, the task list and the detail
+    /// view can never disagree about whether an approval is still outstanding.
+    /// </summary>
+    private static (bool Outstanding, bool Rejected) ApprovalView(
+        TaskItem task,
+        IReadOnlyDictionary<Guid, TaskApprovalState> states)
+        => TaskApprovalView.Resolve(task, states);
 
     private WorkItemProjectionDto Project(
         TaskItem task,
         WorkItemActor actor,
         IReadOnlyDictionary<Guid, string> displayNames,
         ChecklistRun? checklist,
-        IReadOnlyList<TaskItem> children)
+        IReadOnlyList<TaskItem> children,
+        bool approvalOutstanding,
+        bool approvalRejected = false)
     {
         var assignment = _assignmentResolver.Resolve(task);
-        var normalized = _lifecycle.ToNormalizedStatus(task);
-        var waiting = _lifecycle.ResolveWaitingContext(task);
-        var terminal = _lifecycle.IsTerminal(task);
+        var normalized = _lifecycle.ToNormalizedStatus(task, approvalOutstanding, approvalRejected);
+        var waiting = _lifecycle.ResolveWaitingContext(task, approvalOutstanding, approvalRejected);
+        // A rejected approval is terminal too: refused work must not keep offering start/complete.
+        var terminal = _lifecycle.IsTerminal(task) || approvalRejected;
 
         // A terminal task exposes NO state-changing action (contract rule), so placement is empty too.
         // A blocking checklist item makes completion unavailable. Shown DISABLED with the reason rather than
@@ -143,7 +180,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
         var (actions, primaryActionCode, overflowActionCodes) = terminal
             ? ([], null, (IReadOnlyList<string>)[])
-            : BuildActions(task, actor, checklistBlocks);
+            : BuildActions(task, actor, checklistBlocks, approvalOutstanding);
 
         return new WorkItemProjectionDto(
             FixtureKind: WorkItemContract.FixtureKindWorkItem,
@@ -322,7 +359,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
            && checklist.Items.Any(i => i.Requirement == ChecklistItemRequirement.Blocking && !i.Completed);
 
     private static (IReadOnlyList<WorkItemActionDto> Actions, string? Primary, IReadOnlyList<string> Overflow)
-        BuildActions(TaskItem task, WorkItemActor actor, bool checklistBlocks)
+        BuildActions(TaskItem task, WorkItemActor actor, bool checklistBlocks, bool approvalOutstanding)
     {
         var actions = new List<WorkItemActionDto>();
         string? primary = null;
@@ -331,7 +368,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         var unclaimed = isPool && task.AssigneeUserId is null;
         var openOrPlanned = task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned;
         // An approval-gated task is visible but not startable — MOD-0023 must release it first (pack §12 K2).
-        var approvalPending = task.ApprovalRequired && openOrPlanned;
+        // Read from MOD-0023, not from the flag: once approved this is false and `start` becomes enabled.
+        var approvalPending = approvalOutstanding && openOrPlanned;
 
         if (unclaimed)
         {
@@ -348,7 +386,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         else if (approvalPending)
         {
             // Shown DISABLED rather than hidden, so the reason is visible instead of the button vanishing.
-            actions.Add(Disabled("start", ActionStartKey, TaskReasonCodes.InvalidState, DisabledApprovalKey));
+            // No instance id means the handoff never reached MOD-0023 (it was down, or the link failed to store):
+            // telling the user "waiting for approval" would point at an approver who was never asked.
+            var approvalNeverStarted = task.WorkflowInstanceId is null;
+            actions.Add(Disabled("start", ActionStartKey, TaskReasonCodes.ApprovalPending,
+                approvalNeverStarted ? DisabledApprovalStartFailedKey : DisabledApprovalKey));
             primary = "start";
         }
         else
@@ -361,11 +403,18 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
             if (task.Lifecycle is TaskLifecycle.InProgress)
             {
-                actions.Add(checklistBlocks
+                // Approval is checked BEFORE the checklist: it is the gate the user cannot clear themselves, so
+                // pointing them at unticked items they can complete without unblocking anything would be a lie.
+                // The server refuses Done in both cases (409), so this is a hint about a real refusal, never the
+                // enforcement.
+                actions.Add(approvalOutstanding
                     ? Disabled("complete", ActionCompleteKey,
-                        TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
-                    : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
-                        requiresConfirmation: true));
+                        TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey)
+                    : checklistBlocks
+                        ? Disabled("complete", ActionCompleteKey,
+                            TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                        : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
+                            requiresConfirmation: true));
                 primary = "complete";
             }
         }

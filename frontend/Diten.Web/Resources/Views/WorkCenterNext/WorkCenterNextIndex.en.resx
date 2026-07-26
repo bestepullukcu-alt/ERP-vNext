@@ -1222,6 +1222,12 @@
   <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
     <value>A blocking checklist item is still open.</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPendingComplete" xml:space="preserve">
+    <value>Waiting for approval — it cannot be completed yet.</value>
+  </data>
+  <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
+    <value>The approval could not be started.</value>
+  </data>
   <data name="SubtasksOpenNotice" xml:space="preserve">
     <value>This task still has open subtasks. They do not block completion.</value>
   </data>

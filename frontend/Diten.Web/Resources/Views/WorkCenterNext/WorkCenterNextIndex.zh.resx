@@ -1222,6 +1222,12 @@
   <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
     <value>仍有未完成的必办清单项。</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPendingComplete" xml:space="preserve">
+    <value>等待审批 — 目前无法完成。</value>
+  </data>
+  <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
+    <value>无法启动审批流程。</value>
+  </data>
   <data name="SubtasksOpenNotice" xml:space="preserve">
     <value>此任务仍有未完成的子任务，但不会阻止完成。</value>
   </data>

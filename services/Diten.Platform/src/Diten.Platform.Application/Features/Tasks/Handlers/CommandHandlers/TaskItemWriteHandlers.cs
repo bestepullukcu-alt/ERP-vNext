@@ -4,6 +4,7 @@ using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 
@@ -17,17 +18,23 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
     private readonly IOrganizationUnitRepository _organizationUnits;
     private readonly ITaskFieldDefinitionService _fieldDefinitions;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskApprovalService _approvals;
+    private readonly ILogger<UpdateTaskItemHandler> _logger;
 
     public UpdateTaskItemHandler(
         ITaskItemRepository tasks,
         IOrganizationUnitRepository organizationUnits,
         ITaskFieldDefinitionService fieldDefinitions,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskApprovalService approvals,
+        ILogger<UpdateTaskItemHandler> logger)
     {
         _tasks = tasks;
         _organizationUnits = organizationUnits;
         _fieldDefinitions = fieldDefinitions;
         _currentUser = currentUser;
+        _approvals = approvals;
+        _logger = logger;
     }
 
     public async Task<Response<NoContent>> Handle(UpdateTaskItemCommand command, CancellationToken ct)
@@ -82,11 +89,90 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         task.UpdatedBy = _currentUser.ActorName;
         // SpentHours is untouched: it only moves through execution/time entry, never an edit form (pack §12 Y1).
 
+        // ── Approval toggled by an edit (pack §12 K2, charter Binding A) ──────
+        // false→true starts a MOD-0023 instance, true→false cancels the running one. Both are decided here but
+        // ACTED ON after the write succeeds, so a workflow is never started or cancelled for an edit that then
+        // lost a concurrency race.
+        var startApproval = false;
+        var cancelApproval = false;
+        if (request.ApprovalRequired is { } wantsApproval && wantsApproval != task.ApprovalRequired)
+        {
+            if (wantsApproval)
+            {
+                // The manager may already be on the task from an earlier round; only a task with neither is invalid.
+                var manager = request.ApprovalManagerUserId ?? task.ApprovalManagerUserId;
+                if (manager is null || manager == Guid.Empty)
+                {
+                    return Response<NoContent>.Fail(
+                        "An approval manager is required when approval is requested.",
+                        400, TaskReasonCodes.ValidationFailed, command.CorrelationId);
+                }
+
+                task.ApprovalRequired = true;
+                task.ApprovalManagerUserId = manager;
+                startApproval = true;
+            }
+            else
+            {
+                // ApprovalRequired goes false now; WorkflowInstanceId is kept until the cancel below has used it.
+                task.ApprovalRequired = false;
+                cancelApproval = task.WorkflowInstanceId is not null;
+            }
+        }
+        else if (request.ApprovalManagerUserId is { } reassigned
+            && task.ApprovalRequired
+            && reassigned != Guid.Empty
+            && reassigned != task.ApprovalManagerUserId)
+        {
+            // Re-pointing the approver without touching the requirement: MOD-0023 owns the running instance's
+            // assignee, so MOD-0024 records the intent only. Reassignment inside a live approval is Phase 3b.
+            task.ApprovalManagerUserId = reassigned;
+            _logger.LogInformation(
+                "Task {TaskId} approval manager recorded as {ManagerId}; the running MOD-0023 instance keeps its own assignee.",
+                task.Id, reassigned);
+        }
+
         if (!await _tasks.UpdateAsync(task, request.ExpectedVersion, ct))
         {
             return Response<NoContent>.Fail(
                 "The task changed meanwhile; reload and retry.",
                 409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        if (startApproval)
+        {
+            // Same contract as creation: a task whose approval could not be started is KEPT with ApprovalRequired
+            // true and no instance id, so the fail-closed gate holds `start` shut until it is retried.
+            var instanceId = await _approvals.TryStartApprovalAsync(task, ct);
+            if (instanceId is not null)
+            {
+                task.WorkflowInstanceId = instanceId;
+                if (!await _tasks.UpdateAsync(task, task.Version, ct))
+                {
+                    // The approval IS running; only its link failed to persist. Never silent: without the id the
+                    // projection cannot read the state, and fail-closed then keeps the task blocked.
+                    _logger.LogError(
+                        "Approval instance {InstanceId} started for task {TaskId} but the link could not be stored; "
+                        + "the task stays blocked until it is retried.", instanceId, task.Id);
+                }
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Approval was switched on for task {TaskId} but the MOD-0023 instance could not be started; "
+                    + "the task stays blocked until it is retried.", task.Id);
+            }
+        }
+        else if (cancelApproval)
+        {
+            await _approvals.CancelApprovalAsync(task, ct);
+            task.WorkflowInstanceId = null;
+            if (!await _tasks.UpdateAsync(task, task.Version, ct))
+            {
+                _logger.LogWarning(
+                    "Approval was switched off for task {TaskId} and cancelled, but clearing the instance link failed.",
+                    task.Id);
+            }
         }
 
         return Response<NoContent>.Success(204, command.CorrelationId);

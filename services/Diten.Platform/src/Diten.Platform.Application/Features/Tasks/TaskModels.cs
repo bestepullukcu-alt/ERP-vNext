@@ -133,7 +133,12 @@ public sealed record UpdateTaskItemRequest(
     bool EmailNotificationsEnabled,
     bool DelegationAllowed,
     IReadOnlyList<TaskFieldValueDto>? FieldValues,
-    int ExpectedVersion);
+    int ExpectedVersion,
+    // Phase 3: approval can be switched on or off by an edit. NULL means "this caller is not editing approval" —
+    // a form that never renders the toggle must not be able to silently drop an approval that is already running.
+    // Trailing and optional so every Phase 1-2 payload stays valid.
+    bool? ApprovalRequired = null,
+    Guid? ApprovalManagerUserId = null);
 
 public sealed record TaskWatcherRequest(Guid UserId, TaskWatcherRole Role, Guid? PositionId);
 

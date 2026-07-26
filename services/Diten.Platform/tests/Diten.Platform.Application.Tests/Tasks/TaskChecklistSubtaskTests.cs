@@ -191,7 +191,7 @@ public sealed class TaskChecklistSubtaskTests
     {
         var parent = InProgressTask();
         var child = SubtaskOf(parent.Id, TaskLifecycle.Open);
-        var items = await Provider(new FakeTaskItemRepository(parent, child), new FakeChecklistRunRepository())
+        var items = await Provider(new FakeTaskItemRepository(parent, child), new FakeChecklistRunRepository(), new FakeTaskApprovalService())
             .GetWorkItemsAsync(FullyPermittedActor(), CancellationToken.None);
 
         // Its own row — it is assigned to me, so I must be able to work it directly.
@@ -294,7 +294,7 @@ public sealed class TaskChecklistSubtaskTests
     [Fact]
     public async Task A_task_with_no_checklist_declares_neither_the_capability_nor_the_container()
     {
-        var item = await ProjectOne(InProgressTask(), new FakeChecklistRunRepository());
+        var item = await ProjectOne(InProgressTask(), new FakeChecklistRunRepository(), new FakeTaskApprovalService());
 
         Assert.DoesNotContain("checklist", item.WorkItemCapabilities);
         Assert.Null(item.Checklist);
@@ -315,7 +315,7 @@ public sealed class TaskChecklistSubtaskTests
     {
         // Capability without data is valid; data without capability is not. The shell needs the container to
         // offer "add a subtask".
-        var item = await ProjectOne(InProgressTask(), new FakeChecklistRunRepository());
+        var item = await ProjectOne(InProgressTask(), new FakeChecklistRunRepository(), new FakeTaskApprovalService());
 
         Assert.Contains("subtasks", item.WorkItemCapabilities);
         Assert.NotNull(item.Subtasks);
@@ -420,14 +420,19 @@ public sealed class TaskChecklistSubtaskTests
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private static async Task<WorkItemProjectionDto> ProjectOne(TaskItem task, FakeChecklistRunRepository runs)
+    private static async Task<WorkItemProjectionDto> ProjectOne(
+        TaskItem task, FakeChecklistRunRepository runs, FakeTaskApprovalService? approvals = null)
         => Assert.Single(
-            await Provider(new FakeTaskItemRepository(task), runs)
+            await Provider(new FakeTaskItemRepository(task), runs, approvals)
                 .GetWorkItemsAsync(FullyPermittedActor(), CancellationToken.None));
 
-    private static TaskWorkItemProvider Provider(FakeTaskItemRepository tasks, FakeChecklistRunRepository runs)
+    private static TaskWorkItemProvider Provider(
+        FakeTaskItemRepository tasks,
+        FakeChecklistRunRepository runs,
+        FakeTaskApprovalService? approvals = null)
         => new(tasks, new FakePositionAssignmentRepository(), new TaskLifecycleService(),
-            new TaskAssignmentResolver(), new FakeUserDisplayNameResolver(), runs);
+            new TaskAssignmentResolver(), new FakeUserDisplayNameResolver(), runs,
+            approvals ?? new FakeTaskApprovalService());
 
     private static Task<Application.Common.Response<Application.Common.NoContent>> Transition(
         FakeTaskItemRepository tasks,

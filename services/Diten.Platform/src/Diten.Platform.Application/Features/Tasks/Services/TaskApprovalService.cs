@@ -2,6 +2,7 @@ using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Workflow.Commands;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
+using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -39,6 +40,41 @@ public interface ITaskApprovalService
     Task<IReadOnlyDictionary<Guid, TaskApprovalState>> GetStatesAsync(
         IReadOnlyCollection<Guid> workflowInstanceIds,
         CancellationToken ct);
+}
+
+/// <summary>
+/// The ONE place that turns MOD-0023's reported state into the two flags MOD-0024 renders from. The provider, the
+/// list handler and the detail handler all read it, so the fail-closed rule cannot drift between the Task Center
+/// and the task list — it did not drift yet only because rejection had not been added to any of them.
+/// </summary>
+public static class TaskApprovalView
+{
+    /// <summary>
+    /// <paramref name="outstanding"/> — MOD-0023 still owes a decision, so the task waits and cannot start.
+    /// Fail-closed: approval required with no instance (a failed start) or an unreadable instance counts as
+    /// outstanding, because reporting it as approved would make unapproved work look startable.
+    /// <paramref name="rejected"/> — the work was refused; the task reads as Cancelled and offers no action.
+    /// </summary>
+    public static (bool Outstanding, bool Rejected) Resolve(
+        TaskItem task,
+        IReadOnlyDictionary<Guid, TaskApprovalState> states)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+        ArgumentNullException.ThrowIfNull(states);
+
+        // No approval asked for, or the task is already closed: nobody is owed anything.
+        if (!task.ApprovalRequired || task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+        {
+            return (false, false);
+        }
+
+        if (task.WorkflowInstanceId is not { } instanceId || !states.TryGetValue(instanceId, out var state))
+        {
+            return (true, false);
+        }
+
+        return (Outstanding: !state.IsApproved && !state.IsRejected, Rejected: state.IsRejected);
+    }
 }
 
 /// <summary>

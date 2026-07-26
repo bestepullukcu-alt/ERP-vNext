@@ -33,6 +33,7 @@
   <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>يُسجَّل أثناء تنفيذ العمل — وهو دائمًا صفر في مهمة جديدة.</value></data>
   <data name="FieldTags" xml:space="preserve"><value>الوسوم</value></data>
   <data name="FieldReviewRequired" xml:space="preserve"><value>مراجعة مطلوبة</value></data>
+  <data name="ReviewComingSoonHint" xml:space="preserve"><value>مراجعة ما بعد الإنجاز غير متاحة بعد؛ ستتوفر في إصدار لاحق.</value></data>
   <data name="FieldApprovalRequired" xml:space="preserve"><value>موافقة المدير مطلوبة</value></data>
   <data name="FieldApprovalManager" xml:space="preserve"><value>مدير الموافقة</value></data>
   <data name="ApprovalHint" xml:space="preserve"><value>تُدار الموافقة في محرك سير العمل؛ ولا يمكن بدء المهمة قبل منحها.</value></data>

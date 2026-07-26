@@ -17,17 +17,20 @@ public sealed class GetTaskItemListHandler
     private readonly ITaskItemRepository _tasks;
     private readonly IPositionAssignmentRepository _positionAssignments;
     private readonly ITaskLifecycleService _lifecycle;
+    private readonly ITaskApprovalService _approvals;
     private readonly ICurrentUserContext _currentUser;
 
     public GetTaskItemListHandler(
         ITaskItemRepository tasks,
         IPositionAssignmentRepository positionAssignments,
         ITaskLifecycleService lifecycle,
+        ITaskApprovalService approvals,
         ICurrentUserContext currentUser)
     {
         _tasks = tasks;
         _positionAssignments = positionAssignments;
         _lifecycle = lifecycle;
+        _approvals = approvals;
         _currentUser = currentUser;
     }
 
@@ -44,11 +47,22 @@ public sealed class GetTaskItemListHandler
         var positionIds = await ResolveActivePositionIdsAsync(userId, ct);
         var pooled = await _tasks.ListUnclaimedByPositionsAsync(positionIds, ct);
 
-        IReadOnlyList<TaskItemListItemDto> result = mine
-            .Concat(pooled)
-            .DistinctBy(t => t.Id)
+        var visible = mine.Concat(pooled).DistinctBy(t => t.Id).ToList();
+
+        // ONE approval-state read for the whole list — the same rule the Task Center projection follows. Reading
+        // per task would be an N+1, and inferring from ApprovalRequired would report an approved task as Waiting.
+        var approvalStates = await _approvals.GetStatesAsync(
+            visible.Where(t => t.ApprovalRequired && t.WorkflowInstanceId is not null)
+                .Select(t => t.WorkflowInstanceId!.Value).Distinct().ToList(), ct);
+
+        IReadOnlyList<TaskItemListItemDto> result = visible
             .OrderBy(t => t.DueAt ?? DateTimeOffset.MaxValue)
-            .Select(t => TaskItemMapper.ToListItem(t, _lifecycle))
+                        .Select(t =>
+            {
+                // One shared fail-closed rule (TaskApprovalView) — the list must not disagree with the Task Center.
+                var (outstanding, rejected) = TaskApprovalView.Resolve(t, approvalStates);
+                return TaskItemMapper.ToListItem(t, _lifecycle, outstanding, rejected);
+            })
             .ToList();
 
         return Response<IReadOnlyList<TaskItemListItemDto>>.Success(result, correlationId: request.CorrelationId);

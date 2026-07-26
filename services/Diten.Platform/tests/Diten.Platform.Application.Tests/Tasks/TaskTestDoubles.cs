@@ -78,14 +78,19 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
             OrganizationUnitId = source.OrganizationUnitId
         };
 
+        CopyWritableFields(from: source, to: copy);
+        return copy;
+    }
+
+    /// <summary>Every writable property, so the double can never decide which fields are persistable.</summary>
+    private static void CopyWritableFields(TaskItem from, TaskItem to)
+    {
         foreach (var property in typeof(TaskItem)
                      .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
-                     .Where(p => p.CanRead && p.CanWrite))
+                     .Where(p => p is { CanRead: true, CanWrite: true }))
         {
-            property.SetValue(copy, property.GetValue(source));
+            property.SetValue(to, property.GetValue(from));
         }
-
-        return copy;
     }
 
     public Task<IReadOnlyList<TaskItem>> GetAllForTenantAsync(CancellationToken ct = default)
@@ -126,6 +131,11 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
 
     public Task<bool> UpdateAsync(TaskItem task, int expectedVersion, CancellationToken ct = default)
     {
+        // The real repository stamps the passed entity BEFORE its conditional write (TaskRepositories.cs:79), so a
+        // handler that writes twice in one request (persist the edit, then store the workflow instance id) can pass
+        // task.Version the second time. The double must stamp it too, or that second write always misses.
+        task.Version = expectedVersion + 1;
+
         var stored = _items.FirstOrDefault(x => x.Id == task.Id && x.TenantId == TaskTestData.Tenant);
         if (stored is null || stored.Version != expectedVersion)
         {
@@ -133,12 +143,12 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
             return Task.FromResult(false);
         }
 
+        // Replace the WHOLE document, like the real repository does. Copying a hand-picked subset of fields made
+        // every field outside that list silently unwritable: a handler could persist ApprovalRequired or
+        // WorkflowInstanceId, return 204, and the next read would still show the old value — the test double, not
+        // the code, decided what "saved" meant.
+        CopyWritableFields(from: task, to: stored);
         stored.Version = expectedVersion + 1;
-        stored.AssigneeUserId = task.AssigneeUserId;
-        stored.Lifecycle = task.Lifecycle;
-        stored.Title = task.Title;
-        stored.CompletedAt = task.CompletedAt;
-        stored.CancelledAt = task.CancelledAt;
         return Task.FromResult(true);
     }
 
@@ -424,6 +434,12 @@ internal sealed class FakeWorkflowTransitionGate : Diten.Platform.Application.Co
 /// <summary>Approval-service double: records starts/cancels and can simulate a workflow that will not start.</summary>
 internal sealed class FakeTaskApprovalService : Diten.Platform.Application.Features.Tasks.Services.ITaskApprovalService
 {
+    /// <summary>Instance id → state, as MOD-0023 would report it. Seeded per test.</summary>
+    public Dictionary<Guid, Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState> States { get; } = [];
+
+    /// <summary>Batched reads issued — the N+1 assertion reads this.</summary>
+    public List<int> StateReadSizes { get; } = [];
+
     public bool CannotStart { get; set; }
     public List<Guid> Started { get; } = [];
     public List<Guid> Cancelled { get; } = [];
@@ -443,6 +459,32 @@ internal sealed class FakeTaskApprovalService : Diten.Platform.Application.Featu
 
     public Task<IReadOnlyDictionary<Guid, Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState>>
         GetStatesAsync(IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct)
-        => Task.FromResult<IReadOnlyDictionary<Guid, Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState>>(
-            new Dictionary<Guid, Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState>());
+    {
+        StateReadSizes.Add(workflowInstanceIds.Count);
+        return Task.FromResult<IReadOnlyDictionary<Guid, Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState>>(
+            States.Where(kv => workflowInstanceIds.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value));
+    }
+
+    /// <summary>Mark an instance as approved, the way MOD-0023 reports it after a decision.</summary>
+    public FakeTaskApprovalService Approved(Guid instanceId)
+    {
+        States[instanceId] = new Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState(
+            IsPending: false, IsApproved: true, IsRejected: false);
+        return this;
+    }
+
+    /// <summary>Mark an instance as REFUSED — the one approval outcome that lands in MOD-0024's lifecycle.</summary>
+    public FakeTaskApprovalService Rejected(Guid instanceId)
+    {
+        States[instanceId] = new Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState(
+            IsPending: false, IsApproved: false, IsRejected: true);
+        return this;
+    }
+
+    public FakeTaskApprovalService Pending(Guid instanceId)
+    {
+        States[instanceId] = new Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState(
+            IsPending: true, IsApproved: false, IsRejected: false);
+        return this;
+    }
 }

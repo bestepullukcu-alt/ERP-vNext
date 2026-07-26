@@ -199,7 +199,7 @@ public sealed class TaskWorkItemProviderTests
             new TaskLifecycleService(),
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
-            new FakeChecklistRunRepository());
+            new FakeChecklistRunRepository(), new FakeTaskApprovalService());
 
     private static WorkItemActor Actor() => new(
         TaskTestData.Me,

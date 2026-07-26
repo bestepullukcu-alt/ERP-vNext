@@ -26,7 +26,7 @@ public sealed class TaskLifecycleServiceTests
     public void Maps_every_lifecycle_value_to_a_contract_normalized_status(TaskLifecycle lifecycle, string expected)
     {
         var task = MakeTask(lifecycle);
-        Assert.Equal(expected, _sut.ToNormalizedStatus(task));
+        Assert.Equal(expected, _sut.ToNormalizedStatus(task, approvalOutstanding: false));
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public sealed class TaskLifecycleServiceTests
         // The existing WorkCenterNext mock emitted Open + InProgress together, claiming an unstarted task was
         // already being worked. That pairing is wrong and must not come back.
         var task = MakeTask(TaskLifecycle.Open);
-        Assert.Equal("Pending", _sut.ToNormalizedStatus(task));
+        Assert.Equal("Pending", _sut.ToNormalizedStatus(task, approvalOutstanding: false));
     }
 
     [Theory]
@@ -49,8 +49,8 @@ public sealed class TaskLifecycleServiceTests
     public void Waiting_status_and_waitingContext_are_bidirectional(TaskLifecycle lifecycle)
     {
         var task = MakeTask(lifecycle);
-        var isWaiting = _sut.ToNormalizedStatus(task) == "Waiting";
-        var context = _sut.ResolveWaitingContext(task);
+        var isWaiting = _sut.ToNormalizedStatus(task, approvalOutstanding: false) == "Waiting";
+        var context = _sut.ResolveWaitingContext(task, approvalOutstanding: false);
 
         // The contract rejects a Waiting item without a context, and a context on a non-Waiting item.
         Assert.Equal(isWaiting, context is not null);
@@ -63,8 +63,8 @@ public sealed class TaskLifecycleServiceTests
         task.ApprovalRequired = true;
         task.ApprovalManagerUserId = Me;
 
-        Assert.Equal("Waiting", _sut.ToNormalizedStatus(task));
-        var context = _sut.ResolveWaitingContext(task);
+        Assert.Equal("Waiting", _sut.ToNormalizedStatus(task, approvalOutstanding: true));
+        var context = _sut.ResolveWaitingContext(task, approvalOutstanding: true);
         Assert.NotNull(context);
         Assert.Equal(TaskWaitingTypes.Approval, context!.Type);
     }
@@ -92,15 +92,15 @@ public sealed class TaskLifecycleServiceTests
         var task = MakeTask(TaskLifecycle.Open);
         task.ApprovalRequired = true;
 
-        Assert.Equal("Waiting", _sut.ToNormalizedStatus(task));
-        Assert.Equal(TaskWaitingTypes.Approval, _sut.ResolveWaitingContext(task)!.Type);
+        Assert.Equal("Waiting", _sut.ToNormalizedStatus(task, approvalOutstanding: true));
+        Assert.Equal(TaskWaitingTypes.Approval, _sut.ResolveWaitingContext(task, approvalOutstanding: true)!.Type);
     }
 
     [Fact]
     public void PendingReview_waits_on_the_reviewer()
     {
         var task = MakeTask(TaskLifecycle.PendingReview);
-        var context = _sut.ResolveWaitingContext(task);
+        var context = _sut.ResolveWaitingContext(task, approvalOutstanding: false);
         Assert.Equal(TaskWaitingTypes.Review, context!.Type);
     }
 

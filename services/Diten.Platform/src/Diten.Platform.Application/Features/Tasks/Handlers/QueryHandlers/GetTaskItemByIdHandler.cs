@@ -12,17 +12,20 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
     private readonly ITaskWatcherRepository _watchers;
     private readonly ITaskDependencyRepository _dependencies;
     private readonly ITaskLifecycleService _lifecycle;
+    private readonly ITaskApprovalService _approvals;
 
     public GetTaskItemByIdHandler(
         ITaskItemRepository tasks,
         ITaskWatcherRepository watchers,
         ITaskDependencyRepository dependencies,
-        ITaskLifecycleService lifecycle)
+        ITaskLifecycleService lifecycle,
+        ITaskApprovalService approvals)
     {
         _tasks = tasks;
         _watchers = watchers;
         _dependencies = dependencies;
         _lifecycle = lifecycle;
+        _approvals = approvals;
     }
 
     public async Task<Response<TaskItemDetailDto>> Handle(GetTaskItemByIdQuery request, CancellationToken ct)
@@ -39,8 +42,14 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         var watchers = await _watchers.ListByTaskIdAsync(task.Id, ct);
         var dependencies = await _dependencies.ListByTaskIdAsync(task.Id, ct);
 
+        // Same shared rule as the list and the projection, for one task.
+        var approvalStates = task.ApprovalRequired && task.WorkflowInstanceId is { } instanceId
+            ? await _approvals.GetStatesAsync([instanceId], ct)
+            : new Dictionary<Guid, TaskApprovalState>();
+        var (approvalOutstanding, approvalRejected) = TaskApprovalView.Resolve(task, approvalStates);
+
         return Response<TaskItemDetailDto>.Success(
-            TaskItemMapper.ToDetail(task, _lifecycle, watchers, dependencies),
+            TaskItemMapper.ToDetail(task, _lifecycle, approvalOutstanding, approvalRejected, watchers, dependencies),
             correlationId: request.CorrelationId);
     }
 }

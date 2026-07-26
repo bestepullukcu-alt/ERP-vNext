@@ -1222,6 +1222,12 @@
   <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
     <value>Остался незавершённый обязательный пункт чек-листа.</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPendingComplete" xml:space="preserve">
+    <value>Ожидает утверждения — завершить пока нельзя.</value>
+  </data>
+  <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
+    <value>Не удалось запустить согласование.</value>
+  </data>
   <data name="SubtasksOpenNotice" xml:space="preserve">
     <value>У задачи есть незавершённые подзадачи. Они не мешают её завершить.</value>
   </data>

@@ -17,14 +17,19 @@ public interface ITaskLifecycleService
     TaskLifecycle ResolveInitialLifecycle(bool approvalRequired);
 
     /// <summary>Maps native lifecycle → the contract's normalizedStatus (five-value set).</summary>
-    string ToNormalizedStatus(TaskItem task);
+    /// <summary>
+    /// The contract's normalizedStatus. <paramref name="approvalOutstanding"/> is an INPUT, read from MOD-0023 by
+    /// the caller: <c>ApprovalRequired</c> only records that approval was asked for, never whether it was given, so
+    /// deriving it here left an approved task permanently "Waiting".
+    /// </summary>
+    string ToNormalizedStatus(TaskItem task, bool approvalOutstanding, bool approvalRejected = false);
 
     /// <summary>
     /// The waiting reason, or null. The contract treats <c>normalizedStatus == "Waiting"</c> and
     /// <c>waitingContext</c> as a BIDIRECTIONAL pair, so this must be non-null exactly when the normalized
     /// status is Waiting.
     /// </summary>
-    TaskWaitingContext? ResolveWaitingContext(TaskItem task);
+    TaskWaitingContext? ResolveWaitingContext(TaskItem task, bool approvalOutstanding, bool approvalRejected = false);
 
     /// <summary>Remaining effort = Estimate − Spent, floored at 0. Derived, never stored (pack §12 E4).</summary>
     decimal? CalculateRemainingHours(TaskItem task);

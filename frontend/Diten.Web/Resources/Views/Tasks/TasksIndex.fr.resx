@@ -33,6 +33,7 @@
   <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>Enregistré pendant l'exécution — toujours zéro sur une nouvelle tâche.</value></data>
   <data name="FieldTags" xml:space="preserve"><value>Étiquettes</value></data>
   <data name="FieldReviewRequired" xml:space="preserve"><value>Revue requise</value></data>
+  <data name="ReviewComingSoonHint" xml:space="preserve"><value>La revue après achèvement n'est pas encore disponible ; elle arrivera dans une prochaine version.</value></data>
   <data name="FieldApprovalRequired" xml:space="preserve"><value>Approbation du responsable requise</value></data>
   <data name="FieldApprovalManager" xml:space="preserve"><value>Responsable de l'approbation</value></data>
   <data name="ApprovalHint" xml:space="preserve"><value>L'approbation est gérée par le moteur de workflow ; la tâche ne peut pas démarrer avant son octroi.</value></data>

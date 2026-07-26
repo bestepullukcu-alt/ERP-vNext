@@ -606,8 +606,98 @@ proxy returns 503 — a release blocker.
 > keyboard or touch user gets no tooltip. Open subtasks render a notice and never disable anything.
 
 ### Phase 3 — approval/review via MOD-0023
-- [ ] Toggling approval starts a MOD-0023 instance; MOD-0024 stores no approval state.
-- [ ] Rejection cancels the task as a workflow outcome; approval makes it startable.
+- [x] Toggling approval starts a MOD-0023 instance; MOD-0024 stores no approval state.
+- [x] Rejection cancels the task as a workflow outcome; approval makes it startable.
+- [ ] **Review** — deferred to **Phase 3b** (below). The toggle ships visibly disabled, not silently inert.
+
+> **As built (2026-07-26) — APPROVAL COMPLETE. Review deferred to Phase 3b.**
+>
+> **The link is one field.** `TaskItem.WorkflowInstanceId` is the ONLY thing MOD-0024 keeps. There is no
+> `ApprovalStatus`, no `ApprovedAt`, no cached decision — a reflection test asserts no approval-status field exists
+> on the entity, so the shortcut cannot be reintroduced by accident. State is read from MOD-0023 **at request
+> time**, through its own repositories and MediatR commands; none of its files were modified.
+>
+> **One shared read rule.** `TaskApprovalView.Resolve(task, states)` turns MOD-0023's reported state into the two
+> flags MOD-0024 renders from (`outstanding`, `rejected`). The provider, the list handler and the detail handler all
+> call it. It started as three copies of the same fail-closed condition; adding rejection to three places would have
+> been three chances to drift, and the Task Center disagreeing with the task list about whether work is startable is
+> exactly the class of bug that is invisible in tests written per-handler.
+>
+> **Fail-closed, stated once:** approval required + no instance (the start failed) or an unreadable instance ⇒ still
+> outstanding. An unreadable workflow must never read as "approved", because that is the direction that lets
+> unapproved work look startable.
+>
+> **Reads are batched.** One `GetStatesAsync` call per request carries every visible task's instance id,
+> de-duplicated. Pinned by a test: 12 approval-gated tasks ⇒ exactly 1 read of 12 ids. Without that test a per-task
+> read is indistinguishable from a batched one at the API boundary.
+>
+> **Start and cancel are driven by the CHANGE, not the value.** Create with `approvalRequired: true` starts an
+> instance; an edit starts one on `false→true` and cancels the running one on `true→false`. `null` means "this
+> caller is not editing approval" — a form that never renders the toggle would otherwise post `false` and silently
+> cancel a live approval. Both handoffs happen **after** the write is known to have landed, so an edit that loses
+> its concurrency race never starts or cancels a workflow.
+>
+> **A task whose approval cannot be started is KEPT**, with `ApprovalRequired` still true and no instance id. The
+> fail-closed gate then holds `start` shut until it is retried. Losing the user's work, or accepting it and quietly
+> dropping the approval, are both worse than a blocked task.
+>
+> **Rejection is the one outcome that lands in MOD-0024's lifecycle** (§12 K2): a refused task reads as `Cancelled`,
+> carries no `waitingContext` and exposes no action. It is derived from the same batched read — no second mechanism,
+> no stored copy, no polling or event bus invented for it. It is therefore **not persisted**: nothing tells MOD-0024
+> *when* the decision happens, so the rejection is reported truthfully on every read instead of guessed once. A task
+> the user already closed is never re-labelled by a late rejection.
+>
+> **Template install is lazy, idempotent and tenant-scoped.** The first approval in a tenant creates and publishes
+> a single-step definition; a concurrent loser adopts the winner's template rather than creating a duplicate. Code
+> and name are configurable (`Tasks:Approval`), because a tenant that already runs its own approval definition must
+> be able to point MOD-0024 at it.
+>
+> #### ⚠️ Finding: a SECOND approval engine had been built. Do not bring it back.
+>
+> Phase 1 decided approval inside `TaskLifecycleService.CanTransition`: `ApprovalRequired == true` ⇒ refuse
+> `InProgress`. That reads like a safety check. It was a second approval engine, and it was **wrong in both
+> directions**:
+>
+> - It judged from a **flag on the task**, which records only that approval was *asked for* — never whether it was
+>   *given*. So an approved task could never start. The approval could be granted in MOD-0023 and the button stayed
+>   dead forever.
+> - It made the real gate unreachable: `CanTransition` refused first, so `IWorkflowTransitionGate` was never
+>   consulted, and MOD-0023's actual decision was never asked for.
+>
+> It has been **removed**, and `TaskLifecycleService` now takes `approvalOutstanding` as an explicit **input** from
+> the caller — it reports a state, it does not decide one. `CanTransition` carries a comment saying why, and
+> `TaskLifecycleServiceTests` pins it with a named test
+> (`The_lifecycle_service_does_NOT_judge_approval_the_workflow_gate_does`) so a future "let's validate this locally
+> too" edit fails the suite instead of passing review. Removing it opened no hole: `TransitionTaskItemHandler`
+> consults the fail-closed gate before committing, on `start` **and** `complete`, and only when `ApprovalRequired`.
+>
+> **Rule for anyone extending this:** MOD-0024 may *report* approval state and *hand off* to MOD-0023. It may never
+> *decide* it. Any local `if (ApprovalRequired)` that blocks a transition is this bug returning.
+>
+> #### Phase 3b — review (not built)
+>
+> Review has no engine, no reviewer resolution and no endpoint. Rather than ship a switch that writes a flag nothing
+> reads, `taskReviewRequired` renders **disabled** with a visible "coming soon" hint (`ReviewComingSoonHint`,
+> 7 languages) and an `aria-describedby` link so the reason reaches assistive tech, not just sighted users.
+> `PendingReview` already exists in the lifecycle map and projects as `Waiting`, so Phase 3b is a reviewer +
+> transition + gate, not a remodel. Also deferred to 3b: **reassigning the approver of a live approval** — MOD-0023
+> owns the running instance's assignee, so today an edit records MOD-0024's intent and logs that the instance keeps
+> its own, rather than pretending to move it.
+>
+> **Two message surfaces do not exist yet, and no strings were shipped for them** (a translated string nobody can
+> render is a false claim of coverage):
+> - **A retry affordance for a failed approval start.** `WorkItemActionDto` carries exactly ONE disabled-reason
+>   label, so there is no slot for a second "try saving again" line. Today the disabled `start` says *the approval
+>   could not be started* (`WorkAggregation_ApprovalError_StartFailed`) — distinct from *waiting for the approver*
+>   (`…_ActionDisabled_ApprovalPending`), which is the distinction that matters: one is actionable by the user, the
+>   other is not. Both are pinned by tests.
+> - **A "why was this cancelled" note on a rejected task.** The row reads `Cancelled` truthfully, but attributing it
+>   to the rejection needs a `notice` field on the projection to reach the shell's existing note slot.
+>
+> **Wired reasons (both were projection lies before Phase 3):** `complete` is now disabled while an approval is
+> outstanding — the gate refuses `Done` as well as `InProgress`, so an enabled button promised what the server
+> answers with 409. Approval is checked **before** the checklist there, because pointing a user at unticked items
+> they *can* clear, when clearing them unblocks nothing, is worse than naming the gate they cannot.
 
 ### Phase 4 — recurrence
 - [ ] Recurring instances are distinct (`ProcessInstanceId`); a rerun does not duplicate.
@@ -663,7 +753,9 @@ suites stay green.
    + DI; quick & detailed forms; email on assign; 7-language l10n. Verify permission `Module`/`Scope` **before**
    declaring done.
 2. **Phase 2** — checklist, subtasks, task templates.
-3. **Phase 3** — MOD-0023 approval/review handoff.
+3. **Phase 3** — MOD-0023 approval handoff. ✅ Done 2026-07-26. **Review split out as Phase 3b** (no engine yet;
+   the toggle ships disabled with a visible reason — see the Phase 3 acceptance notes, including the recorded
+   "second approval engine" finding that must not be reintroduced).
 4. **Phase 4** — recurrence on the Hangfire seam.
 5. **Phase 5** — configurable field definition UI (BL-024 authorization stays out).
 

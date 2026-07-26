@@ -1222,6 +1222,12 @@
   <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
     <value>Queda un elemento bloqueante de la lista de verificación.</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPendingComplete" xml:space="preserve">
+    <value>Pendiente de aprobación: aún no se puede completar.</value>
+  </data>
+  <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
+    <value>No se pudo iniciar la aprobación.</value>
+  </data>
   <data name="SubtasksOpenNotice" xml:space="preserve">
     <value>Esta tarea todavía tiene subtareas abiertas. No impiden completarla.</value>
   </data>

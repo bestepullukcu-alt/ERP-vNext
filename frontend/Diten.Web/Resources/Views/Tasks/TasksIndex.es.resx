@@ -33,6 +33,7 @@
   <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>Se registra durante la ejecución: siempre es cero en una tarea nueva.</value></data>
   <data name="FieldTags" xml:space="preserve"><value>Etiquetas</value></data>
   <data name="FieldReviewRequired" xml:space="preserve"><value>Requiere revisión</value></data>
+  <data name="ReviewComingSoonHint" xml:space="preserve"><value>La revisión posterior a la finalización aún no está disponible; llegará en una versión posterior.</value></data>
   <data name="FieldApprovalRequired" xml:space="preserve"><value>Requiere aprobación del responsable</value></data>
   <data name="FieldApprovalManager" xml:space="preserve"><value>Responsable de aprobación</value></data>
   <data name="ApprovalHint" xml:space="preserve"><value>La aprobación se ejecuta en el motor de flujo de trabajo; la tarea no puede iniciarse hasta concederse.</value></data>
