@@ -81,6 +81,14 @@
   <data name="ActionOk" xml:space="preserve"><value>ОК</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>Не удалось определить организационную единицу для этой задачи. Попросите администратора назначить вам должность или создать корневую организационную единицу.</value></data>
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Выбранная должность не может получать задачи. Выберите активную должность.</value></data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Задачу раньше вас изменил другой сотрудник. Экран обновлён до текущего состояния.</value></data>
+  <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Обязательный пункт чек-листа ещё не отмечен, поэтому задачу нельзя завершить.</value></data>
+  <data name="ErrorApprovalPending" xml:space="preserve"><value>Задача ожидает решения согласующего.</value></data>
+  <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>Согласующий запросил подтверждающие сведения до принятия решения.</value></data>
+  <data name="ErrorApprovalRejected" xml:space="preserve"><value>Согласование отклонено, поэтому задача не может продолжаться.</value></data>
+  <data name="ErrorApprovalCancelled" xml:space="preserve"><value>Согласование отменено, поэтому задача не может продолжаться.</value></data>
+  <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>Согласование ещё не завершено, поэтому этот шаг недоступен.</value></data>
+  <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>Сейчас не удалось проверить согласование, действие не выполнено. Повторите попытку чуть позже.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>Работу можно назначить только сотрудникам, занимающим должность.</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Выберите сотрудника…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>Пока никто не занимает должность, назначить работу некому. Попросите администратора сначала назначить должности.</value></data>

@@ -108,6 +108,17 @@
         // Keyed by the API's stable reason code, not by server-side text: the message is chosen in the browser so
         // it lands in the user's language (the same code→resx bridge used for password validation).
         ErrorOrganizationUnitUnresolved = Localizer["ErrorOrganizationUnitUnresolved"].Value,
-        ErrorPositionNotAssignable = Localizer["ErrorPositionNotAssignable"].Value
+        ErrorPositionNotAssignable = Localizer["ErrorPositionNotAssignable"].Value,
+        // A REFUSED transition, one message per blocking reason MOD-0023's gate can answer with. These arrived as a
+        // bare 500 until Phase 3's HTTP contract fix, so none of them had a message before; a single generic
+        // "an error occurred" cannot tell a user waiting for their manager from one whose request was rejected.
+        ErrorConcurrencyRefreshed = Localizer["ErrorConcurrencyRefreshed"].Value,
+        ErrorChecklistIncomplete = Localizer["ErrorChecklistIncomplete"].Value,
+        ErrorApprovalPending = Localizer["ErrorApprovalPending"].Value,
+        ErrorApprovalWaitingEvidence = Localizer["ErrorApprovalWaitingEvidence"].Value,
+        ErrorApprovalRejected = Localizer["ErrorApprovalRejected"].Value,
+        ErrorApprovalCancelled = Localizer["ErrorApprovalCancelled"].Value,
+        ErrorApprovalNotApproved = Localizer["ErrorApprovalNotApproved"].Value,
+        ErrorApprovalGateUnavailable = Localizer["ErrorApprovalGateUnavailable"].Value
     })
 </script>

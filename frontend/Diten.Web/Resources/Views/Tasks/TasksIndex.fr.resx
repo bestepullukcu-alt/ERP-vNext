@@ -81,6 +81,14 @@
   <data name="ActionOk" xml:space="preserve"><value>OK</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>Aucune unité organisationnelle n'a pu être déterminée pour cette tâche. Demandez à un administrateur de vous attribuer un poste ou de définir une unité organisationnelle racine.</value></data>
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Le poste sélectionné ne peut pas recevoir de tâches. Choisissez un poste actif.</value></data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Quelqu'un d'autre a modifié cette tâche avant vous. L'écran affiche désormais l'état actuel.</value></data>
+  <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Un élément obligatoire de la liste de contrôle n'est pas encore coché, la tâche ne peut donc pas être terminée.</value></data>
+  <data name="ErrorApprovalPending" xml:space="preserve"><value>La tâche attend la décision de l'approbateur.</value></data>
+  <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>L'approbateur demande des informations justificatives avant de décider.</value></data>
+  <data name="ErrorApprovalRejected" xml:space="preserve"><value>L'approbation a été refusée, cette tâche ne peut pas continuer.</value></data>
+  <data name="ErrorApprovalCancelled" xml:space="preserve"><value>L'approbation a été annulée, cette tâche ne peut pas continuer.</value></data>
+  <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>L'approbation n'est pas encore terminée, cette étape n'est pas autorisée.</value></data>
+  <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>L'approbation n'a pas pu être vérifiée pour le moment, l'action n'a pas été appliquée. Réessayez dans un instant.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>Seules les personnes occupant actuellement un poste peuvent recevoir du travail.</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Sélectionnez une personne…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>Personne n'occupe encore de poste, il n'y a donc personne à qui assigner. Demandez d'abord à un administrateur d'attribuer des postes.</value></data>

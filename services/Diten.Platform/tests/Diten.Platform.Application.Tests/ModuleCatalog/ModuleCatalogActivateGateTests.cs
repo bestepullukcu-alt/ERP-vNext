@@ -9,6 +9,7 @@ using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.ModuleCatalog;
@@ -23,7 +24,7 @@ public sealed class ModuleCatalogActivateGateTests
         var item = Draft();
         var repo = new FakeModuleCatalogRepository(item);
         // NotApplicable = no workflow attached to this object → gate allows → existing behaviour unchanged.
-        var gate = new WorkflowTransitionGate(new GateMediator(WorkflowTransitionGateDecision.NotApplicable, WorkflowTransitionGateStatus.NoWorkflow));
+        var gate = new WorkflowTransitionGate(new GateMediator(WorkflowTransitionGateDecision.NotApplicable, WorkflowTransitionGateStatus.NoWorkflow), NullLogger<WorkflowTransitionGate>.Instance);
         var handler = new ActivateModuleCatalogItemCommandHandler(repo, gate);
 
         var response = await handler.Handle(new ActivateModuleCatalogItemCommand(item.Id), CancellationToken.None);
@@ -39,7 +40,7 @@ public sealed class ModuleCatalogActivateGateTests
     {
         var item = Draft();
         var repo = new FakeModuleCatalogRepository(item);
-        var gate = new WorkflowTransitionGate(new GateMediator(WorkflowTransitionGateDecision.Blocked, WorkflowTransitionGateStatus.PendingApproval, blockingReason: WorkflowReasonCodes.WorkflowPendingApproval));
+        var gate = new WorkflowTransitionGate(new GateMediator(WorkflowTransitionGateDecision.Blocked, WorkflowTransitionGateStatus.PendingApproval, blockingReason: WorkflowReasonCodes.WorkflowPendingApproval), NullLogger<WorkflowTransitionGate>.Instance);
         var handler = new ActivateModuleCatalogItemCommandHandler(repo, gate);
 
         await Assert.ThrowsAsync<WorkflowTransitionBlockedException>(
@@ -59,7 +60,7 @@ public sealed class ModuleCatalogActivateGateTests
         Status = ModuleCatalogStatus.Draft
     };
 
-    private sealed class GateMediator(
+    internal sealed class GateMediator(
         WorkflowTransitionGateDecision decision,
         WorkflowTransitionGateStatus status,
         string? blockingReason = null) : IMediator
@@ -93,7 +94,7 @@ public sealed class ModuleCatalogActivateGateTests
         public Task Publish<TNotification>(TNotification notification, CancellationToken ct = default) where TNotification : INotification => throw new NotSupportedException();
     }
 
-    private sealed class FakeModuleCatalogRepository(ModuleCatalogItem item) : IModuleCatalogRepository
+    internal sealed class FakeModuleCatalogRepository(ModuleCatalogItem item) : IModuleCatalogRepository
     {
         public int UpdateCount { get; private set; }
 

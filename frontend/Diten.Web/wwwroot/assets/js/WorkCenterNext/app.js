@@ -2345,11 +2345,23 @@
             return;
         }
 
-        if (result.status === 409 || result.reasonCode === 'TASK_CONCURRENCY_CONFLICT') {
-            // Someone else changed it first. Refresh so the screen shows the truth, then say so.
+        // A 409 means two very different things, and they must not share a message. A CONCURRENCY conflict is
+        // "someone changed it first, here is the fresh screen"; a workflow BLOCK is "the approver has not released
+        // this yet" — nothing was overwritten and refreshing changes nothing. Routing every 409 to the concurrency
+        // branch told the user a confident lie, which is worse than the raw server error it replaced.
+        if (global.TasksApi.isConcurrencyConflict(result)) {
             await loadWorkItems();
             render();
             toast(t('ErrorConcurrencyRefreshed'), 'error');
+            return;
+        }
+
+        if (global.TasksApi.isTransitionBlocked(result)) {
+            // Re-read anyway: the projection's own disabled reasons come from the same state that just refused us,
+            // so the row should stop offering the action it cannot honour.
+            await loadWorkItems();
+            render();
+            toast(global.TasksApi.failureMessage(result), 'error');
             return;
         }
 
@@ -2371,11 +2383,19 @@
             return true;
         }
 
-        if (result.status === 409 || result.reasonCode === 'TASK_CONCURRENCY_CONFLICT') {
+        if (global.TasksApi.isConcurrencyConflict(result)) {
             // Someone changed it first — show the truth, then say so.
             await loadWorkItems();
             render();
             toast(t('ErrorConcurrencyRefreshed'), 'error');
+            return false;
+        }
+
+        // A blocked write (checklist incomplete, approval outstanding) is also a 409, but it is a RULE, not a race.
+        if (global.TasksApi.isTransitionBlocked(result)) {
+            await loadWorkItems();
+            render();
+            toast(global.TasksApi.failureMessage(result), 'error');
             return false;
         }
 

@@ -81,6 +81,14 @@
   <data name="ActionOk" xml:space="preserve"><value>حسنًا</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>لم يتم تحديد وحدة تنظيمية لهذه المهمة. اطلب من المسؤول تعيين وظيفة لك أو تحديد وحدة تنظيمية جذرية.</value></data>
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>لا يمكن للوظيفة المحددة استلام المهام. اختر وظيفة نشطة.</value></data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>غيّر شخص آخر هذه المهمة قبلك. تم تحديث الشاشة بالحالة الحالية.</value></data>
+  <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>لم يتم تحديد عنصر مطلوب في قائمة التحقق، لذا لا يمكن إكمال المهمة.</value></data>
+  <data name="ErrorApprovalPending" xml:space="preserve"><value>المهمة في انتظار قرار المعتمِد.</value></data>
+  <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>طلب المعتمِد معلومات مؤيدة قبل اتخاذ القرار.</value></data>
+  <data name="ErrorApprovalRejected" xml:space="preserve"><value>تم رفض الاعتماد، لذا لا يمكن متابعة هذه المهمة.</value></data>
+  <data name="ErrorApprovalCancelled" xml:space="preserve"><value>تم إلغاء الاعتماد، لذا لا يمكن متابعة هذه المهمة.</value></data>
+  <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>لم يكتمل الاعتماد بعد، لذا هذه الخطوة غير مسموحة.</value></data>
+  <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>تعذّر التحقق من الاعتماد الآن ولم يُنفَّذ الإجراء. حاول مرة أخرى بعد قليل.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>لا يمكن إسناد العمل إلا للأشخاص الذين يشغلون وظيفة حاليًا.</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>اختر شخصًا…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>لا يشغل أحد وظيفة بعد، لذا لا يوجد من يمكن الإسناد إليه. اطلب من المسؤول تعيين الوظائف أولاً.</value></data>

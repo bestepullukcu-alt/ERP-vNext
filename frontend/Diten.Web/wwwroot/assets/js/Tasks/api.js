@@ -42,13 +42,70 @@
     const REASON_CODE_MESSAGE_KEYS = {
         ORGANIZATION_UNIT_UNRESOLVED: 'errorOrganizationUnitUnresolved',
         TASK_ALREADY_CLAIMED: 'errorAlreadyClaimed',
-        POSITION_NOT_ASSIGNABLE: 'errorPositionNotAssignable'
+        POSITION_NOT_ASSIGNABLE: 'errorPositionNotAssignable',
+        // MOD-0024's own refusals.
+        TASK_CONCURRENCY_CONFLICT: 'errorConcurrencyRefreshed',
+        CHECKLIST_INCOMPLETE: 'errorChecklistIncomplete',
+        APPROVAL_PENDING: 'errorApprovalPending',
+        // Every blocking code MOD-0023's gate can answer with, read from
+        // EvaluateWorkflowTransitionGateHandler rather than guessed. A blocked transition used to arrive as a bare
+        // 500, so none of these ever had a message.
+        WORKFLOW_PENDING_APPROVAL: 'errorApprovalPending',
+        WORKFLOW_WAITING_EVIDENCE: 'errorApprovalWaitingEvidence',
+        WORKFLOW_REJECTED: 'errorApprovalRejected',
+        WORKFLOW_CANCELLED: 'errorApprovalCancelled',
+        WORKFLOW_NOT_TERMINAL_APPROVED: 'errorApprovalNotApproved',
+        // The gate's own code when it cannot reach a verdict (kept at its original spelling, which is the value
+        // already on the wire).
+        WorkflowGateEvaluationFailed: 'errorApprovalGateUnavailable'
+    };
+
+    /*
+     * A 409 carrying one of the gate's blocking codes is a RULE refusing the write, not a lost race. The two need
+     * different messages and different recovery advice, so the caller must be able to tell them apart.
+     */
+    const BLOCKING_REASON_CODES = new Set([
+        'APPROVAL_PENDING',
+        'CHECKLIST_INCOMPLETE',
+        'WORKFLOW_PENDING_APPROVAL',
+        'WORKFLOW_WAITING_EVIDENCE',
+        'WORKFLOW_REJECTED',
+        'WORKFLOW_CANCELLED',
+        'WORKFLOW_NOT_TERMINAL_APPROVED',
+        'WorkflowGateEvaluationFailed'
+    ]);
+
+    const isTransitionBlocked = (result) =>
+        result?.status === 409 && BLOCKING_REASON_CODES.has(result?.reasonCode);
+
+    /*
+     * A concurrency conflict is the explicit code — OR a bare 409 with no code at all, which is the only honest
+     * reading of "conflict, reason unstated". A 409 whose code we do not recognise is NOT silently folded in here:
+     * it warns and falls through to the reason-code message path, so a new server code shows up in the console
+     * instead of being mislabelled as someone else's edit.
+     */
+    const isConcurrencyConflict = (result) => {
+        if (result?.status !== 409) { return result?.reasonCode === 'TASK_CONCURRENCY_CONFLICT'; }
+        if (!result.reasonCode) { return true; }
+        if (result.reasonCode === 'TASK_CONCURRENCY_CONFLICT') { return true; }
+        if (!BLOCKING_REASON_CODES.has(result.reasonCode) && !REASON_CODE_MESSAGE_KEYS[result.reasonCode]) {
+            global.console?.warn?.(
+                `[TasksApi] unmapped 409 reason code "${result.reasonCode}" — add it to REASON_CODE_MESSAGE_KEYS ` +
+                'and BLOCKING_REASON_CODES, plus the 7 TasksIndex resx files.');
+        }
+        return false;
     };
 
     const failureMessage = (result) => {
         const t = (key) => global.TasksL10n?.t?.(key) ?? key;
         const byReason = REASON_CODE_MESSAGE_KEYS[result?.reasonCode];
         if (byReason) { return t(byReason); }
+        if (result?.reasonCode) {
+            // Never silent: an unmapped code degrades to the generic message, and says so in the console so the
+            // gap is findable instead of looking like an ordinary failure.
+            global.console?.warn?.(
+                `[TasksApi] no message key for reason code "${result.reasonCode}"; showing the generic error.`);
+        }
         if (result?.status === 403) { return t('errorNoAccess'); }
         if (result?.status === 0) { return t('errorUnavailable'); }
         return t('errorOccurred');
@@ -56,6 +113,9 @@
 
     global.TasksApi = {
         REASON_CODE_MESSAGE_KEYS,
+        BLOCKING_REASON_CODES,
+        isTransitionBlocked,
+        isConcurrencyConflict,
         failureMessage,
         list: () => request('GET', '/list'),
         get: (id) => request('GET', `/${id}`),

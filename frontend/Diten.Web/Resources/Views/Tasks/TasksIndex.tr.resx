@@ -81,6 +81,14 @@
   <data name="ActionOk" xml:space="preserve"><value>Tamam</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>Bu görev için organizasyon birimi belirlenemedi. Yöneticinizden size bir pozisyon atamasını veya bir kök organizasyon birimi tanımlamasını isteyin.</value></data>
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Seçilen pozisyon görev alamaz. Aktif bir pozisyon seçin.</value></data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Bu görevi başka biri sizden önce değiştirdi. Ekran güncel durumla yenilendi.</value></data>
+  <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Zorunlu bir kontrol listesi maddesi hâlâ işaretli değil, görev tamamlanamaz.</value></data>
+  <data name="ErrorApprovalPending" xml:space="preserve"><value>Görev, onaylayan kişinin kararını bekliyor.</value></data>
+  <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>Onaylayan kişi, karar vermeden önce destekleyici bilgi istedi.</value></data>
+  <data name="ErrorApprovalRejected" xml:space="preserve"><value>Onay reddedildi, bu görev devam edemez.</value></data>
+  <data name="ErrorApprovalCancelled" xml:space="preserve"><value>Onay iptal edildi, bu görev devam edemez.</value></data>
+  <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>Onay henüz tamamlanmadı, bu adıma geçilemez.</value></data>
+  <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>Onay şu anda kontrol edilemedi, işlem uygulanmadı. Kısa süre sonra tekrar deneyin.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>Yalnızca hâlihazırda bir pozisyonu olan kişilere görev atanabilir.</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Kişi seçin…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>Henüz hiç kimsenin pozisyonu yok, bu yüzden atanacak kişi bulunmuyor. Önce yöneticinizden pozisyon ataması yapmasını isteyin.</value></data>
