@@ -37,6 +37,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// (<c>POST /api/v1/tasks/{id}/{code}</c>) and no <c>resume</c> endpoint exists or is needed.
     /// </summary>
     private const string ActionResumeKey = "WorkAggregation_Action_Resume";
+    /// <summary>Label for parking a task in Waiting. Code and endpoint are both <c>inquire</c>.</summary>
+    private const string ActionInquireKey = "WorkAggregation_Action_Inquire";
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
     private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
@@ -453,6 +455,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             actions.Add(Build("plan", ActionPlanKey, actor.Has(TaskPermissions.Update)));
         }
 
+        /*
+         * Saying "I am blocked" — the ENTRY to Waiting, offered on work the actor actually holds and has not
+         * finished. Without it a blocked task either keeps looking active or gets cancelled, and neither is true.
+         *
+         * The code is `inquire` and the endpoint is POST {id}/inquire: the client turns an action code straight
+         * into the URL segment, so the two names are one name. `requestInfo` is MOD-0023's verb for an approver
+         * asking a submitter for more information and is deliberately untouched.
+         */
+        if (!unclaimed && task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned or TaskLifecycle.InProgress)
+        {
+            actions.Add(Build("inquire", ActionInquireKey, actor.Has(TaskPermissions.Update), requiresReason: true));
+        }
+
         // Only a pooled task that someone has taken can be handed back to the pool.
         if (isPool && !unclaimed)
         {
@@ -498,7 +513,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         string labelKey,
         bool permitted,
         bool requiresConfirmation = false,
-        string riskLevel = "normal")
+        string riskLevel = "normal",
+        bool requiresReason = false)
         => permitted
             ? new WorkItemActionDto(
                 Code: code,
@@ -509,7 +525,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 DisabledReasonCode: null,
                 DisabledReason: null,
                 RequiresConfirmation: requiresConfirmation,
-                RequiresReason: false,
+                RequiresReason: requiresReason,
                 RequiresEvidence: false,
                 SupportsBulk: false,
                 RiskLevel: riskLevel)

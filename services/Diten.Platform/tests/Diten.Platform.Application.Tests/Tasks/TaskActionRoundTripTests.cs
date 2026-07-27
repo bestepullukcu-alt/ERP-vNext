@@ -88,14 +88,16 @@ public sealed class TaskActionRoundTripTests
     // ── The Phase-1 action set and its placement ──────────────────────────────
 
     [Fact]
-    public async Task An_open_self_task_offers_start_plan_and_cancel()
+    public async Task An_open_self_task_offers_start_plan_inquire_and_cancel()
     {
         var item = await ProjectOne(SelfTask());
 
-        Assert.Equal(new[] { "start", "plan", "cancel" }, item.Actions.Select(a => a.Code));
+        // `inquire` joined the set when Waiting stopped being a dead state: the holder needs a way to say the
+        // work is blocked on someone else, instead of leaving it looking active or cancelling it outright.
+        Assert.Equal(new[] { "start", "plan", "inquire", "cancel" }, item.Actions.Select(a => a.Code));
         Assert.Equal("start", item.PrimaryActionCode);
         // The rest populate the ··· menu, which used to be empty.
-        Assert.Equal(new[] { "plan", "cancel" }, item.OverflowActionCodes);
+        Assert.Equal(new[] { "plan", "inquire", "cancel" }, item.OverflowActionCodes);
     }
 
     [Fact]

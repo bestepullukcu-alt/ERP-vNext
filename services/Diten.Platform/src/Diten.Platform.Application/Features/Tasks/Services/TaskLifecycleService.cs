@@ -84,8 +84,10 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         {
             TaskLifecycle.PendingReview => new TaskWaitingContext(
                 TaskWaitingTypes.Review, null, task.UpdatedAt ?? task.CreatedAt, task.DueAt),
+            // WaitingReason is what the holder typed when they parked it (InquireTaskItemHandler makes it
+            // mandatory), so the wait says what it is for instead of only that it exists.
             TaskLifecycle.Waiting => new TaskWaitingContext(
-                TaskWaitingTypes.ExternalInformation, null, task.UpdatedAt ?? task.CreatedAt, task.DueAt),
+                TaskWaitingTypes.ExternalInformation, task.WaitingReason, task.UpdatedAt ?? task.CreatedAt, task.DueAt),
             _ => null
         };
     }

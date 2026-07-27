@@ -84,6 +84,8 @@
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Otra persona modificó esta tarea antes. La pantalla ya muestra el estado actual.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Falta marcar un elemento obligatorio de la lista de verificación, por lo que la tarea no puede completarse.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>La tarea está esperando la decisión de la persona que aprueba.</value></data>
+  <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Solo quien solicitó esta tarea puede cancelarla. Si no quiere el trabajo, devuélvalo.</value></data>
+  <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indique qué está esperando la tarea.</value></data>
   <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>Quien aprueba ha solicitado información de respaldo antes de decidir.</value></data>
   <data name="ErrorApprovalRejected" xml:space="preserve"><value>La aprobación fue rechazada, por lo que esta tarea no puede continuar.</value></data>
   <data name="ErrorApprovalCancelled" xml:space="preserve"><value>La aprobación fue cancelada, por lo que esta tarea no puede continuar.</value></data>

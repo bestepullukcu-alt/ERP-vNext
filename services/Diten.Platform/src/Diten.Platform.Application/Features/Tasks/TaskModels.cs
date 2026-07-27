@@ -40,6 +40,15 @@ public static class TaskReasonCodes
     public const string FieldLimitExceeded = "TASK_FIELD_LIMIT_EXCEEDED";
     public const string ChecklistIncomplete = "CHECKLIST_INCOMPLETE";
 
+    /// <summary>Entering Waiting without saying what is being waited for.</summary>
+    public const string WaitingReasonRequired = "TASK_WAITING_REASON_REQUIRED";
+
+    /// <summary>
+    /// Cancelling someone else's task. A REFUSAL OF AUTHORITY, not a state conflict — an assignee who does not
+    /// want the work returns it; only the requester (or administrative authority) calls it off.
+    /// </summary>
+    public const string CancelNotRequester = "TASK_CANCEL_NOT_REQUESTER";
+
     /// <summary>The workflow gate refused: approval is outstanding (MOD-0023 owns the decision).</summary>
     public const string ApprovalPending = "APPROVAL_PENDING";
 
@@ -149,6 +158,12 @@ public sealed record BulkDeleteTaskItemRequest(IReadOnlyList<Guid> Ids);
 public sealed record ClaimTaskItemRequest(int ExpectedVersion);
 
 public sealed record TaskTransitionRequest(int ExpectedVersion, string? ReasonCode, string? Note);
+
+/// <summary>
+/// Park a task in Waiting. <paramref name="Reason"/> is REQUIRED and is the user's own words, so it is stored as
+/// text and never routed through a resource key.
+/// </summary>
+public sealed record InquireTaskItemRequest(int ExpectedVersion, string Reason);
 
 /// <summary>Tick/untick one checklist item. ExpectedVersion guards the RUN, not the task.</summary>
 public sealed record SetChecklistItemStateRequest(string ItemCode, bool Completed, int ExpectedVersion);

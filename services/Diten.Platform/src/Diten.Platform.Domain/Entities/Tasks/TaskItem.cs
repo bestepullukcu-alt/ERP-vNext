@@ -104,6 +104,14 @@ public sealed class TaskItem : TenantScopedEntity
     // ── Configurable fields (pack §12 K1 — never hard-coded columns) ─────────
     public List<TaskFieldValue> FieldValues { get; set; } = [];
 
+    /// <summary>
+    /// What the holder is waiting for, in their own words, while <see cref="Lifecycle"/> is
+    /// <see cref="TaskLifecycle.Waiting"/>. Required to enter Waiting: "this is blocked" without saying on what
+    /// is not information anyone can act on. Cleared when the task resumes, so a stale reason never outlives the
+    /// wait. Stored as TEXT, never a resource key — it is content a person typed.
+    /// </summary>
+    public string? WaitingReason { get; set; }
+
     // ── Closure ──────────────────────────────────────────────────────────────
     public DateTimeOffset? CompletedAt { get; set; }
     public DateTimeOffset? CancelledAt { get; set; }

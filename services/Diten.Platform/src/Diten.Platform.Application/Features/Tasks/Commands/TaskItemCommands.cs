@@ -39,7 +39,27 @@ public sealed record TransitionTaskItemCommand(
     Guid Id,
     TaskLifecycle Target,
     TaskTransitionRequest Request,
-    string CorrelationId) : IRequest<Response<NoContent>>;
+    string CorrelationId,
+    /// <summary>
+    /// Whether the caller holds administrative authority over any task (the DELETE permission), evaluated by the
+    /// controller from the caller's claims and passed in as DATA — the same seam WorkItemsController uses.
+    /// PermissionClaimEvaluator lives in the API layer precisely so enforcement and evaluation cannot drift, so
+    /// the handler must not re-derive this from claims itself.
+    ///
+    /// <para>Defaults to FALSE so every existing caller, and any new one that forgets, is treated as an ordinary
+    /// user: the cancel guard fails closed.</para>
+    /// </summary>
+    bool ActorMayCancelAnyTask = false) : IRequest<Response<NoContent>>;
+
+/// <summary>
+/// Park a task in <see cref="TaskLifecycle.Waiting"/> because the holder is blocked on someone else.
+///
+/// <para>Separate from <see cref="TransitionTaskItemCommand"/> because the REASON is mandatory here: "waiting"
+/// without saying what for is not something a colleague can act on, and the shared transition request carries
+/// only an optional reason code.</para>
+/// </summary>
+public sealed record InquireTaskItemCommand(Guid Id, InquireTaskItemRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;
 
 // ── Phase 2: checklist (pack §12 E1) ─────────────────────────────────────────
 

@@ -47,6 +47,10 @@
         TASK_CONCURRENCY_CONFLICT: 'errorConcurrencyRefreshed',
         CHECKLIST_INCOMPLETE: 'errorChecklistIncomplete',
         APPROVAL_PENDING: 'errorApprovalPending',
+        // Cancelling is the requester's right: an assignee gets 403 with this code. failureMessage checks the
+        // reason code BEFORE the status, so this replaces the generic "you are not allowed" with the reason.
+        TASK_CANCEL_NOT_REQUESTER: 'errorCancelNotRequester',
+        TASK_WAITING_REASON_REQUIRED: 'errorWaitingReasonRequired',
         // Every blocking code MOD-0023's gate can answer with, read from
         // EvaluateWorkflowTransitionGateHandler rather than guessed. A blocked transition used to arrive as a bare
         // 500, so none of these ever had a message.

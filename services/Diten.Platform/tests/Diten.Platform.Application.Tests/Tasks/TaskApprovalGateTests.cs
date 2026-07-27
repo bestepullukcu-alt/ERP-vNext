@@ -292,6 +292,8 @@ public sealed class TaskApprovalGateTests
         Title = "Needs sign-off",
         AssignmentTarget = TaskAssignmentTarget.SelfAssigned,
         AssigneeUserId = TaskTestData.Me,
+        // A self-assigned task is created by its own assignee; CreateTaskItemHandler always stamps this.
+        CreatedByUserId = TaskTestData.Me,
         OrganizationUnitId = Guid.NewGuid(),
         Lifecycle = TaskLifecycle.Open,
         ApprovalRequired = true,

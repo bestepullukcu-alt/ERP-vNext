@@ -214,6 +214,24 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             }
         }
 
+        /*
+         * Cancelling is the REQUESTER's right, and this is where it is ENFORCED — the projection stops offering
+         * the button, but a caller can post straight here, and a hidden control is presentation while the refusal
+         * is the rule. Same shape as the workflow gate below: the projection explains, the handler refuses.
+         *
+         * 403, not 409: this is a refusal of AUTHORITY (you may not cancel someone else's work), not a state
+         * conflict (the task is in the wrong lifecycle). Conflating them would tell the caller to reload and
+         * retry, which would never help.
+         */
+        if (command.Target == TaskLifecycle.Cancelled
+            && task.CreatedByUserId != _currentUser.UserId
+            && !command.ActorMayCancelAnyTask)
+        {
+            return Response<NoContent>.Fail(
+                "Only the requester can cancel this task.",
+                403, TaskReasonCodes.CancelNotRequester, command.CorrelationId);
+        }
+
         // ── Workflow gate (pack §12 K2, charter Binding A) ────────────────────
         // Asked ONLY for approval-gated tasks, and only for the two transitions that mean "this work proceeds".
         // A task with no approval requirement never pays for the gate and never depends on it.
@@ -303,5 +321,81 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
 
             await _tasks.UpdateAsync(child, child.Version, ct);
         }
+    }
+}
+
+/// <summary>
+/// Park a task in <see cref="TaskLifecycle.Waiting"/> because the holder is blocked on someone else.
+///
+/// <para>This is the ENTRY to Waiting. The lifecycle and its transition matrix have always allowed the state, and
+/// the projection gained a way OUT of it (resume), but no endpoint ever targeted it — so Waiting was reachable
+/// only on paper and the Task Center's "Bekleyen" segment could fill from approval alone. A user with no way to
+/// say "I am blocked" either leaves the task looking active or cancels it, and neither is true.</para>
+///
+/// <para>Deliberately NOT routed through <see cref="TransitionTaskItemCommand"/>: the reason is mandatory here,
+/// and waiting is not "progress", so it never consults the workflow approval gate. Leaving Waiting DOES —
+/// resuming targets InProgress, which the gate covers (TaskApprovalHttpContractTests).</para>
+/// </summary>
+public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemCommand, Response<NoContent>>
+{
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskLifecycleService _lifecycle;
+    private readonly ICurrentUserContext _currentUser;
+
+    public InquireTaskItemHandler(
+        ITaskItemRepository tasks,
+        ITaskLifecycleService lifecycle,
+        ICurrentUserContext currentUser)
+    {
+        _tasks = tasks;
+        _lifecycle = lifecycle;
+        _currentUser = currentUser;
+    }
+
+    public async Task<Response<NoContent>> Handle(InquireTaskItemCommand command, CancellationToken ct)
+    {
+        var reason = command.Request.Reason?.Trim();
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            // "Waiting" with no stated cause is not information anyone can act on — least of all the person who
+            // reads the task next week.
+            return Response<NoContent>.Fail(
+                "Say what the task is waiting for.",
+                400, TaskReasonCodes.WaitingReasonRequired, command.CorrelationId);
+        }
+
+        var task = await _tasks.GetByIdAsync(command.Id, ct);
+        if (task is null)
+        {
+            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // Only the holder can declare a wait: it is a statement about their own work.
+        if (task.AssigneeUserId != _currentUser.UserId)
+        {
+            return Response<NoContent>.Fail(
+                "Only the current holder can park this task in waiting.",
+                403, TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        if (!_lifecycle.CanTransition(task, TaskLifecycle.Waiting, out var reasonCode))
+        {
+            return Response<NoContent>.Fail(
+                "This transition is not allowed in the task's current state.",
+                409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        task.Lifecycle = TaskLifecycle.Waiting;
+        task.WaitingReason = reason;
+        task.UpdatedBy = _currentUser.ActorName;
+
+        if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }

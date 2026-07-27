@@ -43,7 +43,41 @@ public sealed class TokenBridge
     private readonly TimeProvider _timeProvider;
     private readonly ConcurrentDictionary<string, DateTimeOffset> _completedAt = new();
 
-    public TokenBridge(TimeProvider? timeProvider = null) => _timeProvider = timeProvider ?? TimeProvider.System;
+    private readonly ILogger<TokenBridge>? _logger;
+
+    /*
+     * The logger is DIAGNOSTIC ONLY — nothing below changes what this class does.
+     *
+     * Sessions have dropped silently twice, long after login, and four hypotheses were eliminated without finding
+     * the cause (token lifetimes bound correctly, single-flight keyed correctly, culture changes survived, the
+     * culture middleware leaves the auth cookie alone). Every remaining explanation lives on one of the three
+     * paths below, and all three are currently silent — so the next occurrence produces no evidence either.
+     *
+     * NEVER log the access token, the refresh token, or any secret: only WHY the session ended, what the gateway
+     * answered, and which user it happened to.
+     */
+    public TokenBridge(TimeProvider? timeProvider = null, ILogger<TokenBridge>? logger = null)
+    {
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// The subject of an EXPIRED token, read without validating it — the token has already failed validation by
+    /// the time this is used, so this is a best-effort label for the log line and nothing else. Never throws.
+    /// </summary>
+    private static string SubjectFor(string accessToken)
+    {
+        try
+        {
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+            return jwt.Subject ?? "unknown";
+        }
+        catch
+        {
+            return "unreadable";
+        }
+    }
 
     /// <summary>Refresh calls actually issued — the single-flight and no-double-refresh assertions read this.</summary>
     internal int RefreshCallCount;
@@ -87,6 +121,10 @@ public sealed class TokenBridge
         if (string.IsNullOrWhiteSpace(refreshToken))
         {
             // Expired with nothing to refresh from: end the session cleanly rather than leaving a dead cookie.
+            _logger?.LogWarning(
+                "Session ended cleanly for {Subject}: the access token expired and no refresh token cookie was "
+                + "present, so there was nothing to renew from. Path {Path}.",
+                SubjectFor(accessToken), context.Request.Path.Value);
             authCookieService.ClearTokens(context.Response);
             return;
         }
@@ -102,6 +140,15 @@ public sealed class TokenBridge
             {
                 // Only a definitive "re-authenticate" ends the session. A transient failure leaves the cookies
                 // alone so the next request can try again.
+                _logger?.LogWarning(
+                    "Token refresh REFUSED for {Subject}. reauthRequired={ReauthRequired} (session {Outcome}), "
+                    + "gateway said: {Error}. Path {Path}.",
+                    SubjectFor(accessToken),
+                    refreshResult.ReauthRequired,
+                    refreshResult.ReauthRequired ? "ended" : "kept for a retry",
+                    refreshResult.ErrorMessage ?? "(no reason supplied)",
+                    context.Request.Path.Value);
+
                 if (refreshResult.ReauthRequired)
                 {
                     authCookieService.ClearTokens(context.Response);
@@ -116,11 +163,22 @@ public sealed class TokenBridge
                 refreshResult.RefreshToken,
                 refreshResult.ExpiresAt.Value);
 
+            _logger?.LogInformation(
+                "Token refreshed for {Subject}; the new access token is valid until {ExpiresAt:o}.",
+                SubjectFor(accessToken), refreshResult.ExpiresAt.Value);
+
             SetPrincipal(context, handler.ValidateToken(refreshResult.AccessToken, validationParameters, out _));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Soft failure (network, gateway down): keep the cookies so the session survives a blip.
+            // Soft failure (network, gateway down): keep the cookies so the session survives a blip. Logged
+            // because "the session survived a blip" and "the session quietly stopped refreshing" look identical
+            // from the outside, and one of them is the fault being hunted.
+            _logger?.LogWarning(
+                ex,
+                "Token refresh FAILED for {Subject} without a verdict; cookies kept so the next request retries. "
+                + "Path {Path}.",
+                SubjectFor(accessToken), context.Request.Path.Value);
         }
     }
 

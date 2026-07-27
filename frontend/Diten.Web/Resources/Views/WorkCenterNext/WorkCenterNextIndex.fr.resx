@@ -1267,6 +1267,9 @@
   <data name="WorkAggregation_Action_Resume" xml:space="preserve">
     <value>Reprendre</value>
   </data>
+  <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
+    <value>En attente de…</value>
+  </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>Annuler la tâche</value>
   </data>

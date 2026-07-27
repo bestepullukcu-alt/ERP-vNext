@@ -201,7 +201,9 @@ var validatedTokenParameters = new TokenValidationParameters
 // Services/Auth/TokenBridge.cs so they can be tested — see that file for why the second pass must never
 // re-read the request token (it undid the refresh and logged the session out).
 // One instance per app: the in-flight refresh map has to be shared across requests to be single-flight at all.
-var tokenBridge = new TokenBridge();
+// The logger is diagnostic only: the three refresh outcomes were all silent, so a session that dropped left no
+// evidence behind. Nothing about the bridge's behaviour depends on it.
+var tokenBridge = new TokenBridge(logger: app.Services.GetRequiredService<ILogger<TokenBridge>>());
 
 // MOD-0014 pass 1: validate, and refresh an expired token. Owns every cookie decision.
 app.Use(async (context, next) =>

@@ -84,6 +84,8 @@
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>غيّر شخص آخر هذه المهمة قبلك. تم تحديث الشاشة بالحالة الحالية.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>لم يتم تحديد عنصر مطلوب في قائمة التحقق، لذا لا يمكن إكمال المهمة.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>المهمة في انتظار قرار المعتمِد.</value></data>
+  <data name="ErrorCancelNotRequester" xml:space="preserve"><value>لا يمكن إلغاء هذه المهمة إلا من قِبل الشخص الذي طلبها. إذا كنت لا تريد العمل، فأعده بدلاً من ذلك.</value></data>
+  <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>اذكر ما تنتظره المهمة.</value></data>
   <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>طلب المعتمِد معلومات مؤيدة قبل اتخاذ القرار.</value></data>
   <data name="ErrorApprovalRejected" xml:space="preserve"><value>تم رفض الاعتماد، لذا لا يمكن متابعة هذه المهمة.</value></data>
   <data name="ErrorApprovalCancelled" xml:space="preserve"><value>تم إلغاء الاعتماد، لذا لا يمكن متابعة هذه المهمة.</value></data>

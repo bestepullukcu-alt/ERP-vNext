@@ -84,6 +84,8 @@
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Someone else changed this task first. The screen now shows the current state.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>A required checklist item is still unticked, so the task cannot be completed.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>The task is waiting for the approver's decision.</value></data>
+  <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>
+  <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Say what the task is waiting for.</value></data>
   <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>The approver has asked for supporting information before deciding.</value></data>
   <data name="ErrorApprovalRejected" xml:space="preserve"><value>The approval was rejected, so this task cannot continue.</value></data>
   <data name="ErrorApprovalCancelled" xml:space="preserve"><value>The approval was cancelled, so this task cannot continue.</value></data>

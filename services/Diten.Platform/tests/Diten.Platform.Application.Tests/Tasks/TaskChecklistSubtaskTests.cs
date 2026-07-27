@@ -515,6 +515,10 @@ public sealed class TaskChecklistSubtaskTests
         Title = "Parent work",
         AssignmentTarget = TaskAssignmentTarget.SelfAssigned,
         AssigneeUserId = TaskTestData.Me,
+        // A self-assigned task is created by its own assignee; CreateTaskItemHandler always stamps this. Without
+        // it the fixture describes a task with no requester, which only stopped mattering while anyone could
+        // cancel anything.
+        CreatedByUserId = TaskTestData.Me,
         OrganizationUnitId = Guid.NewGuid(),
         Lifecycle = TaskLifecycle.Open,
         Version = 1

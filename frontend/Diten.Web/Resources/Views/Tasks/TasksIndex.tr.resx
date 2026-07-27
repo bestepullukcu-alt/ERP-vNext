@@ -84,6 +84,8 @@
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Bu görevi başka biri sizden önce değiştirdi. Ekran güncel durumla yenilendi.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Zorunlu bir kontrol listesi maddesi hâlâ işaretli değil, görev tamamlanamaz.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Görev, onaylayan kişinin kararını bekliyor.</value></data>
+  <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Bu görevi yalnızca talep eden kişi iptal edebilir. İşi istemiyorsanız iade edin.</value></data>
+  <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Görevin neyi beklediğini yazın.</value></data>
   <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>Onaylayan kişi, karar vermeden önce destekleyici bilgi istedi.</value></data>
   <data name="ErrorApprovalRejected" xml:space="preserve"><value>Onay reddedildi, bu görev devam edemez.</value></data>
   <data name="ErrorApprovalCancelled" xml:space="preserve"><value>Onay iptal edildi, bu görev devam edemez.</value></data>

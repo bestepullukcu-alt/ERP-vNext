@@ -137,12 +137,31 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// Say the task is blocked on someone else, with what it is waiting for. The route segment MUST match the
+    /// projected action code (<c>inquire</c>): the client turns the code straight into the URL.
+    /// </summary>
+    [HttpPost("{id:guid}/inquire")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> Inquire(Guid id, [FromBody] InquireTaskItemRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new InquireTaskItemCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Call the task off. Holding <c>platform.tasks.cancel</c> is not enough on its own — the handler also
+    /// requires the caller to be the REQUESTER, or to hold administrative authority over any task. That
+    /// authority is evaluated HERE, from the caller's claims through the same seam the enforcement filter uses,
+    /// and passed to the handler as data: PermissionClaimEvaluator lives in this layer so the two cannot drift.
+    /// </summary>
     [HttpPost("{id:guid}/cancel")]
     [HasPermission(TaskPermissions.Cancel)]
     public async Task<IActionResult> Cancel(Guid id, [FromBody] TaskTransitionRequest request, CancellationToken ct)
     {
+        var mayCancelAnyTask = PermissionClaimEvaluator.Evaluate(User.Claims, TaskPermissions.Delete).IsSatisfied;
         var response = await _mediator.Send(
-            new TransitionTaskItemCommand(id, TaskLifecycle.Cancelled, request, CorrelationId), ct);
+            new TransitionTaskItemCommand(id, TaskLifecycle.Cancelled, request, CorrelationId, mayCancelAnyTask), ct);
         return CreateActionResultInstance(response);
     }
 
