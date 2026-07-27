@@ -81,6 +81,43 @@ public sealed class TaskApprovalHttpContractTests
         Assert.Equal(TaskLifecycle.InProgress, fixture.Task.Lifecycle);
     }
 
+    /*
+     * RESUMING out of Waiting goes through the SAME approval gate as a first start.
+     *
+     * This is the contract, not an observation. TransitionTaskItemHandler keys its gate on the TARGET lifecycle
+     * (InProgress) and never on the source, so today a Waiting → InProgress transition is gated for free. That is
+     * a property of one boolean expression: narrowing it to "only from Open/Planned" — a plausible optimisation,
+     * since Waiting was an unreachable state until the resume action was projected — would silently let a task
+     * whose approval is still outstanding be resumed straight into InProgress.
+     *
+     * The projection alone cannot protect this: it disables the button, and a caller can POST to /start anyway.
+     */
+    [Fact]
+    public async Task A_task_waiting_on_information_still_cannot_RESUME_while_approval_is_outstanding()
+    {
+        var fixture = new Fixture(WorkflowInstanceStatus.Active, TaskLifecycle.Waiting);
+
+        // The resume action projects the code "start", so this is the exact request the button sends.
+        var response = await fixture.StartAsync();
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowPendingApproval, response.ReasonCode);
+        // And it did not move: the gate is consulted before the commit, from Waiting just as from Open.
+        Assert.Equal(TaskLifecycle.Waiting, fixture.Task.Lifecycle);
+    }
+
+    [Fact]
+    public async Task An_APPROVED_workflow_lets_a_waiting_task_resume()
+    {
+        // The positive half: without it, a gate that blocked everything would pass the test above.
+        var fixture = new Fixture(WorkflowInstanceStatus.Approved, TaskLifecycle.Waiting);
+
+        var response = await fixture.StartAsync();
+
+        Assert.Equal(204, response.StatusCode);
+        Assert.Equal(TaskLifecycle.InProgress, fixture.Task.Lifecycle);
+    }
+
     [Fact]
     public async Task A_gate_that_THROWS_is_treated_as_blocked_not_as_a_server_error()
     {

@@ -1264,6 +1264,9 @@
   <data name="WorkAggregation_Action_Release" xml:space="preserve">
     <value>Bırak</value>
   </data>
+  <data name="WorkAggregation_Action_Resume" xml:space="preserve">
+    <value>Devam et</value>
+  </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>Görevi iptal et</value>
   </data>

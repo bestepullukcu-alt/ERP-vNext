@@ -217,6 +217,10 @@ public sealed class TaskActionRoundTripTests
         Title = "CT probe",
         AssignmentTarget = TaskAssignmentTarget.SelfAssigned,
         AssigneeUserId = TaskTestData.Me,
+        // A self-assigned task is created BY the person it is assigned to, and CreateTaskItemHandler always
+        // stamps CreatedByUserId. Omitting it here made the fixture describe a task with no requester, which
+        // stopped mattering only because `cancel` used to be projected for everyone.
+        CreatedByUserId = TaskTestData.Me,
         OrganizationUnitId = Guid.NewGuid(),
         Lifecycle = TaskLifecycle.Open,
         Version = 1

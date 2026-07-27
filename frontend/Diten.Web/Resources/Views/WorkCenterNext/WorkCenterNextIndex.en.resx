@@ -1264,6 +1264,9 @@
   <data name="WorkAggregation_Action_Release" xml:space="preserve">
     <value>Release</value>
   </data>
+  <data name="WorkAggregation_Action_Resume" xml:space="preserve">
+    <value>Resume</value>
+  </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>Cancel task</value>
   </data>

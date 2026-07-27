@@ -1264,6 +1264,9 @@
   <data name="WorkAggregation_Action_Release" xml:space="preserve">
     <value>Освободить</value>
   </data>
+  <data name="WorkAggregation_Action_Resume" xml:space="preserve">
+    <value>Продолжить</value>
+  </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>Отменить задачу</value>
   </data>

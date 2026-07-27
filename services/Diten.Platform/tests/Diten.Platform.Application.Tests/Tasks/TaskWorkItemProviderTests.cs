@@ -191,6 +191,125 @@ public sealed class TaskWorkItemProviderTests
 
     // ── helpers ────────────────────────────────────────────────────────────
 
+    // ── Cancelling belongs to the requester, not to whoever was handed the work ──────────────────────────────
+
+    /*
+     * The defect: `cancel` was projected unconditionally, so being ASSIGNED a task was enough to call the whole
+     * thing off. That is the wrong half of the return/cancel split — an assignee who does not want the work
+     * returns it; the person who asked for it cancels it.
+     */
+    [Fact]
+    public async Task An_assignee_who_did_not_create_the_task_is_not_offered_cancel()
+    {
+        var task = SelfTask();
+        task.AssignmentTarget = TaskAssignmentTarget.Person;
+        task.CreatedByUserId = TaskTestData.Rival;   // someone else asked for this work
+
+        var items = await Provider(new FakeTaskItemRepository(task))
+            .GetWorkItemsAsync(AssigneeActor(), CancellationToken.None);
+
+        var item = Assert.Single(items);
+        AssertContractConformant(item);
+        Assert.DoesNotContain(item.Actions, a => a.Code == "cancel");
+        // The work is still actionable — this removes one action, it does not strand the assignee.
+        Assert.Contains(item.Actions, a => a.Code == "accept");
+    }
+
+    [Fact]
+    public async Task The_creator_is_offered_cancel()
+    {
+        var task = SelfTask();
+        task.AssignmentTarget = TaskAssignmentTarget.Person;
+        task.CreatedByUserId = TaskTestData.Me;      // I asked for it, so I may call it off
+
+        var items = await Provider(new FakeTaskItemRepository(task))
+            .GetWorkItemsAsync(AssigneeActor(), CancellationToken.None);
+
+        var item = Assert.Single(items);
+        AssertContractConformant(item);
+        var cancel = Assert.Single(item.Actions, a => a.Code == "cancel");
+        Assert.True(cancel.Enabled);
+    }
+
+    [Fact]
+    public async Task Administrative_authority_may_cancel_someone_elses_task()
+    {
+        var task = SelfTask();
+        task.AssignmentTarget = TaskAssignmentTarget.Person;
+        task.CreatedByUserId = TaskTestData.Rival;
+
+        var admin = new WorkItemActor(TaskTestData.Me, IsPlatformActor: false, new HashSet<string>(
+            new[] { TaskPermissions.Update, TaskPermissions.Cancel, TaskPermissions.Delete },
+            StringComparer.OrdinalIgnoreCase));
+
+        var items = await Provider(new FakeTaskItemRepository(task))
+            .GetWorkItemsAsync(admin, CancellationToken.None);
+
+        Assert.Contains(Assert.Single(items).Actions, a => a.Code == "cancel");
+    }
+
+    // ── Waiting is no longer a dead end ─────────────────────────────────────────────────────────────────────
+
+    /*
+     * Waiting was legal in the transition matrix but nothing projected an action for it, so a task that got there
+     * could never come back. The action is the EXISTING start endpoint under a resume label — the code doubles as
+     * the URL segment on the client, so emitting "resume" would post to an endpoint that does not exist.
+     */
+    [Fact]
+    public async Task A_waiting_task_offers_resume_using_the_start_endpoint()
+    {
+        var task = SelfTask();
+        task.Lifecycle = TaskLifecycle.Waiting;
+
+        var items = await Provider(new FakeTaskItemRepository(task))
+            .GetWorkItemsAsync(Actor(), CancellationToken.None);
+
+        var item = Assert.Single(items);
+        AssertContractConformant(item);
+        Assert.Equal("Waiting", item.NormalizedStatus);
+        Assert.Equal("start", item.PrimaryActionCode);
+
+        var resume = Assert.Single(item.Actions, a => a.Code == "start");
+        Assert.True(resume.Enabled);
+        // Same endpoint, different word: the label is the only thing that changes.
+        Assert.Equal("WorkAggregation_Action_Resume", resume.Label.Key);
+    }
+
+    [Fact]
+    public async Task Resume_is_disabled_with_a_visible_reason_while_approval_is_outstanding()
+    {
+        var instanceId = Guid.Parse("abcdabcd-abcd-abcd-abcd-abcdabcdabcd");
+        var task = SelfTask();
+        task.Lifecycle = TaskLifecycle.Waiting;
+        task.ApprovalRequired = true;
+        task.WorkflowInstanceId = instanceId;
+
+        var provider = new TaskWorkItemProvider(
+            new FakeTaskItemRepository(task),
+            new FakePositionAssignmentRepository(),
+            new TaskLifecycleService(),
+            new TaskAssignmentResolver(),
+            new FakeUserDisplayNameResolver(),
+            new FakeChecklistRunRepository(),
+            new FakeTaskApprovalService().Pending(instanceId));
+
+        var items = await provider.GetWorkItemsAsync(Actor(), CancellationToken.None);
+
+        var item = Assert.Single(items);
+        AssertContractConformant(item);
+        var resume = Assert.Single(item.Actions, a => a.Code == "start");
+        Assert.False(resume.Enabled);
+        // Disabled WITH the reason, never hidden — the server refuses it too (TaskApprovalHttpContractTests).
+        Assert.Equal(TaskReasonCodes.ApprovalPending, resume.DisabledReasonCode);
+    }
+
+    private static WorkItemActor AssigneeActor() => new(
+        TaskTestData.Me,
+        IsPlatformActor: false,
+        new HashSet<string>(
+            new[] { TaskPermissions.Update, TaskPermissions.Complete, TaskPermissions.Cancel },
+            StringComparer.OrdinalIgnoreCase));
+
     private static TaskWorkItemProvider Provider(
         FakeTaskItemRepository tasks,
         FakePositionAssignmentRepository? positionAssignments = null)

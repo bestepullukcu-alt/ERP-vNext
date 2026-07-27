@@ -1264,6 +1264,9 @@
   <data name="WorkAggregation_Action_Release" xml:space="preserve">
     <value>释放</value>
   </data>
+  <data name="WorkAggregation_Action_Resume" xml:space="preserve">
+    <value>继续</value>
+  </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>取消任务</value>
   </data>

@@ -31,6 +31,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string ActionPlanKey = "WorkAggregation_Action_Plan";
     private const string ActionReleaseKey = "WorkAggregation_Action_Release";
     private const string ActionCancelKey = "WorkAggregation_Action_Cancel";
+    /// <summary>
+    /// Label for resuming a task that was parked in <see cref="TaskLifecycle.Waiting"/>. It is a LABEL only — the
+    /// action code stays <c>start</c>, because the client turns the code straight into the endpoint segment
+    /// (<c>POST /api/v1/tasks/{id}/{code}</c>) and no <c>resume</c> endpoint exists or is needed.
+    /// </summary>
+    private const string ActionResumeKey = "WorkAggregation_Action_Resume";
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
     private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
@@ -78,10 +84,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// </summary>
     public IReadOnlyCollection<string> RequiredActionPermissions { get; } =
     [
-        TaskPermissions.Update,     // accept + start
+        TaskPermissions.Update,     // accept + start + resume
         TaskPermissions.Claim,      // claim a pooled task
         TaskPermissions.Complete,   // complete
-        TaskPermissions.Cancel      // cancel
+        TaskPermissions.Cancel,     // cancel
+        TaskPermissions.Delete      // administrative authority to cancel someone else's task
     ];
 
     public async Task<IReadOnlyList<WorkItemProjectionDto>> GetWorkItemsAsync(
@@ -393,6 +400,27 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 approvalNeverStarted ? DisabledApprovalStartFailedKey : DisabledApprovalKey));
             primary = "start";
         }
+        else if (task.Lifecycle is TaskLifecycle.Waiting)
+        {
+            /*
+             * Waiting is a real state the holder can be in — blocked on someone else — and nothing was projected
+             * for it, which is why the lifecycle was legal in the transition matrix yet dead in the product: a
+             * task that reached Waiting had no way back out.
+             *
+             * The action is the EXISTING start endpoint wearing a resume label. Waiting → InProgress is already
+             * allowed by TaskLifecycleService, start already targets InProgress, and the code doubles as the URL
+             * segment on the client — so emitting "resume" here would POST to an endpoint that does not exist.
+             *
+             * The approval gate still applies, and that is NOT a coincidence to rely on: TransitionTaskItemHandler
+             * keys its gate on the TARGET lifecycle (InProgress), never on the source, so resuming is gated by the
+             * same condition that gates a first start. Disabling it here keeps the reason visible instead of
+             * letting the user press a button that will 409.
+             */
+            actions.Add(approvalOutstanding
+                ? Disabled("start", ActionResumeKey, TaskReasonCodes.ApprovalPending, DisabledApprovalKey)
+                : Build("start", ActionResumeKey, actor.Has(TaskPermissions.Update)));
+            primary = "start";
+        }
         else
         {
             if (openOrPlanned)
@@ -432,10 +460,29 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 requiresConfirmation: true));
         }
 
-        // Cancellation is allowed from every non-terminal state (CanTransition), and this method is only reached
-        // for non-terminal tasks — see the call site.
-        actions.Add(Build("cancel", ActionCancelKey, actor.Has(TaskPermissions.Cancel),
-            requiresConfirmation: true, riskLevel: "destructive"));
+        /*
+         * Cancelling is the REQUESTER's right, not the assignee's.
+         *
+         * This used to be projected unconditionally, so being handed a task was enough to call the whole thing
+         * off — the recipient could cancel the requester's work. That is the wrong half of the SAP/ServiceNow
+         * split: an assignee who does not want the work RETURNS it; only the person who asked for it (or someone
+         * with administrative authority over the record) cancels it.
+         *
+         * "Administrative authority" is bound to the DELETE permission because it is the only declared key that
+         * already means power over any task record, and cancelling is strictly weaker than deleting. A dedicated
+         * platform.tasks.cancel-any would say it more precisely, but adding a permission is a manifest + role-sync
+         * change, not a projection one — recorded rather than smuggled in here.
+         *
+         * NOTE: this is the PROJECTION only. The /cancel endpoint still accepts a direct POST from anyone holding
+         * platform.tasks.cancel, so this hides a button without yet refusing the write. Enforcing it in
+         * TransitionTaskItemHandler is the follow-up; a hidden control is presentation, the refusal is the rule.
+         */
+        var isRequester = task.CreatedByUserId is not null && task.CreatedByUserId == actor.UserId;
+        if (isRequester || actor.Has(TaskPermissions.Delete))
+        {
+            actions.Add(Build("cancel", ActionCancelKey, actor.Has(TaskPermissions.Cancel),
+                requiresConfirmation: true, riskLevel: "destructive"));
+        }
 
         // Everything that is not the primary belongs in the overflow menu, in the order built above.
         var overflow = actions
