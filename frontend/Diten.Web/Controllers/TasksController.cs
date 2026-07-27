@@ -99,11 +99,17 @@ public sealed class TasksController : Controller
         => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/{id}", readBody: false);
 
     /// <summary>
-    /// Lifecycle/ownership transitions: accept, claim, release, plan, start, complete, cancel.
-    /// The route parameter is named <c>transition</c>, not <c>action</c>: <c>action</c> is reserved by MVC routing
-    /// and combining it with a constraint fails endpoint construction at startup.
+    /// Lifecycle/ownership transitions. The accepted set is <see cref="TaskTransitionRoutes.All"/>; the literal
+    /// below must stay identical to <see cref="TaskTransitionRoutes.Pattern"/>, which TaskTransitionRouteTests
+    /// asserts — a route constraint has to be a compile-time constant, so the compiler cannot do it for us.
+    ///
+    /// <para>A code missing here is NOT a missing feature, it is a 404 on a button the user can see: the client
+    /// turns a projected action code straight into this URL. That is how <c>inquire</c> shipped unreachable.</para>
+    ///
+    /// <para>The route parameter is named <c>transition</c>, not <c>action</c>: <c>action</c> is reserved by MVC
+    /// routing and combining it with a constraint fails endpoint construction at startup.</para>
     /// </summary>
-    [HttpPost("api/{id:guid}/{transition:regex(^(accept|claim|release|plan|start|complete|cancel)$)}")]
+    [HttpPost("api/{id:guid}/{transition:regex(^(accept|claim|release|plan|start|inquire|complete|cancel)$)}")]
     public Task<IActionResult> ApiTransition(Guid id, string transition)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/{transition}", readBody: true);
 
