@@ -1662,20 +1662,6 @@
                 <p>${esc(t('FixtureInvalidDesc'))}</p>
             </div>`;
         }
-        const byCode = new Map(itemActions(item).map((candidate) => [candidate.code, candidate]));
-        const placedCodes = [surface.primaryActionCode, ...surface.secondaryActionCodes, ...surface.overflowActionCodes].filter(Boolean);
-        const acts = placedCodes.map((code) => byCode.get(code)).filter(Boolean);
-        const actions = acts.length
-            ? acts.map((a) => {
-                const dis = a.disabled ? ' disabled' : '';
-                const title = a.disabled ? ` title="${esc(t(a.disabledReasonKey || 'BlockedBanner'))}"` : '';
-                const reason = a.disabled
-                    ? `<small class="wcn-action-disabled-reason">${esc(a.disabledReason || t(a.disabledReasonKey || 'BlockedBanner'))}</small>`
-                    : '';
-                return `<span class="wcn-action-wrap"><button type="button" class="btn btn-sm btn-${a.primary ? '' : 'label-'}${a.kind}"${dis}${title} data-wcn-action="${a.key}" data-wcn-id="${item.id}">` +
-                    `${esc(t(a.labelKey))}</button>${reason}</span>`;
-            }).join('')
-            : `<span class="wcn-noactions">${esc(t('NoActionsAvailable'))}</span>`;
         // Dependency banner (spec v2 §5): source-computed block, read-only here.
         const blockedBanner = isBlocked(item)
             ? `<div class="wcn-blocked" role="note">
@@ -1718,6 +1704,11 @@
         ).join('');
         // Personal actions (pin / snooze) — the thin overlay WorkCenter owns.
         const isSnoozed = item.snoozedUntil && item.snoozedUntil > data.todayIso;
+        /*
+         * The personal overlay (snooze) is NOT a task action: it changes what the viewer sees, not what the task
+         * is. It lives in the rail beneath the personal note — one place, with the other personal thing — rather
+         * than beside the engine actions where it would read as another transition.
+         */
         const personal = (item.lifecycle === 'Done' || item.lifecycle === 'Cancelled') ? '' :
             `<div class="wcn-personal" role="group" aria-label="${esc(t('PersonalActionsLabel'))}">
                 <button type="button" class="wcn-personal-btn${isSnoozed ? ' active' : ''}" data-wcn-snooze="${item.id}">
@@ -1797,8 +1788,6 @@
             ${renderLifecycleStepper(item)}
             ${reviewNote}
             ${sysBanner}${blockedBanner}${notices}${waitingNote}${snoozeNote}
-            <div class="wcn-detail-actions" role="group" aria-label="${esc(t('ActionsLabel'))}">${actions}</div>
-            ${personal}
         </section>`;
 
         // Flowing bento — each card carries its own width, and the deck is ordered so
@@ -1835,7 +1824,7 @@
             card(renderActionRail(item)),
             card(renderGates(item)),
             // Personal note sits UNDER the actions: it is something the viewer writes, not something the task says.
-            card(renderNote(item)),
+            card(`${renderNote(item)}${personal}`),
             card(renderPlanDates(item)),
             card(renderSourceContext(item, meta)),
             card(`${renderDelegation(item)}${renderApprovalChain(item)}`)

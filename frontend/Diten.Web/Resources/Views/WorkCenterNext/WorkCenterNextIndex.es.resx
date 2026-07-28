@@ -1137,6 +1137,10 @@
   <data name="NoticePlanConflict" xml:space="preserve"><value>El plan personal entra en conflicto con la fecha de origen.</value></data>
   <data name="NoticeSnoozed" xml:space="preserve"><value>Ha pospuesto este elemento.</value></data>
   <data name="NoticeWaiting" xml:space="preserve"><value>Este elemento espera información externa.</value></data>
+  <data name="NoticeWaitingExternal" xml:space="preserve"><value>Esta tarea espera información de otra persona.</value></data>
+  <data name="NoticeWaitingApproval" xml:space="preserve"><value>Esta tarea espera una decisión de aprobación.</value></data>
+  <data name="NoticeWaitingReview" xml:space="preserve"><value>Esta tarea espera revisión.</value></data>
+  <data name="NoticeWaitingMeeting" xml:space="preserve"><value>Esta tarea espera una reunión.</value></data>
   <data name="ProviderCommandRequired" xml:space="preserve"><value>Este cambio debe ejecutarse en el proveedor de origen.</value></data>
   <data name="RedactedValue" xml:space="preserve"><value>Restringido</value></data>
   <data name="RelatedRecordOpen" xml:space="preserve"><value>Abrir registro relacionado</value></data>

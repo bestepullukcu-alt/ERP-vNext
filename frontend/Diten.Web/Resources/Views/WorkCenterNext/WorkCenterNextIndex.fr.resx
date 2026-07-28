@@ -1137,6 +1137,10 @@
   <data name="NoticePlanConflict" xml:space="preserve"><value>Le plan personnel est en conflit avec l’échéance source.</value></data>
   <data name="NoticeSnoozed" xml:space="preserve"><value>Vous avez reporté cet élément.</value></data>
   <data name="NoticeWaiting" xml:space="preserve"><value>Cet élément attend une contribution externe.</value></data>
+  <data name="NoticeWaitingExternal" xml:space="preserve"><value>Cette tâche attend une information de quelqu'un d'autre.</value></data>
+  <data name="NoticeWaitingApproval" xml:space="preserve"><value>Cette tâche attend une décision d'approbation.</value></data>
+  <data name="NoticeWaitingReview" xml:space="preserve"><value>Cette tâche attend d'être revue.</value></data>
+  <data name="NoticeWaitingMeeting" xml:space="preserve"><value>Cette tâche attend une réunion.</value></data>
   <data name="ProviderCommandRequired" xml:space="preserve"><value>Cette modification doit être exécutée par le fournisseur source.</value></data>
   <data name="RedactedValue" xml:space="preserve"><value>Restreint</value></data>
   <data name="RelatedRecordOpen" xml:space="preserve"><value>Ouvrir l’enregistrement associé</value></data>

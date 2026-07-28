@@ -1137,6 +1137,10 @@
   <data name="NoticePlanConflict" xml:space="preserve"><value>Личный план конфликтует со сроком источника.</value></data>
   <data name="NoticeSnoozed" xml:space="preserve"><value>Вы отложили этот элемент.</value></data>
   <data name="NoticeWaiting" xml:space="preserve"><value>Этот элемент ожидает внешних данных.</value></data>
+  <data name="NoticeWaitingExternal" xml:space="preserve"><value>Эта задача ожидает информации от другого человека.</value></data>
+  <data name="NoticeWaitingApproval" xml:space="preserve"><value>Эта задача ожидает решения по согласованию.</value></data>
+  <data name="NoticeWaitingReview" xml:space="preserve"><value>Эта задача ожидает проверки.</value></data>
+  <data name="NoticeWaitingMeeting" xml:space="preserve"><value>Эта задача ожидает встречи.</value></data>
   <data name="ProviderCommandRequired" xml:space="preserve"><value>Это изменение должно выполняться поставщиком источника.</value></data>
   <data name="RedactedValue" xml:space="preserve"><value>Ограничено</value></data>
   <data name="RelatedRecordOpen" xml:space="preserve"><value>Открыть связанную запись</value></data>

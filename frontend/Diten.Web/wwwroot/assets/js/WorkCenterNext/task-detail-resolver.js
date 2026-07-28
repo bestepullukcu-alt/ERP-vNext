@@ -46,9 +46,43 @@
         if (fixture.workIntent === 'issue' || fixture.workIntent === 'exception') { return 'investigation'; }
         return 'execution';
     };
+    /*
+     * Why the work is parked, by TYPE. The vocabulary is the projection's (TaskWaitingTypes on the server); the
+     * shell never guesses a reason it was not told.
+     */
+    const WAITING_NOTICE_KEY = {
+        // The projection's vocabulary (TaskWaitingTypes on the server).
+        externalInformation: 'NoticeWaitingExternal',
+        approval: 'NoticeWaitingApproval',
+        review: 'NoticeWaitingReview',
+        // The showcase fixtures' vocabulary. It diverged from the server's before either was written down, and
+        // neither is validated by the executable contract — so BOTH reach this resolver and both must be
+        // answered. Reconciling the two vocabularies is a contract decision, not this map's to make.
+        information: 'NoticeWaitingExternal',
+        meeting: 'NoticeWaitingMeeting'
+    };
+    const reportedUnknownWaitingTypes = new Set();
+
     const resolveNotices = (fixture, selectedBanner) => {
         const notices = [];
-        if (fixture.waitingContext) { notices.push({ code: 'waiting', labelKey: 'NoticeWaiting' }); }
+        /*
+         * The notice must name the RIGHT wait. One key was used for every waitingContext, so a task waiting on an
+         * APPROVAL was told it was waiting on external input — while the gates card on the same page said
+         * "Approval: waiting for a decision". The page contradicted itself.
+         *
+         * An unmapped type prints nothing and says so: inventing a reason is worse than staying silent about one.
+         */
+        if (fixture.waitingContext) {
+            const labelKey = WAITING_NOTICE_KEY[fixture.waitingContext.type];
+            if (labelKey) {
+                notices.push({ code: 'waiting', labelKey });
+            } else if (!reportedUnknownWaitingTypes.has(fixture.waitingContext.type)) {
+                reportedUnknownWaitingTypes.add(fixture.waitingContext.type);
+                console.warn(
+                    `[WorkCenterNext] No notice text for waitingContext.type "${fixture.waitingContext.type}" — `
+                    + 'nothing is shown. Add it to WAITING_NOTICE_KEY and the 7 WorkCenterNext resx files.');
+            }
+        }
         if (fixture.taskLifecycle === 'PendingReview') { notices.push({ code: 'pendingReview', labelKey: 'NoticePendingReview' }); }
         if (fixture.personal?.snoozedUntil) { notices.push({ code: 'snoozed', labelKey: 'NoticeSnoozed' }); }
         if (fixture.slaState === 'due-soon') { notices.push({ code: 'dueSoon', labelKey: 'NoticeDueSoon' }); }

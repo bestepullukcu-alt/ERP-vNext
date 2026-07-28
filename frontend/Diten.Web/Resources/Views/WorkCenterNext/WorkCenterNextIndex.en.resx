@@ -1137,6 +1137,10 @@
   <data name="NoticePlanConflict" xml:space="preserve"><value>The personal plan conflicts with the source due date.</value></data>
   <data name="NoticeSnoozed" xml:space="preserve"><value>This item is snoozed by you.</value></data>
   <data name="NoticeWaiting" xml:space="preserve"><value>This item is waiting on external input.</value></data>
+  <data name="NoticeWaitingExternal" xml:space="preserve"><value>This task is waiting on input from someone else.</value></data>
+  <data name="NoticeWaitingApproval" xml:space="preserve"><value>This task is waiting for an approval decision.</value></data>
+  <data name="NoticeWaitingReview" xml:space="preserve"><value>This task is waiting to be reviewed.</value></data>
+  <data name="NoticeWaitingMeeting" xml:space="preserve"><value>This task is waiting for a meeting.</value></data>
   <data name="ProviderCommandRequired" xml:space="preserve"><value>This change must be executed by the source provider.</value></data>
   <data name="RedactedValue" xml:space="preserve"><value>Restricted</value></data>
   <data name="RelatedRecordOpen" xml:space="preserve"><value>Open related record</value></data>

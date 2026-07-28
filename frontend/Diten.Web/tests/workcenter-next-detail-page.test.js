@@ -570,3 +570,100 @@ describe("subtask rows carry who has it and when it is due", () => {
     expect(app().querySelector('[data-wcn-open-task="s1"]')).not.toBeNull();
   });
 });
+
+/*
+ * ONE place per action, and one notice that names the right wait.
+ *
+ * Both defects here are the same shape as several others this week: a new mechanism was added and the old one
+ * was left in place. The command card kept its own action row after the rail was built, so every action rendered
+ * twice — and two copies disagree the moment one is changed.
+ */
+describe("every action is rendered exactly once", () => {
+  const codesIn = (root) => Array.from(root.querySelectorAll("[data-wcn-action]"))
+    .map((node) => node.getAttribute("data-wcn-action"));
+
+  it("renders no action code more than once", async () => {
+    await bootDetailPage(projectionItem({
+      actions: ["start", "reassign", "cancel"].map((code) => ({
+        code,
+        label: { kind: "resource", key: `WorkAggregation_Action_${code}` },
+        semanticType: code,
+        enabled: true,
+        source: "provider",
+        disabledReasonCode: null,
+        disabledReason: null,
+        requiresConfirmation: false,
+        requiresReason: false,
+        requiresEvidence: false,
+        supportsBulk: false,
+        riskLevel: code === "cancel" ? "destructive" : "normal"
+      })),
+      primaryActionCode: "start"
+    }));
+
+    const codes = codesIn(app());
+    const duplicated = codes.filter((code, index) => codes.indexOf(code) !== index);
+    expect(duplicated).toEqual([]);
+    // Non-vacuity: the assertion above is meaningless if nothing rendered.
+    expect(codes).toContain("start");
+    expect(codes).toContain("cancel");
+  });
+
+  it("keeps every action inside the rail, none in the command card", async () => {
+    await bootDetailPage(projectionItem());
+
+    const command = app().querySelector(".wcn-detail-command");
+    expect(command).not.toBeNull();
+    expect(command.querySelectorAll("[data-wcn-action]")).toHaveLength(0);
+    expect(app().querySelector(".wcn-detail-rail [data-wcn-action]")).not.toBeNull();
+  });
+
+  // Snooze changes what the viewer sees, not what the task is, so it sits with the personal note — in ONE place.
+  it("keeps the personal overlay in one place too", async () => {
+    await bootDetailPage(projectionItem());
+
+    expect(app().querySelectorAll("[data-wcn-snooze]")).toHaveLength(1);
+    expect(app().querySelector(".wcn-detail-rail [data-wcn-snooze]")).not.toBeNull();
+  });
+});
+
+describe("the waiting notice names the wait it actually is", () => {
+  const waitingOn = (type) => projectionItem({
+    normalizedStatus: "Waiting",
+    taskLifecycle: "Waiting",
+    waitingContext: { type, since: "2026-07-26T10:00:00+00:00" }
+  });
+
+  it("says approval when the task waits on an approval decision", async () => {
+    await bootDetailPage(waitingOn("approval"));
+
+    expect(app().textContent).toContain("NoticeWaitingApproval");
+    // The defect: the external-input wording was used for every kind of wait, so the page contradicted its own
+    // gates card ("Approval: waiting for a decision").
+    expect(app().textContent).not.toContain("NoticeWaitingExternal");
+  });
+
+  it("says external input when that is what it is", async () => {
+    await bootDetailPage(waitingOn("externalInformation"));
+    expect(app().textContent).toContain("NoticeWaitingExternal");
+  });
+
+  it("says review when the task waits to be reviewed", async () => {
+    await bootDetailPage(waitingOn("review"));
+    expect(app().textContent).toContain("NoticeWaitingReview");
+  });
+
+  it("says nothing and warns for a wait it has no wording for", async () => {
+    const warnings = [];
+    const original = console.warn;
+    console.warn = (...args) => warnings.push(args.join(" "));
+    try {
+      await bootDetailPage(waitingOn("moonPhase"));
+    } finally {
+      console.warn = original;
+    }
+
+    expect(app().textContent).not.toContain("NoticeWaiting");
+    expect(warnings.some((w) => w.includes('waitingContext.type "moonPhase"'))).toBe(true);
+  });
+});

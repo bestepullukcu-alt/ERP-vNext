@@ -1137,6 +1137,10 @@
   <data name="NoticePlanConflict" xml:space="preserve"><value>个人计划与源截止日期冲突。</value></data>
   <data name="NoticeSnoozed" xml:space="preserve"><value>您已暂缓此项目。</value></data>
   <data name="NoticeWaiting" xml:space="preserve"><value>此项目正在等待外部输入。</value></data>
+  <data name="NoticeWaitingExternal" xml:space="preserve"><value>该任务正在等待他人提供信息。</value></data>
+  <data name="NoticeWaitingApproval" xml:space="preserve"><value>该任务正在等待审批决定。</value></data>
+  <data name="NoticeWaitingReview" xml:space="preserve"><value>该任务正在等待评审。</value></data>
+  <data name="NoticeWaitingMeeting" xml:space="preserve"><value>该任务正在等待一次会议。</value></data>
   <data name="ProviderCommandRequired" xml:space="preserve"><value>此更改必须由源提供方执行。</value></data>
   <data name="RedactedValue" xml:space="preserve"><value>受限</value></data>
   <data name="RelatedRecordOpen" xml:space="preserve"><value>打开相关记录</value></data>

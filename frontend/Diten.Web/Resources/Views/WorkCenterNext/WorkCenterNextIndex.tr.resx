@@ -1137,6 +1137,10 @@
   <data name="NoticePlanConflict" xml:space="preserve"><value>Kişisel plan kaynak bitiş tarihiyle çakışıyor.</value></data>
   <data name="NoticeSnoozed" xml:space="preserve"><value>Bu öğeyi ertelediniz.</value></data>
   <data name="NoticeWaiting" xml:space="preserve"><value>Bu öğe dış girdiyi bekliyor.</value></data>
+  <data name="NoticeWaitingExternal" xml:space="preserve"><value>Bu görev başkasından gelecek bilgiyi bekliyor.</value></data>
+  <data name="NoticeWaitingApproval" xml:space="preserve"><value>Bu görev onay kararını bekliyor.</value></data>
+  <data name="NoticeWaitingReview" xml:space="preserve"><value>Bu görev inceleme bekliyor.</value></data>
+  <data name="NoticeWaitingMeeting" xml:space="preserve"><value>Bu görev bir toplantıyı bekliyor.</value></data>
   <data name="ProviderCommandRequired" xml:space="preserve"><value>Bu değişiklik kaynak sağlayıcıda yürütülmelidir.</value></data>
   <data name="RedactedValue" xml:space="preserve"><value>Kısıtlı</value></data>
   <data name="RelatedRecordOpen" xml:space="preserve"><value>İlgili kaydı aç</value></data>

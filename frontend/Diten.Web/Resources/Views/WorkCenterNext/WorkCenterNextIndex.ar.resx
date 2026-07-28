@@ -1137,6 +1137,10 @@
   <data name="NoticePlanConflict" xml:space="preserve"><value>تتعارض الخطة الشخصية مع موعد المصدر.</value></data>
   <data name="NoticeSnoozed" xml:space="preserve"><value>لقد أجّلت هذا العنصر.</value></data>
   <data name="NoticeWaiting" xml:space="preserve"><value>هذا العنصر ينتظر مدخلات خارجية.</value></data>
+  <data name="NoticeWaitingExternal" xml:space="preserve"><value>تنتظر هذه المهمة معلومات من شخص آخر.</value></data>
+  <data name="NoticeWaitingApproval" xml:space="preserve"><value>تنتظر هذه المهمة قرار الموافقة.</value></data>
+  <data name="NoticeWaitingReview" xml:space="preserve"><value>تنتظر هذه المهمة المراجعة.</value></data>
+  <data name="NoticeWaitingMeeting" xml:space="preserve"><value>تنتظر هذه المهمة اجتماعًا.</value></data>
   <data name="ProviderCommandRequired" xml:space="preserve"><value>يجب تنفيذ هذا التغيير لدى مزود المصدر.</value></data>
   <data name="RedactedValue" xml:space="preserve"><value>مقيّد</value></data>
   <data name="RelatedRecordOpen" xml:space="preserve"><value>فتح السجل المرتبط</value></data>
