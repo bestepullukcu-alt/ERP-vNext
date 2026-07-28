@@ -6095,3 +6095,13 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
   .wcn-trigger-card { align-items: stretch; flex-direction: column; }
   .wcn-row-meeting .wcn-trigger-actions { justify-content: flex-end; inline-size: 100%; }
 }
+
+/* Gates card — REPORTS the governance state of a task; it never offers a decision (MOD-0023 owns those). */
+.wcn-gates { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+.wcn-gate { display: flex; align-items: baseline; gap: .5rem; font-size: .8125rem; }
+.wcn-gate-name { min-inline-size: 6rem; color: var(--bs-secondary-color); }
+.wcn-gate-status { font-weight: 600; color: var(--bs-heading-color); }
+.wcn-gate-pending .wcn-gate-status { color: var(--bs-warning); }
+.wcn-gate-rejected .wcn-gate-status { color: var(--bs-danger); }
+.wcn-gate-approved .wcn-gate-status { color: var(--bs-success); }
+.wcn-gate-who { color: var(--bs-secondary-color); }

@@ -1309,6 +1309,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Пунктов чек-листа пока нет.</value>
   </data>
+  <data name="GatesLabel" xml:space="preserve">
+    <value>Контроли</value>
+  </data>
+  <data name="GateApproval" xml:space="preserve">
+    <value>Согласование</value>
+  </data>
+  <data name="GateReview" xml:space="preserve">
+    <value>Проверка</value>
+  </data>
+  <data name="GateStatusNotRequired" xml:space="preserve">
+    <value>Не требуется</value>
+  </data>
+  <data name="GateStatusRequired" xml:space="preserve">
+    <value>Требуется</value>
+  </data>
+  <data name="GateStatusPending" xml:space="preserve">
+    <value>Ожидает решения</value>
+  </data>
+  <data name="GateStatusApproved" xml:space="preserve">
+    <value>Согласовано</value>
+  </data>
+  <data name="GateStatusRejected" xml:space="preserve">
+    <value>Отклонено</value>
+  </data>
+  <data name="SubtaskStatusCancelled" xml:space="preserve">
+    <value>Отменено</value>
+  </data>
   <data name="BreadcrumbLabel" xml:space="preserve">
     <value>Навигационная цепочка</value>
   </data>

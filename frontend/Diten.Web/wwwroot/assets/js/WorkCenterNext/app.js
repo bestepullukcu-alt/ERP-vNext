@@ -1114,12 +1114,64 @@
         </div>`;
     };
 
+
+    /*
+     * What must happen before this work can proceed, and where that stands.
+     *
+     * REPORTING ONLY. There is deliberately no approve/reject control here: the decision belongs to MOD-0023
+     * (charter Binding A), and MOD-0024 has already been caught once growing a second approval engine. This card
+     * answers "why is this waiting, and on whom" — nothing else.
+     *
+     * Absent gates object → no card. A gate that is not required is still SHOWN, because "no approval needed" is
+     * an answer the holder wants; it is the difference between a gate that is satisfied and one that never
+     * applied.
+     */
+    const GATE_STATUS_KEY = {
+        notRequired: 'GateStatusNotRequired',
+        required: 'GateStatusRequired',
+        pending: 'GateStatusPending',
+        approved: 'GateStatusApproved',
+        rejected: 'GateStatusRejected'
+    };
+
+    const gateRow = (labelKey, gate) => {
+        if (!gate) { return ''; }
+        const statusKey = GATE_STATUS_KEY[gate.status];
+        // An unknown status renders nothing rather than a raw token: the projection is the authority on the
+        // vocabulary, and inventing a label for a value we do not know is how gibberish reaches the screen.
+        if (!statusKey) { return ''; }
+        const who = gate.decider?.displayName
+            ? `<span class="wcn-gate-who">${esc(gate.decider.displayName)}</span>`
+            : '';
+        return `<li class="wcn-gate wcn-gate-${esc(gate.status)}">
+            <span class="wcn-gate-name">${esc(t(labelKey))}</span>
+            <span class="wcn-gate-status">${esc(t(statusKey))}</span>
+            ${who}
+        </li>`;
+    };
+
+    const renderGates = (item) => {
+        const gates = item.gates;
+        if (!gates) { return ''; }
+        const rows = gateRow('GateApproval', gates.approval) + gateRow('GateReview', gates.review);
+        if (!rows) { return ''; }
+        return `<div class="wcn-detail-section">
+            <h6 class="wcn-detail-h6">${esc(t('GatesLabel'))}</h6>
+            <ul class="wcn-gates">${rows}</ul>
+        </div>`;
+    };
+
     // Subtasks — full: complete/add here; readonly: progress + "edit in source".
-    const SUBTASK_ICON = { done: 'bxs-check-circle', 'in-progress': 'bx-loader-circle', 'not-started': 'bx-circle' };
+    const SUBTASK_ICON = {
+        done: 'bxs-check-circle', 'in-progress': 'bx-loader-circle', 'not-started': 'bx-circle',
+        cancelled: 'bx-x-circle'
+    };
     const SUBTASK_STATUS_KEY = {
         done: 'SubtaskStatusDone',
         'in-progress': 'SubtaskStatusInProgress',
-        'not-started': 'SubtaskStatusNotStarted'
+        'not-started': 'SubtaskStatusNotStarted',
+        // Called-off work is not work waiting to begin — it reads as "not started" only if nobody says otherwise.
+        cancelled: 'SubtaskStatusCancelled'
     };
     /*
      * A subtask appears as its OWN row in İşlerim (it is assigned to someone and has its own lifecycle), so that
@@ -1619,6 +1671,7 @@
             cell(renderPlanDates(item), 'col-lg-4'),
             cell(renderBusinessContext(item), 'col-lg-8'),
             cell(renderTimesheet(item), 'col-lg-4'),
+            cell(renderGates(item), 'col-lg-6'),
             cell(renderChecklist(item), 'col-lg-6'),
             cell(renderParentContext(item), 'col-12'),
             cell(renderSubtasks(item), 'col-lg-6'),

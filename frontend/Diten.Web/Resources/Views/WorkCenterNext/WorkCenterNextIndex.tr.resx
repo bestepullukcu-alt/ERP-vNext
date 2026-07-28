@@ -1309,6 +1309,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Henüz kontrol listesi maddesi yok.</value>
   </data>
+  <data name="GatesLabel" xml:space="preserve">
+    <value>Kapılar</value>
+  </data>
+  <data name="GateApproval" xml:space="preserve">
+    <value>Onay</value>
+  </data>
+  <data name="GateReview" xml:space="preserve">
+    <value>İnceleme</value>
+  </data>
+  <data name="GateStatusNotRequired" xml:space="preserve">
+    <value>Gerekmiyor</value>
+  </data>
+  <data name="GateStatusRequired" xml:space="preserve">
+    <value>Gerekli</value>
+  </data>
+  <data name="GateStatusPending" xml:space="preserve">
+    <value>Karar bekliyor</value>
+  </data>
+  <data name="GateStatusApproved" xml:space="preserve">
+    <value>Onaylandı</value>
+  </data>
+  <data name="GateStatusRejected" xml:space="preserve">
+    <value>Reddedildi</value>
+  </data>
+  <data name="SubtaskStatusCancelled" xml:space="preserve">
+    <value>İptal edildi</value>
+  </data>
   <data name="BreadcrumbLabel" xml:space="preserve">
     <value>Sayfa yolu</value>
   </data>

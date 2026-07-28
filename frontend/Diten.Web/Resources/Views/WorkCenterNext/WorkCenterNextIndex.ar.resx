@@ -1309,6 +1309,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>لا توجد عناصر في قائمة التحقق بعد.</value>
   </data>
+  <data name="GatesLabel" xml:space="preserve">
+    <value>البوابات</value>
+  </data>
+  <data name="GateApproval" xml:space="preserve">
+    <value>الموافقة</value>
+  </data>
+  <data name="GateReview" xml:space="preserve">
+    <value>المراجعة</value>
+  </data>
+  <data name="GateStatusNotRequired" xml:space="preserve">
+    <value>غير مطلوبة</value>
+  </data>
+  <data name="GateStatusRequired" xml:space="preserve">
+    <value>مطلوبة</value>
+  </data>
+  <data name="GateStatusPending" xml:space="preserve">
+    <value>في انتظار القرار</value>
+  </data>
+  <data name="GateStatusApproved" xml:space="preserve">
+    <value>تمت الموافقة</value>
+  </data>
+  <data name="GateStatusRejected" xml:space="preserve">
+    <value>مرفوضة</value>
+  </data>
+  <data name="SubtaskStatusCancelled" xml:space="preserve">
+    <value>مُلغاة</value>
+  </data>
   <data name="BreadcrumbLabel" xml:space="preserve">
     <value>مسار التنقل</value>
   </data>

@@ -1309,6 +1309,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>暂无清单项。</value>
   </data>
+  <data name="GatesLabel" xml:space="preserve">
+    <value>审批关卡</value>
+  </data>
+  <data name="GateApproval" xml:space="preserve">
+    <value>审批</value>
+  </data>
+  <data name="GateReview" xml:space="preserve">
+    <value>评审</value>
+  </data>
+  <data name="GateStatusNotRequired" xml:space="preserve">
+    <value>不需要</value>
+  </data>
+  <data name="GateStatusRequired" xml:space="preserve">
+    <value>需要</value>
+  </data>
+  <data name="GateStatusPending" xml:space="preserve">
+    <value>等待决定</value>
+  </data>
+  <data name="GateStatusApproved" xml:space="preserve">
+    <value>已批准</value>
+  </data>
+  <data name="GateStatusRejected" xml:space="preserve">
+    <value>已拒绝</value>
+  </data>
+  <data name="SubtaskStatusCancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
   <data name="BreadcrumbLabel" xml:space="preserve">
     <value>面包屑导航</value>
   </data>

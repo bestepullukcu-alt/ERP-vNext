@@ -256,7 +256,13 @@ public sealed record WorkItemProjectionDto(
     WorkItemSubtasksDto? Subtasks = null,
     /// <summary>Set when this item IS a subtask, so the shell can show whose subtask it is.</summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? ParentTaskItemId = null);
+    string? ParentTaskItemId = null,
+    /// <summary>
+    /// Governance gates, REPORTED so the holder can see why work is waiting. Optional and trailing, so a provider
+    /// that has no gates (MOD-0023's own items) serializes unchanged and the field is simply absent.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemGatesDto? Gates = null);
 
 /// <summary>
 /// The task's live checklist. An empty <c>items</c> list is valid when the capability is declared.
@@ -287,8 +293,39 @@ public sealed record WorkItemSubtaskDto(
     string Id,
     /// <summary>Plain text: a subtask title is a real user-typed title, never a resource key.</summary>
     string Title,
-    /// <summary>Contract vocabulary: done | in-progress | not-started.</summary>
+    /// <summary>
+    /// Contract vocabulary: done | in-progress | not-started | cancelled.
+    ///
+    /// <para><c>cancelled</c> is its own value and not folded into <c>not-started</c>: called-off work is not
+    /// waiting to begin, and reading three cancelled subtasks as "not started" invites someone to go and do
+    /// them. It is also the distinction BL-035 needs — a cancelled subtask must not gate its parent.</para>
+    /// </summary>
     string Status);
+
+/// <summary>
+/// The governance gates on a work item: what must happen before it can proceed, and where that stands.
+///
+/// <para><b>This REPORTS; it never decides.</b> The aggregator surfaces gate state so a holder can see why work
+/// is waiting and on whom — it must never offer an approve/reject control and must never write gate state.
+/// Approval and review decisions belong to MOD-0023 (charter Binding A); MOD-0024 was already caught growing a
+/// second approval engine once, from a local flag rather than the workflow's actual state.</para>
+///
+/// <para>Modelled as a policy object beside <c>reviewMeetingPolicy</c> rather than as a separate fetch: the Task
+/// Center aggregates many providers, so a detail page that called one provider's own API would work for that
+/// provider alone.</para>
+/// </summary>
+public sealed record WorkItemGatesDto(WorkItemGateDto Approval, WorkItemGateDto Review);
+
+/// <summary>
+/// One gate. <see cref="Decider"/> is a TYPED identity or null — never a name this service guessed. Platform has
+/// no user-directory seam, so the id crosses and the client renders what it can.
+/// </summary>
+public sealed record WorkItemGateDto(
+    bool Required,
+    /// <summary>notRequired | required | pending | approved | rejected.</summary>
+    string Status,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPersonDto? Decider);
 
 // The caller's effective context, assembled by the API layer from the authenticated principal. UserId is
 // resolved server-side (never from the client payload); permission flags are evaluated from the principal's

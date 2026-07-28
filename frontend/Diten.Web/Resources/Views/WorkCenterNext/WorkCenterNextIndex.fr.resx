@@ -1309,6 +1309,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aucun élément de liste de contrôle.</value>
   </data>
+  <data name="GatesLabel" xml:space="preserve">
+    <value>Contrôles</value>
+  </data>
+  <data name="GateApproval" xml:space="preserve">
+    <value>Approbation</value>
+  </data>
+  <data name="GateReview" xml:space="preserve">
+    <value>Revue</value>
+  </data>
+  <data name="GateStatusNotRequired" xml:space="preserve">
+    <value>Non requis</value>
+  </data>
+  <data name="GateStatusRequired" xml:space="preserve">
+    <value>Requis</value>
+  </data>
+  <data name="GateStatusPending" xml:space="preserve">
+    <value>En attente d'une décision</value>
+  </data>
+  <data name="GateStatusApproved" xml:space="preserve">
+    <value>Approuvé</value>
+  </data>
+  <data name="GateStatusRejected" xml:space="preserve">
+    <value>Refusé</value>
+  </data>
+  <data name="SubtaskStatusCancelled" xml:space="preserve">
+    <value>Annulé</value>
+  </data>
   <data name="BreadcrumbLabel" xml:space="preserve">
     <value>Fil d'Ariane</value>
   </data>

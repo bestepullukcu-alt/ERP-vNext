@@ -1309,6 +1309,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aún no hay elementos de verificación.</value>
   </data>
+  <data name="GatesLabel" xml:space="preserve">
+    <value>Controles</value>
+  </data>
+  <data name="GateApproval" xml:space="preserve">
+    <value>Aprobación</value>
+  </data>
+  <data name="GateReview" xml:space="preserve">
+    <value>Revisión</value>
+  </data>
+  <data name="GateStatusNotRequired" xml:space="preserve">
+    <value>No necesario</value>
+  </data>
+  <data name="GateStatusRequired" xml:space="preserve">
+    <value>Necesario</value>
+  </data>
+  <data name="GateStatusPending" xml:space="preserve">
+    <value>Esperando una decisión</value>
+  </data>
+  <data name="GateStatusApproved" xml:space="preserve">
+    <value>Aprobado</value>
+  </data>
+  <data name="GateStatusRejected" xml:space="preserve">
+    <value>Rechazado</value>
+  </data>
+  <data name="SubtaskStatusCancelled" xml:space="preserve">
+    <value>Cancelado</value>
+  </data>
   <data name="BreadcrumbLabel" xml:space="preserve">
     <value>Ruta de navegación</value>
   </data>

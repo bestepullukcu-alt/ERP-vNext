@@ -53,6 +53,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     // (retry the save) instead of waiting for an approver who was never asked.
     private const string DisabledApprovalStartFailedKey = "WorkAggregation_ApprovalError_StartFailed";
 
+    private const string GateNotRequired = "notRequired";
+    private const string GateRequired = "required";
+    private const string GatePending = "pending";
+    private const string GateApproved = "approved";
+    private const string GateRejected = "rejected";
+
     private readonly ITaskItemRepository _tasks;
     private readonly IPositionAssignmentRepository _positionAssignments;
     private readonly ITaskLifecycleService _lifecycle;
@@ -116,7 +122,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // ONE batched resolve for the whole page — never one call per task, and cached between requests.
         // Best effort: if AuthService is down this comes back empty and names are simply omitted.
         var userIds = tasks
-            .SelectMany(t => new[] { t.AssigneeUserId, t.CreatedByUserId })
+            // The approval manager joins the batch so the gates card can name a person instead of an id.
+            .SelectMany(t => new[] { t.AssigneeUserId, t.CreatedByUserId, t.ApprovalManagerUserId })
             .Where(id => id is not null && id != Guid.Empty)
             .Select(id => id!.Value)
             .Distinct()
@@ -250,7 +257,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // Container ⇔ capability, both directions: emitted only when declared, and then even if empty.
             Checklist: checklist is null ? null : ToChecklist(checklist),
             Subtasks: task.ParentTaskItemId is null ? ToSubtasks(children) : null,
-            ParentTaskItemId: task.ParentTaskItemId?.ToString());
+            ParentTaskItemId: task.ParentTaskItemId?.ToString(),
+            Gates: BuildGates(task, actor, displayNames, approvalOutstanding, approvalRejected));
     }
 
     /// <summary>
@@ -338,14 +346,59 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// Subtasks in the contract's own vocabulary. MOD-0024 is their source, so the mode is `full`: they are
     /// created and completed here rather than deep-linked elsewhere.
     /// </summary>
+
+    /// <summary>
+    /// What must happen before this work may proceed, and where that stands — REPORTED, never decided here.
+    ///
+    /// <para>Approval status is read from what MOD-0023 says about the instance, not from
+    /// <c>ApprovalRequired</c>: that flag records only that approval was ASKED FOR. Deriving status from it is
+    /// exactly the mistake that once left an approved task still showing as waiting.</para>
+    ///
+    /// <para>Review carries no decider. A TaskItem records that a review is required but not WHO reviews —
+    /// MOD-0023 resolves that — so the field is null rather than filled with the approval manager, who is a
+    /// different person answering a different question.</para>
+    /// </summary>
+    private static WorkItemGatesDto BuildGates(
+        TaskItem task,
+        WorkItemActor actor,
+        IReadOnlyDictionary<Guid, string> displayNames,
+        bool approvalOutstanding,
+        bool approvalRejected)
+    {
+        var approvalStatus = !task.ApprovalRequired ? GateNotRequired
+            : approvalRejected ? GateRejected
+            : approvalOutstanding ? GatePending
+            // Required, not outstanding and not refused: MOD-0023 released it.
+            : GateApproved;
+
+        var reviewStatus = !task.ReviewRequired ? GateNotRequired
+            // The task is sitting with a reviewer right now.
+            : task.Lifecycle == TaskLifecycle.PendingReview ? GatePending
+            // Declared, but the work has not reached review yet.
+            : GateRequired;
+
+        return new WorkItemGatesDto(
+            Approval: new WorkItemGateDto(
+                task.ApprovalRequired,
+                approvalStatus,
+                // A CANDIDATE approver hint (MOD-0018/MOD-0023 resolve real authority) — a typed identity, so the
+                // client can render a person instead of a raw id, and null when there is none.
+                Person(task.ApprovalManagerUserId, actor, displayNames)),
+            Review: new WorkItemGateDto(task.ReviewRequired, reviewStatus, Decider: null));
+    }
+
     private static WorkItemSubtasksDto ToSubtasks(IReadOnlyList<TaskItem> children)
         => new("full", children
             .Select(child => new WorkItemSubtaskDto(
                 Id: child.Id.ToString(),
                 Title: child.Title,
+                // Cancelled is NOT "not started": called-off work is not waiting to begin, and reading it that
+                // way sends someone to do it. It is also the distinction BL-035 will need — a cancelled subtask
+                // must not gate its parent.
                 Status: child.Lifecycle switch
                 {
                     TaskLifecycle.Done => "done",
+                    TaskLifecycle.Cancelled => "cancelled",
                     TaskLifecycle.InProgress or TaskLifecycle.PendingReview or TaskLifecycle.Waiting => "in-progress",
                     _ => "not-started"
                 }))

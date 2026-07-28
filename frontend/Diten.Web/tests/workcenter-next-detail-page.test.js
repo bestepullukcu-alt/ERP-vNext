@@ -330,3 +330,77 @@ describe("subtasks and checklist say what they mean", () => {
     expect(app().textContent).toContain("ChecklistDoesNotBlock");
   });
 });
+
+/*
+ * The gates card. It REPORTS what must happen before work can proceed — and never offers a way to decide it.
+ * The decision belongs to MOD-0023 (charter Binding A); MOD-0024 has already been caught growing a second
+ * approval engine once, so the boundary is asserted rather than assumed.
+ */
+describe("the gates card reports governance without deciding it", () => {
+  const withGates = (gates) => projectionItem({ gates });
+
+  it("says so when nothing is required", async () => {
+    await bootDetailPage(withGates({
+      approval: { required: false, status: "notRequired" },
+      review: { required: false, status: "notRequired" }
+    }));
+
+    expect(app().textContent).toContain("GatesLabel");
+    // "No approval needed" is an answer the holder wants — it is not the same as a gate that is satisfied.
+    expect(app().textContent).toContain("GateStatusNotRequired");
+  });
+
+  it("names who an outstanding approval is waiting on", async () => {
+    await bootDetailPage(withGates({
+      approval: {
+        required: true,
+        status: "pending",
+        decider: { id: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee", displayName: "Deniz Koç" }
+      },
+      review: { required: false, status: "notRequired" }
+    }));
+
+    expect(app().textContent).toContain("GateStatusPending");
+    expect(app().textContent).toContain("Deniz Koç");
+  });
+
+  it("reports a required review that has not been reached yet", async () => {
+    await bootDetailPage(withGates({
+      approval: { required: false, status: "notRequired" },
+      review: { required: true, status: "required" }
+    }));
+
+    expect(app().textContent).toContain("GateStatusRequired");
+  });
+
+  // BOUNDARY: reporting a gate must never become operating one.
+  it("offers no approve or reject control", async () => {
+    await bootDetailPage(withGates({
+      approval: { required: true, status: "pending" },
+      review: { required: true, status: "pending" }
+    }));
+
+    const gates = app().querySelector(".wcn-gates");
+    expect(gates).not.toBeNull();
+    expect(gates.querySelector("button")).toBeNull();
+    expect(app().querySelector('[data-wcn-action="approve"]')).toBeNull();
+    expect(app().querySelector('[data-wcn-action="reject"]')).toBeNull();
+  });
+
+  it("prints no card at all when the provider sends no gates", async () => {
+    await bootDetailPage(projectionItem());
+    expect(app().querySelector(".wcn-gates")).toBeNull();
+  });
+});
+
+describe("a cancelled subtask is not reported as unstarted work", () => {
+  it("labels it cancelled", async () => {
+    await bootDetailPage(projectionItem({
+      subtasks: { mode: "full", items: [{ id: "s1", title: "İptal edilen iş", status: "cancelled" }] }
+    }));
+
+    const status = app().querySelector(".wcn-subtask-status");
+    expect(status.textContent).toBe("SubtaskStatusCancelled");
+    expect(status.textContent).not.toBe("SubtaskStatusNotStarted");
+  });
+});
