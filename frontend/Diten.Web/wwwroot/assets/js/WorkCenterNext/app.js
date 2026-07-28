@@ -1107,6 +1107,7 @@
             : '';
         return `<div class="wcn-detail-section">
             <h6 class="wcn-detail-h6">${esc(t('ChecklistLabel'))} <span class="wcn-count-inline">${done}/${items.length}</span></h6>
+            <p class="wcn-block-hint">${esc(t(items.some((c) => c.blocking) ? 'ChecklistBlocksCompletion' : 'ChecklistDoesNotBlock'))}</p>
             <progress class="wcn-progress" value="${done}" max="${items.length}" aria-label="${esc(t('ChecklistLabel'))}"></progress>
             <ul class="wcn-checks">${rows}</ul>
             ${notice}
@@ -1115,6 +1116,11 @@
 
     // Subtasks — full: complete/add here; readonly: progress + "edit in source".
     const SUBTASK_ICON = { done: 'bxs-check-circle', 'in-progress': 'bx-loader-circle', 'not-started': 'bx-circle' };
+    const SUBTASK_STATUS_KEY = {
+        done: 'SubtaskStatusDone',
+        'in-progress': 'SubtaskStatusInProgress',
+        'not-started': 'SubtaskStatusNotStarted'
+    };
     /*
      * A subtask appears as its OWN row in İşlerim (it is assigned to someone and has its own lifecycle), so that
      * row has to say what it belongs to — otherwise it reads as unexplained standalone work. The parent title is
@@ -1144,6 +1150,9 @@
                 </button>
                 <button type="button" class="wcn-subtask-title wcn-linklike" data-wcn-open-task="${esc(s.id)}"
                         aria-label="${esc(tf('SubtaskOpenAria', s.title))}">${esc(s.title)}</button>
+                ${SUBTASK_STATUS_KEY[s.status]
+                    ? `<span class="wcn-subtask-status">${esc(t(SUBTASK_STATUS_KEY[s.status]))}</span>`
+                    : ''}
             </li>`).join('');
         const adder = full
             ? `<div class="wcn-subtask-add">
@@ -1516,9 +1525,6 @@
         const isSnoozed = item.snoozedUntil && item.snoozedUntil > data.todayIso;
         const personal = (item.lifecycle === 'Done' || item.lifecycle === 'Cancelled') ? '' :
             `<div class="wcn-personal" role="group" aria-label="${esc(t('PersonalActionsLabel'))}">
-                <button type="button" class="wcn-personal-btn${item.pinned ? ' active' : ''}" data-wcn-pin="${item.id}" aria-pressed="${item.pinned}">
-                    <i class="bx ${item.pinned ? 'bxs-pin' : 'bx-pin'}"></i><span>${esc(t(item.pinned ? 'Unpin' : 'Pin'))}</span>
-                </button>
                 <button type="button" class="wcn-personal-btn${isSnoozed ? ' active' : ''}" data-wcn-snooze="${item.id}">
                     <i class="bx bx-moon"></i><span>${esc(t(isSnoozed ? 'Unsnooze' : 'Snooze'))}</span>
                 </button>
@@ -1588,7 +1594,6 @@
                 ${chip('type', item.typeIcon, typeLabel(item))}
                 <span class="wcn-badge wcn-badge-${STATUS_KIND[displayStatus(item)]}">${esc(statusLabel(item))}</span>
             </div>
-            <h5 class="wcn-detail-title">${esc(item.title)}</h5>
             <div class="wcn-detail-chips">
                 ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
                 ${priorityChip(item)}
@@ -1627,8 +1632,26 @@
             cell(renderRelated(item), 'col-lg-8')
         ].filter(Boolean).join('');
 
+        /*
+         * The page header, rendered here because only this code knows the task's NAME.
+         *
+         * ONE navigation control, not two: there used to be a breadcrumb and a Back button pointing at the same
+         * place. The breadcrumb is kept because it also states where you are, and its Task Center link returns to
+         * the list AS THE USER LEFT IT (tab, segment, filters) instead of a default view.
+         *
+         * The h1 is the task, not the page type — "Task detail" was said twice and the task's own name nowhere.
+         */
+        const pageHeader = `<nav class="wcn-detail-breadcrumb" aria-label="${esc(t('BreadcrumbLabel'))}">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="${esc(listReturnUrl())}">${esc(t('Title'))}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">${esc(item.title)}</li>
+            </ol>
+        </nav>
+        <h1 class="wcn-detail-pagetitle">${esc(item.title)}</h1>`;
+
         return `<div class="wcn-detail wcn-details-page">
             <div class="row g-4 wcn-detail-grid">
+                <div class="col-12">${pageHeader}</div>
                 <div class="col-12">${commandCard}</div>
                 ${bento}
                 ${activitySection ? `<div class="col-12">${card(activitySection)}</div>` : ''}
@@ -2208,12 +2231,21 @@
         teardownPanelSelect2();
         destroyWorkCenterDataTable();
         if (root.dataset.wcnPage === 'detail') {
+            /*
+             * Loading and error are answered BEFORE "not found". This branch used to return first, so while the
+             * projection was still in flight the page stated the task did not exist — an error message about
+             * data that had simply not arrived, and then it flipped to the task. The list page had the skeleton
+             * all along; the detail page never reached it.
+             */
+            if (state.loadState === 'loading') { root.innerHTML = renderLoadingState(); return; }
+            if (state.loadState === 'error') { root.innerHTML = renderErrorState(); return; }
+
             const item = itemById(root.dataset.wcnItemId || '');
             state.selectedId = item ? item.id : null;
             if (item) { markSeen(item); }
             root.innerHTML = item
                 ? detailHtml(item)
-                : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t('DetailItemNotFound'))}</p><a class="btn btn-label-secondary" href="/WorkCenterNext">${esc(t('DetailBackToList'))}</a></div></section>`;
+                : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t('DetailItemNotFound'))}</p><a class="btn btn-label-secondary" href="${esc(listReturnUrl())}">${esc(t('DetailBackToList'))}</a></div></section>`;
             setupTimerTick();
             restoreFocus(snap);
             return;
@@ -3169,8 +3201,31 @@
         }
     };
 
+    /*
+     * The list's whole state — tab, segment, filters, search, page — lives in its URL (hydrateStateFromUrl reads
+     * it back). Remember that URL on the way out so returning restores the list the user was actually looking at,
+     * instead of dropping them on a default Inbox and making them rebuild their filters.
+     */
+    const LIST_RETURN_KEY = 'wcn:list-return-url';
+
+    const rememberListUrl = () => {
+        try {
+            global.sessionStorage?.setItem(LIST_RETURN_KEY, global.location.pathname + global.location.search);
+        } catch (error) { /* private mode / storage disabled — the default link still works */ }
+    };
+
+    const listReturnUrl = () => {
+        try {
+            const stored = global.sessionStorage?.getItem(LIST_RETURN_KEY);
+            // Same-origin path only: a stored value is user-controlled input, not a destination to trust.
+            if (stored && stored.startsWith('/WorkCenterNext')) { return stored; }
+        } catch (error) { /* fall through */ }
+        return '/WorkCenterNext';
+    };
+
     const openDetailPage = (id) => {
         if (!id) { return; }
+        rememberListUrl();
         global.location.assign(`/WorkCenterNext/Details/${encodeURIComponent(id)}`);
     };
 
@@ -3664,9 +3719,10 @@
         if (root.dataset.wcnPage !== 'detail') {
             hydrateStateFromUrl();
             state.viewsByTab[state.tab] = state.view;
-        } else {
-            state.loadState = 'ready';
         }
+        // The detail page used to declare itself 'ready' here, before loadWorkItems had fetched anything — so the
+        // first paint had no items and announced the task did not exist. It stays 'loading' until the projection
+        // answers, like every other surface.
         reportMissingWriteDependencies();
         /*
          * onClick is async, so anything it throws becomes an UNHANDLED REJECTION — which the browser swallows.

@@ -80,8 +80,9 @@ const bootDetailPage = (item, options) => {
   const mapped = global.WorkCenterNextApi.mapPayload([item]);
   expect(mapped.errors).toEqual([]);
   // Stub the network at the module seam; everything downstream is the real code.
-  global.WorkCenterNextApi.fetchWorkItems = () =>
-    Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors: [] });
+  global.WorkCenterNextApi.fetchWorkItems = (options && options.neverResolve)
+    ? () => new Promise(() => { /* a request that never settles — the page must stay in its loading state */ })
+    : () => Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors: [] });
 
   const created = [];
   // The Details view used to omit these entirely; `withoutTasksScripts` reproduces that page exactly.
@@ -193,43 +194,6 @@ describe("adding a subtask reads the title the user typed", () => {
   });
 });
 
-describe("what a re-render does to a half-typed subtask title", () => {
-  /*
-   * The reported symptom did NOT reproduce from a click alone (above), so this probes the next candidate: the
-   * whole surface is rebuilt with innerHTML on every render, and captureFocus preserves only the SEARCH box —
-   * so anything typed into another field is gone the moment something re-renders.
-   */
-  it("loses the typed value, because the field is rebuilt empty", async () => {
-    await bootDetailPage(projectionItem());
-
-    const input = app().querySelector("[data-wcn-subtask-input]");
-    input.value = "Banka ekstresini iste";
-
-    // Any re-render will do; a personal pin toggle is the smallest one a user can trigger by accident.
-    const pin = app().querySelector("[data-wcn-pin]");
-    // Not optional: if the control is gone this test must fail loudly rather than skip itself.
-    expect(pin).not.toBeNull();
-    {
-      pin.click();
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      const after = app().querySelector("[data-wcn-subtask-input]");
-      expect(after).not.toBeNull();
-      // Documents the behaviour rather than asserting it is correct: this is the mechanism by which a user can
-      // type a title and then be told to enter one.
-      expect(after.value).toBe("");
-    }
-  });
-});
-
-/*
- * The Details ROUTE, as its own view actually loads it.
- *
- * The subtask defect lived here and not on the list page: /WorkCenterNext/Details never loaded Tasks/api.js or
- * Tasks/form.js, so every write threw on an undefined global inside an async click handler. An unhandled
- * rejection is swallowed, so the symptom was total silence — no request, no toast, no warning — which is
- * indistinguishable from "the button was never wired". The tests above passed throughout, because the harness
- * supplied those globals that the real page did not.
- */
 describe("the Details route can actually write", () => {
   const bootWithoutTasksScripts = async (item) => {
     const booted = await bootDetailPage(item);
@@ -278,5 +242,91 @@ describe("the Details route can actually write", () => {
     }
 
     expect(errors.some((line) => line.includes("click handler failed"))).toBe(true);
+  });
+});
+
+/*
+ * The detail page's own header and its conditional sections.
+ *
+ * Design pass (Figma, CT-approved): the page states the TASK, returns to the list the user left, and shows a
+ * loading state instead of claiming the task does not exist while the projection is still in flight.
+ */
+describe("the detail page header states the task, not the page type", () => {
+  beforeEach(async () => { await bootDetailPage(projectionItem()); });
+
+  it("puts the task name in the heading", () => {
+    const heading = app().querySelector(".wcn-detail-pagetitle");
+    expect(heading).not.toBeNull();
+    expect(heading.textContent).toBe("Yeni maliyet merkezi açılış talebi");
+  });
+
+  it("offers ONE way back, not a Back button and a breadcrumb for the same place", () => {
+    const links = Array.from(app().querySelectorAll('a[href^="/WorkCenterNext"]'));
+    expect(links).toHaveLength(1);
+  });
+
+  it("returns to the list as the user left it", async () => {
+    // The list stores where it was on the way out; the crumb has to honour it.
+    window.sessionStorage.setItem("wcn:list-return-url", "/WorkCenterNext?tab=havuz&segment=bekleyen");
+    await bootDetailPage(projectionItem());
+
+    const crumb = app().querySelector('.wcn-detail-breadcrumb a');
+    expect(crumb.getAttribute("href")).toBe("/WorkCenterNext?tab=havuz&segment=bekleyen");
+    window.sessionStorage.removeItem("wcn:list-return-url");
+  });
+
+  it("refuses a stored return URL that points somewhere else", async () => {
+    window.sessionStorage.setItem("wcn:list-return-url", "https://evil.example/steal");
+    await bootDetailPage(projectionItem());
+
+    expect(app().querySelector('.wcn-detail-breadcrumb a').getAttribute("href")).toBe("/WorkCenterNext");
+    window.sessionStorage.removeItem("wcn:list-return-url");
+  });
+
+  // Pinning means "keep this near the top of MY list"; on a page showing one task there is no list to order.
+  it("offers no pin control", () => {
+    expect(app().querySelector("[data-wcn-pin]")).toBeNull();
+  });
+});
+
+describe("the detail page while the projection is still loading", () => {
+  it("shows the loading state instead of claiming the task does not exist", async () => {
+    // A fetch that never settles leaves the page in its loading state, which is what a slow network produces.
+    await bootDetailPage(projectionItem(), { neverResolve: true });
+
+    expect(app().querySelector(".wcn-skeleton")).not.toBeNull();
+    // The defect: an error about data that had simply not arrived yet.
+    expect(app().textContent).not.toContain("DetailItemNotFound");
+  });
+});
+
+describe("subtasks and checklist say what they mean", () => {
+  it("shows each subtask's status in words", async () => {
+    await bootDetailPage(projectionItem({
+      subtasks: { mode: "full", items: [{ id: "s1", title: "Alt iş", status: "in-progress" }] }
+    }));
+
+    const row = app().querySelector(".wcn-subtask-status");
+    expect(row).not.toBeNull();
+    expect(row.textContent).toBe("SubtaskStatusInProgress");
+  });
+
+  it("says a blocking checklist blocks completion", async () => {
+    await bootDetailPage(projectionItem({
+      workItemCapabilities: ["planning", "execution", "subtasks", "checklist"],
+      checklist: { version: 1, items: [{ id: "c1", label: { kind: "display", text: "Adım" }, completed: false, required: true, blocking: true, evidenceRequired: false }] }
+    }));
+
+    expect(app().textContent).toContain("ChecklistBlocksCompletion");
+    expect(app().textContent).not.toContain("ChecklistDoesNotBlock");
+  });
+
+  it("says a guidance checklist does not", async () => {
+    await bootDetailPage(projectionItem({
+      workItemCapabilities: ["planning", "execution", "subtasks", "checklist"],
+      checklist: { version: 1, items: [{ id: "c1", label: { kind: "display", text: "Adım" }, completed: false, required: true, blocking: false, evidenceRequired: false }] }
+    }));
+
+    expect(app().textContent).toContain("ChecklistDoesNotBlock");
   });
 });

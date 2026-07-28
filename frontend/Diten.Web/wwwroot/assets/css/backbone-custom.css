@@ -5721,6 +5721,18 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 }
 .wcn-focus-intro i { font-size: 1.125rem; color: var(--bs-primary); }
 
+/* Detail page header -------------------------------------------------------
+   The heading is the TASK, not the page type — the page type is already stated by the breadcrumb above it. */
+.wcn-detail-pagetitle {
+    margin: .25rem 0 0; font-size: 1.25rem; font-weight: 600; color: var(--bs-heading-color);
+}
+.wcn-detail-breadcrumb .breadcrumb { margin-block-end: 0; }
+
+/* A subtask's status in words, beside its title: the icon alone encodes it in colour only. */
+.wcn-subtask-status {
+    margin-inline-start: auto; font-size: .75rem; color: var(--bs-secondary-color); white-space: nowrap;
+}
+
 /* Empty states -------------------------------------------------------------
    The surface is a CARD, matching the Golden Reference DataTable empty state. Without it the icon, heading and
    text sat straight on the page background, which reads as a page that failed to draw rather than a list with

@@ -1309,6 +1309,24 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>No checklist items yet.</value>
   </data>
+  <data name="BreadcrumbLabel" xml:space="preserve">
+    <value>Breadcrumb</value>
+  </data>
+  <data name="SubtaskStatusDone" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="SubtaskStatusInProgress" xml:space="preserve">
+    <value>In progress</value>
+  </data>
+  <data name="SubtaskStatusNotStarted" xml:space="preserve">
+    <value>Not started</value>
+  </data>
+  <data name="ChecklistBlocksCompletion" xml:space="preserve">
+    <value>This list must be finished before the task can be completed.</value>
+  </data>
+  <data name="ChecklistDoesNotBlock" xml:space="preserve">
+    <value>This list is guidance; it does not block completion.</value>
+  </data>
   <data name="ActivityEmpty" xml:space="preserve">
     <value>No activity recorded yet.</value>
   </data>

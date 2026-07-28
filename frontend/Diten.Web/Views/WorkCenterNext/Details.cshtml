@@ -1,29 +1,18 @@
 @using Diten.Web.Views.WorkCenterNext
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<WorkCenterNextIndex> Localizer
-@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     var workItemId = ViewData["WorkItemId"]?.ToString() ?? string.Empty;
     ViewData["Title"] = Localizer["DetailPageTitle"].Value;
     Layout = "_LayoutTenantShell";
 }
 
+@* The page header is rendered by app.js, not here.
+   It has to carry the TASK'S OWN NAME, and the server knows only the id — so a static header could say nothing
+   but "Task detail", which is what it used to do: the page type twice (heading and breadcrumb) and the task's
+   name nowhere. There was also a Back button AND a breadcrumb, two controls for one destination, and neither
+   remembered which tab/segment/filter the list was on. *@
 <div class="wcn-full-detail-page">
-    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-        <div>
-            <h5 class="mb-0">@Localizer["DetailPageTitle"]</h5>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="/WorkCenterNext">@Localizer["Title"]</a></li>
-                    <li class="breadcrumb-item active text-primary">@Localizer["DetailPageTitle"]</li>
-                </ol>
-            </nav>
-        </div>
-        <a href="/WorkCenterNext" class="btn btn-label-secondary">
-            <i class="bx bx-arrow-back me-1"></i>@SharedLocalizer["Back"]
-        </a>
-    </div>
-
     @* DEC-1 — showcase fixtures are opt-in and DEVELOPMENT-ONLY (server-decided; no client-only switch). *@
     <div id="wcnApp" class="wcn-app wcn-full-detail-app" data-wcn-page="detail" data-wcn-item-id="@workItemId"
          data-wcn-fixtures="@((ViewData["FixturesToggleAllowed"] as bool? == true && Context.Request.Query["fixtures"] == "showcase") ? "showcase" : "")"></div>

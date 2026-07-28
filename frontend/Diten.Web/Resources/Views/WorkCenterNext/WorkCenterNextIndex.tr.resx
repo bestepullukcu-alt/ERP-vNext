@@ -1309,6 +1309,24 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Henüz kontrol listesi maddesi yok.</value>
   </data>
+  <data name="BreadcrumbLabel" xml:space="preserve">
+    <value>Sayfa yolu</value>
+  </data>
+  <data name="SubtaskStatusDone" xml:space="preserve">
+    <value>Tamamlandı</value>
+  </data>
+  <data name="SubtaskStatusInProgress" xml:space="preserve">
+    <value>Devam ediyor</value>
+  </data>
+  <data name="SubtaskStatusNotStarted" xml:space="preserve">
+    <value>Başlamadı</value>
+  </data>
+  <data name="ChecklistBlocksCompletion" xml:space="preserve">
+    <value>Görev tamamlanmadan önce bu listenin bitmesi gerekir.</value>
+  </data>
+  <data name="ChecklistDoesNotBlock" xml:space="preserve">
+    <value>Bu liste yol göstericidir; tamamlamayı engellemez.</value>
+  </data>
   <data name="ActivityEmpty" xml:space="preserve">
     <value>Henüz etkinlik kaydı yok.</value>
   </data>

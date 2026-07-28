@@ -1309,6 +1309,24 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aún no hay elementos de verificación.</value>
   </data>
+  <data name="BreadcrumbLabel" xml:space="preserve">
+    <value>Ruta de navegación</value>
+  </data>
+  <data name="SubtaskStatusDone" xml:space="preserve">
+    <value>Completado</value>
+  </data>
+  <data name="SubtaskStatusInProgress" xml:space="preserve">
+    <value>En curso</value>
+  </data>
+  <data name="SubtaskStatusNotStarted" xml:space="preserve">
+    <value>Sin empezar</value>
+  </data>
+  <data name="ChecklistBlocksCompletion" xml:space="preserve">
+    <value>Esta lista debe completarse antes de poder finalizar la tarea.</value>
+  </data>
+  <data name="ChecklistDoesNotBlock" xml:space="preserve">
+    <value>Esta lista es orientativa; no impide finalizar.</value>
+  </data>
   <data name="ActivityEmpty" xml:space="preserve">
     <value>Todavía no hay actividad registrada.</value>
   </data>

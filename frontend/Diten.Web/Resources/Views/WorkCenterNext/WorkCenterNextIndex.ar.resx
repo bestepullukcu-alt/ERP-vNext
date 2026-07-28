@@ -1309,6 +1309,24 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>لا توجد عناصر في قائمة التحقق بعد.</value>
   </data>
+  <data name="BreadcrumbLabel" xml:space="preserve">
+    <value>مسار التنقل</value>
+  </data>
+  <data name="SubtaskStatusDone" xml:space="preserve">
+    <value>مكتملة</value>
+  </data>
+  <data name="SubtaskStatusInProgress" xml:space="preserve">
+    <value>قيد التنفيذ</value>
+  </data>
+  <data name="SubtaskStatusNotStarted" xml:space="preserve">
+    <value>لم تبدأ</value>
+  </data>
+  <data name="ChecklistBlocksCompletion" xml:space="preserve">
+    <value>يجب إنهاء هذه القائمة قبل إتمام المهمة.</value>
+  </data>
+  <data name="ChecklistDoesNotBlock" xml:space="preserve">
+    <value>هذه القائمة إرشادية ولا تمنع إتمام المهمة.</value>
+  </data>
   <data name="ActivityEmpty" xml:space="preserve">
     <value>لا يوجد نشاط مسجَّل بعد.</value>
   </data>
