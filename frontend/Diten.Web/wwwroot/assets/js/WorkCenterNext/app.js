@@ -228,6 +228,29 @@
     // actions[] is the single effective command projection. The browser never
     // derives eligibility from lifecycle, permission, blockers or system state.
     const itemActions = (item) => data.getActions(item);
+    /*
+     * Which action LEADS a row.
+     *
+     * The projected primary wins even when it is DISABLED. Why a piece of work cannot move is the most important
+     * thing on its row, and skipping a disabled primary hid "waiting for approval" in the ··· menu and promoted
+     * `cancel` into the lead instead — so an approval-blocked task read as "the only thing I can do is call this
+     * off". The disabled button carries its own reason (disabledReason), which is the message the user needs.
+     *
+     * A destructive action is never promoted by the fallback. It stays available in the menu, where choosing it
+     * takes a deliberate second click, but it must not become the leading button merely because everything else
+     * is disabled.
+     */
+    const rowPrimaryAction = (actions) =>
+        actions.find((action) => action.primary)
+        || actions.find((action) => !action.disabled && !action.destructive)
+        || null;
+
+    /// The reason the row's leading action is unusable, or null when it is usable.
+    const blockedPrimaryReason = (item) => {
+        const primary = rowPrimaryAction(itemActions(item));
+        return primary && primary.disabled && primary.disabledReason ? primary.disabledReason : null;
+    };
+
     const primaryAction = (item) => {
         const actions = itemActions(item);
         const primaryCode = item._fixture?.primaryActionCode || item.primaryActionCode || null;
@@ -746,7 +769,12 @@
         chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item)),
         priorityChip(item),
         isBlocked(item) ? chip('danger', 'bx-lock-alt', t('BlockedLabel'), t(item.blockedState.reasonKey || 'BlockedBanner')) : '',
-        item.waitingOn ? chip('warning', 'bx-time-five', tf('WaitingOn', item.waitingOn)) : '',
+        // Same two facts as the detail note: the person if we know one, otherwise the holder's own sentence.
+        item.waitingOn ? chip('warning', 'bx-time-five', tf('WaitingOn', item.waitingOn))
+            : item.waitingReason ? chip('warning', 'bx-time-five', item.waitingReason) : '',
+        // Why the leading action cannot be used, ON the row rather than only in the button's tooltip. A blocked
+        // item whose reason needs a hover reads as simply broken.
+        blockedPrimaryReason(item) ? chip('secondary', 'bx-lock-alt', blockedPrimaryReason(item)) : '',
         (item.snoozedUntil && item.snoozedUntil > data.todayIso) ? chip('secondary', 'bx-moon', tf('SnoozedUntil', item.snoozedUntil)) : '',
         (item.systemState && SYSSTATE[item.systemState]) ? chip(SYSSTATE[item.systemState].kind, SYSSTATE[item.systemState].icon, t(SYSSTATE[item.systemState].key)) : '',
         item.requester ? chip('requester', 'bx-user', item.requester) : ''
@@ -849,13 +877,11 @@
         // et…); every other action — including reject — lives behind the ··· overflow,
         // so a destructive choice takes a deliberate second click. Same shape in the
         // inbox rows and the Table view's İşlemler column.
-        const primary = actions.find((action) => action.primary && !action.disabled)
-            || actions.find((action) => !action.disabled)
-            || null;
+        const primary = rowPrimaryAction(actions);
         const overflow = actions.filter((action) => !primary || action.key !== primary.key);
         const interactionLocked = state.submittingItemId === item.id;
         const primaryButton = primary
-            ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked ? ' disabled' : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
+            ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked || primary.disabled ? ' disabled' : ''}${primary.disabled && primary.disabledReason ? ` title="${esc(primary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
             : '';
         const overflowMenu = overflow.length
             ? `<div class="dropdown"><button type="button" class="btn btn-icon wcn-inbox-action-more dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end">${actionMenuBody(item, overflow)}</ul></div>`
@@ -895,16 +921,14 @@
             return `<div class="d-flex align-items-center justify-content-end wcn-table-actions">${primaryButton}${kebab}</div>`;
         }
         const actions = itemActions(item);
-        const primary = actions.find((action) => action.primary && !action.disabled)
-            || actions.find((action) => !action.disabled)
-            || null;
+        const primary = rowPrimaryAction(actions);
         const rest = actions.filter((action) => !primary || action.key !== primary.key);
         const interactionLocked = state.submittingItemId === item.id;
         // Stale source → refresh is the primary; real actions come back after it clears.
         const primaryButton = needsSourceRecovery(item)
             ? refreshSourceBtn(item)
             : (primary
-                ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked ? ' disabled' : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
+                ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked || primary.disabled ? ' disabled' : ''}${primary.disabled && primary.disabledReason ? ` title="${esc(primary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
                 : '');
         const viewItem = `<li><button type="button" class="dropdown-item wcn-menu-item" data-wcn-detail="${item.id}"><i class="bx bx-show"></i><span>${esc(t('RowView'))}</span></button></li>`;
         const kebab = `<div class="dropdown"><button type="button" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end m-0">${actionMenuBody(item, needsSourceRecovery(item) ? [] : rest, viewItem)}</ul></div>`;
@@ -1467,9 +1491,14 @@
         const sysBanner = sys
             ? `<div class="wcn-sysstate wcn-sysstate-${sys.kind}" role="alert"><i class="bx ${sys.icon}"></i><span>${esc(t(sys.key))}</span>${sysAction}</div>`
             : '';
-        // Information-request round-trip (spec v2 §6) — parked waiting on someone.
-        const waitingNote = item.waitingOn
-            ? `<div class="wcn-parked wcn-parked-info" role="note"><i class="bx bx-time-five"></i><span>${esc(tf('WaitingOn', item.waitingOn))}</span></div>`
+        /*
+         * Parked waiting. Two independent facts, and either can be absent: WHO we are waiting on (rendered as
+         * "waiting on X") and WHY, which the holder typed as a whole sentence and is therefore shown as written —
+         * wrapping "Muhasebeden banka ekstresi bekleniyor" in "waiting on {0}" would read as nonsense.
+         */
+        const waitingText = item.waitingOn ? tf('WaitingOn', item.waitingOn) : item.waitingReason;
+        const waitingNote = waitingText
+            ? `<div class="wcn-parked wcn-parked-info" role="note"><i class="bx bx-time-five"></i><span>${esc(waitingText)}</span></div>`
             : '';
         // Snoozed (personal park) note.
         const snoozeNote = (item.snoozedUntil && item.snoozedUntil > data.todayIso)

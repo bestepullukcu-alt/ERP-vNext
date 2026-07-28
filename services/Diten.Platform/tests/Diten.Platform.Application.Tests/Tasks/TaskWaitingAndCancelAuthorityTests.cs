@@ -44,6 +44,9 @@ public sealed class TaskWaitingAndCancelAuthorityTests
     public async Task The_stored_wait_is_projected_so_the_Bekleyen_segment_can_fill()
     {
         var task = OwnedTask(TaskLifecycle.InProgress);
+        // A due date the projection could WRONGLY reuse as the wait's end. Without one here the ExpectedUntil
+        // assertion below passes whether or not the bug is present.
+        task.DueAt = new DateTimeOffset(2026, 7, 22, 17, 0, 0, TimeSpan.Zero);
         var repository = new FakeTaskItemRepository(task);
         await Inquire(repository, task, "Blocked on legal review");
 
@@ -55,7 +58,19 @@ public sealed class TaskWaitingAndCancelAuthorityTests
         Assert.NotNull(item.WaitingContext);
         // The contract requires waitingContext ⇔ Waiting in BOTH directions.
         Assert.Equal("externalInformation", item.WaitingContext!.Type);
-        Assert.Equal("Blocked on legal review", item.WaitingContext.WaitingOn);
+
+        /*
+         * WHY goes in `reason`, as the user's own text. It used to be sent as `waitingOn`, where the client reads
+         * `.displayName` off what it expects to be a person — so the sentence was on the wire and rendered as
+         * nothing. `waitingOn` answers WHO, and nothing resolves an identity yet, so it is null rather than
+         * carrying something that is not one.
+         */
+        Assert.Null(item.WaitingContext.WaitingOn);
+        Assert.NotNull(item.WaitingContext.Reason);
+        Assert.Equal("display", item.WaitingContext.Reason!.Kind);
+        Assert.Equal("Blocked on legal review", item.WaitingContext.Reason.Text);
+        // Nothing collects when the WAIT ends. Copying the task's own due date announced a deadline already past.
+        Assert.Null(item.WaitingContext.ExpectedUntil);
     }
 
     [Fact]

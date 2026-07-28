@@ -66,6 +66,27 @@ public sealed class TokenBridge
     /// The subject of an EXPIRED token, read without validating it — the token has already failed validation by
     /// the time this is used, so this is a best-effort label for the log line and nothing else. Never throws.
     /// </summary>
+    /// <summary>
+    /// The ACCESS token's own expiry, read from the freshly issued token. This is the lifetime that decides how
+    /// soon the next refresh happens; it is minutes, while the refresh token's is days. Never throws.
+    /// </summary>
+    private static object AccessTokenExpiry(string? accessToken)
+    {
+        if (string.IsNullOrWhiteSpace(accessToken))
+        {
+            return "unknown";
+        }
+
+        try
+        {
+            return new JwtSecurityTokenHandler().ReadJwtToken(accessToken).ValidTo;
+        }
+        catch
+        {
+            return "unreadable";
+        }
+    }
+
     private static string SubjectFor(string accessToken)
     {
         try
@@ -163,9 +184,20 @@ public sealed class TokenBridge
                 refreshResult.RefreshToken,
                 refreshResult.ExpiresAt.Value);
 
+            /*
+             * ExpiresAt is the REFRESH token's expiry, not the access token's — it is what WriteTokens receives as
+             * its refreshExpiresAtUtc argument. Calling it "the access token is valid until…" invited exactly the
+             * wrong conclusion: a log reading "valid until 10 August" was about to be used to rule out expiry as
+             * the cause of a logout, when the access token actually lives for minutes, not days.
+             *
+             * Both are reported, each under its own name, so neither can be mistaken for the other.
+             */
             _logger?.LogInformation(
-                "Token refreshed for {Subject}; the new access token is valid until {ExpiresAt:o}.",
-                SubjectFor(accessToken), refreshResult.ExpiresAt.Value);
+                "Token refreshed for {Subject}. Access token valid until {AccessExpiresAt:o}; refresh token until "
+                + "{RefreshExpiresAt:o}.",
+                SubjectFor(accessToken),
+                AccessTokenExpiry(refreshResult.AccessToken),
+                refreshResult.ExpiresAt.Value);
 
             SetPrincipal(context, handler.ValidateToken(refreshResult.AccessToken, validationParameters, out _));
         }

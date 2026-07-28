@@ -164,11 +164,37 @@ public sealed record WorkItemActionDto(
     bool SupportsBulk,
     string RiskLevel);
 
-// waitingContext { type, waitingOn?, since?, expectedUntil? } — present iff normalizedStatus == Waiting.
+/// <summary>
+/// waitingContext { type, waitingOn?, reason?, since?, expectedUntil? } — present iff normalizedStatus == Waiting.
+///
+/// <para><b>waitingOn and reason are different questions.</b> <c>waitingOn</c> answers WHO/WHAT we are waiting on
+/// and is a typed identity ({id, displayName}) that the client renders as a person. <c>reason</c> answers WHY, in
+/// the user's own words. Putting the reason text into <c>waitingOn</c> made the client read
+/// <c>waitingOn.displayName</c> off a string and render nothing at all — the sentence the user typed was on the
+/// wire and invisible.</para>
+///
+/// <para>There is no directory seam that resolves a waiting-on identity yet, so <c>waitingOn</c> is null today.
+/// It stays declared rather than removed: null is "we do not know", which is the truth, and the field is where a
+/// real identity belongs when one exists.</para>
+/// </summary>
 public sealed record WorkItemWaitingContextDto(
     string Type,
-    string? WaitingOn,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPersonDto? WaitingOn,
+    /// <summary>
+    /// Why the work is parked, as the holder typed it — a DISPLAY label, never a resource key. Routing user text
+    /// through a key is what puts the raw key on screen.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? Reason,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     DateTimeOffset? Since,
+    /// <summary>
+    /// When the WAIT is expected to end. Omitted unless something actually knows it: nothing collects this today,
+    /// and filling it from the task's own due date announced "waiting until 22 July" on a date already in the past.
+    /// Giving `inquire` a date of its own is a separate decision.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     DateTimeOffset? ExpectedUntil);
 
 // concurrency { kind, token } — one projection-level optimistic-concurrency token (from the provider's

@@ -41,8 +41,20 @@ public interface ITaskLifecycleService
     bool CanTransition(TaskItem task, TaskLifecycle target, out string? reasonCode);
 }
 
-/// <summary>Why a task is waiting — projected as the contract's <c>waitingContext</c>.</summary>
-public sealed record TaskWaitingContext(string Type, string? WaitingOn, DateTimeOffset? Since, DateTimeOffset? ExpectedUntil);
+/// <summary>
+/// Why a task is waiting — projected as the contract's <c>waitingContext</c>.
+///
+/// <para><paramref name="WaitingOn"/> is WHO/WHAT (a typed identity; null until a directory seam resolves one) and
+/// <paramref name="Reason"/> is WHY, in the holder's own words. They are separate because they answer separate
+/// questions: the reason text was previously carried in <paramref name="WaitingOn"/>, where the client reads
+/// <c>.displayName</c> and therefore rendered nothing.</para>
+/// </summary>
+public sealed record TaskWaitingContext(
+    string Type,
+    string? WaitingOn,
+    string? Reason,
+    DateTimeOffset? Since,
+    DateTimeOffset? ExpectedUntil);
 
 public static class TaskWaitingTypes
 {

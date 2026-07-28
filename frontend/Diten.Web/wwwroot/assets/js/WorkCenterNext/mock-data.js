@@ -182,7 +182,14 @@
         labelKey: action.label?.kind === 'resource' ? action.label.key : null,
         displayLabel: resolveLabel(action.label),
         semanticType: action.semanticType || action.code,
-        kind: action.riskLevel === 'danger' ? 'danger'
+        /*
+         * Whether this action destroys or calls off work. The engine says "destructive" (and "elevated" for
+         * raised-risk); this file only ever tested for "danger", a value no provider emits — so cancel arrived
+         * marked destructive and was styled and treated as an ordinary next step. The shell uses this to keep a
+         * destructive action from ever LEADING a row.
+         */
+        destructive: ['danger', 'destructive'].includes(action.riskLevel),
+        kind: ['danger', 'destructive'].includes(action.riskLevel) ? 'danger'
             : ['approve', 'complete', 'resolve', 'signoff'].includes(action.code) ? 'success'
                 : action.code === 'requestInfo' ? 'warning'
                     : action.code === 'accept' || action.code === 'claim' || action.code === 'start' || action.code === 'resume' ? 'primary'
@@ -274,7 +281,12 @@
         item.pinned = !!item.personal?.pinned;
         item.snoozedUntil = item.personal?.snoozedUntil || null;
         item.plannedDate = item.personal?.plannedDate || null;
+        // Two different questions, two different fields. `waitingOn` is WHO (a typed identity, so a name can be
+        // rendered); `reason` is WHY, in the holder's own words. The reason text used to be sent inside
+        // waitingOn, where this line reads `.displayName` off a string — so the sentence the user typed was on
+        // the wire and rendered as nothing at all.
         item.waitingOn = item.waitingContext?.waitingOn?.displayName || null;
+        item.waitingReason = resolveLabel(item.waitingContext?.reason) || null;
         item.note = item.personal?.note || null;
         item.slaState = item.slaState || sla.state;
         item.slaDiffDays = item.slaDiffDays ?? sla.diffDays;

@@ -71,23 +71,33 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
             return null;
         }
 
+        /*
+         * ExpectedUntil is null in every branch below, on purpose. It means "when the WAIT ends", and nothing
+         * collects that: it used to be filled with the task's own DueAt, which told the user "waiting until
+         * 22 July" on a date already in the past. A due date is when the WORK is due, which is a different fact.
+         */
         if (approvalOutstanding)
         {
             return new TaskWaitingContext(
                 TaskWaitingTypes.Approval,
-                task.ApprovalManagerUserId?.ToString(),
+                // The manager is only a CANDIDATE hint (MOD-0023/MOD-0018 resolve real authority), and an id is
+                // not an identity the client can render, so it is not passed off as one.
+                WaitingOn: null,
+                Reason: null,
                 task.CreatedAt,
-                task.DueAt);
+                ExpectedUntil: null);
         }
 
         return task.Lifecycle switch
         {
             TaskLifecycle.PendingReview => new TaskWaitingContext(
-                TaskWaitingTypes.Review, null, task.UpdatedAt ?? task.CreatedAt, task.DueAt),
+                TaskWaitingTypes.Review, WaitingOn: null, Reason: null,
+                task.UpdatedAt ?? task.CreatedAt, ExpectedUntil: null),
             // WaitingReason is what the holder typed when they parked it (InquireTaskItemHandler makes it
-            // mandatory), so the wait says what it is for instead of only that it exists.
+            // mandatory). It is the REASON, not the thing being waited on.
             TaskLifecycle.Waiting => new TaskWaitingContext(
-                TaskWaitingTypes.ExternalInformation, task.WaitingReason, task.UpdatedAt ?? task.CreatedAt, task.DueAt),
+                TaskWaitingTypes.ExternalInformation, WaitingOn: null, Reason: task.WaitingReason,
+                task.UpdatedAt ?? task.CreatedAt, ExpectedUntil: null),
             _ => null
         };
     }

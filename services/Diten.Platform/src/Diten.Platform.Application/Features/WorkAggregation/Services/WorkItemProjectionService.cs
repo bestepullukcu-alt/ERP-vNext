@@ -71,8 +71,17 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         var waitingContext = isWaiting
             ? new WorkItemWaitingContextDto(
                 Type: WaitingEvidenceType,
-                WaitingOn: task.AssigneeRef,
+                // The approver IS who we are waiting on, so it belongs in the typed identity field. The name is
+                // left null rather than guessed — MOD-0023 has no directory seam — and the client renders nothing
+                // instead of a raw id.
+                WaitingOn: string.IsNullOrWhiteSpace(task.AssigneeRef)
+                    ? null
+                    : new WorkItemPersonDto(task.AssigneeRef),
+                // No free-text reason on an approval wait: the reason IS the type (waiting for evidence).
+                Reason: null,
                 Since: task.EscalatedAt,
+                // Unlike MOD-0024's case, this DueAt is the APPROVAL task's own deadline, so it genuinely is when
+                // this wait is expected to end.
                 ExpectedUntil: task.DueAt)
             : null;
 

@@ -283,3 +283,97 @@ describe("showcase mode is unchanged", () => {
     dated.forEach((item) => expect(["overdue", "due-soon", "on-track"]).toContain(item.slaState));
   });
 });
+
+describe("a parked task shows why, and a blocked one says what blocks it", () => {
+  beforeEach(loadRealMode);
+  afterEach(() => global.WorkCenterNextData?.setNowProvider(null));
+
+  const waiting = (overrides) => realItem(Object.assign({
+    normalizedStatus: "Waiting",
+    taskLifecycle: "Waiting",
+    waitingContext: {
+      type: "externalInformation",
+      // WHY, as the user typed it. WHO is unknown, so waitingOn is absent rather than carrying the reason.
+      reason: { kind: "display", text: "Muhasebeden banka ekstresi bekleniyor", locale: "und" },
+      since: "2026-07-26T10:00:00+00:00"
+    }
+  }, overrides));
+
+  it("renders the reason the holder typed, which used to be invisible", () => {
+    const [item] = global.WorkCenterNextApi.mapPayload([waiting()]).items;
+
+    expect(item.waitingReason).toBe("Muhasebeden banka ekstresi bekleniyor");
+    // waitingOn answers WHO. Nothing resolves an identity yet, so it stays empty instead of holding the reason.
+    expect(item.waitingOn).toBeNull();
+  });
+
+  it("does not invent an end date for the wait", () => {
+    const [item] = global.WorkCenterNextApi.mapPayload([waiting()]).items;
+
+    // Copying the task's own due date announced "waiting until 22 July" on a date already past.
+    expect(item.waitingContext.expectedUntil).toBeUndefined();
+  });
+
+  it("still shows a real waiting-on person when one is known", () => {
+    const payload = waiting();
+    payload.waitingContext.waitingOn = { id: "USR-9", displayName: "Merve Şahin" };
+
+    const [item] = global.WorkCenterNextApi.mapPayload([payload]).items;
+
+    expect(item.waitingOn).toBe("Merve Şahin");
+  });
+
+  /*
+   * The row-leading action. A disabled primary must stay in the lead carrying its reason: hiding it promoted
+   * `cancel`, so an approval-blocked task read as "the only thing I can do is call this off".
+   */
+  it("keeps a disabled primary in the lead and never promotes a destructive action", () => {
+    const payload = realItem({
+      actions: [
+        {
+          code: "start",
+          label: { kind: "resource", key: "WorkAggregation_Action_Start" },
+          semanticType: "start",
+          enabled: false,
+          source: "provider",
+          disabledReasonCode: "APPROVAL_PENDING",
+          disabledReason: { kind: "resource", key: "WorkAggregation_ActionDisabled_ApprovalPending" },
+          requiresConfirmation: false,
+          requiresReason: false,
+          requiresEvidence: false,
+          supportsBulk: false,
+          riskLevel: "normal"
+        },
+        {
+          code: "cancel",
+          label: { kind: "resource", key: "WorkAggregation_Action_Cancel" },
+          semanticType: "cancel",
+          enabled: true,
+          source: "provider",
+          disabledReasonCode: null,
+          disabledReason: null,
+          requiresConfirmation: true,
+          requiresReason: false,
+          requiresEvidence: false,
+          supportsBulk: false,
+          riskLevel: "destructive"
+        }
+      ],
+      primaryActionCode: "start"
+    });
+
+    const [item] = global.WorkCenterNextApi.mapPayload([payload]).items;
+    const start = item.actions.find((a) => a.code === "start");
+    const cancel = item.actions.find((a) => a.code === "cancel");
+
+    // The blocked action carries its own explanation…
+    expect(start.disabled).toBe(true);
+    expect(start.disabledReasonKey).toBe("WorkAggregation_ActionDisabled_ApprovalPending");
+    // …and it is still the projected primary, so the shell can lead the row with it.
+    expect(start.primary).toBe(true);
+    expect(cancel.primary).toBe(false);
+    // The engine says "destructive"; this file only ever tested for "danger", so the risk never reached the UI.
+    expect(cancel.destructive).toBe(true);
+    expect(cancel.kind).toBe("danger");
+  });
+});

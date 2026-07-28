@@ -227,7 +227,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
             WaitingContext: waiting is null
                 ? null
-                : new WorkItemWaitingContextDto(waiting.Type, waiting.WaitingOn, waiting.Since, waiting.ExpectedUntil),
+                // The reason is the user's own sentence, so it crosses as a DISPLAY label; waitingOn stays null
+                // until something can resolve a real identity to put there.
+                : new WorkItemWaitingContextDto(
+                    waiting.Type,
+                    WaitingOn: null,
+                    Reason: waiting.Reason is null ? null : WorkItemLabelDto.Display(waiting.Reason),
+                    waiting.Since,
+                    waiting.ExpectedUntil),
             Escalation: null,
             DueAt: task.DueAt,
             PrimaryActionCode: primaryActionCode,
