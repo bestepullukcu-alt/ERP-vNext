@@ -37,7 +37,7 @@
             executionState: 'paused',
             nativeStatus: { code: 'LEGACY_WAITING_INFORMATION', label: resource('MigrationLegacyInformationRequest') },
             waitingContext: {
-                type: 'information',
+                type: 'externalInformation',
                 waitingOn: { id: 'legacy-person', displayName: legacy.waitingOn || 'Unknown' },
                 since: '2026-07-24T09:00:00+03:00',
                 expectedUntil: null

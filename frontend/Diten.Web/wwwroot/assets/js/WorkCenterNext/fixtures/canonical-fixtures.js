@@ -131,7 +131,7 @@
             timerState: 'inactive',
             nativeStatus: { code: 'WAITING_INFORMATION', label: resource('StatusWaiting') },
             waitingContext: {
-                type: 'information',
+                type: 'externalInformation',
                 waitingOn: { id: 'USR-103', displayName: 'Deniz Koç' },
                 since: '2026-07-24T10:30:00+03:00',
                 expectedUntil: null

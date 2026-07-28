@@ -653,17 +653,26 @@ describe("the waiting notice names the wait it actually is", () => {
     expect(app().textContent).toContain("NoticeWaitingReview");
   });
 
-  it("says nothing and warns for a wait it has no wording for", async () => {
-    const warnings = [];
-    const original = console.warn;
-    console.warn = (...args) => warnings.push(args.join(" "));
-    try {
-      await bootDetailPage(waitingOn("moonPhase"));
-    } finally {
-      console.warn = original;
-    }
+  /*
+   * An unknown type can no longer even reach the page: the executable contract declares the vocabulary now, so
+   * mapPayload drops the item and reports it. That is a STRONGER guarantee than rendering silence, and it is
+   * asserted at the contract level below. The resolver keeps its own warn as defence in depth.
+   */
+  it("is rejected by the contract before it can reach the page", async () => {
+    await bootDetailPage(projectionItem());
 
-    expect(app().textContent).not.toContain("NoticeWaiting");
-    expect(warnings.some((w) => w.includes('waitingContext.type "moonPhase"'))).toBe(true);
+    const result = global.WorkCenterNextContract.validateWorkItem(waitingOn("moonPhase"));
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.map((e) => e.code)).toContain("WAITING_CONTEXT_TYPE_INVALID");
+  });
+
+  it("accepts every type the contract declares", async () => {
+    await bootDetailPage(projectionItem());
+
+    global.WorkCenterNextContract.enums.WAITING_CONTEXT_TYPES.forEach((type) => {
+      const result = global.WorkCenterNextContract.validateWorkItem(waitingOn(type));
+      expect(result.errors.filter((e) => e.code === "WAITING_CONTEXT_TYPE_INVALID")).toEqual([]);
+    });
   });
 });

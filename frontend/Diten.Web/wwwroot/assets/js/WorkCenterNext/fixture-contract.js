@@ -12,6 +12,21 @@
     const SYSTEM_STATES = ['fresh', 'stale', 'sourceUnavailable', 'authorityEnded', 'processing', 'reconciliationRequired'];
     const ACTION_DEPTHS = ['inline', 'deeplink'];
     const REVIEW_MEETING_REQUIREMENTS = ['notAllowed', 'optional', 'required'];
+    /*
+     * WHY a work item is parked. Declared here because it was NOT: the fixtures said information/meeting, the
+     * projection said externalInformation/approval/review, and nothing checked either — so the two drifted apart
+     * silently and a task waiting on an approval was told it was waiting on external input.
+     *
+     * The canonical vocabulary is the PROJECTION's, because that is what real items emit and because approval and
+     * review name the gates the engine actually has. `information` is gone: it meant the same as
+     * externalInformation.
+     *
+     * `meeting` is FIXTURE-ONLY today — no provider emits it. It is kept rather than deleted because the contract
+     * already models meetings (reviewMeetingPolicy, the scheduleReviewMeeting action), so this is a designed state
+     * awaiting its provider (Faz 3b / BL-026), not an invented one; the showcase exists to demonstrate exactly
+     * such states. Remove it if that work is ever abandoned.
+     */
+    const WAITING_CONTEXT_TYPES = ['externalInformation', 'approval', 'review', 'meeting'];
     const CAPABILITIES = [
         'planning', 'execution', 'timeTracking', 'checklist', 'subtasks', 'dependencies',
         'attachments', 'evidence', 'activity', 'processStages', 'businessContext', 'relatedRecords'
@@ -166,6 +181,11 @@
         }
         if (fixture.actionDepth === 'deeplink' && !isSafeLink(fixture.source?.deepLink)) { push(errors, fixture, 'DEEPLINK_REQUIRED', 'source.deepLink'); }
         if ((fixture.normalizedStatus === 'Waiting') !== !!fixture.waitingContext) { push(errors, fixture, 'WAITING_CONTEXT_BIDIRECTIONAL', 'waitingContext'); }
+        // An unknown type is a CONTRACT error, not a rendering quirk: the shell can only translate what it is
+        // told about, so a type nobody declared reaches the user as silence.
+        if (fixture.waitingContext && !WAITING_CONTEXT_TYPES.includes(fixture.waitingContext.type)) {
+            push(errors, fixture, 'WAITING_CONTEXT_TYPE_INVALID', 'waitingContext.type');
+        }
         if (fixture.personal?.snoozedUntil && fixture.normalizedStatus === 'Waiting' && fixture.waitingContext?.type === 'personalSnooze') {
             push(errors, fixture, 'SNOOZE_MUST_NOT_CREATE_WAITING', 'personal.snoozedUntil');
         }
@@ -232,7 +252,7 @@
     };
 
     global.WorkCenterNextContract = {
-        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, CAPABILITIES, VALUE_TYPES },
+        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, CAPABILITIES, VALUE_TYPES },
         limits: LIMITS,
         isLabel,
         isSafeLink,

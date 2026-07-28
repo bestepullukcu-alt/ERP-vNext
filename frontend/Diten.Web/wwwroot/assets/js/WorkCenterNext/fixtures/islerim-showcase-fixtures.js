@@ -128,7 +128,7 @@
             summary: resource('IsSummaryCapaEvidence'),
             normalizedStatus: 'Waiting', taskLifecycle: 'Waiting', executionState: 'paused', timerState: 'inactive',
             nativeStatus: { code: 'WAITING_INFORMATION', label: resource('StatusWaiting') },
-            waitingContext: { type: 'information', waitingOn: req('USR-206', 'Merve Şahin'), since: '2026-07-24T09:00:00+03:00', expectedUntil: null },
+            waitingContext: { type: 'externalInformation', waitingOn: req('USR-206', 'Merve Şahin'), since: '2026-07-24T09:00:00+03:00', expectedUntil: null },
             workItemCapabilities: ['execution', 'checklist', 'activity', 'businessContext', 'relatedRecords'],
             checklist: { items: [] }, priority: 'high',
             requester: req('USR-206', 'Merve Şahin'),

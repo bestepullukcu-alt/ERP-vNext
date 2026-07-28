@@ -51,14 +51,13 @@
      * shell never guesses a reason it was not told.
      */
     const WAITING_NOTICE_KEY = {
-        // The projection's vocabulary (TaskWaitingTypes on the server).
+        // Declared and validated by the executable contract (WAITING_CONTEXT_TYPES) — this map must cover
+        // every value in it, and nothing else.
         externalInformation: 'NoticeWaitingExternal',
         approval: 'NoticeWaitingApproval',
         review: 'NoticeWaitingReview',
-        // The showcase fixtures' vocabulary. It diverged from the server's before either was written down, and
-        // neither is validated by the executable contract — so BOTH reach this resolver and both must be
-        // answered. Reconciling the two vocabularies is a contract decision, not this map's to make.
-        information: 'NoticeWaitingExternal',
+        // Fixture-only today: no provider emits it, but the contract already models meetings
+        // (reviewMeetingPolicy / scheduleReviewMeeting), so it is a designed state awaiting its provider.
         meeting: 'NoticeWaitingMeeting'
     };
     const reportedUnknownWaitingTypes = new Set();
