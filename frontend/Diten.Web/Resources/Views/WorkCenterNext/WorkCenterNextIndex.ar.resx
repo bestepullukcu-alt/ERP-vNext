@@ -1309,6 +1309,9 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>لا توجد عناصر في قائمة التحقق بعد.</value>
   </data>
+  <data name="ActivityEmpty" xml:space="preserve">
+    <value>لا يوجد نشاط مسجَّل بعد.</value>
+  </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>لا توجد مهام فرعية بعد.</value>
   </data>

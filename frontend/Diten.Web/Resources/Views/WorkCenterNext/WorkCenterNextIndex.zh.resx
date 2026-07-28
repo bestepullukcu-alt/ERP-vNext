@@ -1309,6 +1309,9 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>暂无清单项。</value>
   </data>
+  <data name="ActivityEmpty" xml:space="preserve">
+    <value>尚无活动记录。</value>
+  </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>暂无子任务。</value>
   </data>

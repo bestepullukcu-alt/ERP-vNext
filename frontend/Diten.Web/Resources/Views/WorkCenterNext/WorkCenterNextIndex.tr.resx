@@ -1309,6 +1309,9 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Henüz kontrol listesi maddesi yok.</value>
   </data>
+  <data name="ActivityEmpty" xml:space="preserve">
+    <value>Henüz etkinlik kaydı yok.</value>
+  </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Henüz alt görev yok.</value>
   </data>

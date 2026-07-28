@@ -5721,7 +5721,17 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 }
 .wcn-focus-intro i { font-size: 1.125rem; color: var(--bs-primary); }
 
-/* Empty states ------------------------------------------------------------- */
+/* Empty states -------------------------------------------------------------
+   The surface is a CARD, matching the Golden Reference DataTable empty state. Without it the icon, heading and
+   text sat straight on the page background, which reads as a page that failed to draw rather than a list with
+   nothing in it. Styled here rather than by wrapping each variant in markup: every empty state already shares
+   this class, and FG-003 keeps presentation in CSS. */
+.wcn-empty,
+.wcn-system-page {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-card-border-radius);
+}
 .wcn-empty {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: .375rem; text-align: center; padding: 4rem 1.5rem; color: var(--bs-secondary-color);

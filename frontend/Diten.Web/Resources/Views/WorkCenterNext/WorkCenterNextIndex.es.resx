@@ -1309,6 +1309,9 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aún no hay elementos de verificación.</value>
   </data>
+  <data name="ActivityEmpty" xml:space="preserve">
+    <value>Todavía no hay actividad registrada.</value>
+  </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Aún no hay subtareas.</value>
   </data>

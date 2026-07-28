@@ -1309,6 +1309,9 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aucun élément de liste de contrôle.</value>
   </data>
+  <data name="ActivityEmpty" xml:space="preserve">
+    <value>Aucune activité enregistrée pour l'instant.</value>
+  </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Aucune sous-tâche.</value>
   </data>

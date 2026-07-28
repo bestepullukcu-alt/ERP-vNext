@@ -1309,6 +1309,9 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Пунктов чек-листа пока нет.</value>
   </data>
+  <data name="ActivityEmpty" xml:space="preserve">
+    <value>Активности пока нет.</value>
+  </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Подзадач пока нет.</value>
   </data>

@@ -1231,6 +1231,11 @@
 
     // Lightweight timesheet (task only) — total logged + live segment when running.
     const renderTimesheet = (item) => {
+        // The capability gate came first, like every other block: without it this card rendered "0h 0m" for every
+        // real task, because `item.timesheet` is null when the provider does not declare timeTracking and the
+        // fallback below quietly supplied zeroes. A confident zero is worse than no card — it reads as "nobody has
+        // worked on this" rather than "this system does not track that".
+        if (!hasCap(item, 'timeTracking')) { return ''; }
         if (item.itemType !== 'task' || item.lifecycle === 'PendingAcceptance') { return ''; }
         const ts = item.timesheet || { loggedMinutes: 0, running: false };
         const live = ts.running
@@ -1545,15 +1550,34 @@
         const reviewNote = (item.itemType === 'task' && item.lifecycle === 'PendingReview')
             ? `<div class="wcn-review-note"><i class="bx bx-hourglass"></i><span>${esc(t('AwaitingReview'))}</span></div>`
             : '';
-        const summarySection = `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('DetailSummary'))}</h6>
-            <p class="wcn-detail-summary">${esc(item.summary)}</p>
-        </div>`;
-        const activitySection = `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('ActivityLabel'))}</h6>
-            ${renderComposer(item)}
-            <ul class="wcn-audit">${auditRows}</ul>
-        </div>`;
+        /*
+         * These two were built as unconditional template strings, so `cell`/`card` — which drop EMPTY content —
+         * never had anything to drop: the heading alone made them non-empty. A task with no description got an
+         * empty "Summary" card, and one whose provider never declared `activity` still got an "Activity &
+         * comments" heading over an empty list.
+         *
+         * They are gated the same way every other block is (hasCap / data present), so there is one mechanism
+         * rather than a special case per card.
+         */
+        const summarySection = item.summary
+            ? `<div class="wcn-detail-section">
+                <h6 class="wcn-detail-h6">${esc(t('DetailSummary'))}</h6>
+                <p class="wcn-detail-summary">${esc(item.summary)}</p>
+            </div>`
+            : '';
+        // Capability declared but empty is a VALID state and gets an explanation instead of vanishing — the same
+        // distinction renderChecklist makes. Not declared at all means the provider does not offer activity, and
+        // then there is nothing to head. (Posting a comment is not built yet — BL-034 item 7 — so renderComposer
+        // stays behind its own gate.)
+        const activitySection = hasCap(item, 'activity')
+            ? `<div class="wcn-detail-section">
+                <h6 class="wcn-detail-h6">${esc(t('ActivityLabel'))}</h6>
+                ${renderComposer(item)}
+                ${item.activity.length
+                    ? `<ul class="wcn-audit">${auditRows}</ul>`
+                    : `<p class="wcn-block-hint">${esc(t('ActivityEmpty'))}</p>`}
+            </div>`
+            : '';
 
         // Command card — identity, status, actions and personal overlay. Everything
         // the viewer decides on lives here, above the read-only detail cards.
@@ -1607,7 +1631,7 @@
             <div class="row g-4 wcn-detail-grid">
                 <div class="col-12">${commandCard}</div>
                 ${bento}
-                <div class="col-12">${card(activitySection)}</div>
+                ${activitySection ? `<div class="col-12">${card(activitySection)}</div>` : ''}
             </div>
         </div>`;
     };
