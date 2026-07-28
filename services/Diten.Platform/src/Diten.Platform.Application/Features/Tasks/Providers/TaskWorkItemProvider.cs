@@ -39,6 +39,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string ActionResumeKey = "WorkAggregation_Action_Resume";
     /// <summary>Label for parking a task in Waiting. Code and endpoint are both <c>inquire</c>.</summary>
     private const string ActionInquireKey = "WorkAggregation_Action_Inquire";
+    /// <summary>Give assigned work back to whoever asked for it. Code and endpoint are both <c>return</c>.</summary>
+    private const string ActionReturnKey = "WorkAggregation_Action_Return";
+    /// <summary>Hand work to a different person. Code and endpoint are both <c>reassign</c>.</summary>
+    private const string ActionReassignKey = "WorkAggregation_Action_Reassign";
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
     private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
@@ -86,11 +90,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// </summary>
     public IReadOnlyCollection<string> RequiredActionPermissions { get; } =
     [
-        TaskPermissions.Update,     // accept + start + resume
+        TaskPermissions.Update,     // accept + start + resume + inquire + return
         TaskPermissions.Claim,      // claim a pooled task
         TaskPermissions.Complete,   // complete
         TaskPermissions.Cancel,     // cancel
-        TaskPermissions.Delete      // administrative authority to cancel someone else's task
+        TaskPermissions.Delete,     // administrative authority to cancel someone else's task
+        TaskPermissions.Assign      // reassign — moving work onto another person IS assigning it
     ];
 
     public async Task<IReadOnlyList<WorkItemProjectionDto>> GetWorkItemsAsync(
@@ -475,6 +480,31 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             actions.Add(Build("inquire", ActionInquireKey, actor.Has(TaskPermissions.Update), requiresReason: true));
         }
 
+        /*
+         * Handing work back, and handing it on. Until these existed the only way out of unwanted work was
+         * `cancel`, which means the opposite — the request is destroyed rather than declined.
+         *
+         * `return` goes to the REQUESTER, so it is offered only when there is a separate requester to return it
+         * to: returning your own self-assigned task to yourself is a no-op dressed as an action. Only the holder
+         * may do it, which is why it is not offered on unclaimed pool work either.
+         *
+         * `reassign` is the holder's (delegating) or the requester's (correcting). It is never offered on pooled
+         * work: a pool is claimed and released, and naming a holder it does not have would contradict that.
+         */
+        var isRequester = task.CreatedByUserId is not null && task.CreatedByUserId == actor.UserId;
+        var isHolder = task.AssigneeUserId == actor.UserId;
+        var hasSeparateRequester = task.CreatedByUserId is not null && task.CreatedByUserId != task.AssigneeUserId;
+
+        if (!isPool && isHolder && hasSeparateRequester)
+        {
+            actions.Add(Build("return", ActionReturnKey, actor.Has(TaskPermissions.Update), requiresReason: true));
+        }
+
+        if (!isPool && (isHolder || isRequester))
+        {
+            actions.Add(Build("reassign", ActionReassignKey, actor.Has(TaskPermissions.Assign), requiresReason: true));
+        }
+
         // Only a pooled task that someone has taken can be handed back to the pool.
         if (isPool && !unclaimed)
         {
@@ -499,7 +529,6 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * platform.tasks.cancel, so this hides a button without yet refusing the write. Enforcing it in
          * TransitionTaskItemHandler is the follow-up; a hidden control is presentation, the refusal is the rule.
          */
-        var isRequester = task.CreatedByUserId is not null && task.CreatedByUserId == actor.UserId;
         if (isRequester || actor.Has(TaskPermissions.Delete))
         {
             actions.Add(Build("cancel", ActionCancelKey, actor.Has(TaskPermissions.Cancel),

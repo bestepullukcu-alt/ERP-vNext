@@ -1270,6 +1270,12 @@
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>等待中…</value>
   </data>
+  <data name="WorkAggregation_Action_Return" xml:space="preserve">
+    <value>退回</value>
+  </data>
+  <data name="WorkAggregation_Action_Reassign" xml:space="preserve">
+    <value>重新分配</value>
+  </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>取消任务</value>
   </data>

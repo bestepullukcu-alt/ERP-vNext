@@ -1270,6 +1270,12 @@
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>En attente de…</value>
   </data>
+  <data name="WorkAggregation_Action_Return" xml:space="preserve">
+    <value>Renvoyer</value>
+  </data>
+  <data name="WorkAggregation_Action_Reassign" xml:space="preserve">
+    <value>Réattribuer</value>
+  </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>Annuler la tâche</value>
   </data>

@@ -45,8 +45,13 @@ public sealed class TaskTransitionRouteTests
     // ── Test C: anything else is refused, and refused whole ──────────────────────────────────────────────────
 
     [Theory]
-    [InlineData("return")]        // designed but not built yet — must NOT be forwarded until it exists
-    [InlineData("reassign")]      // same
+    // Designed in the frontend-first round but deliberately NOT built (BL-034): delegation eligibility is
+    // MOD-0018's decision, dispute is MOD-0023's, and pause/logTime await the time-tracking owner. Forwarding one
+    // would turn a missing feature into a confusing error from Platform instead of a local refusal.
+    [InlineData("delegate")]
+    [InlineData("dispute")]
+    [InlineData("pause")]
+    [InlineData("logTime")]
     [InlineData("delete")]
     [InlineData("")]
     [InlineData("cancel-everything")]   // an unanchored pattern would forward this

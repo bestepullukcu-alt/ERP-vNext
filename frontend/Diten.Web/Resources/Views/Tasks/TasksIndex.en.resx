@@ -86,6 +86,10 @@
   <data name="ErrorApprovalPending" xml:space="preserve"><value>The task is waiting for the approver's decision.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Say what the task is waiting for.</value></data>
+  <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>Say why you are handing this task on.</value></data>
+  <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>Only the person the task is assigned to can return it.</value></data>
+  <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>Only the current assignee or the requester can reassign this task.</value></data>
+  <data name="ErrorAssigneeNotAssignable" xml:space="preserve"><value>That person cannot be assigned work. Choose someone from the list.</value></data>
   <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>The approver has asked for supporting information before deciding.</value></data>
   <data name="ErrorApprovalRejected" xml:space="preserve"><value>The approval was rejected, so this task cannot continue.</value></data>
   <data name="ErrorApprovalCancelled" xml:space="preserve"><value>The approval was cancelled, so this task cannot continue.</value></data>

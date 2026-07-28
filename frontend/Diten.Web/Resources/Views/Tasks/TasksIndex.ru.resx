@@ -86,6 +86,10 @@
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Задача ожидает решения согласующего.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Отменить эту задачу может только тот, кто её запросил. Если вы не хотите эту работу, верните её.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Укажите, чего ожидает задача.</value></data>
+  <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>Укажите, почему вы передаёте эту задачу.</value></data>
+  <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>Вернуть задачу может только её текущий исполнитель.</value></data>
+  <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>Переназначить задачу может только текущий исполнитель или её заказчик.</value></data>
+  <data name="ErrorAssigneeNotAssignable" xml:space="preserve"><value>Этому человеку нельзя назначить работу. Выберите из списка.</value></data>
   <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>Согласующий запросил подтверждающие сведения до принятия решения.</value></data>
   <data name="ErrorApprovalRejected" xml:space="preserve"><value>Согласование отклонено, поэтому задача не может продолжаться.</value></data>
   <data name="ErrorApprovalCancelled" xml:space="preserve"><value>Согласование отменено, поэтому задача не может продолжаться.</value></data>

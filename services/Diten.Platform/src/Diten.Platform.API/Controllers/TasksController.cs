@@ -150,6 +150,34 @@ public sealed class TasksController : CustomBaseController
     }
 
     /// <summary>
+    /// Give assigned work back to whoever asked for it. Route segment MUST match the projected action code.
+    ///
+    /// <para>MOD-0023 has a <c>return</c> of its own — an approver sending an approval or review back to its
+    /// submitter. Same verb, different owner and different work-intent type; the two are deliberately separate
+    /// routes and must not be merged (charter Binding A).</para>
+    /// </summary>
+    [HttpPost("{id:guid}/return")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> Return(Guid id, [FromBody] ReturnTaskItemRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new ReturnTaskItemCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Hand work to a different person. Guarded by ASSIGN, not Update: choosing who does the work is the act of
+    /// assigning it, which is a different authority from editing the task.
+    /// </summary>
+    [HttpPost("{id:guid}/reassign")]
+    [HasPermission(TaskPermissions.Assign)]
+    public async Task<IActionResult> Reassign(
+        Guid id, [FromBody] ReassignTaskItemRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new ReassignTaskItemCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
     /// Call the task off. Holding <c>platform.tasks.cancel</c> is not enough on its own — the handler also
     /// requires the caller to be the REQUESTER, or to hold administrative authority over any task. That
     /// authority is evaluated HERE, from the caller's claims through the same seam the enforcement filter uses,

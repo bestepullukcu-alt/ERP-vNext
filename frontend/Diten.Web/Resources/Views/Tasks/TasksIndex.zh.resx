@@ -86,6 +86,10 @@
   <data name="ErrorApprovalPending" xml:space="preserve"><value>该任务正在等待审批人的决定。</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>只有提出该任务的人才能取消它。如果您不想接手，请退回。</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>请说明该任务在等待什么。</value></data>
+  <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>请说明移交该任务的原因。</value></data>
+  <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>只有该任务的当前负责人才能退回它。</value></data>
+  <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>只有当前负责人或提出该任务的人才能重新分配它。</value></data>
+  <data name="ErrorAssigneeNotAssignable" xml:space="preserve"><value>无法将工作分配给该人员。请从列表中选择。</value></data>
   <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>审批人在做出决定前要求补充支持材料。</value></data>
   <data name="ErrorApprovalRejected" xml:space="preserve"><value>审批已被驳回，该任务无法继续。</value></data>
   <data name="ErrorApprovalCancelled" xml:space="preserve"><value>审批已被取消，该任务无法继续。</value></data>

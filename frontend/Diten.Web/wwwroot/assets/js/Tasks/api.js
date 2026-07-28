@@ -51,6 +51,12 @@
         // reason code BEFORE the status, so this replaces the generic "you are not allowed" with the reason.
         TASK_CANCEL_NOT_REQUESTER: 'errorCancelNotRequester',
         TASK_WAITING_REASON_REQUIRED: 'errorWaitingReasonRequired',
+        // Handing work back (return) or on (reassign): both refuse without a reason, and both refuse an actor
+        // who is neither the holder nor the requester.
+        TASK_HANDOVER_REASON_REQUIRED: 'errorHandoverReasonRequired',
+        TASK_RETURN_NOT_ASSIGNEE: 'errorReturnNotAssignee',
+        TASK_REASSIGN_NOT_PERMITTED: 'errorReassignNotPermitted',
+        TASK_ASSIGNEE_NOT_ASSIGNABLE: 'errorAssigneeNotAssignable',
         // Every blocking code MOD-0023's gate can answer with, read from
         // EvaluateWorkflowTransitionGateHandler rather than guessed. A blocked transition used to arrive as a bare
         // 500, so none of these ever had a message.

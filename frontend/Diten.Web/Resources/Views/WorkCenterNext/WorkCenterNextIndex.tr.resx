@@ -1270,6 +1270,12 @@
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>Bilgi bekle</value>
   </data>
+  <data name="WorkAggregation_Action_Return" xml:space="preserve">
+    <value>İade et</value>
+  </data>
+  <data name="WorkAggregation_Action_Reassign" xml:space="preserve">
+    <value>Başkasına ata</value>
+  </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>Görevi iptal et</value>
   </data>

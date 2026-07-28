@@ -1270,6 +1270,12 @@
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>في انتظار…</value>
   </data>
+  <data name="WorkAggregation_Action_Return" xml:space="preserve">
+    <value>إعادة</value>
+  </data>
+  <data name="WorkAggregation_Action_Reassign" xml:space="preserve">
+    <value>إعادة إسناد</value>
+  </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>إلغاء المهمة</value>
   </data>

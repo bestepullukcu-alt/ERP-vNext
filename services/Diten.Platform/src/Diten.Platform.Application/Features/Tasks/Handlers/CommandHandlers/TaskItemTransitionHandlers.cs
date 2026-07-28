@@ -399,3 +399,234 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }
+
+/// <summary>
+/// Give assigned work BACK to whoever asked for it — the refusal that was missing.
+///
+/// <para>Until now the only way out of unwanted work was <c>cancel</c>, which means something opposite: the work
+/// is called off entirely. So an assignee either did somebody else's job or destroyed their request.</para>
+///
+/// <para>No new state is invented. The task returns to the creator exactly as a fresh assignment does — they
+/// become the assignee, the acceptance gate reopens, and it appears in their Inbox as pendingAcceptance. The
+/// lifecycle is untouched: returning says nothing about how far the work got.</para>
+///
+/// <para><b>The verb is shared with MOD-0023, the path is not.</b> An approver returning an approval/review to its
+/// submitter is MOD-0023's decision and lives entirely in that module (charter Binding A). Both are called
+/// `return` because "send it back" is one idea; they operate on different work-intent types and must not be
+/// merged into one route because they answer to different owners.</para>
+/// </summary>
+public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemCommand, Response<NoContent>>
+{
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskAssignmentRepository _assignments;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly ITenantContext _tenantContext;
+
+    public ReturnTaskItemHandler(
+        ITaskItemRepository tasks,
+        ITaskAssignmentRepository assignments,
+        ICurrentUserContext currentUser,
+        ITenantContext tenantContext)
+    {
+        _tasks = tasks;
+        _assignments = assignments;
+        _currentUser = currentUser;
+        _tenantContext = tenantContext;
+    }
+
+    public async Task<Response<NoContent>> Handle(ReturnTaskItemCommand command, CancellationToken ct)
+    {
+        var reason = command.Request.Reason?.Trim();
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            return Response<NoContent>.Fail(
+                "Say why the task is being returned.",
+                400, TaskReasonCodes.HandoverReasonRequired, command.CorrelationId);
+        }
+
+        var task = await _tasks.GetByIdAsync(command.Id, ct);
+        if (task is null)
+        {
+            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        if (task.AssigneeUserId != _currentUser.UserId)
+        {
+            return Response<NoContent>.Fail(
+                "Only the current assignee can return this task.",
+                403, TaskReasonCodes.ReturnNotAssignee, command.CorrelationId);
+        }
+
+        // Nowhere to send it back TO. Returning a task to yourself is a no-op dressed as an action, and the
+        // projection does not offer it — this refuses the direct call for the same reason.
+        if (task.CreatedByUserId is null || task.CreatedByUserId == task.AssigneeUserId)
+        {
+            return Response<NoContent>.Fail(
+                "This task has no separate requester to return it to.",
+                409, TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        var returnedBy = task.AssigneeUserId;
+
+        // Back to the requester as an ordinary assignment: they hold it, and the acceptance gate reopens so it
+        // lands in their Inbox rather than silently in their active work.
+        task.AssigneeUserId = task.CreatedByUserId;
+        task.AssignmentTarget = TaskAssignmentTarget.Person;
+        task.Lifecycle = TaskLifecycle.Open;
+        task.UpdatedBy = _currentUser.ActorName;
+
+        if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        // There is no `Returned` event type, and adding one changes the shape of already-persisted history for a
+        // distinction the note already records. A return IS a reassignment — back to the requester.
+        await _assignments.CreateAsync(new TaskAssignment
+        {
+            TenantId = _tenantContext.TenantId,
+            TaskItemId = task.Id,
+            EventType = TaskAssignmentEventType.Reassigned,
+            UserId = task.AssigneeUserId,
+            ActorUserId = returnedBy,
+            // ReasonCode is for machine-readable classification and there is no code for "returned"; the note is
+            // the reason, and it is the user's own words.
+            ReasonCode = null,
+            Note = reason,
+            CreatedBy = _currentUser.ActorName
+        }, ct);
+
+        return Response<NoContent>.Success(204, command.CorrelationId);
+    }
+}
+
+/// <summary>
+/// Hand work to somebody else.
+///
+/// <para>Two people may do it, for two different reasons: the current HOLDER delegating work they cannot do, and
+/// the REQUESTER correcting an assignment they got wrong. Nobody else — being able to see a task is not authority
+/// to move it onto a colleague.</para>
+///
+/// <para>The new holder receives it UNACCEPTED: the acceptance gate reopens so the task appears in their Inbox to
+/// be taken on, rather than silently joining their active work. Pool tasks are excluded entirely; a pool already
+/// has claim/release for exactly this, and reassigning one would name a holder the pool does not have.</para>
+/// </summary>
+public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCommand, Response<NoContent>>
+{
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskAssignmentRepository _assignments;
+    private readonly IPositionAssignmentRepository _positionAssignments;
+    private readonly IPositionRepository _positions;
+    private readonly IOrganizationUnitRepository _organizationUnits;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly ITenantContext _tenantContext;
+
+    public ReassignTaskItemHandler(
+        ITaskItemRepository tasks,
+        ITaskAssignmentRepository assignments,
+        IPositionAssignmentRepository positionAssignments,
+        IPositionRepository positions,
+        IOrganizationUnitRepository organizationUnits,
+        ICurrentUserContext currentUser,
+        ITenantContext tenantContext)
+    {
+        _tasks = tasks;
+        _assignments = assignments;
+        _positionAssignments = positionAssignments;
+        _positions = positions;
+        _organizationUnits = organizationUnits;
+        _currentUser = currentUser;
+        _tenantContext = tenantContext;
+    }
+
+    public async Task<Response<NoContent>> Handle(ReassignTaskItemCommand command, CancellationToken ct)
+    {
+        var reason = command.Request.Reason?.Trim();
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            return Response<NoContent>.Fail(
+                "Say why the task is being reassigned.",
+                400, TaskReasonCodes.HandoverReasonRequired, command.CorrelationId);
+        }
+
+        var task = await _tasks.GetByIdAsync(command.Id, ct);
+        if (task is null)
+        {
+            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        if (task.AssignmentTarget == TaskAssignmentTarget.PositionPool)
+        {
+            return Response<NoContent>.Fail(
+                "Pooled work is claimed and released, not reassigned.",
+                409, TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        var isHolder = task.AssigneeUserId == _currentUser.UserId;
+        var isRequester = task.CreatedByUserId is not null && task.CreatedByUserId == _currentUser.UserId;
+        if (!isHolder && !isRequester)
+        {
+            return Response<NoContent>.Fail(
+                "Only the current assignee or the requester can reassign this task.",
+                403, TaskReasonCodes.ReassignNotPermitted, command.CorrelationId);
+        }
+
+        if (command.Request.AssigneeUserId == Guid.Empty)
+        {
+            return Response<NoContent>.Fail(
+                "A new assignee is required.",
+                400, TaskReasonCodes.AssigneeInvalid, command.CorrelationId);
+        }
+
+        if (command.Request.AssigneeUserId == task.AssigneeUserId)
+        {
+            return Response<NoContent>.Fail(
+                "The task is already assigned to that person.",
+                409, TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        // The same rule the people picker uses — see TaskAssigneeEligibility for why it is shared rather than
+        // written twice. Refusing here is what stops work landing on somebody the product will not offer.
+        var assignable = TaskAssigneeEligibility.ResolveAssignableUserIds(
+            await _positionAssignments.GetAllAsync(ct),
+            await _positions.GetAllAsync(ct),
+            await _organizationUnits.GetAllAsync(ct),
+            DateTimeOffset.UtcNow);
+
+        if (!assignable.Contains(command.Request.AssigneeUserId))
+        {
+            return Response<NoContent>.Fail(
+                "That person cannot be assigned work.",
+                400, TaskReasonCodes.AssigneeNotAssignable, command.CorrelationId);
+        }
+
+        // Unaccepted on arrival: the acceptance gate reopens so it lands in the new holder's Inbox.
+        task.AssigneeUserId = command.Request.AssigneeUserId;
+        task.AssignmentTarget = TaskAssignmentTarget.Person;
+        task.Lifecycle = TaskLifecycle.Open;
+        task.UpdatedBy = _currentUser.ActorName;
+
+        if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        await _assignments.CreateAsync(new TaskAssignment
+        {
+            TenantId = _tenantContext.TenantId,
+            TaskItemId = task.Id,
+            EventType = TaskAssignmentEventType.Reassigned,
+            UserId = command.Request.AssigneeUserId,
+            ActorUserId = _currentUser.UserId,
+            ReasonCode = null,
+            Note = reason,
+            CreatedBy = _currentUser.ActorName
+        }, ct);
+
+        return Response<NoContent>.Success(204, command.CorrelationId);
+    }
+}

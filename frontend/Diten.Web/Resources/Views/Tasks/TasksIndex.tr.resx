@@ -86,6 +86,10 @@
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Görev, onaylayan kişinin kararını bekliyor.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Bu görevi yalnızca talep eden kişi iptal edebilir. İşi istemiyorsanız iade edin.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Görevin neyi beklediğini yazın.</value></data>
+  <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>Görevi neden devrettiğinizi yazın.</value></data>
+  <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>Görevi yalnızca üzerine atanmış kişi iade edebilir.</value></data>
+  <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>Bu görevi yalnızca mevcut atanan kişi veya talep eden yeniden atayabilir.</value></data>
+  <data name="ErrorAssigneeNotAssignable" xml:space="preserve"><value>Bu kişiye iş atanamaz. Listeden birini seçin.</value></data>
   <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>Onaylayan kişi, karar vermeden önce destekleyici bilgi istedi.</value></data>
   <data name="ErrorApprovalRejected" xml:space="preserve"><value>Onay reddedildi, bu görev devam edemez.</value></data>
   <data name="ErrorApprovalCancelled" xml:space="preserve"><value>Onay iptal edildi, bu görev devam edemez.</value></data>

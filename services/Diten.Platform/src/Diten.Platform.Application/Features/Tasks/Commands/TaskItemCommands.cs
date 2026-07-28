@@ -61,6 +61,22 @@ public sealed record TransitionTaskItemCommand(
 public sealed record InquireTaskItemCommand(Guid Id, InquireTaskItemRequest Request, string CorrelationId)
     : IRequest<Response<NoContent>>;
 
+/// <summary>
+/// Give assigned work back to whoever asked for it.
+///
+/// <para><b>`return` is also MOD-0023's verb.</b> An approver returns an approval or a review to its submitter,
+/// and that is a DIFFERENT path with a different owner: MOD-0023 decides approvals, MOD-0024 never does (charter
+/// Binding A). The two share a verb because "send it back" is the same idea, not because they share an
+/// implementation — they act on different work-intent types (`task` here, `approval`/`review` there) and the
+/// projection is per item, so nothing routes between them. Do NOT merge these paths.</para>
+/// </summary>
+public sealed record ReturnTaskItemCommand(Guid Id, ReturnTaskItemRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;
+
+/// <summary>Hand work to a different person; they receive it unaccepted, in their Inbox.</summary>
+public sealed record ReassignTaskItemCommand(Guid Id, ReassignTaskItemRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;
+
 // ── Phase 2: checklist (pack §12 E1) ─────────────────────────────────────────
 
 /// <summary>Tick or untick one checklist item on a task.</summary>

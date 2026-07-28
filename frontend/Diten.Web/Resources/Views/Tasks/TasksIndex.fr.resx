@@ -86,6 +86,10 @@
   <data name="ErrorApprovalPending" xml:space="preserve"><value>La tâche attend la décision de l'approbateur.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Seule la personne qui a demandé cette tâche peut l'annuler. Si vous ne voulez pas ce travail, renvoyez-le.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indiquez ce que la tâche attend.</value></data>
+  <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>Indiquez pourquoi vous transmettez cette tâche.</value></data>
+  <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>Seule la personne à qui la tâche est attribuée peut la renvoyer.</value></data>
+  <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>Seuls la personne assignée ou le demandeur peuvent réattribuer cette tâche.</value></data>
+  <data name="ErrorAssigneeNotAssignable" xml:space="preserve"><value>Cette personne ne peut pas recevoir de travail. Choisissez quelqu'un dans la liste.</value></data>
   <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>L'approbateur demande des informations justificatives avant de décider.</value></data>
   <data name="ErrorApprovalRejected" xml:space="preserve"><value>L'approbation a été refusée, cette tâche ne peut pas continuer.</value></data>
   <data name="ErrorApprovalCancelled" xml:space="preserve"><value>L'approbation a été annulée, cette tâche ne peut pas continuer.</value></data>

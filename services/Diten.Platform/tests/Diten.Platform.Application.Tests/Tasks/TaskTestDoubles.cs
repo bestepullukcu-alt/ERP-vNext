@@ -15,6 +15,12 @@ internal static class TaskTestData
     internal static readonly Guid OtherTenant = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
     internal static readonly Guid Me = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
     internal static readonly Guid Rival = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+
+    /// <summary>
+    /// A THIRD person. Handing work on needs one: with only two users, "the holder", "the requester" and "the new
+    /// assignee" collapse into each other and an authority rule can pass by coincidence.
+    /// </summary>
+    internal static readonly Guid Other = Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff");
 }
 
 internal sealed class FakeCurrentUserContext(Guid userId) : ICurrentUserContext

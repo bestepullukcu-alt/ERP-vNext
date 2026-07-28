@@ -43,6 +43,18 @@ public static class TaskReasonCodes
     /// <summary>Entering Waiting without saying what is being waited for.</summary>
     public const string WaitingReasonRequired = "TASK_WAITING_REASON_REQUIRED";
 
+    /// <summary>Handing work back or on without saying why. Both are statements to another person.</summary>
+    public const string HandoverReasonRequired = "TASK_HANDOVER_REASON_REQUIRED";
+
+    /// <summary>Only the current holder may return work they were given.</summary>
+    public const string ReturnNotAssignee = "TASK_RETURN_NOT_ASSIGNEE";
+
+    /// <summary>Reassigning is the holder's or the requester's to do — nobody else's.</summary>
+    public const string ReassignNotPermitted = "TASK_REASSIGN_NOT_PERMITTED";
+
+    /// <summary>The proposed assignee is not someone work may be assigned to.</summary>
+    public const string AssigneeNotAssignable = "TASK_ASSIGNEE_NOT_ASSIGNABLE";
+
     /// <summary>
     /// Cancelling someone else's task. A REFUSAL OF AUTHORITY, not a state conflict — an assignee who does not
     /// want the work returns it; only the requester (or administrative authority) calls it off.
@@ -164,6 +176,18 @@ public sealed record TaskTransitionRequest(int ExpectedVersion, string? ReasonCo
 /// text and never routed through a resource key.
 /// </summary>
 public sealed record InquireTaskItemRequest(int ExpectedVersion, string Reason);
+
+/// <summary>
+/// Hand assigned work BACK to whoever asked for it. <paramref name="Reason"/> is required: a refusal the
+/// requester cannot understand only moves the problem.
+/// </summary>
+public sealed record ReturnTaskItemRequest(int ExpectedVersion, string Reason);
+
+/// <summary>
+/// Hand work ON to somebody else. <paramref name="Reason"/> is required for the same reason as a return — the
+/// new holder is being told why this is now theirs.
+/// </summary>
+public sealed record ReassignTaskItemRequest(int ExpectedVersion, Guid AssigneeUserId, string Reason);
 
 /// <summary>Tick/untick one checklist item. ExpectedVersion guards the RUN, not the task.</summary>
 public sealed record SetChecklistItemStateRequest(string ItemCode, bool Completed, int ExpectedVersion);
