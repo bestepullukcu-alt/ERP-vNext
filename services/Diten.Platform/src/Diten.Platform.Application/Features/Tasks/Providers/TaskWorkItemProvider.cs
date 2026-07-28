@@ -119,17 +119,6 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .DistinctBy(t => t.Id)
             .ToList();
 
-        // ONE batched resolve for the whole page — never one call per task, and cached between requests.
-        // Best effort: if AuthService is down this comes back empty and names are simply omitted.
-        var userIds = tasks
-            // The approval manager joins the batch so the gates card can name a person instead of an id.
-            .SelectMany(t => new[] { t.AssigneeUserId, t.CreatedByUserId, t.ApprovalManagerUserId })
-            .Where(id => id is not null && id != Guid.Empty)
-            .Select(id => id!.Value)
-            .Distinct()
-            .ToList();
-        var displayNames = await _displayNames.ResolveAsync(userIds, ct);
-
         // Phase 2 containers, both batched: one read for every task's checklist and one for every task's
         // children. Per-task reads here would be an N+1 over the whole page.
         var taskIds = tasks.Select(t => t.Id).ToList();
@@ -143,6 +132,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .Where(child => child.ParentTaskItemId is not null)
             .GroupBy(child => child.ParentTaskItemId!.Value)
             .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskItem>)group.ToList());
+
+        // ONE batched resolve for the whole page — never one call per task, and cached between requests. It runs
+        // after the children are known so subtask holders ride the SAME batch; resolving them per row would be an
+        // N+1 across the page. Best effort: if AuthService is down this comes back empty and names are omitted.
+        var userIds = tasks
+            // The approval manager joins the batch so the gates card can name a person instead of an id.
+            .SelectMany(t => new[] { t.AssigneeUserId, t.CreatedByUserId, t.ApprovalManagerUserId })
+            .Concat(childrenByParent.SelectMany(pair => pair.Value).Select(child => child.AssigneeUserId))
+            .Where(id => id is not null && id != Guid.Empty)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+        var displayNames = await _displayNames.ResolveAsync(userIds, ct);
 
         // Approval state comes from MOD-0023, in ONE read for the whole page. It must be READ, never inferred:
         // ApprovalRequired records that approval was asked for, not whether it has been given, so deriving from
@@ -256,7 +258,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             Requester: Person(task.CreatedByUserId, actor, displayNames),
             // Container ⇔ capability, both directions: emitted only when declared, and then even if empty.
             Checklist: checklist is null ? null : ToChecklist(checklist),
-            Subtasks: task.ParentTaskItemId is null ? ToSubtasks(children) : null,
+            Subtasks: task.ParentTaskItemId is null ? ToSubtasks(children, actor, displayNames) : null,
             ParentTaskItemId: task.ParentTaskItemId?.ToString(),
             Gates: BuildGates(task, actor, displayNames, approvalOutstanding, approvalRejected));
     }
@@ -387,7 +389,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             Review: new WorkItemGateDto(task.ReviewRequired, reviewStatus, Decider: null));
     }
 
-    private static WorkItemSubtasksDto ToSubtasks(IReadOnlyList<TaskItem> children)
+    private static WorkItemSubtasksDto ToSubtasks(
+        IReadOnlyList<TaskItem> children,
+        WorkItemActor actor,
+        IReadOnlyDictionary<Guid, string> displayNames)
         => new("full", children
             .Select(child => new WorkItemSubtaskDto(
                 Id: child.Id.ToString(),
@@ -401,7 +406,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     TaskLifecycle.Cancelled => "cancelled",
                     TaskLifecycle.InProgress or TaskLifecycle.PendingReview or TaskLifecycle.Waiting => "in-progress",
                     _ => "not-started"
-                }))
+                },
+                // A subtask carries its OWN holder and date; without them the row can only repeat its title,
+                // and "who is doing this and by when" is the reason to look at the list at all.
+                Assignee: Person(child.AssigneeUserId, actor, displayNames),
+                DueAt: child.DueAt))
             .ToList());
 
     private static string ResolveExecutionState(TaskItem task) => task.Lifecycle switch

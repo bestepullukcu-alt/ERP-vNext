@@ -300,7 +300,16 @@ public sealed record WorkItemSubtaskDto(
     /// waiting to begin, and reading three cancelled subtasks as "not started" invites someone to go and do
     /// them. It is also the distinction BL-035 needs — a cancelled subtask must not gate its parent.</para>
     /// </summary>
-    string Status);
+    string Status,
+    /// <summary>
+    /// Who holds the subtask. A TYPED identity or null — a subtask nobody has taken genuinely has no holder, and
+    /// the display name is null when Platform cannot resolve one rather than guessed.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPersonDto? Assignee = null,
+    /// <summary>When the subtask is due, omitted when it has no date of its own.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? DueAt = null);
 
 /// <summary>
 /// The governance gates on a work item: what must happen before it can proceed, and where that stands.

@@ -404,3 +404,169 @@ describe("a cancelled subtask is not reported as unstarted work", () => {
     expect(status.textContent).not.toBe("SubtaskStatusNotStarted");
   });
 });
+
+/*
+ * The layout: content on the left, everything actionable on the right.
+ *
+ * The design's point is that reading and acting are different jobs. With actions inline among the content
+ * cards, the one control the page exists for sat wherever its card happened to land.
+ */
+describe("the detail page separates what the work IS from what you can DO", () => {
+  beforeEach(async () => { await bootDetailPage(projectionItem()); });
+
+  it("puts the action rail in the right column and the content in the left", () => {
+    const rail = app().querySelector(".wcn-detail-rail");
+    const content = app().querySelector(".wcn-detail-content");
+    expect(rail).not.toBeNull();
+    expect(content).not.toBeNull();
+    expect(rail.querySelector(".wcn-actrail")).not.toBeNull();
+    // Actions must not also be sitting among the content cards.
+    expect(content.querySelector(".wcn-actrail")).toBeNull();
+  });
+
+  it("stacks instead of vanishing on a narrow screen", () => {
+    // col-12 is what makes the rail a full-width block below the content rather than a squeezed sliver.
+    expect(app().querySelector(".wcn-detail-rail").className).toContain("col-12");
+  });
+
+  it("leads the rail with the primary action at full size", () => {
+    const first = app().querySelector(".wcn-actrail .wcn-act");
+    expect(first.className).toContain("wcn-act-primary");
+  });
+});
+
+describe("each action says what it will do", () => {
+  it("explains the primary action", async () => {
+    await bootDetailPage(projectionItem());
+    // "Complete" alone does not say where the work goes.
+    expect(app().textContent).toContain("OutcomeComplete");
+  });
+
+  it("shows nothing and warns once for an action it has no outcome text for", async () => {
+    const warnings = [];
+    const original = console.warn;
+    console.warn = (...args) => warnings.push(args.join(" "));
+    try {
+      await bootDetailPage(projectionItem({
+        actions: [{
+          code: "teleport",
+          label: { kind: "display", text: "Teleport", locale: "und" },
+          semanticType: "teleport",
+          enabled: true,
+          source: "provider",
+          disabledReasonCode: null,
+          disabledReason: null,
+          requiresConfirmation: false,
+          requiresReason: false,
+          requiresEvidence: false,
+          supportsBulk: false,
+          riskLevel: "normal"
+        }],
+        primaryActionCode: "teleport"
+      }));
+    } finally {
+      console.warn = original;
+    }
+
+    // The button still renders — it is the provider's action — but its consequence is not guessed at.
+    expect(app().querySelector(".wcn-act-btn")).not.toBeNull();
+    expect(app().querySelector(".wcn-act-outcome")).toBeNull();
+    expect(warnings.some((w) => w.includes("No outcome text for action \"teleport\""))).toBe(true);
+  });
+});
+
+describe("the lifecycle strip only draws steps this task will actually reach", () => {
+  const gated = (approval, review) => projectionItem({
+    gates: {
+      approval: { required: approval, status: approval ? "pending" : "notRequired" },
+      review: { required: review, status: review ? "required" : "notRequired" }
+    }
+  });
+
+  it("omits the review step when no review is required", async () => {
+    await bootDetailPage(gated(false, false));
+
+    // A step you can see is a step you expect to reach.
+    expect(app().textContent).not.toContain("StepReview");
+    expect(app().textContent).toContain("StepInProgress");
+  });
+
+  it("draws the review step when a review IS required", async () => {
+    await bootDetailPage(gated(false, true));
+    expect(app().textContent).toContain("StepReview");
+  });
+
+  it("puts approval first when it is required, because it gates starting", async () => {
+    await bootDetailPage(gated(true, false));
+
+    const labels = Array.from(app().querySelectorAll(".wcn-step-label")).map((n) => n.textContent);
+    expect(labels[0]).toBe("StepApproval");
+  });
+
+  it("omits the approval step entirely when none is required", async () => {
+    await bootDetailPage(gated(false, false));
+    expect(app().textContent).not.toContain("StepApproval");
+  });
+
+  it("marks Planned as an optional step rather than a station on the main path", async () => {
+    await bootDetailPage(gated(false, false));
+    expect(app().querySelector(".wcn-step-optional")).not.toBeNull();
+  });
+
+  /*
+   * Waiting is a PAUSE on the current step, not a step of its own — a healthy task never passes through it, so
+   * drawing it as a station would promise a stop that should not happen.
+   */
+  it("shows waiting as a pause badge, never as a step", async () => {
+    await bootDetailPage(projectionItem({
+      normalizedStatus: "Waiting",
+      taskLifecycle: "Waiting",
+      waitingContext: {
+        type: "externalInformation",
+        reason: { kind: "display", text: "Muhasebeden ekstre bekleniyor", locale: "und" },
+        since: "2026-07-26T10:00:00+00:00"
+      }
+    }));
+
+    expect(app().querySelector(".wcn-step-paused")).not.toBeNull();
+    expect(app().textContent).toContain("Muhasebeden ekstre bekleniyor");
+    const labels = Array.from(app().querySelectorAll(".wcn-step-label")).map((n) => n.textContent);
+    expect(labels).not.toContain("StepWaiting");
+  });
+});
+
+describe("subtask rows carry who has it and when it is due", () => {
+  it("shows the holder and the date when they exist", async () => {
+    await bootDetailPage(projectionItem({
+      subtasks: {
+        mode: "full",
+        items: [{
+          id: "s1", title: "Ekstreyi iste", status: "in-progress",
+          assignee: { id: "u1", displayName: "Merve Şahin" }, dueAt: "2026-08-03T00:00:00+00:00"
+        }]
+      }
+    }));
+
+    expect(app().querySelector(".wcn-subtask-assignee").textContent).toContain("Merve Şahin");
+    expect(app().querySelector(".wcn-subtask-due").textContent).toContain("2026-08-03");
+  });
+
+  it("shows nothing at all when a subtask has no holder", async () => {
+    await bootDetailPage(projectionItem({
+      subtasks: { mode: "full", items: [{ id: "s1", title: "Sahipsiz iş", status: "not-started" }] }
+    }));
+
+    // Absent, not a dash: a dash claims the field was checked and found empty.
+    expect(app().querySelector(".wcn-subtask-assignee")).toBeNull();
+    expect(app().querySelector(".wcn-subtask-due")).toBeNull();
+    expect(app().querySelector(".wcn-subtask-title")).not.toBeNull();
+  });
+
+  it("opens the subtask's own page rather than an inline editor", async () => {
+    await bootDetailPage(projectionItem({
+      subtasks: { mode: "full", items: [{ id: "s1", title: "Alt iş", status: "not-started" }] }
+    }));
+
+    expect(app().querySelector('[data-wcn-open-task="s1"]')).not.toBeNull();
+  });
+});

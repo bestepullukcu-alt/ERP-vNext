@@ -1309,6 +1309,54 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Henüz kontrol listesi maddesi yok.</value>
   </data>
+  <data name="ActionsAvailable" xml:space="preserve">
+    <value>Mevcut aksiyonlar</value>
+  </data>
+  <data name="ActionsOther" xml:space="preserve">
+    <value>Diğer aksiyonlar</value>
+  </data>
+  <data name="StepApproval" xml:space="preserve">
+    <value>Onay</value>
+  </data>
+  <data name="StepOpen" xml:space="preserve">
+    <value>Açık</value>
+  </data>
+  <data name="StepPaused" xml:space="preserve">
+    <value>Şu an duraklatıldı</value>
+  </data>
+  <data name="StepPausedBecause" xml:space="preserve">
+    <value>Şu an duraklatıldı: {0}</value>
+  </data>
+  <data name="OutcomeAccept" xml:space="preserve">
+    <value>Görevi üstlenir ve Açık durumuna alır</value>
+  </data>
+  <data name="OutcomeClaim" xml:space="preserve">
+    <value>Görevi havuzdan alır ve size atar</value>
+  </data>
+  <data name="OutcomeRelease" xml:space="preserve">
+    <value>Görevi başkası alsın diye havuza geri verir</value>
+  </data>
+  <data name="OutcomePlan" xml:space="preserve">
+    <value>Kendi planladığınız tarihi belirler; son tarih değişmez</value>
+  </data>
+  <data name="OutcomeStart" xml:space="preserve">
+    <value>Görevi Devam ediyor durumuna alır</value>
+  </data>
+  <data name="OutcomeInquire" xml:space="preserve">
+    <value>Görevi duraklatır ve Bekleyen durumuna alır</value>
+  </data>
+  <data name="OutcomeReturn" xml:space="preserve">
+    <value>Görevi talep eden kişiye geri gönderir</value>
+  </data>
+  <data name="OutcomeReassign" xml:space="preserve">
+    <value>Görevi, kabul edilmemiş olarak başkasına verir</value>
+  </data>
+  <data name="OutcomeComplete" xml:space="preserve">
+    <value>Görevi bitirir ve Tamamlandı durumuna alır</value>
+  </data>
+  <data name="OutcomeCancel" xml:space="preserve">
+    <value>Görevi tümüyle iptal eder; açık alt görevler de iptal olur</value>
+  </data>
   <data name="GatesLabel" xml:space="preserve">
     <value>Kapılar</value>
   </data>

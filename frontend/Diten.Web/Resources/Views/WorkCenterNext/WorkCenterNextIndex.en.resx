@@ -1309,6 +1309,54 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>No checklist items yet.</value>
   </data>
+  <data name="ActionsAvailable" xml:space="preserve">
+    <value>Available actions</value>
+  </data>
+  <data name="ActionsOther" xml:space="preserve">
+    <value>Other actions</value>
+  </data>
+  <data name="StepApproval" xml:space="preserve">
+    <value>Approval</value>
+  </data>
+  <data name="StepOpen" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="StepPaused" xml:space="preserve">
+    <value>Currently paused</value>
+  </data>
+  <data name="StepPausedBecause" xml:space="preserve">
+    <value>Currently paused: {0}</value>
+  </data>
+  <data name="OutcomeAccept" xml:space="preserve">
+    <value>Takes the task on and moves it to Open</value>
+  </data>
+  <data name="OutcomeClaim" xml:space="preserve">
+    <value>Takes the task out of the pool and assigns it to you</value>
+  </data>
+  <data name="OutcomeRelease" xml:space="preserve">
+    <value>Returns the task to the pool for someone else</value>
+  </data>
+  <data name="OutcomePlan" xml:space="preserve">
+    <value>Sets your own planned date; the due date is unchanged</value>
+  </data>
+  <data name="OutcomeStart" xml:space="preserve">
+    <value>Moves the task to In progress</value>
+  </data>
+  <data name="OutcomeInquire" xml:space="preserve">
+    <value>Pauses the task and moves it to Waiting</value>
+  </data>
+  <data name="OutcomeReturn" xml:space="preserve">
+    <value>Sends the task back to whoever requested it</value>
+  </data>
+  <data name="OutcomeReassign" xml:space="preserve">
+    <value>Hands the task to someone else, unaccepted</value>
+  </data>
+  <data name="OutcomeComplete" xml:space="preserve">
+    <value>Finishes the task and moves it to Done</value>
+  </data>
+  <data name="OutcomeCancel" xml:space="preserve">
+    <value>Calls the task off entirely; open subtasks are cancelled too</value>
+  </data>
   <data name="GatesLabel" xml:space="preserve">
     <value>Gates</value>
   </data>

@@ -1309,6 +1309,54 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aucun élément de liste de contrôle.</value>
   </data>
+  <data name="ActionsAvailable" xml:space="preserve">
+    <value>Actions disponibles</value>
+  </data>
+  <data name="ActionsOther" xml:space="preserve">
+    <value>Autres actions</value>
+  </data>
+  <data name="StepApproval" xml:space="preserve">
+    <value>Approbation</value>
+  </data>
+  <data name="StepOpen" xml:space="preserve">
+    <value>Ouverte</value>
+  </data>
+  <data name="StepPaused" xml:space="preserve">
+    <value>Actuellement en pause</value>
+  </data>
+  <data name="StepPausedBecause" xml:space="preserve">
+    <value>Actuellement en pause : {0}</value>
+  </data>
+  <data name="OutcomeAccept" xml:space="preserve">
+    <value>Prend la tâche en charge et la passe à Ouverte</value>
+  </data>
+  <data name="OutcomeClaim" xml:space="preserve">
+    <value>Retire la tâche du pool et vous l’attribue</value>
+  </data>
+  <data name="OutcomeRelease" xml:space="preserve">
+    <value>Renvoie la tâche dans le pool</value>
+  </data>
+  <data name="OutcomePlan" xml:space="preserve">
+    <value>Définit votre date prévue ; l’échéance ne change pas</value>
+  </data>
+  <data name="OutcomeStart" xml:space="preserve">
+    <value>Passe la tâche à En cours</value>
+  </data>
+  <data name="OutcomeInquire" xml:space="preserve">
+    <value>Met la tâche en pause et la passe à En attente</value>
+  </data>
+  <data name="OutcomeReturn" xml:space="preserve">
+    <value>Renvoie la tâche à son demandeur</value>
+  </data>
+  <data name="OutcomeReassign" xml:space="preserve">
+    <value>Transmet la tâche à quelqu’un d’autre, non acceptée</value>
+  </data>
+  <data name="OutcomeComplete" xml:space="preserve">
+    <value>Termine la tâche et la passe à Terminée</value>
+  </data>
+  <data name="OutcomeCancel" xml:space="preserve">
+    <value>Annule entièrement la tâche ; les sous-tâches ouvertes le sont aussi</value>
+  </data>
   <data name="GatesLabel" xml:space="preserve">
     <value>Contrôles</value>
   </data>

@@ -1309,6 +1309,54 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aún no hay elementos de verificación.</value>
   </data>
+  <data name="ActionsAvailable" xml:space="preserve">
+    <value>Acciones disponibles</value>
+  </data>
+  <data name="ActionsOther" xml:space="preserve">
+    <value>Otras acciones</value>
+  </data>
+  <data name="StepApproval" xml:space="preserve">
+    <value>Aprobación</value>
+  </data>
+  <data name="StepOpen" xml:space="preserve">
+    <value>Abierta</value>
+  </data>
+  <data name="StepPaused" xml:space="preserve">
+    <value>Actualmente en pausa</value>
+  </data>
+  <data name="StepPausedBecause" xml:space="preserve">
+    <value>Actualmente en pausa: {0}</value>
+  </data>
+  <data name="OutcomeAccept" xml:space="preserve">
+    <value>Asume la tarea y la pasa a Abierta</value>
+  </data>
+  <data name="OutcomeClaim" xml:space="preserve">
+    <value>Saca la tarea del grupo y te la asigna</value>
+  </data>
+  <data name="OutcomeRelease" xml:space="preserve">
+    <value>Devuelve la tarea al grupo</value>
+  </data>
+  <data name="OutcomePlan" xml:space="preserve">
+    <value>Fija tu fecha planificada; la fecha límite no cambia</value>
+  </data>
+  <data name="OutcomeStart" xml:space="preserve">
+    <value>Pasa la tarea a En curso</value>
+  </data>
+  <data name="OutcomeInquire" xml:space="preserve">
+    <value>Pausa la tarea y la pasa a En espera</value>
+  </data>
+  <data name="OutcomeReturn" xml:space="preserve">
+    <value>Devuelve la tarea a quien la solicitó</value>
+  </data>
+  <data name="OutcomeReassign" xml:space="preserve">
+    <value>Entrega la tarea a otra persona, sin aceptar</value>
+  </data>
+  <data name="OutcomeComplete" xml:space="preserve">
+    <value>Finaliza la tarea y la pasa a Completada</value>
+  </data>
+  <data name="OutcomeCancel" xml:space="preserve">
+    <value>Cancela la tarea por completo; las subtareas abiertas también</value>
+  </data>
   <data name="GatesLabel" xml:space="preserve">
     <value>Controles</value>
   </data>

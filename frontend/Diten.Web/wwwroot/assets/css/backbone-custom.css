@@ -6105,3 +6105,40 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .wcn-gate-rejected .wcn-gate-status { color: var(--bs-danger); }
 .wcn-gate-approved .wcn-gate-status { color: var(--bs-success); }
 .wcn-gate-who { color: var(--bs-secondary-color); }
+
+/* Detail layout: content left, actions right ------------------------------
+   The rail stacks under the content on narrow screens (col-12 → col-lg-4), so the actions are never the only
+   thing on screen and never above the work they act on. */
+.wcn-detail-content > .wcn-detail-card,
+.wcn-detail-rail > .wcn-detail-card { margin-block-end: 1.5rem; }
+.wcn-detail-content > .wcn-detail-card:last-child,
+.wcn-detail-rail > .wcn-detail-card:last-child { margin-block-end: 0; }
+
+/* Action rail: the primary action leads at full width; the rest are quieter and narrower. */
+.wcn-actrail { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
+.wcn-act { display: flex; flex-direction: column; gap: .25rem; }
+.wcn-act-btn { display: inline-flex; align-items: center; gap: .5rem; justify-content: flex-start; }
+.wcn-act-primary .wcn-act-btn { inline-size: 100%; padding-block: .625rem; font-size: .9375rem; font-weight: 600; }
+.wcn-act-secondary .wcn-act-btn, .wcn-act-danger .wcn-act-btn { inline-size: 100%; }
+/* What the action will do — quieter than the label it explains. */
+.wcn-act-outcome { font-size: .75rem; color: var(--bs-secondary-color); }
+/* Why a disabled action cannot be used. It stays in place: the reason is the point. */
+.wcn-act-reason { font-size: .75rem; color: var(--bs-warning); }
+.wcn-act-disabled .wcn-act-btn { opacity: .65; }
+.wcn-actrail-other { margin-block-start: 1rem; padding-block-start: 1rem; border-block-start: 1px solid var(--bs-border-color); }
+
+/* Lifecycle strip: an optional step is drawn but visibly not on the main path. */
+.wcn-step-optional .wcn-step-dot { border-style: dashed; opacity: .7; }
+.wcn-step-optional .wcn-step-label { opacity: .7; }
+/* Waiting is a pause ON the current step, not a step of its own. */
+.wcn-step-paused {
+    margin: .625rem 0 0; display: flex; align-items: center; gap: .375rem;
+    font-size: .8125rem; color: var(--bs-warning);
+}
+
+/* Subtask rows: compact, not a grid. Absent fields render nothing rather than a dash. */
+.wcn-subtask-meta {
+    display: inline-flex; align-items: center; gap: .25rem;
+    font-size: .75rem; color: var(--bs-secondary-color); white-space: nowrap;
+}
+.wcn-subtask-meta i { font-size: .875rem; }

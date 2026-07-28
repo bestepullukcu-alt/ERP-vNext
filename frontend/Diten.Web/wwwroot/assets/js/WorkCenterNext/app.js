@@ -1035,23 +1035,154 @@
     // Step-bar = the SOURCE-declared stages (spec v3) — only when the item carries
     // the `stages` capability, NOT a universal WorkCenter lifecycle. The active
     // stage is matched by lifecycle; earlier stages are marked done.
-    const LIFECYCLE_STAGE = { PendingAcceptance: 0, PendingApproval: 0, Open: 0, Planned: 0, InProgress: 1, Waiting: 1, PendingReview: 2, Done: 99, Cancelled: -1 };
-    const renderStepBar = (item) => {
-        if (!Array.isArray(item.stages) || !item.stages.length) { return ''; }
+
+
+    // ── Detail layout: content on the left, everything you can DO on the right ──────────────────────────────
+
+    /*
+     * What each action will DO, keyed by action code.
+     *
+     * A verb alone ("Return") does not say where the work goes. This is a map, not a chain of ifs, so adding an
+     * action is adding one entry — and an unmapped code renders NOTHING and says so once, rather than shipping a
+     * button whose consequence is a guess.
+     */
+    const ACTION_OUTCOME_KEY = {
+        accept: 'OutcomeAccept',
+        claim: 'OutcomeClaim',
+        release: 'OutcomeRelease',
+        plan: 'OutcomePlan',
+        start: 'OutcomeStart',
+        inquire: 'OutcomeInquire',
+        return: 'OutcomeReturn',
+        reassign: 'OutcomeReassign',
+        complete: 'OutcomeComplete',
+        cancel: 'OutcomeCancel'
+    };
+
+    const reportedMissingOutcomes = new Set();
+
+    const actionOutcome = (action) => {
+        const key = ACTION_OUTCOME_KEY[action.code];
+        if (!key) {
+            if (!reportedMissingOutcomes.has(action.code)) {
+                reportedMissingOutcomes.add(action.code);
+                console.warn(
+                    `[WorkCenterNext] No outcome text for action "${action.code}" — the button will not say what `
+                    + 'it does. Add it to ACTION_OUTCOME_KEY and the 7 WorkCenterNext resx files.');
+            }
+            return '';
+        }
+        return `<span class="wcn-act-outcome">${esc(t(key))}</span>`;
+    };
+
+    const actionButton = (item, action, variant) => {
+        const disabled = action.disabled;
+        const reason = disabled && action.disabledReason
+            ? `<span class="wcn-act-reason">${esc(action.disabledReason)}</span>`
+            : '';
+        return `<li class="wcn-act wcn-act-${variant}${disabled ? ' wcn-act-disabled' : ''}">
+            <button type="button" class="btn btn-${variant === 'primary' ? '' : 'label-'}${action.kind} wcn-act-btn"
+                    data-wcn-action="${esc(action.key)}" data-wcn-id="${esc(item.id)}"${disabled ? ' disabled' : ''}>
+                <i class="bx ${inboxActionIcon(action)}"></i><span>${esc(actionLabel(action))}</span>
+            </button>
+            ${actionOutcome(action)}${reason}
+        </li>`;
+    };
+
+    /*
+     * The action rail. The PRIMARY action leads it at full size — the whole point of the page is to let someone
+     * act, and burying that behind a row of equal-weight buttons makes the reader hunt for it.
+     *
+     * A disabled primary KEEPS its place, with its reason: why work cannot move is the most important thing on
+     * the page, and promoting the next enabled action instead once made `cancel` look like the intended next
+     * step. Destructive actions are separated out below, never mixed in with the ordinary ones.
+     */
+    const renderActionRail = (item) => {
+        const actions = itemActions(item);
+        if (!actions.length) { return ''; }
+
+        const primary = rowPrimaryAction(actions);
+        const destructive = actions.filter((a) => a.destructive && a !== primary);
+        const secondary = actions.filter((a) => a !== primary && !a.destructive);
+
+        const available = (primary ? actionButton(item, primary, 'primary') : '')
+            + secondary.map((a) => actionButton(item, a, 'secondary')).join('');
+
+        const other = destructive.map((a) => actionButton(item, a, 'danger')).join('');
+
+        return `${available
+            ? `<div class="wcn-detail-section">
+                <h6 class="wcn-detail-h6">${esc(t('ActionsAvailable'))}</h6>
+                <ul class="wcn-actrail">${available}</ul>
+            </div>`
+            : ''}
+        ${other
+            ? `<div class="wcn-detail-section wcn-actrail-other">
+                <h6 class="wcn-detail-h6">${esc(t('ActionsOther'))}</h6>
+                <ul class="wcn-actrail">${other}</ul>
+            </div>`
+            : ''}`;
+    };
+
+    /*
+     * The lifecycle strip, drawn from THIS task's own route rather than a fixed set of stages.
+     *
+     * Steps that do not apply are not drawn at all: a task needing no review must not show a review step greyed
+     * out, because a step you can see is a step you expect to reach. Approval leads the strip when it is
+     * required — it gates starting, so it comes before the work.
+     *
+     * "Planned" is optional and marked as such; "Waiting" is NOT a step. Waiting is a pause ON the current step
+     * (you are still mid-flight, blocked), so it renders as a badge over the strip rather than a station nobody
+     * passes through on a healthy task.
+     */
+    const renderLifecycleStepper = (item) => {
+        if (item.itemType !== 'task') { return ''; }
+        const gates = item.gates;
+        const steps = [];
+        if (gates?.approval?.required) { steps.push({ key: 'StepApproval', id: 'approval' }); }
+        steps.push({ key: 'StepOpen', id: 'open' });
+        steps.push({ key: 'StepPlanned', id: 'planned', optional: true });
+        steps.push({ key: 'StepInProgress', id: 'inProgress' });
+        if (gates?.review?.required) { steps.push({ key: 'StepReview', id: 'review' }); }
+        steps.push({ key: 'StepDone', id: 'done' });
+
         const cancelled = item.lifecycle === 'Cancelled';
-        // Map lifecycle → active stage index, clamped to the source's own stages.
-        let active = LIFECYCLE_STAGE[item.lifecycle];
-        if (active === 99) { active = item.stages.length; }        // Done → all complete
-        active = Math.min(active, item.stages.length - 1);
-        const steps = item.stages.map((stage, i) => {
+        // Waiting is a pause, so the strip still shows where the work actually stands.
+        const positionFor = {
+            Open: 'open', Planned: 'planned', InProgress: 'inProgress',
+            Waiting: 'inProgress', PendingReview: 'review', Done: 'done', Cancelled: 'open'
+        };
+        let activeId = positionFor[item.lifecycle] || 'open';
+        // An outstanding approval is where the task really is, whatever its own lifecycle says.
+        if (gates?.approval?.status === 'pending') { activeId = 'approval'; }
+        // A review step only exists when required; fall back so the marker never lands on a step not drawn.
+        if (!steps.some((step) => step.id === activeId)) { activeId = 'inProgress'; }
+
+        const activeIndex = steps.findIndex((step) => step.id === activeId);
+        const allDone = item.lifecycle === 'Done';
+
+        const rendered = steps.map((step, index) => {
             let cls = 'upcoming';
-            if (!cancelled) { if (i < active) { cls = 'done'; } else if (i === active) { cls = 'active'; } }
-            const dot = (i < active && !cancelled) ? '<i class="bx bx-check"></i>' : (i + 1);
-            return `<li class="wcn-step wcn-step-${cls}"><span class="wcn-step-dot">${dot}</span><span class="wcn-step-label">${esc(stage.label)}</span></li>`;
+            if (!cancelled) {
+                if (allDone || index < activeIndex) { cls = 'done'; }
+                else if (index === activeIndex) { cls = 'active'; }
+            }
+            const mark = cls === 'done' ? '<i class="bx bx-check"></i>' : (index + 1);
+            return `<li class="wcn-step wcn-step-${cls}${step.optional ? ' wcn-step-optional' : ''}">
+                <span class="wcn-step-dot">${mark}</span>
+                <span class="wcn-step-label">${esc(t(step.key))}</span>
+            </li>`;
         }).join('');
+
+        const paused = item.lifecycle === 'Waiting'
+            ? `<p class="wcn-step-paused" role="note"><i class="bx bx-pause-circle"></i>${
+                esc(item.waitingReason ? tf('StepPausedBecause', item.waitingReason) : t('StepPaused'))}</p>`
+            : '';
+
         return `<div class="wcn-detail-section">
             <h6 class="wcn-detail-h6">${esc(t('StepBarLabel'))}</h6>
-            <ol class="wcn-steps${cancelled ? ' wcn-steps-cancelled' : ''}">${steps}</ol>
+            <ol class="wcn-steps${cancelled ? ' wcn-steps-cancelled' : ''}">${rendered}</ol>
+            ${paused}
         </div>`;
     };
 
@@ -1194,6 +1325,12 @@
         if (!hasCap(item, 'subtasks') || !item.subtasks) { return ''; }
         const subtaskItems = item.subtasks.items || [];
         const full = item.subtasks.mode === 'full' && !isTerminal(item);
+        /*
+         * A compact row, not a grid. A task has a handful of subtasks, so paging, export and column pickers cost
+         * more than they carry — but "who has it and when is it due" is exactly why anyone opens the list, so
+         * each row carries them WHEN THEY EXIST. An absent holder or date renders nothing at all; a dash would
+         * be a claim that the field was checked and found empty.
+         */
         const rows = subtaskItems.map((s) =>
             `<li class="wcn-subtask wcn-subtask-${s.status}">
                 <button type="button" class="wcn-subtask-toggle" ${full ? `data-wcn-subtask="${item.id}:${s.id}"` : 'disabled'}
@@ -1202,6 +1339,12 @@
                 </button>
                 <button type="button" class="wcn-subtask-title wcn-linklike" data-wcn-open-task="${esc(s.id)}"
                         aria-label="${esc(tf('SubtaskOpenAria', s.title))}">${esc(s.title)}</button>
+                ${s.assignee?.displayName
+                    ? `<span class="wcn-subtask-meta wcn-subtask-assignee"><i class="bx bx-user"></i>${esc(s.assignee.displayName)}</span>`
+                    : ''}
+                ${s.dueAt
+                    ? `<span class="wcn-subtask-meta wcn-subtask-due"><i class="bx bx-calendar"></i>${esc(String(s.dueAt).slice(0, 10))}</span>`
+                    : ''}
                 ${SUBTASK_STATUS_KEY[s.status]
                     ? `<span class="wcn-subtask-status">${esc(t(SUBTASK_STATUS_KEY[s.status]))}</span>`
                     : ''}
@@ -1651,7 +1794,7 @@
                 ${priorityChip(item)}
                 ${chip('role', 'bx-user-check', t(ROLE_KEY[item.viewerRole] || item.viewerRole))}
             </div>
-            ${renderStepBar(item)}
+            ${renderLifecycleStepper(item)}
             ${reviewNote}
             ${sysBanner}${blockedBanner}${notices}${waitingNote}${snoozeNote}
             <div class="wcn-detail-actions" role="group" aria-label="${esc(t('ActionsLabel'))}">${actions}</div>
@@ -1666,23 +1809,36 @@
         const cell = (inner, col) => inner
             ? `<div class="col-12 ${col}"><section class="card backbone-preview-section wcn-detail-card p-4">${inner}</section></div>`
             : '';
-        const bento = [
-            cell(summarySection, 'col-lg-8'),
-            cell(renderPlanDates(item), 'col-lg-4'),
-            cell(renderBusinessContext(item), 'col-lg-8'),
-            cell(renderTimesheet(item), 'col-lg-4'),
-            cell(renderGates(item), 'col-lg-6'),
-            cell(renderChecklist(item), 'col-lg-6'),
-            cell(renderParentContext(item), 'col-12'),
-            cell(renderSubtasks(item), 'col-lg-6'),
-            cell(renderDependencies(item), 'col-lg-6'),
-            cell(renderSourceContext(item, meta), 'col-lg-6'),
-            cell(`${renderDelegation(item)}${renderApprovalChain(item)}`, 'col-lg-6'),
-            cell(renderCompliance(item), 'col-lg-6'),
-            cell(renderNote(item), 'col-lg-4'),
-            cell(renderAttachments(item), 'col-lg-4'),
-            cell(renderEvidence(item), 'col-lg-4'),
-            cell(renderRelated(item), 'col-lg-8')
+        /*
+         * TWO COLUMNS. Left is what the work IS; right is what you can DO about it and what stands in the way.
+         *
+         * The split matters because reading and acting are different jobs: with actions inline among the content
+         * cards, the one control the page exists for sat wherever its card happened to land. On a narrow screen
+         * the columns stack and the action rail follows the content, so it is never the only thing visible.
+         */
+        const content = [
+            card(summarySection),
+            card(renderBusinessContext(item)),
+            card(renderParentContext(item)),
+            card(renderSubtasks(item)),
+            card(renderDependencies(item)),
+            card(renderChecklist(item)),
+            card(renderTimesheet(item)),
+            card(renderAttachments(item)),
+            card(renderEvidence(item)),
+            card(renderCompliance(item)),
+            card(renderRelated(item)),
+            card(activitySection)
+        ].filter(Boolean).join('');
+
+        const rail = [
+            card(renderActionRail(item)),
+            card(renderGates(item)),
+            // Personal note sits UNDER the actions: it is something the viewer writes, not something the task says.
+            card(renderNote(item)),
+            card(renderPlanDates(item)),
+            card(renderSourceContext(item, meta)),
+            card(`${renderDelegation(item)}${renderApprovalChain(item)}`)
         ].filter(Boolean).join('');
 
         /*
@@ -1706,8 +1862,8 @@
             <div class="row g-4 wcn-detail-grid">
                 <div class="col-12">${pageHeader}</div>
                 <div class="col-12">${commandCard}</div>
-                ${bento}
-                ${activitySection ? `<div class="col-12">${card(activitySection)}</div>` : ''}
+                <div class="col-12 col-lg-8 wcn-detail-content">${content}</div>
+                <div class="col-12 col-lg-4 wcn-detail-rail">${rail}</div>
             </div>
         </div>`;
     };

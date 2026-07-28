@@ -1309,6 +1309,54 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Пунктов чек-листа пока нет.</value>
   </data>
+  <data name="ActionsAvailable" xml:space="preserve">
+    <value>Доступные действия</value>
+  </data>
+  <data name="ActionsOther" xml:space="preserve">
+    <value>Другие действия</value>
+  </data>
+  <data name="StepApproval" xml:space="preserve">
+    <value>Согласование</value>
+  </data>
+  <data name="StepOpen" xml:space="preserve">
+    <value>Открыта</value>
+  </data>
+  <data name="StepPaused" xml:space="preserve">
+    <value>Сейчас приостановлено</value>
+  </data>
+  <data name="StepPausedBecause" xml:space="preserve">
+    <value>Сейчас приостановлено: {0}</value>
+  </data>
+  <data name="OutcomeAccept" xml:space="preserve">
+    <value>Берёт задачу и переводит её в «Открыта»</value>
+  </data>
+  <data name="OutcomeClaim" xml:space="preserve">
+    <value>Забирает задачу из пула и назначает вам</value>
+  </data>
+  <data name="OutcomeRelease" xml:space="preserve">
+    <value>Возвращает задачу в пул</value>
+  </data>
+  <data name="OutcomePlan" xml:space="preserve">
+    <value>Задаёт вашу плановую дату; срок не меняется</value>
+  </data>
+  <data name="OutcomeStart" xml:space="preserve">
+    <value>Переводит задачу в «В работе»</value>
+  </data>
+  <data name="OutcomeInquire" xml:space="preserve">
+    <value>Приостанавливает задачу и переводит её в «Ожидание»</value>
+  </data>
+  <data name="OutcomeReturn" xml:space="preserve">
+    <value>Возвращает задачу её заказчику</value>
+  </data>
+  <data name="OutcomeReassign" xml:space="preserve">
+    <value>Передаёт задачу другому, непринятой</value>
+  </data>
+  <data name="OutcomeComplete" xml:space="preserve">
+    <value>Завершает задачу и переводит её в «Завершена»</value>
+  </data>
+  <data name="OutcomeCancel" xml:space="preserve">
+    <value>Полностью отменяет задачу; открытые подзадачи тоже отменяются</value>
+  </data>
   <data name="GatesLabel" xml:space="preserve">
     <value>Контроли</value>
   </data>

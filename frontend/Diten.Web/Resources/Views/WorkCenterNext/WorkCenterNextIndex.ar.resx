@@ -1309,6 +1309,54 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>لا توجد عناصر في قائمة التحقق بعد.</value>
   </data>
+  <data name="ActionsAvailable" xml:space="preserve">
+    <value>الإجراءات المتاحة</value>
+  </data>
+  <data name="ActionsOther" xml:space="preserve">
+    <value>إجراءات أخرى</value>
+  </data>
+  <data name="StepApproval" xml:space="preserve">
+    <value>الموافقة</value>
+  </data>
+  <data name="StepOpen" xml:space="preserve">
+    <value>مفتوحة</value>
+  </data>
+  <data name="StepPaused" xml:space="preserve">
+    <value>متوقفة مؤقتًا حاليًا</value>
+  </data>
+  <data name="StepPausedBecause" xml:space="preserve">
+    <value>متوقفة مؤقتًا حاليًا: {0}</value>
+  </data>
+  <data name="OutcomeAccept" xml:space="preserve">
+    <value>تتولّى المهمة وتنقلها إلى «مفتوحة»</value>
+  </data>
+  <data name="OutcomeClaim" xml:space="preserve">
+    <value>تُخرج المهمة من التجمّع وتُسندها إليك</value>
+  </data>
+  <data name="OutcomeRelease" xml:space="preserve">
+    <value>تُعيد المهمة إلى التجمّع</value>
+  </data>
+  <data name="OutcomePlan" xml:space="preserve">
+    <value>تحدّد تاريخك المخطط؛ ولا يتغير الموعد النهائي</value>
+  </data>
+  <data name="OutcomeStart" xml:space="preserve">
+    <value>تنقل المهمة إلى «قيد التنفيذ»</value>
+  </data>
+  <data name="OutcomeInquire" xml:space="preserve">
+    <value>توقف المهمة مؤقتًا وتنقلها إلى «قيد الانتظار»</value>
+  </data>
+  <data name="OutcomeReturn" xml:space="preserve">
+    <value>تُعيد المهمة إلى مَن طلبها</value>
+  </data>
+  <data name="OutcomeReassign" xml:space="preserve">
+    <value>تُسلّم المهمة إلى شخص آخر دون قبول</value>
+  </data>
+  <data name="OutcomeComplete" xml:space="preserve">
+    <value>تُنهي المهمة وتنقلها إلى «مكتملة»</value>
+  </data>
+  <data name="OutcomeCancel" xml:space="preserve">
+    <value>تُلغي المهمة بالكامل، وتُلغى معها المهام الفرعية المفتوحة</value>
+  </data>
   <data name="GatesLabel" xml:space="preserve">
     <value>البوابات</value>
   </data>
