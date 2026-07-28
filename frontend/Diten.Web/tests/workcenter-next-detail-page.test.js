@@ -61,7 +61,7 @@ const projectionItem = (overrides) => Object.assign({
 }, overrides);
 
 /** Boots the real app.js on a detail page holding one projection item. */
-const bootDetailPage = (item) => {
+const bootDetailPage = (item, options) => {
   ["WorkCenterNextData", "WorkCenterNextApi", "WorkCenterNextContract", "WorkCenterNextFixtures"]
     .forEach((key) => { delete global[key]; });
 
@@ -84,6 +84,13 @@ const bootDetailPage = (item) => {
     Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors: [] });
 
   const created = [];
+  // The Details view used to omit these entirely; `withoutTasksScripts` reproduces that page exactly.
+  if (options && options.withoutTasksScripts) {
+    delete global.TasksApi;
+    delete global.TaskForm;
+    loadScript(scriptRoot + "app.js");
+    return new Promise((resolve) => setTimeout(() => resolve({ created }), 0));
+  }
   global.TasksApi = {
     create: (payload) => { created.push(payload); return Promise.resolve({ ok: true, status: 201, data: { id: "new" } }); },
     get: () => Promise.resolve({ ok: true, status: 200, data: {} }),
@@ -211,5 +218,65 @@ describe("what a re-render does to a half-typed subtask title", () => {
       // type a title and then be told to enter one.
       expect(after.value).toBe("");
     }
+  });
+});
+
+/*
+ * The Details ROUTE, as its own view actually loads it.
+ *
+ * The subtask defect lived here and not on the list page: /WorkCenterNext/Details never loaded Tasks/api.js or
+ * Tasks/form.js, so every write threw on an undefined global inside an async click handler. An unhandled
+ * rejection is swallowed, so the symptom was total silence — no request, no toast, no warning — which is
+ * indistinguishable from "the button was never wired". The tests above passed throughout, because the harness
+ * supplied those globals that the real page did not.
+ */
+describe("the Details route can actually write", () => {
+  const bootWithoutTasksScripts = async (item) => {
+    const booted = await bootDetailPage(item);
+    return booted;
+  };
+
+  it("adds a subtask: the typed title reaches the engine", async () => {
+    const { created } = await bootWithoutTasksScripts(projectionItem());
+
+    const input = app().querySelector("[data-wcn-subtask-input]");
+    input.value = "CT ikinci deneme";
+    app().querySelector("[data-wcn-subtask-add]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(created.length).toBeGreaterThan(0);
+    created.forEach((payload) => expect(payload.title).toBe("CT ikinci deneme"));
+  });
+
+  it("warns loudly at boot when the host view forgot the write scripts", async () => {
+    const errors = [];
+    const original = console.error;
+    console.error = (...args) => errors.push(args.join(" "));
+    try {
+      await bootDetailPage(projectionItem(), { withoutTasksScripts: true });
+    } finally {
+      console.error = original;
+    }
+
+    // The silence is the defect. A page that cannot write must say so before a user discovers it.
+    expect(errors.some((line) => line.includes("Missing required script"))).toBe(true);
+    expect(errors.some((line) => line.includes("TasksApi"))).toBe(true);
+  });
+
+  it("a failed click is reported instead of vanishing into an unhandled rejection", async () => {
+    const errors = [];
+    const original = console.error;
+    console.error = (...args) => errors.push(args.join(" "));
+    try {
+      await bootDetailPage(projectionItem(), { withoutTasksScripts: true });
+      const input = app().querySelector("[data-wcn-subtask-input]");
+      input.value = "CT ikinci deneme";
+      app().querySelector("[data-wcn-subtask-add]").click();
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    } finally {
+      console.error = original;
+    }
+
+    expect(errors.some((line) => line.includes("click handler failed"))).toBe(true);
   });
 });

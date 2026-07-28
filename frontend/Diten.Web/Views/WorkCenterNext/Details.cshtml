@@ -31,6 +31,14 @@
 
 @section Scripts {
     <partial name="_L10n" />
+    @* app.js performs the SAME writes here as on the list page — transitions, checklist ticks, subtask creation —
+       and every one of them goes through TasksApi/TaskForm. Omitting these made each write throw on an undefined
+       global inside an async click handler, which surfaces as nothing at all: no request, no toast, no warning.
+       The page looked like its buttons were not wired. Whatever the list page needs to WRITE, this page needs. *@
+    <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixture-contract.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixtures/canonical-fixtures.js" asp-append-version="true"></script>

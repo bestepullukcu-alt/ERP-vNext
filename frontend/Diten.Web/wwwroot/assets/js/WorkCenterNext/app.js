@@ -3411,8 +3411,13 @@
         }
         const subAddEl = event.target.closest('[data-wcn-subtask-add]');
         if (subAddEl) {
-            const input = document.querySelector('#wcnApp [data-wcn-subtask-input]');
-            addSubtask(subAddEl.getAttribute('data-wcn-subtask-add'), input ? input.value : '');
+            // Read the input from the card the button belongs to, not from the document: one card per page today,
+            // but a page-wide lookup silently binds to whichever card happens to come first.
+            const card = subAddEl.closest('.wcn-subtask-add') || subAddEl.closest('.wcn-detail-card');
+            const input = (card || document).querySelector('[data-wcn-subtask-input]');
+            // AWAITED on purpose: an un-awaited async call rejects into nothing, and that is precisely how this
+            // action failed in total silence when the host page had not loaded TasksApi.
+            await addSubtask(subAddEl.getAttribute('data-wcn-subtask-add'), input ? input.value : '');
             return;
         }
         const noteSaveEl = event.target.closest('[data-wcn-note-save]');
@@ -3631,6 +3636,25 @@
         render();
     };
 
+    /*
+     * Every write this module performs — transitions, checklist ticks, subtask creation — goes through globals
+     * that a HOST PAGE has to include. app.js cannot import them, so a page that forgets one produces a surface
+     * whose buttons do nothing: the handler throws on `undefined`, the rejection is swallowed, and there is no
+     * request and no message. /WorkCenterNext/Details shipped in exactly that state.
+     *
+     * Announced at boot rather than on first click, so the gap is visible before a user finds it.
+     */
+    const WRITE_DEPENDENCIES = ['TasksApi', 'TaskForm'];
+
+    const reportMissingWriteDependencies = () => {
+        const missing = WRITE_DEPENDENCIES.filter((name) => !global[name]);
+        if (!missing.length) { return; }
+        console.error(
+            `[WorkCenterNext] Missing required script(s): ${missing.join(', ')}. Every write on this page will `
+            + 'fail silently. The host view must load assets/js/Tasks/api.js and assets/js/Tasks/form.js '
+            + '(see Views/WorkCenterNext/Index.cshtml).');
+    };
+
     // ── Boot ──────────────────────────────────────────────────────────────────
     let booted = false;
     const boot = async () => {
@@ -3643,7 +3667,21 @@
         } else {
             state.loadState = 'ready';
         }
-        document.addEventListener('click', onClick);
+        reportMissingWriteDependencies();
+        /*
+         * onClick is async, so anything it throws becomes an UNHANDLED REJECTION — which the browser swallows.
+         * That is how a page missing Tasks/api.js looked exactly like a page whose buttons were never wired:
+         * the handler ran, threw on an undefined global, and produced no request, no toast and no warning.
+         * A failed click now says so, in the console and to the user.
+         */
+        document.addEventListener('click', (event) => {
+            Promise.resolve()
+                .then(() => onClick(event))
+                .catch((error) => {
+                    console.error('WorkCenterNext click handler failed.', error);
+                    toast(t('ErrorTitle'), 'error');
+                });
+        });
         document.addEventListener('change', onChange);
         document.addEventListener('input', onInput);
         document.addEventListener('keydown', onKeydown);
