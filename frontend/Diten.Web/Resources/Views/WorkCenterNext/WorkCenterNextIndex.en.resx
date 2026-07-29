@@ -1334,9 +1334,6 @@
   <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
     <value>The approval could not be started.</value>
   </data>
-  <data name="SubtasksOpenNotice" xml:space="preserve">
-    <value>This task still has open subtasks. They do not block completion.</value>
-  </data>
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>No checklist items yet.</value>
   </data>
@@ -1522,6 +1519,15 @@
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>No subtasks yet.</value>
+  </data>
+  <data name="SubtasksBlockingNotice" xml:space="preserve">
+    <value>{0} open subtask(s) must be closed before this task can be completed</value>
+  </data>
+  <data name="BlockerSubtaskOpen" xml:space="preserve">
+    <value>Cannot be completed until the subtask “{0}” is closed</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
+    <value>A subtask is still open</value>
   </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Checklist updated.</value>

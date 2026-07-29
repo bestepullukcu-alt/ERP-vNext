@@ -227,11 +227,17 @@ describe("MOD-0024 Phase 2 — checklist and subtasks", () => {
       expect(app).toContain("SubtasksEmpty");
     });
 
-    it("reports open subtasks as a notice, never as a block", () => {
+    it("says open subtasks BLOCK completion, and says how many", () => {
+      /*
+       * This assertion was inverted with BL-035 (owner decision, 2026-07-29). It used to require the notice to
+       * report without blocking; the rule is now enforced server-side, and a screen that still called it a mere
+       * notice would be lying about what pressing the button does.
+       */
       const fn = app.slice(app.indexOf("const renderSubtasks"), app.indexOf("const DEP_TYPE_KEY"));
-      expect(fn).toContain("SubtasksOpenNotice");
-      // Nothing here may disable completion — that is the checklist's job alone.
-      expect(fn).not.toContain("CHECKLIST_INCOMPLETE");
+      expect(fn).toContain("SubtasksBlockingNotice");
+      expect(fn).not.toContain("SubtasksOpenNotice");
+      // A cancelled subtask is not open, so it must not be counted among the blockers.
+      expect(fn).toContain("'cancelled'");
     });
   });
 
@@ -244,7 +250,7 @@ describe("MOD-0024 Phase 2 — checklist and subtasks", () => {
 
     it("ships every Phase 2 key in all seven languages", () => {
       const required = [
-        "ChecklistEmpty", "SubtasksEmpty", "SubtasksOpenNotice",
+        "ChecklistEmpty", "SubtasksEmpty", "SubtasksBlockingNotice",
         "WorkAggregation_ActionDisabled_ChecklistIncomplete",
         "ToastChecklistUpdated", "ToastSubtaskAdded", "SubtaskTitleRequired",
         "SubtaskOfNamed", "SubtaskOfUnnamed"
@@ -264,7 +270,7 @@ describe("MOD-0024 Phase 2 — checklist and subtasks", () => {
         return m ? m[1].trim() : null;
       };
 
-      ["ChecklistEmpty", "SubtasksOpenNotice", "SubtaskTitleRequired"].forEach((key) => {
+      ["ChecklistEmpty", "SubtasksBlockingNotice", "SubtaskTitleRequired"].forEach((key) => {
         expect(valueOf("tr", key)).not.toBe(valueOf("en", key));
       });
     });

@@ -1358,3 +1358,90 @@ describe("priority is shown where it exists and nowhere else (BL-032)", () => {
     expect(flagChips).toHaveLength(0);
   });
 });
+
+/*
+ * BL-035 on screen. The banner mechanism was already there for dependencies; a subtask blocker has to reach it
+ * with a sentence of its own rather than falling through to a bare label.
+ */
+describe("an open subtask is named in the blocked banner", () => {
+  const withOpenSubtask = () => projectionItem({
+    workItemCapabilities: ["planning", "execution", "subtasks"],
+    subtasks: {
+      mode: "full",
+      items: [
+        { id: "11111111-1111-1111-1111-111111111111", title: "Bütçe kalemini doğrula", status: "in-progress", assignee: null, dueAt: null, canCancel: true },
+        { id: "33333333-3333-3333-3333-333333333333", title: "Kapanış", status: "cancelled", assignee: null, dueAt: null, canCancel: false }
+      ]
+    },
+    actions: [{
+      code: "complete",
+      label: { kind: "resource", key: "WorkAggregation_Action_Complete" },
+      semanticType: "complete",
+      enabled: false,
+      source: "provider",
+      disabledReasonCode: "SUBTASK_BLOCKED",
+      disabledReason: { kind: "resource", key: "WorkAggregation_ActionDisabled_SubtaskBlocked" },
+      requiresConfirmation: false,
+      requiresReason: false,
+      requiresEvidence: false,
+      supportsBulk: false,
+      riskLevel: "normal"
+    }],
+    blockedState: {
+      blocked: true,
+      affectedActionCodes: ["complete"],
+      blockers: [{
+        code: "SUBTASK_BLOCKED",
+        label: { kind: "display", text: "Bütçe kalemini doğrula", locale: "und" },
+        taskItemId: "11111111-1111-1111-1111-111111111111",
+        affectedActionCode: "complete"
+      }]
+    }
+  });
+
+  it("uses the subtask sentence, not a bare label", async () => {
+    await bootDetailPage(withOpenSubtask());
+
+    const row = app().querySelector(".wcn-blocked-item");
+    expect(row).not.toBeNull();
+    expect(row.querySelector(".wcn-blocked-why").textContent).toContain("BlockerSubtaskOpen");
+    expect(row.querySelector(".wcn-blocked-affects").textContent).toBe("BlockedAffectsComplete");
+    // No edge, so no type chip — inventing one would claim a dependency that does not exist.
+    expect(row.querySelector(".wcn-dep-type")).toBeNull();
+  });
+
+  it("keeps completion visible and disabled", async () => {
+    await bootDetailPage(withOpenSubtask());
+
+    const button = app().querySelector('.wcn-actrail [data-wcn-action="complete"]');
+    expect(button).not.toBeNull();
+    expect(button.disabled).toBe(true);
+  });
+
+  it("counts only the open subtasks in the card's notice", async () => {
+    await bootDetailPage(withOpenSubtask());
+
+    // One in-progress, one cancelled: the cancelled one is not open and must not be counted.
+    const notice = Array.from(app().querySelectorAll(".wcn-block-hint"))
+      .find((el) => el.textContent.includes("SubtasksBlockingNotice"));
+    expect(notice).not.toBeUndefined();
+  });
+
+  it("says nothing about blocking when every subtask is closed", async () => {
+    await bootDetailPage(projectionItem({
+      workItemCapabilities: ["planning", "execution", "subtasks"],
+      subtasks: {
+        mode: "full",
+        items: [
+          { id: "11111111-1111-1111-1111-111111111111", title: "Bütçe kalemini doğrula", status: "done", assignee: null, dueAt: null, canCancel: false },
+          { id: "33333333-3333-3333-3333-333333333333", title: "Kapanış", status: "cancelled", assignee: null, dueAt: null, canCancel: false }
+        ]
+      }
+    }));
+
+    const notice = Array.from(app().querySelectorAll(".wcn-block-hint"))
+      .find((el) => el.textContent.includes("SubtasksBlockingNotice"));
+    expect(notice).toBeUndefined();
+    expect(app().querySelector(".wcn-blocked")).toBeNull();
+  });
+});

@@ -26,6 +26,9 @@ public static class WorkAggregationReasonCodes
     /// <summary>An unsatisfied dependency edge. Used as the ACTION's disabled reason and as the BLOCKER's code,
     /// deliberately the same string: they describe one fact from two directions.</summary>
     public const string DependencyBlocked = "DEPENDENCY_BLOCKED";
+
+    /// <summary>An open subtask. Blocks COMPLETION only — its parent can still be started, and still cancelled.</summary>
+    public const string SubtaskBlocked = "SUBTASK_BLOCKED";
 }
 
 // Mirror of the executable contract's enumerations (fixture-contract.js). Used by the projection AND by the

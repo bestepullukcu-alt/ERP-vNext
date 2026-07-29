@@ -1334,9 +1334,6 @@
   <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
     <value>تعذّر بدء عملية الموافقة.</value>
   </data>
-  <data name="SubtasksOpenNotice" xml:space="preserve">
-    <value>لا تزال لهذه المهمة مهام فرعية مفتوحة. وهي لا تمنع الإكمال.</value>
-  </data>
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>لا توجد عناصر في قائمة التحقق بعد.</value>
   </data>
@@ -1522,6 +1519,15 @@
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>لا توجد مهام فرعية بعد.</value>
+  </data>
+  <data name="SubtasksBlockingNotice" xml:space="preserve">
+    <value>يجب إغلاق {0} مهمة فرعية مفتوحة قبل إكمال هذه المهمة</value>
+  </data>
+  <data name="BlockerSubtaskOpen" xml:space="preserve">
+    <value>لا يمكن الإكمال قبل إغلاق المهمة الفرعية «{0}»</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
+    <value>ما تزال إحدى المهام الفرعية مفتوحة</value>
   </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>تم تحديث قائمة التحقق.</value>

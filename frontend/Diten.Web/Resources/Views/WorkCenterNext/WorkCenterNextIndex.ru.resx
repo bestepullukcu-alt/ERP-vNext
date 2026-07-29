@@ -1334,9 +1334,6 @@
   <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
     <value>Не удалось запустить согласование.</value>
   </data>
-  <data name="SubtasksOpenNotice" xml:space="preserve">
-    <value>У задачи есть незавершённые подзадачи. Они не мешают её завершить.</value>
-  </data>
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Пунктов чек-листа пока нет.</value>
   </data>
@@ -1522,6 +1519,15 @@
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Подзадач пока нет.</value>
+  </data>
+  <data name="SubtasksBlockingNotice" xml:space="preserve">
+    <value>Прежде чем завершить эту задачу, нужно закрыть {0} открытых подзадач</value>
+  </data>
+  <data name="BlockerSubtaskOpen" xml:space="preserve">
+    <value>Нельзя завершить, пока не закрыта подзадача «{0}»</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
+    <value>Подзадача ещё открыта</value>
   </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Чек-лист обновлён.</value>

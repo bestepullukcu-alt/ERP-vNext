@@ -303,10 +303,20 @@
                 // "Blocked, but nothing is blocking it" is the invented-data failure in banner form.
                 push(errors, fixture, 'BLOCKED_STATE_BLOCKER_REQUIRED', 'blockedState.blockers');
             }
+            /*
+             * A blocker's CODE is deliberately NOT a closed vocabulary. The Task Center aggregates other modules'
+             * work, and each provider names its own obstacles (DEPENDENCY_BLOCKED and SUBTASK_BLOCKED from
+             * MOD-0024, VALIDATION_BLOCKED from enterprise-strategy); a fixed list here would reject a provider
+             * for having a reason we had not thought of. What IS required is that the code be a real string and
+             * the label a real label, so the banner can always name the thing in the way.
+             */
             (blocked.blockers || []).forEach((blocker, index) => {
                 const path = `blockedState.blockers[${index}]`;
                 if (!blocker.code || !isLabel(blocker.label)) { push(errors, fixture, 'BLOCKER_INVALID', path); }
-                if (blocker.dependencyType !== undefined && !DEPENDENCY_TYPES.includes(blocker.dependencyType)) {
+                // null means "not an edge" — an open subtask is a blocker with no dependency type at all, and
+                // the wire may carry that either as an absent field or an explicit null.
+                if (blocker.dependencyType !== undefined && blocker.dependencyType !== null
+                    && !DEPENDENCY_TYPES.includes(blocker.dependencyType)) {
                     push(errors, fixture, 'BLOCKER_DEPENDENCY_TYPE_INVALID', `${path}.dependencyType`);
                 }
                 if (blocker.affectedActionCode !== undefined

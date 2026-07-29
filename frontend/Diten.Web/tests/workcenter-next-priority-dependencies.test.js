@@ -244,3 +244,37 @@ describe("the contract declares what being blocked looks like", () => {
     expect(codesOf(contract().validateWorkItem(item))).toEqual([]);
   });
 });
+
+describe("an open subtask is a blocker like any other (BL-035)", () => {
+  const subtaskBlocked = (blockerOverrides) => workItem({
+    actions: [disabledAction("complete", "SUBTASK_BLOCKED")],
+    blockedState: {
+      blocked: true,
+      affectedActionCodes: ["complete"],
+      blockers: [Object.assign({
+        code: "SUBTASK_BLOCKED",
+        label: { kind: "display", text: "Bütçe kalemini doğrula", locale: "und" },
+        taskItemId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+        affectedActionCode: "complete"
+      }, blockerOverrides)]
+    }
+  });
+
+  it("validates with no dependency type at all", () => {
+    // The three dependency fields were left optional for exactly this: a blocker that is not an edge.
+    expect(codesOf(contract().validateWorkItem(subtaskBlocked()))).toEqual([]);
+  });
+
+  it("validates when the wire carries an explicit null dependency type", () => {
+    // The provider writes null and the serializer omits it — but a null must not be read as "unknown type".
+    expect(codesOf(contract().validateWorkItem(subtaskBlocked({ dependencyType: null })))).toEqual([]);
+  });
+
+  it("still refuses a subtask blocker whose action is not disabled", () => {
+    // The "disabled, not hidden" rule is not relaxed for the new blocker kind.
+    const item = subtaskBlocked();
+    item.actions = [action({ code: "complete" })];
+
+    expect(codesOf(contract().validateWorkItem(item))).toContain("BLOCKER_ACTION_REFERENCE_INVALID");
+  });
+});

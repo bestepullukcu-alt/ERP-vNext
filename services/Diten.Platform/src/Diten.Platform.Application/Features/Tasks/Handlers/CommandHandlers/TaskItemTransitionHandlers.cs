@@ -203,9 +203,11 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         // caller can post straight to this endpoint. Hiding a control is presentation; refusing the write is the
         // rule (pack §12 E1).
         //
-        // Only Blocking items gate completion. An unfinished `Required` item is an expectation, not a barrier —
-        // and open SUBTASKS never gate it at all, because two competing blocking mechanisms make "why can't I
-        // finish this?" unanswerable.
+        // Only Blocking items gate completion — an unfinished `Required` item is an expectation, not a barrier.
+        // Open SUBTASKS gate it too, further down (BL-035). That reverses what this comment used to say: the old
+        // objection was that two blocking mechanisms would make "why can't I finish this?" unanswerable, and the
+        // answer now exists — blockedState.blockers[] names every blocker individually, which it did not when the
+        // objection was written.
         if (command.Target == TaskLifecycle.Done)
         {
             var checklist = await _checklists.GetByTaskIdAsync(task.Id, ct);
@@ -275,7 +277,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
          * an approval-pending task reports APPROVAL_PENDING from both sides, and the dependency reason is what
          * remains once the gates above are clear.
          *
-         * Which edges apply is decided by TaskDependencyRules, the same source the projection uses — one rule, one
+         * Which edges apply is decided by TaskBlockingRules, the same source the projection uses — one rule, one
          * place, so the button and the refusal cannot disagree.
          */
         if (command.Target is TaskLifecycle.InProgress or TaskLifecycle.Done)
@@ -286,6 +288,28 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                 return Response<NoContent>.Fail(
                     "A dependency has not been met yet.",
                     409, TaskReasonCodes.DependencyBlocked, command.CorrelationId);
+            }
+        }
+
+        /*
+         * Subtask gate (BL-035). AFTER the dependency gate, in the same order the projection resolves its
+         * blockers, so the reason beside the greyed button is the reason this endpoint answers with.
+         *
+         * COMPLETION only. `start` is untouched — work can begin with its parts still open — and `cancel` must
+         * stay possible, because cancelling a parent is what CancelOpenSubtasksAsync uses to close its children:
+         * blocking it would make an unwanted task with open children impossible to call off.
+         *
+         * A subtask cannot itself have subtasks (one level only), so this query is always empty for a child and
+         * the rule never applies to one. That needs no special case — the emptiness IS the special case.
+         */
+        if (command.Target == TaskLifecycle.Done)
+        {
+            var children = await _tasks.ListByParentAsync(task.Id, ct);
+            if (TaskBlockingRules.OpenSubtasksBlockingCompletion(children).Count > 0)
+            {
+                return Response<NoContent>.Fail(
+                    "A subtask is still open.",
+                    409, TaskReasonCodes.SubtaskBlocked, command.CorrelationId);
             }
         }
 
@@ -372,11 +396,11 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         }
 
         var gatedAct = target == TaskLifecycle.InProgress
-            ? TaskDependencyRules.StartActionCode
-            : TaskDependencyRules.CompleteActionCode;
+            ? TaskBlockingRules.StartActionCode
+            : TaskBlockingRules.CompleteActionCode;
 
         var relevant = edges
-            .Where(edge => TaskDependencyRules.AffectedActionCode(edge.DependencyType) == gatedAct)
+            .Where(edge => TaskBlockingRules.AffectedActionCode(edge.DependencyType) == gatedAct)
             .ToList();
         if (relevant.Count == 0)
         {
@@ -391,7 +415,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         foreach (var edge in relevant)
         {
             if (predecessors.TryGetValue(edge.DependsOnTaskItemId, out var predecessor)
-                && !TaskDependencyRules.IsSatisfied(edge.DependencyType, predecessor))
+                && !TaskBlockingRules.IsSatisfied(edge.DependencyType, predecessor))
             {
                 return predecessor;
             }

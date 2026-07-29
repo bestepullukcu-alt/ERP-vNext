@@ -48,6 +48,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
     /// <summary>An unfinished predecessor. The BLOCKER carries which task and which edge; this is the button's own reason.</summary>
     private const string DisabledDependencyKey = "WorkAggregation_ActionDisabled_DependencyBlocked";
+    /// <summary>An open subtask. Same shape as above: the blocker names which child, this is the button's reason.</summary>
+    private const string DisabledSubtaskKey = "WorkAggregation_ActionDisabled_SubtaskBlocked";
     // `complete` needs its OWN wording: "waiting for approval, cannot be started" is wrong on a task already
     // in progress, and the server refuses Done for the same reason it refuses InProgress.
     private const string DisabledApprovalCompleteKey = "WorkAggregation_ActionDisabled_ApprovalPendingComplete";
@@ -236,7 +238,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // actions may be offered — and the contract requires every blocked action to be present and disabled,
         // never hidden. A hidden button teaches the reader nothing about why the work will not move.
         var dependencies = ToDependencies(task, edges ?? [], edgeTasks);
-        var blockers = ResolveBlockers(task, edges ?? [], edgeTasks);
+        var blockers = ResolveBlockers(task, edges ?? [], edgeTasks, children);
 
         var (built, primaryActionCode, overflowActionCodes) = terminal
             ? ([], null, (IReadOnlyList<string>)[])
@@ -253,12 +255,25 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          */
         var offered = built.Select(action => action.Code).ToHashSet();
         var effectiveBlockers = blockers.Where(b => offered.Contains(b.AffectedActionCode!)).ToList();
-        var blockedCodes = effectiveBlockers.Select(b => b.AffectedActionCode!).ToHashSet();
-        var actions = blockedCodes.Count == 0
+        /*
+         * The button's reason follows the FIRST blocker on that action, in the order they were resolved
+         * (dependencies, then subtasks). Same order the handler checks in, so the sentence beside the greyed
+         * button is the one the server would answer with — two different orders would have the screen blame an
+         * open subtask while the 409 blamed a predecessor.
+         */
+        var reasonByAction = effectiveBlockers
+            .GroupBy(b => b.AffectedActionCode!)
+            .ToDictionary(group => group.Key, group => group.First().Code);
+        var actions = reasonByAction.Count == 0
             ? built
             : built
-                .Select(action => blockedCodes.Contains(action.Code) && action.Enabled
-                    ? AsDisabled(action, WorkAggregationReasonCodes.DependencyBlocked, DisabledDependencyKey)
+                .Select(action => reasonByAction.TryGetValue(action.Code, out var reasonCode) && action.Enabled
+                    ? AsDisabled(
+                        action,
+                        reasonCode,
+                        reasonCode == WorkAggregationReasonCodes.SubtaskBlocked
+                            ? DisabledSubtaskKey
+                            : DisabledDependencyKey)
                     : action)
                 .ToList();
 
@@ -328,7 +343,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 ? null
                 : new WorkItemBlockedStateDto(
                     Blocked: true,
-                    AffectedActionCodes: blockedCodes.ToList(),
+                    AffectedActionCodes: reasonByAction.Keys.ToList(),
                     Blockers: effectiveBlockers));
     }
 
@@ -520,10 +535,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 // The other task's title is text a person typed, so it crosses as a DISPLAY label.
                 Title: WorkItemLabelDto.Display(other.Title),
                 Type: edge.DependencyType.ToString(),
-                State: TaskDependencyRules.StateOf(other),
+                State: TaskBlockingRules.StateOf(other),
                 Direction: isPredecessorEdge ? "pred" : "succ",
                 // Only an edge this task WAITS on can block it, and only while its predecessor is unsatisfied.
-                Blocking: isPredecessorEdge && !TaskDependencyRules.IsSatisfied(edge.DependencyType, other)));
+                Blocking: isPredecessorEdge && !TaskBlockingRules.IsSatisfied(edge.DependencyType, other)));
         }
 
         return result;
@@ -537,6 +552,39 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private static IReadOnlyList<WorkItemBlockerDto> ResolveBlockers(
         TaskItem task,
         IReadOnlyList<TaskDependency> edges,
+        IReadOnlyDictionary<Guid, TaskItem>? edgeTasks,
+        IReadOnlyList<TaskItem> children)
+    {
+        /*
+         * ORDER MATTERS: dependencies first, then open subtasks. The handler checks the two gates in the same
+         * order, and the button's reason is taken from the first blocker on that action — so the reason on screen
+         * and the reason in the 409 are the same fact.
+         *
+         * One blocker PER open subtask, never one summarising them. A blocker names the thing in the way; a
+         * bundled "3 subtasks are open" would lose which three, and the client already derives the count from
+         * blockers.length.
+         */
+        return [.. DependencyBlockers(task, edges, edgeTasks), .. SubtaskBlockers(children)];
+    }
+
+    /// <summary>
+    /// BL-035 — every subtask that is neither done nor cancelled. <c>DependencyType</c> stays null: this is not an
+    /// edge, and the DTO left those three fields optional for exactly this case.
+    /// </summary>
+    private static IReadOnlyList<WorkItemBlockerDto> SubtaskBlockers(IReadOnlyList<TaskItem> children)
+        => TaskBlockingRules.OpenSubtasksBlockingCompletion(children)
+            .Select(child => new WorkItemBlockerDto(
+                Code: WorkAggregationReasonCodes.SubtaskBlocked,
+                // The child's own title, so the parent's banner names it — text a person typed, hence display.
+                Label: WorkItemLabelDto.Display(child.Title),
+                TaskItemId: child.Id.ToString(),
+                DependencyType: null,
+                AffectedActionCode: TaskBlockingRules.CompleteActionCode))
+            .ToList();
+
+    private static IReadOnlyList<WorkItemBlockerDto> DependencyBlockers(
+        TaskItem task,
+        IReadOnlyList<TaskDependency> edges,
         IReadOnlyDictionary<Guid, TaskItem>? edgeTasks)
     {
         if (edges.Count == 0 || edgeTasks is null)
@@ -548,13 +596,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .Where(edge => edge.TaskItemId == task.Id)
             .Select(edge => (Edge: edge, Other: edgeTasks.GetValueOrDefault(edge.DependsOnTaskItemId)))
             .Where(pair => pair.Other is not null
-                           && !TaskDependencyRules.IsSatisfied(pair.Edge.DependencyType, pair.Other))
+                           && !TaskBlockingRules.IsSatisfied(pair.Edge.DependencyType, pair.Other))
             .Select(pair => new WorkItemBlockerDto(
                 Code: WorkAggregationReasonCodes.DependencyBlocked,
                 Label: WorkItemLabelDto.Display(pair.Other!.Title),
                 TaskItemId: pair.Other.Id.ToString(),
                 DependencyType: pair.Edge.DependencyType.ToString(),
-                AffectedActionCode: TaskDependencyRules.AffectedActionCode(pair.Edge.DependencyType)))
+                AffectedActionCode: TaskBlockingRules.AffectedActionCode(pair.Edge.DependencyType)))
             .ToList();
     }
 

@@ -222,8 +222,7 @@
     const blockedTooltip = (item) => {
         const first = (item.blockedState?.blockers || [])[0];
         if (!first) { return t('BlockedBanner'); }
-        const key = { FinishToStart: 'BlockerFinishToStart', FinishToFinish: 'BlockerFinishToFinish',
-            StartToStart: 'BlockerStartToStart', StartToFinish: 'BlockerStartToFinish' }[first.dependencyType];
+        const key = BLOCKER_SENTENCE_KEY[first.dependencyType] || BLOCKER_CODE_SENTENCE_KEY[first.code];
         return key ? tf(key, first.labelText || '') : (first.labelText || t('BlockedBanner'));
     };
 
@@ -1455,10 +1454,16 @@
                 <button type="button" class="btn btn-sm btn-label-primary" data-wcn-subtask-add="${item.id}">${esc(t('SubtaskAdd'))}</button>
                </div>`
             : `<p class="wcn-block-hint"><i class="bx bx-link-external"></i>${esc(t('SubtasksReadonlyHint'))}</p>`;
-        // Open subtasks NEVER block the parent — they are reported, not enforced. Blocking belongs to the
-        // checklist alone; two mechanisms would make "why can't I finish this?" unanswerable.
-        const openNotice = subtaskItems.some((s) => s.status !== 'done')
-            ? `<p class="wcn-block-hint" role="note">${esc(t('SubtasksOpenNotice'))}</p>`
+        /*
+         * Open subtasks DO block their parent's completion (BL-035, owner decision 2026-07-29). This notice used to
+         * say the opposite, on the reasoning that a second blocking mechanism would make "why can't I finish this?"
+         * unanswerable — the banner above now answers it, naming each open child by title.
+         *
+         * `cancelled` is NOT open: called-off work cannot be finished and must not hold the parent.
+         */
+        const openSubtasks = subtaskItems.filter((s) => s.status !== 'done' && s.status !== 'cancelled');
+        const openNotice = openSubtasks.length
+            ? `<p class="wcn-block-hint" role="note"><i class="bx bx-lock-alt"></i>${esc(tf('SubtasksBlockingNotice', openSubtasks.length))}</p>`
             : '';
         const body = subtaskItems.length
             ? `<ul class="wcn-subtasks">${rows}</ul>${openNotice}`
@@ -1500,6 +1505,9 @@
         FinishToStart: 'BlockerFinishToStart', FinishToFinish: 'BlockerFinishToFinish',
         StartToStart: 'BlockerStartToStart', StartToFinish: 'BlockerStartToFinish'
     };
+    // A blocker that is NOT an edge gets its sentence from its code instead of a dependency type. An open subtask
+    // is the first of these; the shape was designed for it.
+    const BLOCKER_CODE_SENTENCE_KEY = { SUBTASK_BLOCKED: 'BlockerSubtaskOpen' };
     const BLOCKED_AFFECTS_KEY = { start: 'BlockedAffectsStart', complete: 'BlockedAffectsComplete' };
     const renderBlocked = (item) => {
         if (!isBlocked(item)) { return ''; }
@@ -1507,7 +1515,7 @@
         if (!blockers.length) { return ''; }
         const rows = blockers.map((b) => {
             const name = b.labelText || '';
-            const sentenceKey = BLOCKER_SENTENCE_KEY[b.dependencyType];
+            const sentenceKey = BLOCKER_SENTENCE_KEY[b.dependencyType] || BLOCKER_CODE_SENTENCE_KEY[b.code];
             const affectsKey = BLOCKED_AFFECTS_KEY[b.affectedActionCode];
             return `<li class="wcn-blocked-item">
                 ${b.dependencyType ? `<span class="wcn-chip wcn-chip-danger wcn-dep-type" title="${esc(t(DEP_TYPE_KEY[b.dependencyType] || b.dependencyType))}">${esc(DEP_TYPE_ABBR[b.dependencyType] || b.dependencyType)}</span>` : ''}

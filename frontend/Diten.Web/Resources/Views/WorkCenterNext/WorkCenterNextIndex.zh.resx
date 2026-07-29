@@ -1334,9 +1334,6 @@
   <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
     <value>无法启动审批流程。</value>
   </data>
-  <data name="SubtasksOpenNotice" xml:space="preserve">
-    <value>此任务仍有未完成的子任务，但不会阻止完成。</value>
-  </data>
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>暂无清单项。</value>
   </data>
@@ -1522,6 +1519,15 @@
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>暂无子任务。</value>
+  </data>
+  <data name="SubtasksBlockingNotice" xml:space="preserve">
+    <value>完成此任务前，还有 {0} 个未完成的子任务需要关闭</value>
+  </data>
+  <data name="BlockerSubtaskOpen" xml:space="preserve">
+    <value>在子任务“{0}”关闭之前无法完成</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
+    <value>仍有子任务未完成</value>
   </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>清单已更新。</value>

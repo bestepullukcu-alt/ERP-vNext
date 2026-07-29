@@ -169,9 +169,16 @@ public sealed class TaskChecklistSubtaskTests
     // ── Subtasks ──────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task An_open_subtask_does_NOT_block_the_parent()
+    public async Task An_open_subtask_BLOCKS_the_parent()
     {
-        // Regression guard: if subtasks ever start blocking, this fails.
+        /*
+         * This assertion used to say the opposite, and the reversal is the point (BL-035, owner decision
+         * 2026-07-29): "the work was split into three, two were never done, and the whole thing is complete" is
+         * not a sentence a task engine should be able to produce.
+         *
+         * The old objection — two blocking mechanisms make "why can't I finish this?" unanswerable — is answered
+         * by blockedState.blockers[], which now names each blocker individually and did not exist then.
+         */
         var parent = InProgressTask();
         var child = SubtaskOf(parent.Id, TaskLifecycle.Open);
         var tasks = new FakeTaskItemRepository(parent, child);
@@ -180,10 +187,15 @@ public sealed class TaskChecklistSubtaskTests
         var item = Assert.Single(
             (await Provider(tasks, runs).GetWorkItemsAsync(FullyPermittedActor(), CancellationToken.None))
             .Where(i => i.Id == parent.Id.ToString()));
-        Assert.True(Assert.Single(item.Actions, a => a.Code == "complete").Enabled);
+        // Visible and disabled, never hidden — the reader has to be able to see what they cannot do, and why.
+        var complete = Assert.Single(item.Actions, a => a.Code == "complete");
+        Assert.False(complete.Enabled);
+        Assert.Equal(WorkAggregationReasonCodes.SubtaskBlocked, complete.DisabledReasonCode);
 
         var result = await Transition(tasks, runs, parent.Id, TaskLifecycle.Done, parent.Version);
-        Assert.True(result.IsSuccessful);
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(TaskReasonCodes.SubtaskBlocked, result.ReasonCode);
     }
 
     [Fact]

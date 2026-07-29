@@ -1334,9 +1334,6 @@
   <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
     <value>Onay süreci başlatılamadı.</value>
   </data>
-  <data name="SubtasksOpenNotice" xml:space="preserve">
-    <value>Bu görevin açık alt görevleri var. Tamamlamayı engellemezler.</value>
-  </data>
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Henüz kontrol listesi maddesi yok.</value>
   </data>
@@ -1522,6 +1519,15 @@
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Henüz alt görev yok.</value>
+  </data>
+  <data name="SubtasksBlockingNotice" xml:space="preserve">
+    <value>Bu görev tamamlanmadan önce {0} açık alt görev kapatılmalı</value>
+  </data>
+  <data name="BlockerSubtaskOpen" xml:space="preserve">
+    <value>“{0}” alt görevi kapanmadan tamamlanamaz</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
+    <value>Bir alt görev hâlâ açık</value>
   </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Kontrol listesi güncellendi.</value>

@@ -1334,9 +1334,6 @@
   <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
     <value>No se pudo iniciar la aprobación.</value>
   </data>
-  <data name="SubtasksOpenNotice" xml:space="preserve">
-    <value>Esta tarea todavía tiene subtareas abiertas. No impiden completarla.</value>
-  </data>
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aún no hay elementos de verificación.</value>
   </data>
@@ -1522,6 +1519,15 @@
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Aún no hay subtareas.</value>
+  </data>
+  <data name="SubtasksBlockingNotice" xml:space="preserve">
+    <value>Hay {0} subtarea(s) abierta(s) que deben cerrarse antes de completar esta tarea</value>
+  </data>
+  <data name="BlockerSubtaskOpen" xml:space="preserve">
+    <value>No se puede completar hasta que se cierre la subtarea «{0}»</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
+    <value>Una subtarea sigue abierta</value>
   </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Lista de verificación actualizada.</value>

@@ -98,6 +98,15 @@ public static class TaskReasonCodes
     /// equal, so a rename on either side is caught rather than silently producing an unmapped code.</para>
     /// </summary>
     public const string DependencyBlocked = "DEPENDENCY_BLOCKED";
+
+    /// <summary>
+    /// A subtask is still open, so its parent cannot be completed (BL-035).
+    ///
+    /// <para>Same string as <c>WorkAggregationReasonCodes.SubtaskBlocked</c>, for the same reason DependencyBlocked
+    /// is: the greyed button and this refusal are one fact seen from two sides, and a second spelling would need a
+    /// second entry in the client's message map — the one nobody adds is the one that reaches a user raw.</para>
+    /// </summary>
+    public const string SubtaskBlocked = "SUBTASK_BLOCKED";
 }
 
 /// <summary>
