@@ -1313,6 +1313,36 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aucun élément de liste de contrôle.</value>
   </data>
+  <data name="SubtaskSave" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="SubtaskSaved" xml:space="preserve">
+    <value>Sous-tâche enregistrée.</value>
+  </data>
+  <data name="SubtaskQuickEditTitle" xml:space="preserve">
+    <value>Édition rapide</value>
+  </data>
+  <data name="SubtaskFieldTitle" xml:space="preserve">
+    <value>Titre</value>
+  </data>
+  <data name="SubtaskFieldDue" xml:space="preserve">
+    <value>Échéance</value>
+  </data>
+  <data name="SubtaskFieldAssignee" xml:space="preserve">
+    <value>Attribuée à</value>
+  </data>
+  <data name="SubtaskFieldStatus" xml:space="preserve">
+    <value>Statut</value>
+  </data>
+  <data name="SubtaskNoAssignee" xml:space="preserve">
+    <value>Personne pour l’instant</value>
+  </data>
+  <data name="SubtaskOpenFullDetail" xml:space="preserve">
+    <value>Ouvrir le détail complet</value>
+  </data>
+  <data name="SubtaskQuickEditScope" xml:space="preserve">
+    <value>L'attribution et le statut se modifient depuis le détail complet, où leurs règles s'appliquent.</value>
+  </data>
   <data name="ActionsAvailable" xml:space="preserve">
     <value>Actions disponibles</value>
   </data>

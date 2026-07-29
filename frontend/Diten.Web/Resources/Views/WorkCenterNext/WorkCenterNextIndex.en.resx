@@ -1313,6 +1313,36 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>No checklist items yet.</value>
   </data>
+  <data name="SubtaskSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SubtaskSaved" xml:space="preserve">
+    <value>Subtask saved.</value>
+  </data>
+  <data name="SubtaskQuickEditTitle" xml:space="preserve">
+    <value>Quick edit</value>
+  </data>
+  <data name="SubtaskFieldTitle" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="SubtaskFieldDue" xml:space="preserve">
+    <value>Due date</value>
+  </data>
+  <data name="SubtaskFieldAssignee" xml:space="preserve">
+    <value>Assignee</value>
+  </data>
+  <data name="SubtaskFieldStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="SubtaskNoAssignee" xml:space="preserve">
+    <value>Nobody yet</value>
+  </data>
+  <data name="SubtaskOpenFullDetail" xml:space="preserve">
+    <value>Open full detail</value>
+  </data>
+  <data name="SubtaskQuickEditScope" xml:space="preserve">
+    <value>Assignee and status are changed from the full detail, where their rules apply.</value>
+  </data>
   <data name="ActionsAvailable" xml:space="preserve">
     <value>Available actions</value>
   </data>

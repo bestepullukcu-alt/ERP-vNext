@@ -81,6 +81,10 @@
         search: '',
         selectedId: null,
         tableSelected: new Set(),
+        subtaskPanelId: null,
+        subtaskPanelDraft: null,
+        subtaskPanelRecord: null,
+        subtaskPanelSaving: false,
         bulkFailedIds: new Set(),
         sortKey: 'sla',
         sortDir: 'asc',
@@ -1854,7 +1858,136 @@
                 <div class="col-12 col-lg-8 wcn-detail-content">${content}</div>
                 <div class="col-12 col-lg-4 wcn-detail-rail">${rail}</div>
             </div>
+            ${subtaskPanel()}
         </div>`;
+    };
+
+
+    /*
+     * Subtask quick-edit panel (Golden Reference slim offcanvas).
+     *
+     * SCOPE IS DELIBERATE. Title and due date are editable because they share ONE safe write path: the task
+     * update endpoint, sent as a full record rebuilt from the one just fetched, under its own expected version.
+     * Assignee and status are shown but NOT editable here — assignment goes through /reassign, which demands a
+     * reason and enforces who may do it, and status goes through the gated transition endpoints. Wiring either
+     * of those into a "quick" panel means either dropping their rules or asking for a reason in a panel whose
+     * whole point is speed; both are how a surface starts lying about what it did. The full page does them
+     * properly, and the link to it is always present.
+     *
+     * The panel holds only fields that change often. Its checklist, dependencies and activity stay on the full
+     * page: two surfaces rendering the same thing eventually disagree, which is the "two lists" problem again.
+     */
+    const subtaskPanel = () => {
+        const id = state.subtaskPanelId;
+        if (!id) { return ''; }
+        const draft = state.subtaskPanelDraft || {};
+        const busy = state.subtaskPanelSaving;
+        const statusKey = SUBTASK_STATUS_KEY[draft.status];
+        return `<div class="offcanvas offcanvas-end wcn-subtask-panel" tabindex="-1" id="wcnSubtaskPanel"
+                     aria-labelledby="wcnSubtaskPanelLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="wcnSubtaskPanelLabel">${esc(t('SubtaskQuickEditTitle'))}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
+                        aria-label="${esc(t('ReasonCancel'))}"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="mb-3">
+                    <label class="form-label" for="wcnSubtaskTitle">${esc(t('SubtaskFieldTitle'))}</label>
+                    <input type="text" class="form-control" id="wcnSubtaskTitle" maxlength="200"
+                           data-wcn-subtask-field="title" value="${esc(draft.title || '')}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="wcnSubtaskDue">${esc(t('SubtaskFieldDue'))}</label>
+                    <input type="date" class="form-control" id="wcnSubtaskDue"
+                           data-wcn-subtask-field="dueAt" value="${esc((draft.dueAt || '').slice(0, 10))}">
+                </div>
+                <div class="mb-3">
+                    <span class="form-label d-block">${esc(t('SubtaskFieldAssignee'))}</span>
+                    <p class="wcn-block-hint mb-0">${draft.assigneeName
+                        ? esc(draft.assigneeName)
+                        : esc(t('SubtaskNoAssignee'))}</p>
+                </div>
+                <div class="mb-3">
+                    <span class="form-label d-block">${esc(t('SubtaskFieldStatus'))}</span>
+                    <p class="wcn-block-hint mb-0">${statusKey ? esc(t(statusKey)) : ''}</p>
+                </div>
+                <p class="wcn-block-hint">${esc(t('SubtaskQuickEditScope'))}</p>
+            </div>
+            <div class="offcanvas-footer p-3 border-top d-flex flex-column gap-2">
+                <button type="button" class="btn btn-primary" data-wcn-subtask-save="${esc(id)}"${busy ? ' disabled' : ''}>
+                    ${esc(t('SubtaskSave'))}
+                </button>
+                <button type="button" class="btn btn-label-secondary" data-wcn-open-task-full="${esc(id)}">
+                    <i class="bx bx-link-external me-1"></i>${esc(t('SubtaskOpenFullDetail'))}
+                </button>
+            </div>
+        </div>`;
+    };
+
+    /* Opens the panel for one subtask, reading its CURRENT record so a save cannot blank fields it never showed. */
+    const openSubtaskPanel = async (parent, subtaskId) => {
+        const row = (parent?.subtasks?.items || []).find((s) => s.id === subtaskId) || null;
+        state.subtaskPanelId = subtaskId;
+        state.subtaskPanelDraft = {
+            title: row?.title || '',
+            dueAt: row?.dueAt || '',
+            status: row?.status || '',
+            assigneeName: row?.assignee?.displayName || ''
+        };
+        state.subtaskPanelRecord = null;
+        render();
+        showSubtaskPanel();
+
+        // The full record is what a save must send back; without it an update would drop every field the panel
+        // does not render.
+        const result = await global.TasksApi.get(subtaskId);
+        if (result.ok && result.data) { state.subtaskPanelRecord = result.data; }
+        else { toast(global.TasksApi.failureMessage(result), 'error'); }
+    };
+
+    const showSubtaskPanel = () => {
+        const node = document.getElementById('wcnSubtaskPanel');
+        if (!node || !global.bootstrap?.Offcanvas) { return; }
+        const panel = global.bootstrap.Offcanvas.getOrCreateInstance(node);
+        node.addEventListener('hidden.bs.offcanvas', () => {
+            state.subtaskPanelId = null;
+            state.subtaskPanelRecord = null;
+            render();
+        }, { once: true });
+        panel.show();
+    };
+
+    const saveSubtaskPanel = async (subtaskId) => {
+        const record = state.subtaskPanelRecord;
+        if (!record) { toast(t('ErrorTitle'), 'error'); return; }
+
+        const draft = state.subtaskPanelDraft || {};
+        const title = String(draft.title || '').trim();
+        if (!title) { toast(t('SubtaskTitleRequired'), 'error'); return; }
+
+        state.subtaskPanelSaving = true;
+        render();
+
+        // Every other field is carried over from the record just read: a partial payload against a full-replace
+        // endpoint silently erases whatever the panel did not show.
+        const payload = Object.assign({}, record, {
+            title,
+            dueAt: draft.dueAt || null,
+            expectedVersion: record.version ?? record.expectedVersion
+        });
+        const result = await global.TasksApi.update(subtaskId, payload);
+        state.subtaskPanelSaving = false;
+
+        if (!result.ok) {
+            toast(global.TasksApi.failureMessage(result), 'error');
+            render();
+            return;
+        }
+
+        state.subtaskPanelId = null;
+        state.subtaskPanelRecord = null;
+        toast(t('SubtaskSaved'));
+        await loadWorkItems();
     };
 
     // ── Table view ────────────────────────────────────────────────────────────
@@ -2585,12 +2718,20 @@
                 setProjectionState(item, 'Done', 'Done', 'Kapandı'); return 'resolved';
             case 'inquire':
             case 'requestInfo':
-                // Information request round-trip — park in Waiting and record who we're
-                // waiting on (the requester) so the "Bekleyen" note is meaningful.
+                /*
+                 * Showcase-only round-trip. It still has to write a CONTRACT-VALID waitingContext: it produced
+                 * type 'information' (a value the contract now rejects) and a waitingOn with no id, which is the
+                 * shape the executable contract now declares. The fixtures and the resolver were aligned when the
+                 * vocabulary was settled; this runtime writer was missed, which is exactly how the divergence
+                 * started in the first place.
+                 */
                 item.waitingOn = item.waitingOn || item.requester;
                 item.waitingContext = item.waitingContext || {
-                    type: 'information',
-                    waitingOn: { displayName: item.waitingOn },
+                    type: 'externalInformation',
+                    // A typed identity, or nothing. A name with no id is not an identity the client can act on.
+                    waitingOn: item.requesterId
+                        ? { id: item.requesterId, displayName: item.waitingOn || null }
+                        : null,
                     since: new Date().toISOString(),
                     expectedUntil: null
                 };
@@ -3649,9 +3790,21 @@
         }
         // Opening a subtask's own detail. Checked BEFORE the toggle so the two never compete for the same click;
         // they are distinct controls inside the same row.
+        // The quick panel first; "full detail" inside it is the deliberate way out to the whole page.
+        const openTaskFullEl = event.target.closest('[data-wcn-open-task-full]');
+        if (openTaskFullEl) {
+            openDetailPage(openTaskFullEl.getAttribute('data-wcn-open-task-full'));
+            return;
+        }
+        const subtaskSaveEl = event.target.closest('[data-wcn-subtask-save]');
+        if (subtaskSaveEl) {
+            await saveSubtaskPanel(subtaskSaveEl.getAttribute('data-wcn-subtask-save'));
+            return;
+        }
         const openTaskEl = event.target.closest('[data-wcn-open-task]');
         if (openTaskEl) {
-            openDetailPage(openTaskEl.getAttribute('data-wcn-open-task'));
+            // A row opens the QUICK panel now; the full page is one click further, from inside it.
+            await openSubtaskPanel(itemById(state.selectedId), openTaskEl.getAttribute('data-wcn-open-task'));
             return;
         }
         const subEl = event.target.closest('[data-wcn-subtask]');
@@ -3827,6 +3980,13 @@
 
     let searchTimer = null;
     const onInput = (event) => {
+        const fieldEl = event.target.closest('[data-wcn-subtask-field]');
+        if (fieldEl) {
+            state.subtaskPanelDraft = Object.assign({}, state.subtaskPanelDraft, {
+                [fieldEl.getAttribute('data-wcn-subtask-field')]: fieldEl.value
+            });
+            return;
+        }
         const searchEl = event.target.closest('[data-wcn-search]');
         if (!searchEl) { return; }
         const value = searchEl.value;
@@ -3897,7 +4057,9 @@
      *
      * Announced at boot rather than on first click, so the gap is visible before a user finds it.
      */
-    const WRITE_DEPENDENCIES = ['TasksApi', 'TaskForm'];
+    // `bootstrap` joins the list because the subtask quick-edit panel is an offcanvas: without it the row
+    // click does nothing at all, which is the same silent failure as a missing TasksApi.
+    const WRITE_DEPENDENCIES = ['TasksApi', 'TaskForm', 'bootstrap'];
 
     const reportMissingWriteDependencies = () => {
         const missing = WRITE_DEPENDENCIES.filter((name) => !global[name]);

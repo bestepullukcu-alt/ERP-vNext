@@ -676,3 +676,148 @@ describe("the waiting notice names the wait it actually is", () => {
     });
   });
 });
+
+/*
+ * Subtask quick-edit panel.
+ *
+ * It is a WRITE surface, and this week the Details route shipped with every write silently broken because the
+ * view had not loaded the scripts they need. So the panel's own dependency is declared, and its failure to open
+ * is asserted to be loud rather than nothing.
+ */
+describe("the subtask quick-edit panel", () => {
+  const parentWithSubtask = () => projectionItem({
+    subtasks: {
+      mode: "full",
+      items: [{
+        id: "11111111-1111-1111-1111-111111111111",
+        title: "Ekstreyi iste",
+        status: "in-progress",
+        assignee: { id: "u1", displayName: "Merve Şahin" },
+        dueAt: "2026-08-03T00:00:00+00:00"
+      }]
+    }
+  });
+
+  const openPanel = async () => {
+    app().querySelector("[data-wcn-open-task]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  };
+
+  it("opens on the row with the subtask's current values", async () => {
+    await bootDetailPage(parentWithSubtask());
+    await openPanel();
+
+    const panel = app().querySelector("#wcnSubtaskPanel");
+    expect(panel).not.toBeNull();
+    expect(panel.querySelector('[data-wcn-subtask-field="title"]').value).toBe("Ekstreyi iste");
+    expect(panel.querySelector('[data-wcn-subtask-field="dueAt"]').value).toBe("2026-08-03");
+  });
+
+  /*
+   * Assignee and status are SHOWN but not editable: assignment goes through /reassign, which demands a reason
+   * and enforces who may do it, and status goes through the gated transitions. A quick panel that edited them
+   * would either drop those rules or ask for a reason, and the first is how a surface starts lying.
+   */
+  it("shows assignee and status without offering to edit them here", async () => {
+    await bootDetailPage(parentWithSubtask());
+    await openPanel();
+
+    const panel = app().querySelector("#wcnSubtaskPanel");
+    expect(panel.textContent).toContain("Merve Şahin");
+    expect(panel.querySelector('[data-wcn-subtask-field="assignee"]')).toBeNull();
+    expect(panel.querySelector('[data-wcn-subtask-field="status"]')).toBeNull();
+    expect(panel.textContent).toContain("SubtaskQuickEditScope");
+  });
+
+  // The panel holds fields that change often; its checklist, dependencies and activity stay on the full page,
+  // because two surfaces rendering the same thing eventually disagree.
+  it("does not duplicate the full page's deeper sections", async () => {
+    await bootDetailPage(parentWithSubtask());
+    await openPanel();
+
+    const panel = app().querySelector("#wcnSubtaskPanel");
+    expect(panel.querySelector(".wcn-checks")).toBeNull();
+    expect(panel.querySelector(".wcn-audit")).toBeNull();
+  });
+
+  it("always offers the way out to the full page, with the subtask's own id", async () => {
+    await bootDetailPage(parentWithSubtask());
+    await openPanel();
+
+    const link = app().querySelector("[data-wcn-open-task-full]");
+    expect(link).not.toBeNull();
+    expect(link.getAttribute("data-wcn-open-task-full")).toBe("11111111-1111-1111-1111-111111111111");
+  });
+
+  it("declares bootstrap as a write dependency, so a page without it says so", async () => {
+    const errors = [];
+    const original = console.error;
+    console.error = (...args) => errors.push(args.join(" "));
+    try {
+      await bootDetailPage(parentWithSubtask(), { withoutTasksScripts: true });
+    } finally {
+      console.error = original;
+    }
+
+    // The panel cannot open without bootstrap; silence would look exactly like a row that is not clickable.
+    expect(errors.some((line) => line.includes("Missing required script"))).toBe(true);
+    expect(errors.some((line) => line.includes("bootstrap"))).toBe(true);
+  });
+});
+
+describe("the contract declares the shapes that kept drifting", () => {
+  beforeEach(async () => { await bootDetailPage(projectionItem()); });
+
+  const validate = (item) => global.WorkCenterNextContract.validateWorkItem(item);
+
+  it("rejects a waitingOn that is a name with no identity behind it", () => {
+    const result = validate(projectionItem({
+      normalizedStatus: "Waiting",
+      taskLifecycle: "Waiting",
+      // The shape app.js's own writer used to produce.
+      waitingContext: { type: "externalInformation", waitingOn: { displayName: "Deniz Koç" } }
+    }));
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.map((e) => e.code)).toContain("WAITING_CONTEXT_WAITING_ON_INVALID");
+  });
+
+  it("accepts a typed identity, and accepts none at all", () => {
+    const withId = validate(projectionItem({
+      normalizedStatus: "Waiting", taskLifecycle: "Waiting",
+      waitingContext: { type: "approval", waitingOn: { id: "u1", displayName: "Deniz Koç" } }
+    }));
+    const withNone = validate(projectionItem({
+      normalizedStatus: "Waiting", taskLifecycle: "Waiting",
+      waitingContext: { type: "approval", waitingOn: null }
+    }));
+
+    expect(withId.errors.map((e) => e.code)).not.toContain("WAITING_CONTEXT_WAITING_ON_INVALID");
+    expect(withNone.errors.map((e) => e.code)).not.toContain("WAITING_CONTEXT_WAITING_ON_INVALID");
+  });
+
+  it("rejects a subtask status nobody declared", () => {
+    const result = validate(projectionItem({
+      subtasks: { mode: "full", items: [{ id: "s1", title: "x", status: "half-done" }] }
+    }));
+
+    expect(result.errors.map((e) => e.code)).toContain("SUBTASK_STATUS_INVALID");
+  });
+
+  it("accepts every declared subtask status", () => {
+    global.WorkCenterNextContract.enums.SUBTASK_STATUSES.forEach((status) => {
+      const result = validate(projectionItem({
+        subtasks: { mode: "full", items: [{ id: "s1", title: "x", status }] }
+      }));
+      expect(result.errors.filter((e) => e.code === "SUBTASK_STATUS_INVALID")).toEqual([]);
+    });
+  });
+
+  it("rejects a subtask holder that is a name with no identity", () => {
+    const result = validate(projectionItem({
+      subtasks: { mode: "full", items: [{ id: "s1", title: "x", status: "done", assignee: { displayName: "X" } }] }
+    }));
+
+    expect(result.errors.map((e) => e.code)).toContain("SUBTASK_ASSIGNEE_INVALID");
+  });
+});

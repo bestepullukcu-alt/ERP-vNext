@@ -6142,3 +6142,7 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
     font-size: .75rem; color: var(--bs-secondary-color); white-space: nowrap;
 }
 .wcn-subtask-meta i { font-size: .875rem; }
+
+/* Subtask quick-edit panel: the slim offcanvas, holding only fields that change often. */
+.wcn-subtask-panel { inline-size: min(24rem, 100vw); }
+.wcn-subtask-panel .offcanvas-footer { margin-block-start: auto; }

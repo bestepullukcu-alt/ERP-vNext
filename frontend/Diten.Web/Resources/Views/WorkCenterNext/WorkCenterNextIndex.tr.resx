@@ -1313,6 +1313,36 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Henüz kontrol listesi maddesi yok.</value>
   </data>
+  <data name="SubtaskSave" xml:space="preserve">
+    <value>Kaydet</value>
+  </data>
+  <data name="SubtaskSaved" xml:space="preserve">
+    <value>Alt görev kaydedildi.</value>
+  </data>
+  <data name="SubtaskQuickEditTitle" xml:space="preserve">
+    <value>Hızlı düzenleme</value>
+  </data>
+  <data name="SubtaskFieldTitle" xml:space="preserve">
+    <value>Başlık</value>
+  </data>
+  <data name="SubtaskFieldDue" xml:space="preserve">
+    <value>Son tarih</value>
+  </data>
+  <data name="SubtaskFieldAssignee" xml:space="preserve">
+    <value>Atanan</value>
+  </data>
+  <data name="SubtaskFieldStatus" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="SubtaskNoAssignee" xml:space="preserve">
+    <value>Henüz kimse</value>
+  </data>
+  <data name="SubtaskOpenFullDetail" xml:space="preserve">
+    <value>Tam detaya git</value>
+  </data>
+  <data name="SubtaskQuickEditScope" xml:space="preserve">
+    <value>Atanan ve durum, kuralların uygulandığı tam detaydan değiştirilir.</value>
+  </data>
   <data name="ActionsAvailable" xml:space="preserve">
     <value>Mevcut aksiyonlar</value>
   </data>

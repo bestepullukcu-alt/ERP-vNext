@@ -27,6 +27,28 @@
      * such states. Remove it if that work is ever abandoned.
      */
     const WAITING_CONTEXT_TYPES = ['externalInformation', 'approval', 'review', 'meeting'];
+    /*
+     * A subtask's state. Declared for the same reason the waiting vocabulary now is: it existed in the provider,
+     * in the shell's icon map and in its label map, and in none of them as a stated contract — so a value added
+     * on one side would reach the other as a blank row.
+     *
+     * `cancelled` is deliberately distinct from `not-started`: called-off work is not waiting to begin, and
+     * BL-035's "a cancelled subtask does not gate its parent" rule needs the two to be different values.
+     */
+    const SUBTASK_STATUSES = ['not-started', 'in-progress', 'done', 'cancelled'];
+
+    /*
+     * WHO a work item is waiting on: a TYPED identity, or nothing at all.
+     *
+     * Three shapes have been in circulation — {id, displayName, isCurrentUser} from the projection, a bare
+     * {displayName} from the shell's own writer, and for a while a plain string carrying the REASON. The client
+     * reads `.displayName`, so a string rendered as nothing and a name without an id cannot be acted on. `null`
+     * is the honest answer when nobody can be resolved; a name with no identity behind it is not.
+     */
+    const isPersonRef = (value) =>
+        value === null || value === undefined
+            ? true
+            : typeof value === 'object' && typeof value.id === 'string' && value.id.length > 0;
     const CAPABILITIES = [
         'planning', 'execution', 'timeTracking', 'checklist', 'subtasks', 'dependencies',
         'attachments', 'evidence', 'activity', 'processStages', 'businessContext', 'relatedRecords'
@@ -186,9 +208,20 @@
         if (fixture.waitingContext && !WAITING_CONTEXT_TYPES.includes(fixture.waitingContext.type)) {
             push(errors, fixture, 'WAITING_CONTEXT_TYPE_INVALID', 'waitingContext.type');
         }
+        if (fixture.waitingContext && !isPersonRef(fixture.waitingContext.waitingOn)) {
+            push(errors, fixture, 'WAITING_CONTEXT_WAITING_ON_INVALID', 'waitingContext.waitingOn');
+        }
         if (fixture.personal?.snoozedUntil && fixture.normalizedStatus === 'Waiting' && fixture.waitingContext?.type === 'personalSnooze') {
             push(errors, fixture, 'SNOOZE_MUST_NOT_CREATE_WAITING', 'personal.snoozedUntil');
         }
+        (fixture.subtasks?.items || []).forEach((subtask, index) => {
+            if (!SUBTASK_STATUSES.includes(subtask.status)) {
+                push(errors, fixture, 'SUBTASK_STATUS_INVALID', `subtasks.items[${index}].status`);
+            }
+            if (!isPersonRef(subtask.assignee)) {
+                push(errors, fixture, 'SUBTASK_ASSIGNEE_INVALID', `subtasks.items[${index}].assignee`);
+            }
+        });
         if (fixture.reviewMeetingPolicy) {
             const requirement = fixture.reviewMeetingPolicy.requirement;
             const byCode = new Map((fixture.actions || []).map((action) => [action.code, action]));
@@ -252,7 +285,7 @@
     };
 
     global.WorkCenterNextContract = {
-        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, CAPABILITIES, VALUE_TYPES },
+        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, CAPABILITIES, VALUE_TYPES },
         limits: LIMITS,
         isLabel,
         isSafeLink,

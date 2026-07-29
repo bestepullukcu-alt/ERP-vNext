@@ -1313,6 +1313,36 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>لا توجد عناصر في قائمة التحقق بعد.</value>
   </data>
+  <data name="SubtaskSave" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="SubtaskSaved" xml:space="preserve">
+    <value>تم حفظ المهمة الفرعية.</value>
+  </data>
+  <data name="SubtaskQuickEditTitle" xml:space="preserve">
+    <value>تحرير سريع</value>
+  </data>
+  <data name="SubtaskFieldTitle" xml:space="preserve">
+    <value>العنوان</value>
+  </data>
+  <data name="SubtaskFieldDue" xml:space="preserve">
+    <value>تاريخ الاستحقاق</value>
+  </data>
+  <data name="SubtaskFieldAssignee" xml:space="preserve">
+    <value>المُسنَدة إليه</value>
+  </data>
+  <data name="SubtaskFieldStatus" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="SubtaskNoAssignee" xml:space="preserve">
+    <value>لا أحد بعد</value>
+  </data>
+  <data name="SubtaskOpenFullDetail" xml:space="preserve">
+    <value>فتح التفاصيل الكاملة</value>
+  </data>
+  <data name="SubtaskQuickEditScope" xml:space="preserve">
+    <value>يُغيَّر المُسنَد إليه والحالة من التفاصيل الكاملة، حيث تُطبَّق قواعدهما.</value>
+  </data>
   <data name="ActionsAvailable" xml:space="preserve">
     <value>الإجراءات المتاحة</value>
   </data>

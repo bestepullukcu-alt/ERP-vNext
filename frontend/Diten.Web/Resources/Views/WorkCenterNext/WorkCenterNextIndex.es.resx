@@ -1313,6 +1313,36 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aún no hay elementos de verificación.</value>
   </data>
+  <data name="SubtaskSave" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="SubtaskSaved" xml:space="preserve">
+    <value>Subtarea guardada.</value>
+  </data>
+  <data name="SubtaskQuickEditTitle" xml:space="preserve">
+    <value>Edición rápida</value>
+  </data>
+  <data name="SubtaskFieldTitle" xml:space="preserve">
+    <value>Título</value>
+  </data>
+  <data name="SubtaskFieldDue" xml:space="preserve">
+    <value>Fecha límite</value>
+  </data>
+  <data name="SubtaskFieldAssignee" xml:space="preserve">
+    <value>Asignada a</value>
+  </data>
+  <data name="SubtaskFieldStatus" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="SubtaskNoAssignee" xml:space="preserve">
+    <value>Todavía nadie</value>
+  </data>
+  <data name="SubtaskOpenFullDetail" xml:space="preserve">
+    <value>Abrir el detalle completo</value>
+  </data>
+  <data name="SubtaskQuickEditScope" xml:space="preserve">
+    <value>La persona asignada y el estado se cambian desde el detalle completo, donde se aplican sus reglas.</value>
+  </data>
   <data name="ActionsAvailable" xml:space="preserve">
     <value>Acciones disponibles</value>
   </data>

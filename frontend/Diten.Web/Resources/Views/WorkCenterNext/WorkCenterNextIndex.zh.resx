@@ -1313,6 +1313,36 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>暂无清单项。</value>
   </data>
+  <data name="SubtaskSave" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="SubtaskSaved" xml:space="preserve">
+    <value>子任务已保存。</value>
+  </data>
+  <data name="SubtaskQuickEditTitle" xml:space="preserve">
+    <value>快速编辑</value>
+  </data>
+  <data name="SubtaskFieldTitle" xml:space="preserve">
+    <value>标题</value>
+  </data>
+  <data name="SubtaskFieldDue" xml:space="preserve">
+    <value>截止日期</value>
+  </data>
+  <data name="SubtaskFieldAssignee" xml:space="preserve">
+    <value>负责人</value>
+  </data>
+  <data name="SubtaskFieldStatus" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="SubtaskNoAssignee" xml:space="preserve">
+    <value>尚无负责人</value>
+  </data>
+  <data name="SubtaskOpenFullDetail" xml:space="preserve">
+    <value>打开完整详情</value>
+  </data>
+  <data name="SubtaskQuickEditScope" xml:space="preserve">
+    <value>负责人和状态需在完整详情页中修改，那里会应用相应规则。</value>
+  </data>
   <data name="ActionsAvailable" xml:space="preserve">
     <value>可用操作</value>
   </data>

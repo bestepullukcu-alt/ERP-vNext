@@ -1313,6 +1313,36 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Пунктов чек-листа пока нет.</value>
   </data>
+  <data name="SubtaskSave" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="SubtaskSaved" xml:space="preserve">
+    <value>Подзадача сохранена.</value>
+  </data>
+  <data name="SubtaskQuickEditTitle" xml:space="preserve">
+    <value>Быстрое редактирование</value>
+  </data>
+  <data name="SubtaskFieldTitle" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="SubtaskFieldDue" xml:space="preserve">
+    <value>Срок</value>
+  </data>
+  <data name="SubtaskFieldAssignee" xml:space="preserve">
+    <value>Исполнитель</value>
+  </data>
+  <data name="SubtaskFieldStatus" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="SubtaskNoAssignee" xml:space="preserve">
+    <value>Пока никто</value>
+  </data>
+  <data name="SubtaskOpenFullDetail" xml:space="preserve">
+    <value>Открыть полную карточку</value>
+  </data>
+  <data name="SubtaskQuickEditScope" xml:space="preserve">
+    <value>Исполнитель и статус меняются в полной карточке, где действуют их правила.</value>
+  </data>
   <data name="ActionsAvailable" xml:space="preserve">
     <value>Доступные действия</value>
   </data>

@@ -291,7 +291,10 @@ describe("MOD-0024 Phase 2 — checklist and subtasks", () => {
         app.indexOf("data-wcn-note-save", app.indexOf("Depth-block interactions")));
       // Open is matched first and returns; the toggle keeps its own attribute.
       expect(handlers.indexOf("data-wcn-open-task")).toBeLessThan(handlers.indexOf("data-wcn-subtask]"));
-      expect(handlers).toContain("openDetailPage(openTaskEl.getAttribute");
+      // The destination changed by design — a row now opens the quick-edit panel, and the panel carries the
+      // way out to the full page. What this test guards is unchanged: opening and completing are separate
+      // controls, so one click can never do both.
+      expect(handlers).toContain("openSubtaskPanel(itemById(state.selectedId)");
       expect(renderer).toContain("data-wcn-subtask=");
     });
 
