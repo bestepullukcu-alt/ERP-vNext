@@ -83,6 +83,7 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Выбранная должность не может получать задачи. Выберите активную должность.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Задачу раньше вас изменил другой сотрудник. Экран обновлён до текущего состояния.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Обязательный пункт чек-листа ещё не отмечен, поэтому задачу нельзя завершить.</value></data>
+  <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Задача, от которой зависит эта, ещё не завершена, поэтому продвинуться нельзя.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Задача ожидает решения согласующего.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Отменить эту задачу может только тот, кто её запросил. Если вы не хотите эту работу, верните её.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Укажите, чего ожидает задача.</value></data>

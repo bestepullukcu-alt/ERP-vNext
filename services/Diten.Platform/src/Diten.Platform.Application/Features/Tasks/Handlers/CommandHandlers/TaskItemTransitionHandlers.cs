@@ -164,6 +164,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     private readonly IChecklistRunRepository _checklists;
     private readonly ITaskChecklistService _checklistService;
     private readonly IWorkflowTransitionGate _workflowGate;
+    private readonly ITaskDependencyRepository _dependencies;
 
     public TransitionTaskItemHandler(
         ITaskItemRepository tasks,
@@ -171,8 +172,10 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         ICurrentUserContext currentUser,
         IChecklistRunRepository checklists,
         ITaskChecklistService checklistService,
-        IWorkflowTransitionGate workflowGate)
+        IWorkflowTransitionGate workflowGate,
+        ITaskDependencyRepository dependencies)
     {
+        _dependencies = dependencies;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
@@ -261,6 +264,31 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             }
         }
 
+        /*
+         * Dependency gate — the RULE, not the hint.
+         *
+         * The projection already computes this and ships `start` disabled with DEPENDENCY_BLOCKED beside it. That
+         * is presentation: a caller can post straight to this endpoint, and until this check existed one did, and
+         * a task with an open predecessor started anyway. Exactly the gap the cancel guard had, and the same cure.
+         *
+         * Placed AFTER the approval gate so the reason the caller is told matches the reason the projection shows:
+         * an approval-pending task reports APPROVAL_PENDING from both sides, and the dependency reason is what
+         * remains once the gates above are clear.
+         *
+         * Which edges apply is decided by TaskDependencyRules, the same source the projection uses — one rule, one
+         * place, so the button and the refusal cannot disagree.
+         */
+        if (command.Target is TaskLifecycle.InProgress or TaskLifecycle.Done)
+        {
+            var blocker = await FindUnsatisfiedDependencyAsync(task, command.Target, ct);
+            if (blocker is not null)
+            {
+                return Response<NoContent>.Fail(
+                    "A dependency has not been met yet.",
+                    409, TaskReasonCodes.DependencyBlocked, command.CorrelationId);
+            }
+        }
+
         task.Lifecycle = command.Target;
         task.UpdatedBy = _currentUser.ActorName;
 
@@ -321,6 +349,55 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
 
             await _tasks.UpdateAsync(child, child.Version, ct);
         }
+    }
+
+    /// <summary>
+    /// The first predecessor that has not reached the state its edge waits for, or null when nothing is in the
+    /// way. Reads only the edges this task WAITS ON (<c>ListByTaskIdAsync</c> returns exactly those), and only the
+    /// ones whose type gates the act being attempted.
+    ///
+    /// <para>An edge whose far end cannot be read blocks NOTHING. That mirrors the projection, which drops such an
+    /// edge rather than showing an unnamed blocker: refusing on a predecessor the caller cannot see or reach would
+    /// park the task with no way to clear it.</para>
+    /// </summary>
+    private async Task<TaskItem?> FindUnsatisfiedDependencyAsync(
+        TaskItem task,
+        TaskLifecycle target,
+        CancellationToken ct)
+    {
+        var edges = await _dependencies.ListByTaskIdAsync(task.Id, ct);
+        if (edges.Count == 0)
+        {
+            return null;
+        }
+
+        var gatedAct = target == TaskLifecycle.InProgress
+            ? TaskDependencyRules.StartActionCode
+            : TaskDependencyRules.CompleteActionCode;
+
+        var relevant = edges
+            .Where(edge => TaskDependencyRules.AffectedActionCode(edge.DependencyType) == gatedAct)
+            .ToList();
+        if (relevant.Count == 0)
+        {
+            return null;
+        }
+
+        // One batched read for every predecessor involved, never one per edge.
+        var predecessors = (await _tasks.ListByIdsAsync(
+                relevant.Select(edge => edge.DependsOnTaskItemId).Distinct().ToList(), ct))
+            .ToDictionary(item => item.Id);
+
+        foreach (var edge in relevant)
+        {
+            if (predecessors.TryGetValue(edge.DependsOnTaskItemId, out var predecessor)
+                && !TaskDependencyRules.IsSatisfied(edge.DependencyType, predecessor))
+            {
+                return predecessor;
+            }
+        }
+
+        return null;
     }
 }
 

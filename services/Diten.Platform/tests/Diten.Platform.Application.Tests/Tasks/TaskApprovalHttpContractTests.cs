@@ -204,7 +204,7 @@ public sealed class TaskApprovalHttpContractTests
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeChecklistRunRepository(),
                 new TaskChecklistService(),
-                new WorkflowTransitionGate(mediator, NullLogger<WorkflowTransitionGate>.Instance));
+                new WorkflowTransitionGate(mediator, NullLogger<WorkflowTransitionGate>.Instance), new FakeTaskDependencyRepository());
         }
 
         public Task<Response<NoContent>> StartAsync() => Send(TaskLifecycle.InProgress);

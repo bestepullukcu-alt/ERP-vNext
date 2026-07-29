@@ -226,7 +226,7 @@ public sealed class TaskWaitingAndCancelAuthorityTests
             new TaskChecklistService(),
             // Not blocked: these tests are about the cancel-authority rule, not the approval gate, and cancelling
             // never consults the gate anyway (it is not "this work proceeds").
-            new FakeWorkflowTransitionGate());
+            new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository());
 
     private static TaskWorkItemProvider Provider(FakeTaskItemRepository tasks)
         => new(tasks,

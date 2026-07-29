@@ -83,6 +83,7 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>所选职位无法接收任务。请选择一个有效职位。</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>其他人已先修改该任务，页面已刷新为最新状态。</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>必填的清单项尚未勾选，无法完成该任务。</value></data>
+  <data name="ErrorDependencyBlocked" xml:space="preserve"><value>该任务所依赖的任务尚未完成，因此无法推进。</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>该任务正在等待审批人的决定。</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>只有提出该任务的人才能取消它。如果您不想接手，请退回。</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>请说明该任务在等待什么。</value></data>

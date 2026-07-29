@@ -442,7 +442,7 @@ public sealed class TaskChecklistSubtaskTests
         int expectedVersion)
         => new TransitionTaskItemHandler(
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
-                runs, new TaskChecklistService(), new FakeWorkflowTransitionGate())
+                runs, new TaskChecklistService(), new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository())
             .Handle(
                 new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
                 CancellationToken.None);

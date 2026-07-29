@@ -247,7 +247,7 @@ public sealed class TaskApprovalGateTests
         int expectedVersion)
         => new TransitionTaskItemHandler(
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
-                new FakeChecklistRunRepository(), new TaskChecklistService(), gate)
+                new FakeChecklistRunRepository(), new TaskChecklistService(), gate, new FakeTaskDependencyRepository())
             .Handle(
                 new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
                 CancellationToken.None);

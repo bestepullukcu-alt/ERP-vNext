@@ -47,6 +47,9 @@
         TASK_CONCURRENCY_CONFLICT: 'errorConcurrencyRefreshed',
         CHECKLIST_INCOMPLETE: 'errorChecklistIncomplete',
         APPROVAL_PENDING: 'errorApprovalPending',
+        // An unmet predecessor. Same string the PROJECTION uses to disable the button, deliberately: the greyed
+        // control and this refusal are one fact seen from two sides.
+        DEPENDENCY_BLOCKED: 'errorDependencyBlocked',
         // Cancelling is the requester's right: an assignee gets 403 with this code. failureMessage checks the
         // reason code BEFORE the status, so this replaces the generic "you are not allowed" with the reason.
         TASK_CANCEL_NOT_REQUESTER: 'errorCancelNotRequester',
@@ -77,6 +80,7 @@
     const BLOCKING_REASON_CODES = new Set([
         'APPROVAL_PENDING',
         'CHECKLIST_INCOMPLETE',
+        'DEPENDENCY_BLOCKED',
         'WORKFLOW_PENDING_APPROVAL',
         'WORKFLOW_WAITING_EVIDENCE',
         'WORKFLOW_REJECTED',

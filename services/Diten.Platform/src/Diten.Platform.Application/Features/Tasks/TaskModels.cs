@@ -88,6 +88,16 @@ public static class TaskReasonCodes
 
     /// <summary>That edge already exists; adding it twice would double every blocker sentence.</summary>
     public const string DependencyDuplicate = "TASK_DEPENDENCY_DUPLICATE";
+
+    /// <summary>
+    /// A predecessor has not reached the state its edge waits for, so this transition is refused.
+    ///
+    /// <para>Deliberately the SAME string as <c>WorkAggregationReasonCodes.DependencyBlocked</c>: the projection
+    /// disabling the button and the handler refusing the write are one fact seen from two sides, and the client
+    /// should not need two entries in its message map to say one thing. TaskDependencyTests asserts they are
+    /// equal, so a rename on either side is caught rather than silently producing an unmapped code.</para>
+    /// </summary>
+    public const string DependencyBlocked = "DEPENDENCY_BLOCKED";
 }
 
 /// <summary>

@@ -83,6 +83,7 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Seçilen pozisyon görev alamaz. Aktif bir pozisyon seçin.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Bu görevi başka biri sizden önce değiştirdi. Ekran güncel durumla yenilendi.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Zorunlu bir kontrol listesi maddesi hâlâ işaretli değil, görev tamamlanamaz.</value></data>
+  <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Bu görevin bağlı olduğu bir görev henüz bitmedi, bu yüzden ilerleyemez.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Görev, onaylayan kişinin kararını bekliyor.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Bu görevi yalnızca talep eden kişi iptal edebilir. İşi istemiyorsanız iade edin.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Görevin neyi beklediğini yazın.</value></data>
